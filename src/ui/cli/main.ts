@@ -10,6 +10,7 @@ import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
 import { MAPS, MAP_IDS } from '../../data/maps.js';
 import { ENCOUNTERS, buildEncounter } from '../../data/monsters.js';
+import { acOf } from '../../data/armor.js';
 import { chooseAction } from '../../ai/greedy.js';
 import type { Action } from '../../engine/actions.js';
 import { renderBoard, renderStatus, renderEvent, describeAction, cellName, parseCell } from './renderer.js';
@@ -104,7 +105,7 @@ async function main() {
     console.log(renderStatus(state));
     const t = me.turn;
     console.log(
-      `\n${me.name} (${me.team === 'team1' ? 'Team 1' : 'Team 2'})  HP ${me.hp}/${me.maxHp}  AC ${me.ac}` +
+      `\n${me.name} (${me.team === 'team1' ? 'Team 1' : 'Team 2'})  HP ${me.hp}/${me.maxHp}  AC ${acOf(me)}` +
       `  [${t.actionUsed ? ' ' : 'A'}${t.bonusActionUsed ? ' ' : 'B'}]  Move ${t.movementMax - t.movementUsed}ft`,
     );
 

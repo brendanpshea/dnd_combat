@@ -33,6 +33,8 @@ export type GameEvent =
   | { type: 'conditionApplied'; combatantId: Id; condition: ConditionId; sourceId?: Id }
   | { type: 'conditionRemoved'; combatantId: Id; condition: ConditionId }
   | { type: 'concentrationBroken'; combatantId: Id; spellId: Id }
+  | { type: 'equipped'; combatantId: Id; weaponId: Id }
+  | { type: 'itemUsed'; combatantId: Id; itemId: Id; targetId?: Id }
   | { type: 'dashed'; combatantId: Id }
   | { type: 'disengaged'; combatantId: Id }
   | { type: 'dodging'; combatantId: Id }

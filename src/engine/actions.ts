@@ -12,6 +12,8 @@ import { posEq, cellAt } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
+import { ITEMS } from '../data/items.js';
+import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, Direction8 } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration } from './rules/attack.js';
@@ -26,6 +28,7 @@ export type Action =
   | { kind: 'attack'; weaponId: Id; targetId: Id; offhand?: boolean }
   | { kind: 'castSpell'; spellId: Id; slotLevel: number; targets: Target[] }
   | { kind: 'useFeature'; featureId: Id }
+  | { kind: 'useItem'; itemId: Id; targets?: Target[] }
   | { kind: 'dash' }
   | { kind: 'disengage' }
   | { kind: 'dodge' }
@@ -42,7 +45,7 @@ function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetI
   const w = WEAPONS[weaponId];
   const t = state.combatants[targetId];
   if (!w || !t || !t.alive || t.team === actor.team) return false;
-  if (!actor.weaponIds.includes(weaponId)) return false;
+  if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
   const inMelee = w.melee && adjacent(actor.position, t.position);
   const inRange =
@@ -52,13 +55,44 @@ function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetI
 }
 
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
-  const w = WEAPONS[weaponId];
-  // Two-weapon fighting needs a light weapon in each hand.
-  const lightCount = actor.weaponIds.filter((id) => WEAPONS[id]?.properties.includes('light')).length;
+  // Two-weapon fighting: a light weapon in each actual hand, off-hand attack
+  // made with the off-hand weapon.
+  const main = actor.equipped.mainHand;
+  const off = actor.equipped.offHand;
+  if (off !== weaponId || off === 'shield' || main === undefined) return false;
+  const mainW = WEAPONS[main];
+  const offW = WEAPONS[weaponId];
   return (
-    !!w && w.properties.includes('light') && lightCount >= 2 &&
+    !!mainW && !!offW &&
+    mainW.properties.includes('light') && offW.properties.includes('light') &&
     actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed
   );
+}
+
+function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, targets: Target[]): boolean {
+  const item = ITEMS[itemId];
+  if (!item) return false;
+  const t = item.targeting;
+  if (t.kind === 'self') return targets.length === 0;
+  if (t.kind === 'ally') {
+    if (targets.length === 0) return true; // drink it yourself
+    const tg = targets[0];
+    if (targets.length !== 1 || !tg || !('combatantId' in tg)) return false;
+    const ally = state.combatants[tg.combatantId];
+    return !!ally && ally.alive && ally.team === actor.team &&
+      (ally.id === actor.id || adjacent(actor.position, ally.position));
+  }
+  if (t.kind === 'thrown') {
+    const tg = targets[0];
+    if (targets.length !== 1 || !tg || !('combatantId' in tg)) return false;
+    const foe = state.combatants[tg.combatantId];
+    return !!foe && foe.alive && foe.team !== actor.team &&
+      distanceFeet(actor.position, foe.position) <= t.range.long &&
+      hasLineOfSight(state.grid, actor.position, foe.position);
+  }
+  // spell scroll: delegate to the spell's targeting rules
+  const spell = SPELLS[t.spellId]!;
+  return validSpellTargets(state, actor.id, spell, targets);
 }
 
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
@@ -132,6 +166,16 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       return spellAvailable(actor, spell, action.slotLevel) &&
         validSpellTargets(state, actorId, spell, action.targets);
     }
+    case 'useItem': {
+      if (incap) return false;
+      const item = ITEMS[action.itemId];
+      if (!item) return false;
+      const stack = actor.inventory.find((s) => s.itemId === action.itemId && s.qty > 0);
+      if (!stack) return false;
+      if (item.useTime === 'action' && actor.turn.actionUsed) return false;
+      if (item.useTime === 'bonus' && actor.turn.bonusActionUsed) return false;
+      return itemTargetsValid(state, actor, action.itemId, action.targets ?? []);
+    }
     case 'useFeature': {
       if (incap) return false;
       const f = FEATURES[action.featureId];
@@ -173,12 +217,52 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     actions.push({ kind: 'move', to });
   }
 
-  for (const wid of new Set(actor.weaponIds)) {
+  for (const wid of attackableWeapons(actor)) {
     for (const t of enemies) {
       const main: Action = { kind: 'attack', weaponId: wid, targetId: t.id };
       if (isLegalAction(state, actorId, main)) actions.push(main);
-      const off: Action = { kind: 'attack', weaponId: wid, targetId: t.id, offhand: true };
+    }
+  }
+  const offWeapon = actor.equipped.offHand;
+  if (offWeapon && offWeapon !== 'shield') {
+    for (const t of enemies) {
+      const off: Action = { kind: 'attack', weaponId: offWeapon, targetId: t.id, offhand: true };
       if (isLegalAction(state, actorId, off)) actions.push(off);
+    }
+  }
+
+  // Consumables.
+  for (const stack of actor.inventory) {
+    const item = ITEMS[stack.itemId];
+    if (!item || stack.qty <= 0) continue;
+    const candidates: Target[][] = [];
+    if (item.targeting.kind === 'self') candidates.push([]);
+    else if (item.targeting.kind === 'ally') {
+      candidates.push([]); // use on self
+      for (const a of allies) {
+        if (a.id !== actorId) candidates.push([{ combatantId: a.id }]);
+      }
+    } else if (item.targeting.kind === 'thrown') {
+      for (const e of enemies) candidates.push([{ combatantId: e.id }]);
+    } else {
+      // Scroll: one default targeting like the spell menu would offer.
+      const spell = SPELLS[item.targeting.spellId]!;
+      if (spell.targeting.kind === 'creature') {
+        const pool = spell.targeting.who === 'enemy' ? enemies : allies;
+        const valid = pool.filter((c) => validTarget(state, actorId, spell, c.id));
+        if (valid.length > 0) {
+          const n = spell.targeting.count;
+          candidates.push(
+            item.targeting.spellId === 'magic-missile'
+              ? Array.from({ length: n }, () => ({ combatantId: valid[0]!.id }))
+              : valid.slice(0, n).map((c) => ({ combatantId: c.id })),
+          );
+        }
+      }
+    }
+    for (const targets of candidates) {
+      const a: Action = { kind: 'useItem', itemId: stack.itemId, targets };
+      if (isLegalAction(state, actorId, a)) actions.push(a);
     }
   }
 
@@ -287,6 +371,10 @@ export function step(state: GameState, action: Action): { state: GameState; even
       events.push(...executeMove(draft, actorId, action.to));
       break;
     case 'attack':
+      // Attacking with a stowed weapon draws it via the free interaction.
+      if (!equippedWeapons(actor).includes(action.weaponId)) {
+        events.push(...autoSwap(draft, actorId, action.weaponId));
+      }
       if (action.offhand) {
         actor.turn.bonusActionUsed = true;
       } else if (!actor.turn.actionUsed) {
@@ -310,6 +398,20 @@ export function step(state: GameState, action: Action): { state: GameState; even
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = action.targets.flatMap((t) => ('position' in t ? [t.position] : []));
       events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions }));
+      break;
+    }
+    case 'useItem': {
+      const item = ITEMS[action.itemId]!;
+      if (item.useTime === 'action') actor.turn.actionUsed = true;
+      else actor.turn.bonusActionUsed = true;
+      const stack = actor.inventory.find((s) => s.itemId === action.itemId)!;
+      stack.qty -= 1;
+      if (stack.qty === 0) actor.inventory = actor.inventory.filter((s) => s !== stack);
+      const targets = action.targets ?? [];
+      const targetIds = targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
+      const positions = targets.flatMap((t) => ('position' in t ? [t.position] : []));
+      events.push({ type: 'itemUsed', combatantId: actorId, itemId: action.itemId, ...(targetIds[0] !== undefined ? { targetId: targetIds[0] } : {}) });
+      events.push(...item.apply({ state: draft, userId: actorId, targetIds, positions }));
       break;
     }
     case 'useFeature': {

@@ -78,6 +78,7 @@ export function startTurn(state: GameState): GameEvent[] {
     disengaged: false,
     attackedThisTurn: false,
     attacksLeft: 0,
+    interacted: false,
     sneakAttackUsed: false,
   };
   events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });

@@ -1,7 +1,7 @@
 /**
  * Class data: everything the builder needs to assemble a level-N character.
  */
-import type { Id, Ability } from '../engine/types.js';
+import type { Id, Ability, ItemStack } from '../engine/types.js';
 
 export interface ClassData {
   id: Id;
@@ -17,10 +17,13 @@ export interface ClassData {
     spellsByLevel: Record<number, Id[]>; // spells known at each character level
   };
   featuresByLevel: Record<number, Id[]>;
-  weaponIds: Id[];
   weaponMasteries: Id[];
-  armorId: Id;
-  shield: boolean;
+  equipment: {
+    mainHand: Id;
+    offHand?: Id | 'shield';
+    armor?: Id;
+    inventory: ItemStack[];   // spare weapons + consumables
+  };
 }
 
 export const CLASSES: Record<Id, ClassData> = {
@@ -32,9 +35,15 @@ export const CLASSES: Record<Id, ClassData> = {
       1: ['second-wind', 'action-surge', 'dueling'],
       3: ['improved-critical'], // Champion
     },
-    weaponIds: ['longsword', 'javelin'],
     weaponMasteries: ['longsword'],
-    armorId: 'scale-mail', shield: true,
+    equipment: {
+      mainHand: 'longsword', offHand: 'shield', armor: 'scale-mail',
+      inventory: [
+        { itemId: 'javelin', qty: 2 },
+        { itemId: 'potion-healing', qty: 1 },
+        { itemId: 'alchemists-fire', qty: 1 },
+      ],
+    },
   },
   cleric: {
     id: 'cleric', name: 'Cleric', hitDie: 8,
@@ -53,9 +62,14 @@ export const CLASSES: Record<Id, ClassData> = {
       1: ['disciple-of-life'],
       3: ['preserve-life'], // Life Domain: Channel Divinity
     },
-    weaponIds: ['mace'],
     weaponMasteries: [],
-    armorId: 'chain-mail', shield: true,
+    equipment: {
+      mainHand: 'mace', offHand: 'shield', armor: 'chain-mail',
+      inventory: [
+        { itemId: 'potion-healing', qty: 1 },
+        { itemId: 'scroll-cure-wounds', qty: 1 },
+      ],
+    },
   },
   wizard: {
     id: 'wizard', name: 'Wizard', hitDie: 6,
@@ -74,9 +88,14 @@ export const CLASSES: Record<Id, ClassData> = {
       1: [],
       3: ['sculpt-spells'], // Evoker
     },
-    weaponIds: ['quarterstaff'],
     weaponMasteries: [],
-    armorId: 'none', shield: false,
+    equipment: {
+      mainHand: 'quarterstaff',
+      inventory: [
+        { itemId: 'potion-healing', qty: 1 },
+        { itemId: 'scroll-magic-missile', qty: 1 },
+      ],
+    },
   },
   rogue: {
     id: 'rogue', name: 'Rogue', hitDie: 8,
@@ -87,8 +106,13 @@ export const CLASSES: Record<Id, ClassData> = {
       2: ['cunning-dash', 'cunning-disengage'],
       3: ['assassinate'], // Assassin
     },
-    weaponIds: ['shortsword', 'shortsword', 'shortbow'], // two blades for TWF
     weaponMasteries: ['shortsword', 'shortbow'],
-    armorId: 'studded-leather', shield: false,
+    equipment: {
+      mainHand: 'shortsword', offHand: 'shortsword', armor: 'studded-leather',
+      inventory: [
+        { itemId: 'shortbow', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
   },
 };

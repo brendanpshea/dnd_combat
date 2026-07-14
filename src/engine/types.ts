@@ -70,6 +70,17 @@ export interface ResourcePool {
   max: number;
 }
 
+export interface ItemStack {
+  itemId: Id;
+  qty: number;
+}
+
+export interface Equipped {
+  mainHand?: Id;          // weapon id
+  offHand?: Id;           // weapon id or 'shield'
+  armor?: Id;             // armor id; undefined = unarmored
+}
+
 export interface Combatant {
   id: Id;
   name: string;
@@ -80,7 +91,8 @@ export interface Combatant {
   abilities: AbilityScores;
   maxHp: number;
   hp: number;
-  ac: number;
+  /** Monsters: flat stat-block AC. PCs derive AC from equipment (acOf). */
+  acOverride?: number;
   speed: number; // feet
   position: Position;
   initiative: number;
@@ -90,9 +102,10 @@ export interface Combatant {
   spellIds: Id[];                   // known/prepared spells incl. cantrips
   featureIds: Id[];                 // class/species features
   featureUses: Record<Id, ResourcePool>;
-  weaponIds: Id[];
+  /** Carried but not in hand (spare weapons, consumables). */
+  inventory: ItemStack[];
+  equipped: Equipped;
   weaponMasteries: Id[];            // weapon ids whose mastery property applies
-  armorId?: Id;
   /** Attacks per Attack action (Multiattack / Extra Attack). Default 1. */
   attacksPerAction: number;
   resistances: DamageType[];
@@ -112,6 +125,7 @@ export interface Combatant {
     disengaged: boolean;    // no opportunity attacks provoked this turn
     attackedThisTurn: boolean; // gates the off-hand bonus attack
     attacksLeft: number;    // extra attacks remaining within the Attack action
+    interacted: boolean;    // free object interaction (weapon swap) spent
     sneakAttackUsed: boolean;
   };
   alive: boolean;

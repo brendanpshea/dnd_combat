@@ -15,7 +15,7 @@ import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import type { GameEvent } from '../engine/events.js';
-import { ARMOR } from './armor.js';
+import { acOf, wearsMetal } from './armor.js';
 
 export type SpellTargeting =
   | { kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number }
@@ -80,14 +80,15 @@ function spellAttack(
   const unconsciousAdjacent =
     target.conditions.some((c) => c.id === 'unconscious') && opts.melee;
   const crit = d20.natural === 20 || unconsciousAdjacent;
-  const hit = d20.natural !== 1 && (d20.natural === 20 || total >= target.ac);
+  const targetAc = acOf(target);
+  const hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
   return {
     hit,
     crit: hit && crit,
     event: {
       type: 'attackRolled',
       attackerId: casterId, targetId, weaponId: 'spell',
-      natural: d20.natural, total, targetAc: target.ac,
+      natural: d20.natural, total, targetAc,
       mode, advSources: adv, disSources: dis,
       hit, crit: hit && crit, opportunity: false,
     },
@@ -133,9 +134,8 @@ export const SPELLS: Record<Id, SpellData> = {
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const target = state.combatants[targetId]!;
-      const metal = target.armorId !== undefined && (ARMOR[target.armorId]?.metal ?? false);
       const atk = spellAttack(state, casterId, targetId, {
-        melee: true, extraAdv: metal ? ['metal armor'] : [],
+        melee: true, extraAdv: wearsMetal(target) ? ['metal armor'] : [],
       });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {

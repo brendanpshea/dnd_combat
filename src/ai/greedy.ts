@@ -8,6 +8,9 @@ import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, spellDc } from '../data/spells.js';
+import { ITEMS } from '../data/items.js';
+import { acOf } from '../data/armor.js';
+import { attackableWeapons } from '../engine/rules/equipment.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, cone15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { attackAbility, collectAttackSources } from '../engine/rules/attack.js';
@@ -69,7 +72,7 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
       dmg += avgDice(`${Math.ceil(actor.level / 2)}d6`);
     }
   }
-  return damageValue(hitProb(bonus, target.ac, mode) * dmg, target);
+  return damageValue(hitProb(bonus, acOf(target), mode) * dmg, target);
 }
 
 function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
@@ -83,11 +86,11 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
   switch (a.spellId) {
     case 'fire-bolt': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(hitProb(spellAtkBonus, t.ac, 'flat') * avgDice('1d10'), t);
+      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d10'), t);
     }
     case 'shocking-grasp': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(hitProb(spellAtkBonus, t.ac, 'flat') * avgDice('1d8'), t) + 1; // reaction denial
+      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d8'), t) + 1; // reaction denial
     }
     case 'sacred-flame': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -125,14 +128,14 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     }
     case 'guiding-bolt': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      const p = hitProb(spellAtkBonus, t.ac, 'flat');
+      const p = hitProb(spellAtkBonus, acOf(t), 'flat');
       return damageValue(p * avgDice('4d6'), t) + p * 2 - slotCost; // rider bonus
     }
     case 'scorching-ray': {
       let v = 0;
       for (const tg of a.targets) {
         const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
-        v += hitProb(spellAtkBonus, t.ac, 'flat') * avgDice('2d6');
+        v += hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('2d6');
       }
       const first = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       return damageValue(v, first) - slotCost;
@@ -191,7 +194,7 @@ function isMeleeFighter(c: Combatant): boolean {
   if (c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric') return true;
   if (c.classId === 'wizard') return false;
   // Monsters: charge if they carry any pure-melee weapon (no ranged profile).
-  return c.weaponIds.some((w) => {
+  return attackableWeapons(c).some((w) => {
     const weapon = WEAPONS[w];
     return !!weapon && weapon.melee && weapon.range === undefined;
   });
@@ -250,6 +253,41 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   return 0;
 }
 
+function scoreItem(state: GameState, actor: Combatant, a: Action & { kind: 'useItem' }): number {
+  const item = ITEMS[a.itemId];
+  if (!item) return 0;
+  const targets = a.targets ?? [];
+  switch (item.targeting.kind) {
+    case 'ally':
+    case 'self': {
+      // Healing potions: value by urgency, like Cure Wounds.
+      const tid = targets[0] && 'combatantId' in targets[0] ? targets[0].combatantId : actor.id;
+      const t = state.combatants[tid]!;
+      const missing = t.maxHp - t.hp;
+      if (missing < t.maxHp / 2) return 0;
+      const heal = Math.min(avgDice(a.itemId === 'potion-greater-healing' ? '4d4+4' : '2d4+2'), missing);
+      return heal * 1.2;
+    }
+    case 'thrown': {
+      const tid = targets[0] && 'combatantId' in targets[0] ? targets[0].combatantId : undefined;
+      if (!tid) return 0;
+      const t = state.combatants[tid]!;
+      const bonus = abilityMod(actor.abilities.dex) + proficiencyBonus(actor.level);
+      // Consumable: only worth throwing when a real weapon isn't clearly better.
+      return damageValue(hitProb(bonus, acOf(t), 'flat') * avgDice('1d4'), t) - 1;
+    }
+    case 'spell': {
+      // Score the scroll as if casting the spell (no slot cost — it's the item).
+      const pseudo: Action = {
+        kind: 'castSpell', spellId: item.targeting.spellId,
+        slotLevel: SPELLS[item.targeting.spellId]!.level, targets,
+      };
+      if (pseudo.kind !== 'castSpell') return 0;
+      return scoreSpell(state, actor, pseudo) - 1; // consumables are precious
+    }
+  }
+}
+
 const END_TURN_THRESHOLD = 0.5;
 
 /** Pick the best action for the current combatant. Returns endTurn when done. */
@@ -266,6 +304,7 @@ export function chooseAction(state: GameState, actorId: Id): Action {
       case 'castSpell': s = scoreSpell(state, actor, a); break;
       case 'move': s = scoreMove(state, actor, a.to); break;
       case 'useFeature': s = scoreFeature(state, actor, a); break;
+      case 'useItem': s = scoreItem(state, actor, a); break;
       case 'dash':
         // Dash only when melee, nothing to attack, and still far away.
         s = isMeleeFighter(actor) && nearestEnemyDist(state, actor.position, actor.team) > 7 &&

@@ -15,7 +15,8 @@ export interface MonsterData {
   abilities: AbilityScores;
   savingThrowProfs?: Ability[];
   featureIds?: Id[];
-  weaponIds: Id[];
+  weaponIds: Id[];         // first = main hand; rest carried (free-swap to use)
+  metalArmor?: boolean;    // Shocking Grasp rider; AC itself is the flat stat
   attacksPerAction?: number;
   resistances?: DamageType[];
   vulnerabilities?: DamageType[];
@@ -36,6 +37,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 10, dex: 15, con: 10, int: 10, wis: 8, cha: 10 },
     featureIds: ['nimble-escape'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
+    metalArmor: true, // chain shirt
     attacksPerAction: 2,
   },
   skeleton: {
@@ -43,6 +45,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     ac: 14, hp: 13, speed: 30,
     abilities: { str: 10, dex: 16, con: 15, int: 6, wis: 8, cha: 5 },
     weaponIds: ['shortsword', 'shortbow'],
+    metalArmor: false,
     vulnerabilities: ['bludgeoning'],
     immunities: ['poison'],
   },
@@ -82,7 +85,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     abilities: { ...m.abilities },
     maxHp: m.hp,
     hp: m.hp,
-    ac: m.ac,
+    acOverride: m.ac,
     speed: m.speed,
     position,
     initiative: 0,
@@ -91,7 +94,13 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     spellIds: [],
     featureIds: [...(m.featureIds ?? [])],
     featureUses: {},
-    weaponIds: [...m.weaponIds],
+    inventory: m.weaponIds.slice(1).map((w) => ({ itemId: w, qty: 1 })),
+    equipped: {
+      mainHand: m.weaponIds[0]!,
+      // Metal-armored monsters get a representative armor id for the
+      // Shocking Grasp rider; their AC stays the stat-block override.
+      ...(m.metalArmor ? { armor: 'chain-mail' } : {}),
+    },
     weaponMasteries: [],
     attacksPerAction: m.attacksPerAction ?? 1,
     resistances: [...(m.resistances ?? [])],
@@ -102,7 +111,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: m.speed, disengaged: false,
-      attackedThisTurn: false, attacksLeft: 0, sneakAttackUsed: false,
+      attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
     },
     alive: true,
   };

@@ -5,6 +5,7 @@
 import type { GameState, Combatant, Id, DamageType } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../types.js';
 import { WEAPONS, WeaponData } from '../../data/weapons.js';
+import { acOf } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
 import { distanceFeet, adjacent } from '../grid.js';
 import { savingThrow } from './saves.js';
@@ -135,15 +136,16 @@ export function resolveAttack(
   const natCrit = d20.natural >= critFloor;
   // Auto-crit on hitting a helpless (unconscious/paralyzed) target from melee.
   const crit = natCrit || (isHelpless(target) && isMeleeAttack);
+  const targetAc = acOf(target);
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
-  const hit = d20.natural !== 1 && (d20.natural === 20 || total >= target.ac);
+  const hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
 
   consumeRollMarkers(attacker, target);
 
   events.push({
     type: 'attackRolled',
     attackerId, targetId, weaponId,
-    natural: d20.natural, total, targetAc: target.ac,
+    natural: d20.natural, total, targetAc,
     mode, advSources: adv, disSources: dis,
     hit, crit: hit && crit,
     opportunity: ctx.opportunity ?? false,
@@ -156,11 +158,13 @@ export function resolveAttack(
   let amount = dmg.total + (ctx.offhand ? 0 : mod);
   let rolls = dmg.rolls;
 
-  // Fighting Style: Dueling — one-handed melee weapon (shield is fine): +2.
+  // Fighting Style: Dueling — one-handed melee weapon, no weapon in the
+  // other hand (a shield is fine): +2.
   if (
     attacker.featureIds.includes('dueling') &&
     isMeleeAttack &&
-    !weapon.properties.includes('two-handed')
+    !weapon.properties.includes('two-handed') &&
+    (attacker.equipped.offHand === undefined || attacker.equipped.offHand === 'shield')
   ) {
     amount += 2;
   }

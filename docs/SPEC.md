@@ -124,6 +124,20 @@ carry `sourceId`, optional `concentration` flag, `expiresAtRound`, and
 **Saves.** d20 + mod + proficiency (class save list) + Bless d4.
 Spell DC = 8 + proficiency + casting mod.
 
+**Equipment & inventory.** Combatants have hands (`equipped.mainHand`,
+`offHand` = weapon or shield, `armor`) and a carried `inventory` of item
+stacks. **AC is derived** from equipment (`acOf`); monsters keep a flat
+stat-block override. One **free interaction per turn**: attacking with a
+stowed weapon auto-draws it into the main hand (stowing the old one).
+Two-weapon fighting checks the actual hands; Dueling requires an empty or
+shield off-hand. Consumables (`useItem` action): Potions of Healing (bonus
+action, self or adjacent ally), Alchemist's Fire (thrown attack), and spell
+scrolls (cast the spell without a slot — every spell is store-shelf-ready).
+All item data carries `cost`/`rarity` for future stores and treasure drops;
+thrown weapons are not consumed (abstract recovery). Default kits: everyone
+carries a healing potion; the wizard/cleric get a scroll, the fighter
+alchemist's fire and two javelins.
+
 ## 4. Classes (levels 1–3, one subclass each)
 
 All classes: standard array by priority, standard gear, weapon masteries per

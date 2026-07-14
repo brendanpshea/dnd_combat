@@ -8,6 +8,8 @@ import type { Action } from '../../engine/actions.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { SPELLS } from '../../data/spells.js';
 import { FEATURES } from '../../data/features.js';
+import { ITEMS } from '../../data/items.js';
+import { acOf } from '../../data/armor.js';
 
 const CLASS_LETTER: Record<string, string> = {
   fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R',
@@ -62,7 +64,9 @@ export function renderStatus(state: GameState): string {
       if (!c.alive) return `${token(c)} ${c.name}: DEAD`;
       const conds = c.conditions.map((k) => k.id).join(',');
       const slots = c.spellSlots.length > 0 ? ` slots:${c.spellSlots.map((s) => s.current).join('/')}` : '';
-      return `${token(c)} ${c.name}: ${c.hp}/${c.maxHp}hp AC${c.ac}${slots}${conds ? ` [${conds}]` : ''}`;
+      const items = c.inventory.filter((s) => ITEMS[s.itemId]).reduce((n, s) => n + s.qty, 0);
+      const itemStr = items > 0 ? ` items:${items}` : '';
+      return `${token(c)} ${c.name}: ${c.hp}/${c.maxHp}hp AC${acOf(c)}${slots}${itemStr}${conds ? ` [${conds}]` : ''}`;
     });
     rows.push(`  ${team === 'team1' ? 'Team 1' : 'Team 2'}: ${cells.join('  |  ')}`);
   }
@@ -105,6 +109,14 @@ export function renderEvent(state: GameState, e: GameEvent): string | undefined 
       return `  ${name(state, e.combatantId)} is no longer ${e.condition}.`;
     case 'concentrationBroken':
       return `${name(state, e.combatantId)} loses concentration on ${SPELLS[e.spellId]?.name ?? e.spellId}.`;
+    case 'equipped':
+      return `${name(state, e.combatantId)} draws ${WEAPONS[e.weaponId]?.name ?? e.weaponId}.`;
+    case 'itemUsed': {
+      const item = ITEMS[e.itemId]?.name ?? e.itemId;
+      return e.targetId && e.targetId !== e.combatantId
+        ? `${name(state, e.combatantId)} uses ${item} on ${name(state, e.targetId)}.`
+        : `${name(state, e.combatantId)} uses ${item}.`;
+    }
     case 'dashed':
       return `${name(state, e.combatantId)} dashes.`;
     case 'disengaged':
@@ -131,6 +143,11 @@ export function describeAction(state: GameState, a: Action): string {
       return `Cast ${s} → ${tg}`;
     }
     case 'useFeature': return FEATURES[a.featureId]?.name ?? a.featureId;
+    case 'useItem': {
+      const item = ITEMS[a.itemId]?.name ?? a.itemId;
+      const tg = (a.targets ?? []).map((t) => 'combatantId' in t ? name(state, t.combatantId) : cellName(t.position)).join(', ');
+      return tg ? `Use ${item} → ${tg}` : `Use ${item}`;
+    }
     case 'dash': return 'Dash';
     case 'disengage': return 'Disengage';
     case 'dodge': return 'Dodge';

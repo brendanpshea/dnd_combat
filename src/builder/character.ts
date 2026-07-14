@@ -5,7 +5,6 @@ import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourceP
 import { abilityMod } from '../engine/types.js';
 import { CLASSES } from '../data/classes.js';
 import { FEATURES } from '../data/features.js';
-import { armorClass } from '../data/armor.js';
 
 export const STANDARD_ARRAY = [16, 16, 13, 12, 10, 8] as const;
 
@@ -37,7 +36,6 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const level = opts.level ?? 1;
   const abilities = assignStats(cls.statPriority);
   const conMod = abilityMod(abilities.con);
-  const dexMod = abilityMod(abilities.dex);
   const maxHp = hpForLevel(cls.hitDie, conMod, level);
 
   const featureIds = Object.entries(cls.featuresByLevel)
@@ -67,7 +65,6 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     abilities,
     maxHp,
     hp: maxHp,
-    ac: armorClass(cls.armorId, dexMod, cls.shield),
     speed: 30,
     position: opts.position,
     initiative: 0,
@@ -76,7 +73,12 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     spellIds,
     featureIds,
     featureUses,
-    weaponIds: [...cls.weaponIds],
+    inventory: cls.equipment.inventory.map((s) => ({ ...s })),
+    equipped: {
+      mainHand: cls.equipment.mainHand,
+      ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
+      ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
+    },
     weaponMasteries: [...cls.weaponMasteries],
     attacksPerAction: 1,
     resistances: [],
@@ -87,12 +89,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,
-      attackedThisTurn: false, attacksLeft: 0, sneakAttackUsed: false,
+      attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
     },
     alive: true,
   };
   if (cls.spellcasting) combatant.spellcastingAbility = cls.spellcasting.ability;
-  combatant.armorId = cls.armorId;
   return combatant;
 }
 

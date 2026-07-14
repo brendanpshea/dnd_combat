@@ -37,9 +37,10 @@ export function moveDestinations(state: GameState, mover: Combatant): Position[]
   return out;
 }
 
-/** A creature's first usable melee weapon, for opportunity attacks. */
+/** A creature's first in-hand melee weapon, for opportunity attacks. */
 function meleeWeaponOf(c: Combatant): Id | undefined {
-  return c.weaponIds.find((w) => WEAPONS[w]?.melee);
+  const hands = [c.equipped.mainHand, c.equipped.offHand];
+  return hands.find((w): w is Id => !!w && w !== 'shield' && (WEAPONS[w]?.melee ?? false));
 }
 
 function canTakeReaction(c: Combatant): boolean {

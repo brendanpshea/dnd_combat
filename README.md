@@ -7,7 +7,8 @@ Two teams fight on an 8×8 board: the classic party of four (Fighter, Wizard,
 Cleric, Rogue — levels 1–3, one subclass each) against a mirror party or an
 SRD monster encounter (goblins, wolves, undead, or an ogre). Real d20 rules:
 advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
-masteries, spell slots, terrain, and forced movement.
+masteries, spell slots, terrain, forced movement, and inventory (equipment
+slots, weapon swapping, healing potions, scrolls, alchemist's fire).
 
 ## Quick start
 
