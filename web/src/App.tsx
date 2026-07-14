@@ -1,0 +1,308 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Combat } from '../../src/engine/combat.js';
+import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
+import { buildParty } from '../../src/builder/character.js';
+import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
+import { MAPS, MAP_IDS } from '../../src/data/maps.js';
+import { acOf } from '../../src/data/armor.js';
+import { chooseAction } from '../../src/ai/greedy.js';
+import type { Action } from '../../src/engine/actions.js';
+import { renderEvent } from '../../src/ui/cli/renderer.js';
+import { Board, CellHighlight, tooltipFor } from './Board.js';
+import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
+
+type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
+
+interface SetupConfig {
+  mode: Mode;
+  mapId: string;
+  level: number;
+  encounterId: string;
+  seed: number;
+}
+
+type Targeting =
+  | { type: 'cells'; label: string; byCell: Map<string, Action> }
+  | { type: 'multi'; label: string; spec: MultiTargetSpec; picked: Id[] };
+
+export function App() {
+  const [config, setConfig] = useState<SetupConfig | null>(null);
+  if (!config) return <Setup onStart={setConfig} />;
+  return <Battle key={JSON.stringify(config)} config={config} onExit={() => setConfig(null)} />;
+}
+
+function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
+  const [mode, setMode] = useState<Mode>('vs-ai');
+  const [mapId, setMapId] = useState('ruins');
+  const [level, setLevel] = useState(1);
+  const [encounterId, setEncounterId] = useState('goblins');
+  const [seed, setSeed] = useState(() => Math.floor(Math.random() * 2 ** 31));
+
+  return (
+    <div className="setup">
+      <h1>⚔️ D&D Grid Combat</h1>
+      <label>
+        Mode
+        <select value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
+          <option value="hotseat">Hot-seat (2 players)</option>
+          <option value="vs-ai">You vs AI</option>
+          <option value="spectate">AI vs AI (watch)</option>
+          <option value="encounter">Party vs monsters</option>
+        </select>
+      </label>
+      {mode === 'encounter' && (
+        <label>
+          Encounter
+          <select value={encounterId} onChange={(e) => setEncounterId(e.target.value)}>
+            {Object.values(ENCOUNTERS).map((enc) => (
+              <option key={enc.id} value={enc.id}>{enc.name} (lvl {enc.suggestedLevel})</option>
+            ))}
+          </select>
+        </label>
+      )}
+      <label>
+        Map
+        <select value={mapId} onChange={(e) => setMapId(e.target.value)}>
+          {MAP_IDS.map((id) => <option key={id} value={id}>{MAPS[id]!.name}</option>)}
+        </select>
+      </label>
+      <label>
+        Party level
+        <select value={level} onChange={(e) => setLevel(Number(e.target.value))}>
+          {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </label>
+      <label>
+        Seed
+        <input
+          type="number"
+          value={seed}
+          onChange={(e) => setSeed(Number(e.target.value) || 0)}
+        />
+      </label>
+      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed })}>
+        Fight!
+      </button>
+    </div>
+  );
+}
+
+function makeCombat(config: SetupConfig): { combat: Combat; aiTeams: Set<TeamId> } {
+  const aiTeams = new Set<TeamId>();
+  if (config.mode === 'vs-ai' || config.mode === 'spectate' || config.mode === 'encounter') aiTeams.add('team2');
+  if (config.mode === 'spectate') aiTeams.add('team1');
+  const team2 = config.mode === 'encounter'
+    ? buildEncounter(config.encounterId, 'team2', 7)
+    : buildParty('team2', 7, config.level);
+  const combat = new Combat({
+    seed: config.seed,
+    mapId: config.mapId,
+    combatants: [...buildParty('team1', 0, config.level), ...team2],
+  });
+  return { combat, aiTeams };
+}
+
+function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
+  const ref = useRef<{ combat: Combat; aiTeams: Set<TeamId> } | null>(null);
+  if (!ref.current) ref.current = makeCombat(config);
+  const { combat, aiTeams } = ref.current;
+
+  const [, setVersion] = useState(0);
+  const [log, setLog] = useState<string[]>(() =>
+    combat.log.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s));
+  const [targeting, setTargeting] = useState<Targeting | null>(null);
+  const [chooser, setChooser] = useState<{ target: Combatant; options: Array<{ label: string; action: Action }> } | null>(null);
+  const [showLog, setShowLog] = useState(false);
+  const logEnd = useRef<HTMLDivElement>(null);
+
+  const state = combat.state;
+  const activeId = combat.isOver() ? undefined : combat.activeId;
+  const active = activeId ? state.combatants[activeId] : undefined;
+  const isHumanTurn = !!active && !aiTeams.has(active.team) && !combat.isOver();
+
+  function apply(action: Action) {
+    try {
+      const events = combat.apply(action);
+      const lines = events.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s);
+      setLog((l) => [...l, ...lines]);
+    } catch (err) {
+      setLog((l) => [...l, `(${(err as Error).message})`]);
+    }
+    setTargeting(null);
+    setChooser(null);
+    setVersion((v) => v + 1);
+  }
+
+  // AI turns, paced for watchability.
+  useEffect(() => {
+    if (combat.isOver() || !active || !aiTeams.has(active.team)) return;
+    const t = setTimeout(() => apply(chooseAction(combat.state, combat.activeId)), 350);
+    return () => clearTimeout(t);
+  });
+
+  useEffect(() => {
+    logEnd.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [log]);
+
+  const grouped = useMemo(
+    () => (isHumanTurn && activeId ? groupActions(state, activeId, combat.legalActions()) : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isHumanTurn, activeId, log],
+  );
+
+  const highlights = useMemo(() => {
+    const m = new Map<string, CellHighlight>();
+    if (!grouped || !active) return m;
+    if (targeting?.type === 'cells') {
+      for (const k of targeting.byCell.keys()) m.set(k, 'cell-target');
+      return m;
+    }
+    if (targeting?.type === 'multi') {
+      for (const id of targeting.spec.validIds) {
+        const c = state.combatants[id]!;
+        m.set(posKey(c.position), c.team === active.team ? 'ally' : 'enemy');
+      }
+      return m;
+    }
+    for (const k of grouped.moves.keys()) m.set(k, 'move');
+    for (const id of grouped.perTarget.keys()) {
+      const c = state.combatants[id]!;
+      m.set(posKey(c.position), c.team === active.team ? 'ally' : 'enemy');
+    }
+    return m;
+  }, [grouped, targeting, state, active]);
+
+  const multiCounts = useMemo(() => {
+    if (targeting?.type !== 'multi') return undefined;
+    const m = new Map<Id, number>();
+    for (const id of targeting.picked) m.set(id, (m.get(id) ?? 0) + 1);
+    return m;
+  }, [targeting]);
+
+  function onCellTap(pos: Position, occ?: Combatant) {
+    if (!grouped || !isHumanTurn) return;
+    setChooser(null);
+    const key = posKey(pos);
+
+    if (targeting?.type === 'cells') {
+      const a = targeting.byCell.get(key);
+      if (a) apply(a);
+      else setTargeting(null);
+      return;
+    }
+    if (targeting?.type === 'multi') {
+      const spec = targeting.spec;
+      if (occ && spec.validIds.has(occ.id) && (spec.allowRepeats || !targeting.picked.includes(occ.id))) {
+        const picked = [...targeting.picked, occ.id];
+        if (picked.length >= spec.maxTargets) apply(buildMultiAction(spec, picked));
+        else setTargeting({ ...targeting, picked });
+      }
+      return;
+    }
+    if (occ && grouped.perTarget.has(occ.id)) {
+      const options = grouped.perTarget.get(occ.id)!;
+      if (options.length === 1) apply(options[0]!.action);
+      else setChooser({ target: occ, options });
+      return;
+    }
+    const move = grouped.moves.get(key);
+    if (move) apply(move);
+  }
+
+  const winner = combat.winner();
+
+  return (
+    <div className="battle">
+      <header className="topbar">
+        <button className="ghost" onClick={onExit}>✕</button>
+        <span className="round">Round {state.round}</span>
+        <span className="mapname">{MAPS[config.mapId]?.name}</span>
+        <button className="ghost" onClick={() => setShowLog((s) => !s)}>
+          📜 {showLog ? 'Hide' : 'Log'}
+        </button>
+      </header>
+
+      <Board
+        state={state}
+        activeId={activeId ?? ''}
+        highlights={highlights}
+        selectedId={activeId}
+        multiCounts={multiCounts}
+        onCellTap={onCellTap}
+      />
+
+      {active && (
+        <div className="statusline" title={tooltipFor(active)}>
+          <strong>{active.name}</strong>
+          <span className={active.team}>{active.team === 'team1' ? 'Blue' : 'Red'}</span>
+          <span>HP {active.hp}/{active.maxHp}</span>
+          <span>AC {acOf(active)}</span>
+          <span>{active.turn.actionUsed ? '·' : 'A'}{active.turn.bonusActionUsed ? '·' : 'B'}</span>
+          <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
+          {!isHumanTurn && !combat.isOver() && <em className="thinking">AI thinking…</em>}
+        </div>
+      )}
+
+      {targeting && (
+        <div className="targeting-banner">
+          {targeting.label}
+          {targeting.type === 'multi' && (
+            <>
+              <span> ({targeting.picked.length}/{targeting.spec.maxTargets})</span>
+              {targeting.picked.length > 0 && (
+                <button className="mini" onClick={() => apply(buildMultiAction(targeting.spec, targeting.picked))}>
+                  Cast now
+                </button>
+              )}
+            </>
+          )}
+          <button className="mini" onClick={() => setTargeting(null)}>Cancel</button>
+        </div>
+      )}
+
+      {isHumanTurn && grouped && !targeting && (
+        <div className="actionbar">
+          {grouped.bar.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => {
+                if (b.action) apply(b.action);
+                else if (b.cellTargets) setTargeting({ type: 'cells', label: `${b.label} — pick a cell`, byCell: b.cellTargets });
+                else if (b.multi) setTargeting({ type: 'multi', label: `${b.label} — pick targets`, spec: b.multi, picked: [] });
+              }}
+            >
+              {b.label}
+            </button>
+          ))}
+          <button className="endturn" onClick={() => apply({ kind: 'endTurn' })}>End turn ➤</button>
+        </div>
+      )}
+
+      {chooser && (
+        <div className="chooser" onClick={() => setChooser(null)}>
+          <div className="chooser-box" onClick={(e) => e.stopPropagation()}>
+            <h3>{chooser.target.name}</h3>
+            {chooser.options.map((o, i) => (
+              <button key={i} onClick={() => apply(o.action)}>{o.label}</button>
+            ))}
+            <button className="ghost" onClick={() => setChooser(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div className={`log ${showLog ? 'open' : ''}`}>
+        {log.slice(-200).map((line, i) => <div key={i} className="logline">{line}</div>)}
+        <div ref={logEnd} />
+      </div>
+
+      {winner && (
+        <div className="overlay">
+          <div className="overlay-box">
+            <h2>{winner === 'team1' ? '🔵 Blue team wins!' : '🔴 Red team wins!'}</h2>
+            <button className="primary" onClick={onExit}>New battle</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

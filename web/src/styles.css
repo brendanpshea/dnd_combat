@@ -1,0 +1,261 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1625;
+  --panel: #241f33;
+  --panel2: #2e2842;
+  --text: #e8e4f0;
+  --muted: #9a92b0;
+  --blue: #4a9eff;
+  --red: #ff5a5a;
+  --gold: #ffd166;
+  --green: #6ee7a0;
+  --cell: #3a3352;
+  --cell-dark: #322b48;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--panel2);
+  border: 1px solid #453d63;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  min-height: 40px;
+}
+button:active { transform: scale(0.97); }
+button.primary { background: var(--blue); border-color: var(--blue); color: #081120; font-weight: 700; }
+button.ghost { background: transparent; border-color: transparent; }
+button.mini { min-height: 28px; padding: 2px 10px; margin-left: 8px; }
+button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--gold); }
+
+/* ---- setup ---- */
+.setup {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.setup h1 { text-align: center; margin-bottom: 12px; }
+.setup label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
+.setup select, .setup input {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel2);
+  border: 1px solid #453d63;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 44px;
+}
+
+/* ---- battle layout ---- */
+.battle {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar .round { font-weight: 700; }
+.topbar .mapname { color: var(--muted); flex: 1; }
+
+/* ---- board ---- */
+.board-wrap { width: min(96vw, 58vh, 600px); }
+.board {
+  display: grid;
+  gap: 2px;
+  background: #14101f;
+  padding: 4px;
+  border-radius: 10px;
+  user-select: none;
+}
+.cell {
+  aspect-ratio: 1;
+  background: var(--cell);
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.cell.dark { background: var(--cell-dark); }
+.terrain-wall { background: #0d0a14 !important; box-shadow: inset 0 0 0 2px #453d63; }
+.terrain-difficult { background-image: repeating-linear-gradient(45deg, transparent 0 4px, #26543a44 4px 8px); }
+.terrain-hazard { background-image: repeating-linear-gradient(-45deg, transparent 0 4px, #b4432a55 4px 8px); }
+
+.hl-move { box-shadow: inset 0 0 0 3px #4a9eff88; }
+.hl-move:hover { background: #4a9eff33; }
+.hl-enemy { box-shadow: inset 0 0 0 3px var(--red); }
+.hl-ally { box-shadow: inset 0 0 0 3px var(--green); }
+.hl-cell-target { box-shadow: inset 0 0 0 3px var(--gold); background: #ffd16622; }
+
+.token {
+  width: 82%;
+  height: 82%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #1d1830;
+}
+.token.team1 { border: 2.5px solid var(--blue); }
+.token.team2 { border: 2.5px solid var(--red); }
+.token.active { box-shadow: 0 0 10px 2px var(--gold); }
+.token .glyph { font-size: clamp(14px, 4.2vmin, 26px); line-height: 1; }
+.hpbar {
+  position: absolute;
+  bottom: -1px;
+  left: 12%;
+  width: 76%;
+  height: 4px;
+  background: #00000088;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hpfill { height: 100%; background: var(--green); }
+.multi-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--gold);
+  color: #081120;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cond-dot {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c084fc;
+  border: 1.5px solid #14101f;
+}
+
+/* ---- status + actions ---- */
+.statusline {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: center;
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+.statusline .team1 { color: var(--blue); }
+.statusline .team2 { color: var(--red); }
+.statusline .thinking { color: var(--muted); }
+
+.targeting-banner {
+  background: #4a3a1f;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.actionbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  max-width: 100%;
+}
+.actionbar button { font-size: 13px; padding: 6px 10px; }
+
+/* ---- chooser popover ---- */
+.chooser {
+  position: fixed;
+  inset: 0;
+  background: #00000088;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+.chooser-box {
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 240px;
+  max-width: 90vw;
+}
+
+/* ---- log ---- */
+.log {
+  width: 100%;
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 8px 12px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: var(--muted);
+  max-height: 72px;
+  transition: max-height 0.2s;
+}
+.log.open { max-height: 40vh; }
+.logline { padding: 1px 0; }
+.logline:last-child { color: var(--text); }
+
+/* ---- overlay ---- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #000000aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+.overlay-box {
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 720px) {
+  .board-wrap { width: min(70vh, 600px); }
+  .actionbar button { font-size: 14px; }
+}

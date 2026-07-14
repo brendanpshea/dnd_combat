@@ -14,8 +14,9 @@ slots, weapon swapping, healing potions, scrolls, alchemist's fire).
 
 ```bash
 npm install
-npm test          # 100+ engine tests
-npm start         # hot-seat human vs human, random map
+npm test          # 130+ engine tests
+npm start         # terminal battle: hot-seat human vs human, random map
+npm run web       # web UI (mobile + desktop) at http://localhost:5173
 ```
 
 ### Play modes
@@ -63,6 +64,16 @@ the CLI warns on a mismatch.
 
 Cells are named chess-style (`c4`). Menus are generated from the engine's
 legal-action list, so an illegal move is never offered.
+
+### Web UI
+
+`npm run web` serves a touch-friendly battle screen (React + Vite, no external
+assets — CSS board, emoji tokens). Pick mode (hot-seat / vs AI / spectate /
+encounter), map, level, and seed on the start screen. Legal moves are painted
+onto the board: tap a tinted cell to move, a red-ringed enemy to attack (a
+chooser pops up when several weapons/spells reach), green rings for heals.
+Area spells enter a pick-a-cell mode; Magic Missile-style spells accumulate
+target taps. `npm run web:build` produces a static bundle in `dist-web/`.
 
 ## Project layout
 
