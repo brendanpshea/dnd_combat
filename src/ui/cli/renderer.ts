@@ -40,7 +40,11 @@ export function renderBoard(state: GameState): string {
     for (let x = 0; x < width; x++) {
       const cell = cellAt(state.grid, { x, y })!;
       const occ = cell.occupantId ? state.combatants[cell.occupantId] : undefined;
-      row += occ ? ` ${token(occ)}|` : cell.terrain === 'wall' ? '###|' : '   |';
+      const ground =
+        cell.terrain === 'wall' ? '###' :
+        cell.terrain === 'difficult' ? '~~~' :
+        cell.terrain === 'hazard' ? '^^^' : '   ';
+      row += occ ? ` ${token(occ)}|` : `${ground}|`;
     }
     lines.push(row);
   }

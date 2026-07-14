@@ -4,6 +4,7 @@
 import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { cellAt } from './types.js';
 import { makeGrid } from './grid.js';
+import { MAPS, parseMap } from '../data/maps.js';
 import { seedRng } from './rng.js';
 import { rollInitiative, currentCombatant } from './turn.js';
 import { legalActions, step, Action } from './actions.js';
@@ -13,16 +14,26 @@ export interface CombatSetup {
   seed: number;
   width?: number;
   height?: number;
+  /** Battle map from src/data/maps.ts; omitted = open grid of width×height. */
+  mapId?: string;
   combatants: Combatant[]; // positions must be set and unique
 }
 
 export function startCombat(setup: CombatSetup): { state: GameState; events: GameEvent[] } {
-  const grid = makeGrid(setup.width ?? 8, setup.height ?? 8);
+  let grid;
+  if (setup.mapId !== undefined) {
+    const map = MAPS[setup.mapId];
+    if (!map) throw new Error(`Unknown map: ${setup.mapId}`);
+    grid = parseMap(map);
+  } else {
+    grid = makeGrid(setup.width ?? 8, setup.height ?? 8);
+  }
   const combatants: Record<Id, Combatant> = {};
   for (const c of setup.combatants) {
     combatants[c.id] = c;
     const cell = cellAt(grid, c.position);
     if (!cell) throw new Error(`${c.id} placed out of bounds`);
+    if (cell.terrain === 'wall') throw new Error(`${c.id} placed inside a wall`);
     if (cell.occupantId) throw new Error(`${c.id} placed on occupied cell`);
     cell.occupantId = c.id;
   }

@@ -5,8 +5,12 @@ import type { GameState, Combatant, Id, Position } from '../types.js';
 import { cellAt } from '../types.js';
 import { reachable, pathTo, adjacent } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
-import { resolveAttack } from './attack.js';
+import { resolveAttack, applyDamage } from './attack.js';
+import { rollDice } from '../dice.js';
 import type { GameEvent } from '../events.js';
+
+/** Damage for entering a hazard cell (fire pit, spikes...). */
+export const HAZARD_DAMAGE = '1d4';
 
 export function hostileIds(state: GameState, mover: Combatant): Set<Id> {
   return new Set(
@@ -86,8 +90,19 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     const fromCell = cellAt(state.grid, mover.position)!;
     if (fromCell.occupantId === moverId) delete fromCell.occupantId;
     mover.position = step;
-    cellAt(state.grid, step)!.occupantId = moverId;
+    const toCell = cellAt(state.grid, step)!;
+    toCell.occupantId = moverId;
     walked.push(step);
+
+    if (toCell.terrain === 'hazard') {
+      const dmg = rollDice(state.rng, HAZARD_DAMAGE);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls));
+      if (!mover.alive) {
+        events.unshift({ type: 'moved', combatantId: moverId, path: walked });
+        return events;
+      }
+    }
   }
 
   mover.turn.movementUsed += cost;
