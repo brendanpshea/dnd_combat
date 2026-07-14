@@ -42,6 +42,16 @@ export const FEATURES: Record<Id, FeatureData> = {
       return [];
     },
   },
+  'nimble-escape': {
+    id: 'nimble-escape', name: 'Nimble Escape', trigger: 'bonus',
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      c.turn.disengaged = true;
+      return [{ type: 'disengaged', combatantId: actorId }];
+    },
+  },
+  'pack-tactics': { id: 'pack-tactics', name: 'Pack Tactics', trigger: 'passive' },
+  'undead-fortitude': { id: 'undead-fortitude', name: 'Undead Fortitude', trigger: 'passive' },
   dueling: { id: 'dueling', name: 'Fighting Style: Dueling', trigger: 'passive' },
   'sneak-attack': { id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive' },
   'disciple-of-life': { id: 'disciple-of-life', name: 'Disciple of Life', trigger: 'passive' },

@@ -91,6 +91,11 @@ export interface Combatant {
   weaponIds: Id[];
   weaponMasteries: Id[];            // weapon ids whose mastery property applies
   armorId?: Id;
+  /** Attacks per Attack action (Multiattack / Extra Attack). Default 1. */
+  attacksPerAction: number;
+  resistances: DamageType[];
+  vulnerabilities: DamageType[];
+  immunities: DamageType[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
   /** Per-turn economy, reset at turn start. */
@@ -102,6 +107,7 @@ export interface Combatant {
     movementMax: number;    // feet; speed, doubled by Dash
     disengaged: boolean;    // no opportunity attacks provoked this turn
     attackedThisTurn: boolean; // gates the off-hand bonus attack
+    attacksLeft: number;    // extra attacks remaining within the Attack action
     sneakAttackUsed: boolean;
   };
   alive: boolean;

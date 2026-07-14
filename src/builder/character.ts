@@ -78,11 +78,15 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     featureUses,
     weaponIds: [...cls.weaponIds],
     weaponMasteries: [...cls.weaponMasteries],
+    attacksPerAction: 1,
+    resistances: [],
+    vulnerabilities: [],
+    immunities: [],
     conditions: [],
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,
-      attackedThisTurn: false, sneakAttackUsed: false,
+      attackedThisTurn: false, attacksLeft: 0, sneakAttackUsed: false,
     },
     alive: true,
   };

@@ -51,8 +51,10 @@ function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetI
 
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
   const w = WEAPONS[weaponId];
+  // Two-weapon fighting needs a light weapon in each hand.
+  const lightCount = actor.weaponIds.filter((id) => WEAPONS[id]?.properties.includes('light')).length;
   return (
-    !!w && w.properties.includes('light') &&
+    !!w && w.properties.includes('light') && lightCount >= 2 &&
     actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed
   );
 }
@@ -107,7 +109,8 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (action.offhand) {
         return canUseOffhand(actor, action.weaponId) && canAttackWith(state, actor, action.weaponId, action.targetId);
       }
-      return !actor.turn.actionUsed && canAttackWith(state, actor, action.weaponId, action.targetId);
+      return (!actor.turn.actionUsed || actor.turn.attacksLeft > 0) &&
+        canAttackWith(state, actor, action.weaponId, action.targetId);
     case 'castSpell': {
       if (incap) return false;
       const spell = SPELLS[action.spellId];
@@ -159,7 +162,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     actions.push({ kind: 'move', to });
   }
 
-  for (const wid of actor.weaponIds) {
+  for (const wid of new Set(actor.weaponIds)) {
     for (const t of enemies) {
       const main: Action = { kind: 'attack', weaponId: wid, targetId: t.id };
       if (isLegalAction(state, actorId, main)) actions.push(main);
@@ -261,9 +264,13 @@ export function step(state: GameState, action: Action): { state: GameState; even
     case 'attack':
       if (action.offhand) {
         actor.turn.bonusActionUsed = true;
-      } else {
+      } else if (!actor.turn.actionUsed) {
+        // First attack of the Attack action: bank any multiattack follow-ups.
         actor.turn.actionUsed = true;
         actor.turn.attackedThisTurn = true;
+        actor.turn.attacksLeft = actor.attacksPerAction - 1;
+      } else {
+        actor.turn.attacksLeft -= 1;
       }
       events.push(...resolveAttack(draft, actorId, action.targetId, action.weaponId, {
         offhand: action.offhand ?? false,

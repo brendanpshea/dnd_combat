@@ -145,7 +145,13 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
 
 /** Does this combatant prefer to fight up close? */
 function isMeleeFighter(c: Combatant): boolean {
-  return c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric';
+  if (c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric') return true;
+  if (c.classId === 'wizard') return false;
+  // Monsters: charge if they carry any pure-melee weapon (no ranged profile).
+  return c.weaponIds.some((w) => {
+    const weapon = WEAPONS[w];
+    return !!weapon && weapon.melee && weapon.range === undefined;
+  });
 }
 
 function nearestEnemyDist(state: GameState, from: Position, team: Combatant['team']): number {

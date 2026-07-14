@@ -58,6 +58,15 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === target.id)) {
     adv.push('vex');
   }
+  // Pack Tactics: an un-incapacitated ally of the attacker adjacent to the target.
+  if (attacker.featureIds.includes('pack-tactics')) {
+    const packed = Object.values(state.combatants).some(
+      (c) => c.alive && c.id !== attacker.id && c.team === attacker.team &&
+             adjacent(c.position, target.position) &&
+             !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious'),
+    );
+    if (packed) adv.push('pack tactics');
+  }
   if (target.conditions.some((c) => c.id === 'unconscious')) {
     adv.push('target unconscious');
   }
@@ -159,9 +168,23 @@ export function resolveAttack(
     }
   }
 
+  // Goblin-style rider: extra dice when the roll had advantage.
+  if (weapon.bonusDiceOnAdvantage && mode === 'advantage') {
+    const extra = rollDice(state.rng, weapon.bonusDiceOnAdvantage, crit);
+    state.rng = extra.state;
+    amount += extra.total;
+    rolls = [...rolls, ...extra.rolls];
+  }
+
   amount = Math.max(1, amount);
 
-  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls));
+  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit }));
+
+  if (weapon.onHitCondition && target.alive &&
+      !target.conditions.some((c) => c.id === weapon.onHitCondition)) {
+    target.conditions.push({ id: weapon.onHitCondition, sourceId: attackerId });
+    events.push({ type: 'conditionApplied', combatantId: targetId, condition: weapon.onHitCondition, sourceId: attackerId });
+  }
 
   // Weapon mastery riders, only for wielders trained in this weapon's mastery.
   if (weapon.mastery && attacker.weaponMasteries.includes(weapon.id) && target.alive) {
@@ -179,8 +202,8 @@ export function resolveAttack(
 }
 
 /**
- * Apply damage: HP, concentration save, waking the unconscious, death,
- * win check.
+ * Apply damage: resist/vuln/immune adjustment, HP, Undead Fortitude,
+ * concentration save, waking the unconscious, death, win check.
  */
 export function applyDamage(
   state: GameState,
@@ -189,12 +212,28 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
+  opts: { crit?: boolean } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
 
+  if (target.immunities.includes(damageType)) amount = 0;
+  else if (target.resistances.includes(damageType)) amount = Math.floor(amount / 2);
+  else if (target.vulnerabilities.includes(damageType)) amount *= 2;
+
   target.hp = Math.max(0, target.hp - amount);
   events.push({ type: 'damageDealt', targetId, sourceId, amount, damageType, rolls });
+
+  // Undead Fortitude: unless radiant or a crit, Con save DC 5 + damage to
+  // drop to 1 HP instead of 0.
+  if (
+    target.hp === 0 && target.featureIds.includes('undead-fortitude') &&
+    damageType !== 'radiant' && !opts.crit
+  ) {
+    const save = savingThrow(state, targetId, 'con', 5 + amount);
+    events.push(save.event);
+    if (save.success) target.hp = 1;
+  }
 
   // Damage wakes the unconscious.
   if (target.hp > 0 && target.conditions.some((c) => c.id === 'unconscious')) {

@@ -9,6 +9,7 @@ import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
 import { MAPS, MAP_IDS } from '../../data/maps.js';
+import { ENCOUNTERS, buildEncounter } from '../../data/monsters.js';
 import { chooseAction } from '../../ai/greedy.js';
 import type { Action } from '../../engine/actions.js';
 import { renderBoard, renderStatus, renderEvent, describeAction, cellName, parseCell } from './renderer.js';
@@ -48,12 +49,27 @@ async function main() {
     process.exit(1);
   }
   const mapId = mapArg ?? MAP_IDS[Math.floor(Math.random() * MAP_IDS.length)]!;
-  console.log(`\nD&D Grid Combat — ${mode}. Seed: ${seed}. Map: ${MAPS[mapId]!.name}`);
+
+  // --encounter <id>: party vs an AI-run monster warband.
+  const encounterArg = argValue('--encounter');
+  if (encounterArg !== undefined && !ENCOUNTERS[encounterArg]) {
+    console.log(`Unknown encounter '${encounterArg}'. Available: ${Object.keys(ENCOUNTERS).join(', ')}`);
+    process.exit(1);
+  }
+  let team2 = buildParty('team2', 7);
+  let banner = mode;
+  if (encounterArg) {
+    team2 = buildEncounter(encounterArg, 'team2', 7);
+    aiTeams.add('team2');
+    banner = `party vs ${ENCOUNTERS[encounterArg]!.name}`;
+  }
+
+  console.log(`\nD&D Grid Combat — ${banner}. Seed: ${seed}. Map: ${MAPS[mapId]!.name}`);
   console.log(`(terrain: ### wall  ~~~ difficult ground  ^^^ fire hazard)\n`);
   const combat = new Combat({
     seed,
     mapId,
-    combatants: [...buildParty('team1', 0), ...buildParty('team2', 7)],
+    combatants: [...buildParty('team1', 0), ...team2],
   });
 
   for (const e of combat.log) {

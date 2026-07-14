@@ -66,7 +66,7 @@ export const CLASSES: Record<Id, ClassData> = {
     savingThrows: ['dex', 'int'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: { 1: ['sneak-attack'] },
-    weaponIds: ['shortsword', 'shortbow'],
+    weaponIds: ['shortsword', 'shortsword', 'shortbow'], // two blades for TWF
     weaponMasteries: ['shortsword', 'shortbow'],
     armorId: 'studded-leather', shield: false,
   },

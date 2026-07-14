@@ -59,14 +59,23 @@ export function startTurn(state: GameState): GameEvent[] {
     (k) => k.expiresAtRound === undefined || state.round <= k.expiresAtRound,
   );
 
+  // Stand up from prone automatically for half speed.
+  let speed = c.conditions.some((k) => k.id === 'unconscious') ? 0 : c.speed;
+  if (c.conditions.some((k) => k.id === 'prone')) {
+    c.conditions = c.conditions.filter((k) => k.id !== 'prone');
+    speed = Math.floor(speed / 2);
+    events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
+  }
+
   c.turn = {
     actionUsed: false,
     bonusActionUsed: false,
     reactionUsed: false,
     movementUsed: 0,
-    movementMax: c.conditions.some((k) => k.id === 'unconscious') ? 0 : c.speed,
+    movementMax: speed,
     disengaged: false,
     attackedThisTurn: false,
+    attacksLeft: 0,
     sneakAttackUsed: false,
   };
   events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });

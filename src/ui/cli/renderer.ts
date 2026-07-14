@@ -11,6 +11,8 @@ import { FEATURES } from '../../data/features.js';
 
 const CLASS_LETTER: Record<string, string> = {
   fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R',
+  'goblin-warrior': 'g', 'goblin-boss': 'G', skeleton: 's',
+  wolf: 'w', zombie: 'z', ogre: 'O',
 };
 
 export function cellName(p: Position): string {
