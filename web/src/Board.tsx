@@ -2,6 +2,7 @@ import type { GameState, Position, Combatant, Id } from '../../src/engine/types.
 import { cellAt } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
+import type { FloatEffect, CorpseEffect } from './effects.js';
 
 const TOKEN: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',
@@ -17,10 +18,13 @@ export interface BoardProps {
   highlights: Map<string, CellHighlight>;
   selectedId?: Id | undefined;
   multiCounts?: Map<Id, number> | undefined;
+  floats?: FloatEffect[];
+  corpses?: CorpseEffect[];
+  hitIds?: Set<Id>;
   onCellTap(pos: Position, occupant?: Combatant): void;
 }
 
-export function Board({ state, activeId, highlights, selectedId, multiCounts, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, hitIds, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
   const rows = [];
   for (let y = height - 1; y >= 0; y--) {
@@ -33,12 +37,18 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, on
       if (hl) classes.push(`hl-${hl}`);
       if ((x + y) % 2 === 0) classes.push('dark');
       const count = occ && multiCounts?.get(occ.id);
+      const key = posKey(pos);
+      const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];
+      const cellCorpses = corpses?.filter((c) => c.cellKey === key) ?? [];
       rows.push(
         <div
-          key={posKey(pos)}
+          key={key}
           className={classes.join(' ')}
           onClick={() => onCellTap(pos, occ)}
         >
+          {cellCorpses.map((c) => (
+            <span key={c.id} className="corpse">{c.glyph}</span>
+          ))}
           {occ && (
             <div
               className={[
@@ -46,6 +56,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, on
                 occ.team,
                 occ.id === activeId ? 'active' : '',
                 occ.id === selectedId ? 'selected' : '',
+                hitIds?.has(occ.id) ? 'hit' : '',
               ].join(' ')}
             >
               <span className="glyph">{TOKEN[occ.classId] ?? '❓'}</span>
@@ -59,6 +70,15 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, on
               {occ.conditions.length > 0 && <span className="cond-dot" title={occ.conditions.map((c) => c.id).join(', ')} />}
             </div>
           )}
+          {cellFloats.map((f) => (
+            <span
+              key={f.id}
+              className={`float ${f.cls}`}
+              style={{ animationDelay: `${f.delayMs}ms` }}
+            >
+              {f.text}
+            </span>
+          ))}
         </div>,
       );
     }

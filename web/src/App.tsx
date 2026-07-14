@@ -10,6 +10,8 @@ import type { Action } from '../../src/engine/actions.js';
 import { renderEvent } from '../../src/ui/cli/renderer.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
+import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
+import { initAudio, isMuted, setMuted } from './sound.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 
@@ -113,6 +115,13 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
   const [targeting, setTargeting] = useState<Targeting | null>(null);
   const [chooser, setChooser] = useState<{ target: Combatant; options: Array<{ label: string; action: Action }> } | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [floats, setFloats] = useState<FloatEffect[]>([]);
+  const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
+  const [hitIds, setHitIds] = useState<Set<Id>>(new Set());
+  const [muted, setMutedState] = useState(isMuted());
+  const [speed, setSpeed] = useState(1);
+  const speedRef = useRef(1);
+  speedRef.current = speed;
   const logEnd = useRef<HTMLDivElement>(null);
 
   const state = combat.state;
@@ -121,10 +130,31 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
   const isHumanTurn = !!active && !aiTeams.has(active.team) && !combat.isOver();
 
   function apply(action: Action) {
+    initAudio();
     try {
       const events = combat.apply(action);
       const lines = events.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s);
       setLog((l) => [...l, ...lines]);
+
+      const fx = effectsFor(combat.state, events);
+      if (fx.floats.length > 0) {
+        setFloats((f) => [...f, ...fx.floats]);
+        const ids = new Set(fx.floats.map((f) => f.id));
+        setTimeout(() => setFloats((f) => f.filter((x) => !ids.has(x.id))), 1600);
+      }
+      if (fx.corpses.length > 0) {
+        setCorpses((c) => [...c, ...fx.corpses]);
+        const ids = new Set(fx.corpses.map((c) => c.id));
+        setTimeout(() => setCorpses((c) => c.filter((x) => !ids.has(x.id))), 1800);
+      }
+      if (fx.hits.length > 0) {
+        setHitIds((h) => new Set([...h, ...fx.hits]));
+        setTimeout(() => setHitIds((h) => {
+          const next = new Set(h);
+          for (const id of fx.hits) next.delete(id);
+          return next;
+        }), 450);
+      }
     } catch (err) {
       setLog((l) => [...l, `(${(err as Error).message})`]);
     }
@@ -133,10 +163,16 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
     setVersion((v) => v + 1);
   }
 
-  // AI turns, paced for watchability.
+  // AI turns, paced by what the action is so effects can land.
   useEffect(() => {
     if (combat.isOver() || !active || !aiTeams.has(active.team)) return;
-    const t = setTimeout(() => apply(chooseAction(combat.state, combat.activeId)), 350);
+    const action = chooseAction(combat.state, combat.activeId);
+    const base =
+      action.kind === 'move' ? 550 :
+      action.kind === 'endTurn' ? 350 :
+      action.kind === 'attack' || action.kind === 'castSpell' || action.kind === 'useItem' ? 1000 :
+      700;
+    const t = setTimeout(() => apply(action), base / speedRef.current);
     return () => clearTimeout(t);
   });
 
@@ -217,6 +253,24 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
         <button className="ghost" onClick={onExit}>✕</button>
         <span className="round">Round {state.round}</span>
         <span className="mapname">{MAPS[config.mapId]?.name}</span>
+        <button
+          className="ghost"
+          title="AI speed"
+          onClick={() => setSpeed((s) => (s === 1 ? 2 : 1))}
+        >
+          {speed === 1 ? '🐢 1×' : '🐇 2×'}
+        </button>
+        <button
+          className="ghost"
+          title={muted ? 'Unmute' : 'Mute'}
+          onClick={() => {
+            initAudio();
+            setMuted(!muted);
+            setMutedState(!muted);
+          }}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
         <button className="ghost" onClick={() => setShowLog((s) => !s)}>
           📜 {showLog ? 'Hide' : 'Log'}
         </button>
@@ -228,6 +282,9 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
         highlights={highlights}
         selectedId={activeId}
         multiCounts={multiCounts}
+        floats={floats}
+        corpses={corpses}
+        hitIds={hitIds}
         onCellTap={onCellTap}
       />
 
