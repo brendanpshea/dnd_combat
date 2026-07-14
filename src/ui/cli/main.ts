@@ -56,20 +56,26 @@ async function main() {
     console.log(`Unknown encounter '${encounterArg}'. Available: ${Object.keys(ENCOUNTERS).join(', ')}`);
     process.exit(1);
   }
-  let team2 = buildParty('team2', 7);
+  const level = Math.min(3, Math.max(1, Number(argValue('--level') ?? 1)));
+
+  let team2 = buildParty('team2', 7, level);
   let banner = mode;
   if (encounterArg) {
+    const enc = ENCOUNTERS[encounterArg]!;
     team2 = buildEncounter(encounterArg, 'team2', 7);
     aiTeams.add('team2');
-    banner = `party vs ${ENCOUNTERS[encounterArg]!.name}`;
+    banner = `party vs ${enc.name}`;
+    if (level !== enc.suggestedLevel) {
+      console.log(`(note: ${enc.name} is tuned for a level-${enc.suggestedLevel} party; you are level ${level})`);
+    }
   }
 
-  console.log(`\nD&D Grid Combat — ${banner}. Seed: ${seed}. Map: ${MAPS[mapId]!.name}`);
+  console.log(`\nD&D Grid Combat — ${banner}. Level ${level}. Seed: ${seed}. Map: ${MAPS[mapId]!.name}`);
   console.log(`(terrain: ### wall  ~~~ difficult ground  ^^^ fire hazard)\n`);
   const combat = new Combat({
     seed,
     mapId,
-    combatants: [...buildParty('team1', 0), ...team2],
+    combatants: [...buildParty('team1', 0, level), ...team2],
   });
 
   for (const e of combat.log) {
@@ -105,7 +111,39 @@ async function main() {
     const actions = combat.legalActions();
     // Collapse the move flood into one menu entry.
     const moves = actions.filter((a): a is Action & { kind: 'move' } => a.kind === 'move');
-    const rest = actions.filter((a) => a.kind !== 'move');
+    let rest = actions.filter((a) => a.kind !== 'move');
+
+    // Collapse position-targeted spells with many variants (Misty Step) too.
+    const posSpells = new Map<string, Array<Action & { kind: 'castSpell' }>>();
+    for (const a of rest) {
+      if (a.kind === 'castSpell' && a.targets.length === 1 && 'position' in a.targets[0]!) {
+        const list = posSpells.get(a.spellId) ?? [];
+        list.push(a);
+        posSpells.set(a.spellId, list);
+      }
+    }
+    const collapsed: Array<{ label: string; run: () => Promise<Action | undefined> }> = [];
+    for (const [spellId, variants] of posSpells) {
+      if (variants.length <= 4) continue;
+      rest = rest.filter((a) => !(a.kind === 'castSpell' && a.spellId === spellId));
+      const byCell = new Map(variants.map((v) => {
+        const t = v.targets[0]!;
+        return [cellName((t as { position: { x: number; y: number } }).position), v] as const;
+      }));
+      collapsed.push({
+        label: `Cast ${spellId} (${variants.length} cells)`,
+        run: async () => {
+          for (;;) {
+            const ans = (await rl.question(`Target cell (e.g. c4; ? lists; x cancels): `)).trim().toLowerCase();
+            if (ans === 'x') return undefined;
+            if (ans === '?') { console.log([...byCell.keys()].join(' ')); continue; }
+            const v = byCell.get(ans);
+            if (v) return v;
+            console.log('Not a valid cell for this spell.');
+          }
+        },
+      });
+    }
     const menu: Array<{ label: string; run: () => Promise<Action | undefined> }> = [];
 
     if (moves.length > 0) {
@@ -124,6 +162,7 @@ async function main() {
         },
       });
     }
+    menu.push(...collapsed);
     for (const a of rest) {
       menu.push({ label: describeAction(state, a), run: async () => a });
     }

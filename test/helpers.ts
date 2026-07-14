@@ -30,6 +30,7 @@ export function makeCombatant(over: Partial<Combatant> & { team: TeamId; positio
     vulnerabilities: [],
     immunities: [],
     conditions: [],
+    hasActed: false,
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,

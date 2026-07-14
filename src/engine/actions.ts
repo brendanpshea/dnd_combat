@@ -33,7 +33,9 @@ export type Action =
   | { kind: 'endTurn' };
 
 function isIncapacitated(c: Combatant): boolean {
-  return c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious');
+  return c.conditions.some(
+    (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed',
+  );
 }
 
 function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetId: Id): boolean {
@@ -81,6 +83,15 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
     const tg = targets[0];
     if (targets.length !== 1 || !tg || !('position' in tg)) return false;
     return distanceFeet(actor.position, tg.position) <= t.range;
+  }
+  if (t.kind === 'self') return targets.length === 0;
+  if (t.kind === 'emptyCell') {
+    const tg = targets[0];
+    if (targets.length !== 1 || !tg || !('position' in tg)) return false;
+    const cell = cellAt(state.grid, tg.position);
+    return !!cell && cell.terrain !== 'wall' && cell.occupantId === undefined &&
+      distanceFeet(actor.position, tg.position) <= t.range &&
+      hasLineOfSight(state.grid, actor.position, tg.position);
   }
   // cone15: target is an adjacent cell defining the direction.
   const tg = targets[0];
@@ -193,6 +204,20 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
             : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
         const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets };
         if (isLegalAction(state, actorId, a)) actions.push(a);
+      }
+    } else if (t.kind === 'self') {
+      // Offer only when it would touch an enemy (Thunderwave burst).
+      if (enemies.some((e) => adjacent(e.position, actor.position))) {
+        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [] };
+        if (isLegalAction(state, actorId, a)) actions.push(a);
+      }
+    } else if (t.kind === 'emptyCell') {
+      // Enumerate all valid destination cells (like move destinations).
+      for (let y = 0; y < state.grid.height; y++) {
+        for (let x = 0; x < state.grid.width; x++) {
+          const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ position: { x, y } }] };
+          if (isLegalAction(state, actorId, a)) actions.push(a);
+        }
       }
     } else if (t.kind === 'sphere2x2') {
       // Anchors whose 2x2 covers at least one enemy.

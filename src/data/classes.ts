@@ -28,7 +28,10 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'fighter', name: 'Fighter', hitDie: 10,
     savingThrows: ['str', 'con'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
-    featuresByLevel: { 1: ['second-wind', 'action-surge', 'dueling'] },
+    featuresByLevel: {
+      1: ['second-wind', 'action-surge', 'dueling'],
+      3: ['improved-critical'], // Champion
+    },
     weaponIds: ['longsword', 'javelin'],
     weaponMasteries: ['longsword'],
     armorId: 'scale-mail', shield: true,
@@ -39,10 +42,17 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
       ability: 'wis',
-      slotsByLevel: [[2]],
-      spellsByLevel: { 1: ['sacred-flame', 'cure-wounds', 'bless'] },
+      slotsByLevel: [[2], [3], [4, 2]],
+      spellsByLevel: {
+        1: ['sacred-flame', 'cure-wounds', 'bless'],
+        2: ['guiding-bolt'],
+        3: ['hold-person', 'aid'],
+      },
     },
-    featuresByLevel: { 1: ['disciple-of-life'] },
+    featuresByLevel: {
+      1: ['disciple-of-life'],
+      3: ['preserve-life'], // Life Domain: Channel Divinity
+    },
     weaponIds: ['mace'],
     weaponMasteries: [],
     armorId: 'chain-mail', shield: true,
@@ -53,10 +63,17 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
       ability: 'int',
-      slotsByLevel: [[2]],
-      spellsByLevel: { 1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands'] },
+      slotsByLevel: [[2], [3], [4, 2]],
+      spellsByLevel: {
+        1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands'],
+        2: ['thunderwave'],
+        3: ['scorching-ray', 'misty-step'],
+      },
     },
-    featuresByLevel: { 1: [] },
+    featuresByLevel: {
+      1: [],
+      3: ['sculpt-spells'], // Evoker
+    },
     weaponIds: ['quarterstaff'],
     weaponMasteries: [],
     armorId: 'none', shield: false,
@@ -65,7 +82,11 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'rogue', name: 'Rogue', hitDie: 8,
     savingThrows: ['dex', 'int'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
-    featuresByLevel: { 1: ['sneak-attack'] },
+    featuresByLevel: {
+      1: ['sneak-attack'],
+      2: ['cunning-dash', 'cunning-disengage'],
+      3: ['assassinate'], // Assassin
+    },
     weaponIds: ['shortsword', 'shortsword', 'shortbow'], // two blades for TWF
     weaponMasteries: ['shortsword', 'shortbow'],
     armorId: 'studded-leather', shield: false,

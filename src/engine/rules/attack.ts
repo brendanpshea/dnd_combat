@@ -70,6 +70,16 @@ export function collectAttackSources(
   if (target.conditions.some((c) => c.id === 'unconscious')) {
     adv.push('target unconscious');
   }
+  if (target.conditions.some((c) => c.id === 'paralyzed')) {
+    adv.push('target paralyzed');
+  }
+  if (target.conditions.some((c) => c.id === 'guided')) {
+    adv.push('guiding bolt');
+  }
+  // Assassinate: the target hasn't taken a turn yet this combat.
+  if (attacker.featureIds.includes('assassinate') && !target.hasActed) {
+    adv.push('assassinate');
+  }
   if (target.conditions.some((c) => c.id === 'prone')) {
     (isMeleeAttack ? adv : dis).push(isMeleeAttack ? 'target prone' : 'target prone (ranged)');
   }
@@ -79,10 +89,17 @@ export function collectAttackSources(
 }
 
 /** Remove one-shot roll markers after an attack roll is made. */
-function consumeRollMarkers(attacker: Combatant, targetId: Id): void {
+function consumeRollMarkers(attacker: Combatant, target: Combatant): void {
   attacker.conditions = attacker.conditions.filter(
-    (c) => c.id !== 'sapped' && !(c.id === 'vexed' && c.sourceId === targetId),
+    (c) => c.id !== 'sapped' && !(c.id === 'vexed' && c.sourceId === target.id),
   );
+  // Guiding Bolt's advantage is spent by whoever attacks the target next.
+  target.conditions = target.conditions.filter((c) => c.id !== 'guided');
+}
+
+/** Paralyzed/unconscious targets crit automatically when hit from melee range. */
+export function isHelpless(target: Combatant): boolean {
+  return target.conditions.some((c) => c.id === 'unconscious' || c.id === 'paralyzed');
 }
 
 export function resolveAttack(
@@ -113,13 +130,15 @@ export function resolveAttack(
     total += d4.total;
   }
 
-  // Auto-crit on hitting an unconscious target from melee range.
-  const unconsciousAdjacent =
-    target.conditions.some((c) => c.id === 'unconscious') && isMeleeAttack;
-  const crit = d20.natural === 20 || unconsciousAdjacent;
+  // Champion widens the crit range to 19-20.
+  const critFloor = attacker.featureIds.includes('improved-critical') ? 19 : 20;
+  const natCrit = d20.natural >= critFloor;
+  // Auto-crit on hitting a helpless (unconscious/paralyzed) target from melee.
+  const crit = natCrit || (isHelpless(target) && isMeleeAttack);
+  // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   const hit = d20.natural !== 1 && (d20.natural === 20 || total >= target.ac);
 
-  consumeRollMarkers(attacker, targetId);
+  consumeRollMarkers(attacker, target);
 
   events.push({
     type: 'attackRolled',

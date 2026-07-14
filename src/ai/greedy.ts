@@ -123,6 +123,49 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       }
       return v - slotCost;
     }
+    case 'guiding-bolt': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const p = hitProb(spellAtkBonus, t.ac, 'flat');
+      return damageValue(p * avgDice('4d6'), t) + p * 2 - slotCost; // rider bonus
+    }
+    case 'scorching-ray': {
+      let v = 0;
+      for (const tg of a.targets) {
+        const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
+        v += hitProb(spellAtkBonus, t.ac, 'flat') * avgDice('2d6');
+      }
+      const first = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      return damageValue(v, first) - slotCost;
+    }
+    case 'thunderwave': {
+      let v = 0;
+      const sculpt = actor.featureIds.includes('sculpt-spells');
+      for (const c of Object.values(state.combatants)) {
+        if (!c.alive || c.id === actor.id || !adjacent(c.position, actor.position)) continue;
+        if (sculpt && c.team === actor.team) continue;
+        const pFail = saveFailProb(state, c, 'con', dc);
+        const ev = avgDice('2d8') * (pFail + (1 - pFail) * 0.5) + pFail * 2; // push value
+        v += c.team === actor.team ? -1.5 * ev : damageValue(ev, c);
+      }
+      return v - slotCost;
+    }
+    case 'misty-step': {
+      // Escape hatch: valuable when stuck in melee; teleport beats disengage+walk.
+      const near = nearestEnemyDist(state, actor.position, actor.team);
+      if (near > 1) return 0;
+      const to = (a.targets[0] as { position: Position }).position;
+      const after = nearestEnemyDist(state, to, actor.team);
+      return after >= 3 && after <= 8 ? 4 : 0;
+    }
+    case 'hold-person': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      // Paralysis is near-lethal: allies auto-crit. Weight by save-fail odds and target beefiness.
+      return saveFailProb(state, t, 'wis', dc) * (8 + t.hp / 3) - slotCost;
+    }
+    case 'aid': {
+      return state.round <= 2 ? 2.5 * a.targets.length - slotCost : 0;
+    }
     case 'burning-hands': {
       const caster = actor;
       const dir = directionFromDelta(caster.position, (a.targets[0] as { position: Position }).position);
@@ -189,6 +232,20 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     return Object.values(state.combatants).some(
       (c) => c.alive && c.team !== actor.team && adjacent(c.position, actor.position),
     ) ? 5 : 0;
+  }
+  if (a.featureId === 'cunning-disengage') {
+    // Escape melee before repositioning; mirrors the disengage-action logic.
+    return nearestEnemyDist(state, actor.position, actor.team) === 1 && actor.hp < actor.maxHp / 2 ? 1.5 : 0;
+  }
+  if (a.featureId === 'cunning-dash') {
+    return nearestEnemyDist(state, actor.position, actor.team) > 7 ? 0.8 : 0;
+  }
+  if (a.featureId === 'preserve-life') {
+    const pool = 5 * actor.level;
+    const healable = Object.values(state.combatants)
+      .filter((c) => c.alive && c.team === actor.team && c.hp < Math.floor(c.maxHp / 2))
+      .reduce((s, c) => s + Math.min(Math.floor(c.maxHp / 2) - c.hp, pool), 0);
+    return Math.min(healable, pool) * 1.2;
   }
   return 0;
 }

@@ -83,6 +83,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     vulnerabilities: [],
     immunities: [],
     conditions: [],
+    hasActed: false,
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,
@@ -95,10 +96,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   return combatant;
 }
 
-/** The standard v1 party of four, placed on a rank. */
-export function buildParty(team: TeamId, rank: number, files: number[] = [1, 2, 4, 6]): Combatant[] {
+/** The standard party of four, placed on a rank. */
+export function buildParty(team: TeamId, rank: number, level = 1, files: number[] = [1, 2, 4, 6]): Combatant[] {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return order.map((classId, i) =>
-    buildCharacter({ classId, team, position: { x: files[i]!, y: rank } }),
+    buildCharacter({ classId, team, level, position: { x: files[i]!, y: rank } }),
   );
 }

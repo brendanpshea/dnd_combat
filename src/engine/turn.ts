@@ -59,8 +59,10 @@ export function startTurn(state: GameState): GameEvent[] {
     (k) => k.expiresAtRound === undefined || state.round <= k.expiresAtRound,
   );
 
+  c.hasActed = true;
+
   // Stand up from prone automatically for half speed.
-  let speed = c.conditions.some((k) => k.id === 'unconscious') ? 0 : c.speed;
+  let speed = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed') ? 0 : c.speed;
   if (c.conditions.some((k) => k.id === 'prone')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'prone');
     speed = Math.floor(speed / 2);

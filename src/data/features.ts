@@ -5,6 +5,7 @@
  */
 import type { GameState, Id } from '../engine/types.js';
 import { rollDice } from '../engine/dice.js';
+import { distanceFeet } from '../engine/grid.js';
 import type { GameEvent } from '../engine/events.js';
 
 export interface FeatureContext {
@@ -51,6 +52,49 @@ export const FEATURES: Record<Id, FeatureData> = {
     },
   },
   'pack-tactics': { id: 'pack-tactics', name: 'Pack Tactics', trigger: 'passive' },
+  'improved-critical': { id: 'improved-critical', name: 'Improved Critical (Champion)', trigger: 'passive' },
+  assassinate: { id: 'assassinate', name: 'Assassinate', trigger: 'passive' },
+  'sculpt-spells': { id: 'sculpt-spells', name: 'Sculpt Spells (Evoker)', trigger: 'passive' },
+  'cunning-dash': {
+    id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus',
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      c.turn.movementMax += c.speed;
+      return [{ type: 'dashed', combatantId: actorId }];
+    },
+  },
+  'cunning-disengage': {
+    id: 'cunning-disengage', name: 'Cunning Action: Disengage', trigger: 'bonus',
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      c.turn.disengaged = true;
+      return [{ type: 'disengaged', combatantId: actorId }];
+    },
+  },
+  'preserve-life': {
+    id: 'preserve-life', name: 'Channel Divinity: Preserve Life', trigger: 'action',
+    uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const events: GameEvent[] = [];
+      let pool = 5 * me.level;
+      // Most-wounded allies within 30 ft first; never above half max HP.
+      const targets = Object.values(state.combatants)
+        .filter((c) => c.alive && c.team === me.team &&
+          distanceFeet(me.position, c.position) <= 30 &&
+          c.hp < Math.floor(c.maxHp / 2))
+        .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp);
+      for (const t of targets) {
+        if (pool <= 0) break;
+        const amount = Math.min(pool, Math.floor(t.maxHp / 2) - t.hp);
+        if (amount <= 0) continue;
+        t.hp += amount;
+        pool -= amount;
+        events.push({ type: 'healed', targetId: t.id, sourceId: actorId, amount });
+      }
+      return events;
+    },
+  },
   'undead-fortitude': { id: 'undead-fortitude', name: 'Undead Fortitude', trigger: 'passive' },
   dueling: { id: 'dueling', name: 'Fighting Style: Dueling', trigger: 'passive' },
   'sneak-attack': { id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive' },

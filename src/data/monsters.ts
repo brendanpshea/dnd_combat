@@ -98,6 +98,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     vulnerabilities: [...(m.vulnerabilities ?? [])],
     immunities: [...(m.immunities ?? [])],
     conditions: [],
+    hasActed: false,
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: m.speed, disengaged: false,
@@ -111,23 +112,24 @@ export interface EncounterData {
   id: Id;
   name: string;
   members: Id[]; // monster ids; duplicates allowed
+  suggestedLevel: number;
 }
 
 export const ENCOUNTERS: Record<Id, EncounterData> = {
   goblins: {
-    id: 'goblins', name: 'Goblin Warband',
+    id: 'goblins', name: 'Goblin Warband', suggestedLevel: 1,
     members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
   },
   wolves: {
-    id: 'wolves', name: 'Wolf Pack',
+    id: 'wolves', name: 'Wolf Pack', suggestedLevel: 1,
     members: ['wolf', 'wolf', 'wolf', 'wolf', 'wolf'],
   },
   undead: {
-    id: 'undead', name: 'Restless Dead',
+    id: 'undead', name: 'Restless Dead', suggestedLevel: 2,
     members: ['skeleton', 'skeleton', 'zombie', 'zombie', 'zombie'],
   },
   ogre: {
-    id: 'ogre', name: 'Ogre and Retinue',
+    id: 'ogre', name: 'Ogre and Retinue', suggestedLevel: 3,
     members: ['ogre', 'goblin-warrior', 'goblin-warrior'],
   },
 };

@@ -12,6 +12,7 @@ import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
+import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import type { GameEvent } from '../engine/events.js';
 import { ARMOR } from './armor.js';
@@ -19,7 +20,9 @@ import { ARMOR } from './armor.js';
 export type SpellTargeting =
   | { kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number }
   | { kind: 'sphere2x2'; range: number }
-  | { kind: 'cone15' };
+  | { kind: 'cone15' }
+  | { kind: 'emptyCell'; range: number }   // Misty Step
+  | { kind: 'self' };                       // Thunderwave (adjacent burst)
 
 export interface CastContext {
   state: GameState;
@@ -250,6 +253,7 @@ export const SPELLS: Record<Id, SpellData> = {
     concentration: false,
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
       const dir = directionFromDelta(caster.position, positions[0]!);
       const events: GameEvent[] = [];
       const dc = spellDc(state, casterId);
@@ -260,6 +264,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!tid) continue;
         const t = state.combatants[tid]!;
         if (!t.alive || !hasLineOfSight(state.grid, caster.position, pos)) continue;
+        if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
         const dmg = rollDice(state.rng, dice);
@@ -268,6 +273,136 @@ export const SPELLS: Record<Id, SpellData> = {
         if (amount > 0) {
           events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
         }
+      }
+      return events;
+    },
+  },
+  'guiding-bolt': {
+    id: 'guiding-bolt', name: 'Guiding Bolt', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
+    concentration: false,
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: false });
+      const events: GameEvent[] = [atk.event];
+      if (atk.hit) {
+        const dmg = rollDice(state.rng, `${3 + slotLevel}d6`, atk.crit); // 4d6 at slot 1
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'radiant', dmg.rolls));
+        const t = state.combatants[targetId]!;
+        if (t.alive && !t.conditions.some((c) => c.id === 'guided')) {
+          t.conditions.push({ id: 'guided', sourceId: casterId });
+          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'guided', sourceId: casterId });
+        }
+      }
+      return events;
+    },
+  },
+
+  thunderwave: {
+    id: 'thunderwave', name: 'Thunderwave', level: 1, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: false,
+    cast({ state, casterId, slotLevel }) {
+      const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const victims = Object.values(state.combatants).filter(
+        (c) => c.alive && c.id !== casterId && adjacent(c.position, caster.position) &&
+          !(sculpt && c.team === caster.team),
+      );
+      for (const t of victims) {
+        const save = savingThrow(state, t.id, 'con', dc);
+        events.push(save.event);
+        const dmg = rollDice(state.rng, `${1 + slotLevel}d8`); // 2d8 at slot 1
+        state.rng = dmg.state;
+        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        if (amount > 0) events.push(...applyDamage(state, t.id, casterId, amount, 'thunder', dmg.rolls));
+        if (!save.success && t.alive) {
+          const dir = {
+            x: Math.sign(t.position.x - caster.position.x),
+            y: Math.sign(t.position.y - caster.position.y),
+          };
+          events.push(...pushCreature(state, t.id, dir, 2));
+        }
+      }
+      return events;
+    },
+  },
+
+  'scorching-ray': {
+    id: 'scorching-ray', name: 'Scorching Ray', level: 2, castingTime: 'action',
+    // One entry per ray, repeats allowed (like Magic Missile darts).
+    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 3 },
+    concentration: false,
+    cast({ state, casterId, targetIds }) {
+      const events: GameEvent[] = [];
+      for (const tid of targetIds) {
+        const t = state.combatants[tid]!;
+        if (!t.alive) continue;
+        const atk = spellAttack(state, casterId, tid, { melee: false });
+        events.push(atk.event);
+        if (atk.hit) {
+          const dmg = rollDice(state.rng, '2d6', atk.crit);
+          state.rng = dmg.state;
+          events.push(...applyDamage(state, tid, casterId, dmg.total, 'fire', dmg.rolls));
+        }
+      }
+      return events;
+    },
+  },
+
+  'misty-step': {
+    id: 'misty-step', name: 'Misty Step', level: 2, castingTime: 'bonus',
+    targeting: { kind: 'emptyCell', range: 30 },
+    concentration: false,
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const to = positions[0]!;
+      const fromCell = cellAt(state.grid, caster.position)!;
+      if (fromCell.occupantId === casterId) delete fromCell.occupantId;
+      const path = [caster.position, to];
+      caster.position = to;
+      cellAt(state.grid, to)!.occupantId = casterId;
+      return [{ type: 'moved', combatantId: casterId, path }];
+    },
+  },
+
+  'hold-person': {
+    id: 'hold-person', name: 'Hold Person', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: true,
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'wis', dc);
+      const events: GameEvent[] = [save.event];
+      if (!save.success) {
+        const t = state.combatants[targetId]!;
+        t.conditions.push({
+          id: 'paralyzed', sourceId: casterId, concentration: true,
+          repeatSave: { ability: 'wis', dc },
+        });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: casterId });
+        state.combatants[casterId]!.concentratingOn = { spellId: 'hold-person', targetIds: [targetId] };
+      }
+      return events;
+    },
+  },
+
+  aid: {
+    id: 'aid', name: 'Aid', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'ally', count: 3 },
+    concentration: false,
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const amount = 5 * (slotLevel - 1); // +5 at slot 2, +10 at slot 3...
+      const events: GameEvent[] = [];
+      for (const tid of new Set(targetIds)) {
+        const t = state.combatants[tid]!;
+        t.maxHp += amount;
+        t.hp += amount;
+        events.push({ type: 'healed', targetId: tid, sourceId: casterId, amount });
       }
       return events;
     },

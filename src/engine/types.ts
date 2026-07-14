@@ -46,6 +46,8 @@ export interface GridState {
 export type ConditionId =
   | 'prone' | 'incapacitated' | 'blinded' | 'poisoned' | 'frightened'
   | 'unconscious'
+  | 'paralyzed'    // Hold Person: no move/act, attacks vs have adv, melee hits crit
+  | 'guided'       // Guiding Bolt: next attack roll against this target has advantage
   | 'vexed'        // attacker has advantage on next attack vs this source's target
   | 'sapped'       // disadvantage on next attack roll
   | 'dodging'      // attacks against this creature have disadvantage
@@ -98,6 +100,8 @@ export interface Combatant {
   immunities: DamageType[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
+  /** Has taken a turn this combat (Assassinate window). */
+  hasActed: boolean;
   /** Per-turn economy, reset at turn start. */
   turn: {
     actionUsed: boolean;

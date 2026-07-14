@@ -109,3 +109,39 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   events.unshift({ type: 'moved', combatantId: moverId, path: walked });
   return events;
 }
+
+/**
+ * Forced movement (Thunderwave push): shove `cells` cells along a unit
+ * direction. Stops at board edge, walls, and occupied cells. Provokes no
+ * opportunity attacks; hazard cells still burn.
+ */
+export function pushCreature(
+  state: GameState,
+  targetId: Id,
+  dir: { x: number; y: number },
+  cells: number,
+): GameEvent[] {
+  const events: GameEvent[] = [];
+  const t = state.combatants[targetId]!;
+  const walked: Position[] = [t.position];
+  for (let i = 0; i < cells; i++) {
+    const next = { x: t.position.x + dir.x, y: t.position.y + dir.y };
+    const cell = cellAt(state.grid, next);
+    if (!cell || cell.terrain === 'wall' || cell.occupantId !== undefined) break;
+    const fromCell = cellAt(state.grid, t.position)!;
+    if (fromCell.occupantId === targetId) delete fromCell.occupantId;
+    t.position = next;
+    cell.occupantId = targetId;
+    walked.push(next);
+    if (cell.terrain === 'hazard') {
+      const dmg = rollDice(state.rng, HAZARD_DAMAGE);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, targetId, dmg.total, 'fire', dmg.rolls));
+      if (!t.alive) break;
+    }
+  }
+  if (walked.length > 1) {
+    events.unshift({ type: 'moved', combatantId: targetId, path: walked });
+  }
+  return events;
+}
