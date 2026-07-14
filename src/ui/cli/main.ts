@@ -1,21 +1,27 @@
 /**
- * Hot-seat CLI. Renders the board, generates a menu straight from
+ * Hot-seat / vs-AI CLI. Renders the board, generates a menu straight from
  * legalActions(), applies the chosen action, prints the events.
  *
- * Usage: npm start [-- --seed 123]
+ * Usage: npm start [-- --seed 123] [-- --p1 ai] [-- --p2 ai]
+ *   --p1/--p2 ai   let the greedy AI play that team (both = spectate)
  */
 import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
+import { chooseAction } from '../../ai/greedy.js';
 import type { Action } from '../../engine/actions.js';
 import { renderBoard, renderStatus, renderEvent, describeAction, cellName, parseCell } from './renderer.js';
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
+function argValue(flag: string): string | undefined {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 ? process.argv[i + 1] : undefined;
+}
+
 function parseSeed(): number {
-  const i = process.argv.indexOf('--seed');
-  if (i >= 0 && process.argv[i + 1]) return Number(process.argv[i + 1]);
-  return Math.floor(Math.random() * 2 ** 31);
+  const v = argValue('--seed');
+  return v !== undefined ? Number(v) : Math.floor(Math.random() * 2 ** 31);
 }
 
 async function chooseFrom(prompt: string, options: string[]): Promise<number> {
@@ -31,7 +37,11 @@ async function chooseFrom(prompt: string, options: string[]): Promise<number> {
 
 async function main() {
   const seed = parseSeed();
-  console.log(`\nD&D Grid Combat — hot-seat. Seed: ${seed}\n`);
+  const aiTeams = new Set<string>();
+  if (argValue('--p1') === 'ai') aiTeams.add('team1');
+  if (argValue('--p2') === 'ai') aiTeams.add('team2');
+  const mode = aiTeams.size === 2 ? 'AI vs AI' : aiTeams.size === 1 ? 'human vs AI' : 'hot-seat';
+  console.log(`\nD&D Grid Combat — ${mode}. Seed: ${seed}\n`);
   const combat = new Combat({
     seed,
     combatants: [...buildParty('team1', 0), ...buildParty('team2', 7)],
@@ -45,6 +55,20 @@ async function main() {
   while (!combat.isOver()) {
     const state = combat.state;
     const me = state.combatants[combat.activeId]!;
+
+    if (aiTeams.has(me.team)) {
+      const action = chooseAction(state, me.id);
+      if (action.kind !== 'endTurn') {
+        console.log(`\n[AI] ${me.name} (${me.team === 'team1' ? 'T1' : 'T2'}): ${describeAction(state, action)}`);
+      }
+      const events = combat.apply(action);
+      for (const e of events) {
+        const line = renderEvent(combat.state, e);
+        if (line) console.log(line);
+      }
+      continue;
+    }
+
     console.log('\n' + renderBoard(state));
     console.log(renderStatus(state));
     const t = me.turn;
