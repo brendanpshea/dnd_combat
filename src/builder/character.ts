@@ -28,6 +28,9 @@ export interface BuildOptions {
   name?: string;
   level?: number;
   speciesId?: Id; // v1: 'human' (no mechanical effect; see SPEC)
+  /** Campaign overrides: persisted gear instead of the class defaults. */
+  inventory?: Array<{ itemId: Id; qty: number }>;
+  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
 }
 
 export function buildCharacter(opts: BuildOptions): Combatant {
@@ -73,12 +76,14 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     spellIds,
     featureIds,
     featureUses,
-    inventory: cls.equipment.inventory.map((s) => ({ ...s })),
-    equipped: {
-      mainHand: cls.equipment.mainHand,
-      ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
-      ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
-    },
+    inventory: (opts.inventory ?? cls.equipment.inventory).map((s) => ({ ...s })),
+    equipped: opts.equipped
+      ? { ...opts.equipped }
+      : {
+          mainHand: cls.equipment.mainHand,
+          ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
+          ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
+        },
     weaponMasteries: [...cls.weaponMasteries],
     attacksPerAction: 1,
     resistances: [],

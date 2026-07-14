@@ -25,7 +25,18 @@ npm start -- --p2 ai                       # you vs the AI
 npm start -- --p1 ai --p2 ai               # spectate an AI mirror match
 npm start -- --encounter goblins           # party vs monsters (AI-run)
 npm start -- --level 3 --encounter ogre    # level-3 party vs the boss fight
+npm run campaign                           # persistent 4-battle campaign
 ```
+
+### Campaign mode
+
+`npm run campaign` runs a persistent ladder: Goblin Warband → Wolf Pack →
+Restless Dead → Ogre, leveling from 1 to 3 along the way. Between battles you
+shop (potions, scrolls, alchemist's fire) with gold from victories and loot;
+consumables spent in battle stay spent. Progress saves to
+`campaign-save.json` after each victory (`--new` restarts, `--auto` lets the
+AI play the party, `--seed n` for a deterministic run). Defeat ends the
+campaign and deletes the save.
 
 ### Flags
 

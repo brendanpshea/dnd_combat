@@ -21,32 +21,34 @@ export interface WeaponData {
   bonusDiceOnAdvantage?: string;
   /** Condition applied to the target on a hit (wolf bite → prone). */
   onHitCondition?: 'prone';
+  /** Store price in gp; absent for natural/monster weapons (not tradable). */
+  cost?: number;
 }
 
 export const WEAPONS: Record<Id, WeaponData> = {
   longsword: {
     id: 'longsword', name: 'Longsword', damage: '1d8', damageType: 'slashing',
-    properties: ['versatile'], melee: true, mastery: 'sap',
+    properties: ['versatile'], melee: true, mastery: 'sap', cost: 15,
   },
   javelin: {
     id: 'javelin', name: 'Javelin', damage: '1d6', damageType: 'piercing',
-    properties: ['thrown'], range: { normal: 30, long: 120 }, melee: true,
+    properties: ['thrown'], range: { normal: 30, long: 120 }, melee: true, cost: 1,
   },
   mace: {
     id: 'mace', name: 'Mace', damage: '1d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    properties: [], melee: true, cost: 5,
   },
   quarterstaff: {
     id: 'quarterstaff', name: 'Quarterstaff', damage: '1d6', damageType: 'bludgeoning',
-    properties: ['versatile'], melee: true,
+    properties: ['versatile'], melee: true, cost: 1,
   },
   shortsword: {
     id: 'shortsword', name: 'Shortsword', damage: '1d6', damageType: 'piercing',
-    properties: ['finesse', 'light'], melee: true, mastery: 'vex',
+    properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 10,
   },
   shortbow: {
     id: 'shortbow', name: 'Shortbow', damage: '1d6', damageType: 'piercing',
-    properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'vex',
+    properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'vex', cost: 25,
   },
 
   // --- monster natural weapons and gear (SRD 5.2.1 stat blocks) ------------

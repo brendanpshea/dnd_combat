@@ -205,6 +205,19 @@ until nothing beats ending the turn (threshold 0.5):
 Known limits (by design, for now): no lookahead, no terrain valuation (won't
 deliberately hide behind walls), no focus-fire memory, never upcasts.
 
+## 7b. Campaign layer
+
+`src/campaign/` is the meta-game the combat engine knows nothing about: a
+`CampaignState` (gold, stage index, per-character inventory + equipment)
+persists across battles as JSON. The ladder is data (`STAGES`): encounter,
+party level, map, and loot per stage. Between battles the shop buys/sells
+(half price back) from `SHOP_STOCK`. Before a battle the campaign builds
+Combatants via the builder's gear overrides; after a victory it reads
+surviving inventory back (spent consumables stay spent, weapon swaps
+persist), adds loot, and advances. Fallen characters recover on victory —
+only a full wipe ends the campaign. Entry point: `npm run campaign`
+(`--auto` = AI-played, `--new` = fresh start).
+
 ## 8. CLI
 
 `npm start` — flags: `--seed n`, `--map id`, `--level 1|2|3`,
