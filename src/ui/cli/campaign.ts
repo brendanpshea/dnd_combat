@@ -16,6 +16,7 @@ import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
+  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
 import { runBattle, chooseFrom, argValue, parseSeed } from './battle.js';
@@ -92,25 +93,75 @@ async function giveFlow(c: CampaignState, rl: readline.Interface): Promise<void>
   if (!giveItem(c, from, to, items[which]!.itemId)) console.log("Can't do that.");
 }
 
+function showRoll(r: SkillRoll): void {
+  console.log(
+    `  ${CLASSES[r.by]!.name} rolls ${r.skill}: d20(${r.natural}) = ${r.total} vs DC ${r.dc} — ` +
+    (r.success ? 'success!' : 'failure.'),
+  );
+}
+
 async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
+  // Visit-scoped state: haggled prices, one steal, one haggle; getting caught
+  // stealing ends all shenanigans for the visit.
+  let priceMult = 1;
+  let stealUsed = false;
+  let haggleUsed = false;
+  let banned = false;
+  const price = (id: string) => Math.ceil(itemPrice(id)! * priceMult);
+
   for (;;) {
     console.log('\n=== Shop ===');
+    if (priceMult < 1) console.log(`(haggled: ${Math.round((1 - priceMult) * 100)}% off this visit)`);
+    if (priceMult > 1) console.log(`(the shopkeeper is annoyed: prices +${Math.round((priceMult - 1) * 100)}% this visit)`);
+    if (banned) console.log('(the shopkeeper is watching you closely)');
     console.log(partySummary(c));
+    const canScheme = !banned;
     const options = [
-      ...SHOP_STOCK.map((id) => `Buy ${itemName(id)} (${itemPrice(id)}g)`),
+      ...SHOP_STOCK.map((id) => `Buy ${itemName(id)} (${price(id)}g)`),
       'Sell an item (half price)',
       'Manage equipment',
       'Give an item to someone',
+      ...(canScheme && !haggleUsed ? ['Haggle over prices (skill check)'] : []),
+      ...(canScheme && !stealUsed ? ['Try to steal something (Stealth + Sleight of Hand)'] : []),
       'Done — to battle!',
     ];
     const pick = await chooseFrom(rl, 'Shop?', options);
-    if (pick === options.length - 1) return;
+    const label = options[pick]!;
+    if (label.startsWith('Done')) return;
 
     const charNames = c.characters.map((ch) => CLASSES[ch.classId]!.name);
-    if (pick === options.length - 2) { await giveFlow(c, rl); continue; }
-    if (pick === options.length - 3) { await manageEquipment(c, rl); continue; }
-    if (pick === options.length - 4) {
-      // Sell flow.
+
+    if (label.startsWith('Haggle')) {
+      haggleUsed = true;
+      const skills = Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>;
+      const skillPick = await chooseFrom(rl, 'How?', skills.map((s) => {
+        const cfg = HAGGLE[s];
+        const best = bestAtSkill(c, s);
+        return `${s} (DC ${cfg.dc}, ${CLASSES[c.characters[best.idx]!.classId]!.name} +${best.bonus}` +
+          `, success −${cfg.discount * 100}%${cfg.penalty > 0 ? `, failure +${cfg.penalty * 100}%` : ', failure: no harm'})`;
+      }));
+      const result = attemptHaggle(c, skills[skillPick]!);
+      showRoll(result.roll);
+      priceMult = result.priceMultiplier;
+      continue;
+    }
+
+    if (label.startsWith('Try to steal')) {
+      stealUsed = true;
+      const result = attemptSteal(c);
+      for (const r of result.rolls) showRoll(r);
+      if (result.success) {
+        console.log(`  Swiped: ${itemName(result.itemId!)}!`);
+      } else {
+        banned = true;
+        console.log(`  Caught! The shopkeeper fines the party ${result.fine} gold and watches you closely.`);
+      }
+      continue;
+    }
+
+    if (label.startsWith('Give an item')) { await giveFlow(c, rl); continue; }
+    if (label.startsWith('Manage equipment')) { await manageEquipment(c, rl); continue; }
+    if (label.startsWith('Sell')) {
       const who = await chooseFrom(rl, 'Whose item?', charNames);
       const ch = c.characters[who]!;
       const sellable = ch.inventory.filter((s) => s.qty > 0 && itemPrice(s.itemId) !== undefined);
@@ -121,10 +172,12 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
       continue;
     }
 
+    // Buy: pick index maps 1:1 onto SHOP_STOCK.
     const itemId = SHOP_STOCK[pick]!;
-    if (c.gold < itemPrice(itemId)!) { console.log('Not enough gold.'); continue; }
+    const cost = price(itemId);
+    if (c.gold < cost) { console.log('Not enough gold.'); continue; }
     const who = await chooseFrom(rl, 'Give it to whom?', charNames);
-    buyItem(c, who, itemId);
+    buyItem(c, who, itemId, cost);
   }
 }
 
@@ -138,7 +191,7 @@ async function main() {
   if (campaign) {
     console.log('\nResuming saved campaign.');
   } else {
-    campaign = newCampaign();
+    campaign = newCampaign(baseSeed);
     console.log('\nA new party sets out: Fighter, Wizard, Cleric, Rogue. 100 gold.');
   }
 

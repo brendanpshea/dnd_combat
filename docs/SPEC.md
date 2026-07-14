@@ -219,7 +219,13 @@ attack/damage bonus support in the engine), and armor gated by per-class
 **armor proficiencies** (fighter/cleric all, rogue light, wizard none).
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
-passed between characters. Before a battle the campaign builds
+passed between characters. **Shop skills** (once each per visit, rolled by
+the party's best at each skill via per-class `skillProfs`): stealing needs
+Stealth AND Sleight of Hand vs DC 13 — success grabs a random stock item,
+getting caught costs a 50g fine and ends all shenanigans for the visit;
+haggling offers Persuasion (DC 15, −20%, safe), Intimidation (DC 15, −25%
+or +25% on failure), or Deception (DC 13, ±15%). Skill checks roll off a
+persisted campaign RNG state, so seeded runs stay reproducible. Before a battle the campaign builds
 Combatants via the builder's gear overrides; after a victory it reads
 surviving inventory back (spent consumables stay spent, weapon swaps
 persist), adds loot, and advances. Fallen characters recover on victory —

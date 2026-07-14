@@ -7,6 +7,7 @@ import {
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   rollLoot, giveItem, equipItem, equipBlocked, unequipSlot,
 } from '../src/campaign/campaign.js';
+import * as campaignModule from '../src/campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../src/campaign/save.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildEncounter } from '../src/data/monsters.js';
@@ -162,6 +163,85 @@ describe('equipment management', () => {
     expect(party[0]!.equipped.mainHand).toBe('longsword-plus1');
     // Mastery persists on the +1 blade.
     expect(party[0]!.weaponMasteries).toContain('longsword-plus1');
+  });
+});
+
+describe('shop skills', () => {
+  const {
+    skillBonus, bestAtSkill, partySkillCheck, attemptSteal, attemptHaggle,
+    STEAL_FINE,
+  } = campaignModule;
+
+  it('skill bonuses: rogue best at stealth/sleight, fighter at intimidation, cleric at persuasion', () => {
+    const c = newCampaign(5);
+    expect(bestAtSkill(c, 'stealth').idx).toBe(3);          // rogue (dex 16 + prof)
+    expect(bestAtSkill(c, 'sleight-of-hand').idx).toBe(3);
+    expect(bestAtSkill(c, 'deception').idx).toBe(3);        // rogue proficient
+    expect(bestAtSkill(c, 'intimidation').idx).toBe(0);     // fighter proficient
+    expect(bestAtSkill(c, 'persuasion').idx).toBe(2);       // cleric proficient
+    expect(skillBonus('rogue', 1, 'stealth')).toBe(5);      // +3 dex +2 prof
+    expect(skillBonus('wizard', 1, 'stealth')).toBe(3);     // +3 dex, untrained
+  });
+
+  it('skill checks are deterministic and advance the campaign rng', () => {
+    const a = newCampaign(42);
+    const b = newCampaign(42);
+    const r1 = partySkillCheck(a, 'stealth', 13);
+    const r2 = partySkillCheck(b, 'stealth', 13);
+    expect(r1).toEqual(r2);
+    expect(a.rng).not.toBe(newCampaign(42).rng); // state advanced
+  });
+
+  it('steal: success grabs a random stock item; failure fines up to 50g', () => {
+    let successes = 0;
+    let failures = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      const c = newCampaign(seed);
+      const before = c.gold;
+      const itemsBefore = c.characters.reduce((n, ch) => n + ch.inventory.reduce((m, s) => m + s.qty, 0), 0);
+      const result = attemptSteal(c);
+      expect(result.rolls).toHaveLength(2);
+      if (result.success) {
+        successes++;
+        expect(result.itemId).toBeDefined();
+        expect(SHOP_STOCK).toContain(result.itemId);
+        expect(c.gold).toBe(before);
+        const itemsAfter = c.characters.reduce((n, ch) => n + ch.inventory.reduce((m, s) => m + s.qty, 0), 0);
+        expect(itemsAfter).toBe(itemsBefore + 1);
+      } else {
+        failures++;
+        expect(result.fine).toBe(Math.min(before, STEAL_FINE));
+        expect(c.gold).toBe(before - result.fine);
+      }
+    }
+    expect(successes).toBeGreaterThan(5);  // rogue +5/+5 vs DC 13 twice ≈ 42%
+    expect(failures).toBeGreaterThan(5);
+  });
+
+  it('haggle: success discounts, failure penalizes (except persuasion)', () => {
+    let sawPersuadeFail = false;
+    let sawIntimidateSuccess = false;
+    let sawIntimidateFail = false;
+    for (let seed = 1; seed <= 80; seed++) {
+      const p = attemptHaggle(newCampaign(seed), 'persuasion');
+      if (!p.roll.success) {
+        expect(p.priceMultiplier).toBe(1);
+        sawPersuadeFail = true;
+      } else {
+        expect(p.priceMultiplier).toBeCloseTo(0.8);
+      }
+      const i = attemptHaggle(newCampaign(seed + 1000), 'intimidation');
+      if (i.roll.success) { expect(i.priceMultiplier).toBeCloseTo(0.75); sawIntimidateSuccess = true; }
+      else { expect(i.priceMultiplier).toBeCloseTo(1.25); sawIntimidateFail = true; }
+    }
+    expect(sawPersuadeFail && sawIntimidateSuccess && sawIntimidateFail).toBe(true);
+  });
+
+  it('haggled price override works in buyItem', () => {
+    const c = newCampaign(1);
+    c.gold = 40; // base potion is 50; haggled to 40
+    expect(buyItem(c, 0, 'potion-healing', 40)).toBe(true);
+    expect(c.gold).toBe(0);
   });
 });
 

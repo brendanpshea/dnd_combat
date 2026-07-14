@@ -8,12 +8,13 @@
  * inventory back afterwards.
  */
 import type { Id, Combatant, ItemStack, TeamId } from '../engine/types.js';
-import { buildCharacter } from '../builder/character.js';
+import { abilityMod, proficiencyBonus } from '../engine/types.js';
+import { buildCharacter, assignStats } from '../builder/character.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST } from '../data/armor.js';
-import { CLASSES } from '../data/classes.js';
-import { RngState, next } from '../engine/rng.js';
+import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
+import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
 
 export interface PartyCharacter {
   classId: Id;
@@ -28,6 +29,8 @@ export interface CampaignState {
   characters: PartyCharacter[];
   /** Battles won, for flavor/records. */
   victories: string[];
+  /** RNG state for out-of-combat rolls (skill checks); persisted for replays. */
+  rng: RngState;
 }
 
 export interface LootTable {
@@ -137,12 +140,13 @@ export function itemName(itemId: Id): string {
     (itemId === 'shield' ? 'Shield' : itemId);
 }
 
-export function newCampaign(): CampaignState {
+export function newCampaign(seed = 1): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {
     gold: STARTING_GOLD,
     stage: 0,
     victories: [],
+    rng: seedRng(seed),
     characters: order.map((classId) => {
       const eq = CLASSES[classId]!.equipment;
       return {
@@ -177,11 +181,11 @@ export function addItem(inv: ItemStack[], itemId: Id, qty = 1): void {
   else inv.push({ itemId, qty });
 }
 
-/** Buy for a specific character. Returns false if unaffordable/unknown. */
-export function buyItem(c: CampaignState, charIdx: number, itemId: Id): boolean {
-  const price = itemPrice(itemId);
+/** Buy for a specific character. `priceOverride` supports haggled prices. */
+export function buyItem(c: CampaignState, charIdx: number, itemId: Id, priceOverride?: number): boolean {
+  const price = priceOverride ?? itemPrice(itemId);
   const ch = c.characters[charIdx];
-  if (price === undefined || !ch || c.gold < price) return false;
+  if (price === undefined || itemPrice(itemId) === undefined || !ch || c.gold < price) return false;
   c.gold -= price;
   addItem(ch.inventory, itemId);
   return true;
@@ -212,6 +216,103 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Shop skill checks (steal, haggle) — always rolled by the party's best.
+// ---------------------------------------------------------------------------
+
+export const STEAL_DC = 13;
+export const HAGGLE: Record<'intimidation' | 'persuasion' | 'deception',
+  { dc: number; discount: number; penalty: number }> = {
+  persuasion:   { dc: 15, discount: 0.20, penalty: 0 },     // safe
+  intimidation: { dc: 15, discount: 0.25, penalty: 0.25 },  // risky
+  deception:    { dc: 13, discount: 0.15, penalty: 0.15 },  // easier, middling
+};
+export const STEAL_FINE = 50;
+
+function partyLevel(c: CampaignState): number {
+  return currentStage(c)?.partyLevel ?? STAGES[STAGES.length - 1]!.partyLevel;
+}
+
+/** A character's bonus for a skill (ability mod + proficiency if trained). */
+export function skillBonus(classId: Id, level: number, skill: SkillId): number {
+  const cls = CLASSES[classId]!;
+  const abilities = assignStats(cls.statPriority);
+  return abilityMod(abilities[SKILL_ABILITY[skill]]) +
+    (cls.skillProfs.includes(skill) ? proficiencyBonus(level) : 0);
+}
+
+/** The party member with the highest bonus rolls every party skill check. */
+export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bonus: number } {
+  const level = partyLevel(c);
+  let best = { idx: 0, bonus: -Infinity };
+  c.characters.forEach((ch, idx) => {
+    const bonus = skillBonus(ch.classId, level, skill);
+    if (bonus > best.bonus) best = { idx, bonus };
+  });
+  return best;
+}
+
+export interface SkillRoll {
+  skill: SkillId;
+  by: Id;            // classId of the roller
+  natural: number;
+  total: number;
+  dc: number;
+  success: boolean;
+}
+
+export function partySkillCheck(c: CampaignState, skill: SkillId, dc: number): SkillRoll {
+  const { idx, bonus } = bestAtSkill(c, skill);
+  const d = rollDie(c.rng, 20);
+  c.rng = d.state;
+  const total = d.value + bonus;
+  return {
+    skill, by: c.characters[idx]!.classId,
+    natural: d.value, total, dc, success: total >= dc,
+  };
+}
+
+export interface StealResult {
+  rolls: SkillRoll[];
+  success: boolean;
+  /** On success: the randomly grabbed item. */
+  itemId?: Id;
+  /** On failure: gold paid (capped at what the party has). */
+  fine: number;
+}
+
+/** Steal attempt: Stealth AND Sleight of Hand vs DC 13. Success grabs a
+ * random shop item (into the roller's pack); getting caught costs a fine. */
+export function attemptSteal(c: CampaignState): StealResult {
+  const stealth = partySkillCheck(c, 'stealth', STEAL_DC);
+  const sleight = partySkillCheck(c, 'sleight-of-hand', STEAL_DC);
+  const rolls = [stealth, sleight];
+  if (stealth.success && sleight.success) {
+    const r = next(c.rng);
+    c.rng = r.state;
+    const itemId = SHOP_STOCK[Math.floor(r.value * SHOP_STOCK.length)]!;
+    const thief = c.characters.find((ch) => ch.classId === sleight.by) ?? c.characters[0]!;
+    addItem(thief.inventory, itemId);
+    return { rolls, success: true, itemId, fine: 0 };
+  }
+  const fine = Math.min(c.gold, STEAL_FINE);
+  c.gold -= fine;
+  return { rolls, success: false, fine };
+}
+
+export interface HaggleResult {
+  roll: SkillRoll;
+  /** Multiplier to apply to shop prices this visit (1 = unchanged). */
+  priceMultiplier: number;
+}
+
+export function attemptHaggle(c: CampaignState, skill: keyof typeof HAGGLE): HaggleResult {
+  const cfg = HAGGLE[skill];
+  const roll = partySkillCheck(c, skill, cfg.dc);
+  const priceMultiplier = roll.success ? 1 - cfg.discount : 1 + cfg.penalty;
+  return { roll, priceMultiplier };
 }
 
 /** Move one of an item from one character to another. */

@@ -3,6 +3,7 @@
  */
 import * as fs from 'node:fs';
 import type { CampaignState } from './campaign.js';
+import { seedRng } from '../engine/rng.js';
 
 export const SAVE_PATH = 'campaign-save.json';
 
@@ -15,6 +16,7 @@ export function loadCampaign(path = SAVE_PATH): CampaignState | undefined {
   try {
     const raw = JSON.parse(fs.readFileSync(path, 'utf8')) as CampaignState;
     if (typeof raw.gold !== 'number' || !Array.isArray(raw.characters)) return undefined;
+    if (typeof raw.rng !== 'number') raw.rng = seedRng(1); // pre-skills saves
     return raw;
   } catch {
     return undefined;

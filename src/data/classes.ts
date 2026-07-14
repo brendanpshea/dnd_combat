@@ -5,12 +5,23 @@ import type { Id, Ability, ItemStack } from '../engine/types.js';
 
 export type ArmorProf = 'light' | 'medium' | 'heavy' | 'shield';
 
+export type SkillId = 'stealth' | 'sleight-of-hand' | 'intimidation' | 'persuasion' | 'deception';
+
+export const SKILL_ABILITY: Record<SkillId, Ability> = {
+  stealth: 'dex',
+  'sleight-of-hand': 'dex',
+  intimidation: 'cha',
+  persuasion: 'cha',
+  deception: 'cha',
+};
+
 export interface ClassData {
   id: Id;
   name: string;
   hitDie: number;
   savingThrows: [Ability, Ability];
   armorProfs: ArmorProf[];
+  skillProfs: SkillId[];
   /** How 16,16,13,12,10,8 gets assigned, highest first. */
   statPriority: [Ability, Ability, Ability, Ability, Ability, Ability];
   spellcasting?: {
@@ -34,6 +45,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'fighter', name: 'Fighter', hitDie: 10,
     savingThrows: ['str', 'con'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'],
+    skillProfs: ['intimidation'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
       1: ['second-wind', 'action-surge', 'dueling'],
@@ -53,6 +65,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'cleric', name: 'Cleric', hitDie: 8,
     savingThrows: ['wis', 'cha'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'], // heavy via Life Domain
+    skillProfs: ['persuasion'],
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
       ability: 'wis',
@@ -80,6 +93,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'wizard', name: 'Wizard', hitDie: 6,
     savingThrows: ['int', 'wis'],
     armorProfs: [],
+    skillProfs: [],
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
       ability: 'int',
@@ -107,6 +121,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'rogue', name: 'Rogue', hitDie: 8,
     savingThrows: ['dex', 'int'],
     armorProfs: ['light'],
+    skillProfs: ['stealth', 'sleight-of-hand', 'deception'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
       1: ['sneak-attack'],
