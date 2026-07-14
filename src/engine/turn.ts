@@ -49,6 +49,16 @@ export function startTurn(state: GameState): GameEvent[] {
   }
   c.conditions = c.conditions.filter((k) => k.id !== 'dodging' && k.id !== 'noReactions');
 
+  // Expire round-limited conditions (e.g. Unconscious's 1-minute cap).
+  for (const cond of c.conditions) {
+    if (cond.expiresAtRound !== undefined && state.round > cond.expiresAtRound) {
+      events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });
+    }
+  }
+  c.conditions = c.conditions.filter(
+    (k) => k.expiresAtRound === undefined || state.round <= k.expiresAtRound,
+  );
+
   c.turn = {
     actionUsed: false,
     bonusActionUsed: false,
@@ -56,6 +66,7 @@ export function startTurn(state: GameState): GameEvent[] {
     movementUsed: 0,
     movementMax: c.conditions.some((k) => k.id === 'unconscious') ? 0 : c.speed,
     disengaged: false,
+    attackedThisTurn: false,
     sneakAttackUsed: false,
   };
   events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });

@@ -49,11 +49,14 @@ export type ConditionId =
   | 'vexed'        // attacker has advantage on next attack vs this source's target
   | 'sapped'       // disadvantage on next attack roll
   | 'dodging'      // attacks against this creature have disadvantage
+  | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'noReactions'; // Shocking Grasp rider
 
 export interface ActiveCondition {
   id: ConditionId;
   sourceId?: Id;
+  /** Sustained by the source's concentration; removed when it breaks. */
+  concentration?: boolean;
   /** Round number after which the condition expires; undefined = until removed. */
   expiresAtRound?: number;
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
@@ -82,8 +85,12 @@ export interface Combatant {
   savingThrowProfs: Ability[];
   spellcastingAbility?: Ability;
   spellSlots: ResourcePool[];       // index 0 = level-1 slots
+  spellIds: Id[];                   // known/prepared spells incl. cantrips
+  featureIds: Id[];                 // class/species features
   featureUses: Record<Id, ResourcePool>;
   weaponIds: Id[];
+  weaponMasteries: Id[];            // weapon ids whose mastery property applies
+  armorId?: Id;
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
   /** Per-turn economy, reset at turn start. */
@@ -94,6 +101,7 @@ export interface Combatant {
     movementUsed: number;   // feet
     movementMax: number;    // feet; speed, doubled by Dash
     disengaged: boolean;    // no opportunity attacks provoked this turn
+    attackedThisTurn: boolean; // gates the off-hand bonus attack
     sneakAttackUsed: boolean;
   };
   alive: boolean;

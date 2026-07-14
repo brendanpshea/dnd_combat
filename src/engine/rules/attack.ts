@@ -7,6 +7,7 @@ import { abilityMod, proficiencyBonus, cellAt } from '../types.js';
 import { WEAPONS, WeaponData } from '../../data/weapons.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
 import { distanceFeet, adjacent } from '../grid.js';
+import { savingThrow } from './saves.js';
 import type { GameEvent } from '../events.js';
 
 /** Which ability powers an attack with this weapon. */
@@ -19,10 +20,8 @@ export function attackAbility(attacker: Combatant, weapon: WeaponData): 'str' | 
 
 export interface AttackContext {
   opportunity?: boolean;
-  /** Flat damage bonus (e.g. Dueling), applied on hit, not doubled by crits. */
-  flatDamageBonus?: number;
-  /** Extra damage dice on hit (e.g. Sneak Attack), doubled by crits. */
-  extraDice?: string;
+  /** Off-hand (light weapon) attack: no ability modifier on damage. */
+  offhand?: boolean;
 }
 
 /**
@@ -98,7 +97,12 @@ export function resolveAttack(
   const ability = attackAbility(attacker, weapon);
   const mod = abilityMod(attacker.abilities[ability]);
   const prof = proficiencyBonus(attacker.level); // v1: proficient with all carried weapons
-  const total = d20.natural + mod + prof;
+  let total = d20.natural + mod + prof;
+  if (attacker.conditions.some((c) => c.id === 'blessed')) {
+    const d4 = rollDice(state.rng, '1d4');
+    state.rng = d4.state;
+    total += d4.total;
+  }
 
   // Auto-crit on hitting an unconscious target from melee range.
   const unconsciousAdjacent =
@@ -121,19 +125,56 @@ export function resolveAttack(
 
   const dmg = rollDice(state.rng, weapon.damage, crit);
   state.rng = dmg.state;
-  let amount = dmg.total + mod + (ctx.flatDamageBonus ?? 0);
+  let amount = dmg.total + (ctx.offhand ? 0 : mod);
   let rolls = dmg.rolls;
-  if (ctx.extraDice) {
-    const extra = rollDice(state.rng, ctx.extraDice, crit);
-    state.rng = extra.state;
-    amount += extra.total;
-    rolls = [...rolls, ...extra.rolls];
+
+  // Fighting Style: Dueling — one-handed melee weapon (shield is fine): +2.
+  if (
+    attacker.featureIds.includes('dueling') &&
+    isMeleeAttack &&
+    !weapon.properties.includes('two-handed')
+  ) {
+    amount += 2;
   }
+
+  // Sneak Attack: once per turn, finesse/ranged weapon, and either advantage
+  // or an ally adjacent to the target — never while at disadvantage.
+  if (
+    attacker.featureIds.includes('sneak-attack') &&
+    !attacker.turn.sneakAttackUsed &&
+    (weapon.properties.includes('finesse') || !weapon.melee)
+  ) {
+    const allyAdjacent = Object.values(state.combatants).some(
+      (c) => c.alive && c.id !== attackerId && c.team === attacker.team &&
+             adjacent(c.position, target.position),
+    );
+    const qualifies = mode === 'advantage' || (allyAdjacent && mode !== 'disadvantage');
+    if (qualifies) {
+      const sneakDice = `${Math.ceil(attacker.level / 2)}d6`;
+      const extra = rollDice(state.rng, sneakDice, crit);
+      state.rng = extra.state;
+      amount += extra.total;
+      rolls = [...rolls, ...extra.rolls];
+      attacker.turn.sneakAttackUsed = true;
+    }
+  }
+
   amount = Math.max(1, amount);
 
   events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls));
 
-  // Weapon mastery riders (Sap/Vex) hook in here in Phase 3.
+  // Weapon mastery riders, only for wielders trained in this weapon's mastery.
+  if (weapon.mastery && attacker.weaponMasteries.includes(weapon.id) && target.alive) {
+    if (weapon.mastery === 'sap' && !target.conditions.some((c) => c.id === 'sapped')) {
+      target.conditions.push({ id: 'sapped', sourceId: attackerId });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: attackerId });
+    } else if (weapon.mastery === 'vex') {
+      if (!attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === targetId)) {
+        attacker.conditions.push({ id: 'vexed', sourceId: targetId });
+        events.push({ type: 'conditionApplied', combatantId: attackerId, condition: 'vexed', sourceId: targetId });
+      }
+    }
+  }
   return events;
 }
 
@@ -164,17 +205,9 @@ export function applyDamage(
   // Concentration save: DC max(10, floor(damage/2)).
   if (target.hp > 0 && target.concentratingOn) {
     const dc = Math.max(10, Math.floor(amount / 2));
-    const d20 = rollD20(state.rng, 'flat');
-    state.rng = d20.state;
-    const mod = abilityMod(target.abilities.con);
-    const prof = target.savingThrowProfs.includes('con') ? proficiencyBonus(target.level) : 0;
-    const total = d20.natural + mod + prof;
-    const success = total >= dc;
-    events.push({
-      type: 'savingThrow', combatantId: targetId, ability: 'con', dc,
-      natural: d20.natural, total, success,
-    });
-    if (!success) {
+    const save = savingThrow(state, targetId, 'con', dc);
+    events.push(save.event);
+    if (!save.success) {
       events.push(...breakConcentration(state, targetId));
     }
   }
@@ -195,11 +228,14 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   for (const tid of targetIds) {
     const t = state.combatants[tid];
     if (!t) continue;
-    const before = t.conditions.length;
-    t.conditions = t.conditions.filter((cond) => cond.sourceId !== combatantId);
-    if (t.conditions.length < before) {
-      // Event granularity: one removal notice per target is enough for v1 logs.
+    for (const cond of t.conditions) {
+      if (cond.sourceId === combatantId && cond.concentration) {
+        events.push({ type: 'conditionRemoved', combatantId: tid, condition: cond.id });
+      }
     }
+    t.conditions = t.conditions.filter(
+      (cond) => !(cond.sourceId === combatantId && cond.concentration),
+    );
   }
   return events;
 }
