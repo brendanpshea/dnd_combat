@@ -2,6 +2,7 @@ import type { Id, Combatant } from '../engine/types.js';
 import { abilityMod } from '../engine/types.js';
 
 export type Rarity = 'common' | 'uncommon' | 'rare';
+export type ArmorCategory = 'light' | 'medium' | 'heavy';
 
 export interface ArmorData {
   id: Id;
@@ -9,16 +10,23 @@ export interface ArmorData {
   base: number;
   /** How much Dex applies: 'full' (light/none), capped (medium), 'none' (heavy). */
   dexCap: 'full' | 'none' | number;
+  category: ArmorCategory;
   metal: boolean; // Shocking Grasp gets advantage vs metal armor
   cost: number;   // gp
   rarity: Rarity;
 }
 
 export const ARMOR: Record<Id, ArmorData> = {
-  'studded-leather': { id: 'studded-leather', name: 'Studded Leather', base: 12, dexCap: 'full', metal: false, cost: 45, rarity: 'common' },
-  'scale-mail':      { id: 'scale-mail',      name: 'Scale Mail',      base: 14, dexCap: 2,      metal: true,  cost: 50, rarity: 'common' },
-  'chain-mail':      { id: 'chain-mail',      name: 'Chain Mail',      base: 16, dexCap: 'none', metal: true,  cost: 75, rarity: 'common' },
+  leather:           { id: 'leather',           name: 'Leather',          base: 11, dexCap: 'full', category: 'light',  metal: false, cost: 10,  rarity: 'common' },
+  'studded-leather': { id: 'studded-leather',  name: 'Studded Leather',  base: 12, dexCap: 'full', category: 'light',  metal: false, cost: 45,  rarity: 'common' },
+  'chain-shirt':     { id: 'chain-shirt',      name: 'Chain Shirt',      base: 13, dexCap: 2,      category: 'medium', metal: true,  cost: 50,  rarity: 'common' },
+  'scale-mail':      { id: 'scale-mail',       name: 'Scale Mail',       base: 14, dexCap: 2,      category: 'medium', metal: true,  cost: 50,  rarity: 'common' },
+  'half-plate':      { id: 'half-plate',       name: 'Half Plate',       base: 15, dexCap: 2,      category: 'medium', metal: true,  cost: 400, rarity: 'uncommon' },
+  'chain-mail':      { id: 'chain-mail',       name: 'Chain Mail',       base: 16, dexCap: 'none', category: 'heavy',  metal: true,  cost: 75,  rarity: 'common' },
+  splint:            { id: 'splint',           name: 'Splint',           base: 17, dexCap: 'none', category: 'heavy',  metal: true,  cost: 200, rarity: 'uncommon' },
 };
+
+export const SHIELD_COST = 10;
 
 export function armorClass(armorId: Id | undefined, dexMod: number, shield: boolean): number {
   const a = armorId !== undefined ? ARMOR[armorId] : undefined;

@@ -4,7 +4,8 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
-  buyItem, sellItem, itemPrice, STAGES, STARTING_GOLD, SHOP_STOCK,
+  buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
+  rollLoot, giveItem, equipItem, equipBlocked, unequipSlot,
 } from '../src/campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../src/campaign/save.js';
 import { Combat } from '../src/engine/combat.js';
@@ -36,10 +37,10 @@ describe('campaign state', () => {
     expect(sellItem(c, 1, 'scroll-cure-wounds')).toBe(false); // wizard doesn't have one
   });
 
-  it('every shop item has a price', () => {
+  it('every shop item has a price and a display name', () => {
     for (const id of SHOP_STOCK) {
       expect(itemPrice(id)).toBeGreaterThan(0);
-      expect(ITEMS[id]).toBeDefined();
+      expect(itemName(id)).not.toBe(id); // resolved to a human name
     }
   });
 
@@ -54,19 +55,23 @@ describe('campaign state', () => {
     expect(party[1]!.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
   });
 
-  it('applyVictory: loot added, gear read back from survivors, stage advances', () => {
+  it('applyVictory: loot rolled within bounds, gear read back, stage advances', () => {
     const c = newCampaign();
     const party = buildCampaignParty(c);
     // Simulate the fighter having drunk their potion mid-battle.
     party[0]!.inventory = party[0]!.inventory.filter((s) => s.itemId !== 'potion-healing');
-    const stage = applyVictory(c, party);
-    expect(stage.encounterId).toBe('goblins');
+    const result = applyVictory(c, party, 12345);
+    expect(result.stage.encounterId).toBe('goblins');
     expect(c.stage).toBe(1);
-    expect(c.gold).toBe(STARTING_GOLD + stage.loot.gold);
+    expect(result.gold).toBeGreaterThanOrEqual(40);
+    expect(result.gold).toBeLessThanOrEqual(80);
+    expect(c.gold).toBe(STARTING_GOLD + result.gold);
+    expect(result.items.reduce((n, s) => n + s.qty, 0)).toBe(2); // 2 rolls
     expect(c.victories).toEqual(['goblins']);
-    // Spent potion stays spent... but the loot (2 potions) went to the fighter pool.
-    const fighterPotions = c.characters[0]!.inventory.find((s) => s.itemId === 'potion-healing');
-    expect(fighterPotions?.qty).toBe(2); // 0 remaining + 2 loot
+    // Spent potion stays spent — the fighter has only whatever loot granted.
+    const fighterPotions = c.characters[0]!.inventory.find((s) => s.itemId === 'potion-healing')?.qty ?? 0;
+    const lootedPotions = result.items.find((s) => s.itemId === 'potion-healing')?.qty ?? 0;
+    expect(fighterPotions).toBe(lootedPotions);
   });
 
   it('completing all stages finishes the campaign', () => {
@@ -76,6 +81,87 @@ describe('campaign state', () => {
     }
     expect(isComplete(c)).toBe(true);
     expect(() => applyVictory(c, [])).toThrow(/complete/);
+  });
+});
+
+describe('loot tables', () => {
+  it('rollLoot is deterministic and stays within bounds', () => {
+    const table = STAGES[0]!.loot;
+    const a = rollLoot(table, 999);
+    const b = rollLoot(table, 999);
+    expect(a).toEqual(b);
+    for (let seed = 1; seed <= 200; seed++) {
+      const r = rollLoot(table, seed);
+      expect(r.gold).toBeGreaterThanOrEqual(table.gold.min);
+      expect(r.gold).toBeLessThanOrEqual(table.gold.max);
+      expect(r.items.reduce((n, s) => n + s.qty, 0)).toBe(table.rolls);
+      for (const s of r.items) {
+        expect(table.entries.some((e) => e.itemId === s.itemId)).toBe(true);
+      }
+    }
+  });
+
+  it('the ogre table can drop a magic weapon', () => {
+    let magic = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = rollLoot(STAGES[3]!.loot, seed);
+      if (r.items.some((s) => s.itemId.endsWith('plus1'))) magic++;
+    }
+    expect(magic).toBeGreaterThan(50); // ~66% of runs over 300 seeds
+  });
+});
+
+describe('equipment management', () => {
+  it('proficiency gating: wizard cannot wear armor, rogue only light', () => {
+    const c = newCampaign();
+    c.characters[1]!.inventory.push({ itemId: 'splint', qty: 1 });   // wizard
+    c.characters[3]!.inventory.push({ itemId: 'splint', qty: 1 });   // rogue
+    c.characters[0]!.inventory.push({ itemId: 'splint', qty: 1 });   // fighter
+    expect(equipBlocked(c, 1, 'splint', 'armor')).toMatch(/can't wear/);
+    expect(equipBlocked(c, 3, 'splint', 'armor')).toMatch(/can't wear/);
+    expect(equipBlocked(c, 0, 'splint', 'armor')).toBeUndefined();
+    expect(equipItem(c, 0, 'splint', 'armor')).toBe(true);
+    expect(c.characters[0]!.equipped.armor).toBe('splint');
+    // Old scale mail went back to inventory.
+    expect(c.characters[0]!.inventory.some((s) => s.itemId === 'scale-mail')).toBe(true);
+  });
+
+  it('two-handed weapons clear the off-hand; shield needs a free main hand', () => {
+    const c = newCampaign();
+    c.characters[0]!.inventory.push({ itemId: 'greatsword', qty: 1 });
+    expect(equipItem(c, 0, 'greatsword', 'mainHand')).toBe(true);
+    const ftr = c.characters[0]!;
+    expect(ftr.equipped.mainHand).toBe('greatsword');
+    expect(ftr.equipped.offHand).toBeUndefined(); // shield stowed
+    expect(ftr.inventory.some((s) => s.itemId === 'shield')).toBe(true);
+    // Can't re-equip the shield while holding a two-hander.
+    expect(equipBlocked(c, 0, 'shield', 'offHand')).toMatch(/two-handed/);
+  });
+
+  it('giveItem moves one item between characters', () => {
+    const c = newCampaign();
+    expect(giveItem(c, 0, 1, 'potion-healing')).toBe(true);
+    expect(c.characters[0]!.inventory.some((s) => s.itemId === 'potion-healing')).toBe(false);
+    expect(c.characters[1]!.inventory.find((s) => s.itemId === 'potion-healing')!.qty).toBe(2);
+    expect(giveItem(c, 0, 1, 'potion-healing')).toBe(false); // none left
+    expect(giveItem(c, 1, 1, 'potion-healing')).toBe(false); // self
+  });
+
+  it('unequip returns gear to inventory but the main hand stays armed', () => {
+    const c = newCampaign();
+    expect(unequipSlot(c, 0, 'offHand')).toBe(true);
+    expect(c.characters[0]!.inventory.some((s) => s.itemId === 'shield')).toBe(true);
+    expect(unequipSlot(c, 0, 'mainHand')).toBe(false);
+  });
+
+  it('a +1 weapon carries into battle with working bonuses', () => {
+    const c = newCampaign();
+    c.characters[0]!.inventory.push({ itemId: 'longsword-plus1', qty: 1 });
+    expect(equipItem(c, 0, 'longsword-plus1', 'mainHand')).toBe(true);
+    const party = buildCampaignParty(c);
+    expect(party[0]!.equipped.mainHand).toBe('longsword-plus1');
+    // Mastery persists on the +1 blade.
+    expect(party[0]!.weaponMasteries).toContain('longsword-plus1');
   });
 });
 

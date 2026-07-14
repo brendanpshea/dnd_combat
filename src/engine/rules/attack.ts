@@ -124,7 +124,7 @@ export function resolveAttack(
   const ability = attackAbility(attacker, weapon);
   const mod = abilityMod(attacker.abilities[ability]);
   const prof = proficiencyBonus(attacker.level); // v1: proficient with all carried weapons
-  let total = d20.natural + mod + prof;
+  let total = d20.natural + mod + prof + (weapon.attackBonus ?? 0);
   if (attacker.conditions.some((c) => c.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;
@@ -155,7 +155,7 @@ export function resolveAttack(
 
   const dmg = rollDice(state.rng, weapon.damage, crit);
   state.rng = dmg.state;
-  let amount = dmg.total + (ctx.offhand ? 0 : mod);
+  let amount = dmg.total + (ctx.offhand ? 0 : mod) + (weapon.damageBonus ?? 0);
   let rolls = dmg.rolls;
 
   // Fighting Style: Dueling — one-handed melee weapon, no weapon in the

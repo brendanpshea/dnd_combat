@@ -3,11 +3,14 @@
  */
 import type { Id, Ability, ItemStack } from '../engine/types.js';
 
+export type ArmorProf = 'light' | 'medium' | 'heavy' | 'shield';
+
 export interface ClassData {
   id: Id;
   name: string;
   hitDie: number;
   savingThrows: [Ability, Ability];
+  armorProfs: ArmorProf[];
   /** How 16,16,13,12,10,8 gets assigned, highest first. */
   statPriority: [Ability, Ability, Ability, Ability, Ability, Ability];
   spellcasting?: {
@@ -30,12 +33,13 @@ export const CLASSES: Record<Id, ClassData> = {
   fighter: {
     id: 'fighter', name: 'Fighter', hitDie: 10,
     savingThrows: ['str', 'con'],
+    armorProfs: ['light', 'medium', 'heavy', 'shield'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
       1: ['second-wind', 'action-surge', 'dueling'],
       3: ['improved-critical'], // Champion
     },
-    weaponMasteries: ['longsword'],
+    weaponMasteries: ['longsword', 'longsword-plus1'],
     equipment: {
       mainHand: 'longsword', offHand: 'shield', armor: 'scale-mail',
       inventory: [
@@ -48,6 +52,7 @@ export const CLASSES: Record<Id, ClassData> = {
   cleric: {
     id: 'cleric', name: 'Cleric', hitDie: 8,
     savingThrows: ['wis', 'cha'],
+    armorProfs: ['light', 'medium', 'heavy', 'shield'], // heavy via Life Domain
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
       ability: 'wis',
@@ -74,6 +79,7 @@ export const CLASSES: Record<Id, ClassData> = {
   wizard: {
     id: 'wizard', name: 'Wizard', hitDie: 6,
     savingThrows: ['int', 'wis'],
+    armorProfs: [],
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
       ability: 'int',
@@ -100,13 +106,14 @@ export const CLASSES: Record<Id, ClassData> = {
   rogue: {
     id: 'rogue', name: 'Rogue', hitDie: 8,
     savingThrows: ['dex', 'int'],
+    armorProfs: ['light'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
       1: ['sneak-attack'],
       2: ['cunning-dash', 'cunning-disengage'],
       3: ['assassinate'], // Assassin
     },
-    weaponMasteries: ['shortsword', 'shortbow'],
+    weaponMasteries: ['shortsword', 'shortsword-plus1', 'shortbow'],
     equipment: {
       mainHand: 'shortsword', offHand: 'shortsword', armor: 'studded-leather',
       inventory: [

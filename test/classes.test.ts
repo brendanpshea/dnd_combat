@@ -37,7 +37,7 @@ describe('character builder', () => {
     const r = buildCharacter({ classId: 'rogue', team: 'team1', position: { x: 0, y: 0 } });
     expect(acOf(r)).toBe(15); // studded 12 + dex +3
     expect(r.maxHp).toBe(11);
-    expect(r.weaponMasteries).toEqual(['shortsword', 'shortbow']);
+    expect(r.weaponMasteries).toEqual(expect.arrayContaining(['shortsword', 'shortbow']));
     expect(r.featureIds).toContain('sneak-attack');
   });
 

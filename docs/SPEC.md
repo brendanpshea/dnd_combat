@@ -210,8 +210,16 @@ deliberately hide behind walls), no focus-fire memory, never upcasts.
 `src/campaign/` is the meta-game the combat engine knows nothing about: a
 `CampaignState` (gold, stage index, per-character inventory + equipment)
 persists across battles as JSON. The ladder is data (`STAGES`): encounter,
-party level, map, and loot per stage. Between battles the shop buys/sells
-(half price back) from `SHOP_STOCK`. Before a battle the campaign builds
+party level, map, and a weighted **loot table** per stage (gold range +
+N item draws; the ogre's table can drop +1 weapons and half plate). Loot
+rolls use the battle's final RNG state, so seeded campaigns are reproducible
+end-to-end. Between battles the shop buys/sells (half price back) from
+`SHOP_STOCK` — consumables, weapons (incl. +1 longsword/shortsword with
+attack/damage bonus support in the engine), and armor gated by per-class
+**armor proficiencies** (fighter/cleric all, rogue light, wizard none).
+The equip screen moves gear between hands/armor/inventory (two-handers
+clear the off-hand; shields need a free main hand), and items can be
+passed between characters. Before a battle the campaign builds
 Combatants via the builder's gear overrides; after a victory it reads
 surviving inventory back (spent consumables stay spent, weapon swaps
 persist), adds loot, and advances. Fallen characters recover on victory —

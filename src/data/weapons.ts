@@ -23,6 +23,9 @@ export interface WeaponData {
   onHitCondition?: 'prone';
   /** Store price in gp; absent for natural/monster weapons (not tradable). */
   cost?: number;
+  /** Magic weapon bonuses (+1 sword: both are 1). */
+  attackBonus?: number;
+  damageBonus?: number;
 }
 
 export const WEAPONS: Record<Id, WeaponData> = {
@@ -49,6 +52,28 @@ export const WEAPONS: Record<Id, WeaponData> = {
   shortbow: {
     id: 'shortbow', name: 'Shortbow', damage: '1d6', damageType: 'piercing',
     properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'vex', cost: 25,
+  },
+  dagger: {
+    id: 'dagger', name: 'Dagger', damage: '1d4', damageType: 'piercing',
+    properties: ['finesse', 'light', 'thrown'], range: { normal: 20, long: 60 }, melee: true, cost: 2,
+  },
+  greatsword: {
+    id: 'greatsword', name: 'Greatsword', damage: '2d6', damageType: 'slashing',
+    properties: ['two-handed'], melee: true, cost: 50,
+  },
+  longbow: {
+    id: 'longbow', name: 'Longbow', damage: '1d8', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, cost: 50,
+  },
+  'longsword-plus1': {
+    id: 'longsword-plus1', name: 'Longsword +1', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'sap', cost: 500,
+    attackBonus: 1, damageBonus: 1,
+  },
+  'shortsword-plus1': {
+    id: 'shortsword-plus1', name: 'Shortsword +1', damage: '1d6', damageType: 'piercing',
+    properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 500,
+    attackBonus: 1, damageBonus: 1,
   },
 
   // --- monster natural weapons and gear (SRD 5.2.1 stat blocks) ------------
