@@ -48,6 +48,7 @@ export type ConditionId =
   | 'unconscious'
   | 'vexed'        // attacker has advantage on next attack vs this source's target
   | 'sapped'       // disadvantage on next attack roll
+  | 'dodging'      // attacks against this creature have disadvantage
   | 'noReactions'; // Shocking Grasp rider
 
 export interface ActiveCondition {
@@ -90,7 +91,9 @@ export interface Combatant {
     actionUsed: boolean;
     bonusActionUsed: boolean;
     reactionUsed: boolean;
-    movementUsed: number; // feet
+    movementUsed: number;   // feet
+    movementMax: number;    // feet; speed, doubled by Dash
+    disengaged: boolean;    // no opportunity attacks provoked this turn
     sneakAttackUsed: boolean;
   };
   alive: boolean;
