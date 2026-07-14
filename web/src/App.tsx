@@ -200,9 +200,9 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
       return;
     }
     if (occ && grouped.perTarget.has(occ.id)) {
-      const options = grouped.perTarget.get(occ.id)!;
-      if (options.length === 1) apply(options[0]!.action);
-      else setChooser({ target: occ, options });
+      // Always confirm via the chooser — even a single option — so the player
+      // sees what they're about to do and can back out.
+      setChooser({ target: occ, options: grouped.perTarget.get(occ.id)! });
       return;
     }
     const move = grouped.moves.get(key);
