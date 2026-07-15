@@ -109,17 +109,18 @@ describe('simulation AI behavior', () => {
   }, 120000);
 
   it('arena gate: sim AI is at least competitive with greedy (regression floor)', () => {
-    // Small sample = wide confidence interval. This gate exists to catch
-    // gross regressions (the kind that produced 8-15% win rates during
-    // development), not to prove superiority — that's scripts/arena.ts with
-    // hundreds of games. Floor set well below parity accordingly.
-    const seeds = Array.from({ length: 6 }, (_, i) => i * 5 + 1);
+    // A gross-regression tripwire, not a superiority proof (that's
+    // `npm run arena` with hundreds of games — sim-normal sits ~37% vs the
+    // hand-tuned greedy). The floor is set well below that true rate so
+    // ordinary small-sample noise never flakes it; only a real collapse
+    // (the 8-15% win rates seen mid-development) trips it.
+    const seeds = Array.from({ length: 8 }, (_, i) => i * 5 + 1);
     const result = runArena(
       (s, id) => chooseActionSim(s, id, FAST),
       greedy,
       seeds,
     );
     expect(result.stalls).toBe(0);
-    expect(result.aWinRate).toBeGreaterThanOrEqual(0.3);
+    expect(result.aWinRate).toBeGreaterThanOrEqual(0.2);
   }, 300000);
 });

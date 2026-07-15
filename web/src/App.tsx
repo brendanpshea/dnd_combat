@@ -9,6 +9,8 @@ import { chooseAction } from '../../src/ai/greedy.js';
 import { chooseActionSim, SIM_PRESETS } from '../../src/ai/simulated.js';
 import type { Action } from '../../src/engine/actions.js';
 import { renderEvent } from '../../src/ui/cli/renderer.js';
+import { sphere2x2, cone15 } from '../../src/engine/grid.js';
+import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
@@ -36,8 +38,22 @@ interface SetupConfig {
   aiLevel: AiLevel;
 }
 
+/** Cells an area spell will actually cover, for the targeting preview. */
+function footprint(caster: Combatant, spellId: string, target: Position): string[] {
+  const kind = SPELLS[spellId]?.targeting.kind;
+  if (kind === 'sphere2x2') return sphere2x2(target).map(posKey);
+  if (kind === 'cone15') {
+    try {
+      return cone15(caster.position, directionFromDelta(caster.position, target)).map(posKey);
+    } catch {
+      return [posKey(target)];
+    }
+  }
+  return [posKey(target)]; // emptyCell (teleport), self
+}
+
 type Targeting =
-  | { type: 'cells'; label: string; byCell: Map<string, Action> }
+  | { type: 'cells'; label: string; spellId: string; byCell: Map<string, Action>; preview?: Position | undefined }
   | { type: 'multi'; label: string; spec: MultiTargetSpec; picked: Id[] };
 
 type Screen =
@@ -201,6 +217,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
   const [floats, setFloats] = useState<FloatEffect[]>([]);
   const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
   const [hitIds, setHitIds] = useState<Set<Id>>(new Set());
+  const [movePaths, setMovePaths] = useState<Map<Id, Position[]>>(new Map());
   const [muted, setMutedState] = useState(isMuted());
   const [speed, setSpeed] = useState(1);
   const speedRef = useRef(1);
@@ -218,6 +235,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
       const events = combat.apply(action);
       const lines = events.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s);
       setLog((l) => [...l, ...lines]);
+
+      // Movement animation: tokens follow the actual path (around walls, past
+      // allies) instead of sliding in a straight line through them.
+      const paths = new Map<Id, Position[]>();
+      for (const e of events) {
+        if (e.type === 'moved' && e.path.length > 1) paths.set(e.combatantId, e.path);
+      }
+      setMovePaths(paths);
 
       const fx = effectsFor(combat.state, events);
       if (fx.floats.length > 0) {
@@ -274,6 +299,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
     if (!grouped || !active) return m;
     if (targeting?.type === 'cells') {
       for (const k of targeting.byCell.keys()) m.set(k, 'cell-target');
+      // Previewing a placement: light up the full footprint it will hit.
+      if (targeting.preview) {
+        for (const k of footprint(active, targeting.spellId, targeting.preview)) m.set(k, 'aoe');
+      }
       return m;
     }
     if (targeting?.type === 'multi') {
@@ -305,8 +334,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
 
     if (targeting?.type === 'cells') {
       const a = targeting.byCell.get(key);
-      if (a) apply(a);
-      else setTargeting(null);
+      if (!a) { setTargeting(null); return; }
+      // Two-phase: first tap previews the footprint, a second tap on the same
+      // cell (or the Confirm button) casts — so the 2x2 / cone is visible.
+      if (targeting.preview && posKey(targeting.preview) === key) apply(a);
+      else setTargeting({ ...targeting, preview: pos });
       return;
     }
     if (targeting?.type === 'multi') {
@@ -365,6 +397,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
         highlights={highlights}
         selectedId={activeId}
         multiCounts={multiCounts}
+        movePaths={movePaths}
         floats={floats}
         corpses={corpses}
         hitIds={hitIds}
@@ -396,6 +429,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
               )}
             </>
           )}
+          {targeting.type === 'cells' && targeting.preview && (
+            <button className="mini" onClick={() => apply(targeting.byCell.get(posKey(targeting.preview!))!)}>
+              Cast here
+            </button>
+          )}
           <button className="mini" onClick={() => setTargeting(null)}>Cancel</button>
         </div>
       )}
@@ -407,7 +445,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
               key={b.id}
               onClick={() => {
                 if (b.action) apply(b.action);
-                else if (b.cellTargets) setTargeting({ type: 'cells', label: `${b.label} — pick a cell`, byCell: b.cellTargets });
+                else if (b.cellTargets) {
+                  const spellId = [...b.cellTargets.values()][0]?.kind === 'castSpell'
+                    ? ([...b.cellTargets.values()][0] as { spellId: string }).spellId : '';
+                  setTargeting({ type: 'cells', label: `${b.label} — tap a cell, tap again to cast`, spellId, byCell: b.cellTargets });
+                }
                 else if (b.multi) setTargeting({ type: 'multi', label: `${b.label} — pick targets`, spec: b.multi, picked: [] });
               }}
             >

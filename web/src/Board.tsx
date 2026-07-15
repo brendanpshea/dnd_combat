@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { GameState, Position, Combatant, Id } from '../../src/engine/types.js';
 import { cellAt } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
@@ -10,7 +11,7 @@ const TOKEN: Record<string, string> = {
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
 };
 
-export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | undefined;
+export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | undefined;
 
 export interface BoardProps {
   state: GameState;
@@ -21,6 +22,7 @@ export interface BoardProps {
   floats?: FloatEffect[];
   corpses?: CorpseEffect[];
   hitIds?: Set<Id>;
+  movePaths?: Map<Id, Position[]>;
   onCellTap(pos: Position, occupant?: Combatant): void;
 }
 
@@ -30,8 +32,23 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, hitIds, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, hitIds, movePaths, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
+  const slotRefs = useRef(new Map<Id, HTMLDivElement>());
+
+  // Slide tokens along their actual path (around walls / through allies) via
+  // the Web Animations API. Runs before paint so there's no jump-then-slide.
+  useLayoutEffect(() => {
+    if (!movePaths) return;
+    for (const [id, path] of movePaths) {
+      const el = slotRefs.current.get(id);
+      if (!el || path.length < 2) continue;
+      const frames = path.map((p) => ({
+        transform: `translate(${p.x * 100}%, ${(height - 1 - p.y) * 100}%)`,
+      }));
+      el.animate(frames, { duration: Math.min(650, 85 * (path.length - 1)), easing: 'ease-in-out' });
+    }
+  }, [movePaths, height]);
 
   const cells = [];
   for (let y = height - 1; y >= 0; y--) {
@@ -73,6 +90,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       return (
         <div
           key={c.id}
+          ref={(el) => { if (el) slotRefs.current.set(c.id, el); else slotRefs.current.delete(c.id); }}
           className="token-slot"
           style={{
             width: `${100 / width}%`,

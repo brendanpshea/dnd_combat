@@ -258,10 +258,16 @@ export function applyDamage(
     if (save.success) target.hp = 1;
   }
 
-  // Damage wakes the unconscious.
-  if (target.hp > 0 && target.conditions.some((c) => c.id === 'unconscious')) {
-    target.conditions = target.conditions.filter((c) => c.id !== 'unconscious');
-    events.push({ type: 'conditionRemoved', combatantId: targetId, condition: 'unconscious' });
+  // Damage ends the Sleep effect at either stage: the stage-1 magical
+  // Incapacitated (identified by its repeat save) and the escalated
+  // Unconscious both wake on any damage.
+  if (target.hp > 0) {
+    const asleep = (c: (typeof target.conditions)[number]) =>
+      c.id === 'unconscious' || (c.id === 'incapacitated' && c.repeatSave !== undefined);
+    for (const c of target.conditions) {
+      if (asleep(c)) events.push({ type: 'conditionRemoved', combatantId: targetId, condition: c.id });
+    }
+    target.conditions = target.conditions.filter((c) => !asleep(c));
   }
 
   // Concentration save: DC max(10, floor(damage/2)).

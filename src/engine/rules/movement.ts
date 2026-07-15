@@ -65,6 +65,13 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   const cost = r.costs.get(`${to.x},${to.y}`)!;
 
+  // Leave the origin cell now; intermediate cells (which may belong to allies
+  // we pass through) must not have their occupancy touched, or the grid
+  // desyncs and other units can end up sharing a cell. Occupancy is claimed
+  // once, on arrival.
+  const originCell = cellAt(state.grid, mover.position)!;
+  if (originCell.occupantId === moverId) delete originCell.occupantId;
+
   const walked: Position[] = [path[0]!];
   for (let i = 1; i < path.length; i++) {
     const from = path[i - 1]!;
@@ -80,6 +87,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
           h.turn.reactionUsed = true;
           events.push(...resolveAttack(state, hid, moverId, weapon, { opportunity: true }));
           if (!mover.alive) {
+            // kill() cleared occupancy; the mover simply stops where it fell.
             events.unshift({ type: 'moved', combatantId: moverId, path: walked });
             return events;
           }
@@ -87,15 +95,10 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       }
     }
 
-    // Commit the step.
-    const fromCell = cellAt(state.grid, mover.position)!;
-    if (fromCell.occupantId === moverId) delete fromCell.occupantId;
     mover.position = step;
-    const toCell = cellAt(state.grid, step)!;
-    toCell.occupantId = moverId;
     walked.push(step);
 
-    if (toCell.terrain === 'hazard') {
+    if (cellAt(state.grid, step)!.terrain === 'hazard') {
       const dmg = rollDice(state.rng, HAZARD_DAMAGE);
       state.rng = dmg.state;
       events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls));
@@ -106,6 +109,8 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     }
   }
 
+  // Arrive: claim the destination cell (guaranteed empty by moveDestinations).
+  cellAt(state.grid, mover.position)!.occupantId = moverId;
   mover.turn.movementUsed += cost;
   events.unshift({ type: 'moved', combatantId: moverId, path: walked });
   return events;

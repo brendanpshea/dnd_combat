@@ -104,7 +104,9 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease-in-out;
+  /* Movement is animated along the real path via the Web Animations API
+     (see Board.tsx) — no CSS transition, which would cut straight through
+     walls and other tokens. */
 }
 .cell {
   aspect-ratio: 1;
@@ -127,6 +129,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .hl-enemy { box-shadow: inset 0 0 0 3px var(--red); }
 .hl-ally { box-shadow: inset 0 0 0 3px var(--green); }
 .hl-cell-target { box-shadow: inset 0 0 0 3px var(--gold); background: #ffd16622; }
+.hl-aoe { box-shadow: inset 0 0 0 3px #ff9d4d; background: #ff6a3a55; }
 
 .token {
   width: 82%;

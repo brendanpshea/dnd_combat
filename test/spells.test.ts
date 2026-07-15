@@ -183,6 +183,42 @@ describe('leveled spells', () => {
     expect(done).toBe(true);
   });
 
+  it('sleep: damage wakes a target still in the stage-1 incapacitated state', () => {
+    let checked = false;
+    for (let seed = 1; seed < 80 && !checked; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [
+          place('wizard', 'team1', { x: 0, y: 0 }, { id: 'wiz' }),
+          place('wizard', 'team1', { x: 1, y: 0 }, { id: 'wiz2' }),
+          place('fighter', 'team2', { x: 5, y: 5 }, { id: 'ftr', hp: 1000, maxHp: 1000 }),
+        ],
+      });
+      until(c, 'wiz');
+      c.apply({ kind: 'castSpell', spellId: 'sleep', slotLevel: 1, targets: [{ position: { x: 5, y: 5 } }] });
+      const ftr = () => c.state.combatants['ftr']!;
+      // Only the first-stage incapacitated (never let it reach a turn to escalate).
+      if (!ftr().conditions.some((k) => k.id === 'incapacitated')) continue;
+      // Need the second wizard to act before the fighter (so still stage-1).
+      let guard = 0;
+      while (c.activeId !== 'wiz2' && c.activeId !== 'ftr' && guard++ < 5) c.apply({ kind: 'endTurn' });
+      if (c.activeId !== 'wiz2') continue;
+      if (!ftr().conditions.some((k) => k.id === 'incapacitated')) continue;
+      expect(ftr().conditions.some((k) => k.id === 'unconscious')).toBe(false);
+
+      // Any damage must end the sleep — the reported bug was it staying asleep.
+      const events = c.apply({
+        kind: 'castSpell', spellId: 'magic-missile', slotLevel: 1,
+        targets: [{ combatantId: 'ftr' }, { combatantId: 'ftr' }, { combatantId: 'ftr' }],
+      });
+      expect(events.some((e) => e.type === 'damageDealt')).toBe(true);
+      expect(ftr().conditions.some((k) => k.id === 'incapacitated')).toBe(false);
+      expect(events.some((e) => e.type === 'conditionRemoved' && e.condition === 'incapacitated')).toBe(true);
+      checked = true;
+    }
+    expect(checked).toBe(true);
+  });
+
   it('burning hands: dex save, half damage on success, hits everyone in the cone', () => {
     const c = new Combat({
       seed: 44,

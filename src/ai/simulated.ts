@@ -24,6 +24,9 @@ export interface SimOptions {
   moveCandidates: number;
 }
 
+/** Tiebreak nudge: a committed action must beat ending the turn by this much. */
+const ACTION_COST = 0.4;
+
 export const SIM_PRESETS: Record<'easy' | 'normal' | 'hard', SimOptions> = {
   easy: { samples: 1, beam: 2, depth: 1, moveCandidates: 3 },
   normal: { samples: 3, beam: 3, depth: 2, moveCandidates: 5 },
@@ -123,11 +126,20 @@ export function chooseActionSim(state: GameState, actorId: Id, opts: SimOptions 
         next.winner !== null ||
         action.kind === 'endTurn' ||
         currentCombatant(next).id !== actorId;
+      // The "skip" verbs (Disengage/Dodge/Dash) don't change the board, so a
+      // pointless one evaluates ~= ending the turn and beam-max would pick it
+      // arbitrarily. A small cost makes it lose to ending unless a follow-up
+      // move/attack in the same plan justifies it. Moves and attacks are NOT
+      // charged — penalizing them makes melee refuse to approach (approaching
+      // raises self-threat) and games stall.
+      const wasteCost =
+        action.kind === 'dash' || action.kind === 'disengage' || action.kind === 'dodge'
+          ? ACTION_COST : 0;
       out.push({
         state: next,
         stateV: evaluate(next, team),
         plan: [...node.plan, action],
-        pathScore: node.pathScore + (meanV - node.stateV),
+        pathScore: node.pathScore + (meanV - node.stateV) - wasteCost,
         done,
       });
     }
