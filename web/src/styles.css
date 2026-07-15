@@ -543,6 +543,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .char-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .char-identity { flex-wrap: nowrap; }
+.char-identity .portrait { width: 48px; height: 48px; }
 .char-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .char-name strong { min-width: 60px; }
 .char-name select {
@@ -592,6 +593,30 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   border: 1px solid #453d63; border-radius: 6px; padding: 4px 8px;
 }
 button.danger { border-color: var(--red); color: var(--red); }
+
+/* One-tap common purchase — visually the primary shop action. */
+.quick-buy {
+  width: 100%;
+  background: #2a4a2f;
+  border: 1px solid var(--green);
+  color: #bff0cf;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 2px;
+}
+.quick-buy:disabled { opacity: 0.4; cursor: default; }
+
+/* Advanced disclosure — quiet, so the common path stays uncluttered. */
+.adv-toggle {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 4px 2px;
+  min-height: 26px;
+}
+.adv-toggle:hover { color: var(--text); }
 .battle-brief {
   background: #1d1830; border-left: 3px solid var(--gold); border-radius: 6px;
   padding: 7px 10px; display: flex; justify-content: space-between; gap: 12px;

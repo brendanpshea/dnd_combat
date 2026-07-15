@@ -210,6 +210,25 @@ export function itemName(itemId: Id): string {
     (itemId === 'shield' ? 'Shield' : itemId);
 }
 
+/** A small emoji icon for an item, so the shop/inventory read visually. */
+export function itemIcon(itemId: Id): string {
+  if (itemId === 'shield') return '🛡️';
+  if (ITEMS[itemId]) {
+    if (itemId.includes('potion')) return '🧪';
+    if (itemId.includes('scroll')) return '📜';
+    if (itemId.includes('fire')) return '🔥';
+    return '✨';
+  }
+  const w = WEAPONS[itemId];
+  if (w) {
+    if (itemId.endsWith('plus1')) return '🌟';
+    if (w.range && !w.melee) return '🏹';
+    return '⚔️';
+  }
+  if (ARMOR[itemId]) return '🥋';
+  return '📦';
+}
+
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {

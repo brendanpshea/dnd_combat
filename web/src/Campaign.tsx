@@ -15,7 +15,7 @@ import { WEAPONS } from '../../src/data/weapons.js';
 import { acOf } from '../../src/data/armor.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
-  applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
+  applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass,
@@ -71,6 +71,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   const [buyFor, setBuyFor] = useState(0);
   const [stockCategory, setStockCategory] = useState<ShopCategory>('consumables');
   const [sellMode, setSellMode] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
 
   const mutate = (fn: () => void) => {
     initAudio();
@@ -329,28 +330,30 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   </select>
                 ) : <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>}
               </div>
-              <div className="char-controls">
-                <button className="mini" onClick={() => { setEquipFor(equipFor === idx ? null : idx); setGiveFrom(null); }}>Equip</button>
-                <button className="mini" onClick={() => { setGiveFrom(giveFrom === idx ? null : idx); setEquipFor(null); }}>Give</button>
-              </div>
+              {advanced && (
+                <div className="char-controls">
+                  <button className="mini" onClick={() => { setEquipFor(equipFor === idx ? null : idx); setGiveFrom(null); }}>Equip</button>
+                  <button className="mini" onClick={() => { setGiveFrom(giveFrom === idx ? null : idx); setEquipFor(null); }}>Give</button>
+                </div>
+              )}
             </div>
             <div className="gear-row">
-              <span className="gear-slot">Main <b>{itemName(ch.equipped.mainHand)}</b></span>
-              <span className="gear-slot">Off-hand <b>{ch.equipped.offHand ? itemName(ch.equipped.offHand) : 'Empty'}</b></span>
-              <span className="gear-slot">Armor <b>{ch.equipped.armor ? itemName(ch.equipped.armor) : 'Unarmored'}</b></span>
-              <span className="gear-ac">AC {acOf(party[idx]!)}</span>
+              <span className="gear-slot">{itemIcon(ch.equipped.mainHand)} <b>{itemName(ch.equipped.mainHand)}</b></span>
+              <span className="gear-slot">{ch.equipped.offHand ? `${itemIcon(ch.equipped.offHand)} ` : ''}<b>{ch.equipped.offHand ? itemName(ch.equipped.offHand) : 'No off-hand'}</b></span>
+              <span className="gear-slot">{ch.equipped.armor ? `${itemIcon(ch.equipped.armor)} ` : ''}<b>{ch.equipped.armor ? itemName(ch.equipped.armor) : 'Unarmored'}</b></span>
+              <span className="gear-ac">🛡 {acOf(party[idx]!)}</span>
             </div>
             <div className="char-items">
               <span className="inventory-label">Pack</span>
               {ch.inventory.filter((s) => s.qty > 0).map((s) => (
                 <span key={s.itemId} className="item-chip">
-                  {itemName(s.itemId)}{s.qty > 1 ? `×${s.qty}` : ''}
+                  {itemIcon(s.itemId)} {itemName(s.itemId)}{s.qty > 1 ? `×${s.qty}` : ''}
                 </span>
               ))}
-              {ch.inventory.every((s) => s.qty <= 0) && <span className="muted">(no items)</span>}
+              {ch.inventory.every((s) => s.qty <= 0) && <span className="muted">(empty)</span>}
             </div>
 
-            {equipFor === idx && (
+            {advanced && equipFor === idx && (
               <div className="subpanel">
                 {ch.inventory.filter((s) => s.qty > 0).map((s) => {
                   const slots: EquipSlot[] = ['mainHand', 'offHand', 'armor'];
@@ -381,7 +384,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               </div>
             )}
 
-            {giveFrom === idx && (
+            {advanced && giveFrom === idx && (
               <div className="subpanel">
                 {ch.inventory.filter((s) => s.qty > 0).map((s) =>
                   c.characters.map((_, to) =>
@@ -391,7 +394,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                         className="mini"
                         onClick={() => mutate(() => giveItem(c, idx, to, s.itemId))}
                       >
-                        {itemName(s.itemId)} → {charNames[to]}
+                        {itemIcon(s.itemId)} {itemName(s.itemId)} → {charNames[to]}
                       </button>
                     ) : null,
                   ),
@@ -440,78 +443,103 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   }
                 })}
               >
-                {itemName(id)} <span className="muted">{price(id)}g</span>
+                {itemIcon(id)} {itemName(id)} <span className="muted">{price(id)}g</span>
               </button>
             );
           })}
         </div>
-        <div className="sell-heading">
-          <span className="muted">Inventory</span>
-          <button className={`mini ${sellMode ? 'selected' : ''}`} onClick={() => setSellMode((open) => !open)}>
-            {sellMode ? 'Done selling' : 'Sell items'}
-          </button>
-        </div>
-        {sellMode && <div className="shop-actions sell-items">
-          {c.characters.flatMap((ch, idx) =>
-            ch.inventory.filter((s) => s.qty > 0 && Math.floor((itemPrice(s.itemId) ?? 0) / 2) > 0).map((s) => (
-              <button
-                key={`${idx}:${s.itemId}`}
-                className="mini"
-                onClick={() => mutate(() => {
-                  if (sellItem(c, idx, s.itemId)) setNotice(`Sold ${itemName(s.itemId)} (+${Math.floor(itemPrice(s.itemId)! / 2)}g)`);
-                })}
-              >
-                {itemName(s.itemId)} · {charNames[idx]} <span className="muted">+{Math.floor(itemPrice(s.itemId)! / 2)}g</span>
+
+        {/* One-tap common purchase — the thing you do almost every visit. */}
+        <button
+          className="quick-buy"
+          disabled={c.gold < price('potion-healing')}
+          onClick={() => mutate(() => {
+            let bought = 0;
+            for (let i = 0; i < c.characters.length; i++) {
+              if (c.gold >= price('potion-healing') && buyItem(c, i, 'potion-healing', price('potion-healing'))) bought++;
+            }
+            if (bought) { setNotice(`Bought ${bought} Potion${bought === 1 ? '' : 's'} of Healing — one per hero.`); setRolls([]); }
+          })}
+        >
+          🧪 Stock up — a Potion of Healing for each hero
+        </button>
+
+        <button className="adv-toggle" onClick={() => setAdvanced((a) => !a)}>
+          {advanced ? '▾ Hide advanced options' : '▸ Advanced: sell, haggle, steal, equip'}
+        </button>
+
+        {advanced && (
+          <>
+            <div className="sell-heading">
+              <span className="muted">Sell from packs</span>
+              <button className={`mini ${sellMode ? 'selected' : ''}`} onClick={() => setSellMode((open) => !open)}>
+                {sellMode ? 'Done selling' : 'Sell items'}
               </button>
-            )),
-          )}
-        </div>}
-        <div className="gambits">
-          <span className="muted">Shop gambits</span>
-          <div className="shop-actions">
-            {!visit.banned && !visit.haggleUsed && (
-              <>
-                {(Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>).map((skill) => {
-                  const best = bestAtSkill(c, skill);
-                  return (
-                    <button
-                      key={skill}
-                      className="mini"
-                      onClick={() => mutate(() => {
-                        const v = shopVisitFor(c);
-                        v.haggleUsed = true;
-                        const result = attemptHaggle(c, skill);
-                        v.priceMult = result.priceMultiplier;
-                        setRolls([result.roll]);
-                        setNotice(null);
-                      })}
-                    >
-                      {skill} ({CLASSES[c.characters[best.idx]!.classId]!.name} +{best.bonus})
-                    </button>
-                  );
-                })}
-              </>
-            )}
-            {!visit.banned && !visit.stealUsed && (
-              <button
-                className="mini danger"
-                onClick={() => mutate(() => {
-                  const v = shopVisitFor(c);
-                  v.stealUsed = true;
-                  const result = attemptSteal(c);
-                  setRolls(result.rolls);
-                  if (result.success) setNotice(`🪄 Swiped: ${itemName(result.itemId!)}!`);
-                  else {
-                    v.banned = true;
-                    setNotice(`Caught! Fined ${result.fine}g.`);
-                  }
-                })}
-              >
-                🕵️ Steal (random item)
-              </button>
-            )}
-          </div>
-        </div>
+            </div>
+            {sellMode && <div className="shop-actions sell-items">
+              {c.characters.flatMap((ch, idx) =>
+                ch.inventory.filter((s) => s.qty > 0 && Math.floor((itemPrice(s.itemId) ?? 0) / 2) > 0).map((s) => (
+                  <button
+                    key={`${idx}:${s.itemId}`}
+                    className="mini"
+                    onClick={() => mutate(() => {
+                      if (sellItem(c, idx, s.itemId)) setNotice(`Sold ${itemName(s.itemId)} (+${Math.floor(itemPrice(s.itemId)! / 2)}g)`);
+                    })}
+                  >
+                    {itemIcon(s.itemId)} {itemName(s.itemId)} · {charNames[idx]} <span className="muted">+{Math.floor(itemPrice(s.itemId)! / 2)}g</span>
+                  </button>
+                )),
+              )}
+            </div>}
+            <div className="gambits">
+              <span className="muted">Shop gambits (once per visit)</span>
+              <div className="shop-actions">
+                {!visit.banned && !visit.haggleUsed && (
+                  <>
+                    {(Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>).map((skill) => {
+                      const best = bestAtSkill(c, skill);
+                      return (
+                        <button
+                          key={skill}
+                          className="mini"
+                          title={`${CLASSES[c.characters[best.idx]!.classId]!.name} rolls, bonus +${best.bonus}`}
+                          onClick={() => mutate(() => {
+                            const v = shopVisitFor(c);
+                            v.haggleUsed = true;
+                            const result = attemptHaggle(c, skill);
+                            v.priceMult = result.priceMultiplier;
+                            setRolls([result.roll]);
+                            setNotice(null);
+                          })}
+                        >
+                          💬 {skill}
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+                {!visit.banned && !visit.stealUsed && (
+                  <button
+                    className="mini danger"
+                    onClick={() => mutate(() => {
+                      const v = shopVisitFor(c);
+                      v.stealUsed = true;
+                      const result = attemptSteal(c);
+                      setRolls(result.rolls);
+                      if (result.success) setNotice(`🪄 Swiped: ${itemName(result.itemId!)}!`);
+                      else {
+                        v.banned = true;
+                        setNotice(`Caught! Fined ${result.fine}g.`);
+                      }
+                    })}
+                  >
+                    🕵️ Steal (random item)
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </section>
 
       <div className="battle-brief">
