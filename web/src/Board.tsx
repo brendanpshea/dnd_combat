@@ -4,6 +4,7 @@ import { cellAt } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect } from './effects.js';
+import { hasArt, tokenUrl, tokenScale } from './art.js';
 
 const TOKEN: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',
@@ -98,19 +99,34 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
             width: `${100 / width}%`,
             height: `${100 / height}%`,
             transform: `translate(${tx}%, ${ty}%)`,
+            // Front rows (lower y = nearer the viewer) overlap the ranks behind
+            // them, so figures whose art overflows upward layer correctly.
+            zIndex: height - c.position.y,
           }}
         >
           <div
             className={[
               'token',
               c.team,
+              hasArt(c.classId) ? 'art' : 'emoji',
               c.id === activeId ? 'active' : '',
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
               c.conditions.some((condition) => condition.id === 'hidden') ? 'hidden' : '',
             ].join(' ')}
           >
-            <span className="glyph">{TOKEN[c.classId] ?? '❓'}</span>
+            <div className="base" />
+            {hasArt(c.classId) ? (
+              <img
+                className="art"
+                src={tokenUrl(c.classId)}
+                alt=""
+                draggable={false}
+                style={{ transform: `scale(${tokenScale(c.classId)})` }}
+              />
+            ) : (
+              <span className="glyph">{TOKEN[c.classId] ?? '❓'}</span>
+            )}
             <div className="hpbar">
               <div className="hpfill" style={{ width: `${Math.round((c.hp / c.maxHp) * 100)}%` }} />
             </div>

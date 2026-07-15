@@ -19,6 +19,7 @@ import {
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
+import { Portrait } from './Portrait.js';
 import { initAudio } from './sound.js';
 
 type Phase =
@@ -188,6 +189,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         {c.characters.map((ch, idx) => (
           <div key={idx} className="char-card">
             <div className="char-head">
+              <Portrait id={ch.classId} team="team1" />
               <strong>{charNames[idx]}</strong>
               {c.stage === 0 && c.victories.length === 0 ? (
                 <select

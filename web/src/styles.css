@@ -132,25 +132,69 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .hl-aoe { box-shadow: inset 0 0 0 3px #ff9d4d; background: #ff6a3a55; }
 
 .token {
-  width: 82%;
-  height: 82%;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.token.hidden { opacity: 0.42; filter: saturate(0.55); }
+
+/* Base marker under each figure — carries the team color + grounding. */
+.token .base { position: absolute; z-index: 0; }
+.token.art .base {
+  bottom: 5%;
+  left: 19%;
+  width: 62%;
+  height: 15%;
   border-radius: 50%;
+  box-shadow: 0 3px 5px #000a;
+}
+.token.art.team1 .base { background: radial-gradient(closest-side, #4a9effcc, #4a9eff22); }
+.token.art.team2 .base { background: radial-gradient(closest-side, #ff5a5acc, #ff5a5a22); }
+
+.token .art {
+  position: absolute;
+  bottom: 4%;
+  left: -9%;
+  width: 118%;
+  height: 118%;
+  object-fit: contain;
+  object-position: bottom;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 3px 2px #0006);
+  pointer-events: none;
+  z-index: 1;
+}
+.token.art.active .base { box-shadow: 0 0 9px 3px var(--gold), 0 3px 5px #000a; }
+.token.art.active .art {
+  filter: drop-shadow(0 0 5px var(--gold)) drop-shadow(0 3px 2px #0006);
+}
+
+/* Emoji fallback: the old circular chip. */
+.token.emoji .base {
+  inset: 9%;
+  border-radius: 50%;
+  background: #1d1830;
+  border: 2.5px solid transparent;
+}
+.token.emoji.team1 .base { border-color: var(--blue); }
+.token.emoji.team2 .base { border-color: var(--red); }
+.token.emoji.active .base { box-shadow: 0 0 10px 2px var(--gold); }
+.token.emoji .glyph {
+  position: absolute;
+  inset: 9%;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  background: #1d1830;
+  font-size: clamp(14px, 4.2vmin, 26px);
+  line-height: 1;
 }
-.token.team1 { border: 2.5px solid var(--blue); }
-.token.team2 { border: 2.5px solid var(--red); }
-.token.active { box-shadow: 0 0 10px 2px var(--gold); }
-.token.hidden { opacity: 0.42; filter: saturate(0.55); }
-.token .glyph { font-size: clamp(14px, 4.2vmin, 26px); line-height: 1; }
 .hpbar {
   position: absolute;
-  bottom: -1px;
-  left: 12%;
-  width: 76%;
+  z-index: 2;
+  bottom: 1%;
+  left: 20%;
+  width: 60%;
   height: 4px;
   background: #00000088;
   border-radius: 2px;
@@ -159,8 +203,9 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .hpfill { height: 100%; background: var(--green); }
 .multi-count {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  z-index: 3;
+  top: 2%;
+  right: 6%;
   background: var(--gold);
   color: #081120;
   font-size: 11px;
@@ -174,8 +219,9 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .cond-dot {
   position: absolute;
-  top: -3px;
-  left: -3px;
+  z-index: 3;
+  top: 4%;
+  left: 6%;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -260,6 +306,22 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .statusline .team1 { color: var(--blue); }
 .statusline .team2 { color: var(--red); }
 .statusline .thinking { color: var(--muted); }
+
+.portrait {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  background: #1d1830;
+  border: 2px solid var(--muted);
+  flex-shrink: 0;
+}
+.portrait.team1 { border-color: var(--blue); }
+.portrait.team2 { border-color: var(--red); }
+.portrait.big { width: 64px; height: 64px; }
+.chooser-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.chooser-head h3 { margin: 0; }
 
 .targeting-banner {
   background: #4a3a1f;

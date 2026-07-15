@@ -18,6 +18,7 @@ import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
 import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
+import { Portrait } from './Portrait.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -437,6 +438,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
 
       {active && (
         <div className="statusline" title={tooltipFor(active)}>
+          <Portrait id={active.classId} team={active.team} />
           <strong>{active.name}</strong>
           <span className={active.team}>{active.team === 'team1' ? 'Blue' : 'Red'}</span>
           <span>HP {active.hp}/{active.maxHp}</span>
@@ -494,7 +496,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
       {chooser && (
         <div className="chooser" onClick={() => setChooser(null)}>
           <div className="chooser-box" onClick={(e) => e.stopPropagation()}>
-            <h3>{chooser.target.name}</h3>
+            <div className="chooser-head">
+              <Portrait id={chooser.target.classId} team={chooser.target.team} big />
+              <h3>{chooser.target.name}</h3>
+            </div>
             {chooser.options.map((o, i) => (
               <button key={i} onClick={() => apply(o.action)}>{o.label}</button>
             ))}
