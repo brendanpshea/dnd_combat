@@ -31,6 +31,36 @@ export interface CampaignState {
   victories: string[];
   /** RNG state for out-of-combat rolls (skill checks); persisted for replays. */
   rng: RngState;
+  /**
+   * Once-per-visit shop flags, persisted so a page refresh can't retry a
+   * steal. Cleared by applyVictory; keyed to a stage for safety.
+   */
+  shopVisit?: {
+    stage: number;
+    stealUsed: boolean;
+    haggleUsed: boolean;
+    banned: boolean;
+    priceMult: number;
+  };
+}
+
+export function shopVisitFor(c: CampaignState): NonNullable<CampaignState['shopVisit']> {
+  if (!c.shopVisit || c.shopVisit.stage !== c.stage) {
+    c.shopVisit = { stage: c.stage, stealUsed: false, haggleUsed: false, banned: false, priceMult: 1 };
+  }
+  return c.shopVisit;
+}
+
+/** Parse + minimally validate a serialized campaign. */
+export function parseCampaign(json: string): CampaignState | undefined {
+  try {
+    const raw = JSON.parse(json) as CampaignState;
+    if (typeof raw.gold !== 'number' || !Array.isArray(raw.characters)) return undefined;
+    if (typeof raw.rng !== 'number') raw.rng = 1; // pre-skills saves
+    return raw;
+  } catch {
+    return undefined;
+  }
 }
 
 export interface LootTable {
@@ -413,5 +443,6 @@ export function applyVictory(
   }
   c.victories.push(stage.encounterId);
   c.stage += 1;
+  delete c.shopVisit;
   return { stage, gold: loot.gold, items: loot.items };
 }

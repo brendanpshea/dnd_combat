@@ -12,6 +12,8 @@ import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
+import { CampaignScreen } from './Campaign.js';
+import { loadCampaignWeb } from './campaignStorage.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 
@@ -27,10 +29,62 @@ type Targeting =
   | { type: 'cells'; label: string; byCell: Map<string, Action> }
   | { type: 'multi'; label: string; spec: MultiTargetSpec; picked: Id[] };
 
+type Screen =
+  | { view: 'menu' }
+  | { view: 'skirmish-setup' }
+  | { view: 'skirmish'; config: SetupConfig }
+  | { view: 'campaign' };
+
 export function App() {
-  const [config, setConfig] = useState<SetupConfig | null>(null);
-  if (!config) return <Setup onStart={setConfig} />;
-  return <Battle key={JSON.stringify(config)} config={config} onExit={() => setConfig(null)} />;
+  const [screen, setScreen] = useState<Screen>({ view: 'menu' });
+  switch (screen.view) {
+    case 'menu':
+      return <Menu onPick={setScreen} />;
+    case 'skirmish-setup':
+      return <Setup onStart={(config) => setScreen({ view: 'skirmish', config })} />;
+    case 'skirmish':
+      return (
+        <Skirmish
+          key={JSON.stringify(screen.config)}
+          config={screen.config}
+          onExit={() => setScreen({ view: 'menu' })}
+        />
+      );
+    case 'campaign':
+      return <CampaignScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
+  }
+}
+
+function Menu({ onPick }: { onPick(s: Screen): void }) {
+  const hasSave = !!loadCampaignWeb();
+  return (
+    <div className="setup">
+      <h1>⚔️ D&D Grid Combat</h1>
+      <button className="primary" onClick={() => onPick({ view: 'campaign' })}>
+        🏰 Campaign{hasSave ? ' (resume)' : ''}
+      </button>
+      <button onClick={() => onPick({ view: 'skirmish-setup' })}>⚔️ Single battle</button>
+      <p className="hint">
+        Campaign: a persistent party fights a 4-battle ladder, shopping and
+        looting between fights. Progress saves in your browser.
+      </p>
+    </div>
+  );
+}
+
+function Skirmish({ config, onExit }: { config: SetupConfig; onExit(): void }) {
+  const ref = useRef<{ combat: Combat; aiTeams: Set<TeamId> } | null>(null);
+  if (!ref.current) ref.current = makeCombat(config);
+  return (
+    <Battle
+      combat={ref.current.combat}
+      aiTeams={ref.current.aiTeams}
+      mapLabel={MAPS[config.mapId]?.name ?? ''}
+      doneLabel="New battle"
+      onExit={onExit}
+      onDone={onExit}
+    />
+  );
 }
 
 function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
@@ -104,11 +158,16 @@ function makeCombat(config: SetupConfig): { combat: Combat; aiTeams: Set<TeamId>
   return { combat, aiTeams };
 }
 
-function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
-  const ref = useRef<{ combat: Combat; aiTeams: Set<TeamId> } | null>(null);
-  if (!ref.current) ref.current = makeCombat(config);
-  const { combat, aiTeams } = ref.current;
+export interface BattleProps {
+  combat: Combat;
+  aiTeams: Set<TeamId>;
+  mapLabel: string;
+  doneLabel: string;
+  onExit(): void;
+  onDone(winner: TeamId): void;
+}
 
+export function Battle({ combat, aiTeams, mapLabel, doneLabel, onExit, onDone }: BattleProps) {
   const [, setVersion] = useState(0);
   const [log, setLog] = useState<string[]>(() =>
     combat.log.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s));
@@ -252,7 +311,7 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
       <header className="topbar">
         <button className="ghost" onClick={onExit}>✕</button>
         <span className="round">Round {state.round}</span>
-        <span className="mapname">{MAPS[config.mapId]?.name}</span>
+        <span className="mapname">{mapLabel}</span>
         <button
           className="ghost"
           title="AI speed"
@@ -356,7 +415,7 @@ function Battle({ config, onExit }: { config: SetupConfig; onExit(): void }) {
         <div className="overlay">
           <div className="overlay-box">
             <h2>{winner === 'team1' ? '🔵 Blue team wins!' : '🔴 Red team wins!'}</h2>
-            <button className="primary" onClick={onExit}>New battle</button>
+            <button className="primary" onClick={() => onDone(winner)}>{doneLabel}</button>
           </div>
         </div>
       )}

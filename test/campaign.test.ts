@@ -245,6 +245,33 @@ describe('shop skills', () => {
   });
 });
 
+describe('shop visit persistence (web refresh safety)', () => {
+  const { shopVisitFor, parseCampaign } = campaignModule;
+
+  it('shopVisit survives serialization and is cleared by applyVictory', () => {
+    const c = newCampaign(9);
+    const v = shopVisitFor(c);
+    v.stealUsed = true;
+    v.banned = true;
+    const roundTrip = parseCampaign(JSON.stringify(c))!;
+    expect(shopVisitFor(roundTrip).stealUsed).toBe(true);
+    expect(shopVisitFor(roundTrip).banned).toBe(true);
+
+    applyVictory(c, buildCampaignParty(c), 1);
+    expect(c.shopVisit).toBeUndefined();
+    expect(shopVisitFor(c).stealUsed).toBe(false); // fresh visit next stage
+  });
+
+  it('parseCampaign rejects garbage and defaults missing rng', () => {
+    expect(parseCampaign('not json{')).toBeUndefined();
+    expect(parseCampaign('{"gold": "x"}')).toBeUndefined();
+    const old = { ...newCampaign(1) } as Record<string, unknown>;
+    delete old['rng'];
+    const parsed = parseCampaign(JSON.stringify(old))!;
+    expect(typeof parsed.rng).toBe('number');
+  });
+});
+
 describe('campaign persistence', () => {
   it('save/load round-trips; delete removes; corrupt file loads as undefined', () => {
     const file = path.join(os.tmpdir(), `dnd-campaign-test-${Date.now()}.json`);

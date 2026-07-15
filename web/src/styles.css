@@ -297,6 +297,71 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .logline { padding: 1px 0; }
 .logline:last-child { color: var(--text); }
 
+/* ---- campaign ---- */
+.campaign {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 8px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.campaign .panel {
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.campaign h3 { font-size: 15px; color: var(--gold); }
+.muted { color: var(--muted); font-size: 13px; }
+.notice {
+  background: var(--panel2);
+  border-left: 3px solid var(--gold);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.notice.roll { border-left-color: #c084fc; }
+.char-card {
+  background: var(--panel2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.char-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.char-head strong { min-width: 60px; }
+.char-head .muted { flex: 1; }
+.char-items { display: flex; flex-wrap: wrap; gap: 4px; }
+.item-chip {
+  background: #453d63;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.subpanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-top: 1px solid #453d63;
+  padding-top: 6px;
+}
+.shop-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.shop-grid button { font-size: 13px; padding: 6px 10px; }
+.shop-grid button:disabled { opacity: 0.4; cursor: default; }
+.shop-actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.buyfor { font-size: 13px; color: var(--muted); }
+.buyfor select {
+  font: inherit; color: var(--text); background: var(--panel2);
+  border: 1px solid #453d63; border-radius: 6px; padding: 4px 8px;
+}
+button.danger { border-color: var(--red); color: var(--red); }
+.tobattle { font-size: 16px; padding: 12px; }
+.hint { color: var(--muted); font-size: 14px; text-align: center; }
+
 /* ---- overlay ---- */
 .overlay {
   position: fixed;

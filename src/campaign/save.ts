@@ -1,9 +1,10 @@
 /**
- * Campaign persistence: plain JSON in the working directory.
+ * Campaign persistence for the CLI: plain JSON in the working directory.
+ * (The web UI has its own localStorage-backed equivalent.)
  */
 import * as fs from 'node:fs';
 import type { CampaignState } from './campaign.js';
-import { seedRng } from '../engine/rng.js';
+import { parseCampaign } from './campaign.js';
 
 export const SAVE_PATH = 'campaign-save.json';
 
@@ -13,14 +14,7 @@ export function saveCampaign(c: CampaignState, path = SAVE_PATH): void {
 
 export function loadCampaign(path = SAVE_PATH): CampaignState | undefined {
   if (!fs.existsSync(path)) return undefined;
-  try {
-    const raw = JSON.parse(fs.readFileSync(path, 'utf8')) as CampaignState;
-    if (typeof raw.gold !== 'number' || !Array.isArray(raw.characters)) return undefined;
-    if (typeof raw.rng !== 'number') raw.rng = seedRng(1); // pre-skills saves
-    return raw;
-  } catch {
-    return undefined;
-  }
+  return parseCampaign(fs.readFileSync(path, 'utf8'));
 }
 
 export function deleteSave(path = SAVE_PATH): void {
