@@ -136,4 +136,20 @@ export const WEAPONS: Record<Id, WeaponData> = {
     extraDamage: { dice: '1d6', type: 'poison' },
     onHitSave: { condition: 'poisoned', ability: 'con', dc: 11 },
   },
+  sling: {
+    id: 'sling', name: 'Sling', damage: '1d4', damageType: 'bludgeoning',
+    properties: [], range: { normal: 30, long: 120 }, melee: false,
+  },
+  greataxe: {
+    id: 'greataxe', name: 'Greataxe', damage: '1d12', damageType: 'slashing',
+    properties: ['two-handed'], melee: true, cost: 30,
+  },
+  'bear-bite': {
+    id: 'bear-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'bear-claws': {
+    id: 'bear-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
 };

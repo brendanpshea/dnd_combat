@@ -9,6 +9,7 @@ const TOKEN: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',
   'goblin-warrior': '👺', 'goblin-boss': '👹', skeleton: '💀',
   bandit: '🥷', 'bandit-captain': '🏴‍☠️', 'dire-wolf': '🐺', ghoul: '🧛', 'giant-spider': '🕷️', acolyte: '🧎',
+  kobold: '🦎', scout: '🏹', orc: '🧌', 'brown-bear': '🐻', 'cult-fanatic': '🕯️', 'animated-armor': '🛡️',
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
 };
 

@@ -4,7 +4,9 @@
  * bonuses derive from abilities + proficiency exactly like PCs (the stat
  * blocks below reproduce the SRD's printed bonuses at PB +2).
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool } from '../engine/types.js';
+import { proficiencyBonus } from '../engine/types.js';
+import { FEATURES } from './features.js';
 
 export interface MonsterData {
   id: Id;
@@ -114,11 +116,64 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['mace'],
     spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless'] },
   },
+  kobold: {
+    id: 'kobold', name: 'Kobold',
+    ac: 12, hp: 5, speed: 30,
+    abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 7, cha: 8 },
+    featureIds: ['pack-tactics'],
+    weaponIds: ['dagger', 'sling'],
+  },
+  scout: {
+    id: 'scout', name: 'Scout',
+    ac: 13, hp: 16, speed: 30,
+    abilities: { str: 11, dex: 14, con: 12, int: 11, wis: 13, cha: 11 },
+    weaponIds: ['longbow', 'shortsword'], // ranged skirmisher: bow preferred
+    attacksPerAction: 2,
+  },
+  orc: {
+    id: 'orc', name: 'Orc',
+    ac: 13, hp: 15, speed: 30,
+    abilities: { str: 16, dex: 12, con: 16, int: 7, wis: 11, cha: 10 },
+    featureIds: ['adrenaline-rush'], // reuses the Orc species feature
+    weaponIds: ['greataxe', 'javelin'],
+  },
+  'brown-bear': {
+    id: 'brown-bear', name: 'Brown Bear',
+    ac: 11, hp: 34, speed: 40,
+    abilities: { str: 19, dex: 10, con: 16, int: 2, wis: 13, cha: 7 },
+    weaponIds: ['bear-claws', 'bear-bite'],
+    attacksPerAction: 2, // bite + claws
+  },
+  'cult-fanatic': {
+    id: 'cult-fanatic', name: 'Cult Fanatic',
+    ac: 13, hp: 33, speed: 30,
+    abilities: { str: 11, dex: 14, con: 12, int: 10, wis: 13, cha: 14 },
+    weaponIds: ['dagger'],
+    attacksPerAction: 2,
+    spellcasting: { ability: 'wis', slots: [4, 2], spellIds: ['sacred-flame', 'bless', 'hold-person'] },
+  },
+  'animated-armor': {
+    id: 'animated-armor', name: 'Animated Armor',
+    ac: 18, hp: 33, speed: 25,
+    abilities: { str: 14, dex: 11, con: 13, int: 1, wis: 3, cha: 1 },
+    weaponIds: ['slam'],
+    attacksPerAction: 2,
+    immunities: ['poison', 'psychic'],
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
   const m = MONSTERS[monsterId];
   if (!m) throw new Error(`Unknown monster: ${monsterId}`);
+  // Feature-use pools, same as the character builder (level 1 → PB +2).
+  const featureUses: Record<Id, ResourcePool> = {};
+  for (const fid of m.featureIds ?? []) {
+    const f = FEATURES[fid];
+    if (f?.uses) {
+      const count = f.uses.count === 'proficiency' ? proficiencyBonus(1) : f.uses.count;
+      featureUses[fid] = { current: count, max: count };
+    }
+  }
   return {
     id: `${team}-${monsterId}${suffix}`,
     name: suffix ? `${m.name} ${suffix}` : m.name,
@@ -138,7 +193,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     spellIds: [...(m.spellcasting?.spellIds ?? [])],
     ...(m.spellcasting ? { spellcastingAbility: m.spellcasting.ability } : {}),
     featureIds: [...(m.featureIds ?? [])],
-    featureUses: {},
+    featureUses,
     inventory: m.weaponIds.slice(1).map((w) => ({ itemId: w, qty: 1 })),
     equipped: {
       mainHand: m.weaponIds[0]!,
@@ -197,6 +252,22 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   crypt: {
     id: 'crypt', name: 'Crypt Crawlers', suggestedLevel: 3,
     members: ['acolyte', 'ghoul', 'ghoul', 'skeleton', 'skeleton'],
+  },
+  kobolds: {
+    id: 'kobolds', name: 'Kobold Warren', suggestedLevel: 1,
+    members: ['kobold', 'kobold', 'kobold', 'kobold', 'kobold', 'kobold'],
+  },
+  raiders: {
+    id: 'raiders', name: 'Orc Raiders', suggestedLevel: 2,
+    members: ['orc', 'orc', 'scout', 'scout', 'bandit'],
+  },
+  wilds: {
+    id: 'wilds', name: 'Wild Hunt', suggestedLevel: 2,
+    members: ['brown-bear', 'dire-wolf', 'wolf', 'wolf'],
+  },
+  cult: {
+    id: 'cult', name: 'Cult of the Worm', suggestedLevel: 3,
+    members: ['cult-fanatic', 'acolyte', 'ghoul', 'ghoul', 'animated-armor'],
   },
 };
 

@@ -134,9 +134,42 @@ describe('on-hit save riders', () => {
   });
 });
 
+describe('second monster batch', () => {
+  it('reuses existing seams: orc adrenaline rush, animated armor immunities, caster fanatic', () => {
+    const orc = buildMonster('orc', 'team2', { x: 0, y: 0 });
+    expect(orc.featureIds).toContain('adrenaline-rush');
+    expect(orc.featureUses['adrenaline-rush']!.current).toBe(proficiencyBonus(1)); // PB uses
+
+    const armor = buildMonster('animated-armor', 'team2', { x: 0, y: 0 });
+    expect(armor.immunities).toEqual(expect.arrayContaining(['poison', 'psychic']));
+
+    const fanatic = buildMonster('cult-fanatic', 'team2', { x: 0, y: 0 });
+    expect(fanatic.spellcastingAbility).toBe('wis');
+    expect(fanatic.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
+    expect(fanatic.spellIds).toContain('hold-person');
+  });
+
+  it('kobold pack tactics grants advantage when a kobold ally flanks', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [
+        buildMonster('kobold', 'team2', { x: 3, y: 4 }, '1'),
+        buildMonster('kobold', 'team2', { x: 4, y: 3 }, '2'),
+        makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    const kobolds = Object.values(c.state.combatants).filter((x) => x.classId === 'kobold').map((k) => k.id);
+    let guard = 0;
+    while (!kobolds.includes(c.activeId) && guard++ < 10) c.apply({ kind: 'endTurn' });
+    const events = c.apply({ kind: 'attack', weaponId: 'dagger', targetId: 'pc' });
+    const roll = events.find((e) => e.type === 'attackRolled');
+    expect(roll?.type === 'attackRolled' && roll.advSources.includes('pack tactics')).toBe(true);
+  });
+});
+
 describe('new encounters complete under AI', () => {
   it('party beats or loses each new encounter without stalling', () => {
-    for (const encId of ['bandits', 'spiders', 'crypt']) {
+    for (const encId of ['bandits', 'spiders', 'crypt', 'kobolds', 'raiders', 'wilds', 'cult']) {
       const c = new Combat({
         seed: 7,
         mapId: 'ruins',

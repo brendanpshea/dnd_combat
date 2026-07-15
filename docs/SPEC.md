@@ -194,6 +194,12 @@ proficiency and match the printed numbers.
 | Ghoul (AC 12, 22) | Claws paralyze on failed Con save (save-ends); immune poison |
 | Giant Spider (AC 14, 26) | Bite deals bonus poison damage + poisons on failed save |
 | Acolyte (AC 10, 9) | Caster — reuses the cleric spells (Sacred Flame, Cure Wounds, Bless) |
+| Kobold (AC 12, 5) | Pack Tactics swarm, dagger + sling |
+| Scout (AC 13, 16) | Multiattack ×2, longbow — ranged skirmisher |
+| Orc (AC 13, 15) | Greataxe + Adrenaline Rush (reuses the Orc *species* feature) |
+| Brown Bear (AC 11, 34) | Multiattack ×2 (bite + claws) beast bruiser |
+| Cult Fanatic (AC 13, 33) | Caster boss with Hold Person + Bless; dagger ×2 |
+| Animated Armor (AC 18, 33) | Construct, immune poison/psychic, slam ×2 |
 
 Two weapon riders added for these: `onHitSave` (a save-ends condition on hit —
 ghoul paralysis, spider poison; repeats via the same end-of-turn machinery as
@@ -202,8 +208,10 @@ data hooks, no per-monster engine code. The `poisoned` and `paralyzed`
 conditions — previously defined but uninflicted — are now live.
 
 Encounters (`--encounter`): goblins (L1), wolves (L1), undead (L2), ogre (L3),
-bandits (L2, camp), spiders (L2, nest), crypt (L3, acolyte + ghouls + skeletons).
-Monsters are always AI-run.
+bandits (L2, camp), spiders (L2, nest), crypt (L3, acolyte + ghouls + skeletons),
+kobolds (L1, warren), raiders (L2, orcs + scouts), wilds (L2, bear + wolves),
+cult (L3, fanatic + acolyte + ghouls + animated armor). Monsters are always
+AI-run.
 
 ## 6. Grid, terrain, maps
 
