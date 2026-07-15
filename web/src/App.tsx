@@ -13,7 +13,7 @@ import { sphere2x2, cone15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
-import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
+import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
@@ -254,6 +254,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
   const [movePaths, setMovePaths] = useState<Map<Id, Position[]>>(new Map());
   const [muted, setMutedState] = useState(isMuted());
   const [speed, setSpeed] = useState(1);
+  const [hint, setHint] = useState<Action | null>(null);
+  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('dnd-tutorial-seen'));
   const speedRef = useRef(1);
   speedRef.current = speed;
   const logEnd = useRef<HTMLDivElement>(null);
@@ -311,7 +313,25 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
     }
     setTargeting(null);
     setChooser(null);
+    setHint(null);
     setVersion((v) => v + 1);
+  }
+
+  function dismissTutorial() {
+    localStorage.setItem('dnd-tutorial-seen', '1');
+    setShowTutorial(false);
+  }
+
+  /** The board cell a suggested action points at (for the hint highlight). */
+  function hintCell(a: Action): string | undefined {
+    if (a.kind === 'move') return posKey(a.to);
+    if (a.kind === 'attack' || a.kind === 'shakeAwake') return posKey(state.combatants[a.targetId]!.position);
+    if (a.kind === 'castSpell' || a.kind === 'useItem') {
+      const t = a.targets?.[0];
+      if (t && 'combatantId' in t) return posKey(state.combatants[t.combatantId]!.position);
+      if (t && 'position' in t) return posKey(t.position);
+    }
+    return undefined;
   }
 
   // AI turns, paced by what the action is so effects can land.
@@ -363,8 +383,13 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
       const c = state.combatants[id]!;
       if (c.team !== active.team) m.set(posKey(c.position), 'enemy');
     }
+    if (hint) {
+      const k = hintCell(hint);
+      if (k) m.set(k, 'hint');
+    }
     return m;
-  }, [grouped, targeting, state, active]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grouped, targeting, state, active, hint]);
 
   const multiCounts = useMemo(() => {
     if (targeting?.type !== 'multi') return undefined;
@@ -436,6 +461,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
         <button className="ghost" onClick={() => setShowLog((s) => !s)}>
           📜 {showLog ? 'Hide' : 'Log'}
         </button>
+        <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>
       </header>
 
       <Board
@@ -487,8 +513,22 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
         </div>
       )}
 
+      {isHumanTurn && hint && !targeting && (
+        <div className="hint-banner">
+          💡 Suggestion: <b>{hint.kind === 'endTurn' ? 'end your turn' : describeShort(hint)}</b>
+          <button className="mini" onClick={() => setHint(null)}>Dismiss</button>
+        </div>
+      )}
+
       {isHumanTurn && grouped && !targeting && (
         <div className="actionbar">
+          <button
+            className="hint-btn"
+            title="Ask for a suggested move"
+            onClick={() => setHint(aiPolicy('normal')(combat.state, combat.activeId))}
+          >
+            💡 Hint
+          </button>
           {grouped.bar.map((b) => (
             <button
               key={b.id}
@@ -534,6 +574,23 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
           <div className="overlay-box">
             <h2>{winner === 'team1' ? '🔵 Blue team wins!' : '🔴 Red team wins!'}</h2>
             <button className="primary" onClick={() => onDone(winner)}>{doneLabel}</button>
+          </div>
+        </div>
+      )}
+
+      {showTutorial && (
+        <div className="overlay" onClick={dismissTutorial}>
+          <div className="overlay-box tutorial" onClick={(e) => e.stopPropagation()}>
+            <h2>⚔️ How to play</h2>
+            <ul className="tut-list">
+              <li>🔽 The <b>bobbing gold arrow</b> shows whose turn it is.</li>
+              <li>🟦 Tap a <b>blue tile</b> to move your hero there.</li>
+              <li>🟥 Tap a <b>red-ringed enemy</b> to attack it.</li>
+              <li>✨ Use spells, potions, and abilities from the <b>action bar</b> at the bottom.</li>
+              <li>💡 Stuck? Tap <b>Hint</b> for a suggested move.</li>
+              <li>➤ Done? Tap <b>End turn</b>. Defeat all enemies to win!</li>
+            </ul>
+            <button className="primary" onClick={dismissTutorial}>Got it!</button>
           </div>
         </div>
       )}

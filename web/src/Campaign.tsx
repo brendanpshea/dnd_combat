@@ -96,6 +96,12 @@ export function CampaignScreen({ Battle, onExit }: Props) {
 
   function battleDone(winner: TeamId, combat: Combat) {
     if (winner !== 'team1') {
+      if (c.storyMode) {
+        // Story mode: no permadeath — regroup and retry the same fight.
+        setNotice('The party retreats to regroup. Take another run at it!');
+        setPhase({ p: 'shop' });
+        return;
+      }
       deleteCampaignWeb();
       setPhase({ p: 'over' });
       return;
@@ -113,6 +119,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       <Battle
         combat={phase.combat}
         aiTeams={phase.aiTeams}
+        aiLevel={c.storyMode ? 'easy' : 'normal'}
         mapLabel={`${ENCOUNTERS[st.encounterId]!.name} — ${MAPS[st.mapId]!.name}`}
         doneLabel="Continue"
         onExit={() => setPhase({ p: 'shop' })}
@@ -248,6 +255,17 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             </div>
           ))}
         </section>
+        <fieldset className="difficulty-pick">
+          <legend>Difficulty</legend>
+          <label className={c.storyMode ? 'selected' : ''}>
+            <input type="radio" name="difficulty" checked={c.storyMode} onChange={() => mutate(() => { c.storyMode = true; })} />
+            <b>🌱 Story</b> — gentler foes; a loss just lets you try the fight again.
+          </label>
+          <label className={!c.storyMode ? 'selected' : ''}>
+            <input type="radio" name="difficulty" checked={!c.storyMode} onChange={() => mutate(() => { c.storyMode = false; })} />
+            <b>⚔️ Adventurer</b> — tougher foes; losing ends the campaign.
+          </label>
+        </fieldset>
         <button
           className="primary forge-ready"
           onClick={() => mutate(() => { c.partyReady = true; setPhase({ p: 'shop' }); })}

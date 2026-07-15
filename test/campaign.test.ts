@@ -328,6 +328,13 @@ describe('shop visit persistence (web refresh safety)', () => {
     expect(typeof parsed.rng).toBe('number');
   });
 
+  it('story mode: new campaigns default on; old saves migrate to off (normal)', () => {
+    expect(newCampaign(1).storyMode).toBe(true);
+    const old = newCampaign(1) as unknown as Record<string, unknown>;
+    delete old['storyMode'];
+    expect(parseCampaign(JSON.stringify(old))!.storyMode).toBe(false);
+  });
+
   it('pre-XP saves get seeded XP so the party does not de-level', () => {
     const old = newCampaign(1) as unknown as Record<string, unknown>;
     old['stage'] = 6; // mid-ladder

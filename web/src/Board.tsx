@@ -14,7 +14,7 @@ const TOKEN: Record<string, string> = {
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
 };
 
-export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | undefined;
+export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | 'hint' | undefined;
 
 export interface BoardProps {
   state: GameState;

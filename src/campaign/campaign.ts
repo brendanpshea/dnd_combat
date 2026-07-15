@@ -39,6 +39,9 @@ export interface CampaignState {
   victories: string[];
   /** The initial party identity setup has been confirmed. */
   partyReady: boolean;
+  /** Story mode: gentler enemy AI, and a defeat retries the fight instead of
+   * ending the campaign (kid-friendly). Normal mode keeps permadeath. */
+  storyMode: boolean;
   /** RNG state for out-of-combat rolls (skill checks); persisted for replays. */
   rng: RngState;
   /**
@@ -74,6 +77,7 @@ export function parseCampaign(json: string): CampaignState | undefined {
     }
     // Existing campaigns already passed the original setup screen.
     if (typeof raw.partyReady !== 'boolean') raw.partyReady = true;
+    if (typeof raw.storyMode !== 'boolean') raw.storyMode = false; // old saves = normal
     // Pre-XP saves: seed XP so the party doesn't de-level — sum the XP they
     // would have earned reaching their current stage on the new ladder.
     if (typeof raw.xp !== 'number') {
@@ -237,6 +241,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
     stage: 0,
     victories: [],
     partyReady: false,
+    storyMode: true, // approachable default; toggled in the forge
     rng: seedRng(seed),
     characters: order.map((classId, index) => {
       const eq = CLASSES[classId]!.equipment;

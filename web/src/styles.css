@@ -169,6 +169,8 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .hl-ally { box-shadow: inset 0 0 0 3px var(--green); }
 .hl-cell-target { box-shadow: inset 0 0 0 3px var(--gold); background: #ffd16622; }
 .hl-aoe { box-shadow: inset 0 0 0 3px #ff9d4d; background: #ff6a3a55; }
+.hl-hint { box-shadow: inset 0 0 0 4px var(--gold); animation: hintPulse 0.7s ease-in-out infinite alternate; }
+@keyframes hintPulse { from { background: #ffd16610; } to { background: #ffd16644; } }
 
 .token {
   width: 100%;
@@ -460,6 +462,20 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   font-size: 14px;
 }
 
+.hint-banner {
+  background: #3a3220;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-banner b { color: #ffe9a8; text-transform: capitalize; }
+.hint-banner .mini { margin-left: auto; }
+
 .actionbar {
   display: flex;
   flex-wrap: wrap;
@@ -468,6 +484,27 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   max-width: 100%;
 }
 .actionbar button { font-size: 13px; padding: 6px 10px; }
+.hint-btn { background: #3a3220; border-color: var(--gold); color: var(--gold); }
+
+/* Tutorial overlay */
+.tutorial { text-align: left; max-width: 340px; }
+.tut-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 4px 0 8px; }
+.tut-list li { font-size: 15px; line-height: 1.35; }
+.tutorial .primary { align-self: center; min-width: 140px; }
+
+/* Difficulty picker (forge) */
+.difficulty-pick {
+  border: 1px solid #453d63; border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.difficulty-pick legend { padding: 0 6px; color: var(--muted); font-size: 13px; }
+.difficulty-pick label {
+  display: flex; align-items: flex-start; gap: 8px; font-size: 13px;
+  color: var(--muted); cursor: pointer; padding: 6px 8px; border-radius: 8px;
+  border: 1px solid transparent;
+}
+.difficulty-pick label.selected { border-color: var(--green); background: #2a4a2f33; color: var(--text); }
+.difficulty-pick b { color: var(--text); }
 
 /* ---- chooser popover ---- */
 .chooser {
