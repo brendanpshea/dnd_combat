@@ -356,9 +356,12 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
       return m;
     }
     for (const k of grouped.moves.keys()) m.set(k, 'move');
+    // Resting state: only ring enemies you can attack (red) — allies are
+    // still tappable for heals/potions, but not pre-highlighted (green shows
+    // only once you're actively targeting an ally spell).
     for (const id of grouped.perTarget.keys()) {
       const c = state.combatants[id]!;
-      m.set(posKey(c.position), c.team === active.team ? 'ally' : 'enemy');
+      if (c.team !== active.team) m.set(posKey(c.position), 'enemy');
     }
     return m;
   }, [grouped, targeting, state, active]);

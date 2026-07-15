@@ -318,17 +318,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               <Portrait id={ch.portraitId} team="team1" label={`${ch.name} portrait`} />
               <div className="char-name">
                 <strong>{ch.name}</strong>
-                {c.stage === 0 && c.victories.length === 0 ? (
-                  <select
-                    value={ch.speciesId}
-                    onChange={(e) => mutate(() => { ch.speciesId = e.target.value; })}
-                    aria-label={`${charNames[idx]} species`}
-                  >
-                    {Object.values(SPECIES).map((species) => (
-                      <option key={species.id} value={species.id}>{species.name}</option>
-                    ))}
-                  </select>
-                ) : <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>}
+                <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>
               </div>
               {advanced && (
                 <div className="char-controls">

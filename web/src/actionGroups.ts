@@ -86,17 +86,24 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         break;
       case 'castSpell': {
         const first = a.targets[0];
+        const spell = SPELLS[a.spellId]!;
+        const t = spell.targeting;
         if (first && 'position' in first) {
           const m = cellSpells.get(a.spellId) ?? new Map<string, Action>();
           m.set(posKey(first.position), a);
           cellSpells.set(a.spellId, m);
-        } else if (a.targets.length === 1 && first && 'combatantId' in first) {
+        } else if (
+          t.kind === 'creature' && t.who === 'enemy' &&
+          a.targets.length === 1 && first && 'combatantId' in first
+        ) {
+          // Single-target enemy spells (Fire Bolt, Hold Person) tap the enemy,
+          // like weapon attacks — red target ring.
           pushTarget(first.combatantId, describeShort(a), a);
-        } else if (!seenMulti.has(a.spellId)) {
+        } else if (t.kind === 'creature' && !seenMulti.has(a.spellId)) {
+          // Ally spells (Cure Wounds, Bless) and multi-target spells (Magic
+          // Missile) go to the action bar → a targeting mode, so allies light
+          // up green only when you're actively casting on them.
           seenMulti.add(a.spellId);
-          const spell = SPELLS[a.spellId]!;
-          const t = spell.targeting;
-          if (t.kind !== 'creature') break;
           const validIds = new Set(
             Object.values(state.combatants)
               .filter((c: Combatant) => c.alive && validTarget(state, actorId, spell, c.id))

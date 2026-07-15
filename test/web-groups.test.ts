@@ -74,7 +74,7 @@ describe('web action grouping', () => {
     expect(events.some((e) => e.type === 'savingThrow')).toBe(true);
   });
 
-  it('ally taps offer heals (cleric adjacent to wounded fighter)', () => {
+  it('ally-target spells go to the action bar (targeting mode), not ally taps', () => {
     const c = new Combat({
       seed: 8,
       combatants: [
@@ -85,9 +85,15 @@ describe('web action grouping', () => {
     });
     until(c, 'clr');
     const grouped = groupActions(c.state, 'clr', c.legalActions());
-    const allyOptions = grouped.perTarget.get('ally')!;
-    const labels = allyOptions.map((o) => o.label);
-    expect(labels).toContain('Cure Wounds');
-    expect(labels).toContain('Potion of Healing');
+    // Cure Wounds is now a bar entry with an ally-targeting mode (so allies
+    // light up only when actively casting), not a pre-highlighted ally tap.
+    const cure = grouped.bar.find((b) => b.id === 'spell:cure-wounds');
+    expect(cure?.multi).toBeDefined();
+    expect(cure!.multi!.validIds.has('ally')).toBe(true);
+    // Potions administered to an adjacent ally remain a direct tap.
+    const allyOptions = grouped.perTarget.get('ally') ?? [];
+    expect(allyOptions.map((o) => o.label)).toContain('Potion of Healing');
+    // Enemy single-target spells still tap the enemy directly.
+    expect(grouped.perTarget.has('foe')).toBe(true);
   });
 });
