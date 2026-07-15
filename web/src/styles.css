@@ -84,15 +84,32 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .board-wrap { width: min(96vw, 58vh, 600px); }
 .board {
   display: grid;
-  gap: 2px;
+  gap: 0;
   background: #14101f;
   padding: 4px;
   border-radius: 10px;
   user-select: none;
+  position: relative;
+}
+.token-layer {
+  position: absolute;
+  inset: 4px; /* match board padding: same coordinate space as the cells */
+  pointer-events: none;
+  z-index: 3;
+}
+.token-slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease-in-out;
 }
 .cell {
   aspect-ratio: 1;
   background: var(--cell);
+  box-shadow: inset 0 0 0 1px #14101f;
   border-radius: 4px;
   position: relative;
   display: flex;
