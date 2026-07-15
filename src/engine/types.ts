@@ -88,6 +88,8 @@ export interface Equipped {
 export interface Combatant {
   id: Id;
   name: string;
+  /** Optional UI art identity. Defaults to classId when absent. */
+  portraitId?: Id;
   team: TeamId;
   classId: Id;
   speciesId: Id;

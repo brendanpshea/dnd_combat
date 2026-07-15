@@ -28,7 +28,7 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 140 engine tests
+npm test          # 182 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
 npm run campaign  # terminal campaign: 11-battle ladder with XP, leveling, loot
@@ -42,8 +42,12 @@ in localStorage) and **Single battle** (hot-seat / vs AI / AI spectate /
 monster encounters, with map/level/seed selection).
 Choose a species for each party member before a skirmish; player-versus-player
 and spectated mirror matches use the same lineup on both teams. Campaign
-species can be chosen on the party cards before the first battle and persist
-with the save.
+mode begins with a dedicated party forge: name each adventurer, select species,
+swap among the four class roles, and choose an authored portrait. The selected
+portrait is used for the party card and the live battlefield token; all of that
+identity persists with the save. Campaigns keep one Fighter, Wizard, Cleric,
+and Rogue for a balanced starting kit, so choosing an occupied class swaps the
+two members' roles and standard gear.
 
 In battle, legal actions are painted onto the board: tap a tinted cell to
 move (tokens slide), a red-ringed enemy to attack (a confirm chooser always
@@ -107,6 +111,9 @@ Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
 purchases are proficiency-gated), manage equipment, haggle or steal, then
 fight. Consumables spent in battle stay spent; weapon swaps persist. Defeat
 ends the campaign and deletes the save (there's also a reset/delete option).
+New campaigns begin at the party forge; names, species, class roles, and
+portrait choices are locked in when the campaign begins and travel with the
+party through every battle.
 Seeded runs are reproducible end to end — battles, skill checks, treasure, and
 XP alike.
 

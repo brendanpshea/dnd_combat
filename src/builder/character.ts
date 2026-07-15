@@ -27,6 +27,7 @@ export interface BuildOptions {
   team: TeamId;
   position: Position;
   name?: string;
+  portraitId?: Id;
   level?: number;
   speciesId?: Id;
   /** Campaign overrides: persisted gear instead of the class defaults. */
@@ -71,6 +72,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const combatant: Combatant = {
     id: `${opts.team}-${opts.classId}`,
     name: opts.name ?? cls.name,
+    ...(opts.portraitId !== undefined ? { portraitId: opts.portraitId } : {}),
     team: opts.team,
     classId: cls.id,
     speciesId,

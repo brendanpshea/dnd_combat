@@ -96,6 +96,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
   const tokens = Object.values(state.combatants)
     .filter((c) => c.alive)
     .map((c) => {
+      const artId = c.portraitId ?? c.classId;
       const count = multiCounts?.get(c.id);
       const tx = c.position.x * 100;
       const ty = (height - 1 - c.position.y) * 100;
@@ -117,7 +118,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
             className={[
               'token',
               c.team,
-              hasArt(c.classId) ? 'art' : 'emoji',
+              hasArt(artId) ? 'art' : 'emoji',
               c.id === activeId ? 'active' : '',
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
@@ -126,13 +127,13 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
           >
             {c.id === activeId && <div className="turn-arrow" />}
             <div className="base" />
-            {hasArt(c.classId) ? (
+            {hasArt(artId) ? (
               <img
                 className="art"
-                src={tokenUrl(c.classId)}
+                src={tokenUrl(artId)}
                 alt=""
                 draggable={false}
-                style={{ transform: `scale(${tokenScale(c.classId)})` }}
+                style={{ transform: `scale(${tokenScale(artId)})` }}
               />
             ) : (
               <span className="glyph">{TOKEN[c.classId] ?? '❓'}</span>

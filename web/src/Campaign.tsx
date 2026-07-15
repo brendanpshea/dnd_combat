@@ -18,7 +18,7 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
-  partyLevelOf, LEVEL_XP, MAX_LEVEL,
+  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -26,6 +26,7 @@ import { Portrait } from './Portrait.js';
 import { initAudio } from './sound.js';
 
 type Phase =
+  | { p: 'forge' }
   | { p: 'shop' }
   | { p: 'battle'; combat: Combat; aiTeams: Set<TeamId> }
   | { p: 'loot'; gold: number; items: ItemStack[]; xpGained: number; leveledTo?: number | undefined }
@@ -39,6 +40,8 @@ const SHOP_CATEGORIES: Array<{ id: ShopCategory; label: string }> = [
   { id: 'weapons', label: 'Weapons' },
   { id: 'armor', label: 'Armor' },
 ];
+
+const PORTRAIT_OPTIONS = ['fighter', 'wizard', 'cleric', 'rogue'] as const;
 
 function shopCategory(itemId: Id): ShopCategory {
   if (ITEMS[itemId]) return 'consumables';
@@ -58,7 +61,9 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   }
   const c = stateRef.current;
   const [, setVersion] = useState(0);
-  const [phase, setPhase] = useState<Phase>(() => (isComplete(c) ? { p: 'complete' } : { p: 'shop' }));
+  const [phase, setPhase] = useState<Phase>(() => (
+    isComplete(c) ? { p: 'complete' } : c.partyReady ? { p: 'shop' } : { p: 'forge' }
+  ));
   const [rolls, setRolls] = useState<SkillRoll[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [equipFor, setEquipFor] = useState<number | null>(null);
@@ -128,7 +133,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           className="primary"
           onClick={() => {
             stateRef.current = newCampaign(Math.floor(Math.random() * 2 ** 31));
-            setPhase({ p: 'shop' });
+            setPhase({ p: 'forge' });
             setRolls([]);
             setNotice(null);
           }}
@@ -154,6 +159,99 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           onClick={() => setPhase(isComplete(c) ? { p: 'complete' } : { p: 'shop' })}
         >
           Continue
+        </button>
+      </div>
+    );
+  }
+
+  if (phase.p === 'forge') {
+    return (
+      <div className="party-forge">
+        <header className="forge-header">
+          <button className="ghost" onClick={onExit}>✕</button>
+          <div>
+            <h1>Form your party</h1>
+            <p>Choose each adventurer&apos;s identity before the campaign begins.</p>
+          </div>
+        </header>
+        <div className="forge-list">
+          {c.characters.map((character, idx) => {
+            const classData = CLASSES[character.classId]!;
+            return (
+              <section className="forge-member" key={idx}>
+                <div className="forge-preview">
+                  <Portrait id={character.portraitId} team="team1" big label={`${character.name} portrait`} />
+                  <span className="forge-role">{classData.name}</span>
+                </div>
+                <label className="forge-field">
+                  <span>Name</span>
+                  <input
+                    value={character.name}
+                    maxLength={24}
+                    onChange={(event) => mutate(() => { character.name = event.target.value || classData.name; })}
+                  />
+                </label>
+                <label className="forge-field">
+                  <span>Class</span>
+                  <select
+                    value={character.classId}
+                    onChange={(event) => mutate(() => setPartyClass(c, idx, event.target.value))}
+                  >
+                    {Object.values(CLASSES).map((candidate) => (
+                      <option
+                        key={candidate.id}
+                        value={candidate.id}
+                      >
+                        {candidate.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="forge-field">
+                  <span>Species</span>
+                  <select
+                    value={character.speciesId}
+                    onChange={(event) => mutate(() => { character.speciesId = event.target.value; })}
+                  >
+                    {Object.values(SPECIES).map((species) => (
+                      <option key={species.id} value={species.id}>{species.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <div className="forge-field portrait-picker">
+                  <span>Portrait</span>
+                  <div role="radiogroup" aria-label={`${character.name} portrait`}>
+                    {PORTRAIT_OPTIONS.map((portraitId) => (
+                      <button
+                        key={portraitId}
+                        className={character.portraitId === portraitId ? 'selected' : ''}
+                        role="radio"
+                        aria-checked={character.portraitId === portraitId}
+                        title={`Use ${CLASSES[portraitId]!.name} portrait`}
+                        onClick={() => mutate(() => { character.portraitId = portraitId; })}
+                      >
+                        <Portrait id={portraitId} team="team1" label={`${CLASSES[portraitId]!.name} portrait`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            );
+          })}
+        </div>
+        <section className="forge-party-preview" aria-label="Battlefield party preview">
+          {c.characters.map((character) => (
+            <div key={character.name}>
+              <Portrait id={character.portraitId} team="team1" label="" />
+              <span>{character.name}</span>
+            </div>
+          ))}
+        </section>
+        <button
+          className="primary forge-ready"
+          onClick={() => mutate(() => { c.partyReady = true; setPhase({ p: 'shop' }); })}
+        >
+          Begin campaign
         </button>
       </div>
     );
@@ -216,9 +314,9 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         {c.characters.map((ch, idx) => (
           <div key={idx} className="char-card">
             <div className="char-head char-identity">
-              <Portrait id={ch.classId} team="team1" />
+              <Portrait id={ch.portraitId} team="team1" label={`${ch.name} portrait`} />
               <div className="char-name">
-                <strong>{charNames[idx]}</strong>
+                <strong>{ch.name}</strong>
                 {c.stage === 0 && c.victories.length === 0 ? (
                   <select
                     value={ch.speciesId}

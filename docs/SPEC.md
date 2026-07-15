@@ -277,8 +277,17 @@ against arena win rate is an open, well-tooled follow-up).
 ## 7b. Campaign layer
 
 `src/campaign/` is the meta-game the combat engine knows nothing about: a
-`CampaignState` (gold, **XP**, stage index, per-character inventory +
-equipment) persists across battles as JSON. The ladder is data (`STAGES`) —
+`CampaignState` (gold, **XP**, stage index, and per-character name, class,
+species, portrait, inventory, and equipment) persists across battles as JSON.
+New web campaigns start in a **party forge**. Players name each adventurer,
+select species and an authored portrait, and assign the four class roles. The
+campaign deliberately keeps one Fighter, Wizard, Cleric, and Rogue: selecting
+an occupied role swaps the two members' class roles and standard starting kits
+while preserving their name, species, and portrait. Confirming the forge sets
+`partyReady`; legacy saves default this flag to ready and gain class-name and
+class-portrait defaults during parsing. The selected portrait is passed through
+the builder as `Combatant.portraitId`, so the party card preview and board token
+share the same art identity. The ladder is data (`STAGES`) —
 just `{ encounterId, mapId }`, ordered easy → hard over 11 stages; everything
 else is *derived*. **Party level comes from accumulated XP** (`levelForXp`,
 5e thresholds 300/900, capped at content level 3), not from the stage, so the
@@ -334,8 +343,11 @@ authored SVG icon, WebAudio-synthesized sound effects.
   fade, condition tags; synthesized SFX per damage type with a persisted
   mute; AI turns paced by action kind with a 1×/2× speed toggle.
 - **Campaign:** full parity with the CLI (shop, equip, give, haggle, steal,
-  loot) as forms; saves in localStorage. Once-per-visit shop flags persist in
-  the save so a page refresh can't retry a theft.
+  loot) as forms; new web campaigns begin with the party forge (name, species,
+  unique class-role swaps, and portrait selection), whose selected portrait
+  drives the battlefield token. Saves in localStorage include that identity.
+  Once-per-visit shop flags persist in the save so a page refresh can't retry a
+  theft.
 - **PWA:** manifest + service worker (network-first navigation, cache-first
   hashed assets) — installable on phones, works offline.
 - **Deployment:** GitHub Actions builds on every push to `main` (gated on
@@ -343,7 +355,7 @@ authored SVG icon, WebAudio-synthesized sound effects.
 
 ## 9. Testing
 
-140 vitest tests: deterministic replay of full battles, rules-level unit
+182 vitest tests: deterministic replay of full battles, rules-level unit
 tests (advantage cancellation, crit math, OA triggers, condition lifecycles,
 resistances, multiattack banking), AI completion across seeds/maps/encounters,
 stat-block fidelity checks against the SRD's printed attack bonuses, campaign

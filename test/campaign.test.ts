@@ -6,7 +6,7 @@ import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
-  giveItem, equipItem, equipBlocked, unequipSlot,
+  giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -58,6 +58,30 @@ describe('campaign state', () => {
     expect(party[0]!.level).toBe(3);
     expect(party[0]!.inventory).toEqual([{ itemId: 'potion-greater-healing', qty: 3 }]);
     expect(party[1]!.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
+  });
+
+  it('keeps initial party identities and portrait choices in combat', () => {
+    const c = newCampaign();
+    const fighter = c.characters[0]!;
+    expect(c.partyReady).toBe(false);
+    expect(fighter.name).toBe('Fighter');
+    expect(fighter.portraitId).toBe('fighter');
+    fighter.name = 'Aster';
+    fighter.portraitId = 'wizard';
+    const party = buildCampaignParty(c);
+    expect(party[0]!.name).toBe('Aster');
+    expect(party[0]!.portraitId).toBe('wizard');
+  });
+
+  it('swaps unique class roles during party creation and resets both starting kits', () => {
+    const c = newCampaign();
+    expect(setPartyClass(c, 0, 'wizard')).toBe(true);
+    expect(c.characters[0]!.classId).toBe('wizard');
+    expect(c.characters[0]!.equipped.mainHand).toBe('quarterstaff');
+    expect(c.characters[1]!.classId).toBe('fighter');
+    expect(c.characters[1]!.equipped.mainHand).toBe('longsword');
+    c.partyReady = true;
+    expect(setPartyClass(c, 0, 'fighter')).toBe(false);
   });
 
   it('applyVictory: awards XP, generates treasure, reads gear back, advances', () => {

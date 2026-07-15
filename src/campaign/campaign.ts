@@ -22,6 +22,8 @@ import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
 export interface PartyCharacter {
   classId: Id;
   speciesId: Id;
+  name: string;
+  portraitId: Id;
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
 }
@@ -35,6 +37,8 @@ export interface CampaignState {
   characters: PartyCharacter[];
   /** Battles won, for flavor/records. */
   victories: string[];
+  /** The initial party identity setup has been confirmed. */
+  partyReady: boolean;
   /** RNG state for out-of-combat rolls (skill checks); persisted for replays. */
   rng: RngState;
   /**
@@ -63,7 +67,13 @@ export function parseCampaign(json: string): CampaignState | undefined {
     const raw = JSON.parse(json) as CampaignState;
     if (typeof raw.gold !== 'number' || !Array.isArray(raw.characters)) return undefined;
     if (typeof raw.rng !== 'number') raw.rng = 1; // pre-skills saves
-    for (const character of raw.characters) character.speciesId ??= 'human';
+    for (const character of raw.characters) {
+      character.speciesId ??= 'human';
+      character.name ??= CLASSES[character.classId]?.name ?? 'Adventurer';
+      character.portraitId ??= character.classId;
+    }
+    // Existing campaigns already passed the original setup screen.
+    if (typeof raw.partyReady !== 'boolean') raw.partyReady = true;
     // Pre-XP saves: seed XP so the party doesn't de-level — sum the XP they
     // would have earned reaching their current stage on the new ladder.
     if (typeof raw.xp !== 'number') {
@@ -207,12 +217,15 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
     xp: 0,
     stage: 0,
     victories: [],
+    partyReady: false,
     rng: seedRng(seed),
     characters: order.map((classId, index) => {
       const eq = CLASSES[classId]!.equipment;
       return {
         classId,
         speciesId: speciesIds[index] ?? 'human',
+        name: CLASSES[classId]!.name,
+        portraitId: classId,
         inventory: eq.inventory.map((s) => ({ ...s })),
         equipped: {
           mainHand: eq.mainHand,
@@ -222,6 +235,30 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
       };
     }),
   };
+}
+
+/**
+ * Change a member's class during initial party creation. The four roles stay
+ * unique, so choosing an occupied class swaps the two roles and their kits.
+ */
+export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): boolean {
+  if (c.partyReady || !CLASSES[classId] || !c.characters[charIdx]) return false;
+  const character = c.characters[charIdx]!;
+  const previousClassId = character.classId;
+  const ownerIdx = c.characters.findIndex((ch, idx) => idx !== charIdx && ch.classId === classId);
+  const applyClass = (target: PartyCharacter, nextClassId: Id) => {
+    const equipment = CLASSES[nextClassId]!.equipment;
+    target.classId = nextClassId;
+    target.inventory = equipment.inventory.map((stack) => ({ ...stack }));
+    target.equipped = {
+      mainHand: equipment.mainHand,
+      ...(equipment.offHand !== undefined ? { offHand: equipment.offHand } : {}),
+      ...(equipment.armor !== undefined ? { armor: equipment.armor } : {}),
+    };
+  };
+  if (ownerIdx >= 0) applyClass(c.characters[ownerIdx]!, previousClassId);
+  applyClass(character, classId);
+  return true;
 }
 
 export function currentStage(c: CampaignState): StageData | undefined {
@@ -273,6 +310,8 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
     buildCharacter({
       classId: ch.classId, team, level,
       speciesId: ch.speciesId,
+      name: ch.name,
+      portraitId: ch.portraitId,
       position: { x: files[i]!, y: 0 },
       inventory: ch.inventory.map((s) => ({ ...s })),
       equipped: { ...ch.equipped },

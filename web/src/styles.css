@@ -601,6 +601,37 @@ button.danger { border-color: var(--red); color: var(--red); }
 .tobattle { font-size: 16px; padding: 12px; }
 .hint { color: var(--muted); font-size: 14px; text-align: center; }
 
+/* ---- party forge ---- */
+.party-forge { width: min(940px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.forge-header { display: flex; align-items: flex-start; gap: 12px; }
+.forge-header h1 { margin: 0; font-size: 25px; }
+.forge-header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.forge-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.forge-member {
+  background: var(--panel2); border: 1px solid #453d63; border-radius: 8px; padding: 10px;
+  display: grid; grid-template-columns: 62px 1fr 1fr; gap: 8px 10px; align-items: end;
+}
+.forge-preview { grid-row: span 2; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.forge-preview .portrait { width: 54px; height: 54px; }
+.forge-role { color: var(--gold); font-size: 11px; text-align: center; }
+.forge-field { display: flex; flex-direction: column; gap: 3px; color: var(--muted); font-size: 11px; }
+.forge-field input, .forge-field select {
+  min-width: 0; color: var(--text); background: #181323; border: 1px solid #534a70;
+  border-radius: 5px; padding: 5px 6px; font: inherit; font-size: 13px;
+}
+.portrait-picker { grid-column: 2 / -1; }
+.portrait-picker [role="radiogroup"] { display: flex; gap: 5px; }
+.portrait-picker button { width: 34px; height: 34px; padding: 2px; border-radius: 5px; }
+.portrait-picker button.selected { border-color: var(--gold); background: #c69b2b24; }
+.portrait-picker .portrait { width: 26px; height: 26px; }
+.forge-party-preview {
+  display: flex; justify-content: center; gap: 16px; padding: 10px; border-top: 1px solid #453d63;
+  border-bottom: 1px solid #453d63;
+}
+.forge-party-preview > div { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 62px; color: var(--muted); font-size: 11px; }
+.forge-party-preview .portrait { width: 45px; height: 45px; }
+.forge-ready { align-self: center; min-width: 210px; }
+
 /* ---- overlay ---- */
 .overlay {
   position: fixed;
@@ -631,4 +662,9 @@ button.danger { border-color: var(--red); color: var(--red); }
   .char-controls { margin-left: 48px; width: calc(100% - 48px); }
   .gear-ac { margin-left: 0; }
   .battle-brief { flex-direction: column; gap: 2px; }
+  .forge-list { grid-template-columns: 1fr; }
+  .forge-member { grid-template-columns: 58px 1fr 1fr; }
+  .forge-party-preview { gap: 5px; }
+  .forge-party-preview > div { min-width: 0; width: 25%; overflow: hidden; }
+  .forge-party-preview span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
