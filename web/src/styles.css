@@ -1,17 +1,10 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* To use a bundled rounded display font (Fredoka / Baloo 2), drop a woff2 at
-   web/public/fonts/display.woff2 and uncomment:
-@font-face {
-  font-family: 'Display';
-  src: url('./fonts/display.woff2') format('woff2');
-  font-weight: 400 900; font-display: swap;
-}
-   then add 'Display' to the front of --display below. Until then, ui-rounded
-   gives Apple devices a rounded system font for free with a graceful fallback. */
-
+/* 'Baloo 2' is loaded at runtime via the FontFace API in main.tsx (base-path
+   correct for GitHub Pages); ui-rounded covers Apple before it loads, then a
+   plain system stack as the final fallback. */
 :root {
-  --display: ui-rounded, 'Segoe UI Rounded', 'Baloo 2', 'Fredoka', 'Segoe UI', system-ui, sans-serif;
+  --display: 'Baloo 2', ui-rounded, 'Segoe UI Rounded', 'Segoe UI', system-ui, sans-serif;
   --bg: #1a1625;
   --panel: #241f33;
   --panel2: #2e2842;
@@ -210,9 +203,32 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   pointer-events: none;
   z-index: 1;
 }
-.token.art.active .base { box-shadow: 0 0 9px 3px var(--gold), 0 3px 5px #000a; }
 .token.art.active .art {
   filter: drop-shadow(0 0 5px var(--gold)) drop-shadow(0 3px 2px #0006);
+}
+/* Active combatant: pulsing gold base (both art + emoji modes). */
+.token.active .base { animation: activePulse 0.9s ease-in-out infinite alternate; }
+@keyframes activePulse {
+  from { box-shadow: 0 0 5px 2px #ffd16677, 0 3px 5px #000a; }
+  to   { box-shadow: 0 0 13px 5px var(--gold), 0 3px 5px #000a; }
+}
+
+/* "It's this unit's turn" marker — the primary, unambiguous actor signal. */
+.turn-arrow {
+  position: absolute;
+  left: 50%;
+  top: -24%;
+  z-index: 6;
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 11px solid var(--gold);
+  filter: drop-shadow(0 2px 2px #000b);
+  animation: arrowBob 0.7s ease-in-out infinite alternate;
+}
+@keyframes arrowBob {
+  from { transform: translate(-50%, 0); }
+  to   { transform: translate(-50%, -35%); }
 }
 
 /* Emoji fallback: the old circular chip. */

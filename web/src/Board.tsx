@@ -124,6 +124,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               c.conditions.some((condition) => condition.id === 'hidden') ? 'hidden' : '',
             ].join(' ')}
           >
+            {c.id === activeId && <div className="turn-arrow" />}
             <div className="base" />
             {hasArt(c.classId) ? (
               <img
