@@ -77,11 +77,11 @@ npm run campaign                           # campaign (saves to campaign-save.js
 | `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` | Battle map (random if omitted) |
 | `--level <n>` | `1` `2` `3` | Party level (both sides in PvP) |
 | `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
-| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` | Fight monsters instead of a mirror party |
+| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `bandits` `spiders` `crypt` | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
 | `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |
 
-Encounters have suggested party levels (goblins/wolves 1, undead 2, ogre 3);
+Encounters have suggested party levels (goblins/wolves 1, undead/bandits/spiders 2, ogre/crypt 3);
 the CLI warns on a mismatch.
 
 ```

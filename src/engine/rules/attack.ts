@@ -207,10 +207,30 @@ export function resolveAttack(
 
   events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit }));
 
+  // Secondary damage of a different type (giant spider poison).
+  if (weapon.extraDamage && target.alive) {
+    const extra = rollDice(state.rng, weapon.extraDamage.dice, crit);
+    state.rng = extra.state;
+    events.push(...applyDamage(state, targetId, attackerId, extra.total, weapon.extraDamage.type, extra.rolls, { crit }));
+  }
+
   if (weapon.onHitCondition && target.alive &&
       !target.conditions.some((c) => c.id === weapon.onHitCondition)) {
     target.conditions.push({ id: weapon.onHitCondition, sourceId: attackerId });
     events.push({ type: 'conditionApplied', combatantId: targetId, condition: weapon.onHitCondition, sourceId: attackerId });
+  }
+
+  // Save-or-suffer rider (ghoul paralysis, spider poison): save-ends, so it
+  // repeats at the end of the victim's turns via runEndOfTurnSaves.
+  if (weapon.onHitSave && target.alive &&
+      !target.conditions.some((c) => c.id === weapon.onHitSave!.condition)) {
+    const { condition, ability, dc } = weapon.onHitSave;
+    const save = savingThrow(state, targetId, ability, dc);
+    events.push(save.event);
+    if (!save.success) {
+      target.conditions.push({ id: condition, sourceId: attackerId, repeatSave: { ability, dc } });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition, sourceId: attackerId });
+    }
   }
 
   // Weapon mastery riders, only for wielders trained in this weapon's mastery.

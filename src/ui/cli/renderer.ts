@@ -15,6 +15,8 @@ const CLASS_LETTER: Record<string, string> = {
   fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R',
   'goblin-warrior': 'g', 'goblin-boss': 'G', skeleton: 's',
   wolf: 'w', zombie: 'z', ogre: 'O',
+  bandit: 'b', 'bandit-captain': 'B', 'dire-wolf': 'D',
+  ghoul: 'h', 'giant-spider': 'x', acolyte: 'a',
 };
 
 export function cellName(p: Position): string {

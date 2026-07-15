@@ -189,8 +189,20 @@ proficiency and match the printed numbers.
 | Wolf (AC 12, 11, spd 40) | Pack Tactics, bite knocks prone |
 | Zombie (AC 8, 15) | Undead Fortitude (Con save vs dropping to 0; radiant/crit bypass) |
 | Ogre (AC 11, 68, CR 2) | Big greatclub numbers; the level-3 boss fight |
+| Bandit / Bandit Captain | Plain humanoids; captain has Multiattack ×3 |
+| Dire Wolf (AC 14, 22, spd 50) | Pack Tactics + prone bite (bigger wolf) |
+| Ghoul (AC 12, 22) | Claws paralyze on failed Con save (save-ends); immune poison |
+| Giant Spider (AC 14, 26) | Bite deals bonus poison damage + poisons on failed save |
+| Acolyte (AC 10, 9) | Caster — reuses the cleric spells (Sacred Flame, Cure Wounds, Bless) |
 
-Encounters (`--encounter`): goblins (L1), wolves (L1), undead (L2), ogre (L3).
+Two weapon riders added for these: `onHitSave` (a save-ends condition on hit —
+ghoul paralysis, spider poison; repeats via the same end-of-turn machinery as
+Sleep) and `extraDamage` (secondary damage of another type). Both are generic
+data hooks, no per-monster engine code. The `poisoned` and `paralyzed`
+conditions — previously defined but uninflicted — are now live.
+
+Encounters (`--encounter`): goblins (L1), wolves (L1), undead (L2), ogre (L3),
+bandits (L2, camp), spiders (L2, nest), crypt (L3, acolyte + ghouls + skeletons).
 Monsters are always AI-run.
 
 ## 6. Grid, terrain, maps

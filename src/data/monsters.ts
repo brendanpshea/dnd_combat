@@ -21,6 +21,8 @@ export interface MonsterData {
   resistances?: DamageType[];
   vulnerabilities?: DamageType[];
   immunities?: DamageType[];
+  /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
+  spellcasting?: { ability: Ability; slots: number[]; spellIds: Id[] };
 }
 
 export const MONSTERS: Record<Id, MonsterData> = {
@@ -70,6 +72,48 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 19, dex: 8, con: 16, int: 5, wis: 7, cha: 7 },
     weaponIds: ['greatclub', 'ogre-javelin'],
   },
+  bandit: {
+    id: 'bandit', name: 'Bandit',
+    ac: 12, hp: 11, speed: 30,
+    abilities: { str: 11, dex: 12, con: 12, int: 10, wis: 10, cha: 10 },
+    weaponIds: ['scimitar', 'light-crossbow'],
+  },
+  'bandit-captain': {
+    id: 'bandit-captain', name: 'Bandit Captain',
+    ac: 15, hp: 52, speed: 30,
+    abilities: { str: 15, dex: 16, con: 14, int: 14, wis: 11, cha: 14 },
+    savingThrowProfs: ['str', 'dex', 'wis'],
+    weaponIds: ['scimitar', 'dagger'],
+    attacksPerAction: 3, // 2 scimitar + 1 dagger, uniform approximation
+  },
+  'dire-wolf': {
+    id: 'dire-wolf', name: 'Dire Wolf',
+    ac: 14, hp: 22, speed: 50,
+    abilities: { str: 17, dex: 15, con: 15, int: 3, wis: 12, cha: 7 },
+    featureIds: ['pack-tactics'],
+    weaponIds: ['dire-wolf-bite'],
+  },
+  ghoul: {
+    id: 'ghoul', name: 'Ghoul',
+    ac: 12, hp: 22, speed: 30,
+    abilities: { str: 13, dex: 15, con: 10, int: 7, wis: 10, cha: 6 },
+    weaponIds: ['ghoul-claws', 'ghoul-bite'],
+    attacksPerAction: 2, // bite + claws
+    immunities: ['poison'],
+  },
+  'giant-spider': {
+    id: 'giant-spider', name: 'Giant Spider',
+    ac: 14, hp: 26, speed: 30,
+    abilities: { str: 14, dex: 16, con: 12, int: 2, wis: 11, cha: 4 },
+    weaponIds: ['spider-bite'],
+  },
+  acolyte: {
+    id: 'acolyte', name: 'Acolyte',
+    ac: 10, hp: 9, speed: 30,
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 14, cha: 11 },
+    weaponIds: ['mace'],
+    spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless'] },
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -90,8 +134,9 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     position,
     initiative: 0,
     savingThrowProfs: [...(m.savingThrowProfs ?? [])],
-    spellSlots: [],
-    spellIds: [],
+    spellSlots: (m.spellcasting?.slots ?? []).map((n) => ({ current: n, max: n })),
+    spellIds: [...(m.spellcasting?.spellIds ?? [])],
+    ...(m.spellcasting ? { spellcastingAbility: m.spellcasting.ability } : {}),
     featureIds: [...(m.featureIds ?? [])],
     featureUses: {},
     inventory: m.weaponIds.slice(1).map((w) => ({ itemId: w, qty: 1 })),
@@ -140,6 +185,18 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   ogre: {
     id: 'ogre', name: 'Ogre and Retinue', suggestedLevel: 3,
     members: ['ogre', 'goblin-warrior', 'goblin-warrior'],
+  },
+  bandits: {
+    id: 'bandits', name: 'Bandit Camp', suggestedLevel: 2,
+    members: ['bandit-captain', 'bandit', 'bandit', 'bandit', 'bandit'],
+  },
+  spiders: {
+    id: 'spiders', name: 'Spider Nest', suggestedLevel: 2,
+    members: ['giant-spider', 'giant-spider', 'giant-spider', 'giant-spider'],
+  },
+  crypt: {
+    id: 'crypt', name: 'Crypt Crawlers', suggestedLevel: 3,
+    members: ['acolyte', 'ghoul', 'ghoul', 'skeleton', 'skeleton'],
   },
 };
 

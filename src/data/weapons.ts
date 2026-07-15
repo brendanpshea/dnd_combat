@@ -1,7 +1,7 @@
 /**
  * Weapon data. Adding a weapon is an entry here — never an engine edit.
  */
-import type { Id, DamageType } from '../engine/types.js';
+import type { Id, DamageType, Ability, ConditionId } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
 export type MasteryId = 'sap' | 'vex';
@@ -19,8 +19,15 @@ export interface WeaponData {
   mastery?: MasteryId;
   /** Extra damage dice when the attack roll had advantage (goblin scimitar). */
   bonusDiceOnAdvantage?: string;
-  /** Condition applied to the target on a hit (wolf bite → prone). */
+  /** Condition applied automatically on a hit (wolf bite → prone). */
   onHitCondition?: 'prone';
+  /**
+   * On a hit, the target makes a save or gains a save-ends condition
+   * (ghoul claws → paralyzed, giant spider bite → poisoned).
+   */
+  onHitSave?: { condition: ConditionId; ability: Ability; dc: number };
+  /** Extra damage of a second type on every hit (spider bite → poison). */
+  extraDamage?: { dice: string; type: DamageType };
   /** Store price in gp; absent for natural/monster weapons (not tradable). */
   cost?: number;
   /** Magic weapon bonuses (+1 sword: both are 1). */
@@ -101,5 +108,32 @@ export const WEAPONS: Record<Id, WeaponData> = {
   slam: {
     id: 'slam', name: 'Slam', damage: '1d6', damageType: 'bludgeoning',
     properties: [], melee: true,
+  },
+  scimitar: {
+    id: 'scimitar', name: 'Scimitar', damage: '1d6', damageType: 'slashing',
+    properties: ['finesse', 'light'], melee: true,
+  },
+  'light-crossbow': {
+    id: 'light-crossbow', name: 'Light Crossbow', damage: '1d8', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false,
+  },
+  'dire-wolf-bite': {
+    id: 'dire-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: ['finesse'], melee: true, onHitCondition: 'prone',
+  },
+  'ghoul-bite': {
+    id: 'ghoul-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'ghoul-claws': {
+    id: 'ghoul-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+    onHitSave: { condition: 'paralyzed', ability: 'con', dc: 10 },
+  },
+  'spider-bite': {
+    id: 'spider-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: ['finesse'], melee: true,
+    extraDamage: { dice: '1d6', type: 'poison' },
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 11 },
   },
 };

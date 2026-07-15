@@ -8,6 +8,7 @@ import type { FloatEffect, CorpseEffect } from './effects.js';
 const TOKEN: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',
   'goblin-warrior': '👺', 'goblin-boss': '👹', skeleton: '💀',
+  bandit: '🥷', 'bandit-captain': '🏴‍☠️', 'dire-wolf': '🐺', ghoul: '🧛', 'giant-spider': '🕷️', acolyte: '🧎',
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
 };
 
