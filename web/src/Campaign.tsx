@@ -15,6 +15,7 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
+  partyLevelOf, LEVEL_XP, MAX_LEVEL,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -23,7 +24,7 @@ import { initAudio } from './sound.js';
 type Phase =
   | { p: 'shop' }
   | { p: 'battle'; combat: Combat; aiTeams: Set<TeamId> }
-  | { p: 'loot'; gold: number; items: ItemStack[] }
+  | { p: 'loot'; gold: number; items: ItemStack[]; xpGained: number; leveledTo?: number | undefined }
   | { p: 'over' }
   | { p: 'complete' };
 
@@ -77,7 +78,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     const result = applyVictory(c, survivors, combat.state.rng);
     if (isComplete(c)) deleteCampaignWeb();
     else saveCampaignWeb(c);
-    setPhase({ p: 'loot', gold: result.gold, items: result.items });
+    setPhase({ p: 'loot', gold: result.gold, items: result.items, xpGained: result.xpGained, leveledTo: result.leveledTo });
   }
 
   if (phase.p === 'battle') {
@@ -123,9 +124,10 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     return (
       <div className="setup">
         <h1>🎉 Victory!</h1>
+        {phase.leveledTo && <h2 style={{ color: 'var(--gold)' }}>⭐ Level up! The party is now level {phase.leveledTo}.</h2>}
         <p className="hint">
-          Loot: {phase.gold} gold
-          {phase.items.length > 0 && ` — ${phase.items.map((i) => `${itemName(i.itemId)}×${i.qty}`).join(', ')}`}
+          +{phase.xpGained} XP · {phase.gold} gold
+          {phase.items.length > 0 && ` · ${phase.items.map((i) => `${itemName(i.itemId)}×${i.qty}`).join(', ')}`}
         </p>
         <button
           className="primary"
@@ -145,10 +147,25 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     <div className="campaign">
       <header className="topbar">
         <button className="ghost" onClick={onExit}>✕</button>
-        <span className="round">💰 {c.gold}g</span>
+        <span className="round">💰 {c.gold}g · L{partyLevelOf(c)}{partyLevelOf(c) < MAX_LEVEL ? ` (${c.xp}/${LEVEL_XP[partyLevelOf(c)]} XP)` : ''}</span>
         <span className="mapname">
-          Stage {c.stage + 1}/{STAGES.length}: {enc?.name} (lvl {stage?.partyLevel}, {stage ? MAPS[stage.mapId]!.name : ''})
+          Stage {c.stage + 1}/{STAGES.length}: {enc?.name} ({stage ? MAPS[stage.mapId]!.name : ''}
+          {enc && partyLevelOf(c) < enc.suggestedLevel ? ', under-leveled!' : ''})
         </span>
+        <button
+          className="ghost"
+          title="Abandon this campaign and start over"
+          onClick={() => {
+            if (!confirm('Abandon this campaign and delete your save?')) return;
+            deleteCampaignWeb();
+            stateRef.current = newCampaign(Math.floor(Math.random() * 2 ** 31));
+            setPhase({ p: 'shop' });
+            setRolls([]);
+            setNotice(null);
+          }}
+        >
+          🗑 Reset
+        </button>
       </header>
 
       {visit.priceMult !== 1 && (

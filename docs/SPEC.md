@@ -277,12 +277,21 @@ against arena win rate is an open, well-tooled follow-up).
 ## 7b. Campaign layer
 
 `src/campaign/` is the meta-game the combat engine knows nothing about: a
-`CampaignState` (gold, stage index, per-character inventory + equipment)
-persists across battles as JSON. The ladder is data (`STAGES`): encounter,
-party level, map, and a weighted **loot table** per stage (gold range +
-N item draws; the ogre's table can drop +1 weapons and half plate). Loot
-rolls use the battle's final RNG state, so seeded campaigns are reproducible
-end-to-end. Between battles the shop buys/sells (half price back) from
+`CampaignState` (gold, **XP**, stage index, per-character inventory +
+equipment) persists across battles as JSON. The ladder is data (`STAGES`) —
+just `{ encounterId, mapId }`, ordered easy → hard over 11 stages; everything
+else is *derived*. **Party level comes from accumulated XP** (`levelForXp`,
+5e thresholds 300/900, capped at content level 3), not from the stage, so the
+party levels up gradually mid-run and can be under-level for a hard fight (the
+UI warns). Each monster carries an SRD **XP value** (`MONSTER_XP`); a victory
+awards `encounterXP / partySize` (per-character pacing). **Treasure is
+generated from encounter XP** (`treasureFor`): gold ≈ XP/2 with variance, and
+the number of item rolls and the rarity ceiling both scale with XP (a rarity-
+tiered pool, no per-stage authoring); the finale forces one guaranteed rare
+drop. Loot and XP use the battle's final RNG state, so seeded campaigns are
+reproducible end-to-end. Old saves migrate: a missing `xp` is back-filled from
+the ladder so nobody de-levels. Between battles the shop buys/sells
+(half price back) from
 `SHOP_STOCK` — consumables, weapons (incl. +1 longsword/shortsword with
 attack/damage bonus support in the engine), and armor gated by per-class
 **armor proficiencies** (fighter/cleric all, rogue light, wizard none).

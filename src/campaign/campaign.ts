@@ -15,6 +15,8 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST } from '../data/armor.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
 import { SPECIES } from '../data/species.js';
+import { encounterXP } from '../data/monsters.js';
+import type { Rarity } from '../data/armor.js';
 import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
 
 export interface PartyCharacter {
@@ -26,6 +28,8 @@ export interface PartyCharacter {
 
 export interface CampaignState {
   gold: number;
+  /** Accumulated party XP (per-character pace: encounter XP / party size). */
+  xp: number;
   /** Index into STAGES of the next battle. */
   stage: number;
   characters: PartyCharacter[];
@@ -60,98 +64,121 @@ export function parseCampaign(json: string): CampaignState | undefined {
     if (typeof raw.gold !== 'number' || !Array.isArray(raw.characters)) return undefined;
     if (typeof raw.rng !== 'number') raw.rng = 1; // pre-skills saves
     for (const character of raw.characters) character.speciesId ??= 'human';
+    // Pre-XP saves: seed XP so the party doesn't de-level — sum the XP they
+    // would have earned reaching their current stage on the new ladder.
+    if (typeof raw.xp !== 'number') {
+      const size = raw.characters.length || 4;
+      let xp = 0;
+      for (let i = 0; i < Math.min(raw.stage, STAGES.length); i++) {
+        xp += xpAward(STAGES[i]!.encounterId, size);
+      }
+      raw.xp = xp;
+    }
     return raw;
   } catch {
     return undefined;
   }
 }
 
-export interface LootTable {
-  gold: { min: number; max: number };
-  /** How many independent item draws. */
-  rolls: number;
-  entries: Array<{ itemId: Id; weight: number }>;
-}
-
 export interface StageData {
   encounterId: Id;
-  partyLevel: number;       // party level for this battle
   mapId: string;
-  loot: LootTable;
 }
 
+/**
+ * The ladder, ordered easy → hard. Party level and treasure are *derived*
+ * from encounter XP (see levelForXp / treasureFor), so a stage is just which
+ * fight, on which map. Ordering by ascending XP gives the gradual ramp: the
+ * party accumulates XP and levels up (1 → 2 around stage 5, 2 → 3 around
+ * stage 9) across the run.
+ */
 export const STAGES: StageData[] = [
-  {
-    encounterId: 'goblins', partyLevel: 1, mapId: 'ruins',
-    loot: {
-      gold: { min: 40, max: 80 }, rolls: 2,
-      entries: [
-        { itemId: 'potion-healing', weight: 5 },
-        { itemId: 'alchemists-fire', weight: 3 },
-        { itemId: 'scroll-magic-missile', weight: 2 },
-        { itemId: 'chain-shirt', weight: 1 },
-      ],
-    },
-  },
-  {
-    encounterId: 'wolves', partyLevel: 2, mapId: 'marsh',
-    loot: {
-      gold: { min: 30, max: 60 }, rolls: 2,
-      entries: [
-        { itemId: 'potion-healing', weight: 6 },
-        { itemId: 'potion-greater-healing', weight: 2 },
-        { itemId: 'alchemists-fire', weight: 3 },
-      ],
-    },
-  },
-  {
-    encounterId: 'undead', partyLevel: 2, mapId: 'corridor',
-    loot: {
-      gold: { min: 70, max: 120 }, rolls: 2,
-      entries: [
-        { itemId: 'potion-greater-healing', weight: 4 },
-        { itemId: 'scroll-cure-wounds', weight: 3 },
-        { itemId: 'potion-healing', weight: 3 },
-        { itemId: 'splint', weight: 2 },
-      ],
-    },
-  },
-  {
-    encounterId: 'ogre', partyLevel: 3, mapId: 'firepit',
-    loot: {
-      gold: { min: 180, max: 280 }, rolls: 3,
-      entries: [
-        { itemId: 'potion-greater-healing', weight: 4 },
-        { itemId: 'longsword-plus1', weight: 2 },
-        { itemId: 'shortsword-plus1', weight: 2 },
-        { itemId: 'half-plate', weight: 2 },
-        { itemId: 'potion-healing', weight: 1 },
-      ],
-    },
-  },
+  { encounterId: 'kobolds', mapId: 'ruins' },   // 150
+  { encounterId: 'wolves', mapId: 'marsh' },    // 250
+  { encounterId: 'undead', mapId: 'corridor' }, // 250
+  { encounterId: 'goblins', mapId: 'ruins' },   // 400  → L2 around here
+  { encounterId: 'raiders', mapId: 'open' },    // 425
+  { encounterId: 'wilds', mapId: 'marsh' },     // 500
+  { encounterId: 'bandits', mapId: 'open' },    // 550
+  { encounterId: 'crypt', mapId: 'corridor' },  // 550  → L3 around here
+  { encounterId: 'spiders', mapId: 'marsh' },   // 800
+  { encounterId: 'cult', mapId: 'ruins' },      // 1100
+  { encounterId: 'ogre', mapId: 'firepit' },    // 550, boss finale
 ];
 
-/** Weighted loot roll driven by engine RNG state (battle-end rng → loot). */
-export function rollLoot(table: LootTable, rng: RngState): { gold: number; items: ItemStack[]; rng: RngState } {
-  let r = next(rng);
-  const gold = table.gold.min + Math.floor(r.value * (table.gold.max - table.gold.min + 1));
-  const totalWeight = table.entries.reduce((s, e) => s + e.weight, 0);
+// --- XP & leveling ---------------------------------------------------------
+
+/** 5e XP thresholds by level (index = level − 1); capped at our content's L3. */
+export const LEVEL_XP = [0, 300, 900] as const;
+export const MAX_LEVEL = LEVEL_XP.length;
+
+export function levelForXp(xp: number): number {
+  let level = 1;
+  for (let i = 1; i < LEVEL_XP.length; i++) if (xp >= LEVEL_XP[i]!) level = i + 1;
+  return level;
+}
+
+export function partyLevelOf(c: CampaignState): number {
+  return levelForXp(c.xp);
+}
+
+/** XP awarded for beating an encounter (per-character pace = total / party size). */
+export function xpAward(encounterId: Id, partySize: number): number {
+  return Math.round(encounterXP(encounterId) / Math.max(1, partySize));
+}
+
+// --- treasure generation ---------------------------------------------------
+
+/**
+ * Item pools by rarity. Bigger fights unlock higher tiers and roll more times,
+ * so treasure scales with encounter XP without any per-stage authoring.
+ */
+const TREASURE_POOL: Record<Rarity, Id[]> = {
+  common: ['potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'scroll-cure-wounds', 'chain-shirt'],
+  uncommon: ['potion-greater-healing', 'greatsword', 'longbow', 'scale-mail'],
+  rare: ['half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1'],
+};
+
+function pick<T>(arr: T[], r: number): T {
+  return arr[Math.floor(r * arr.length)]!;
+}
+
+export interface Treasure {
+  gold: number;
+  items: ItemStack[];
+  rng: RngState;
+}
+
+/**
+ * Generate treasure from encounter XP. Gold ≈ XP/2 with variance; the number
+ * of item rolls and the rarity ceiling both rise with XP. `bonusTier` forces
+ * one guaranteed drop of that tier (used for the finale). Deterministic.
+ */
+export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity): Treasure {
+  let state = rng;
+  const roll = () => { const r = next(state); state = r.state; return r.value; };
+
+  const gold = Math.round(xp * 0.5 * (0.8 + 0.4 * roll()));
+
+  const rolls = xp >= 700 ? 3 : xp >= 300 ? 2 : 1;
+  const tiers: Rarity[] = xp >= 800 ? ['common', 'uncommon', 'rare']
+    : xp >= 400 ? ['common', 'uncommon'] : ['common'];
+
   const items: ItemStack[] = [];
-  let state = r.state;
-  for (let i = 0; i < table.rolls; i++) {
-    r = next(state);
-    state = r.state;
-    let pick = r.value * totalWeight;
-    for (const e of table.entries) {
-      pick -= e.weight;
-      if (pick < 0) {
-        const existing = items.find((s) => s.itemId === e.itemId);
-        if (existing) existing.qty += 1;
-        else items.push({ itemId: e.itemId, qty: 1 });
-        break;
-      }
-    }
+  const add = (itemId: Id) => {
+    const s = items.find((x) => x.itemId === itemId);
+    if (s) s.qty += 1; else items.push({ itemId, qty: 1 });
+  };
+
+  for (let i = 0; i < rolls; i++) {
+    // Weight toward common; occasional step up a tier when unlocked.
+    const t = roll();
+    const tierIdx = tiers.length === 1 ? 0
+      : t < 0.6 ? 0 : t < 0.9 ? Math.min(1, tiers.length - 1) : tiers.length - 1;
+    add(pick(TREASURE_POOL[tiers[tierIdx]!], roll()));
   }
+  if (bonusTier) add(pick(TREASURE_POOL[bonusTier], roll()));
+
   return { gold, items, rng: state };
 }
 
@@ -177,6 +204,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {
     gold: STARTING_GOLD,
+    xp: 0,
     stage: 0,
     victories: [],
     rng: seedRng(seed),
@@ -239,8 +267,7 @@ export function sellItem(c: CampaignState, charIdx: number, itemId: Id): boolean
 
 /** Build the party Combatants for the current stage (rank 0, standard files). */
 export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Combatant[] {
-  const stage = currentStage(c);
-  const level = stage?.partyLevel ?? STAGES[STAGES.length - 1]!.partyLevel;
+  const level = partyLevelOf(c);
   const files = [1, 2, 4, 6];
   return c.characters.map((ch, i) =>
     buildCharacter({
@@ -266,10 +293,6 @@ export const HAGGLE: Record<'intimidation' | 'persuasion' | 'deception',
 };
 export const STEAL_FINE = 50;
 
-function partyLevel(c: CampaignState): number {
-  return currentStage(c)?.partyLevel ?? STAGES[STAGES.length - 1]!.partyLevel;
-}
-
 /** A character's bonus for a skill (ability mod + proficiency if trained). */
 export function skillBonus(classId: Id, level: number, skill: SkillId, speciesId: Id = 'human'): number {
   const cls = CLASSES[classId]!;
@@ -281,7 +304,7 @@ export function skillBonus(classId: Id, level: number, skill: SkillId, speciesId
 
 /** The party member with the highest bonus rolls every party skill check. */
 export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bonus: number } {
-  const level = partyLevel(c);
+  const level = partyLevelOf(c);
   let best = { idx: 0, bonus: -Infinity };
   c.characters.forEach((ch, idx) => {
     const bonus = skillBonus(ch.classId, level, skill, ch.speciesId);
@@ -422,17 +445,26 @@ export function unequipSlot(c: CampaignState, charIdx: number, slot: EquipSlot):
   return true;
 }
 
+export interface VictoryResult {
+  stage: StageData;
+  gold: number;
+  items: ItemStack[];
+  xpGained: number;
+  leveledFrom?: number;
+  leveledTo?: number;
+}
+
 /**
  * After a victory: read surviving gear back (consumables spent in battle stay
- * spent, weapon swaps persist), roll the stage's loot table with the battle's
- * final RNG state, and advance the ladder. The fallen recover — defeat only
- * happens when the whole party dies.
+ * spent, weapon swaps persist), award XP (possibly leveling the party),
+ * generate treasure from encounter XP, and advance the ladder. The fallen
+ * recover — defeat only happens when the whole party dies.
  */
 export function applyVictory(
   c: CampaignState,
   finalTeam: Combatant[],
   rng: RngState = 1,
-): { stage: StageData; gold: number; items: ItemStack[] } {
+): VictoryResult {
   const stage = currentStage(c);
   if (!stage) throw new Error('Campaign already complete');
   for (const ch of c.characters) {
@@ -442,13 +474,26 @@ export function applyVictory(
       ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
     }
   }
-  const loot = rollLoot(stage.loot, rng);
-  c.gold += loot.gold;
-  for (const item of loot.items) {
+
+  const xpGained = xpAward(stage.encounterId, c.characters.length);
+  const beforeLevel = levelForXp(c.xp);
+  c.xp += xpGained;
+  const afterLevel = levelForXp(c.xp);
+
+  // The final stage guarantees a rare drop as a trophy for finishing.
+  const isFinale = c.stage === STAGES.length - 1;
+  const treasure = treasureFor(encounterXP(stage.encounterId), rng, isFinale ? 'rare' : undefined);
+  c.gold += treasure.gold;
+  for (const item of treasure.items) {
     addItem(c.characters[0]!.inventory, item.itemId, item.qty);
   }
+
   c.victories.push(stage.encounterId);
   c.stage += 1;
   delete c.shopVisit;
-  return { stage, gold: loot.gold, items: loot.items };
+
+  return {
+    stage, gold: treasure.gold, items: treasure.items, xpGained,
+    ...(afterLevel > beforeLevel ? { leveledFrom: beforeLevel, leveledTo: afterLevel } : {}),
+  };
 }

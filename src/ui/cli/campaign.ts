@@ -15,17 +15,24 @@ import { CLASSES } from '../../data/classes.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
-  giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
+  giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
 import { runBattle, chooseFrom, argValue, parseSeed, AiLevel } from './battle.js';
 
+function xpLine(c: CampaignState): string {
+  const level = partyLevelOf(c);
+  if (level >= MAX_LEVEL) return `Level ${level} (max)`;
+  const next = LEVEL_XP[level]!; // threshold for level+1
+  return `Level ${level}   XP ${c.xp}/${next}`;
+}
+
 function partySummary(c: CampaignState): string {
   const stage = currentStage(c);
   const lines = [
-    `Gold: ${c.gold}   Battles won: ${c.victories.length}/${STAGES.length}` +
-    (stage ? `   Next: ${ENCOUNTERS[stage.encounterId]!.name} (level ${stage.partyLevel}, ${MAPS[stage.mapId]!.name})` : ''),
+    `Gold: ${c.gold}   ${xpLine(c)}   Battles won: ${c.victories.length}/${STAGES.length}` +
+    (stage ? `   Next: ${ENCOUNTERS[stage.encounterId]!.name} (${MAPS[stage.mapId]!.name})` : ''),
   ];
   for (const ch of c.characters) {
     const eq = [
@@ -203,7 +210,8 @@ async function main() {
     if (!auto) await shop(campaign, rl);
 
     const enc = ENCOUNTERS[stage.encounterId]!;
-    console.log(`\nThe party (level ${stage.partyLevel}) faces ${enc.name} at ${MAPS[stage.mapId]!.name}!`);
+    console.log(`\nThe party (level ${partyLevelOf(campaign)}) faces ${enc.name} at ${MAPS[stage.mapId]!.name}` +
+      (partyLevelOf(campaign) < enc.suggestedLevel ? ' — under-leveled, this will be tough!' : '') + '!');
     const combat = new Combat({
       seed: baseSeed + campaign.stage,
       mapId: stage.mapId,
@@ -222,10 +230,11 @@ async function main() {
 
     const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
     const done = applyVictory(campaign, survivors, combat.state.rng);
-    console.log(`\nVictory! Loot: ${done.gold} gold` +
+    console.log(`\nVictory! +${done.xpGained} XP. Loot: ${done.gold} gold` +
       (done.items.length > 0
         ? `, ${done.items.map((i) => `${itemName(i.itemId)}×${i.qty}`).join(', ')}`
         : ''));
+    if (done.leveledTo) console.log(`*** LEVEL UP! The party is now level ${done.leveledTo}. ***`);
     if (!isComplete(campaign)) {
       saveCampaign(campaign);
       console.log('(progress saved)');

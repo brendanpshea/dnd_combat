@@ -271,6 +271,24 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   },
 };
 
+/**
+ * SRD XP by CR, used to drive treasure and campaign leveling. Kept as a map
+ * (not per-stat-block) so it stays in one readable place; a test asserts every
+ * monster has an entry so the two can't drift.
+ */
+export const MONSTER_XP: Record<Id, number> = {
+  'goblin-warrior': 50, 'goblin-boss': 200, skeleton: 50, wolf: 50, zombie: 50, ogre: 450,
+  bandit: 25, 'bandit-captain': 450, 'dire-wolf': 200, ghoul: 200, 'giant-spider': 200, acolyte: 50,
+  kobold: 25, scout: 100, orc: 100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
+};
+
+/** Total XP an encounter is worth (sum of member XP). */
+export function encounterXP(encounterId: Id): number {
+  const enc = ENCOUNTERS[encounterId];
+  if (!enc) return 0;
+  return enc.members.reduce((sum, mid) => sum + (MONSTER_XP[mid] ?? 0), 0);
+}
+
 /** Place an encounter on a rank, spread across the files. */
 export function buildEncounter(encounterId: Id, team: TeamId, rank: number): Combatant[] {
   const enc = ENCOUNTERS[encounterId];

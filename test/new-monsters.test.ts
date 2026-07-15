@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty } from '../src/builder/character.js';
-import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS } from '../src/data/monsters.js';
+import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS, MONSTER_XP, encounterXP } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
@@ -27,6 +27,14 @@ describe('new monster stat blocks', () => {
     expect(a.spellcastingAbility).toBe('wis');
     expect(a.spellSlots).toEqual([{ current: 3, max: 3 }]);
     expect(a.spellIds).toEqual(expect.arrayContaining(['sacred-flame', 'cure-wounds', 'bless']));
+  });
+
+  it('every monster has an XP entry (guards the parallel XP map from drift)', () => {
+    for (const id of Object.keys(MONSTERS)) {
+      expect(MONSTER_XP[id], `${id} missing from MONSTER_XP`).toBeGreaterThan(0);
+    }
+    expect(encounterXP('kobolds')).toBe(6 * 25);
+    expect(encounterXP('cult')).toBe(450 + 50 + 200 + 200 + 200);
   });
 
   it('all new encounters build and start combat cleanly', () => {

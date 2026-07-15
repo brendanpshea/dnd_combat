@@ -31,7 +31,7 @@ npm install
 npm test          # 140 engine tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
-npm run campaign  # terminal campaign: persistent 4-battle ladder
+npm run campaign  # terminal campaign: 11-battle ladder with XP, leveling, loot
 ```
 
 ## Web UI
@@ -97,14 +97,18 @@ legal-action list, so an illegal move is never offered.
 
 ## Campaign mode
 
-A persistent ladder: Goblin Warband → Wolf Pack → Restless Dead → Ogre,
-leveling from 1 to 3. Between battles: shop (consumables, weapons, armor,
-+1 magic weapons — armor purchases are proficiency-gated), manage equipment,
-haggle or steal, then fight. Victories roll weighted loot tables (gold plus
-item draws; the ogre can drop +1 weapons and half plate). Consumables spent
-in battle stay spent; weapon swaps persist. Defeat ends the campaign and
-deletes the save. Seeded runs are reproducible end to end — battles, skill
-checks, and loot alike.
+An 11-battle ladder ordered easy → hard (Kobold Warren up to the Ogre finale).
+The party **earns XP and levels up** (1 → 3) as it goes — level is derived from
+accumulated XP, not fixed per stage, so progression is gradual and you can end
+up under-leveled for a tough fight (the UI warns you). **Treasure is generated
+from each encounter's XP**: gold scales with the fight, and bigger fights roll
+more items from higher rarity tiers (the finale guarantees a rare drop).
+Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
+purchases are proficiency-gated), manage equipment, haggle or steal, then
+fight. Consumables spent in battle stay spent; weapon swaps persist. Defeat
+ends the campaign and deletes the save (there's also a reset/delete option).
+Seeded runs are reproducible end to end — battles, skill checks, treasure, and
+XP alike.
 
 ## Project layout
 

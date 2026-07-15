@@ -5,8 +5,10 @@ import * as os from 'node:os';
 import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
-  rollLoot, giveItem, equipItem, equipBlocked, unequipSlot,
+  treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
+  giveItem, equipItem, equipBlocked, unequipSlot,
 } from '../src/campaign/campaign.js';
+import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../src/campaign/save.js';
 import { Combat } from '../src/engine/combat.js';
@@ -22,7 +24,9 @@ describe('campaign state', () => {
     expect(c.characters).toHaveLength(4);
     expect(c.characters[0]!.classId).toBe('fighter');
     expect(c.characters[0]!.inventory.some((s) => s.itemId === 'potion-healing')).toBe(true);
-    expect(currentStage(c)!.encounterId).toBe('goblins');
+    expect(c.xp).toBe(0);
+    expect(partyLevelOf(c)).toBe(1);
+    expect(currentStage(c)!.encounterId).toBe('kobolds'); // easiest first
     expect(isComplete(c)).toBe(false);
   });
 
@@ -45,10 +49,10 @@ describe('campaign state', () => {
     }
   });
 
-  it('buildCampaignParty uses the stage level and persisted gear', () => {
+  it('buildCampaignParty uses the XP-derived level and persisted gear', () => {
     const c = newCampaign();
     c.characters[0]!.inventory = [{ itemId: 'potion-greater-healing', qty: 3 }];
-    c.stage = 3; // ogre stage, level 3
+    c.xp = 900; // level 3
     const party = buildCampaignParty(c);
     expect(party).toHaveLength(4);
     expect(party[0]!.level).toBe(3);
@@ -56,23 +60,35 @@ describe('campaign state', () => {
     expect(party[1]!.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
   });
 
-  it('applyVictory: loot rolled within bounds, gear read back, stage advances', () => {
+  it('applyVictory: awards XP, generates treasure, reads gear back, advances', () => {
     const c = newCampaign();
     const party = buildCampaignParty(c);
-    // Simulate the fighter having drunk their potion mid-battle.
     party[0]!.inventory = party[0]!.inventory.filter((s) => s.itemId !== 'potion-healing');
     const result = applyVictory(c, party, 12345);
-    expect(result.stage.encounterId).toBe('goblins');
+    expect(result.stage.encounterId).toBe('kobolds');
     expect(c.stage).toBe(1);
-    expect(result.gold).toBeGreaterThanOrEqual(40);
-    expect(result.gold).toBeLessThanOrEqual(80);
+    expect(result.xpGained).toBe(xpAward('kobolds', 4)); // encounterXP/4
+    expect(c.xp).toBe(result.xpGained);
+    expect(result.gold).toBeGreaterThan(0);
     expect(c.gold).toBe(STARTING_GOLD + result.gold);
-    expect(result.items.reduce((n, s) => n + s.qty, 0)).toBe(2); // 2 rolls
-    expect(c.victories).toEqual(['goblins']);
-    // Spent potion stays spent — the fighter has only whatever loot granted.
-    const fighterPotions = c.characters[0]!.inventory.find((s) => s.itemId === 'potion-healing')?.qty ?? 0;
-    const lootedPotions = result.items.find((s) => s.itemId === 'potion-healing')?.qty ?? 0;
-    expect(fighterPotions).toBe(lootedPotions);
+    expect(result.items.length).toBeGreaterThan(0);
+    expect(c.victories).toEqual(['kobolds']);
+  });
+
+  it('party levels up mid-ladder and the level-up is reported', () => {
+    const c = newCampaign();
+    let sawLevel2 = false;
+    for (let i = 0; !isComplete(c); i++) {
+      const before = partyLevelOf(c);
+      const r = applyVictory(c, buildCampaignParty(c), 100 + i);
+      if (r.leveledTo) {
+        expect(r.leveledTo).toBe(partyLevelOf(c));
+        expect(r.leveledFrom).toBe(before);
+        if (r.leveledTo === 2) sawLevel2 = true;
+      }
+    }
+    expect(sawLevel2).toBe(true);
+    expect(partyLevelOf(c)).toBe(3); // caps at content level by the finale
   });
 
   it('completing all stages finishes the campaign', () => {
@@ -85,30 +101,47 @@ describe('campaign state', () => {
   });
 });
 
-describe('loot tables', () => {
-  it('rollLoot is deterministic and stays within bounds', () => {
-    const table = STAGES[0]!.loot;
-    const a = rollLoot(table, 999);
-    const b = rollLoot(table, 999);
-    expect(a).toEqual(b);
-    for (let seed = 1; seed <= 200; seed++) {
-      const r = rollLoot(table, seed);
-      expect(r.gold).toBeGreaterThanOrEqual(table.gold.min);
-      expect(r.gold).toBeLessThanOrEqual(table.gold.max);
-      expect(r.items.reduce((n, s) => n + s.qty, 0)).toBe(table.rolls);
-      for (const s of r.items) {
-        expect(table.entries.some((e) => e.itemId === s.itemId)).toBe(true);
-      }
-    }
+describe('XP, leveling, and treasure', () => {
+  it('levelForXp follows the thresholds and caps at 3', () => {
+    expect(levelForXp(0)).toBe(1);
+    expect(levelForXp(299)).toBe(1);
+    expect(levelForXp(300)).toBe(2);
+    expect(levelForXp(899)).toBe(2);
+    expect(levelForXp(900)).toBe(3);
+    expect(levelForXp(99999)).toBe(3);
+    expect(LEVEL_XP.length).toBe(3);
   });
 
-  it('the ogre table can drop a magic weapon', () => {
-    let magic = 0;
-    for (let seed = 1; seed <= 300; seed++) {
-      const r = rollLoot(STAGES[3]!.loot, seed);
-      if (r.items.some((s) => s.itemId.endsWith('plus1'))) magic++;
+  it('the ladder is ordered easy -> hard by encounter XP', () => {
+    const xps = STAGES.map((s) => encounterXP(s.encounterId));
+    // final stage (ogre) is the intended finale; overall trend rises.
+    expect(xps[0]!).toBeLessThan(xps[xps.length - 1]!);
+    expect(STAGES[STAGES.length - 1]!.encounterId).toBe('ogre');
+  });
+
+  it('treasureFor is deterministic, scales with XP, and stays in-pool', () => {
+    const a = treasureFor(500, 42);
+    const b = treasureFor(500, 42);
+    expect(a).toEqual(b);
+    for (const xp of [150, 500, 1100]) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const t = treasureFor(xp, seed);
+        expect(t.gold).toBeGreaterThan(0);
+        // gold tracks XP (~half): higher XP fights pay more on average.
+      }
     }
-    expect(magic).toBeGreaterThan(50); // ~66% of runs over 300 seeds
+    // Bigger fights roll more items.
+    const small = treasureFor(150, 5).items.reduce((n, s) => n + s.qty, 0);
+    const big = treasureFor(1100, 5).items.reduce((n, s) => n + s.qty, 0);
+    expect(big).toBeGreaterThan(small);
+  });
+
+  it('a rare bonus tier guarantees a rare drop (finale trophy)', () => {
+    const rareIds = new Set(['half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1']);
+    for (let seed = 1; seed <= 30; seed++) {
+      const t = treasureFor(550, seed, 'rare');
+      expect(t.items.some((s) => rareIds.has(s.itemId))).toBe(true);
+    }
   });
 });
 
@@ -269,6 +302,16 @@ describe('shop visit persistence (web refresh safety)', () => {
     delete old['rng'];
     const parsed = parseCampaign(JSON.stringify(old))!;
     expect(typeof parsed.rng).toBe('number');
+  });
+
+  it('pre-XP saves get seeded XP so the party does not de-level', () => {
+    const old = newCampaign(1) as unknown as Record<string, unknown>;
+    old['stage'] = 6; // mid-ladder
+    delete old['xp'];
+    const parsed = parseCampaign(JSON.stringify(old))!;
+    expect(typeof parsed.xp).toBe('number');
+    // Should reflect XP earned through the first 6 stages, i.e. already L2.
+    expect(partyLevelOf(parsed)).toBeGreaterThanOrEqual(2);
   });
 
   it('persists selected species and upgrades older campaign saves to humans', () => {

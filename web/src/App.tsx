@@ -17,7 +17,7 @@ import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actio
 import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
-import { loadCampaignWeb } from './campaignStorage.js';
+import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -87,6 +87,7 @@ export function App() {
 }
 
 function Menu({ onPick }: { onPick(s: Screen): void }) {
+  const [, force] = useState(0);
   const hasSave = !!loadCampaignWeb();
   return (
     <div className="setup">
@@ -95,9 +96,21 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         🏰 Campaign{hasSave ? ' (resume)' : ''}
       </button>
       <button onClick={() => onPick({ view: 'skirmish-setup' })}>⚔️ Single battle</button>
+      {hasSave && (
+        <button
+          className="ghost"
+          onClick={() => {
+            if (!confirm('Delete your saved campaign?')) return;
+            deleteCampaignWeb();
+            force((n) => n + 1);
+          }}
+        >
+          🗑 Delete saved campaign
+        </button>
+      )}
       <p className="hint">
-        Campaign: a persistent party fights a 4-battle ladder, shopping and
-        looting between fights. Progress saves in your browser.
+        Campaign: a persistent party fights an 11-battle ladder, leveling up and
+        collecting treasure as they go. Progress saves in your browser.
       </p>
     </div>
   );
