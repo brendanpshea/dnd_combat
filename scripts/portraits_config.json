@@ -1,0 +1,6 @@
+[
+  {"name": "portrait-goblin-warrior.png", "type": "portrait", "target_pct": 0.92},
+  {"name": "portrait-goblin-boss.png", "type": "portrait", "target_pct": 0.92},
+  {"name": "portrait-kobold.png", "type": "portrait", "target_pct": 0.92},
+  {"name": "portrait-wolf.png", "type": "portrait", "target_pct": 0.92}
+]

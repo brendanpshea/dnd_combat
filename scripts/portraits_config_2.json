@@ -1,0 +1,6 @@
+[
+  {"name": "portrait-skeleton.png", "type": "portrait", "target_pct": 0.92},
+  {"name": "portrait-zombie.png", "type": "portrait", "target_pct": 0.92},
+  {"name": "portrait-ogre.png", "type": "portrait", "target_pct": 0.92},
+  {"name": "portrait-bandit.png", "type": "portrait", "target_pct": 0.92}
+]

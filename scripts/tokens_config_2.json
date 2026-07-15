@@ -1,0 +1,6 @@
+[
+  {"name": "token-skeleton.png", "type": "token", "target_pct": 0.90},
+  {"name": "token-zombie.png", "type": "token", "target_pct": 0.90},
+  {"name": "token-ogre.png", "type": "token", "target_pct": 0.95},
+  {"name": "token-bandit.png", "type": "token", "target_pct": 0.90}
+]

@@ -1,0 +1,6 @@
+[
+  {"name": "token-goblin-warrior.png", "type": "token", "target_pct": 0.90},
+  {"name": "token-goblin-boss.png", "type": "token", "target_pct": 0.95},
+  {"name": "token-kobold.png", "type": "token", "target_pct": 0.70},
+  {"name": "token-wolf.png", "type": "token", "target_pct": 0.90}
+]
