@@ -17,6 +17,13 @@ persistent campaign mode adds shops (with haggling and theft), random loot,
 gear progression, and four combat-relevant species: Human, Dwarf, Wood Elf,
 and Orc.
 
+Hide is a DC 15 Dexterity (Stealth) action available only outside every
+enemy's line of sight. A hidden creature cannot be directly targeted, gains
+advantage on its next attack, and becomes visible when it attacks or casts a
+spell. Enemies can reveal a hidden creature at the start of their turns when
+they can see it and their advantaged passive Perception beats its Hide result.
+Rogues and goblins can Hide as a bonus action.
+
 ## Quick start
 
 ```bash

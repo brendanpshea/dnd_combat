@@ -57,6 +57,7 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // buffs
   blessed: 0.08,
   dodging: 0.06,
+  hidden: 0.14,
 };
 
 /** Does this unit's kit want melee range? (any pure-melee weapon in hand) */

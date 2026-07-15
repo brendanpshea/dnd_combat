@@ -19,6 +19,7 @@ import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration } from './rules/attack.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
+import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
 import type { GameEvent } from './events.js';
 
 export type Target = { combatantId: Id } | { position: Position };
@@ -32,6 +33,7 @@ export type Action =
   | { kind: 'dash' }
   | { kind: 'disengage' }
   | { kind: 'dodge' }
+  | { kind: 'hide' }
   | { kind: 'shakeAwake'; targetId: Id }
   | { kind: 'endTurn' };
 
@@ -45,6 +47,7 @@ function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetI
   const w = WEAPONS[weaponId];
   const t = state.combatants[targetId];
   if (!w || !t || !t.alive || t.team === actor.team) return false;
+  if (isHidden(t)) return false;
   if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
   const inMelee = w.melee && adjacent(actor.position, t.position);
@@ -80,13 +83,14 @@ function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, target
     if (targets.length !== 1 || !tg || !('combatantId' in tg)) return false;
     const ally = state.combatants[tg.combatantId];
     return !!ally && ally.alive && ally.team === actor.team &&
+      (ally.id === actor.id || !isHidden(ally)) &&
       (ally.id === actor.id || adjacent(actor.position, ally.position));
   }
   if (t.kind === 'thrown') {
     const tg = targets[0];
     if (targets.length !== 1 || !tg || !('combatantId' in tg)) return false;
     const foe = state.combatants[tg.combatantId];
-    return !!foe && foe.alive && foe.team !== actor.team &&
+    return !!foe && foe.alive && foe.team !== actor.team && !isHidden(foe) &&
       distanceFeet(actor.position, foe.position) <= t.range.long &&
       hasLineOfSight(state.grid, actor.position, foe.position);
   }
@@ -184,6 +188,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (f.uses && (!uses || uses.current <= 0)) return false;
       if (f.trigger === 'bonus' && actor.turn.bonusActionUsed) return false;
       if (f.trigger === 'action' && actor.turn.actionUsed) return false;
+      if ((action.featureId === 'cunning-hide' || action.featureId === 'nimble-hide') && !canHide(state, actor)) return false;
       // 'free' features with an action-restoring effect only make sense after
       // the action is spent; harmless either way.
       if (action.featureId === 'action-surge' && !actor.turn.actionUsed) return false;
@@ -193,6 +198,8 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'disengage':
     case 'dodge':
       return !incap && !actor.turn.actionUsed;
+    case 'hide':
+      return !incap && !actor.turn.actionUsed && canHide(state, actor);
     case 'shakeAwake': {
       if (incap || actor.turn.actionUsed) return false;
       const t = state.combatants[action.targetId];
@@ -343,6 +350,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   for (const kind of ['dash', 'disengage', 'dodge'] as const) {
     if (isLegalAction(state, actorId, { kind })) actions.push({ kind });
   }
+  if (isLegalAction(state, actorId, { kind: 'hide' })) actions.push({ kind: 'hide' });
   for (const t of allies) {
     const a: Action = { kind: 'shakeAwake', targetId: t.id };
     if (isLegalAction(state, actorId, a)) actions.push(a);
@@ -395,6 +403,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       else actor.turn.bonusActionUsed = true;
       if (action.slotLevel >= 1) actor.spellSlots[action.slotLevel - 1]!.current -= 1;
       if (spell.concentration) events.push(...breakConcentration(draft, actorId));
+      events.push(...endHide(actor));
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = action.targets.flatMap((t) => ('position' in t ? [t.position] : []));
       events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions }));
@@ -411,6 +420,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       const targetIds = targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = targets.flatMap((t) => ('position' in t ? [t.position] : []));
       events.push({ type: 'itemUsed', combatantId: actorId, itemId: action.itemId, ...(targetIds[0] !== undefined ? { targetId: targetIds[0] } : {}) });
+      if (item.targeting.kind === 'thrown') events.push(...endHide(actor));
       events.push(...item.apply({ state: draft, userId: actorId, targetIds, positions }));
       break;
     }
@@ -437,6 +447,10 @@ export function step(state: GameState, action: Action): { state: GameState; even
       actor.turn.actionUsed = true;
       actor.conditions.push({ id: 'dodging' });
       events.push({ type: 'dodging', combatantId: actorId });
+      break;
+    case 'hide':
+      actor.turn.actionUsed = true;
+      events.push(...attemptHide(draft, actorId));
       break;
     case 'shakeAwake': {
       actor.turn.actionUsed = true;

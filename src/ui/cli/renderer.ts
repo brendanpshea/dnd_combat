@@ -104,6 +104,10 @@ export function renderEvent(state: GameState, e: GameEvent): string | undefined 
       return `${name(state, e.targetId)} regains ${e.amount} HP (${state.combatants[e.targetId]?.hp}/${state.combatants[e.targetId]?.maxHp}).`;
     case 'savingThrow':
       return `  ${name(state, e.combatantId)} ${e.ability.toUpperCase()} save: ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.`;
+    case 'hideCheck':
+      return `  ${name(state, e.combatantId)} hides: d20(${e.natural}) = ${e.total} vs DC 15 — ${e.success ? 'hidden' : 'seen'}.`;
+    case 'hiddenRevealed':
+      return `  ${name(state, e.observerId)} spots ${name(state, e.combatantId)} (${e.passivePerception} beats ${e.hideCheck}).`;
     case 'conditionApplied':
       return `  ${name(state, e.combatantId)} is ${e.condition}.`;
     case 'conditionRemoved':
@@ -152,6 +156,7 @@ export function describeAction(state: GameState, a: Action): string {
     case 'dash': return 'Dash';
     case 'disengage': return 'Disengage';
     case 'dodge': return 'Dodge';
+    case 'hide': return 'Hide';
     case 'shakeAwake': return `Shake ${name(state, a.targetId)} awake`;
     case 'endTurn': return 'End turn';
   }

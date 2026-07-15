@@ -53,6 +53,7 @@ export type ConditionId =
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
+  | 'hidden'       // unseen: cannot be directly targeted; next attack has advantage
   | 'noReactions'; // Shocking Grasp rider
 
 export interface ActiveCondition {
@@ -64,6 +65,8 @@ export interface ActiveCondition {
   expiresAtRound?: number;
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
   repeatSave?: { ability: Ability; dc: number };
+  /** The Dexterity (Stealth) result that observers must beat to reveal Hide. */
+  hideCheck?: number;
 }
 
 export interface ResourcePool {

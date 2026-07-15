@@ -54,6 +54,7 @@ export function describeShort(a: Action): string {
     case 'dash': return 'Dash';
     case 'disengage': return 'Disengage';
     case 'dodge': return 'Dodge';
+    case 'hide': return 'Hide';
     case 'endTurn': return 'End turn';
     case 'move': return 'Move';
   }
@@ -132,6 +133,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
       case 'dash':
       case 'disengage':
       case 'dodge':
+      case 'hide':
         bar.push({ id: a.kind, label: describeShort(a), action: a });
         break;
       case 'endTurn':

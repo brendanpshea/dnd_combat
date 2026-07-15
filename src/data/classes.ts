@@ -125,7 +125,7 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
       1: ['sneak-attack'],
-      2: ['cunning-dash', 'cunning-disengage'],
+      2: ['cunning-dash', 'cunning-disengage', 'cunning-hide'],
       3: ['assassinate'], // Assassin
     },
     weaponMasteries: ['shortsword', 'shortsword-plus1', 'shortbow'],

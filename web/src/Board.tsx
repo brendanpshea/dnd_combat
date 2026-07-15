@@ -105,6 +105,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               c.id === activeId ? 'active' : '',
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
+              c.conditions.some((condition) => condition.id === 'hidden') ? 'hidden' : '',
             ].join(' ')}
           >
             <span className="glyph">{TOKEN[c.classId] ?? '❓'}</span>

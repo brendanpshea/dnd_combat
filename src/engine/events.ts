@@ -30,6 +30,8 @@ export type GameEvent =
       combatantId: Id; ability: Ability; dc: number;
       natural: number; total: number; success: boolean;
     }
+  | { type: 'hideCheck'; combatantId: Id; natural: number; total: number; success: boolean }
+  | { type: 'hiddenRevealed'; combatantId: Id; observerId: Id; passivePerception: number; hideCheck: number }
   | { type: 'conditionApplied'; combatantId: Id; condition: ConditionId; sourceId?: Id }
   | { type: 'conditionRemoved'; combatantId: Id; condition: ConditionId }
   | { type: 'concentrationBroken'; combatantId: Id; spellId: Id }

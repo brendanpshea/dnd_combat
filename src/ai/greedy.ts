@@ -243,6 +243,9 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   if (a.featureId === 'cunning-dash') {
     return nearestEnemyDist(state, actor.position, actor.team) > 7 ? 0.8 : 0;
   }
+  if (a.featureId === 'cunning-hide' || a.featureId === 'nimble-hide') {
+    return actor.turn.actionUsed ? 1.2 : 0.8;
+  }
   if (a.featureId === 'preserve-life') {
     const pool = 5 * actor.level;
     const healable = Object.values(state.combatants)
@@ -319,6 +322,9 @@ export function chooseAction(state: GameState, actorId: Id): Action {
           ? 0.8 : 0;
         break;
       case 'dodge': s = 0; break;
+      case 'hide':
+        s = !actions.some((x) => x.kind === 'attack' || x.kind === 'castSpell') ? 0.7 : 0;
+        break;
       case 'shakeAwake': s = 2; break;
       case 'endTurn': continue;
     }

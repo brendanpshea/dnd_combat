@@ -11,6 +11,7 @@ import type { GameState, Id, Ability, Position } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
+import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
@@ -428,6 +429,7 @@ export function validTarget(
   const caster = state.combatants[casterId]!;
   const t = state.combatants[targetId];
   if (!t || !t.alive) return false;
+  if (targetId !== casterId && isHidden(t)) return false;
   if (spell.targeting.kind !== 'creature') return false;
   const { range, who } = spell.targeting;
   if (who === 'enemy' && t.team === caster.team) return false;

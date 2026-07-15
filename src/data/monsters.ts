@@ -28,14 +28,14 @@ export const MONSTERS: Record<Id, MonsterData> = {
     id: 'goblin-warrior', name: 'Goblin Warrior',
     ac: 15, hp: 10, speed: 30,
     abilities: { str: 8, dex: 15, con: 10, int: 10, wis: 8, cha: 8 },
-    featureIds: ['nimble-escape'],
+    featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
   },
   'goblin-boss': {
     id: 'goblin-boss', name: 'Goblin Boss',
     ac: 17, hp: 21, speed: 30,
     abilities: { str: 10, dex: 15, con: 10, int: 10, wis: 8, cha: 10 },
-    featureIds: ['nimble-escape'],
+    featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
     metalArmor: true, // chain shirt
     attacksPerAction: 2,

@@ -5,6 +5,7 @@
 import type { GameState, Combatant, Id } from './types.js';
 import { abilityMod } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
+import { discoverHidden } from './rules/hide.js';
 import type { GameEvent } from './events.js';
 
 export function rollInitiative(state: GameState): GameEvent[] {
@@ -39,7 +40,7 @@ export function currentCombatant(state: GameState): Combatant {
 /** Reset economy, expire own-turn conditions, run repeat saves at turn END (handled in endTurn). */
 export function startTurn(state: GameState): GameEvent[] {
   const c = currentCombatant(state);
-  const events: GameEvent[] = [];
+  const events: GameEvent[] = [...discoverHidden(state, c.id)];
 
   // Dodging and noReactions last until the start of the owner's next turn.
   for (const cond of c.conditions) {

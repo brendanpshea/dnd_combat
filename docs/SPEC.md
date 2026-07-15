@@ -106,7 +106,14 @@ resistance(½) / vulnerability(×2) → HP → Undead Fortitude → wake-the-unc
 attacks only). Multiattack: `attacksPerAction` banked as `attacksLeft` when the
 Attack action is taken (composes with Action Surge). Off-hand attack requires
 two light weapons. Dash/Disengage/Dodge implemented; Dodge imposes disadvantage
-until the dodger's next turn.
+until the dodger's next turn. **Hide** is a DC 15 Dexterity (Stealth) action
+available only when no living enemy has line of sight to the actor. On success,
+the hidden creature cannot be directly targeted and has advantage on its next
+attack; attacking or casting a spell ends Hide. At the start of an enemy's
+turn, line of sight plus advantaged passive Perception ($15 +$ Wisdom modifier)
+strictly greater than the stored Hide check reveals the creature to all enemies.
+Area effects may still affect hidden creatures. Rogue Cunning Action and Goblin
+Nimble Escape each provide a bonus-action Hide option.
 
 **Movement.** Dijkstra over per-cell cost; pass through allies, not hostiles;
 can't end on occupied cells. Leaving reach provokes an opportunity attack

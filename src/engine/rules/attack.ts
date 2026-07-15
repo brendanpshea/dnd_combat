@@ -9,6 +9,7 @@ import { acOf } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
 import { distanceFeet, adjacent } from '../grid.js';
 import { savingThrow } from './saves.js';
+import { endHide, isHidden } from './hide.js';
 import type { GameEvent } from '../events.js';
 
 /** Which ability powers an attack with this weapon. */
@@ -56,6 +57,7 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'poisoned')) dis.push('poisoned');
   if (attacker.conditions.some((c) => c.id === 'blinded')) dis.push('blinded');
   if (attacker.conditions.some((c) => c.id === 'inspired')) adv.push('heroic inspiration');
+  if (isHidden(attacker)) adv.push('hidden');
   if (target.conditions.some((c) => c.id === 'blinded')) adv.push('target blinded');
   if (attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === target.id)) {
     adv.push('vex');
@@ -151,6 +153,7 @@ export function resolveAttack(
     hit, crit: hit && crit,
     opportunity: ctx.opportunity ?? false,
   });
+  events.push(...endHide(attacker));
 
   if (!hit) return events;
 

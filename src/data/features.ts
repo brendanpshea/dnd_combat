@@ -5,6 +5,7 @@
  */
 import type { GameState, Id } from '../engine/types.js';
 import { proficiencyBonus } from '../engine/types.js';
+import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { distanceFeet } from '../engine/grid.js';
 import type { GameEvent } from '../engine/events.js';
@@ -76,6 +77,12 @@ export const FEATURES: Record<Id, FeatureData> = {
       return [{ type: 'disengaged', combatantId: actorId }];
     },
   },
+  'nimble-hide': {
+    id: 'nimble-hide', name: 'Nimble Escape: Hide', trigger: 'bonus',
+    apply({ state, actorId }) {
+      return attemptHide(state, actorId);
+    },
+  },
   'pack-tactics': { id: 'pack-tactics', name: 'Pack Tactics', trigger: 'passive' },
   'improved-critical': { id: 'improved-critical', name: 'Improved Critical (Champion)', trigger: 'passive' },
   assassinate: { id: 'assassinate', name: 'Assassinate', trigger: 'passive' },
@@ -94,6 +101,12 @@ export const FEATURES: Record<Id, FeatureData> = {
       const c = state.combatants[actorId]!;
       c.turn.disengaged = true;
       return [{ type: 'disengaged', combatantId: actorId }];
+    },
+  },
+  'cunning-hide': {
+    id: 'cunning-hide', name: 'Cunning Action: Hide', trigger: 'bonus',
+    apply({ state, actorId }) {
+      return attemptHide(state, actorId);
     },
   },
   'preserve-life': {

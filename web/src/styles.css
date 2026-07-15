@@ -144,6 +144,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .token.team1 { border: 2.5px solid var(--blue); }
 .token.team2 { border: 2.5px solid var(--red); }
 .token.active { box-shadow: 0 0 10px 2px var(--gold); }
+.token.hidden { opacity: 0.42; filter: saturate(0.55); }
 .token .glyph { font-size: clamp(14px, 4.2vmin, 26px); line-height: 1; }
 .hpbar {
   position: absolute;
