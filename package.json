@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "start": "tsx src/ui/cli/main.ts",
     "campaign": "tsx src/ui/cli/campaign.ts",
+    "arena": "tsx scripts/arena.ts",
     "web": "vite --config web/vite.config.ts",
     "web:build": "vite build --config web/vite.config.ts",
     "web:typecheck": "tsc -p web/tsconfig.json"

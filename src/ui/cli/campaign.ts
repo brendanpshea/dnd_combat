@@ -19,7 +19,7 @@ import {
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
-import { runBattle, chooseFrom, argValue, parseSeed } from './battle.js';
+import { runBattle, chooseFrom, argValue, parseSeed, AiLevel } from './battle.js';
 
 function partySummary(c: CampaignState): string {
   const stage = currentStage(c);
@@ -212,7 +212,7 @@ async function main() {
     const aiTeams = new Set<string>(['team2']);
     if (auto) aiTeams.add('team1');
 
-    const winner = await runBattle(combat, aiTeams, rl);
+    const winner = await runBattle(combat, aiTeams, rl, (argValue('--ai') ?? 'normal') as AiLevel);
     if (winner !== 'team1') {
       console.log('\nThe party has fallen. The campaign is over.');
       deleteSave();

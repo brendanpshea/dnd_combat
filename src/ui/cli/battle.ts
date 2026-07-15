@@ -8,6 +8,23 @@ import type { Combat } from '../../engine/combat.js';
 import type { TeamId } from '../../engine/types.js';
 import { acOf } from '../../data/armor.js';
 import { chooseAction } from '../../ai/greedy.js';
+import { chooseActionSim, SIM_PRESETS } from '../../ai/simulated.js';
+
+export type AiLevel = 'easy' | 'normal' | 'hard';
+
+/**
+ * Difficulty tiers are ordered by *measured* arena strength, not by
+ * architecture: sim-easy (~13% vs greedy) < sim-normal (~35%) < greedy.
+ * The hand-tuned greedy still outplays the general simulation AI on current
+ * content, so it serves as Hard; when the arena shows the sim AI overtaking
+ * it (more content, better evaluator), swap Hard to SIM_PRESETS.hard.
+ */
+export function aiPolicy(level: AiLevel) {
+  if (level === 'hard') return chooseAction;
+  const opts = SIM_PRESETS[level];
+  return (state: Parameters<typeof chooseAction>[0], id: Parameters<typeof chooseAction>[1]) =>
+    chooseActionSim(state, id, opts);
+}
 import type { Action } from '../../engine/actions.js';
 import { renderBoard, renderStatus, renderEvent, describeAction, cellName, parseCell } from './renderer.js';
 
@@ -27,7 +44,9 @@ export async function runBattle(
   combat: Combat,
   aiTeams: Set<string>,
   rl: readline.Interface,
+  aiLevel: AiLevel = 'normal',
 ): Promise<TeamId> {
+  const ai = aiPolicy(aiLevel);
   for (const e of combat.log) {
     const line = renderEvent(combat.state, e);
     if (line) console.log(line);
@@ -38,7 +57,7 @@ export async function runBattle(
     const me = state.combatants[combat.activeId]!;
 
     if (aiTeams.has(me.team)) {
-      const action = chooseAction(state, me.id);
+      const action = ai(state, me.id);
       if (action.kind !== 'endTurn') {
         console.log(`\n[AI] ${me.name} (${me.team === 'team1' ? 'T1' : 'T2'}): ${describeAction(state, action)}`);
       }

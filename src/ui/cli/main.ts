@@ -11,7 +11,7 @@ import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
 import { MAPS, MAP_IDS } from '../../data/maps.js';
 import { ENCOUNTERS, buildEncounter } from '../../data/monsters.js';
-import { runBattle, argValue, parseSeed } from './battle.js';
+import { runBattle, argValue, parseSeed, AiLevel } from './battle.js';
 
 async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -54,7 +54,8 @@ async function main() {
     combatants: [...buildParty('team1', 0, level), ...team2],
   });
 
-  await runBattle(combat, aiTeams, rl);
+  const aiLevel = (argValue('--ai') ?? 'normal') as AiLevel;
+  await runBattle(combat, aiTeams, rl, aiLevel);
   rl.close();
 }
 

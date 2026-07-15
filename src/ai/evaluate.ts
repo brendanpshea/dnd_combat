@@ -1,0 +1,145 @@
+/**
+ * Generic state evaluation for the simulation AI.
+ *
+ * V(state, team) reads only generic state fields (HP, conditions, resources,
+ * positions, equipped kit) — never specific spell/feature/item ids. New
+ * content is valued through what it *does* to the state, so the AI
+ * generalizes to content that didn't exist when this file was written.
+ */
+import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
+import { abilityMod } from '../engine/types.js';
+import { WEAPONS } from '../data/weapons.js';
+import { ITEMS } from '../data/items.js';
+import { parseDice } from '../engine/dice.js';
+import { distanceCells } from '../engine/grid.js';
+import { cellAt } from '../engine/types.js';
+import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
+
+function avgDice(expr: string): number {
+  const d = parseDice(expr);
+  return d.count * (d.sides + 1) / 2 + d.bonus;
+}
+
+/** Rough damage-per-round proxy from a unit's kit. Content-agnostic. */
+export function damageProxy(c: Combatant): number {
+  let best = 2; // unarmed floor
+  for (const wid of [...equippedWeapons(c), ...stowedWeapons(c)]) {
+    const w = WEAPONS[wid];
+    if (!w) continue;
+    const ability = w.melee && !w.properties.includes('finesse') ? 'str' : 'dex';
+    const dmg = avgDice(w.damage) + abilityMod(c.abilities[ability]) + (w.damageBonus ?? 0);
+    if (dmg > best) best = dmg;
+  }
+  // Casters scale with their remaining magic rather than any specific spell.
+  const slotPower = c.spellSlots.reduce((s, pool, i) => s + pool.current * (i + 1), 0);
+  if (c.spellIds.length > 0) best += 2 + Math.min(6, slotPower);
+  return best * c.attacksPerAction;
+}
+
+/** How much losing this unit hurts. */
+export function unitWorth(c: Combatant): number {
+  return c.maxHp + 4 * c.level + 1.5 * damageProxy(c);
+}
+
+/** Fraction of a unit's effectiveness a condition removes (or adds). */
+const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
+  // loses actions entirely (and helpless conditions invite auto-crits)
+  paralyzed: -0.55,
+  unconscious: -0.55,
+  incapacitated: -0.4,
+  // impaired
+  prone: -0.1,
+  blinded: -0.2,
+  poisoned: -0.12,
+  frightened: -0.1,
+  sapped: -0.06,
+  guided: -0.08,   // the *bearer* is easier to hit
+  // buffs
+  blessed: 0.08,
+  dodging: 0.06,
+};
+
+/** Does this unit's kit want melee range? (any pure-melee weapon in hand) */
+function prefersMelee(c: Combatant): boolean {
+  return equippedWeapons(c).some((w) => {
+    const wd = WEAPONS[w];
+    return !!wd && wd.melee && wd.range === undefined;
+  });
+}
+
+/** Can `enemy` plausibly hurt `unit` soon? 1 = this turn, decaying with distance. */
+function threatReach(enemy: Combatant, unit: Combatant): number {
+  const dist = distanceCells(enemy.position, unit.position);
+  const cellsPerTurn = enemy.speed / 5;
+  const hasRanged = [...equippedWeapons(enemy), ...stowedWeapons(enemy)]
+    .some((w) => WEAPONS[w]?.range !== undefined) || enemy.spellIds.length > 0;
+  // Melee threat falls off smoothly beyond charge range; ranged threat is
+  // wider but still prefers proximity (adjacency, better odds, fewer walls).
+  const reachNow = hasRanged ? 8 : cellsPerTurn + 1;
+  return 1 / (1 + Math.max(0, dist - reachNow) * (hasRanged ? 0.15 : 0.6));
+}
+
+function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
+  let score = 0;
+  for (const c of Object.values(state.combatants)) {
+    if (c.team !== team || !c.alive) continue;
+    const worth = unitWorth(c);
+
+    // Alive matters a lot; remaining HP matters proportionally.
+    let unit = worth * (0.35 + 0.65 * (c.hp / c.maxHp));
+
+    for (const cond of c.conditions) {
+      unit += worth * (CONDITION_WEIGHT[cond.id] ?? 0);
+    }
+
+    // Resources not yet spent retain option value.
+    unit += c.spellSlots.reduce((s, pool, i) => s + pool.current * (i + 1) * 0.7, 0);
+    unit += Object.values(c.featureUses).reduce((s, u) => s + u.current * 0.5, 0);
+    // Consumables too (valued by their data cost) — so the AI doesn't burn
+    // a potion at full HP just because it scores no worse than passing.
+    unit += c.inventory.reduce((s, stack) => {
+      const item = ITEMS[stack.itemId];
+      return item ? s + stack.qty * Math.min(2, item.cost / 100) : s;
+    }, 0);
+
+    // Standing in a hazard is bad; more so with low HP.
+    const cell = cellAt(state.grid, c.position);
+    if (cell?.terrain === 'hazard') unit -= 2 + 4 * (1 - c.hp / c.maxHp);
+
+    // Engagement: a unit contributes nothing from across the board. Melee
+    // kits want to be adjacent; ranged kits want a comfortable middle band.
+    let nearest = Infinity;
+    for (const e of Object.values(state.combatants)) {
+      if (e.alive && e.team !== team) nearest = Math.min(nearest, distanceCells(e.position, c.position));
+    }
+    // Distance is mutual, so a symmetric weight would cancel out of
+    // V = mine - theirs and leave movement gradient-free. The POV team
+    // cares more about its own engagement: that asymmetry is what makes
+    // closing (or kiting) worth something to the mover.
+    if (Number.isFinite(nearest)) {
+      const preferred = prefersMelee(c) ? 1 : 4;
+      unit -= (isPov ? 0.9 : 0.3) * Math.abs(nearest - preferred);
+    }
+
+    // Incoming threat: fragile units should not sit where enemies can reach.
+    let threat = 0;
+    for (const e of Object.values(state.combatants)) {
+      if (!e.alive || e.team === team) continue;
+      threat += threatReach(e, c) * damageProxy(e);
+    }
+    // Threat matters more the closer it comes to killing you — and the POV
+    // team weighs its own exposure more (see engagement note above).
+    unit -= (isPov ? 0.25 : 0.12) * Math.min(threat, c.hp * 1.5) * (1.3 - c.hp / c.maxHp);
+
+    score += unit;
+  }
+  return score;
+}
+
+/** Positive is good for `team`. */
+export function evaluate(state: GameState, team: TeamId): number {
+  const other: TeamId = team === 'team1' ? 'team2' : 'team1';
+  if (state.winner === team) return 1e6;
+  if (state.winner === other) return -1e6;
+  return teamScore(state, team, true) - teamScore(state, other, false);
+}

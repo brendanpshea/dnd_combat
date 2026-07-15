@@ -191,21 +191,50 @@ are data.
 
 ## 7. AI
 
-`ai/greedy.ts` scores every legal action by expected value and plays the best
-until nothing beats ending the turn (threshold 0.5):
+Two policies behind one signature, selectable as difficulty in both UIs
+(`--ai easy|normal|hard` in the CLI, a dropdown in the web setup).
 
-- Attacks/attack spells: hit or save-fail probability × average damage, kill
-  bonus when EV can finish the target.
-- Heals scale with urgency; Bless/Aid front-loaded to early rounds; Sleep and
-  Burning Hands count actual template occupants with friendly-fire penalties
-  (waived by Sculpt Spells); Hold Person weighted by target beefiness.
-- Movement: melee classes close distance; casters kite to the 3–8 cell band;
-  leaving melee without Disengage is penalized (so they Disengage/Misty Step
-  first). Monsters charge if their kit is pure melee, else kite.
-- Leveled spells carry a small slot-preservation cost.
+**`ai/greedy.ts`** (the original): hand-written expected-value formulas per
+spell/feature. Strong on current content — it is hand-tuned to exactly this
+content — but every new spell needs a new formula; it does not generalize.
 
-Known limits (by design, for now): no lookahead, no terrain valuation (won't
-deliberately hide behind walls), no focus-fire memory, never upcasts.
+**`ai/simulated.ts` + `ai/evaluate.ts`**: scores actions by actually running
+them through the pure `step()` on sampled RNG streams and evaluating outcomes
+with a *generic* state evaluator. Contains **no content ids** (a test greps
+the source against every spell/feature/item id) — new content is valued
+through its simulated consequences, automatically.
+
+- `evaluate(state, team)`: unit worth (HP, level, kit damage proxy) scaled by
+  HP fraction; condition weights by mechanical effect; option value for slots,
+  feature uses, and consumables (priced from item cost); hazard penalty;
+  engagement band (melee kits want adjacency, ranged a middle distance) and
+  an incoming-threat term. Positional terms are POV-asymmetric — distance is
+  mutual, so symmetric weights would cancel out of `mine − theirs` and leave
+  movement gradient-free.
+- Search: small beam over this turn's action sequence; per-action expected
+  deltas (averaged over samples) accumulate into path scores, which stops
+  beam-max from chasing lucky-sample fantasy lines. Presets: easy
+  (1 sample/beam 2/depth 1), normal (3/3/2), hard (5/5/3). Two "obvious"
+  improvements — common random numbers across candidates, and a re-sampling
+  refinement pass — were both tried and *measurably weakened* arena play;
+  they are documented in code comments so nobody re-adds them on instinct.
+- Sample seeds derive from the state's RNG but are *not* the game's actual
+  stream — the AI estimates expectations, never peeks at the real next roll.
+  Decisions are deterministic; replays stay exact.
+
+**Difficulty mapping follows measured strength, not architecture:**
+Easy = sim-easy (~13% vs greedy), Normal = sim-normal (~35%), Hard = greedy.
+When arena runs show the sim AI overtaking greedy (richer content, better
+evaluator, tuned weights), Hard swaps to the sim hard preset — the criterion
+is empirical, not aesthetic.
+
+**Arena** (`npm run arena [games] [preset]`, `src/ai/arena.ts`): pits
+policies over seeded mirror matches with side-swapping — the empirical tool
+for any AI change; a CI-friendly regression floor lives in the test suite.
+
+Known limits: single-turn horizon (no enemy-reply search), no wall/LoS
+valuation, never upcasts, evaluator weights hand-set (auto-tuning them
+against arena win rate is an open, well-tooled follow-up).
 
 ## 7b. Campaign layer
 

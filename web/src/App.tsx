@@ -6,6 +6,7 @@ import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
 import { MAPS, MAP_IDS } from '../../src/data/maps.js';
 import { acOf } from '../../src/data/armor.js';
 import { chooseAction } from '../../src/ai/greedy.js';
+import { chooseActionSim, SIM_PRESETS } from '../../src/ai/simulated.js';
 import type { Action } from '../../src/engine/actions.js';
 import { renderEvent } from '../../src/ui/cli/renderer.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
@@ -16,6 +17,15 @@ import { CampaignScreen } from './Campaign.js';
 import { loadCampaignWeb } from './campaignStorage.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
+export type AiLevel = 'easy' | 'normal' | 'hard';
+
+// Tiers ordered by measured arena strength: sim-easy < sim-normal < greedy.
+// (See src/ui/cli/battle.ts for the full rationale.)
+export function aiPolicy(level: AiLevel) {
+  if (level === 'hard') return chooseAction;
+  const opts = SIM_PRESETS[level];
+  return (state: Parameters<typeof chooseAction>[0], id: Id) => chooseActionSim(state, id, opts);
+}
 
 interface SetupConfig {
   mode: Mode;
@@ -23,6 +33,7 @@ interface SetupConfig {
   level: number;
   encounterId: string;
   seed: number;
+  aiLevel: AiLevel;
 }
 
 type Targeting =
@@ -79,6 +90,7 @@ function Skirmish({ config, onExit }: { config: SetupConfig; onExit(): void }) {
     <Battle
       combat={ref.current.combat}
       aiTeams={ref.current.aiTeams}
+      aiLevel={config.aiLevel}
       mapLabel={MAPS[config.mapId]?.name ?? ''}
       doneLabel="New battle"
       onExit={onExit}
@@ -92,6 +104,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
   const [mapId, setMapId] = useState('ruins');
   const [level, setLevel] = useState(1);
   const [encounterId, setEncounterId] = useState('goblins');
+  const [aiLevel, setAiLevel] = useState<AiLevel>('normal');
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 2 ** 31));
 
   return (
@@ -128,6 +141,16 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
       </label>
+      {mode !== 'hotseat' && (
+        <label>
+          AI difficulty
+          <select value={aiLevel} onChange={(e) => setAiLevel(e.target.value as AiLevel)}>
+            <option value="easy">Easy</option>
+            <option value="normal">Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+      )}
       <label>
         Seed
         <input
@@ -136,7 +159,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           onChange={(e) => setSeed(Number(e.target.value) || 0)}
         />
       </label>
-      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed })}>
+      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed, aiLevel })}>
         Fight!
       </button>
     </div>
@@ -161,13 +184,14 @@ function makeCombat(config: SetupConfig): { combat: Combat; aiTeams: Set<TeamId>
 export interface BattleProps {
   combat: Combat;
   aiTeams: Set<TeamId>;
+  aiLevel?: AiLevel;
   mapLabel: string;
   doneLabel: string;
   onExit(): void;
   onDone(winner: TeamId): void;
 }
 
-export function Battle({ combat, aiTeams, mapLabel, doneLabel, onExit, onDone }: BattleProps) {
+export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabel, onExit, onDone }: BattleProps) {
   const [, setVersion] = useState(0);
   const [log, setLog] = useState<string[]>(() =>
     combat.log.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s));
@@ -225,7 +249,7 @@ export function Battle({ combat, aiTeams, mapLabel, doneLabel, onExit, onDone }:
   // AI turns, paced by what the action is so effects can land.
   useEffect(() => {
     if (combat.isOver() || !active || !aiTeams.has(active.team)) return;
-    const action = chooseAction(combat.state, combat.activeId);
+    const action = aiPolicy(aiLevel)(combat.state, combat.activeId);
     const base =
       action.kind === 'move' ? 550 :
       action.kind === 'endTurn' ? 350 :
