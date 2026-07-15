@@ -22,11 +22,22 @@ export interface CorpseEffect {
   glyph: string;
 }
 
+export interface BurstEffect {
+  id: number;
+  cellKey: string;
+  /** damage type, 'crit', or 'heal' — selects particle color/shape. */
+  kind: string;
+  delayMs: number;
+}
+
 export interface EffectBatch {
   floats: FloatEffect[];
   corpses: CorpseEffect[];
+  bursts: BurstEffect[];
   /** Token ids to shake briefly. */
   hits: Id[];
+  /** A crit landed this batch — trigger a brief screen flash. */
+  critFlash: boolean;
 }
 
 let nextId = 1;
@@ -46,7 +57,12 @@ const DMG_SFX: Record<DamageType, Sfx> = {
 export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
   const floats: FloatEffect[] = [];
   const corpses: CorpseEffect[] = [];
+  const bursts: BurstEffect[] = [];
   const hits: Id[] = [];
+  let critFlash = false;
+  // The attack roll immediately precedes its damage; remember if it crit so
+  // the damage float and burst can be upgraded.
+  let pendingCrit = false;
   let stagger = 0;
 
   const cellOf = (id: Id): string | undefined => {
@@ -61,6 +77,7 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
   for (const e of events) {
     switch (e.type) {
       case 'attackRolled': {
+        pendingCrit = e.hit && e.crit;
         if (!e.hit) {
           const cell = cellOf(e.targetId);
           if (cell) floats.push({ id: nextId++, cellKey: cell, text: 'miss', cls: 'miss', delayMs: stagger });
@@ -73,12 +90,17 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
       }
       case 'damageDealt': {
         const cell = cellOf(e.targetId);
+        const crit = pendingCrit;
+        pendingCrit = false;
         if (cell) {
           floats.push({
             id: nextId++, cellKey: cell,
-            text: `-${e.amount}`, cls: `dmg-${e.damageType}`, delayMs: stagger,
+            text: crit ? `CRIT ${e.amount}!` : `-${e.amount}`,
+            cls: `dmg-${e.damageType}${crit ? ' crit' : ''}`, delayMs: stagger,
           });
+          bursts.push({ id: nextId++, cellKey: cell, kind: crit ? 'crit' : e.damageType, delayMs: stagger });
         }
+        if (crit) critFlash = true;
         hits.push(e.targetId);
         sound(DMG_SFX[e.damageType], stagger);
         stagger += 150;
@@ -88,6 +110,7 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         const cell = cellOf(e.targetId);
         if (cell && e.amount > 0) {
           floats.push({ id: nextId++, cellKey: cell, text: `+${e.amount}`, cls: 'heal', delayMs: stagger });
+          bursts.push({ id: nextId++, cellKey: cell, kind: 'heal', delayMs: stagger });
           sound('heal', stagger);
           stagger += 150;
         }
@@ -115,5 +138,5 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         break;
     }
   }
-  return { floats, corpses, hits };
+  return { floats, corpses, bursts, hits, critFlash };
 }

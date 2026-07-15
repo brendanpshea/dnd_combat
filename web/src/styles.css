@@ -1,6 +1,17 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* To use a bundled rounded display font (Fredoka / Baloo 2), drop a woff2 at
+   web/public/fonts/display.woff2 and uncomment:
+@font-face {
+  font-family: 'Display';
+  src: url('./fonts/display.woff2') format('woff2');
+  font-weight: 400 900; font-display: swap;
+}
+   then add 'Display' to the front of --display below. Until then, ui-rounded
+   gives Apple devices a rounded system font for free with a graceful fallback. */
+
 :root {
+  --display: ui-rounded, 'Segoe UI Rounded', 'Baloo 2', 'Fredoka', 'Segoe UI', system-ui, sans-serif;
   --bg: #1a1625;
   --panel: #241f33;
   --panel2: #2e2842;
@@ -22,6 +33,17 @@ body {
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
 }
+
+/* Chunky rounded display type for headers, damage numbers, and key chrome. */
+h1, h2, h3,
+.setup h1, .overlay-box h2, .campaign h3,
+.topbar .round, .targeting-banner, .float,
+button.primary, button.endturn {
+  font-family: var(--display);
+  letter-spacing: 0.01em;
+}
+h1, .overlay-box h2 { font-weight: 800; }
+.setup h1 { font-size: 30px; }
 
 button {
   font: inherit;
@@ -120,9 +142,33 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   cursor: pointer;
 }
 .cell.dark { background: var(--cell-dark); }
-.terrain-wall { background: #0d0a14 !important; box-shadow: inset 0 0 0 2px #453d63; }
-.terrain-difficult { background-image: repeating-linear-gradient(45deg, transparent 0 4px, #26543a44 4px 8px); }
-.terrain-hazard { background-image: repeating-linear-gradient(-45deg, transparent 0 4px, #b4432a55 4px 8px); }
+/* Terrain lives in `background` only; highlights use box-shadow, so the two
+   never fight and a highlight ring shows on any terrain. */
+.cell.terrain-wall {
+  background:
+    linear-gradient(145deg, #35304e 0%, #221d31 55%, #14101d 100%);
+}
+.cell.terrain-wall::after {
+  content: ''; position: absolute; inset: 8%; border-radius: 3px; z-index: 0;
+  background: linear-gradient(145deg, #453d6355, transparent 60%);
+  box-shadow: inset 0 -2px 3px #0009;
+}
+.cell.terrain-difficult {
+  background:
+    radial-gradient(90% 70% at 30% 25%, #2f6b5a66, transparent 60%),
+    radial-gradient(90% 70% at 72% 78%, #295a6b66, transparent 60%),
+    linear-gradient(150deg, #244440, #213a4c);
+}
+.cell.terrain-hazard {
+  background:
+    radial-gradient(70% 60% at 50% 78%, #ff6a3a77, transparent 72%),
+    linear-gradient(150deg, #532421, #35130f);
+  animation: emberGlow 1.7s ease-in-out infinite alternate;
+}
+@keyframes emberGlow {
+  from { filter: brightness(0.9) saturate(0.95); }
+  to   { filter: brightness(1.18) saturate(1.1); }
+}
 
 .hl-move { box-shadow: inset 0 0 0 3px #4a9eff88; }
 .hl-move:hover { background: #4a9eff33; }
@@ -263,6 +309,70 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .float.dmg-poison, .float.dmg-acid { color: #8fdd6a; }
 .float.dmg-force { color: #ff9dea; }
 .float.dmg-psychic { color: #f2a2c4; }
+.float.crit {
+  color: var(--gold) !important;
+  font-size: clamp(15px, 4.8vmin, 28px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 7px #ff6a3a, 0 1px 3px #000;
+  -webkit-text-stroke: 0.6px #6b3d0a;
+}
+
+/* ---- particle bursts ---- */
+.burst {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+.burst i {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: clamp(3px, 1.3vmin, 6px);
+  height: clamp(3px, 1.3vmin, 6px);
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  opacity: 0;
+  background: #f0ead9;
+  transform: rotate(var(--a)) translateY(0) scale(0.4);
+  animation: particle 0.5s ease-out forwards;
+}
+@keyframes particle {
+  0%   { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(0.4); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-3.4vmin) scale(1); }
+}
+.burst-fire i { background: #ff9d4d; box-shadow: 0 0 5px #ff6a3a; }
+.burst-lightning i { background: #9be2ff; box-shadow: 0 0 5px #4a9eff; }
+.burst-thunder i { background: #b8c4ff; box-shadow: 0 0 5px #8fa0ff; }
+.burst-cold i { background: #bfefff; box-shadow: 0 0 5px #7fd6ff; }
+.burst-radiant i { background: var(--gold); box-shadow: 0 0 6px #ffd166; }
+.burst-necrotic i, .burst-psychic i { background: #c084fc; box-shadow: 0 0 5px #a24fe0; }
+.burst-poison i, .burst-acid i { background: #8fdd6a; box-shadow: 0 0 5px #5fb83a; }
+.burst-force i { background: #ff9dea; box-shadow: 0 0 5px #e05fc0; }
+.burst-heal i { background: var(--green); box-shadow: 0 0 6px #6ee7a0; }
+.burst-crit i {
+  width: clamp(4px, 1.7vmin, 8px);
+  height: clamp(4px, 1.7vmin, 8px);
+  background: var(--gold);
+  box-shadow: 0 0 7px #ffb84d;
+}
+
+/* ---- crit screen flash ---- */
+.crit-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, #ffd16636, transparent 68%);
+  animation: critflash 0.26s ease-out forwards;
+}
+@keyframes critflash {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
+}
 
 .token.hit { animation: shake 0.4s ease-in-out; }
 @keyframes shake {

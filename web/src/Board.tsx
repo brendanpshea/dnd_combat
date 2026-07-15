@@ -3,7 +3,7 @@ import type { GameState, Position, Combatant, Id } from '../../src/engine/types.
 import { cellAt } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
-import type { FloatEffect, CorpseEffect } from './effects.js';
+import type { FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
 import { hasArt, tokenUrl, tokenScale } from './art.js';
 
 const TOKEN: Record<string, string> = {
@@ -24,6 +24,7 @@ export interface BoardProps {
   multiCounts?: Map<Id, number> | undefined;
   floats?: FloatEffect[];
   corpses?: CorpseEffect[];
+  bursts?: BurstEffect[];
   hitIds?: Set<Id>;
   movePaths?: Map<Id, Position[]>;
   onCellTap(pos: Position, occupant?: Combatant): void;
@@ -35,7 +36,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, hitIds, movePaths, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, hitIds, movePaths, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
 
@@ -65,6 +66,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       if ((x + y) % 2 === 0) classes.push('dark');
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];
       const cellCorpses = corpses?.filter((c) => c.cellKey === key) ?? [];
+      const cellBursts = bursts?.filter((b) => b.cellKey === key) ?? [];
       cells.push(
         <div
           key={key}
@@ -73,6 +75,13 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
         >
           {cellCorpses.map((c) => (
             <span key={c.id} className="corpse">{c.glyph}</span>
+          ))}
+          {cellBursts.map((b) => (
+            <span key={b.id} className={`burst burst-${b.kind}`} style={{ animationDelay: `${b.delayMs}ms` }}>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => (
+                <i key={k} style={{ ['--a' as string]: `${k * 45 + (b.id % 20)}deg`, animationDelay: `${b.delayMs}ms` }} />
+              ))}
+            </span>
           ))}
           {cellFloats.map((f) => (
             <span key={f.id} className={`float ${f.cls}`} style={{ animationDelay: `${f.delayMs}ms` }}>

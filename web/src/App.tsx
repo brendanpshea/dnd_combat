@@ -14,7 +14,7 @@ import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
-import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
+import { effectsFor, FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
 import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
@@ -248,6 +248,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
   const [showLog, setShowLog] = useState(false);
   const [floats, setFloats] = useState<FloatEffect[]>([]);
   const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
+  const [bursts, setBursts] = useState<BurstEffect[]>([]);
+  const [critFlash, setCritFlash] = useState(false);
   const [hitIds, setHitIds] = useState<Set<Id>>(new Set());
   const [movePaths, setMovePaths] = useState<Map<Id, Position[]>>(new Map());
   const [muted, setMutedState] = useState(isMuted());
@@ -286,6 +288,15 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
         setCorpses((c) => [...c, ...fx.corpses]);
         const ids = new Set(fx.corpses.map((c) => c.id));
         setTimeout(() => setCorpses((c) => c.filter((x) => !ids.has(x.id))), 1800);
+      }
+      if (fx.bursts.length > 0) {
+        setBursts((b) => [...b, ...fx.bursts]);
+        const ids = new Set(fx.bursts.map((b) => b.id));
+        setTimeout(() => setBursts((b) => b.filter((x) => !ids.has(x.id))), 900);
+      }
+      if (fx.critFlash) {
+        setCritFlash(true);
+        setTimeout(() => setCritFlash(false), 260);
       }
       if (fx.hits.length > 0) {
         setHitIds((h) => new Set([...h, ...fx.hits]));
@@ -396,6 +407,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
 
   return (
     <div className="battle">
+      {critFlash && <div className="crit-flash" />}
       <header className="topbar">
         <button className="ghost" onClick={onExit}>✕</button>
         <span className="round">Round {state.round}</span>
@@ -431,6 +443,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
         multiCounts={multiCounts}
         movePaths={movePaths}
         floats={floats}
+        bursts={bursts}
         corpses={corpses}
         hitIds={hitIds}
         onCellTap={onCellTap}
