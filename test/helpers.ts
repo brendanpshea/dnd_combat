@@ -14,6 +14,7 @@ export function makeCombatant(over: Partial<Combatant> & { team: TeamId; positio
     abilities,
     maxHp: 13,
     hp: 13,
+    tempHp: 0,
     speed: 30,
     position: over.position,
     initiative: 0,

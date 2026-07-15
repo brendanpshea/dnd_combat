@@ -9,6 +9,7 @@ import type { TeamId, Id, ItemStack } from '../../src/engine/types.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
 import { MAPS } from '../../src/data/maps.js';
 import { CLASSES } from '../../src/data/classes.js';
+import { SPECIES } from '../../src/data/species.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
@@ -171,6 +172,17 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           <div key={idx} className="char-card">
             <div className="char-head">
               <strong>{charNames[idx]}</strong>
+              {c.stage === 0 && c.victories.length === 0 ? (
+                <select
+                  value={ch.speciesId}
+                  onChange={(e) => mutate(() => { ch.speciesId = e.target.value; })}
+                  aria-label={`${charNames[idx]} species`}
+                >
+                  {Object.values(SPECIES).map((species) => (
+                    <option key={species.id} value={species.id}>{species.name}</option>
+                  ))}
+                </select>
+              ) : <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>}
               <span className="muted">
                 {itemName(ch.equipped.mainHand)}
                 {ch.equipped.offHand ? ` + ${itemName(ch.equipped.offHand)}` : ''}

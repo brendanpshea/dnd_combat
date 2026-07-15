@@ -47,6 +47,19 @@ describe('character builder', () => {
     expect(f5.level).toBe(5);
   });
 
+  it('composes species traits over the class chassis', () => {
+    const dwarf = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 3, speciesId: 'dwarf' });
+    const elf = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 1, y: 0 }, speciesId: 'elf' });
+    const human = buildCharacter({ classId: 'rogue', team: 'team1', position: { x: 2, y: 0 } });
+
+    expect(dwarf.maxHp).toBe(13 + 2 * 9 + 3);
+    expect(dwarf.resistances).toContain('poison');
+    expect(elf.speed).toBe(35);
+    expect(elf.featureIds).toContain('trance');
+    expect(human.speciesId).toBe('human');
+    expect(human.featureIds).toContain('heroic-inspiration');
+  });
+
   it('buildParty places four distinct classes on the rank', () => {
     const party = buildParty('team1', 0);
     expect(party).toHaveLength(4);

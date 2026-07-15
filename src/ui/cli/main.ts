@@ -11,6 +11,7 @@ import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
 import { MAPS, MAP_IDS } from '../../data/maps.js';
 import { ENCOUNTERS, buildEncounter } from '../../data/monsters.js';
+import { SPECIES } from '../../data/species.js';
 import { runBattle, argValue, parseSeed, AiLevel } from './battle.js';
 
 async function main() {
@@ -33,8 +34,13 @@ async function main() {
     process.exit(1);
   }
   const level = Math.min(3, Math.max(1, Number(argValue('--level') ?? 1)));
+  const speciesIds = (argValue('--species') ?? 'human,human,human,human').split(',').map((id) => id.trim());
+  if (speciesIds.length !== 4 || speciesIds.some((id) => !SPECIES[id])) {
+    console.log(`--species must name four of: ${Object.keys(SPECIES).join(', ')}`);
+    process.exit(1);
+  }
 
-  let team2 = buildParty('team2', 7, level);
+  let team2 = buildParty('team2', 7, level, undefined, speciesIds);
   let banner = mode;
   if (encounterArg) {
     const enc = ENCOUNTERS[encounterArg]!;
@@ -51,7 +57,7 @@ async function main() {
   const combat = new Combat({
     seed,
     mapId,
-    combatants: [...buildParty('team1', 0, level), ...team2],
+    combatants: [...buildParty('team1', 0, level, undefined, speciesIds), ...team2],
   });
 
   const aiLevel = (argValue('--ai') ?? 'normal') as AiLevel;

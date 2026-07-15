@@ -232,7 +232,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const tid = cell?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;
-        if (!t.alive) continue;
+        if (!t.alive || t.featureIds.includes('trance')) continue;
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {

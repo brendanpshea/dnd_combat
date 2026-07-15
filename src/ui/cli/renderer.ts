@@ -63,10 +63,11 @@ export function renderStatus(state: GameState): string {
     const cells = members.map((c) => {
       if (!c.alive) return `${token(c)} ${c.name}: DEAD`;
       const conds = c.conditions.map((k) => k.id).join(',');
+      const temp = c.tempHp ? ` +${c.tempHp} temp` : '';
       const slots = c.spellSlots.length > 0 ? ` slots:${c.spellSlots.map((s) => s.current).join('/')}` : '';
       const items = c.inventory.filter((s) => ITEMS[s.itemId]).reduce((n, s) => n + s.qty, 0);
       const itemStr = items > 0 ? ` items:${items}` : '';
-      return `${token(c)} ${c.name}: ${c.hp}/${c.maxHp}hp AC${acOf(c)}${slots}${itemStr}${conds ? ` [${conds}]` : ''}`;
+      return `${token(c)} ${c.name}: ${c.hp}/${c.maxHp}hp${temp} AC${acOf(c)}${slots}${itemStr}${conds ? ` [${conds}]` : ''}`;
     });
     rows.push(`  ${team === 'team1' ? 'Team 1' : 'Team 2'}: ${cells.join('  |  ')}`);
   }

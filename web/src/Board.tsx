@@ -131,5 +131,6 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
 }
 
 export function tooltipFor(c: Combatant): string {
-  return `${c.name} — HP ${c.hp}/${c.maxHp}, AC ${acOf(c)}`;
+  const temp = c.tempHp ? ` + ${c.tempHp} temporary` : '';
+  return `${c.name} — HP ${c.hp}/${c.maxHp}${temp}, AC ${acOf(c)}`;
 }

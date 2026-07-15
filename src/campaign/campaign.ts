@@ -14,10 +14,12 @@ import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST } from '../data/armor.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
+import { SPECIES } from '../data/species.js';
 import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
 
 export interface PartyCharacter {
   classId: Id;
+  speciesId: Id;
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
 }
@@ -57,6 +59,7 @@ export function parseCampaign(json: string): CampaignState | undefined {
     const raw = JSON.parse(json) as CampaignState;
     if (typeof raw.gold !== 'number' || !Array.isArray(raw.characters)) return undefined;
     if (typeof raw.rng !== 'number') raw.rng = 1; // pre-skills saves
+    for (const character of raw.characters) character.speciesId ??= 'human';
     return raw;
   } catch {
     return undefined;
@@ -170,17 +173,18 @@ export function itemName(itemId: Id): string {
     (itemId === 'shield' ? 'Shield' : itemId);
 }
 
-export function newCampaign(seed = 1): CampaignState {
+export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {
     gold: STARTING_GOLD,
     stage: 0,
     victories: [],
     rng: seedRng(seed),
-    characters: order.map((classId) => {
+    characters: order.map((classId, index) => {
       const eq = CLASSES[classId]!.equipment;
       return {
         classId,
+        speciesId: speciesIds[index] ?? 'human',
         inventory: eq.inventory.map((s) => ({ ...s })),
         equipped: {
           mainHand: eq.mainHand,
@@ -241,6 +245,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
   return c.characters.map((ch, i) =>
     buildCharacter({
       classId: ch.classId, team, level,
+      speciesId: ch.speciesId,
       position: { x: files[i]!, y: 0 },
       inventory: ch.inventory.map((s) => ({ ...s })),
       equipped: { ...ch.equipped },
@@ -266,11 +271,12 @@ function partyLevel(c: CampaignState): number {
 }
 
 /** A character's bonus for a skill (ability mod + proficiency if trained). */
-export function skillBonus(classId: Id, level: number, skill: SkillId): number {
+export function skillBonus(classId: Id, level: number, skill: SkillId, speciesId: Id = 'human'): number {
   const cls = CLASSES[classId]!;
   const abilities = assignStats(cls.statPriority);
+  const speciesProficiency = SPECIES[speciesId]?.skillProficienciesByClass?.[classId] === skill;
   return abilityMod(abilities[SKILL_ABILITY[skill]]) +
-    (cls.skillProfs.includes(skill) ? proficiencyBonus(level) : 0);
+    (cls.skillProfs.includes(skill) || speciesProficiency ? proficiencyBonus(level) : 0);
 }
 
 /** The party member with the highest bonus rolls every party skill check. */
@@ -278,7 +284,7 @@ export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bo
   const level = partyLevel(c);
   let best = { idx: 0, bonus: -Infinity };
   c.characters.forEach((ch, idx) => {
-    const bonus = skillBonus(ch.classId, level, skill);
+    const bonus = skillBonus(ch.classId, level, skill, ch.speciesId);
     if (bonus > best.bonus) best = { idx, bonus };
   });
   return best;

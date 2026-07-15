@@ -153,10 +153,21 @@ the 5.5e list. Level 1 details (AC/HP/features) are authoritative in
 | L3 | Improved Critical (19–20) | Hold Person, Aid, Preserve Life (CD), slots 4/2 | Scorching Ray, Misty Step, Sculpt Spells, slots 4/2 | Assassinate, Sneak Attack 2d6 |
 
 Notable simplifications: Action Surge granted at level 1 (5.5e says 2);
-humans have no mechanical species traits yet; per-rest resources reset at
-combat start. Sleep is the real 5.5e two-stage version (Incapacitated →
+per-rest resources reset at combat start. Sleep is the real 5.5e two-stage version (Incapacitated →
 Unconscious). Preserve Life auto-distributes to the most wounded allies
 within 30 ft, capped at half max HP.
+
+### Species (Human, Dwarf, Wood Elf, Orc)
+
+Species are data composed over a class during character construction. Vision,
+exploration, charms, and feats remain out of scope; the implemented traits all
+matter in combat. Humans gain one Heroic Inspiration use (free action: next
+attack has advantage) and a deterministic extra campaign skill proficiency per
+class. Dwarves gain poison resistance and $+1$ maximum HP per
+level. Wood Elves move 35 feet and are immune to Sleep. Orcs gain Adrenaline
+Rush (bonus Dash, proficiency-bonus temporary HP, proficiency-bonus uses) and
+Relentless Endurance (drop to 1 HP once per encounter). Temporary HP absorbs
+damage before HP and does not stack.
 
 ## 5. Monsters & encounters
 
@@ -312,16 +323,14 @@ Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ g
 
 Next candidates, roughly in fun-per-effort order:
 1. **More classes** (Barbarian, Ranger…) — mostly data now.
-2. **Species with real traits** (darkvision needs no vision system if we skip
-   light; breath weapons reuse cone templates).
-3. **Levels 4–5** (ASIs, Extra Attack, 3rd-level spells — Fireball wants a
+2. **Levels 4–5** (ASIs, Extra Attack, 3rd-level spells — Fireball wants a
    bigger sphere template).
-4. **Longer/branching campaign** (more stages, choice of route, revival
+3. **Longer/branching campaign** (more stages, choice of route, revival
    costs; the stage ladder is already data).
-5. **Deployment phase** (players place their four units).
-6. **Smarter AI** (one-ply lookahead via the pure `step`, terrain valuation,
+4. **Deployment phase** (players place their four units).
+5. **Smarter AI** (one-ply lookahead via the pure `step`, terrain valuation,
    focus fire).
-7. **Bigger/asymmetric maps, more encounters.**
+6. **Bigger/asymmetric maps, more encounters.**
 
 ## 11. Deliberately out of scope
 

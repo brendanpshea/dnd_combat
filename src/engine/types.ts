@@ -52,6 +52,7 @@ export type ConditionId =
   | 'sapped'       // disadvantage on next attack roll
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws
+  | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
   | 'noReactions'; // Shocking Grasp rider
 
 export interface ActiveCondition {
@@ -91,6 +92,8 @@ export interface Combatant {
   abilities: AbilityScores;
   maxHp: number;
   hp: number;
+  /** Temporary HP is depleted before HP and never stacks. */
+  tempHp?: number;
   /** Monsters: flat stat-block AC. PCs derive AC from equipment (acOf). */
   acOverride?: number;
   speed: number; // feet

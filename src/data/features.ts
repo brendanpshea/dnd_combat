@@ -4,6 +4,7 @@
  * presence in combatant.featureIds.
  */
 import type { GameState, Id } from '../engine/types.js';
+import { proficiencyBonus } from '../engine/types.js';
 import { rollDice } from '../engine/dice.js';
 import { distanceFeet } from '../engine/grid.js';
 import type { GameEvent } from '../engine/events.js';
@@ -17,11 +18,35 @@ export interface FeatureData {
   id: Id;
   name: string;
   trigger: 'action' | 'bonus' | 'free' | 'passive';
-  uses?: { count: number; per: 'encounter' };
+  uses?: { count: number | 'proficiency'; per: 'encounter' };
   apply?(ctx: FeatureContext): GameEvent[];
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
+  'heroic-inspiration': {
+    id: 'heroic-inspiration', name: 'Heroic Inspiration', trigger: 'free',
+    uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      c.conditions.push({ id: 'inspired', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'inspired', sourceId: actorId }];
+    },
+  },
+  'adrenaline-rush': {
+    id: 'adrenaline-rush', name: 'Adrenaline Rush', trigger: 'bonus',
+    uses: { count: 'proficiency', per: 'encounter' },
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      c.turn.movementMax += c.speed;
+      c.tempHp = Math.max(c.tempHp ?? 0, proficiencyBonus(c.level));
+      return [{ type: 'dashed', combatantId: actorId }];
+    },
+  },
+  'relentless-endurance': {
+    id: 'relentless-endurance', name: 'Relentless Endurance', trigger: 'passive',
+    uses: { count: 1, per: 'encounter' },
+  },
+  trance: { id: 'trance', name: 'Trance', trigger: 'passive' },
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
     uses: { count: 2, per: 'encounter' },

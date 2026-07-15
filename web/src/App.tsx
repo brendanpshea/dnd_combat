@@ -11,6 +11,7 @@ import type { Action } from '../../src/engine/actions.js';
 import { renderEvent } from '../../src/ui/cli/renderer.js';
 import { sphere2x2, cone15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
+import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, MultiTargetSpec } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect } from './effects.js';
@@ -36,7 +37,10 @@ interface SetupConfig {
   encounterId: string;
   seed: number;
   aiLevel: AiLevel;
+  speciesIds: Id[];
 }
+
+const PARTY_CLASS_IDS = ['fighter', 'wizard', 'cleric', 'rogue'] as const;
 
 /** Cells an area spell will actually cover, for the targeting preview. */
 function footprint(caster: Combatant, spellId: string, target: Position): string[] {
@@ -122,6 +126,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
   const [encounterId, setEncounterId] = useState('goblins');
   const [aiLevel, setAiLevel] = useState<AiLevel>('normal');
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 2 ** 31));
+  const [speciesIds, setSpeciesIds] = useState<Id[]>(() => PARTY_CLASS_IDS.map(() => 'human'));
 
   return (
     <div className="setup">
@@ -167,6 +172,19 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           </select>
         </label>
       )}
+      {PARTY_CLASS_IDS.map((classId, index) => (
+        <label key={classId}>
+          {classId[0]!.toUpperCase() + classId.slice(1)} species
+          <select
+            value={speciesIds[index]}
+            onChange={(e) => setSpeciesIds((current) => current.map((id, i) => i === index ? e.target.value : id))}
+          >
+            {Object.values(SPECIES).map((species) => (
+              <option key={species.id} value={species.id}>{species.name}</option>
+            ))}
+          </select>
+        </label>
+      ))}
       <label>
         Seed
         <input
@@ -175,7 +193,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           onChange={(e) => setSeed(Number(e.target.value) || 0)}
         />
       </label>
-      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed, aiLevel })}>
+      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed, aiLevel, speciesIds })}>
         Fight!
       </button>
     </div>
@@ -188,11 +206,11 @@ function makeCombat(config: SetupConfig): { combat: Combat; aiTeams: Set<TeamId>
   if (config.mode === 'spectate') aiTeams.add('team1');
   const team2 = config.mode === 'encounter'
     ? buildEncounter(config.encounterId, 'team2', 7)
-    : buildParty('team2', 7, config.level);
+    : buildParty('team2', 7, config.level, undefined, config.speciesIds);
   const combat = new Combat({
     seed: config.seed,
     mapId: config.mapId,
-    combatants: [...buildParty('team1', 0, config.level), ...team2],
+    combatants: [...buildParty('team1', 0, config.level, undefined, config.speciesIds), ...team2],
   });
   return { combat, aiTeams };
 }

@@ -87,6 +87,8 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
 
     // Alive matters a lot; remaining HP matters proportionally.
     let unit = worth * (0.35 + 0.65 * (c.hp / c.maxHp));
+    // A generic buffer against the next damage instance, regardless of source.
+    unit += Math.min(c.tempHp ?? 0, c.maxHp) * 0.8;
 
     for (const cond of c.conditions) {
       unit += worth * (CONDITION_WEIGHT[cond.id] ?? 0);

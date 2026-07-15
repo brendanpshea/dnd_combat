@@ -2,9 +2,10 @@
  * Character construction: class + species + level → Combatant.
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
-import { abilityMod } from '../engine/types.js';
+import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES } from '../data/classes.js';
 import { FEATURES } from '../data/features.js';
+import { SPECIES } from '../data/species.js';
 
 export const STANDARD_ARRAY = [16, 16, 13, 12, 10, 8] as const;
 
@@ -27,7 +28,7 @@ export interface BuildOptions {
   position: Position;
   name?: string;
   level?: number;
-  speciesId?: Id; // v1: 'human' (no mechanical effect; see SPEC)
+  speciesId?: Id;
   /** Campaign overrides: persisted gear instead of the class defaults. */
   inventory?: Array<{ itemId: Id; qty: number }>;
   equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
@@ -36,19 +37,28 @@ export interface BuildOptions {
 export function buildCharacter(opts: BuildOptions): Combatant {
   const cls = CLASSES[opts.classId];
   if (!cls) throw new Error(`Unknown class: ${opts.classId}`);
+  const speciesId = opts.speciesId ?? 'human';
+  const species = SPECIES[speciesId];
+  if (!species) throw new Error(`Unknown species: ${speciesId}`);
   const level = opts.level ?? 1;
   const abilities = assignStats(cls.statPriority);
   const conMod = abilityMod(abilities.con);
-  const maxHp = hpForLevel(cls.hitDie, conMod, level);
+  const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level;
 
-  const featureIds = Object.entries(cls.featuresByLevel)
+  const featureIds = [
+    ...Object.entries(cls.featuresByLevel)
     .filter(([lvl]) => Number(lvl) <= level)
-    .flatMap(([, ids]) => ids);
+    .flatMap(([, ids]) => ids),
+    ...(species.featureIds ?? []),
+  ];
 
   const featureUses: Record<Id, ResourcePool> = {};
   for (const fid of featureIds) {
     const f = FEATURES[fid];
-    if (f?.uses) featureUses[fid] = { current: f.uses.count, max: f.uses.count };
+    if (f?.uses) {
+      const count = f.uses.count === 'proficiency' ? proficiencyBonus(level) : f.uses.count;
+      featureUses[fid] = { current: count, max: count };
+    }
   }
 
   const slots = cls.spellcasting?.slotsByLevel[level - 1] ?? [];
@@ -63,12 +73,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     name: opts.name ?? cls.name,
     team: opts.team,
     classId: cls.id,
-    speciesId: opts.speciesId ?? 'human',
+    speciesId,
     level,
     abilities,
     maxHp,
     hp: maxHp,
-    speed: 30,
+    tempHp: 0,
+    speed: species.speed,
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
@@ -86,7 +97,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
         },
     weaponMasteries: [...cls.weaponMasteries],
     attacksPerAction: 1,
-    resistances: [],
+    resistances: [...(species.resistances ?? [])],
     vulnerabilities: [],
     immunities: [],
     conditions: [],
@@ -103,9 +114,15 @@ export function buildCharacter(opts: BuildOptions): Combatant {
 }
 
 /** The standard party of four, placed on a rank. */
-export function buildParty(team: TeamId, rank: number, level = 1, files: number[] = [1, 2, 4, 6]): Combatant[] {
+export function buildParty(
+  team: TeamId,
+  rank: number,
+  level = 1,
+  files: number[] = [1, 2, 4, 6],
+  speciesIds: Id[] = [],
+): Combatant[] {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return order.map((classId, i) =>
-    buildCharacter({ classId, team, level, position: { x: files[i]!, y: rank } }),
+    buildCharacter({ classId, team, level, position: { x: files[i]!, y: rank }, speciesId: speciesIds[i] ?? 'human' }),
   );
 }

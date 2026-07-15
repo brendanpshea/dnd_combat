@@ -14,7 +14,8 @@ advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
 masteries, spell slots, terrain, forced movement, and inventory (equipment
 slots, weapon swapping, healing potions, scrolls, alchemist's fire). A
 persistent campaign mode adds shops (with haggling and theft), random loot,
-and gear progression.
+gear progression, and four combat-relevant species: Human, Dwarf, Wood Elf,
+and Orc.
 
 ## Quick start
 
@@ -32,6 +33,10 @@ React + Vite, no external art — CSS board, emoji tokens, inline SVG icon,
 WebAudio-synthesized sound. Main menu offers **Campaign** (progress persists
 in localStorage) and **Single battle** (hot-seat / vs AI / AI spectate /
 monster encounters, with map/level/seed selection).
+Choose a species for each party member before a skirmish; player-versus-player
+and spectated mirror matches use the same lineup on both teams. Campaign
+species can be chosen on the party cards before the first battle and persist
+with the save.
 
 In battle, legal actions are painted onto the board: tap a tinted cell to
 move (tokens slide), a red-ringed enemy to attack (a confirm chooser always
@@ -55,6 +60,7 @@ npm start -- --p2 ai                       # you vs the AI
 npm start -- --p1 ai --p2 ai               # spectate an AI mirror match
 npm start -- --encounter goblins           # party vs monsters (AI-run)
 npm start -- --level 3 --encounter ogre    # level-3 party vs the boss fight
+npm start -- --species dwarf,elf,orc,human # Fighter, Wizard, Cleric, Rogue
 npm run campaign                           # campaign (saves to campaign-save.json)
 ```
 
@@ -63,6 +69,7 @@ npm run campaign                           # campaign (saves to campaign-save.js
 | `--seed <n>` | any integer | Deterministic battle; same seed + same actions = same game |
 | `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` | Battle map (random if omitted) |
 | `--level <n>` | `1` `2` `3` | Party level (both sides in PvP) |
+| `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
 | `--encounter <id>` | `goblins` `wolves` `undead` `ogre` | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
 | `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |

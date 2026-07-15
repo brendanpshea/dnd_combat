@@ -172,11 +172,11 @@ describe('shop skills', () => {
     STEAL_FINE,
   } = campaignModule;
 
-  it('skill bonuses: rogue best at stealth/sleight, fighter at intimidation, cleric at persuasion', () => {
+  it('skill bonuses reflect class skills plus Human Skillful defaults', () => {
     const c = newCampaign(5);
     expect(bestAtSkill(c, 'stealth').idx).toBe(3);          // rogue (dex 16 + prof)
     expect(bestAtSkill(c, 'sleight-of-hand').idx).toBe(3);
-    expect(bestAtSkill(c, 'deception').idx).toBe(3);        // rogue proficient
+    expect(bestAtSkill(c, 'deception').idx).toBe(1);        // Human wizard Skillful
     expect(bestAtSkill(c, 'intimidation').idx).toBe(0);     // fighter proficient
     expect(bestAtSkill(c, 'persuasion').idx).toBe(2);       // cleric proficient
     expect(skillBonus('rogue', 1, 'stealth')).toBe(5);      // +3 dex +2 prof
@@ -269,6 +269,21 @@ describe('shop visit persistence (web refresh safety)', () => {
     delete old['rng'];
     const parsed = parseCampaign(JSON.stringify(old))!;
     expect(typeof parsed.rng).toBe('number');
+  });
+
+  it('persists selected species and upgrades older campaign saves to humans', () => {
+    const campaign = newCampaign(1, ['dwarf', 'elf', 'orc', 'human']);
+    expect(buildCampaignParty(campaign).map((c) => c.speciesId)).toEqual(['dwarf', 'elf', 'orc', 'human']);
+
+    const old = newCampaign(1) as unknown as { characters: Array<Record<string, unknown>> };
+    delete old.characters[0]!['speciesId'];
+    expect(parseCampaign(JSON.stringify(old))!.characters[0]!.speciesId).toBe('human');
+  });
+
+  it('human Skillful adds the campaign proficiency assigned to each class', () => {
+    const humanFighter = campaignModule.skillBonus('fighter', 1, 'persuasion', 'human');
+    const dwarfFighter = campaignModule.skillBonus('fighter', 1, 'persuasion', 'dwarf');
+    expect(humanFighter).toBe(dwarfFighter + 2);
   });
 });
 

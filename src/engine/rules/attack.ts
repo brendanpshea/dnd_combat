@@ -55,6 +55,7 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'sapped')) dis.push('sapped');
   if (attacker.conditions.some((c) => c.id === 'poisoned')) dis.push('poisoned');
   if (attacker.conditions.some((c) => c.id === 'blinded')) dis.push('blinded');
+  if (attacker.conditions.some((c) => c.id === 'inspired')) adv.push('heroic inspiration');
   if (target.conditions.some((c) => c.id === 'blinded')) adv.push('target blinded');
   if (attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === target.id)) {
     adv.push('vex');
@@ -92,7 +93,7 @@ export function collectAttackSources(
 /** Remove one-shot roll markers after an attack roll is made. */
 function consumeRollMarkers(attacker: Combatant, target: Combatant): void {
   attacker.conditions = attacker.conditions.filter(
-    (c) => c.id !== 'sapped' && !(c.id === 'vexed' && c.sourceId === target.id),
+    (c) => c.id !== 'sapped' && c.id !== 'inspired' && !(c.id === 'vexed' && c.sourceId === target.id),
   );
   // Guiding Bolt's advantage is spent by whoever attacks the target next.
   target.conditions = target.conditions.filter((c) => c.id !== 'guided');
@@ -244,12 +245,20 @@ export function applyDamage(
   else if (target.resistances.includes(damageType)) amount = Math.floor(amount / 2);
   else if (target.vulnerabilities.includes(damageType)) amount *= 2;
 
-  target.hp = Math.max(0, target.hp - amount);
+  const absorbed = Math.min(target.tempHp ?? 0, amount);
+  if (absorbed > 0) target.tempHp = (target.tempHp ?? 0) - absorbed;
+  target.hp = Math.max(0, target.hp - (amount - absorbed));
   events.push({ type: 'damageDealt', targetId, sourceId, amount, damageType, rolls });
 
   // Undead Fortitude: unless radiant or a crit, Con save DC 5 + damage to
   // drop to 1 HP instead of 0.
   if (
+    target.hp === 0 && target.featureIds.includes('relentless-endurance') &&
+    target.featureUses['relentless-endurance']?.current
+  ) {
+    target.hp = 1;
+    target.featureUses['relentless-endurance']!.current -= 1;
+  } else if (
     target.hp === 0 && target.featureIds.includes('undead-fortitude') &&
     damageType !== 'radiant' && !opts.crit
   ) {
