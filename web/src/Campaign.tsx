@@ -10,6 +10,9 @@ import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
 import { MAPS } from '../../src/data/maps.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
+import { ITEMS } from '../../src/data/items.js';
+import { WEAPONS } from '../../src/data/weapons.js';
+import { acOf } from '../../src/data/armor.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
@@ -29,6 +32,20 @@ type Phase =
   | { p: 'over' }
   | { p: 'complete' };
 
+type ShopCategory = 'consumables' | 'weapons' | 'armor';
+
+const SHOP_CATEGORIES: Array<{ id: ShopCategory; label: string }> = [
+  { id: 'consumables', label: 'Supplies' },
+  { id: 'weapons', label: 'Weapons' },
+  { id: 'armor', label: 'Armor' },
+];
+
+function shopCategory(itemId: Id): ShopCategory {
+  if (ITEMS[itemId]) return 'consumables';
+  if (WEAPONS[itemId]) return 'weapons';
+  return 'armor';
+}
+
 interface Props {
   Battle: ComponentType<BattleProps>;
   onExit(): void;
@@ -47,6 +64,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   const [equipFor, setEquipFor] = useState<number | null>(null);
   const [giveFrom, setGiveFrom] = useState<number | null>(null);
   const [buyFor, setBuyFor] = useState(0);
+  const [stockCategory, setStockCategory] = useState<ShopCategory>('consumables');
+  const [sellMode, setSellMode] = useState(false);
 
   const mutate = (fn: () => void) => {
     initAudio();
@@ -143,6 +162,14 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   // ---- shop phase ----
   const enc = stage ? ENCOUNTERS[stage.encounterId]! : undefined;
   const charNames = c.characters.map((ch) => CLASSES[ch.classId]!.name);
+  const party = buildCampaignParty(c);
+  const stockedItems = SHOP_STOCK.filter((id) => shopCategory(id) === stockCategory);
+  const healingCount = c.characters.reduce(
+    (total, ch) => total + ch.inventory.filter((s) => s.itemId.includes('potion')).reduce((n, s) => n + s.qty, 0),
+    0,
+  );
+  const lowestAc = Math.min(...party.map(acOf));
+  const encounterSize = enc?.members.length ?? 0;
 
   return (
     <div className="campaign">
@@ -188,29 +215,35 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         <h3>Party</h3>
         {c.characters.map((ch, idx) => (
           <div key={idx} className="char-card">
-            <div className="char-head">
+            <div className="char-head char-identity">
               <Portrait id={ch.classId} team="team1" />
-              <strong>{charNames[idx]}</strong>
-              {c.stage === 0 && c.victories.length === 0 ? (
-                <select
-                  value={ch.speciesId}
-                  onChange={(e) => mutate(() => { ch.speciesId = e.target.value; })}
-                  aria-label={`${charNames[idx]} species`}
-                >
-                  {Object.values(SPECIES).map((species) => (
-                    <option key={species.id} value={species.id}>{species.name}</option>
-                  ))}
-                </select>
-              ) : <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>}
-              <span className="muted">
-                {itemName(ch.equipped.mainHand)}
-                {ch.equipped.offHand ? ` + ${itemName(ch.equipped.offHand)}` : ''}
-                {ch.equipped.armor ? `, ${itemName(ch.equipped.armor)}` : ', unarmored'}
-              </span>
-              <button className="mini" onClick={() => { setEquipFor(equipFor === idx ? null : idx); setGiveFrom(null); }}>Equip</button>
-              <button className="mini" onClick={() => { setGiveFrom(giveFrom === idx ? null : idx); setEquipFor(null); }}>Give</button>
+              <div className="char-name">
+                <strong>{charNames[idx]}</strong>
+                {c.stage === 0 && c.victories.length === 0 ? (
+                  <select
+                    value={ch.speciesId}
+                    onChange={(e) => mutate(() => { ch.speciesId = e.target.value; })}
+                    aria-label={`${charNames[idx]} species`}
+                  >
+                    {Object.values(SPECIES).map((species) => (
+                      <option key={species.id} value={species.id}>{species.name}</option>
+                    ))}
+                  </select>
+                ) : <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>}
+              </div>
+              <div className="char-controls">
+                <button className="mini" onClick={() => { setEquipFor(equipFor === idx ? null : idx); setGiveFrom(null); }}>Equip</button>
+                <button className="mini" onClick={() => { setGiveFrom(giveFrom === idx ? null : idx); setEquipFor(null); }}>Give</button>
+              </div>
+            </div>
+            <div className="gear-row">
+              <span className="gear-slot">Main <b>{itemName(ch.equipped.mainHand)}</b></span>
+              <span className="gear-slot">Off-hand <b>{ch.equipped.offHand ? itemName(ch.equipped.offHand) : 'Empty'}</b></span>
+              <span className="gear-slot">Armor <b>{ch.equipped.armor ? itemName(ch.equipped.armor) : 'Unarmored'}</b></span>
+              <span className="gear-ac">AC {acOf(party[idx]!)}</span>
             </div>
             <div className="char-items">
+              <span className="inventory-label">Pack</span>
               {ch.inventory.filter((s) => s.qty > 0).map((s) => (
                 <span key={s.itemId} className="item-chip">
                   {itemName(s.itemId)}{s.qty > 1 ? `×${s.qty}` : ''}
@@ -272,92 +305,121 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       </section>
 
       <section className="panel">
-        <h3>Shop</h3>
-        <label className="buyfor">
-          Purchases go to{' '}
+        <div className="shop-heading">
+          <h3>Shop</h3>
+          <label className="buyfor">
+            To{' '}
           <select value={buyFor} onChange={(e) => setBuyFor(Number(e.target.value))}>
             {charNames.map((n, i) => <option key={i} value={i}>{n}</option>)}
           </select>
-        </label>
-        <div className="shop-grid">
-          {SHOP_STOCK.map((id) => (
+          </label>
+        </div>
+        <div className="shop-tabs" role="tablist" aria-label="Shop category">
+          {SHOP_CATEGORIES.map((category) => (
             <button
-              key={id}
-              disabled={c.gold < price(id)}
-              onClick={() => mutate(() => {
-                if (buyItem(c, buyFor, id, price(id))) {
-                  setNotice(`Bought ${itemName(id)} for ${price(id)}g → ${charNames[buyFor]}`);
-                  setRolls([]);
-                }
-              })}
+              key={category.id}
+              className={stockCategory === category.id ? 'selected' : ''}
+              onClick={() => setStockCategory(category.id)}
+              role="tab"
+              aria-selected={stockCategory === category.id}
             >
-              {itemName(id)} <span className="muted">{price(id)}g</span>
+              {category.label}
             </button>
           ))}
         </div>
-        <div className="shop-actions">
-          <span className="muted">Sell (half price):</span>
-          {c.characters.flatMap((ch, idx) =>
-            ch.inventory
-              .filter((s) => s.qty > 0 && itemPrice(s.itemId) !== undefined)
-              .map((s) => (
-                <button
-                  key={`${idx}:${s.itemId}`}
-                  className="mini"
-                  onClick={() => mutate(() => {
-                    if (sellItem(c, idx, s.itemId)) setNotice(`Sold ${itemName(s.itemId)} (+${Math.floor(itemPrice(s.itemId)! / 2)}g)`);
-                  })}
-                >
-                  {itemName(s.itemId)} ({charNames[idx]})
-                </button>
-              )),
-          )}
+        <div className="shop-grid">
+          {stockedItems.map((id) => {
+            const missingGold = Math.max(0, price(id) - c.gold);
+            return (
+              <button
+                key={id}
+                disabled={c.gold < price(id)}
+                title={missingGold > 0 ? `Need ${missingGold} more gold` : `Buy for ${charNames[buyFor]}`}
+                onClick={() => mutate(() => {
+                  if (buyItem(c, buyFor, id, price(id))) {
+                    setNotice(`Bought ${itemName(id)} for ${price(id)}g → ${charNames[buyFor]}`);
+                    setRolls([]);
+                  }
+                })}
+              >
+                {itemName(id)} <span className="muted">{price(id)}g</span>
+              </button>
+            );
+          })}
         </div>
-        <div className="shop-actions">
-          {!visit.banned && !visit.haggleUsed && (
-            <>
-              {(Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>).map((skill) => {
-                const best = bestAtSkill(c, skill);
-                return (
-                  <button
-                    key={skill}
-                    className="mini"
-                    onClick={() => mutate(() => {
-                      const v = shopVisitFor(c);
-                      v.haggleUsed = true;
-                      const result = attemptHaggle(c, skill);
-                      v.priceMult = result.priceMultiplier;
-                      setRolls([result.roll]);
-                      setNotice(null);
-                    })}
-                  >
-                    {skill} ({CLASSES[c.characters[best.idx]!.classId]!.name} +{best.bonus})
-                  </button>
-                );
-              })}
-            </>
+        <div className="sell-heading">
+          <span className="muted">Inventory</span>
+          <button className={`mini ${sellMode ? 'selected' : ''}`} onClick={() => setSellMode((open) => !open)}>
+            {sellMode ? 'Done selling' : 'Sell items'}
+          </button>
+        </div>
+        {sellMode && <div className="shop-actions sell-items">
+          {c.characters.flatMap((ch, idx) =>
+            ch.inventory.filter((s) => s.qty > 0 && Math.floor((itemPrice(s.itemId) ?? 0) / 2) > 0).map((s) => (
+              <button
+                key={`${idx}:${s.itemId}`}
+                className="mini"
+                onClick={() => mutate(() => {
+                  if (sellItem(c, idx, s.itemId)) setNotice(`Sold ${itemName(s.itemId)} (+${Math.floor(itemPrice(s.itemId)! / 2)}g)`);
+                })}
+              >
+                {itemName(s.itemId)} · {charNames[idx]} <span className="muted">+{Math.floor(itemPrice(s.itemId)! / 2)}g</span>
+              </button>
+            )),
           )}
-          {!visit.banned && !visit.stealUsed && (
-            <button
-              className="mini danger"
-              onClick={() => mutate(() => {
-                const v = shopVisitFor(c);
-                v.stealUsed = true;
-                const result = attemptSteal(c);
-                setRolls(result.rolls);
-                if (result.success) setNotice(`🪄 Swiped: ${itemName(result.itemId!)}!`);
-                else {
-                  v.banned = true;
-                  setNotice(`Caught! Fined ${result.fine}g.`);
-                }
-              })}
-            >
-              🕵️ Steal (random item)
-            </button>
-          )}
+        </div>}
+        <div className="gambits">
+          <span className="muted">Shop gambits</span>
+          <div className="shop-actions">
+            {!visit.banned && !visit.haggleUsed && (
+              <>
+                {(Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>).map((skill) => {
+                  const best = bestAtSkill(c, skill);
+                  return (
+                    <button
+                      key={skill}
+                      className="mini"
+                      onClick={() => mutate(() => {
+                        const v = shopVisitFor(c);
+                        v.haggleUsed = true;
+                        const result = attemptHaggle(c, skill);
+                        v.priceMult = result.priceMultiplier;
+                        setRolls([result.roll]);
+                        setNotice(null);
+                      })}
+                    >
+                      {skill} ({CLASSES[c.characters[best.idx]!.classId]!.name} +{best.bonus})
+                    </button>
+                  );
+                })}
+              </>
+            )}
+            {!visit.banned && !visit.stealUsed && (
+              <button
+                className="mini danger"
+                onClick={() => mutate(() => {
+                  const v = shopVisitFor(c);
+                  v.stealUsed = true;
+                  const result = attemptSteal(c);
+                  setRolls(result.rolls);
+                  if (result.success) setNotice(`🪄 Swiped: ${itemName(result.itemId!)}!`);
+                  else {
+                    v.banned = true;
+                    setNotice(`Caught! Fined ${result.fine}g.`);
+                  }
+                })}
+              >
+                🕵️ Steal (random item)
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
+      <div className="battle-brief">
+        <span><b>{enc?.name}</b> · {encounterSize} foes · {stage ? MAPS[stage.mapId]!.name : ''}</span>
+        <span>{healingCount} healing potion{healingCount === 1 ? '' : 's'} · lowest AC {lowestAc}</span>
+      </div>
       <button className="primary tobattle" onClick={startBattle}>
         ⚔️ To battle: {enc?.name}
       </button>

@@ -536,15 +536,30 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .char-card {
   background: var(--panel2);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 9px 10px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 .char-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.char-head strong { min-width: 60px; }
-.char-head .muted { flex: 1; }
+.char-identity { flex-wrap: nowrap; }
+.char-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.char-name strong { min-width: 60px; }
+.char-name select {
+  color: var(--text); background: #181323; border: 1px solid #534a70;
+  border-radius: 5px; padding: 2px 5px; max-width: 105px;
+}
+.char-controls { margin-left: auto; display: flex; gap: 6px; }
+.char-controls .mini { margin-left: 0; }
+.gear-row {
+  display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
+  padding: 5px 0; border-top: 1px solid #453d63; border-bottom: 1px solid #453d63;
+  color: var(--muted); font-size: 12px;
+}
+.gear-slot b { color: var(--text); font-weight: 600; }
+.gear-ac { color: var(--gold); font-weight: 700; margin-left: auto; }
 .char-items { display: flex; flex-wrap: wrap; gap: 4px; }
+.inventory-label { color: var(--muted); font-size: 12px; padding: 2px 2px 2px 0; }
 .item-chip {
   background: #453d63;
   border-radius: 10px;
@@ -562,12 +577,27 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .shop-grid button { font-size: 13px; padding: 6px 10px; }
 .shop-grid button:disabled { opacity: 0.4; cursor: default; }
 .shop-actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.shop-heading, .sell-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shop-tabs { display: flex; gap: 5px; }
+.shop-tabs button, .sell-heading .mini { min-height: 29px; padding: 3px 10px; font-size: 12px; margin: 0; }
+.shop-tabs button.selected, .sell-heading .mini.selected {
+  background: #4a9eff28; border-color: var(--blue); color: #b9d9ff;
+}
+.sell-heading { padding-top: 5px; border-top: 1px solid #453d63; }
+.sell-items { padding-top: 2px; }
+.gambits { display: flex; flex-direction: column; gap: 4px; padding-top: 5px; border-top: 1px solid #453d63; }
 .buyfor { font-size: 13px; color: var(--muted); }
 .buyfor select {
   font: inherit; color: var(--text); background: var(--panel2);
   border: 1px solid #453d63; border-radius: 6px; padding: 4px 8px;
 }
 button.danger { border-color: var(--red); color: var(--red); }
+.battle-brief {
+  background: #1d1830; border-left: 3px solid var(--gold); border-radius: 6px;
+  padding: 7px 10px; display: flex; justify-content: space-between; gap: 12px;
+  color: var(--muted); font-size: 12px;
+}
+.battle-brief b { color: var(--text); }
 .tobattle { font-size: 16px; padding: 12px; }
 .hint { color: var(--muted); font-size: 14px; text-align: center; }
 
@@ -594,4 +624,11 @@ button.danger { border-color: var(--red); color: var(--red); }
 @media (min-width: 720px) {
   .board-wrap { width: min(70vh, 600px); }
   .actionbar button { font-size: 14px; }
+}
+
+@media (max-width: 440px) {
+  .char-identity { flex-wrap: wrap; }
+  .char-controls { margin-left: 48px; width: calc(100% - 48px); }
+  .gear-ac { margin-left: 0; }
+  .battle-brief { flex-direction: column; gap: 2px; }
 }
