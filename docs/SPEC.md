@@ -1,12 +1,14 @@
 # D&D 5.5e Grid Combat — Design & Specification
 
 A grid-based tactical combat game using a simplified subset of the SRD 5.2.1
-rules. The engine is headless, deterministic, and data-driven; the terminal CLI
-and the greedy AI both drive it through the same action API.
+rules. The engine is headless, deterministic, and data-driven; the terminal
+CLI, the web app, and the greedy AI all drive it through the same action API.
 
-**Status: phases 1–5c implemented** — full hot-seat and vs-AI play, four
+**Status: phases 1–8 implemented** — full hot-seat and vs-AI play, four
 classes at levels 1–3 with one subclass each, six SRD monsters in four
-encounters, five battle maps with terrain. See §10 for the roadmap.
+encounters, five battle maps with terrain, inventory/equipment, a persistent
+campaign (shop, loot, skill gambits), and a deployed web frontend
+(https://brendanpshea.github.io/dnd_combat/). See §10 for the roadmap.
 
 ## 1. Core decisions
 
@@ -239,17 +241,45 @@ only a full wipe ends the campaign. Entry point: `npm run campaign`
 `legalActions()`; the move flood and many-celled spells (Misty Step) collapse
 into "pick a cell" prompts. Every `GameEvent` renders as an English log line.
 
+## 8b. Web UI
+
+`web/` is a React + Vite app importing the engine directly (no engine
+changes were needed — the browser is just another driver of
+`legalActions`/`step`). No external art: CSS board, emoji tokens, an
+authored SVG icon, WebAudio-synthesized sound effects.
+
+- **Interaction:** legal actions are painted onto the board — tinted cells
+  for moves (tokens slide via a transform-positioned token layer), red/green
+  rings for attackable/healable targets. Target taps always open a confirm
+  chooser. Area spells enter pick-a-cell mode; multi-target spells (Magic
+  Missile, Bless) accumulate taps. The grouping layer
+  (`web/src/actionGroups.ts`) is unit-tested against the live engine.
+- **Feedback:** damage floats colored by damage type, hit shake, skull death
+  fade, condition tags; synthesized SFX per damage type with a persisted
+  mute; AI turns paced by action kind with a 1×/2× speed toggle.
+- **Campaign:** full parity with the CLI (shop, equip, give, haggle, steal,
+  loot) as forms; saves in localStorage. Once-per-visit shop flags persist in
+  the save so a page refresh can't retry a theft.
+- **PWA:** manifest + service worker (network-first navigation, cache-first
+  hashed assets) — installable on phones, works offline.
+- **Deployment:** GitHub Actions builds on every push to `main` (gated on
+  the test suite) and deploys `dist-web/` to GitHub Pages.
+
 ## 9. Testing
 
-104+ vitest tests: deterministic replay of full battles, rules-level unit
+140 vitest tests: deterministic replay of full battles, rules-level unit
 tests (advantage cancellation, crit math, OA triggers, condition lifecycles,
 resistances, multiattack banking), AI completion across seeds/maps/encounters,
-and stat-block fidelity checks against the SRD's printed attack bonuses.
+stat-block fidelity checks against the SRD's printed attack bonuses, campaign
+state/loot/skill-check coverage, and web action-grouping tests. CI runs the
+suite before every deploy.
 
 ## 10. Roadmap
 
 Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ greedy AI
-→ ✅ terrain/maps → ✅ monsters/encounters → ✅ levels 2–3 + subclasses.
+→ ✅ terrain/maps → ✅ monsters/encounters → ✅ levels 2–3 + subclasses
+→ ✅ inventory/equipment → ✅ campaign + shop + random loot + shop skills
+→ ✅ web UI (battle, campaign, effects/sound, PWA, Pages deploy).
 
 Next candidates, roughly in fun-per-effort order:
 1. **More classes** (Barbarian, Ranger…) — mostly data now.
@@ -257,10 +287,12 @@ Next candidates, roughly in fun-per-effort order:
    light; breath weapons reuse cone templates).
 3. **Levels 4–5** (ASIs, Extra Attack, 3rd-level spells — Fireball wants a
    bigger sphere template).
-4. **Deployment phase** (players place their four units).
-5. **Smarter AI** (one-ply lookahead via the pure `step`, terrain valuation,
+4. **Longer/branching campaign** (more stages, choice of route, revival
+   costs; the stage ladder is already data).
+5. **Deployment phase** (players place their four units).
+6. **Smarter AI** (one-ply lookahead via the pure `step`, terrain valuation,
    focus fire).
-6. **Bigger/asymmetric maps, more encounters, loot/equipment variation.**
+7. **Bigger/asymmetric maps, more encounters.**
 
 ## 11. Deliberately out of scope
 
