@@ -9,6 +9,7 @@
 import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
 import { abilityMod } from '../engine/types.js';
 import { WEAPONS, type WeaponData } from '../data/weapons.js';
+import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { parseDice } from '../engine/dice.js';
 import { distanceCells, hasLineOfSight } from '../engine/grid.js';
@@ -79,12 +80,47 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // Dodging only pays off if something actually attacks you, and it costs the
   // action that could have been an attack. Weighted low so a real attack wins.
   dodging: 0.02,
-  // Defensive states are *instrumental*: worth having only for the attack they
-  // set up, which already shows up in simulated outcomes. Valued richly the AI
-  // hoards the state instead of cashing it in — two hidden units, mutually
-  // untargetable, deadlocked a game permanently.
-  hidden: 0.05,
 };
+
+/**
+ * Extra expected damage this unit gets from attacking with *advantage*: the
+ * dice its kit unlocks (a rogue's Sneak Attack, a goblin's bonus dice — both
+ * declared in data) plus the plain hit-rate gain, which is worth about a
+ * quarter of a normal hit.
+ */
+function advantageUpside(c: Combatant): number {
+  let dice = 0;
+  for (const fid of c.featureIds) {
+    const roll = FEATURES[fid]?.advantageDice?.(c.level);
+    if (roll) dice += avgDice(roll);
+  }
+  for (const wid of [...equippedWeapons(c), ...stowedWeapons(c)]) {
+    const roll = WEAPONS[wid]?.bonusDiceOnAdvantage;
+    if (roll) dice = Math.max(dice, avgDice(roll));
+  }
+  return dice + 0.25 * damageProxy(c);
+}
+
+/**
+ * Hidden isn't a state worth having, it's a purchase: advantage on the next
+ * attack. So it's priced at exactly what that advantage buys *this* kit — not
+ * as a flat share of the unit's worth.
+ *
+ * Both halves of that matter. It must be paid up front because the search
+ * cannot discover the payoff: hiding needs cover, cover blocks your own line
+ * of sight, so the only winning line is hide -> move -> attack — three actions,
+ * while the beam prunes on the prefix after one. Priced at 0.05 of `worth`
+ * (~+1.2 for a rogue) hide lost to any step toward the enemy and was cut at
+ * depth 1, and the AI never played the rogue's defining trick even at depth 3.
+ *
+ * But it must be priced off the *mechanic*, not the unit's size. A flat
+ * 1.5x damage made hiding worth ~+12 to a cleric whose best cantrip gains ~4:
+ * revealing itself was never worth it, so it sat invisible and untargetable
+ * until the round limit — one hidden cleric, one blind wizard, a dead game.
+ * Advantage genuinely is worth ~9 to a rogue (2d6 Sneak Attack) and ~2 to a
+ * cleric (a hit-rate bump), and pricing the mechanic says so on its own.
+ */
+const HIDDEN_MULT = 1.2;
 
 /**
  * Does this unit's kit want to be in melee? Decided by which range band it
@@ -119,6 +155,8 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     let unit = worth * (0.35 + 0.65 * (c.hp / c.maxHp));
     // A generic buffer against the next damage instance, regardless of source.
     unit += Math.min(c.tempHp ?? 0, c.maxHp) * 0.8;
+
+    if (isHidden(c)) unit += HIDDEN_MULT * advantageUpside(c);
 
     for (const cond of c.conditions) {
       unit += worth * (CONDITION_WEIGHT[cond.id] ?? 0);

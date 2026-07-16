@@ -5,6 +5,7 @@
 import type { GameState, Combatant, Id, DamageType } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../types.js';
 import { WEAPONS, WeaponData } from '../../data/weapons.js';
+import { FEATURES } from '../../data/features.js';
 import { acOf } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
 import { distanceFeet, adjacent } from '../grid.js';
@@ -191,7 +192,9 @@ export function resolveAttack(
     );
     const qualifies = mode === 'advantage' || (allyAdjacent && mode !== 'disadvantage');
     if (qualifies) {
-      const sneakDice = `${Math.ceil(attacker.level / 2)}d6`;
+      // The dice live in the feature's data, so the AI can price what advantage
+      // buys this kit off the same declaration the rule fires from.
+      const sneakDice = FEATURES['sneak-attack']!.advantageDice!(attacker.level);
       const extra = rollDice(state.rng, sneakDice, crit);
       state.rng = extra.state;
       amount += extra.total;

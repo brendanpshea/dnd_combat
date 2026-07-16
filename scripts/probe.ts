@@ -23,7 +23,7 @@ import { describeAction } from '../src/ui/cli/renderer.js';
 import type { Combatant, Position, TeamId } from '../src/engine/types.js';
 import type { Action } from '../src/engine/actions.js';
 
-const FAST = SIM_PRESETS.normal;
+const FAST = SIM_PRESETS[(process.argv[2] ?? 'normal') as keyof typeof SIM_PRESETS] ?? SIM_PRESETS.normal;
 
 function pc(classId: string, team: TeamId, position: Position, over: Partial<Combatant> = {}): Combatant {
   const c = buildCharacter({ classId, team, position, level: 3 });

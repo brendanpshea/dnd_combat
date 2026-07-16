@@ -21,6 +21,17 @@ export interface FeatureData {
   trigger: 'action' | 'bonus' | 'free' | 'passive';
   uses?: { count: number | 'proficiency'; per: 'encounter' };
   apply?(ctx: FeatureContext): GameEvent[];
+  /**
+   * Extra damage dice this feature contributes when the attack has advantage.
+   * The mirror of a weapon's `bonusDiceOnAdvantage`, and the single source of
+   * truth for the amount — the attack rule reads it too.
+   *
+   * Declared as data so policies can price what advantage is worth to a kit
+   * without knowing the feature by name: it's the difference between hiding
+   * being a rogue's whole gameplan and a cleric's waste of a turn, and
+   * `src/ai/` may not name content (test-enforced).
+   */
+  advantageDice?(level: number): string;
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
@@ -135,6 +146,9 @@ export const FEATURES: Record<Id, FeatureData> = {
   },
   'undead-fortitude': { id: 'undead-fortitude', name: 'Undead Fortitude', trigger: 'passive' },
   dueling: { id: 'dueling', name: 'Fighting Style: Dueling', trigger: 'passive' },
-  'sneak-attack': { id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive' },
+  'sneak-attack': {
+    id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive',
+    advantageDice: (level) => `${Math.ceil(level / 2)}d6`,
+  },
   'disciple-of-life': { id: 'disciple-of-life', name: 'Disciple of Life', trigger: 'passive' },
 };
