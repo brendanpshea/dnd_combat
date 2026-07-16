@@ -249,6 +249,14 @@ through its simulated consequences, automatically.
   an incoming-threat term. Positional terms are POV-asymmetric — distance is
   mutual, so symmetric weights would cancel out of `mine − theirs` and leave
   movement gradient-free.
+- **Melee vs ranged is decided by a damage comparison over the unit's whole
+  kit** (`damageProfile`: best melee output vs best ranged, with a caster's
+  cantrips counting as ranged), not by what it happens to be holding. An
+  earlier version asked "is a melee weapon equipped?" — true of *every*
+  character, since a wizard carries a staff, so the 7-HP wizard charged into
+  melee and died in ~2 turns, and a fighter flipped to "ranged" the moment
+  auto-swap put a thrown javelin in its hand. Fixing this alone moved the sim
+  from 36% to 50% against greedy.
 - Search: small beam over this turn's action sequence; per-action expected
   deltas (averaged over samples) accumulate into path scores, which stops
   beam-max from chasing lucky-sample fantasy lines. Presets: easy

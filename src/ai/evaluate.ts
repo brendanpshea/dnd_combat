@@ -8,7 +8,7 @@
  */
 import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
 import { abilityMod } from '../engine/types.js';
-import { WEAPONS } from '../data/weapons.js';
+import { WEAPONS, type WeaponData } from '../data/weapons.js';
 import { ITEMS } from '../data/items.js';
 import { parseDice } from '../engine/dice.js';
 import { distanceCells, hasLineOfSight } from '../engine/grid.js';
@@ -20,20 +20,39 @@ function avgDice(expr: string): number {
   return d.count * (d.sides + 1) / 2 + d.bonus;
 }
 
-/** Rough damage-per-round proxy from a unit's kit. Content-agnostic. */
-export function damageProxy(c: Combatant): number {
-  let best = 2; // unarmed floor
+function weaponDamage(c: Combatant, w: WeaponData): number {
+  const ability = w.melee && !w.properties.includes('finesse') ? 'str' : 'dex';
+  return avgDice(w.damage) + abilityMod(c.abilities[ability]) + (w.damageBonus ?? 0);
+}
+
+/**
+ * Best output at melee reach and at range, over the unit's *whole* kit
+ * (carried as well as drawn — a fighter with a stowed longsword is still a
+ * melee fighter after it throws a javelin). Casters count their magic as
+ * ranged: a wizard's staff is a last resort, not a reason to charge.
+ */
+function damageProfile(c: Combatant): { melee: number; ranged: number } {
+  let melee = 2; // unarmed floor
+  let ranged = 0;
   for (const wid of [...equippedWeapons(c), ...stowedWeapons(c)]) {
     const w = WEAPONS[wid];
     if (!w) continue;
-    const ability = w.melee && !w.properties.includes('finesse') ? 'str' : 'dex';
-    const dmg = avgDice(w.damage) + abilityMod(c.abilities[ability]) + (w.damageBonus ?? 0);
-    if (dmg > best) best = dmg;
+    const dmg = weaponDamage(c, w);
+    if (w.melee) melee = Math.max(melee, dmg);
+    if (w.range !== undefined) ranged = Math.max(ranged, dmg);
   }
-  // Casters scale with their remaining magic rather than any specific spell.
-  const slotPower = c.spellSlots.reduce((s, pool, i) => s + pool.current * (i + 1), 0);
-  if (c.spellIds.length > 0) best += 2 + Math.min(6, slotPower);
-  return best * c.attacksPerAction;
+  if (c.spellIds.length > 0) {
+    // Cantrips are unlimited ranged damage; slots add burst on top.
+    const slotPower = c.spellSlots.reduce((s, pool, i) => s + pool.current * (i + 1), 0);
+    ranged = Math.max(ranged, 5) + Math.min(6, slotPower);
+  }
+  return { melee, ranged };
+}
+
+/** Rough damage-per-round proxy from a unit's kit. Content-agnostic. */
+export function damageProxy(c: Combatant): number {
+  const { melee, ranged } = damageProfile(c);
+  return Math.max(melee, ranged) * c.attacksPerAction;
 }
 
 /** How much losing this unit hurts. */
@@ -62,12 +81,15 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   hidden: 0.14,
 };
 
-/** Does this unit's kit want melee range? (any pure-melee weapon in hand) */
+/**
+ * Does this unit's kit want to be in melee? Decided by which range band it
+ * actually hits harder from — NOT by whether it happens to be holding a melee
+ * weapon, which is true of every character (a wizard carries a staff) and
+ * would march the squishiest party member into melee.
+ */
 function prefersMelee(c: Combatant): boolean {
-  return equippedWeapons(c).some((w) => {
-    const wd = WEAPONS[w];
-    return !!wd && wd.melee && wd.range === undefined;
-  });
+  const { melee, ranged } = damageProfile(c);
+  return melee >= ranged;
 }
 
 /** Can `enemy` plausibly hurt `unit` soon? 1 = this turn, decaying with distance. */
