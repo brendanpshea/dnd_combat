@@ -14,6 +14,7 @@ import { parseDice } from '../engine/dice.js';
 import { distanceCells, hasLineOfSight } from '../engine/grid.js';
 import { cellAt } from '../engine/types.js';
 import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
+import { isHidden } from '../engine/rules/hide.js';
 
 function avgDice(expr: string): number {
   const d = parseDice(expr);
@@ -78,7 +79,11 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // Dodging only pays off if something actually attacks you, and it costs the
   // action that could have been an attack. Weighted low so a real attack wins.
   dodging: 0.02,
-  hidden: 0.14,
+  // Defensive states are *instrumental*: worth having only for the attack they
+  // set up, which already shows up in simulated outcomes. Valued richly the AI
+  // hoards the state instead of cashing it in — two hidden units, mutually
+  // untargetable, deadlocked a game permanently.
+  hidden: 0.05,
 };
 
 /**
@@ -141,19 +146,35 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     for (const e of Object.values(state.combatants)) {
       if (!e.alive || e.team === team) continue;
       nearest = Math.min(nearest, distanceCells(e.position, c.position));
-      if (!melee && !seesAnyEnemy && hasLineOfSight(state.grid, c.position, e.position)) seesAnyEnemy = true;
+      // "See" means *can act on*, not merely a clear geometric line: a hidden
+      // enemy can't be targeted, so a unit whose foes are all hidden is blind
+      // and should go looking. Counting a hidden enemy as seen let two hidden
+      // units stare through each other at their ideal range forever, neither
+      // able to attack and neither with any reason to move.
+      if (!seesAnyEnemy && !isHidden(e) && hasLineOfSight(state.grid, c.position, e.position)) {
+        seesAnyEnemy = true;
+      }
     }
     // A shooter that can see nobody can threaten nobody, so give it a reason to
     // find a sightline rather than idle behind a wall. Only for ranged kits:
     // penalising a melee unit for lacking line of sight would pin it to a
     // sniping spot it can't use instead of letting it close.
-    if (!melee && Number.isFinite(nearest) && !seesAnyEnemy) unit -= 1.2;
+    //
+    // POV-asymmetric for the same reason the engagement band is: sight is
+    // *mutual*, so a symmetric weight cancels out of V = mine - theirs — the
+    // 1.2 I gain by stepping into a sightline is exactly the 1.2 my target
+    // gains by being seen. Weighted evenly, two shooters behind opposite walls
+    // both score standing still as optimal and the game never ends.
+    if (!melee && Number.isFinite(nearest) && !seesAnyEnemy) unit -= isPov ? 1.2 : 0.4;
     // Distance is mutual, so a symmetric weight would cancel out of
     // V = mine - theirs and leave movement gradient-free. The POV team
     // cares more about its own engagement: that asymmetry is what makes
     // closing (or kiting) worth something to the mover.
     if (Number.isFinite(nearest)) {
-      const preferred = prefersMelee(c) ? 1 : 4;
+      // A band you can't shoot from is not a band: with no sightline — including
+      // when every enemy is hidden, and so untargetable — a unit closes, because
+      // closing is how you find one.
+      const preferred = melee || !seesAnyEnemy ? 1 : 4;
       unit -= (isPov ? 0.9 : 0.3) * Math.abs(nearest - preferred);
     }
 

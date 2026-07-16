@@ -246,9 +246,28 @@ through its simulated consequences, automatically.
   HP fraction; condition weights by mechanical effect; option value for slots,
   feature uses, and consumables (priced from item cost); hazard penalty;
   engagement band (melee kits want adjacency, ranged a middle distance) and
-  an incoming-threat term. Positional terms are POV-asymmetric — distance is
-  mutual, so symmetric weights would cancel out of `mine − theirs` and leave
-  movement gradient-free.
+  an incoming-threat term.
+- **Every positional term must be POV-asymmetric or it cancels.** Distance and
+  sight are *mutual*, so a symmetric weight vanishes from `mine − theirs` and
+  leaves movement gradient-free. This has now bitten twice: an evenly-weighted
+  line-of-sight penalty made the 1.2 a shooter gains by stepping into a
+  sightline exactly cancel the 1.2 its target gains by being seen, so two
+  shooters behind opposite walls both scored standing still as optimal and the
+  game never ended.
+- **A band you can't shoot from is not a band**: with no sightline — including
+  when every enemy is *hidden*, and so untargetable — a unit closes, because
+  closing is how you find one. "Sees" therefore means *can act on*, not merely
+  a clear geometric line.
+- **Skip verbs (Dodge/Disengage/Dash/Hide) pay a flat toll** (`ACTION_COST`),
+  and defensive conditions are weighted below what one real attack swings.
+  Both encode one rule: *prefer acting against the enemy*. These verbs' payoff
+  is a state the evaluator prices directly, while an attack's payoff is a
+  sampled roll that might miss — so without a toll the safe non-action wins
+  every close call and a unit dodges instead of swinging, round after round.
+  Valuing `hidden` richly (0.14) was worst: the AI hoarded the state rather
+  than cashing it in for the attack that made it worth having, and two hidden,
+  mutually untargetable units deadlocked a game permanently. Measured: dodge
+  ~2% of decisions, disengage ~0%.
 - **Melee vs ranged is decided by a damage comparison over the unit's whole
   kit** (`damageProfile`: best melee output vs best ranged, with a caster's
   cantrips counting as ranged), not by what it happens to be holding. An
@@ -256,7 +275,13 @@ through its simulated consequences, automatically.
   character, since a wizard carries a staff, so the 7-HP wizard charged into
   melee and died in ~2 turns, and a fighter flipped to "ranged" the moment
   auto-swap put a thrown javelin in its hand. Fixing this alone moved the sim
-  from 36% to 50% against greedy.
+  from 36% to ~54% against greedy.
+
+  A follow-up refinement — counting touch cantrips as melee output, giving ties
+  to range, and charging the "too close" half of the band only to units whose
+  offense adjacency actually blunts — read as +2% over 50 games and **−9% over
+  80**. It was reverted. Every claim in this file about a weight is a *measured*
+  claim; see the noise note under Arena before adding another.
 - Search: small beam over this turn's action sequence; per-action expected
   deltas (averaged over samples) accumulate into path scores, which stops
   beam-max from chasing lucky-sample fantasy lines. Presets: easy
@@ -269,14 +294,37 @@ through its simulated consequences, automatically.
   Decisions are deterministic; replays stay exact.
 
 **Difficulty mapping follows measured strength, not architecture:**
-Easy = sim-easy (~13% vs greedy), Normal = sim-normal (~35%), Hard = greedy.
+Easy = sim-easy (~13% vs greedy), Normal = sim-normal (~54%), Hard = greedy.
+(sim-*hard* measures ~45% — more search, but still short of greedy, so Hard
+stays greedy.)
 When arena runs show the sim AI overtaking greedy (richer content, better
 evaluator, tuned weights), Hard swaps to the sim hard preset — the criterion
 is empirical, not aesthetic.
 
-**Arena** (`npm run arena [games] [preset]`, `src/ai/arena.ts`): pits
-policies over seeded mirror matches with side-swapping — the empirical tool
-for any AI change; a CI-friendly regression floor lives in the test suite.
+**Two tools, and they answer different questions.** Use both; neither
+substitutes for the other.
+
+**Probe** (`npx tsx scripts/probe.ts`) — tactical set-pieces with an obvious
+right answer, printing what the AI actually did. Runs in ~4s, deterministic,
+and tells you *why* something changed. This is the loop to iterate in.
+Judge the whole turn, never the first action: "attack then step aside" and
+"step aside then attack" spend the same resources and score identically, so
+which comes first is decided by sampling noise — a first-action assertion
+tests a coin flip, as one test in this repo did until it started failing for
+no behavioural reason.
+
+**Arena** (`npm run arena [games] [preset]`, `src/ai/arena.ts`): seeded mirror
+matches with side-swapping — the authority on *strength*, and the gate before
+any AI change lands. Games are independent, so seeds are dealt across one
+process per core (`--serial` to debug in-process).
+
+Mind the noise. A win rate off N games carries a standard error of about
+`sqrt(0.25/N)` — ±7 points at 50 games, ±5.6 at 80 — and the CLI prints it.
+Two readings inside ~2 SE of each other are *the same reading*. A tuning batch
+in this repo measured 50% and 52% on 50-game runs and was one commit away from
+landing as an improvement; on 80 games, paired against baseline on identical
+seeds, it was 45% against 55% — a 10-point regression. Re-measure on more
+games, paired on the same seeds, before believing the prettier number.
 
 Actions carry a small cost (`MOVE_COST`, and a larger one for the skip verbs)
 so they must justify themselves: without it, a zero-value move ties with

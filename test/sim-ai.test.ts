@@ -89,8 +89,21 @@ describe('simulation AI behavior', () => {
     });
     let guard = 0;
     while (c.activeId !== 'ftr' && guard++ < 20) c.apply({ kind: 'endTurn' });
-    const action = chooseActionSim(c.state, 'ftr', FAST);
-    expect(action.kind === 'attack' || action.kind === 'castSpell' || action.kind === 'useItem').toBe(true);
+
+    // Play the whole turn out, rather than asserting on the first action alone.
+    // "Attack, then reposition" and "reposition, then attack" both spend one
+    // move and one attack, so they score identically and which one wins is
+    // decided by sampling noise — a first-action assertion tests a coin flip.
+    // What the AI must never do is finish the turn without swinging at a
+    // one-hit kill standing next to it, and that is what this checks.
+    const kinds: string[] = [];
+    let steps = 0;
+    while (c.activeId === 'ftr' && steps++ < 8) {
+      const action = chooseActionSim(c.state, 'ftr', FAST);
+      kinds.push(action.kind === 'attack' && action.targetId === 'wiz' ? 'attack:wiz' : action.kind);
+      c.apply(action);
+    }
+    expect(kinds).toContain('attack:wiz');
   });
 
   it('full games complete without stalling', () => {

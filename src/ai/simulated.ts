@@ -24,8 +24,15 @@ export interface SimOptions {
   moveCandidates: number;
 }
 
-/** Tiebreak nudge: a committed action must beat ending the turn by this much. */
-const ACTION_COST = 0.4;
+/**
+ * Skip verbs — Dodge, Disengage, Dash, Hide — spend the action without doing
+ * anything *to* the enemy. Their payoff is a defensive state the evaluator
+ * prices directly, while an attack's payoff is a sampled roll that might miss,
+ * so in any close call the safe non-action wins and a unit dodges instead of
+ * swinging, round after round. A flat toll encodes the standing preference for
+ * acting against the enemy: they must clear a real bar, not merely tie.
+ */
+const ACTION_COST = 1.0;
 /**
  * Movement must also justify itself, or a unit whose neighbouring cells all
  * evaluate the same (e.g. two cells both adjacent to its target) shuffles back
@@ -141,7 +148,8 @@ export function chooseActionSim(state: GameState, actorId: Id, opts: SimOptions 
       // charged — penalizing them makes melee refuse to approach (approaching
       // raises self-threat) and games stall.
       const wasteCost =
-        action.kind === 'dash' || action.kind === 'disengage' || action.kind === 'dodge'
+        action.kind === 'dash' || action.kind === 'disengage' ||
+        action.kind === 'dodge' || action.kind === 'hide'
           ? ACTION_COST
           : action.kind === 'move' ? MOVE_COST : 0;
       out.push({
