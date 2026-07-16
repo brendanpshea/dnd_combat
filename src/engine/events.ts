@@ -23,6 +23,8 @@ export type GameEvent =
       type: 'damageDealt';
       targetId: Id; sourceId: Id; amount: number; damageType: DamageType;
       rolls: number[];
+      /** Named contributors (e.g. 'Sneak Attack', 'Dueling') for the log/toasts. */
+      tags?: string[];
     }
   | { type: 'healed'; targetId: Id; sourceId: Id; amount: number }
   | {

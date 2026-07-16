@@ -78,6 +78,10 @@ export function renderStatus(state: GameState): string {
   return rows.join('\n');
 }
 
+const sum = (ns: number[]) => ns.reduce((a, b) => a + b, 0);
+/** '+3' / '-1' / '' — the modifier on top of the dice, for readable roll math. */
+const signed = (n: number) => (n === 0 ? '' : n > 0 ? `+${n}` : `${n}`);
+
 function name(state: GameState, id: Id): string {
   const c = state.combatants[id];
   return c ? `${c.name}(${c.team === 'team1' ? 'T1' : 'T2'})` : id;
@@ -100,14 +104,28 @@ export function renderEvent(state: GameState, e: GameEvent): string | undefined 
       const oa = e.opportunity ? ' (opportunity attack)' : '';
       const mode = e.mode !== 'flat' ? ` [${e.mode}: ${[...e.advSources, ...e.disSources].join(', ')}]` : '';
       const result = e.hit ? (e.crit ? 'CRIT!' : 'hit') : 'miss';
-      return `${name(state, e.attackerId)} attacks ${name(state, e.targetId)} with ${w}${oa}: ${e.total} vs AC ${e.targetAc} — ${result}${mode}`;
+      // Roll20-style math: the bonus is whatever the engine added on top of
+      // the die (proficiency, ability, Bless's d4, a +1 weapon...).
+      return `${name(state, e.attackerId)} attacks ${name(state, e.targetId)} with ${w}${oa}: ` +
+        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}`;
     }
-    case 'damageDealt':
-      return `  ${name(state, e.targetId)} takes ${e.amount} ${e.damageType} damage.`;
+    case 'damageDealt': {
+      const rolled = sum(e.rolls);
+      const mod = e.amount - rolled;
+      // Only show `dice+mod` when it actually reconciles. A halved save or a
+      // resistance makes the final amount *lower* than the dice, and printing
+      // a bogus negative "modifier" would read like broken arithmetic.
+      const dice = e.rolls.length === 0 ? ''
+        : mod >= 0 ? ` [${e.rolls.join('+')}${signed(mod)}]`
+        : ` [rolled ${rolled} → ${e.amount}]`;
+      const tags = e.tags && e.tags.length > 0 ? ` (${e.tags.join(', ')})` : '';
+      return `  ${name(state, e.targetId)} takes ${e.amount} ${e.damageType}${dice}${tags}.`;
+    }
     case 'healed':
       return `${name(state, e.targetId)} regains ${e.amount} HP (${state.combatants[e.targetId]?.hp}/${state.combatants[e.targetId]?.maxHp}).`;
     case 'savingThrow':
-      return `  ${name(state, e.combatantId)} ${e.ability.toUpperCase()} save: ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.`;
+      return `  ${name(state, e.combatantId)} ${e.ability.toUpperCase()} save: ` +
+        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.`;
     case 'hideCheck':
       return `  ${name(state, e.combatantId)} hides: d20(${e.natural}) = ${e.total} vs DC 15 — ${e.success ? 'hidden' : 'seen'}.`;
     case 'hiddenRevealed':

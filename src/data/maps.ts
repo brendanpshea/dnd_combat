@@ -11,9 +11,13 @@
  */
 import type { GridState, Cell, TerrainId } from '../engine/types.js';
 
+/** Visual theme — the whole board is styled as a place, not just its terrain. */
+export type MapTheme = 'stone' | 'forest' | 'graveyard' | 'ember';
+
 export interface MapData {
   id: string;
   name: string;
+  theme: MapTheme;
   rows: string[]; // height entries of width chars
 }
 
@@ -39,7 +43,7 @@ export function parseMap(map: MapData): GridState {
 
 export const MAPS: Record<string, MapData> = {
   open: {
-    id: 'open', name: 'Open Field',
+    id: 'open', name: 'Open Field', theme: 'forest',
     rows: [
       '........',
       '........',
@@ -52,7 +56,7 @@ export const MAPS: Record<string, MapData> = {
     ],
   },
   ruins: {
-    id: 'ruins', name: 'Walled Ruins',
+    id: 'ruins', name: 'Walled Ruins', theme: 'stone',
     rows: [
       '........',
       '..#..#..',
@@ -65,7 +69,7 @@ export const MAPS: Record<string, MapData> = {
     ],
   },
   marsh: {
-    id: 'marsh', name: 'Misty Marsh',
+    id: 'marsh', name: 'Misty Marsh', theme: 'forest',
     rows: [
       '........',
       '..~~....',
@@ -78,7 +82,7 @@ export const MAPS: Record<string, MapData> = {
     ],
   },
   firepit: {
-    id: 'firepit', name: 'Fire Pit Arena',
+    id: 'firepit', name: 'Fire Pit Arena', theme: 'ember',
     rows: [
       '........',
       '.#....#.',
@@ -91,7 +95,7 @@ export const MAPS: Record<string, MapData> = {
     ],
   },
   corridor: {
-    id: 'corridor', name: 'The Corridor',
+    id: 'corridor', name: 'The Corridor', theme: 'graveyard',
     rows: [
       '........',
       '.##..##.',

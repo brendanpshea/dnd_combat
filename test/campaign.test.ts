@@ -64,7 +64,7 @@ describe('campaign state', () => {
     const c = newCampaign();
     const fighter = c.characters[0]!;
     expect(c.partyReady).toBe(false);
-    expect(fighter.name).toBe('Fighter');
+    expect(fighter.name).toBe('Sir Arthur'); // flavourful sample name, not the class
     expect(fighter.portraitId).toBe('fighter');
     fighter.name = 'Aster';
     fighter.portraitId = 'wizard';

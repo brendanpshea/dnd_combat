@@ -161,6 +161,10 @@ export function resolveAttack(
   state.rng = dmg.state;
   let amount = dmg.total + (ctx.offhand ? 0 : mod) + (weapon.damageBonus ?? 0);
   let rolls = dmg.rolls;
+  // Which named bonuses actually fired — surfaced in the log and as toasts so
+  // players can see (and debug) that Sneak Attack, Dueling, etc. are working.
+  const tags: string[] = [];
+  if (crit) tags.push('Critical Hit');
 
   // Fighting Style: Dueling — one-handed melee weapon, no weapon in the
   // other hand (a shield is fine): +2.
@@ -171,6 +175,7 @@ export function resolveAttack(
     (attacker.equipped.offHand === undefined || attacker.equipped.offHand === 'shield')
   ) {
     amount += 2;
+    tags.push('Dueling');
   }
 
   // Sneak Attack: once per turn, finesse/ranged weapon, and either advantage
@@ -192,6 +197,7 @@ export function resolveAttack(
       amount += extra.total;
       rolls = [...rolls, ...extra.rolls];
       attacker.turn.sneakAttackUsed = true;
+      tags.push('Sneak Attack');
     }
   }
 
@@ -205,7 +211,7 @@ export function resolveAttack(
 
   amount = Math.max(1, amount);
 
-  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit }));
+  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags }));
 
   // Secondary damage of a different type (giant spider poison).
   if (weapon.extraDamage && target.alive) {
@@ -259,7 +265,7 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
-  opts: { crit?: boolean } = {},
+  opts: { crit?: boolean; tags?: string[] } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -271,7 +277,10 @@ export function applyDamage(
   const absorbed = Math.min(target.tempHp ?? 0, amount);
   if (absorbed > 0) target.tempHp = (target.tempHp ?? 0) - absorbed;
   target.hp = Math.max(0, target.hp - (amount - absorbed));
-  events.push({ type: 'damageDealt', targetId, sourceId, amount, damageType, rolls });
+  events.push({
+    type: 'damageDealt', targetId, sourceId, amount, damageType, rolls,
+    ...(opts.tags && opts.tags.length > 0 ? { tags: opts.tags } : {}),
+  });
 
   // Undead Fortitude: unless radiant or a crit, Con save DC 5 + damage to
   // drop to 1 HP instead of 0.

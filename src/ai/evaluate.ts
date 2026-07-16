@@ -11,7 +11,7 @@ import { abilityMod } from '../engine/types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ITEMS } from '../data/items.js';
 import { parseDice } from '../engine/dice.js';
-import { distanceCells } from '../engine/grid.js';
+import { distanceCells, hasLineOfSight } from '../engine/grid.js';
 import { cellAt } from '../engine/types.js';
 import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
 
@@ -56,7 +56,9 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   guided: -0.08,   // the *bearer* is easier to hit
   // buffs
   blessed: 0.08,
-  dodging: 0.06,
+  // Dodging only pays off if something actually attacks you, and it costs the
+  // action that could have been an attack. Weighted low so a real attack wins.
+  dodging: 0.02,
   hidden: 0.14,
 };
 
@@ -111,10 +113,19 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
 
     // Engagement: a unit contributes nothing from across the board. Melee
     // kits want to be adjacent; ranged kits want a comfortable middle band.
+    const melee = prefersMelee(c);
     let nearest = Infinity;
+    let seesAnyEnemy = false;
     for (const e of Object.values(state.combatants)) {
-      if (e.alive && e.team !== team) nearest = Math.min(nearest, distanceCells(e.position, c.position));
+      if (!e.alive || e.team === team) continue;
+      nearest = Math.min(nearest, distanceCells(e.position, c.position));
+      if (!melee && !seesAnyEnemy && hasLineOfSight(state.grid, c.position, e.position)) seesAnyEnemy = true;
     }
+    // A shooter that can see nobody can threaten nobody, so give it a reason to
+    // find a sightline rather than idle behind a wall. Only for ranged kits:
+    // penalising a melee unit for lacking line of sight would pin it to a
+    // sniping spot it can't use instead of letting it close.
+    if (!melee && Number.isFinite(nearest) && !seesAnyEnemy) unit -= 1.2;
     // Distance is mutual, so a symmetric weight would cancel out of
     // V = mine - theirs and leave movement gradient-free. The POV team
     // cares more about its own engagement: that asymmetry is what makes

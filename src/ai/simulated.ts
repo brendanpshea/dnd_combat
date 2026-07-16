@@ -26,6 +26,14 @@ export interface SimOptions {
 
 /** Tiebreak nudge: a committed action must beat ending the turn by this much. */
 const ACTION_COST = 0.4;
+/**
+ * Movement must also justify itself, or a unit whose neighbouring cells all
+ * evaluate the same (e.g. two cells both adjacent to its target) shuffles back
+ * and forth until its movement runs out — a zero-value move would otherwise
+ * tie with endTurn and win the sort. Kept well under the ~0.9/cell an actual
+ * approach gains, so charging into range is unaffected.
+ */
+const MOVE_COST = 0.15;
 
 export const SIM_PRESETS: Record<'easy' | 'normal' | 'hard', SimOptions> = {
   easy: { samples: 1, beam: 2, depth: 1, moveCandidates: 3 },
@@ -134,7 +142,8 @@ export function chooseActionSim(state: GameState, actorId: Id, opts: SimOptions 
       // raises self-threat) and games stall.
       const wasteCost =
         action.kind === 'dash' || action.kind === 'disengage' || action.kind === 'dodge'
-          ? ACTION_COST : 0;
+          ? ACTION_COST
+          : action.kind === 'move' ? MOVE_COST : 0;
       out.push({
         state: next,
         stateV: evaluate(next, team),

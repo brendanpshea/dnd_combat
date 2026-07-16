@@ -135,6 +135,52 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   cursor: pointer;
 }
 .cell.dark { background: var(--cell-dark); }
+
+/* ---- board themes -------------------------------------------------------
+   Each map is styled as a place: the checkerboard, walls, and difficult
+   ground all take the theme's palette, rather than a splotch of colour in
+   the middle of a purple board. Terrain still lives in `background` only. */
+.board.theme-forest { background: #10180f; }
+.board.theme-forest .cell { background: #46693c; }
+.board.theme-forest .cell.dark { background: #3d5d34; }
+.board.theme-forest .cell.terrain-wall {
+  /* mossy boulders / tree cover */
+  background: linear-gradient(145deg, #3a5230 0%, #24361d 55%, #16220f 100%);
+}
+.board.theme-forest .cell.terrain-wall::after {
+  background: linear-gradient(145deg, #6d8a5a55, transparent 60%);
+}
+.board.theme-forest .cell.terrain-difficult {
+  /* boggy water pooling in the undergrowth */
+  background:
+    radial-gradient(90% 70% at 30% 25%, #2f6b5a77, transparent 60%),
+    radial-gradient(90% 70% at 72% 78%, #295a6b77, transparent 60%),
+    linear-gradient(150deg, #2c4a3a, #24414a);
+}
+
+.board.theme-graveyard { background: #0d1014; }
+.board.theme-graveyard .cell { background: #3b4048; }
+.board.theme-graveyard .cell.dark { background: #343941; }
+.board.theme-graveyard .cell.terrain-wall {
+  /* headstones / crypt masonry */
+  background: linear-gradient(145deg, #5b6270 0%, #363c47 55%, #1d2129 100%);
+}
+.board.theme-graveyard .cell.terrain-wall::after {
+  background: linear-gradient(145deg, #8b93a555, transparent 60%);
+}
+.board.theme-graveyard .cell.terrain-difficult {
+  /* grave-mist */
+  background:
+    radial-gradient(90% 70% at 40% 30%, #6f7f8f66, transparent 62%),
+    linear-gradient(150deg, #3d4650, #2f3742);
+}
+
+.board.theme-ember { background: #170d0b; }
+.board.theme-ember .cell { background: #4a3630; }
+.board.theme-ember .cell.dark { background: #412e29; }
+.board.theme-ember .cell.terrain-wall {
+  background: linear-gradient(145deg, #55403a 0%, #33231f 55%, #1b100e 100%);
+}
 /* Terrain lives in `background` only; highlights use box-shadow, so the two
    never fight and a highlight ring shows on any terrain. */
 .cell.terrain-wall {
@@ -316,6 +362,14 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .float.miss { color: #9a92b0; font-style: italic; font-weight: 600; }
 .float.heal { color: var(--green); }
+.float.saved { color: #9be2ff; font-size: clamp(10px, 2.6vmin, 14px); font-weight: 700; }
+.float.failed { color: #ffb08a; font-size: clamp(10px, 2.6vmin, 14px); font-weight: 700; }
+.float.tag {
+  color: var(--gold);
+  font-size: clamp(10px, 2.7vmin, 15px);
+  font-weight: 800;
+  text-shadow: 0 0 5px #ff6a3a, 0 1px 2px #000;
+}
 .float.cond { color: #c084fc; font-size: clamp(10px, 2.6vmin, 14px); font-weight: 600; }
 .float.dmg-slashing, .float.dmg-piercing, .float.dmg-bludgeoning { color: #e8e4f0; }
 .float.dmg-fire { color: #ff9d4d; }

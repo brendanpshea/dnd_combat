@@ -121,6 +121,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         aiTeams={phase.aiTeams}
         aiLevel={c.storyMode ? 'easy' : 'normal'}
         mapLabel={`${ENCOUNTERS[st.encounterId]!.name} — ${MAPS[st.mapId]!.name}`}
+        theme={MAPS[st.mapId]!.theme}
         doneLabel="Continue"
         onExit={() => setPhase({ p: 'shop' })}
         onDone={(winner) => battleDone(winner, phase.combat)}
@@ -247,14 +248,6 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             );
           })}
         </div>
-        <section className="forge-party-preview" aria-label="Battlefield party preview">
-          {c.characters.map((character) => (
-            <div key={character.name}>
-              <Portrait id={character.portraitId} team="team1" label="" />
-              <span>{character.name}</span>
-            </div>
-          ))}
-        </section>
         <fieldset className="difficulty-pick">
           <legend>Difficulty</legend>
           <label className={c.storyMode ? 'selected' : ''}>

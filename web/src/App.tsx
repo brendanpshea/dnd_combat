@@ -126,6 +126,7 @@ function Skirmish({ config, onExit }: { config: SetupConfig; onExit(): void }) {
       aiTeams={ref.current.aiTeams}
       aiLevel={config.aiLevel}
       mapLabel={MAPS[config.mapId]?.name ?? ''}
+      theme={MAPS[config.mapId]?.theme}
       doneLabel="New battle"
       onExit={onExit}
       onDone={onExit}
@@ -234,12 +235,14 @@ export interface BattleProps {
   aiTeams: Set<TeamId>;
   aiLevel?: AiLevel;
   mapLabel: string;
+  /** Visual theme of the map being fought on. */
+  theme?: string | undefined;
   doneLabel: string;
   onExit(): void;
   onDone(winner: TeamId): void;
 }
 
-export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabel, onExit, onDone }: BattleProps) {
+export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, doneLabel, onExit, onDone }: BattleProps) {
   const [, setVersion] = useState(0);
   const [log, setLog] = useState<string[]>(() =>
     combat.log.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s));
@@ -471,6 +474,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, doneLabe
         selectedId={activeId}
         multiCounts={multiCounts}
         movePaths={movePaths}
+        theme={theme}
         floats={floats}
         bursts={bursts}
         corpses={corpses}

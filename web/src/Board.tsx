@@ -27,6 +27,8 @@ export interface BoardProps {
   bursts?: BurstEffect[];
   hitIds?: Set<Id>;
   movePaths?: Map<Id, Position[]>;
+  /** Map visual theme — styles the whole board as a place. */
+  theme?: string | undefined;
   onCellTap(pos: Position, occupant?: Combatant): void;
 }
 
@@ -36,7 +38,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, hitIds, movePaths, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, hitIds, movePaths, theme, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
 
@@ -152,7 +154,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
 
   return (
     <div className="board-wrap">
-      <div className="board" style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}>
+      <div className={`board theme-${theme ?? 'stone'}`} style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}>
         {cells}
         <div className="token-layer">{tokens}</div>
       </div>

@@ -101,6 +101,12 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
           bursts.push({ id: nextId++, cellKey: cell, kind: crit ? 'crit' : e.damageType, delayMs: stagger });
         }
         if (crit) critFlash = true;
+        // Name the bonuses that fired ("Sneak Attack!") so players can see
+        // their features working, the same way damage numbers are surfaced.
+        for (const tag of e.tags ?? []) {
+          if (tag === 'Critical Hit') continue; // already shouted by the CRIT float
+          if (cell) floats.push({ id: nextId++, cellKey: cell, text: `${tag}!`, cls: 'tag', delayMs: stagger + 90 });
+        }
         hits.push(e.targetId);
         sound(DMG_SFX[e.damageType], stagger);
         stagger += 150;
@@ -114,6 +120,18 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
           sound('heal', stagger);
           stagger += 150;
         }
+        break;
+      }
+      case 'savingThrow': {
+        const cell = cellOf(e.combatantId);
+        if (cell) {
+          floats.push({
+            id: nextId++, cellKey: cell,
+            text: e.success ? 'Saved!' : 'Failed!',
+            cls: e.success ? 'saved' : 'failed', delayMs: stagger,
+          });
+        }
+        stagger += 120;
         break;
       }
       case 'conditionApplied': {

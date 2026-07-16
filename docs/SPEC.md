@@ -270,9 +270,17 @@ is empirical, not aesthetic.
 policies over seeded mirror matches with side-swapping — the empirical tool
 for any AI change; a CI-friendly regression floor lives in the test suite.
 
-Known limits: single-turn horizon (no enemy-reply search), no wall/LoS
-valuation, never upcasts, evaluator weights hand-set (auto-tuning them
-against arena win rate is an open, well-tooled follow-up).
+Actions carry a small cost (`MOVE_COST`, and a larger one for the skip verbs)
+so they must justify themselves: without it, a zero-value move ties with
+ending the turn and wins the sort, and units shuffle between equivalent cells
+until their movement runs out. Shooters take a penalty for having no line of
+sight to anyone, which stops them idling behind a wall at their "preferred"
+distance — melee kits are exempt, or the term pins them to a sniping spot
+they can't use.
+
+Known limits: single-turn horizon (no enemy-reply search), cover/terrain
+otherwise unvalued, never upcasts, evaluator weights hand-set (auto-tuning
+them against arena win rate is an open, well-tooled follow-up).
 
 ## 7b. Campaign layer
 

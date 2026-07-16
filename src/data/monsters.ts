@@ -225,13 +225,15 @@ export interface EncounterData {
 }
 
 export const ENCOUNTERS: Record<Id, EncounterData> = {
+  // Early-ladder sizes are tuned down: 5e's group multiplier (x2 for 5+
+  // monsters) made these ~2x "deadly" for the level-1 party they front-load.
   goblins: {
     id: 'goblins', name: 'Goblin Warband', suggestedLevel: 1,
-    members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
+    members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior'],
   },
   wolves: {
     id: 'wolves', name: 'Wolf Pack', suggestedLevel: 1,
-    members: ['wolf', 'wolf', 'wolf', 'wolf', 'wolf'],
+    members: ['wolf', 'wolf', 'wolf'],
   },
   undead: {
     id: 'undead', name: 'Restless Dead', suggestedLevel: 2,

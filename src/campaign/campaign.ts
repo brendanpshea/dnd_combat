@@ -72,7 +72,7 @@ export function parseCampaign(json: string): CampaignState | undefined {
     if (typeof raw.rng !== 'number') raw.rng = 1; // pre-skills saves
     for (const character of raw.characters) {
       character.speciesId ??= 'human';
-      character.name ??= CLASSES[character.classId]?.name ?? 'Adventurer';
+      character.name ??= defaultNameFor(character.classId);
       character.portraitId ??= character.classId;
     }
     // Existing campaigns already passed the original setup screen.
@@ -233,6 +233,18 @@ export function itemIcon(itemId: Id): string {
   return '📦';
 }
 
+/** Flavourful starting names, so a new party isn't "Fighter, Wizard, ...". */
+export const DEFAULT_NAMES: Record<Id, string> = {
+  fighter: 'Sir Arthur',
+  wizard: 'Morgana Le Fey',
+  cleric: 'Elaine the Holy',
+  rogue: 'Cedric the Sneaky',
+};
+
+export function defaultNameFor(classId: Id): string {
+  return DEFAULT_NAMES[classId] ?? CLASSES[classId]?.name ?? 'Adventurer';
+}
+
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {
@@ -248,7 +260,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
       return {
         classId,
         speciesId: speciesIds[index] ?? 'human',
-        name: CLASSES[classId]!.name,
+        name: defaultNameFor(classId),
         portraitId: classId,
         inventory: eq.inventory.map((s) => ({ ...s })),
         equipped: {
@@ -272,6 +284,8 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
   const ownerIdx = c.characters.findIndex((ch, idx) => idx !== charIdx && ch.classId === classId);
   const applyClass = (target: PartyCharacter, nextClassId: Id) => {
     const equipment = CLASSES[nextClassId]!.equipment;
+    // Carry the sample name along with the role, unless the player renamed it.
+    if (target.name === defaultNameFor(target.classId)) target.name = defaultNameFor(nextClassId);
     target.classId = nextClassId;
     target.inventory = equipment.inventory.map((stack) => ({ ...stack }));
     target.equipped = {
