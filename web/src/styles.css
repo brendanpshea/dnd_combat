@@ -784,3 +784,33 @@ button.danger { border-color: var(--red); color: var(--red); }
   .forge-party-preview > div { min-width: 0; width: 25%; overflow: hidden; }
   .forge-party-preview span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+/* Narration: the readable counterpart to the floating numbers. Fixed height so
+   the board never shifts when a line arrives or clears, and re-keyed per line
+   so each one re-plays the pop — otherwise two identical hits look like one. */
+.narration {
+  min-height: 2.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 10px;
+  margin: 6px auto 0;
+  max-width: min(100%, 46ch);
+  font-family: var(--display);
+  font-size: clamp(13px, 3.4vmin, 17px);
+  font-weight: 700;
+  color: #efe9ff;
+  background: linear-gradient(180deg, #2a2440, #221d36);
+  border: 1px solid #453d63;
+  border-radius: 10px;
+  animation: narrate-in 0.22s ease-out;
+}
+@keyframes narrate-in {
+  0% { opacity: 0.4; transform: translateY(-3px) scale(0.99); }
+  100% { opacity: 1; transform: none; }
+}
+button.ghost.on { border-color: var(--gold); color: var(--gold); }
+@media (prefers-reduced-motion: reduce) {
+  .narration { animation: none; }
+}

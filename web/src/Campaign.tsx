@@ -120,6 +120,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         combat={phase.combat}
         aiTeams={phase.aiTeams}
         aiLevel={c.storyMode ? 'easy' : 'normal'}
+        storyMode={c.storyMode}
         mapLabel={`${ENCOUNTERS[st.encounterId]!.name} — ${MAPS[st.mapId]!.name}`}
         theme={MAPS[st.mapId]!.theme}
         doneLabel="Continue"

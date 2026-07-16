@@ -158,3 +158,4 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
   }
   return { floats, corpses, bursts, hits, critFlash };
 }
+

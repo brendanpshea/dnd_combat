@@ -15,6 +15,7 @@ import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
+import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
 import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
@@ -234,6 +235,8 @@ export interface BattleProps {
   combat: Combat;
   aiTeams: Set<TeamId>;
   aiLevel?: AiLevel;
+  /** Younger-player mode: slower beats and narration on by default. */
+  storyMode?: boolean;
   mapLabel: string;
   /** Visual theme of the map being fought on. */
   theme?: string | undefined;
@@ -242,8 +245,8 @@ export interface BattleProps {
   onDone(winner: TeamId): void;
 }
 
-export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, doneLabel, onExit, onDone }: BattleProps) {
-  const [, setVersion] = useState(0);
+export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false, mapLabel, theme, doneLabel, onExit, onDone }: BattleProps) {
+  const [version, setVersion] = useState(0);
   const [log, setLog] = useState<string[]>(() =>
     combat.log.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s));
   const [targeting, setTargeting] = useState<Targeting | null>(null);
@@ -257,6 +260,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, d
   const [movePaths, setMovePaths] = useState<Map<Id, Position[]>>(new Map());
   const [muted, setMutedState] = useState(isMuted());
   const [speed, setSpeed] = useState(1);
+  /** Wall-clock time before which the AI must not act — see beatFor. */
+  const dwellUntil = useRef(0);
+  const [narration, setNarration] = useState<string | null>(null);
+  const [narrationOn, setNarrationOn] = useState(storyMode);
   const [hint, setHint] = useState<Action | null>(null);
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('dnd-tutorial-seen'));
   const speedRef = useRef(1);
@@ -282,6 +289,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, d
         if (e.type === 'moved' && e.path.length > 1) paths.set(e.combatantId, e.path);
       }
       setMovePaths(paths);
+
+      // Hold the board still long enough to read what just happened. Story mode
+      // lingers; the speed control divides it (and ⚡ removes it entirely).
+      const pace = (storyMode ? 1.45 : 1) / speedRef.current;
+      dwellUntil.current = performance.now() + beatFor(events) * pace;
+
+      const headline = narrate(combat.state, events);
+      if (headline) setNarration(headline);
 
       const fx = effectsFor(combat.state, events);
       if (fx.floats.length > 0) {
@@ -337,18 +352,24 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, d
     return undefined;
   }
 
-  // AI turns, paced by what the action is so effects can land.
+  // AI turns wait out the beat owed by whatever just happened (see beatFor).
+  // Any action sets that debt — including the player's own — so an enemy never
+  // starts moving while your hit is still landing.
+  //
+  // The dependency list matters: this effect used to have none, so it re-ran on
+  // every render and restarted its own timer. Unrelated state changes (a float
+  // expiring, a class toggling) silently re-rolled the AI's clock, which is no
+  // way to pace anything. `version` bumps once per applied action, which is
+  // exactly when the AI should reconsider.
   useEffect(() => {
     if (combat.isOver() || !active || !aiTeams.has(active.team)) return;
-    const action = aiPolicy(aiLevel)(combat.state, combat.activeId);
-    const base =
-      action.kind === 'move' ? 550 :
-      action.kind === 'endTurn' ? 350 :
-      action.kind === 'attack' || action.kind === 'castSpell' || action.kind === 'useItem' ? 1000 :
-      700;
-    const t = setTimeout(() => apply(action), base / speedRef.current);
+    const wait = Math.max(0, dwellUntil.current - performance.now());
+    const t = setTimeout(() => {
+      apply(aiPolicy(aiLevel)(combat.state, combat.activeId));
+    }, wait);
     return () => clearTimeout(t);
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version, activeId, aiLevel]);
 
   useEffect(() => {
     logEnd.current?.scrollIntoView({ behavior: 'smooth' });
@@ -445,10 +466,17 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, d
         <span className="mapname">{mapLabel}</span>
         <button
           className="ghost"
-          title="AI speed"
-          onClick={() => setSpeed((s) => (s === 1 ? 2 : 1))}
+          title="Enemy turn speed"
+          onClick={() => setSpeed((s) => (s === 1 ? 2 : s === 2 ? 99 : 1))}
         >
-          {speed === 1 ? '🐢 1×' : '🐇 2×'}
+          {speed === 1 ? '🐢 1×' : speed === 2 ? '🐇 2×' : '⚡ Instant'}
+        </button>
+        <button
+          className={narrationOn ? 'ghost on' : 'ghost'}
+          title={narrationOn ? 'Hide narration' : 'Show narration'}
+          onClick={() => setNarrationOn((n) => !n)}
+        >
+          💬
         </button>
         <button
           className="ghost"
@@ -481,6 +509,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', mapLabel, theme, d
         hitIds={hitIds}
         onCellTap={onCellTap}
       />
+
+      {/* Directly under the board: a fixed place to read what just happened,
+          so following a fight never depends on watching the right cell. */}
+      {narrationOn && (
+        <div className="narration" key={narration ?? ''} aria-live="polite">
+          {narration ?? ' '}
+        </div>
+      )}
 
       {active && (
         <div className="statusline" title={tooltipFor(active)}>
