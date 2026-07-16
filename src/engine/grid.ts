@@ -108,22 +108,32 @@ export function reachable(
 ): ReachResult {
   const costs = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, Position>();
+  // Costs are also kept in a flat array indexed y*width+x. The Maps are the
+  // published result, but looking *up* through them means building an 'x,y'
+  // string for every neighbour and every step of the min-scan, which made this
+  // the hottest function in the AI's search. The array is a pure lookup
+  // accelerator: same visit order, same strict-< tiebreak, same output.
+  const cost = new Float64Array(grid.width * grid.height).fill(Infinity);
+  const at = (p: Position) => p.y * grid.width + p.x;
+  cost[at(start)] = 0;
+
   // Simple priority-queue-by-scan; grids are tiny (8x8).
   const open: Position[] = [start];
   while (open.length > 0) {
     let bestIdx = 0;
     for (let i = 1; i < open.length; i++) {
-      if ((costs.get(key(open[i]!)) ?? Infinity) < (costs.get(key(open[bestIdx]!)) ?? Infinity)) bestIdx = i;
+      if (cost[at(open[i]!)]! < cost[at(open[bestIdx]!)]!) bestIdx = i;
     }
     const cur = open.splice(bestIdx, 1)[0]!;
-    const curCost = costs.get(key(cur))!;
+    const curCost = cost[at(cur)]!;
     for (const n of neighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
       const stepCost = terrainMoveCost(cell.terrain);
       const total = curCost + stepCost;
       if (total > budgetFeet) continue;
-      if (total < (costs.get(key(n)) ?? Infinity)) {
+      if (total < cost[at(n)]!) {
+        cost[at(n)] = total;
         costs.set(key(n), total);
         prev.set(key(n), cur);
         open.push(n);

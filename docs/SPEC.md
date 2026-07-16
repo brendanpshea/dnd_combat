@@ -316,7 +316,18 @@ no behavioural reason.
 **Arena** (`npm run arena [games] [preset]`, `src/ai/arena.ts`): seeded mirror
 matches with side-swapping — the authority on *strength*, and the gate before
 any AI change lands. Games are independent, so seeds are dealt across one
-process per core (`--serial` to debug in-process).
+process per core (`--serial` to debug in-process). 160 games run in ~30s.
+
+Keeping it that way is a feature, not vanity: a slow gate is a gate people skip,
+and skipping it is how the -9% batch above nearly landed. The AI spends its time
+in `step` and the grid search, not in clever evaluation, so that's where the
+speed is. Three fixes took a 160-game read from 119s to 32s with *bit-identical*
+results (85/160 before and after — the proof they changed nothing):
+`step` deep-copies with a hand-rolled clone instead of `structuredClone` (the
+state is plain data by spec, and a test enforces it); `reachable` looks costs up
+in a flat array instead of building an 'x,y' string per neighbour; and the
+evaluator memoises dice averages and caches each unit's damage profile, which
+its O(n²) threat term otherwise recomputes from scratch.
 
 Mind the noise. A win rate off N games carries a standard error of about
 `sqrt(0.25/N)` — ±7 points at 50 games, ±5.6 at 80 — and the CLI prints it.

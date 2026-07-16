@@ -5,6 +5,7 @@ import { buildEncounter } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { makeCombatant } from './helpers.js';
 import { cellAt, Position } from '../src/engine/types.js';
+import { step } from '../src/engine/actions.js';
 
 /** No two living combatants ever share a cell, and grid occupancy matches positions. */
 function assertNoOverlap(c: Combat) {
@@ -95,5 +96,44 @@ describe('movement occupancy integrity', () => {
       assertNoOverlap(c);
     }
     expect(c.isOver()).toBe(true);
+  });
+});
+
+describe('state is plain serializable data', () => {
+  it('holds nothing structuredClone-only (guards the hand-rolled clone in step)', () => {
+    // `step` deep-copies via a hand-rolled clone that understands objects,
+    // arrays and primitives — and nothing else. That is sound only while the
+    // spec's "GameState is plain serializable" rule holds. If someone adds a
+    // Map, Set, Date or class instance to the state, the clone would silently
+    // flatten it and produce a corrupt draft, so fail loudly here instead.
+    const c = new Combat({
+      seed: 3,
+      mapId: 'ruins',
+      combatants: [...buildParty('team1', 0, 3), ...buildParty('team2', 7, 3)],
+    });
+    c.apply({ kind: 'endTurn' });
+
+    const seen = new Set<unknown>();
+    const check = (v: unknown, path: string): void => {
+      if (v === null || typeof v !== 'object') return;
+      expect(
+        Array.isArray(v) || Object.getPrototypeOf(v) === Object.prototype,
+        `${path} is not a plain object/array — the clone in step() cannot copy it`,
+      ).toBe(true);
+      if (seen.has(v)) throw new Error(`${path} is a shared/cyclic reference`);
+      seen.add(v);
+      for (const [k, val] of Object.entries(v)) check(val, `${path}.${k}`);
+    };
+    check(c.state, 'state');
+
+    // And the copy must be deep: mutating the result of a step must never be
+    // visible in the state it came from.
+    const before = c.state;
+    const { state: after } = step(before, { kind: 'endTurn' });
+    const someone = Object.keys(after.combatants)[0]!;
+    after.combatants[someone]!.hp = -999;
+    after.grid.cells[0]!.terrain = 'hazard';
+    expect(before.combatants[someone]!.hp).not.toBe(-999);
+    expect(before.grid.cells[0]!.terrain).not.toBe('hazard');
   });
 });

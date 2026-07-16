@@ -17,9 +17,19 @@ import { cellAt } from '../engine/types.js';
 import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
 import { isHidden } from '../engine/rules/hide.js';
 
+// Dice expressions are a tiny fixed vocabulary ('1d8', '2d6'...) coming from
+// static content data, but re-parsing them with a regex on every evaluation put
+// parseDice among the hottest functions in the profile. The average of a dice
+// string never changes, so parse each one once.
+const avgDiceCache = new Map<string, number>();
 function avgDice(expr: string): number {
-  const d = parseDice(expr);
-  return d.count * (d.sides + 1) / 2 + d.bonus;
+  let v = avgDiceCache.get(expr);
+  if (v === undefined) {
+    const d = parseDice(expr);
+    v = d.count * (d.sides + 1) / 2 + d.bonus;
+    avgDiceCache.set(expr, v);
+  }
+  return v;
 }
 
 function weaponDamage(c: Combatant, w: WeaponData): number {
@@ -33,7 +43,24 @@ function weaponDamage(c: Combatant, w: WeaponData): number {
  * melee fighter after it throws a javelin). Casters count their magic as
  * ranged: a wizard's staff is a last resort, not a reason to charge.
  */
+/**
+ * Cached per combatant *object*. A single `evaluate` calls damageProxy once per
+ * unit plus once per unit-pair for the threat term — O(n²) recomputes of a kit
+ * scan that can't change, since nothing mutates a state the AI is evaluating
+ * (`step` clones, then mutates only its private draft). Keyed by identity, so a
+ * combatant whose slots change is a different object and re-derives naturally.
+ */
+const profileCache = new WeakMap<Combatant, { melee: number; ranged: number }>();
+
 function damageProfile(c: Combatant): { melee: number; ranged: number } {
+  const hit = profileCache.get(c);
+  if (hit) return hit;
+  const computed = computeDamageProfile(c);
+  profileCache.set(c, computed);
+  return computed;
+}
+
+function computeDamageProfile(c: Combatant): { melee: number; ranged: number } {
   let melee = 2; // unarmed floor
   let ranged = 0;
   for (const wid of [...equippedWeapons(c), ...stowedWeapons(c)]) {
