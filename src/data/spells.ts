@@ -232,6 +232,62 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  'poison-spray': {
+    id: 'poison-spray', name: 'Poison Spray', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 10, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '☠️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'con', dc);
+      const events: GameEvent[] = [save.event];
+      if (!save.success) {
+        const dmg = rollDice(state.rng, '1d12');
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Ray of Sickness — two-stage, like the real spell: a spell *attack roll*
+   * (not a save) does the damage, and only on a hit does the target get a
+   * chance to shrug off the `poisoned` rider. `poisoned` already exists as a
+   * condition (it imposes disadvantage on the bearer's own attacks — see
+   * collectAttackSources) but nothing has ever applied it before this. It rides
+   * on the generic `repeatSave` mechanism (a Con check at the end of the
+   * target's turn removes it), the same one Sleep and Hold Person use, so no
+   * new expiry logic was needed.
+   */
+  'ray-of-sickness': {
+    id: 'ray-of-sickness', name: 'Ray of Sickness', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🤢',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: false });
+      const events: GameEvent[] = [atk.event];
+      if (!atk.hit) return events;
+      const dmg = rollDice(state.rng, `${2 + slotLevel}d8`, atk.crit);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
+      const target = state.combatants[targetId]!;
+      if (target.alive) {
+        const dc = spellDc(state, casterId);
+        const save = savingThrow(state, targetId, 'con', dc);
+        events.push(save.event);
+        if (!save.success) {
+          target.conditions.push({ id: 'poisoned', sourceId: casterId, repeatSave: { ability: 'con', dc } });
+          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'poisoned', sourceId: casterId });
+        }
+      }
+      return events;
+    },
+  },
+
   'sacred-flame': {
     id: 'sacred-flame', name: 'Sacred Flame', level: 0, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },

@@ -96,6 +96,17 @@ twice a fight, enemies only (a dragonborn aims its own breath, so no friendly
 fire to confuse a player or the AI). It needed no new mechanism; it's a data
 entry plus one spell, and the AI values it through simulated damage.
 
+**Abyssal Tiefling** is the third: poison resistance, a free **Poison Spray**
+cantrip (Con save, short range — 10 ft, 2 cells), and an innate **Ray of
+Sickness** from 3rd. Ray of Sickness is deliberately the odd one out among the
+species spells so far: it's a spell *attack roll* first, and only a hit gets a
+Con save against the `poisoned` rider — two stages, mirroring the real spell,
+built entirely from existing pieces (`spellAttack` for the roll, `repeatSave` on
+the condition for the end-of-turn check-to-clear, the same mechanism Sleep and
+Hold Person already use). It's also the first spell to ever apply `poisoned` —
+the condition existed from day one (disadvantage on the bearer's own attacks)
+but had no caster before this.
+
 Because species never meet in the mirror arena (both sides are human), a
 dedicated harness measures them where it matters — `npm run species` runs a
 party of each species against themed level-3 encounters, reporting *heroes
@@ -103,7 +114,11 @@ downed per game* (the balance signal, which keeps headroom even when every party
 wins) and how often the signature ability fired. It confirmed the Dragonborn
 tracks the human baseline while breathing ~2x/fight (used, not warping), and
 that a defensive trait shows a defensive delta (the dwarf takes ~0.8 fewer downs
-against poison-dealing spiders).
+against poison-dealing spiders). It also demonstrated its own noise floor: a
+first 12-games/cell read had the tiefling doing *worse* than human against the
+undead encounter, which a 30-game rerun flipped the other way (poison resistance
+against ghouls helps, as it should) — a reminder to size the sample to the claim,
+same lesson as the arena's win-rate noise.
 
 The first innate user is the elf's **Faerie Fire** at 3rd: a 2×2 Dexterity-save area,
 concentration, that leaves foes `outlined` (the *condition* is named for its

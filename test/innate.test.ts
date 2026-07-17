@@ -179,3 +179,90 @@ describe('Dragonborn', () => {
     expect(after.combatants['ally']!.hp).toBe(allyHp);   // untouched
   });
 });
+
+describe('Abyssal Tiefling', () => {
+  const fell = (classId: string, position: Position, id: string, level = 1) =>
+    ({ ...buildCharacter({ classId, team: 'team1', position, speciesId: 'tiefling', level }), id });
+
+  it('resists poison — demonic, not the usual infernal fire flavour', () => {
+    const tf = fell('fighter', { x: 0, y: 0 }, 'tf');
+    expect(tf.resistances).toContain('poison');
+    expect(tf.resistances).not.toContain('fire');
+    const c = new Combat({ seed: 3, mapId: 'open', combatants: [tf, goblin({ x: 7, y: 7 }, 'g')] });
+    applyDamage(c.state, 'tf', 'g', 10, 'poison');
+    expect(tf.maxHp - c.state.combatants['tf']!.hp).toBe(5);   // halved
+  });
+
+  it('knows Poison Spray for free at 1st, any class', () => {
+    const wiz = fell('wizard', { x: 2, y: 2 }, 'wiz');
+    const ftr = fell('fighter', { x: 2, y: 2 }, 'ftr');
+    expect(wiz.spellIds).toContain('poison-spray');
+    expect(ftr.spellIds).toContain('poison-spray');
+    expect(ftr.spellSlots).toEqual([]);   // the fighter still has no slots — a cantrip needs none
+  });
+
+  it('casts Poison Spray at its short range and no farther', () => {
+    const wiz = fell('wizard', { x: 2, y: 2 }, 'wiz');
+    const near = { ...buildMonster('goblin-warrior', 'team2', { x: 3, y: 2 }), id: 'near' };  // 1 cell / 5 ft
+    const far = { ...buildMonster('goblin-warrior', 'team2', { x: 6, y: 2 }), id: 'far' };    // 4 cells / 20 ft
+    const c = new Combat({ seed: 3, mapId: 'open', combatants: [wiz, near, far] });
+    let guard = 0;
+    while (c.activeId !== 'wiz' && guard++ < 20) c.apply({ kind: 'endTurn' });
+    const casts = legalActions(c.state, 'wiz').filter((a) => a.kind === 'castSpell' && a.spellId === 'poison-spray');
+    const targeted = casts.flatMap((a) => a.kind === 'castSpell' ? a.targets : [])
+      .flatMap((t) => 'combatantId' in t ? [t.combatantId] : []);
+    expect(targeted).toContain('near');
+    expect(targeted).not.toContain('far');
+  });
+
+  it('lets a fighter — no spell slots — cast Ray of Sickness innately from 3rd', () => {
+    const ftr = fell('fighter', { x: 2, y: 2 }, 'ftr', 3);
+    expect(ftr.spellSlots).toEqual([]);
+    expect(ftr.innateSpells['ray-of-sickness']).toEqual({ current: 1, max: 1 });
+    expect(fell('fighter', { x: 2, y: 2 }, 'a', 1).innateSpells['ray-of-sickness']).toBeUndefined();  // not yet at 1st
+  });
+
+  it('Ray of Sickness is an attack roll first — damage requires a hit, not a failed save', () => {
+    // Unlike Poison Spray (a save spell), this one only pays off on a hit.
+    let hit = false;
+    for (let seed = 1; seed <= 30 && !hit; seed++) {
+      const ftr = fell('fighter', { x: 2, y: 2 }, 'ftr', 3);
+      const c = new Combat({ seed, mapId: 'open', combatants: [ftr, goblin({ x: 4, y: 2 }, 'g')] });
+      let guard = 0;
+      while (c.activeId !== 'ftr' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const cast = legalActions(c.state, 'ftr').find((a) => a.kind === 'castSpell' && a.spellId === 'ray-of-sickness');
+      if (!cast) continue;
+      const before = c.state.combatants['g']!.hp;
+      const { state: after, events } = step(c.state, cast);
+      expect(after.combatants['ftr']!.innateSpells['ray-of-sickness']!.current).toBe(0);  // spent either way
+      const attackEvent = events.find((e) => e.type === 'attackRolled');
+      expect(attackEvent).toBeDefined();
+      if (attackEvent?.type === 'attackRolled' && attackEvent.hit) {
+        hit = true;
+        expect(after.combatants['g']!.hp).toBeLessThan(before);
+      } else {
+        expect(after.combatants['g']!.hp).toBe(before);   // miss: no damage at all
+      }
+    }
+    expect(hit).toBe(true);   // sanity: the loop actually exercised a hit
+  });
+
+  it('poisons on a hit that fails the Con save — the first-ever user of `poisoned`', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const ftr = fell('fighter', { x: 2, y: 2 }, 'ftr', 3);
+      const c = new Combat({ seed, mapId: 'open', combatants: [ftr, goblin({ x: 4, y: 2 }, 'g')] });
+      let guard = 0;
+      while (c.activeId !== 'ftr' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const cast = legalActions(c.state, 'ftr').find((a) => a.kind === 'castSpell' && a.spellId === 'ray-of-sickness');
+      if (!cast) continue;
+      const { state: after } = step(c.state, cast);
+      const g = after.combatants['g']!;
+      if (g.conditions.some((k) => k.id === 'poisoned')) {
+        // Rides the generic repeat-save mechanism, so it must carry one.
+        expect(g.conditions.find((k) => k.id === 'poisoned')?.repeatSave?.ability).toBe('con');
+        return;
+      }
+    }
+    throw new Error('poisoned never landed in 40 seeds — check the hit/save odds');
+  });
+});

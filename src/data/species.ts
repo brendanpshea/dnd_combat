@@ -64,4 +64,15 @@ export const SPECIES: Record<Id, SpeciesData> = {
     resistances: ['fire'],
     innateSpells: [{ spellId: 'breath-weapon', atLevel: 1, uses: 2 }],
   },
+  tiefling: {
+    id: 'tiefling', name: 'Abyssal Tiefling', speed: 30,
+    // Poison resistance, not fire — an abyssal (demonic) tiefling, distinct
+    // from the usual infernal fire flavour and from the Dragonborn we already
+    // have. Poison Spray free at 1st; Ray of Sickness innate from 3rd is the
+    // first spell to ever apply `poisoned`, which existed as a condition
+    // (disadvantage on the bearer's attacks) but had no caster before this.
+    resistances: ['poison'],
+    spellsByLevel: { 1: ['poison-spray'] },
+    innateSpells: [{ spellId: 'ray-of-sickness', atLevel: 3, uses: 1 }],
+  },
 };
