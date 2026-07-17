@@ -19,7 +19,7 @@ import {
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest, longRest,
-  isStoreHealingSource, useStoreHealing,
+  isStoreHealingSource, storeSpellActions, useStoreHealing,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -44,6 +44,10 @@ const SHOP_CATEGORIES: Array<{ id: ShopCategory; label: string }> = [
 ];
 
 const PORTRAIT_OPTIONS = ['fighter', 'wizard', 'cleric', 'rogue'] as const;
+
+type StoreSelection =
+  | { kind: 'item'; charIdx: number; itemId: Id; slot?: EquipSlot }
+  | { kind: 'spell'; charIdx: number; spellId: Id };
 
 function shopCategory(itemId: Id): ShopCategory {
   if (ITEMS[itemId]) return 'consumables';
@@ -82,16 +86,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     setToasts((t) => [...t.slice(-2), { id, text }]);   // at most 3 on screen
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2600);
   };
-  /**
-   * The tapped item, if any. Everything you can do to an item lives in one
-   * sheet keyed off this — which is the whole fix. Asking for (item, recipient)
-   * as a single atomic choice forced the UI to render the cross product: 27
-   * "give" buttons for a party carrying 9 things, and items x 3 forever after.
-   * Pick the item, *then* say what to do with it: items + characters, not
-   * items x characters. It's also the grammar the battle screen already uses —
-   * tap the spell, then tap the target.
-   */
-  const [picked, setPicked] = useState<{ charIdx: number; itemId: Id; slot?: EquipSlot } | null>(null);
+  /** A selected inventory item or curated store spell, awaiting a verb/target. */
+  const [picked, setPicked] = useState<StoreSelection | null>(null);
   const [buyFor, setBuyFor] = useState(0);
   const [stockCategory, setStockCategory] = useState<ShopCategory>('consumables');
   const [advanced, setAdvanced] = useState(false);
@@ -336,11 +332,15 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           rendered an item-by-recipient grid whether you wanted it or not. */}
       {picked && (() => {
         const owner = c.characters[picked.charIdx]!;
-        const { itemId, slot } = picked;
-        const isCureWounds = itemId === 'cure-wounds';
-        const stack = owner.inventory.find((s) => s.itemId === itemId);
-        const qty = slot ? 1 : isCureWounds ? undefined : stack?.qty ?? 0;
-        const resale = Math.floor((itemPrice(itemId) ?? 0) / 2);
+        const itemId = picked.kind === 'item' ? picked.itemId : '';
+        const spell = picked.kind === 'spell'
+          ? storeSpellActions(party[picked.charIdx]!).find((action) => action.spellId === picked.spellId)
+          : undefined;
+        const slot = picked.kind === 'item' ? picked.slot : undefined;
+        const sourceId = picked.kind === 'item' ? picked.itemId : picked.spellId;
+        const stack = itemId ? owner.inventory.find((s) => s.itemId === itemId) : undefined;
+        const qty = slot ? 1 : itemId ? stack?.qty ?? 0 : undefined;
+        const resale = itemId ? Math.floor((itemPrice(itemId) ?? 0) / 2) : 0;
         const slots: EquipSlot[] = ['mainHand', 'offHand', 'armor'];
         const slotName = (sl: EquipSlot) => (sl === 'mainHand' ? 'main hand' : sl === 'offHand' ? 'off-hand' : 'armor');
         const close = () => setPicked(null);
@@ -348,7 +348,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           <div className="tray-backdrop" onClick={close}>
             <div className="tray" onClick={(e) => e.stopPropagation()}>
               <div className="tray-head">
-                {isCureWounds ? '💚 Cure Wounds' : `${itemIcon(itemId)} ${itemName(itemId)}`}{qty && qty > 1 ? ` ×${qty}` : ''}
+                {spell ? `${spell.icon} ${spell.name}` : `${itemIcon(itemId!)} ${itemName(itemId!)}`}{qty && qty > 1 ? ` ×${qty}` : ''}
                 <span className="muted">— {slot ? `worn by ${owner.name}` : owner.name}</span>
                 <button className="ghost" onClick={close}>✕</button>
               </div>
@@ -380,12 +380,12 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 })()
               )}
 
-              {!slot && isStoreHealingSource(itemId) && (
+              {!slot && isStoreHealingSource(sourceId) && (
                 <div className="sheet-row">
                   <span className="sheet-label">Use on</span>
                   {c.characters.map((target, targetIdx) => (
                     <button key={targetIdx} className="mini" onClick={() => mutate(() => {
-                      const result = useStoreHealing(c, picked.charIdx, targetIdx, itemId);
+                      const result = useStoreHealing(c, picked.charIdx, targetIdx, sourceId);
                       if (result) setNotice(`${owner.name} heals ${target.name} for ${result.healed} HP.`);
                       close();
                     })}>{target.name}</button>
@@ -393,7 +393,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 </div>
               )}
 
-              {!slot && !isCureWounds && (
+              {picked.kind === 'item' && !slot && (
                 <div className="sheet-row">
                   <span className="sheet-label">Give to</span>
                   {c.characters.map((to, toIdx) => toIdx !== picked.charIdx && (
@@ -406,7 +406,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 </div>
               )}
 
-              {!slot && resale > 0 && (
+              {picked.kind === 'item' && !slot && resale > 0 && (
                 <div className="sheet-row">
                   <span className="sheet-label">Sell</span>
                   <button className="mini" onClick={() => mutate(() => {
@@ -468,11 +468,11 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 return held ? (
                   <button
                     key={slot}
-                    className={`gear-slot chip-btn${picked?.charIdx === idx && picked.slot === slot ? ' selected' : ''}`}
+                    className={`gear-slot chip-btn${picked?.kind === 'item' && picked.charIdx === idx && picked.slot === slot ? ' selected' : ''}`}
                     onClick={() => setPicked(
-                      picked?.charIdx === idx && picked.slot === slot
+                      picked?.kind === 'item' && picked.charIdx === idx && picked.slot === slot
                         ? null
-                        : { charIdx: idx, itemId: held, slot },
+                        : { kind: 'item', charIdx: idx, itemId: held, slot },
                     )}
                   >
                     {itemIcon(held)} <b>{itemName(held)}</b>
@@ -488,28 +488,35 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               {ch.inventory.filter((s) => s.qty > 0).map((s) => (
                 <button
                   key={s.itemId}
-                  className={`item-chip chip-btn${picked?.charIdx === idx && picked.itemId === s.itemId && !picked.slot ? ' selected' : ''}`}
+                  className={`item-chip chip-btn${picked?.kind === 'item' && picked.charIdx === idx && picked.itemId === s.itemId && !picked.slot ? ' selected' : ''}`}
                   onClick={() => setPicked(
-                    picked?.charIdx === idx && picked.itemId === s.itemId && !picked.slot
+                    picked?.kind === 'item' && picked.charIdx === idx && picked.itemId === s.itemId && !picked.slot
                       ? null
-                      : { charIdx: idx, itemId: s.itemId },
+                      : { kind: 'item', charIdx: idx, itemId: s.itemId },
                   )}
                 >
                   {itemIcon(s.itemId)} {itemName(s.itemId)}{s.qty > 1 ? `×${s.qty}` : ''}
                 </button>
               ))}
-              {party[idx]!.spellIds.includes('cure-wounds') && (
-                <button
-                  className={`item-chip chip-btn${picked?.charIdx === idx && picked.itemId === 'cure-wounds' ? ' selected' : ''}`}
-                  onClick={() => setPicked(
-                    picked?.charIdx === idx && picked.itemId === 'cure-wounds' ? null : { charIdx: idx, itemId: 'cure-wounds' },
-                  )}
-                >
-                  💚 Cure Wounds
-                </button>
-              )}
               {ch.inventory.every((s) => s.qty <= 0) && <span className="muted">(empty)</span>}
             </div>
+            {storeSpellActions(party[idx]!).length > 0 && (
+              <div className="char-items">
+                <span className="inventory-label">Spells</span>
+                {storeSpellActions(party[idx]!).map((spell) => (
+                  <button
+                    key={spell.spellId}
+                    className={`item-chip chip-btn${picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === spell.spellId ? ' selected' : ''}`}
+                    onClick={() => setPicked(
+                      picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === spell.spellId
+                        ? null : { kind: 'spell', charIdx: idx, spellId: spell.spellId },
+                    )}
+                  >
+                    {spell.icon} {spell.name}
+                  </button>
+                ))}
+              </div>
+            )}
 
           </div>
         ))}

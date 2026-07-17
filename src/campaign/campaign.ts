@@ -427,6 +427,24 @@ export interface StoreHealingResult {
   healed: number;
 }
 
+export interface StoreSpellAction {
+  spellId: Id;
+  name: string;
+  icon: string;
+}
+
+const STORE_SPELL_ACTIONS: Record<Id, StoreSpellAction> = {
+  'cure-wounds': { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚' },
+};
+
+/** Store spells are a curated subset of a combatant's known spells. */
+export function storeSpellActions(combatant: Pick<Combatant, 'spellIds'>): StoreSpellAction[] {
+  return combatant.spellIds.flatMap((spellId) => {
+    const action = STORE_SPELL_ACTIONS[spellId];
+    return action ? [action] : [];
+  });
+}
+
 /**
  * Use a healing consumable or Cure Wounds during a store visit. Consumables
  * are spent; Cure Wounds is available to prepared casters without consuming a

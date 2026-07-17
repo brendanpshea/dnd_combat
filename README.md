@@ -114,8 +114,10 @@ persist. The shop offers unrestricted testing rests: a **short rest** restores
 half of every hero's maximum HP, while a **long rest** fully restores HP. Defeat
 ends the campaign and deletes the save (there's also a reset/delete option).
 Healing consumables and the cleric's **Cure Wounds** can also be used in the
-shop: select the source, then select the party member to heal. Potions and
-scrolls are consumed; Cure Wounds uses no encounter-only spell slot there.
+shop: inventory sources stay in the Pack, while store-usable spells appear in
+a separate Spells row. Select the source, then select the party member to
+heal. Potions and scrolls are consumed; Cure Wounds uses no encounter-only
+spell slot there.
 New campaigns begin at the party forge; names, species, class roles, and
 portrait choices are locked in when the campaign begins and travel with the
 party through every battle.
