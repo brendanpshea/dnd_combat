@@ -94,17 +94,33 @@ export interface ReachResult {
 const key = (p: Position) => `${p.x},${p.y}`;
 
 /**
+ * What it costs you (in expected damage) to step from one cell to another —
+ * opportunity attacks provoked, hazards entered. Supplied by the rules layer,
+ * which knows about reach and reactions; the grid only knows shape.
+ */
+export type StepDanger = (from: Position, to: Position) => number;
+
+/**
  * Dijkstra over terrain cost from `start` up to `budgetFeet`.
  * - Cannot pass through cells occupied by ids in `blockedBy` (hostiles).
  * - Can pass through (not end on) cells occupied by others (allies).
  * Ending on an occupied cell is disallowed by the caller via `costs` +
  * occupancy check; this function reports raw reachability.
+ *
+ * `danger` breaks ties between routes of *equal length*, and never buys safety
+ * with movement — a longer way round can strand a unit short of its target,
+ * which is a worse problem than the one it solves. Distance stays the sole
+ * primary objective; among the equally short paths, take the safe one.
+ *
+ * Without `danger` the results are identical to a plain Dijkstra, edge for
+ * edge: every risk is 0, so the tiebreak can never fire.
  */
 export function reachable(
   grid: GridState,
   start: Position,
   budgetFeet: number,
   blockedBy: Set<Id>,
+  danger?: StepDanger,
 ): ReachResult {
   const costs = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, Position>();
@@ -114,26 +130,39 @@ export function reachable(
   // the hottest function in the AI's search. The array is a pure lookup
   // accelerator: same visit order, same strict-< tiebreak, same output.
   const cost = new Float64Array(grid.width * grid.height).fill(Infinity);
+  // Accumulated danger, the tiebreak. Compared only when costs are equal, so
+  // it orders routes without ever reordering distances.
+  const risk = new Float64Array(grid.width * grid.height).fill(Infinity);
   const at = (p: Position) => p.y * grid.width + p.x;
   cost[at(start)] = 0;
+  risk[at(start)] = 0;
 
   // Simple priority-queue-by-scan; grids are tiny (8x8).
   const open: Position[] = [start];
   while (open.length > 0) {
     let bestIdx = 0;
     for (let i = 1; i < open.length; i++) {
-      if (cost[at(open[i]!)]! < cost[at(open[bestIdx]!)]!) bestIdx = i;
+      const a = at(open[i]!);
+      const b = at(open[bestIdx]!);
+      if (cost[a]! < cost[b]! || (cost[a] === cost[b] && risk[a]! < risk[b]!)) bestIdx = i;
     }
     const cur = open.splice(bestIdx, 1)[0]!;
     const curCost = cost[at(cur)]!;
+    const curRisk = risk[at(cur)]!;
     for (const n of neighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
       const stepCost = terrainMoveCost(cell.terrain);
       const total = curCost + stepCost;
       if (total > budgetFeet) continue;
-      if (total < cost[at(n)]!) {
-        cost[at(n)] = total;
+      const totalRisk = curRisk + (danger ? danger(cur, n) : 0);
+      const i = at(n);
+      // Strictly shorter, or the same length and safer. Re-queueing on a risk
+      // improvement matters: a cell first reached the dangerous way must pass
+      // the better route on to everything behind it.
+      if (total < cost[i]! || (total === cost[i] && totalRisk < risk[i]!)) {
+        cost[i] = total;
+        risk[i] = totalRisk;
         costs.set(key(n), total);
         prev.set(key(n), cur);
         open.push(n);

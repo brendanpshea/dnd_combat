@@ -3,7 +3,7 @@
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
 import { cellAt } from '../types.js';
-import { reachable, pathTo, adjacent } from '../grid.js';
+import { reachable, pathTo, adjacent, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
 import { rollDice } from '../dice.js';
@@ -37,6 +37,40 @@ export function moveDestinations(state: GameState, mover: Combatant): Position[]
   return out;
 }
 
+/**
+ * Rough expected damage of the two things a route can walk you into. Only
+ * their *relative* size matters — they rank equal-length paths against each
+ * other, nothing else — and a 1d4 hazard and a melee swing that lands about
+ * half the time are genuinely close, so neither dominates.
+ */
+const HAZARD_DANGER = 2.5;   // 1d4, and certain
+const PROVOKE_DANGER = 4;    // one opportunity attack, at roughly even odds
+
+/**
+ * The danger of each step, for picking between equal-length routes.
+ *
+ * A `move` action names a destination, not a route — the engine picks the walk
+ * (see `Action`). So neither the AI nor the player can ask for the safe way
+ * round: whatever this returns is the only say anyone gets. Blind, it would
+ * stroll through a fire pit, or out of a fighter's reach, whenever the distance
+ * tied — which is exactly what it did, to both players equally.
+ */
+function stepDanger(state: GameState, mover: Combatant): StepDanger {
+  const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
+    .map((id) => state.combatants[id]!)
+    .filter((h) => canTakeReaction(h) && meleeWeaponOf(h));
+  return (from, to) => {
+    let danger = 0;
+    // Mirrors the provoke rule below exactly: you pay for *leaving* reach, so
+    // sidestepping within it is free.
+    for (const h of threats) {
+      if (adjacent(h.position, from) && !adjacent(h.position, to)) danger += PROVOKE_DANGER;
+    }
+    if (cellAt(state.grid, to)!.terrain === 'hazard') danger += HAZARD_DANGER;
+    return danger;
+  };
+}
+
 /** A creature's first in-hand melee weapon, for opportunity attacks. */
 function meleeWeaponOf(c: Combatant): Id | undefined {
   const hands = [c.equipped.mainHand, c.equipped.offHand];
@@ -60,7 +94,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const events: GameEvent[] = [];
   const mover = state.combatants[moverId]!;
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover));
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   const cost = r.costs.get(`${to.x},${to.y}`)!;
