@@ -1141,3 +1141,37 @@ button.category .count {
 @media (prefers-reduced-motion: reduce) {
   .token.downed::after { animation: none; }
 }
+
+/* --- Party items: tap a thing, then say what to do with it ----------------
+   Gear slots and pack items are the same affordance, because to a player they
+   are the same question. The verbs live in the item sheet (reusing the battle
+   screen's tray), so the shop renders no give/equip buttons at all until a
+   thing is actually tapped. */
+.chip-btn {
+  cursor: pointer;
+  background: var(--panel2);
+  border: 1px solid #453d63;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.12s, transform 0.08s;
+}
+.chip-btn:hover { border-color: #6b5fa8; }
+.chip-btn:active { transform: scale(0.97); }
+.chip-btn.selected { border-color: var(--gold); color: var(--gold); }
+.gear-row .chip-btn { border-radius: 8px; }
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 7px 0;
+  border-top: 1px solid #342f4d;
+}
+.sheet-row:first-of-type { border-top: 0; }
+/* Fixed-width labels so the verbs line up into columns and the sheet reads as
+   a menu rather than a paragraph of buttons. */
+.sheet-label { min-width: 5.5em; color: var(--muted); font-size: 13px; }
+.tray-head .muted { font-weight: 400; font-size: 13px; }
