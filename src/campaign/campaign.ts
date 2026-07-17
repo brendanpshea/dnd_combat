@@ -7,6 +7,7 @@
  * (via the builder's gear overrides) before a battle and reads surviving
  * inventory back afterwards.
  */
+import { HERO_NAMES, defaultNameFor } from '../builder/names.js';
 import type { Id, Combatant, ItemStack, TeamId } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { buildCharacter, assignStats } from '../builder/character.js';
@@ -72,8 +73,15 @@ export function parseCampaign(json: string): CampaignState | undefined {
     if (typeof raw.rng !== 'number') raw.rng = 1; // pre-skills saves
     for (const character of raw.characters) {
       character.speciesId ??= 'human';
-      character.name ??= defaultNameFor(character.classId);
       character.portraitId ??= character.classId;
+      // Saves from before characters had names carry the class as the name, so
+      // the game announces "Wizard is down" instead of "Morgana Le Fey is down".
+      // A name that is exactly the class name was never chosen, it was the old
+      // default — upgrade it. (Deliberately naming your wizard "Wizard" is a
+      // price worth paying to fix every save that predates the feature.)
+      if (!character.name || character.name === CLASSES[character.classId]?.name) {
+        character.name = defaultNameFor(character.classId);
+      }
     }
     // Existing campaigns already passed the original setup screen.
     if (typeof raw.partyReady !== 'boolean') raw.partyReady = true;
@@ -233,17 +241,8 @@ export function itemIcon(itemId: Id): string {
   return '📦';
 }
 
-/** Flavourful starting names, so a new party isn't "Fighter, Wizard, ...". */
-export const DEFAULT_NAMES: Record<Id, string> = {
-  fighter: 'Sir Arthur',
-  wizard: 'Morgana Le Fey',
-  cleric: 'Elaine the Holy',
-  rogue: 'Cedric the Sneaky',
-};
-
-export function defaultNameFor(classId: Id): string {
-  return DEFAULT_NAMES[classId] ?? CLASSES[classId]?.name ?? 'Adventurer';
-}
+/** Re-exported so callers don't reach past this layer for a party's names. */
+export { HERO_NAMES as DEFAULT_NAMES, defaultNameFor };
 
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];

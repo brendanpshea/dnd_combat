@@ -4,6 +4,7 @@
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES } from '../data/classes.js';
+import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
 
@@ -125,6 +126,14 @@ export function buildParty(
 ): Combatant[] {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return order.map((classId, i) =>
-    buildCharacter({ classId, team, level, position: { x: files[i]!, y: rank }, speciesId: speciesIds[i] ?? 'human' }),
+    buildCharacter({
+      classId, team, level,
+      // Without this a generated party is "Fighter, Wizard, Cleric, Rogue", and
+      // the narration bar reads "Wizard is down" — a class, not a character.
+      // Distinct per side, or a mirror match kills Sir Arthur with Sir Arthur.
+      name: defaultNameFor(classId, team),
+      position: { x: files[i]!, y: rank },
+      speciesId: speciesIds[i] ?? 'human',
+    }),
   );
 }

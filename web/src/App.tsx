@@ -277,7 +277,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const dwellUntil = useRef(0);
   const [narration, setNarration] = useState<string | null>(null);
   const [tray, setTray] = useState<BarGroup | null>(null);
-  const [narrationOn, setNarrationOn] = useState(storyMode);
+  // Default on: on a phone the log is hidden, so this is the only running
+  // account of the fight. Story mode additionally slows the beats down.
+  const [narrationOn, setNarrationOn] = useState(true);
   const [hint, setHint] = useState<Action | null>(null);
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('dnd-tutorial-seen'));
   const speedRef = useRef(1);
@@ -516,7 +518,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         >
           {muted ? '🔇' : '🔊'}
         </button>
-        <button className="ghost" onClick={() => setShowLog((s) => !s)}>
+        <button className="ghost log-toggle" onClick={() => setShowLog((s) => !s)}>
           📜 {showLog ? 'Hide' : 'Log'}
         </button>
         <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>

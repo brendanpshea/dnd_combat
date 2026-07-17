@@ -6,7 +6,7 @@ import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
-  giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass,
+  giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -15,6 +15,8 @@ import { Combat } from '../src/engine/combat.js';
 import { buildEncounter } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { ITEMS } from '../src/data/items.js';
+import { CLASSES } from '../src/data/classes.js';
+import { buildParty } from '../src/builder/character.js';
 
 describe('campaign state', () => {
   it('new campaign: 4 characters with class kits, starting gold, stage 0', () => {
@@ -404,4 +406,35 @@ describe('campaign battles (headless AI playthrough)', () => {
     }
     expect(stagesWon).toBeGreaterThanOrEqual(2); // the ladder is winnable, not scripted
   }, 60000);
+});
+
+describe('names in old saves', () => {
+  it('upgrades a party that was named after its classes', () => {
+    // Saves from before characters had names stored the class as the name, so
+    // the game announced "☠ Wizard is down!" on the monsters' turn — a class,
+    // not a character. The old migration only filled a *missing* name, so these
+    // slipped through.
+    const c = newCampaign(1);
+    for (const ch of c.characters) ch.name = CLASSES[ch.classId]!.name; // 'Fighter', 'Wizard', ...
+    const revived = parseCampaign(JSON.stringify(c))!;
+    expect(revived.characters.map((ch) => ch.name)).toEqual([
+      'Sir Arthur', 'Morgana Le Fey', 'Elaine the Holy', 'Cedric the Sneaky',
+    ]);
+  });
+
+  it('keeps a name the player actually chose', () => {
+    const c = newCampaign(1);
+    c.characters[1]!.name = 'Zatanna';
+    expect(parseCampaign(JSON.stringify(c))!.characters[1]!.name).toBe('Zatanna');
+  });
+
+  it('names generated parties on both sides, so a mirror match reads', () => {
+    // buildParty never passed a name, so every skirmish was "Fighter" vs
+    // "Fighter" — and one list for both sides would be Sir Arthur vs Sir Arthur.
+    const heroes = buildParty('team1', 0, 1).map((c) => c.name);
+    const rivals = buildParty('team2', 7, 1).map((c) => c.name);
+    expect(heroes[0]).toBe('Sir Arthur');
+    expect(rivals[0]).toBe('Sir Kay');
+    expect(heroes.some((n) => rivals.includes(n))).toBe(false);
+  });
 });

@@ -895,3 +895,43 @@ button.category .count {
 @media (prefers-reduced-motion: reduce) {
   .tray, .tray-backdrop { animation: none; }
 }
+
+/* --- Where the log lives -------------------------------------------------
+   Two different answers, because the screens are different problems.
+
+   Desktop has spare width and no spare height, so the log moves into a side
+   column and stops pushing the board around. The battle becomes a grid: every
+   child stays in column 1 by default, so only the log needs placing — no DOM
+   restructuring, and the narrow layout is untouched.
+
+   Phones have neither, and the narration bar already says what just happened in
+   plain English. So the log is hidden entirely and 📜 summons it. */
+@media (min-width: 900px) {
+  .battle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 12px;
+    justify-items: center;
+    align-content: start;
+    max-width: 1240px;
+  }
+  .battle > * { grid-column: 1; }
+  .topbar { grid-column: 1 / -1; }
+  .log {
+    grid-column: 2;
+    grid-row: 2 / span 99;   /* beside everything below the topbar */
+    align-self: stretch;
+    max-height: none;
+    font-size: 12.5px;
+  }
+  /* The side log is always there; nothing to toggle. */
+  .log-toggle { display: none; }
+}
+
+@media (max-width: 899px) {
+  .log { display: none; }
+  .log.open {
+    display: block;
+    max-height: 44vh;
+  }
+}
