@@ -12,6 +12,7 @@
     "campaign": "tsx src/ui/cli/campaign.ts",
     "arena": "tsx scripts/arena.ts",
     "probe": "tsx scripts/probe.ts",
+    "species": "tsx scripts/species.ts",
     "web": "vite --config web/vite.config.ts",
     "web:build": "vite build --config web/vite.config.ts",
     "web:typecheck": "tsc -p web/tsconfig.json"
