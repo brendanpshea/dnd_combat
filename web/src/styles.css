@@ -594,8 +594,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   transition: max-height 0.2s;
 }
 .log.open { max-height: 40vh; }
-.logline { padding: 1px 0; }
-.logline:last-child { color: var(--text); }
 
 /* ---- campaign ---- */
 .campaign {
@@ -919,7 +917,7 @@ button.category .count {
 @media (min-width: 900px) {
   .battle {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 340px;
     grid-template-areas: "top top" "main log";
     align-content: start;
     column-gap: 12px;
@@ -934,7 +932,7 @@ button.category .count {
        column grows to fit the whole fight and the page scrolls away. */
     max-height: calc(100vh - 96px);
     min-height: 0;
-    font-size: 12.5px;
+    font-size: 13px;
   }
   /* The side log is always there; nothing to toggle. */
   .log-toggle { display: none; }
@@ -947,3 +945,44 @@ button.category .count {
     max-height: 44vh;
   }
 }
+
+/* --- Log legibility ------------------------------------------------------
+   The log was one grey wall: rounds, turns, hits and misses all the same
+   weight, so finding anything meant reading everything. Colour does the
+   skimming — headers anchor, outcomes announce themselves. Restrained on
+   purpose: tint what a glance should catch, leave the rest to read normally. */
+.logline { padding: 1px 0; line-height: 1.45; }
+
+.logline.round {
+  margin: 8px 0 2px;
+  padding-top: 6px;
+  border-top: 1px solid #453d63;
+  color: var(--gold);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+/* Turn headers are the anchors you scroll to, so they carry the side's colour
+   and everything under them indents beneath. */
+.logline.turn {
+  margin-top: 6px;
+  font-weight: 800;
+  color: var(--text);
+  border-left: 3px solid transparent;
+  padding-left: 6px;
+}
+.logline.turn.team1 { border-left-color: var(--blue); }
+.logline.turn.team2 { border-left-color: var(--red); }
+
+.logline.hit, .logline.miss, .logline.dmg, .logline.heal,
+.logline.saved, .logline.failed, .logline.cond, .logline.move, .logline.died {
+  padding-left: 9px;
+}
+.logline.miss  { color: #8f88a6; font-style: italic; }
+.logline.move  { color: #8f88a6; }
+.logline.dmg   { color: #ffb59a; }
+.logline.dmg.crit { color: var(--gold); font-weight: 800; }
+.logline.heal  { color: var(--green); }
+.logline.saved { color: #9be2ff; }
+.logline.failed { color: #ffc39a; }
+.logline.cond  { color: #c9a6ff; }
+.logline.died  { color: #ff7a7a; font-weight: 800; }

@@ -82,23 +82,36 @@ const sum = (ns: number[]) => ns.reduce((a, b) => a + b, 0);
 /** '+3' / '-1' / '' — the modifier on top of the dice, for readable roll math. */
 const signed = (n: number) => (n === 0 ? '' : n > 0 ? `+${n}` : `${n}`);
 
-function name(state: GameState, id: Id): string {
-  const c = state.combatants[id];
-  return c ? `${c.name}(${c.team === 'team1' ? 'T1' : 'T2'})` : id;
+export interface RenderOpts {
+  /**
+   * Append (T1)/(T2) after each name. The terminal needs it — it has no colour
+   * to tell sides apart with. The web log tags the line's team instead, and
+   * names are unique now (rival parties and monsters both get their own), so
+   * the tags are pure noise there.
+   */
+  tagTeams?: boolean;
 }
 
-export function renderEvent(state: GameState, e: GameEvent): string | undefined {
+function name(state: GameState, id: Id, opts: RenderOpts = {}): string {
+  const c = state.combatants[id];
+  if (!c) return id;
+  if (opts.tagTeams === false) return c.name;
+  return `${c.name}(${c.team === 'team1' ? 'T1' : 'T2'})`;
+}
+
+export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {}): string | undefined {
+  const nm = (id: Id): string => name(state, id, opts);
   switch (e.type) {
     case 'combatStarted':
-      return 'Initiative: ' + e.order.map((o) => `${name(state, o.id)} ${o.initiative}`).join(', ');
+      return 'Initiative: ' + e.order.map((o) => `${nm(o.id)} ${o.initiative}`).join(', ');
     case 'roundStarted':
       return `\n=== Round ${e.round} ===`;
     case 'turnStarted':
-      return `-- ${name(state, e.combatantId)}'s turn --`;
+      return `-- ${nm(e.combatantId)}'s turn --`;
     case 'turnEnded':
       return undefined;
     case 'moved':
-      return `${name(state, e.combatantId)} moves to ${cellName(e.path[e.path.length - 1]!)}.`;
+      return `${nm(e.combatantId)} moves to ${cellName(e.path[e.path.length - 1]!)}.`;
     case 'attackRolled': {
       const w = e.weaponId === 'spell' ? 'a spell' : WEAPONS[e.weaponId]?.name ?? e.weaponId;
       const oa = e.opportunity ? ' (opportunity attack)' : '';
@@ -106,7 +119,7 @@ export function renderEvent(state: GameState, e: GameEvent): string | undefined 
       const result = e.hit ? (e.crit ? 'CRIT!' : 'hit') : 'miss';
       // Roll20-style math: the bonus is whatever the engine added on top of
       // the die (proficiency, ability, Bless's d4, a +1 weapon...).
-      return `${name(state, e.attackerId)} attacks ${name(state, e.targetId)} with ${w}${oa}: ` +
+      return `${nm(e.attackerId)} attacks ${nm(e.targetId)} with ${w}${oa}: ` +
         `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}`;
     }
     case 'damageDealt': {
@@ -119,39 +132,39 @@ export function renderEvent(state: GameState, e: GameEvent): string | undefined 
         : mod >= 0 ? ` [${e.rolls.join('+')}${signed(mod)}]`
         : ` [rolled ${rolled} → ${e.amount}]`;
       const tags = e.tags && e.tags.length > 0 ? ` (${e.tags.join(', ')})` : '';
-      return `  ${name(state, e.targetId)} takes ${e.amount} ${e.damageType}${dice}${tags}.`;
+      return `  ${nm(e.targetId)} takes ${e.amount} ${e.damageType}${dice}${tags}.`;
     }
     case 'healed':
-      return `${name(state, e.targetId)} regains ${e.amount} HP (${state.combatants[e.targetId]?.hp}/${state.combatants[e.targetId]?.maxHp}).`;
+      return `${nm(e.targetId)} regains ${e.amount} HP (${state.combatants[e.targetId]?.hp}/${state.combatants[e.targetId]?.maxHp}).`;
     case 'savingThrow':
-      return `  ${name(state, e.combatantId)} ${e.ability.toUpperCase()} save: ` +
+      return `  ${nm(e.combatantId)} ${e.ability.toUpperCase()} save: ` +
         `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.`;
     case 'hideCheck':
-      return `  ${name(state, e.combatantId)} hides: d20(${e.natural}) = ${e.total} vs DC 15 — ${e.success ? 'hidden' : 'seen'}.`;
+      return `  ${nm(e.combatantId)} hides: d20(${e.natural}) = ${e.total} vs DC 15 — ${e.success ? 'hidden' : 'seen'}.`;
     case 'hiddenRevealed':
-      return `  ${name(state, e.observerId)} spots ${name(state, e.combatantId)} (${e.passivePerception} beats ${e.hideCheck}).`;
+      return `  ${nm(e.observerId)} spots ${nm(e.combatantId)} (${e.passivePerception} beats ${e.hideCheck}).`;
     case 'conditionApplied':
-      return `  ${name(state, e.combatantId)} is ${e.condition}.`;
+      return `  ${nm(e.combatantId)} is ${e.condition}.`;
     case 'conditionRemoved':
-      return `  ${name(state, e.combatantId)} is no longer ${e.condition}.`;
+      return `  ${nm(e.combatantId)} is no longer ${e.condition}.`;
     case 'concentrationBroken':
-      return `${name(state, e.combatantId)} loses concentration on ${SPELLS[e.spellId]?.name ?? e.spellId}.`;
+      return `${nm(e.combatantId)} loses concentration on ${SPELLS[e.spellId]?.name ?? e.spellId}.`;
     case 'equipped':
-      return `${name(state, e.combatantId)} draws ${WEAPONS[e.weaponId]?.name ?? e.weaponId}.`;
+      return `${nm(e.combatantId)} draws ${WEAPONS[e.weaponId]?.name ?? e.weaponId}.`;
     case 'itemUsed': {
       const item = ITEMS[e.itemId]?.name ?? e.itemId;
       return e.targetId && e.targetId !== e.combatantId
-        ? `${name(state, e.combatantId)} uses ${item} on ${name(state, e.targetId)}.`
-        : `${name(state, e.combatantId)} uses ${item}.`;
+        ? `${nm(e.combatantId)} uses ${item} on ${nm(e.targetId)}.`
+        : `${nm(e.combatantId)} uses ${item}.`;
     }
     case 'dashed':
-      return `${name(state, e.combatantId)} dashes.`;
+      return `${nm(e.combatantId)} dashes.`;
     case 'disengaged':
-      return `${name(state, e.combatantId)} disengages.`;
+      return `${nm(e.combatantId)} disengages.`;
     case 'dodging':
-      return `${name(state, e.combatantId)} dodges.`;
+      return `${nm(e.combatantId)} dodges.`;
     case 'died':
-      return `*** ${name(state, e.combatantId)} dies! ***`;
+      return `*** ${nm(e.combatantId)} dies! ***`;
     case 'combatEnded':
       return `\n##### ${e.winner === 'team1' ? 'TEAM 1' : 'TEAM 2'} WINS! #####`;
   }

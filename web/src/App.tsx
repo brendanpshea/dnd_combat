@@ -8,7 +8,7 @@ import { acOf } from '../../src/data/armor.js';
 import { chooseAction } from '../../src/ai/greedy.js';
 import { chooseActionSim, SIM_PRESETS } from '../../src/ai/simulated.js';
 import type { Action } from '../../src/engine/actions.js';
-import { renderEvent } from '../../src/ui/cli/renderer.js';
+import { logLinesFor, type LogLine } from './log.js';
 import { sphere2x2, cone15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
@@ -260,8 +260,7 @@ export interface BattleProps {
 
 export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false, mapLabel, theme, doneLabel, onExit, onDone }: BattleProps) {
   const [version, setVersion] = useState(0);
-  const [log, setLog] = useState<string[]>(() =>
-    combat.log.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s));
+  const [log, setLog] = useState<LogLine[]>(() => logLinesFor(combat.state, combat.log));
   const [targeting, setTargeting] = useState<Targeting | null>(null);
   const [chooser, setChooser] = useState<{ target: Combatant; options: Array<{ label: string; action: Action }> } | null>(null);
   const [showLog, setShowLog] = useState(false);
@@ -295,8 +294,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     initAudio();
     try {
       const events = combat.apply(action);
-      const lines = events.map((e) => renderEvent(combat.state, e)).filter((s): s is string => !!s);
-      setLog((l) => [...l, ...lines]);
+      setLog((l) => [...l, ...logLinesFor(combat.state, events)]);
 
       // Movement animation: tokens follow the actual path (around walls, past
       // allies) instead of sliding in a straight line through them.
@@ -343,7 +341,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         }), 450);
       }
     } catch (err) {
-      setLog((l) => [...l, `(${(err as Error).message})`]);
+      setLog((l) => [...l, { text: `(${(err as Error).message})`, kind: 'misc' }]);
     }
     setTargeting(null);
     setChooser(null);
@@ -667,7 +665,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       )}
 
       <div className={`log ${showLog ? 'open' : ''}`}>
-        {log.slice(-200).map((line, i) => <div key={i} className="logline">{line}</div>)}
+        {log.slice(-200).map((line, i) => (
+          <div key={i} className={`logline ${line.kind} ${line.team ?? ''}`}>{line.text}</div>
+        ))}
         <div ref={logEnd} />
       </div>
 
