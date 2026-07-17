@@ -201,10 +201,12 @@ describe('Abyssal Tiefling', () => {
     expect(ftr.spellSlots).toEqual([]);   // the fighter still has no slots — a cantrip needs none
   });
 
-  it('casts Poison Spray at its short range and no farther', () => {
-    const wiz = fell('wizard', { x: 2, y: 2 }, 'wiz');
-    const near = { ...buildMonster('goblin-warrior', 'team2', { x: 3, y: 2 }), id: 'near' };  // 1 cell / 5 ft
-    const far = { ...buildMonster('goblin-warrior', 'team2', { x: 6, y: 2 }), id: 'far' };    // 4 cells / 20 ft
+  it('casts Poison Spray at its 30 ft (6-cell) range and no farther', () => {
+    // 8x8 board: corner to corner is 7 cells (35 ft), just past range — the only
+    // way to place a target outside 30 ft at all.
+    const wiz = fell('wizard', { x: 0, y: 0 }, 'wiz');
+    const near = { ...buildMonster('goblin-warrior', 'team2', { x: 1, y: 0 }), id: 'near' };  // 1 cell / 5 ft
+    const far = { ...buildMonster('goblin-warrior', 'team2', { x: 7, y: 7 }), id: 'far' };    // 7 cells / 35 ft
     const c = new Combat({ seed: 3, mapId: 'open', combatants: [wiz, near, far] });
     let guard = 0;
     while (c.activeId !== 'wiz' && guard++ < 20) c.apply({ kind: 'endTurn' });

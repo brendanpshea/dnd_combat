@@ -234,7 +234,7 @@ export const SPELLS: Record<Id, SpellData> = {
 
   'poison-spray': {
     id: 'poison-spray', name: 'Poison Spray', level: 0, castingTime: 'action',
-    targeting: { kind: 'creature', range: 10, who: 'enemy', count: 1 },
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1 },   // 2024: 10 ft -> 30 ft
     concentration: false,
     icon: '☠️',
     cast({ state, casterId, targetIds }) {
