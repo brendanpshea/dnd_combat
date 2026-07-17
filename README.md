@@ -150,3 +150,25 @@ npm run web:build      # production bundle
 
 Content is data-driven: adding a monster, spell, weapon, item, or map is a
 data-file edit (`src/data/`), never an engine change.
+
+### Working on the AI
+
+Two tools, answering different questions. Use both — neither substitutes for the
+other, and skipping the slow one is how a 9-point regression nearly shipped.
+
+```bash
+npm run probe                          # ~3s: does it still play sensibly?
+npm run arena -- 80                    # ~30s: is it stronger? (160 games)
+npm run arena -- 80 hard --samples 8   # sweep a preset without editing it
+npm run arena -- 20 normal --serial    # in-process, for debugging one game
+```
+
+`probe` runs tactical set-pieces with an obvious right answer and prints what
+the AI did — instant, deterministic, and it tells you *why* something changed.
+`arena` plays seeded mirror matches against the greedy policy and is the
+authority on strength, sharded across cores.
+
+**Mind the noise.** A win rate off N games carries a standard error of about
+`sqrt(0.25/N)` — ±7 points at 50 games, ±4 at 160 — and the arena prints it.
+Two readings inside ~2 SE are the same reading. Before believing an improvement,
+re-run it on more games, paired against baseline on the same seeds.

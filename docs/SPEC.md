@@ -303,19 +303,66 @@ through its simulated consequences, automatically.
 **Difficulty mapping follows measured strength, not architecture:**
 Easy = sim-easy (~28% vs greedy), Normal = sim-normal (~52%), Hard = greedy.
 
-**`samples` is the only difficulty knob that does anything.** Measured over 160
-games: samples 1 → 28.7%, 2 → 40.0%, 3 → 46.3%; beam and moveCandidates barely
-register (beam 1 vs 2 at samples 3: 46.3% either way). Easy is therefore easy
-because it is *blind* — it imagines each action once — which is uncomfortable,
-because noisy estimates don't read as "weak", they read as "broken": a unit that
-walks into a lethal opportunity attack looks like a bug, not a beginner. That is
-what the lethality veto is for. It is analytic, so it protects the 1-sample
-preset without making Story mode harder.
-(sim-*hard* measures ~45% — more search, but still short of greedy, so Hard
-stays greedy.)
-When arena runs show the sim AI overtaking greedy (richer content, better
-evaluator, tuned weights), Hard swaps to the sim hard preset — the criterion
-is empirical, not aesthetic.
+**The ladder really has two rungs, not three.** Measured against greedy over 160
+games: sim-easy 28.1%, sim-normal 51.9%, sim-hard 54.4%. Easy is genuinely
+easier; normal, hard and greedy are all within noise of each other and of 50%.
+Someone choosing Hard today gets, in effect, the Normal opponent.
+
+sim-hard at 54.4% ± 4.0 is only ~1.1 SE above even, so it has *not* convincingly
+overtaken greedy and Hard stays greedy for now — the swap criterion below is
+empirical, and "tied" is not "overtaken". (An earlier note here recorded sim-hard
+at ~45% and concluded it was behind; that read was 40 games, ±7.9, and predated
+the hide/pathing/deadlock fixes. It was noise.)
+
+Closing the top of the ladder is not a tuning job. Both cheap levers are spent:
+more search plateaus past 5 samples (table below), and focus-fire targeting is
+already implemented twice over — the evaluator's `0.35` alive-bonus means
+killing one 20 HP enemy scores 40 where splitting the same damage scores 26, and
+greedy carries an explicit `killBonus`. What is left is either a better
+evaluator (three attempts have measured *worse*), cross-unit coordination (a
+real gap — "I soften, you finish" — but a large build), or buying difficulty
+outside the AI entirely: more or better enemies on Hard, which is honest, cheap,
+and the usual answer in shipped games.
+
+**What the knobs are actually worth** (160 games each, vs greedy):
+
+| samples | beam | depth | mc | win rate |
+| --- | --- | --- | --- | --- |
+| 1 | 2 | 1 | 3 | 28.7% |
+| 2 | 1 | 1 | 2 | 40.0% |
+| 3 | 1 | 1 | 3 | 46.3% |
+| 3 | 2 | 1 | 3 | 46.3% |
+| 3 | 3 | 2 | 5 | 51.9% ← normal |
+| 5 | 5 | 3 | 7 | 54.4% ← hard |
+| 8 | 5 | 3 | 7 | 41.3% |
+| 12 | 5 | 3 | 7 | 48.1% |
+
+`samples` dominates the climb: 1 → 3 is worth **+17.6 points**, more than
+everything else combined, and 1 → 5 gets from 28.7% to 54.4%. Depth is second
+and real (+5.6 to depth 2). `beam` cannot be read from rows 3-4 and those two
+rows prove nothing: **at `depth: 1` the beam is never extended**, so
+`chooseActionSim` returns the top-scoring first action whatever the width — beam
+is inert by construction below depth 2. (An earlier draft of this file concluded
+from exactly that pair that "beam does nothing". It was measuring a no-op.)
+
+**Past 5 samples the curve stops climbing** — 8 lands at 41.3%, a drop of 2.3 SE
+that is probably real rather than noise, and 12 recovers only to 48.1%. So
+thinking harder is not a lever any more: this AI is at its ceiling, and the
+remaining error is in *what* it values, not in how precisely it measures it.
+(Worth a look if anyone revisits: `pathScore` accumulates `meanV - node.stateV`,
+an average over N samples minus a single-draw baseline, since the beam continues
+from the sample-0 state. That mismatch is a plausible suspect for why sharper
+estimates stop paying, and would explain the same shape as the two other
+"obvious" improvements above that measured *worse*.)
+
+The awkward consequence is that **easy is easy because it is blind** — one
+sample, so it imagines each action once and its estimates are noise. That is a
+bad way to be weak: noisy estimates don't read as "beginner", they read as
+"broken". A kobold that walks into a lethal opportunity attack looks like a bug,
+which is what it looked like in real play. Hence the lethality veto: being
+analytic, it protects the 1-sample preset without buying strength (easy 28.7% →
+28.1%) — the alternative, raising samples, would have made Story mode ~18 points
+*harder*, which is precisely backwards for the mode aimed at younger players.
 
 **Two tools, and they answer different questions.** Use both; neither
 substitutes for the other.

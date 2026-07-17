@@ -14,10 +14,14 @@ export type AiLevel = 'easy' | 'normal' | 'hard';
 
 /**
  * Difficulty tiers are ordered by *measured* arena strength, not by
- * architecture: sim-easy (~13% vs greedy) < sim-normal (~35%) < greedy.
- * The hand-tuned greedy still outplays the general simulation AI on current
- * content, so it serves as Hard; when the arena shows the sim AI overtaking
- * it (more content, better evaluator), swap Hard to SIM_PRESETS.hard.
+ * architecture: sim-easy (~28% vs greedy) < sim-normal (~52%) < greedy.
+ *
+ * In truth the ladder has two rungs. Easy is genuinely easier; sim-normal
+ * (51.9%), sim-hard (54.4%) and greedy all sit within noise of each other, so
+ * Hard is barely harder than Normal. Greedy keeps the slot because sim-hard is
+ * only ~1.1 SE above even against it — tied, not overtaken, and the criterion
+ * for swapping is empirical. Widening the top of the ladder needs more than a
+ * preset: see docs/SPEC.md, "What the knobs are actually worth".
  */
 export function aiPolicy(level: AiLevel) {
   if (level === 'hard') return chooseAction;

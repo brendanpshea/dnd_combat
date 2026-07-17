@@ -123,10 +123,12 @@ describe('simulation AI behavior', () => {
 
   it('arena gate: sim AI is at least competitive with greedy (regression floor)', () => {
     // A gross-regression tripwire, not a superiority proof (that's
-    // `npm run arena` with hundreds of games — sim-normal sits ~37% vs the
-    // hand-tuned greedy). The floor is set well below that true rate so
+    // `npm run arena` with hundreds of games — sim-normal sits ~52% vs the
+    // hand-tuned greedy). The floor is set far below that true rate so
     // ordinary small-sample noise never flakes it; only a real collapse
-    // (the 8-15% win rates seen mid-development) trips it.
+    // (the 8-15% win rates seen mid-development) trips it. Note 8 seeds cannot
+    // measure strength at all — a 16-game read carries ~±12 points — which is
+    // exactly why this asserts a floor and not a number.
     const seeds = Array.from({ length: 8 }, (_, i) => i * 5 + 1);
     const result = runArena(
       (s, id) => chooseActionSim(s, id, FAST),

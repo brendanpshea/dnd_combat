@@ -1,5 +1,6 @@
 /**
- * Arena CLI: npx tsx scripts/arena.ts [games] [preset] [--serial]
+ * Arena CLI: npx tsx scripts/arena.ts [games] [preset] [--serial] [--samples N]
+ *                                     [--beam N] [--depth N] [--moveCandidates N]
  * Pits the simulation AI against greedy over seeded mirror matches.
  *
  * Games are independent, so seeds are dealt across one child process per core.
@@ -14,20 +15,31 @@ import { fileURLToPath } from 'node:url';
 import * as path from 'node:path';
 import { runArena, type ArenaResult } from '../src/ai/arena.js';
 import { chooseAction } from '../src/ai/greedy.js';
-import { chooseActionSim, SIM_PRESETS } from '../src/ai/simulated.js';
+import { chooseActionSim, SIM_PRESETS, type SimOptions } from '../src/ai/simulated.js';
 
-const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-const serial = process.argv.includes('--serial');
+const argv = process.argv.slice(2);
+const args = argv.filter((a) => !a.startsWith('--') && !/^\d+$/.test(argv[argv.indexOf(a) - 1] ?? ''));
+const serial = argv.includes('--serial');
 const n = Number(args[0] ?? 50);
 const preset = (args[1] ?? 'normal') as keyof typeof SIM_PRESETS;
 const seeds = Array.from({ length: n }, (_, i) => i + 1);
+
+// Sweep a preset's fields without editing it: --samples 8 --depth 3 ...
+const override: Partial<SimOptions> = {};
+for (const field of ['samples', 'beam', 'depth', 'moveCandidates'] as const) {
+  const i = argv.indexOf(`--${field}`);
+  if (i >= 0 && argv[i + 1]) override[field] = Number(argv[i + 1]);
+}
+const overrideJson = Object.keys(override).length ? JSON.stringify(override) : '';
+const opts: SimOptions = { ...SIM_PRESETS[preset], ...override };
+const label = overrideJson ? `${preset} ${overrideJson}` : preset;
 
 function runShard(shardSeeds: number[]): Promise<ArenaResult> {
   const here = path.dirname(fileURLToPath(import.meta.url));
   return new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,
-      ['--import', 'tsx', path.join(here, 'arena-shard.ts'), shardSeeds.join(','), preset],
+      ['--import', 'tsx', path.join(here, 'arena-shard.ts'), shardSeeds.join(','), preset, overrideJson],
       { stdio: ['ignore', 'pipe', 'inherit'] },
     );
     let out = '';
@@ -43,8 +55,8 @@ const t0 = Date.now();
 let result: ArenaResult;
 
 if (serial || n < 4) {
-  console.log(`Arena: sim(${preset}) vs greedy — ${n} seeds × 2 sides (serial)...`);
-  result = runArena((s, id) => chooseActionSim(s, id, SIM_PRESETS[preset]), chooseAction, seeds);
+  console.log(`Arena: sim(${label}) vs greedy — ${n} seeds × 2 sides (serial)...`);
+  result = runArena((s, id) => chooseActionSim(s, id, opts), chooseAction, seeds);
 } else {
   // Round-robin rather than contiguous blocks: game length varies a lot by
   // seed, so dealing them out keeps one shard from drawing all the long games
@@ -52,7 +64,7 @@ if (serial || n < 4) {
   const workers = Math.min(cpus().length, n);
   const shards: number[][] = Array.from({ length: workers }, () => []);
   seeds.forEach((s, i) => shards[i % workers]!.push(s));
-  console.log(`Arena: sim(${preset}) vs greedy — ${n} seeds × 2 sides across ${workers} processes...`);
+  console.log(`Arena: sim(${label}) vs greedy — ${n} seeds × 2 sides across ${workers} processes...`);
   const parts = await Promise.all(shards.map(runShard));
   result = parts.reduce(
     (acc, p) => ({

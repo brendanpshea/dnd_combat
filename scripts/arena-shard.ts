@@ -8,9 +8,11 @@ import { chooseActionSim, SIM_PRESETS } from '../src/ai/simulated.js';
 
 const seeds = process.argv[2]!.split(',').map(Number);
 const preset = process.argv[3] as keyof typeof SIM_PRESETS;
+// Optional per-field overrides, so a preset can be swept without editing it.
+const opts = { ...SIM_PRESETS[preset], ...(process.argv[4] ? JSON.parse(process.argv[4]) : {}) };
 
 const result = runArena(
-  (s, id) => chooseActionSim(s, id, SIM_PRESETS[preset]),
+  (s, id) => chooseActionSim(s, id, opts),
   chooseAction,
   seeds,
 );
