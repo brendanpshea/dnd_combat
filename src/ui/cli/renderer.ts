@@ -120,11 +120,12 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       const w = e.weaponId === 'spell' ? 'a spell' : WEAPONS[e.weaponId]?.name ?? e.weaponId;
       const oa = e.opportunity ? ' (opportunity attack)' : '';
       const mode = e.mode !== 'flat' ? ` [${e.mode}: ${[...e.advSources, ...e.disSources].join(', ')}]` : '';
+      const familiar = e.advSources.includes('owl familiar') ? ' An owl familiar distracts the target.' : '';
       const result = e.hit ? (e.crit ? 'CRIT!' : 'hit') : 'miss';
       // Roll20-style math: the bonus is whatever the engine added on top of
       // the die (proficiency, ability, Bless's d4, a +1 weapon...).
       return `${nm(e.attackerId)} attacks ${nm(e.targetId)} with ${w}${oa}: ` +
-        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}`;
+        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}${familiar}`;
     }
     case 'damageDealt': {
       const rolled = sum(e.rolls);

@@ -338,6 +338,15 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   background: #c084fc;
   border: 1.5px solid #14101f;
 }
+.familiar {
+  position: absolute;
+  z-index: 4;
+  top: -7%;
+  right: -8%;
+  font-size: clamp(13px, 3.2vmin, 21px);
+  filter: drop-shadow(0 1px 2px #000c);
+}
+.familiar.spent { opacity: 0.42; filter: grayscale(0.8) drop-shadow(0 1px 2px #000c); }
 
 /* ---- effects ---- */
 .float {

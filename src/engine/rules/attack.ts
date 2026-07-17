@@ -90,6 +90,9 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'blinded')) dis.push('blinded');
   if (attacker.conditions.some((c) => c.id === 'inspired')) adv.push('heroic inspiration');
   if (isHidden(attacker)) adv.push('hidden');
+  if (attacker.familiar?.kind === 'owl' && attacker.familiar.helpedRound !== state.round) {
+    adv.push('owl familiar');
+  }
   if (target.conditions.some((c) => c.id === 'blinded')) adv.push('target blinded');
   if (attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === target.id)) {
     adv.push('vex');
@@ -127,6 +130,13 @@ export function collectAttackSources(
   return { adv, dis };
 }
 
+/** An owl familiar can Help with the caster's first attack roll each round. */
+export function consumeFamiliarHelp(state: GameState, attacker: Combatant): void {
+  if (attacker.familiar?.kind === 'owl' && attacker.familiar.helpedRound !== state.round) {
+    attacker.familiar.helpedRound = state.round;
+  }
+}
+
 /** Remove one-shot roll markers after an attack roll is made. */
 function consumeRollMarkers(attacker: Combatant, target: Combatant): void {
   attacker.conditions = attacker.conditions.filter(
@@ -158,6 +168,7 @@ export function resolveAttack(
   const mode = resolveRollMode(adv, dis);
   const d20 = rollD20(state.rng, mode);
   state.rng = d20.state;
+  consumeFamiliarHelp(state, attacker);
 
   const ability = ctx.abilityOverride ?? attackAbility(attacker, weapon);
   const mod = abilityMod(attacker.abilities[ability]);

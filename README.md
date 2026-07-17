@@ -118,6 +118,9 @@ shop: inventory sources stay in the Pack, while store-usable spells appear in
 a separate Spells row. Select the source, then select the party member to
 heal. Potions and scrolls are consumed; Cure Wounds uses no encounter-only
 spell slot there.
+Wizards can summon an owl with **Find Familiar** from the store Spells row.
+The familiar persists through unconsciousness and rests, and grants advantage
+on the wizard's first melee or spell attack roll each combat round.
 New campaigns begin at the party forge; names, species, class roles, and
 portrait choices are locked in when the campaign begins and travel with the
 party through every battle.

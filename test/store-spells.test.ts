@@ -5,8 +5,10 @@ describe('store spells', () => {
   it('derives curated store spells from a character known-spell list', () => {
     const party = buildCampaignParty(newCampaign());
     expect(storeSpellActions(party[2]!)).toEqual([
-      { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚' },
+      { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚', targeting: 'party' },
     ]);
-    expect(storeSpellActions(party[1]!)).toEqual([]);
+    expect(storeSpellActions(party[1]!)).toContainEqual(
+      { spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self' },
+    );
   });
 });

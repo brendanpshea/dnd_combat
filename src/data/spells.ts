@@ -12,7 +12,7 @@ import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources, resolveAttack, canAttackWith } from '../engine/rules/attack.js';
+import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith } from '../engine/rules/attack.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
@@ -92,6 +92,7 @@ function spellAttack(
   const mode = resolveRollMode(adv, dis);
   const d20 = rollD20(state.rng, mode);
   state.rng = d20.state;
+  consumeFamiliarHelp(state, caster);
   let total = d20.natural + spellMod(state, casterId) + proficiencyBonus(caster.level);
   if (caster.conditions.some((c) => c.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
@@ -264,6 +265,17 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  'find-familiar': {
+    id: 'find-familiar', name: 'Find Familiar', level: 1, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '🦉',
+    cast({ state, casterId }) {
+      state.combatants[casterId]!.familiar = { kind: 'owl' };
+      return [];
+    },
+  },
+
   bless: {
     id: 'bless', name: 'Bless', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 30, who: 'ally', count: 3 },
@@ -359,6 +371,41 @@ export const SPELLS: Record<Id, SpellData> = {
         if (amount > 0) {
           events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
         }
+      }
+      return events;
+    },
+  },
+  /**
+   * A dragonborn's breath weapon: a cone of elemental damage, Dexterity save
+   * for half, a couple of times a fight. Damage only — no condition — so it's
+   * the innate-spell path's second shape after Faerie Fire, and the AI values
+   * it through simulated damage with no new weighting.
+   *
+   * Enemies only: a dragonborn aims its own breath, so no friendly fire to
+   * confuse a player (or the AI) about where to stand.
+   */
+  'breath-weapon': {
+    id: 'breath-weapon', name: 'Breath Weapon', level: 1, castingTime: 'action',
+    targeting: { kind: 'cone15' },
+    concentration: false,
+    icon: '🐲',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dir = directionFromDelta(caster.position, positions[0]!);
+      const events: GameEvent[] = [];
+      const dc = spellDc(state, casterId);
+      for (const pos of cone15(caster.position, dir)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team) continue;
+        if (!hasLineOfSight(state.grid, caster.position, pos)) continue;
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        const dmg = rollDice(state.rng, '2d6');
+        state.rng = dmg.state;
+        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
       }
       return events;
     },

@@ -57,4 +57,11 @@ export const SPECIES: Record<Id, SpeciesData> = {
     id: 'orc', name: 'Orc', speed: 30,
     featureIds: ['adrenaline-rush', 'relentless-endurance'],
   },
+  dragonborn: {
+    id: 'dragonborn', name: 'Dragonborn', speed: 30,
+    // Draconic Ancestry (red): shrug off fire, and breathe it back — a cone a
+    // couple of times a fight, the innate-spell path's damage shape.
+    resistances: ['fire'],
+    innateSpells: [{ spellId: 'breath-weapon', atLevel: 1, uses: 2 }],
+  },
 };

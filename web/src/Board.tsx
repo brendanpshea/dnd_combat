@@ -144,6 +144,14 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
             ) : (
               <span className="glyph">{TOKEN[c.classId] ?? '❓'}</span>
             )}
+            {c.familiar?.kind === 'owl' && (
+              <span
+                className={`familiar${c.familiar.helpedRound === state.round ? ' spent' : ''}`}
+                title={c.familiar.helpedRound === state.round ? 'Owl familiar has helped this round' : 'Owl familiar is ready to help'}
+              >
+                🦉
+              </span>
+            )}
             <div className="hpbar">
               <div className="hpfill" style={{ width: `${Math.round((c.hp / c.maxHp) * 100)}%` }} />
             </div>

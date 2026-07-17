@@ -90,7 +90,22 @@ instead of a slot. Per-encounter needs no reset logic — every battle rebuilds
 the party, so a fresh pool is automatic. The AI values the pool as option value,
 like feature uses and slots, so it saves the cast for a worthwhile cluster.
 
-The first user is the elf's **Faerie Fire** at 3rd: a 2×2 Dexterity-save area,
+**Dragonborn** is the second user, and the innate path's *damage* shape: fire
+resistance (`resistances`) plus a **Breath Weapon** — a cone, Dex save for half,
+twice a fight, enemies only (a dragonborn aims its own breath, so no friendly
+fire to confuse a player or the AI). It needed no new mechanism; it's a data
+entry plus one spell, and the AI values it through simulated damage.
+
+Because species never meet in the mirror arena (both sides are human), a
+dedicated harness measures them where it matters — `npm run species` runs a
+party of each species against themed level-3 encounters, reporting *heroes
+downed per game* (the balance signal, which keeps headroom even when every party
+wins) and how often the signature ability fired. It confirmed the Dragonborn
+tracks the human baseline while breathing ~2x/fight (used, not warping), and
+that a defensive trait shows a defensive delta (the dwarf takes ~0.8 fewer downs
+against poison-dealing spiders).
+
+The first innate user is the elf's **Faerie Fire** at 3rd: a 2×2 Dexterity-save area,
 concentration, that leaves foes `outlined` (the *condition* is named for its
 effect, not the spell — `guided` not `guiding-bolt` — so `src/ai/` never learns
 a content id). Outlined creatures are attacked with advantage until the light
@@ -519,6 +534,10 @@ use the same store target flow: choose the source, then a party member. Item
 sources stay in the Pack; curated store-usable spells appear in a separate
 Spells row. Item sources are consumed; Cure Wounds does not spend an
 encounter-only spell slot.
+**Find Familiar** summons an owl from the wizard's store Spells row. The owl
+persists through unconsciousness and rests without occupying a grid cell; it
+grants advantage on the wizard's first melee or spell attack roll each round,
+then its token marker dims until the next round.
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
 passed between characters. **Shop skills** (once each per visit, rolled by

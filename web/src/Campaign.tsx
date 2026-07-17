@@ -19,7 +19,7 @@ import {
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest, longRest,
-  isStoreHealingSource, storeSpellActions, useStoreHealing,
+  isStoreHealingSource, storeSpellActions, useStoreHealing, useStoreSpell,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -390,6 +390,18 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                       close();
                     })}>{target.name}</button>
                   ))}
+                </div>
+              )}
+
+              {spell?.targeting === 'self' && (
+                <div className="sheet-row">
+                  <span className="sheet-label">Cast</span>
+                  <button className="mini" onClick={() => mutate(() => {
+                    if (useStoreSpell(c, picked.charIdx, spell.spellId)) {
+                      setNotice(`${owner.name} summons a tiny owl familiar.`);
+                    }
+                    close();
+                  })}>Summon owl</button>
                 </div>
               )}
 

@@ -30,6 +30,9 @@ export interface PartyCharacter {
   /** Mutable adventuring state. Missing means a fully rested legacy save. */
   resources?: {
     hp: number;
+    effects?: {
+      familiar?: { kind: 'owl' };
+    };
   };
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
@@ -374,8 +377,13 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
     if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
       combatant.hp = Math.max(0, Math.min(ch.resources.hp, combatant.maxHp));
     }
+    if (ch.resources?.effects?.familiar) combatant.familiar = { kind: 'owl' };
     return combatant;
   });
+}
+
+function setCampaignHp(ch: PartyCharacter, hp: number): void {
+  ch.resources = { ...ch.resources, hp };
 }
 
 export interface RestResult {
@@ -394,7 +402,7 @@ export function shortRest(c: CampaignState): RestResult {
   for (const [index, combatant] of party.entries()) {
     const healedHp = Math.min(combatant.maxHp, combatant.hp + Math.ceil(combatant.maxHp / 2));
     totalHealed += healedHp - combatant.hp;
-    c.characters[index]!.resources = { hp: healedHp };
+    setCampaignHp(c.characters[index]!, healedHp);
   }
   return { totalHealed };
 }
@@ -405,7 +413,7 @@ export function longRest(c: CampaignState): RestResult {
   const party = buildCampaignParty(c);
   for (const [index, combatant] of party.entries()) {
     totalHealed += combatant.maxHp - combatant.hp;
-    c.characters[index]!.resources = { hp: combatant.maxHp };
+    setCampaignHp(c.characters[index]!, combatant.maxHp);
   }
   return { totalHealed };
 }
@@ -431,10 +439,12 @@ export interface StoreSpellAction {
   spellId: Id;
   name: string;
   icon: string;
+  targeting: 'party' | 'self';
 }
 
 const STORE_SPELL_ACTIONS: Record<Id, StoreSpellAction> = {
-  'cure-wounds': { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚' },
+  'cure-wounds': { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚', targeting: 'party' },
+  'find-familiar': { spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self' },
 };
 
 /** Store spells are a curated subset of a combatant's known spells. */
@@ -443,6 +453,22 @@ export function storeSpellActions(combatant: Pick<Combatant, 'spellIds'>): Store
     const action = STORE_SPELL_ACTIONS[spellId];
     return action ? [action] : [];
   });
+}
+
+/** Cast a self-targeted spell during a store visit. */
+export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): boolean {
+  const user = c.characters[userIdx];
+  const caster = user ? buildCampaignParty(c)[userIdx] : undefined;
+  const action = caster ? storeSpellActions(caster).find((candidate) => candidate.spellId === spellId) : undefined;
+  if (!user || !caster || !action || action.targeting !== 'self') return false;
+  if (spellId === 'find-familiar') {
+    user.resources = {
+      hp: user.resources?.hp ?? caster.hp,
+      effects: { ...user.resources?.effects, familiar: { kind: 'owl' } },
+    };
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -483,7 +509,7 @@ export function useStoreHealing(
   }
   const rolled = roll.total + bonus;
   const hp = Math.min(recipient.maxHp, recipient.hp + rolled);
-  target.resources = { hp };
+  setCampaignHp(target, hp);
   return { rolled, healed: hp - recipient.hp };
 }
 
@@ -699,7 +725,12 @@ export function applyVictory(
     if (fought) {
       ch.inventory = fought.inventory.map((s) => ({ ...s }));
       ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
-      ch.resources = { hp: fought.hp };
+      ch.resources = {
+        hp: fought.hp,
+        ...(fought.familiar || ch.resources?.effects
+          ? { effects: { ...ch.resources?.effects, ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}) } }
+          : {}),
+      };
     }
   }
 

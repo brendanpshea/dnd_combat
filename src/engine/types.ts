@@ -130,6 +130,12 @@ export interface Combatant {
   immunities: DamageType[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
+  /** A summoned familiar follows its caster without occupying a grid cell. */
+  familiar?: {
+    kind: 'owl';
+    /** The round in which it last granted the caster attack advantage. */
+    helpedRound?: number;
+  };
   /** Has taken a turn this combat (Assassinate window). */
   hasActed: boolean;
   /** Per-turn economy, reset at turn start. */
