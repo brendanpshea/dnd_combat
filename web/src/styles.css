@@ -772,6 +772,21 @@ button.danger { border-color: var(--red); color: var(--red); }
 .portrait-picker button { width: 34px; height: 34px; padding: 2px; border-radius: 5px; }
 .portrait-picker button.selected { border-color: var(--gold); background: #c69b2b24; }
 .portrait-picker .portrait { width: 26px; height: 26px; }
+.card-picker { grid-column: 1 / -1; }
+.card-row {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+}
+.pick-card {
+  scroll-snap-align: start; flex: 0 0 auto; width: 120px; min-height: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  text-align: left; padding: 7px 8px; border-radius: 7px;
+  background: #181323; border: 1px solid #534a70; color: var(--text); cursor: pointer;
+}
+.pick-card .portrait { width: 28px; height: 28px; margin-bottom: 2px; }
+.pick-card b { font-size: 12px; }
+.pick-card small { color: var(--muted); font-size: 10px; line-height: 1.25; }
+.pick-card.selected { border-color: var(--gold); background: #c69b2b24; }
 .forge-advanced { grid-column: 1 / -1; margin-top: 2px; }
 .forge-advanced > summary {
   cursor: pointer; color: var(--gold); font-size: 11px; padding: 3px 0; user-select: none;

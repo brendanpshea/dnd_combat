@@ -25,6 +25,7 @@ import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignS
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
 import { PORTRAITS } from './portraits.js';
+import { classBlurb, speciesBlurb } from './blurbs.js';
 import { LootScreen } from './Loot.js';
 import { initAudio } from './sound.js';
 
@@ -212,33 +213,41 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                     onChange={(event) => mutate(() => { character.name = event.target.value || classData.name; })}
                   />
                 </label>
-                <label className="forge-field">
+                <div className="forge-field card-picker">
                   <span>Class</span>
-                  <select
-                    value={character.classId}
-                    onChange={(event) => mutate(() => setPartyClass(c, idx, event.target.value))}
-                  >
+                  <div className="card-row" role="radiogroup" aria-label={`${character.name} class`}>
                     {Object.values(CLASSES).map((candidate) => (
-                      <option
+                      <button
                         key={candidate.id}
-                        value={candidate.id}
+                        className={character.classId === candidate.id ? 'pick-card selected' : 'pick-card'}
+                        role="radio"
+                        aria-checked={character.classId === candidate.id}
+                        onClick={() => mutate(() => setPartyClass(c, idx, candidate.id))}
                       >
-                        {candidate.name}
-                      </option>
+                        <Portrait id={candidate.id} team="team1" label="" />
+                        <b>{candidate.name}</b>
+                        <small>{classBlurb(candidate.id)}</small>
+                      </button>
                     ))}
-                  </select>
-                </label>
-                <label className="forge-field">
+                  </div>
+                </div>
+                <div className="forge-field card-picker">
                   <span>Species</span>
-                  <select
-                    value={character.speciesId}
-                    onChange={(event) => mutate(() => { character.speciesId = event.target.value; })}
-                  >
+                  <div className="card-row" role="radiogroup" aria-label={`${character.name} species`}>
                     {Object.values(SPECIES).map((species) => (
-                      <option key={species.id} value={species.id}>{species.name}</option>
+                      <button
+                        key={species.id}
+                        className={character.speciesId === species.id ? 'pick-card selected' : 'pick-card'}
+                        role="radio"
+                        aria-checked={character.speciesId === species.id}
+                        onClick={() => mutate(() => { character.speciesId = species.id; })}
+                      >
+                        <b>{species.name}</b>
+                        <small>{speciesBlurb(species.id)}</small>
+                      </button>
                     ))}
-                  </select>
-                </label>
+                  </div>
+                </div>
                 <div className="forge-field portrait-picker">
                   <span>Portrait</span>
                   <div role="radiogroup" aria-label={`${character.name} portrait`}>
