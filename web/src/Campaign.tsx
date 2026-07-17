@@ -76,8 +76,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
    */
   const [toasts, setToasts] = useState<Array<{ id: number; text: string }>>([]);
   const toastId = useRef(0);
-  const setNotice = (text: string | null) => {
-    if (!text) return;                       // clearing is meaningless: they expire
+  const setNotice = (text: string) => {
     const id = ++toastId.current;
     setToasts((t) => [...t.slice(-2), { id, text }]);   // at most 3 on screen
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2600);
@@ -161,7 +160,6 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             stateRef.current = newCampaign(Math.floor(Math.random() * 2 ** 31));
             setPhase({ p: 'forge' });
             setRolls([]);
-            setNotice(null);
           }}
         >
           New campaign
@@ -311,7 +309,6 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             stateRef.current = newCampaign(Math.floor(Math.random() * 2 ** 31));
             setPhase({ p: 'shop' });
             setRolls([]);
-            setNotice(null);
           }}
         >
           🗑 Reset
@@ -382,7 +379,10 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                     <button
                       key={`${s.itemId}:${o.slot}`}
                       className="mini"
-                      onClick={() => mutate(() => { equipItem(c, idx, s.itemId, o.slot); setNotice(null); })}
+                      onClick={() => mutate(() => {
+                        equipItem(c, idx, s.itemId, o.slot);
+                        setNotice(`${itemIcon(s.itemId)} ${charNames[idx]} equips ${itemName(s.itemId)}`);
+                      })}
                     >
                       Equip {itemName(s.itemId)} ({o.slot === 'mainHand' ? 'main' : o.slot === 'offHand' ? 'off-hand' : 'armor'})
                     </button>
@@ -519,14 +519,18 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                         <button
                           key={skill}
                           className="mini"
-                          title={`${CLASSES[c.characters[best.idx]!.classId]!.name} rolls, bonus +${best.bonus}`}
+                          title={`${charNames[best.idx]} rolls, bonus +${best.bonus}`}
                           onClick={() => mutate(() => {
                             const v = shopVisitFor(c);
                             v.haggleUsed = true;
                             const result = attemptHaggle(c, skill);
                             v.priceMult = result.priceMultiplier;
                             setRolls([result.roll]);
-                            setNotice(null);
+                            const who = charNames[result.roll.by] ?? 'The party';
+                            const pct = Math.round(Math.abs(1 - result.priceMultiplier) * 100);
+                            setNotice(result.roll.success
+                              ? `💬 ${who} talks them down — ${pct}% off this visit!`
+                              : `😠 ${who} fumbles it — prices up ${pct}% this visit.`);
                           })}
                         >
                           💬 {skill}
