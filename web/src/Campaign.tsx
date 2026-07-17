@@ -24,6 +24,7 @@ import {
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
+import { PORTRAITS } from './portraits.js';
 import { LootScreen } from './Loot.js';
 import { initAudio } from './sound.js';
 
@@ -42,8 +43,6 @@ const SHOP_CATEGORIES: Array<{ id: ShopCategory; label: string }> = [
   { id: 'weapons', label: 'Weapons' },
   { id: 'armor', label: 'Armor' },
 ];
-
-const PORTRAIT_OPTIONS = ['fighter', 'wizard', 'cleric', 'rogue'] as const;
 
 type StoreSelection =
   | { kind: 'item'; charIdx: number; itemId: Id; slot?: EquipSlot }
@@ -243,16 +242,16 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 <div className="forge-field portrait-picker">
                   <span>Portrait</span>
                   <div role="radiogroup" aria-label={`${character.name} portrait`}>
-                    {PORTRAIT_OPTIONS.map((portraitId) => (
+                    {PORTRAITS.map((portrait) => (
                       <button
-                        key={portraitId}
-                        className={character.portraitId === portraitId ? 'selected' : ''}
+                        key={portrait.id}
+                        className={character.portraitId === portrait.id ? 'selected' : ''}
                         role="radio"
-                        aria-checked={character.portraitId === portraitId}
-                        title={`Use ${CLASSES[portraitId]!.name} portrait`}
-                        onClick={() => mutate(() => { character.portraitId = portraitId; })}
+                        aria-checked={character.portraitId === portrait.id}
+                        title={`Use ${portrait.name} portrait`}
+                        onClick={() => mutate(() => { character.portraitId = portrait.id; })}
                       >
-                        <Portrait id={portraitId} team="team1" label={`${CLASSES[portraitId]!.name} portrait`} />
+                        <Portrait id={portrait.id} team="team1" label={`${portrait.name} portrait`} />
                       </button>
                     ))}
                   </div>
