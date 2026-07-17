@@ -64,6 +64,17 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       const key = posKey(pos);
       const hl = highlights.get(key);
       const classes = ['cell', `terrain-${cell.terrain}`];
+      // Badge only the perimeter of an effect field (or a lone tile): a cell
+      // whose terrain differs from any orthogonal neighbour, or sits on the
+      // grid edge. Keeps a large lava pool or marsh from being stamped on
+      // every interior tile while still flagging what the terrain is.
+      if (cell.terrain === 'difficult' || cell.terrain === 'hazard') {
+        const edge = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const).some(([dx, dy]) => {
+          const n = cellAt(state.grid, { x: x + dx, y: y + dy });
+          return !n || n.terrain !== cell.terrain;
+        });
+        if (edge) classes.push('needs-badge');
+      }
       // An overlay, not a terrain: it sits on top of whatever the cell really
       // is, so it can't just be another terrain-* class (that would replace
       // the ground it's covering rather than sitting on it).

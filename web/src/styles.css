@@ -145,17 +145,15 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .board.theme-forest .cell.dark { background: #3d5d34; }
 .board.theme-forest .cell.terrain-wall {
   /* mossy boulders / tree cover */
-  background: linear-gradient(145deg, #3a5230 0%, #24361d 55%, #16220f 100%);
-}
-.board.theme-forest .cell.terrain-wall::after {
-  background: linear-gradient(145deg, #6d8a5a55, transparent 60%);
+  --wall-hi: #6a7d55; --wall-lo: #445531;
 }
 .board.theme-forest .cell.terrain-difficult {
-  /* boggy water pooling in the undergrowth */
+  /* boggy water pooling in the undergrowth — clearly wetter and lighter than
+     the surrounding green so the field reads without relying on the badge */
   background:
-    radial-gradient(90% 70% at 30% 25%, #2f6b5a77, transparent 60%),
-    radial-gradient(90% 70% at 72% 78%, #295a6b77, transparent 60%),
-    linear-gradient(150deg, #2c4a3a, #24414a);
+    radial-gradient(90% 70% at 30% 25%, #4aa48acc, transparent 62%),
+    radial-gradient(90% 70% at 72% 78%, #3b93a3cc, transparent 62%),
+    linear-gradient(150deg, #2f6a56, #275a68);
 }
 
 .board.theme-graveyard { background: #0d1014; }
@@ -163,51 +161,68 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .board.theme-graveyard .cell.dark { background: #343941; }
 .board.theme-graveyard .cell.terrain-wall {
   /* headstones / crypt masonry */
-  background: linear-gradient(145deg, #5b6270 0%, #363c47 55%, #1d2129 100%);
-}
-.board.theme-graveyard .cell.terrain-wall::after {
-  background: linear-gradient(145deg, #8b93a555, transparent 60%);
+  --wall-hi: #7b8391; --wall-lo: #4b525f;
 }
 .board.theme-graveyard .cell.terrain-difficult {
-  /* grave-mist */
+  /* grave-mist — a pale cool haze that lifts clearly off the grey floor */
   background:
-    radial-gradient(90% 70% at 40% 30%, #6f7f8f66, transparent 62%),
-    linear-gradient(150deg, #3d4650, #2f3742);
+    radial-gradient(95% 75% at 45% 32%, #9fb6c8cc, transparent 66%),
+    linear-gradient(150deg, #52616f, #40505f);
 }
 
 .board.theme-ember { background: #170d0b; }
 .board.theme-ember .cell { background: #4a3630; }
 .board.theme-ember .cell.dark { background: #412e29; }
 .board.theme-ember .cell.terrain-wall {
-  background: linear-gradient(145deg, #55403a 0%, #33231f 55%, #1b100e 100%);
+  --wall-hi: #7c5e52; --wall-lo: #4e3a32;
 }
-/* Terrain lives in `background` only; highlights use box-shadow, so the two
-   never fight and a highlight ring shows on any terrain. */
-.cell.terrain-wall {
+/* Effect terrain lives in `background`; highlights use box-shadow, so the two
+   never fight and a highlight ring shows on any terrain. Walls are the
+   exception: they read as raised solid blocks via a ::before face (a
+   lighter-than-floor material, a bevel — light top-left, dark bottom-right —
+   and a cast shadow onto neighbours), so "impassable / blocks sight" is carried
+   by relief, not a subtle hue shift. Per-theme colour is just two custom props. */
+.cell.terrain-wall { --wall-hi: #6b6480; --wall-lo: #453f5c; z-index: 1; }
+.cell.terrain-wall::before {
+  content: ''; position: absolute; inset: 3px; border-radius: 5px; z-index: 0;
   background:
-    linear-gradient(145deg, #35304e 0%, #221d31 55%, #14101d 100%);
+    repeating-linear-gradient(0deg, transparent 0 32%, #0000004d 32% 35%),
+    repeating-linear-gradient(90deg, transparent 0 47%, #0000004d 47% 50%),
+    linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+  box-shadow:
+    inset 2px 2px 0 #ffffff36, inset -2px -3px 0 #0000006b, 2px 3px 4px #00000080;
 }
-.cell.terrain-wall::after {
-  content: ''; position: absolute; inset: 8%; border-radius: 3px; z-index: 0;
-  background: linear-gradient(145deg, #453d6355, transparent 60%);
-  box-shadow: inset 0 -2px 3px #0009;
-}
-.cell.terrain-difficult {
+/* `.board ` prefix so the terrain background outweighs a theme's own
+   `.board.theme-x .cell` rule (equal class count would otherwise let the plain
+   floor win — that hid the lava on the ember board entirely). */
+.board .cell.terrain-difficult {
   background:
-    radial-gradient(90% 70% at 30% 25%, #2f6b5a66, transparent 60%),
-    radial-gradient(90% 70% at 72% 78%, #295a6b66, transparent 60%),
-    linear-gradient(150deg, #244440, #213a4c);
+    radial-gradient(90% 70% at 30% 25%, #3f9683cc, transparent 62%),
+    radial-gradient(90% 70% at 72% 78%, #3585a0cc, transparent 62%),
+    linear-gradient(150deg, #2c5f57, #26506a);
 }
-.cell.terrain-hazard {
+.board .cell.terrain-hazard {
+  /* bright molten core so a lava tile reads as danger even before the glow
+     animation lifts it; the corner badge is the semantic tiebreaker */
   background:
-    radial-gradient(70% 60% at 50% 78%, #ff6a3a77, transparent 72%),
-    linear-gradient(150deg, #532421, #35130f);
+    radial-gradient(78% 66% at 50% 72%, #ffd27a 0%, #ff6a2e 42%, transparent 80%),
+    linear-gradient(150deg, #7a2c1e, #3d1410);
   animation: emberGlow 1.7s ease-in-out infinite alternate;
 }
 @keyframes emberGlow {
   from { filter: brightness(0.9) saturate(0.95); }
   to   { filter: brightness(1.18) saturate(1.1); }
 }
+/* A corner glyph so terrain meaning doesn't ride on colour alone (colour-blind
+   safe, readable at a glance). Board.tsx tags only field edges and lone tiles
+   with `needs-badge`, so a big lava pool or marsh isn't stamped on every cell. */
+.cell.needs-badge::after {
+  position: absolute; right: 2px; bottom: 1px; z-index: 1;
+  font-size: clamp(9px, 2.4vmin, 13px); line-height: 1; pointer-events: none;
+  filter: drop-shadow(0 1px 1px #000a);
+}
+.cell.terrain-difficult.needs-badge::after { content: '💧'; }
+.cell.terrain-hazard.needs-badge::after { content: '🔥'; }
 
 /* A gnome's Minor Illusion — a false wall. It should *read* as a wall (a real
    obstacle to tell people not to walk in), but visibly unstable, since it
