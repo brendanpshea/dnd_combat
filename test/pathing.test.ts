@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { step } from '../src/engine/actions.js';
+import { worstCaseWalkDamage } from '../src/engine/rules/movement.js';
 import type { Position } from '../src/engine/types.js';
 import { cellAt } from '../src/engine/types.js';
 
@@ -80,5 +81,54 @@ describe('pathing prefers the safe route among equal-length ones', () => {
     expect(path.length - 1).toBe(4); // still the shortest route, not a detour
     const burned = path.filter((p) => cellAt(c.state.grid, p)!.terrain === 'hazard');
     expect(burned).toEqual([]);
+  });
+});
+
+describe('worst-case walk damage (the lethality veto\'s input)', () => {
+  it('counts an opportunity attack at its maximum normal hit', () => {
+    const c = new Combat({
+      seed: 5,
+      mapId: 'open',
+      combatants: [
+        pc('rogue', 'team1', { x: 3, y: 3 }, 'rog'),
+        pc('fighter', 'team2', { x: 3, y: 4 }, 'ftr'),
+      ],
+    });
+    const rog = c.state.combatants['rog']!;
+    // Walking out of the fighter's reach: longsword 1d8 + 3 Str, max 11.
+    expect(worstCaseWalkDamage(c.state, rog, { x: 3, y: 0 })).toBe(11);
+    // Sidestepping *within* its reach provokes nothing — you never left.
+    expect(worstCaseWalkDamage(c.state, rog, { x: 2, y: 4 })).toBe(0);
+  });
+
+  it('charges each hostile once however often the walk crosses its reach', () => {
+    // One reaction each per round, so a long walk past the same enemy cannot
+    // stack opportunity attacks.
+    const c = new Combat({
+      seed: 5,
+      mapId: 'open',
+      combatants: [
+        pc('rogue', 'team1', { x: 3, y: 3 }, 'rog'),
+        pc('fighter', 'team2', { x: 3, y: 4 }, 'ftr'),
+      ],
+    });
+    const rog = c.state.combatants['rog']!;
+    expect(worstCaseWalkDamage(c.state, rog, { x: 6, y: 0 })).toBe(11);
+  });
+
+  it('is zero after Disengage', () => {
+    const c = new Combat({
+      seed: 5,
+      mapId: 'open',
+      combatants: [
+        pc('rogue', 'team1', { x: 3, y: 3 }, 'rog'),
+        pc('fighter', 'team2', { x: 3, y: 4 }, 'ftr'),
+      ],
+    });
+    let guard = 0;
+    while (c.activeId !== 'rog' && guard++ < 20) c.apply({ kind: 'endTurn' });
+    c.apply({ kind: 'disengage' });
+    const rog = c.state.combatants['rog']!;
+    expect(worstCaseWalkDamage(c.state, rog, { x: 3, y: 0 })).toBe(0);
   });
 });

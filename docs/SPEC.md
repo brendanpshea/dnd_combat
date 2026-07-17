@@ -117,8 +117,15 @@ Nimble Escape each provide a bonus-action Hide option.
 
 **Movement.** Dijkstra over per-cell cost; pass through allies, not hostiles;
 can't end on occupied cells. Leaving reach provokes an opportunity attack
-(resolved mid-path; death interrupts movement). Pathing prefers equal-cost
-routes around hazards. **Forced movement** (Thunderwave): push N cells along a
+(resolved mid-path; death interrupts movement). **Among routes of equal length,
+pathing takes the safe one** — fewest opportunity attacks provoked, fewest
+hazards crossed (`StepDanger`). It never buys safety with movement: a longer way
+round can strand a unit short of its target, a worse problem than the one it
+solves. This matters because a `move` action names a *destination, not a route*
+— the engine picks the walk — so this tiebreak is the only say anyone gets,
+player or AI. (For a long time this paragraph described a preference that was
+not implemented: hazards cost exactly what open ground costs, so the router
+walked people through the fire pit whenever the distance tied.) **Forced movement** (Thunderwave): push N cells along a
 direction, stopping at walls/occupied/edge, no opportunity attacks, hazards
 still trigger. Prone: automatic stand-up at turn start for half speed.
 
@@ -294,7 +301,16 @@ through its simulated consequences, automatically.
   Decisions are deterministic; replays stay exact.
 
 **Difficulty mapping follows measured strength, not architecture:**
-Easy = sim-easy (~13% vs greedy), Normal = sim-normal (~54%), Hard = greedy.
+Easy = sim-easy (~28% vs greedy), Normal = sim-normal (~52%), Hard = greedy.
+
+**`samples` is the only difficulty knob that does anything.** Measured over 160
+games: samples 1 → 28.7%, 2 → 40.0%, 3 → 46.3%; beam and moveCandidates barely
+register (beam 1 vs 2 at samples 3: 46.3% either way). Easy is therefore easy
+because it is *blind* — it imagines each action once — which is uncomfortable,
+because noisy estimates don't read as "weak", they read as "broken": a unit that
+walks into a lethal opportunity attack looks like a bug, not a beginner. That is
+what the lethality veto is for. It is analytic, so it protects the 1-sample
+preset without making Story mode harder.
 (sim-*hard* measures ~45% — more search, but still short of greedy, so Hard
 stays greedy.)
 When arena runs show the sim AI overtaking greedy (richer content, better

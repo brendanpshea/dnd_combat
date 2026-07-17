@@ -42,11 +42,14 @@ interface Scenario {
    * the same resources and score identically, so which comes first is decided
    * by sampling noise. A first-action assertion tests a coin flip.
    */
-  want?: { label: string; ok: (turn: Action[], text: string) => boolean };
+  want?: { label: string; ok: (turn: Action[], text: string, out: Outcome) => boolean };
   actorId: string;
   units: Combatant[];
   mapId?: string;
 }
+
+/** What the turn actually cost, read from events rather than guessed from labels. */
+interface Outcome { provoked: number; oaDamage: number; alive: boolean; hp: number }
 
 const attacked = (turn: Action[]) => turn.some((a) => a.kind === 'attack' || a.kind === 'castSpell');
 const took = (turn: Action[], kind: Action['kind']) => turn.some((a) => a.kind === kind);
@@ -112,6 +115,21 @@ const SCENARIOS: Scenario[] = [
     units: [pc('fighter', 'team1', { x: 0, y: 0 }, { id: 'ftr' }), mon('kobold', 'team2', { x: 7, y: 7 }, { id: 'k' })],
   },
   {
+    name: 'hurt kobold in reach, second target nearby',
+    actorId: 'kob',
+    // Your case 1 & 3: a kobold on its last legs walks out of a fighter's reach
+    // and dies to the opportunity attack. Fleeing while healthy is fine — it is
+    // worth 12 points of win rate — but no repositioning is worth the unit.
+    // A fighter's longsword does 4-11; at 4hp any hit kills. Provoking here is
+    // not a risk, it's a coin flip for the unit's life.
+    want: { label: 'not provoke a certainly-lethal OA', ok: (_t, _x, out) => out.provoked === 0 },
+    units: [
+      mon('kobold', 'team2', { x: 3, y: 3 }, { id: 'kob', hp: 4 }),
+      pc('fighter', 'team1', { x: 3, y: 4 }, { id: 'ftr' }),
+      pc('wizard', 'team1', { x: 6, y: 3 }, { id: 'wiz' }),
+    ],
+  },
+  {
     name: 'rogue behind a wall, ogre opposite (can Hide)',
     actorId: 'rog',
     // Hiding is the rogue's whole trick: a bonus action, off the wall's cover,
@@ -140,19 +158,28 @@ for (const s of SCENARIOS) {
   // half of an equal-scoring plan the sampler happened to order first.
   const turn: Action[] = [];
   const texts: string[] = [];
+  const out: Outcome = { provoked: 0, oaDamage: 0, alive: true, hp: 0 };
   let steps = 0;
   while (c.activeId === s.actorId && !c.isOver() && steps++ < 8) {
     const a = chooseActionSim(c.state, s.actorId, FAST);
     turn.push(a);
     texts.push(describeAction(c.state, a));
-    c.apply(a);
+    const evs = c.apply(a);
+    for (const e of evs) {
+      if (e.type === 'attackRolled' && e.opportunity && e.targetId === s.actorId) out.provoked++;
+      if (e.type === 'damageDealt' && e.targetId === s.actorId) out.oaDamage += e.amount;
+    }
   }
-  const text = texts.filter((t) => t !== 'End turn').join(' → ') || '(nothing)';
+  const me = c.state.combatants[s.actorId]!;
+  out.alive = me.alive;
+  out.hp = me.hp;
+  let text = texts.filter((t) => t !== 'End turn').join(' → ') || '(nothing)';
+  if (out.provoked) text += `   [provoked ${out.provoked} OA, took ${out.oaDamage}${out.alive ? '' : ', DIED'}]`;
   if (!s.want) {
     console.log(`  ..  ${s.name.padEnd(44)} ${text}`);
     continue;
   }
-  const ok = s.want.ok(turn, text);
+  const ok = s.want.ok(turn, text, out);
   if (ok) pass++;
   else fail++;
   console.log(`  ${ok ? 'ok' : 'XX'}  ${s.name.padEnd(44)} ${text}${ok ? '' : `\n      ^ want: ${s.want.label}`}`);

@@ -11,7 +11,8 @@ import type { GameState, Id, TeamId } from '../engine/types.js';
 import { legalActions, step, Action } from '../engine/actions.js';
 import { currentCombatant } from '../engine/turn.js';
 import { seedRng } from '../engine/rng.js';
-import { evaluate } from './evaluate.js';
+import { evaluate, unitWorth } from './evaluate.js';
+import { worstCaseWalkDamage } from '../engine/rules/movement.js';
 
 export interface SimOptions {
   /** RNG samples averaged per action candidate. */
@@ -41,6 +42,37 @@ const ACTION_COST = 1.0;
  * approach gains, so charging into range is unaffected.
  */
 const MOVE_COST = 0.15;
+
+/**
+ * How much of its own worth a unit forfeits for stepping somewhere an
+ * opportunity attack could kill it outright. Roughly the odds of that swing
+ * landing — this is a coin flip for the unit's life, priced as one.
+ */
+const LETHAL_RISK = 0.5;
+
+/**
+ * Would walking there hand someone a chance to kill me on a normal hit?
+ *
+ * This is computed, never sampled, and that is the whole point. Averaging is
+ * the wrong operator for an outcome you cannot come back from: a 45% chance of
+ * dying is not "45% of the badness of dying" in a game where the dead stay
+ * dead. Worse, the estimator cannot even see it — the easy preset samples once,
+ * so it imagines the retreat a single time, and about half the time the
+ * imagined opportunity attack misses and the walk looks free. It was not being
+ * brave; it never knew it was flipping a coin. No number of samples fixes that
+ * cheaply either: raising `samples` is the only knob that meaningfully changes
+ * this AI's strength (1 -> 28.7%, 3 -> 46.3% against greedy), so buying safety
+ * that way would have made Story mode 18 points harder — the opposite of what
+ * Story mode is for.
+ *
+ * Deliberately narrow. It bites only when a unit could die *this step*, so
+ * retreating while healthy — worth ~12 points of win rate, and correct, since
+ * one opportunity attack beats a full round in melee — is untouched.
+ */
+function lethalRisk(state: GameState, actorId: Id, to: { x: number; y: number }): number {
+  const me = state.combatants[actorId]!;
+  return worstCaseWalkDamage(state, me, to) >= me.hp ? LETHAL_RISK * unitWorth(me) : 0;
+}
 
 export const SIM_PRESETS: Record<'easy' | 'normal' | 'hard', SimOptions> = {
   easy: { samples: 1, beam: 2, depth: 1, moveCandidates: 3 },
@@ -151,7 +183,7 @@ export function chooseActionSim(state: GameState, actorId: Id, opts: SimOptions 
         action.kind === 'dash' || action.kind === 'disengage' ||
         action.kind === 'dodge' || action.kind === 'hide'
           ? ACTION_COST
-          : action.kind === 'move' ? MOVE_COST : 0;
+          : action.kind === 'move' ? MOVE_COST + lethalRisk(node.state, actorId, action.to) : 0;
       out.push({
         state: next,
         stateV: evaluate(next, team),

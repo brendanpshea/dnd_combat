@@ -2,11 +2,11 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
-import { cellAt } from '../types.js';
+import { cellAt, abilityMod } from '../types.js';
 import { reachable, pathTo, adjacent, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
-import { rollDice } from '../dice.js';
+import { rollDice, parseDice } from '../dice.js';
 import type { GameEvent } from '../events.js';
 
 /** Damage for entering a hazard cell (fire pit, spikes...). */
@@ -83,6 +83,59 @@ function canTakeReaction(c: Combatant): boolean {
     !c.turn.reactionUsed &&
     !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'noReactions')
   );
+}
+
+/** Biggest damage roll `c` could land with `weaponId` on a normal hit. */
+function maxHit(c: Combatant, weaponId: Id): number {
+  const w = WEAPONS[weaponId];
+  if (!w) return 0;
+  const d = parseDice(w.damage);
+  const ability = w.melee && !w.properties.includes('finesse') ? 'str' : 'dex';
+  return d.count * d.sides + d.bonus + abilityMod(c.abilities[ability]) + (w.damageBonus ?? 0);
+}
+
+/**
+ * The most damage `mover` could take walking to `to`: every opportunity attack
+ * it provokes landing for maximum, plus every hazard it crosses. Measured along
+ * the route the engine would actually walk (same tiebreak, same path).
+ *
+ * Crits are deliberately excluded — at ~5% they would make almost every step
+ * look potentially fatal, and a rule that fires constantly is one that gets
+ * tuned back out. This answers a narrow question: could a *normal* hit kill me?
+ *
+ * Lives here rather than in the AI because it is a fact about the rules, not a
+ * policy: the same question the player asks before stepping away.
+ */
+export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Position): number {
+  const budget = mover.turn.movementMax - mover.turn.movementUsed;
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover));
+  const path = pathTo(r, mover.position, to);
+  if (!path) return 0;
+
+  const hazardMax = (() => { const d = parseDice(HAZARD_DAMAGE); return d.count * d.sides + d.bonus; })();
+  const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
+    .map((id) => state.combatants[id]!)
+    .filter((h) => canTakeReaction(h));
+
+  let worst = 0;
+  // One reaction each, so a hostile can only ever land a single opportunity
+  // attack over the whole walk, however many times you cross its reach.
+  const spent = new Set<Id>();
+  for (let i = 1; i < path.length; i++) {
+    const from = path[i - 1]!;
+    const step = path[i]!;
+    for (const h of threats) {
+      if (spent.has(h.id)) continue;
+      const weapon = meleeWeaponOf(h);
+      if (!weapon) continue;
+      if (adjacent(h.position, from) && !adjacent(h.position, step)) {
+        worst += maxHit(h, weapon);
+        spent.add(h.id);
+      }
+    }
+    if (cellAt(state.grid, step)!.terrain === 'hazard') worst += hazardMax;
+  }
+  return worst;
 }
 
 /**
