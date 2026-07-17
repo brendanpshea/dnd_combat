@@ -97,10 +97,16 @@ across the board — via a `weaponAttack` targeting kind rather than a range on
 the spell. A static range could only ever have been melee *or* ranged, and the
 same spell has to be both; declaring "whatever this weapon can hit" hands the
 question to `canAttackWith`, so line of sight, long range and every other attack
-rule stay in the one place that owns them. This is why the elf **cleric** starts
-with a light crossbow (Wisdom-guided fire across the map, at the cost of the
-shield — AC 16, since a crossbow is two-handed) and the elf **wizard** with two
-daggers (finesse, so they swing off Dexterity, and thrown, so they reach).
+rule stay in the one place that owns them. True Strike guides **any weapon you can attack with**, drawn or stowed
+(`attackableWeapons`), not just what's in hand — so the *pack is a ranged slot*.
+The elf **cleric** keeps mace + shield (AC 18) and True-Strikes the crossbow it
+carries in its pack, firing across the board without giving up the shield; the
+elf **wizard** carries two daggers (finesse, thrown). The castSpell action names
+the weapon, and `legalActions` offers True Strike once per reachable weapon —
+because adjacent, a mace has no disadvantage while a crossbow does (enemy next to
+the shooter), so the reach-vs-disadvantage call belongs to the player, not to a
+default. Cast without a choice (the tray's browse path), it picks the hardest-
+hitting weapon that reaches.
 
 Spell targeting declarations drive both validation and UI prompts:
 `creature` (n targets in range), `sphere2x2` (anchor cell), `cone15`

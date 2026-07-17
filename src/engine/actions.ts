@@ -27,7 +27,7 @@ export type Target = { combatantId: Id } | { position: Position };
 export type Action =
   | { kind: 'move'; to: Position }
   | { kind: 'attack'; weaponId: Id; targetId: Id; offhand?: boolean }
-  | { kind: 'castSpell'; spellId: Id; slotLevel: number; targets: Target[] }
+  | { kind: 'castSpell'; spellId: Id; slotLevel: number; targets: Target[]; weaponId?: Id }
   | { kind: 'useFeature'; featureId: Id }
   | { kind: 'useItem'; itemId: Id; targets?: Target[] }
   | { kind: 'dash' }
@@ -36,6 +36,12 @@ export type Action =
   | { kind: 'hide' }
   | { kind: 'shakeAwake'; targetId: Id }
   | { kind: 'endTurn' };
+
+/** Weapons True Strike can guide: anything currently attackable (in hand or a
+ *  stowed one the free interaction could draw). */
+function trueStrikeWeapons(c: Combatant): Id[] {
+  return attackableWeapons(c);
+}
 
 function isIncapacitated(c: Combatant): boolean {
   return c.conditions.some(
@@ -93,13 +99,16 @@ function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): 
   return !!pool && pool.current > 0;
 }
 
-function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targets: Target[]): boolean {
+function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targets: Target[], weaponId?: Id): boolean {
   const actor = state.combatants[actorId]!;
   const t = spell.targeting;
   if (t.kind === 'weaponAttack') {
     const tg = targets[0];
-    return targets.length === 1 && !!tg && 'combatantId' in tg &&
-      validTarget(state, actorId, spell, tg.combatantId);
+    if (targets.length !== 1 || !tg || !('combatantId' in tg)) return false;
+    // A named weapon must be one you can attack with; unnamed means "let the
+    // spell pick", so any attackable weapon that reaches will do.
+    const weapons = weaponId ? [weaponId] : trueStrikeWeapons(actor);
+    return weapons.some((w) => canAttackWith(state, actor, w, tg.combatantId));
   }
   if (t.kind === 'creature') {
     if (targets.length < 1 || targets.length > t.count) return false;
@@ -159,7 +168,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (costsAction && actor.turn.actionUsed) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
       return spellAvailable(actor, spell, action.slotLevel) &&
-        validSpellTargets(state, actorId, spell, action.targets);
+        validSpellTargets(state, actorId, spell, action.targets, action.weaponId);
     }
     case 'useItem': {
       if (incap) return false;
@@ -274,8 +283,10 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     const t = spell.targeting;
     if (t.kind === 'weaponAttack') {
       for (const e of enemies) {
-        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ combatantId: e.id }] };
-        if (isLegalAction(state, actorId, a)) actions.push(a);
+        for (const w of trueStrikeWeapons(actor)) {
+          const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ combatantId: e.id }], weaponId: w };
+          if (isLegalAction(state, actorId, a)) actions.push(a);
+        }
       }
     } else if (t.kind === 'creature') {
       const pool = t.who === 'enemy' ? enemies : t.who === 'ally' ? allies : [...enemies, ...allies];
@@ -441,7 +452,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       events.push(...endHide(actor));
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = action.targets.flatMap((t) => ('position' in t ? [t.position] : []));
-      events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions }));
+      events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) }));
       break;
     }
     case 'useItem': {

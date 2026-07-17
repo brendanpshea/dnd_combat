@@ -50,7 +50,7 @@ describe('a wood elf knows True Strike', () => {
 
     const { events } = step(c.state, {
       kind: 'castSpell', spellId: 'true-strike', slotLevel: 0,
-      targets: [{ combatantId: 'foe' }],
+      targets: [{ combatantId: 'foe' }], weaponId: 'dagger',
     });
     const attack = events.find((e) => e.type === 'attackRolled');
     expect(attack?.type === 'attackRolled' && attack.weaponId).toBe('dagger');
@@ -79,20 +79,19 @@ describe('a wood elf knows True Strike', () => {
       mapId: 'open',
       combatants: [elf('cleric', 'team1', { x: 1, y: 1 }, 'cle'), human('fighter', 'team2', { x: 1, y: 6 }, 'foe')],
     });
-    expect(c.state.combatants['cle']!.equipped.mainHand).toBe('light-crossbow');
+    expect(c.state.combatants['cle']!.equipped.mainHand).toBe('mace');   // shield kept
+    expect(c.state.combatants['cle']!.inventory.some((s) => s.itemId === 'light-crossbow')).toBe(true);
     let guard = 0;
     while (c.activeId !== 'cle' && guard++ < 20) c.apply({ kind: 'endTurn' });
 
-    // Five cells away — no melee spell could reach, but the crossbow does.
-    const shot = legalActions(c.state, 'cle').some(
-      (a) => a.kind === 'castSpell' && a.spellId === 'true-strike' &&
-        a.targets[0] && 'combatantId' in a.targets[0] && a.targets[0].combatantId === 'foe',
+    // Five cells away — the mace can't reach, but True Strike offers the stowed
+    // crossbow, which can. The shield never left the off-hand.
+    const shot = legalActions(c.state, 'cle').find(
+      (a) => a.kind === 'castSpell' && a.spellId === 'true-strike' && a.weaponId === 'light-crossbow',
     );
-    expect(shot).toBe(true);
+    expect(shot).toBeDefined();
 
-    const { events } = step(c.state, {
-      kind: 'castSpell', spellId: 'true-strike', slotLevel: 0, targets: [{ combatantId: 'foe' }],
-    });
+    const { events } = step(c.state, shot!);
     const attack = events.find((e) => e.type === 'attackRolled');
     expect(attack?.type === 'attackRolled' && attack.weaponId).toBe('light-crossbow');
     // Wisdom-guided, and proficiency-backed.
@@ -120,20 +119,40 @@ describe('a wood elf knows True Strike', () => {
     expect(reaches).toBe(false);
   });
 
+  it('offers every attackable weapon, so the reach/disadvantage call is the players', () => {
+    // The reason True Strike is per-weapon: adjacent, the mace has no
+    // disadvantage while the crossbow does (enemy adjacent to shooter), so which
+    // is better is a judgement, not a default. Both must be on the menu.
+    const c = new Combat({
+      seed: 5,
+      mapId: 'open',
+      combatants: [elf('cleric', 'team1', { x: 3, y: 3 }, 'cle'), human('fighter', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'cle' && guard++ < 20) c.apply({ kind: 'endTurn' });
+    const weapons = legalActions(c.state, 'cle')
+      .filter((a) => a.kind === 'castSpell' && a.spellId === 'true-strike')
+      .map((a) => (a as { weaponId?: string }).weaponId);
+    expect(weapons).toContain('mace');            // adjacent: no disadvantage
+    expect(weapons).toContain('light-crossbow');  // also legal, but with it
+  });
+
   it('does nothing with an empty hand rather than throwing', () => {
     const c = new Combat({
       seed: 3,
       mapId: 'open',
       combatants: [elf('wizard', 'team1', { x: 3, y: 3 }, 'wiz'), human('fighter', 'team2', { x: 3, y: 4 }, 'foe')],
     });
-    delete c.state.combatants['wiz']!.equipped.mainHand;
-    delete c.state.combatants['wiz']!.equipped.offHand;
+    const wiz = c.state.combatants['wiz']!;
+    delete wiz.equipped.mainHand;
+    delete wiz.equipped.offHand;
+    wiz.inventory = [];   // no stowed weapon to draw either
     let guard = 0;
     while (c.activeId !== 'wiz' && guard++ < 20) c.apply({ kind: 'endTurn' });
     const legal = legalActions(c.state, 'wiz').some(
       (a) => a.kind === 'castSpell' && a.spellId === 'true-strike',
     );
-    expect(legal).toBe(false);   // nothing in hand to guide
+    expect(legal).toBe(false);   // nothing to guide
   });
 });
 

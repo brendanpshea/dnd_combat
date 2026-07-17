@@ -9,10 +9,11 @@
  */
 import type { GameState, Combatant, Id, Ability, Position } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
-import { rollD20, rollDice, resolveRollMode } from '../engine/dice.js';
+import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, resolveAttack, canAttackWith } from '../engine/rules/attack.js';
+import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import { applyHealing } from '../engine/rules/heal.js';
@@ -43,6 +44,8 @@ export interface CastContext {
   /** Combatant targets (creature targeting) or positions (area targeting). */
   targetIds: Id[];
   positions: Position[];
+  /** For weaponAttack spells (True Strike): which weapon to swing. */
+  weaponId?: Id;
 }
 
 export interface SpellData {
@@ -136,6 +139,24 @@ function bestMentalAbility(c: Combatant): Ability {
   return minds.reduce((best, a) => (c.abilities[a] > c.abilities[best] ? a : best), minds[0]!);
 }
 
+/**
+ * When True Strike is cast without a chosen weapon (the tray's browse path),
+ * pick the attackable one that can reach the target and hits hardest. The
+ * enemy-tap path offers every weapon explicitly, because at melee range a mace
+ * with no disadvantage can beat a crossbow that has it — a judgement the player
+ * makes, not this default.
+ */
+function bestTrueStrikeWeapon(state: GameState, caster: Combatant, targetId: Id): Id | undefined {
+  return attackableWeapons(caster)
+    .filter((w) => canAttackWith(state, caster, w, targetId))
+    .sort((a, b) => avgDamage(WEAPONS[b]!) - avgDamage(WEAPONS[a]!))[0];
+}
+
+function avgDamage(w: { damage: string; damageBonus?: number }): number {
+  const d = parseDice(w.damage);
+  return d.count * (d.sides + 1) / 2 + d.bonus + (w.damageBonus ?? 0);
+}
+
 // --- the spells -------------------------------------------------------------
 
 export const SPELLS: Record<Id, SpellData> = {
@@ -172,11 +193,14 @@ export const SPELLS: Record<Id, SpellData> = {
     targeting: { kind: 'weaponAttack' },
     concentration: false,
     icon: '🗡️',
-    cast({ state, casterId, targetIds }) {
+    cast({ state, casterId, targetIds, weaponId }) {
       const caster = state.combatants[casterId]!;
-      const weaponId = caster.equipped.mainHand;
-      if (!weaponId || !WEAPONS[weaponId]) return [];   // nothing in hand to guide
-      return resolveAttack(state, casterId, targetIds[0]!, weaponId, {
+      const targetId = targetIds[0]!;
+      // The named weapon, or — cast from the tray with no choice made — the best
+      // one that can reach, so the browse path still does something sensible.
+      const weapon = weaponId ?? bestTrueStrikeWeapon(state, caster, targetId);
+      if (!weapon || !WEAPONS[weapon]) return [];   // nothing that can reach
+      return resolveAttack(state, casterId, targetId, weapon, {
         abilityOverride: bestMentalAbility(caster),
       });
     },

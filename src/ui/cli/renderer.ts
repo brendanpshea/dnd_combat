@@ -183,8 +183,9 @@ export function describeAction(state: GameState, a: Action): string {
     }
     case 'castSpell': {
       const s = SPELLS[a.spellId]?.name ?? a.spellId;
+      const w = a.weaponId ? ` (${WEAPONS[a.weaponId]?.name ?? a.weaponId})` : '';
       const tg = a.targets.map((t) => 'combatantId' in t ? name(state, t.combatantId) : cellName(t.position)).join(', ');
-      return `Cast ${s} → ${tg}`;
+      return `Cast ${s}${w} → ${tg}`;
     }
     case 'useFeature': return FEATURES[a.featureId]?.name ?? a.featureId;
     case 'useItem': {

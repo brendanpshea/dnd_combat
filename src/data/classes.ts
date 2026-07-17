@@ -83,13 +83,13 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     weaponMasteries: [],
     equipment: {
-      // A light crossbow, so an elf cleric's True Strike (Wisdom-guided) reaches
-      // across the board. Two-handed, so no shield — AC 16 not 18 is the price
-      // of fighting at range. The mace rides in the pack for when something
-      // closes; drawing it is a free interaction.
-      mainHand: 'light-crossbow', armor: 'chain-mail',
+      // Mace and shield in hand (AC 18), with a light crossbow slung in the
+      // pack. True Strike guides *any* attackable weapon, so an elf cleric fires
+      // the stowed crossbow across the board on Wisdom without dropping the
+      // shield — the pack is the ranged slot.
+      mainHand: 'mace', offHand: 'shield', armor: 'chain-mail',
       inventory: [
-        { itemId: 'mace', qty: 1 },
+        { itemId: 'light-crossbow', qty: 1 },
         { itemId: 'potion-healing', qty: 1 },
         { itemId: 'scroll-cure-wounds', qty: 1 },
       ],

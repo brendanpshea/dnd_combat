@@ -61,7 +61,12 @@ export function describeShort(a: Action): string {
       const w = WEAPONS[a.weaponId]?.name ?? a.weaponId;
       return a.offhand ? `Off-hand ${w}` : w;
     }
-    case 'castSpell': return SPELLS[a.spellId]?.name ?? a.spellId;
+    case 'castSpell': {
+      const name = SPELLS[a.spellId]?.name ?? a.spellId;
+      // Weapon-attack spells carry which weapon; showing it is the whole point
+      // of offering one per weapon (crossbow to shoot, mace to bonk).
+      return a.weaponId ? `${name} (${WEAPONS[a.weaponId]?.name ?? a.weaponId})` : name;
+    }
     case 'useItem': return ITEMS[a.itemId]?.name ?? a.itemId;
     case 'useFeature': return FEATURES[a.featureId]?.name ?? a.featureId;
     case 'shakeAwake': return 'Shake awake';
