@@ -5,6 +5,7 @@
  */
 import type { GameState, Id } from '../engine/types.js';
 import { proficiencyBonus } from '../engine/types.js';
+import type { SkillId } from './classes.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
@@ -41,6 +42,8 @@ export interface FeatureData {
    * no way to tell which was which.
    */
   bonusVerb?: 'dash' | 'disengage' | 'hide';
+  /** Proficiency in a skill, for anyone who has this feature. */
+  grantsSkill?: SkillId;
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
@@ -68,6 +71,12 @@ export const FEATURES: Record<Id, FeatureData> = {
     uses: { count: 1, per: 'encounter' },
   },
   trance: { id: 'trance', name: 'Trance', trigger: 'passive' },
+  /**
+   * Proficiency in Perception. Declared as a feature rather than a skill list
+   * on the combatant because skills live in the campaign layer, and the engine
+   * needs this to spot a hidden rogue — one fact, read by both.
+   */
+  'keen-senses': { id: 'keen-senses', name: 'Keen Senses', trigger: 'passive', grantsSkill: 'perception' },
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
     uses: { count: 2, per: 'encounter' },

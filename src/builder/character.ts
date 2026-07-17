@@ -64,11 +64,16 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   }
 
   const slots = cls.spellcasting?.slotsByLevel[level - 1] ?? [];
-  const spellIds = cls.spellcasting
-    ? Object.entries(cls.spellcasting.spellsByLevel)
-        .filter(([lvl]) => Number(lvl) <= level)
-        .flatMap(([, ids]) => ids)
-    : [];
+  const known = (byLevel: Record<number, Id[]> | undefined): Id[] =>
+    Object.entries(byLevel ?? {})
+      .filter(([lvl]) => Number(lvl) <= level)
+      .flatMap(([, ids]) => ids);
+  // Class magic plus whatever the species brings of its own — a wood elf knows
+  // True Strike whether or not it ever opened a spellbook.
+  const spellIds = [...new Set([
+    ...(cls.spellcasting ? known(cls.spellcasting.spellsByLevel) : []),
+    ...known(species?.spellsByLevel),
+  ])];
 
   const combatant: Combatant = {
     id: `${opts.team}-${opts.classId}`,

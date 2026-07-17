@@ -78,6 +78,24 @@ type Action =
   | { kind: 'endTurn' };
 ```
 
+**Species may grant spells** (`SpeciesData.spellsByLevel`, the same shape a class
+uses) — a wood elf knows True Strike whether or not it ever opened a spellbook.
+**Cantrips only, and deliberately**: a levelled spell needs a slot and a fighter
+has none, so a racial Faerie Fire would silently be a caster-only perk. Innate
+"once per rest, no slot" casting is the mechanism that unlocks the rest, and it
+doesn't exist yet — it's the prerequisite for most interesting species magic
+(breath weapons, Hellish Rebuke), so build it before promising any.
+
+**True Strike** is a weapon attack, not another damage cantrip: it swings what's
+in your hand using the caster's *best mental ability* (`AttackContext
+.abilityOverride`). This needs no per-class rule to stay balanced — a fighter's
+mental stats are 12/10/8, so it's strictly worse than his +3 Strength and he'll
+never cast it, while a wizard finally gets to hit something with its staff.
+Melee-only for now (`range: 0`): the spell's real range is a property of the
+weapon, and `SpellTargeting.range` is static data that validation, the menus and
+the AI all read, so an elf archer needs a targeting model that can ask the caster
+a question first.
+
 Spell targeting declarations drive both validation and UI prompts:
 `creature` (n targets in range), `sphere2x2` (anchor cell), `cone15`
 (direction), `emptyCell` (teleport destination), `self` (adjacent burst).
@@ -134,6 +152,11 @@ the hidden creature cannot be directly targeted and has advantage on its next
 attack; attacking or casting a spell ends Hide. At the start of an enemy's
 turn, line of sight plus advantaged passive Perception ($15 +$ Wisdom modifier)
 strictly greater than the stored Hide check reveals the creature to all enemies.
+Passive Perception counts *proficiency* (a wood elf's Keen Senses), which it did
+not before — perception was a stat nobody could be good at, so every creature in
+the game spotted a hidden rogue equally well. A feature grants the skill
+(`FeatureData.grantsSkill`) and both consumers read that one fact: the engine for
+spotting, the campaign for who rolls a check.
 Area effects may still affect hidden creatures. Rogue Cunning Action and Goblin
 Nimble Escape each provide a bonus-action Hide option.
 

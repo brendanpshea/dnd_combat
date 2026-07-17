@@ -14,6 +14,7 @@ import { buildCharacter, assignStats } from '../builder/character.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST } from '../data/armor.js';
+import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP } from '../data/monsters.js';
@@ -386,8 +387,12 @@ export function skillBonus(classId: Id, level: number, skill: SkillId, speciesId
   const cls = CLASSES[classId]!;
   const abilities = assignStats(cls.statPriority);
   const speciesProficiency = SPECIES[speciesId]?.skillProficienciesByClass?.[classId] === skill;
+  // A species feature can grant a skill outright (a wood elf's Keen Senses),
+  // regardless of class — the same fact the engine reads to spot hidden foes.
+  const featureProficiency = (SPECIES[speciesId]?.featureIds ?? [])
+    .some((f) => FEATURES[f]?.grantsSkill === skill);
   return abilityMod(abilities[SKILL_ABILITY[skill]]) +
-    (cls.skillProfs.includes(skill) || speciesProficiency ? proficiencyBonus(level) : 0);
+    (cls.skillProfs.includes(skill) || speciesProficiency || featureProficiency ? proficiencyBonus(level) : 0);
 }
 
 /** The party member with the highest bonus rolls every party skill check. */

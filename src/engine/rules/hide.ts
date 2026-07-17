@@ -4,6 +4,7 @@ import { abilityMod, proficiencyBonus } from '../types.js';
 import { rollD20 } from '../dice.js';
 import { hasLineOfSight } from '../grid.js';
 import { CLASSES } from '../../data/classes.js';
+import { FEATURES } from '../../data/features.js';
 import type { GameEvent } from '../events.js';
 
 export function hiddenCondition(c: Combatant) {
@@ -52,7 +53,11 @@ export function endHide(c: Combatant): GameEvent[] {
 
 /** Passive Perception with advantage: 10 + Wisdom modifier + 5. */
 function passivePerceptionWithAdvantage(observer: Combatant): number {
-  return 15 + abilityMod(observer.abilities.wis);
+  // Proficiency counts. It didn't before, which made "perception" a stat nobody
+  // could be good at: every creature in the game spotted hidden rogues equally
+  // well, whatever it was.
+  const proficient = observer.featureIds.some((f) => FEATURES[f]?.grantsSkill === 'perception');
+  return 15 + abilityMod(observer.abilities.wis) + (proficient ? proficiencyBonus(observer.level) : 0);
 }
 
 /** A successful observer reveals that hidden target to every enemy at once. */

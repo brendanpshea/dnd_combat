@@ -2,7 +2,7 @@
  * Attack resolution and damage application. All functions mutate the draft
  * state they are given — step() owns cloning, these own the rules.
  */
-import type { GameState, Combatant, Id, DamageType } from '../types.js';
+import type { GameState, Combatant, Id, DamageType, Ability } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../types.js';
 import { WEAPONS, WeaponData } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
@@ -26,6 +26,12 @@ export interface AttackContext {
   opportunity?: boolean;
   /** Off-hand (light weapon) attack: no ability modifier on damage. */
   offhand?: boolean;
+  /**
+   * Swing with a different ability than the weapon would normally use — True
+   * Strike guiding a staff with Intelligence. Applies to the attack roll and
+   * the damage, exactly as the usual modifier does.
+   */
+  abilityOverride?: Ability;
 }
 
 /**
@@ -126,7 +132,7 @@ export function resolveAttack(
   const d20 = rollD20(state.rng, mode);
   state.rng = d20.state;
 
-  const ability = attackAbility(attacker, weapon);
+  const ability = ctx.abilityOverride ?? attackAbility(attacker, weapon);
   const mod = abilityMod(attacker.abilities[ability]);
   const prof = proficiencyBonus(attacker.level); // v1: proficient with all carried weapons
   let total = d20.natural + mod + prof + (weapon.attackBonus ?? 0);

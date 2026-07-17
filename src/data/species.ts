@@ -14,6 +14,14 @@ export interface SpeciesData {
   hpPerLevel?: number;
   resistances?: DamageType[];
   featureIds?: Id[];
+  /**
+   * Spells the species itself grants, by the level they arrive — the same shape
+   * a class uses. Cantrips only for now, and deliberately: a levelled spell
+   * needs a slot, and a fighter has none, so a racial fireball would be a
+   * caster-only perk. Innate "once per rest, no slot" casting is the mechanism
+   * that unlocks the rest, and it doesn't exist yet.
+   */
+  spellsByLevel?: Record<number, Id[]>;
   /** Deterministic Skillful choice for the campaign's limited skill list. */
   skillProficienciesByClass?: Partial<Record<Id, SkillId>>;
 }
@@ -33,7 +41,11 @@ export const SPECIES: Record<Id, SpeciesData> = {
   },
   elf: {
     id: 'elf', name: 'Wood Elf', speed: 35,
-    featureIds: ['trance'],
+    // Trance (no Sleep) and 35 ft were the whole species; an elf may as well
+    // have been a human in a hurry. True Strike is the elf's own magic, and
+    // Keen Senses makes it the party's lookout.
+    featureIds: ['trance', 'keen-senses'],
+    spellsByLevel: { 1: ['true-strike'] },
   },
   orc: {
     id: 'orc', name: 'Orc', speed: 30,

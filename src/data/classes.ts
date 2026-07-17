@@ -5,7 +5,7 @@ import type { Id, Ability, ItemStack } from '../engine/types.js';
 
 export type ArmorProf = 'light' | 'medium' | 'heavy' | 'shield';
 
-export type SkillId = 'stealth' | 'sleight-of-hand' | 'intimidation' | 'persuasion' | 'deception';
+export type SkillId = 'stealth' | 'sleight-of-hand' | 'intimidation' | 'persuasion' | 'deception' | 'perception';
 
 export const SKILL_ABILITY: Record<SkillId, Ability> = {
   stealth: 'dex',
@@ -13,6 +13,7 @@ export const SKILL_ABILITY: Record<SkillId, Ability> = {
   intimidation: 'cha',
   persuasion: 'cha',
   deception: 'cha',
+  perception: 'wis',
 };
 
 export interface ClassData {

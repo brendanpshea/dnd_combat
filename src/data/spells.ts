@@ -7,17 +7,18 @@
  * - sphere2x2: pick an anchor cell for the 2x2 template
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
-import type { GameState, Id, Ability, Position } from '../engine/types.js';
+import type { GameState, Combatant, Id, Ability, Position } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
+import { applyDamage, collectAttackSources, resolveAttack } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
 import { acOf, wearsMetal } from './armor.js';
+import { WEAPONS } from './weapons.js';
 
 export type SpellTargeting =
   | { kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number }
@@ -114,6 +115,18 @@ function discipleOfLifeBonus(state: GameState, casterId: Id, slotLevel: number):
   return c.featureIds.includes('disciple-of-life') && slotLevel >= 1 ? 2 + slotLevel : 0;
 }
 
+/**
+ * Whichever mind is sharpest — True Strike is guided by insight, and the elf
+ * doesn't care which kind. This is also what keeps the spell self-balancing
+ * across classes without a special case: a fighter's mental stats are 12/10/8,
+ * so True Strike is strictly worse than his +3 Strength and he'll never cast
+ * it, while a wizard finally gets to swing a staff off Intelligence.
+ */
+function bestMentalAbility(c: Combatant): Ability {
+  const minds: Ability[] = ['int', 'wis', 'cha'];
+  return minds.reduce((best, a) => (c.abilities[a] > c.abilities[best] ? a : best), minds[0]!);
+}
+
 // --- the spells -------------------------------------------------------------
 
 export const SPELLS: Record<Id, SpellData> = {
@@ -132,6 +145,32 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'fire', dmg.rolls));
       }
       return events;
+    },
+  },
+
+  /**
+   * The elf's own magic: your weapon, guided. Deliberately *not* another damage
+   * cantrip with a different colour — the weapon in your hand is the spell's
+   * whole identity, and "1d8 + mod at range" would just be Fire Bolt wearing a
+   * hat.
+   *
+   * Melee-only (range 0) for now. The spell's real range is a property of the
+   * weapon, and `SpellTargeting.range` is static data that validation, the
+   * menus and the AI all read — so elf archers wait for a targeting model that
+   * can ask the caster a question.
+   */
+  'true-strike': {
+    id: 'true-strike', name: 'True Strike', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🗡️',
+    cast({ state, casterId, targetIds }) {
+      const caster = state.combatants[casterId]!;
+      const weaponId = caster.equipped.mainHand;
+      if (!weaponId || !WEAPONS[weaponId]) return [];   // nothing in hand to guide
+      return resolveAttack(state, casterId, targetIds[0]!, weaponId, {
+        abilityOverride: bestMentalAbility(caster),
+      });
     },
   },
 
