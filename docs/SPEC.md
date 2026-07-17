@@ -487,6 +487,10 @@ the ladder so nobody de-levels. Between battles the shop buys/sells
 `SHOP_STOCK` — consumables, weapons (incl. +1 longsword/shortsword with
 attack/damage bonus support in the engine), and armor gated by per-class
 **armor proficiencies** (fighter/cleric all, rogue light, wizard none).
+Remaining HP persists from a victorious battle into the next store visit. For
+testing, the store provides an unrestricted **short rest** that restores half
+of each hero's maximum HP; other encounter resources still begin full when a
+combatant is rebuilt.
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
 passed between characters. **Shop skills** (once each per visit, rolled by
@@ -497,9 +501,9 @@ haggling offers Persuasion (DC 15, −20%, safe), Intimidation (DC 15, −25%
 or +25% on failure), or Deception (DC 13, ±15%). Skill checks roll off a
 persisted campaign RNG state, so seeded runs stay reproducible. Before a battle the campaign builds
 Combatants via the builder's gear overrides; after a victory it reads
-surviving inventory back (spent consumables stay spent, weapon swaps
-persist), adds loot, and advances. Fallen characters recover on victory —
-only a full wipe ends the campaign. Entry point: `npm run campaign`
+surviving inventory and HP back (spent consumables stay spent, weapon swaps
+persist), adds loot, and advances. Only a full wipe ends the campaign. Entry
+point: `npm run campaign`
 (`--auto` = AI-played, `--new` = fresh start).
 
 ## 8. CLI

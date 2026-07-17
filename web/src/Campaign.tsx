@@ -18,7 +18,7 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
-  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass,
+  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -417,7 +417,15 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       ))}
 
       <section className="panel">
-        <h3>Party</h3>
+        <div className="shop-heading">
+          <h3>Party</h3>
+          <button className="mini" onClick={() => mutate(() => {
+            const result = shortRest(c);
+            setNotice(result.totalHealed > 0
+              ? `Short rest: the party recovers ${result.totalHealed} HP.`
+              : 'The party is already fully rested.');
+          })}>Short rest</button>
+        </div>
         {c.characters.map((ch, idx) => (
           <div key={idx} className="char-card">
             <div className="char-head char-identity">
@@ -425,6 +433,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               <div className="char-name">
                 <strong>{ch.name}</strong>
                 <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>
+                <span className="char-hp">HP {party[idx]!.hp}/{party[idx]!.maxHp}</span>
               </div>
             </div>
             {/* Gear and pack are the same thing to the player: a tap on any of

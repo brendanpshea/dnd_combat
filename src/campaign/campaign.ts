@@ -26,6 +26,10 @@ export interface PartyCharacter {
   speciesId: Id;
   name: string;
   portraitId: Id;
+  /** Mutable adventuring state. Missing means a fully rested legacy save. */
+  resources?: {
+    hp: number;
+  };
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
 }
@@ -356,8 +360,8 @@ export function sellItem(c: CampaignState, charIdx: number, itemId: Id): boolean
 export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Combatant[] {
   const level = partyLevelOf(c);
   const files = [1, 2, 4, 6];
-  return c.characters.map((ch, i) =>
-    buildCharacter({
+  return c.characters.map((ch, i) => {
+    const combatant = buildCharacter({
       classId: ch.classId, team, level,
       speciesId: ch.speciesId,
       name: ch.name,
@@ -365,8 +369,33 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       position: { x: files[i]!, y: 0 },
       inventory: ch.inventory.map((s) => ({ ...s })),
       equipped: { ...ch.equipped },
-    }),
-  );
+    });
+    if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
+      combatant.hp = Math.max(0, Math.min(ch.resources.hp, combatant.maxHp));
+    }
+    return combatant;
+  });
+}
+
+export interface RestResult {
+  totalHealed: number;
+}
+
+/**
+ * Testing-friendly short rest: each hero recovers half their maximum HP.
+ * It is deliberately unrestricted for now; campaign HP is the only mutable
+ * resource persisted between encounters, so spell slots still refresh when a
+ * new battle is built.
+ */
+export function shortRest(c: CampaignState): RestResult {
+  let totalHealed = 0;
+  const party = buildCampaignParty(c);
+  for (const [index, combatant] of party.entries()) {
+    const healedHp = Math.min(combatant.maxHp, combatant.hp + Math.ceil(combatant.maxHp / 2));
+    totalHealed += healedHp - combatant.hp;
+    c.characters[index]!.resources = { hp: healedHp };
+  }
+  return { totalHealed };
 }
 
 // ---------------------------------------------------------------------------
@@ -581,6 +610,7 @@ export function applyVictory(
     if (fought) {
       ch.inventory = fought.inventory.map((s) => ({ ...s }));
       ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
+      ch.resources = { hp: fought.hp };
     }
   }
 

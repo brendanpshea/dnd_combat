@@ -635,6 +635,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .char-identity .portrait { width: 48px; height: 48px; }
 .char-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .char-name strong { min-width: 60px; }
+.char-hp { color: #bff0cf; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .char-name select {
   color: var(--text); background: #181323; border: 1px solid #534a70;
   border-radius: 5px; padding: 2px 5px; max-width: 105px;

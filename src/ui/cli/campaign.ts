@@ -16,7 +16,7 @@ import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
-  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll,
+  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
 import { runBattle, chooseFrom, argValue, parseSeed, AiLevel } from './battle.js';
@@ -30,11 +30,12 @@ function xpLine(c: CampaignState): string {
 
 function partySummary(c: CampaignState): string {
   const stage = currentStage(c);
+  const party = buildCampaignParty(c);
   const lines = [
     `Gold: ${c.gold}   ${xpLine(c)}   Battles won: ${c.victories.length}/${STAGES.length}` +
     (stage ? `   Next: ${ENCOUNTERS[stage.encounterId]!.name} (${MAPS[stage.mapId]!.name})` : ''),
   ];
-  for (const ch of c.characters) {
+  for (const [index, ch] of c.characters.entries()) {
     const eq = [
       itemName(ch.equipped.mainHand),
       ch.equipped.offHand ? itemName(ch.equipped.offHand) : undefined,
@@ -44,7 +45,8 @@ function partySummary(c: CampaignState): string {
       .filter((s) => s.qty > 0)
       .map((s) => `${itemName(s.itemId)}×${s.qty}`)
       .join(', ');
-    lines.push(`  ${CLASSES[ch.classId]!.name} [${eq}]: ${items || '(no items)'}`);
+    const combatant = party[index]!;
+    lines.push(`  ${CLASSES[ch.classId]!.name} (${combatant.hp}/${combatant.maxHp} HP) [${eq}]: ${items || '(no items)'}`);
   }
   return lines.join('\n');
 }
@@ -128,6 +130,7 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
       'Sell an item (half price)',
       'Manage equipment',
       'Give an item to someone',
+      'Short rest (recover half maximum HP)',
       ...(canScheme && !haggleUsed ? ['Haggle over prices (skill check)'] : []),
       ...(canScheme && !stealUsed ? ['Try to steal something (Stealth + Sleight of Hand)'] : []),
       'Done — to battle!',
@@ -168,6 +171,13 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
 
     if (label.startsWith('Give an item')) { await giveFlow(c, rl); continue; }
     if (label.startsWith('Manage equipment')) { await manageEquipment(c, rl); continue; }
+    if (label.startsWith('Short rest')) {
+      const result = shortRest(c);
+      console.log(result.totalHealed > 0
+        ? `The party recovers ${result.totalHealed} HP.`
+        : 'The party is already fully rested.');
+      continue;
+    }
     if (label.startsWith('Sell')) {
       const who = await chooseFrom(rl, 'Whose item?', charNames);
       const ch = c.characters[who]!;
