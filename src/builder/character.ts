@@ -1,12 +1,36 @@
 /**
  * Character construction: class + species + level → Combatant.
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
-import { CLASSES } from '../data/classes.js';
+import { CLASSES, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
 import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
+
+/**
+ * Merge the grants of every choice point that applies at this level, taking the
+ * player's pick or the point's default. This is the single fold that makes a
+ * Fighting Style (or any future subclass/ancestry) real on the combatant.
+ */
+function resolveChoiceGrants(
+  points: ChoicePoint[] | undefined,
+  level: number,
+  picks: Record<Id, Id> | undefined,
+): Required<ChoiceGrant> {
+  const merged: Required<ChoiceGrant> = { featureIds: [], spellIds: [], weaponMasteries: [], resistances: [] };
+  for (const cp of points ?? []) {
+    if (cp.atLevel > level) continue;
+    const chosen = picks?.[cp.id] ?? cp.default;
+    const opt = cp.options.find((o) => o.id === chosen) ?? cp.options.find((o) => o.id === cp.default);
+    if (!opt) continue;
+    merged.featureIds.push(...(opt.grants.featureIds ?? []));
+    merged.spellIds.push(...(opt.grants.spellIds ?? []));
+    merged.weaponMasteries.push(...(opt.grants.weaponMasteries ?? []));
+    merged.resistances.push(...(opt.grants.resistances ?? []));
+  }
+  return merged;
+}
 
 export const STANDARD_ARRAY = [16, 16, 13, 12, 10, 8] as const;
 
@@ -34,6 +58,8 @@ export interface BuildOptions {
   /** Campaign overrides: persisted gear instead of the class defaults. */
   inventory?: Array<{ itemId: Id; qty: number }>;
   equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
+  /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
+  choices?: Record<Id, Id>;
 }
 
 export function buildCharacter(opts: BuildOptions): Combatant {
@@ -47,11 +73,19 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const conMod = abilityMod(abilities.con);
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level;
 
+  const grants = resolveChoiceGrants(cls.choices, level, opts.choices);
+  const speciesGrants = resolveChoiceGrants(species.choices, level, opts.choices);
+  grants.featureIds.push(...speciesGrants.featureIds);
+  grants.spellIds.push(...speciesGrants.spellIds);
+  grants.weaponMasteries.push(...speciesGrants.weaponMasteries);
+  grants.resistances.push(...speciesGrants.resistances);
+
   const featureIds = [
     ...Object.entries(cls.featuresByLevel)
     .filter(([lvl]) => Number(lvl) <= level)
     .flatMap(([, ids]) => ids),
     ...(species.featureIds ?? []),
+    ...grants.featureIds,
   ];
 
   const featureUses: Record<Id, ResourcePool> = {};
@@ -82,6 +116,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ...(cls.spellcasting ? known(cls.spellcasting.spellsByLevel) : []),
     ...known(species?.spellsByLevel),
     ...Object.keys(innateSpells),
+    ...grants.spellIds,
   ])];
 
   const combatant: Combatant = {
@@ -115,9 +150,9 @@ export function buildCharacter(opts: BuildOptions): Combatant {
           ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
           ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
         },
-    weaponMasteries: [...cls.weaponMasteries],
+    weaponMasteries: [...cls.weaponMasteries, ...grants.weaponMasteries],
     attacksPerAction: 1,
-    resistances: [...(species.resistances ?? [])],
+    resistances: [...(species.resistances ?? []), ...grants.resistances],
     vulnerabilities: [],
     immunities: [],
     conditions: [],

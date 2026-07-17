@@ -1,9 +1,39 @@
 /**
  * Class data: everything the builder needs to assemble a level-N character.
  */
-import type { Id, Ability, ItemStack } from '../engine/types.js';
+import type { Id, Ability, ItemStack, DamageType } from '../engine/types.js';
 
 export type ArmorProf = 'light' | 'medium' | 'heavy' | 'shield';
+
+/**
+ * A build decision offered at character creation — a Fighter's Fighting Style,
+ * and later subclasses or species ancestries. One generic shape so a new choice
+ * is data (an entry on a class or species), never new builder or UI code: the
+ * builder folds the picked option's grants exactly like it folds species traits,
+ * and the forge renders any choice point from this declaration.
+ */
+export interface ChoiceGrant {
+  featureIds?: Id[];
+  spellIds?: Id[];
+  weaponMasteries?: Id[];
+  resistances?: DamageType[];
+}
+export interface ChoiceOption {
+  id: Id;
+  name: string;
+  /** One line shown under the option in the forge. */
+  blurb: string;
+  grants: ChoiceGrant;
+}
+export interface ChoicePoint {
+  id: Id;
+  label: string;
+  /** Only offered/applied once the character reaches this level. */
+  atLevel: number;
+  /** Option used when the player hasn't chosen (beginners, legacy saves, skirmish). */
+  default: Id;
+  options: ChoiceOption[];
+}
 
 export type SkillId = 'stealth' | 'sleight-of-hand' | 'intimidation' | 'persuasion' | 'deception' | 'perception';
 
@@ -32,6 +62,8 @@ export interface ClassData {
     spellsByLevel: Record<number, Id[]>; // spells known at each character level
   };
   featuresByLevel: Record<number, Id[]>;
+  /** Build decisions this class offers (Fighting Style, later subclasses). */
+  choices?: ChoicePoint[];
   weaponMasteries: Id[];
   equipment: {
     mainHand: Id;
@@ -49,9 +81,19 @@ export const CLASSES: Record<Id, ClassData> = {
     skillProfs: ['intimidation'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
-      1: ['second-wind', 'action-surge', 'dueling'],
+      1: ['second-wind', 'action-surge'],
       3: ['improved-critical'], // Champion
     },
+    choices: [{
+      id: 'fighting-style', label: 'Fighting Style', atLevel: 1, default: 'dueling',
+      options: [
+        { id: 'dueling', name: 'Dueling', blurb: '+2 damage with a one-handed weapon (shield ok).', grants: { featureIds: ['dueling'] } },
+        { id: 'defense', name: 'Defense', blurb: '+1 AC while wearing armor.', grants: { featureIds: ['defense'] } },
+        { id: 'archery', name: 'Archery', blurb: '+2 to attack rolls with ranged weapons.', grants: { featureIds: ['archery'] } },
+        { id: 'great-weapon-fighting', name: 'Great Weapon Fighting', blurb: 'Reroll 1s and 2s on two-handed weapon damage.', grants: { featureIds: ['great-weapon-fighting'] } },
+        { id: 'two-weapon-fighting', name: 'Two-Weapon Fighting', blurb: 'Add your ability modifier to off-hand damage.', grants: { featureIds: ['two-weapon-fighting'] } },
+      ],
+    }],
     weaponMasteries: ['longsword', 'longsword-plus1', 'javelin'],
     equipment: {
       mainHand: 'longsword', offHand: 'shield', armor: 'scale-mail',

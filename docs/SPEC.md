@@ -345,10 +345,21 @@ tag. One use per encounter.
 **Fighting styles** beyond Dueling exist as reusable passive features —
 Defense (+1 AC while armored), Archery (+2 ranged attack rolls), Great Weapon
 Fighting (reroll 1s/2s on two-handed weapon damage), and Two-Weapon Fighting
-(off-hand adds its ability modifier). Only Dueling is assigned to a current kit;
-the rest are infrastructure any future kit or class can take. RAW Protection is
-omitted — it needs a reaction outside opportunity attacks, which the engine
-doesn't model yet.
+(off-hand adds its ability modifier). A Fighter now *chooses* its style at
+creation through the generic choice-point system (below); Dueling is the
+default. RAW Protection is omitted — it needs a reaction outside opportunity
+attacks, which the engine doesn't model yet.
+
+**Build choice points.** A class or species may declare `choices`: a build
+decision (`ChoicePoint`) with an `atLevel` gate, a `default`, and options that
+each carry a `grants` bag (feature ids, spell ids, weapon masteries,
+resistances). At construction the builder folds the picked option's grants —
+or the default's, for beginners, legacy saves and skirmishes — exactly as it
+folds species traits. Fighter's Fighting Style is the first user; subclasses and
+draconic ancestry are the same shape, so a new choice is data plus a forge
+disclosure, never new builder code. In the campaign forge, applicable choice
+points render under a collapsed **Advanced** control per party member; the pick
+persists on `PartyCharacter.choices` and clears when the slot's class changes.
 
 **Weapon masteries** now cover six of the eight 2024 masteries: Sap and Vex
 (as before), plus Slow (−10 ft to speed until the target's next turn), Push

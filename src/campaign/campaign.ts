@@ -37,6 +37,8 @@ export interface PartyCharacter {
   };
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
+  /** Selected build options per choice-point id (Fighting Style, …). */
+  choices?: Record<Id, Id>;
 }
 
 export interface CampaignState {
@@ -308,6 +310,9 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
     // Carry the sample name along with the role, unless the player renamed it.
     if (target.name === defaultNameFor(target.classId)) target.name = defaultNameFor(nextClassId);
     target.classId = nextClassId;
+    // Fighting Style and other picks belong to the old class; drop them so the
+    // new class resolves to its own defaults.
+    delete target.choices;
     target.inventory = equipment.inventory.map((stack) => ({ ...stack }));
     target.equipped = {
       mainHand: equipment.mainHand,
@@ -317,6 +322,14 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
   };
   if (ownerIdx >= 0) applyClass(c.characters[ownerIdx]!, previousClassId);
   applyClass(character, classId);
+  return true;
+}
+
+/** Record a build-choice pick (Fighting Style, …) for a party member, pre-launch. */
+export function setPartyChoice(c: CampaignState, charIdx: number, pointId: Id, optionId: Id): boolean {
+  if (c.partyReady || !c.characters[charIdx]) return false;
+  const character = c.characters[charIdx]!;
+  character.choices = { ...character.choices, [pointId]: optionId };
   return true;
 }
 
@@ -374,6 +387,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       position: { x: files[i]!, y: 0 },
       inventory: ch.inventory.map((s) => ({ ...s })),
       equipped: { ...ch.equipped },
+      ...(ch.choices ? { choices: { ...ch.choices } } : {}),
     });
     if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
       combatant.hp = Math.max(0, Math.min(ch.resources.hp, combatant.maxHp));

@@ -4,7 +4,7 @@
  * the headless combat engine until those systems exist.
  */
 import type { DamageType, Id } from '../engine/types.js';
-import type { SkillId } from './classes.js';
+import type { SkillId, ChoicePoint } from './classes.js';
 
 export interface SpeciesData {
   id: Id;
@@ -27,6 +27,8 @@ export interface SpeciesData {
   innateSpells?: Array<{ spellId: Id; atLevel: number; uses: number }>;
   /** Deterministic Skillful choice for the campaign's limited skill list. */
   skillProficienciesByClass?: Partial<Record<Id, SkillId>>;
+  /** Build decisions this species offers (e.g. a future draconic ancestry). */
+  choices?: ChoicePoint[];
 }
 
 export const SPECIES: Record<Id, SpeciesData> = {

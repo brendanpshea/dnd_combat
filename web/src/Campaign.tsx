@@ -18,7 +18,7 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
-  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest, longRest,
+  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, setPartyChoice, shortRest, longRest,
   isStoreHealingSource, storeSpellActions, useStoreHealing, useStoreSpell,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
@@ -257,6 +257,40 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                     ))}
                   </div>
                 </div>
+                {(() => {
+                  const points = [
+                    ...(CLASSES[character.classId]?.choices ?? []),
+                    ...(SPECIES[character.speciesId]?.choices ?? []),
+                  ].filter((cp) => cp.atLevel <= partyLevelOf(c));
+                  if (points.length === 0) return null;
+                  return (
+                    <details className="forge-advanced">
+                      <summary>Advanced</summary>
+                      {points.map((cp) => {
+                        const selected = character.choices?.[cp.id] ?? cp.default;
+                        return (
+                          <div className="forge-field choice-point" key={cp.id}>
+                            <span>{cp.label}</span>
+                            <div role="radiogroup" aria-label={`${character.name} ${cp.label}`}>
+                              {cp.options.map((opt) => (
+                                <button
+                                  key={opt.id}
+                                  className={selected === opt.id ? 'choice selected' : 'choice'}
+                                  role="radio"
+                                  aria-checked={selected === opt.id}
+                                  onClick={() => mutate(() => setPartyChoice(c, idx, cp.id, opt.id))}
+                                >
+                                  <b>{opt.name}</b>
+                                  <small>{opt.blurb}</small>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </details>
+                  );
+                })()}
               </section>
             );
           })}

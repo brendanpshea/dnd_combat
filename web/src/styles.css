@@ -772,6 +772,22 @@ button.danger { border-color: var(--red); color: var(--red); }
 .portrait-picker button { width: 34px; height: 34px; padding: 2px; border-radius: 5px; }
 .portrait-picker button.selected { border-color: var(--gold); background: #c69b2b24; }
 .portrait-picker .portrait { width: 26px; height: 26px; }
+.forge-advanced { grid-column: 1 / -1; margin-top: 2px; }
+.forge-advanced > summary {
+  cursor: pointer; color: var(--gold); font-size: 11px; padding: 3px 0; user-select: none;
+}
+.forge-advanced .choice-point { margin-top: 6px; }
+.forge-advanced .choice-point [role="radiogroup"] {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px;
+}
+.forge-advanced button.choice {
+  flex: 1 1 46%; min-width: 0; text-align: left; padding: 6px 8px; border-radius: 6px;
+  background: #181323; border: 1px solid #534a70; color: var(--text); cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.forge-advanced button.choice b { font-size: 12px; }
+.forge-advanced button.choice small { color: var(--muted); font-size: 10px; line-height: 1.25; }
+.forge-advanced button.choice.selected { border-color: var(--gold); background: #c69b2b24; }
 .forge-party-preview {
   display: flex; justify-content: center; gap: 16px; padding: 10px; border-top: 1px solid #453d63;
   border-bottom: 1px solid #453d63;
