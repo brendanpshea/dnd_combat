@@ -12,7 +12,7 @@ import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js
 import { rollD20, rollDice, resolveRollMode } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources, resolveAttack } from '../engine/rules/attack.js';
+import { applyDamage, collectAttackSources, resolveAttack, canAttackWith } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import { applyHealing } from '../engine/rules/heal.js';
@@ -22,6 +22,15 @@ import { WEAPONS } from './weapons.js';
 
 export type SpellTargeting =
   | { kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number }
+  /**
+   * Anything you could hit with the weapon in your hand — True Strike.
+   *
+   * Not a range: the reach belongs to the weapon, so a staff is melee and a
+   * crossbow is 80 ft, and the same spell has to mean both. Declaring the
+   * *rule* instead of a number lets the weapon answer, and keeps line of sight,
+   * long range and every other attack rule in the one place that owns them.
+   */
+  | { kind: 'weaponAttack' }
   | { kind: 'sphere2x2'; range: number }
   | { kind: 'cone15' }
   | { kind: 'emptyCell'; range: number }   // Misty Step
@@ -154,14 +163,13 @@ export const SPELLS: Record<Id, SpellData> = {
    * whole identity, and "1d8 + mod at range" would just be Fire Bolt wearing a
    * hat.
    *
-   * Melee-only (range 0) for now. The spell's real range is a property of the
-   * weapon, and `SpellTargeting.range` is static data that validation, the
-   * menus and the AI all read — so elf archers wait for a targeting model that
-   * can ask the caster a question.
+   * Reaches wherever the weapon does: a staff jabs, a crossbow shoots across
+   * the board. That's `weaponAttack` targeting rather than a range on the
+   * spell, which could only ever have been one or the other.
    */
   'true-strike': {
     id: 'true-strike', name: 'True Strike', level: 0, castingTime: 'action',
-    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
+    targeting: { kind: 'weaponAttack' },
     concentration: false,
     icon: '🗡️',
     cast({ state, casterId, targetIds }) {
@@ -490,6 +498,11 @@ export function validTarget(
   const t = state.combatants[targetId];
   if (!t || !t.alive) return false;
   if (targetId !== casterId && isHidden(t)) return false;
+  if (spell.targeting.kind === 'weaponAttack') {
+    // The weapon decides: reach, range, line of sight, the lot.
+    const weaponId = caster.equipped.mainHand;
+    return !!weaponId && canAttackWith(state, caster, weaponId, targetId);
+  }
   if (spell.targeting.kind !== 'creature') return false;
   const { range, who } = spell.targeting;
   if (who === 'enemy' && t.team === caster.team) return false;

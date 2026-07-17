@@ -81,7 +81,7 @@ describe('campaign state', () => {
     const c = newCampaign();
     expect(setPartyClass(c, 0, 'wizard')).toBe(true);
     expect(c.characters[0]!.classId).toBe('wizard');
-    expect(c.characters[0]!.equipped.mainHand).toBe('quarterstaff');
+    expect(c.characters[0]!.equipped.mainHand).toBe('dagger');   // wizard kit
     expect(c.characters[1]!.classId).toBe('fighter');
     expect(c.characters[1]!.equipped.mainHand).toBe('longsword');
     c.partyReady = true;

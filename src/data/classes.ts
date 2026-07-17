@@ -83,8 +83,13 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     weaponMasteries: [],
     equipment: {
-      mainHand: 'mace', offHand: 'shield', armor: 'chain-mail',
+      // A light crossbow, so an elf cleric's True Strike (Wisdom-guided) reaches
+      // across the board. Two-handed, so no shield — AC 16 not 18 is the price
+      // of fighting at range. The mace rides in the pack for when something
+      // closes; drawing it is a free interaction.
+      mainHand: 'light-crossbow', armor: 'chain-mail',
       inventory: [
+        { itemId: 'mace', qty: 1 },
         { itemId: 'potion-healing', qty: 1 },
         { itemId: 'scroll-cure-wounds', qty: 1 },
       ],
@@ -111,8 +116,12 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     weaponMasteries: [],
     equipment: {
-      mainHand: 'quarterstaff',
+      // Two daggers: finesse, so they hit off the wizard's Dexterity (+3) rather
+      // than its feeble Strength, and thrown, so they reach — a real weapon for
+      // True Strike, and dual-wieldable. The staff waits in the pack.
+      mainHand: 'dagger', offHand: 'dagger',
       inventory: [
+        { itemId: 'quarterstaff', qty: 1 },
         { itemId: 'potion-healing', qty: 1 },
         { itemId: 'scroll-magic-missile', qty: 1 },
       ],

@@ -16,7 +16,7 @@ import { ITEMS } from '../data/items.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, Direction8 } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
-import { resolveAttack, breakConcentration } from './rules/attack.js';
+import { resolveAttack, breakConcentration, canAttackWith } from './rules/attack.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
 import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
@@ -41,21 +41,6 @@ function isIncapacitated(c: Combatant): boolean {
   return c.conditions.some(
     (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed',
   );
-}
-
-function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetId: Id): boolean {
-  const w = WEAPONS[weaponId];
-  const t = state.combatants[targetId];
-  if (!w || !t || !t.alive || t.team === actor.team) return false;
-  if (isDown(t)) return false;   // already out of the fight; nothing to gain
-  if (isHidden(t)) return false;
-  if (!attackableWeapons(actor).includes(weaponId)) return false;
-  const dist = distanceFeet(actor.position, t.position);
-  const inMelee = w.melee && adjacent(actor.position, t.position);
-  const inRange =
-    w.range !== undefined && dist <= w.range.long &&
-    hasLineOfSight(state.grid, actor.position, t.position);
-  return inMelee || inRange;
 }
 
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
@@ -111,6 +96,11 @@ function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): 
 function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targets: Target[]): boolean {
   const actor = state.combatants[actorId]!;
   const t = spell.targeting;
+  if (t.kind === 'weaponAttack') {
+    const tg = targets[0];
+    return targets.length === 1 && !!tg && 'combatantId' in tg &&
+      validTarget(state, actorId, spell, tg.combatantId);
+  }
   if (t.kind === 'creature') {
     if (targets.length < 1 || targets.length > t.count) return false;
     // Multi-target creature spells: Bless requires distinct targets; Magic
@@ -282,7 +272,12 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     const slotLevel = spell.level; // enumerate at base level; upcasting via custom actions
     if (!spellAvailable(actor, spell, slotLevel)) continue;
     const t = spell.targeting;
-    if (t.kind === 'creature') {
+    if (t.kind === 'weaponAttack') {
+      for (const e of enemies) {
+        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ combatantId: e.id }] };
+        if (isLegalAction(state, actorId, a)) actions.push(a);
+      }
+    } else if (t.kind === 'creature') {
       const pool = t.who === 'enemy' ? enemies : t.who === 'ally' ? allies : [...enemies, ...allies];
       const valid = pool.filter((c) => validTarget(state, actorId, spell, c.id));
       if (t.count === 1) {

@@ -93,6 +93,7 @@ export function targetingNote(spell: SpellData): string {
         t.who === 'enemy' ? ['enemy', 'enemies'] : ['target', 'targets'];
       return t.count > 1 ? `${t.count} ${many}` : `1 ${one}`;
     }
+    case 'weaponAttack': return 'weapon';
     case 'sphere2x2': return '2×2 area';
     case 'cone15': return 'cone';
     case 'emptyCell': return 'teleport';
@@ -168,6 +169,27 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
               group: 'spell',
               note: spellNote(spell),
               action: a,
+            });
+          }
+        } else if (t.kind === 'weaponAttack' && first && 'combatantId' in first) {
+          // True Strike targets one enemy like Fire Bolt, and reaches wherever
+          // the weapon does — but it carries no `count`, so it takes the plain
+          // single-target route rather than the multi-tap spec.
+          pushTarget(first.combatantId, describeShort(a), a, spell.icon);
+          if (!seenMulti.has(a.spellId)) {
+            seenMulti.add(a.spellId);
+            const validIds = new Set(
+              Object.values(state.combatants)
+                .filter((cc: Combatant) => cc.alive && validTarget(state, actorId, spell, cc.id))
+                .map((cc: Combatant) => cc.id),
+            );
+            bar.push({
+              id: `spell:${a.spellId}`,
+              label: spell.name,
+              icon: spell.icon,
+              group: 'spell',
+              note: spellNote(spell),
+              multi: { spellId: a.spellId, slotLevel: a.slotLevel, maxTargets: 1, allowRepeats: false, validIds },
             });
           }
         } else if (t.kind === 'creature' && first && 'combatantId' in first) {

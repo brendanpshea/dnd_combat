@@ -90,11 +90,17 @@ doesn't exist yet — it's the prerequisite for most interesting species magic
 in your hand using the caster's *best mental ability* (`AttackContext
 .abilityOverride`). This needs no per-class rule to stay balanced — a fighter's
 mental stats are 12/10/8, so it's strictly worse than his +3 Strength and he'll
-never cast it, while a wizard finally gets to hit something with its staff.
-Melee-only for now (`range: 0`): the spell's real range is a property of the
-weapon, and `SpellTargeting.range` is static data that validation, the menus and
-the AI all read, so an elf archer needs a targeting model that can ask the caster
-a question first.
+never cast it, while a wizard finally gets to hit something with a weapon.
+
+It reaches **wherever the weapon reaches** — a staff jabs, a crossbow shoots
+across the board — via a `weaponAttack` targeting kind rather than a range on
+the spell. A static range could only ever have been melee *or* ranged, and the
+same spell has to be both; declaring "whatever this weapon can hit" hands the
+question to `canAttackWith`, so line of sight, long range and every other attack
+rule stay in the one place that owns them. This is why the elf **cleric** starts
+with a light crossbow (Wisdom-guided fire across the map, at the cost of the
+shield — AC 16, since a crossbow is two-handed) and the elf **wizard** with two
+daggers (finesse, so they swing off Dexterity, and thrown, so they reach).
 
 Spell targeting declarations drive both validation and UI prompts:
 `creature` (n targets in range), `sphere2x2` (anchor cell), `cone15`

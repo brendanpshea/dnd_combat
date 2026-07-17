@@ -15,9 +15,11 @@ describe('character builder', () => {
     expect(f.featureUses['action-surge']).toEqual({ current: 1, max: 1 });
   });
 
-  it('cleric: AC 18, HP 11, wis caster with 2 slots and life domain', () => {
+  it('cleric: AC 16, HP 11, wis caster with 2 slots and life domain', () => {
     const c = buildCharacter({ classId: 'cleric', team: 'team1', position: { x: 0, y: 0 } });
-    expect(acOf(c)).toBe(18); // chain mail 16 + shield 2
+    // Ranged battle-cleric: a light crossbow (two-handed) means no shield, so
+    // chain mail's 16 rather than 18 — the cost of fighting from a distance.
+    expect(acOf(c)).toBe(16);
     expect(c.maxHp).toBe(11);
     expect(c.spellcastingAbility).toBe('wis');
     expect(c.spellSlots).toEqual([{ current: 2, max: 2 }]);

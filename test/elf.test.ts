@@ -53,7 +53,7 @@ describe('a wood elf knows True Strike', () => {
       targets: [{ combatantId: 'foe' }],
     });
     const attack = events.find((e) => e.type === 'attackRolled');
-    expect(attack?.type === 'attackRolled' && attack.weaponId).toBe('quarterstaff');
+    expect(attack?.type === 'attackRolled' && attack.weaponId).toBe('dagger');
     // Int (+3), not Str (-1): the roll must clear the natural die by the mind's
     // modifier plus proficiency.
     if (attack?.type !== 'attackRolled') throw new Error('no attack');
@@ -71,6 +71,55 @@ describe('a wood elf knows True Strike', () => {
     expect(mental(wiz)).toBeGreaterThan(abilityMod(wiz.abilities.str)); // wizard: worth it
   });
 
+  it('reaches as far as the weapon does — a crossbow shoots across the board', () => {
+    // The whole point of weaponAttack targeting: a static range on the spell
+    // could be melee OR ranged, never both, and the same spell has to be both.
+    const c = new Combat({
+      seed: 5,
+      mapId: 'open',
+      combatants: [elf('cleric', 'team1', { x: 1, y: 1 }, 'cle'), human('fighter', 'team2', { x: 1, y: 6 }, 'foe')],
+    });
+    expect(c.state.combatants['cle']!.equipped.mainHand).toBe('light-crossbow');
+    let guard = 0;
+    while (c.activeId !== 'cle' && guard++ < 20) c.apply({ kind: 'endTurn' });
+
+    // Five cells away — no melee spell could reach, but the crossbow does.
+    const shot = legalActions(c.state, 'cle').some(
+      (a) => a.kind === 'castSpell' && a.spellId === 'true-strike' &&
+        a.targets[0] && 'combatantId' in a.targets[0] && a.targets[0].combatantId === 'foe',
+    );
+    expect(shot).toBe(true);
+
+    const { events } = step(c.state, {
+      kind: 'castSpell', spellId: 'true-strike', slotLevel: 0, targets: [{ combatantId: 'foe' }],
+    });
+    const attack = events.find((e) => e.type === 'attackRolled');
+    expect(attack?.type === 'attackRolled' && attack.weaponId).toBe('light-crossbow');
+    // Wisdom-guided, and proficiency-backed.
+    if (attack?.type !== 'attackRolled') throw new Error('no shot');
+    const cle = c.state.combatants['cle']!;
+    expect(attack.total - attack.natural).toBe(abilityMod(cle.abilities.wis) + 2);
+  });
+
+  it('will not reach a target the weapon cannot: out of range is out of range', () => {
+    // A staff-wielding elf can't True Strike someone across the room.
+    const c = new Combat({
+      seed: 5,
+      mapId: 'open',
+      combatants: [elf('wizard', 'team1', { x: 0, y: 0 }, 'wiz'), human('fighter', 'team2', { x: 7, y: 7 }, 'foe')],
+    });
+    // Swap the daggers (thrown, 60 ft) for a pure-melee staff.
+    const wiz = c.state.combatants['wiz']!;
+    wiz.equipped.mainHand = 'quarterstaff';
+    delete wiz.equipped.offHand;
+    let guard = 0;
+    while (c.activeId !== 'wiz' && guard++ < 20) c.apply({ kind: 'endTurn' });
+    const reaches = legalActions(c.state, 'wiz').some(
+      (a) => a.kind === 'castSpell' && a.spellId === 'true-strike',
+    );
+    expect(reaches).toBe(false);
+  });
+
   it('does nothing with an empty hand rather than throwing', () => {
     const c = new Combat({
       seed: 3,
@@ -78,13 +127,13 @@ describe('a wood elf knows True Strike', () => {
       combatants: [elf('wizard', 'team1', { x: 3, y: 3 }, 'wiz'), human('fighter', 'team2', { x: 3, y: 4 }, 'foe')],
     });
     delete c.state.combatants['wiz']!.equipped.mainHand;
+    delete c.state.combatants['wiz']!.equipped.offHand;
     let guard = 0;
     while (c.activeId !== 'wiz' && guard++ < 20) c.apply({ kind: 'endTurn' });
-    const { events } = step(c.state, {
-      kind: 'castSpell', spellId: 'true-strike', slotLevel: 0,
-      targets: [{ combatantId: 'foe' }],
-    });
-    expect(events.some((e) => e.type === 'attackRolled')).toBe(false);
+    const legal = legalActions(c.state, 'wiz').some(
+      (a) => a.kind === 'castSpell' && a.spellId === 'true-strike',
+    );
+    expect(legal).toBe(false);   // nothing in hand to guide
   });
 });
 

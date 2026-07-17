@@ -8,7 +8,8 @@ import { WEAPONS, WeaponData } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
-import { distanceFeet, adjacent } from '../grid.js';
+import { distanceFeet, adjacent, hasLineOfSight } from '../grid.js';
+import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
 import { downCombatant } from './heal.js';
@@ -20,6 +21,29 @@ export function attackAbility(attacker: Combatant, weapon: WeaponData): 'str' | 
   if (!weapon.melee) return 'dex';
   if (finesse) return attacker.abilities.dex >= attacker.abilities.str ? 'dex' : 'str';
   return 'str'; // thrown non-finesse weapons also use str
+}
+
+/**
+ * Can `actor` attack `targetId` with this weapon, right now?
+ *
+ * Lives here rather than in actions.ts because it is a rule about attacking,
+ * and because True Strike needs it: the spell *is* a weapon attack, so its
+ * legal targets are exactly the weapon's — which no static `range` on the spell
+ * could ever express.
+ */
+export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetId: Id): boolean {
+  const w = WEAPONS[weaponId];
+  const t = state.combatants[targetId];
+  if (!w || !t || !t.alive || t.team === actor.team) return false;
+  if (isDown(t)) return false;   // already out of the fight; nothing to gain
+  if (isHidden(t)) return false;
+  if (!attackableWeapons(actor).includes(weaponId)) return false;
+  const dist = distanceFeet(actor.position, t.position);
+  const inMelee = w.melee && adjacent(actor.position, t.position);
+  const inRange =
+    w.range !== undefined && dist <= w.range.long &&
+    hasLineOfSight(state.grid, actor.position, t.position);
+  return inMelee || inRange;
 }
 
 export interface AttackContext {
