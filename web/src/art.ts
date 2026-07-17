@@ -11,6 +11,8 @@ export const HAS_ART = new Set<string>([
   'goblin-warrior', 'goblin-boss', 'skeleton', 'wolf', 'zombie', 'ogre',
   'bandit', 'dire-wolf', 'ghoul', 'giant-spider', 'acolyte',
   'kobold', 'scout', 'orc', 'brown-bear', 'cult-fanatic', 'animated-armor',
+  'orc-barbarian', 'dragonborn-paladin', 'gnome-bard', 'halfling-rogue', 'tiefling-warlock',
+  'dwarf-berserker', 'elf-archer', 'human-bard', 'bandit-captain',
 ]);
 
 export function hasArt(id: string): boolean {

@@ -185,6 +185,12 @@ dwarf/elf/orc variants are a later pass (accessory/palette swaps).
 > A scruffy chibi human bandit, cloth bandana mask over the nose, worn leather
 > and a colored sash, a curved scimitar, shifty grin. Rogueish highwayman.
 
+**Bandit Captain** (`bandit-captain`) — SIZE L
+> A cocky chibi human bandit captain in a weathered navy blue overcoat with gold
+> trim, a black tricorn hat, a steel breastplate, holding a gleaming saber sword
+> in one hand and a dagger in the other. A smug grin and a stubble beard. Clearly
+> the leader of the bandit gang.
+
 **Dire Wolf** (`dire-wolf`) — SIZE L
 > A larger, darker chibi wolf than the common wolf: charcoal fur, a scar over
 > one eye, fiercer bristling snarl, heavier build. Clearly the alpha.
@@ -251,6 +257,7 @@ engine, so wiring is a lookup with no ambiguity. Put source PNGs in
 | Zombie | `token-zombie.png` | `portrait-zombie.png` |
 | Ogre | `token-ogre.png` | `portrait-ogre.png` |
 | Bandit | `token-bandit.png` | `portrait-bandit.png` |
+| Bandit Captain | `token-bandit-captain.png` | `portrait-bandit-captain.png` |
 | Dire Wolf | `token-dire-wolf.png` | `portrait-dire-wolf.png` |
 | Ghoul | `token-ghoul.png` | `portrait-ghoul.png` |
 | Giant Spider | `token-giant-spider.png` | `portrait-giant-spider.png` |
