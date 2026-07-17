@@ -18,7 +18,7 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
-  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, setPartyChoice, shortRest, longRest,
+  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, setPartyChoice, setPartySpecies, shortRest, longRest,
   PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
   isStoreHealingSource, storeSpellActions, useStoreHealing, useStoreSpell,
 } from '../../src/campaign/campaign.js';
@@ -287,7 +287,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                             className={character.speciesId === species.id ? 'pick-card selected' : 'pick-card'}
                             role="radio"
                             aria-checked={character.speciesId === species.id}
-                            onClick={() => mutate(() => { character.speciesId = species.id; })}
+                            onClick={() => mutate(() => setPartySpecies(c, idx, species.id))}
                           >
                             <b>{species.name}</b>
                             <small>{speciesBlurb(species.id)}</small>

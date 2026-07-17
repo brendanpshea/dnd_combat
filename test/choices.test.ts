@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildCharacter } from '../src/builder/character.js';
 import {
-  newCampaign, setPartyClass, setPartyChoice, buildCampaignParty,
-  PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
+  newCampaign, setPartyClass, setPartyChoice, setPartySpecies, buildCampaignParty,
+  PARTY_TEMPLATES, applyPartyTemplate, randomizeParty, defaultPortraitFor,
 } from '../src/campaign/campaign.js';
 import { SPECIES } from '../src/data/species.js';
 
@@ -87,6 +87,42 @@ describe('build-choice points', () => {
     c.partyReady = true;
     expect(applyPartyTemplate(c, 'frontier')).toBe(false);
     expect(randomizeParty(c)).toBe(false);
+  });
+
+  it('default party portraits are the class images (all human)', () => {
+    const c = newCampaign(1);
+    for (const ch of c.characters) expect(ch.portraitId).toBe(ch.classId);
+  });
+
+  it('a template gives each member their species portrait', () => {
+    const c = newCampaign(1);
+    applyPartyTemplate(c, 'frontier');
+    const fighter = c.characters.find((ch) => ch.classId === 'fighter')!; // dwarf
+    const rogue = c.characters.find((ch) => ch.classId === 'rogue')!;     // halfling
+    const cleric = c.characters.find((ch) => ch.classId === 'cleric')!;   // human
+    expect(fighter.portraitId).toBe('dwarf-berserker');
+    expect(rogue.portraitId).toBe('halfling-rogue');
+    expect(cleric.portraitId).toBe('cleric'); // human → class image
+  });
+
+  it('randomizeParty gives each member a portrait matching its rolled species', () => {
+    const c = newCampaign(3);
+    randomizeParty(c);
+    for (const ch of c.characters) {
+      expect(ch.portraitId).toBe(defaultPortraitFor(ch.speciesId, ch.classId));
+    }
+  });
+
+  it('changing species updates an un-customized portrait but leaves a hand-picked one', () => {
+    const c = newCampaign(1);
+    const fi = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    // Default (human) → class portrait; switching to orc follows the species.
+    setPartySpecies(c, fi, 'orc');
+    expect(c.characters[fi]!.portraitId).toBe('orc-barbarian');
+    // Hand-pick a portrait, then change species: the pick sticks.
+    c.characters[fi]!.portraitId = 'gnome-bard';
+    setPartySpecies(c, fi, 'elf');
+    expect(c.characters[fi]!.portraitId).toBe('gnome-bard');
   });
 
   it('every template covers all four class roles', () => {

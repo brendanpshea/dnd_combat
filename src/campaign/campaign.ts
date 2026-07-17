@@ -268,6 +268,24 @@ export function itemIcon(itemId: Id): string {
 /** Re-exported so callers don't reach past this layer for a party's names. */
 export { HERO_NAMES as DEFAULT_NAMES, defaultNameFor };
 
+/**
+ * The portrait a species wears by default. Each maps to its dedicated art
+ * (see web PORTRAITS); a species without one — human — falls back to the class
+ * portrait, which is what the four class images depict. Keep in sync with the
+ * web portrait registry.
+ */
+const SPECIES_PORTRAIT: Partial<Record<Id, Id>> = {
+  dwarf: 'dwarf-berserker', elf: 'elf-archer', orc: 'orc-barbarian',
+  dragonborn: 'dragonborn-paladin', tiefling: 'tiefling-warlock',
+  gnome: 'gnome-bard', halfling: 'halfling-rogue',
+};
+
+/** Sensible default portrait for a species/class combo: species art if it has
+ *  its own, else the class portrait. */
+export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
+  return SPECIES_PORTRAIT[speciesId] ?? classId;
+}
+
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {
@@ -280,11 +298,12 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
     rng: seedRng(seed),
     characters: order.map((classId, index) => {
       const eq = CLASSES[classId]!.equipment;
+      const speciesId = speciesIds[index] ?? 'human';
       return {
         classId,
-        speciesId: speciesIds[index] ?? 'human',
+        speciesId,
         name: defaultNameFor(classId),
-        portraitId: classId,
+        portraitId: defaultPortraitFor(speciesId, classId),
         inventory: eq.inventory.map((s) => ({ ...s })),
         equipped: {
           mainHand: eq.mainHand,
@@ -347,6 +366,7 @@ export function applyPartyTemplate(c: CampaignState, templateId: string): boolea
     const m = t.members[ch.classId];
     if (!m) continue;
     ch.speciesId = m.speciesId;
+    ch.portraitId = defaultPortraitFor(m.speciesId, ch.classId);
     if (m.name) ch.name = m.name;
     if (m.style) ch.choices = { 'fighting-style': m.style };
     else delete ch.choices;
@@ -362,6 +382,7 @@ export function randomizeParty(c: CampaignState): boolean {
     const { value, state } = next(c.rng);
     c.rng = state;
     ch.speciesId = speciesIds[Math.floor(value * speciesIds.length)] ?? 'human';
+    ch.portraitId = defaultPortraitFor(ch.speciesId, ch.classId);
     ch.name = defaultNameFor(ch.classId);
     delete ch.choices;
   }
@@ -381,6 +402,11 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
     const equipment = CLASSES[nextClassId]!.equipment;
     // Carry the sample name along with the role, unless the player renamed it.
     if (target.name === defaultNameFor(target.classId)) target.name = defaultNameFor(nextClassId);
+    // Let an un-customized portrait follow the class too (matters for humans,
+    // whose portrait is the class image; species with their own art don't move).
+    if (target.portraitId === defaultPortraitFor(target.speciesId, target.classId)) {
+      target.portraitId = defaultPortraitFor(target.speciesId, nextClassId);
+    }
     target.classId = nextClassId;
     // Fighting Style and other picks belong to the old class; drop them so the
     // new class resolves to its own defaults.
@@ -394,6 +420,20 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
   };
   if (ownerIdx >= 0) applyClass(c.characters[ownerIdx]!, previousClassId);
   applyClass(character, classId);
+  return true;
+}
+
+/**
+ * Change a member's species pre-launch. An un-customized portrait follows the
+ * new species' default art; a hand-picked portrait is left alone.
+ */
+export function setPartySpecies(c: CampaignState, charIdx: number, speciesId: Id): boolean {
+  if (c.partyReady || !SPECIES[speciesId] || !c.characters[charIdx]) return false;
+  const character = c.characters[charIdx]!;
+  if (character.portraitId === defaultPortraitFor(character.speciesId, character.classId)) {
+    character.portraitId = defaultPortraitFor(speciesId, character.classId);
+  }
+  character.speciesId = speciesId;
   return true;
 }
 
