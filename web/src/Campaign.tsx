@@ -19,6 +19,7 @@ import {
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest, longRest,
+  isStoreHealingSource, useStoreHealing,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -336,8 +337,9 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       {picked && (() => {
         const owner = c.characters[picked.charIdx]!;
         const { itemId, slot } = picked;
+        const isCureWounds = itemId === 'cure-wounds';
         const stack = owner.inventory.find((s) => s.itemId === itemId);
-        const qty = slot ? 1 : stack?.qty ?? 0;
+        const qty = slot ? 1 : isCureWounds ? undefined : stack?.qty ?? 0;
         const resale = Math.floor((itemPrice(itemId) ?? 0) / 2);
         const slots: EquipSlot[] = ['mainHand', 'offHand', 'armor'];
         const slotName = (sl: EquipSlot) => (sl === 'mainHand' ? 'main hand' : sl === 'offHand' ? 'off-hand' : 'armor');
@@ -346,7 +348,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           <div className="tray-backdrop" onClick={close}>
             <div className="tray" onClick={(e) => e.stopPropagation()}>
               <div className="tray-head">
-                {itemIcon(itemId)} {itemName(itemId)}{qty > 1 ? ` ×${qty}` : ''}
+                {isCureWounds ? '💚 Cure Wounds' : `${itemIcon(itemId)} ${itemName(itemId)}`}{qty && qty > 1 ? ` ×${qty}` : ''}
                 <span className="muted">— {slot ? `worn by ${owner.name}` : owner.name}</span>
                 <button className="ghost" onClick={close}>✕</button>
               </div>
@@ -378,7 +380,20 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 })()
               )}
 
-              {!slot && (
+              {!slot && isStoreHealingSource(itemId) && (
+                <div className="sheet-row">
+                  <span className="sheet-label">Use on</span>
+                  {c.characters.map((target, targetIdx) => (
+                    <button key={targetIdx} className="mini" onClick={() => mutate(() => {
+                      const result = useStoreHealing(c, picked.charIdx, targetIdx, itemId);
+                      if (result) setNotice(`${owner.name} heals ${target.name} for ${result.healed} HP.`);
+                      close();
+                    })}>{target.name}</button>
+                  ))}
+                </div>
+              )}
+
+              {!slot && !isCureWounds && (
                 <div className="sheet-row">
                   <span className="sheet-label">Give to</span>
                   {c.characters.map((to, toIdx) => toIdx !== picked.charIdx && (
@@ -483,6 +498,16 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   {itemIcon(s.itemId)} {itemName(s.itemId)}{s.qty > 1 ? `×${s.qty}` : ''}
                 </button>
               ))}
+              {party[idx]!.spellIds.includes('cure-wounds') && (
+                <button
+                  className={`item-chip chip-btn${picked?.charIdx === idx && picked.itemId === 'cure-wounds' ? ' selected' : ''}`}
+                  onClick={() => setPicked(
+                    picked?.charIdx === idx && picked.itemId === 'cure-wounds' ? null : { charIdx: idx, itemId: 'cure-wounds' },
+                  )}
+                >
+                  💚 Cure Wounds
+                </button>
+              )}
               {ch.inventory.every((s) => s.qty <= 0) && <span className="muted">(empty)</span>}
             </div>
 

@@ -7,7 +7,7 @@ import {
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
-  partySkillCheck, attemptSteal, shortRest, longRest,
+  partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -119,6 +119,21 @@ describe('campaign state', () => {
     const longRestResult = longRest(c);
     expect(longRestResult.totalHealed).toBe(restedFighter.maxHp - restedFighter.hp);
     expect(buildCampaignParty(c)[0]!.hp).toBe(restedFighter.maxHp);
+  });
+
+  it('uses store healing sources on a selected party member', () => {
+    const c = newCampaign(42);
+    c.characters[1]!.resources = { hp: 1 };
+    expect(useStoreHealing(c, 0, 1, 'potion-healing')?.healed).toBeGreaterThan(0);
+    expect(c.characters[0]!.inventory.some((s) => s.itemId === 'potion-healing')).toBe(false);
+
+    c.characters[0]!.resources = { hp: 1 };
+    expect(useStoreHealing(c, 2, 0, 'scroll-cure-wounds')?.healed).toBeGreaterThan(0);
+    expect(c.characters[2]!.inventory.some((s) => s.itemId === 'scroll-cure-wounds')).toBe(false);
+
+    c.characters[3]!.resources = { hp: 1 };
+    expect(useStoreHealing(c, 2, 3, 'cure-wounds')?.healed).toBeGreaterThan(0);
+    expect(c.characters[2]!.resources).toBeUndefined(); // casting is not a consumable
   });
 
   it('party levels up mid-ladder and the level-up is reported', () => {

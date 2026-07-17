@@ -19,6 +19,7 @@ import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP } from '../data/monsters.js';
 import type { Rarity } from '../data/armor.js';
+import { rollDice } from '../engine/dice.js';
 import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
 
 export interface PartyCharacter {
@@ -407,6 +408,65 @@ export function longRest(c: CampaignState): RestResult {
     c.characters[index]!.resources = { hp: combatant.maxHp };
   }
   return { totalHealed };
+}
+
+/** Healing sources that can be used between battles from the store. */
+export type StoreHealingSource =
+  | 'potion-healing'
+  | 'potion-greater-healing'
+  | 'scroll-cure-wounds'
+  | 'cure-wounds';
+
+export function isStoreHealingSource(itemId: Id): itemId is StoreHealingSource {
+  return itemId === 'potion-healing' || itemId === 'potion-greater-healing' ||
+    itemId === 'scroll-cure-wounds' || itemId === 'cure-wounds';
+}
+
+export interface StoreHealingResult {
+  rolled: number;
+  healed: number;
+}
+
+/**
+ * Use a healing consumable or Cure Wounds during a store visit. Consumables
+ * are spent; Cure Wounds is available to prepared casters without consuming a
+ * slot because spell slots are encounter-only campaign state for now.
+ */
+export function useStoreHealing(
+  c: CampaignState,
+  userIdx: number,
+  targetIdx: number,
+  source: StoreHealingSource,
+): StoreHealingResult | undefined {
+  const user = c.characters[userIdx];
+  const target = c.characters[targetIdx];
+  if (!user || !target) return undefined;
+
+  const party = buildCampaignParty(c);
+  const caster = party[userIdx]!;
+  const recipient = party[targetIdx]!;
+  const item = source === 'cure-wounds' ? undefined : user.inventory.find((s) => s.itemId === source && s.qty > 0);
+  if (source === 'cure-wounds' ? !caster.spellIds.includes(source) : !item) return undefined;
+
+  let dice = '2d4+2';
+  let bonus = 0;
+  if (source === 'potion-greater-healing') dice = '4d4+4';
+  if (source === 'scroll-cure-wounds' || source === 'cure-wounds') {
+    dice = '2d8';
+    bonus = abilityMod(caster.abilities[caster.spellcastingAbility ?? 'int']) +
+      (caster.featureIds.includes('disciple-of-life') ? 3 : 0);
+  }
+
+  const roll = rollDice(c.rng, dice);
+  c.rng = roll.state;
+  if (item) {
+    item.qty -= 1;
+    if (item.qty === 0) user.inventory = user.inventory.filter((s) => s !== item);
+  }
+  const rolled = roll.total + bonus;
+  const hp = Math.min(recipient.maxHp, recipient.hp + rolled);
+  target.resources = { hp };
+  return { rolled, healed: hp - recipient.hp };
 }
 
 // ---------------------------------------------------------------------------

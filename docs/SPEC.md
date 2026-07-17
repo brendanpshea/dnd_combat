@@ -491,6 +491,9 @@ Remaining HP persists from a victorious battle into the next store visit. For
 testing, the store provides unrestricted rests: a **short rest** restores half
 of each hero's maximum HP, and a **long rest** fully restores HP. Other
 encounter resources still begin full when a combatant is rebuilt.
+Healing potions, the Scroll of Cure Wounds, and the cleric's **Cure Wounds**
+use the same store target flow: choose the source, then a party member. Item
+sources are consumed; Cure Wounds does not spend an encounter-only spell slot.
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
 passed between characters. **Shop skills** (once each per visit, rolled by
