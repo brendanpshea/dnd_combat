@@ -23,6 +23,7 @@ import {
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
+import { LootScreen } from './Loot.js';
 import { initAudio } from './sound.js';
 
 type Phase =
@@ -65,7 +66,22 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     isComplete(c) ? { p: 'complete' } : c.partyReady ? { p: 'shop' } : { p: 'forge' }
   ));
   const [rolls, setRolls] = useState<SkillRoll[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
+  /**
+   * Transient updates ("Bought Chain Mail → Sir Arthur") used to render inline
+   * above a long scrolling list, which is exactly where the eye isn't after you
+   * tap a button near the bottom. They're toasts now: bottom-centre, near the
+   * thumb, and they expire on their own. Persistent *state* — haggled prices, a
+   * watchful shopkeeper — stays inline, because it's a fact about the visit
+   * rather than a thing that just happened.
+   */
+  const [toasts, setToasts] = useState<Array<{ id: number; text: string }>>([]);
+  const toastId = useRef(0);
+  const setNotice = (text: string | null) => {
+    if (!text) return;                       // clearing is meaningless: they expire
+    const id = ++toastId.current;
+    setToasts((t) => [...t.slice(-2), { id, text }]);   // at most 3 on screen
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2600);
+  };
   const [equipFor, setEquipFor] = useState<number | null>(null);
   const [giveFrom, setGiveFrom] = useState<number | null>(null);
   const [buyFor, setBuyFor] = useState(0);
@@ -157,20 +173,14 @@ export function CampaignScreen({ Battle, onExit }: Props) {
 
   if (phase.p === 'loot') {
     return (
-      <div className="setup">
-        <h1>🎉 Victory!</h1>
-        {phase.leveledTo && <h2 style={{ color: 'var(--gold)' }}>⭐ Level up! The party is now level {phase.leveledTo}.</h2>}
-        <p className="hint">
-          +{phase.xpGained} XP · {phase.gold} gold
-          {phase.items.length > 0 && ` · ${phase.items.map((i) => `${itemName(i.itemId)}×${i.qty}`).join(', ')}`}
-        </p>
-        <button
-          className="primary"
-          onClick={() => setPhase(isComplete(c) ? { p: 'complete' } : { p: 'shop' })}
-        >
-          Continue
-        </button>
-      </div>
+      <LootScreen
+        campaign={c}
+        gold={phase.gold}
+        items={phase.items}
+        xpGained={phase.xpGained}
+        leveledTo={phase.leveledTo}
+        onContinue={() => setPhase(isComplete(c) ? { p: 'complete' } : { p: 'shop' })}
+      />
     );
   }
 
@@ -272,7 +282,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
 
   // ---- shop phase ----
   const enc = stage ? ENCOUNTERS[stage.encounterId]! : undefined;
-  const charNames = c.characters.map((ch) => CLASSES[ch.classId]!.name);
+  // The characters have names; the shop was showing their classes.
+  const charNames = c.characters.map((ch) => ch.name);
   const party = buildCampaignParty(c);
   const stockedItems = SHOP_STOCK.filter((id) => shopCategory(id) === stockCategory);
   const healingCount = c.characters.reduce(
@@ -315,10 +326,14 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         </div>
       )}
       {visit.banned && <div className="notice">👁 The shopkeeper is watching you closely.</div>}
-      {notice && <div className="notice">{notice}</div>}
+      {toasts.length > 0 && (
+        <div className="toasts">
+          {toasts.map((t) => <div key={t.id} className="toast">{t.text}</div>)}
+        </div>
+      )}
       {rolls.map((r, i) => (
         <div key={i} className="notice roll">
-          🎲 {CLASSES[r.by]!.name} rolls {r.skill}: d20({r.natural}) = {r.total} vs DC {r.dc} — {r.success ? 'success!' : 'failure'}
+          🎲 {charNames[r.by] ?? 'The party'} rolls {r.skill}: d20({r.natural}) = {r.total} vs DC {r.dc} — {r.success ? 'success!' : 'failure'}
         </div>
       ))}
 

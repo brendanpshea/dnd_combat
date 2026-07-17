@@ -161,6 +161,18 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
   rare: ['half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1'],
 };
 
+/**
+ * How rare a loot item is. The pools are the authority — a longsword+1 is rare
+ * because it drops from the rare table, and WEAPONS has no rarity of its own —
+ * so ask them first, checking best-first so anything listed twice reads high.
+ */
+export function rarityOf(itemId: Id): Rarity {
+  for (const r of ['rare', 'uncommon', 'common'] as const) {
+    if (TREASURE_POOL[r].includes(itemId)) return r;
+  }
+  return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? 'common';
+}
+
 function pick<T>(arr: T[], r: number): T {
   return arr[Math.floor(r * arr.length)]!;
 }
@@ -391,7 +403,14 @@ export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bo
 
 export interface SkillRoll {
   skill: SkillId;
-  by: Id;            // classId of the roller
+  /**
+   * Index of the character who rolled — their identity, rather than their class
+   * as a stand-in for it. Callers want the *name* ("Cedric the Sneaky rolls
+   * stealth"), and looking a character up by classId only works because
+   * setPartyClass swaps to keep the four classes unique. That invariant holds
+   * today, but nothing here depends on it now.
+   */
+  by: number;
   natural: number;
   total: number;
   dc: number;
@@ -404,7 +423,7 @@ export function partySkillCheck(c: CampaignState, skill: SkillId, dc: number): S
   c.rng = d.state;
   const total = d.value + bonus;
   return {
-    skill, by: c.characters[idx]!.classId,
+    skill, by: idx,
     natural: d.value, total, dc, success: total >= dc,
   };
 }
@@ -428,7 +447,7 @@ export function attemptSteal(c: CampaignState): StealResult {
     const r = next(c.rng);
     c.rng = r.state;
     const itemId = SHOP_STOCK[Math.floor(r.value * SHOP_STOCK.length)]!;
-    const thief = c.characters.find((ch) => ch.classId === sleight.by) ?? c.characters[0]!;
+    const thief = c.characters[sleight.by] ?? c.characters[0]!;
     addItem(thief.inventory, itemId);
     return { rolls, success: true, itemId, fine: 0 };
   }

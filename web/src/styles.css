@@ -986,3 +986,130 @@ button.category .count {
 .logline.failed { color: #ffc39a; }
 .logline.cond  { color: #c9a6ff; }
 .logline.died  { color: #ff7a7a; font-weight: 800; }
+
+/* --- Victory / loot ------------------------------------------------------
+   The screen a player sees eleven times a campaign, so every beat is short and
+   nothing waits on an animation: Continue works from the first frame. */
+.loot h1 { margin-bottom: 2px; }
+
+.levelup {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #4a3d18, #3a2f12);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--display);
+  font-weight: 800;
+  animation: levelup-in 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) 0.5s backwards;
+}
+@keyframes levelup-in {
+  from { transform: scale(0.7) translateY(6px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.loot-panel {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid #453d63;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.loot-line { display: flex; align-items: baseline; gap: 8px; }
+.loot-line span:first-child { color: var(--muted); }
+.loot-line b { margin-left: auto; font-size: 18px; font-family: var(--display); }
+.gold-line { margin-top: 10px; }
+.gold-line b { color: var(--gold); }
+.loot-line .gain { margin-left: 0; color: var(--green); font-weight: 700; }
+.loot-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+.xpbar {
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: #2a2440;
+  overflow: hidden;
+  border: 1px solid #453d63;
+}
+.xpfill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6ea8ff, #a78bfa);
+  /* The point of the screen: progress you can watch move. */
+  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s;
+}
+
+.loot-items { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.loot-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--panel2);
+  border: 1px solid #453d63;
+  border-left-width: 4px;
+  animation: loot-in 0.34s cubic-bezier(0.2, 1.3, 0.4, 1) backwards;
+}
+@keyframes loot-in {
+  from { transform: translateX(-10px) scale(0.96); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.loot-ico { font-size: 20px; }
+.loot-name { font-weight: 700; }
+.loot-name em { color: var(--muted); font-style: normal; }
+.loot-tags { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.loot-tags .rarity { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 800; }
+.loot-tags .worth { color: var(--muted); font-size: 12px; }
+
+/* Rarity is the one bit of loot grammar every player already knows. */
+.loot-item.r-common   { border-left-color: #6b6486; }
+.loot-item.r-common .rarity { color: #8f88a6; }
+.loot-item.r-uncommon { border-left-color: var(--green); }
+.loot-item.r-uncommon .rarity { color: var(--green); }
+.loot-item.r-rare     { border-left-color: #6ea8ff; }
+.loot-item.r-rare .rarity { color: #6ea8ff; }
+.loot-item.r-rare { box-shadow: 0 0 14px #6ea8ff22; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loot-item, .levelup { animation: none; }
+  .xpfill { transition: none; }
+}
+
+/* --- Shop toasts ---------------------------------------------------------
+   Bottom-centre, over everything, near the thumb — the previous version
+   rendered inline above a long scrolling list, so a purchase made near the
+   bottom announced itself somewhere off-screen. */
+.toasts {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  pointer-events: none;   /* never swallow a tap meant for the shop */
+  width: min(440px, calc(100% - 24px));
+}
+.toast {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #322a4e, #272042);
+  border: 1px solid #6b5fa8;
+  box-shadow: 0 6px 20px #0007;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  animation: toast-in 0.2s ease-out, toast-out 0.35s ease-in 2.25s forwards;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes toast-out { to { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}

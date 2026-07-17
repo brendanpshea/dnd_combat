@@ -100,9 +100,9 @@ async function giveFlow(c: CampaignState, rl: readline.Interface): Promise<void>
   if (!giveItem(c, from, to, items[which]!.itemId)) console.log("Can't do that.");
 }
 
-function showRoll(r: SkillRoll): void {
+function showRoll(c: CampaignState, r: SkillRoll): void {
   console.log(
-    `  ${CLASSES[r.by]!.name} rolls ${r.skill}: d20(${r.natural}) = ${r.total} vs DC ${r.dc} — ` +
+    `  ${c.characters[r.by]?.name ?? 'The party'} rolls ${r.skill}: d20(${r.natural}) = ${r.total} vs DC ${r.dc} — ` +
     (r.success ? 'success!' : 'failure.'),
   );
 }
@@ -148,7 +148,7 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
           `, success −${cfg.discount * 100}%${cfg.penalty > 0 ? `, failure +${cfg.penalty * 100}%` : ', failure: no harm'})`;
       }));
       const result = attemptHaggle(c, skills[skillPick]!);
-      showRoll(result.roll);
+      showRoll(c, result.roll);
       priceMult = result.priceMultiplier;
       continue;
     }
@@ -156,7 +156,7 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
     if (label.startsWith('Try to steal')) {
       stealUsed = true;
       const result = attemptSteal(c);
-      for (const r of result.rolls) showRoll(r);
+      for (const r of result.rolls) showRoll(c, r);
       if (result.success) {
         console.log(`  Swiped: ${itemName(result.itemId!)}!`);
       } else {

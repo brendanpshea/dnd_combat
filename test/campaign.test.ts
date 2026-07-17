@@ -7,6 +7,7 @@ import {
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
+  partySkillCheck, attemptSteal,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -436,5 +437,32 @@ describe('names in old saves', () => {
     expect(heroes[0]).toBe('Sir Arthur');
     expect(rivals[0]).toBe('Sir Kay');
     expect(heroes.some((n) => rivals.includes(n))).toBe(false);
+  });
+});
+
+describe('skill gambits identify the character, not the class', () => {
+  it('reports the roller by index, so a name can be shown and duplicate classes are unambiguous', () => {
+    const c = newCampaign(7);
+    const roll = partySkillCheck(c, 'stealth', 15);
+    expect(typeof roll.by).toBe('number');
+    expect(c.characters[roll.by]).toBeDefined();
+    // A rogue is best at stealth, and this party's rogue is Cedric.
+    expect(c.characters[roll.by]!.name).toBe('Cedric the Sneaky');
+  });
+
+  it('gives a stolen item to the hero whose hands did the stealing', () => {
+    // The sleight-of-hand roller pockets it — that's the roll whose index the
+    // thief is looked up by, so the two must not drift apart.
+    const c = newCampaign(3);
+    for (let i = 0; i < 60; i++) {
+      const before = c.characters.map((ch) => ch.inventory.reduce((n, s2) => n + s2.qty, 0));
+      const result = attemptSteal(c);
+      if (!result.success) continue;
+      const after = c.characters.map((ch) => ch.inventory.reduce((n, s2) => n + s2.qty, 0));
+      const sleight = result.rolls.find((r) => r.skill === 'sleight-of-hand')!;
+      expect(after.findIndex((n, i2) => n > before[i2]!)).toBe(sleight.by);
+      return;
+    }
+    throw new Error('no successful steal in 60 attempts — check the DC');
   });
 });
