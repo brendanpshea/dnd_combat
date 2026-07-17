@@ -41,6 +41,12 @@ export interface SpellData {
   castingTime: 'action' | 'bonus';
   targeting: SpellTargeting;
   concentration: boolean;
+  /**
+   * A glyph for menus. Declared per spell because it says what the spell *is*,
+   * which nothing else in the data knows. How you *aim* it is NOT baked in here
+   * — that's derivable from `targeting`, and menus say it in words.
+   */
+  icon: string;
   cast(ctx: CastContext): GameEvent[];
 }
 
@@ -115,6 +121,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'fire-bolt', name: 'Fire Bolt', level: 0, castingTime: 'action',
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
     concentration: false,
+    icon: '🔥',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const atk = spellAttack(state, casterId, targetId, { melee: false });
@@ -132,6 +139,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'shocking-grasp', name: 'Shocking Grasp', level: 0, castingTime: 'action',
     targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
     concentration: false,
+    icon: '⚡',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const target = state.combatants[targetId]!;
@@ -156,6 +164,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'sacred-flame', name: 'Sacred Flame', level: 0, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
     concentration: false,
+    icon: '🔆',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const dc = spellDc(state, casterId);
@@ -174,6 +183,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'cure-wounds', name: 'Cure Wounds', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
     concentration: false,
+    icon: '💚',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
       const roll = rollDice(state.rng, `${2 * slotLevel}d8`);
@@ -187,6 +197,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'bless', name: 'Bless', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 30, who: 'ally', count: 3 },
     concentration: true,
+    icon: '🙏',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];
       for (const tid of targetIds) {
@@ -207,6 +218,7 @@ export const SPELLS: Record<Id, SpellData> = {
     // one entry per dart, repeats allowed.
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 3 },
     concentration: false,
+    icon: '✨',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];
       for (const tid of targetIds) {
@@ -224,6 +236,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'sleep', name: 'Sleep', level: 1, castingTime: 'action',
     targeting: { kind: 'sphere2x2', range: 60 },
     concentration: false,
+    icon: '😴',
     cast({ state, casterId, positions }) {
       const events: GameEvent[] = [];
       const dc = spellDc(state, casterId);
@@ -252,6 +265,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'burning-hands', name: 'Burning Hands', level: 1, castingTime: 'action',
     targeting: { kind: 'cone15' },
     concentration: false,
+    icon: '🖐️',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
       const sculpt = caster.featureIds.includes('sculpt-spells');
@@ -282,6 +296,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'guiding-bolt', name: 'Guiding Bolt', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
     concentration: false,
+    icon: '🌟',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
       const atk = spellAttack(state, casterId, targetId, { melee: false });
@@ -304,6 +319,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'thunderwave', name: 'Thunderwave', level: 1, castingTime: 'action',
     targeting: { kind: 'self' },
     concentration: false,
+    icon: '💥',
     cast({ state, casterId, slotLevel }) {
       const caster = state.combatants[casterId]!;
       const sculpt = caster.featureIds.includes('sculpt-spells');
@@ -337,6 +353,7 @@ export const SPELLS: Record<Id, SpellData> = {
     // One entry per ray, repeats allowed (like Magic Missile darts).
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 3 },
     concentration: false,
+    icon: '☄️',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];
       for (const tid of targetIds) {
@@ -358,6 +375,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'misty-step', name: 'Misty Step', level: 2, castingTime: 'bonus',
     targeting: { kind: 'emptyCell', range: 30 },
     concentration: false,
+    icon: '👣',
     cast({ state, casterId, positions }) {
       const caster = state.combatants[casterId]!;
       const to = positions[0]!;
@@ -374,6 +392,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'hold-person', name: 'Hold Person', level: 2, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
     concentration: true,
+    icon: '⛓️',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const dc = spellDc(state, casterId);
@@ -396,6 +415,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'aid', name: 'Aid', level: 2, castingTime: 'action',
     targeting: { kind: 'creature', range: 30, who: 'ally', count: 3 },
     concentration: false,
+    icon: '💗',
     cast({ state, casterId, slotLevel, targetIds }) {
       const amount = 5 * (slotLevel - 1); // +5 at slot 2, +10 at slot 3...
       const events: GameEvent[] = [];

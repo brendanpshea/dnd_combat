@@ -5,7 +5,7 @@
  */
 import type { GameState, Id, Position, Combatant } from '../../src/engine/types.js';
 import type { Action, Target } from '../../src/engine/actions.js';
-import { SPELLS, validTarget } from '../../src/data/spells.js';
+import { SPELLS, validTarget, type SpellData } from '../../src/data/spells.js';
 import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { FEATURES } from '../../src/data/features.js';
@@ -14,6 +14,8 @@ export const posKey = (p: Position) => `${p.x},${p.y}`;
 
 export interface TargetOption {
   label: string;
+  /** Glyph, so a chooser of three weapon names says which is which at a glance. */
+  icon?: string;
   action: Action;
 }
 
@@ -28,6 +30,7 @@ export type BarGroup = 'spell' | 'item' | 'skill' | 'basic';
 export interface BarEntry {
   id: string;
   label: string;
+  icon?: string;
   group: BarGroup;
   /** Short qualifier shown beside the label: 'L2', 'Bonus', '×3'. */
   note?: string;
@@ -71,6 +74,44 @@ export function describeShort(a: Action): string {
   }
 }
 
+/**
+ * How a spell is aimed, in words.
+ *
+ * Every targeted spell used to be labelled "Name 🎯" — the same glyph for *pick
+ * an enemy*, *pick an ally*, *pick a cell for a 2x2 blast*, *pick a direction
+ * for a cone*, and *pick three targets*. Five interactions, one marker, so the
+ * label actively misled. The glyph was a compression artefact of the old flat
+ * bar; the tray has room to just say it, and this is derivable from data rather
+ * than declared per spell.
+ */
+export function targetingNote(spell: SpellData): string {
+  const t = spell.targeting;
+  switch (t.kind) {
+    case 'creature': {
+      const [one, many] =
+        t.who === 'ally' ? ['ally', 'allies'] :
+        t.who === 'enemy' ? ['enemy', 'enemies'] : ['target', 'targets'];
+      return t.count > 1 ? `${t.count} ${many}` : `1 ${one}`;
+    }
+    case 'sphere2x2': return '2×2 area';
+    case 'cone15': return 'cone';
+    case 'emptyCell': return 'teleport';
+    case 'self': return 'burst';
+  }
+}
+
+/** Level + aim: "L1 · 2×2 area". Cantrips cost no slot, so they show only aim. */
+function spellNote(spell: SpellData): string {
+  return [spell.level > 0 ? `L${spell.level}` : '', targetingNote(spell)].filter(Boolean).join(' · ');
+}
+
+/** Melee or ranged, for weapon attacks — the data already knows. */
+const weaponIcon = (weaponId: Id): string => (WEAPONS[weaponId]?.melee ? '⚔️' : '🏹');
+
+const VERB_ICON: Record<string, string> = {
+  dash: '💨', disengage: '🚪', dodge: '🛡️', hide: '👁️',
+};
+
 export function groupActions(state: GameState, actorId: Id, actions: Action[]): Grouped {
   const moves = new Map<string, Action>();
   const perTarget = new Map<Id, TargetOption[]>();
@@ -92,9 +133,9 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     if (verb) bonusVerbs.set(verb, a);
   }
 
-  const pushTarget = (id: Id, label: string, action: Action) => {
+  const pushTarget = (id: Id, label: string, action: Action, icon?: string) => {
     const list = perTarget.get(id) ?? [];
-    list.push({ label, action });
+    list.push({ label, action, ...(icon ? { icon } : {}) });
     perTarget.set(id, list);
   };
 
@@ -104,10 +145,10 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         moves.set(posKey(a.to), a);
         break;
       case 'attack':
-        pushTarget(a.targetId, describeShort(a), a);
+        pushTarget(a.targetId, describeShort(a), a, weaponIcon(a.weaponId));
         break;
       case 'shakeAwake':
-        pushTarget(a.targetId, 'Shake awake', a);
+        pushTarget(a.targetId, 'Shake awake', a, '🫱');
         break;
       case 'castSpell': {
         const first = a.targets[0];
@@ -117,35 +158,49 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           const m = cellSpells.get(a.spellId) ?? new Map<string, Action>();
           m.set(posKey(first.position), a);
           cellSpells.set(a.spellId, m);
-        } else if (
-          t.kind === 'creature' && t.who === 'enemy' &&
-          a.targets.length === 1 && first && 'combatantId' in first
-        ) {
-          // Single-target enemy spells (Fire Bolt, Hold Person) tap the enemy,
-          // like weapon attacks — red target ring.
-          pushTarget(first.combatantId, describeShort(a), a);
-        } else if (t.kind === 'creature' && !seenMulti.has(a.spellId)) {
-          // Ally spells (Cure Wounds, Bless) and multi-target spells (Magic
-          // Missile) go to the action bar → a targeting mode, so allies light
-          // up green only when you're actively casting on them.
-          seenMulti.add(a.spellId);
-          const validIds = new Set(
-            Object.values(state.combatants)
-              .filter((c: Combatant) => c.alive && validTarget(state, actorId, spell, c.id))
-              .map((c: Combatant) => c.id),
-          );
-          bar.push({
-            id: `spell:${a.spellId}`,
-            label: `${spell.name} 🎯`,
-            group: 'spell',
-            ...(spell.level > 0 ? { note: `L${spell.level}` } : {}),
-            multi: {
-              spellId: a.spellId, slotLevel: a.slotLevel,
-              maxTargets: t.count,
-              allowRepeats: a.spellId === 'magic-missile' || a.spellId === 'scorching-ray',
-              validIds,
-            },
-          });
+        } else if (t.kind === 'self') {
+          if (!seenMulti.has(a.spellId)) {
+            seenMulti.add(a.spellId);
+            bar.push({
+              id: `spell:${a.spellId}`,
+              label: spell.name,
+              icon: spell.icon,
+              group: 'spell',
+              note: spellNote(spell),
+              action: a,
+            });
+          }
+        } else if (t.kind === 'creature' && first && 'combatantId' in first) {
+          // Fast path: a single-target enemy spell also hangs off the enemy, so
+          // attacking stays two taps (tap the goblin, tap Fire Bolt) rather than
+          // three via the tray. It's the most common action in the game.
+          if (t.who === 'enemy' && a.targets.length === 1) {
+            pushTarget(first.combatantId, describeShort(a), a, spell.icon);
+          }
+          // ...and *every* creature-targeted spell gets a tray entry, because
+          // opening "Spells" and finding only some of your spells is a lie. The
+          // two paths answer different questions: what can I do, vs do it now.
+          if (!seenMulti.has(a.spellId)) {
+            seenMulti.add(a.spellId);
+            const validIds = new Set(
+              Object.values(state.combatants)
+                .filter((c: Combatant) => c.alive && validTarget(state, actorId, spell, c.id))
+                .map((c: Combatant) => c.id),
+            );
+            bar.push({
+              id: `spell:${a.spellId}`,
+              label: spell.name,
+              icon: spell.icon,
+              group: 'spell',
+              note: spellNote(spell),
+              multi: {
+                spellId: a.spellId, slotLevel: a.slotLevel,
+                maxTargets: t.count,
+                allowRepeats: a.spellId === 'magic-missile' || a.spellId === 'scorching-ray',
+                validIds,
+              },
+            });
+          }
         }
         break;
       }
@@ -184,6 +239,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         bar.push({
           id: a.kind,
           label: describeShort(a),
+          ...(VERB_ICON[a.kind] ? { icon: VERB_ICON[a.kind]! } : {}),
           group: 'basic',
           ...(bonus ? { note: 'Bonus' } : {}),
           action: bonus ?? a,
@@ -203,6 +259,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     bar.push({
       id: verb,
       label: describeShort({ kind: verb } as Action),
+      ...(VERB_ICON[verb] ? { icon: VERB_ICON[verb]! } : {}),
       group: 'basic',
       note: 'Bonus',
       action,
@@ -213,9 +270,10 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     const spell = SPELLS[spellId];
     bar.push({
       id: `spell:${spellId}`,
-      label: `${spell?.name ?? spellId} 🎯`,
+      label: spell?.name ?? spellId,
+      ...(spell ? { icon: spell.icon } : {}),
       group: 'spell',
-      ...(spell && spell.level > 0 ? { note: `L${spell.level}` } : {}),
+      ...(spell ? { note: spellNote(spell) } : {}),
       cellTargets: cells,
     });
   }

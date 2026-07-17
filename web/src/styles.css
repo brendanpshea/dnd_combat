@@ -1113,3 +1113,9 @@ button.category .count {
 @media (prefers-reduced-motion: reduce) {
   .toast { animation: none; }
 }
+
+/* Glyphs: recognition aids beside the name, never instead of it — a nine-year
+   old doesn't know 🔆 means Sacred Flame, and on touch there is no hover to
+   ask. Sized to be scannable without shouting over the label. */
+.chip-ico { font-size: 17px; flex: none; }
+.opt-ico { margin-right: 7px; }

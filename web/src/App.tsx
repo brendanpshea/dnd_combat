@@ -13,7 +13,7 @@ import { sphere2x2, cone15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
-import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup } from './actionGroups.js';
+import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
@@ -262,7 +262,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [version, setVersion] = useState(0);
   const [log, setLog] = useState<LogLine[]>(() => logLinesFor(combat.state, combat.log));
   const [targeting, setTargeting] = useState<Targeting | null>(null);
-  const [chooser, setChooser] = useState<{ target: Combatant; options: Array<{ label: string; action: Action }> } | null>(null);
+  const [chooser, setChooser] = useState<{ target: Combatant; options: TargetOption[] } | null>(null);
   const [showLog, setShowLog] = useState(false);
   const [floats, setFloats] = useState<FloatEffect[]>([]);
   const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
@@ -611,7 +611,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               const only = entries[0]!;
               return (
                 <button key={group} onClick={() => runEntry(only)}>
-                  {icon} {only.label}
+                  {only.icon ?? icon} {only.label}
                 </button>
               );
             }
@@ -640,6 +640,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
             <div className="tray-grid">
               {grouped.bar.filter((b) => b.group === tray).map((b) => (
                 <button key={b.id} className="chip" onClick={() => runEntry(b)}>
+                  {b.icon && <span className="chip-ico">{b.icon}</span>}
                   <span className="chip-label">{b.label}</span>
                   {b.note && <span className="chip-note">{b.note}</span>}
                 </button>
@@ -657,7 +658,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               <h3>{chooser.target.name}</h3>
             </div>
             {chooser.options.map((o, i) => (
-              <button key={i} onClick={() => apply(o.action)}>{o.label}</button>
+              <button key={i} onClick={() => apply(o.action)}>
+                {o.icon && <span className="opt-ico">{o.icon}</span>}
+                {o.label}
+              </button>
             ))}
             <button className="ghost" onClick={() => setChooser(null)}>Cancel</button>
           </div>

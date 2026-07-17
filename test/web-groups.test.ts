@@ -152,3 +152,67 @@ describe('the bar does not grow with the character', () => {
     }
   });
 });
+
+describe('the Spells tray shows every spell', () => {
+  const wizardBar = () => {
+    const c = new Combat({
+      seed: 3,
+      mapId: 'open',
+      combatants: [...buildParty('team1', 0, 3), ...buildEncounter('goblins', 'team2', 1)],
+    });
+    const me = Object.values(c.state.combatants).find((u) => u.team === 'team1' && u.classId === 'wizard')!;
+    let guard = 0;
+    while (c.activeId !== me.id && guard++ < 40) c.apply({ kind: 'endTurn' });
+    return { bar: groupActions(c.state, me.id, c.legalActions()), me, c };
+  };
+
+  it('lists every castable spell, including self-targeted ones', () => {
+    // Thunderwave targets {kind:'self'} and so carries no target at all. Every
+    // branch here wanted a position or a creature, so it matched none of them:
+    // the wizard knew the spell, the engine offered it, and the UI had nowhere
+    // to put it — uncastable in the browser since the day it was added.
+    const { bar, me } = wizardBar();
+    const tray = bar.bar.filter((b) => b.group === 'spell').map((b) => b.id);
+    for (const spellId of me.spellIds) {
+      expect(tray, `${spellId} missing from the Spells tray`).toContain(`spell:${spellId}`);
+    }
+  });
+
+  it('keeps single-target spells on the enemy tap too — two taps, not three', () => {
+    // Browsing and acting are different questions; the tray answers "what can I
+    // do?", tapping the goblin answers "burn that one". Moving the spell into
+    // the tray alone would tax the commonest action in the game.
+    const { bar, c } = wizardBar();
+    const goblin = Object.values(c.state.combatants).find((u) => u.team === 'team2')!;
+    const labels = bar.perTarget.get(goblin.id)!.map((o) => o.label);
+    expect(labels).toContain('Fire Bolt');
+    expect(bar.bar.map((b) => b.id)).toContain('spell:fire-bolt');
+  });
+
+  it('says how a spell is aimed, in words rather than one 🎯 for five things', () => {
+    const { bar } = wizardBar();
+    const note = (id: string) => bar.bar.find((b) => b.id === `spell:${id}`)?.note;
+    expect(note('fire-bolt')).toBe('1 enemy');          // cantrip: no slot to mention
+    expect(note('magic-missile')).toBe('L1 · 3 enemies');
+    expect(note('sleep')).toBe('L1 · 2×2 area');
+    expect(note('burning-hands')).toBe('L1 · cone');
+    expect(note('misty-step')).toBe('L2 · teleport');
+    expect(note('thunderwave')).toBe('L1 · burst');
+    expect(bar.bar.every((b) => !b.label.includes('🎯'))).toBe(true);
+  });
+
+  it('marks melee and ranged attacks apart in the chooser', () => {
+    const c = new Combat({
+      seed: 3,
+      mapId: 'open',
+      combatants: [...buildParty('team1', 0, 3), ...buildEncounter('goblins', 'team2', 1)],
+    });
+    const rogue = Object.values(c.state.combatants).find((u) => u.team === 'team1' && u.classId === 'rogue')!;
+    let guard = 0;
+    while (c.activeId !== rogue.id && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const g = groupActions(c.state, rogue.id, c.legalActions());
+    const opts = [...g.perTarget.values()].flat();
+    expect(opts.find((o) => o.label === 'Shortsword')?.icon).toBe('⚔️');
+    expect(opts.find((o) => o.label === 'Shortbow')?.icon).toBe('🏹');
+  });
+});
