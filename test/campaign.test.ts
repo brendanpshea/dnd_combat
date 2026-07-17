@@ -17,6 +17,7 @@ import { buildEncounter } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { ITEMS } from '../src/data/items.js';
 import { CLASSES } from '../src/data/classes.js';
+import { attackableWeapons } from '../src/engine/rules/equipment.js';
 import { buildParty } from '../src/builder/character.js';
 
 describe('campaign state', () => {
@@ -208,11 +209,36 @@ describe('equipment management', () => {
     expect(giveItem(c, 1, 1, 'potion-healing')).toBe(false); // self
   });
 
-  it('unequip returns gear to inventory but the main hand stays armed', () => {
+  it('unequip returns gear to the pack, main hand included', () => {
     const c = newCampaign();
     expect(unequipSlot(c, 0, 'offHand')).toBe(true);
     expect(c.characters[0]!.inventory.some((s) => s.itemId === 'shield')).toBe(true);
-    expect(unequipSlot(c, 0, 'mainHand')).toBe(false);
+
+    // The main hand was exempt, to stop a hero going weaponless. It guarded
+    // nothing — a stowed weapon is still attackable, because the free
+    // interaction draws it — while stranding the sword in the hand: giving and
+    // selling work from packs, so a main weapon could never be handed on.
+    const sword = c.characters[0]!.equipped.mainHand!;
+    expect(unequipSlot(c, 0, 'mainHand')).toBe(true);
+    expect(c.characters[0]!.equipped.mainHand).toBeUndefined();
+    expect(c.characters[0]!.inventory.some((s) => s.itemId === sword)).toBe(true);
+    expect(unequipSlot(c, 0, 'mainHand')).toBe(false);   // nothing there now
+  });
+
+  it('a hero can hand on the weapon in their hand once it is stowed', () => {
+    const c = newCampaign();
+    const sword = c.characters[0]!.equipped.mainHand!;
+    unequipSlot(c, 0, 'mainHand');
+    expect(giveItem(c, 0, 1, sword)).toBe(true);
+    expect(c.characters[1]!.inventory.some((s) => s.itemId === sword)).toBe(true);
+  });
+
+  it('a stowed weapon still swings, so unequipping does not disarm anyone', () => {
+    const c = newCampaign();
+    unequipSlot(c, 0, 'mainHand');
+    const fighter = buildCampaignParty(c, 'team1')[0]!;
+    expect(fighter.equipped.mainHand).toBeUndefined();
+    expect(attackableWeapons(fighter).length).toBeGreaterThan(0);
   });
 
   it('a +1 weapon carries into battle with working bonuses', () => {

@@ -531,10 +531,19 @@ export function equipItem(c: CampaignState, charIdx: number, itemId: Id, slot: E
 }
 
 /** Unequip a slot back into inventory (main hand must keep a weapon). */
+/**
+ * Return a piece of worn gear to its owner's pack.
+ *
+ * The main hand used to be exempt, to keep a hero from ending up weaponless.
+ * It guarded nothing: `attackableWeapons` counts stowed weapons too, since the
+ * free interaction draws them — a sword in the pack still swings. What the
+ * exemption *did* do was strand the sword there, because giving and selling
+ * work from packs, so a hero's main weapon could never be handed on or sold.
+ * (Selling your only weapon is still possible, and still your business.)
+ */
 export function unequipSlot(c: CampaignState, charIdx: number, slot: EquipSlot): boolean {
   const ch = c.characters[charIdx];
   if (!ch || ch.equipped[slot] === undefined) return false;
-  if (slot === 'mainHand') return false;
   addItem(ch.inventory, ch.equipped[slot]!);
   delete ch.equipped[slot];
   return true;

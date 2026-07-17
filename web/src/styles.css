@@ -1175,3 +1175,22 @@ button.category .count {
    a menu rather than a paragraph of buttons. */
 .sheet-label { min-width: 5.5em; color: var(--muted); font-size: 13px; }
 .tray-head .muted { font-weight: 400; font-size: 13px; }
+
+/* On a phone the tray is a bottom sheet: it belongs under the thumb, against
+   the edge. A desktop has no thumb and does have an OS taskbar sitting exactly
+   there, so the same sheet reads as falling off the screen — float it instead. */
+@media (min-width: 900px) {
+  .tray-backdrop { align-items: center; }
+  .tray {
+    border-radius: 14px;
+    border-bottom-width: 1px;
+    max-height: 72vh;
+    padding-bottom: 12px;
+    box-shadow: 0 12px 40px #000a;
+    animation: tray-float 0.16s ease-out;
+  }
+  @keyframes tray-float {
+    from { transform: translateY(6px) scale(0.99); opacity: 0.6; }
+    to { transform: none; opacity: 1; }
+  }
+}
