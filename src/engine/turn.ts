@@ -73,6 +73,13 @@ export function startTurn(state: GameState): GameEvent[] {
     speed = Math.floor(speed / 2);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
   }
+  // Slow mastery: -10 ft this turn, then it clears (lasts to the start of the
+  // slowed creature's next turn).
+  if (c.conditions.some((k) => k.id === 'slowed')) {
+    c.conditions = c.conditions.filter((k) => k.id !== 'slowed');
+    speed = Math.max(0, speed - 10);
+    events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'slowed' });
+  }
 
   c.turn = {
     actionUsed: false,

@@ -42,7 +42,10 @@ export function acOf(c: Combatant): number {
   if (c.mageArmor && c.equipped.armor === undefined) {
     return 13 + abilityMod(c.abilities.dex) + (c.equipped.offHand === 'shield' ? 2 : 0);
   }
-  return armorClass(c.equipped.armor, abilityMod(c.abilities.dex), c.equipped.offHand === 'shield');
+  const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), c.equipped.offHand === 'shield');
+  // Fighting Style: Defense — +1 AC while wearing any armor.
+  const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
+  return base + defense;
 }
 
 /** Is the combatant wearing metal armor (Shocking Grasp rider)? */

@@ -173,6 +173,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `*** ${nm(e.combatantId)} dies! ***`;
     case 'charmedAway':
       return `*** ${nm(e.combatantId)} is charmed and wanders off! ***`;
+    case 'turnedUndead':
+      return `${nm(e.combatantId)} channels divine energy, turning the undead (DC ${e.dc}).`;
     case 'illusionCast':
       return `${nm(e.sourceId)} conjures a shimmering illusion at ${cellName(e.position)}.`;
     case 'illusionPopped':

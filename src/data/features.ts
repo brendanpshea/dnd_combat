@@ -9,7 +9,10 @@ import type { SkillId } from './classes.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
+import { savingThrow } from '../engine/rules/saves.js';
+import { charmAway } from '../engine/rules/attack.js';
 import { distanceFeet } from '../engine/grid.js';
+import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
 
 export interface FeatureContext {
@@ -179,8 +182,38 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
+  'turn-undead': {
+    id: 'turn-undead', name: 'Channel Divinity: Turn Undead', trigger: 'action',
+    uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      // Base Channel Divinity every cleric gets, not the Life Domain's
+      // Preserve Life. RAW turns (forces to flee) every undead within 30 ft
+      // that fails a Wisdom save; this game has no "must flee" AI, so a turned
+      // undead is removed from the fight via charmAway — the same not-a-death
+      // exit Animal Friendship uses, scoped here to creatureType 'undead'.
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.wis);
+      const targets = Object.values(state.combatants).filter(
+        (c) => c.alive && c.hp > 0 && c.team !== me.team &&
+          c.creatureType === 'undead' &&
+          distanceFeet(me.position, c.position) <= 30,
+      );
+      const events: GameEvent[] = [{ type: 'turnedUndead', combatantId: actorId, dc }];
+      for (const t of targets) {
+        const { success, event } = savingThrow(state, t.id, 'wis', dc);
+        events.push(event);
+        if (!success) events.push(...charmAway(state, t.id));
+        if (state.winner) break;
+      }
+      return events;
+    },
+  },
   'undead-fortitude': { id: 'undead-fortitude', name: 'Undead Fortitude', trigger: 'passive' },
   dueling: { id: 'dueling', name: 'Fighting Style: Dueling', trigger: 'passive' },
+  defense: { id: 'defense', name: 'Fighting Style: Defense', trigger: 'passive' },
+  archery: { id: 'archery', name: 'Fighting Style: Archery', trigger: 'passive' },
+  'great-weapon-fighting': { id: 'great-weapon-fighting', name: 'Fighting Style: Great Weapon Fighting', trigger: 'passive' },
+  'two-weapon-fighting': { id: 'two-weapon-fighting', name: 'Fighting Style: Two-Weapon Fighting', trigger: 'passive' },
   'sneak-attack': {
     id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive',
     advantageDice: (level) => `${Math.ceil(level / 2)}d6`,

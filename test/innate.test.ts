@@ -557,3 +557,46 @@ describe('Halfling', () => {
     });
   });
 });
+
+describe('Turn Undead', () => {
+  const cleric = (position: Position, id: string, level = 2): Combatant =>
+    ({ ...buildCharacter({ classId: 'cleric', team: 'team1', position, speciesId: 'human', level }), id });
+  const skeleton = (position: Position, id: string): Combatant =>
+    ({ ...buildMonster('skeleton', 'team2', position), id });
+
+  it('a level-2 cleric knows Turn Undead as an encounter-limited action feature', () => {
+    const cl = cleric({ x: 3, y: 3 }, 'cl');
+    expect(cl.featureIds).toContain('turn-undead');
+    expect(cl.featureUses['turn-undead']).toEqual({ current: 1, max: 1 });
+    expect(FEATURES['turn-undead']!.trigger).toBe('action');
+  });
+
+  it('removes only undead that fail the save, leaves living enemies untouched, and spends the use', () => {
+    // Loop seeds so we land on a run where at least one skeleton fails.
+    for (let seed = 1; seed <= 40; seed++) {
+      const cl = cleric({ x: 3, y: 3 }, 'cl');
+      const s1 = skeleton({ x: 4, y: 3 }, 's1');
+      const s2 = skeleton({ x: 3, y: 4 }, 's2');
+      const gob = goblin({ x: 5, y: 3 }, 'gob'); // living, in range — must never be turned
+      const c = new Combat({ seed, mapId: 'open', combatants: [cl, s1, s2, gob] });
+      let guard = 0;
+      while (c.activeId !== 'cl' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const use = legalActions(c.state, 'cl').find(
+        (a) => a.kind === 'useFeature' && a.featureId === 'turn-undead',
+      );
+      expect(use).toBeDefined();
+      const events = c.apply(use!);
+      const turned = events.filter((e) => e.type === 'charmedAway').map((e) => e.combatantId);
+      if (turned.length === 0) continue; // both saved this seed; try another
+
+      // Only skeletons ever get charmed away; the goblin is a living humanoid.
+      expect(turned.every((id) => id === 's1' || id === 's2')).toBe(true);
+      expect(c.state.combatants['gob']!.alive).toBe(true);
+      for (const id of turned) expect(c.state.combatants[id]!.alive).toBe(false);
+      // The Channel Divinity use is spent.
+      expect(c.state.combatants['cl']!.featureUses['turn-undead']!.current).toBe(0);
+      return;
+    }
+    throw new Error('no skeleton ever failed the save across 40 seeds');
+  });
+});

@@ -326,14 +326,38 @@ the 5.5e list. Level 1 details (AC/HP/features) are authoritative in
 
 | | Fighter (Champion) | Cleric (Life) | Wizard (Evoker) | Rogue (Assassin) |
 | --- | --- | --- | --- | --- |
-| L1 | Second Wind ×2, Action Surge, Dueling +2, Sap mastery. AC 17, HP 13 | Sacred Flame, Cure Wounds, Bless, Disciple of Life. AC 18, HP 11 | Fire Bolt, Shocking Grasp, Magic Missile, Sleep, Burning Hands. AC 13, HP 7 | Sneak Attack 1d6, two shortswords + bow, Vex mastery. AC 15, HP 11 |
-| L2 | — | +Guiding Bolt, 3 slots | +Thunderwave, 3 slots | Cunning Action (bonus Dash/Disengage) |
+| L1 | Second Wind ×2, Action Surge, Dueling +2, Sap + Slow (javelin) mastery. AC 17, HP 13 | Sacred Flame, Cure Wounds, Bless, Disciple of Life. AC 18, HP 11 | Fire Bolt, Shocking Grasp, Magic Missile, Sleep, Burning Hands. AC 13, HP 7 | Sneak Attack 1d6, two shortswords + bow, Vex mastery. AC 15, HP 11 |
+| L2 | — | +Guiding Bolt, Turn Undead (CD), 3 slots | +Thunderwave, 3 slots | Cunning Action (bonus Dash/Disengage) |
 | L3 | Improved Critical (19–20) | Hold Person, Aid, Preserve Life (CD), slots 4/2 | Scorching Ray, Misty Step, Sculpt Spells, slots 4/2 | Assassinate, Sneak Attack 2d6 |
 
 Notable simplifications: Action Surge granted at level 1 (5.5e says 2);
 per-rest resources reset at combat start. Sleep is the real 5.5e two-stage version (Incapacitated →
 Unconscious). Preserve Life auto-distributes to the most wounded allies
 within 30 ft, capped at half max HP.
+
+**Turn Undead** is the base Channel Divinity every cleric gets at level 2
+(separate from Life Domain's Preserve Life at 3). RAW turns — forces to flee —
+every undead within 30 ft that fails a Wisdom save; with no "must flee" AI, a
+turned undead is instead removed from the fight (`charmAway`, the same
+not-a-death exit Animal Friendship uses), scoped by the `creatureType: 'undead'`
+tag. One use per encounter.
+
+**Fighting styles** beyond Dueling exist as reusable passive features —
+Defense (+1 AC while armored), Archery (+2 ranged attack rolls), Great Weapon
+Fighting (reroll 1s/2s on two-handed weapon damage), and Two-Weapon Fighting
+(off-hand adds its ability modifier). Only Dueling is assigned to a current kit;
+the rest are infrastructure any future kit or class can take. RAW Protection is
+omitted — it needs a reaction outside opportunity attacks, which the engine
+doesn't model yet.
+
+**Weapon masteries** now cover six of the eight 2024 masteries: Sap and Vex
+(as before), plus Slow (−10 ft to speed until the target's next turn), Push
+(shove 10 ft straight back on a hit), Topple (Con save or fall prone), and
+Graze (a miss still deals the attacker's ability modifier in damage). Weapons
+carry their RAW mastery in data; a mastery only fires for a wielder whose class
+trains that weapon (`weaponMasteries`). Cleave and Nick are deferred — they
+need multi-target and off-hand action-economy changes the current single-target
+attack resolution doesn't support.
 
 ### Species (Human, Dwarf, Wood Elf, Orc)
 

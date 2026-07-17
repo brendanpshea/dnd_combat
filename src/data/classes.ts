@@ -52,7 +52,7 @@ export const CLASSES: Record<Id, ClassData> = {
       1: ['second-wind', 'action-surge', 'dueling'],
       3: ['improved-critical'], // Champion
     },
-    weaponMasteries: ['longsword', 'longsword-plus1'],
+    weaponMasteries: ['longsword', 'longsword-plus1', 'javelin'],
     equipment: {
       mainHand: 'longsword', offHand: 'shield', armor: 'scale-mail',
       inventory: [
@@ -79,6 +79,7 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     featuresByLevel: {
       1: ['disciple-of-life'],
+      2: ['turn-undead'], // Channel Divinity every cleric gets
       3: ['preserve-life'], // Life Domain: Channel Divinity
     },
     weaponMasteries: [],

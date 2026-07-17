@@ -31,6 +31,7 @@ export function beatFor(events: GameEvent[]): number {
     switch (e.type) {
       case 'died': hold(950); break;
       case 'charmedAway': hold(950); break;
+      case 'turnedUndead': hold(600); break;
       case 'downed': hold(950); break;
       case 'revived': hold(800); break;
       case 'damageDealt': hold(700); break;
@@ -100,6 +101,8 @@ export function narrate(state: GameState, events: GameEvent[]): string | undefin
         return `☠ ${name(e.combatantId)} is slain!`;
       case 'charmedAway':
         return `🐾 ${name(e.combatantId)} is charmed — it wanders off!`;
+      case 'turnedUndead':
+        return `✝ ${name(e.combatantId)} channels divine energy to turn the undead!`;
       case 'downed':
         return `💤 ${name(e.combatantId)} is down — heal them to get them up!`;
       case 'revived':

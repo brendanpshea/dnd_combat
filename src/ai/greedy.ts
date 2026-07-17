@@ -250,6 +250,16 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   if (a.featureId === 'cunning-hide' || a.featureId === 'nimble-hide') {
     return actor.turn.actionUsed ? 1.2 : 0.8;
   }
+  if (a.featureId === 'turn-undead') {
+    // Removing an undead outright is worth more than killing it — full unit
+    // gone, no HP left to chew through — so value each in-range undead like a
+    // lethal hit (remaining HP + kill bonus), weighted by its Wis-save odds.
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.wis);
+    return Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        c.creatureType === 'undead' && distanceFeet(actor.position, c.position) <= 30)
+      .reduce((s, c) => s + saveFailProb(state, c, 'wis', dc) * damageValue(c.hp, c), 0);
+  }
   if (a.featureId === 'preserve-life') {
     const pool = 5 * actor.level;
     const healable = Object.values(state.combatants)

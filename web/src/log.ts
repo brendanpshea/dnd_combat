@@ -29,6 +29,7 @@ function kindOf(e: GameEvent): string {
     case 'turnStarted': return 'turn';
     case 'died': return 'died';
     case 'charmedAway': return 'downed';   // a removal, not a kill — same visual weight as downed
+    case 'turnedUndead': return 'cond';
     case 'downed': return 'downed';
     case 'revived':
     case 'healed': return 'heal';

@@ -4,7 +4,7 @@
 import type { Id, DamageType, Ability, ConditionId } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
-export type MasteryId = 'sap' | 'vex';
+export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze';
 
 export interface WeaponData {
   id: Id;
@@ -42,15 +42,15 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   javelin: {
     id: 'javelin', name: 'Javelin', damage: '1d6', damageType: 'piercing',
-    properties: ['thrown'], range: { normal: 30, long: 120 }, melee: true, cost: 1,
+    properties: ['thrown'], range: { normal: 30, long: 120 }, melee: true, mastery: 'slow', cost: 1,
   },
   mace: {
     id: 'mace', name: 'Mace', damage: '1d6', damageType: 'bludgeoning',
-    properties: [], melee: true, cost: 5,
+    properties: [], melee: true, mastery: 'sap', cost: 5,
   },
   quarterstaff: {
     id: 'quarterstaff', name: 'Quarterstaff', damage: '1d6', damageType: 'bludgeoning',
-    properties: ['versatile'], melee: true, cost: 1,
+    properties: ['versatile'], melee: true, mastery: 'topple', cost: 1,
   },
   shortsword: {
     id: 'shortsword', name: 'Shortsword', damage: '1d6', damageType: 'piercing',
@@ -66,11 +66,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   greatsword: {
     id: 'greatsword', name: 'Greatsword', damage: '2d6', damageType: 'slashing',
-    properties: ['two-handed'], melee: true, cost: 50,
+    properties: ['two-handed'], melee: true, mastery: 'graze', cost: 50,
   },
   longbow: {
     id: 'longbow', name: 'Longbow', damage: '1d8', damageType: 'piercing',
-    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, cost: 50,
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, mastery: 'slow', cost: 50,
   },
   'longsword-plus1': {
     id: 'longsword-plus1', name: 'Longsword +1', damage: '1d8', damageType: 'slashing',
@@ -99,7 +99,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   greatclub: {
     id: 'greatclub', name: 'Greatclub', damage: '2d8', damageType: 'bludgeoning',
-    properties: ['two-handed'], melee: true,
+    properties: ['two-handed'], melee: true, mastery: 'push',
   },
   'ogre-javelin': {
     id: 'ogre-javelin', name: 'Javelin', damage: '2d6', damageType: 'piercing',
@@ -115,7 +115,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'light-crossbow': {
     id: 'light-crossbow', name: 'Light Crossbow', damage: '1d8', damageType: 'piercing',
-    properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false,
+    properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'slow',
   },
   'dire-wolf-bite': {
     id: 'dire-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',

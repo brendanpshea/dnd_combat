@@ -12,6 +12,7 @@ import { distanceFeet, adjacent, hasLineOfSight } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
+import { pushCreature } from './movement.js';
 import { downCombatant } from './heal.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
@@ -175,6 +176,8 @@ export function resolveAttack(
   const mod = abilityMod(attacker.abilities[ability]);
   const prof = proficiencyBonus(attacker.level); // v1: proficient with all carried weapons
   let total = d20.natural + mod + prof + (weapon.attackBonus ?? 0);
+  // Fighting Style: Archery — +2 to attack rolls with ranged weapons.
+  if (attacker.featureIds.includes('archery') && !weapon.melee) total += 2;
   if (attacker.conditions.some((c) => c.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;
@@ -202,16 +205,48 @@ export function resolveAttack(
   });
   events.push(...endHide(attacker));
 
-  if (!hit) return events;
+  if (!hit) {
+    // Graze mastery: a miss still deals the attacker's ability modifier in
+    // damage (no dice), for a trained wielder.
+    if (weapon.mastery === 'graze' && attacker.weaponMasteries.includes(weaponId) &&
+        target.alive && mod > 0) {
+      events.push(...applyDamage(state, attackerId, targetId, mod, weapon.damageType, []));
+    }
+    return events;
+  }
 
   const dmg = rollDice(state.rng, weapon.damage, crit);
   state.rng = dmg.state;
-  let amount = dmg.total + (ctx.offhand ? 0 : mod) + (weapon.damageBonus ?? 0);
   let rolls = dmg.rolls;
   // Which named bonuses actually fired — surfaced in the log and as toasts so
   // players can see (and debug) that Sneak Attack, Dueling, etc. are working.
   const tags: string[] = [];
   if (crit) tags.push('Critical Hit');
+
+  // Fighting Style: Great Weapon Fighting — reroll each 1 or 2 on a two-handed
+  // melee weapon's damage dice once, keeping the new roll.
+  if (
+    attacker.featureIds.includes('great-weapon-fighting') &&
+    isMeleeAttack &&
+    weapon.properties.includes('two-handed')
+  ) {
+    const faces = weapon.damage.match(/d(\d+)/)?.[1];
+    if (faces) {
+      rolls = rolls.map((r) => {
+        if (r > 2) return r;
+        const rr = rollDice(state.rng, `1d${faces}`);
+        state.rng = rr.state;
+        return rr.total;
+      });
+      tags.push('Great Weapon Fighting');
+    }
+  }
+
+  // Off-hand attacks add no ability modifier to damage (RAW default) — unless
+  // the Two-Weapon Fighting style restores it.
+  const offhandMod = ctx.offhand && !attacker.featureIds.includes('two-weapon-fighting') ? 0 : mod;
+  let amount = rolls.reduce((s, r) => s + r, 0) + offhandMod + (weapon.damageBonus ?? 0);
+  if (ctx.offhand && offhandMod !== 0) tags.push('Two-Weapon Fighting');
 
   // Fighting Style: Dueling — one-handed melee weapon, no weapon in the
   // other hand (a shield is fine): +2.
@@ -297,6 +332,25 @@ export function resolveAttack(
       if (!attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === targetId)) {
         attacker.conditions.push({ id: 'vexed', sourceId: targetId });
         events.push({ type: 'conditionApplied', combatantId: attackerId, condition: 'vexed', sourceId: targetId });
+      }
+    } else if (weapon.mastery === 'slow' && !target.conditions.some((c) => c.id === 'slowed')) {
+      target.conditions.push({ id: 'slowed', sourceId: attackerId });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'slowed', sourceId: attackerId });
+    } else if (weapon.mastery === 'push') {
+      // Shove the target 10 ft (2 cells) straight away from the attacker.
+      const dir = {
+        x: Math.sign(target.position.x - attacker.position.x),
+        y: Math.sign(target.position.y - attacker.position.y),
+      };
+      if (dir.x !== 0 || dir.y !== 0) events.push(...pushCreature(state, targetId, dir, 2));
+    } else if (weapon.mastery === 'topple' && !target.conditions.some((c) => c.id === 'prone')) {
+      // Con save vs the attacker's weapon DC or fall prone.
+      const dc = 8 + proficiencyBonus(attacker.level) + mod;
+      const save = savingThrow(state, targetId, 'con', dc);
+      events.push(save.event);
+      if (!save.success) {
+        target.conditions.push({ id: 'prone', sourceId: attackerId });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: attackerId });
       }
     }
   }

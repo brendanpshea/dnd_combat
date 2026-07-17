@@ -60,6 +60,7 @@ export type ConditionId =
   | 'guided'       // Guiding Bolt: next attack roll against this target has advantage
   | 'vexed'        // attacker has advantage on next attack vs this source's target
   | 'sapped'       // disadvantage on next attack roll
+  | 'slowed'       // Slow mastery: speed cut by 10 ft until this creature's next turn
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
