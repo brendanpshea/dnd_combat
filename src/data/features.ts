@@ -32,6 +32,14 @@ export interface FeatureData {
    * `src/ai/` may not name content (test-enforced).
    */
   advantageDice?(level: number): string;
+  /**
+   * This feature does what the named action verb does, only as a bonus action
+   * (Cunning Action, Nimble Escape). Declared so the UI can offer *one* "Hide"
+   * instead of two identical-looking buttons — a rogue's bar listed Dash,
+   * Disengage and Hide twice each, six of its nine entries, and the player had
+   * no way to tell which was which.
+   */
+  bonusVerb?: 'dash' | 'disengage' | 'hide';
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
@@ -81,7 +89,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     },
   },
   'nimble-escape': {
-    id: 'nimble-escape', name: 'Nimble Escape', trigger: 'bonus',
+    id: 'nimble-escape', name: 'Nimble Escape', trigger: 'bonus', bonusVerb: 'disengage',
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       c.turn.disengaged = true;
@@ -89,7 +97,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     },
   },
   'nimble-hide': {
-    id: 'nimble-hide', name: 'Nimble Escape: Hide', trigger: 'bonus',
+    id: 'nimble-hide', name: 'Nimble Escape: Hide', trigger: 'bonus', bonusVerb: 'hide',
     apply({ state, actorId }) {
       return attemptHide(state, actorId);
     },
@@ -99,7 +107,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   assassinate: { id: 'assassinate', name: 'Assassinate', trigger: 'passive' },
   'sculpt-spells': { id: 'sculpt-spells', name: 'Sculpt Spells (Evoker)', trigger: 'passive' },
   'cunning-dash': {
-    id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus',
+    id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       c.turn.movementMax += c.speed;
@@ -107,7 +115,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     },
   },
   'cunning-disengage': {
-    id: 'cunning-disengage', name: 'Cunning Action: Disengage', trigger: 'bonus',
+    id: 'cunning-disengage', name: 'Cunning Action: Disengage', trigger: 'bonus', bonusVerb: 'disengage',
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       c.turn.disengaged = true;
@@ -115,7 +123,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     },
   },
   'cunning-hide': {
-    id: 'cunning-hide', name: 'Cunning Action: Hide', trigger: 'bonus',
+    id: 'cunning-hide', name: 'Cunning Action: Hide', trigger: 'bonus', bonusVerb: 'hide',
     apply({ state, actorId }) {
       return attemptHide(state, actorId);
     },

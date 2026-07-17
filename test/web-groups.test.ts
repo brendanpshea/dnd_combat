@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
-import { buildCharacter } from '../src/builder/character.js';
+import { buildCharacter, buildParty } from '../src/builder/character.js';
+import { buildEncounter } from '../src/data/monsters.js';
 import { groupActions, buildMultiAction, posKey } from '../web/src/actionGroups.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
@@ -95,5 +96,59 @@ describe('web action grouping', () => {
     expect(allyOptions.map((o) => o.label)).toContain('Potion of Healing');
     // Enemy single-target spells still tap the enemy directly.
     expect(grouped.perTarget.has('foe')).toBe(true);
+  });
+});
+
+describe('the bar does not grow with the character', () => {
+  const partyBar = (level: number, classId: string) => {
+    const c = new Combat({
+      seed: 3,
+      mapId: 'ruins',
+      combatants: [...buildParty('team1', 0, level), ...buildEncounter('goblins', 'team2', 7)],
+    });
+    const me = Object.values(c.state.combatants).find((u) => u.team === 'team1' && u.classId === classId)!;
+    let guard = 0;
+    while (c.activeId !== me.id && guard++ < 40) c.apply({ kind: 'endTurn' });
+    return groupActions(c.state, me.id, c.legalActions()).bar;
+  };
+
+  it('offers each verb once, not once per action economy', () => {
+    // A rogue has Cunning Action: Dash/Disengage/Hide *and* the plain verbs, so
+    // its bar listed all three twice — six of nine entries — with no way to tell
+    // the buttons apart. One entry each now, spending the bonus action, which is
+    // the whole reason the feature exists.
+    const labels = partyBar(3, 'rogue').map((b) => b.label);
+    for (const verb of ['Dash', 'Disengage', 'Hide']) {
+      expect(labels.filter((l) => l === verb), `${verb} should appear exactly once`).toHaveLength(1);
+    }
+    expect(labels).not.toContain('Cunning Action: Dash');
+  });
+
+  it('spends the bonus action for a verb when the feature offers it', () => {
+    const hide = partyBar(3, 'rogue').find((b) => b.label === 'Hide')!;
+    expect(hide.note).toBe('Bonus');
+    // The action it actually plays is Cunning Action, not the action-costing Hide.
+    expect(hide.action).toMatchObject({ kind: 'useFeature', featureId: 'cunning-hide' });
+  });
+
+  it('every entry lands in a category, so nothing can go missing from the bar', () => {
+    for (const classId of ['fighter', 'wizard', 'cleric', 'rogue']) {
+      for (const b of partyBar(3, classId)) {
+        expect(['spell', 'item', 'skill', 'basic'], `${classId}: ${b.label}`).toContain(b.group);
+      }
+    }
+  });
+
+  it('keeps the bar at a handful of controls regardless of level', () => {
+    // The point of categories: ~2/3 of every spell in the game is bar-bound, so
+    // a flat bar grows without limit. One control per non-empty category can't.
+    const groups = ['spell', 'item', 'skill', 'basic'] as const;
+    for (const level of [1, 2, 3]) {
+      for (const classId of ['fighter', 'wizard', 'cleric', 'rogue']) {
+        const bar = partyBar(level, classId);
+        const controls = groups.filter((g) => bar.some((b) => b.group === g)).length;
+        expect(controls, `${classId} L${level}`).toBeLessThanOrEqual(4);
+      }
+    }
   });
 });

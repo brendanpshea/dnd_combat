@@ -17,9 +17,20 @@ export interface TargetOption {
   action: Action;
 }
 
+/**
+ * Which shelf an entry belongs on. The bar shows one control per *category*,
+ * not per action, so it stays the same size at level 3 and level 20 — roughly
+ * two thirds of every spell in the game is bar-bound (only single-target enemy
+ * spells attach to a tapped enemy), so a flat bar grows without limit.
+ */
+export type BarGroup = 'spell' | 'item' | 'skill' | 'basic';
+
 export interface BarEntry {
   id: string;
   label: string;
+  group: BarGroup;
+  /** Short qualifier shown beside the label: 'L2', 'Bonus', '×3'. */
+  note?: string;
   /** Immediate action, or enters a targeting mode. */
   action?: Action;
   cellTargets?: Map<string, Action>;   // area/teleport spells: tap a cell
@@ -67,6 +78,20 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
   const cellSpells = new Map<string, Map<string, Action>>();
   const seenMulti = new Set<string>();
 
+  // Cunning Action / Nimble Escape do exactly what Dash, Disengage and Hide do,
+  // only as a bonus action — so a rogue was offered each verb twice, with no
+  // way to tell the buttons apart. Offer one, and spend the bonus action, which
+  // is the reason the feature exists: it keeps the action free for an attack.
+  // (If the bonus is already spent the feature isn't legal, so the plain verb
+  // surfaces on its own and the entry quietly costs the action instead.)
+  const bonusVerbs = new Map<string, Action>();
+  const emittedVerbs = new Set<string>();
+  for (const a of actions) {
+    if (a.kind !== 'useFeature') continue;
+    const verb = FEATURES[a.featureId]?.bonusVerb;
+    if (verb) bonusVerbs.set(verb, a);
+  }
+
   const pushTarget = (id: Id, label: string, action: Action) => {
     const list = perTarget.get(id) ?? [];
     list.push({ label, action });
@@ -112,6 +137,8 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           bar.push({
             id: `spell:${a.spellId}`,
             label: `${spell.name} 🎯`,
+            group: 'spell',
+            ...(spell.level > 0 ? { note: `L${spell.level}` } : {}),
             multi: {
               spellId: a.spellId, slotLevel: a.slotLevel,
               maxTargets: t.count,
@@ -124,34 +151,71 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
       }
       case 'useItem': {
         const first = a.targets?.[0];
+        const qty = state.combatants[actorId]?.inventory
+          .find((s) => s.itemId === a.itemId)?.qty ?? 0;
+        const note = qty > 1 ? { note: `×${qty}` } : {};
         if (first && 'combatantId' in first && first.combatantId !== actorId) {
           pushTarget(first.combatantId, describeShort(a), a);
         } else if (!first) {
-          bar.push({ id: `item:${a.itemId}:self`, label: describeShort(a), action: a });
+          bar.push({ id: `item:${a.itemId}:self`, label: describeShort(a), group: 'item', ...note, action: a });
         } else {
           // self-targeted with explicit id — treat as bar action
-          bar.push({ id: `item:${a.itemId}:self2`, label: describeShort(a), action: a });
+          bar.push({ id: `item:${a.itemId}:self2`, label: describeShort(a), group: 'item', ...note, action: a });
         }
         break;
       }
-      case 'useFeature':
-        bar.push({ id: `feat:${a.featureId}`, label: describeShort(a), action: a });
+      case 'useFeature': {
+        const verb = FEATURES[a.featureId]?.bonusVerb;
+        // Merged below into the single entry for its verb.
+        if (verb) break;
+        bar.push({
+          id: `feat:${a.featureId}`, label: describeShort(a), group: 'skill',
+          ...(FEATURES[a.featureId]?.trigger === 'bonus' ? { note: 'Bonus' } : {}),
+          action: a,
+        });
         break;
+      }
       case 'dash':
       case 'disengage':
       case 'dodge':
-      case 'hide':
-        bar.push({ id: a.kind, label: describeShort(a), action: a });
+      case 'hide': {
+        const bonus = bonusVerbs.get(a.kind);
+        emittedVerbs.add(a.kind);
+        bar.push({
+          id: a.kind,
+          label: describeShort(a),
+          group: 'basic',
+          ...(bonus ? { note: 'Bonus' } : {}),
+          action: bonus ?? a,
+        });
         break;
+      }
       case 'endTurn':
         break; // rendered separately
     }
   }
 
+  // A bonus verb whose plain form isn't legal — the action is already spent, so
+  // only Cunning Action can still Dash — would otherwise vanish with its
+  // duplicate. Surface it under the verb's own name.
+  for (const [verb, action] of bonusVerbs) {
+    if (emittedVerbs.has(verb)) continue;
+    bar.push({
+      id: verb,
+      label: describeShort({ kind: verb } as Action),
+      group: 'basic',
+      note: 'Bonus',
+      action,
+    });
+  }
+
   for (const [spellId, cells] of cellSpells) {
+    const spell = SPELLS[spellId];
     bar.push({
       id: `spell:${spellId}`,
-      label: `${SPELLS[spellId]?.name ?? spellId} 🎯`,
+      label: `${spell?.name ?? spellId} 🎯`,
+      group: 'spell',
+      ...(spell && spell.level > 0 ? { note: `L${spell.level}` } : {}),
       cellTargets: cells,
     });
   }

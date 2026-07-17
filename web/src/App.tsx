@@ -13,7 +13,7 @@ import { sphere2x2, cone15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
-import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec } from './actionGroups.js';
+import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
@@ -43,6 +43,19 @@ interface SetupConfig {
 }
 
 const PARTY_CLASS_IDS = ['fighter', 'wizard', 'cleric', 'rogue'] as const;
+
+/**
+ * The action bar shows one control per category, not per action, so it is the
+ * same size at level 3 and level 20. Order runs most- to least-used: the skip
+ * verbs sit last because they are, measurably, what nobody does — across 3,806
+ * AI decisions, dodge 2.3%, dash 0.1%, disengage 0.0%.
+ */
+const CATEGORIES: Array<{ group: BarGroup; icon: string; name: string }> = [
+  { group: 'spell', icon: '🔮', name: 'Spells' },
+  { group: 'item', icon: '🎒', name: 'Items' },
+  { group: 'skill', icon: '⭐', name: 'Skills' },
+  { group: 'basic', icon: '⋯', name: 'More' },
+];
 
 /** Cells an area spell will actually cover, for the targeting preview. */
 function footprint(caster: Combatant, spellId: string, target: Position): string[] {
@@ -263,6 +276,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   /** Wall-clock time before which the AI must not act — see beatFor. */
   const dwellUntil = useRef(0);
   const [narration, setNarration] = useState<string | null>(null);
+  const [tray, setTray] = useState<BarGroup | null>(null);
   const [narrationOn, setNarrationOn] = useState(storyMode);
   const [hint, setHint] = useState<Action | null>(null);
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('dnd-tutorial-seen'));
@@ -350,6 +364,19 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       if (t && 'position' in t) return posKey(t.position);
     }
     return undefined;
+  }
+
+  /** Play a bar entry: fire it, or enter its targeting mode. */
+  function runEntry(b: BarEntry) {
+    setTray(null);
+    if (b.action) apply(b.action);
+    else if (b.cellTargets) {
+      const first = [...b.cellTargets.values()][0];
+      const spellId = first?.kind === 'castSpell' ? first.spellId : '';
+      setTargeting({ type: 'cells', label: `${b.label} — tap a cell, tap again to cast`, spellId, byCell: b.cellTargets });
+    } else if (b.multi) {
+      setTargeting({ type: 'multi', label: `${b.label} — pick targets`, spec: b.multi, picked: [] });
+    }
   }
 
   // AI turns wait out the beat owed by whatever just happened (see beatFor).
@@ -569,23 +596,50 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           >
             💡 Hint
           </button>
-          {grouped.bar.map((b) => (
-            <button
-              key={b.id}
-              onClick={() => {
-                if (b.action) apply(b.action);
-                else if (b.cellTargets) {
-                  const spellId = [...b.cellTargets.values()][0]?.kind === 'castSpell'
-                    ? ([...b.cellTargets.values()][0] as { spellId: string }).spellId : '';
-                  setTargeting({ type: 'cells', label: `${b.label} — tap a cell, tap again to cast`, spellId, byCell: b.cellTargets });
-                }
-                else if (b.multi) setTargeting({ type: 'multi', label: `${b.label} — pick targets`, spec: b.multi, picked: [] });
-              }}
-            >
-              {b.label}
-            </button>
-          ))}
+          {CATEGORIES.map(({ group, icon, name }) => {
+            const entries = grouped.bar.filter((b) => b.group === group);
+            if (entries.length === 0) return null;
+            // A category holding one thing shouldn't cost a tap to open — show
+            // the thing. Only 'basic' is always a tray: it's the shelf for the
+            // rarely-used verbs, which is the point of putting them there.
+            if (entries.length === 1 && group !== 'basic') {
+              const only = entries[0]!;
+              return (
+                <button key={group} onClick={() => runEntry(only)}>
+                  {icon} {only.label}
+                </button>
+              );
+            }
+            return (
+              <button key={group} className="category" onClick={() => setTray(group)}>
+                {icon} {name} <span className="count">{entries.length}</span>
+              </button>
+            );
+          })}
           <button className="endturn" onClick={() => apply({ kind: 'endTurn' })}>End turn ➤</button>
+        </div>
+      )}
+
+      {/* The tray: where a growing spell list lives, so the bar can't grow with
+          it. Roughly two thirds of every spell is bar-bound, so a flat bar was
+          fine at level 3 and hopeless by level 9. */}
+      {isHumanTurn && grouped && tray && (
+        <div className="tray-backdrop" onClick={() => setTray(null)}>
+          <div className="tray" onClick={(e) => e.stopPropagation()}>
+            <div className="tray-head">
+              {CATEGORIES.find((c) => c.group === tray)?.icon}{' '}
+              {CATEGORIES.find((c) => c.group === tray)?.name}
+              <button className="ghost" onClick={() => setTray(null)}>✕</button>
+            </div>
+            <div className="tray-grid">
+              {grouped.bar.filter((b) => b.group === tray).map((b) => (
+                <button key={b.id} className="chip" onClick={() => runEntry(b)}>
+                  <span className="chip-label">{b.label}</span>
+                  {b.note && <span className="chip-note">{b.note}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
