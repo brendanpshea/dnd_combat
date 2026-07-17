@@ -4,6 +4,7 @@
  * state — no engine backdoors, exactly the Action API the CLI uses.
  */
 import type { GameState, Id, Combatant, Position } from '../engine/types.js';
+import { isDown } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
@@ -203,7 +204,10 @@ function isMeleeFighter(c: Combatant): boolean {
 function nearestEnemyDist(state: GameState, from: Position, team: Combatant['team']): number {
   let best = Infinity;
   for (const c of Object.values(state.combatants)) {
-    if (c.alive && c.team !== team) best = Math.min(best, distanceCells(from, c.position));
+    // Skipping the downed matters: standing next to a body otherwise reads as
+    // "already engaged", so there's no gradient toward the enemy still fighting
+    // and the unit paces on the spot until the round limit.
+    if (c.alive && !isDown(c) && c.team !== team) best = Math.min(best, distanceCells(from, c.position));
   }
   return best;
 }
@@ -233,7 +237,7 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   if (a.featureId === 'action-surge') {
     // Worth it when a follow-up attack is possible, i.e. an enemy is adjacent.
     return Object.values(state.combatants).some(
-      (c) => c.alive && c.team !== actor.team && adjacent(c.position, actor.position),
+      (c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(c.position, actor.position),
     ) ? 5 : 0;
   }
   if (a.featureId === 'cunning-disengage') {

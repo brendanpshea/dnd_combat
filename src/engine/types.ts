@@ -137,6 +137,17 @@ export interface Combatant {
     sneakAttackUsed: boolean;
   };
   alive: boolean;
+  /**
+   * At 0 HP this creature drops unconscious instead of dying — player
+   * characters do, monsters don't. Set by the builder rather than inferred
+   * from the class, because the engine must not know what a "character" is.
+   *
+   * A downed creature is `alive` with `hp === 0`. That pair is the whole state:
+   * it can't act, can't be woken by damage (the Sleep wake rule already only
+   * fires above 0 HP), and any healing brings it back. Nothing else is needed —
+   * no death saves, no second unconscious condition.
+   */
+  unconsciousAtZero?: boolean;
 }
 
 export interface GameState {
@@ -149,6 +160,21 @@ export interface GameState {
   /** Index into initiativeOrder of whose turn it is. */
   turnIndex: number;
   winner: TeamId | null;
+}
+
+/**
+ * Down, not dead: a hero at 0 HP is unconscious, still on the board, and comes
+ * back the moment anything heals it.
+ *
+ * It is also *out of reach of the fight*. Nothing can hurt it further — damage
+ * finds it already at 0 — so hostile targeting must exclude it, and not merely
+ * as an optimisation: without that rule an AI scoring "can I kill this?" reads
+ * a 0 HP body as a guaranteed kill and every enemy spends the rest of the
+ * battle hitting it. That is not a hypothetical; it deadlocked every mirror
+ * match the moment downing went in.
+ */
+export function isDown(c: Combatant): boolean {
+  return c.alive && c.hp === 0;
 }
 
 export function cellAt(grid: GridState, p: Position): Cell | undefined {

@@ -3,7 +3,7 @@
  * cloning.
  */
 import type { GameState, Combatant, Id } from './types.js';
-import { abilityMod } from './types.js';
+import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { discoverHidden } from './rules/hide.js';
 import type { GameEvent } from './events.js';
@@ -62,9 +62,12 @@ export function startTurn(state: GameState): GameEvent[] {
 
   c.hasActed = true;
 
-  // Stand up from prone automatically for half speed.
-  let speed = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed') ? 0 : c.speed;
-  if (c.conditions.some((k) => k.id === 'prone')) {
+  // Stand up from prone automatically for half speed — unless you're in no
+  // condition to: a downed hero standing itself up every turn is nonsense, and
+  // it would strip the prone that marks it as a body on the floor.
+  const helpless = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed');
+  let speed = helpless ? 0 : c.speed;
+  if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'prone');
     speed = Math.floor(speed / 2);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
@@ -88,7 +91,15 @@ export function startTurn(state: GameState): GameEvent[] {
 
 /**
  * End the current turn (running end-of-turn repeat saves) and advance to the
- * next living combatant, bumping the round when the order wraps.
+ * next combatant who can actually take one, bumping the round when the order
+ * wraps.
+ *
+ * Downed heroes are skipped. They're alive, so they'd otherwise be handed a
+ * turn in which the only legal action is to end it — dead air on the board, and
+ * for a human player a "Sir Arthur's turn!" banner over a body that cannot do
+ * anything. (There are no death saves here, so unlike 5e a downed hero's turn
+ * has no content at all.) Sleep is deliberately not skipped: a slept creature
+ * is above 0 HP, and its turn is where its repeat save is rolled.
  */
 export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id: Id) => GameEvent[]): GameEvent[] {
   const events: GameEvent[] = [];
@@ -102,7 +113,7 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   for (let i = 1; i <= n; i++) {
     const idx = (state.turnIndex + i) % n;
     const next = state.combatants[state.initiativeOrder[idx]!]!;
-    if (!next.alive) continue;
+    if (!next.alive || isDown(next)) continue;
     if (idx <= state.turnIndex) {
       state.round += 1;
       events.push({ type: 'roundStarted', round: state.round });

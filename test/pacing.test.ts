@@ -68,7 +68,21 @@ describe('narration', () => {
 
   it('leads with a death whatever else happened in the batch', () => {
     expect(narrate(c.state, [hit('a', 'b'), dmg('b', 99), { type: 'died', combatantId: 'b' }]))
-      .toBe('☠ Grix is down!');
+      .toBe('☠ Grix is slain!');
+  });
+
+  it('distinguishes a hero going down from a monster dying, and says what to do', () => {
+    // "Down" and "dead" are now different things, and the difference is the
+    // whole feature: one of them you can fix.
+    expect(narrate(c.state, [hit('b', 'a'), dmg('a', 99), { type: 'downed', combatantId: 'a' }]))
+      .toBe('💤 Sir Arthur is down — heal them to get them up!');
+    expect(narrate(c.state, [{ type: 'revived', combatantId: 'a', hp: 5 }]))
+      .toBe('✨ Sir Arthur is back on their feet!');
+  });
+
+  it('holds on a hero dropping as long as on a death', () => {
+    expect(beatFor([{ type: 'downed', combatantId: 'a' }]))
+      .toBe(beatFor([{ type: 'died', combatantId: 'a' }]));
   });
 
   it('says nothing for a turn where nothing happened to anyone', () => {

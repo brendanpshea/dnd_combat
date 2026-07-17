@@ -21,8 +21,8 @@ campaign (shop, loot, skill gambits), and a deployed web frontend
 | Initiative | Rolled: d20 + Dex mod, individual turns, teams interleaved. Ties: higher Dex, then seeded coin flip |
 | RNG | Seedable and injected; every roll goes through it; `(seed, actions[])` replays exactly |
 | Visibility | Full — both players see all HP, AC, slots, conditions |
-| Death | 0 HP = dead and removed. No death saves (Undead Fortitude is the one exception mechanic) |
-| Win | Last team with a living combatant wins |
+| Death | Monsters: 0 HP = dead and removed. **Player characters: 0 HP = unconscious**, still on the board, revived by any healing. No death saves |
+| Win | Last team still *standing* wins — a party whose members are all down has lost (they are alive, but out) |
 | Board | 8×8, fixed starting positions on opposite ranks (player deployment is future work) |
 | Concentration | Implemented, including the Con save (DC max(10, ⌊damage/2⌋)) when the concentrator takes damage |
 
@@ -100,7 +100,29 @@ a flat roll — the real 5e rule.
 **Damage pipeline.** Roll dice → ability mod (off-hand: none) → flat bonuses
 (Dueling) → extra dice (Sneak Attack, advantage riders) → immunity(0) /
 resistance(½) / vulnerability(×2) → HP → Undead Fortitude → wake-the-unconscious
-→ concentration save → death → win check.
+→ concentration save → death *or downing* → win check.
+
+**Downed heroes** (`unconsciousAtZero`, set by the builder — the engine must not
+know what a "character" is). A downed creature is `alive` with `hp === 0`, and
+that pair is the entire state: `isDown()`. It is unconscious and prone, keeps its
+square, and any healing brings it back — every heal routes through
+`applyHealing`, the one place HP goes up, so a potion revives exactly as Cure
+Wounds does. Damage can't finish it off (it is already at 0), so the stake is
+losing its sword until someone reaches it, not losing it for good.
+
+Sleep needs no special case: "damage wakes you unless you're at 0" is one rule,
+and healing only revives from 0, so healing a *sleeping* ally doesn't wake it.
+
+**A downed creature is not a combatant**, and this is load-bearing rather than
+cosmetic. It can't be attacked, targeted by hostile spells, shaken awake, or
+counted as an enemy for reach, cover or approach; it doesn't block a path (you
+step over a body — but can't stop on it); and it takes no turn, having nothing
+to do with one. Each of those was found the hard way:
+- attackable → an AI scoring "can I kill this?" reads a 0 HP body as a
+  guaranteed kill and every enemy beats on it forever; no battle ever ended;
+- blocking → two bodies sealed a corridor and the last enemy became unreachable;
+- counted as an enemy → a hero standing over a body thinks it's engaged, so it
+  has no gradient toward the enemy still fighting and paces on the spot.
 
 **Action economy.** Action, bonus action, movement, one reaction (opportunity
 attacks only). Multiattack: `attacksPerAction` banked as `attacksLeft` when the

@@ -8,13 +8,14 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Id, Ability, Position } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
+import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
 import { acOf, wearsMetal } from './armor.js';
 
@@ -102,10 +103,9 @@ function spellAttack(
   };
 }
 
-function heal(state: GameState, targetId: Id, sourceId: Id, amount: number): GameEvent {
-  const t = state.combatants[targetId]!;
-  t.hp = Math.min(t.maxHp, t.hp + amount);
-  return { type: 'healed', targetId, sourceId, amount };
+/** All healing goes through the one rule, so all healing revives. */
+function heal(state: GameState, targetId: Id, sourceId: Id, amount: number): GameEvent[] {
+  return applyHealing(state, targetId, sourceId, amount);
 }
 
 /** Life Domain: level-1+ healing spells restore +2 + spell level. */
@@ -189,7 +189,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const roll = rollDice(state.rng, `${2 * slotLevel}d8`);
       state.rng = roll.state;
       const amount = roll.total + spellMod(state, casterId) + discipleOfLifeBonus(state, casterId, slotLevel);
-      return [heal(state, targetId, casterId, amount)];
+      return heal(state, targetId, casterId, amount);
     },
   },
 
@@ -422,8 +422,9 @@ export const SPELLS: Record<Id, SpellData> = {
       for (const tid of new Set(targetIds)) {
         const t = state.combatants[tid]!;
         t.maxHp += amount;
-        t.hp += amount;
-        events.push({ type: 'healed', targetId: tid, sourceId: casterId, amount });
+        // Through the rule, so Aid stands a downed ally up like any other
+        // healing — which is what raising their hit points means.
+        events.push(...applyHealing(state, tid, casterId, amount));
       }
       return events;
     },
@@ -453,6 +454,8 @@ export function validTarget(
   if (spell.targeting.kind !== 'creature') return false;
   const { range, who } = spell.targeting;
   if (who === 'enemy' && t.team === caster.team) return false;
+  // A downed creature can't be attacked — but healing it is the whole point.
+  if (who === 'enemy' && isDown(t)) return false;
   if (who === 'ally' && t.team !== caster.team) return false;
   if (range === 0) {
     return targetId === casterId || adjacent(caster.position, t.position);

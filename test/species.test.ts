@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isDown } from '../src/engine/types.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { Combat } from '../src/engine/combat.js';
 import { applyDamage, collectAttackSources } from '../src/engine/rules/attack.js';
@@ -63,8 +64,15 @@ describe('species traits', () => {
     expect(combat.state.combatants[orc.id]!.hp).toBe(1);
     expect(combat.state.combatants[orc.id]!.alive).toBe(true);
     expect(combat.state.combatants[orc.id]!.featureUses['relentless-endurance']).toEqual({ current: 0, max: 1 });
+    // Once it's spent, the next hit takes the orc to 0 — but this orc is a
+    // player character, and characters drop unconscious there rather than dying.
+    // Relentless Endurance buys one more moment on its feet, not immortality.
     applyDamage(combat.state, orc.id, enemy.id, 1, 'slashing');
-    expect(combat.state.combatants[orc.id]!.alive).toBe(false);
+    const downed = combat.state.combatants[orc.id]!;
+    expect(downed.alive).toBe(true);
+    expect(downed.hp).toBe(0);
+    expect(isDown(downed)).toBe(true);
+    expect(downed.conditions.some((c) => c.id === 'unconscious')).toBe(true);
   });
 
   it('Trance prevents Sleep from applying its magical incapacitation', () => {

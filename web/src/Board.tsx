@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { GameState, Position, Combatant, Id } from '../../src/engine/types.js';
-import { cellAt } from '../../src/engine/types.js';
+import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
@@ -125,6 +125,10 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
               c.conditions.some((condition) => condition.id === 'hidden') ? 'hidden' : '',
+              // A body on the floor: greyed and toppled, but still yours and
+              // still there — the point of downing is that you can see who to
+              // go and pick up.
+              isDown(c) ? 'downed' : '',
             ].join(' ')}
           >
             {c.id === activeId && <div className="turn-arrow" />}

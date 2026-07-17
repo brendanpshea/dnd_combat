@@ -28,6 +28,8 @@ function kindOf(e: GameEvent): string {
     case 'roundStarted': return 'round';
     case 'turnStarted': return 'turn';
     case 'died': return 'died';
+    case 'downed': return 'downed';
+    case 'revived':
     case 'healed': return 'heal';
     case 'damageDealt': return e.tags?.includes('Critical Hit') ? 'dmg crit' : 'dmg';
     case 'attackRolled': return e.hit ? 'hit' : 'miss';
@@ -46,6 +48,8 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'turnStarted':
     case 'moved':
     case 'died':
+    case 'downed':
+    case 'revived':
     case 'dashed':
     case 'disengaged':
     case 'dodging':

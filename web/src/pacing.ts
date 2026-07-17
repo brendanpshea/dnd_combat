@@ -30,6 +30,8 @@ export function beatFor(events: GameEvent[]): number {
   for (const e of events) {
     switch (e.type) {
       case 'died': hold(950); break;
+      case 'downed': hold(950); break;
+      case 'revived': hold(800); break;
       case 'damageDealt': hold(700); break;
       case 'healed': hold(650); break;
       case 'savingThrow': hold(550); break;
@@ -85,9 +87,13 @@ export function narrate(state: GameState, events: GameEvent[]): string | undefin
       case 'conditionApplied':
         line = `${name(e.combatantId)} is ${e.condition}!`;
         break;
-      // Last word, whatever else happened: someone dying is the headline.
+      // Last word, whatever else happened: someone going down is the headline.
       case 'died':
-        return `☠ ${name(e.combatantId)} is down!`;
+        return `☠ ${name(e.combatantId)} is slain!`;
+      case 'downed':
+        return `💤 ${name(e.combatantId)} is down — heal them to get them up!`;
+      case 'revived':
+        return `✨ ${name(e.combatantId)} is back on their feet!`;
       default:
         break;
     }

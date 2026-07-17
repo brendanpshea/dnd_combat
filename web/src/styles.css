@@ -1119,3 +1119,25 @@ button.category .count {
    ask. Sized to be scannable without shouting over the label. */
 .chip-ico { font-size: 17px; flex: none; }
 .opt-ico { margin-right: 7px; }
+
+/* A downed hero: face-down, drained of colour, unmistakably out — but still on
+   the board, because someone can still go and get them up. */
+.token.downed .art, .token.downed .glyph {
+  filter: grayscale(1) brightness(0.62);
+  transform: rotate(-72deg) scale(0.82) !important;
+  transition: transform 0.35s ease-out, filter 0.35s ease-out;
+}
+.token.downed .base { opacity: 0.35; }
+.token.downed .hpbar { display: none; }
+.token.downed::after {
+  content: '💤';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: clamp(10px, 2.4vmin, 14px);
+  animation: down-pulse 1.8s ease-in-out infinite;
+}
+@keyframes down-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .token.downed::after { animation: none; }
+}

@@ -165,6 +165,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.combatantId)} dodges.`;
     case 'died':
       return `*** ${nm(e.combatantId)} dies! ***`;
+    case 'downed':
+      return `*** ${nm(e.combatantId)} is down! (unconscious — heal them to revive) ***`;
+    case 'revived':
+      return `${nm(e.combatantId)} is back on their feet with ${e.hp} HP!`;
     case 'combatEnded':
       return `\n##### ${e.winner === 'team1' ? 'TEAM 1' : 'TEAM 2'} WINS! #####`;
   }

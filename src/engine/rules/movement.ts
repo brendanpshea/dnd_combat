@@ -2,7 +2,7 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
-import { cellAt, abilityMod } from '../types.js';
+import { cellAt, abilityMod, isDown } from '../types.js';
 import { reachable, pathTo, adjacent, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
@@ -12,10 +12,19 @@ import type { GameEvent } from '../events.js';
 /** Damage for entering a hazard cell (fire pit, spikes...). */
 export const HAZARD_DAMAGE = '1d4';
 
+/**
+ * Hostiles that actually stand in your way. A downed one doesn't: you step over
+ * a body rather than being walled off by it — the mover still can't *end* on the
+ * square (moveDestinations rejects any occupied cell), which is the real rule.
+ *
+ * Not a nicety. Bodies stay on the board now, and in a corridor a couple of
+ * downed heroes sealed the map: the last enemy became physically unreachable and
+ * the battle could never end.
+ */
 export function hostileIds(state: GameState, mover: Combatant): Set<Id> {
   return new Set(
     Object.values(state.combatants)
-      .filter((c) => c.alive && c.team !== mover.team)
+      .filter((c) => c.alive && !isDown(c) && c.team !== mover.team)
       .map((c) => c.id),
   );
 }

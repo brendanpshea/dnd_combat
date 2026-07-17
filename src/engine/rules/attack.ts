@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown } from '../types.js';
 import { WEAPONS, WeaponData } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf } from '../../data/armor.js';
@@ -11,6 +11,7 @@ import { rollD20, rollDice, resolveRollMode } from '../dice.js';
 import { distanceFeet, adjacent } from '../grid.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
+import { downCombatant } from './heal.js';
 import type { GameEvent } from '../events.js';
 
 /** Which ability powers an attack with this weapon. */
@@ -46,7 +47,7 @@ export function collectAttackSources(
     if (weapon.range && dist > weapon.range.normal) dis.push('long range');
     // Ranged attack with any hostile adjacent to the attacker.
     for (const c of Object.values(state.combatants)) {
-      if (c.alive && c.team !== attacker.team && adjacent(c.position, attacker.position)) {
+      if (c.alive && !isDown(c) && c.team !== attacker.team && adjacent(c.position, attacker.position)) {
         dis.push('enemy adjacent');
         break;
       }
@@ -272,6 +273,10 @@ export function applyDamage(
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
+  // Ask *before* the damage lands: were they already out? Nothing about the
+  // state afterwards can answer it, because a slept hero is also `unconscious`
+  // at whatever HP it has left.
+  const wasDown = isDown(target);
 
   if (target.immunities.includes(damageType)) amount = 0;
   else if (target.resistances.includes(damageType)) amount = Math.floor(amount / 2);
@@ -325,7 +330,14 @@ export function applyDamage(
   }
 
   if (target.hp === 0) {
-    events.push(...kill(state, targetId));
+    // Heroes drop; monsters die. A downed hero can't be finished off — further
+    // damage finds it already at 0 and changes nothing — so the fight's stake
+    // is losing its sword until someone reaches it, not losing it for good.
+    if (target.unconsciousAtZero && target.alive) {
+      if (!wasDown) events.push(...dropToZero(state, targetId));
+    } else {
+      events.push(...kill(state, targetId));
+    }
   }
   return events;
 }
@@ -352,6 +364,26 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   return events;
 }
 
+/**
+ * Drop a hero to 0: unconscious, out of the fight, and possibly the last one
+ * standing — so the winner check runs here exactly as it does for a death.
+ *
+ * Caller decides whether this is the *first* time (see `wasDown`). An earlier
+ * version asked the state instead — "already unconscious at 0?" — which a slept
+ * hero also satisfies the instant it's damaged to 0. It returned early, skipped
+ * the winner check, and a party could be wiped out with the battle grinding on
+ * forever.
+ */
+function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
+  const events = [...downCombatant(state, combatantId), ...breakConcentration(state, combatantId)];
+  const winner = checkWinner(state);
+  if (winner) {
+    state.winner = winner;
+    events.push({ type: 'combatEnded', winner });
+  }
+  return events;
+}
+
 export function kill(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
   c.alive = false;
@@ -372,9 +404,13 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
 }
 
 export function checkWinner(state: GameState): 'team1' | 'team2' | null {
-  const alive = Object.values(state.combatants).filter((c) => c.alive);
-  const t1 = alive.some((c) => c.team === 'team1');
-  const t2 = alive.some((c) => c.team === 'team2');
+  // Standing, not merely alive: a downed hero is alive at 0 HP and out of the
+  // fight, so a party that is all down has lost. Deliberately *not* "conscious"
+  // — a slept party is above 0 and still counts, or Sleep would win the game
+  // outright.
+  const standing = Object.values(state.combatants).filter((c) => c.alive && c.hp > 0);
+  const t1 = standing.some((c) => c.team === 'team1');
+  const t2 = standing.some((c) => c.team === 'team2');
   if (t1 && !t2) return 'team1';
   if (t2 && !t1) return 'team2';
   return null;

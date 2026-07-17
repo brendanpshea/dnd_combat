@@ -7,6 +7,7 @@ import type { GameState, Id } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { rollDice, rollD20, resolveRollMode } from '../engine/dice.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
+import { applyHealing } from '../engine/rules/heal.js';
 import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
 import type { GameEvent } from '../engine/events.js';
@@ -40,12 +41,11 @@ export interface ConsumableData {
 function healPotion(dice: string) {
   return ({ state, userId, targetIds }: UseContext): GameEvent[] => {
     const targetId = targetIds[0] ?? userId;
-    const t = state.combatants[targetId]!;
     const roll = rollDice(state.rng, dice);
     state.rng = roll.state;
-    const amount = Math.min(roll.total, t.maxHp - t.hp);
-    t.hp += amount;
-    return [{ type: 'healed', targetId, sourceId: userId, amount }];
+    // Through the rule: a potion poured into a downed ally wakes them, exactly
+    // as Cure Wounds does. Healing that only sometimes revives is a bug.
+    return applyHealing(state, targetId, userId, roll.total);
   };
 }
 

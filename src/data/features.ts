@@ -7,6 +7,7 @@ import type { GameState, Id } from '../engine/types.js';
 import { proficiencyBonus } from '../engine/types.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
+import { applyHealing } from '../engine/rules/heal.js';
 import { distanceFeet } from '../engine/grid.js';
 import type { GameEvent } from '../engine/events.js';
 
@@ -74,9 +75,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       const c = state.combatants[actorId]!;
       const roll = rollDice(state.rng, `1d10+${c.level}`);
       state.rng = roll.state;
-      const amount = Math.min(roll.total, c.maxHp - c.hp);
-      c.hp += amount;
-      return [{ type: 'healed', targetId: actorId, sourceId: actorId, amount }];
+      return applyHealing(state, actorId, actorId, roll.total);
     },
   },
   'action-surge': {
@@ -145,9 +144,8 @@ export const FEATURES: Record<Id, FeatureData> = {
         if (pool <= 0) break;
         const amount = Math.min(pool, Math.floor(t.maxHp / 2) - t.hp);
         if (amount <= 0) continue;
-        t.hp += amount;
         pool -= amount;
-        events.push({ type: 'healed', targetId: t.id, sourceId: actorId, amount });
+        events.push(...applyHealing(state, t.id, actorId, amount));
       }
       return events;
     },

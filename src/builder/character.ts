@@ -73,6 +73,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const combatant: Combatant = {
     id: `${opts.team}-${opts.classId}`,
     name: opts.name ?? cls.name,
+    unconsciousAtZero: true,   // heroes drop; monsters die
     ...(opts.portraitId !== undefined ? { portraitId: opts.portraitId } : {}),
     team: opts.team,
     classId: cls.id,

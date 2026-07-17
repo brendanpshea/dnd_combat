@@ -27,6 +27,10 @@ export type GameEvent =
       tags?: string[];
     }
   | { type: 'healed'; targetId: Id; sourceId: Id; amount: number }
+  /** A hero hit 0 HP: unconscious, still on the board, revivable. Not death. */
+  | { type: 'downed'; combatantId: Id }
+  /** Healed off 0 HP and back on their feet. */
+  | { type: 'revived'; combatantId: Id; hp: number }
   | {
       type: 'savingThrow';
       combatantId: Id; ability: Ability; dc: number;

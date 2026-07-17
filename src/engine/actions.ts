@@ -8,7 +8,7 @@
  * spells; drivers may customize targets and step() re-validates.
  */
 import type { GameState, Id, Position, Combatant } from './types.js';
-import { posEq, cellAt } from './types.js';
+import { posEq, cellAt, isDown } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
@@ -47,6 +47,7 @@ function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, targetI
   const w = WEAPONS[weaponId];
   const t = state.combatants[targetId];
   if (!w || !t || !t.alive || t.team === actor.team) return false;
+  if (isDown(t)) return false;   // already out of the fight; nothing to gain
   if (isHidden(t)) return false;
   if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
@@ -203,7 +204,10 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'shakeAwake': {
       if (incap || actor.turn.actionUsed) return false;
       const t = state.combatants[action.targetId];
-      return !!t && t.alive && t.team === actor.team && t.id !== actorId &&
+      // Shaking rouses a *sleeper*. It does nothing for a hero at 0 HP —
+      // only healing gets them up — and allowing it stripped the unconscious
+      // while leaving them at 0, an awake body that still couldn't act.
+      return !!t && t.alive && !isDown(t) && t.team === actor.team && t.id !== actorId &&
         adjacent(actor.position, t.position) &&
         t.conditions.some((c) => c.id === 'unconscious');
     }
@@ -217,7 +221,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   if (currentCombatant(state).id !== actorId) return [];
 
   const actions: Action[] = [];
-  const enemies = Object.values(state.combatants).filter((c) => c.alive && c.team !== actor.team);
+  const enemies = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
   const allies = Object.values(state.combatants).filter((c) => c.alive && c.team === actor.team);
 
   for (const to of moveDestinations(state, actor)) {

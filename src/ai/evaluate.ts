@@ -7,7 +7,7 @@
  * generalizes to content that didn't exist when this file was written.
  */
 import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
-import { abilityMod } from '../engine/types.js';
+import { abilityMod, isDown } from '../engine/types.js';
 import { WEAPONS, type WeaponData } from '../data/weapons.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
@@ -209,7 +209,7 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     let nearest = Infinity;
     let seesAnyEnemy = false;
     for (const e of Object.values(state.combatants)) {
-      if (!e.alive || e.team === team) continue;
+      if (!e.alive || isDown(e) || e.team === team) continue;
       nearest = Math.min(nearest, distanceCells(e.position, c.position));
       // "See" means *can act on*, not merely a clear geometric line: a hidden
       // enemy can't be targeted, so a unit whose foes are all hidden is blind
@@ -246,7 +246,7 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Incoming threat: fragile units should not sit where enemies can reach.
     let threat = 0;
     for (const e of Object.values(state.combatants)) {
-      if (!e.alive || e.team === team) continue;
+      if (!e.alive || isDown(e) || e.team === team) continue;
       threat += threatReach(e, c) * damageProxy(e);
     }
     // Threat matters more the closer it comes to killing you — and the POV
