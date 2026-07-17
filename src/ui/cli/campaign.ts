@@ -16,7 +16,7 @@ import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
-  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest,
+  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest, longRest,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
 import { runBattle, chooseFrom, argValue, parseSeed, AiLevel } from './battle.js';
@@ -131,6 +131,7 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
       'Manage equipment',
       'Give an item to someone',
       'Short rest (recover half maximum HP)',
+      'Long rest (recover all HP)',
       ...(canScheme && !haggleUsed ? ['Haggle over prices (skill check)'] : []),
       ...(canScheme && !stealUsed ? ['Try to steal something (Stealth + Sleight of Hand)'] : []),
       'Done — to battle!',
@@ -173,6 +174,13 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
     if (label.startsWith('Manage equipment')) { await manageEquipment(c, rl); continue; }
     if (label.startsWith('Short rest')) {
       const result = shortRest(c);
+      console.log(result.totalHealed > 0
+        ? `The party recovers ${result.totalHealed} HP.`
+        : 'The party is already fully rested.');
+      continue;
+    }
+    if (label.startsWith('Long rest')) {
+      const result = longRest(c);
       console.log(result.totalHealed > 0
         ? `The party recovers ${result.totalHealed} HP.`
         : 'The party is already fully rested.');

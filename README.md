@@ -110,8 +110,8 @@ more items from higher rarity tiers (the finale guarantees a rare drop).
 Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
 purchases are proficiency-gated), manage equipment, haggle or steal, then
 fight. Consumables spent in battle stay spent; weapon swaps and remaining HP
-persist. The shop offers an unrestricted testing **short rest**, restoring
-half of every hero's maximum HP. Defeat
+persist. The shop offers unrestricted testing rests: a **short rest** restores
+half of every hero's maximum HP, while a **long rest** fully restores HP. Defeat
 ends the campaign and deletes the save (there's also a reset/delete option).
 New campaigns begin at the party forge; names, species, class roles, and
 portrait choices are locked in when the campaign begins and travel with the

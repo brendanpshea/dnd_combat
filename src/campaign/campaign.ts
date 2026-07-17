@@ -398,6 +398,17 @@ export function shortRest(c: CampaignState): RestResult {
   return { totalHealed };
 }
 
+/** Testing-friendly long rest: each hero recovers all missing HP. */
+export function longRest(c: CampaignState): RestResult {
+  let totalHealed = 0;
+  const party = buildCampaignParty(c);
+  for (const [index, combatant] of party.entries()) {
+    totalHealed += combatant.maxHp - combatant.hp;
+    c.characters[index]!.resources = { hp: combatant.maxHp };
+  }
+  return { totalHealed };
+}
+
 // ---------------------------------------------------------------------------
 // Shop skill checks (steal, haggle) — always rolled by the party's best.
 // ---------------------------------------------------------------------------

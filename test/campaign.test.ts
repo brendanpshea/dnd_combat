@@ -7,7 +7,7 @@ import {
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
-  partySkillCheck, attemptSteal, shortRest,
+  partySkillCheck, attemptSteal, shortRest, longRest,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -103,7 +103,7 @@ describe('campaign state', () => {
     expect(c.victories).toEqual(['kobolds']);
   });
 
-  it('persists battle HP and short rest recovers half maximum HP', () => {
+  it('persists battle HP and rests restore the expected amount', () => {
     const c = newCampaign();
     const party = buildCampaignParty(c);
     const fighter = party[0]!;
@@ -115,6 +115,10 @@ describe('campaign state', () => {
     const restedFighter = buildCampaignParty(c)[0]!;
     expect(result.totalHealed).toBe(Math.ceil(fighter.maxHp / 2));
     expect(restedFighter.hp).toBe(1 + Math.ceil(restedFighter.maxHp / 2));
+
+    const longRestResult = longRest(c);
+    expect(longRestResult.totalHealed).toBe(restedFighter.maxHp - restedFighter.hp);
+    expect(buildCampaignParty(c)[0]!.hp).toBe(restedFighter.maxHp);
   });
 
   it('party levels up mid-ladder and the level-up is reported', () => {

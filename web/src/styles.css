@@ -669,6 +669,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .shop-grid button:disabled { opacity: 0.4; cursor: default; }
 .shop-actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .shop-heading, .sell-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rest-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 .shop-tabs { display: flex; gap: 5px; }
 .shop-tabs button, .sell-heading .mini { min-height: 29px; padding: 3px 10px; font-size: 12px; margin: 0; }
 .shop-tabs button.selected, .sell-heading .mini.selected {

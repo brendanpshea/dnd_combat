@@ -18,7 +18,7 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
-  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest,
+  partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, shortRest, longRest,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -419,12 +419,20 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       <section className="panel">
         <div className="shop-heading">
           <h3>Party</h3>
-          <button className="mini" onClick={() => mutate(() => {
-            const result = shortRest(c);
-            setNotice(result.totalHealed > 0
-              ? `Short rest: the party recovers ${result.totalHealed} HP.`
-              : 'The party is already fully rested.');
-          })}>Short rest</button>
+          <div className="rest-actions">
+            <button className="mini" onClick={() => mutate(() => {
+              const result = shortRest(c);
+              setNotice(result.totalHealed > 0
+                ? `Short rest: the party recovers ${result.totalHealed} HP.`
+                : 'The party is already fully rested.');
+            })}>Short rest</button>
+            <button className="mini" onClick={() => mutate(() => {
+              const result = longRest(c);
+              setNotice(result.totalHealed > 0
+                ? `Long rest: the party recovers ${result.totalHealed} HP.`
+                : 'The party is already fully rested.');
+            })}>Long rest</button>
+          </div>
         </div>
         {c.characters.map((ch, idx) => (
           <div key={idx} className="char-card">

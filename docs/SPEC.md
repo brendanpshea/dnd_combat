@@ -488,9 +488,9 @@ the ladder so nobody de-levels. Between battles the shop buys/sells
 attack/damage bonus support in the engine), and armor gated by per-class
 **armor proficiencies** (fighter/cleric all, rogue light, wizard none).
 Remaining HP persists from a victorious battle into the next store visit. For
-testing, the store provides an unrestricted **short rest** that restores half
-of each hero's maximum HP; other encounter resources still begin full when a
-combatant is rebuilt.
+testing, the store provides unrestricted rests: a **short rest** restores half
+of each hero's maximum HP, and a **long rest** fully restores HP. Other
+encounter resources still begin full when a combatant is rebuilt.
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
 passed between characters. **Shop skills** (once each per visit, rolled by
