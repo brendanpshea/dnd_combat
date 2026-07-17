@@ -7,6 +7,7 @@ import type { GameState, Id } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { rollDice, rollD20, resolveRollMode } from '../engine/dice.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
+import { applyLucky } from '../engine/rules/luck.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
@@ -71,7 +72,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
       const fake = { melee: false, range: { normal: 20, long: 60 }, properties: [] };
       const { adv, dis } = collectAttackSources(state, user, target, fake as never, false);
       const mode = resolveRollMode(adv, dis);
-      const d20 = rollD20(state.rng, mode);
+      const d20 = applyLucky(state, userId, rollD20(state.rng, mode), mode);
       state.rng = d20.state;
       const total = d20.natural + abilityMod(user.abilities.dex) + proficiencyBonus(user.level);
       const ac = acOf(target);

@@ -14,8 +14,8 @@ advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
 masteries, spell slots, terrain, forced movement, and inventory (equipment
 slots, weapon swapping, healing potions, scrolls, alchemist's fire). A
 persistent campaign mode adds shops (with haggling and theft), random loot,
-gear progression, and seven combat-relevant species: Human, Dwarf, Wood Elf,
-Orc, Dragonborn, Abyssal Tiefling, and Gnome.
+gear progression, and eight combat-relevant species: Human, Dwarf, Wood Elf,
+Orc, Dragonborn, Abyssal Tiefling, Gnome, and Halfling.
 
 Hide is a DC 15 Dexterity (Stealth) action available only outside every
 enemy's line of sight. A hidden creature cannot be directly targeted, gains
@@ -28,7 +28,7 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 274 deterministic engine, campaign, AI, and UI tests
+npm test          # 284 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
 npm run campaign  # terminal campaign: 11-battle ladder with XP, leveling, loot
@@ -121,6 +121,9 @@ spell slot there.
 Wizards can summon an owl with **Find Familiar** from the store Spells row.
 The familiar persists through unconsciousness and rests, and grants advantage
 on the wizard's first melee or spell attack roll each combat round.
+Wizards can also cast **Mage Armor** in the store or combat. It sets AC to
+$13 + \text{Dexterity modifier}$ while unarmored and remains active until the
+next long rest.
 New campaigns begin at the party forge; names, species, class roles, and
 portrait choices are locked in when the campaign begins and travel with the
 party through every battle.

@@ -7,6 +7,8 @@ import { collectAttackSources, breakConcentration, applyDamage } from '../src/en
 import { canHide } from '../src/engine/rules/hide.js';
 import { savingThrow } from '../src/engine/rules/saves.js';
 import { hasLineOfSight } from '../src/engine/grid.js';
+import { applyLucky } from '../src/engine/rules/luck.js';
+import { rollD20, type D20Roll } from '../src/engine/dice.js';
 import { FEATURES } from '../src/data/features.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 import { cellAt } from '../src/engine/types.js';
@@ -436,6 +438,122 @@ describe('Gnome', () => {
         return;
       }
       throw new Error('the wolf never failed its save in 30 seeds — check the DC/save odds');
+    });
+  });
+});
+
+describe('Halfling', () => {
+  const hin = (classId: string, position: Position, id: string, level = 1) =>
+    ({ ...buildCharacter({ classId, team: 'team1', position, speciesId: 'halfling', level }), id });
+
+  it('knows Lucky and Naturally Stealthy, and nothing else', () => {
+    const h = hin('fighter', { x: 0, y: 0 }, 'h');
+    expect(h.featureIds).toContain('lucky');
+    expect(h.featureIds).toContain('naturally-stealthy');
+    // No Brave: nothing in the game applies Frightened yet, so it would ship
+    // inert — the same trap Speak with Animals was for the gnome.
+    expect(h.spellIds).toEqual([]);
+    expect(h.innateSpells).toEqual({});
+  });
+
+  describe('Lucky', () => {
+    it('rerolls a natural 1 and keeps the new result, even if it is also worse', () => {
+      // Direct unit test of the shared helper: isolates the reroll rule from
+      // any particular call site's wiring.
+      const c = new Combat({ seed: 1, mapId: 'open', combatants: [hin('fighter', { x: 0, y: 0 }, 'h')] });
+      const naturalOne: D20Roll = { natural: 1, dice: [1], mode: 'flat', state: c.state.rng };
+      const result = applyLucky(c.state, 'h', naturalOne, 'flat');
+      expect(result.natural).not.toBe(undefined);
+      // The reroll must actually consume the RNG (a different draw), not just
+      // relabel the same one.
+      expect(result.state).not.toBe(naturalOne.state);
+    });
+
+    it('does not touch a roll that was not a natural 1', () => {
+      const c = new Combat({ seed: 1, mapId: 'open', combatants: [hin('fighter', { x: 0, y: 0 }, 'h')] });
+      const naturalTen: D20Roll = { natural: 10, dice: [10], mode: 'flat', state: c.state.rng };
+      expect(applyLucky(c.state, 'h', naturalTen, 'flat')).toBe(naturalTen);   // same object back
+    });
+
+    it('does nothing for a combatant without the feature', () => {
+      const c = new Combat({ seed: 1, mapId: 'open', combatants: [buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, speciesId: 'human' })] });
+      const id = Object.keys(c.state.combatants)[0]!;
+      const naturalOne: D20Roll = { natural: 1, dice: [1], mode: 'flat', state: c.state.rng };
+      expect(applyLucky(c.state, id, naturalOne, 'flat')).toBe(naturalOne);
+    });
+
+    it('actually fires at a real attack roll: a natural 1 does not stay a 1', () => {
+      // Search for a seed whose next flat d20 draw would be a natural 1 (a
+      // deterministic peek, not a mocked roll), then confirm the real
+      // resolveAttack() call site rerolls it rather than just the isolated
+      // helper in another test.
+      for (let seed = 1; seed <= 300; seed++) {
+        const h = hin('fighter', { x: 3, y: 3 }, 'h');
+        const foe = { ...buildCharacter({ classId: 'fighter', team: 'team2', position: { x: 3, y: 4 } }), id: 'foe' };
+        const c = new Combat({ seed, mapId: 'open', combatants: [h, foe] });
+        let guard = 0;
+        while (c.activeId !== 'h' && guard++ < 20) c.apply({ kind: 'endTurn' });
+        if (rollD20(c.state.rng, 'flat').natural !== 1) continue;
+
+        const atk = legalActions(c.state, 'h').find((a) => a.kind === 'attack')!;
+        const { events } = step(c.state, atk);
+        const rolled = events.find((e) => e.type === 'attackRolled');
+        expect(rolled?.type === 'attackRolled' && rolled.natural).not.toBe(1);
+        return;
+      }
+      throw new Error('never found a seed with a natural-1 first draw in 300 tries');
+    });
+
+    it('also protects saving throws, not just attacks', () => {
+      // Same peek-and-verify approach, this time against savingThrow directly
+      // — a second call site, proving the helper is wired there too, not just
+      // guessed to be from the shared implementation.
+      for (let seed = 1; seed <= 300; seed++) {
+        const h = hin('fighter', { x: 0, y: 0 }, 'h');
+        const c = new Combat({ seed, mapId: 'open', combatants: [h] });
+        if (rollD20(c.state.rng, 'flat').natural !== 1) continue;
+        const result = savingThrow(c.state, 'h', 'dex', 15);
+        expect(result.event.type === 'savingThrow' && result.event.natural).not.toBe(1);
+        return;
+      }
+      throw new Error('never found a seed with a natural-1 first draw in 300 tries');
+    });
+  });
+
+  describe('Naturally Stealthy', () => {
+    it('makes a halfling\'s own Hide check meaningfully better than a same-Dex human\'s', () => {
+      // Same shape as the Gnomish Cunning statistical test: one roll can't
+      // distinguish "the proficiency applied" from "rolled well", so this
+      // compares totals over many seeds. Ability fixed at 10 (mod +0) so the
+      // only source of difference is the proficiency bonus itself.
+      const trials = 30;
+      let halflingSum = 0;
+      let humanSum = 0;
+      for (let seed = 1; seed <= trials; seed++) {
+        const h = hin('fighter', { x: 3, y: 3 }, 'h');
+        h.abilities = { ...h.abilities, dex: 10 };
+        const foe = { ...buildMonster('goblin-warrior', 'team2', { x: 7, y: 7 }), id: 'foe' };
+        const c = new Combat({ seed, mapId: 'ruins', combatants: [h, foe] });
+        let guard = 0;
+        while (c.activeId !== 'h' && guard++ < 20) c.apply({ kind: 'endTurn' });
+        const hide = legalActions(c.state, 'h').find((a) => a.kind === 'hide');
+        if (!hide) continue;
+        const check = step(c.state, hide).events.find((e) => e.type === 'hideCheck');
+        if (check?.type === 'hideCheck') halflingSum += check.total;
+
+        const hu = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 3, y: 3 } }), id: 'hu' };
+        hu.abilities = { ...hu.abilities, dex: 10 };
+        const c2 = new Combat({ seed, mapId: 'ruins', combatants: [hu, { ...foe, id: 'foe2' }] });
+        let guard2 = 0;
+        while (c2.activeId !== 'hu' && guard2++ < 20) c2.apply({ kind: 'endTurn' });
+        const hide2 = legalActions(c2.state, 'hu').find((a) => a.kind === 'hide');
+        if (!hide2) continue;
+        const check2 = step(c2.state, hide2).events.find((e) => e.type === 'hideCheck');
+        if (check2?.type === 'hideCheck') humanSum += check2.total;
+      }
+      // Proficiency bonus at level 1 is +2; over ~30 samples the gap should be
+      // close to (and comfortably above half of) 2 * trials.
+      expect(halflingSum - humanSum).toBeGreaterThan(trials);
     });
   });
 });

@@ -5,6 +5,7 @@ import { rollD20 } from '../dice.js';
 import { hasLineOfSight } from '../grid.js';
 import { CLASSES } from '../../data/classes.js';
 import { FEATURES } from '../../data/features.js';
+import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 
 export function hiddenCondition(c: Combatant) {
@@ -26,14 +27,19 @@ export function canHide(state: GameState, actor: Combatant): boolean {
 
 function stealthBonus(c: Combatant): number {
   const cls = CLASSES[c.classId];
-  const proficient = cls?.skillProfs.includes('stealth') ?? false;
+  // A class list, or a species trait granting it outright (a halfling's
+  // Naturally Stealthy) — the same `grantsSkill` a feature already uses for
+  // passive Perception (Keen Senses), extended here to the roll it was always
+  // missing from: nothing before this let a species make its own Hide better.
+  const proficient = (cls?.skillProfs.includes('stealth') ?? false) ||
+    c.featureIds.some((f) => FEATURES[f]?.grantsSkill === 'stealth');
   return abilityMod(c.abilities.dex) + (proficient ? proficiencyBonus(c.level) : 0);
 }
 
 /** Spend Hide's action or bonus action and make its flat DC 15 Stealth check. */
 export function attemptHide(state: GameState, actorId: Id): GameEvent[] {
   const actor = state.combatants[actorId]!;
-  const d20 = rollD20(state.rng, 'flat');
+  const d20 = applyLucky(state, actorId, rollD20(state.rng, 'flat'), 'flat');
   state.rng = d20.state;
   const total = d20.natural + stealthBonus(actor);
   const success = total >= 15;

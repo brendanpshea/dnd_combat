@@ -88,6 +88,15 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'gnomish-cunning', name: 'Gnomish Cunning', trigger: 'passive',
     saveAdvantage: ['int', 'wis', 'cha'],
   },
+  // Existence alone is the whole feature: every d20-rolling call site checks
+  // featureIds.includes('lucky') directly (see engine/rules/luck.ts) rather
+  // than reading a field off this, so there is nothing else to declare.
+  lucky: { id: 'lucky', name: 'Lucky', trigger: 'passive' },
+  // Naturally Stealthy, reframed: RAW hides you behind a larger ally, which
+  // needs a size system this game doesn't have. Stealth proficiency instead —
+  // a halfling's own Hide check is simply better (stealthBonus in hide.ts),
+  // which is the part of the trait that actually matters at the table.
+  'naturally-stealthy': { id: 'naturally-stealthy', name: 'Naturally Stealthy', trigger: 'passive', grantsSkill: 'stealth' },
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
     uses: { count: 2, per: 'encounter' },

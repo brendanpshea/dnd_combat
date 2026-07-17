@@ -26,7 +26,7 @@ const ENCOUNTERS = ['ogre', 'crypt', 'spiders'];
 
 // Species with a signature spell to watch; the rest are passive (no ×N).
 const SIGNATURE: Record<string, string | undefined> = {
-  human: undefined, dwarf: undefined, orc: undefined,
+  human: undefined, dwarf: undefined, orc: undefined, halfling: undefined,
   elf: 'faerie-fire', dragonborn: 'breath-weapon', tiefling: 'ray-of-sickness',
   gnome: 'animal-friendship',
 };

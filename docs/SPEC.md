@@ -151,6 +151,28 @@ something the generic evaluator is taught to *seek out*, the same trade-off
 made for every other AI behaviour in this project (tune the evaluator, never
 script the behaviour).
 
+**Halfling** is the fifth, and deliberately a pure survival species — two
+traits, no spell, nothing offensive. **Lucky** rerolls a natural 1 on any d20
+test and must use the new roll; five call sites do the actual rolling (weapon
+attacks, spell attacks, thrown items, saving throws, the Hide check), so it's
+one shared helper (`applyLucky`, in `engine/rules/luck.ts` rather than
+`dice.ts` — `dice.ts` is deliberately state-shape-agnostic, no `Combatant`
+awareness) wrapped around each `D20Roll`. Unlimited, not a resource pool —
+that's the halfling species trait's actual shape (2014 and 2024 alike); the
+capped 3/rest version is a separate feat, a different thing. **Naturally
+Stealthy** is a reframe: RAW lets a halfling hide behind a larger ally, which
+needs a size system this game doesn't have (the same gap that ruled out
+Halfling Nimbleness entirely), so it grants Stealth proficiency instead —
+which turned up a real, if small, gap on the way in: `stealthBonus` (the Hide
+roll) read only `cls.skillProfs`, never the generic `grantsSkill` that
+`passivePerceptionWithAdvantage` already used for the elf's Keen Senses. Two
+lines closed it, and now a species trait can improve a creature's *own* Hide
+check, not just how well it spots others'. **Brave (advantage vs Frightened)
+is deliberately not included**: `frightened` has existed in `ConditionId`
+since day one and nothing has ever applied it, so shipping Brave today would
+be exactly the "Speak with Animals is useless" trap the gnome's Animal
+Friendship was built to avoid.
+
 Because species never meet in the mirror arena (both sides are human), a
 dedicated harness measures them where it matters — `npm run species` runs a
 party of each species against themed level-3 encounters, reporting *heroes
@@ -597,6 +619,9 @@ encounter-only spell slot.
 persists through unconsciousness and rests without occupying a grid cell; it
 grants advantage on the wizard's first melee or spell attack roll each round,
 then its token marker dims until the next round.
+**Mage Armor** is a wizard self-cast in the store and combat. While unarmored,
+it sets AC to $13 + \text{Dexterity modifier}$ (and still allows a shield); it
+persists between battles but ends at the next long rest.
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
 passed between characters. **Shop skills** (once each per visit, rolled by

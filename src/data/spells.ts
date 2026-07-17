@@ -13,6 +13,7 @@ import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway } from '../engine/rules/attack.js';
+import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
@@ -94,7 +95,7 @@ function spellAttack(
   const { adv, dis } = collectAttackSources(state, caster, target, fake as never, opts.melee);
   adv.push(...(opts.extraAdv ?? []));
   const mode = resolveRollMode(adv, dis);
-  const d20 = rollD20(state.rng, mode);
+  const d20 = applyLucky(state, casterId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   consumeFamiliarHelp(state, caster);
   let total = d20.natural + spellMod(state, casterId) + proficiencyBonus(caster.level);
@@ -332,6 +333,17 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🦉',
     cast({ state, casterId }) {
       state.combatants[casterId]!.familiar = { kind: 'owl' };
+      return [];
+    },
+  },
+
+  'mage-armor': {
+    id: 'mage-armor', name: 'Mage Armor', level: 1, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '🛡️',
+    cast({ state, casterId }) {
+      state.combatants[casterId]!.mageArmor = true;
       return [];
     },
   },

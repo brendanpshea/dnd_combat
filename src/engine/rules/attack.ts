@@ -13,6 +13,7 @@ import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
 import { downCombatant } from './heal.js';
+import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 
 /** Which ability powers an attack with this weapon. */
@@ -166,7 +167,7 @@ export function resolveAttack(
 
   const { adv, dis } = collectAttackSources(state, attacker, target, weapon, isMeleeAttack);
   const mode = resolveRollMode(adv, dis);
-  const d20 = rollD20(state.rng, mode);
+  const d20 = applyLucky(state, attackerId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   consumeFamiliarHelp(state, attacker);
 

@@ -146,6 +146,8 @@ export interface Combatant {
     /** The round in which it last granted the caster attack advantage. */
     helpedRound?: number;
   };
+  /** Mage Armor lasts until the campaign's next long rest while unarmored. */
+  mageArmor?: boolean;
   /** Has taken a turn this combat (Assassinate window). */
   hasActed: boolean;
   /** Per-turn economy, reset at turn start. */

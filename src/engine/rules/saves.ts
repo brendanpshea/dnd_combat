@@ -5,6 +5,7 @@ import type { GameState, Id, Ability } from '../types.js';
 import { abilityMod, proficiencyBonus } from '../types.js';
 import { rollD20, rollDice } from '../dice.js';
 import { FEATURES } from '../../data/features.js';
+import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 
 export function savingThrow(
@@ -18,7 +19,8 @@ export function savingThrow(
   // disadvantage-on-saves source exists yet, so 'flat' is the only other case
   // — the mode is exactly "does a feature grant this?".
   const hasAdvantage = c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability));
-  const d20 = rollD20(state.rng, hasAdvantage ? 'advantage' : 'flat');
+  const mode = hasAdvantage ? 'advantage' : 'flat';
+  const d20 = applyLucky(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   let total =
     d20.natural +

@@ -89,4 +89,21 @@ export const SPECIES: Record<Id, SpeciesData> = {
     spellsByLevel: { 1: ['minor-illusion'] },
     innateSpells: [{ spellId: 'animal-friendship', atLevel: 1, uses: 2 }],
   },
+  halfling: {
+    id: 'halfling', name: 'Halfling', speed: 30,
+    // Two survival traits, deliberately not a damage-dealer: a halfling reads
+    // as hard to pin down and hard to hit, not another offensive niche.
+    // Lucky (a natural 1 rerolls, unconditionally, on every attack roll,
+    // saving throw and Hide check — see engine/rules/luck.ts) is the
+    // signature trait, unlimited rather than the capped "Lucky" feat's
+    // separate 2024 mechanic. Halfling Nimbleness and 2024's Naturally
+    // Stealthy (hiding behind a larger ally) both need a size system this
+    // game doesn't have, so Naturally Stealthy is reframed as straight
+    // Stealth proficiency — its own Hide check gets better, which is the part
+    // that actually shows up at the table. Brave (advantage vs Frightened) is
+    // deliberately not included: nothing in the game applies Frightened yet,
+    // so it would ship inert, the same trap Speak with Animals was for the
+    // gnome before Animal Friendship replaced it.
+    featureIds: ['lucky', 'naturally-stealthy'],
+  },
 };
