@@ -64,6 +64,10 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       const key = posKey(pos);
       const hl = highlights.get(key);
       const classes = ['cell', `terrain-${cell.terrain}`];
+      // An overlay, not a terrain: it sits on top of whatever the cell really
+      // is, so it can't just be another terrain-* class (that would replace
+      // the ground it's covering rather than sitting on it).
+      if (cell.illusion) classes.push('illusion');
       if (hl) classes.push(`hl-${hl}`);
       if ((x + y) % 2 === 0) classes.push('dark');
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];

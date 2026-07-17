@@ -34,6 +34,16 @@ export type TerrainId = 'open' | 'difficult' | 'wall' | 'hazard';
 export interface Cell {
   terrain: TerrainId;
   occupantId?: Id;
+  /**
+   * A gnome's Minor Illusion: a shimmering, walkable false wall. Deliberately
+   * not a `TerrainId` — an illusion sits *on top of* whatever the cell really
+   * is (open ground, difficult terrain) rather than replacing it, so nothing
+   * needs to remember what to revert to when it pops. It blocks line of sight
+   * like a wall but not movement; any creature that walks through it (either
+   * side — an illusion doesn't pick favourites) reveals it, and it expires on
+   * its own after a few rounds regardless.
+   */
+  illusion?: { sourceId: Id; expiresAtRound: number };
 }
 
 export interface GridState {
@@ -163,7 +173,19 @@ export interface Combatant {
    * no death saves, no second unconscious condition.
    */
   unconsciousAtZero?: boolean;
+  /**
+   * SRD creature type (humanoid, beast, undead...). Optional and mostly
+   * decorative today — nothing gates on it except Animal Friendship, which
+   * needs to tell a wolf from a goblin. Player characters are all `humanoid`;
+   * monsters are tagged per stat block. A natural follow-on (not done here,
+   * to keep this change scoped) is gating Hold Person to humanoids for the
+   * same faithfulness reason.
+   */
+  creatureType?: CreatureType;
 }
+
+export type CreatureType =
+  | 'humanoid' | 'beast' | 'undead' | 'giant' | 'construct' | 'fiend' | 'dragon';
 
 export interface GameState {
   rng: RngState;

@@ -3,7 +3,7 @@
  * consulted by the rules (Dueling, Sneak Attack, Disciple of Life) via their
  * presence in combatant.featureIds.
  */
-import type { GameState, Id } from '../engine/types.js';
+import type { GameState, Id, Ability } from '../engine/types.js';
 import { proficiencyBonus } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 import { attemptHide } from '../engine/rules/hide.js';
@@ -44,6 +44,13 @@ export interface FeatureData {
   bonusVerb?: 'dash' | 'disengage' | 'hide';
   /** Proficiency in a skill, for anyone who has this feature. */
   grantsSkill?: SkillId;
+  /**
+   * Advantage on saving throws using these abilities (Gnomish Cunning: Int,
+   * Wis, Cha). `savingThrow` reads it directly off the roller's featureIds, so
+   * a second species wanting the same shield — a halfling's Brave, say, scoped
+   * to just the fear save — is another one-line feature, not new mechanism.
+   */
+  saveAdvantage?: Ability[];
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
@@ -77,6 +84,10 @@ export const FEATURES: Record<Id, FeatureData> = {
    * needs this to spot a hidden rogue — one fact, read by both.
    */
   'keen-senses': { id: 'keen-senses', name: 'Keen Senses', trigger: 'passive', grantsSkill: 'perception' },
+  'gnomish-cunning': {
+    id: 'gnomish-cunning', name: 'Gnomish Cunning', trigger: 'passive',
+    saveAdvantage: ['int', 'wis', 'cha'],
+  },
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
     uses: { count: 2, per: 'encounter' },

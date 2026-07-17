@@ -5,7 +5,11 @@ import { buildMonster } from '../src/data/monsters.js';
 import { legalActions, step } from '../src/engine/actions.js';
 import { collectAttackSources, breakConcentration, applyDamage } from '../src/engine/rules/attack.js';
 import { canHide } from '../src/engine/rules/hide.js';
+import { savingThrow } from '../src/engine/rules/saves.js';
+import { hasLineOfSight } from '../src/engine/grid.js';
+import { FEATURES } from '../src/data/features.js';
 import type { Combatant, Position } from '../src/engine/types.js';
+import { cellAt } from '../src/engine/types.js';
 
 const elf = (classId: string, position: Position, id: string, level = 3): Combatant =>
   ({ ...buildCharacter({ classId, team: 'team1', position, speciesId: 'elf', level }), id });
@@ -266,5 +270,172 @@ describe('Abyssal Tiefling', () => {
       }
     }
     throw new Error('poisoned never landed in 40 seeds — check the hit/save odds');
+  });
+});
+
+describe('Gnome', () => {
+  const gno = (classId: string, position: Position, id: string, level = 1) =>
+    ({ ...buildCharacter({ classId, team: 'team1', position, speciesId: 'gnome', level }), id });
+  const wolf = (position: Position, id: string) =>
+    ({ ...buildMonster('wolf', 'team2', position), id });
+
+  it('knows Minor Illusion and 2 uses of Animal Friendship from 1st level', () => {
+    const g = gno('fighter', { x: 2, y: 2 }, 'g');
+    expect(g.spellIds).toContain('minor-illusion');
+    expect(g.spellIds).toContain('animal-friendship');
+    expect(g.innateSpells['animal-friendship']).toEqual({ current: 2, max: 2 });
+    expect(g.spellSlots).toEqual([]);   // the fighter still has no slots
+    expect(g.featureIds).toContain('gnomish-cunning');
+  });
+
+  describe('Gnomish Cunning (save advantage)', () => {
+    it('rolls Int/Wis/Cha saves with advantage — statistically, not just structurally', () => {
+      // A single roll can't distinguish "advantage applied" from "got lucky",
+      // so this checks the pass *rate* over many independent seeds. Ability
+      // fixed at 10 (mod +0) and profs cleared so DC 11 is a coin flip either
+      // way — flat should land near 50%, advantage near 75% (1 - (10/20)^2).
+      // The gap is wide enough that seed variance can't plausibly erase it.
+      const trials = 150;
+      const dc = 11;
+      let advPasses = 0;
+      let flatPasses = 0;
+      for (let seed = 1; seed <= trials; seed++) {
+        const g = gno('fighter', { x: 0, y: 0 }, 'g');
+        g.abilities = { ...g.abilities, wis: 10 };
+        g.savingThrowProfs = [];
+        const state = new Combat({ seed, mapId: 'open', combatants: [g, goblin({ x: 7, y: 7 }, 'foe')] }).state;
+        if (savingThrow(state, 'g', 'wis', dc).success) advPasses++;
+
+        const h = { ...g, featureIds: [] };   // same stats, no Gnomish Cunning
+        const flatState = new Combat({ seed, mapId: 'open', combatants: [h, goblin({ x: 7, y: 7 }, 'foe')] }).state;
+        if (savingThrow(flatState, 'g', 'wis', dc).success) flatPasses++;
+      }
+      expect(advPasses).toBeGreaterThan(flatPasses + 15);
+    });
+
+    it('does not grant advantage on Str/Dex/Con saves', () => {
+      // Str isn't in Gnomish Cunning's list; this exercises the "no feature
+      // matches this ability" branch so the gate is proven to gate something.
+      const g = gno('fighter', { x: 0, y: 0 }, 'g');
+      expect(g.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes('str'))).toBe(false);
+      expect(g.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes('wis'))).toBe(true);
+    });
+  });
+
+  describe('Minor Illusion', () => {
+    it('blocks line of sight where cast, like a wall', () => {
+      const g = gno('wizard', { x: 0, y: 0 }, 'g');
+      const foe = { ...buildCharacter({ classId: 'fighter', team: 'team2', position: { x: 7, y: 0 } }), id: 'foe' };
+      const c = new Combat({ seed: 3, mapId: 'open', combatants: [g, foe] });
+      let guard = 0;
+      while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      expect(hasLineOfSight(c.state.grid, { x: 0, y: 0 }, { x: 7, y: 0 })).toBe(true);
+      const cast = legalActions(c.state, 'g').find(
+        (a) => a.kind === 'castSpell' && a.spellId === 'minor-illusion' &&
+          a.targets[0] && 'position' in a.targets[0] && a.targets[0].position.x === 3 && a.targets[0].position.y === 0,
+      )!;
+      const { state: after } = step(c.state, cast);
+      expect(after.grid.cells.find((_, i) => i === 0 * after.grid.width + 3)?.illusion).toBeDefined();
+      expect(hasLineOfSight(after.grid, { x: 0, y: 0 }, { x: 7, y: 0 })).toBe(false);
+    });
+
+    it('is popped by any creature that walks through it, not just its caster', () => {
+      const g = gno('wizard', { x: 0, y: 0 }, 'g');
+      const foe = { ...buildCharacter({ classId: 'fighter', team: 'team2', position: { x: 7, y: 0 } }), id: 'foe' };
+      const c = new Combat({ seed: 3, mapId: 'open', combatants: [g, foe] });
+      let guard = 0;
+      while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const cast = legalActions(c.state, 'g').find(
+        (a) => a.kind === 'castSpell' && a.spellId === 'minor-illusion' &&
+          a.targets[0] && 'position' in a.targets[0] && a.targets[0].position.x === 5 && a.targets[0].position.y === 0,
+      )!;
+      c.apply(cast);
+      expect(cellAt(c.state.grid, { x: 5, y: 0 })!.illusion).toBeDefined();
+      const move = legalActions(c.state, 'g').find((a) => a.kind === 'move' && a.to.x === 6 && a.to.y === 0)!;
+      expect(move).toBeDefined();   // walks straight through the illusion's cell
+      const { state: after, events } = step(c.state, move);
+      expect(events.some((e) => e.type === 'illusionPopped')).toBe(true);
+      expect(cellAt(after.grid, { x: 5, y: 0 })!.illusion).toBeUndefined();
+    });
+
+    it('never blocks movement, only sight — nothing walkable becomes impassable', () => {
+      const g = gno('wizard', { x: 0, y: 0 }, 'g');
+      const c = new Combat({ seed: 3, mapId: 'open', combatants: [g, { ...buildCharacter({ classId: 'fighter', team: 'team2', position: { x: 7, y: 7 } }), id: 'foe' }] });
+      let guard = 0;
+      while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const cast = legalActions(c.state, 'g').find(
+        (a) => a.kind === 'castSpell' && a.spellId === 'minor-illusion' &&
+          a.targets[0] && 'position' in a.targets[0] && a.targets[0].position.x === 1 && a.targets[0].position.y === 0,
+      )!;
+      const { state: after } = step(c.state, cast);
+      const dest = legalActions(after, 'g').some((a) => a.kind === 'move' && a.to.x === 1 && a.to.y === 0);
+      expect(dest).toBe(true);   // still a legal destination, illusion and all
+    });
+
+    it('expires on its own a few rounds after casting', () => {
+      const g = gno('wizard', { x: 0, y: 0 }, 'g');
+      const c = new Combat({ seed: 3, mapId: 'open', combatants: [g, { ...buildCharacter({ classId: 'fighter', team: 'team2', position: { x: 7, y: 7 } }), id: 'foe' }] });
+      let guard = 0;
+      while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const cast = legalActions(c.state, 'g').find(
+        (a) => a.kind === 'castSpell' && a.spellId === 'minor-illusion' &&
+          a.targets[0] && 'position' in a.targets[0] && a.targets[0].position.x === 3 && a.targets[0].position.y === 3,
+      )!;
+      c.apply(cast);
+      expect(cellAt(c.state.grid, { x: 3, y: 3 })!.illusion).toBeDefined();
+      let steps = 0;
+      while (cellAt(c.state.grid, { x: 3, y: 3 })!.illusion && steps++ < 200) c.apply({ kind: 'endTurn' });
+      expect(cellAt(c.state.grid, { x: 3, y: 3 })!.illusion).toBeUndefined();
+      expect(steps).toBeLessThan(200);   // it actually expired, rather than the loop giving up
+    });
+  });
+
+  describe('Animal Friendship', () => {
+    it('only ever targets beasts, never a humanoid enemy standing right next to it', () => {
+      const g = gno('fighter', { x: 2, y: 2 }, 'g');
+      const w = wolf({ x: 3, y: 2 }, 'w');
+      const gob = { ...buildMonster('goblin-warrior', 'team2', { x: 2, y: 3 }), id: 'gob' };
+      const c = new Combat({ seed: 5, mapId: 'open', combatants: [g, w, gob] });
+      let guard = 0;
+      while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      const targets = legalActions(c.state, 'g')
+        .filter((a) => a.kind === 'castSpell' && a.spellId === 'animal-friendship')
+        .flatMap((a) => a.kind === 'castSpell' ? a.targets : [])
+        .flatMap((t) => 'combatantId' in t ? [t.combatantId] : []);
+      expect(targets).toEqual(['w']);
+    });
+
+    it('a fighter with no spell slots can cast it — spending an innate use, not a slot', () => {
+      const g = gno('fighter', { x: 2, y: 2 }, 'g');
+      const w = wolf({ x: 3, y: 2 }, 'w');
+      const c = new Combat({ seed: 5, mapId: 'open', combatants: [g, w] });
+      let guard = 0;
+      while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      expect(g.spellSlots).toEqual([]);
+      const cast = legalActions(c.state, 'g').find((a) => a.kind === 'castSpell' && a.spellId === 'animal-friendship')!;
+      const { state: after } = step(c.state, cast);
+      expect(after.combatants['g']!.innateSpells['animal-friendship']!.current).toBe(1);
+      expect(after.combatants['g']!.spellSlots).toEqual([]);
+    });
+
+    it('removes the beast from the fight on a failed save — charmed, not killed, ending the battle', () => {
+      for (let seed = 1; seed <= 30; seed++) {
+        const g = gno('fighter', { x: 2, y: 2 }, 'g');
+        const w = wolf({ x: 3, y: 2 }, 'w');
+        const c = new Combat({ seed, mapId: 'open', combatants: [g, w] });
+        let guard = 0;
+        while (c.activeId !== 'g' && guard++ < 20) c.apply({ kind: 'endTurn' });
+        const cast = legalActions(c.state, 'g').find((a) => a.kind === 'castSpell' && a.spellId === 'animal-friendship');
+        if (!cast) continue;
+        const { state: after, events } = step(c.state, cast);
+        if (!events.some((e) => e.type === 'charmedAway')) continue;   // save succeeded this seed
+        expect(events.some((e) => e.type === 'died')).toBe(false);       // never a death
+        expect(events.some((e) => e.type === 'combatEnded')).toBe(true); // last enemy standing
+        expect(after.combatants['w']!.alive).toBe(false);
+        expect(after.winner).toBe('team1');
+        return;
+      }
+      throw new Error('the wolf never failed its save in 30 seeds — check the DC/save odds');
+    });
   });
 });

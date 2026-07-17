@@ -447,6 +447,32 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
   return events;
 }
 
+/**
+ * Remove a creature from the fight without killing it — Animal Friendship
+ * charming a beast away. Shares kill()'s bookkeeping (clear the cell, break
+ * concentration, check the winner) so it participates correctly in every rule
+ * keyed off `alive` — pathing, targeting, the win check — but it is never a
+ * death: no `unconsciousAtZero` down-path, no "dies" in the log.
+ */
+export function charmAway(state: GameState, combatantId: Id): GameEvent[] {
+  const c = state.combatants[combatantId]!;
+  c.alive = false;
+  c.hp = 0;
+  c.conditions = [];
+  const cell = cellAt(state.grid, c.position);
+  if (cell && cell.occupantId === combatantId) delete cell.occupantId;
+  const events: GameEvent[] = [
+    { type: 'charmedAway', combatantId },
+    ...breakConcentration(state, combatantId),
+  ];
+  const winner = checkWinner(state);
+  if (winner) {
+    state.winner = winner;
+    events.push({ type: 'combatEnded', winner });
+  }
+  return events;
+}
+
 export function checkWinner(state: GameState): 'team1' | 'team2' | null {
   // Standing, not merely alive: a downed hero is alive at 0 HP and out of the
   // fight, so a party that is all down has lost. Deliberately *not* "conscious"

@@ -7,12 +7,12 @@
  * - sphere2x2: pick an anchor cell for the 2x2 template
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
-import type { GameState, Combatant, Id, Ability, Position } from '../engine/types.js';
+import type { GameState, Combatant, Id, Ability, Position, CreatureType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith } from '../engine/rules/attack.js';
+import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway } from '../engine/rules/attack.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow } from '../engine/rules/saves.js';
@@ -22,7 +22,11 @@ import { acOf, wearsMetal } from './armor.js';
 import { WEAPONS } from './weapons.js';
 
 export type SpellTargeting =
-  | { kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number }
+  | {
+      kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number;
+      /** Restrict to one SRD creature type (Animal Friendship: beasts only). */
+      creatureType?: CreatureType;
+    }
   /**
    * Anything you could hit with the weapon in your hand — True Strike.
    *
@@ -562,6 +566,35 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  /**
+   * A gnome's Minor Illusion, turned into a battlefield tool: drop a shimmering
+   * false wall on an empty cell within range. It blocks line of sight like a
+   * real wall (hasLineOfSight), but nothing about movement changes — walking
+   * through it is exactly how it gets revealed (popIllusion, wired into every
+   * movement path). It also expires on its own after a few rounds, so a gnome
+   * that never gets challenged on it doesn't get a wall forever.
+   *
+   * This is the one spell in the game that doesn't touch a combatant at all —
+   * it only writes to a grid cell — so it earns nothing directly from the
+   * evaluator's per-unit scoring. What it *does* get for free: every place
+   * that already calls hasLineOfSight (the threat term, the "can I see an
+   * enemy" gradient, canHide) will treat the screen as real, so blocking an
+   * archer's shot or opening a Hide for an ally happens through existing
+   * machinery, not a bespoke weight. Reuses `emptyCell` targeting (the same
+   * shape as Misty Step) rather than inventing a new one.
+   */
+  'minor-illusion': {
+    id: 'minor-illusion', name: 'Minor Illusion', level: 0, castingTime: 'action',
+    targeting: { kind: 'emptyCell', range: 30 },
+    concentration: false,
+    icon: '🌫️',
+    cast({ state, casterId, positions }) {
+      const at = positions[0]!;
+      cellAt(state.grid, at)!.illusion = { sourceId: casterId, expiresAtRound: state.round + 3 };
+      return [{ type: 'illusionCast', position: at, sourceId: casterId }];
+    },
+  },
+
   'faerie-fire': {
     id: 'faerie-fire', name: 'Faerie Fire', level: 1, castingTime: 'action',
     targeting: { kind: 'sphere2x2', range: 60 },
@@ -590,6 +623,37 @@ export const SPELLS: Record<Id, SpellData> = {
       }
       // Concentration holds the light on everyone it caught.
       if (lit.length > 0) state.combatants[casterId]!.concentratingOn = { spellId: 'faerie-fire', targetIds: lit };
+      return events;
+    },
+  },
+
+  /**
+   * Animal Friendship — a hard counter, not a damage spell. Beast-only
+   * (`creatureType`), touch range like the real spell (RAW: Range Touch), a
+   * failed Wisdom save charms the beast off the board entirely (`charmAway`,
+   * not `kill` — it wanders off, it isn't dead). No concentration: RAW this
+   * lasts 24 hours, and once a beast is out of the fight there's nothing left
+   * to sustain.
+   *
+   * Only the Wolf Pack, Spider Nest and Brown Bear encounters ever have a legal
+   * target — `creatureType` filters it out of `validTarget`, so `legalActions`
+   * generates no entry at all, and the tray simply won't show it against
+   * goblins or skeletons (the same way Cure Wounds vanishes from the tray at
+   * full HP with no one to heal). That's intentional — it rewards knowing the
+   * bestiary, like a real prepared spell, not a blanket debuff with a beast
+   * label stapled on.
+   */
+  'animal-friendship': {
+    id: 'animal-friendship', name: 'Animal Friendship', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1, creatureType: 'beast' },
+    concentration: false,
+    icon: '🐾',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'wis', dc);
+      const events: GameEvent[] = [save.event];
+      if (!save.success) events.push(...charmAway(state, targetId));
       return events;
     },
   },
@@ -663,11 +727,12 @@ export function validTarget(
     return !!weaponId && canAttackWith(state, caster, weaponId, targetId);
   }
   if (spell.targeting.kind !== 'creature') return false;
-  const { range, who } = spell.targeting;
+  const { range, who, creatureType } = spell.targeting;
   if (who === 'enemy' && t.team === caster.team) return false;
   // A downed creature can't be attacked — but healing it is the whole point.
   if (who === 'enemy' && isDown(t)) return false;
   if (who === 'ally' && t.team !== caster.team) return false;
+  if (creatureType && t.creatureType !== creatureType) return false;
   if (range === 0) {
     return targetId === casterId || adjacent(caster.position, t.position);
   }

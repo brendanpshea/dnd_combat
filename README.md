@@ -14,8 +14,8 @@ advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
 masteries, spell slots, terrain, forced movement, and inventory (equipment
 slots, weapon swapping, healing potions, scrolls, alchemist's fire). A
 persistent campaign mode adds shops (with haggling and theft), random loot,
-gear progression, and four combat-relevant species: Human, Dwarf, Wood Elf,
-and Orc.
+gear progression, and seven combat-relevant species: Human, Dwarf, Wood Elf,
+Orc, Dragonborn, Abyssal Tiefling, and Gnome.
 
 Hide is a DC 15 Dexterity (Stealth) action available only outside every
 enemy's line of sight. A hidden creature cannot be directly targeted, gains
@@ -28,7 +28,7 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 182 deterministic engine, campaign, AI, and UI tests
+npm test          # 274 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
 npm run campaign  # terminal campaign: 11-battle ladder with XP, leveling, loot

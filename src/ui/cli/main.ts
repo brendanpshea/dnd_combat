@@ -53,7 +53,7 @@ async function main() {
   }
 
   console.log(`\nD&D Grid Combat — ${banner}. Level ${level}. Seed: ${seed}. Map: ${MAPS[mapId]!.name}`);
-  console.log(`(terrain: ### wall  ~~~ difficult ground  ^^^ fire hazard)\n`);
+  console.log(`(terrain: ### wall  ~~~ difficult ground  ^^^ fire hazard  %%% illusion — a false wall)\n`);
   const combat = new Combat({
     seed,
     mapId,

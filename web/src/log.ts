@@ -28,6 +28,7 @@ function kindOf(e: GameEvent): string {
     case 'roundStarted': return 'round';
     case 'turnStarted': return 'turn';
     case 'died': return 'died';
+    case 'charmedAway': return 'downed';   // a removal, not a kill — same visual weight as downed
     case 'downed': return 'downed';
     case 'revived':
     case 'healed': return 'heal';
@@ -48,6 +49,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'turnStarted':
     case 'moved':
     case 'died':
+    case 'charmedAway':
     case 'downed':
     case 'revived':
     case 'dashed':
@@ -61,6 +63,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'savingThrow': return e.combatantId;
     case 'damageDealt':
     case 'healed': return e.targetId;
+    case 'illusionCast': return e.sourceId;
     default: return undefined;
   }
 }

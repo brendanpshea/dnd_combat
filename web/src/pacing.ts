@@ -30,6 +30,7 @@ export function beatFor(events: GameEvent[]): number {
   for (const e of events) {
     switch (e.type) {
       case 'died': hold(950); break;
+      case 'charmedAway': hold(950); break;
       case 'downed': hold(950); break;
       case 'revived': hold(800); break;
       case 'damageDealt': hold(700); break;
@@ -37,6 +38,7 @@ export function beatFor(events: GameEvent[]): number {
       case 'savingThrow': hold(550); break;
       case 'conditionApplied': hold(550); break;
       case 'hideCheck': case 'hiddenRevealed': hold(500); break;
+      case 'illusionCast': case 'illusionPopped': hold(500); break;
       // A miss needs its own beat — nothing else marks it. A hit doesn't: its
       // damageDealt lands in the same batch and holds longer.
       case 'attackRolled': hold(e.hit ? 300 : 550); break;
@@ -87,9 +89,17 @@ export function narrate(state: GameState, events: GameEvent[]): string | undefin
       case 'conditionApplied':
         line = `${name(e.combatantId)} is ${e.condition}!`;
         break;
+      case 'illusionCast':
+        line = `${name(e.sourceId)} conjures a shimmering illusion!`;
+        break;
+      case 'illusionPopped':
+        line = 'The illusion fades away.';
+        break;
       // Last word, whatever else happened: someone going down is the headline.
       case 'died':
         return `☠ ${name(e.combatantId)} is slain!`;
+      case 'charmedAway':
+        return `🐾 ${name(e.combatantId)} is charmed — it wanders off!`;
       case 'downed':
         return `💤 ${name(e.combatantId)} is down — heal them to get them up!`;
       case 'revived':

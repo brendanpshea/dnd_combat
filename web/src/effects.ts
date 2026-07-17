@@ -149,6 +149,14 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         stagger += 200;
         break;
       }
+      case 'charmedAway': {
+        // No corpse — it walked away, nothing is left on the square.
+        const cell = cellOf(e.combatantId);
+        if (cell) floats.push({ id: nextId++, cellKey: cell, text: 'charmed!', cls: 'cond', delayMs: stagger });
+        sound('condition', stagger);
+        stagger += 200;
+        break;
+      }
       case 'combatEnded':
         sound('victory', stagger + 300);
         break;

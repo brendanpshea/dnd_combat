@@ -88,6 +88,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     id: `${opts.team}-${opts.classId}`,
     name: opts.name ?? cls.name,
     unconsciousAtZero: true,   // heroes drop; monsters die
+    creatureType: 'humanoid',  // every playable species is a humanoid
     ...(opts.portraitId !== undefined ? { portraitId: opts.portraitId } : {}),
     team: opts.team,
     classId: cls.id,

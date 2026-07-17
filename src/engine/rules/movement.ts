@@ -3,7 +3,7 @@
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
 import { cellAt, abilityMod, isDown } from '../types.js';
-import { reachable, pathTo, adjacent, type StepDanger } from '../grid.js';
+import { reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
 import { rollDice, parseDice } from '../dice.js';
@@ -194,6 +194,13 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     mover.position = step;
     walked.push(step);
 
+    // Walking through an illusion reveals it — a physical creature passing
+    // through proves there was nothing solid there. Either side's illusion,
+    // either side's feet.
+    if (popIllusion(state.grid, step)) {
+      events.push({ type: 'illusionPopped', position: step });
+    }
+
     if (cellAt(state.grid, step)!.terrain === 'hazard') {
       const dmg = rollDice(state.rng, HAZARD_DAMAGE);
       state.rng = dmg.state;
@@ -235,6 +242,9 @@ export function pushCreature(
     t.position = next;
     cell.occupantId = targetId;
     walked.push(next);
+    if (popIllusion(state.grid, next)) {
+      events.push({ type: 'illusionPopped', position: next });
+    }
     if (cell.terrain === 'hazard') {
       const dmg = rollDice(state.rng, HAZARD_DAMAGE);
       state.rng = dmg.state;

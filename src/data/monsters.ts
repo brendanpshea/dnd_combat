@@ -4,7 +4,7 @@
  * bonuses derive from abilities + proficiency exactly like PCs (the stat
  * blocks below reproduce the SRD's printed bonuses at PB +2).
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType } from '../engine/types.js';
 import { proficiencyBonus } from '../engine/types.js';
 import { FEATURES } from './features.js';
 
@@ -25,12 +25,16 @@ export interface MonsterData {
   immunities?: DamageType[];
   /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
   spellcasting?: { ability: Ability; slots: number[]; spellIds: Id[] };
+  /** SRD creature type. Beast is the load-bearing one today -- Animal
+   *  Friendship needs to tell a wolf from a goblin. */
+  creatureType: CreatureType;
 }
 
 export const MONSTERS: Record<Id, MonsterData> = {
   'goblin-warrior': {
     id: 'goblin-warrior', name: 'Goblin Warrior',
     ac: 15, hp: 10, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 8, dex: 15, con: 10, int: 10, wis: 8, cha: 8 },
     featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
@@ -38,6 +42,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'goblin-boss': {
     id: 'goblin-boss', name: 'Goblin Boss',
     ac: 17, hp: 21, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 10, dex: 15, con: 10, int: 10, wis: 8, cha: 10 },
     featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
@@ -47,6 +52,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   skeleton: {
     id: 'skeleton', name: 'Skeleton',
     ac: 14, hp: 13, speed: 30,
+    creatureType: 'undead',
     abilities: { str: 10, dex: 16, con: 15, int: 6, wis: 8, cha: 5 },
     weaponIds: ['shortsword', 'shortbow'],
     metalArmor: false,
@@ -56,6 +62,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   wolf: {
     id: 'wolf', name: 'Wolf',
     ac: 12, hp: 11, speed: 40,
+    creatureType: 'beast',
     abilities: { str: 14, dex: 15, con: 12, int: 3, wis: 12, cha: 6 },
     featureIds: ['pack-tactics'],
     weaponIds: ['bite'],
@@ -63,6 +70,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   zombie: {
     id: 'zombie', name: 'Zombie',
     ac: 8, hp: 15, speed: 20,
+    creatureType: 'undead',
     abilities: { str: 13, dex: 6, con: 16, int: 3, wis: 6, cha: 5 },
     featureIds: ['undead-fortitude'],
     weaponIds: ['slam'],
@@ -71,18 +79,21 @@ export const MONSTERS: Record<Id, MonsterData> = {
   ogre: {
     id: 'ogre', name: 'Ogre',
     ac: 11, hp: 68, speed: 40,
+    creatureType: 'giant',
     abilities: { str: 19, dex: 8, con: 16, int: 5, wis: 7, cha: 7 },
     weaponIds: ['greatclub', 'ogre-javelin'],
   },
   bandit: {
     id: 'bandit', name: 'Bandit',
     ac: 12, hp: 11, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 11, dex: 12, con: 12, int: 10, wis: 10, cha: 10 },
     weaponIds: ['scimitar', 'light-crossbow'],
   },
   'bandit-captain': {
     id: 'bandit-captain', name: 'Bandit Captain',
     ac: 15, hp: 52, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 15, dex: 16, con: 14, int: 14, wis: 11, cha: 14 },
     savingThrowProfs: ['str', 'dex', 'wis'],
     weaponIds: ['scimitar', 'dagger'],
@@ -91,6 +102,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'dire-wolf': {
     id: 'dire-wolf', name: 'Dire Wolf',
     ac: 14, hp: 22, speed: 50,
+    creatureType: 'beast',
     abilities: { str: 17, dex: 15, con: 15, int: 3, wis: 12, cha: 7 },
     featureIds: ['pack-tactics'],
     weaponIds: ['dire-wolf-bite'],
@@ -98,6 +110,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   ghoul: {
     id: 'ghoul', name: 'Ghoul',
     ac: 12, hp: 22, speed: 30,
+    creatureType: 'undead',
     abilities: { str: 13, dex: 15, con: 10, int: 7, wis: 10, cha: 6 },
     weaponIds: ['ghoul-claws', 'ghoul-bite'],
     attacksPerAction: 2, // bite + claws
@@ -106,12 +119,14 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'giant-spider': {
     id: 'giant-spider', name: 'Giant Spider',
     ac: 14, hp: 26, speed: 30,
+    creatureType: 'beast',
     abilities: { str: 14, dex: 16, con: 12, int: 2, wis: 11, cha: 4 },
     weaponIds: ['spider-bite'],
   },
   acolyte: {
     id: 'acolyte', name: 'Acolyte',
     ac: 10, hp: 9, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 14, cha: 11 },
     weaponIds: ['mace'],
     spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless'] },
@@ -119,6 +134,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   kobold: {
     id: 'kobold', name: 'Kobold',
     ac: 12, hp: 5, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 7, cha: 8 },
     featureIds: ['pack-tactics'],
     weaponIds: ['dagger', 'sling'],
@@ -126,6 +142,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   scout: {
     id: 'scout', name: 'Scout',
     ac: 13, hp: 16, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 11, dex: 14, con: 12, int: 11, wis: 13, cha: 11 },
     weaponIds: ['longbow', 'shortsword'], // ranged skirmisher: bow preferred
     attacksPerAction: 2,
@@ -133,6 +150,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   orc: {
     id: 'orc', name: 'Orc',
     ac: 13, hp: 15, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 16, dex: 12, con: 16, int: 7, wis: 11, cha: 10 },
     featureIds: ['adrenaline-rush'], // reuses the Orc species feature
     weaponIds: ['greataxe', 'javelin'],
@@ -140,6 +158,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'brown-bear': {
     id: 'brown-bear', name: 'Brown Bear',
     ac: 11, hp: 34, speed: 40,
+    creatureType: 'beast',
     abilities: { str: 19, dex: 10, con: 16, int: 2, wis: 13, cha: 7 },
     weaponIds: ['bear-claws', 'bear-bite'],
     attacksPerAction: 2, // bite + claws
@@ -147,6 +166,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'cult-fanatic': {
     id: 'cult-fanatic', name: 'Cult Fanatic',
     ac: 13, hp: 33, speed: 30,
+    creatureType: 'humanoid',
     abilities: { str: 11, dex: 14, con: 12, int: 10, wis: 13, cha: 14 },
     weaponIds: ['dagger'],
     attacksPerAction: 2,
@@ -155,6 +175,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'animated-armor': {
     id: 'animated-armor', name: 'Animated Armor',
     ac: 18, hp: 33, speed: 25,
+    creatureType: 'construct',
     abilities: { str: 14, dex: 11, con: 13, int: 1, wis: 3, cha: 1 },
     weaponIds: ['slam'],
     attacksPerAction: 2,
@@ -215,6 +236,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
     },
     alive: true,
+    creatureType: m.creatureType,
   };
 }
 

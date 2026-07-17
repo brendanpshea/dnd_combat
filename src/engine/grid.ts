@@ -60,9 +60,36 @@ export function hasLineOfSight(grid: GridState, from: Position, to: Position): b
   for (const p of lineTrace(from, to)) {
     if (posEq(p, from) || posEq(p, to)) continue;
     const cell = cellAt(grid, p);
-    if (!cell || cell.terrain === 'wall') return false;
+    if (!cell || cell.terrain === 'wall' || cell.illusion) return false;
   }
   return true;
+}
+
+/**
+ * Pop the illusion sitting on `p`, if any — walked into, attacked through, or
+ * simply expired. Returns whether there was one to pop, so callers only emit
+ * an event when something actually happened.
+ */
+export function popIllusion(grid: GridState, p: Position): boolean {
+  const cell = cellAt(grid, p);
+  if (!cell?.illusion) return false;
+  delete cell.illusion;
+  return true;
+}
+
+/** Every illusion whose time is up, cleared and returned for the round-tick event. */
+export function expireIllusions(grid: GridState, round: number): Position[] {
+  const popped: Position[] = [];
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const cell = cellAt(grid, { x, y })!;
+      if (cell.illusion && round > cell.illusion.expiresAtRound) {
+        delete cell.illusion;
+        popped.push({ x, y });
+      }
+    }
+  }
+  return popped;
 }
 
 /** Cells a segment between two cell centers passes through (supercover Bresenham). */

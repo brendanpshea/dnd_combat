@@ -107,6 +107,50 @@ Hold Person already use). It's also the first spell to ever apply `poisoned` —
 the condition existed from day one (disadvantage on the bearer's own attacks)
 but had no caster before this.
 
+**Gnome** is the fourth, and the first to need mechanism beyond "another
+innate spell": **Gnomish Cunning** (advantage on Int/Wis/Cha saves —
+`FeatureData.saveAdvantage`, read by `savingThrow`, the same shape a second
+species wanting a narrower version — a halfling's Brave, say, scoped to fear
+only — reuses for free), a free **Minor Illusion** cantrip, and 2 uses of
+**Animal Friendship** from 1st (not gated to 3rd like the other species'
+innate spells — a gnome can talk its way past a wolf pack from level 1).
+
+Animal Friendship needed a way to say "beast, not humanoid": `Combatant
+.creatureType` (`humanoid | beast | undead | giant | construct | fiend |
+dragon`), tagged on every monster stat block and read by a new
+`SpellTargeting.creatureType` filter in `validTarget` — so `legalActions`
+simply never offers it against a goblin, the same as Cure Wounds never
+appearing in the tray at full HP. A failed Wisdom save doesn't damage the
+beast, it removes it from the fight entirely (`charmAway`, sharing `kill()`'s
+bookkeeping — clears the cell, breaks concentration, checks the winner — but
+emitting `charmedAway` rather than `died`, since it wandered off rather than
+dying). Measured: against the Spider Nest (all beasts), a 3-gnome party's win
+rate goes 50% → 83% and downs-per-game 1.8 → 0.7, casting Animal Friendship
+~4×/game — the design's intended hard counter to a fight built entirely of its
+one weakness, not a subtle bonus.
+
+Minor Illusion is the heaviest single addition: a shimmering, walkable false
+wall. `Cell` gains an `illusion?: { sourceId, expiresAtRound }` field —
+deliberately *not* a `TerrainId`, since an illusion sits on top of whatever
+the cell already is rather than replacing it, so nothing has to remember what
+to revert to when it pops. It blocks `hasLineOfSight` exactly like a wall,
+but movement cost is untouched (keyed off `terrain`, which the illusion never
+touches), and any creature that walks through it — either side — pops it
+(`popIllusion`, wired into `executeMove` and `pushCreature`); it also expires
+on its own a few rounds later (`expireIllusions`, swept once per round in
+`endTurn`). It is the one spell in the game that touches no combatant at all,
+so it earns nothing from the evaluator's per-unit scoring directly — what it
+gets for free is that every existing caller of `hasLineOfSight` (the threat
+term, "can I see an enemy," `canHide`) treats the screen as real, so blocking
+a shot or opening a Hide happens through machinery that already existed, not
+a bespoke weight. Measured consequence, honestly: the AI barely casts it in a
+truly desperate fight (a solo rogue vs 3 goblins, 0 casts in 20 games — no
+slack for anything but attacking), but does reach for it in an ordinary party
+fight (13 casts across 20 games) — it is not dead weight, it is just not
+something the generic evaluator is taught to *seek out*, the same trade-off
+made for every other AI behaviour in this project (tune the evaluator, never
+script the behaviour).
+
 Because species never meet in the mirror arena (both sides are human), a
 dedicated harness measures them where it matters — `npm run species` runs a
 party of each species against themed level-3 encounters, reporting *heroes

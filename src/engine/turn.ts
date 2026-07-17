@@ -5,6 +5,7 @@
 import type { GameState, Combatant, Id } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
+import { expireIllusions } from './grid.js';
 import { discoverHidden } from './rules/hide.js';
 import type { GameEvent } from './events.js';
 
@@ -116,6 +117,9 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
     if (!next.alive || isDown(next)) continue;
     if (idx <= state.turnIndex) {
       state.round += 1;
+      for (const p of expireIllusions(state.grid, state.round)) {
+        events.push({ type: 'illusionPopped', position: p });
+      }
       events.push({ type: 'roundStarted', round: state.round });
     }
     state.turnIndex = idx;

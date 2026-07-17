@@ -28,6 +28,7 @@ const ENCOUNTERS = ['ogre', 'crypt', 'spiders'];
 const SIGNATURE: Record<string, string | undefined> = {
   human: undefined, dwarf: undefined, orc: undefined,
   elf: 'faerie-fire', dragonborn: 'breath-weapon', tiefling: 'ray-of-sickness',
+  gnome: 'animal-friendship',
 };
 
 const here = path.dirname(fileURLToPath(import.meta.url));

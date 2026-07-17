@@ -209,6 +209,29 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   to   { filter: brightness(1.18) saturate(1.1); }
 }
 
+/* A gnome's Minor Illusion — a false wall. It should *read* as a wall (a real
+   obstacle to tell people not to walk in), but visibly unstable, since it
+   isn't one: a shimmer instead of the wall's solid gradient, and it never
+   blocks the token layer, since a creature can genuinely stand where it looks
+   like nothing can. */
+.cell.illusion {
+  background:
+    linear-gradient(145deg, #3d3a6e77 0%, #241f4477 55%, #14112a77 100%);
+  animation: illusionShimmer 2.2s ease-in-out infinite alternate;
+}
+.cell.illusion::after {
+  content: '🌫️'; position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  font-size: clamp(14px, 4vmin, 22px); opacity: 0.55; z-index: 0;
+}
+@keyframes illusionShimmer {
+  from { filter: brightness(0.85) saturate(1.1); opacity: 0.85; }
+  to   { filter: brightness(1.25) saturate(1.3); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell.illusion { animation: none; }
+}
+
 .hl-move { box-shadow: inset 0 0 0 3px #4a9eff88; }
 .hl-move:hover { background: #4a9eff33; }
 .hl-enemy { box-shadow: inset 0 0 0 3px var(--red); }

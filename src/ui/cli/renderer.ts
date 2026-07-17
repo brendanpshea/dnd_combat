@@ -49,6 +49,7 @@ export function renderBoard(state: GameState): string {
       const cell = cellAt(state.grid, { x, y })!;
       const occ = cell.occupantId ? state.combatants[cell.occupantId] : undefined;
       const ground =
+        cell.illusion ? '%%%' :   // a false wall — distinct from a real one (###)
         cell.terrain === 'wall' ? '###' :
         cell.terrain === 'difficult' ? '~~~' :
         cell.terrain === 'hazard' ? '^^^' : '   ';
@@ -170,6 +171,12 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.combatantId)} dodges.`;
     case 'died':
       return `*** ${nm(e.combatantId)} dies! ***`;
+    case 'charmedAway':
+      return `*** ${nm(e.combatantId)} is charmed and wanders off! ***`;
+    case 'illusionCast':
+      return `${nm(e.sourceId)} conjures a shimmering illusion at ${cellName(e.position)}.`;
+    case 'illusionPopped':
+      return `  The illusion at ${cellName(e.position)} fades away.`;
     case 'downed':
       return `*** ${nm(e.combatantId)} is down! (unconscious — heal them to revive) ***`;
     case 'revived':

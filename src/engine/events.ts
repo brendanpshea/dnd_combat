@@ -47,4 +47,11 @@ export type GameEvent =
   | { type: 'disengaged'; combatantId: Id }
   | { type: 'dodging'; combatantId: Id }
   | { type: 'died'; combatantId: Id }
+  /** Removed from the fight without dying — Animal Friendship charms a beast
+   *  off the board. Shares kill()'s bookkeeping but is never a death. */
+  | { type: 'charmedAway'; combatantId: Id }
+  /** A gnome's Minor Illusion takes shape on a cell. */
+  | { type: 'illusionCast'; position: Position; sourceId: Id }
+  /** Revealed — walked through, or simply expired. */
+  | { type: 'illusionPopped'; position: Position }
   | { type: 'combatEnded'; winner: TeamId };

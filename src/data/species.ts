@@ -75,4 +75,18 @@ export const SPECIES: Record<Id, SpeciesData> = {
     spellsByLevel: { 1: ['poison-spray'] },
     innateSpells: [{ spellId: 'ray-of-sickness', atLevel: 3, uses: 1 }],
   },
+  gnome: {
+    id: 'gnome', name: 'Gnome', speed: 30,
+    // Gnomish Cunning: advantage on Int/Wis/Cha saves — the reliable backbone,
+    // the same shape as the elf's Keen Senses. Minor Illusion is free from 1st
+    // (battlefield LoS control, not a damage cantrip — the tray's the only
+    // place it costs nothing to browse for). Animal Friendship replaces the
+    // useless-in-combat Speak with Animals: 2 uses from 1st (not gated to 3rd
+    // like the other species' innate spells — a gnome starts able to talk its
+    // way past a wolf pack), a hard beast-only counter that removes its
+    // target from the fight on a failed save rather than damaging it.
+    featureIds: ['gnomish-cunning'],
+    spellsByLevel: { 1: ['minor-illusion'] },
+    innateSpells: [{ spellId: 'animal-friendship', atLevel: 1, uses: 2 }],
+  },
 };
