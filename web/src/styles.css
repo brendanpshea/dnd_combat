@@ -754,55 +754,55 @@ button.danger { border-color: var(--red); color: var(--red); }
 .forge-header { display: flex; align-items: flex-start; gap: 12px; }
 .forge-header h1 { margin: 0; font-size: 25px; }
 .forge-header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
-.forge-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.forge-member {
-  background: var(--panel2); border: 1px solid #453d63; border-radius: 8px; padding: 10px;
-  display: grid; grid-template-columns: 62px 1fr 1fr; gap: 8px 10px; align-items: end;
+.section-label {
+  display: block; color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 6px;
 }
-.forge-preview { grid-row: span 2; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.forge-preview .portrait { width: 54px; height: 54px; }
-.forge-role { color: var(--gold); font-size: 11px; text-align: center; }
-.forge-field { display: flex; flex-direction: column; gap: 3px; color: var(--muted); font-size: 11px; }
-.forge-field input, .forge-field select {
-  min-width: 0; color: var(--text); background: #181323; border: 1px solid #534a70;
-  border-radius: 5px; padding: 5px 6px; font: inherit; font-size: 13px;
-}
-.portrait-picker { grid-column: 2 / -1; }
-.portrait-picker [role="radiogroup"] { display: flex; gap: 5px; }
-.portrait-picker button { width: 34px; height: 34px; padding: 2px; border-radius: 5px; }
-.portrait-picker button.selected { border-color: var(--gold); background: #c69b2b24; }
-.portrait-picker .portrait { width: 26px; height: 26px; }
-.card-picker { grid-column: 1 / -1; }
-.card-row {
-  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
-  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+.quick-start { margin-bottom: 14px; }
+
+/* Cards wrap to fill the width and reflow on resize — no horizontal scroll. */
+.card-grid {
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 .pick-card {
-  scroll-snap-align: start; flex: 0 0 auto; width: 120px; min-height: 0;
-  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-  text-align: left; padding: 7px 8px; border-radius: 7px;
+  min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  text-align: left; padding: 7px 9px; border-radius: 7px;
   background: #181323; border: 1px solid #534a70; color: var(--text); cursor: pointer;
 }
 .pick-card .portrait { width: 28px; height: 28px; margin-bottom: 2px; }
-.pick-card b { font-size: 12px; }
+.pick-card b { font-size: 12.5px; }
 .pick-card small { color: var(--muted); font-size: 10px; line-height: 1.25; }
 .pick-card.selected { border-color: var(--gold); background: #c69b2b24; }
-.forge-advanced { grid-column: 1 / -1; margin-top: 2px; }
-.forge-advanced > summary {
-  cursor: pointer; color: var(--gold); font-size: 11px; padding: 3px 0; user-select: none;
+
+/* Party accordion: compact summary rows, one expands at a time. */
+.forge-list.accordion { display: flex; flex-direction: column; gap: 8px; }
+.forge-member {
+  background: var(--panel2); border: 1px solid #453d63; border-radius: 8px; overflow: hidden;
 }
-.forge-advanced .choice-point { margin-top: 6px; }
-.forge-advanced .choice-point [role="radiogroup"] {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px;
+.forge-member.open { border-color: #5b5384; }
+.member-summary {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 11px;
+  background: none; border: none; color: var(--text); cursor: pointer; text-align: left;
 }
-.forge-advanced button.choice {
-  flex: 1 1 46%; min-width: 0; text-align: left; padding: 6px 8px; border-radius: 6px;
-  background: #181323; border: 1px solid #534a70; color: var(--text); cursor: pointer;
-  display: flex; flex-direction: column; gap: 2px;
+.member-summary .portrait { width: 40px; height: 40px; flex: 0 0 auto; }
+.member-id { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; }
+.member-id b { font-size: 14px; }
+.member-id small { color: var(--muted); font-size: 11px; }
+.member-chevron { color: var(--gold); font-size: 13px; flex: 0 0 auto; }
+.member-editor {
+  padding: 4px 11px 12px; display: flex; flex-direction: column; gap: 10px;
+  border-top: 1px solid #3a3357;
 }
-.forge-advanced button.choice b { font-size: 12px; }
-.forge-advanced button.choice small { color: var(--muted); font-size: 10px; line-height: 1.25; }
-.forge-advanced button.choice.selected { border-color: var(--gold); background: #c69b2b24; }
+.forge-field { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 11px; }
+.forge-field input {
+  min-width: 0; color: var(--text); background: #181323; border: 1px solid #534a70;
+  border-radius: 5px; padding: 6px 8px; font: inherit; font-size: 13px;
+}
+.portrait-picker [role="radiogroup"] { display: flex; gap: 5px; }
+.portrait-picker button { width: 36px; height: 36px; padding: 2px; border-radius: 5px; background: #181323; border: 1px solid #534a70; cursor: pointer; }
+.portrait-picker button.selected { border-color: var(--gold); background: #c69b2b24; }
+.portrait-picker .portrait { width: 28px; height: 28px; }
 .forge-party-preview {
   display: flex; justify-content: center; gap: 16px; padding: 10px; border-top: 1px solid #453d63;
   border-bottom: 1px solid #453d63;
@@ -841,8 +841,6 @@ button.danger { border-color: var(--red); color: var(--red); }
   .char-controls { margin-left: 48px; width: calc(100% - 48px); }
   .gear-ac { margin-left: 0; }
   .battle-brief { flex-direction: column; gap: 2px; }
-  .forge-list { grid-template-columns: 1fr; }
-  .forge-member { grid-template-columns: 58px 1fr 1fr; }
   .forge-party-preview { gap: 5px; }
   .forge-party-preview > div { min-width: 0; width: 25%; overflow: hidden; }
   .forge-party-preview span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

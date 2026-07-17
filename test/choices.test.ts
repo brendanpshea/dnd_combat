@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { buildCharacter } from '../src/builder/character.js';
-import { newCampaign, setPartyClass, setPartyChoice, buildCampaignParty } from '../src/campaign/campaign.js';
+import {
+  newCampaign, setPartyClass, setPartyChoice, buildCampaignParty,
+  PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
+} from '../src/campaign/campaign.js';
+import { SPECIES } from '../src/data/species.js';
+
+const SPECIES_IDS = Object.keys(SPECIES);
 
 describe('build-choice points', () => {
   it('a fighter with no choice specified resolves to the default Fighting Style (Dueling)', () => {
@@ -43,6 +49,50 @@ describe('build-choice points', () => {
     const fighter = party.find((p) => p.classId === 'fighter')!;
     expect(fighter.featureIds).toContain('defense');
     expect(fighter.featureIds).not.toContain('dueling');
+  });
+
+  it('a prebuilt party template overlays species and styles without breaking the four roles', () => {
+    const c = newCampaign(7);
+    expect(applyPartyTemplate(c, 'frontier')).toBe(true);
+    // Still exactly one of each class.
+    const classes = c.characters.map((ch) => ch.classId).sort();
+    expect(classes).toEqual(['cleric', 'fighter', 'rogue', 'wizard']);
+    const fighter = c.characters.find((ch) => ch.classId === 'fighter')!;
+    expect(fighter.speciesId).toBe('dwarf');
+    // The style resolves onto the built combatant.
+    const built = buildCampaignParty(c).find((p) => p.classId === 'fighter')!;
+    expect(built.featureIds).toContain('defense');
+  });
+
+  it('applying a template with no style for a slot clears any prior style', () => {
+    const c = newCampaign(7);
+    const fi = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    setPartyChoice(c, fi, 'fighting-style', 'archery');
+    applyPartyTemplate(c, 'bloodline'); // fighter style is dueling here
+    const built = buildCampaignParty(c).find((p) => p.classId === 'fighter')!;
+    expect(built.featureIds).toContain('dueling');
+    expect(built.featureIds).not.toContain('archery');
+  });
+
+  it('randomizeParty gives every member a real species and is deterministic per seed', () => {
+    const a = newCampaign(42); randomizeParty(a);
+    const b = newCampaign(42); randomizeParty(b);
+    const speciesA = a.characters.map((ch) => ch.speciesId);
+    expect(speciesA).toEqual(b.characters.map((ch) => ch.speciesId)); // same seed → same roll
+    for (const ch of a.characters) expect(SPECIES_IDS).toContain(ch.speciesId);
+  });
+
+  it('template functions refuse to run once the party is locked in', () => {
+    const c = newCampaign(7);
+    c.partyReady = true;
+    expect(applyPartyTemplate(c, 'frontier')).toBe(false);
+    expect(randomizeParty(c)).toBe(false);
+  });
+
+  it('every template covers all four class roles', () => {
+    for (const t of PARTY_TEMPLATES) {
+      expect(Object.keys(t.members).sort()).toEqual(['cleric', 'fighter', 'rogue', 'wizard']);
+    }
   });
 
   it('swapping a slot to a new class clears its old choices', () => {

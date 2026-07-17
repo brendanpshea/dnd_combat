@@ -297,6 +297,78 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
 }
 
 /**
+ * Prebuilt parties for the forge's Quick Start shelf: a beginner taps one and
+ * plays, never touching the editor. Each keys species/style/name by class, so a
+ * template just overlays the fixed four-role party — the role model is untouched.
+ * Fighter styles are limited to Dueling/Defense here because the default kit
+ * (longsword + shield) is what makes the others (Archery, Great Weapon, Two-
+ * Weapon) fire, and it has none of those weapons yet.
+ */
+export interface PartyTemplate {
+  id: string;
+  name: string;
+  blurb: string;
+  members: Partial<Record<Id, { speciesId: Id; style?: Id; name?: string }>>;
+}
+
+export const PARTY_TEMPLATES: PartyTemplate[] = [
+  {
+    id: 'classic', name: 'Classic Four', blurb: 'The balanced starting party — all human.',
+    members: {
+      fighter: { speciesId: 'human', style: 'dueling' },
+      wizard: { speciesId: 'human' }, cleric: { speciesId: 'human' }, rogue: { speciesId: 'human' },
+    },
+  },
+  {
+    id: 'frontier', name: 'Frontier Band', blurb: 'Hardy and stealthy — a dwarf shield-wall and a halfling scout.',
+    members: {
+      fighter: { speciesId: 'dwarf', style: 'defense', name: 'Bruni' },
+      wizard: { speciesId: 'elf', name: 'Faelar' },
+      cleric: { speciesId: 'human', name: 'Mara' },
+      rogue: { speciesId: 'halfling', name: 'Pip' },
+    },
+  },
+  {
+    id: 'bloodline', name: 'Strange Bloodlines', blurb: 'Exotic ancestries — draconic, infernal, and fey.',
+    members: {
+      fighter: { speciesId: 'dragonborn', style: 'dueling', name: 'Rhogar' },
+      wizard: { speciesId: 'tiefling', name: 'Nemeia' },
+      cleric: { speciesId: 'gnome', name: 'Fibblewick' },
+      rogue: { speciesId: 'orc', name: 'Grazt' },
+    },
+  },
+];
+
+/** Overlay a template onto the current (pre-launch) party, keeping the four roles. */
+export function applyPartyTemplate(c: CampaignState, templateId: string): boolean {
+  const t = PARTY_TEMPLATES.find((x) => x.id === templateId);
+  if (c.partyReady || !t) return false;
+  for (const ch of c.characters) {
+    const m = t.members[ch.classId];
+    if (!m) continue;
+    ch.speciesId = m.speciesId;
+    if (m.name) ch.name = m.name;
+    if (m.style) ch.choices = { 'fighting-style': m.style };
+    else delete ch.choices;
+  }
+  return true;
+}
+
+/** Randomize every member's species (and reset names/choices to defaults). */
+export function randomizeParty(c: CampaignState): boolean {
+  if (c.partyReady) return false;
+  const speciesIds = Object.keys(SPECIES);
+  for (const ch of c.characters) {
+    const { value, state } = next(c.rng);
+    c.rng = state;
+    ch.speciesId = speciesIds[Math.floor(value * speciesIds.length)] ?? 'human';
+    ch.name = defaultNameFor(ch.classId);
+    delete ch.choices;
+  }
+  return true;
+}
+
+/**
  * Change a member's class during initial party creation. The four roles stay
  * unique, so choosing an occupied class swaps the two roles and their kits.
  */
