@@ -897,31 +897,43 @@ button.category .count {
 }
 
 /* --- Where the log lives -------------------------------------------------
-   Two different answers, because the screens are different problems.
+   Two different answers, because the screens pose different problems.
 
-   Desktop has spare width and no spare height, so the log moves into a side
-   column and stops pushing the board around. The battle becomes a grid: every
-   child stays in column 1 by default, so only the log needs placing — no DOM
-   restructuring, and the narrow layout is untouched.
+   Desktop has spare width and no spare height, so the log becomes a side column
+   and stops shoving the board around. Phones have neither, and the narration bar
+   already says what happened in plain English — so the log is hidden and 📜
+   summons it.
 
-   Phones have neither, and the narration bar already says what just happened in
-   plain English. So the log is hidden entirely and 📜 summons it. */
+   The log is a *sibling* of the play area, not a grid item spanning rows: a
+   spanning item inherits one row-gap per row it crosses, which quietly stapled
+   ~780px of nothing under the log and ran it off the bottom of the screen. */
+.battle-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
 @media (min-width: 900px) {
   .battle {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
-    column-gap: 12px;
-    justify-items: center;
+    grid-template-areas: "top top" "main log";
     align-content: start;
+    column-gap: 12px;
     max-width: 1240px;
   }
-  .battle > * { grid-column: 1; }
-  .topbar { grid-column: 1 / -1; }
+  .topbar { grid-area: top; }
+  .battle-main { grid-area: main; }
   .log {
-    grid-column: 2;
-    grid-row: 2 / span 99;   /* beside everything below the topbar */
+    grid-area: log;
     align-self: stretch;
-    max-height: none;
+    /* Bounded by the viewport, never by its own 200 lines — otherwise the
+       column grows to fit the whole fight and the page scrolls away. */
+    max-height: calc(100vh - 96px);
+    min-height: 0;
     font-size: 12.5px;
   }
   /* The side log is always there; nothing to toggle. */

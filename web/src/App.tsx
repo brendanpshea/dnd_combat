@@ -524,6 +524,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>
       </header>
 
+      {/* The play area, grouped so the log can be a sibling column on desktop
+          rather than a grid item spanning rows. Spanning meant inheriting one
+          row-gap per row it crossed — ~780px of nothing, and the log ran off
+          the bottom of the screen. */}
+      <div className="battle-main">
       <Board
         state={state}
         activeId={activeId ?? ''}
@@ -621,6 +626,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <button className="endturn" onClick={() => apply({ kind: 'endTurn' })}>End turn ➤</button>
         </div>
       )}
+      </div>
 
       {/* The tray: where a growing spell list lives, so the bar can't grow with
           it. Roughly two thirds of every spell is bar-bound, so a flat bar was
