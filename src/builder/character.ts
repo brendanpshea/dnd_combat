@@ -68,11 +68,20 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     Object.entries(byLevel ?? {})
       .filter(([lvl]) => Number(lvl) <= level)
       .flatMap(([, ids]) => ids);
-  // Class magic plus whatever the species brings of its own — a wood elf knows
-  // True Strike whether or not it ever opened a spellbook.
+  // Innate spells the species grants at or below this level, with their per-
+  // encounter use pools — a fighter's only route to a levelled spell.
+  const innateSpells: Record<Id, { current: number; max: number }> = {};
+  for (const s of species?.innateSpells ?? []) {
+    if (s.atLevel <= level) innateSpells[s.spellId] = { current: s.uses, max: s.uses };
+  }
+
+  // Class magic, plus whatever the species brings of its own — a wood elf knows
+  // True Strike (cantrip) and, from 3rd, Faerie Fire (innate) whether or not it
+  // ever opened a spellbook.
   const spellIds = [...new Set([
     ...(cls.spellcasting ? known(cls.spellcasting.spellsByLevel) : []),
     ...known(species?.spellsByLevel),
+    ...Object.keys(innateSpells),
   ])];
 
   const combatant: Combatant = {
@@ -96,6 +105,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     spellIds,
     featureIds,
     featureUses,
+    innateSpells,
     inventory: (opts.inventory ?? cls.equipment.inventory).map((s) => ({ ...s })),
     equipped: opts.equipped
       ? { ...opts.equipped }

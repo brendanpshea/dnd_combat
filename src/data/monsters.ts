@@ -194,6 +194,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     ...(m.spellcasting ? { spellcastingAbility: m.spellcasting.ability } : {}),
     featureIds: [...(m.featureIds ?? [])],
     featureUses,
+    innateSpells: {},   // monsters have no innate spells (all their magic is stat-block slots)
     inventory: m.weaponIds.slice(1).map((w) => ({ itemId: w, qty: 1 })),
     equipped: {
       mainHand: m.weaponIds[0]!,

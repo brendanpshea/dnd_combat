@@ -94,6 +94,11 @@ function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, target
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
   if (!actor.spellIds.includes(spell.id)) return false;
   if (spell.level === 0) return slotLevel === 0;
+  // Innate: cast at slotLevel 0 (spending no slot), limited by its own pool.
+  // Checked before the slot path so a fighter — which has no slots at all — can
+  // still cast it, and so a caster elf spends the free innate use before a slot.
+  const innate = actor.innateSpells[spell.id];
+  if (innate && slotLevel === 0) return innate.current > 0;
   if (slotLevel < spell.level) return false;
   const pool = actor.spellSlots[slotLevel - 1];
   return !!pool && pool.current > 0;
@@ -278,7 +283,9 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
 
   for (const sid of actor.spellIds) {
     const spell = SPELLS[sid]!;
-    const slotLevel = spell.level; // enumerate at base level; upcasting via custom actions
+    // Innate spells cast at slotLevel 0 (no slot); everything else at its base
+    // level. spellAvailable enforces the right resource for whichever this is.
+    const slotLevel = actor.innateSpells[sid] ? 0 : spell.level;
     if (!spellAvailable(actor, spell, slotLevel)) continue;
     const t = spell.targeting;
     if (t.kind === 'weaponAttack') {
@@ -448,6 +455,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (spell.castingTime === 'action') actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
       if (action.slotLevel >= 1) actor.spellSlots[action.slotLevel - 1]!.current -= 1;
+      else if (actor.innateSpells[action.spellId]) actor.innateSpells[action.spellId]!.current -= 1;
       if (spell.concentration) events.push(...breakConcentration(draft, actorId));
       events.push(...endHide(actor));
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));

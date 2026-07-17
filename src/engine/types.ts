@@ -54,7 +54,8 @@ export type ConditionId =
   | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
   | 'hidden'       // unseen: cannot be directly targeted; next attack has advantage
-  | 'noReactions'; // Shocking Grasp rider
+  | 'noReactions'  // Shocking Grasp rider
+  | 'outlined'; // outlined: attacks against this creature have advantage, and it can't hide
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -110,6 +111,14 @@ export interface Combatant {
   spellIds: Id[];                   // known/prepared spells incl. cantrips
   featureIds: Id[];                 // class/species features
   featureUses: Record<Id, ResourcePool>;
+  /**
+   * Innate spells — a species' own magic, cast with no spell slot and a limited
+   * number of times per encounter (a wood elf's Faerie Fire). Keyed by spell id;
+   * the pool is the mirror of featureUses. This is what lets a *fighter* cast a
+   * levelled spell at all: it has no slots, so slot-gated casting could only
+   * ever have been a caster's perk.
+   */
+  innateSpells: Record<Id, ResourcePool>;
   /** Carried but not in hand (spare weapons, consumables). */
   inventory: ItemStack[];
   equipped: Equipped;

@@ -18,6 +18,7 @@ export function isHidden(c: Combatant): boolean {
 /** A creature can Hide only if every living enemy currently lacks line of sight. */
 export function canHide(state: GameState, actor: Combatant): boolean {
   if (isHidden(actor)) return false;
+  if (actor.conditions.some((c) => c.id === 'outlined')) return false;   // outlined; can't slip away
   return !Object.values(state.combatants).some(
     (other) => other.alive && other.team !== actor.team && hasLineOfSight(state.grid, other.position, actor.position),
   );

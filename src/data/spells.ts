@@ -459,6 +459,38 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  'faerie-fire': {
+    id: 'faerie-fire', name: 'Faerie Fire', level: 1, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 60 },
+    concentration: true,
+    icon: '🧚',
+    cast({ state, casterId, positions }) {
+      const events: GameEvent[] = [];
+      const dc = spellDc(state, casterId);
+      const lit: Id[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        // Foes only, and only those not already lit. A Dex save shrugs it off.
+        if (!t.alive || t.team === state.combatants[casterId]!.team) continue;
+        if (t.conditions.some((c) => c.id === 'outlined')) continue;
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        if (save.success) continue;
+        // Outlined: attacks against it have advantage until the light fades, and
+        // it can't melt back into hiding. Reveal it now if it already had.
+        t.conditions = t.conditions.filter((c) => c.id !== 'hidden');
+        t.conditions.push({ id: 'outlined', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: tid, condition: 'outlined', sourceId: casterId });
+        lit.push(tid);
+      }
+      // Concentration holds the light on everyone it caught.
+      if (lit.length > 0) state.combatants[casterId]!.concentratingOn = { spellId: 'faerie-fire', targetIds: lit };
+      return events;
+    },
+  },
+
   'hold-person': {
     id: 'hold-person', name: 'Hold Person', level: 2, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },

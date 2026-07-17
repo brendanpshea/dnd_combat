@@ -107,8 +107,15 @@ export function targetingNote(spell: SpellData): string {
 }
 
 /** Level + aim: "L1 · 2×2 area". Cantrips cost no slot, so they show only aim. */
-function spellNote(spell: SpellData): string {
-  return [spell.level > 0 ? `L${spell.level}` : '', targetingNote(spell)].filter(Boolean).join(' · ');
+function spellNote(spell: SpellData, innateUsesLeft?: number): string {
+  const cost = innateUsesLeft !== undefined ? `${innateUsesLeft} left`
+    : spell.level > 0 ? `L${spell.level}` : '';
+  return [cost, targetingNote(spell)].filter(Boolean).join(' · ');
+}
+
+/** Remaining innate casts of a spell for the actor, or undefined if not innate. */
+function innateLeft(actor: Combatant, spellId: Id): number | undefined {
+  return actor.innateSpells[spellId]?.current;
 }
 
 /** Melee or ranged, for weapon attacks — the data already knows. */
@@ -293,6 +300,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     });
   }
 
+  const me = state.combatants[actorId]!;
   for (const [spellId, cells] of cellSpells) {
     const spell = SPELLS[spellId];
     bar.push({
@@ -300,7 +308,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
       label: spell?.name ?? spellId,
       ...(spell ? { icon: spell.icon } : {}),
       group: 'spell',
-      ...(spell ? { note: spellNote(spell) } : {}),
+      ...(spell ? { note: spellNote(spell, innateLeft(me, spellId)) } : {}),
       cellTargets: cells,
     });
   }

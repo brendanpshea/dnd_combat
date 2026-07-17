@@ -112,6 +112,9 @@ export function collectAttackSources(
   if (target.conditions.some((c) => c.id === 'guided')) {
     adv.push('guiding bolt');
   }
+  if (target.conditions.some((c) => c.id === 'outlined')) {
+    adv.push('faerie fire');   // outlined: stays until the light does, not one-shot
+  }
   // Assassinate: the target hasn't taken a turn yet this combat.
   if (attacker.featureIds.includes('assassinate') && !target.hasActed) {
     adv.push('assassinate');

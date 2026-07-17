@@ -78,13 +78,24 @@ type Action =
   | { kind: 'endTurn' };
 ```
 
-**Species may grant spells** (`SpeciesData.spellsByLevel`, the same shape a class
-uses) — a wood elf knows True Strike whether or not it ever opened a spellbook.
-**Cantrips only, and deliberately**: a levelled spell needs a slot and a fighter
-has none, so a racial Faerie Fire would silently be a caster-only perk. Innate
-"once per rest, no slot" casting is the mechanism that unlocks the rest, and it
-doesn't exist yet — it's the prerequisite for most interesting species magic
-(breath weapons, Hellish Rebuke), so build it before promising any.
+**Species may grant spells** two ways. `SpeciesData.spellsByLevel` grants
+*cantrips* (free to cast; a wood elf knows True Strike). `SpeciesData.innateSpells`
+grants *levelled* spells cast with **no slot, a fixed number of times per
+encounter** (`{ spellId, atLevel, uses }`). This is the mechanism that lets a
+non-caster cast at all: a fighter has zero slots, so slot-gated casting could
+only ever have been a caster's perk. It's a third casting path in
+`spellAvailable`, gated by `Combatant.innateSpells` (the mirror of `featureUses`)
+rather than a slot, and it casts at `slotLevel 0` so it spends the innate use
+instead of a slot. Per-encounter needs no reset logic — every battle rebuilds
+the party, so a fresh pool is automatic. The AI values the pool as option value,
+like feature uses and slots, so it saves the cast for a worthwhile cluster.
+
+The first user is the elf's **Faerie Fire** at 3rd: a 2×2 Dexterity-save area,
+concentration, that leaves foes `outlined` (the *condition* is named for its
+effect, not the spell — `guided` not `guiding-bolt` — so `src/ai/` never learns
+a content id). Outlined creatures are attacked with advantage until the light
+fades, and can't hide (an already-hidden one is revealed). This is the intended
+counter to the rogue's Hide.
 
 **True Strike** is a weapon attack, not another damage cantrip: it swings what's
 in your hand using the caster's *best mental ability* (`AttackContext

@@ -15,13 +15,16 @@ export interface SpeciesData {
   resistances?: DamageType[];
   featureIds?: Id[];
   /**
-   * Spells the species itself grants, by the level they arrive — the same shape
-   * a class uses. Cantrips only for now, and deliberately: a levelled spell
-   * needs a slot, and a fighter has none, so a racial fireball would be a
-   * caster-only perk. Innate "once per rest, no slot" casting is the mechanism
-   * that unlocks the rest, and it doesn't exist yet.
+   * Cantrips the species grants, by the character level they arrive — the same
+   * shape a class uses. Cantrips are free to cast, so they need nothing more.
    */
   spellsByLevel?: Record<number, Id[]>;
+  /**
+   * Innate *levelled* spells: cast with no slot, a fixed number of times per
+   * encounter. This is what a non-caster needs — a fighter has no slots, so
+   * without this a racial Faerie Fire would silently be a caster-only perk.
+   */
+  innateSpells?: Array<{ spellId: Id; atLevel: number; uses: number }>;
   /** Deterministic Skillful choice for the campaign's limited skill list. */
   skillProficienciesByClass?: Partial<Record<Id, SkillId>>;
 }
@@ -46,6 +49,9 @@ export const SPECIES: Record<Id, SpeciesData> = {
     // Keen Senses makes it the party's lookout.
     featureIds: ['trance', 'keen-senses'],
     spellsByLevel: { 1: ['true-strike'] },
+    // Faerie Fire at 3rd — the elf lights a cluster of foes so the whole party
+    // strikes them with advantage, and no one among them can hide.
+    innateSpells: [{ spellId: 'faerie-fire', atLevel: 3, uses: 1 }],
   },
   orc: {
     id: 'orc', name: 'Orc', speed: 30,

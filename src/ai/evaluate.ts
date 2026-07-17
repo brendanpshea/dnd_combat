@@ -101,7 +101,8 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   poisoned: -0.12,
   frightened: -0.1,
   sapped: -0.06,
-  guided: -0.08,   // the *bearer* is easier to hit
+  guided: -0.08,       // the *bearer* is easier to hit
+  'outlined': -0.14, // like guided but it lasts, and can't be hidden from
   // buffs
   blessed: 0.08,
   // Dodging only pays off if something actually attacks you, and it costs the
@@ -192,6 +193,9 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Resources not yet spent retain option value.
     unit += c.spellSlots.reduce((s, pool, i) => s + pool.current * (i + 1) * 0.7, 0);
     unit += Object.values(c.featureUses).reduce((s, u) => s + u.current * 0.5, 0);
+    // Innate spells are a resource too — a once-per-fight cast worth saving for
+    // the right cluster, not burning on one straggler.
+    unit += Object.values(c.innateSpells).reduce((s, u) => s + u.current * 0.7, 0);
     // Consumables too (valued by their data cost) — so the AI doesn't burn
     // a potion at full HP just because it scores no worse than passing.
     unit += c.inventory.reduce((s, stack) => {

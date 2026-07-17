@@ -69,9 +69,13 @@ export function renderStatus(state: GameState): string {
       const conds = c.conditions.map((k) => k.id).join(',');
       const temp = c.tempHp ? ` +${c.tempHp} temp` : '';
       const slots = c.spellSlots.length > 0 ? ` slots:${c.spellSlots.map((s) => s.current).join('/')}` : '';
+      const innate = Object.entries(c.innateSpells)
+        .filter(([, u]) => u.current > 0)
+        .map(([id, u]) => `${SPELLS[id]?.name ?? id}:${u.current}`);
+      const innateStr = innate.length > 0 ? ` innate:${innate.join(',')}` : '';
       const items = c.inventory.filter((s) => ITEMS[s.itemId]).reduce((n, s) => n + s.qty, 0);
       const itemStr = items > 0 ? ` items:${items}` : '';
-      return `${token(c)} ${c.name}: ${c.hp}/${c.maxHp}hp${temp} AC${acOf(c)}${slots}${itemStr}${conds ? ` [${conds}]` : ''}`;
+      return `${token(c)} ${c.name}: ${c.hp}/${c.maxHp}hp${temp} AC${acOf(c)}${slots}${innateStr}${itemStr}${conds ? ` [${conds}]` : ''}`;
     });
     rows.push(`  ${team === 'team1' ? 'Team 1' : 'Team 2'}: ${cells.join('  |  ')}`);
   }
