@@ -39,6 +39,9 @@ export function armorClass(armorId: Id | undefined, dexMod: number, shield: bool
 /** A combatant's current AC: stat-block override (monsters) or derived from equipment. */
 export function acOf(c: Combatant): number {
   if (c.acOverride !== undefined) return c.acOverride;
+  if (c.mageArmor && c.equipped.armor === undefined) {
+    return 13 + abilityMod(c.abilities.dex) + (c.equipped.offHand === 'shield' ? 2 : 0);
+  }
   return armorClass(c.equipped.armor, abilityMod(c.abilities.dex), c.equipped.offHand === 'shield');
 }
 

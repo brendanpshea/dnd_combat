@@ -33,8 +33,9 @@ describe('character builder', () => {
     expect(acOf(w)).toBe(13); // 10 + dex 16 → +3
     expect(w.maxHp).toBe(7);
     expect(w.spellcastingAbility).toBe('int');
-    expect(w.spellIds).toHaveLength(6);
+    expect(w.spellIds).toHaveLength(7);
     expect(w.spellIds).toContain('find-familiar');
+    expect(w.spellIds).toContain('mage-armor');
   });
 
   it('rogue: AC 15, HP 11, vex masteries on both weapons', () => {

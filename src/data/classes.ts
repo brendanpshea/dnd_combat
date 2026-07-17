@@ -105,7 +105,7 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'int',
       slotsByLevel: [[2], [3], [4, 2]],
       spellsByLevel: {
-        1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands', 'find-familiar'],
+        1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands', 'find-familiar', 'mage-armor'],
         2: ['thunderwave'],
         3: ['scorching-ray', 'misty-step'],
       },

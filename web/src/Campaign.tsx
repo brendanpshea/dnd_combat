@@ -398,10 +398,10 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   <span className="sheet-label">Cast</span>
                   <button className="mini" onClick={() => mutate(() => {
                     if (useStoreSpell(c, picked.charIdx, spell.spellId)) {
-                      setNotice(`${owner.name} summons a tiny owl familiar.`);
+                      setNotice(`${owner.name} ${spell.castNotice ?? `casts ${spell.name}`}.`);
                     }
                     close();
-                  })}>Summon owl</button>
+                  })}>{spell.castLabel ?? 'Cast'}</button>
                 </div>
               )}
 

@@ -8,7 +8,10 @@ describe('store spells', () => {
       { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚', targeting: 'party' },
     ]);
     expect(storeSpellActions(party[1]!)).toContainEqual(
-      { spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self' },
+      expect.objectContaining({ spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self' }),
+    );
+    expect(storeSpellActions(party[1]!)).toContainEqual(
+      expect.objectContaining({ spellId: 'mage-armor', name: 'Mage Armor', icon: '🛡️', targeting: 'self' }),
     );
   });
 });

@@ -32,6 +32,7 @@ export interface PartyCharacter {
     hp: number;
     effects?: {
       familiar?: { kind: 'owl' };
+      mageArmor?: true;
     };
   };
   inventory: ItemStack[];
@@ -378,6 +379,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       combatant.hp = Math.max(0, Math.min(ch.resources.hp, combatant.maxHp));
     }
     if (ch.resources?.effects?.familiar) combatant.familiar = { kind: 'owl' };
+    if (ch.resources?.effects?.mageArmor) combatant.mageArmor = true;
     return combatant;
   });
 }
@@ -413,7 +415,11 @@ export function longRest(c: CampaignState): RestResult {
   const party = buildCampaignParty(c);
   for (const [index, combatant] of party.entries()) {
     totalHealed += combatant.maxHp - combatant.hp;
-    setCampaignHp(c.characters[index]!, combatant.maxHp);
+    const character = c.characters[index]!;
+    character.resources = {
+      hp: combatant.maxHp,
+      ...(character.resources?.effects?.familiar ? { effects: { familiar: { kind: 'owl' } } } : {}),
+    };
   }
   return { totalHealed };
 }
@@ -440,11 +446,20 @@ export interface StoreSpellAction {
   name: string;
   icon: string;
   targeting: 'party' | 'self';
+  castLabel?: string;
+  castNotice?: string;
 }
 
 const STORE_SPELL_ACTIONS: Record<Id, StoreSpellAction> = {
   'cure-wounds': { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚', targeting: 'party' },
-  'find-familiar': { spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self' },
+  'find-familiar': {
+    spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self',
+    castLabel: 'Summon owl', castNotice: 'summons a tiny owl familiar',
+  },
+  'mage-armor': {
+    spellId: 'mage-armor', name: 'Mage Armor', icon: '🛡️', targeting: 'self',
+    castLabel: 'Ward self', castNotice: 'is protected by Mage Armor',
+  },
 };
 
 /** Store spells are a curated subset of a combatant's known spells. */
@@ -465,6 +480,13 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     user.resources = {
       hp: user.resources?.hp ?? caster.hp,
       effects: { ...user.resources?.effects, familiar: { kind: 'owl' } },
+    };
+    return true;
+  }
+  if (spellId === 'mage-armor') {
+    user.resources = {
+      hp: user.resources?.hp ?? caster.hp,
+      effects: { ...user.resources?.effects, mageArmor: true },
     };
     return true;
   }
@@ -727,8 +749,14 @@ export function applyVictory(
       ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
       ch.resources = {
         hp: fought.hp,
-        ...(fought.familiar || ch.resources?.effects
-          ? { effects: { ...ch.resources?.effects, ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}) } }
+        ...(fought.familiar || fought.mageArmor || ch.resources?.effects
+          ? {
+              effects: {
+                ...ch.resources?.effects,
+                ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
+                ...(fought.mageArmor ? { mageArmor: true as const } : {}),
+              },
+            }
           : {}),
       };
     }
