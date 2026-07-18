@@ -320,6 +320,60 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 19, dex: 14, con: 12, int: 1, wis: 10, cha: 3 },
     weaponIds: ['snake-constrict', 'bite'],
   },
+
+  gargoyle: {
+    id: 'gargoyle', name: 'Gargoyle',
+    ac: 15, hp: 52, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 15, dex: 11, con: 16, int: 6, wis: 11, cha: 7 },
+    weaponIds: ['gargoyle-bite', 'gargoyle-claws'],
+    attacksPerAction: 2,
+    resistances: ['bludgeoning', 'piercing', 'slashing'],
+  },
+  'fire-elemental': {
+    id: 'fire-elemental', name: 'Fire Elemental',
+    ac: 13, hp: 102, speed: 50,
+    creatureType: 'elemental',
+    abilities: { str: 10, dex: 17, con: 16, int: 6, wis: 10, cha: 7 },
+    featureIds: ['fire-form'],
+    weaponIds: ['fire-touch'],
+    attacksPerAction: 2,
+    immunities: ['fire', 'poison'],
+    resistances: ['bludgeoning', 'piercing', 'slashing'],
+  },
+  'water-elemental': {
+    id: 'water-elemental', name: 'Water Elemental',
+    ac: 14, hp: 114, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 18, dex: 14, con: 18, int: 5, wis: 10, cha: 8 },
+    featureIds: ['whelm'],
+    weaponIds: ['water-slam'],
+    attacksPerAction: 2,
+    immunities: ['poison'],
+    resistances: ['bludgeoning', 'piercing', 'slashing', 'acid'],
+  },
+  'earth-elemental': {
+    id: 'earth-elemental', name: 'Earth Elemental',
+    ac: 17, hp: 126, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 20, dex: 8, con: 20, int: 5, wis: 10, cha: 5 },
+    featureIds: ['earth-glide'],
+    weaponIds: ['earth-slam'],
+    attacksPerAction: 2,
+    immunities: ['poison'],
+    resistances: ['bludgeoning', 'piercing', 'slashing'],
+  },
+  'air-elemental': {
+    id: 'air-elemental', name: 'Air Elemental',
+    ac: 15, hp: 90, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 14, dex: 20, con: 14, int: 6, wis: 10, cha: 6 },
+    featureIds: ['whirlwind'],
+    weaponIds: ['air-slam'],
+    attacksPerAction: 2,
+    immunities: ['poison'],
+    resistances: ['bludgeoning', 'piercing', 'slashing', 'lightning'],
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -493,6 +547,30 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'snake-pit', name: 'Viper Pit', suggestedLevel: 3,
     members: ['giant-constrictor-snake', 'giant-constrictor-snake'],
   },
+  'gargoyle-perch': {
+    id: 'gargoyle-perch', name: 'Gargoyle Perch', suggestedLevel: 3,
+    members: ['gargoyle', 'gargoyle'],
+  },
+  'fire-nexus': {
+    id: 'fire-nexus', name: 'Fire Nexus', suggestedLevel: 5,
+    members: ['fire-elemental', 'cult-fanatic'],
+  },
+  'water-vortex': {
+    id: 'water-vortex', name: 'Water Vortex', suggestedLevel: 5,
+    members: ['water-elemental'],
+  },
+  'earth-tremor': {
+    id: 'earth-tremor', name: 'Earth Tremor', suggestedLevel: 5,
+    members: ['earth-elemental'],
+  },
+  'tempest-eye': {
+    id: 'tempest-eye', name: 'Tempest Eye', suggestedLevel: 5,
+    members: ['air-elemental'],
+  },
+  'elemental-cataclysm': {
+    id: 'elemental-cataclysm', name: 'Elemental Cataclysm', suggestedLevel: 6,
+    members: ['fire-elemental', 'earth-elemental'],
+  },
 };
 
 /**
@@ -508,6 +586,7 @@ export const MONSTER_XP: Record<Id, number> = {
   priest: 450, 'ogre-mage': 1100,
   guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
   'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
+  gargoyle: 450, 'fire-elemental': 1800, 'water-elemental': 1800, 'earth-elemental': 1800, 'air-elemental': 1800,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

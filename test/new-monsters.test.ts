@@ -202,7 +202,8 @@ describe('new encounters complete under AI', () => {
     for (const encId of [
       'bandits', 'spiders', 'crypt', 'kobolds', 'raiders', 'wilds', 'cult',
       'watch', 'ambush', 'swamp', 'pack', 'syndicate',
-      'badger-den', 'toad-swamp', 'hyena-pack', 'boar-stampede', 'snake-pit'
+      'badger-den', 'toad-swamp', 'hyena-pack', 'boar-stampede', 'snake-pit',
+      'gargoyle-perch', 'fire-nexus', 'water-vortex', 'earth-tremor', 'tempest-eye', 'elemental-cataclysm'
     ]) {
       const c = new Combat({
         seed: 7,

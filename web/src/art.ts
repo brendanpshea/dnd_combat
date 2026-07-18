@@ -16,6 +16,7 @@ export const HAS_ART = new Set<string>([
   'knight', 'minotaur', 'ettin', 'priest', 'ogre-mage',
   'guard', 'bugbear', 'lizardfolk', 'gnoll', 'spy',
   'giant-badger', 'giant-toad', 'giant-hyena', 'giant-boar', 'giant-constrictor-snake',
+  'gargoyle', 'fire-elemental', 'water-elemental', 'earth-elemental', 'air-elemental',
 ]);
 
 export function hasArt(id: string): boolean {
@@ -40,6 +41,7 @@ const SCALE: Record<string, number> = {
   minotaur: 1.15, ettin: 1.3, 'ogre-mage': 1.3,
   bugbear: 1.15, gnoll: 1.1,
   'giant-badger': 0.95, 'giant-toad': 1.25, 'giant-hyena': 1.2, 'giant-boar': 1.25, 'giant-constrictor-snake': 1.3,
+  gargoyle: 1.0, 'fire-elemental': 1.35, 'water-elemental': 1.35, 'earth-elemental': 1.4, 'air-elemental': 1.35,
 };
 
 export function tokenScale(id: string): number {

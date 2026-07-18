@@ -254,4 +254,29 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
     onHitCondition: 'restrained',
   },
+  'gargoyle-bite': {
+    id: 'gargoyle-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'gargoyle-claws': {
+    id: 'gargoyle-claws', name: 'Claws', damage: '1d6', damageType: 'slashing',
+    properties: ['light'], melee: true,
+  },
+  'fire-touch': {
+    id: 'fire-touch', name: 'Touch', damage: '2d6', damageType: 'fire',
+    properties: [], melee: true,
+    extraDamage: { dice: '1d6', type: 'fire' },
+  },
+  'water-slam': {
+    id: 'water-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'earth-slam': {
+    id: 'earth-slam', name: 'Slam', damage: '2d10', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'air-slam': {
+    id: 'air-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
 };

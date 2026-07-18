@@ -200,7 +200,7 @@ export interface Combatant {
 }
 
 export type CreatureType =
-  | 'humanoid' | 'beast' | 'undead' | 'giant' | 'construct' | 'fiend' | 'dragon';
+  | 'humanoid' | 'beast' | 'undead' | 'giant' | 'construct' | 'fiend' | 'dragon' | 'elemental';
 
 export interface GameState {
   rng: RngState;

@@ -238,4 +238,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   relentless: { id: 'relentless', name: 'Relentless', trigger: 'passive' },
   charge: { id: 'charge', name: 'Charge', trigger: 'passive' },
   burrow: { id: 'burrow', name: 'Burrow', trigger: 'passive' },
+  'fire-form': { id: 'fire-form', name: 'Fire Form', trigger: 'passive' },
+  whelm: { id: 'whelm', name: 'Whelm', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  whirlwind: { id: 'whirlwind', name: 'Whirlwind', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  'earth-glide': { id: 'earth-glide', name: 'Earth Glide', trigger: 'passive' },
 };
