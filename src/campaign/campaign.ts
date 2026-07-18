@@ -81,6 +81,16 @@ export function shopVisitFor(c: CampaignState): NonNullable<CampaignState['shopV
 }
 
 /** Parse + minimally validate a serialized campaign. */
+/** Item ids retired from the game, remapped to their replacement on load. */
+const RETIRED_ITEMS: Record<Id, Id> = { 'scroll-cure-wounds': 'potion-healing' };
+
+/** Replace any retired item ids in a stack list, merging quantities. */
+function migrateRetiredItems(inv: ItemStack[] | undefined): ItemStack[] {
+  const out: ItemStack[] = [];
+  for (const s of inv ?? []) addItem(out, RETIRED_ITEMS[s.itemId] ?? s.itemId, s.qty);
+  return out;
+}
+
 export function parseCampaign(json: string): CampaignState | undefined {
   try {
     const raw = JSON.parse(json) as CampaignState;
@@ -89,6 +99,10 @@ export function parseCampaign(json: string): CampaignState | undefined {
     for (const character of raw.characters) {
       character.speciesId ??= 'human';
       character.portraitId ??= character.classId;
+      // Scroll of Cure Wounds was retired (it duplicated healing potions); a
+      // save still holding one would carry a dead, unusable item, so trade each
+      // for the potion it doubled.
+      character.inventory = migrateRetiredItems(character.inventory);
       // Saves from before characters had names carry the class as the name, so
       // the game announces "Wizard is down" instead of "Morgana Le Fey is down".
       // A name that is exactly the class name was never chosen, it was the old
@@ -98,6 +112,7 @@ export function parseCampaign(json: string): CampaignState | undefined {
         character.name = defaultNameFor(character.classId);
       }
     }
+    if (raw.stash) raw.stash = migrateRetiredItems(raw.stash);
     // Existing campaigns already passed the original setup screen.
     if (typeof raw.partyReady !== 'boolean') raw.partyReady = true;
     if (typeof raw.storyMode !== 'boolean') raw.storyMode = false; // old saves = normal

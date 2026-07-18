@@ -244,6 +244,20 @@ describe('party loot stash', () => {
     expect(partyStash(c)).toEqual([]);
     expect(claimFromStash(c, 0, 'potion-healing')).toBe(false);
   });
+
+  it('loading a save converts retired Scroll of Cure Wounds into healing potions', () => {
+    const c = newCampaign(3);
+    c.characters[2]!.inventory = [
+      { itemId: 'scroll-cure-wounds', qty: 2 },
+      { itemId: 'potion-healing', qty: 1 },
+    ];
+    c.stash = [{ itemId: 'scroll-cure-wounds', qty: 1 }];
+    const loaded = parseCampaign(JSON.stringify(c))!;
+    // No scrolls survive; the cleric's two scrolls merge into the existing potion.
+    expect(loaded.characters[2]!.inventory.some((s) => s.itemId === 'scroll-cure-wounds')).toBe(false);
+    expect(loaded.characters[2]!.inventory.find((s) => s.itemId === 'potion-healing')!.qty).toBe(3);
+    expect(loaded.stash).toEqual([{ itemId: 'potion-healing', qty: 1 }]);
+  });
 });
 
 describe('equipment management', () => {
