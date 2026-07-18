@@ -197,7 +197,14 @@ export function resolveAttack(
   const crit = natCrit || (isHelpless(target) && isMeleeAttack);
   const targetAc = acOf(target);
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
-  const hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
+  let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
+
+  // Shield reaction (autocast): a would-be hit that +5 AC turns into a miss, if
+  // the defender can react. A natural 20 lands regardless.
+  if (hit && d20.natural !== 20 && total < targetAc + 5 && tryAutoShield(state, targetId)) {
+    hit = false;
+    events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'shielded', sourceId: targetId });
+  }
 
   consumeRollMarkers(attacker, target);
 
@@ -454,6 +461,23 @@ export function applyDamage(
     }
   }
   return events;
+}
+
+/**
+ * Shield, cast as a reaction (autocast for now). If the defender knows Shield,
+ * has a slot and its reaction, and isn't already shielded, it spends both and
+ * gains +5 AC (and Magic Missile immunity) until the start of its next turn.
+ */
+export function tryAutoShield(state: GameState, targetId: Id): boolean {
+  const t = state.combatants[targetId];
+  if (!t || !t.alive || !t.spellIds.includes('shield')) return false;
+  if (t.turn.reactionUsed || t.conditions.some((c) => c.id === 'shielded')) return false;
+  const slot = t.spellSlots.find((s) => s.current > 0);
+  if (!slot) return false;
+  slot.current -= 1;
+  t.turn.reactionUsed = true;
+  t.conditions.push({ id: 'shielded', sourceId: targetId });
+  return true;
 }
 
 export function breakConcentration(state: GameState, combatantId: Id): GameEvent[] {

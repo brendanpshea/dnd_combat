@@ -110,6 +110,46 @@ describe('Web', () => {
   });
 });
 
+describe('Shield (autocast reaction)', () => {
+  it('turns a would-be hit into a miss, spending a slot and the reaction', () => {
+    for (let seed = 1; seed <= 80; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [foe('goblin-warrior', { x: 3, y: 3 }, 'gob'), pc('wizard', 1, { x: 4, y: 3 }, 'wiz')],
+      });
+      until(c, 'gob');
+      const slotsBefore = c.state.combatants['wiz']!.spellSlots[0]!.current;
+      const events = c.apply({ kind: 'attack', weaponId: 'goblin-scimitar', targetId: 'wiz' });
+      if (!events.some((e) => e.type === 'conditionApplied' && e.condition === 'shielded')) continue;
+      const roll = events.find((e) => e.type === 'attackRolled')!;
+      if (roll.type !== 'attackRolled') throw new Error();
+      expect(roll.hit).toBe(false); // shielded away
+      expect(c.state.combatants['wiz']!.spellSlots[0]!.current).toBe(slotsBefore - 1);
+      expect(c.state.combatants['wiz']!.turn.reactionUsed).toBe(true);
+      return;
+    }
+    throw new Error('no attack ever fell in the Shield window across 80 seeds');
+  });
+
+  it('blocks Magic Missile entirely', () => {
+    const c = new Combat({
+      seed: 3,
+      combatants: [pc('wizard', 3, { x: 1, y: 1 }, 'caster'), pc('wizard', 1, { x: 5, y: 1 }, 'target')],
+    });
+    // Make them enemies so Magic Missile can target the defender.
+    c.state.combatants['target']!.team = 'team2';
+    until(c, 'caster');
+    const hpBefore = c.state.combatants['target']!.hp;
+    const events = c.apply({
+      kind: 'castSpell', spellId: 'magic-missile', slotLevel: 1,
+      targets: [{ combatantId: 'target' }, { combatantId: 'target' }, { combatantId: 'target' }],
+    });
+    expect(events.some((e) => e.type === 'conditionApplied' && e.condition === 'shielded')).toBe(true);
+    expect(events.some((e) => e.type === 'damageDealt')).toBe(false); // all darts blocked
+    expect(c.state.combatants['target']!.hp).toBe(hpBefore);
+  });
+});
+
 describe('Spiritual Weapon', () => {
   it('summons a floating weapon (bonus action, slot spent) and re-attacks free next turn', () => {
     const c = new Combat({

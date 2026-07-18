@@ -46,13 +46,13 @@ export function startTurn(state: GameState): GameEvent[] {
   const c = currentCombatant(state);
   const events: GameEvent[] = [...discoverHidden(state, c.id)];
 
-  // Dodging and noReactions last until the start of the owner's next turn.
+  // Dodging, noReactions and Shield last until the start of the owner's next turn.
   for (const cond of c.conditions) {
-    if (cond.id === 'dodging' || cond.id === 'noReactions') {
+    if (cond.id === 'dodging' || cond.id === 'noReactions' || cond.id === 'shielded') {
       events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });
     }
   }
-  c.conditions = c.conditions.filter((k) => k.id !== 'dodging' && k.id !== 'noReactions');
+  c.conditions = c.conditions.filter((k) => k.id !== 'dodging' && k.id !== 'noReactions' && k.id !== 'shielded');
 
   // Expire round-limited conditions (e.g. Unconscious's 1-minute cap).
   for (const cond of c.conditions) {

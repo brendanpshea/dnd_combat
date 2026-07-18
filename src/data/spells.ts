@@ -12,7 +12,7 @@ import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway } from '../engine/rules/attack.js';
+import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
@@ -60,7 +60,7 @@ export interface SpellData {
   id: Id;
   name: string;
   level: number; // 0 = cantrip
-  castingTime: 'action' | 'bonus';
+  castingTime: 'action' | 'bonus' | 'reaction';
   targeting: SpellTargeting;
   concentration: boolean;
   /**
@@ -391,9 +391,18 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '✨',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];
+      const negated = new Set<Id>();
       for (const tid of targetIds) {
         const t = state.combatants[tid]!;
         if (!t.alive) continue; // later darts may hit an already-dead target choice
+        // Shield blocks Magic Missile outright — autocast it on the first dart.
+        if (negated.has(tid)) continue;
+        const already = t.conditions.some((c) => c.id === 'shielded');
+        if (already || tryAutoShield(state, tid)) {
+          if (!already) events.push({ type: 'conditionApplied', combatantId: tid, condition: 'shielded', sourceId: tid });
+          negated.add(tid);
+          continue;
+        }
         const dmg = rollDice(state.rng, '1d4+1');
         state.rng = dmg.state;
         events.push(...applyDamage(state, tid, casterId, dmg.total, 'force', dmg.rolls));
@@ -517,6 +526,24 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(...applyHealing(state, tid, casterId, heal.total + mod));
       }
       return events;
+    },
+  },
+
+  /**
+   * Shield: a reaction that adds +5 AC (and Magic Missile immunity) until the
+   * caster's next turn. Never cast as a normal action — the engine autocasts it
+   * for a defender that a hit would otherwise land on (see tryAutoShield); this
+   * entry exists so the spell can be *known* and looked up.
+   */
+  shield: {
+    id: 'shield', name: 'Shield', level: 1, castingTime: 'reaction',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '🛡️',
+    cast({ state, casterId }) {
+      const c = state.combatants[casterId]!;
+      if (!c.conditions.some((k) => k.id === 'shielded')) c.conditions.push({ id: 'shielded', sourceId: casterId });
+      return [{ type: 'conditionApplied', combatantId: casterId, condition: 'shielded', sourceId: casterId }];
     },
   },
 

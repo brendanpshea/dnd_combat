@@ -362,6 +362,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
 
   for (const sid of actor.spellIds) {
     const spell = SPELLS[sid]!;
+    if (spell.castingTime === 'reaction') continue; // e.g. Shield — the engine autocasts it
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
     // Spiritual Weapon's re-attack is free once the weapon is out.

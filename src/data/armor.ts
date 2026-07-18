@@ -45,7 +45,9 @@ export function acOf(c: Combatant): number {
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), c.equipped.offHand === 'shield');
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
-  return base + defense;
+  // Shield spell reaction: +5 AC until the caster's next turn.
+  const shielded = c.conditions.some((k) => k.id === 'shielded') ? 5 : 0;
+  return base + defense + shielded;
 }
 
 /** Is the combatant wearing metal armor (Shocking Grasp rider)? */

@@ -63,6 +63,7 @@ export type ConditionId =
   | 'slowed'       // Slow mastery: speed cut by 10 ft until this creature's next turn
   | 'restrained'   // Web: speed 0, disadvantage to attack, advantage to be hit
   | 'commanded'    // Command: prone and loses its next action
+  | 'shielded'     // Shield reaction: +5 AC (and Magic Missile immunity) until next turn
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll

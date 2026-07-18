@@ -350,6 +350,19 @@ shared `cantripDice` helper. New boss-tier monsters — Knight, Minotaur, Ettin 
 front the three L4–5 ladder stages (Knightly Order, Labyrinth Terror, and the
 Giant's Stronghold finale).
 
+**Expanded spellbook.** Beyond the core kit, the casters share a wider list
+(also seeded onto NPC caster stat blocks): Healing Word and Mass Healing Word
+(bonus-action heals), Command (Wis save → grovel: prone + lose a turn, the
+`commanded` condition), Suggestion (Wis save → leave the fight via `charmAway`),
+Web (Dex save → `restrained`, save-ends, concentration), Fear (cone, Wis save →
+`frightened`, which now imposes disadvantage on attacks), Lightning Bolt (a
+`line15` bolt, Dex save for half, ignores cover), Spiritual Weapon (a bonus-
+action force attack that re-attacks free each turn while it lasts), Spiritual
+Guardians (a 15-ft radiant aura resolved in `startTurn`, held by concentration),
+and Shield (a reaction the engine **autocasts** for a defender when +5 AC would
+turn a hit into a miss, and which blocks Magic Missile outright). Guidance is
+out-of-combat only: a party cleric adds +1d4 to shop skill checks.
+
 **Turn Undead** is the base Channel Divinity every cleric gets at level 2
 (separate from Life Domain's Preserve Life at 3). RAW turns — forces to flee —
 every undead within 30 ft that fails a Wisdom save; with no "must flee" AI, a

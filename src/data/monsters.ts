@@ -129,7 +129,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'humanoid',
     abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 14, cha: 11 },
     weaponIds: ['mace'],
-    spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless'] },
+    spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'] },
   },
   kobold: {
     id: 'kobold', name: 'Kobold',
@@ -170,7 +170,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 11, dex: 14, con: 12, int: 10, wis: 13, cha: 14 },
     weaponIds: ['dagger'],
     attacksPerAction: 2,
-    spellcasting: { ability: 'wis', slots: [4, 2], spellIds: ['sacred-flame', 'bless', 'hold-person'] },
+    spellcasting: { ability: 'wis', slots: [4, 2], spellIds: ['sacred-flame', 'bless', 'hold-person', 'command', 'spiritual-weapon', 'suggestion'] },
   },
   'animated-armor': {
     id: 'animated-armor', name: 'Animated Armor',

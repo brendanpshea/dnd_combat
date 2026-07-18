@@ -3,6 +3,7 @@ import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
 import { buildEncounter } from '../src/data/monsters.js';
 import { groupActions, buildMultiAction, posKey } from '../web/src/actionGroups.js';
+import { SPELLS } from '../src/data/spells.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 function place(classId: string, team: 'team1' | 'team2', position: Position, over: Partial<Combatant> = {}): Combatant {
@@ -174,6 +175,8 @@ describe('the Spells tray shows every spell', () => {
     const { bar, me } = wizardBar();
     const tray = bar.bar.filter((b) => b.group === 'spell').map((b) => b.id);
     for (const spellId of me.spellIds) {
+      // Shield is a reaction the engine autocasts — never offered as an action.
+      if (SPELLS[spellId]?.castingTime === 'reaction') continue;
       expect(tray, `${spellId} missing from the Spells tray`).toContain(`spell:${spellId}`);
     }
   });
