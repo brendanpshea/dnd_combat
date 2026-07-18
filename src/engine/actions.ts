@@ -14,7 +14,7 @@ import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spel
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
-import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, cube15, Direction8 } from './grid.js';
+import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, cube15, line15, Direction8 } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith } from './rules/attack.js';
 import { savingThrow } from './rules/saves.js';
@@ -290,8 +290,8 @@ export function spellTargetSets(
       }
     }
   } else {
-    // cone15 / cube15: directions whose area catches at least one enemy.
-    const area = t.kind === 'cube15' ? cube15 : cone15;
+    // cone15 / cube15 / line15: directions whose area catches at least one enemy.
+    const area = t.kind === 'cube15' ? cube15 : t.kind === 'line15' ? line15 : cone15;
     for (const dir of Object.keys(DIRECTIONS) as Direction8[]) {
       if (!area(actor.position, dir).some((p) => enemies.some((e) => posEq(e.position, p)))) continue;
       const d = DIRECTIONS[dir];

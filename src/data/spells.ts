@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
+import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -41,6 +41,7 @@ export type SpellTargeting =
   | { kind: 'sphere5x5'; range: number }    // Fireball
   | { kind: 'cone15' }
   | { kind: 'cube15' }                       // Thunderwave (3x3 adjacent square)
+  | { kind: 'line15' }                       // Lightning Bolt (line to the edge)
   | { kind: 'emptyCell'; range: number }   // Misty Step
   | { kind: 'self' };                       // Thunderwave (adjacent burst)
 
@@ -603,6 +604,41 @@ export const SPELLS: Record<Id, SpellData> = {
         }
       }
       if (caught.length > 0) caster.concentratingOn = { spellId: 'web', targetIds: caught };
+      return events;
+    },
+  },
+
+  /**
+   * Lightning Bolt: an 8d6 line to the board edge, Dexterity save for half. A
+   * Fireball sibling in a line instead of a burst, and (like Fireball) it
+   * strikes everything on the line, cover or no cover — Sculpt Spells spares
+   * allies caught in it.
+   */
+  'lightning-bolt': {
+    id: 'lightning-bolt', name: 'Lightning Bolt', level: 3, castingTime: 'action',
+    targeting: { kind: 'line15' },
+    concentration: false,
+    icon: '⚡',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dir = directionFromDelta(caster.position, positions[0]!);
+      const dc = spellDc(state, casterId);
+      const dice = `${8 + (slotLevel - 3)}d6`;
+      const events: GameEvent[] = [];
+      for (const pos of line15(caster.position, dir)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive) continue;
+        if (sculpt && t.team === caster.team) continue;
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        const dmg = rollDice(state.rng, dice);
+        state.rng = dmg.state;
+        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'lightning', dmg.rolls));
+      }
       return events;
     },
   },

@@ -154,7 +154,7 @@ export const CLASSES: Record<Id, ClassData> = {
         1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands', 'find-familiar', 'mage-armor'],
         2: ['thunderwave'],
         3: ['scorching-ray', 'misty-step', 'suggestion', 'web'],
-        5: ['fireball', 'fear'], // 3rd-level slot arrives here
+        5: ['fireball', 'fear', 'lightning-bolt'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {

@@ -110,6 +110,26 @@ describe('Web', () => {
   });
 });
 
+describe('Lightning Bolt', () => {
+  it('strikes every creature along the line, but not off it', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        pc('wizard', 5, { x: 0, y: 3 }, 'wiz'),
+        foe('ogre', { x: 3, y: 3 }, 'on1'),  // on the eastward line
+        foe('ogre', { x: 5, y: 3 }, 'on2'),  // further along the line
+        foe('ogre', { x: 3, y: 5 }, 'off'),  // off the line
+      ],
+    });
+    until(c, 'wiz');
+    const events = c.apply({ kind: 'castSpell', spellId: 'lightning-bolt', slotLevel: 3, targets: [{ position: { x: 1, y: 3 } }] });
+    const hurt = new Set(events.filter((e) => e.type === 'damageDealt').map((e) => e.type === 'damageDealt' && e.targetId));
+    expect(hurt.has('on1')).toBe(true);
+    expect(hurt.has('on2')).toBe(true);
+    expect(hurt.has('off')).toBe(false);
+  });
+});
+
 describe('Fear', () => {
   it('frightens enemies in the cone so they attack at disadvantage', () => {
     for (let seed = 1; seed <= 40; seed++) {

@@ -9,7 +9,7 @@ import { chooseAction } from '../../src/ai/greedy.js';
 import { chooseActionSim, SIM_PRESETS } from '../../src/ai/simulated.js';
 import type { Action } from '../../src/engine/actions.js';
 import { logLinesFor, type LogLine } from './log.js';
-import { sphere2x2, sphere5x5, cone15, cube15 } from '../../src/engine/grid.js';
+import { sphere2x2, sphere5x5, cone15, cube15, line15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
@@ -62,10 +62,11 @@ function footprint(caster: Combatant, spellId: string, target: Position): string
   const kind = SPELLS[spellId]?.targeting.kind;
   if (kind === 'sphere2x2') return sphere2x2(target).map(posKey);
   if (kind === 'sphere5x5') return sphere5x5(target).map(posKey);
-  if (kind === 'cone15' || kind === 'cube15') {
+  if (kind === 'cone15' || kind === 'cube15' || kind === 'line15') {
     try {
       const dir = directionFromDelta(caster.position, target);
-      return (kind === 'cube15' ? cube15 : cone15)(caster.position, dir).map(posKey);
+      const area = kind === 'cube15' ? cube15 : kind === 'line15' ? line15 : cone15;
+      return area(caster.position, dir).map(posKey);
     } catch {
       return [posKey(target)];
     }

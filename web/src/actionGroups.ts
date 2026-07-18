@@ -103,6 +103,7 @@ export function targetingNote(spell: SpellData): string {
     case 'sphere5x5': return '5×5 blast';
     case 'cone15': return 'cone';
     case 'cube15': return '3×3 blast';
+    case 'line15': return 'line';
     case 'emptyCell': return 'teleport';
     case 'self': return 'burst';
   }

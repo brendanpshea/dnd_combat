@@ -12,7 +12,7 @@ import { SPELLS, spellDc } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
-import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15 } from '../engine/grid.js';
+import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { attackAbility, collectAttackSources } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
@@ -244,6 +244,22 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         const t = state.combatants[occ]!;
         if (!t.alive || t.team === actor.team) continue;
         v += saveFailProb(state, t, 'dex', dc) * 5; // restrain value per enemy
+      }
+      return v - slotCost;
+    }
+    case 'lightning-bolt': {
+      const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
+      const sculpt = actor.featureIds.includes('sculpt-spells');
+      let v = 0;
+      for (const pos of line15(actor.position, dir)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        if (sculpt && t.team === actor.team) continue;
+        const pFail = saveFailProb(state, t, 'dex', dc);
+        const ev = avgDice('8d6') * (pFail + (1 - pFail) * 0.5);
+        v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
       }
       return v - slotCost;
     }

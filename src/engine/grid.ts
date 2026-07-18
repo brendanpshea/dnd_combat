@@ -277,6 +277,18 @@ export function cube15(origin: Position, dir: Direction8): Position[] {
   return cells;
 }
 
+/**
+ * A straight line (Lightning Bolt) from `origin` in a direction, up to `length`
+ * cells — a bolt shoots to the board edge, so the default spans the grid. The
+ * origin cell is excluded.
+ */
+export function line15(origin: Position, dir: Direction8, length = 8): Position[] {
+  const d = DIRECTIONS[dir];
+  const cells: Position[] = [];
+  for (let k = 1; k <= length; k++) cells.push({ x: origin.x + k * d.x, y: origin.y + k * d.y });
+  return cells;
+}
+
 export function cone15(origin: Position, dir: Direction8): Position[] {
   const d = DIRECTIONS[dir];
   const diagonal = d.x !== 0 && d.y !== 0;
