@@ -61,6 +61,24 @@ last touched.
   base ring under each token. Keep characters team-neutral.
 - **Lighting:** soft, top-front, consistent across the whole set (shadow on the
   lower and one side). No dramatic rim light.
+- **Cast diversity (required).** The human and humanoid cast must look like the
+  real range of people — **do not default to young, pale-skinned, Western, or
+  male** (the old prompts did, and the set skewed hard that way). Across the
+  ensemble, deliberately vary:
+  - **Skin tone** — the full range from deep brown to light, weighted toward
+    more brown and tan than pale.
+  - **Gender** — a genuine, roughly balanced mix of feminine, masculine, and
+    androgynous figures; never male-by-default.
+  - **Age** — include elders and youths, not only twenty-somethings.
+  - **Heritage & aesthetic** — draw hair, features, armor and dress from many
+    cultures (West/East/South African, South & East Asian, Middle Eastern,
+    Central/South American, Pacific, Indigenous, and European), as tasteful
+    fantasy inflections — **not** literal costumes or stereotypes.
+  Every human subject line below now fixes a **specific** identity so the whole
+  set stays balanced; keep those traits when you generate. Non-people monsters
+  (goblins, wolves, undead, constructs, the minotaur/oni) are exempt, though
+  their gear and cultural cues can still vary. Generic "make it diverse" notes
+  get ignored by generators — the per-asset specifics are what do the work.
 
 Reference palette (for accents/materials, not mandatory per-pixel):
 `#ffd166` gold · `#6ee7a0` green · `#ff9d4d` warm orange · `#9be2ff` ice ·
@@ -118,30 +136,36 @@ Generate token **and** portrait for each. Heroes are the default human species.
 A set of **eight species-flavoured portrait variants** is also ✅ generated and
 selectable in the party forge (they share these hero designs' style):
 `orc-barbarian`, `dragonborn-paladin`, `gnome-bard`, `halfling-rogue`,
-`tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard`.
+`tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard`. **When
+regenerating these, spread skin tone and gender across the set** — and make
+`human-bard` and `elf-archer` explicitly people of colour, since the other six
+already carry fantasy-species variety.
 
-**Fighter** — SIZE M ✅
-> A cheerful, sturdy chibi knight. Wearing steel scale mail and a warm-brown
-> tabard, a round wooden shield strapped to one arm, holding a shining longsword
-> upright. Short tousled brown hair, determined confident grin, rosy cheeks.
-> Iconic feature: the round shield + upright sword. Steel greys with a warm gold
-> trim.
+**Fighter** — SIZE M ✅ *(regenerate: currently skews white/male)*
+> A cheerful, sturdy chibi knight — **a Black woman with deep brown skin and
+> short coily hair (or neat box braids)**, a broad confident grin, rosy cheeks.
+> Wearing steel scale mail and a warm-brown tabard, a round wooden shield
+> strapped to one arm, holding a shining longsword upright. Iconic feature: the
+> round shield + upright sword. Steel greys with a warm gold trim.
 
-**Wizard** — SIZE M
+**Wizard** — SIZE M *(regenerate)*
 > A tiny curious chibi wizard almost entirely under an **enormous floppy pointed
-> hat** (the dominant feature) in deep indigo with a gold star. Flowing indigo
-> robe with rolled sleeves, clutching a gnarled wooden staff topped with a small
-> glowing arcane-purple spark. Big round eyes, small round glasses, wisp of
-> hair. Iconic feature: the giant pointed hat + glowing staff.
+> hat** (the dominant feature) in deep indigo with a gold star. **An elder with
+> warm tan-olive skin and a long wispy white beard (an East-Asian-sage
+> inflection).** Flowing indigo robe with rolled sleeves, clutching a gnarled
+> wooden staff topped with a small glowing arcane-purple spark. Big kind eyes,
+> small round glasses. Iconic feature: the giant pointed hat + glowing staff.
 
-**Cleric** — SIZE M
-> A kindly chibi cleric in cream-and-gold robes with a warm accent sash, holding
-> a simple mace and a radiant golden holy symbol (sunburst) that gives off a
-> soft warm glow. Gentle smiling face, tidy hair, a faint halo glint. Iconic
-> feature: the glowing sunburst holy symbol + mace.
+**Cleric** — SIZE M *(regenerate)*
+> A kindly chibi cleric — **a woman with warm medium-brown skin and locs (or a
+> simple headwrap)**, gentle smiling face, a faint halo glint — in cream-and-gold
+> robes with a warm accent sash, holding a simple mace and a radiant golden holy
+> symbol (sunburst) that gives off a soft warm glow. Iconic feature: the glowing
+> sunburst holy symbol + mace.
 
-**Rogue** — SIZE M
-> A sly chibi rogue in dark teal-green studded leather with a raised hood
+**Rogue** — SIZE M *(regenerate)*
+> A sly chibi rogue — **a young man with light brown skin (a Southeast-Asian /
+> Latino inflection)** — in dark teal-green studded leather with a raised hood
 > shadowing a confident smirk and one winking eye, a bright accent scarf. Holds
 > two short daggers in reverse grip. Nimble crouched-ready stance. Iconic
 > feature: the hood + crossed twin daggers.
@@ -190,15 +214,16 @@ selectable in the party forge (they share these hero designs' style):
 
 ### Tier 2 — nice-to-have (generate as budget allows) — all ✅ generated
 
-**Bandit** (`bandit`) — SIZE M
-> A scruffy chibi human bandit, cloth bandana mask over the nose, worn leather
-> and a colored sash, a curved scimitar, shifty grin. Rogueish highwayman.
+**Bandit** (`bandit`) — SIZE M *(regenerate)*
+> A scruffy chibi human bandit — **a woman with warm brown skin** — cloth bandana
+> mask over the nose, worn leather and a colored sash, a curved scimitar, shifty
+> grin. Rogueish highwaywoman.
 
-**Bandit Captain** (`bandit-captain`) — SIZE L
-> A cocky chibi human bandit captain in a weathered navy blue overcoat with gold
-> trim, a black tricorn hat, a steel breastplate, holding a gleaming saber sword
-> in one hand and a dagger in the other. A smug grin and a stubble beard. Clearly
-> the leader of the bandit gang.
+**Bandit Captain** (`bandit-captain`) — SIZE L *(regenerate)*
+> A cocky chibi bandit captain — **a Black woman with deep brown skin** — in a
+> weathered navy blue overcoat with gold trim, a black tricorn hat, a steel
+> breastplate, holding a gleaming saber in one hand and a dagger in the other. A
+> smug grin. Clearly the leader of the bandit gang.
 
 **Dire Wolf** (`dire-wolf`) — SIZE L
 > A larger, darker chibi wolf than the common wolf: charcoal fur, a scar over
@@ -214,10 +239,11 @@ selectable in the party forge (they share these hero designs' style):
 > a cluster of shiny eyes, small dripping fangs, a friendly-menacing look.
 > Reads clearly as a spider from above.
 
-**Acolyte** (`acolyte`) — SIZE M
-> A chibi robed cultist acolyte in dark hooded robes with a colored trim,
-> holding a glowing holy symbol and a mace, serene unsettling smile under the
-> hood.
+**Acolyte** (`acolyte`) — SIZE M *(regenerate)*
+> A chibi robed cultist acolyte — **a person of South-Asian descent with
+> medium-brown skin, face partly visible under the hood** — in dark hooded robes
+> with a colored trim, holding a glowing holy symbol and a mace, serene
+> unsettling smile.
 
 **Orc** (`orc`) — SIZE M
 > A burly chibi orc, muscular for a chibi, green-grey skin, small tusks, a fierce
@@ -230,56 +256,62 @@ selectable in the party forge (they share these hero designs' style):
 
 ### Tier 3 — later (SVG/emoji fallback holds for now) — all ✅ generated
 
-**Scout** (`scout`) — SIZE M
-> A chibi human scout/ranger in green-and-leather traveling gear, a hooded cloak,
-> drawing a longbow, keen focused expression.
+**Scout** (`scout`) — SIZE M *(regenerate)*
+> A chibi scout/ranger — **a woman of East-Asian descent with tan skin** — in
+> green-and-leather traveling gear and a hooded cloak, drawing a longbow, keen
+> focused expression.
 
-**Cult Fanatic** (`cult-fanatic`) — SIZE M
-> A chibi cult leader in ornate dark robes with arcane-purple trim and a horned
-> or eye motif, glowing eyes, holding a dagger and channeling dark magic.
-> Fancier and more sinister than the acolyte.
+**Cult Fanatic** (`cult-fanatic`) — SIZE M *(regenerate)*
+> A chibi cult leader — **a gaunt older man with olive-pale skin** — in ornate
+> dark robes with arcane-purple trim and a horned or eye motif, glowing eyes,
+> holding a dagger and channeling dark magic. Fancier and more sinister than the
+> acolyte. (One deliberately pale figure among many brown ones — variety cuts
+> both ways.)
 
 **Animated Armor** (`animated-armor`) — SIZE M
 > A chibi empty suit of plate armor standing upright and animated, glowing faint
 > blue light in the empty helmet visor, one gauntlet raised. Clanky and
 > construct-like, no visible body inside.
 
-### Tier 4 — level 4–5 bosses & casters (⬜ art needed)
+### Tier 4 — level 4–5 bosses & casters (✅ art present)
 
-The five newest stat blocks, still on the emoji fallback. Knight/Minotaur/Ettin
+The five newest stat blocks. Knight/Minotaur/Ettin
 front the level 4–5 ladder; Priest and Ogre Mage are spellcasters.
 
-**Knight** (`knight`) — SIZE M ⬜
+**Knight** (`knight`) — SIZE M ✅ *(visor down, face hidden — no change needed)*
 > A gallant chibi human knight in gleaming full plate with a warm-gold trim and a
 > long flowing crimson-and-white surcoat, a great steel helm with a plume (visor
 > up showing a stern noble face), a heavy greatsword held point-down in both
 > hands, a small heraldic shield on the back. Disciplined, commanding posture.
-> Clearly a heavier, grander armored figure than the Fighter hero. Iconic
-> feature: the plumed great-helm + two-handed greatsword.
+> Clearly a heavier, grander armored figure than the Fighter hero. **If the visor
+> is up, make the face a woman of colour;** heraldry may draw on non-European
+> motifs. Iconic feature: the plumed great-helm + two-handed greatsword.
 
-**Minotaur** (`minotaur`) — SIZE L ⬜
+**Minotaur** (`minotaur`) — SIZE L ✅
 > A hulking chibi minotaur: a big bull-headed brute with shaggy red-brown fur, a
 > broad snout with a brass nose-ring, two large curved horns (the dominant
 > feature), fierce glowing eyes and a snort. Muscular bare torso, simple hide
 > kilt, hoofed legs, hoisting an enormous double-bladed greataxe. Cartoon-fierce,
 > not gory. Iconic feature: the great curved horns + huge greataxe.
 
-**Ettin** (`ettin`) — SIZE XL ⬜
+**Ettin** (`ettin`) — SIZE XL ✅ *(giant, exempt; could vary the two heads more)*
 > A massive chibi two-headed giant: one lumpy body, **two** ugly-goofy heads
-> side by side, each with wild matted hair, a jutting underbite, and its own dim
-> expression (one grumpy, one dopey). Warm grey-tan skin, ragged furs, a
-> battleaxe in one fist and a spiked morningstar in the other. Towering and
-> dim-witted, menacing by size — same lovable-brute energy as the Ogre. Iconic
-> feature: the two mismatched heads + axe-and-morningstar.
+> side by side, **each visibly distinct** — different skin undertones, hair, and
+> its own dim expression (one grumpy, one dopey), so they read as two beings.
+> Warm grey-tan skin, ragged furs, a battleaxe in one fist and a spiked
+> morningstar in the other. Towering and dim-witted, menacing by size — same
+> lovable-brute energy as the Ogre. Iconic feature: the two mismatched heads +
+> axe-and-morningstar.
 
-**Priest** (`priest`) — SIZE M ⬜
-> A solemn chibi human priest in ornate cream-and-gold vestments with a jeweled
-> pectoral holy symbol and a tall mitre-like headdress, one hand raised in
-> blessing wreathed in soft golden radiance, the other holding a heavy mace.
-> Serene, authoritative face. Grander and more ceremonial than the hooded
-> Acolyte. Iconic feature: the tall headdress + glowing raised hand.
+**Priest** (`priest`) — SIZE M ✅ *(regenerate: currently an older white man)*
+> A solemn chibi priest — **an elder with deep brown skin and a short grey beard
+> (or a dignified elder woman with grey locs)** — in ornate cream-and-gold
+> vestments with a jeweled pectoral holy symbol and a tall mitre-like headdress,
+> one hand raised in blessing wreathed in soft golden radiance, the other holding
+> a heavy mace. Serene, authoritative face. Grander and more ceremonial than the
+> hooded Acolyte. Iconic feature: the tall headdress + glowing raised hand.
 
-**Ogre Mage** (`ogre-mage`) — SIZE XL ⬜
+**Ogre Mage** (`ogre-mage`) — SIZE XL ✅
 > A towering chibi ogre-mage (oni): a big blue-skinned ogre with small tusks, two
 > short horns, and fierce eyes, wrapped in rich embroidered silk robes with an
 > arcane-purple glow crackling around one raised clawed hand, a gnarled greatclub
@@ -321,11 +353,11 @@ Status: ✅ = art present; ⬜ = still needed (emoji fallback).
 | Scout | `token-scout.png` | `portrait-scout.png` | ✅ |
 | Cult Fanatic | `token-cult-fanatic.png` | `portrait-cult-fanatic.png` | ✅ |
 | Animated Armor | `token-animated-armor.png` | `portrait-animated-armor.png` | ✅ |
-| Knight | `token-knight.png` | `portrait-knight.png` | ⬜ |
-| Minotaur | `token-minotaur.png` | `portrait-minotaur.png` | ⬜ |
-| Ettin | `token-ettin.png` | `portrait-ettin.png` | ⬜ |
-| Priest | `token-priest.png` | `portrait-priest.png` | ⬜ |
-| Ogre Mage | `token-ogre-mage.png` | `portrait-ogre-mage.png` | ⬜ |
+| Knight | `token-knight.png` | `portrait-knight.png` | ✅ |
+| Minotaur | `token-minotaur.png` | `portrait-minotaur.png` | ✅ |
+| Ettin | `token-ettin.png` | `portrait-ettin.png` | ✅ |
+| Priest | `token-priest.png` | `portrait-priest.png` | ✅ |
+| Ogre Mage | `token-ogre-mage.png` | `portrait-ogre-mage.png` | ✅ |
 
 Species portrait variants (✅, forge only — token + portrait both present):
 `orc-barbarian`, `dragonborn-paladin`, `gnome-bard`, `halfling-rogue`,
@@ -353,6 +385,9 @@ engine, so the game stays playable while art lands incrementally.
       platform, or off-white fringe.
 - [ ] **Team-neutral** — no blue/red baked in (the engine adds the team ring).
 - [ ] **Tone** — friendly heroes, cartoon-menacing monsters, nothing gory.
+- [ ] **Representation** — the person matches the identity fixed in its subject
+      line; and stepping back, the **human cast as a whole** spans skin tones,
+      genders, and ages (not a row of young pale men). Re-roll defaults.
 - [ ] **Relative size** — the ogre visibly dwarfs the kobold when both are
       scaled into a cell.
 - [ ] **Consistent framing** — feet near bottom, centered, even padding, so all
