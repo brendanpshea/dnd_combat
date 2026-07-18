@@ -11,6 +11,12 @@ tiles, UI frames, health bars, targeting highlights, and spell/particle effects
 are hand-authored SVG/CSS in the app, not generated — keep them out of scope
 here so the raster set stays tight and consistent.
 
+**Status legend:** ✅ generated and wired in the engine (`HAS_ART` in
+`web/src/art.ts`) · ⬜ needed (still on the emoji fallback). As of this writing
+the four heroes, eight species portraits, and all Tier 1–3 monsters are ✅; the
+five level 4–5 additions in **§6 Tier 4** are ⬜ and the reason this doc was
+last touched.
+
 ---
 
 ## 1. How to use this doc
@@ -100,18 +106,21 @@ pack an atlas — generate clean and large; we shrink.)
 ogre towers over a kobold on the board):
 - **S** (~55%): kobold, giant spider
 - **M** (~70%): all heroes, goblin warrior, skeleton, zombie, wolf, bandit,
-  ghoul, acolyte, scout, orc, cult fanatic, animated armor
-- **L** (~85%): goblin boss, dire wolf, brown bear
-- **XL** (~95%): ogre
+  ghoul, acolyte, scout, orc, cult fanatic, animated armor, knight, priest
+- **L** (~85%): goblin boss, dire wolf, brown bear, minotaur
+- **XL** (~95%): ogre, ettin, ogre mage
 
 ---
 
-## 5. Heroes (human; default launch roster — Tier 1)
+## 5. Heroes (human; default launch roster — Tier 1) — all ✅ generated
 
-Generate token **and** portrait for each. Heroes are the default human species;
-dwarf/elf/orc variants are a later pass (accessory/palette swaps).
+Generate token **and** portrait for each. Heroes are the default human species.
+A set of **eight species-flavoured portrait variants** is also ✅ generated and
+selectable in the party forge (they share these hero designs' style):
+`orc-barbarian`, `dragonborn-paladin`, `gnome-bard`, `halfling-rogue`,
+`tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard`.
 
-**Fighter** — SIZE M
+**Fighter** — SIZE M ✅
 > A cheerful, sturdy chibi knight. Wearing steel scale mail and a warm-brown
 > tabard, a round wooden shield strapped to one arm, holding a shining longsword
 > upright. Short tousled brown hair, determined confident grin, rosy cheeks.
@@ -141,7 +150,7 @@ dwarf/elf/orc variants are a later pass (accessory/palette swaps).
 
 ## 6. Monsters
 
-### Tier 1 — launch must-have (most-seen, early ladder)
+### Tier 1 — launch must-have (most-seen, early ladder) — all ✅ generated
 
 **Goblin Warrior** (`goblin-warrior`) — SIZE M
 > A scrappy little chibi goblin, green skin, huge pointed ears, big yellow eyes,
@@ -179,7 +188,7 @@ dwarf/elf/orc variants are a later pass (accessory/palette swaps).
 > loincloth. Hoisting an enormous knotted wooden greatclub over one shoulder.
 > Lovably dumb and menacing by sheer size.
 
-### Tier 2 — nice-to-have (generate as budget allows)
+### Tier 2 — nice-to-have (generate as budget allows) — all ✅ generated
 
 **Bandit** (`bandit`) — SIZE M
 > A scruffy chibi human bandit, cloth bandana mask over the nose, worn leather
@@ -219,7 +228,7 @@ dwarf/elf/orc variants are a later pass (accessory/palette swaps).
 > A big chibi brown bear, round and fluffy, big head and paws, a roaring-cute
 > open mouth with small fangs, standing on all fours. Expressive cartoon animal.
 
-### Tier 3 — later (SVG/emoji fallback holds for now)
+### Tier 3 — later (SVG/emoji fallback holds for now) — all ✅ generated
 
 **Scout** (`scout`) — SIZE M
 > A chibi human scout/ranger in green-and-leather traveling gear, a hooded cloak,
@@ -235,6 +244,49 @@ dwarf/elf/orc variants are a later pass (accessory/palette swaps).
 > blue light in the empty helmet visor, one gauntlet raised. Clanky and
 > construct-like, no visible body inside.
 
+### Tier 4 — level 4–5 bosses & casters (⬜ art needed)
+
+The five newest stat blocks, still on the emoji fallback. Knight/Minotaur/Ettin
+front the level 4–5 ladder; Priest and Ogre Mage are spellcasters.
+
+**Knight** (`knight`) — SIZE M ⬜
+> A gallant chibi human knight in gleaming full plate with a warm-gold trim and a
+> long flowing crimson-and-white surcoat, a great steel helm with a plume (visor
+> up showing a stern noble face), a heavy greatsword held point-down in both
+> hands, a small heraldic shield on the back. Disciplined, commanding posture.
+> Clearly a heavier, grander armored figure than the Fighter hero. Iconic
+> feature: the plumed great-helm + two-handed greatsword.
+
+**Minotaur** (`minotaur`) — SIZE L ⬜
+> A hulking chibi minotaur: a big bull-headed brute with shaggy red-brown fur, a
+> broad snout with a brass nose-ring, two large curved horns (the dominant
+> feature), fierce glowing eyes and a snort. Muscular bare torso, simple hide
+> kilt, hoofed legs, hoisting an enormous double-bladed greataxe. Cartoon-fierce,
+> not gory. Iconic feature: the great curved horns + huge greataxe.
+
+**Ettin** (`ettin`) — SIZE XL ⬜
+> A massive chibi two-headed giant: one lumpy body, **two** ugly-goofy heads
+> side by side, each with wild matted hair, a jutting underbite, and its own dim
+> expression (one grumpy, one dopey). Warm grey-tan skin, ragged furs, a
+> battleaxe in one fist and a spiked morningstar in the other. Towering and
+> dim-witted, menacing by size — same lovable-brute energy as the Ogre. Iconic
+> feature: the two mismatched heads + axe-and-morningstar.
+
+**Priest** (`priest`) — SIZE M ⬜
+> A solemn chibi human priest in ornate cream-and-gold vestments with a jeweled
+> pectoral holy symbol and a tall mitre-like headdress, one hand raised in
+> blessing wreathed in soft golden radiance, the other holding a heavy mace.
+> Serene, authoritative face. Grander and more ceremonial than the hooded
+> Acolyte. Iconic feature: the tall headdress + glowing raised hand.
+
+**Ogre Mage** (`ogre-mage`) — SIZE XL ⬜
+> A towering chibi ogre-mage (oni): a big blue-skinned ogre with small tusks, two
+> short horns, and fierce eyes, wrapped in rich embroidered silk robes with an
+> arcane-purple glow crackling around one raised clawed hand, a gnarled greatclub
+> slung on its back. Regal, arrogant, and dangerous — an arcane brute, clearly
+> ogre-sized but robed and spellcasting rather than a dumb club-swinger. Iconic
+> feature: blue skin + horns + glowing arcane hand.
+
 ---
 
 ## 7. Integration — filenames & mapping
@@ -243,30 +295,46 @@ Save each asset with these exact names. IDs match `classId` / monster id in the
 engine, so wiring is a lookup with no ambiguity. Put source PNGs in
 `art/source/`; the build pipeline emits the atlas + `web/public/` assets.
 
-| Character | Token file | Portrait file |
-| --- | --- | --- |
-| Fighter | `token-fighter.png` | `portrait-fighter.png` |
-| Wizard | `token-wizard.png` | `portrait-wizard.png` |
-| Cleric | `token-cleric.png` | `portrait-cleric.png` |
-| Rogue | `token-rogue.png` | `portrait-rogue.png` |
-| Goblin Warrior | `token-goblin-warrior.png` | `portrait-goblin-warrior.png` |
-| Goblin Boss | `token-goblin-boss.png` | `portrait-goblin-boss.png` |
-| Kobold | `token-kobold.png` | `portrait-kobold.png` |
-| Wolf | `token-wolf.png` | `portrait-wolf.png` |
-| Skeleton | `token-skeleton.png` | `portrait-skeleton.png` |
-| Zombie | `token-zombie.png` | `portrait-zombie.png` |
-| Ogre | `token-ogre.png` | `portrait-ogre.png` |
-| Bandit | `token-bandit.png` | `portrait-bandit.png` |
-| Bandit Captain | `token-bandit-captain.png` | `portrait-bandit-captain.png` |
-| Dire Wolf | `token-dire-wolf.png` | `portrait-dire-wolf.png` |
-| Ghoul | `token-ghoul.png` | `portrait-ghoul.png` |
-| Giant Spider | `token-giant-spider.png` | `portrait-giant-spider.png` |
-| Acolyte | `token-acolyte.png` | `portrait-acolyte.png` |
-| Orc | `token-orc.png` | `portrait-orc.png` |
-| Brown Bear | `token-brown-bear.png` | `portrait-brown-bear.png` |
-| Scout | `token-scout.png` | `portrait-scout.png` |
-| Cult Fanatic | `token-cult-fanatic.png` | `portrait-cult-fanatic.png` |
-| Animated Armor | `token-animated-armor.png` | `portrait-animated-armor.png` |
+Status: ✅ = art present; ⬜ = still needed (emoji fallback).
+
+| Character | Token file | Portrait file | Status |
+| --- | --- | --- | --- |
+| Fighter | `token-fighter.png` | `portrait-fighter.png` | ✅ |
+| Wizard | `token-wizard.png` | `portrait-wizard.png` | ✅ |
+| Cleric | `token-cleric.png` | `portrait-cleric.png` | ✅ |
+| Rogue | `token-rogue.png` | `portrait-rogue.png` | ✅ |
+| Goblin Warrior | `token-goblin-warrior.png` | `portrait-goblin-warrior.png` | ✅ |
+| Goblin Boss | `token-goblin-boss.png` | `portrait-goblin-boss.png` | ✅ |
+| Kobold | `token-kobold.png` | `portrait-kobold.png` | ✅ |
+| Wolf | `token-wolf.png` | `portrait-wolf.png` | ✅ |
+| Skeleton | `token-skeleton.png` | `portrait-skeleton.png` | ✅ |
+| Zombie | `token-zombie.png` | `portrait-zombie.png` | ✅ |
+| Ogre | `token-ogre.png` | `portrait-ogre.png` | ✅ |
+| Bandit | `token-bandit.png` | `portrait-bandit.png` | ✅ |
+| Bandit Captain | `token-bandit-captain.png` | `portrait-bandit-captain.png` | ✅ |
+| Dire Wolf | `token-dire-wolf.png` | `portrait-dire-wolf.png` | ✅ |
+| Ghoul | `token-ghoul.png` | `portrait-ghoul.png` | ✅ |
+| Giant Spider | `token-giant-spider.png` | `portrait-giant-spider.png` | ✅ |
+| Acolyte | `token-acolyte.png` | `portrait-acolyte.png` | ✅ |
+| Orc | `token-orc.png` | `portrait-orc.png` | ✅ |
+| Brown Bear | `token-brown-bear.png` | `portrait-brown-bear.png` | ✅ |
+| Scout | `token-scout.png` | `portrait-scout.png` | ✅ |
+| Cult Fanatic | `token-cult-fanatic.png` | `portrait-cult-fanatic.png` | ✅ |
+| Animated Armor | `token-animated-armor.png` | `portrait-animated-armor.png` | ✅ |
+| Knight | `token-knight.png` | `portrait-knight.png` | ⬜ |
+| Minotaur | `token-minotaur.png` | `portrait-minotaur.png` | ⬜ |
+| Ettin | `token-ettin.png` | `portrait-ettin.png` | ⬜ |
+| Priest | `token-priest.png` | `portrait-priest.png` | ⬜ |
+| Ogre Mage | `token-ogre-mage.png` | `portrait-ogre-mage.png` | ⬜ |
+
+Species portrait variants (✅, forge only — token + portrait both present):
+`orc-barbarian`, `dragonborn-paladin`, `gnome-bard`, `halfling-rogue`,
+`tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard` — files
+`token-<id>.png` / `portrait-<id>.png`.
+
+**After generating the ⬜ art:** drop the source PNGs in `art/source/`, add the
+ids to `IDS` in `art/process.py` and `HAS_ART` in `web/src/art.ts`, then run
+`python art/process.py` to emit the WebP. That's the whole wiring.
 
 Any asset that doesn't exist yet falls back to the current emoji glyph in the
 engine, so the game stays playable while art lands incrementally.
