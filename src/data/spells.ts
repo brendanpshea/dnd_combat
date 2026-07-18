@@ -395,6 +395,8 @@ export const SPELLS: Record<Id, SpellData> = {
       for (const tid of targetIds) {
         const t = state.combatants[tid]!;
         if (!t.alive) continue; // later darts may hit an already-dead target choice
+        // Brooch of Shielding: immune to Magic Missile outright.
+        if (t.featureIds.includes('brooch-shielding')) continue;
         // Shield blocks Magic Missile outright — autocast it on the first dart.
         if (negated.has(tid)) continue;
         const already = t.conditions.some((c) => c.id === 'shielded');

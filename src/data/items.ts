@@ -100,15 +100,40 @@ export const ITEMS: Record<Id, ConsumableData> = {
     targeting: { kind: 'spell', spellId: 'burning-hands' }, cost: 50, rarity: 'common',
     apply: scrollApply('burning-hands'),
   },
+  'scroll-command': {
+    id: 'scroll-command', name: 'Scroll of Command', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'command' }, cost: 40, rarity: 'common',
+    apply: scrollApply('command'),
+  },
+  'scroll-guiding-bolt': {
+    id: 'scroll-guiding-bolt', name: 'Scroll of Guiding Bolt', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'guiding-bolt' }, cost: 50, rarity: 'common',
+    apply: scrollApply('guiding-bolt'),
+  },
   'scroll-web': {
     id: 'scroll-web', name: 'Scroll of Web', useTime: 'action',
-    targeting: { kind: 'spell', spellId: 'web' }, cost: 150, rarity: 'uncommon',
+    targeting: { kind: 'spell', spellId: 'web' }, cost: 120, rarity: 'uncommon',
     apply: scrollApply('web'),
+  },
+  'scroll-scorching-ray': {
+    id: 'scroll-scorching-ray', name: 'Scroll of Scorching Ray', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'scorching-ray' }, cost: 120, rarity: 'uncommon',
+    apply: scrollApply('scorching-ray'),
+  },
+  'scroll-hold-person': {
+    id: 'scroll-hold-person', name: 'Scroll of Hold Person', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'hold-person' }, cost: 120, rarity: 'uncommon',
+    apply: scrollApply('hold-person'),
   },
   'scroll-fireball': {
     id: 'scroll-fireball', name: 'Scroll of Fireball', useTime: 'action',
-    targeting: { kind: 'spell', spellId: 'fireball' }, cost: 300, rarity: 'rare',
+    targeting: { kind: 'spell', spellId: 'fireball' }, cost: 250, rarity: 'rare',
     apply: scrollApply('fireball'),
+  },
+  'scroll-lightning-bolt': {
+    id: 'scroll-lightning-bolt', name: 'Scroll of Lightning Bolt', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'lightning-bolt' }, cost: 250, rarity: 'rare',
+    apply: scrollApply('lightning-bolt'),
   },
 
   // --- resistance potions: grants resistance to a damage type for the rest

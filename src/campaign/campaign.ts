@@ -13,8 +13,9 @@ import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { buildCharacter, assignStats } from '../builder/character.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
-import { ARMOR, SHIELD_COST } from '../data/armor.js';
+import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
+import { TRINKETS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
 import { SPECIES } from '../data/species.js';
@@ -37,7 +38,7 @@ export interface PartyCharacter {
     };
   };
   inventory: ItemStack[];
-  equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
+  equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
   choices?: Record<Id, Id>;
 }
@@ -193,22 +194,28 @@ export function xpAward(encounterId: Id, partySize: number): number {
  */
 const TREASURE_POOL: Record<Rarity, Id[]> = {
   common: [
-    'potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'scroll-burning-hands', 'chain-shirt',
+    'potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'scroll-burning-hands',
+    'scroll-command', 'scroll-guiding-bolt', 'chain-shirt',
     'handaxe', 'spear', 'morningstar',
     'gem-quartz', 'gem-moss-agate', 'gem-onyx', 'gem-carnelian',
     'jewelry-wooden-bracer', 'jewelry-brass-ring', 'jewelry-bronze-figurine', 'jewelry-obsidian-necklace',
   ],
   uncommon: [
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
-    'rapier', 'warhammer', 'battleaxe', 'scroll-web',
+    'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
     'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
     'potion-giant-strength-hill',
+    'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-chain-mail', 'adamantine-splint',
+    'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
+    'bracers-archery', 'boots-winterlands', 'gloves-thievery',
     'gem-amber', 'gem-garnet', 'gem-amethyst',
     'jewelry-iron-bracer', 'jewelry-steel-ring', 'jewelry-silver-necklace',
   ],
   rare: [
     'half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1',
-    'scroll-fireball', 'potion-giant-strength-frost',
+    'greatsword-plus1', 'longbow-plus1', 'warhammer-plus1', 'rapier-plus1',
+    'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1',
+    'scroll-fireball', 'scroll-lightning-bolt', 'potion-giant-strength-frost',
     'moontouched-shortsword', 'moontouched-warhammer',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
@@ -224,7 +231,8 @@ export function rarityOf(itemId: Id): Rarity {
   for (const r of ['rare', 'uncommon', 'common'] as const) {
     if (TREASURE_POOL[r].includes(itemId)) return r;
   }
-  return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? VALUABLES[itemId]?.rarity ?? 'common';
+  return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? VALUABLES[itemId]?.rarity ?? TRINKETS[itemId]?.rarity ??
+    (itemId === 'shield-plus1' ? 'rare' : 'common');
 }
 
 function pick<T>(arr: T[], r: number): T {
@@ -276,23 +284,35 @@ export const STARTING_GOLD = 100;
 export const SHOP_STOCK: Id[] = [
   // consumables
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
-  'scroll-magic-missile', 'scroll-burning-hands', 'scroll-web',
+  'scroll-magic-missile', 'scroll-burning-hands', 'scroll-command', 'scroll-guiding-bolt',
+  'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person', 'scroll-fireball', 'scroll-lightning-bolt',
   'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
+  'potion-giant-strength-hill',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow', 'longsword-plus1', 'shortsword-plus1',
+  'greatsword-plus1', 'longbow-plus1', 'warhammer-plus1', 'rapier-plus1',
+  'moontouched-shortsword', 'moontouched-warhammer',
   // armor
   'leather', 'chain-shirt', 'half-plate', 'splint',
+  'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-splint',
+  'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1',
+  // trinkets
+  'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
+  'bracers-archery', 'boots-winterlands', 'gloves-thievery',
 ];
 
 export function itemName(itemId: Id): string {
   return ITEMS[itemId]?.name ?? WEAPONS[itemId]?.name ?? ARMOR[itemId]?.name ?? VALUABLES[itemId]?.name ??
-    (itemId === 'shield' ? 'Shield' : itemId);
+    TRINKETS[itemId]?.name ??
+    (itemId === 'shield' ? 'Shield' : itemId === 'shield-plus1' ? 'Shield +1' : itemId);
 }
 
 /** A small emoji icon for an item, so the shop/inventory read visually. */
 export function itemIcon(itemId: Id): string {
   if (itemId === 'shield') return '🛡️';
+  if (itemId === 'shield-plus1') return '🛡️';
+  if (TRINKETS[itemId]) return TRINKETS[itemId]!.icon;
   if (ITEMS[itemId]) {
     if (itemId.includes('potion')) return '🧪';
     if (itemId.includes('scroll')) return '📜';
@@ -502,7 +522,8 @@ export function isComplete(c: CampaignState): boolean {
 
 export function itemPrice(itemId: Id): number | undefined {
   if (itemId === 'shield') return SHIELD_COST;
-  return ITEMS[itemId]?.cost ?? WEAPONS[itemId]?.cost ?? ARMOR[itemId]?.cost ?? VALUABLES[itemId]?.cost;
+  if (itemId === 'shield-plus1') return SHIELD_PLUS1_COST;
+  return ITEMS[itemId]?.cost ?? WEAPONS[itemId]?.cost ?? ARMOR[itemId]?.cost ?? VALUABLES[itemId]?.cost ?? TRINKETS[itemId]?.cost;
 }
 
 export function addItem(inv: ItemStack[], itemId: Id, qty = 1): void {
@@ -738,7 +759,9 @@ export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bo
   const level = partyLevelOf(c);
   let best = { idx: 0, bonus: -Infinity };
   c.characters.forEach((ch, idx) => {
-    const bonus = skillBonus(ch.classId, level, skill, ch.speciesId);
+    let bonus = skillBonus(ch.classId, level, skill, ch.speciesId);
+    // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
+    if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
     if (bonus > best.bonus) best = { idx, bonus };
   });
   return best;
@@ -875,7 +898,7 @@ export function sellFromStash(c: CampaignState, itemId: Id): boolean {
   return true;
 }
 
-export type EquipSlot = 'mainHand' | 'offHand' | 'armor';
+export type EquipSlot = 'mainHand' | 'offHand' | 'armor' | 'trinket';
 
 /** Why an equip is disallowed, or undefined if fine. */
 export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot: EquipSlot): string | undefined {
@@ -883,13 +906,17 @@ export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot
   if (!ch) return 'no such character';
   if (!ch.inventory.some((s) => s.itemId === itemId && s.qty > 0)) return 'not in inventory';
   const profs = CLASSES[ch.classId]!.armorProfs;
+  if (slot === 'trinket') {
+    // Anyone can wear a trinket; it just has to be one.
+    return TRINKETS[itemId] ? undefined : 'not a trinket';
+  }
   if (slot === 'armor') {
     const a = ARMOR[itemId];
     if (!a) return 'not armor';
     if (!profs.includes(a.category)) return `${CLASSES[ch.classId]!.name}s can't wear ${a.category} armor`;
     return undefined;
   }
-  if (itemId === 'shield') {
+  if (isShield(itemId)) {
     if (slot !== 'offHand') return 'shields go in the off-hand';
     if (!profs.includes('shield')) return `${CLASSES[ch.classId]!.name}s can't use shields`;
     const main = ch.equipped.mainHand ? WEAPONS[ch.equipped.mainHand] : undefined;

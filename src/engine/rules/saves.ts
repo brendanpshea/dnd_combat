@@ -25,7 +25,8 @@ export function savingThrow(
   let total =
     d20.natural +
     abilityMod(c.abilities[ability]) +
-    (c.savingThrowProfs.includes(ability) ? proficiencyBonus(c.level) : 0);
+    (c.savingThrowProfs.includes(ability) ? proficiencyBonus(c.level) : 0) +
+    (c.featureIds.includes('cloak-protection') ? 1 : 0); // Cloak of Protection
   if (c.conditions.some((k) => k.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;

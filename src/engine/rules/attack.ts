@@ -6,7 +6,7 @@ import type { GameState, Combatant, Id, DamageType, Ability } from '../types.js'
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../types.js';
 import { WEAPONS, WeaponData } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
-import { acOf } from '../../data/armor.js';
+import { acOf, ARMOR, isShield } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
 import { distanceFeet, adjacent, hasLineOfSight } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
@@ -193,8 +193,10 @@ export function resolveAttack(
   // Champion widens the crit range to 19-20.
   const critFloor = attacker.featureIds.includes('improved-critical') ? 19 : 20;
   const natCrit = d20.natural >= critFloor;
+  // Adamantine armor: any crit against the wearer is downgraded to a normal hit.
+  const targetNoCrit = target.equipped.armor !== undefined && (ARMOR[target.equipped.armor]?.noCrit ?? false);
   // Auto-crit on hitting a helpless (unconscious/paralyzed) target from melee.
-  const crit = natCrit || (isHelpless(target) && isMeleeAttack);
+  const crit = !targetNoCrit && (natCrit || (isHelpless(target) && isMeleeAttack));
   const targetAc = acOf(target);
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
@@ -267,10 +269,15 @@ export function resolveAttack(
     attacker.featureIds.includes('dueling') &&
     isMeleeAttack &&
     !weapon.properties.includes('two-handed') &&
-    (attacker.equipped.offHand === undefined || attacker.equipped.offHand === 'shield')
+    (attacker.equipped.offHand === undefined || isShield(attacker.equipped.offHand))
   ) {
     amount += 2;
     tags.push('Dueling');
+  }
+  // Bracers of Archery (trinket): +2 damage with ranged weapons.
+  if (attacker.featureIds.includes('bracers-archery') && !weapon.melee) {
+    amount += 2;
+    tags.push('Bracers of Archery');
   }
 
   // Sneak Attack: once per turn, finesse/ranged weapon, and either advantage

@@ -238,6 +238,47 @@ export const MONSTERS: Record<Id, MonsterData> = {
       spellIds: ['fire-bolt', 'magic-missile', 'web', 'fireball'],
     },
   },
+
+  guard: {
+    id: 'guard', name: 'Guard',
+    ac: 16, hp: 11, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 13, dex: 12, con: 12, int: 10, wis: 11, cha: 10 },
+    weaponIds: ['spear'],
+    metalArmor: true,
+  },
+  bugbear: {
+    id: 'bugbear', name: 'Bugbear',
+    ac: 16, hp: 27, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 15, dex: 14, con: 13, int: 8, wis: 11, cha: 9 },
+    featureIds: ['long-limbed', 'brute'],
+    weaponIds: ['morningstar', 'javelin'],
+  },
+  lizardfolk: {
+    id: 'lizardfolk', name: 'Lizardfolk',
+    ac: 15, hp: 22, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 15, dex: 10, con: 13, int: 7, wis: 12, cha: 7 },
+    weaponIds: ['mace', 'bite'],
+  },
+  gnoll: {
+    id: 'gnoll', name: 'Gnoll',
+    ac: 15, hp: 22, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 14, dex: 12, con: 11, int: 6, wis: 10, cha: 7 },
+    featureIds: ['rampage'],
+    weaponIds: ['spear', 'bite'],
+  },
+  spy: {
+    id: 'spy', name: 'Spy',
+    ac: 12, hp: 27, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 10, dex: 15, con: 10, int: 12, wis: 14, cha: 16 },
+    featureIds: ['sneak-attack'],
+    weaponIds: ['shortsword', 'hand-crossbow'],
+    attacksPerAction: 2,
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -371,6 +412,26 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'oni', name: 'Ogre Mage\'s Warband', suggestedLevel: 5,
     members: ['ogre-mage', 'ogre', 'orc'],
   },
+  watch: {
+    id: 'watch', name: 'Town Watch', suggestedLevel: 1,
+    members: ['guard', 'guard', 'guard', 'guard'],
+  },
+  ambush: {
+    id: 'ambush', name: 'Bugbear Ambush', suggestedLevel: 2,
+    members: ['bugbear', 'goblin-warrior', 'goblin-warrior'],
+  },
+  swamp: {
+    id: 'swamp', name: 'Lizardfolk Tribe', suggestedLevel: 2,
+    members: ['lizardfolk', 'lizardfolk', 'lizardfolk'],
+  },
+  pack: {
+    id: 'pack', name: 'Gnoll Hunting Pack', suggestedLevel: 2,
+    members: ['gnoll', 'gnoll', 'gnoll'],
+  },
+  syndicate: {
+    id: 'syndicate', name: 'Shadow Syndicate', suggestedLevel: 3,
+    members: ['spy', 'spy', 'bandit', 'bandit'],
+  },
 };
 
 /**
@@ -384,6 +445,7 @@ export const MONSTER_XP: Record<Id, number> = {
   kobold: 25, scout: 100, orc: 100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
   knight: 700, minotaur: 700, ettin: 1100,
   priest: 450, 'ogre-mage': 1100,
+  guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

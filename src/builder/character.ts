@@ -7,6 +7,7 @@ import { CLASSES, type ChoiceGrant, type ChoicePoint } from '../data/classes.js'
 import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
+import { TRINKETS } from '../data/trinkets.js';
 
 /**
  * Merge the grants of every choice point that applies at this level, taking the
@@ -57,7 +58,7 @@ export interface BuildOptions {
   speciesId?: Id;
   /** Campaign overrides: persisted gear instead of the class defaults. */
   inventory?: Array<{ itemId: Id; qty: number }>;
-  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id };
+  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
   /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
   choices?: Record<Id, Id>;
 }
@@ -77,6 +78,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     const primary = cls.statPriority[0];
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
+  // A worn trinket (Gauntlets of Ogre Power, …) can raise an ability score, so
+  // apply its floor before HP/AC-relevant mods are computed off the abilities.
+  const trinket = opts.equipped?.trinket ? TRINKETS[opts.equipped.trinket] : undefined;
+  for (const [ab, floor] of Object.entries(trinket?.grants.abilityFloor ?? {})) {
+    abilities[ab as Ability] = Math.max(abilities[ab as Ability], floor);
+  }
+
   const conMod = abilityMod(abilities.con);
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level;
 
@@ -86,6 +94,9 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   grants.spellIds.push(...speciesGrants.spellIds);
   grants.weaponMasteries.push(...speciesGrants.weaponMasteries);
   grants.resistances.push(...speciesGrants.resistances);
+  // A trinket's feature ids and resistances fold in the same way.
+  grants.featureIds.push(...(trinket?.grants.featureIds ?? []));
+  grants.resistances.push(...(trinket?.grants.resistances ?? []));
 
   const featureIds = [
     ...Object.entries(cls.featuresByLevel)

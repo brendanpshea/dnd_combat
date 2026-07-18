@@ -13,6 +13,7 @@ import { SPECIES } from '../../src/data/species.js';
 import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { acOf } from '../../src/data/armor.js';
+import { TRINKETS } from '../../src/data/trinkets.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
@@ -39,12 +40,13 @@ type Phase =
   | { p: 'over' }
   | { p: 'complete' };
 
-type ShopCategory = 'consumables' | 'weapons' | 'armor';
+type ShopCategory = 'consumables' | 'weapons' | 'armor' | 'trinkets';
 
 const SHOP_CATEGORIES: Array<{ id: ShopCategory; label: string }> = [
   { id: 'consumables', label: 'Supplies' },
   { id: 'weapons', label: 'Weapons' },
   { id: 'armor', label: 'Armor' },
+  { id: 'trinkets', label: 'Trinkets' },
 ];
 
 type StoreSelection =
@@ -53,6 +55,7 @@ type StoreSelection =
   | { kind: 'stash'; itemId: Id };
 
 function shopCategory(itemId: Id): ShopCategory {
+  if (TRINKETS[itemId]) return 'trinkets';
   if (ITEMS[itemId]) return 'consumables';
   if (WEAPONS[itemId]) return 'weapons';
   return 'armor';
@@ -464,8 +467,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         const stack = itemId ? owner.inventory.find((s) => s.itemId === itemId) : undefined;
         const qty = slot ? 1 : itemId ? stack?.qty ?? 0 : undefined;
         const resale = itemId ? Math.floor((itemPrice(itemId) ?? 0) / 2) : 0;
-        const slots: EquipSlot[] = ['mainHand', 'offHand', 'armor'];
-        const slotName = (sl: EquipSlot) => (sl === 'mainHand' ? 'main hand' : sl === 'offHand' ? 'off-hand' : 'armor');
+        const slots: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
+        const slotName = (sl: EquipSlot) => (sl === 'mainHand' ? 'main hand' : sl === 'offHand' ? 'off-hand' : sl === 'trinket' ? 'trinket' : 'armor');
         const close = () => setPicked(null);
         return (
           <div className="tray-backdrop" onClick={close}>

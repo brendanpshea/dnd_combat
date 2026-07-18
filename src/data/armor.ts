@@ -14,6 +14,8 @@ export interface ArmorData {
   metal: boolean; // Shocking Grasp gets advantage vs metal armor
   cost: number;   // gp
   rarity: Rarity;
+  /** Adamantine: any critical hit against the wearer becomes a normal hit. */
+  noCrit?: boolean;
 }
 
 export const ARMOR: Record<Id, ArmorData> = {
@@ -24,30 +26,61 @@ export const ARMOR: Record<Id, ArmorData> = {
   'half-plate':      { id: 'half-plate',       name: 'Half Plate',       base: 15, dexCap: 2,      category: 'medium', metal: true,  cost: 400, rarity: 'uncommon' },
   'chain-mail':      { id: 'chain-mail',       name: 'Chain Mail',       base: 16, dexCap: 'none', category: 'heavy',  metal: true,  cost: 75,  rarity: 'common' },
   splint:            { id: 'splint',           name: 'Splint',           base: 17, dexCap: 'none', category: 'heavy',  metal: true,  cost: 200, rarity: 'uncommon' },
+
+  // Adamantine: same protection, but you can't be critically hit. Metal only.
+  'adamantine-scale-mail': { id: 'adamantine-scale-mail', name: 'Adamantine Scale Mail', base: 14, dexCap: 2,      category: 'medium', metal: true, cost: 550,  rarity: 'uncommon', noCrit: true },
+  'adamantine-half-plate': { id: 'adamantine-half-plate', name: 'Adamantine Half Plate', base: 15, dexCap: 2,      category: 'medium', metal: true, cost: 900,  rarity: 'uncommon', noCrit: true },
+  'adamantine-chain-mail': { id: 'adamantine-chain-mail', name: 'Adamantine Chain Mail', base: 16, dexCap: 'none', category: 'heavy',  metal: true, cost: 575,  rarity: 'uncommon', noCrit: true },
+  'adamantine-splint':     { id: 'adamantine-splint',     name: 'Adamantine Splint',     base: 17, dexCap: 'none', category: 'heavy',  metal: true, cost: 700,  rarity: 'uncommon', noCrit: true },
+
+  // +1 armor: +1 AC baked into the base. Rare tier, higher-level reward.
+  'scale-mail-plus1': { id: 'scale-mail-plus1', name: 'Scale Mail +1', base: 15, dexCap: 2,      category: 'medium', metal: true, cost: 1000, rarity: 'rare' },
+  'half-plate-plus1': { id: 'half-plate-plus1', name: 'Half Plate +1', base: 16, dexCap: 2,      category: 'medium', metal: true, cost: 1400, rarity: 'rare' },
+  'splint-plus1':     { id: 'splint-plus1',     name: 'Splint +1',     base: 18, dexCap: 'none', category: 'heavy',  metal: true, cost: 1200, rarity: 'rare' },
 };
 
 export const SHIELD_COST = 10;
+export const SHIELD_PLUS1_COST = 500;
 
-export function armorClass(armorId: Id | undefined, dexMod: number, shield: boolean): number {
+/** Is an off-hand entry a shield (plain or magic)? */
+export function isShield(offHand: Id | undefined): boolean {
+  return offHand === 'shield' || offHand === 'shield-plus1';
+}
+
+/** The AC an off-hand shield contributes (0 if none). */
+export function shieldBonus(offHand: Id | undefined): number {
+  return offHand === 'shield-plus1' ? 3 : offHand === 'shield' ? 2 : 0;
+}
+
+export function armorClass(armorId: Id | undefined, dexMod: number, shieldAc: number): number {
   const a = armorId !== undefined ? ARMOR[armorId] : undefined;
   const base = a?.base ?? 10;
   const cap = a?.dexCap ?? 'full';
   const dex = cap === 'full' ? dexMod : cap === 'none' ? 0 : Math.min(dexMod, cap);
-  return base + dex + (shield ? 2 : 0);
+  return base + dex + shieldAc;
 }
 
 /** A combatant's current AC: stat-block override (monsters) or derived from equipment. */
 export function acOf(c: Combatant): number {
   if (c.acOverride !== undefined) return c.acOverride;
+  const shield = shieldBonus(c.equipped.offHand);
   if (c.mageArmor && c.equipped.armor === undefined) {
-    return 13 + abilityMod(c.abilities.dex) + (c.equipped.offHand === 'shield' ? 2 : 0);
+    return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c);
   }
-  const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), c.equipped.offHand === 'shield');
+  const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
-  // Shield spell reaction: +5 AC until the caster's next turn.
-  const shielded = c.conditions.some((k) => k.id === 'shielded') ? 5 : 0;
-  return base + defense + shielded;
+  return base + defense + trinketAc(c) + shieldedAc(c);
+}
+
+/** Cloak of Protection (trinket): +1 AC, granted as a feature the builder folds. */
+function trinketAc(c: Combatant): number {
+  return c.featureIds.includes('cloak-protection') ? 1 : 0;
+}
+
+/** Shield spell reaction: +5 AC until the caster's next turn. */
+function shieldedAc(c: Combatant): number {
+  return c.conditions.some((k) => k.id === 'shielded') ? 5 : 0;
 }
 
 /** Is the combatant wearing metal armor (Shocking Grasp rider)? */

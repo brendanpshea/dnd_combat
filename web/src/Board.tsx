@@ -14,6 +14,7 @@ const TOKEN: Record<string, string> = {
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
   knight: '🤺', minotaur: '🐂', ettin: '🗿',
   priest: '🙏', 'ogre-mage': '🧞',
+  guard: '🛡️', bugbear: '🐻‍❄️', lizardfolk: '🦎', gnoll: '🐺', spy: '🕵️',
 };
 
 export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | 'hint' | undefined;

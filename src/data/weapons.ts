@@ -89,6 +89,24 @@ export const WEAPONS: Record<Id, WeaponData> = {
     attackBonus: 1, damageBonus: 1,
   },
 
+  // --- +1 weapons (rare tier, higher-level rewards) -------------------------
+  'greatsword-plus1': {
+    id: 'greatsword-plus1', name: 'Greatsword +1', damage: '2d6', damageType: 'slashing',
+    properties: ['two-handed'], melee: true, mastery: 'graze', cost: 1000, attackBonus: 1, damageBonus: 1,
+  },
+  'longbow-plus1': {
+    id: 'longbow-plus1', name: 'Longbow +1', damage: '1d8', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, mastery: 'slow', cost: 1000, attackBonus: 1, damageBonus: 1,
+  },
+  'warhammer-plus1': {
+    id: 'warhammer-plus1', name: 'Warhammer +1', damage: '1d8', damageType: 'bludgeoning',
+    properties: ['versatile'], melee: true, mastery: 'push', cost: 800, attackBonus: 1, damageBonus: 1,
+  },
+  'rapier-plus1': {
+    id: 'rapier-plus1', name: 'Rapier +1', damage: '1d8', damageType: 'piercing',
+    properties: ['finesse'], melee: true, mastery: 'vex', cost: 800, attackBonus: 1, damageBonus: 1,
+  },
+
   // --- greater weapon variety (mundane, tradable) ---------------------------
   handaxe: {
     id: 'handaxe', name: 'Handaxe', damage: '1d6', damageType: 'slashing',
@@ -158,6 +176,10 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'light-crossbow': {
     id: 'light-crossbow', name: 'Light Crossbow', damage: '1d8', damageType: 'piercing',
     properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'slow',
+  },
+  'hand-crossbow': {
+    id: 'hand-crossbow', name: 'Hand Crossbow', damage: '1d6', damageType: 'piercing',
+    properties: ['light'], range: { normal: 30, long: 120 }, melee: false, mastery: 'slow', cost: 75,
   },
   'dire-wolf-bite': {
     id: 'dire-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',

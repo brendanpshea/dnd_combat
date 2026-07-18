@@ -21,6 +21,7 @@ const CLASS_LETTER: Record<string, string> = {
   'cult-fanatic': 'F', 'animated-armor': 'A',
   knight: 'K', minotaur: 'M', ettin: 'E',
   priest: 'P', 'ogre-mage': 'Y',
+  guard: 'u', bugbear: 'U', lizardfolk: 'l', gnoll: 'N', spy: 'y',
 };
 
 export function cellName(p: Position): string {

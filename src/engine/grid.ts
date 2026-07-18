@@ -43,10 +43,10 @@ export function neighbors(grid: GridState, p: Position): Position[] {
   return out;
 }
 
-function terrainMoveCost(t: TerrainId): number {
+function terrainMoveCost(t: TerrainId, ignoreDifficult = false): number {
   switch (t) {
     case 'open': return CELL_FEET;
-    case 'difficult': return CELL_FEET * 2;
+    case 'difficult': return ignoreDifficult ? CELL_FEET : CELL_FEET * 2;
     case 'hazard': return CELL_FEET;
     case 'wall': return Infinity;
   }
@@ -148,6 +148,7 @@ export function reachable(
   budgetFeet: number,
   blockedBy: Set<Id>,
   danger?: StepDanger,
+  ignoreDifficult = false,
 ): ReachResult {
   const costs = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, Position>();
@@ -179,7 +180,7 @@ export function reachable(
     for (const n of neighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
-      const stepCost = terrainMoveCost(cell.terrain);
+      const stepCost = terrainMoveCost(cell.terrain, ignoreDifficult);
       const total = curCost + stepCost;
       if (total > budgetFeet) continue;
       const totalRisk = curRisk + (danger ? danger(cur, n) : 0);

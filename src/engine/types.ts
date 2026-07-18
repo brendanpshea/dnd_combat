@@ -98,6 +98,7 @@ export interface Equipped {
   mainHand?: Id;          // weapon id
   offHand?: Id;           // weapon id or 'shield'
   armor?: Id;             // armor id; undefined = unarmored
+  trinket?: Id;           // wondrous item (one accessory slot); undefined = none
 }
 
 export interface Combatant {

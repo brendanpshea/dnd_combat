@@ -225,4 +225,13 @@ export const FEATURES: Record<Id, FeatureData> = {
   // damage halved (a reaction in 5e; here a once-per-round passive checked in
   // resolveAttack). Existence alone is the feature.
   'uncanny-dodge': { id: 'uncanny-dodge', name: 'Uncanny Dodge', trigger: 'passive' },
+  // Trinket-granted passives; their effects live in the rules that read them.
+  'cloak-protection': { id: 'cloak-protection', name: 'Cloak of Protection', trigger: 'passive' },
+  'brooch-shielding': { id: 'brooch-shielding', name: 'Brooch of Shielding', trigger: 'passive' },
+  'bracers-archery': { id: 'bracers-archery', name: 'Bracers of Archery', trigger: 'passive' },
+  'boots-winterlands': { id: 'boots-winterlands', name: 'Boots of the Winterlands', trigger: 'passive' },
+  'gloves-thievery': { id: 'gloves-thievery', name: 'Gloves of Thievery', trigger: 'passive' },
+  'long-limbed': { id: 'long-limbed', name: 'Long-Limbed', trigger: 'passive' },
+  brute: { id: 'brute', name: 'Brute', trigger: 'passive' },
+  rampage: { id: 'rampage', name: 'Rampage', trigger: 'passive' },
 };

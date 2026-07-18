@@ -33,7 +33,7 @@ export function hostileIds(state: GameState, mover: Combatant): Set<Id> {
 export function moveDestinations(state: GameState, mover: Combatant): Position[] {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   if (budget <= 0) return [];
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, mover.featureIds.includes('boots-winterlands'));
   const out: Position[] = [];
   for (const k of r.costs.keys()) {
     const [x, y] = k.split(',').map(Number) as [number, number];
@@ -117,7 +117,7 @@ function maxHit(c: Combatant, weaponId: Id): number {
  */
 export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Position): number {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), mover.featureIds.includes('boots-winterlands'));
   const path = pathTo(r, mover.position, to);
   if (!path) return 0;
 
@@ -156,7 +156,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const events: GameEvent[] = [];
   const mover = state.combatants[moverId]!;
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), mover.featureIds.includes('boots-winterlands'));
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   const cost = r.costs.get(`${to.x},${to.y}`)!;
