@@ -68,11 +68,22 @@ export function startTurn(state: GameState): GameEvent[] {
   // it would strip the prone that marks it as a body on the floor.
   const helpless = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed');
   let speed = helpless ? 0 : c.speed;
-  if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
+  // Command: the target grovels — drops prone and loses this whole turn (the
+  // `commanded` condition blocks its actions, then clears at end of turn). It
+  // stays on the ground; standing up waits for its following turn.
+  if (c.conditions.some((k) => k.id === 'commanded')) {
+    speed = 0;
+    if (!c.conditions.some((k) => k.id === 'prone')) {
+      c.conditions.push({ id: 'prone', sourceId: c.id });
+      events.push({ type: 'conditionApplied', combatantId: c.id, condition: 'prone', sourceId: c.id });
+    }
+  } else if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'prone');
     speed = Math.floor(speed / 2);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
   }
+  // Web: a restrained creature can't move at all this turn.
+  if (c.conditions.some((k) => k.id === 'restrained')) speed = 0;
   // Slow mastery: -10 ft this turn, then it clears (lasts to the start of the
   // slowed creature's next turn).
   if (c.conditions.some((k) => k.id === 'slowed')) {
@@ -113,6 +124,12 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   const events: GameEvent[] = [];
   const ending = currentCombatant(state);
   events.push(...runRepeatSaves(state, ending.id));
+  // Command lasts exactly the one turn it stole; clear it now (the target keeps
+  // its prone until it stands on a later turn).
+  if (ending.conditions.some((k) => k.id === 'commanded')) {
+    ending.conditions = ending.conditions.filter((k) => k.id !== 'commanded');
+    events.push({ type: 'conditionRemoved', combatantId: ending.id, condition: 'commanded' });
+  }
   events.push({ type: 'turnEnded', combatantId: ending.id });
 
   if (state.winner) return events;

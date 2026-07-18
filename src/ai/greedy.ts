@@ -229,6 +229,37 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // Removing an enemy from the fight is worth roughly killing it.
       return saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) - slotCost;
     }
+    case 'command': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      // Stealing one turn (grovel prone) is worth a slice of the target's threat.
+      return saveFailProb(state, t, 'wis', dc) * (5 + t.hp / 4) - slotCost;
+    }
+    case 'web': {
+      if (actor.concentratingOn) return 0;
+      const center = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere5x5(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || t.team === actor.team) continue;
+        v += saveFailProb(state, t, 'dex', dc) * 5; // restrain value per enemy
+      }
+      return v - slotCost;
+    }
+    case 'fear': {
+      if (actor.concentratingOn) return 0;
+      const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
+      let v = 0;
+      for (const pos of cone15(actor.position, dir)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || t.team === actor.team) continue;
+        v += saveFailProb(state, t, 'wis', dc) * 3.5;
+      }
+      return v - slotCost;
+    }
     default:
       return 0;
   }

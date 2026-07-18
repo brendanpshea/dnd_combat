@@ -59,3 +59,74 @@ describe('Suggestion', () => {
     expect(suggestion).toHaveLength(0); // wolf is a beast; no valid target
   });
 });
+
+describe('Command', () => {
+  it('makes a humanoid grovel: prone and no actions on its next turn', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [pc('cleric', 1, { x: 1, y: 1 }, 'clr'), foe('goblin-warrior', { x: 5, y: 5 }, 'gob')],
+      });
+      until(c, 'clr');
+      const events = c.apply({ kind: 'castSpell', spellId: 'command', slotLevel: 1, targets: [{ combatantId: 'gob' }] });
+      if (!events.some((e) => e.type === 'conditionApplied' && e.condition === 'commanded')) continue;
+      until(c, 'gob');
+      const g = c.state.combatants['gob']!;
+      expect(g.conditions.some((k) => k.id === 'prone')).toBe(true);
+      const kinds = new Set(c.legalActions().map((a) => a.kind));
+      expect(kinds.has('attack')).toBe(false);
+      expect(kinds.has('move')).toBe(false);
+      // The command clears after the stolen turn.
+      c.apply({ kind: 'endTurn' });
+      expect(c.state.combatants['gob']!.conditions.some((k) => k.id === 'commanded')).toBe(false);
+      return;
+    }
+    throw new Error('goblin never failed the Command save across 40 seeds');
+  });
+});
+
+describe('Web', () => {
+  it('restrains enemies in the area — speed 0 and easier to hit', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [
+          pc('wizard', 3, { x: 1, y: 1 }, 'wiz'),
+          foe('goblin-warrior', { x: 5, y: 5 }, 'g1'),
+          foe('goblin-warrior', { x: 6, y: 5 }, 'g2'),
+        ],
+      });
+      until(c, 'wiz');
+      const events = c.apply({ kind: 'castSpell', spellId: 'web', slotLevel: 2, targets: [{ position: { x: 5, y: 5 } }] });
+      const stuck = events.find((e) => e.type === 'conditionApplied' && e.condition === 'restrained');
+      if (!stuck || stuck.type !== 'conditionApplied') continue;
+      const gid = stuck.combatantId;
+      expect(c.state.combatants['wiz']!.concentratingOn?.spellId).toBe('web');
+      until(c, gid);
+      expect(c.state.combatants[gid]!.turn.movementMax).toBe(0); // can't move
+      return;
+    }
+    throw new Error('no goblin was ever webbed across 40 seeds');
+  });
+});
+
+describe('Fear', () => {
+  it('frightens enemies in the cone so they attack at disadvantage', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [pc('wizard', 5, { x: 3, y: 3 }, 'wiz'), foe('goblin-warrior', { x: 3, y: 4 }, 'gob')],
+      });
+      until(c, 'wiz');
+      const events = c.apply({ kind: 'castSpell', spellId: 'fear', slotLevel: 3, targets: [{ position: { x: 3, y: 4 } }] });
+      if (!events.some((e) => e.type === 'conditionApplied' && e.condition === 'frightened')) continue;
+      until(c, 'gob');
+      const swing = c.apply({ kind: 'attack', weaponId: 'goblin-scimitar', targetId: 'wiz' });
+      const roll = swing.find((e) => e.type === 'attackRolled')!;
+      if (roll.type !== 'attackRolled') throw new Error();
+      expect(roll.disSources).toContain('attacker frightened');
+      return;
+    }
+    throw new Error('goblin never got frightened across 40 seeds');
+  });
+});

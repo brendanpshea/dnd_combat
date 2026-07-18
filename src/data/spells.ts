@@ -553,6 +553,95 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
+   * Command: one enemy grovels. On a failed Wisdom save it drops prone and
+   * loses its next turn (the `commanded` condition, cleared at that turn's end).
+   */
+  command: {
+    id: 'command', name: 'Command', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1, creatureType: 'humanoid' },
+    concentration: false,
+    icon: '❗',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const save = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
+      const events: GameEvent[] = [save.event];
+      if (!save.success && !state.combatants[targetId]!.conditions.some((c) => c.id === 'commanded')) {
+        state.combatants[targetId]!.conditions.push({ id: 'commanded', sourceId: casterId });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'commanded', sourceId: casterId });
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Web: a 5x5 patch of sticky strands. Enemies caught (Dex save) are
+   * restrained — no movement, disadvantage to attack, easy to hit — and get a
+   * fresh Dex save at the end of each of their turns (repeatSave). Concentration
+   * holds the web; dropping it frees everyone still stuck.
+   */
+  web: {
+    id: 'web', name: 'Web', level: 2, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 60 },
+    concentration: true,
+    icon: '🕸️',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const caught: Id[] = [];
+      for (const pos of sphere5x5(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team || t.conditions.some((c) => c.id === 'restrained')) continue;
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        if (!save.success) {
+          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc } });
+          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
+          caught.push(tid);
+        }
+      }
+      if (caught.length > 0) caster.concentratingOn = { spellId: 'web', targetIds: caught };
+      return events;
+    },
+  },
+
+  /**
+   * Fear: a cone of dread. Enemies caught (Wisdom save) are frightened —
+   * disadvantage on their attacks — with a repeat save each turn, held by
+   * concentration.
+   */
+  fear: {
+    id: 'fear', name: 'Fear', level: 3, castingTime: 'action',
+    targeting: { kind: 'cone15' },
+    concentration: true,
+    icon: '😱',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dir = directionFromDelta(caster.position, positions[0]!);
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const caught: Id[] = [];
+      for (const pos of cone15(caster.position, dir)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team || t.conditions.some((c) => c.id === 'frightened')) continue;
+        const save = savingThrow(state, tid, 'wis', dc);
+        events.push(save.event);
+        if (!save.success) {
+          t.conditions.push({ id: 'frightened', sourceId: casterId, concentration: true, repeatSave: { ability: 'wis', dc } });
+          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'frightened', sourceId: casterId });
+          caught.push(tid);
+        }
+      }
+      if (caught.length > 0) caster.concentratingOn = { spellId: 'fear', targetIds: caught };
+      return events;
+    },
+  },
+
+  /**
    * A dragonborn's breath weapon: a cone of elemental damage, Dexterity save
    * for half, a couple of times a fight. Damage only — no condition — so it's
    * the innate-spell path's second shape after Faerie Fire, and the AI values

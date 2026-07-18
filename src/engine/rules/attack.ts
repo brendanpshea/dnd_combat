@@ -128,6 +128,12 @@ export function collectAttackSources(
     (isMeleeAttack ? adv : dis).push(isMeleeAttack ? 'target prone' : 'target prone (ranged)');
   }
   if (attacker.conditions.some((c) => c.id === 'prone')) dis.push('attacker prone');
+  // Web restrains: attacks against the caught creature have advantage, its own
+  // have disadvantage. Fear rattles: the frightened creature attacks at
+  // disadvantage.
+  if (target.conditions.some((c) => c.id === 'restrained')) adv.push('target restrained');
+  if (attacker.conditions.some((c) => c.id === 'restrained')) dis.push('attacker restrained');
+  if (attacker.conditions.some((c) => c.id === 'frightened')) dis.push('attacker frightened');
 
   return { adv, dis };
 }

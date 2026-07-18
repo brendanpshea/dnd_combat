@@ -45,7 +45,8 @@ function trueStrikeWeapons(c: Combatant): Id[] {
 
 function isIncapacitated(c: Combatant): boolean {
   return c.conditions.some(
-    (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed',
+    (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed' ||
+      k.id === 'commanded', // Command: grovels, no actions this turn
   );
 }
 

@@ -116,7 +116,7 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'wis',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       spellsByLevel: {
-        1: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word'],
+        1: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'],
         2: ['guiding-bolt'],
         3: ['hold-person', 'aid'],
         5: ['mass-healing-word'], // 3rd-level slot arrives here
@@ -153,8 +153,8 @@ export const CLASSES: Record<Id, ClassData> = {
       spellsByLevel: {
         1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands', 'find-familiar', 'mage-armor'],
         2: ['thunderwave'],
-        3: ['scorching-ray', 'misty-step', 'suggestion'],
-        5: ['fireball'], // 3rd-level slot arrives here
+        3: ['scorching-ray', 'misty-step', 'suggestion', 'web'],
+        5: ['fireball', 'fear'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {
