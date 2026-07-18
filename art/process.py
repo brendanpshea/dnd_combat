@@ -25,6 +25,7 @@ IDS = [
     "kobold", "scout", "orc", "brown-bear", "cult-fanatic", "animated-armor",
     "orc-barbarian", "dragonborn-paladin", "gnome-bard", "halfling-rogue", "tiefling-warlock",
     "dwarf-berserker", "elf-archer", "human-bard", "bandit-captain",
+    "knight", "minotaur", "ettin", "priest", "ogre-mage",
 ]
 
 os.makedirs(OUT, exist_ok=True)

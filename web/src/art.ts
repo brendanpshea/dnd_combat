@@ -13,6 +13,7 @@ export const HAS_ART = new Set<string>([
   'kobold', 'scout', 'orc', 'brown-bear', 'cult-fanatic', 'animated-armor',
   'orc-barbarian', 'dragonborn-paladin', 'gnome-bard', 'halfling-rogue', 'tiefling-warlock',
   'dwarf-berserker', 'elf-archer', 'human-bard', 'bandit-captain',
+  'knight', 'minotaur', 'ettin', 'priest', 'ogre-mage',
 ]);
 
 export function hasArt(id: string): boolean {
@@ -34,6 +35,7 @@ export function portraitUrl(id: string): string {
 const SCALE: Record<string, number> = {
   ogre: 1.3, 'brown-bear': 1.18, 'dire-wolf': 1.15, 'goblin-boss': 1.12,
   kobold: 0.82, 'giant-spider': 0.85, skeleton: 0.95,
+  minotaur: 1.15, ettin: 1.3, 'ogre-mage': 1.3,
 };
 
 export function tokenScale(id: string): number {
