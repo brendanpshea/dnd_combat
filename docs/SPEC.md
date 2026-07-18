@@ -662,8 +662,17 @@ awards `encounterXP / partySize` (per-character pacing). **Treasure is
 generated from encounter XP** (`treasureFor`): gold ≈ XP/2 with variance, and
 the number of item rolls and the rarity ceiling both scale with XP (a rarity-
 tiered pool, no per-stage authoring); the finale forces one guaranteed rare
-drop. Loot and XP use the battle's final RNG state, so seeded campaigns are
-reproducible end-to-end. Old saves migrate: a missing `xp` is back-filled from
+drop. The pool itself (`TREASURE_POOL`) spans gemstones and jewelry
+(`src/data/valuables.ts` — pure sell-value, no combat use, so they're never
+offered as a useItem action), a wider mundane weapon selection, moon-touched
+(silvered) weapons that carry no attack/damage bonus but bypass resistance to
+their damage type (`WeaponData.magic` → `applyDamage`'s `bypassResistance`
+option — dormant today since no monster yet resists a physical type, but ready
+for were-creatures/elementals), resistance and giant-strength potions (both
+persist for the rest of the encounter by mutating the combatant directly,
+matching how Mage Armor already persists), and spell scrolls, tuned so a
+hoard averages roughly 50 gp of value per character level. Loot and XP use the
+battle's final RNG state, so seeded campaigns are reproducible end-to-end. Old saves migrate: a missing `xp` is back-filled from
 the ladder so nobody de-levels. Between battles the shop buys/sells
 (half price back) from
 `SHOP_STOCK` — consumables, weapons (incl. +1 longsword/shortsword with
@@ -673,7 +682,7 @@ Remaining HP persists from a victorious battle into the next store visit. For
 testing, the store provides unrestricted rests: a **short rest** restores half
 of each hero's maximum HP, and a **long rest** fully restores HP. Other
 encounter resources still begin full when a combatant is rebuilt.
-Healing potions, the Scroll of Cure Wounds, and the cleric's **Cure Wounds**
+Healing potions and the cleric's **Cure Wounds**
 use the same store target flow: choose the source, then a party member. Item
 sources stay in the Pack; curated store-usable spells appear in a separate
 Spells row. Item sources are consumed; Cure Wounds does not spend an

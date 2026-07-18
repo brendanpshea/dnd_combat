@@ -33,6 +33,12 @@ export interface WeaponData {
   /** Magic weapon bonuses (+1 sword: both are 1). */
   attackBonus?: number;
   damageBonus?: number;
+  /**
+   * Moon-touched/silvered: no attack or damage bonus, but its damage bypasses
+   * resistance (were-creatures, certain elementals) — see the bypassResistance
+   * option on applyDamage.
+   */
+  magic?: boolean;
 }
 
 export const WEAPONS: Record<Id, WeaponData> = {
@@ -81,6 +87,42 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'shortsword-plus1', name: 'Shortsword +1', damage: '1d6', damageType: 'piercing',
     properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 500,
     attackBonus: 1, damageBonus: 1,
+  },
+
+  // --- greater weapon variety (mundane, tradable) ---------------------------
+  handaxe: {
+    id: 'handaxe', name: 'Handaxe', damage: '1d6', damageType: 'slashing',
+    properties: ['light', 'thrown'], range: { normal: 20, long: 60 }, melee: true, mastery: 'vex', cost: 5,
+  },
+  spear: {
+    id: 'spear', name: 'Spear', damage: '1d6', damageType: 'piercing',
+    properties: ['thrown', 'versatile'], range: { normal: 20, long: 60 }, melee: true, mastery: 'sap', cost: 1,
+  },
+  rapier: {
+    id: 'rapier', name: 'Rapier', damage: '1d8', damageType: 'piercing',
+    properties: ['finesse'], melee: true, mastery: 'vex', cost: 25,
+  },
+  warhammer: {
+    id: 'warhammer', name: 'Warhammer', damage: '1d8', damageType: 'bludgeoning',
+    properties: ['versatile'], melee: true, mastery: 'push', cost: 15,
+  },
+  battleaxe: {
+    id: 'battleaxe', name: 'Battleaxe', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'topple', cost: 10,
+  },
+  morningstar: {
+    id: 'morningstar', name: 'Morningstar', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, mastery: 'sap', cost: 15,
+  },
+
+  // --- moon-touched (silvered) — no bonus, bypasses resistance -------------
+  'moontouched-shortsword': {
+    id: 'moontouched-shortsword', name: 'Moon-Touched Shortsword', damage: '1d6', damageType: 'piercing',
+    properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 150, magic: true,
+  },
+  'moontouched-warhammer': {
+    id: 'moontouched-warhammer', name: 'Moon-Touched Warhammer', damage: '1d8', damageType: 'bludgeoning',
+    properties: ['versatile'], melee: true, mastery: 'push', cost: 150, magic: true,
   },
 
   // --- monster natural weapons and gear (SRD 5.2.1 stat blocks) ------------

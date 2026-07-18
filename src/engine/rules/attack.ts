@@ -317,7 +317,7 @@ export function resolveAttack(
 
   amount = Math.max(1, amount);
 
-  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags }));
+  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags, bypassResistance: !!weapon.magic }));
 
   // Secondary damage of a different type (giant spider poison).
   if (weapon.extraDamage && target.alive) {
@@ -390,7 +390,7 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
-  opts: { crit?: boolean; tags?: string[] } = {},
+  opts: { crit?: boolean; tags?: string[]; bypassResistance?: boolean } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -399,8 +399,10 @@ export function applyDamage(
   // at whatever HP it has left.
   const wasDown = isDown(target);
 
+  // Moon-touched (silvered) weapons: no attack/damage bonus, but their hits
+  // bypass resistance — immunity and vulnerability are untouched.
   if (target.immunities.includes(damageType)) amount = 0;
-  else if (target.resistances.includes(damageType)) amount = Math.floor(amount / 2);
+  else if (target.resistances.includes(damageType) && !opts.bypassResistance) amount = Math.floor(amount / 2);
   else if (target.vulnerabilities.includes(damageType)) amount *= 2;
 
   const absorbed = Math.min(target.tempHp ?? 0, amount);

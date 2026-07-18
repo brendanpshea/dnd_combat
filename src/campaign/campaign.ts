@@ -14,6 +14,7 @@ import { buildCharacter, assignStats } from '../builder/character.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST } from '../data/armor.js';
+import { VALUABLES } from '../data/valuables.js';
 import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
 import { SPECIES } from '../data/species.js';
@@ -191,9 +192,27 @@ export function xpAward(encounterId: Id, partySize: number): number {
  * so treasure scales with encounter XP without any per-stage authoring.
  */
 const TREASURE_POOL: Record<Rarity, Id[]> = {
-  common: ['potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'chain-shirt'],
-  uncommon: ['potion-greater-healing', 'greatsword', 'longbow', 'scale-mail'],
-  rare: ['half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1'],
+  common: [
+    'potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'scroll-burning-hands', 'chain-shirt',
+    'handaxe', 'spear', 'morningstar',
+    'gem-quartz', 'gem-moss-agate', 'gem-onyx', 'gem-carnelian',
+    'jewelry-wooden-bracer', 'jewelry-brass-ring', 'jewelry-bronze-figurine', 'jewelry-obsidian-necklace',
+  ],
+  uncommon: [
+    'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
+    'rapier', 'warhammer', 'battleaxe', 'scroll-web',
+    'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
+    'potion-giant-strength-hill',
+    'gem-amber', 'gem-garnet', 'gem-amethyst',
+    'jewelry-iron-bracer', 'jewelry-steel-ring', 'jewelry-silver-necklace',
+  ],
+  rare: [
+    'half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1',
+    'scroll-fireball', 'potion-giant-strength-frost',
+    'moontouched-shortsword', 'moontouched-warhammer',
+    'gem-topaz', 'gem-sapphire', 'gem-diamond',
+    'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
+  ],
 };
 
 /**
@@ -205,7 +224,7 @@ export function rarityOf(itemId: Id): Rarity {
   for (const r of ['rare', 'uncommon', 'common'] as const) {
     if (TREASURE_POOL[r].includes(itemId)) return r;
   }
-  return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? 'common';
+  return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? VALUABLES[itemId]?.rarity ?? 'common';
 }
 
 function pick<T>(arr: T[], r: number): T {
@@ -257,15 +276,17 @@ export const STARTING_GOLD = 100;
 export const SHOP_STOCK: Id[] = [
   // consumables
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
-  'scroll-magic-missile',
+  'scroll-magic-missile', 'scroll-burning-hands', 'scroll-web',
+  'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
   // weapons
-  'dagger', 'greatsword', 'longbow', 'longsword-plus1', 'shortsword-plus1',
+  'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
+  'greatsword', 'longbow', 'longsword-plus1', 'shortsword-plus1',
   // armor
   'leather', 'chain-shirt', 'half-plate', 'splint',
 ];
 
 export function itemName(itemId: Id): string {
-  return ITEMS[itemId]?.name ?? WEAPONS[itemId]?.name ?? ARMOR[itemId]?.name ??
+  return ITEMS[itemId]?.name ?? WEAPONS[itemId]?.name ?? ARMOR[itemId]?.name ?? VALUABLES[itemId]?.name ??
     (itemId === 'shield' ? 'Shield' : itemId);
 }
 
@@ -280,11 +301,13 @@ export function itemIcon(itemId: Id): string {
   }
   const w = WEAPONS[itemId];
   if (w) {
+    if (w.magic) return '🌙';
     if (itemId.endsWith('plus1')) return '🌟';
     if (w.range && !w.melee) return '🏹';
     return '⚔️';
   }
   if (ARMOR[itemId]) return '🥋';
+  if (VALUABLES[itemId]) return VALUABLES[itemId]!.icon;
   return '📦';
 }
 
@@ -479,7 +502,7 @@ export function isComplete(c: CampaignState): boolean {
 
 export function itemPrice(itemId: Id): number | undefined {
   if (itemId === 'shield') return SHIELD_COST;
-  return ITEMS[itemId]?.cost ?? WEAPONS[itemId]?.cost ?? ARMOR[itemId]?.cost;
+  return ITEMS[itemId]?.cost ?? WEAPONS[itemId]?.cost ?? ARMOR[itemId]?.cost ?? VALUABLES[itemId]?.cost;
 }
 
 export function addItem(inv: ItemStack[], itemId: Id, qty = 1): void {

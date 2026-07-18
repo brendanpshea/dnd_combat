@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
-  treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
+  treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing,
   partyStash, claimFromStash, stashItem, sellFromStash,
@@ -198,10 +198,9 @@ describe('XP, leveling, and treasure', () => {
   });
 
   it('a rare bonus tier guarantees a rare drop (finale trophy)', () => {
-    const rareIds = new Set(['half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1']);
     for (let seed = 1; seed <= 30; seed++) {
       const t = treasureFor(550, seed, 'rare');
-      expect(t.items.some((s) => rareIds.has(s.itemId))).toBe(true);
+      expect(t.items.some((s) => rarityOf(s.itemId) === 'rare')).toBe(true);
     }
   });
 });

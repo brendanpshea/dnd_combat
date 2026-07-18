@@ -3,7 +3,7 @@
  * engine helpers. `cost`/`rarity` exist now so stores and treasure drops are
  * a data concern later.
  */
-import type { GameState, Id } from '../engine/types.js';
+import type { GameState, Id, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { rollDice, rollD20, resolveRollMode } from '../engine/dice.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
@@ -95,7 +95,63 @@ export const ITEMS: Record<Id, ConsumableData> = {
     targeting: { kind: 'spell', spellId: 'magic-missile' }, cost: 60, rarity: 'common',
     apply: scrollApply('magic-missile'),
   },
+  'scroll-burning-hands': {
+    id: 'scroll-burning-hands', name: 'Scroll of Burning Hands', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'burning-hands' }, cost: 50, rarity: 'common',
+    apply: scrollApply('burning-hands'),
+  },
+  'scroll-web': {
+    id: 'scroll-web', name: 'Scroll of Web', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'web' }, cost: 150, rarity: 'uncommon',
+    apply: scrollApply('web'),
+  },
+  'scroll-fireball': {
+    id: 'scroll-fireball', name: 'Scroll of Fireball', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'fireball' }, cost: 300, rarity: 'rare',
+    apply: scrollApply('fireball'),
+  },
+
+  // --- resistance potions: grants resistance to a damage type for the rest
+  // of the encounter (like Mage Armor, a persisted flag rather than a
+  // duration-tracked condition — nothing rebuilds the combatant mid-fight) --
+  'potion-fire-resistance': resistancePotion('fire-resistance', 'Potion of Fire Resistance', 'fire'),
+  'potion-poison-resistance': resistancePotion('poison-resistance', 'Potion of Poison Resistance', 'poison'),
+  'potion-cold-resistance': resistancePotion('cold-resistance', 'Potion of Cold Resistance', 'cold'),
+  'potion-acid-resistance': resistancePotion('acid-resistance', 'Potion of Acid Resistance', 'acid'),
+
+  // --- giant strength: sets Strength to the giant's, if higher. Combat-scoped
+  // (ability scores aren't part of a saved character, so nothing to revert) --
+  'potion-giant-strength-hill': {
+    id: 'potion-giant-strength-hill', name: 'Potion of Hill Giant Strength', useTime: 'bonus',
+    targeting: { kind: 'ally' }, cost: 150, rarity: 'uncommon',
+    apply: giantStrengthPotion(21),
+  },
+  'potion-giant-strength-frost': {
+    id: 'potion-giant-strength-frost', name: 'Potion of Frost Giant Strength', useTime: 'bonus',
+    targeting: { kind: 'ally' }, cost: 400, rarity: 'rare',
+    apply: giantStrengthPotion(23),
+  },
 };
+
+function resistancePotion(id: Id, name: string, damageType: DamageType): ConsumableData {
+  return {
+    id, name, useTime: 'bonus',
+    targeting: { kind: 'ally' }, cost: 150, rarity: 'uncommon',
+    apply({ state, targetIds, userId }) {
+      const target = state.combatants[targetIds[0] ?? userId]!;
+      if (!target.resistances.includes(damageType)) target.resistances.push(damageType);
+      return [];
+    },
+  };
+}
+
+function giantStrengthPotion(strength: number) {
+  return ({ state, targetIds, userId }: UseContext): GameEvent[] => {
+    const target = state.combatants[targetIds[0] ?? userId]!;
+    target.abilities.str = Math.max(target.abilities.str, strength);
+    return [];
+  };
+}
 
 /** A scroll casts the spell at its base level, no slot required. */
 function scrollApply(spellId: Id) {
