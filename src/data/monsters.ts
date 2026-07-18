@@ -209,6 +209,35 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['ettin-battleaxe', 'ettin-morningstar'],
     attacksPerAction: 2, // two heads, two weapons
   },
+
+  // Spellcaster stat blocks that exercise the wider spell list.
+  priest: {
+    id: 'priest', name: 'Priest',
+    ac: 13, hp: 27, speed: 30, // chain shirt
+    creatureType: 'humanoid',
+    abilities: { str: 10, dex: 10, con: 12, int: 13, wis: 16, cha: 13 },
+    savingThrowProfs: ['wis'],
+    weaponIds: ['mace'],
+    metalArmor: true,
+    // Wis +3, PB +2 → spell DC 13 (SRD Priest). A support/control caster.
+    spellcasting: {
+      ability: 'wis', slots: [4, 3, 2],
+      spellIds: ['sacred-flame', 'cure-wounds', 'guiding-bolt', 'healing-word', 'command', 'spiritual-weapon', 'spiritual-guardians', 'bless'],
+    },
+  },
+  'ogre-mage': {
+    id: 'ogre-mage', name: 'Ogre Mage',
+    ac: 15, hp: 90, speed: 30, // AC 15 assumes Mage Armor precast (13 + Dex 2)
+    creatureType: 'giant',
+    abilities: { str: 19, dex: 14, con: 17, int: 14, wis: 12, cha: 15 },
+    savingThrowProfs: ['con', 'int'],
+    weaponIds: ['greatclub'],
+    // An arcane brute: it blasts and controls, and can wade in with the club.
+    spellcasting: {
+      ability: 'int', slots: [4, 3, 2],
+      spellIds: ['fire-bolt', 'magic-missile', 'web', 'fireball'],
+    },
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -334,6 +363,14 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'giants', name: 'Giant\'s Stronghold', suggestedLevel: 5,
     members: ['ettin', 'ogre', 'orc'],
   },
+  temple: {
+    id: 'temple', name: 'Corrupt Temple', suggestedLevel: 3,
+    members: ['priest', 'acolyte', 'acolyte', 'skeleton', 'skeleton'],
+  },
+  oni: {
+    id: 'oni', name: 'Ogre Mage\'s Warband', suggestedLevel: 5,
+    members: ['ogre-mage', 'ogre', 'orc'],
+  },
 };
 
 /**
@@ -346,6 +383,7 @@ export const MONSTER_XP: Record<Id, number> = {
   bandit: 25, 'bandit-captain': 450, 'dire-wolf': 200, ghoul: 200, 'giant-spider': 200, acolyte: 50,
   kobold: 25, scout: 100, orc: 100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
   knight: 700, minotaur: 700, ettin: 1100,
+  priest: 450, 'ogre-mage': 1100,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

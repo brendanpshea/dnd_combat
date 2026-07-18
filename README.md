@@ -28,7 +28,7 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 337 deterministic engine, campaign, AI, and UI tests
+npm test          # 338 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
 npm run campaign  # terminal campaign: 14-battle ladder with XP, leveling, loot
@@ -83,7 +83,7 @@ npm run campaign                           # campaign (saves to campaign-save.js
 | `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` | Battle map (random if omitted) |
 | `--level <n>` | `1`–`5` | Party level (both sides in PvP) |
 | `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
-| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `bandits` `spiders` `crypt` `kobolds` `raiders` `wilds` `cult` `knights` `labyrinth` `giants` | Fight monsters instead of a mirror party |
+| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `bandits` `spiders` `crypt` `kobolds` `raiders` `wilds` `cult` `knights` `labyrinth` `giants` `temple` `oni` | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
 | `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |
 
