@@ -461,6 +461,7 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   if (!c.concentratingOn) return [];
   const { spellId, targetIds } = c.concentratingOn;
   delete c.concentratingOn;
+  if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
   // Remove conditions this concentration was sustaining on its targets.
   for (const tid of targetIds) {

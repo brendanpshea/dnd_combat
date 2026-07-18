@@ -247,6 +247,23 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       }
       return v - slotCost;
     }
+    case 'spiritual-weapon': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const dmg = hitProb(spellAtkBonus, acOf(t), 'flat') * (avgDice('1d8') + castMod);
+      // First cast (slot spent) also buys a bonus-action attack for later turns.
+      const setup = slotCost > 0 ? 4 : 0;
+      return damageValue(dmg, t) + setup - slotCost;
+    }
+    case 'spiritual-guardians': {
+      if (actor.concentratingOn) return 0;
+      let v = 0;
+      for (const e of Object.values(state.combatants)) {
+        if (!e.alive || e.team === actor.team) continue;
+        if (distanceFeet(e.position, actor.position) > 15) continue;
+        v += saveFailProb(state, e, 'wis', dc) * avgDice('3d8') * 0.6; // damage over the next turns
+      }
+      return v - slotCost;
+    }
     case 'lightning-bolt': {
       const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
       const sculpt = actor.featureIds.includes('sculpt-spells');

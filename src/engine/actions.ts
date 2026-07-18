@@ -95,6 +95,9 @@ function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, target
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
   if (!actor.spellIds.includes(spell.id)) return false;
   if (spell.level === 0) return slotLevel === 0;
+  // Spiritual Weapon: while the summoned weapon lasts, its bonus-action re-attack
+  // is free (slotLevel 0). The initial cast still spends a slot (normal path).
+  if (spell.id === 'spiritual-weapon' && slotLevel === 0) return !!actor.spiritualWeapon;
   // Innate: cast at slotLevel 0 (spending no slot), limited by its own pool.
   // Checked before the slot path so a fighter — which has no slots at all — can
   // still cast it, and so a caster elf spends the free innate use before a slot.
@@ -258,7 +261,10 @@ export function spellTargetSets(
       out.push({ targets });
     }
   } else if (t.kind === 'self') {
-    if (enemies.some((e) => adjacent(e.position, actor.position))) out.push({ targets: [] });
+    // Offer when it would do something: a burst that touches an adjacent enemy,
+    // or Spiritual Guardians' aura reaching an enemy within 15 ft.
+    const reach = spell.id === 'spiritual-guardians' ? 15 : 5;
+    if (enemies.some((e) => distanceFeet(e.position, actor.position) <= reach)) out.push({ targets: [] });
   } else if (t.kind === 'emptyCell') {
     for (let y = 0; y < state.grid.height; y++) {
       for (let x = 0; x < state.grid.width; x++) out.push({ targets: [{ position: { x, y } }] });
@@ -358,7 +364,8 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     const spell = SPELLS[sid]!;
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
-    const slotLevel = actor.innateSpells[sid] ? 0 : spell.level;
+    // Spiritual Weapon's re-attack is free once the weapon is out.
+    const slotLevel = actor.innateSpells[sid] || (sid === 'spiritual-weapon' && actor.spiritualWeapon) ? 0 : spell.level;
     if (!spellAvailable(actor, spell, slotLevel)) continue;
     for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
       const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };

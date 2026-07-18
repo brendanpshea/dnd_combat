@@ -110,6 +110,51 @@ describe('Web', () => {
   });
 });
 
+describe('Spiritual Weapon', () => {
+  it('summons a floating weapon (bonus action, slot spent) and re-attacks free next turn', () => {
+    const c = new Combat({
+      seed: 3,
+      combatants: [pc('cleric', 3, { x: 3, y: 3 }, 'clr'), foe('goblin-warrior', { x: 4, y: 3 }, 'gob')],
+    });
+    until(c, 'clr');
+    const slotsBefore = c.state.combatants['clr']!.spellSlots[1]!.current;
+    const events = c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ combatantId: 'gob' }] });
+    expect(c.state.combatants['clr']!.spiritualWeapon).toBeDefined();
+    expect(events.some((e) => e.type === 'attackRolled')).toBe(true);
+    expect(c.state.combatants['clr']!.spellSlots[1]!.current).toBe(slotsBefore - 1); // first cast spends a slot
+    expect(c.state.combatants['clr']!.turn.bonusActionUsed).toBe(true);
+
+    // Round trip back to the cleric: the re-attack is now a free bonus action.
+    c.apply({ kind: 'endTurn' }); // cleric -> goblin
+    c.apply({ kind: 'endTurn' }); // goblin -> cleric (new round)
+    expect(c.activeId).toBe('clr');
+    const recast = c.legalActions().find((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon');
+    expect(recast).toBeDefined();
+    if (recast?.kind !== 'castSpell') throw new Error();
+    expect(recast.slotLevel).toBe(0); // free
+    const slotsNow = c.state.combatants['clr']!.spellSlots[1]!.current;
+    c.apply(recast);
+    expect(c.state.combatants['clr']!.spellSlots[1]!.current).toBe(slotsNow); // no slot spent
+  });
+});
+
+describe('Spiritual Guardians', () => {
+  it('damages an enemy that starts its turn in the aura, and the aura ends with concentration', () => {
+    const c = new Combat({
+      seed: 2,
+      combatants: [pc('cleric', 5, { x: 3, y: 3 }, 'clr'), foe('goblin-warrior', { x: 4, y: 3 }, 'gob')],
+    });
+    until(c, 'clr');
+    c.apply({ kind: 'castSpell', spellId: 'spiritual-guardians', slotLevel: 3, targets: [] });
+    expect(c.state.combatants['clr']!.spiritualGuardians).toBeDefined();
+    expect(c.state.combatants['clr']!.concentratingOn?.spellId).toBe('spiritual-guardians');
+    const hpBefore = c.state.combatants['gob']!.hp;
+    const events = c.apply({ kind: 'endTurn' }); // goblin's turn starts inside the aura
+    expect(events.some((e) => e.type === 'damageDealt' && e.damageType === 'radiant')).toBe(true);
+    expect(c.state.combatants['gob']!.hp).toBeLessThan(hpBefore);
+  });
+});
+
 describe('Lightning Bolt', () => {
   it('strikes every creature along the line, but not off it', () => {
     const c = new Combat({

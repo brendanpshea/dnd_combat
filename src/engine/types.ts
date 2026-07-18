@@ -180,6 +180,12 @@ export interface Combatant {
   unconsciousAtZero?: boolean;
   /** Round the combatant last spent Uncanny Dodge (once per round). */
   uncannyDodgeRound?: number;
+  /** Spiritual Weapon: a floating weapon that grants a bonus-action force
+   *  attack each turn until it expires (cleared in startTurn). */
+  spiritualWeapon?: { expiresAtRound: number };
+  /** Spiritual Guardians: a radiant aura around the caster that hurts enemies
+   *  who start their turn near it (held by concentration). */
+  spiritualGuardians?: { dc: number; mod: number };
   /**
    * SRD creature type (humanoid, beast, undead...). Optional and mostly
    * decorative today — nothing gates on it except Animal Friendship, which

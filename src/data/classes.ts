@@ -118,8 +118,8 @@ export const CLASSES: Record<Id, ClassData> = {
       spellsByLevel: {
         1: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'],
         2: ['guiding-bolt'],
-        3: ['hold-person', 'aid'],
-        5: ['mass-healing-word'], // 3rd-level slot arrives here
+        3: ['hold-person', 'aid', 'spiritual-weapon'],
+        5: ['mass-healing-word', 'spiritual-guardians'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {

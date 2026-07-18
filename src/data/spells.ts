@@ -609,6 +609,52 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
+   * Spiritual Weapon: a floating force blade. Casting it (a bonus action, a
+   * 2nd-level slot) summons the weapon and makes its first attack; while it
+   * lasts, the caster re-attacks each turn as a free bonus action (offered at
+   * slotLevel 0, no slot). Anchored to the caster — it strikes an adjacent
+   * enemy rather than roaming the board.
+   */
+  'spiritual-weapon': {
+    id: 'spiritual-weapon', name: 'Spiritual Weapon', level: 2, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 5, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🌟',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const caster = state.combatants[casterId]!;
+      const events: GameEvent[] = [];
+      if (slotLevel >= 2) caster.spiritualWeapon = { expiresAtRound: state.round + 10 };
+      const targetId = targetIds[0]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: true });
+      events.push(atk.event);
+      if (atk.hit) {
+        const dmg = rollDice(state.rng, '1d8', atk.crit);
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, targetId, casterId, dmg.total + spellMod(state, casterId), 'force', dmg.rolls));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Spiritual Guardians: a radiant aura around the caster. Any enemy that starts
+   * its turn within 15 ft takes 3d8 radiant (Wisdom save halves) — resolved in
+   * startTurn. Held by concentration; dropping it dispels the aura.
+   */
+  'spiritual-guardians': {
+    id: 'spiritual-guardians', name: 'Spiritual Guardians', level: 3, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: true,
+    icon: '👼',
+    cast({ state, casterId }) {
+      const caster = state.combatants[casterId]!;
+      caster.spiritualGuardians = { dc: spellDc(state, casterId), mod: spellMod(state, casterId) };
+      caster.concentratingOn = { spellId: 'spiritual-guardians', targetIds: [] };
+      return []; // silent until an enemy starts its turn in the aura
+    },
+  },
+
+  /**
    * Lightning Bolt: an 8d6 line to the board edge, Dexterity save for half. A
    * Fireball sibling in a line instead of a burst, and (like Fireball) it
    * strikes everything on the line, cover or no cover — Sculpt Spells spares

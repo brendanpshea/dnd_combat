@@ -5,8 +5,11 @@
 import type { GameState, Combatant, Id } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
-import { expireIllusions } from './grid.js';
+import { rollDice } from './dice.js';
+import { expireIllusions, distanceFeet } from './grid.js';
 import { discoverHidden } from './rules/hide.js';
+import { savingThrow } from './rules/saves.js';
+import { applyDamage } from './rules/attack.js';
 import type { GameEvent } from './events.js';
 
 export function rollInitiative(state: GameState): GameEvent[] {
@@ -104,6 +107,23 @@ export function startTurn(state: GameState): GameEvent[] {
     interacted: false,
     sneakAttackUsed: false,
   };
+  // Spiritual Weapon fades once its duration runs out.
+  if (c.spiritualWeapon && state.round > c.spiritualWeapon.expiresAtRound) delete c.spiritualWeapon;
+
+  // Spiritual Guardians: an enemy that starts its turn within 15 ft of an active
+  // aura takes 3d8 radiant, halved on a Wisdom save.
+  for (const other of Object.values(state.combatants)) {
+    if (!other.spiritualGuardians || !other.alive || other.team === c.team) continue;
+    if (distanceFeet(c.position, other.position) > 15) continue;
+    const save = savingThrow(state, c.id, 'wis', other.spiritualGuardians.dc);
+    events.push(save.event);
+    const dmg = rollDice(state.rng, '3d8');
+    state.rng = dmg.state;
+    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    if (amount > 0) events.push(...applyDamage(state, c.id, other.id, amount, 'radiant', dmg.rolls));
+    if (!c.alive) break;
+  }
+
   events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
   return events;
 }
