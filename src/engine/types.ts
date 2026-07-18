@@ -176,6 +176,8 @@ export interface Combatant {
    * no death saves, no second unconscious condition.
    */
   unconsciousAtZero?: boolean;
+  /** Round the combatant last spent Uncanny Dodge (once per round). */
+  uncannyDodgeRound?: number;
   /**
    * SRD creature type (humanoid, beast, undead...). Optional and mostly
    * decorative today — nothing gates on it except Animal Friendship, which

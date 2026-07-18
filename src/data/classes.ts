@@ -83,6 +83,8 @@ export const CLASSES: Record<Id, ClassData> = {
     featuresByLevel: {
       1: ['second-wind', 'action-surge'],
       3: ['improved-critical'], // Champion
+      // 4: Ability Score Increase (applied in the builder, not a feature).
+      5: ['extra-attack'],
     },
     choices: [{
       id: 'fighting-style', label: 'Fighting Style', atLevel: 1, default: 'dueling',
@@ -112,17 +114,19 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
       ability: 'wis',
-      slotsByLevel: [[2], [3], [4, 2]],
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       spellsByLevel: {
         1: ['sacred-flame', 'cure-wounds', 'bless'],
         2: ['guiding-bolt'],
         3: ['hold-person', 'aid'],
+        5: ['mass-healing-word'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {
       1: ['disciple-of-life'],
       2: ['turn-undead'], // Channel Divinity every cleric gets
       3: ['preserve-life'], // Life Domain: Channel Divinity
+      // 4: Ability Score Increase (builder).
     },
     weaponMasteries: [],
     equipment: {
@@ -146,16 +150,18 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
       ability: 'int',
-      slotsByLevel: [[2], [3], [4, 2]],
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       spellsByLevel: {
         1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands', 'find-familiar', 'mage-armor'],
         2: ['thunderwave'],
         3: ['scorching-ray', 'misty-step'],
+        5: ['fireball'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {
       1: [],
       3: ['sculpt-spells'], // Evoker
+      // 4: Ability Score Increase (builder).
     },
     weaponMasteries: [],
     equipment: {
@@ -180,6 +186,9 @@ export const CLASSES: Record<Id, ClassData> = {
       1: ['sneak-attack'],
       2: ['cunning-dash', 'cunning-disengage', 'cunning-hide'],
       3: ['assassinate'], // Assassin
+      // 4: Ability Score Increase (builder). Sneak Attack scales to 3d6 at L5
+      // automatically via its advantageDice(level) formula.
+      5: ['uncanny-dodge'],
     },
     weaponMasteries: ['shortsword', 'shortsword-plus1', 'shortbow'],
     equipment: {

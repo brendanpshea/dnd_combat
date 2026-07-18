@@ -152,4 +152,20 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'bear-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
     properties: [], melee: true,
   },
+  'minotaur-greataxe': {
+    id: 'minotaur-greataxe', name: 'Greataxe', damage: '2d12', damageType: 'slashing',
+    properties: ['two-handed'], melee: true,
+  },
+  'minotaur-gore': {
+    id: 'minotaur-gore', name: 'Gore', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'ettin-battleaxe': {
+    id: 'ettin-battleaxe', name: 'Battleaxe', damage: '2d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'ettin-morningstar': {
+    id: 'ettin-morningstar', name: 'Morningstar', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
 };

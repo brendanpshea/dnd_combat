@@ -137,13 +137,18 @@ export const STAGES: StageData[] = [
   { encounterId: 'crypt', mapId: 'corridor' },  // 550  → L3 around here
   { encounterId: 'spiders', mapId: 'marsh' },   // 800
   { encounterId: 'cult', mapId: 'ruins' },      // 1100
-  { encounterId: 'ogre', mapId: 'firepit' },    // 550, boss finale
+  { encounterId: 'ogre', mapId: 'firepit' },    // 550  → L4 around here
+  { encounterId: 'knights', mapId: 'open' },    // 925
+  { encounterId: 'labyrinth', mapId: 'corridor' }, // 775  → L5 around here
+  { encounterId: 'giants', mapId: 'firepit' },  // 1650, L5 boss finale
 ];
 
 // --- XP & leveling ---------------------------------------------------------
 
-/** 5e XP thresholds by level (index = level − 1); capped at our content's L3. */
-export const LEVEL_XP = [0, 300, 900] as const;
+/** XP thresholds by level (index = level − 1); capped at our content's L5.
+ *  Tuned to the /party-size award so a full ladder run reaches L4 at the ogre
+ *  and L5 just before the giants finale (fighting the boss at full L5 power). */
+export const LEVEL_XP = [0, 300, 900, 1250, 1700] as const;
 export const MAX_LEVEL = LEVEL_XP.length;
 
 export function levelForXp(xp: number): number {

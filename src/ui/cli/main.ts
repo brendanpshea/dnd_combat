@@ -33,7 +33,7 @@ async function main() {
     console.log(`Unknown encounter '${encounterArg}'. Available: ${Object.keys(ENCOUNTERS).join(', ')}`);
     process.exit(1);
   }
-  const level = Math.min(3, Math.max(1, Number(argValue('--level') ?? 1)));
+  const level = Math.min(5, Math.max(1, Number(argValue('--level') ?? 1)));
   const speciesIds = (argValue('--species') ?? 'human,human,human,human').split(',').map((id) => id.trim());
   if (speciesIds.length !== 4 || speciesIds.some((id) => !SPECIES[id])) {
     console.log(`--species must name four of: ${Object.keys(SPECIES).join(', ')}`);

@@ -149,7 +149,7 @@ describe('campaign state', () => {
       }
     }
     expect(sawLevel2).toBe(true);
-    expect(partyLevelOf(c)).toBe(3); // caps at content level by the finale
+    expect(partyLevelOf(c)).toBe(5); // reaches the content cap by the finale
   });
 
   it('completing all stages finishes the campaign', () => {
@@ -163,21 +163,24 @@ describe('campaign state', () => {
 });
 
 describe('XP, leveling, and treasure', () => {
-  it('levelForXp follows the thresholds and caps at 3', () => {
+  it('levelForXp follows the thresholds and caps at 5', () => {
     expect(levelForXp(0)).toBe(1);
     expect(levelForXp(299)).toBe(1);
     expect(levelForXp(300)).toBe(2);
     expect(levelForXp(899)).toBe(2);
     expect(levelForXp(900)).toBe(3);
-    expect(levelForXp(99999)).toBe(3);
-    expect(LEVEL_XP.length).toBe(3);
+    expect(levelForXp(1249)).toBe(3);
+    expect(levelForXp(1250)).toBe(4);
+    expect(levelForXp(1700)).toBe(5);
+    expect(levelForXp(99999)).toBe(5);
+    expect(LEVEL_XP.length).toBe(5);
   });
 
   it('the ladder is ordered easy -> hard by encounter XP', () => {
     const xps = STAGES.map((s) => encounterXP(s.encounterId));
-    // final stage (ogre) is the intended finale; overall trend rises.
+    // final stage (the giants) is the intended finale; overall trend rises.
     expect(xps[0]!).toBeLessThan(xps[xps.length - 1]!);
-    expect(STAGES[STAGES.length - 1]!.encounterId).toBe('ogre');
+    expect(STAGES[STAGES.length - 1]!.encounterId).toBe('giants');
   });
 
   it('treasureFor is deterministic, scales with XP, and stays in-pool', () => {

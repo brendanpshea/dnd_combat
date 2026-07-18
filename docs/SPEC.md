@@ -318,7 +318,7 @@ thrown weapons are not consumed (abstract recovery). Default kits: everyone
 carries a healing potion; the wizard/cleric get a scroll, the fighter
 alchemist's fire and two javelins.
 
-## 4. Classes (levels 1–3, one subclass each)
+## 4. Classes (levels 1–5, one subclass each)
 
 All classes: standard array by priority, standard gear, weapon masteries per
 the 5.5e list. Level 1 details (AC/HP/features) are authoritative in
@@ -329,11 +329,26 @@ the 5.5e list. Level 1 details (AC/HP/features) are authoritative in
 | L1 | Second Wind ×2, Action Surge, Dueling +2, Sap + Slow (javelin) mastery. AC 17, HP 13 | Sacred Flame, Cure Wounds, Bless, Disciple of Life. AC 18, HP 11 | Fire Bolt, Shocking Grasp, Magic Missile, Sleep, Burning Hands. AC 13, HP 7 | Sneak Attack 1d6, two shortswords + bow, Vex mastery. AC 15, HP 11 |
 | L2 | — | +Guiding Bolt, Turn Undead (CD), 3 slots | +Thunderwave, 3 slots | Cunning Action (bonus Dash/Disengage) |
 | L3 | Improved Critical (19–20) | Hold Person, Aid, Preserve Life (CD), slots 4/2 | Scorching Ray, Misty Step, Sculpt Spells, slots 4/2 | Assassinate, Sneak Attack 2d6 |
+| L4 | Ability Score Increase | Ability Score Increase | Ability Score Increase | Ability Score Increase |
+| L5 | **Extra Attack** (2 attacks) | **Mass Healing Word**, slots 4/3/2 | **Fireball**, slots 4/3/2 | **Uncanny Dodge**, Sneak Attack 3d6 |
 
 Notable simplifications: Action Surge granted at level 1 (5.5e says 2);
 per-rest resources reset at combat start. Sleep is the real 5.5e two-stage version (Incapacitated →
 Unconscious). Preserve Life auto-distributes to the most wounded allies
 within 30 ft, capped at half max HP.
+
+**Levels 4–5.** No feats yet: the level-4 ASI is a deterministic +2 to the
+class's primary stat (capped at 20), applied in the builder. Level 5 is the
+power spike — Extra Attack (`attacksPerAction: 2`), full casters' first
+3rd-level slot, proficiency bonus rising to +3, and each caster's signature
+3rd-level spell. **Fireball** is an 8d6 fire blast on a 5×5 template (Dex save
+for half), honouring the Evoker's Sculpt Spells exactly as Burning Hands does.
+**Mass Healing Word** is a bonus-action multi-ally heal. **Uncanny Dodge**
+halves the first hit against the rogue each round; damage cantrips (Fire Bolt,
+Sacred Flame, Shocking Grasp, Poison Spray) gain a second die at level 5 via a
+shared `cantripDice` helper. New boss-tier monsters — Knight, Minotaur, Ettin —
+front the three L4–5 ladder stages (Knightly Order, Labyrinth Terror, and the
+Giant's Stronghold finale).
 
 **Turn Undead** is the base Channel Divinity every cleric gets at level 2
 (separate from Life Domain's Preserve Life at 3). RAW turns — forces to flee —

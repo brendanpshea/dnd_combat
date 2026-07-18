@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
-import { buildEncounter } from '../src/data/monsters.js';
+import { buildEncounter, buildMonster } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
+import { cantripDice } from '../src/data/spells.js';
+import { sphere5x5 } from '../src/engine/grid.js';
 import { makeCombatant } from './helpers.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
@@ -291,6 +293,130 @@ describe('new spells', () => {
     expect(c.state.combatants['ftr']!.maxHp).toBe(before + 5);
     expect(c.state.combatants['ftr']!.hp).toBe(before + 5);
   });
+});
+
+describe('levels 4-5', () => {
+  it('level 4 adds +2 to the primary stat (capped at 20), and not before', () => {
+    expect(buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 3 }).abilities.str).toBe(16);
+    expect(buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 4 }).abilities.str).toBe(18);
+    expect(buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 0, y: 0 }, level: 4 }).abilities.int).toBe(18);
+  });
+
+  it('level 5 fighter gains Extra Attack (two attacks per action)', () => {
+    expect(buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 4 }).attacksPerAction).toBe(1);
+    const f5 = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 5 });
+    expect(f5.featureIds).toContain('extra-attack');
+    expect(f5.attacksPerAction).toBe(2);
+  });
+
+  it('level 5 casters gain a 3rd-level slot and their signature spell', () => {
+    const w = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 0, y: 0 }, level: 5 });
+    expect(w.spellSlots.map((s) => s.max)).toEqual([4, 3, 2]);
+    expect(w.spellIds).toContain('fireball');
+    const c = buildCharacter({ classId: 'cleric', team: 'team1', position: { x: 0, y: 0 }, level: 5 });
+    expect(c.spellSlots.map((s) => s.max)).toEqual([4, 3, 2]);
+    expect(c.spellIds).toContain('mass-healing-word');
+  });
+
+  it('cantripDice doubles the die count at level 5', () => {
+    expect(cantripDice('1d10', 4)).toBe('1d10');
+    expect(cantripDice('1d10', 5)).toBe('2d10');
+    expect(cantripDice('1d8', 5)).toBe('2d8');
+  });
+
+  it('a level-5 Fire Bolt rolls two dice on a hit', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [
+          place('wizard', 'team1', { x: 3, y: 3 }, 5, { id: 'wiz' }),
+          makeCombatant({ id: 'foe', team: 'team2', position: { x: 4, y: 3 }, hp: 1000, maxHp: 1000 }),
+        ],
+      });
+      until(c, 'wiz');
+      const events = c.apply({ kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'foe' }] });
+      const dmg = events.find((e) => e.type === 'damageDealt');
+      if (!dmg || dmg.type !== 'damageDealt') continue;
+      expect(dmg.rolls).toHaveLength(2);
+      return;
+    }
+    throw new Error('never hit across 60 seeds');
+  });
+
+  it('Fireball hits every enemy in the 5x5 blast and spares allies (Sculpt Spells)', () => {
+    const wiz = place('wizard', 'team1', { x: 1, y: 1 }, 5, { id: 'wiz' });
+    expect(wiz.featureIds).toContain('sculpt-spells');
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        wiz,
+        makeCombatant({ id: 'e1', team: 'team2', position: { x: 5, y: 5 }, hp: 1000, maxHp: 1000 }),
+        makeCombatant({ id: 'e2', team: 'team2', position: { x: 6, y: 5 }, hp: 1000, maxHp: 1000 }),
+        place('fighter', 'team1', { x: 5, y: 6 }, 5, { id: 'ally' }), // inside the blast
+      ],
+    });
+    until(c, 'wiz');
+    const center = { x: 5, y: 5 };
+    expect(sphere5x5(center).some((p) => p.x === 5 && p.y === 6)).toBe(true); // ally is in range
+    const events = c.apply({ kind: 'castSpell', spellId: 'fireball', slotLevel: 3, targets: [{ position: center }] });
+    const hurt = new Set(events.filter((e) => e.type === 'damageDealt').map((e) => e.type === 'damageDealt' && e.targetId));
+    expect(hurt.has('e1')).toBe(true);
+    expect(hurt.has('e2')).toBe(true);
+    expect(hurt.has('ally')).toBe(false); // Sculpt Spells spares the ally
+  });
+
+  it('Mass Healing Word heals several wounded allies at once', () => {
+    const c = new Combat({
+      seed: 2,
+      combatants: [
+        place('cleric', 'team1', { x: 1, y: 1 }, 5, { id: 'clr' }),
+        place('fighter', 'team1', { x: 2, y: 1 }, 5, { id: 'a1', hp: 5 }),
+        place('rogue', 'team1', { x: 3, y: 1 }, 5, { id: 'a2', hp: 5 }),
+        makeCombatant({ id: 'foe', team: 'team2', position: { x: 7, y: 7 } }),
+      ],
+    });
+    until(c, 'clr');
+    const events = c.apply({
+      kind: 'castSpell', spellId: 'mass-healing-word', slotLevel: 3,
+      targets: [{ combatantId: 'a1' }, { combatantId: 'a2' }],
+    });
+    const healed = new Set(events.filter((e) => e.type === 'healed').map((e) => e.type === 'healed' && e.targetId));
+    expect(healed.has('a1')).toBe(true);
+    expect(healed.has('a2')).toBe(true);
+    expect(c.state.combatants['a1']!.hp).toBeGreaterThan(5);
+  });
+
+  it('Uncanny Dodge halves the first hit against the rogue each round', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [
+          place('rogue', 'team1', { x: 4, y: 4 }, 5, { id: 'rog', hp: 300, maxHp: 300 }),
+          { ...buildMonster('ettin', 'team2', { x: 5, y: 4 }), id: 'et' },
+        ],
+      });
+      until(c, 'et');
+      const before = c.state.combatants['rog']!.hp;
+      const events = c.apply({ kind: 'attack', weaponId: 'ettin-battleaxe', targetId: 'rog' });
+      const dmg = events.find((e) => e.type === 'damageDealt');
+      if (!dmg || dmg.type !== 'damageDealt' || !dmg.tags?.includes('Uncanny Dodge')) continue;
+      // The HP lost equals the (already-halved) reported amount.
+      expect(before - c.state.combatants['rog']!.hp).toBe(dmg.amount);
+      return;
+    }
+    throw new Error('ettin never landed a hit to dodge across 60 seeds');
+  });
+
+  it('level-5 party vs the giants finale completes under AI', () => {
+    const c = new Combat({
+      seed: 21,
+      mapId: 'firepit',
+      combatants: [...buildParty('team1', 0, 5), ...buildEncounter('giants', 'team2', 7)],
+    });
+    let steps = 0;
+    while (!c.isOver() && steps++ < 8000) c.apply(chooseAction(c.state, c.activeId));
+    expect(c.isOver()).toBe(true);
+  }, 40000);
 });
 
 describe('level-3 battles', () => {

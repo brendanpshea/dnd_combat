@@ -127,6 +127,12 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
     if (targets.length !== 1 || !tg || !('position' in tg)) return false;
     return distanceFeet(actor.position, tg.position) <= t.range;
   }
+  if (t.kind === 'sphere5x5') {
+    const tg = targets[0];
+    if (targets.length !== 1 || !tg || !('position' in tg)) return false;
+    return distanceFeet(actor.position, tg.position) <= t.range &&
+      hasLineOfSight(state.grid, actor.position, tg.position);
+  }
   if (t.kind === 'self') return targets.length === 0;
   if (t.kind === 'emptyCell') {
     const tg = targets[0];
@@ -338,6 +344,21 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
             if (seen.has(k)) continue;
             seen.add(k);
             const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ position: anchor }] };
+            if (isLegalAction(state, actorId, a)) actions.push(a);
+          }
+        }
+      }
+    } else if (t.kind === 'sphere5x5') {
+      // Centres whose 5x5 blast covers at least one enemy (within 2 of one).
+      const seen = new Set<string>();
+      for (const e of enemies) {
+        for (let dx = -2; dx <= 2; dx++) {
+          for (let dy = -2; dy <= 2; dy++) {
+            const center = { x: e.position.x + dx, y: e.position.y + dy };
+            const k = `${center.x},${center.y}`;
+            if (seen.has(k)) continue;
+            seen.add(k);
+            const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ position: center }] };
             if (isLegalAction(state, actorId, a)) actions.push(a);
           }
         }

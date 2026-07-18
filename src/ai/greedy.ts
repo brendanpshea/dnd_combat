@@ -12,7 +12,7 @@ import { SPELLS, spellDc } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
-import { distanceCells, distanceFeet, adjacent, sphere2x2, cone15 } from '../engine/grid.js';
+import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { attackAbility, collectAttackSources } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
@@ -182,6 +182,34 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         const pFail = saveFailProb(state, t, 'dex', dc);
         const ev = avgDice('3d6') * (pFail + (1 - pFail) * 0.5);
         v += t.team === actor.team ? -1.5 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    case 'fireball': {
+      const center = (a.targets[0] as { position: Position }).position;
+      const sculpt = actor.featureIds.includes('sculpt-spells');
+      let v = 0;
+      for (const pos of sphere5x5(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        if (sculpt && t.team === actor.team) continue;
+        const pFail = saveFailProb(state, t, 'dex', dc);
+        const ev = avgDice('8d6') * (pFail + (1 - pFail) * 0.5);
+        // Allies caught in the blast are a heavy penalty (unless Sculpt spared them).
+        v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    case 'mass-healing-word': {
+      let v = 0;
+      for (const tg of a.targets) {
+        const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
+        const missing = t.maxHp - t.hp;
+        if (missing <= 0) continue;
+        const heal = Math.min(avgDice('1d4') + castMod, missing);
+        v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4);
       }
       return v - slotCost;
     }

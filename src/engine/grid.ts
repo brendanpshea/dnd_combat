@@ -227,6 +227,17 @@ export function sphere2x2(anchor: Position): Position[] {
   ];
 }
 
+/** 5x5 blast (Fireball) centred on a cell: every cell within 2 of the centre. */
+export function sphere5x5(center: Position): Position[] {
+  const cells: Position[] = [];
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      cells.push({ x: center.x + dx, y: center.y + dy });
+    }
+  }
+  return cells;
+}
+
 export type Direction8 = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
 export const DIRECTIONS: Record<Direction8, Position> = {

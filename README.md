@@ -8,7 +8,7 @@ frontends: a terminal CLI and a mobile-friendly web app.
 phone app — Add to Home Screen; works offline).
 
 Two teams fight on an 8×8 board: the classic party of four (Fighter, Wizard,
-Cleric, Rogue — levels 1–3, one subclass each) against a mirror party or an
+Cleric, Rogue — levels 1–5, one subclass each) against a mirror party or an
 SRD monster encounter (goblins, wolves, undead, or an ogre). Real d20 rules:
 advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
 masteries, spell slots, terrain, forced movement, and inventory (equipment
@@ -28,10 +28,10 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 309 deterministic engine, campaign, AI, and UI tests
+npm test          # 318 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
-npm run campaign  # terminal campaign: 11-battle ladder with XP, leveling, loot
+npm run campaign  # terminal campaign: 14-battle ladder with XP, leveling, loot
 ```
 
 ## Web UI
@@ -81,9 +81,9 @@ npm run campaign                           # campaign (saves to campaign-save.js
 | --- | --- | --- |
 | `--seed <n>` | any integer | Deterministic battle; same seed + same actions = same game |
 | `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` | Battle map (random if omitted) |
-| `--level <n>` | `1` `2` `3` | Party level (both sides in PvP) |
+| `--level <n>` | `1`–`5` | Party level (both sides in PvP) |
 | `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
-| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `bandits` `spiders` `crypt` `kobolds` `raiders` `wilds` `cult` | Fight monsters instead of a mirror party |
+| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `bandits` `spiders` `crypt` `kobolds` `raiders` `wilds` `cult` `knights` `labyrinth` `giants` | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
 | `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |
 
@@ -103,8 +103,8 @@ legal-action list, so an illegal move is never offered.
 
 ## Campaign mode
 
-An 11-battle ladder ordered easy → hard (Kobold Warren up to the Ogre finale).
-The party **earns XP and levels up** (1 → 3) as it goes — level is derived from
+A 14-battle ladder ordered easy → hard (Kobold Warren up to the twin-headed Giant finale).
+The party **earns XP and levels up** (1 → 5) as it goes — level is derived from
 accumulated XP, not fixed per stage, so progression is gradual and you can end
 up under-leveled for a tough fight (the UI warns you). **Treasure is generated
 from each encounter's XP**: gold scales with the fight, and bigger fights roll

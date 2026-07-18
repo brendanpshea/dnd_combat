@@ -219,4 +219,10 @@ export const FEATURES: Record<Id, FeatureData> = {
     advantageDice: (level) => `${Math.ceil(level / 2)}d6`,
   },
   'disciple-of-life': { id: 'disciple-of-life', name: 'Disciple of Life', trigger: 'passive' },
+  // Extra Attack (Fighter 5): the builder reads this to set attacksPerAction: 2.
+  'extra-attack': { id: 'extra-attack', name: 'Extra Attack', trigger: 'passive' },
+  // Uncanny Dodge (Rogue 5): the first hit against the rogue each round has its
+  // damage halved (a reaction in 5e; here a once-per-round passive checked in
+  // resolveAttack). Existence alone is the feature.
+  'uncanny-dodge': { id: 'uncanny-dodge', name: 'Uncanny Dodge', trigger: 'passive' },
 };

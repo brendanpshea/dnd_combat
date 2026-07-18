@@ -70,6 +70,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   if (!species) throw new Error(`Unknown species: ${speciesId}`);
   const level = opts.level ?? 1;
   const abilities = assignStats(cls.statPriority);
+  // Level-4 Ability Score Increase. No feats yet, so it's a deterministic +2 to
+  // the class's primary stat (capped at 20) — attack, damage, HP and spell DC
+  // all read the modifier, so the boost flows without further wiring.
+  if (level >= 4) {
+    const primary = cls.statPriority[0];
+    abilities[primary] = Math.min(20, abilities[primary] + 2);
+  }
   const conMod = abilityMod(abilities.con);
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level;
 
@@ -151,7 +158,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
           ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
         },
     weaponMasteries: [...cls.weaponMasteries, ...grants.weaponMasteries],
-    attacksPerAction: 1,
+    attacksPerAction: featureIds.includes('extra-attack') ? 2 : 1,
     resistances: [...(species.resistances ?? []), ...grants.resistances],
     vulnerabilities: [],
     immunities: [],

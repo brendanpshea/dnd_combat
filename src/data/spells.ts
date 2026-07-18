@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { adjacent, distanceFeet, sphere2x2, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
+import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -38,6 +38,7 @@ export type SpellTargeting =
    */
   | { kind: 'weaponAttack' }
   | { kind: 'sphere2x2'; range: number }
+  | { kind: 'sphere5x5'; range: number }    // Fireball
   | { kind: 'cone15' }
   | { kind: 'emptyCell'; range: number }   // Misty Step
   | { kind: 'self' };                       // Thunderwave (adjacent burst)
@@ -79,6 +80,18 @@ function spellMod(state: GameState, casterId: Id): number {
 export function spellDc(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
   return 8 + proficiencyBonus(c.level) + spellMod(state, casterId);
+}
+
+/**
+ * Damage cantrips gain a die at levels 5/11/17. Scales the leading die count of
+ * a dice expression ('1d10' → '2d10' at level 5), so a cantrip's damage roll is
+ * `rollDice(rng, cantripDice(base, caster.level))`.
+ */
+export function cantripDice(base: string, level: number): string {
+  const m = base.match(/^(\d+)d(\d+)$/);
+  if (!m) return base;
+  const tier = level >= 17 ? 4 : level >= 11 ? 3 : level >= 5 ? 2 : 1;
+  return `${Number(m[1]) * tier}d${m[2]}`;
 }
 
 /** Spell attack roll: shares the adv/dis machinery with weapon attacks. */
@@ -176,7 +189,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, '1d10', atk.crit);
+        const dmg = rollDice(state.rng, cantripDice('1d10', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'fire', dmg.rolls));
       }
@@ -225,7 +238,7 @@ export const SPELLS: Record<Id, SpellData> = {
       });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, '1d8', atk.crit);
+        const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'lightning', dmg.rolls));
         if (target.alive) {
@@ -248,7 +261,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'con', dc);
       const events: GameEvent[] = [save.event];
       if (!save.success) {
-        const dmg = rollDice(state.rng, '1d12');
+        const dmg = rollDice(state.rng, cantripDice('1d12', state.combatants[casterId]!.level));
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       }
@@ -304,7 +317,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'dex', dc);
       const events: GameEvent[] = [save.event];
       if (!save.success) {
-        const dmg = rollDice(state.rng, '1d8');
+        const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level));
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'radiant', dmg.rolls));
       }
@@ -447,6 +460,62 @@ export const SPELLS: Record<Id, SpellData> = {
       return events;
     },
   },
+  /**
+   * Fireball: the signature 3rd-level blast. A 5x5 burst centred on a chosen
+   * cell, 8d6 fire, Dexterity save for half. Same area-damage shape as Burning
+   * Hands (and it honours the Evoker's Sculpt Spells the same way — allies in
+   * the blast are spared), just bigger and thrown across the board.
+   */
+  fireball: {
+    id: 'fireball', name: 'Fireball', level: 3, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 150 },
+    concentration: false,
+    icon: '💥',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dc = spellDc(state, casterId);
+      const dice = `${8 + (slotLevel - 3)}d6`; // 8d6 at 3rd, +1d6 per higher slot
+      const events: GameEvent[] = [];
+      for (const pos of sphere5x5(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || !hasLineOfSight(state.grid, positions[0]!, pos)) continue;
+        if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        const dmg = rollDice(state.rng, dice);
+        state.rng = dmg.state;
+        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Mass Healing Word: the cleric's signature 3rd-level spell. A bonus-action
+   * heal that touches several wounded allies at once (1d4 + spell mod each),
+   * standing the downed among them back up through the shared healing rule.
+   */
+  'mass-healing-word': {
+    id: 'mass-healing-word', name: 'Mass Healing Word', level: 3, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 60, who: 'ally', count: 6 },
+    concentration: false,
+    icon: '💞',
+    cast({ state, casterId, targetIds }) {
+      const mod = spellMod(state, casterId);
+      const events: GameEvent[] = [];
+      for (const tid of new Set(targetIds)) {
+        const heal = rollDice(state.rng, '1d4');
+        state.rng = heal.state;
+        events.push(...applyHealing(state, tid, casterId, heal.total + mod));
+      }
+      return events;
+    },
+  },
+
   /**
    * A dragonborn's breath weapon: a cone of elemental damage, Dexterity save
    * for half, a couple of times a fight. Damage only — no condition — so it's

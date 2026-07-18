@@ -12,6 +12,7 @@ const TOKEN: Record<string, string> = {
   bandit: '🥷', 'bandit-captain': '🏴‍☠️', 'dire-wolf': '🐺', ghoul: '🧛', 'giant-spider': '🕷️', acolyte: '🧎',
   kobold: '🦎', scout: '🏹', orc: '🧌', 'brown-bear': '🐻', 'cult-fanatic': '🕯️', 'animated-armor': '🛡️',
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
+  knight: '🤺', minotaur: '🐂', ettin: '🗿',
 };
 
 export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | 'hint' | undefined;

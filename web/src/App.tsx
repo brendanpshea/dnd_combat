@@ -9,7 +9,7 @@ import { chooseAction } from '../../src/ai/greedy.js';
 import { chooseActionSim, SIM_PRESETS } from '../../src/ai/simulated.js';
 import type { Action } from '../../src/engine/actions.js';
 import { logLinesFor, type LogLine } from './log.js';
-import { sphere2x2, cone15 } from '../../src/engine/grid.js';
+import { sphere2x2, sphere5x5, cone15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
@@ -61,6 +61,7 @@ const CATEGORIES: Array<{ group: BarGroup; icon: string; name: string }> = [
 function footprint(caster: Combatant, spellId: string, target: Position): string[] {
   const kind = SPELLS[spellId]?.targeting.kind;
   if (kind === 'sphere2x2') return sphere2x2(target).map(posKey);
+  if (kind === 'sphere5x5') return sphere5x5(target).map(posKey);
   if (kind === 'cone15') {
     try {
       return cone15(caster.position, directionFromDelta(caster.position, target)).map(posKey);
@@ -188,7 +189,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
       <label>
         Party level
         <select value={level} onChange={(e) => setLevel(Number(e.target.value))}>
-          {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
+          {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
       </label>
       {mode !== 'hotseat' && (

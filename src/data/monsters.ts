@@ -181,6 +181,34 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['poison', 'psychic'],
   },
+
+  // --- level 4-5 boss tier (SRD 5.2.1) ------------------------------------
+  knight: {
+    id: 'knight', name: 'Knight',
+    ac: 18, hp: 52, speed: 30, // plate + shield
+    creatureType: 'humanoid',
+    abilities: { str: 16, dex: 11, con: 14, int: 11, wis: 11, cha: 15 },
+    savingThrowProfs: ['con', 'wis'],
+    weaponIds: ['greatsword', 'light-crossbow'],
+    metalArmor: true,
+    attacksPerAction: 2,
+  },
+  minotaur: {
+    id: 'minotaur', name: 'Minotaur',
+    ac: 14, hp: 76, speed: 40,
+    creatureType: 'giant', // no 'monstrosity' type; giant is the closest tag
+    abilities: { str: 18, dex: 11, con: 16, int: 6, wis: 16, cha: 9 },
+    weaponIds: ['minotaur-greataxe', 'minotaur-gore'],
+    // One brutal chop a turn — the Reckless-charger shape, not a flurry.
+  },
+  ettin: {
+    id: 'ettin', name: 'Ettin',
+    ac: 12, hp: 85, speed: 40,
+    creatureType: 'giant',
+    abilities: { str: 21, dex: 8, con: 17, int: 6, wis: 10, cha: 8 },
+    weaponIds: ['ettin-battleaxe', 'ettin-morningstar'],
+    attacksPerAction: 2, // two heads, two weapons
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -294,6 +322,18 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'cult', name: 'Cult of the Worm', suggestedLevel: 3,
     members: ['cult-fanatic', 'acolyte', 'ghoul', 'ghoul', 'animated-armor'],
   },
+  knights: {
+    id: 'knights', name: 'Knightly Order', suggestedLevel: 4,
+    members: ['knight', 'scout', 'scout', 'bandit'],
+  },
+  labyrinth: {
+    id: 'labyrinth', name: 'Labyrinth Terror', suggestedLevel: 4,
+    members: ['minotaur', 'kobold', 'kobold', 'kobold'],
+  },
+  giants: {
+    id: 'giants', name: 'Giant\'s Stronghold', suggestedLevel: 5,
+    members: ['ettin', 'ogre', 'orc'],
+  },
 };
 
 /**
@@ -305,6 +345,7 @@ export const MONSTER_XP: Record<Id, number> = {
   'goblin-warrior': 50, 'goblin-boss': 200, skeleton: 50, wolf: 50, zombie: 50, ogre: 450,
   bandit: 25, 'bandit-captain': 450, 'dire-wolf': 200, ghoul: 200, 'giant-spider': 200, acolyte: 50,
   kobold: 25, scout: 100, orc: 100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
+  knight: 700, minotaur: 700, ettin: 1100,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

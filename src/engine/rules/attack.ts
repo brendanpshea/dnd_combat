@@ -293,6 +293,15 @@ export function resolveAttack(
     rolls = [...rolls, ...extra.rolls];
   }
 
+  // Uncanny Dodge: the first hit against the rogue each round has its damage
+  // halved (a reaction in 5e; a once-per-round passive here). Scoped to weapon
+  // attacks — it doesn't blunt Fireball and other save-based damage.
+  if (target.featureIds.includes('uncanny-dodge') && target.uncannyDodgeRound !== state.round) {
+    amount = Math.floor(amount / 2);
+    target.uncannyDodgeRound = state.round;
+    tags.push('Uncanny Dodge');
+  }
+
   amount = Math.max(1, amount);
 
   events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags }));

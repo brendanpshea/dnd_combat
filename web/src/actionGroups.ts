@@ -100,6 +100,7 @@ export function targetingNote(spell: SpellData): string {
     }
     case 'weaponAttack': return 'weapon';
     case 'sphere2x2': return '2×2 area';
+    case 'sphere5x5': return '5×5 blast';
     case 'cone15': return 'cone';
     case 'emptyCell': return 'teleport';
     case 'self': return 'burst';
