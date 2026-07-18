@@ -95,11 +95,6 @@ export const ITEMS: Record<Id, ConsumableData> = {
     targeting: { kind: 'spell', spellId: 'magic-missile' }, cost: 60, rarity: 'common',
     apply: scrollApply('magic-missile'),
   },
-  'scroll-cure-wounds': {
-    id: 'scroll-cure-wounds', name: 'Scroll of Cure Wounds', useTime: 'action',
-    targeting: { kind: 'spell', spellId: 'cure-wounds' }, cost: 60, rarity: 'common',
-    apply: scrollApply('cure-wounds'),
-  },
 };
 
 /** A scroll casts the spell at its base level, no slot required. */

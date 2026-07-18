@@ -17,6 +17,7 @@ import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
+  partyStash, claimFromStash, stashItem, sellFromStash,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, setPartyChoice, setPartySpecies, shortRest, longRest,
   PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
@@ -48,7 +49,8 @@ const SHOP_CATEGORIES: Array<{ id: ShopCategory; label: string }> = [
 
 type StoreSelection =
   | { kind: 'item'; charIdx: number; itemId: Id; slot?: EquipSlot }
-  | { kind: 'spell'; charIdx: number; spellId: Id };
+  | { kind: 'spell'; charIdx: number; spellId: Id }
+  | { kind: 'stash'; itemId: Id };
 
 function shopCategory(itemId: Id): ShopCategory {
   if (ITEMS[itemId]) return 'consumables';
@@ -416,7 +418,42 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       {/* One sheet, every verb an item has. Opens only on a tap, so the shop
           renders none of these until you want one — where the old give panel
           rendered an item-by-recipient grid whether you wanted it or not. */}
-      {picked && (() => {
+      {picked?.kind === 'stash' && (() => {
+        const itemId = picked.itemId;
+        const resale = Math.floor((itemPrice(itemId) ?? 0) / 2);
+        const close = () => setPicked(null);
+        return (
+          <div className="tray-backdrop" onClick={close}>
+            <div className="tray" onClick={(e) => e.stopPropagation()}>
+              <div className="tray-head">
+                {itemIcon(itemId)} {itemName(itemId)}
+                <span className="muted">— Party Loot</span>
+                <button className="ghost" onClick={close}>✕</button>
+              </div>
+              <div className="sheet-row">
+                <span className="sheet-label">Give to</span>
+                {c.characters.map((to, toIdx) => (
+                  <button key={toIdx} className="mini" onClick={() => mutate(() => {
+                    claimFromStash(c, toIdx, itemId);
+                    setNotice(`${itemIcon(itemId)} ${to.name} takes ${itemName(itemId)}`);
+                    close();
+                  })}>{to.name}</button>
+                ))}
+              </div>
+              {resale > 0 && (
+                <div className="sheet-row">
+                  <span className="sheet-label">Sell</span>
+                  <button className="mini" onClick={() => mutate(() => {
+                    if (sellFromStash(c, itemId)) setNotice(`Sold ${itemName(itemId)} (+${resale}g)`);
+                    close();
+                  })}>+{resale}g</button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+      {picked && picked.kind !== 'stash' && (() => {
         const owner = c.characters[picked.charIdx]!;
         const itemId = picked.kind === 'item' ? picked.itemId : '';
         const spell = picked.kind === 'spell'
@@ -501,6 +538,11 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                       close();
                     })}>{to.name}</button>
                   ))}
+                  <button className="mini" onClick={() => mutate(() => {
+                    stashItem(c, picked.charIdx, itemId);
+                    setNotice(`${itemIcon(itemId)} ${owner.name} → Party Loot`);
+                    close();
+                  })}>Party Loot</button>
                 </div>
               )}
 
@@ -547,6 +589,24 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             })}>Long rest</button>
           </div>
         </div>
+        {partyStash(c).some((s) => s.qty > 0) && (
+          <div className="char-card stash-card">
+            <span className="inventory-label">🎁 Party Loot</span>
+            <div className="char-items">
+              {partyStash(c).filter((s) => s.qty > 0).map((s) => (
+                <button
+                  key={s.itemId}
+                  className={`item-chip chip-btn${picked?.kind === 'stash' && picked.itemId === s.itemId ? ' selected' : ''}`}
+                  onClick={() => setPicked(
+                    picked?.kind === 'stash' && picked.itemId === s.itemId ? null : { kind: 'stash', itemId: s.itemId },
+                  )}
+                >
+                  {itemIcon(s.itemId)} {itemName(s.itemId)}{s.qty > 1 ? `×${s.qty}` : ''}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {c.characters.map((ch, idx) => (
           <div key={idx} className="char-card">
             <div className="char-head char-identity">

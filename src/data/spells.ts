@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
+import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -40,6 +40,7 @@ export type SpellTargeting =
   | { kind: 'sphere2x2'; range: number }
   | { kind: 'sphere5x5'; range: number }    // Fireball
   | { kind: 'cone15' }
+  | { kind: 'cube15' }                       // Thunderwave (3x3 adjacent square)
   | { kind: 'emptyCell'; range: number }   // Misty Step
   | { kind: 'self' };                       // Thunderwave (adjacent burst)
 
@@ -446,7 +447,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const tid = cell?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;
-        if (!t.alive || !hasLineOfSight(state.grid, caster.position, pos)) continue;
+        if (!t.alive) continue; // area engulfs the cone; no per-cell LoS filter
         if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
@@ -481,7 +482,9 @@ export const SPELLS: Record<Id, SpellData> = {
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;
-        if (!t.alive || !hasLineOfSight(state.grid, positions[0]!, pos)) continue;
+        // No line-of-sight filter inside the blast: a Fireball engulfs everything
+        // in its radius, including creatures behind cover from the caster.
+        if (!t.alive) continue;
         if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
@@ -576,19 +579,21 @@ export const SPELLS: Record<Id, SpellData> = {
 
   thunderwave: {
     id: 'thunderwave', name: 'Thunderwave', level: 1, castingTime: 'action',
-    targeting: { kind: 'self' },
+    targeting: { kind: 'cube15' }, // a 3x3 square placed adjacent to the caster
     concentration: false,
     icon: '💥',
-    cast({ state, casterId, slotLevel }) {
+    cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
       const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dir = directionFromDelta(caster.position, positions[0]!);
       const dc = spellDc(state, casterId);
       const events: GameEvent[] = [];
-      const victims = Object.values(state.combatants).filter(
-        (c) => c.alive && c.id !== casterId && adjacent(c.position, caster.position) &&
-          !(sculpt && c.team === caster.team),
-      );
-      for (const t of victims) {
+      for (const pos of cube15(caster.position, dir)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.id === casterId) continue;
+        if (sculpt && t.team === caster.team) continue;
         const save = savingThrow(state, t.id, 'con', dc);
         events.push(save.event);
         const dmg = rollDice(state.rng, `${1 + slotLevel}d8`); // 2d8 at slot 1
@@ -596,11 +601,11 @@ export const SPELLS: Record<Id, SpellData> = {
         const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
         if (amount > 0) events.push(...applyDamage(state, t.id, casterId, amount, 'thunder', dmg.rolls));
         if (!save.success && t.alive) {
-          const dir = {
+          const push = {
             x: Math.sign(t.position.x - caster.position.x),
             y: Math.sign(t.position.y - caster.position.y),
           };
-          events.push(...pushCreature(state, t.id, dir, 2));
+          events.push(...pushCreature(state, t.id, push, 2));
         }
       }
       return events;

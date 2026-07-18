@@ -14,7 +14,7 @@ import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spel
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
-import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, Direction8 } from './grid.js';
+import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, cube15, Direction8 } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith } from './rules/attack.js';
 import { savingThrow } from './rules/saves.js';
@@ -224,6 +224,82 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
   }
 }
 
+/**
+ * Every candidate target set a spell offers from the actor's position — the
+ * single source of truth for spell targeting, so a spell *scroll* offers exactly
+ * the same choices as casting the spell (that's what makes a Scroll of X behave
+ * like X). Returns default selections for multi-target spells (all Magic Missile
+ * darts on the first enemy, etc.); the caller filters by legality.
+ */
+export function spellTargetSets(
+  state: GameState, actor: Combatant, spell: SpellData,
+): Array<{ targets: Target[]; weaponId?: Id }> {
+  const enemies = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
+  const allies = Object.values(state.combatants).filter((c) => c.alive && c.team === actor.team);
+  const out: Array<{ targets: Target[]; weaponId?: Id }> = [];
+  const t = spell.targeting;
+  if (t.kind === 'weaponAttack') {
+    for (const e of enemies) {
+      for (const w of trueStrikeWeapons(actor)) out.push({ targets: [{ combatantId: e.id }], weaponId: w });
+    }
+  } else if (t.kind === 'creature') {
+    const pool = t.who === 'enemy' ? enemies : t.who === 'ally' ? allies : [...enemies, ...allies];
+    const valid = pool.filter((c) => validTarget(state, actor.id, spell, c.id));
+    if (t.count === 1) {
+      for (const v of valid) out.push({ targets: [{ combatantId: v.id }] });
+    } else if (valid.length > 0) {
+      // Default selection: Magic Missile → all darts at first target;
+      // Bless / Mass Healing Word → up to `count` allies (self first).
+      const targets: Target[] =
+        spell.id === 'magic-missile'
+          ? Array.from({ length: t.count }, () => ({ combatantId: valid[0]!.id }))
+          : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
+      out.push({ targets });
+    }
+  } else if (t.kind === 'self') {
+    if (enemies.some((e) => adjacent(e.position, actor.position))) out.push({ targets: [] });
+  } else if (t.kind === 'emptyCell') {
+    for (let y = 0; y < state.grid.height; y++) {
+      for (let x = 0; x < state.grid.width; x++) out.push({ targets: [{ position: { x, y } }] });
+    }
+  } else if (t.kind === 'sphere2x2') {
+    const seen = new Set<string>();
+    for (const e of enemies) {
+      for (const dx of [-1, 0]) {
+        for (const dy of [-1, 0]) {
+          const anchor = { x: e.position.x + dx, y: e.position.y + dy };
+          const k = `${anchor.x},${anchor.y}`;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          out.push({ targets: [{ position: anchor }] });
+        }
+      }
+    }
+  } else if (t.kind === 'sphere5x5') {
+    const seen = new Set<string>();
+    for (const e of enemies) {
+      for (let dx = -2; dx <= 2; dx++) {
+        for (let dy = -2; dy <= 2; dy++) {
+          const center = { x: e.position.x + dx, y: e.position.y + dy };
+          const k = `${center.x},${center.y}`;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          out.push({ targets: [{ position: center }] });
+        }
+      }
+    }
+  } else {
+    // cone15 / cube15: directions whose area catches at least one enemy.
+    const area = t.kind === 'cube15' ? cube15 : cone15;
+    for (const dir of Object.keys(DIRECTIONS) as Direction8[]) {
+      if (!area(actor.position, dir).some((p) => enemies.some((e) => posEq(e.position, p)))) continue;
+      const d = DIRECTIONS[dir];
+      out.push({ targets: [{ position: { x: actor.position.x + d.x, y: actor.position.y + d.y } }] });
+    }
+  }
+  return out;
+}
+
 /** Enumerate playable actions (with default targets for multi-target spells). */
 export function legalActions(state: GameState, actorId: Id): Action[] {
   const actor = state.combatants[actorId];
@@ -266,20 +342,10 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     } else if (item.targeting.kind === 'thrown') {
       for (const e of enemies) candidates.push([{ combatantId: e.id }]);
     } else {
-      // Scroll: one default targeting like the spell menu would offer.
+      // Scroll: the same target sets the spell itself would offer, so a Scroll
+      // of X plays exactly like casting X (multi-dart, area cells, and all).
       const spell = SPELLS[item.targeting.spellId]!;
-      if (spell.targeting.kind === 'creature') {
-        const pool = spell.targeting.who === 'enemy' ? enemies : allies;
-        const valid = pool.filter((c) => validTarget(state, actorId, spell, c.id));
-        if (valid.length > 0) {
-          const n = spell.targeting.count;
-          candidates.push(
-            item.targeting.spellId === 'magic-missile'
-              ? Array.from({ length: n }, () => ({ combatantId: valid[0]!.id }))
-              : valid.slice(0, n).map((c) => ({ combatantId: c.id })),
-          );
-        }
-      }
+      for (const { targets } of spellTargetSets(state, actor, spell)) candidates.push(targets);
     }
     for (const targets of candidates) {
       const a: Action = { kind: 'useItem', itemId: stack.itemId, targets };
@@ -293,90 +359,9 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     // level. spellAvailable enforces the right resource for whichever this is.
     const slotLevel = actor.innateSpells[sid] ? 0 : spell.level;
     if (!spellAvailable(actor, spell, slotLevel)) continue;
-    const t = spell.targeting;
-    if (t.kind === 'weaponAttack') {
-      for (const e of enemies) {
-        for (const w of trueStrikeWeapons(actor)) {
-          const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ combatantId: e.id }], weaponId: w };
-          if (isLegalAction(state, actorId, a)) actions.push(a);
-        }
-      }
-    } else if (t.kind === 'creature') {
-      const pool = t.who === 'enemy' ? enemies : t.who === 'ally' ? allies : [...enemies, ...allies];
-      const valid = pool.filter((c) => validTarget(state, actorId, spell, c.id));
-      if (t.count === 1) {
-        for (const v of valid) {
-          const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ combatantId: v.id }] };
-          if (isLegalAction(state, actorId, a)) actions.push(a);
-        }
-      } else if (valid.length > 0) {
-        // Default selection: Magic Missile → all darts at first enemy;
-        // Bless → up to `count` allies (self first).
-        const targets: Target[] =
-          sid === 'magic-missile'
-            ? Array.from({ length: t.count }, () => ({ combatantId: valid[0]!.id }))
-            : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
-        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets };
-        if (isLegalAction(state, actorId, a)) actions.push(a);
-      }
-    } else if (t.kind === 'self') {
-      // Offer only when it would touch an enemy (Thunderwave burst).
-      if (enemies.some((e) => adjacent(e.position, actor.position))) {
-        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [] };
-        if (isLegalAction(state, actorId, a)) actions.push(a);
-      }
-    } else if (t.kind === 'emptyCell') {
-      // Enumerate all valid destination cells (like move destinations).
-      for (let y = 0; y < state.grid.height; y++) {
-        for (let x = 0; x < state.grid.width; x++) {
-          const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ position: { x, y } }] };
-          if (isLegalAction(state, actorId, a)) actions.push(a);
-        }
-      }
-    } else if (t.kind === 'sphere2x2') {
-      // Anchors whose 2x2 covers at least one enemy.
-      const seen = new Set<string>();
-      for (const e of enemies) {
-        for (const dx of [-1, 0]) {
-          for (const dy of [-1, 0]) {
-            const anchor = { x: e.position.x + dx, y: e.position.y + dy };
-            const k = `${anchor.x},${anchor.y}`;
-            if (seen.has(k)) continue;
-            seen.add(k);
-            const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ position: anchor }] };
-            if (isLegalAction(state, actorId, a)) actions.push(a);
-          }
-        }
-      }
-    } else if (t.kind === 'sphere5x5') {
-      // Centres whose 5x5 blast covers at least one enemy (within 2 of one).
-      const seen = new Set<string>();
-      for (const e of enemies) {
-        for (let dx = -2; dx <= 2; dx++) {
-          for (let dy = -2; dy <= 2; dy++) {
-            const center = { x: e.position.x + dx, y: e.position.y + dy };
-            const k = `${center.x},${center.y}`;
-            if (seen.has(k)) continue;
-            seen.add(k);
-            const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets: [{ position: center }] };
-            if (isLegalAction(state, actorId, a)) actions.push(a);
-          }
-        }
-      }
-    } else {
-      // cone15: directions that would catch at least one enemy.
-      for (const dir of Object.keys(DIRECTIONS) as Direction8[]) {
-        const covers = cone15(actor.position, dir).some((p) =>
-          enemies.some((e) => posEq(e.position, p)),
-        );
-        if (!covers) continue;
-        const d = DIRECTIONS[dir];
-        const a: Action = {
-          kind: 'castSpell', spellId: sid, slotLevel,
-          targets: [{ position: { x: actor.position.x + d.x, y: actor.position.y + d.y } }],
-        };
-        if (isLegalAction(state, actorId, a)) actions.push(a);
-      }
+    for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
+      const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };
+      if (isLegalAction(state, actorId, a)) actions.push(a);
     }
   }
 

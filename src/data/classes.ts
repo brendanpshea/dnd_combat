@@ -138,7 +138,6 @@ export const CLASSES: Record<Id, ClassData> = {
       inventory: [
         { itemId: 'light-crossbow', qty: 1 },
         { itemId: 'potion-healing', qty: 1 },
-        { itemId: 'scroll-cure-wounds', qty: 1 },
       ],
     },
   },

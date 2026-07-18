@@ -12,7 +12,7 @@ import { SPELLS, spellDc } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
-import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15 } from '../engine/grid.js';
+import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { attackAbility, collectAttackSources } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
@@ -142,10 +142,14 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       return damageValue(v, first) - slotCost;
     }
     case 'thunderwave': {
-      let v = 0;
+      const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
       const sculpt = actor.featureIds.includes('sculpt-spells');
-      for (const c of Object.values(state.combatants)) {
-        if (!c.alive || c.id === actor.id || !adjacent(c.position, actor.position)) continue;
+      let v = 0;
+      for (const pos of cube15(actor.position, dir)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ || occ === actor.id) continue;
+        const c = state.combatants[occ]!;
+        if (!c.alive) continue;
         if (sculpt && c.team === actor.team) continue;
         const pFail = saveFailProb(state, c, 'con', dc);
         const ev = avgDice('2d8') * (pFail + (1 - pFail) * 0.5) + pFail * 2; // push value

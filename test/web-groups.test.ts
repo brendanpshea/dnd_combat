@@ -197,7 +197,7 @@ describe('the Spells tray shows every spell', () => {
     expect(note('sleep')).toBe('L1 · 2×2 area');
     expect(note('burning-hands')).toBe('L1 · cone');
     expect(note('misty-step')).toBe('L2 · teleport');
-    expect(note('thunderwave')).toBe('L1 · burst');
+    expect(note('thunderwave')).toBe('L1 · 3×3 blast');
     expect(bar.bar.every((b) => !b.label.includes('🎯'))).toBe(true);
   });
 

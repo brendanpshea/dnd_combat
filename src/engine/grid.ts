@@ -262,6 +262,21 @@ const CONE15_DIAG: ReadonlyArray<Position> = [
   { x: 3, y: 2 }, { x: 2, y: 3 },
 ];
 
+/**
+ * A 3x3 square (Thunderwave's 15-ft cube) placed adjacent to `origin` in a
+ * direction: its near edge touches the caster and it extends 3 cells outward.
+ * The centre sits two cells away along the direction unit vector.
+ */
+export function cube15(origin: Position, dir: Direction8): Position[] {
+  const d = DIRECTIONS[dir];
+  const cx = origin.x + 2 * d.x, cy = origin.y + 2 * d.y;
+  const cells: Position[] = [];
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) cells.push({ x: cx + dx, y: cy + dy });
+  }
+  return cells;
+}
+
 export function cone15(origin: Position, dir: Direction8): Position[] {
   const d = DIRECTIONS[dir];
   const diagonal = d.x !== 0 && d.y !== 0;

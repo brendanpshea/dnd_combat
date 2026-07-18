@@ -48,6 +48,9 @@ export interface CampaignState {
   /** Index into STAGES of the next battle. */
   stage: number;
   characters: PartyCharacter[];
+  /** Shared party loot: where treasure drops land and unassigned gear waits.
+   *  Optional so legacy saves (no field) load fine and are treated as empty. */
+  stash?: ItemStack[];
   /** Battles won, for flavor/records. */
   victories: string[];
   /** The initial party identity setup has been confirmed. */
@@ -173,7 +176,7 @@ export function xpAward(encounterId: Id, partySize: number): number {
  * so treasure scales with encounter XP without any per-stage authoring.
  */
 const TREASURE_POOL: Record<Rarity, Id[]> = {
-  common: ['potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'scroll-cure-wounds', 'chain-shirt'],
+  common: ['potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'chain-shirt'],
   uncommon: ['potion-greater-healing', 'greatsword', 'longbow', 'scale-mail'],
   rare: ['half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1'],
 };
@@ -239,7 +242,7 @@ export const STARTING_GOLD = 100;
 export const SHOP_STOCK: Id[] = [
   // consumables
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
-  'scroll-magic-missile', 'scroll-cure-wounds',
+  'scroll-magic-missile',
   // weapons
   'dagger', 'greatsword', 'longbow', 'longsword-plus1', 'shortsword-plus1',
   // armor
@@ -297,6 +300,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
     gold: STARTING_GOLD,
     xp: 0,
     stage: 0,
+    stash: [],
     victories: [],
     partyReady: false,
     storyMode: true, // approachable default; toggled in the forge
@@ -559,12 +563,11 @@ export function longRest(c: CampaignState): RestResult {
 export type StoreHealingSource =
   | 'potion-healing'
   | 'potion-greater-healing'
-  | 'scroll-cure-wounds'
   | 'cure-wounds';
 
 export function isStoreHealingSource(itemId: Id): itemId is StoreHealingSource {
   return itemId === 'potion-healing' || itemId === 'potion-greater-healing' ||
-    itemId === 'scroll-cure-wounds' || itemId === 'cure-wounds';
+    itemId === 'cure-wounds';
 }
 
 export interface StoreHealingResult {
@@ -648,7 +651,7 @@ export function useStoreHealing(
   let dice = '2d4+2';
   let bonus = 0;
   if (source === 'potion-greater-healing') dice = '4d4+4';
-  if (source === 'scroll-cure-wounds' || source === 'cure-wounds') {
+  if (source === 'cure-wounds') {
     dice = '2d8';
     bonus = abilityMod(caster.abilities[caster.spellcastingAbility ?? 'int']) +
       (caster.featureIds.includes('disciple-of-life') ? 3 : 0);
@@ -783,6 +786,46 @@ export function giveItem(c: CampaignState, fromIdx: number, toIdx: number, itemI
   return true;
 }
 
+/** The shared party loot pile (empty for legacy saves without the field). */
+export function partyStash(c: CampaignState): ItemStack[] {
+  if (!c.stash) c.stash = [];
+  return c.stash;
+}
+
+/** Move one of an item from the shared stash to a party member's pack. */
+export function claimFromStash(c: CampaignState, toIdx: number, itemId: Id): boolean {
+  const to = c.characters[toIdx];
+  const stash = partyStash(c);
+  const stack = stash.find((s) => s.itemId === itemId && s.qty > 0);
+  if (!to || !stack) return false;
+  stack.qty -= 1;
+  c.stash = stash.filter((s) => s.qty > 0);
+  addItem(to.inventory, itemId);
+  return true;
+}
+
+/** Move one of an item from a party member's pack into the shared stash. */
+export function stashItem(c: CampaignState, fromIdx: number, itemId: Id): boolean {
+  const from = c.characters[fromIdx];
+  const stack = from?.inventory.find((s) => s.itemId === itemId && s.qty > 0);
+  if (!from || !stack) return false;
+  stack.qty -= 1;
+  from.inventory = from.inventory.filter((s) => s.qty > 0);
+  addItem(partyStash(c), itemId);
+  return true;
+}
+
+/** Sell one of an item straight from the stash (half price into the purse). */
+export function sellFromStash(c: CampaignState, itemId: Id): boolean {
+  const stash = partyStash(c);
+  const stack = stash.find((s) => s.itemId === itemId && s.qty > 0);
+  if (!stack) return false;
+  stack.qty -= 1;
+  c.stash = stash.filter((s) => s.qty > 0);
+  c.gold += Math.floor((itemPrice(itemId) ?? 0) / 2);
+  return true;
+}
+
 export type EquipSlot = 'mainHand' | 'offHand' | 'armor';
 
 /** Why an equip is disallowed, or undefined if fine. */
@@ -902,8 +945,9 @@ export function applyVictory(
   const isFinale = c.stage === STAGES.length - 1;
   const treasure = treasureFor(encounterXP(stage.encounterId), rng, isFinale ? 'rare' : undefined);
   c.gold += treasure.gold;
+  if (!c.stash) c.stash = [];
   for (const item of treasure.items) {
-    addItem(c.characters[0]!.inventory, item.itemId, item.qty);
+    addItem(c.stash, item.itemId, item.qty);
   }
 
   c.victories.push(stage.encounterId);

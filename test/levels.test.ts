@@ -140,7 +140,8 @@ describe('new spells', () => {
         ],
       });
       until(c, 'wiz');
-      const events = c.apply({ kind: 'castSpell', spellId: 'thunderwave', slotLevel: 1, targets: [] });
+      // Aim the 3x3 cube north (toward the adjacent foe).
+      const events = c.apply({ kind: 'castSpell', spellId: 'thunderwave', slotLevel: 1, targets: [{ position: { x: 3, y: 4 } }] });
       const save = events.find((e) => e.type === 'savingThrow')!;
       if (save.type !== 'savingThrow') throw new Error();
       expect(events.some((e) => e.type === 'damageDealt')).toBe(true);
@@ -164,7 +165,8 @@ describe('new spells', () => {
         ],
       });
       until(c, 'wiz');
-      const events = c.apply({ kind: 'castSpell', spellId: 'thunderwave', slotLevel: 1, targets: [] });
+      // Aim the cube west (toward the adjacent foe).
+      const events = c.apply({ kind: 'castSpell', spellId: 'thunderwave', slotLevel: 1, targets: [{ position: { x: 3, y: 6 } }] });
       const save = events.find((e) => e.type === 'savingThrow')!;
       if (save.type !== 'savingThrow') throw new Error();
       if (!save.success) {
@@ -405,6 +407,43 @@ describe('levels 4-5', () => {
       return;
     }
     throw new Error('ettin never landed a hit to dodge across 60 seeds');
+  });
+
+  it('Fireball engulfs creatures in the blast even behind a wall (no LoS filter)', () => {
+    // Ruins map has a wall at (5,5); the far enemy sits behind it from the blast
+    // centre (4,5) yet is still within the 5x5 radius.
+    const c = new Combat({
+      seed: 4,
+      mapId: 'ruins',
+      combatants: [
+        place('wizard', 'team1', { x: 4, y: 7 }, 5, { id: 'wiz' }), // clear line to the centre
+        makeCombatant({ id: 'near', team: 'team2', position: { x: 3, y: 5 }, hp: 1000, maxHp: 1000 }),
+        makeCombatant({ id: 'behind', team: 'team2', position: { x: 6, y: 5 }, hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    until(c, 'wiz');
+    const events = c.apply({ kind: 'castSpell', spellId: 'fireball', slotLevel: 3, targets: [{ position: { x: 4, y: 5 } }] });
+    const hurt = new Set(events.filter((e) => e.type === 'damageDealt').map((e) => e.type === 'damageDealt' && e.targetId));
+    expect(hurt.has('near')).toBe(true);
+    expect(hurt.has('behind')).toBe(true); // hit despite the wall between it and the centre
+  });
+
+  it('a Scroll of Magic Missile offers the same multi-dart targeting as the spell', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [
+        place('wizard', 'team1', { x: 3, y: 3 }, 3, { id: 'wiz' }),
+        makeCombatant({ id: 'foe', team: 'team2', position: { x: 5, y: 3 }, hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    until(c, 'wiz');
+    const scrollAct = c.legalActions().find((a) => a.kind === 'useItem' && a.itemId === 'scroll-magic-missile');
+    expect(scrollAct).toBeDefined();
+    if (scrollAct?.kind !== 'useItem') throw new Error();
+    expect(scrollAct.targets).toHaveLength(3); // three darts, like the spell
+    const events = c.apply(scrollAct);
+    expect(events.some((e) => e.type === 'damageDealt')).toBe(true);
+    expect(c.state.combatants['wiz']!.inventory.some((s) => s.itemId === 'scroll-magic-missile' && s.qty > 0)).toBe(false);
   });
 
   it('level-5 party vs the giants finale completes under AI', () => {

@@ -28,7 +28,7 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 318 deterministic engine, campaign, AI, and UI tests
+npm test          # 324 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
 npm run campaign  # terminal campaign: 14-battle ladder with XP, leveling, loot
@@ -109,6 +109,8 @@ accumulated XP, not fixed per stage, so progression is gradual and you can end
 up under-leveled for a tough fight (the UI warns you). **Treasure is generated
 from each encounter's XP**: gold scales with the fight, and bigger fights roll
 more items from higher rarity tiers (the finale guarantees a rare drop).
+Drops land in a shared **Party Loot** stash on the shop screen; tap an item to
+hand it to a member, stash one back, or sell it straight from the pile.
 Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
 purchases are proficiency-gated), manage equipment, haggle or steal, then
 fight. Consumables spent in battle stay spent; weapon swaps and remaining HP

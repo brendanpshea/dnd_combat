@@ -8,6 +8,7 @@ import {
   treasureFor, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing,
+  partyStash, claimFromStash, stashItem, sellFromStash,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -43,7 +44,7 @@ describe('campaign state', () => {
     expect(wiz.inventory.find((s) => s.itemId === 'potion-healing')!.qty).toBe(2); // kit + bought
     expect(sellItem(c, 1, 'potion-healing')).toBe(true);
     expect(c.gold).toBe(STARTING_GOLD - 50 + 25);
-    expect(sellItem(c, 1, 'scroll-cure-wounds')).toBe(false); // wizard doesn't have one
+    expect(sellItem(c, 1, 'potion-greater-healing')).toBe(false); // wizard doesn't have one
   });
 
   it('every shop item has a price and a display name', () => {
@@ -127,10 +128,6 @@ describe('campaign state', () => {
     expect(useStoreHealing(c, 0, 1, 'potion-healing')?.healed).toBeGreaterThan(0);
     expect(c.characters[0]!.inventory.some((s) => s.itemId === 'potion-healing')).toBe(false);
 
-    c.characters[0]!.resources = { hp: 1 };
-    expect(useStoreHealing(c, 2, 0, 'scroll-cure-wounds')?.healed).toBeGreaterThan(0);
-    expect(c.characters[2]!.inventory.some((s) => s.itemId === 'scroll-cure-wounds')).toBe(false);
-
     c.characters[3]!.resources = { hp: 1 };
     expect(useStoreHealing(c, 2, 3, 'cure-wounds')?.healed).toBeGreaterThan(0);
     expect(c.characters[2]!.resources).toBeUndefined(); // casting is not a consumable
@@ -206,6 +203,46 @@ describe('XP, leveling, and treasure', () => {
       const t = treasureFor(550, seed, 'rare');
       expect(t.items.some((s) => rareIds.has(s.itemId))).toBe(true);
     }
+  });
+});
+
+describe('party loot stash', () => {
+  it('treasure drops land in the shared stash, not on the fighter', () => {
+    const c = newCampaign(3);
+    const before = c.characters[0]!.inventory.reduce((n, s) => n + s.qty, 0);
+    const result = applyVictory(c, buildCampaignParty(c));
+    expect(result.items.length).toBeGreaterThan(0);
+    // The fighter's pack is unchanged; the loot is in the stash.
+    expect(c.characters[0]!.inventory.reduce((n, s) => n + s.qty, 0)).toBe(before);
+    const stashed = partyStash(c).reduce((n, s) => n + s.qty, 0);
+    expect(stashed).toBe(result.items.reduce((n, s) => n + s.qty, 0));
+  });
+
+  it('claim moves an item from the stash to a member, and stash-it moves it back', () => {
+    const c = newCampaign(3);
+    partyStash(c).push({ itemId: 'potion-healing', qty: 1 });
+    expect(claimFromStash(c, 2, 'potion-healing')).toBe(true);
+    expect(partyStash(c).some((s) => s.itemId === 'potion-healing')).toBe(false);
+    expect(c.characters[2]!.inventory.some((s) => s.itemId === 'potion-healing' && s.qty > 0)).toBe(true);
+
+    expect(stashItem(c, 2, 'potion-healing')).toBe(true);
+    expect(partyStash(c).some((s) => s.itemId === 'potion-healing' && s.qty > 0)).toBe(true);
+  });
+
+  it('sells straight from the stash for half price', () => {
+    const c = newCampaign(3);
+    partyStash(c).push({ itemId: 'greatsword', qty: 1 });
+    const gold = c.gold;
+    expect(sellFromStash(c, 'greatsword')).toBe(true);
+    expect(c.gold).toBe(gold + Math.floor((itemPrice('greatsword') ?? 0) / 2));
+    expect(partyStash(c).some((s) => s.itemId === 'greatsword')).toBe(false);
+  });
+
+  it('a legacy save with no stash field is treated as empty', () => {
+    const c = newCampaign(3);
+    delete c.stash;
+    expect(partyStash(c)).toEqual([]);
+    expect(claimFromStash(c, 0, 'potion-healing')).toBe(false);
   });
 });
 
