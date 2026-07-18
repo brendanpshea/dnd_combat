@@ -217,6 +217,18 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       }
       return v - slotCost;
     }
+    case 'healing-word': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const missing = t.maxHp - t.hp;
+      if (missing <= 0) return -slotCost;
+      const heal = Math.min(avgDice('2d4') + castMod, missing);
+      return heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) - slotCost;
+    }
+    case 'suggestion': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      // Removing an enemy from the fight is worth roughly killing it.
+      return saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) - slotCost;
+    }
     default:
       return 0;
   }

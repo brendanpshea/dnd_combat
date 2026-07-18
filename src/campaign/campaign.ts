@@ -735,16 +735,27 @@ export interface SkillRoll {
   total: number;
   dc: number;
   success: boolean;
+  /** +1d4 the party cleric adds by casting Guidance before the roll, if any. */
+  guidance?: number;
 }
 
 export function partySkillCheck(c: CampaignState, skill: SkillId, dc: number): SkillRoll {
   const { idx, bonus } = bestAtSkill(c, skill);
   const d = rollDie(c.rng, 20);
   c.rng = d.state;
-  const total = d.value + bonus;
+  let total = d.value + bonus;
+  // A party cleric casts Guidance before the check — +1d4, no combat resource.
+  let guidance = 0;
+  if (c.characters.some((ch) => ch.classId === 'cleric')) {
+    const g = rollDie(c.rng, 4);
+    c.rng = g.state;
+    guidance = g.value;
+    total += guidance;
+  }
   return {
     skill, by: idx,
     natural: d.value, total, dc, success: total >= dc,
+    ...(guidance ? { guidance } : {}),
   };
 }
 

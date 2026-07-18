@@ -519,6 +519,39 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  /** Healing Word: a ranged, bonus-action single-target heal (2d4 + mod). */
+  'healing-word': {
+    id: 'healing-word', name: 'Healing Word', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 60, who: 'ally', count: 1 },
+    concentration: false,
+    icon: '🩹',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const mod = spellMod(state, casterId);
+      const heal = rollDice(state.rng, `${1 + slotLevel}d4`); // 2d4 at 1st, +1d4 per higher slot
+      state.rng = heal.state;
+      return applyHealing(state, targetIds[0]!, casterId, heal.total + mod);
+    },
+  },
+
+  /**
+   * Suggestion: a Wisdom save or the target ambles out of the fight — the same
+   * charmAway removal Animal Friendship uses, scoped to humanoids instead of
+   * beasts. A hard single-target answer to one dangerous enemy.
+   */
+  suggestion: {
+    id: 'suggestion', name: 'Suggestion', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1, creatureType: 'humanoid' },
+    concentration: false,
+    icon: '💭',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const save = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
+      const events: GameEvent[] = [save.event];
+      if (!save.success) events.push(...charmAway(state, targetId));
+      return events;
+    },
+  },
+
   /**
    * A dragonborn's breath weapon: a cone of elemental damage, Dexterity save
    * for half, a couple of times a fight. Damage only — no condition — so it's

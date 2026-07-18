@@ -567,7 +567,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       )}
       {rolls.map((r, i) => (
         <div key={i} className="notice roll">
-          🎲 {charNames[r.by] ?? 'The party'} rolls {r.skill}: d20({r.natural}) = {r.total} vs DC {r.dc} — {r.success ? 'success!' : 'failure'}
+          🎲 {charNames[r.by] ?? 'The party'} rolls {r.skill}: d20({r.natural}){r.guidance ? ` +${r.guidance} Guidance` : ''} = {r.total} vs DC {r.dc} — {r.success ? 'success!' : 'failure'}
         </div>
       ))}
 

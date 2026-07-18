@@ -245,6 +245,17 @@ describe('party loot stash', () => {
     expect(claimFromStash(c, 0, 'potion-healing')).toBe(false);
   });
 
+  it('a party cleric adds a Guidance d4 to shop skill checks', () => {
+    const c = newCampaign(7);
+    const withCleric = campaignModule.partySkillCheck(c, 'persuasion', 15);
+    expect(withCleric.guidance).toBeGreaterThanOrEqual(1);
+    expect(withCleric.guidance).toBeLessThanOrEqual(4);
+    // A party with no cleric gets no Guidance.
+    for (const ch of c.characters) if (ch.classId === 'cleric') ch.classId = 'rogue';
+    const noCleric = campaignModule.partySkillCheck(c, 'persuasion', 15);
+    expect(noCleric.guidance).toBeUndefined();
+  });
+
   it('loading a save converts retired Scroll of Cure Wounds into healing potions', () => {
     const c = newCampaign(3);
     c.characters[2]!.inventory = [
