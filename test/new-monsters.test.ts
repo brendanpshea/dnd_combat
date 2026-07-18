@@ -173,11 +173,37 @@ describe('second monster batch', () => {
     const roll = events.find((e) => e.type === 'attackRolled');
     expect(roll?.type === 'attackRolled' && roll.advSources.includes('pack tactics')).toBe(true);
   });
+
+  it('snake constrict weapon applies restrained condition on hit', () => {
+    let verified = false;
+    for (let seed = 1; seed <= 50 && !verified; seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [
+          buildMonster('giant-constrictor-snake', 'team2', { x: 3, y: 4 }, '1'),
+          makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, hp: 1000, maxHp: 1000 }),
+        ],
+      });
+      until(c, 'team2-giant-constrictor-snake1');
+      const events = c.apply({ kind: 'attack', weaponId: 'snake-constrict', targetId: 'pc' });
+      const hit = events.find((e) => e.type === 'attackRolled' && e.hit);
+      if (hit) {
+        const pc = c.state.combatants['pc']!;
+        expect(pc.conditions.some((cond) => cond.id === 'restrained')).toBe(true);
+        verified = true;
+      }
+    }
+    expect(verified).toBe(true);
+  });
 });
 
 describe('new encounters complete under AI', () => {
   it('party beats or loses each new encounter without stalling', () => {
-    for (const encId of ['bandits', 'spiders', 'crypt', 'kobolds', 'raiders', 'wilds', 'cult']) {
+    for (const encId of [
+      'bandits', 'spiders', 'crypt', 'kobolds', 'raiders', 'wilds', 'cult',
+      'watch', 'ambush', 'swamp', 'pack', 'syndicate',
+      'badger-den', 'toad-swamp', 'hyena-pack', 'boar-stampede', 'snake-pit'
+    ]) {
       const c = new Combat({
         seed: 7,
         mapId: 'ruins',

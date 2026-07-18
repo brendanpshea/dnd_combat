@@ -19,8 +19,8 @@ export interface WeaponData {
   mastery?: MasteryId;
   /** Extra damage dice when the attack roll had advantage (goblin scimitar). */
   bonusDiceOnAdvantage?: string;
-  /** Condition applied automatically on a hit (wolf bite → prone). */
-  onHitCondition?: 'prone';
+  /** Condition applied automatically on a hit (wolf bite → prone, snake constrict → restrained). */
+  onHitCondition?: ConditionId;
   /**
    * On a hit, the target makes a save or gains a save-ends condition
    * (ghoul claws → paralyzed, giant spider bite → poisoned).
@@ -231,5 +231,27 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'ettin-morningstar': {
     id: 'ettin-morningstar', name: 'Morningstar', damage: '2d8', damageType: 'piercing',
     properties: [], melee: true,
+  },
+  'badger-claws': {
+    id: 'badger-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: ['light'], melee: true,
+  },
+  'toad-bite': {
+    id: 'toad-bite', name: 'Bite', damage: '1d10', damageType: 'piercing',
+    properties: [], melee: true,
+    extraDamage: { dice: '1d10', type: 'poison' },
+  },
+  'hyena-bite': {
+    id: 'hyena-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'boar-tusk': {
+    id: 'boar-tusk', name: 'Tusk', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'snake-constrict': {
+    id: 'snake-constrict', name: 'Constrict', damage: '2d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+    onHitCondition: 'restrained',
   },
 };

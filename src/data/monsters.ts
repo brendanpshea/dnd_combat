@@ -279,6 +279,47 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['shortsword', 'hand-crossbow'],
     attacksPerAction: 2,
   },
+
+  'giant-badger': {
+    id: 'giant-badger', name: 'Giant Badger',
+    ac: 13, hp: 13, speed: 30,
+    creatureType: 'beast',
+    abilities: { str: 13, dex: 10, con: 15, int: 2, wis: 12, cha: 5 },
+    featureIds: ['burrow'],
+    weaponIds: ['bite', 'badger-claws'],
+    attacksPerAction: 2,
+  },
+  'giant-toad': {
+    id: 'giant-toad', name: 'Giant Toad',
+    ac: 11, hp: 39, speed: 30,
+    creatureType: 'beast',
+    abilities: { str: 15, dex: 13, con: 13, int: 2, wis: 10, cha: 3 },
+    featureIds: ['swallow'],
+    weaponIds: ['toad-bite'],
+  },
+  'giant-hyena': {
+    id: 'giant-hyena', name: 'Giant Hyena',
+    ac: 12, hp: 45, speed: 50,
+    creatureType: 'beast',
+    abilities: { str: 16, dex: 14, con: 14, int: 2, wis: 12, cha: 7 },
+    featureIds: ['rampage'],
+    weaponIds: ['hyena-bite'],
+  },
+  'giant-boar': {
+    id: 'giant-boar', name: 'Giant Boar',
+    ac: 12, hp: 42, speed: 40,
+    creatureType: 'beast',
+    abilities: { str: 17, dex: 10, con: 16, int: 2, wis: 7, cha: 5 },
+    featureIds: ['charge', 'relentless'],
+    weaponIds: ['boar-tusk'],
+  },
+  'giant-constrictor-snake': {
+    id: 'giant-constrictor-snake', name: 'Giant Constrictor Snake',
+    ac: 12, hp: 60, speed: 30,
+    creatureType: 'beast',
+    abilities: { str: 19, dex: 14, con: 12, int: 1, wis: 10, cha: 3 },
+    weaponIds: ['snake-constrict', 'bite'],
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -432,6 +473,26 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'syndicate', name: 'Shadow Syndicate', suggestedLevel: 3,
     members: ['spy', 'spy', 'bandit', 'bandit'],
   },
+  'badger-den': {
+    id: 'badger-den', name: 'Badger Den', suggestedLevel: 1,
+    members: ['giant-badger', 'giant-badger', 'giant-badger'],
+  },
+  'toad-swamp': {
+    id: 'toad-swamp', name: 'Festering Swamp', suggestedLevel: 2,
+    members: ['giant-toad', 'giant-toad'],
+  },
+  'hyena-pack': {
+    id: 'hyena-pack', name: 'Hyena Pack', suggestedLevel: 2,
+    members: ['giant-hyena', 'giant-hyena', 'gnoll'],
+  },
+  'boar-stampede': {
+    id: 'boar-stampede', name: 'Boar Stampede', suggestedLevel: 3,
+    members: ['giant-boar', 'giant-boar'],
+  },
+  'snake-pit': {
+    id: 'snake-pit', name: 'Viper Pit', suggestedLevel: 3,
+    members: ['giant-constrictor-snake', 'giant-constrictor-snake'],
+  },
 };
 
 /**
@@ -446,6 +507,7 @@ export const MONSTER_XP: Record<Id, number> = {
   knight: 700, minotaur: 700, ettin: 1100,
   priest: 450, 'ogre-mage': 1100,
   guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
+  'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

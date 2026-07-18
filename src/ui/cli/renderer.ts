@@ -22,6 +22,7 @@ const CLASS_LETTER: Record<string, string> = {
   knight: 'K', minotaur: 'M', ettin: 'E',
   priest: 'P', 'ogre-mage': 'Y',
   guard: 'u', bugbear: 'U', lizardfolk: 'l', gnoll: 'N', spy: 'y',
+  'giant-badger': 'd', 'giant-toad': 't', 'giant-hyena': 'h', 'giant-boar': 'b', 'giant-constrictor-snake': 's',
 };
 
 export function cellName(p: Position): string {

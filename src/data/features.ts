@@ -234,4 +234,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   'long-limbed': { id: 'long-limbed', name: 'Long-Limbed', trigger: 'passive' },
   brute: { id: 'brute', name: 'Brute', trigger: 'passive' },
   rampage: { id: 'rampage', name: 'Rampage', trigger: 'passive' },
+  swallow: { id: 'swallow', name: 'Swallow', trigger: 'passive' },
+  relentless: { id: 'relentless', name: 'Relentless', trigger: 'passive' },
+  charge: { id: 'charge', name: 'Charge', trigger: 'passive' },
+  burrow: { id: 'burrow', name: 'Burrow', trigger: 'passive' },
 };
