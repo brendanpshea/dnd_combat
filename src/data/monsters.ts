@@ -374,6 +374,50 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['poison'],
     resistances: ['bludgeoning', 'piercing', 'slashing', 'lightning'],
   },
+
+  sprite: {
+    id: 'sprite', name: 'Sprite',
+    ac: 15, hp: 2, speed: 10,
+    creatureType: 'fey',
+    abilities: { str: 3, dex: 18, con: 10, int: 14, wis: 13, cha: 11 },
+    featureIds: ['fey-invisibility'],
+    weaponIds: ['sprite-shortbow'],
+  },
+  satyr: {
+    id: 'satyr', name: 'Satyr',
+    ac: 14, hp: 31, speed: 40,
+    creatureType: 'fey',
+    abilities: { str: 12, dex: 16, con: 11, int: 12, wis: 10, cha: 14 },
+    featureIds: ['magic-resistance'],
+    weaponIds: ['satyr-shortsword', 'satyr-ram'],
+  },
+  dryad: {
+    id: 'dryad', name: 'Dryad',
+    ac: 16, hp: 22, speed: 30,
+    creatureType: 'fey',
+    abilities: { str: 10, dex: 12, con: 11, int: 14, wis: 15, cha: 18 },
+    featureIds: ['fey-charm'],
+    weaponIds: ['dryad-club'],
+    spellcasting: { ability: 'wis', slots: [3], spellIds: ['cure-wounds', 'web'] },
+  },
+  'green-hag': {
+    id: 'green-hag', name: 'Green Hag',
+    ac: 17, hp: 82, speed: 30,
+    creatureType: 'fey',
+    abilities: { str: 18, dex: 12, con: 16, int: 13, wis: 14, cha: 14 },
+    featureIds: ['fey-invisibility'],
+    weaponIds: ['hag-claws'],
+    attacksPerAction: 2,
+  },
+  unicorn: {
+    id: 'unicorn', name: 'Unicorn',
+    ac: 12, hp: 67, speed: 50,
+    creatureType: 'fey',
+    abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 17, cha: 16 },
+    featureIds: ['unicorn-charge', 'magic-resistance'],
+    weaponIds: ['unicorn-horn', 'unicorn-hooves'],
+    attacksPerAction: 2,
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -571,6 +615,26 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'elemental-cataclysm', name: 'Elemental Cataclysm', suggestedLevel: 6,
     members: ['fire-elemental', 'earth-elemental'],
   },
+  'sprite-glade': {
+    id: 'sprite-glade', name: 'Sprite Glade', suggestedLevel: 1,
+    members: ['sprite', 'sprite', 'sprite'],
+  },
+  'satyr-revelry': {
+    id: 'satyr-revelry', name: 'Satyr Revelry', suggestedLevel: 2,
+    members: ['satyr', 'satyr'],
+  },
+  'dryad-grove': {
+    id: 'dryad-grove', name: 'Dryad Grove', suggestedLevel: 2,
+    members: ['dryad', 'sprite', 'sprite'],
+  },
+  'hag-coven': {
+    id: 'hag-coven', name: 'Hag Coven', suggestedLevel: 4,
+    members: ['green-hag', 'bandit', 'bandit'],
+  },
+  'unicorn-sanctuary': {
+    id: 'unicorn-sanctuary', name: 'Unicorn Sanctuary', suggestedLevel: 5,
+    members: ['unicorn'],
+  },
 };
 
 /**
@@ -587,6 +651,7 @@ export const MONSTER_XP: Record<Id, number> = {
   guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
   'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
   gargoyle: 450, 'fire-elemental': 1800, 'water-elemental': 1800, 'earth-elemental': 1800, 'air-elemental': 1800,
+  sprite: 50, satyr: 100, dryad: 200, 'green-hag': 700, unicorn: 1800,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

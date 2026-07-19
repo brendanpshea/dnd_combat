@@ -279,4 +279,34 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'air-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
     properties: [], melee: true,
   },
+  'sprite-shortbow': {
+    id: 'sprite-shortbow', name: 'Shortbow', damage: '1d4', damageType: 'piercing',
+    properties: [], range: { normal: 40, long: 160 }, melee: false,
+    onHitCondition: 'poisoned',
+  },
+  'satyr-shortsword': {
+    id: 'satyr-shortsword', name: 'Shortsword', damage: '1d6', damageType: 'piercing',
+    properties: ['light'], melee: true,
+  },
+  'satyr-ram': {
+    id: 'satyr-ram', name: 'Ram', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'dryad-club': {
+    id: 'dryad-club', name: 'Shillelagh Club', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'hag-claws': {
+    id: 'hag-claws', name: 'Claws', damage: '2d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'unicorn-horn': {
+    id: 'unicorn-horn', name: 'Horn', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+    extraDamage: { dice: '2d8', type: 'radiant' },
+  },
+  'unicorn-hooves': {
+    id: 'unicorn-hooves', name: 'Hooves', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
 };

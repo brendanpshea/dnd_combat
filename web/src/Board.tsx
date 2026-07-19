@@ -17,6 +17,7 @@ const TOKEN: Record<string, string> = {
   guard: '🛡️', bugbear: '🐻‍❄️', lizardfolk: '🦎', gnoll: '🐺', spy: '🕵️',
   'giant-badger': '🦡', 'giant-toad': '🐸', 'giant-hyena': '🐺', 'giant-boar': '🐗', 'giant-constrictor-snake': '🐍',
   gargoyle: '🗿', 'fire-elemental': '🔥', 'water-elemental': '🌊', 'earth-elemental': '🪨', 'air-elemental': '🌪️',
+  sprite: '🧚', satyr: '🐐', dryad: '🌳', 'green-hag': '🧙‍♀️', unicorn: '🦄',
 };
 
 export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | 'hint' | undefined;

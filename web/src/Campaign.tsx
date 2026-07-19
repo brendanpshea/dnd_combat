@@ -623,8 +623,9 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             {/* Gear and pack are the same thing to the player: a tap on any of
                 them asks "what do you want to do with this?" */}
             <div className="gear-row">
-              {(['mainHand', 'offHand', 'armor'] as EquipSlot[]).map((slot) => {
+              {(['mainHand', 'offHand', 'armor', 'trinket'] as EquipSlot[]).map((slot) => {
                 const held = ch.equipped[slot];
+                if (slot === 'trinket' && !held) return null; // no clutter when no trinket is worn
                 const empty = slot === 'mainHand' ? 'Unarmed' : slot === 'offHand' ? 'No off-hand' : 'Unarmored';
                 return held ? (
                   <button

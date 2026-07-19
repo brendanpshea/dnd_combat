@@ -29,6 +29,7 @@ IDS = [
     "guard", "bugbear", "lizardfolk", "gnoll", "spy",
     "giant-badger", "giant-toad", "giant-hyena", "giant-boar", "giant-constrictor-snake",
     "gargoyle", "fire-elemental", "water-elemental", "earth-elemental", "air-elemental",
+    "sprite", "satyr", "dryad", "green-hag", "unicorn",
 ]
 
 os.makedirs(OUT, exist_ok=True)

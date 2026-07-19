@@ -242,4 +242,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   whelm: { id: 'whelm', name: 'Whelm', trigger: 'action', uses: { count: 1, per: 'encounter' } },
   whirlwind: { id: 'whirlwind', name: 'Whirlwind', trigger: 'action', uses: { count: 1, per: 'encounter' } },
   'earth-glide': { id: 'earth-glide', name: 'Earth Glide', trigger: 'passive' },
+  'fey-invisibility': { id: 'fey-invisibility', name: 'Fey Invisibility', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  'magic-resistance': { id: 'magic-resistance', name: 'Magic Resistance', trigger: 'passive' },
+  'fey-charm': { id: 'fey-charm', name: 'Fey Charm', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  'unicorn-charge': { id: 'unicorn-charge', name: 'Horn Charge', trigger: 'passive' },
 };

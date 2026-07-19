@@ -203,7 +203,8 @@ describe('new encounters complete under AI', () => {
       'bandits', 'spiders', 'crypt', 'kobolds', 'raiders', 'wilds', 'cult',
       'watch', 'ambush', 'swamp', 'pack', 'syndicate',
       'badger-den', 'toad-swamp', 'hyena-pack', 'boar-stampede', 'snake-pit',
-      'gargoyle-perch', 'fire-nexus', 'water-vortex', 'earth-tremor', 'tempest-eye', 'elemental-cataclysm'
+      'gargoyle-perch', 'fire-nexus', 'water-vortex', 'earth-tremor', 'tempest-eye', 'elemental-cataclysm',
+      'sprite-glade', 'satyr-revelry', 'dryad-grove', 'hag-coven', 'unicorn-sanctuary'
     ]) {
       const c = new Combat({
         seed: 7,
