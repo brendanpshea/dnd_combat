@@ -177,6 +177,9 @@ describe('campaign state', () => {
   it('mage armor and find familiar interact correctly with slots (mage armor spends one, familiar is free)', () => {
     const c = newCampaign(42);
     const wizardIdx = 1;
+    // Both must be prepared to be castable from the store; a level-1 wizard's
+    // auto-default doesn't include them, so prepare them explicitly here.
+    setPrepared(c, wizardIdx, ['mage-armor', 'find-familiar']);
     expect(buildCampaignParty(c)[wizardIdx]!.spellSlots[0]!.current).toBe(2);
 
     expect(useStoreSpell(c, wizardIdx, 'find-familiar')).toBe(true);
@@ -645,16 +648,25 @@ describe('skill gambits identify the character, not the class', () => {
   });
 });
 
-describe('spell preparation (ignorable — default is the class table, unchanged)', () => {
-  it('a character who never touches prepared spells plays with the full class list', () => {
+describe('spell preparation (ignorable — a sensible default is auto-prepared)', () => {
+  it('a character who never touches prepared spells gets a capped default subset', () => {
     const c = newCampaign();
     const wizardIdx = 1;
     expect(c.characters[wizardIdx]!.prepared).toBeUndefined();
-    const defaultPrepared = preparedSpells(c, wizardIdx);
-    expect(defaultPrepared).toEqual(preparableSpells(c, wizardIdx));
-    // Matches the live-built combatant's actual spellIds (minus cantrips).
+    const pool = preparableSpells(c, wizardIdx);
+    const cap = preparedLimit(c, wizardIdx);
+    const def = preparedSpells(c, wizardIdx);
+    // A level-1 wizard knows more leveled spells than it can prepare, so the
+    // default is a genuine subset — capped, and every entry a real known spell.
+    expect(pool.length).toBeGreaterThan(cap);
+    expect(def).toHaveLength(cap);
+    for (const id of def) expect(pool).toContain(id);
+    // The built combatant carries exactly the prepared subset — the leveled
+    // spells left unprepared are genuinely absent, not merely hidden.
     const built = buildCampaignParty(c)[wizardIdx]!;
-    for (const id of defaultPrepared) expect(built.spellIds).toContain(id);
+    for (const id of def) expect(built.spellIds).toContain(id);
+    const unprepared = pool.filter((id) => !def.includes(id));
+    for (const id of unprepared) expect(built.spellIds).not.toContain(id);
   });
 
   it('cantrips are always known and are never part of the prepared list', () => {
@@ -688,15 +700,16 @@ describe('spell preparation (ignorable — default is the class table, unchanged
     expect(c.characters[wizardIdx]!.prepared).toHaveLength(Math.min(cap, pool.length));
   });
 
-  it('resetPrepared drops back to the default loadout', () => {
+  it('resetPrepared drops back to the auto-prepared default', () => {
     const c = newCampaign();
     const wizardIdx = 1;
     const pool = preparableSpells(c, wizardIdx);
+    const autoDefault = preparedSpells(c, wizardIdx); // before any custom pick
     setPrepared(c, wizardIdx, [pool[0]!]);
     expect(c.characters[wizardIdx]!.prepared).toBeDefined();
     resetPrepared(c, wizardIdx);
     expect(c.characters[wizardIdx]!.prepared).toBeUndefined();
-    expect(preparedSpells(c, wizardIdx)).toEqual(pool);
+    expect(preparedSpells(c, wizardIdx)).toEqual(autoDefault);
   });
 
   it('a non-caster has an empty preparable/prepared list and is unaffected', () => {
@@ -759,9 +772,11 @@ describe('wizard spellbook: learning spells from scrolls', () => {
     expect(c.characters[wizardIdx]!.inventory.some((s) => s.itemId === 'scroll-ray-of-sickness')).toBe(false);
     expect(c.characters[wizardIdx]!.spellbook).toEqual(['ray-of-sickness']);
 
-    // Once learned it's part of the default loadout (no prepared override
-    // yet) and shows up on the built combatant.
+    // Once learned it joins the pool the prepare panel draws from. It isn't
+    // auto-prepared (a real cap means a just-learned spell has to be chosen),
+    // but preparing it makes it live on the built combatant.
     expect(preparableSpells(c, wizardIdx)).toContain('ray-of-sickness');
+    setPrepared(c, wizardIdx, ['ray-of-sickness']);
     expect(buildCampaignParty(c)[wizardIdx]!.spellIds).toContain('ray-of-sickness');
 
     // Learning it a second time is refused — already known.

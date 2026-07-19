@@ -8,7 +8,7 @@
  * inventory back afterwards.
  */
 import { HERO_NAMES, defaultNameFor } from '../builder/names.js';
-import type { Id, Combatant, ItemStack, TeamId } from '../engine/types.js';
+import type { Id, Combatant, ItemStack, TeamId, Ability } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import {
   buildCharacter, assignStats,
@@ -599,7 +599,10 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
-      ...(ch.prepared ? { preparedOverride: ch.prepared } : {}),
+      // Always hand the builder the effective prepared list (hand-picked or the
+      // auto-default), so a campaign caster knows exactly what the prepare panel
+      // shows — never the full class list a skirmish caster would get.
+      preparedOverride: preparedSpells(c, i),
       ...(ch.spellbook ? { spellbookExtra: ch.spellbook } : {}),
     });
     if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
@@ -808,23 +811,64 @@ export function preparableSpells(c: CampaignState, charIdx: number): Id[] {
   return [...new Set([...availableLeveledSpells(ch.classId, level), ...(ch.spellbook ?? [])])];
 }
 
-/** How many leveled spells this character may have prepared at once. */
+/**
+ * The spellcasting-ability modifier that sets a caster's preparation limit,
+ * computed the way buildCharacter would — stat priority, the level-4 ASI, and
+ * an ability-boosting trinket (a Headband of Intellect raises a wizard's INT,
+ * and so its prepared count) — so the campaign's cap matches the combatant the
+ * builder produces. Undefined for a non-caster.
+ */
+function casterSpellMod(ch: PartyCharacter, level: number): number | undefined {
+  const cls = CLASSES[ch.classId];
+  if (!cls?.spellcasting) return undefined;
+  const abilities = assignStats(cls.statPriority);
+  if (level >= 4) {
+    const primary = cls.statPriority[0];
+    abilities[primary] = Math.min(20, abilities[primary] + 2);
+  }
+  const trinket = ch.equipped.trinket ? TRINKETS[ch.equipped.trinket] : undefined;
+  for (const [ab, floor] of Object.entries(trinket?.grants.abilityFloor ?? {})) {
+    abilities[ab as Ability] = Math.max(abilities[ab as Ability], floor);
+  }
+  return abilityMod(abilities[cls.spellcasting.ability]);
+}
+
+/** How many leveled spells this character may have prepared at once — the real
+ *  5e limit (spellcasting modifier + level). 0 for a non-caster. */
 export function preparedLimit(c: CampaignState, charIdx: number): number {
-  return leveledPreparedCount(partyLevelOf(c));
+  const ch = c.characters[charIdx];
+  if (!ch) return 0;
+  const level = partyLevelOf(c);
+  const mod = casterSpellMod(ch, level);
+  return mod === undefined ? 0 : leveledPreparedCount(mod, level);
 }
 
 /**
- * This character's currently prepared leveled spells: their saved choice, or
- * — nothing chosen yet — the default loadout, capped at their limit exactly
- * like buildCharacter caps it (earliest-unlocked spells win the cut), so this
- * always matches what actually shows up on the built combatant and never
- * displays a count past the cap.
+ * The auto-prepared loadout for a caster who hasn't hand-picked one: the
+ * strongest spells they know (highest spell level first, then class-table
+ * order), trimmed to their preparation limit. A level-1 wizard defaults to
+ * preparing a sensible 4 of its 8 known spells; a level-5 one leads with its
+ * 3rd-level spells. Used for both the display and the built combatant, so the
+ * two never disagree.
+ */
+function defaultPrepared(c: CampaignState, charIdx: number): Id[] {
+  const pool = preparableSpells(c, charIdx);
+  const cap = preparedLimit(c, charIdx);
+  return [...pool]
+    .sort((a, b) => (SPELLS[b]?.level ?? 0) - (SPELLS[a]?.level ?? 0))
+    .slice(0, cap);
+}
+
+/**
+ * This character's currently prepared leveled spells: their saved choice, or —
+ * nothing chosen yet — the auto-prepared default. Either way it's capped at
+ * the preparation limit and matches what buildCampaignParty puts on the
+ * combatant, so the panel's count is always honest.
  */
 export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
   const ch = c.characters[charIdx];
   if (!ch) return [];
-  if (ch.prepared) return ch.prepared;
-  return preparableSpells(c, charIdx).slice(0, preparedLimit(c, charIdx));
+  return ch.prepared ?? defaultPrepared(c, charIdx);
 }
 
 /** Cantrips this character always has, regardless of preparation. */

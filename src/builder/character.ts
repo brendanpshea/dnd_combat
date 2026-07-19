@@ -33,26 +33,20 @@ export function classCantrips(classId: Id, level: number): Id[] {
 }
 
 /**
- * How many leveled spells a caster may have prepared at once — applied to the
- * default loadout too (buildCharacter), not just a custom selection: 5e never
- * lets a caster exceed this, so showing e.g. "9/6 prepared" because nobody
- * opened the panel would be a rules-inconsistent, confusing display.
+ * How many leveled spells a caster may have prepared at once — the real 5e
+ * rule: spellcasting-ability modifier + caster level (minimum 1). A level-1
+ * wizard with Intelligence 16 (+3) prepares 4; that's fewer than the ~8
+ * leveled spells it knows, which is the whole point — preparation is a
+ * genuine choice, not a formality, and the panel can never show a limit
+ * larger than the spellbook it's drawn from.
  *
- * Calibrated against the actual class tables (src/data/classes.ts), not
- * guessed: `4 * (level + 2)` clears every class's leveled-spell pool size at
- * every level currently in the game with several spells of headroom (worst
- * case today is the level-1 wizard, 8 class-table spells against a cap of
- * 12) — headroom matters here specifically because a wizard's spellbook
- * (learnSpellFromScroll) adds to the same pool the cap trims, and a spell
- * learned moments ago being the one silently cut is worse than no cap at
- * all. So the default is never trimmed by today's content, class table or
- * spellbook; the cap only starts mattering once a class's pool genuinely
- * outgrows this, at which point picking a subset in the prepare panel
- * becomes a real choice instead of automatic. Re-check this constant against
- * the tables above whenever spells are added to a class's list.
+ * This is a campaign-only constraint. There is no prepare step in a skirmish,
+ * a mirror match, or a monster stat block, so a caster built with no explicit
+ * prepared list (see buildCharacter) simply knows its whole class list; only
+ * an explicit selection — which the campaign always supplies — is capped.
  */
-export function preparedCount(level: number): number {
-  return 4 * (level + 2);
+export function preparedCount(spellMod: number, level: number): number {
+  return Math.max(1, spellMod + level);
 }
 
 /**
@@ -193,20 +187,20 @@ export function buildCharacter(opts: BuildOptions): Combatant {
 
   // Cantrips are always known — preparation never touches them. Leveled spells
   // draw from the class table plus any wizard spellbook additions (scrolls
-  // copied in campaign play), capped at what the caster can actually hold
-  // prepared (preparedCount) either way: a custom selection is trimmed to the
-  // cap, and so is the default (no override) — 5e never lets a caster exceed
-  // their prepared limit, default or not, and the earliest-unlocked spells win
-  // the cut so a low-level list is untouched until a class actually outgrows
-  // the cap (see preparedCount's own comment for why that's rare before then).
+  // copied in campaign play). An explicit prepared selection (the campaign
+  // always supplies one) is filtered to the pool and trimmed to the caster's
+  // real preparation limit; with no override — skirmish, an AI party, a mirror
+  // match — the caster simply knows its whole list, since those contexts have
+  // no prepare step to narrow it.
   const cantrips = cls.spellcasting ? classCantrips(opts.classId, level) : [];
   const leveledPool = cls.spellcasting
     ? [...new Set([...availableLeveledSpells(opts.classId, level), ...(opts.spellbookExtra ?? [])])]
     : [];
-  const cap = preparedCount(level);
-  const preparedLeveled = opts.preparedOverride
-    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, cap)
-    : leveledPool.slice(0, cap);
+  let preparedLeveled = leveledPool;
+  if (opts.preparedOverride && cls.spellcasting) {
+    const cap = preparedCount(abilityMod(abilities[cls.spellcasting.ability]), level);
+    preparedLeveled = opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, cap);
+  }
 
   // Class magic, plus whatever the species brings of its own — a wood elf knows
   // True Strike (cantrip) and, from 3rd, Faerie Fire (innate) whether or not it

@@ -827,23 +827,28 @@ $13 + \text{Dexterity modifier}$ (and still allows a shield); it persists
 between battles but ends at the next long rest.
 
 **Spell preparation** (`preparableSpells`/`preparedSpells`/`setPrepared`/
-`resetPrepared` in campaign.ts) is optional to *engage with*, not exempt from
-the limit: `PartyCharacter.prepared` absent means the default loadout, and
-that default is capped exactly like a custom selection is — 5e never lets a
-caster exceed its prepared limit, so a player who never opens the panel still
-gets a legal list, just the earliest-unlocked spells rather than a hand pick.
-(An earlier version left the default uncapped, which could show a nonsensical
-"9/6 prepared" the moment a class outgrew the cap — fixed by capping
-`buildCharacter`'s default branch the same way its override branch was always
-capped.) `character.ts` splits each class's `spellsByLevel` into always-known
-cantrips (`classCantrips`) and a leveled pool a prepared selection draws from
-(`availableLeveledSpells`); `preparedCount(level) = 4 * (level + 2)` is
-calibrated against the real class tables (not guessed) to clear every
-class's leveled-spell pool at every level currently in the game, with
-headroom to spare for a learned scroll spell landing on top — the worst case
-today is the level-1 wizard's 8 class-table spells against a cap of 12. So
-the cap never trims today's content, default or custom; it only starts
-mattering once a class's pool genuinely outgrows this. The web panel
+`resetPrepared` in campaign.ts) uses the real 5e limit:
+`preparedCount(spellMod, level) = max(1, spellcasting-modifier + caster
+level)`. A level-1 wizard (Int +3) prepares 4 of the ~8 leveled spells it
+knows — preparation is a genuine choice, and the panel can never show a limit
+larger than the spellbook it draws from (the "8 of 12" and "9/6" displays two
+earlier attempts produced are both gone). `character.ts` splits each class's
+`spellsByLevel` into always-known cantrips (`classCantrips`) and a leveled
+pool a prepared selection draws from (`availableLeveledSpells`).
+
+The cap is **campaign-scoped**: it only constrains an explicit prepared list,
+which the campaign always supplies. `buildCharacter` with no `preparedOverride`
+— a skirmish, a mirror match, an AI party, a monster stat block — leaves the
+caster knowing its whole class list, since those contexts have no prepare step
+to narrow it. `buildCampaignParty` always passes `preparedOverride:
+preparedSpells(...)` (the hand-picked list, or an auto-default of the
+strongest spells known, highest spell level first, trimmed to the limit), so a
+campaign caster carries exactly what the panel shows. The consequence, by
+design: a spell not prepared — including a just-learned scroll spell, Mage
+Armor, or Shield — genuinely can't be cast until the player prepares it.
+`casterSpellMod` recomputes the modifier the way the builder does (stat
+priority, the level-4 ASI, an Int/Wis-boosting trinket) so the cap the panel
+shows matches the combatant the builder makes. The web panel
 (`web/src/Campaign.tsx`'s `prepareFor`/`prepareDraft` state) is a checkbox
 list with a live count and a "Use recommended" reset button; the CLI has the
 equivalent `prepareSpellsFlow`.

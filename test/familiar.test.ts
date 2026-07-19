@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
-import { applyVictory, buildCampaignParty, longRest, newCampaign, useStoreSpell } from '../src/campaign/campaign.js';
+import { applyVictory, buildCampaignParty, longRest, newCampaign, useStoreSpell, setPrepared } from '../src/campaign/campaign.js';
 import { collectAttackSources, consumeFamiliarHelp } from '../src/engine/rules/attack.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { SPELLS } from '../src/data/spells.js';
@@ -37,6 +37,7 @@ describe('mage armor', () => {
   it('persists from the store through combat, then ends at the next long rest', () => {
     const campaign = newCampaign();
     const wizard = campaign.characters[1]!;
+    setPrepared(campaign, 1, ['mage-armor']); // must be prepared to cast from the store
     expect(useStoreSpell(campaign, 1, 'mage-armor')).toBe(true);
     expect(acOf(buildCampaignParty(campaign)[1]!)).toBe(16); // 13 + Dex +3
 
