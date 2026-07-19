@@ -33,16 +33,26 @@ export function classCantrips(classId: Id, level: number): Id[] {
 }
 
 /**
- * How many leveled spells a caster may have prepared at once. Deliberately
- * generous against today's small, hand-curated spell lists — it leaves
- * headroom for future content rather than forcing a cut immediately — while
- * still creating a real choice once a class has unlocked more spells than
- * this (a level-3+ cleric or wizard). It never affects the *default* loadout
- * (see buildCharacter): a player who never opens the prepare panel always has
- * everything their class table grants, exactly like before this existed.
+ * How many leveled spells a caster may have prepared at once — applied to the
+ * default loadout too (buildCharacter), not just a custom selection: 5e never
+ * lets a caster exceed this, so showing e.g. "9/6 prepared" because nobody
+ * opened the panel would be a rules-inconsistent, confusing display.
+ *
+ * Calibrated against the actual class tables (src/data/classes.ts), not
+ * guessed: `4 * (level + 2)` clears every class's leveled-spell pool size at
+ * every level currently in the game with several spells of headroom (worst
+ * case today is the level-1 wizard, 8 class-table spells against a cap of
+ * 12) — headroom matters here specifically because a wizard's spellbook
+ * (learnSpellFromScroll) adds to the same pool the cap trims, and a spell
+ * learned moments ago being the one silently cut is worse than no cap at
+ * all. So the default is never trimmed by today's content, class table or
+ * spellbook; the cap only starts mattering once a class's pool genuinely
+ * outgrows this, at which point picking a subset in the prepare panel
+ * becomes a real choice instead of automatic. Re-check this constant against
+ * the tables above whenever spells are added to a class's list.
  */
 export function preparedCount(level: number): number {
-  return 4 + level;
+  return 4 * (level + 2);
 }
 
 /**
@@ -180,17 +190,20 @@ export function buildCharacter(opts: BuildOptions): Combatant {
 
   // Cantrips are always known — preparation never touches them. Leveled spells
   // draw from the class table plus any wizard spellbook additions (scrolls
-  // copied in campaign play); a campaign's chosen prepared subset narrows that
-  // pool, capped at what the caster can hold. No override at all (skirmish, or
-  // a campaign save that's never opened the prepare panel) means every spell
-  // the class table grants is prepared — today's behavior, unchanged.
+  // copied in campaign play), capped at what the caster can actually hold
+  // prepared (preparedCount) either way: a custom selection is trimmed to the
+  // cap, and so is the default (no override) — 5e never lets a caster exceed
+  // their prepared limit, default or not, and the earliest-unlocked spells win
+  // the cut so a low-level list is untouched until a class actually outgrows
+  // the cap (see preparedCount's own comment for why that's rare before then).
   const cantrips = cls.spellcasting ? classCantrips(opts.classId, level) : [];
   const leveledPool = cls.spellcasting
     ? [...new Set([...availableLeveledSpells(opts.classId, level), ...(opts.spellbookExtra ?? [])])]
     : [];
+  const cap = preparedCount(level);
   const preparedLeveled = opts.preparedOverride
-    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, preparedCount(level))
-    : leveledPool;
+    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, cap)
+    : leveledPool.slice(0, cap);
 
   // Class magic, plus whatever the species brings of its own — a wood elf knows
   // True Strike (cantrip) and, from 3rd, Faerie Fire (innate) whether or not it

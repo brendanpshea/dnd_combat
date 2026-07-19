@@ -797,16 +797,23 @@ $13 + \text{Dexterity modifier}$ (and still allows a shield); it persists
 between battles but ends at the next long rest.
 
 **Spell preparation** (`preparableSpells`/`preparedSpells`/`setPrepared`/
-`resetPrepared` in campaign.ts) is entirely optional: `PartyCharacter.prepared`
-absent means every leveled spell the class table grants is prepared — the
-behavior before this existed, unchanged, so a player who never opens the
-panel notices nothing. `character.ts` splits each class's `spellsByLevel` into
-always-known cantrips (`classCantrips`) and a leveled pool a prepared
-selection draws from (`availableLeveledSpells`); `preparedCount(level) = 4 +
-level` caps a custom selection, deliberately generous against today's small
-curated spell lists so it only bites once a class has unlocked more spells
-than that (a level-3+ cleric or wizard) — the cap is never applied to the
-*default* loadout, only to an explicit edit. The web panel
+`resetPrepared` in campaign.ts) is optional to *engage with*, not exempt from
+the limit: `PartyCharacter.prepared` absent means the default loadout, and
+that default is capped exactly like a custom selection is — 5e never lets a
+caster exceed its prepared limit, so a player who never opens the panel still
+gets a legal list, just the earliest-unlocked spells rather than a hand pick.
+(An earlier version left the default uncapped, which could show a nonsensical
+"9/6 prepared" the moment a class outgrew the cap — fixed by capping
+`buildCharacter`'s default branch the same way its override branch was always
+capped.) `character.ts` splits each class's `spellsByLevel` into always-known
+cantrips (`classCantrips`) and a leveled pool a prepared selection draws from
+(`availableLeveledSpells`); `preparedCount(level) = 4 * (level + 2)` is
+calibrated against the real class tables (not guessed) to clear every
+class's leveled-spell pool at every level currently in the game, with
+headroom to spare for a learned scroll spell landing on top — the worst case
+today is the level-1 wizard's 8 class-table spells against a cap of 12. So
+the cap never trims today's content, default or custom; it only starts
+mattering once a class's pool genuinely outgrows this. The web panel
 (`web/src/Campaign.tsx`'s `prepareFor`/`prepareDraft` state) is a checkbox
 list with a live count and a "Use recommended" reset button; the CLI has the
 equivalent `prepareSpellsFlow`.

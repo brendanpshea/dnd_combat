@@ -146,9 +146,9 @@ wizard's first melee or spell attack roll each combat round.
 Casters can **prepare spells**: a "📖 Prepare spells" button on the party
 card opens a checklist of everything they could have ready, capped at a
 level-scaled limit, with a one-tap "Use recommended" reset. It's entirely
-optional — a character who never opens the panel plays with the class's full
-default loadout, unchanged. Wizards can also **learn new spells from
-scrolls**: a scroll of a spell not already in their book offers a "Copy into
+optional — a character who never opens the panel still gets a sensible
+default loadout, capped at the same limit. Wizards can also **learn new
+spells from scrolls**: a scroll of a spell not already in their book offers a "Copy into
 spellbook" option for a gold fee, permanently adding it to what they can
 prepare (the scroll is consumed either way, so it can still just be cast once
 without copying it).

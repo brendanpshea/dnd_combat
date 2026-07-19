@@ -111,8 +111,8 @@ async function giveFlow(c: CampaignState, rl: readline.Interface): Promise<void>
 
 /**
  * Prepare-spells menu: toggle individual spells or reset to the recommended
- * (everything available) loadout. A character who never opens this plays with
- * the class table's full default list — nothing here is required.
+ * (default, capped-at-limit) loadout. A character who never opens this plays
+ * with that same default — nothing here is required.
  */
 async function prepareSpellsFlow(c: CampaignState, rl: readline.Interface): Promise<void> {
   const casters = c.characters
@@ -134,7 +134,7 @@ async function prepareSpellsFlow(c: CampaignState, rl: readline.Interface): Prom
     console.log(`Prepared ${prepared.length}/${cap}: ${prepared.map((id) => SPELLS[id]?.name ?? id).join(', ') || '(none)'}`);
     const options = [
       ...pool.map((id) => `${prepared.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id} (L${SPELLS[id]?.level ?? 1})`),
-      `Use recommended (all ${pool.length})`,
+      `Use recommended (${Math.min(pool.length, cap)}/${cap})`,
       'Done',
     ];
     const pick = await chooseFrom(rl, 'Toggle a spell, or:', options);

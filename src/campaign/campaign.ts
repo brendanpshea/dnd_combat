@@ -804,12 +804,18 @@ export function preparedLimit(c: CampaignState, charIdx: number): number {
   return leveledPreparedCount(partyLevelOf(c));
 }
 
-/** This character's currently prepared leveled spells: their saved choice, or
- *  (nothing chosen yet) everything available — the default loadout. */
+/**
+ * This character's currently prepared leveled spells: their saved choice, or
+ * — nothing chosen yet — the default loadout, capped at their limit exactly
+ * like buildCharacter caps it (earliest-unlocked spells win the cut), so this
+ * always matches what actually shows up on the built combatant and never
+ * displays a count past the cap.
+ */
 export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
   const ch = c.characters[charIdx];
   if (!ch) return [];
-  return ch.prepared ?? preparableSpells(c, charIdx);
+  if (ch.prepared) return ch.prepared;
+  return preparableSpells(c, charIdx).slice(0, preparedLimit(c, charIdx));
 }
 
 /** Cantrips this character always has, regardless of preparation. */

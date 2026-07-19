@@ -622,7 +622,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               </div>
               {isDefault && (
                 <p className="hint">
-                  Prepares everything available by default — no need to touch this unless you
+                  Prepares a sensible default by itself — no need to touch this unless you
                   want to swap spells out.
                 </p>
               )}
@@ -660,7 +660,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   setNotice(`${ch.name} prepares the recommended spells.`);
                   close();
                 })}>
-                  Use recommended (all {pool.length})
+                  Use recommended ({Math.min(pool.length, cap)}/{cap})
                 </button>
                 <button className="mini primary" onClick={() => mutate(() => {
                   setPrepared(c, idx, prepareDraft);

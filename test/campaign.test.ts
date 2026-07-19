@@ -707,6 +707,35 @@ describe('spell preparation (ignorable — default is the class table, unchanged
     expect(setPrepared(c, fighterIdx, ['fireball'])).toBe(true); // doesn't error
     expect(c.characters[fighterIdx]!.prepared).toEqual([]); // filtered to nothing
   });
+
+  // Regression: the default used to be uncapped while the display showed the
+  // cap, so a party card could read "9/6 prepared" — a caster with more
+  // prepared than its own limit, which 5e never allows and which just reads
+  // as broken. The default must never exceed the cap, at any level either
+  // class reaches, whether the player has ever opened the panel or not.
+  it('the default prepared count never exceeds the prepared limit, at any level', () => {
+    for (const classId of ['cleric', 'wizard'] as const) {
+      const c = newCampaign();
+      const idx = c.characters.findIndex((ch) => ch.classId === classId);
+      for (let xp = 0; xp <= LEVEL_XP[LEVEL_XP.length - 1]!; xp += 200) {
+        c.xp = xp;
+        const cap = preparedLimit(c, idx);
+        const def = preparedSpells(c, idx);
+        expect(def.length).toBeLessThanOrEqual(cap);
+        // And it matches what battle actually builds — no display/reality gap.
+        const built = buildCampaignParty(c)[idx]!;
+        for (const id of def) expect(built.spellIds).toContain(id);
+      }
+    }
+  });
+
+  it('"use recommended" never shows or produces a count above the cap', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    setPrepared(c, wizardIdx, ['fire-bolt']); // an arbitrary prior custom pick
+    resetPrepared(c, wizardIdx);
+    expect(preparedSpells(c, wizardIdx).length).toBeLessThanOrEqual(preparedLimit(c, wizardIdx));
+  });
 });
 
 describe('wizard spellbook: learning spells from scrolls', () => {
