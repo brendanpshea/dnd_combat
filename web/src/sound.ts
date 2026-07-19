@@ -6,7 +6,7 @@
 export type Sfx =
   | 'melee' | 'ranged' | 'miss'
   | 'fire' | 'lightning' | 'radiant' | 'force' | 'poison' | 'necrotic' | 'thunder' | 'cold' | 'acid' | 'psychic'
-  | 'heal' | 'death' | 'victory' | 'condition';
+  | 'heal' | 'death' | 'victory' | 'condition' | 'cast';
 
 let ctx: AudioContext | undefined;
 let muted = localStorage.getItem('dnd-muted') === '1';
@@ -128,6 +128,13 @@ export function sfx(kind: Sfx): void {
       break;
     case 'condition':
       play([{ freq: 460, dur: 0.1, type: 'square', vol: 0.05, glide: 520 }]);
+      break;
+    case 'cast':
+      // A rising shimmer that lands just before the spell's impact sounds.
+      play([
+        { freq: 330, dur: 0.12, type: 'triangle', vol: 0.06, glide: 620 },
+        { freq: 660, dur: 0.14, at: 0.08, type: 'sine', vol: 0.05, glide: 990 },
+      ]);
       break;
     case 'death':
       play([

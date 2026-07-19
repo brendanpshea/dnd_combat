@@ -34,6 +34,21 @@ describe('enemy-turn pacing', () => {
     expect(beatFor([miss])).toBeGreaterThan(300);
   });
 
+  it('gives a multi-target spell more dwell than a single hit, capped', () => {
+    // The bug this guards: beatFor kept only the single longest event beat, so
+    // a four-target Fireball got the exact same screen time as one dagger poke.
+    const spellCast = (cells: number): GameEvent => ({
+      type: 'spellCast', casterId: 'a', spellId: 'fireball',
+      origin: { x: 0, y: 0 }, cells: Array.from({ length: cells }, () => ({ x: 1, y: 1 })),
+    });
+    const single = beatFor([hit('a', 'b'), dmg('b', 6)]);
+    const fireball = beatFor([spellCast(25), dmg('b', 8), dmg('c', 8), dmg('d', 8), dmg('e', 8)]);
+    expect(fireball).toBeGreaterThan(single);
+    // Capped: even a much larger hit count doesn't blow the beat past reason.
+    const huge = beatFor([spellCast(25), ...Array.from({ length: 10 }, (_, i) => dmg(`t${i}`, 8))]);
+    expect(huge).toBeLessThan(2200);
+  });
+
   it('keeps a whole enemy turn watchable but brief', () => {
     // move + attack + end: long enough to read, short enough that four enemies
     // don't turn a round into a screensaver.
@@ -87,5 +102,21 @@ describe('narration', () => {
 
   it('says nothing for a turn where nothing happened to anyone', () => {
     expect(narrate(c.state, [{ type: 'turnEnded', combatantId: 'a' }])).toBeUndefined();
+  });
+
+  it('announces a cast even before any result lands, so a whiffed spell still registers', () => {
+    const cast: GameEvent = {
+      type: 'spellCast', casterId: 'a', spellId: 'fireball',
+      origin: { x: 0, y: 0 }, cells: [{ x: 1, y: 0 }],
+    };
+    expect(narrate(c.state, [cast])).toBe('Sir Arthur casts Fireball!');
+  });
+
+  it('lets a real result overwrite the bare cast line', () => {
+    const cast: GameEvent = {
+      type: 'spellCast', casterId: 'a', spellId: 'fireball',
+      origin: { x: 0, y: 0 }, cells: [{ x: 1, y: 0 }],
+    };
+    expect(narrate(c.state, [cast, dmg('b', 12)])).toBe('Grix takes 12 slashing.');
   });
 });

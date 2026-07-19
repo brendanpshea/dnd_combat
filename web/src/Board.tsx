@@ -3,8 +3,9 @@ import type { GameState, Position, Combatant, Id } from '../../src/engine/types.
 import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
-import type { FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
+import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { hasArt, tokenUrl, tokenScale } from './art.js';
+import { conditionBadges, conditionTint } from './conditions.js';
 
 const TOKEN: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',
@@ -33,6 +34,9 @@ export interface BoardProps {
   floats?: FloatEffect[];
   corpses?: CorpseEffect[];
   bursts?: BurstEffect[];
+  areas?: AreaEffect[];
+  projectiles?: ProjectileEffect[];
+  castingId?: Id | undefined;
   hitIds?: Set<Id>;
   movePaths?: Map<Id, Position[]>;
   /** Map visual theme — styles the whole board as a place. */
@@ -46,7 +50,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, hitIds, movePaths, theme, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, movePaths, theme, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
 
@@ -92,12 +96,20 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];
       const cellCorpses = corpses?.filter((c) => c.cellKey === key) ?? [];
       const cellBursts = bursts?.filter((b) => b.cellKey === key) ?? [];
+      const cellAreas = areas?.filter((a) => a.cellKeys.includes(key)) ?? [];
       cells.push(
         <div
           key={key}
           className={classes.join(' ')}
           onClick={() => onCellTap(pos, cell.occupantId ? state.combatants[cell.occupantId] : undefined)}
         >
+          {cellAreas.map((a) => (
+            <span
+              key={a.id}
+              className={`spell-area fx-${a.kind}${a.centerKey === key ? ' center' : ''}`}
+              style={{ animationDelay: `${a.delayMs}ms` }}
+            />
+          ))}
           {cellCorpses.map((c) => (
             <span key={c.id} className="corpse">{c.glyph}</span>
           ))}
@@ -125,6 +137,9 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       const count = multiCounts?.get(c.id);
       const tx = c.position.x * 100;
       const ty = (height - 1 - c.position.y) * 100;
+      const condIds = c.conditions.map((k) => k.id);
+      const badges = conditionBadges(condIds);
+      const tint = conditionTint(condIds);
       return (
         <div
           key={c.id}
@@ -147,7 +162,9 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               c.id === activeId ? 'active' : '',
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
+              c.id === castingId ? 'casting' : '',
               c.conditions.some((condition) => condition.id === 'hidden') ? 'hidden' : '',
+              tint ? `tint-${tint}` : '',
               // A body on the floor: greyed and toppled, but still yours and
               // still there — the point of downing is that you can see who to
               // go and pick up.
@@ -179,19 +196,47 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               <div className="hpfill" style={{ width: `${Math.round((c.hp / c.maxHp) * 100)}%` }} />
             </div>
             {count ? <span className="multi-count">{count}</span> : null}
-            {c.conditions.length > 0 && (
-              <span className="cond-dot" title={c.conditions.map((k) => k.id).join(', ')} />
+            {badges.length > 0 && (
+              <div className="cond-badges">
+                {badges.slice(0, 3).map((m, i) => (
+                  <span key={i} className={`cond-badge ${m.kind}`} title={m.label}>{m.icon}</span>
+                ))}
+                {badges.length > 3 && (
+                  <span className="cond-badge more" title={badges.slice(3).map((m) => m.label).join('\n')}>
+                    +{badges.length - 3}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
       );
     });
 
+  const bolts = (projectiles ?? []).map((p) => {
+    const fx = p.from.x * 100, fy = (height - 1 - p.from.y) * 100;
+    const tx = p.to.x * 100, ty = (height - 1 - p.to.y) * 100;
+    return (
+      <span
+        key={p.id}
+        className={`projectile fx-${p.kind}`}
+        style={{
+          width: `${100 / width}%`,
+          height: `${100 / height}%`,
+          ['--fx' as string]: `${fx}%`, ['--fy' as string]: `${fy}%`,
+          ['--tx' as string]: `${tx}%`, ['--ty' as string]: `${ty}%`,
+          animationDelay: `${p.delayMs}ms`,
+        }}
+      />
+    );
+  });
+
   return (
     <div className="board-wrap">
       <div className={`board theme-${theme ?? 'stone'}`} style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}>
         {cells}
         <div className="token-layer">{tokens}</div>
+        {bolts.length > 0 && <div className="token-layer projectile-layer">{bolts}</div>}
       </div>
     </div>
   );

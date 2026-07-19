@@ -8,6 +8,7 @@
  */
 import type { GameState, Id } from '../../src/engine/types.js';
 import type { GameEvent } from '../../src/engine/events.js';
+import { SPELLS } from '../../src/data/spells.js';
 
 /**
  * How long to hold the board still *after* an action, so its result can be read.
@@ -27,16 +28,22 @@ import type { GameEvent } from '../../src/engine/events.js';
 export function beatFor(events: GameEvent[]): number {
   let beat = 0;
   const hold = (ms: number) => { if (ms > beat) beat = ms; };
+  // A spell or big attack that touches several creatures should linger longer
+  // than a single poke — the old max-only beat gave a four-target Fireball the
+  // same screen time as one dagger hit. Count the results and add a capped bonus.
+  let results = 0;
   for (const e of events) {
     switch (e.type) {
       case 'died': hold(950); break;
+      // The cast's own telegraph/detonation, before any result lands.
+      case 'spellCast': hold(450); break;
       case 'charmedAway': hold(950); break;
       case 'turnedUndead': hold(600); break;
       case 'downed': hold(950); break;
       case 'revived': hold(800); break;
-      case 'damageDealt': hold(700); break;
-      case 'healed': hold(650); break;
-      case 'savingThrow': hold(550); break;
+      case 'damageDealt': hold(700); results++; break;
+      case 'healed': hold(650); results++; break;
+      case 'savingThrow': hold(550); results++; break;
       case 'conditionApplied': hold(550); break;
       case 'hideCheck': case 'hiddenRevealed': hold(500); break;
       case 'illusionCast': case 'illusionPopped': hold(500); break;
@@ -49,6 +56,9 @@ export function beatFor(events: GameEvent[]): number {
       default: hold(120);
     }
   }
+  // Each affected creature beyond the first buys a little more dwell, capped so
+  // a crowded blast never becomes a screensaver.
+  if (results > 1) beat += Math.min((results - 1) * 120, 600);
   return beat;
 }
 
@@ -69,6 +79,11 @@ export function narrate(state: GameState, events: GameEvent[]): string | undefin
 
   for (const e of events) {
     switch (e.type) {
+      case 'spellCast':
+        // A baseline line so every cast registers — overwritten below by the
+        // louder result (damage, a save, a downing) when there is one.
+        line = `${name(e.casterId)} casts ${SPELLS[e.spellId]?.name ?? 'a spell'}!`;
+        break;
       case 'attackRolled':
         attack = { attacker: e.attackerId, target: e.targetId };
         if (!e.hit) line = `${name(e.attackerId)} misses ${name(e.targetId)}.`;

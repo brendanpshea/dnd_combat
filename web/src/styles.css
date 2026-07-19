@@ -365,17 +365,53 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   align-items: center;
   justify-content: center;
 }
-.cond-dot {
+.cond-badges {
   position: absolute;
-  z-index: 3;
-  top: 4%;
-  left: 6%;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #c084fc;
-  border: 1.5px solid #14101f;
+  z-index: 4;
+  top: 2%;
+  left: 4%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  pointer-events: none;
 }
+.cond-badge {
+  font-size: clamp(9px, 2.3vmin, 13px);
+  line-height: 1;
+  width: 1.5em;
+  height: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: #14101fcc;
+  border: 1.5px solid #000a;
+  box-shadow: 0 1px 2px #000a;
+  pointer-events: auto;
+}
+/* A hairline colour rim keys the badge to whether it helps or hurts. */
+.cond-badge.control { border-color: #ff6a6a; }
+.cond-badge.debuff  { border-color: #ffb08a; }
+.cond-badge.buff    { border-color: #7be0a0; }
+.cond-badge.more {
+  font-size: clamp(8px, 2vmin, 11px);
+  font-weight: 800;
+  color: #d9d2e8;
+  background: #241a33dd;
+  border-color: #000a;
+}
+
+/* Whole-token washes for the heaviest, longest-lasting conditions, so a glance
+   at the board reads status without hunting for a corner badge. */
+.token.tint-poison .art,
+.token.tint-poison .glyph { filter: hue-rotate(55deg) saturate(1.35) brightness(0.92); }
+.token.tint-frozen .art,
+.token.tint-frozen .glyph { filter: saturate(0.5) brightness(1.12) hue-rotate(160deg); }
+.token.tint-fear .art,
+.token.tint-fear .glyph   { filter: saturate(0.8) brightness(0.85) hue-rotate(240deg); }
+.token.tint-bound .art,
+.token.tint-bound .glyph  { filter: saturate(0.55) brightness(0.9); }
 .familiar {
   position: absolute;
   z-index: 4;
@@ -471,11 +507,91 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .burst-poison i, .burst-acid i { background: #8fdd6a; box-shadow: 0 0 5px #5fb83a; }
 .burst-force i { background: #ff9dea; box-shadow: 0 0 5px #e05fc0; }
 .burst-heal i { background: var(--green); box-shadow: 0 0 6px #6ee7a0; }
+.burst-cond i { background: #c084fc; box-shadow: 0 0 5px #a24fe0; }
 .burst-crit i {
   width: clamp(4px, 1.7vmin, 8px);
   height: clamp(4px, 1.7vmin, 8px);
   background: var(--gold);
   box-shadow: 0 0 7px #ffb84d;
+}
+
+/* ---- spell area detonation ---- */
+.spell-area {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  border-radius: 16%;
+  background: radial-gradient(circle at 50% 50%, var(--c, #c084fc) 0%, transparent 70%);
+  opacity: 0;
+  animation: spellArea 0.6s ease-out forwards;
+}
+@keyframes spellArea {
+  0%   { opacity: 0; transform: scale(0.55); }
+  22%  { opacity: 0.72; }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+/* The aim point also throws an expanding shock ring. */
+.spell-area.center::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border: 2px solid var(--c, #c084fc);
+  border-radius: 50%;
+  opacity: 0;
+  animation: spellRing 0.6s ease-out forwards;
+}
+@keyframes spellRing {
+  0%   { opacity: 0; transform: scale(0.3); }
+  30%  { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+/* Shared effect palette — spell areas and projectiles read the same --c. */
+.fx-fire { --c: #ff7a2e; }
+.fx-lightning { --c: #7fd0ff; }
+.fx-thunder { --c: #b8c4ff; }
+.fx-cold { --c: #bfefff; }
+.fx-radiant { --c: #ffd166; }
+.fx-necrotic, .fx-psychic { --c: #b06bd6; }
+.fx-poison, .fx-acid { --c: #8fdd6a; }
+.fx-force { --c: #ff9dea; }
+.fx-heal { --c: #6ee7a0; }
+.fx-arcane { --c: #c084fc; }
+.fx-slashing, .fx-piercing, .fx-bludgeoning { --c: #e8e4f0; }
+
+/* ---- spell projectile ---- */
+.projectile-layer { z-index: 7; pointer-events: none; }
+.projectile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: projectile 0.22s ease-in forwards;
+}
+.projectile::before {
+  content: '';
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: var(--c, #c084fc);
+  box-shadow: 0 0 8px 3px var(--c, #c084fc);
+}
+@keyframes projectile {
+  0%   { transform: translate(var(--fx), var(--fy)); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)); opacity: 1; }
+}
+
+/* ---- spell wind-up (caster pulse) ---- */
+.token.casting .art,
+.token.casting .glyph { animation: castPulse 0.42s ease-out; }
+@keyframes castPulse {
+  0%   { filter: brightness(1); }
+  45%  { filter: brightness(1.65) drop-shadow(0 0 7px #c084fc); }
+  100% { filter: brightness(1); }
 }
 
 /* ---- crit screen flash ---- */

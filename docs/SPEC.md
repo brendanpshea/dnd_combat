@@ -776,8 +776,25 @@ authored SVG icon, WebAudio-synthesized sound effects.
   Missile, Bless) accumulate taps. The grouping layer
   (`web/src/actionGroups.ts`) is unit-tested against the live engine.
 - **Feedback:** damage floats colored by damage type, hit shake, skull death
-  fade, condition tags; synthesized SFX per damage type with a persisted
-  mute; AI turns paced by action kind with a 1×/2× speed toggle.
+  fade; synthesized SFX per damage type with a persisted mute; AI turns paced
+  by *what happened*, not the next action queued (`web/src/pacing.ts`'s
+  `beatFor` holds the board on the event's own weight — a kill or a multi-
+  target spell earns more dwell than a footstep or a turn hand-off, capped so
+  a crowded blast never turns a round into a screensaver).
+- **Conditions:** each active condition renders as a small labeled corner
+  badge (`web/src/conditions.ts`), ordered control-effects-first, plus a
+  token-wide colour wash for the heaviest ones (poison, paralysis, fear,
+  restrained) — a glance at the board reads status without a tooltip hunt.
+  Applying one gets its own icon float + particle burst, not just text.
+- **Spells:** the engine emits a `spellCast` event (caster, spell id, origin,
+  and the cells its effect covers — computed once in `actions.ts` from the
+  spell's `targeting` shape) purely so the frontend can dramatize a cast
+  before its results land: the caster flashes, a bolt travels to the aim
+  point for anything that isn't a self-centred burst, then the whole
+  footprint blooms in a colour keyed to the spell's damage type (or an
+  arcane/heal wash for non-damage spells) with an expanding ring at the aim
+  cell. All of it is presentational — `spellFootprint`'s cells never affect
+  who is actually hit, only what lights up.
 - **Campaign:** full parity with the CLI (shop, equip, give, haggle, steal,
   loot) as forms; new web campaigns begin with the party forge (name, species,
   unique class-role swaps, and portrait selection), whose selected portrait

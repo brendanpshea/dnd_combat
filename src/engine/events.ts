@@ -51,6 +51,10 @@ export type GameEvent =
    *  off the board. Shares kill()'s bookkeeping but is never a death. */
   | { type: 'charmedAway'; combatantId: Id }
   | { type: 'turnedUndead'; combatantId: Id; dc: number }
+  /** A spell goes off: its caster, id, origin, and the cells its effect covers
+   *  — purely so a frontend can telegraph the cast and detonate the area before
+   *  the per-target results (saves, damage, conditions) land. */
+  | { type: 'spellCast'; casterId: Id; spellId: Id; origin: Position; cells: Position[] }
   /** A gnome's Minor Illusion takes shape on a cell. */
   | { type: 'illusionCast'; position: Position; sourceId: Id }
   /** Revealed — walked through, or simply expired. */

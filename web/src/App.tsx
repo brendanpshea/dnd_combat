@@ -14,7 +14,7 @@ import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
-import { effectsFor, FloatEffect, CorpseEffect, BurstEffect } from './effects.js';
+import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
@@ -270,6 +270,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [floats, setFloats] = useState<FloatEffect[]>([]);
   const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
   const [bursts, setBursts] = useState<BurstEffect[]>([]);
+  const [areas, setAreas] = useState<AreaEffect[]>([]);
+  const [projectiles, setProjectiles] = useState<ProjectileEffect[]>([]);
+  const [castingId, setCastingId] = useState<Id | undefined>(undefined);
   const [critFlash, setCritFlash] = useState(false);
   const [hitIds, setHitIds] = useState<Set<Id>>(new Set());
   const [movePaths, setMovePaths] = useState<Map<Id, Position[]>>(new Map());
@@ -330,6 +333,21 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         setBursts((b) => [...b, ...fx.bursts]);
         const ids = new Set(fx.bursts.map((b) => b.id));
         setTimeout(() => setBursts((b) => b.filter((x) => !ids.has(x.id))), 900);
+      }
+      if (fx.areas.length > 0) {
+        setAreas((a) => [...a, ...fx.areas]);
+        const ids = new Set(fx.areas.map((a) => a.id));
+        setTimeout(() => setAreas((a) => a.filter((x) => !ids.has(x.id))), 1100);
+      }
+      if (fx.projectiles.length > 0) {
+        setProjectiles((p) => [...p, ...fx.projectiles]);
+        const ids = new Set(fx.projectiles.map((p) => p.id));
+        setTimeout(() => setProjectiles((p) => p.filter((x) => !ids.has(x.id))), 450);
+      }
+      if (fx.casterId !== undefined) {
+        const id = fx.casterId;
+        setCastingId(id);
+        setTimeout(() => setCastingId((c) => (c === id ? undefined : c)), 450);
       }
       if (fx.critFlash) {
         setCritFlash(true);
@@ -540,6 +558,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         theme={theme}
         floats={floats}
         bursts={bursts}
+        areas={areas}
+        projectiles={projectiles}
+        castingId={castingId}
         corpses={corpses}
         hitIds={hitIds}
         onCellTap={onCellTap}

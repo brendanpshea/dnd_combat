@@ -14,7 +14,7 @@ import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spel
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
-import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, DIRECTIONS, cone15, cube15, line15, Direction8 } from './grid.js';
+import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith } from './rules/attack.js';
 import { savingThrow } from './rules/saves.js';
@@ -155,6 +155,48 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
   } catch {
     return false;
   }
+}
+
+/**
+ * The cells a spell's effect visibly covers, for the presentational `spellCast`
+ * event: an area's full footprint, or each creature target's square. Best-effort
+ * and clipped to the board — a wrong cell only mis-paints a transient effect,
+ * never touches resolution (the cast itself owns who is actually hit).
+ */
+function spellFootprint(state: GameState, actor: Combatant, spell: SpellData, targets: Target[]): Position[] {
+  const t = spell.targeting;
+  const firstPos = targets.find((tg): tg is { position: Position } => 'position' in tg)?.position;
+  let cells: Position[] = [];
+  switch (t.kind) {
+    case 'creature':
+    case 'weaponAttack':
+      cells = targets.flatMap((tg) =>
+        'combatantId' in tg && state.combatants[tg.combatantId]
+          ? [state.combatants[tg.combatantId]!.position]
+          : []);
+      break;
+    case 'sphere2x2': if (firstPos) cells = sphere2x2(firstPos); break;
+    case 'sphere5x5': if (firstPos) cells = sphere5x5(firstPos); break;
+    case 'emptyCell': if (firstPos) cells = [firstPos]; break;
+    case 'self': {
+      // A burst centred on the caster (Thunderwave) / an aura around it.
+      cells = [actor.position];
+      for (const d of Object.values(DIRECTIONS)) cells.push({ x: actor.position.x + d.x, y: actor.position.y + d.y });
+      break;
+    }
+    case 'cone15':
+    case 'cube15':
+    case 'line15': {
+      if (!firstPos) break;
+      try {
+        const dir = directionFromDelta(actor.position, firstPos);
+        const area = t.kind === 'cube15' ? cube15 : t.kind === 'line15' ? line15 : cone15;
+        cells = area(actor.position, dir);
+      } catch { cells = [firstPos]; }
+      break;
+    }
+  }
+  return cells.filter((p) => inBounds(state.grid, p));
 }
 
 export function isLegalAction(state: GameState, actorId: Id, action: Action): boolean {
@@ -475,6 +517,12 @@ export function step(state: GameState, action: Action): { state: GameState; even
       events.push(...endHide(actor));
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = action.targets.flatMap((t) => ('position' in t ? [t.position] : []));
+      // Telegraph the cast (and its area) before any result lands, so a frontend
+      // can detonate the footprint ahead of the damage/save numbers.
+      events.push({
+        type: 'spellCast', casterId: actorId, spellId: action.spellId,
+        origin: actor.position, cells: spellFootprint(draft, actor, spell, action.targets),
+      });
       events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) }));
       break;
     }
