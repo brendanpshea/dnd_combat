@@ -384,7 +384,10 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
   for (const fid of m.featureIds ?? []) {
     const f = FEATURES[fid];
     if (f?.uses) {
-      const count = f.uses.count === 'proficiency' ? proficiencyBonus(1) : f.uses.count;
+      const count =
+        f.uses.count === 'proficiency' ? proficiencyBonus(1) :
+        f.uses.count === 'fiveTimesLevel' ? 5 :
+        f.uses.count;
       featureUses[fid] = { current: count, max: count };
     }
   }
@@ -427,6 +430,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: m.speed, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
+      colossusUsed: false,
     },
     alive: true,
     creatureType: m.creatureType,

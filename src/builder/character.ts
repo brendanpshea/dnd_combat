@@ -110,7 +110,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   for (const fid of featureIds) {
     const f = FEATURES[fid];
     if (f?.uses) {
-      const count = f.uses.count === 'proficiency' ? proficiencyBonus(level) : f.uses.count;
+      const count =
+        f.uses.count === 'proficiency' ? proficiencyBonus(level) :
+        f.uses.count === 'fiveTimesLevel' ? 5 * level :
+        f.uses.count;
       featureUses[fid] = { current: count, max: count };
     }
   }
@@ -179,6 +182,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
+      colossusUsed: false,
     },
     alive: true,
   };

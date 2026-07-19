@@ -69,7 +69,9 @@ export type ConditionId =
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
   | 'hidden'       // unseen: cannot be directly targeted; next attack has advantage
   | 'noReactions'  // Shocking Grasp rider
-  | 'outlined'; // outlined: attacks against this creature have advantage, and it can't hide
+  | 'outlined'     // outlined: attacks against this creature have advantage, and it can't hide
+  | 'marked'       // Hunter's Mark: +1d6 force per hit, from the marking ranger only
+  | 'sacredWeapon'; // Devotion's Channel Divinity: +Cha to the paladin's own attack rolls
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -167,6 +169,7 @@ export interface Combatant {
     attacksLeft: number;    // extra attacks remaining within the Attack action
     interacted: boolean;    // free object interaction (weapon swap) spent
     sneakAttackUsed: boolean;
+    colossusUsed: boolean;  // Colossus Slayer: once per turn
   };
   alive: boolean;
   /**
