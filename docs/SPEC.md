@@ -441,6 +441,31 @@ Sleep) and `extraDamage` (secondary damage of another type). Both are generic
 data hooks, no per-monster engine code. The `poisoned` and `paralyzed`
 conditions — previously defined but uninflicted — are now live.
 
+A later wave of SRD monsters (bugbear, gnoll, the four elementals, fey, harpy,
+manticore, owlbear, gorgon, and more) added a set of reusable feature hooks:
+
+- **Passives** read directly by the rules (no `apply`): `long-limbed` (10-ft
+  melee reach), `brute` (+1 weapon die on a melee hit), `charge` /
+  `unicorn-charge` / `trampling-charge` (+1 weapon die after moving ≥15 ft;
+  trampling also forces a Str save vs prone), `rampage` (a bonus melee attack
+  when a melee hit drops a foe), `fire-form` (melee attackers take retaliatory
+  fire), `magic-resistance` (advantage on saves against spells — every spell's
+  save now passes a `magical` flag), and `burrow` / `earth-glide` (ignore
+  difficult-terrain cost, reusing the Boots of the Winterlands path).
+- **Action features** with an `apply` hook and one use per encounter: `whelm`
+  (adjacent enemies Str save or restrained, save-ends), `whirlwind` (adjacent
+  enemies Str save, 3d8 bludgeoning + 10-ft shove, half on a save),
+  `fey-invisibility` (self gains `hidden`), `fey-charm` (nearest foe within
+  30 ft Wis save or charmed out of the fight), `luring-song` (all foes within
+  30 ft Wis save or charmed away), and `petrifying-breath` (enemies within
+  15 ft Con save or restrained, save-ends — the engine's stand-in for
+  petrification). The greedy AI prices each off the same declarations, so it
+  actually uses them.
+
+Because these are save-ends riders and `charmAway` exits (not permanent
+conditions or kills), none of them can lock a hero out of the fight forever —
+an earlier version of the constrictor/cockatrice restraint could.
+
 Encounters (`--encounter`): goblins (L1), wolves (L1), undead (L2), ogre (L3),
 bandits (L2, camp), spiders (L2, nest), crypt (L3, acolyte + ghouls + skeletons),
 kobolds (L1, warren), raiders (L2, orcs + scouts), wilds (L2, bear + wolves),
