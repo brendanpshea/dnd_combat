@@ -246,4 +246,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   'magic-resistance': { id: 'magic-resistance', name: 'Magic Resistance', trigger: 'passive' },
   'fey-charm': { id: 'fey-charm', name: 'Fey Charm', trigger: 'action', uses: { count: 1, per: 'encounter' } },
   'unicorn-charge': { id: 'unicorn-charge', name: 'Horn Charge', trigger: 'passive' },
+  'luring-song': { id: 'luring-song', name: 'Luring Song', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  'petrifying-breath': { id: 'petrifying-breath', name: 'Petrifying Breath', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  'trampling-charge': { id: 'trampling-charge', name: 'Trampling Charge', trigger: 'passive' },
 };

@@ -309,4 +309,45 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'unicorn-hooves', name: 'Hooves', damage: '2d6', damageType: 'bludgeoning',
     properties: [], melee: true,
   },
+  'cockatrice-bite': {
+    id: 'cockatrice-bite', name: 'Bite', damage: '1d4', damageType: 'piercing',
+    properties: [], melee: true,
+    onHitCondition: 'restrained',
+  },
+  'harpy-claws': {
+    id: 'harpy-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: ['light'], melee: true,
+  },
+  'harpy-club': {
+    id: 'harpy-club', name: 'Club', damage: '1d4', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'manticore-spike': {
+    id: 'manticore-spike', name: 'Tail Spike', damage: '1d8', damageType: 'piercing',
+    properties: [], range: { normal: 100, long: 200 }, melee: false,
+  },
+  'manticore-bite': {
+    id: 'manticore-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'manticore-claws': {
+    id: 'manticore-claws', name: 'Claws', damage: '1d6', damageType: 'slashing',
+    properties: ['light'], melee: true,
+  },
+  'owlbear-beak': {
+    id: 'owlbear-beak', name: 'Beak', damage: '1d10', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'owlbear-claws': {
+    id: 'owlbear-claws', name: 'Claws', damage: '2d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'gorgon-gore': {
+    id: 'gorgon-gore', name: 'Gore', damage: '2d12', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'gorgon-hooves': {
+    id: 'gorgon-hooves', name: 'Hooves', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
 };

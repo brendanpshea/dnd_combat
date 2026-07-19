@@ -18,6 +18,7 @@ const TOKEN: Record<string, string> = {
   'giant-badger': '🦡', 'giant-toad': '🐸', 'giant-hyena': '🐺', 'giant-boar': '🐗', 'giant-constrictor-snake': '🐍',
   gargoyle: '🗿', 'fire-elemental': '🔥', 'water-elemental': '🌊', 'earth-elemental': '🪨', 'air-elemental': '🌪️',
   sprite: '🧚', satyr: '🐐', dryad: '🌳', 'green-hag': '🧙‍♀️', unicorn: '🦄',
+  cockatrice: '🐓', harpy: '🦅', manticore: '🦁', owlbear: '🦉', gorgon: '🐂',
 };
 
 export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | 'hint' | undefined;

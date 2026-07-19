@@ -418,6 +418,48 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['unicorn-horn', 'unicorn-hooves'],
     attacksPerAction: 2,
   },
+
+  cockatrice: {
+    id: 'cockatrice', name: 'Cockatrice',
+    ac: 11, hp: 27, speed: 20,
+    creatureType: 'monstrosity',
+    abilities: { str: 6, dex: 12, con: 12, int: 2, wis: 13, cha: 5 },
+    weaponIds: ['cockatrice-bite'],
+  },
+  harpy: {
+    id: 'harpy', name: 'Harpy',
+    ac: 11, hp: 38, speed: 20,
+    creatureType: 'monstrosity',
+    abilities: { str: 12, dex: 13, con: 12, int: 7, wis: 10, cha: 13 },
+    featureIds: ['luring-song'],
+    weaponIds: ['harpy-claws', 'harpy-club'],
+    attacksPerAction: 2,
+  },
+  manticore: {
+    id: 'manticore', name: 'Manticore',
+    ac: 14, hp: 68, speed: 30,
+    creatureType: 'monstrosity',
+    abilities: { str: 17, dex: 16, con: 17, int: 7, wis: 12, cha: 8 },
+    weaponIds: ['manticore-spike', 'manticore-bite', 'manticore-claws'],
+    attacksPerAction: 3,
+  },
+  owlbear: {
+    id: 'owlbear', name: 'Owlbear',
+    ac: 13, hp: 59, speed: 40,
+    creatureType: 'monstrosity',
+    abilities: { str: 20, dex: 12, con: 17, int: 3, wis: 12, cha: 7 },
+    weaponIds: ['owlbear-beak', 'owlbear-claws'],
+    attacksPerAction: 2,
+  },
+  gorgon: {
+    id: 'gorgon', name: 'Gorgon',
+    ac: 19, hp: 114, speed: 40,
+    creatureType: 'monstrosity',
+    abilities: { str: 20, dex: 11, con: 18, int: 2, wis: 12, cha: 7 },
+    featureIds: ['petrifying-breath', 'trampling-charge'],
+    weaponIds: ['gorgon-gore', 'gorgon-hooves'],
+    attacksPerAction: 2,
+  },
 };
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -635,6 +677,26 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'unicorn-sanctuary', name: 'Unicorn Sanctuary', suggestedLevel: 5,
     members: ['unicorn'],
   },
+  'cockatrice-flock': {
+    id: 'cockatrice-flock', name: 'Cockatrice Flock', suggestedLevel: 1,
+    members: ['cockatrice', 'cockatrice'],
+  },
+  'harpy-roost': {
+    id: 'harpy-roost', name: 'Harpy Roost', suggestedLevel: 2,
+    members: ['harpy', 'harpy'],
+  },
+  'owlbear-den': {
+    id: 'owlbear-den', name: 'Owlbear Den', suggestedLevel: 3,
+    members: ['owlbear', 'brown-bear'],
+  },
+  'manticore-cliff': {
+    id: 'manticore-cliff', name: 'Manticore Cliff', suggestedLevel: 3,
+    members: ['manticore', 'goblin-warrior', 'goblin-warrior'],
+  },
+  'gorgon-maze': {
+    id: 'gorgon-maze', name: 'Gorgon Lair', suggestedLevel: 5,
+    members: ['gorgon'],
+  },
 };
 
 /**
@@ -652,6 +714,7 @@ export const MONSTER_XP: Record<Id, number> = {
   'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
   gargoyle: 450, 'fire-elemental': 1800, 'water-elemental': 1800, 'earth-elemental': 1800, 'air-elemental': 1800,
   sprite: 50, satyr: 100, dryad: 200, 'green-hag': 700, unicorn: 1800,
+  cockatrice: 100, harpy: 200, manticore: 700, owlbear: 700, gorgon: 1800,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */
