@@ -652,6 +652,34 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .statusline .team2 { color: var(--red); }
 .statusline .thinking { color: var(--muted); }
 
+/* ---- spell slot pips ---- */
+.slot-pips {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.slot-pip-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.slot-pip-level {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-right: 1px;
+}
+.slot-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid #a78bfa88;
+  background: transparent;
+  display: inline-block;
+}
+.slot-pip.filled { background: #a78bfa; box-shadow: 0 0 3px #a78bfa99; }
+
 .portrait {
   width: 40px;
   height: 40px;
@@ -1371,6 +1399,26 @@ button.category .count {
    a menu rather than a paragraph of buttons. */
 .sheet-label { min-width: 5.5em; color: var(--muted); font-size: 13px; }
 .tray-head .muted { font-weight: 400; font-size: 13px; }
+
+.prepare-btn { margin: 4px 0; align-self: flex-start; }
+.prepare-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+.prepare-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.prepare-option.checked { background: #3a3260; }
+.prepare-option input[disabled] { cursor: not-allowed; }
+.prepare-option input[disabled] ~ * { opacity: 0.5; }
 
 /* On a phone the tray is a bottom sheet: it belongs under the thumb, against
    the edge. A desktop has no thumb and does have an OS taskbar sitting exactly

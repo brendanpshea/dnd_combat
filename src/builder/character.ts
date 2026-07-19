@@ -8,6 +8,42 @@ import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
+import { SPELLS } from '../data/spells.js';
+
+/** Every leveled (non-cantrip) spell a class's table grants at or below a
+ *  character level — the pool a "prepared" selection is drawn from. Cantrips
+ *  are split out because they're always known, never subject to preparation. */
+export function availableLeveledSpells(classId: Id, level: number): Id[] {
+  const cls = CLASSES[classId];
+  if (!cls?.spellcasting) return [];
+  return Object.entries(cls.spellcasting.spellsByLevel)
+    .filter(([lvl]) => Number(lvl) <= level)
+    .flatMap(([, ids]) => ids)
+    .filter((id) => (SPELLS[id]?.level ?? 0) > 0);
+}
+
+/** Cantrips a class grants at or below a level — always known, never prepared. */
+export function classCantrips(classId: Id, level: number): Id[] {
+  const cls = CLASSES[classId];
+  if (!cls?.spellcasting) return [];
+  return Object.entries(cls.spellcasting.spellsByLevel)
+    .filter(([lvl]) => Number(lvl) <= level)
+    .flatMap(([, ids]) => ids)
+    .filter((id) => (SPELLS[id]?.level ?? 0) === 0);
+}
+
+/**
+ * How many leveled spells a caster may have prepared at once. Deliberately
+ * generous against today's small, hand-curated spell lists — it leaves
+ * headroom for future content rather than forcing a cut immediately — while
+ * still creating a real choice once a class has unlocked more spells than
+ * this (a level-3+ cleric or wizard). It never affects the *default* loadout
+ * (see buildCharacter): a player who never opens the prepare panel always has
+ * everything their class table grants, exactly like before this existed.
+ */
+export function preparedCount(level: number): number {
+  return 4 + level;
+}
 
 /**
  * Merge the grants of every choice point that applies at this level, taking the
@@ -142,11 +178,26 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     if (s.atLevel <= level) innateSpells[s.spellId] = { current: s.uses, max: s.uses };
   }
 
+  // Cantrips are always known — preparation never touches them. Leveled spells
+  // draw from the class table plus any wizard spellbook additions (scrolls
+  // copied in campaign play); a campaign's chosen prepared subset narrows that
+  // pool, capped at what the caster can hold. No override at all (skirmish, or
+  // a campaign save that's never opened the prepare panel) means every spell
+  // the class table grants is prepared — today's behavior, unchanged.
+  const cantrips = cls.spellcasting ? classCantrips(opts.classId, level) : [];
+  const leveledPool = cls.spellcasting
+    ? [...new Set([...availableLeveledSpells(opts.classId, level), ...(opts.spellbookExtra ?? [])])]
+    : [];
+  const preparedLeveled = opts.preparedOverride
+    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, preparedCount(level))
+    : leveledPool;
+
   // Class magic, plus whatever the species brings of its own — a wood elf knows
   // True Strike (cantrip) and, from 3rd, Faerie Fire (innate) whether or not it
   // ever opened a spellbook.
   const spellIds = [...new Set([
-    ...(cls.spellcasting ? known(cls.spellcasting.spellsByLevel) : []),
+    ...cantrips,
+    ...preparedLeveled,
     ...known(species?.spellsByLevel),
     ...Object.keys(innateSpells),
     ...grants.spellIds,
@@ -170,7 +221,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
-    spellSlots: slots.map((n) => ({ current: n, max: n })),
+    spellSlots: slots.map((n, i) => ({
+      current: opts.spellSlotsOverride ? Math.max(0, Math.min(n, opts.spellSlotsOverride[i] ?? n)) : n,
+      max: n,
+    })),
     spellIds,
     featureIds,
     featureUses,

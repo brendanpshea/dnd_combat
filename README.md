@@ -28,7 +28,7 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 360 deterministic engine, campaign, AI, and UI tests
+npm test          # 375 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
 npm run campaign  # terminal campaign: 14-battle ladder with XP, leveling, loot
@@ -122,21 +122,34 @@ Drops land in a shared **Party Loot** stash on the shop screen; tap an item to
 hand it to a member, stash one back, or sell it straight from the pile.
 Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
 purchases are proficiency-gated), manage equipment, haggle or steal, then
-fight. Consumables spent in battle stay spent; weapon swaps and remaining HP
-persist. The shop offers unrestricted testing rests: a **short rest** restores
-half of every hero's maximum HP, while a **long rest** fully restores HP. Defeat
-ends the campaign and deletes the save (there's also a reset/delete option).
+fight. Consumables spent in battle stay spent; weapon swaps, remaining HP, and
+**spell slots** all persist between battles and shop visits — casting Cure
+Wounds in the shop spends the same slot pool as casting it mid-fight. The shop
+offers unrestricted testing rests: a **short rest** restores half of every
+hero's maximum HP (slots untouched), while a **long rest** fully restores both
+HP and every spell slot. Defeat ends the campaign and deletes the save
+(there's also a reset/delete option).
+Casters show their remaining slots as a compact row of pips (grouped by spell
+level) next to their HP, in battle and in the shop alike.
 Healing consumables and the cleric's **Cure Wounds** can also be used in the
 shop: inventory sources stay in the Pack, while store-usable spells appear in
-a separate Spells row. Select the source, then select the party member to
-heal. Potions and scrolls are consumed; Cure Wounds uses no encounter-only
-spell slot there.
-Wizards can summon an owl with **Find Familiar** from the store Spells row.
-The familiar persists through unconsciousness and rests, and grants advantage
-on the wizard's first melee or spell attack roll each combat round.
-Wizards can also cast **Mage Armor** in the store or combat. It sets AC to
-$13 + \text{Dexterity modifier}$ while unarmored and remains active until the
-next long rest.
+a separate Spells row, greyed out and labeled with their cost once a caster
+runs dry. Select the source, then select the party member to heal.
+Wizards can summon an owl with **Find Familiar** from the store Spells row — a
+ritual, so it costs no slot. Wizards can also cast **Mage Armor** in the store
+or combat (spending a slot); it sets AC to $13 + \text{Dexterity modifier}$
+while unarmored and remains active until the next long rest. The familiar
+persists through unconsciousness and rests, and grants advantage on the
+wizard's first melee or spell attack roll each combat round.
+Casters can **prepare spells**: a "📖 Prepare spells" button on the party
+card opens a checklist of everything they could have ready, capped at a
+level-scaled limit, with a one-tap "Use recommended" reset. It's entirely
+optional — a character who never opens the panel plays with the class's full
+default loadout, unchanged. Wizards can also **learn new spells from
+scrolls**: a scroll of a spell not already in their book offers a "Copy into
+spellbook" option for a gold fee, permanently adding it to what they can
+prepare (the scroll is consumed either way, so it can still just be cast once
+without copying it).
 New campaigns begin at the party forge; names, species, class roles, and
 portrait choices are locked in when the campaign begins and travel with the
 party through every battle.

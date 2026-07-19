@@ -12,11 +12,15 @@ import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
 import { MAPS } from '../../data/maps.js';
 import { ITEMS } from '../../data/items.js';
 import { CLASSES } from '../../data/classes.js';
+import { SPELLS } from '../../data/spells.js';
+import type { Id } from '../../engine/types.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest, longRest,
+  preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
+  scrollLearnable, learnSpellFromScroll,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
 import { runBattle, chooseFrom, argValue, parseSeed, AiLevel } from './battle.js';
@@ -46,7 +50,10 @@ function partySummary(c: CampaignState): string {
       .map((s) => `${itemName(s.itemId)}×${s.qty}`)
       .join(', ');
     const combatant = party[index]!;
-    lines.push(`  ${CLASSES[ch.classId]!.name} (${combatant.hp}/${combatant.maxHp} HP) [${eq}]: ${items || '(no items)'}`);
+    const slots = combatant.spellSlots.length > 0
+      ? ` slots:${combatant.spellSlots.map((s) => `${s.current}/${s.max}`).join(',')}`
+      : '';
+    lines.push(`  ${CLASSES[ch.classId]!.name} (${combatant.hp}/${combatant.maxHp} HP)${slots} [${eq}]: ${items || '(no items)'}`);
   }
   return lines.join('\n');
 }
@@ -102,6 +109,69 @@ async function giveFlow(c: CampaignState, rl: readline.Interface): Promise<void>
   if (!giveItem(c, from, to, items[which]!.itemId)) console.log("Can't do that.");
 }
 
+/**
+ * Prepare-spells menu: toggle individual spells or reset to the recommended
+ * (everything available) loadout. A character who never opens this plays with
+ * the class table's full default list — nothing here is required.
+ */
+async function prepareSpellsFlow(c: CampaignState, rl: readline.Interface): Promise<void> {
+  const casters = c.characters
+    .map((ch, idx) => ({ idx, ch }))
+    .filter(({ idx }) => preparableSpells(c, idx).length > 0);
+  if (casters.length === 0) { console.log('No one has spells to prepare.'); return; }
+  const names = casters.map(({ ch }) => ch.name);
+  const who = await chooseFrom(rl, 'Whose spells?', [...names, 'Back']);
+  if (who === names.length) return;
+  const idx = casters[who]!.idx;
+  const ch = c.characters[idx]!;
+
+  for (;;) {
+    const pool = preparableSpells(c, idx);
+    const cap = preparedLimit(c, idx);
+    const prepared = preparedSpells(c, idx);
+    const cantrips = knownCantrips(c, idx);
+    console.log(`\n${ch.name} — cantrips: ${cantrips.map((id) => SPELLS[id]?.name ?? id).join(', ') || '(none)'}`);
+    console.log(`Prepared ${prepared.length}/${cap}: ${prepared.map((id) => SPELLS[id]?.name ?? id).join(', ') || '(none)'}`);
+    const options = [
+      ...pool.map((id) => `${prepared.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id} (L${SPELLS[id]?.level ?? 1})`),
+      `Use recommended (all ${pool.length})`,
+      'Done',
+    ];
+    const pick = await chooseFrom(rl, 'Toggle a spell, or:', options);
+    if (pick === options.length - 1) return;
+    if (pick === options.length - 2) { resetPrepared(c, idx); continue; }
+    const spellId = pool[pick]!;
+    if (!prepared.includes(spellId) && prepared.length >= cap) {
+      console.log(`Already at the limit (${cap}) — unprepare something first.`);
+      continue;
+    }
+    const next = prepared.includes(spellId) ? prepared.filter((id) => id !== spellId) : [...prepared, spellId];
+    setPrepared(c, idx, next);
+  }
+}
+
+/** Copy a scroll's spell into a wizard's spellbook for a scribing fee. */
+async function learnScrollFlow(c: CampaignState, rl: readline.Interface): Promise<void> {
+  const candidates: Array<{ idx: number; itemId: Id; spellId: Id; fee: number }> = [];
+  c.characters.forEach((ch, idx) => {
+    for (const s of ch.inventory) {
+      if (s.qty <= 0) continue;
+      const learnable = scrollLearnable(c, idx, s.itemId);
+      if (learnable) candidates.push({ idx, itemId: s.itemId, ...learnable });
+    }
+  });
+  if (candidates.length === 0) { console.log('No scrolls to copy into a spellbook right now.'); return; }
+  const options = candidates.map((cand) =>
+    `${c.characters[cand.idx]!.name}: ${itemName(cand.itemId)} → ${SPELLS[cand.spellId]?.name ?? cand.spellId} (${cand.fee}g)`);
+  const pick = await chooseFrom(rl, 'Copy which scroll?', [...options, 'Back']);
+  if (pick === options.length) return;
+  const cand = candidates[pick]!;
+  if (c.gold < cand.fee) { console.log(`Not enough gold (need ${cand.fee}g).`); return; }
+  if (learnSpellFromScroll(c, cand.idx, cand.itemId)) {
+    console.log(`${c.characters[cand.idx]!.name} copies ${SPELLS[cand.spellId]?.name ?? cand.spellId} into their spellbook.`);
+  }
+}
+
 function showRoll(c: CampaignState, r: SkillRoll): void {
   console.log(
     `  ${c.characters[r.by]?.name ?? 'The party'} rolls ${r.skill}: d20(${r.natural}) = ${r.total} vs DC ${r.dc} — ` +
@@ -125,11 +195,16 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
     if (banned) console.log('(the shopkeeper is watching you closely)');
     console.log(partySummary(c));
     const canScheme = !banned;
+    const hasPreparableCasters = c.characters.some((_, idx) => preparableSpells(c, idx).length > 0);
+    const hasLearnableScroll = c.characters.some((ch, idx) =>
+      ch.inventory.some((s) => s.qty > 0 && scrollLearnable(c, idx, s.itemId)));
     const options = [
       ...SHOP_STOCK.map((id) => `Buy ${itemName(id)} (${price(id)}g)`),
       'Sell an item (half price)',
       'Manage equipment',
       'Give an item to someone',
+      ...(hasPreparableCasters ? ['Prepare spells'] : []),
+      ...(hasLearnableScroll ? ['Copy a scroll into a spellbook'] : []),
       'Short rest (recover half maximum HP)',
       'Long rest (recover all HP)',
       ...(canScheme && !haggleUsed ? ['Haggle over prices (skill check)'] : []),
@@ -172,6 +247,8 @@ async function shop(c: CampaignState, rl: readline.Interface): Promise<void> {
 
     if (label.startsWith('Give an item')) { await giveFlow(c, rl); continue; }
     if (label.startsWith('Manage equipment')) { await manageEquipment(c, rl); continue; }
+    if (label === 'Prepare spells') { await prepareSpellsFlow(c, rl); continue; }
+    if (label === 'Copy a scroll into a spellbook') { await learnScrollFlow(c, rl); continue; }
     if (label.startsWith('Short rest')) {
       const result = shortRest(c);
       console.log(result.totalHealed > 0

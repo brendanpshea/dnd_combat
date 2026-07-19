@@ -23,6 +23,8 @@ import {
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, setPartyChoice, setPartySpecies, shortRest, longRest,
   PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
   isStoreHealingSource, storeSpellActions, useStoreHealing, useStoreSpell,
+  preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
+  scrollLearnable, learnSpellFromScroll,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -31,6 +33,8 @@ import { PORTRAITS } from './portraits.js';
 import { classBlurb, speciesBlurb } from './blurbs.js';
 import { LootScreen } from './Loot.js';
 import { initAudio } from './sound.js';
+import { SlotPips } from './SlotPips.js';
+import { SPELLS } from '../../src/data/spells.js';
 
 type Phase =
   | { p: 'forge' }
@@ -98,6 +102,10 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   const [stockCategory, setStockCategory] = useState<ShopCategory>('consumables');
   const [advanced, setAdvanced] = useState(false);
   const [editingMember, setEditingMember] = useState<number | null>(null);
+  /** Character index whose prepare-spells panel is open, or null. */
+  const [prepareFor, setPrepareFor] = useState<number | null>(null);
+  /** Working selection inside the prepare panel — committed on Save. */
+  const [prepareDraft, setPrepareDraft] = useState<Id[]>([]);
 
   const mutate = (fn: () => void) => {
     initAudio();
@@ -506,18 +514,24 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 })()
               )}
 
-              {!slot && isStoreHealingSource(sourceId) && (
-                <div className="sheet-row">
-                  <span className="sheet-label">Use on</span>
-                  {c.characters.map((target, targetIdx) => (
-                    <button key={targetIdx} className="mini" onClick={() => mutate(() => {
-                      const result = useStoreHealing(c, picked.charIdx, targetIdx, sourceId);
-                      if (result) setNotice(`${owner.name} heals ${target.name} for ${result.healed} HP.`);
-                      close();
-                    })}>{target.name}</button>
-                  ))}
-                </div>
-              )}
+              {!slot && isStoreHealingSource(sourceId) && (() => {
+                const outOfSlots = sourceId === 'cure-wounds' &&
+                  (party[picked.charIdx]!.spellSlots[(SPELLS['cure-wounds']!.level) - 1]?.current ?? 0) <= 0;
+                return (
+                  <div className="sheet-row">
+                    <span className="sheet-label">Use on</span>
+                    {outOfSlots
+                      ? <span className="muted">No spell slots left — rest to recover them.</span>
+                      : c.characters.map((target, targetIdx) => (
+                        <button key={targetIdx} className="mini" onClick={() => mutate(() => {
+                          const result = useStoreHealing(c, picked.charIdx, targetIdx, sourceId);
+                          if (result) setNotice(`${owner.name} heals ${target.name} for ${result.healed} HP.`);
+                          close();
+                        })}>{target.name}</button>
+                      ))}
+                  </div>
+                );
+              })()}
 
               {spell?.targeting === 'self' && (
                 <div className="sheet-row">
@@ -530,6 +544,30 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   })}>{spell.castLabel ?? 'Cast'}</button>
                 </div>
               )}
+
+              {picked.kind === 'item' && !slot && (() => {
+                const learnable = scrollLearnable(c, picked.charIdx, itemId);
+                if (!learnable) return null;
+                const canAfford = c.gold >= learnable.fee;
+                return (
+                  <div className="sheet-row">
+                    <span className="sheet-label">Spellbook</span>
+                    <button
+                      className="mini"
+                      disabled={!canAfford}
+                      title={canAfford ? undefined : `Needs ${learnable.fee}g`}
+                      onClick={() => mutate(() => {
+                        if (learnSpellFromScroll(c, picked.charIdx, itemId)) {
+                          setNotice(`${owner.name} copies ${SPELLS[learnable.spellId]?.name ?? learnable.spellId} into their spellbook.`);
+                        }
+                        close();
+                      })}
+                    >
+                      Copy into spellbook ({learnable.fee}g)
+                    </button>
+                  </div>
+                );
+              })()}
 
               {picked.kind === 'item' && !slot && (
                 <div className="sheet-row">
@@ -558,6 +596,80 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   })}>+{resale}g</button>
                 </div>
               )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {prepareFor !== null && (() => {
+        const idx = prepareFor;
+        const ch = c.characters[idx]!;
+        const pool = preparableSpells(c, idx);
+        const cap = preparedLimit(c, idx);
+        const cantrips = knownCantrips(c, idx);
+        const isDefault = ch.prepared === undefined;
+        const atCap = prepareDraft.length >= cap;
+        const close = () => setPrepareFor(null);
+        const toggle = (spellId: Id) => setPrepareDraft((d) =>
+          d.includes(spellId) ? d.filter((id) => id !== spellId) : atCap ? d : [...d, spellId]);
+        return (
+          <div className="tray-backdrop" onClick={close}>
+            <div className="tray" onClick={(e) => e.stopPropagation()}>
+              <div className="tray-head">
+                📖 {ch.name}'s Spells
+                <span className="muted">— {prepareDraft.length}/{cap} prepared</span>
+                <button className="ghost" onClick={close}>✕</button>
+              </div>
+              {isDefault && (
+                <p className="hint">
+                  Prepares everything available by default — no need to touch this unless you
+                  want to swap spells out.
+                </p>
+              )}
+              {cantrips.length > 0 && (
+                <div className="sheet-row">
+                  <span className="sheet-label">Cantrips (always known)</span>
+                  {cantrips.map((id) => (
+                    <span key={id} className="item-chip muted">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
+                  ))}
+                </div>
+              )}
+              <div className="sheet-row prepare-list">
+                <span className="sheet-label">Leveled spells</span>
+                <div className="prepare-grid">
+                  {pool.map((id) => {
+                    const checked = prepareDraft.includes(id);
+                    return (
+                      <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={!checked && atCap}
+                          onChange={() => toggle(id)}
+                        />
+                        {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
+                        <span className="muted"> (L{SPELLS[id]?.level ?? 1})</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="sheet-row">
+                <button className="mini" onClick={() => mutate(() => {
+                  resetPrepared(c, idx);
+                  setNotice(`${ch.name} prepares the recommended spells.`);
+                  close();
+                })}>
+                  Use recommended (all {pool.length})
+                </button>
+                <button className="mini primary" onClick={() => mutate(() => {
+                  setPrepared(c, idx, prepareDraft);
+                  setNotice(`${ch.name}'s prepared spells are set.`);
+                  close();
+                })}>
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -618,6 +730,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                 <strong>{ch.name}</strong>
                 <span className="muted">{SPECIES[ch.speciesId]?.name ?? ch.speciesId}</span>
                 <span className="char-hp">HP {party[idx]!.hp}/{party[idx]!.maxHp}</span>
+                <SlotPips spellSlots={party[idx]!.spellSlots} />
               </div>
             </div>
             {/* Gear and pack are the same thing to the player: a tap on any of
@@ -645,6 +758,14 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               })}
               <span className="gear-ac">🛡 {acOf(party[idx]!)}</span>
             </div>
+            {preparableSpells(c, idx).length > 0 && (
+              <button
+                className="mini prepare-btn"
+                onClick={() => { setPrepareFor(idx); setPrepareDraft(preparedSpells(c, idx)); }}
+              >
+                📖 Prepare spells ({preparedSpells(c, idx).length}/{preparedLimit(c, idx)})
+              </button>
+            )}
             <div className="char-items">
               <span className="inventory-label">Pack</span>
               {ch.inventory.filter((s) => s.qty > 0).map((s) => (
@@ -665,18 +786,26 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             {storeSpellActions(party[idx]!).length > 0 && (
               <div className="char-items">
                 <span className="inventory-label">Spells</span>
-                {storeSpellActions(party[idx]!).map((spell) => (
-                  <button
-                    key={spell.spellId}
-                    className={`item-chip chip-btn${picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === spell.spellId ? ' selected' : ''}`}
-                    onClick={() => setPicked(
-                      picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === spell.spellId
-                        ? null : { kind: 'spell', charIdx: idx, spellId: spell.spellId },
-                    )}
-                  >
-                    {spell.icon} {spell.name}
-                  </button>
-                ))}
+                {storeSpellActions(party[idx]!).map((spell) => {
+                  const slotIdx = (SPELLS[spell.spellId]?.level ?? 1) - 1;
+                  const remaining = party[idx]!.spellSlots[slotIdx]?.current ?? 0;
+                  const outOfSlots = !spell.ritual && remaining <= 0;
+                  return (
+                    <button
+                      key={spell.spellId}
+                      disabled={outOfSlots}
+                      title={outOfSlots ? 'No spell slots left — rest to recover them' : undefined}
+                      className={`item-chip chip-btn${picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === spell.spellId ? ' selected' : ''}`}
+                      onClick={() => setPicked(
+                        picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === spell.spellId
+                          ? null : { kind: 'spell', charIdx: idx, spellId: spell.spellId },
+                      )}
+                    >
+                      {spell.icon} {spell.name}
+                      <span className="muted"> ({spell.ritual ? 'free' : `${slotIdx + 1} slot`})</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
 

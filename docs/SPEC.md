@@ -724,22 +724,64 @@ the ladder so nobody de-levels. Between battles the shop buys/sells
 `SHOP_STOCK` — consumables, weapons (incl. +1 longsword/shortsword with
 attack/damage bonus support in the engine), and armor gated by per-class
 **armor proficiencies** (fighter/cleric all, rogue light, wizard none).
-Remaining HP persists from a victorious battle into the next store visit. For
-testing, the store provides unrestricted rests: a **short rest** restores half
-of each hero's maximum HP, and a **long rest** fully restores HP. Other
-encounter resources still begin full when a combatant is rebuilt.
+Remaining HP **and spell slots** persist from a victorious battle into the
+next store visit (`PartyCharacter.resources.{hp,slots}`; `slots` absent means
+fully rested — a fresh save, a non-caster, or since the last long rest).
+`buildCampaignParty` feeds them back into the builder as a
+`spellSlotsOverride` (`BuildOptions`), clamped per level so a level-up can
+never leave a caster short of what the class table now grants; `applyVictory`
+writes the built combatant's live `spellSlots` back out. A **short rest**
+restores half of each hero's maximum HP and leaves slots untouched (matching
+5e); a **long rest** restores both — rebuilding `resources` from scratch drops
+the `slots` field entirely, and its absence *is* "fully rested." Other
+encounter resources (feature uses, familiar spend flags) still begin full when
+a combatant is rebuilt; only HP and slots are tracked across the campaign
+layer. Casters show a compact slot-pip readout (`web/src/SlotPips.tsx`;
+`renderStatus` in the CLI) grouped by spell level, in battle and in the shop.
 Healing potions and the cleric's **Cure Wounds**
 use the same store target flow: choose the source, then a party member. Item
 sources stay in the Pack; curated store-usable spells appear in a separate
-Spells row. Item sources are consumed; Cure Wounds does not spend an
-encounter-only spell slot.
-**Find Familiar** summons an owl from the wizard's store Spells row. The owl
-persists through unconsciousness and rests without occupying a grid cell; it
-grants advantage on the wizard's first melee or spell attack roll each round,
-then its token marker dims until the next round.
-**Mage Armor** is a wizard self-cast in the store and combat. While unarmored,
-it sets AC to $13 + \text{Dexterity modifier}$ (and still allows a shield); it
-persists between battles but ends at the next long rest.
+Spells row, each labeled with its slot cost and disabled once the caster is
+dry. Item sources are consumed; Cure Wounds spends the same 1st-level slot a
+mid-battle cast would (`spendSlot` in campaign.ts) — a shop visit can run a
+caster out before the next fight, exactly like casting it in combat would.
+**Find Familiar** summons an owl from the wizard's store Spells row — a
+ritual, so it's the one store spell that costs no slot
+(`StoreSpellAction.ritual`). The owl persists through unconsciousness and
+rests without occupying a grid cell; it grants advantage on the wizard's
+first melee or spell attack roll each round, then its token marker dims until
+the next round.
+**Mage Armor** is a wizard self-cast in the store and combat, spending a
+1st-level slot. While unarmored, it sets AC to
+$13 + \text{Dexterity modifier}$ (and still allows a shield); it persists
+between battles but ends at the next long rest.
+
+**Spell preparation** (`preparableSpells`/`preparedSpells`/`setPrepared`/
+`resetPrepared` in campaign.ts) is entirely optional: `PartyCharacter.prepared`
+absent means every leveled spell the class table grants is prepared — the
+behavior before this existed, unchanged, so a player who never opens the
+panel notices nothing. `character.ts` splits each class's `spellsByLevel` into
+always-known cantrips (`classCantrips`) and a leveled pool a prepared
+selection draws from (`availableLeveledSpells`); `preparedCount(level) = 4 +
+level` caps a custom selection, deliberately generous against today's small
+curated spell lists so it only bites once a class has unlocked more spells
+than that (a level-3+ cleric or wizard) — the cap is never applied to the
+*default* loadout, only to an explicit edit. The web panel
+(`web/src/Campaign.tsx`'s `prepareFor`/`prepareDraft` state) is a checkbox
+list with a live count and a "Use recommended" reset button; the CLI has the
+equivalent `prepareSpellsFlow`.
+
+**Wizard spellbook growth** (`scrollLearnable`/`learnSpellFromScroll`): a
+class's `spellcasting.learnableExtra` (classes.ts) names spells available only
+by learning them, not granted by the table — currently just
+`ray-of-sickness`, a fully-implemented spell that was sitting unused in
+`spells.ts` with no class or species granting it, now the one scroll-only
+wizard spell (`scroll-ray-of-sickness`). Copying a held scroll into
+`PartyCharacter.spellbook` costs a scribing fee (50 gp × spell level, the 5e
+rate) and consumes the scroll; `buildCharacter`'s `spellbookExtra` folds it
+into the leveled pool exactly like a class-granted spell, so it's live
+immediately (part of the default prepared loadout) without requiring a visit
+to the prepare panel.
 The equip screen moves gear between hands/armor/inventory (two-handers
 clear the off-hand; shields need a free main hand), and items can be
 passed between characters. **Shop skills** (once each per visit, rolled by

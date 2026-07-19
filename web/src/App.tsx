@@ -20,6 +20,7 @@ import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
 import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import { Portrait } from './Portrait.js';
+import { SlotPips } from './SlotPips.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -581,6 +582,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <span className={active.team}>{active.team === 'team1' ? 'Blue' : 'Red'}</span>
           <span>HP {active.hp}/{active.maxHp}</span>
           <span>AC {acOf(active)}</span>
+          <SlotPips spellSlots={active.spellSlots} />
           <span>{active.turn.actionUsed ? '·' : 'A'}{active.turn.bonusActionUsed ? '·' : 'B'}</span>
           <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
           {!isHumanTurn && !combat.isOver() && <em className="thinking">AI thinking…</em>}

@@ -60,6 +60,13 @@ export interface ClassData {
     /** slotsByLevel[characterLevel - 1][spellLevel - 1] = slot count. */
     slotsByLevel: number[][];
     spellsByLevel: Record<number, Id[]>; // spells known at each character level
+    /**
+     * Spells this class can learn beyond its default table — a wizard's
+     * spellbook growing from scrolls found in play, rather than every copy
+     * being one already known for free. Campaign-only: nothing here is
+     * granted by default; a character must copy it in first (campaign.ts).
+     */
+    learnableExtra?: Id[];
   };
   featuresByLevel: Record<number, Id[]>;
   /** Build decisions this class offers (Fighting Style, later subclasses). */
@@ -156,6 +163,7 @@ export const CLASSES: Record<Id, ClassData> = {
         3: ['scorching-ray', 'misty-step', 'suggestion', 'web'],
         5: ['fireball', 'fear', 'lightning-bolt'], // 3rd-level slot arrives here
       },
+      learnableExtra: ['ray-of-sickness'],
     },
     featuresByLevel: {
       1: [],

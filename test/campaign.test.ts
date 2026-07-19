@@ -7,8 +7,10 @@ import {
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
-  partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing,
+  partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
   partyStash, claimFromStash, stashItem, sellFromStash,
+  preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
+  scrollLearnable, learnSpellFromScroll,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -122,15 +124,68 @@ describe('campaign state', () => {
     expect(buildCampaignParty(c)[0]!.hp).toBe(restedFighter.maxHp);
   });
 
+  it('persists spell slots spent mid-battle, and a long rest restores them', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    const party = buildCampaignParty(c);
+    const wizard = party[wizardIdx]!;
+    expect(wizard.spellSlots[0]!.current).toBe(2);
+    wizard.spellSlots[0]!.current = 0; // as if Magic Missile went out twice in the fight
+    applyVictory(c, party, 777);
+
+    expect(c.characters[wizardIdx]!.resources?.slots).toEqual([0]);
+    expect(buildCampaignParty(c)[wizardIdx]!.spellSlots[0]!.current).toBe(0);
+
+    longRest(c);
+    expect(c.characters[wizardIdx]!.resources?.slots).toBeUndefined();
+    expect(buildCampaignParty(c)[wizardIdx]!.spellSlots[0]!.current).toBe(2);
+  });
+
   it('uses store healing sources on a selected party member', () => {
     const c = newCampaign(42);
     c.characters[1]!.resources = { hp: 1 };
     expect(useStoreHealing(c, 0, 1, 'potion-healing')?.healed).toBeGreaterThan(0);
     expect(c.characters[0]!.inventory.some((s) => s.itemId === 'potion-healing')).toBe(false);
 
+    // A level-1 cleric has two 1st-level slots. Casting Cure Wounds in the
+    // shop spends one, same as it would mid-battle — no free lunch.
     c.characters[3]!.resources = { hp: 1 };
     expect(useStoreHealing(c, 2, 3, 'cure-wounds')?.healed).toBeGreaterThan(0);
-    expect(c.characters[2]!.resources).toBeUndefined(); // casting is not a consumable
+    expect(c.characters[2]!.resources?.slots).toEqual([1]);
+  });
+
+  it('runs a caster out of spell slots in the shop, and a long rest refills them', () => {
+    const c = newCampaign(42);
+    // Spend both of the cleric's 1st-level slots.
+    expect(useStoreHealing(c, 2, 0, 'cure-wounds')).toBeDefined();
+    expect(useStoreHealing(c, 2, 0, 'cure-wounds')).toBeDefined();
+    expect(c.characters[2]!.resources?.slots).toEqual([0]);
+    // A third cast has nothing to spend and is refused outright.
+    expect(useStoreHealing(c, 2, 0, 'cure-wounds')).toBeUndefined();
+
+    longRest(c);
+    expect(c.characters[2]!.resources?.slots).toBeUndefined(); // absent = fully rested
+    expect(buildCampaignParty(c)[2]!.spellSlots[0]!.current).toBe(2);
+
+    // A short rest, by contrast, leaves slots untouched.
+    useStoreHealing(c, 2, 0, 'cure-wounds');
+    expect(c.characters[2]!.resources?.slots).toEqual([1]);
+    shortRest(c);
+    expect(c.characters[2]!.resources?.slots).toEqual([1]);
+  });
+
+  it('mage armor and find familiar interact correctly with slots (mage armor spends one, familiar is free)', () => {
+    const c = newCampaign(42);
+    const wizardIdx = 1;
+    expect(buildCampaignParty(c)[wizardIdx]!.spellSlots[0]!.current).toBe(2);
+
+    expect(useStoreSpell(c, wizardIdx, 'find-familiar')).toBe(true);
+    expect(c.characters[wizardIdx]!.resources?.slots).toBeUndefined(); // ritual, no cost
+
+    expect(useStoreSpell(c, wizardIdx, 'mage-armor')).toBe(true);
+    expect(c.characters[wizardIdx]!.resources?.slots).toEqual([1]);
+    expect(c.characters[wizardIdx]!.resources?.effects?.familiar).toEqual({ kind: 'owl' });
+    expect(c.characters[wizardIdx]!.resources?.effects?.mageArmor).toBe(true);
   });
 
   it('party levels up mid-ladder and the level-up is reported', () => {
@@ -587,5 +642,130 @@ describe('skill gambits identify the character, not the class', () => {
       return;
     }
     throw new Error('no successful steal in 60 attempts — check the DC');
+  });
+});
+
+describe('spell preparation (ignorable — default is the class table, unchanged)', () => {
+  it('a character who never touches prepared spells plays with the full class list', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    expect(c.characters[wizardIdx]!.prepared).toBeUndefined();
+    const defaultPrepared = preparedSpells(c, wizardIdx);
+    expect(defaultPrepared).toEqual(preparableSpells(c, wizardIdx));
+    // Matches the live-built combatant's actual spellIds (minus cantrips).
+    const built = buildCampaignParty(c)[wizardIdx]!;
+    for (const id of defaultPrepared) expect(built.spellIds).toContain(id);
+  });
+
+  it('cantrips are always known and are never part of the prepared list', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    const cantrips = knownCantrips(c, wizardIdx);
+    expect(cantrips).toContain('fire-bolt');
+    expect(preparableSpells(c, wizardIdx).some((id) => cantrips.includes(id))).toBe(false);
+    const built = buildCampaignParty(c)[wizardIdx]!;
+    for (const id of cantrips) expect(built.spellIds).toContain(id);
+  });
+
+  it('setPrepared saves a custom subset, capped at the level limit', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    const pool = preparableSpells(c, wizardIdx);
+    setPrepared(c, wizardIdx, [pool[0]!]);
+    expect(c.characters[wizardIdx]!.prepared).toEqual([pool[0]!]);
+    expect(preparedSpells(c, wizardIdx)).toEqual([pool[0]!]);
+
+    const built = buildCampaignParty(c)[wizardIdx]!;
+    expect(built.spellIds).toContain(pool[0]!);
+    // A spell left out of the custom prepared list is genuinely gone from the
+    // built combatant, not just hidden — this is the whole feature.
+    const droppedLeveled = pool.find((id) => id !== pool[0]);
+    if (droppedLeveled) expect(built.spellIds).not.toContain(droppedLeveled);
+
+    // A selection larger than the cap is silently trimmed, not rejected.
+    const cap = preparedLimit(c, wizardIdx);
+    setPrepared(c, wizardIdx, [...pool, ...pool]); // dupes, over-cap
+    expect(c.characters[wizardIdx]!.prepared).toHaveLength(Math.min(cap, pool.length));
+  });
+
+  it('resetPrepared drops back to the default loadout', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    const pool = preparableSpells(c, wizardIdx);
+    setPrepared(c, wizardIdx, [pool[0]!]);
+    expect(c.characters[wizardIdx]!.prepared).toBeDefined();
+    resetPrepared(c, wizardIdx);
+    expect(c.characters[wizardIdx]!.prepared).toBeUndefined();
+    expect(preparedSpells(c, wizardIdx)).toEqual(pool);
+  });
+
+  it('a non-caster has an empty preparable/prepared list and is unaffected', () => {
+    const c = newCampaign();
+    const fighterIdx = 0;
+    expect(preparableSpells(c, fighterIdx)).toEqual([]);
+    expect(preparedSpells(c, fighterIdx)).toEqual([]);
+    expect(setPrepared(c, fighterIdx, ['fireball'])).toBe(true); // doesn't error
+    expect(c.characters[fighterIdx]!.prepared).toEqual([]); // filtered to nothing
+  });
+});
+
+describe('wizard spellbook: learning spells from scrolls', () => {
+  it('ray of sickness is not on the default wizard list', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    expect(preparableSpells(c, wizardIdx)).not.toContain('ray-of-sickness');
+  });
+
+  it('a wizard holding the scroll can learn it for a fee, consuming the scroll', () => {
+    const c = newCampaign(9);
+    const wizardIdx = 1;
+    c.characters[wizardIdx]!.inventory.push({ itemId: 'scroll-ray-of-sickness', qty: 1 });
+    const learnable = scrollLearnable(c, wizardIdx, 'scroll-ray-of-sickness');
+    expect(learnable?.spellId).toBe('ray-of-sickness');
+    expect(learnable!.fee).toBeGreaterThan(0);
+
+    const goldBefore = c.gold;
+    expect(learnSpellFromScroll(c, wizardIdx, 'scroll-ray-of-sickness')).toBe(true);
+    expect(c.gold).toBe(goldBefore - learnable!.fee);
+    expect(c.characters[wizardIdx]!.inventory.some((s) => s.itemId === 'scroll-ray-of-sickness')).toBe(false);
+    expect(c.characters[wizardIdx]!.spellbook).toEqual(['ray-of-sickness']);
+
+    // Once learned it's part of the default loadout (no prepared override
+    // yet) and shows up on the built combatant.
+    expect(preparableSpells(c, wizardIdx)).toContain('ray-of-sickness');
+    expect(buildCampaignParty(c)[wizardIdx]!.spellIds).toContain('ray-of-sickness');
+
+    // Learning it a second time is refused — already known.
+    expect(scrollLearnable(c, wizardIdx, 'scroll-ray-of-sickness')).toBeUndefined();
+  });
+
+  it('refuses to learn without gold, without the scroll, or for a non-wizard', () => {
+    const c = newCampaign(9);
+    const wizardIdx = 1;
+    c.characters[wizardIdx]!.inventory.push({ itemId: 'scroll-ray-of-sickness', qty: 1 });
+
+    // Not enough gold.
+    c.gold = 0;
+    expect(learnSpellFromScroll(c, wizardIdx, 'scroll-ray-of-sickness')).toBe(false);
+    expect(c.characters[wizardIdx]!.spellbook).toBeUndefined();
+
+    // A class that isn't the wizard can't learn it even with the scroll and gold.
+    c.gold = 1000;
+    const fighterIdx = 0;
+    c.characters[fighterIdx]!.inventory.push({ itemId: 'scroll-ray-of-sickness', qty: 1 });
+    expect(scrollLearnable(c, fighterIdx, 'scroll-ray-of-sickness')).toBeUndefined();
+    expect(learnSpellFromScroll(c, fighterIdx, 'scroll-ray-of-sickness')).toBe(false);
+
+    // No scroll in hand.
+    c.characters[wizardIdx]!.inventory = c.characters[wizardIdx]!.inventory.filter((s) => s.itemId !== 'scroll-ray-of-sickness');
+    expect(learnSpellFromScroll(c, wizardIdx, 'scroll-ray-of-sickness')).toBe(false);
+  });
+
+  it('a scroll of a spell already known outright is not learnable', () => {
+    const c = newCampaign();
+    const wizardIdx = 1;
+    c.characters[wizardIdx]!.inventory.push({ itemId: 'scroll-fireball', qty: 1 });
+    // Fireball is already on the wizard's default table — nothing to learn.
+    expect(scrollLearnable(c, wizardIdx, 'scroll-fireball')).toBeUndefined();
   });
 });

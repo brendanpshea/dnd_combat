@@ -10,7 +10,11 @@
 import { HERO_NAMES, defaultNameFor } from '../builder/names.js';
 import type { Id, Combatant, ItemStack, TeamId } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
-import { buildCharacter, assignStats } from '../builder/character.js';
+import {
+  buildCharacter, assignStats,
+  availableLeveledSpells, classCantrips, preparedCount as leveledPreparedCount,
+} from '../builder/character.js';
+import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.js';
@@ -215,6 +219,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
   uncommon: [
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
+    'scroll-ray-of-sickness',
     'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
     'potion-giant-strength-hill',
     'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-chain-mail', 'adamantine-splint',
@@ -298,6 +303,7 @@ export const SHOP_STOCK: Id[] = [
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
   'scroll-magic-missile', 'scroll-burning-hands', 'scroll-command', 'scroll-guiding-bolt',
   'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person', 'scroll-fireball', 'scroll-lightning-bolt',
+  'scroll-ray-of-sickness',
   'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
   'potion-giant-strength-hill',
   // weapons
@@ -580,6 +586,9 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       inventory: ch.inventory.map((s) => ({ ...s })),
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
+      ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
+      ...(ch.prepared ? { preparedOverride: ch.prepared } : {}),
+      ...(ch.spellbook ? { spellbookExtra: ch.spellbook } : {}),
     });
     if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
       combatant.hp = Math.max(0, Math.min(ch.resources.hp, combatant.maxHp));
@@ -594,15 +603,30 @@ function setCampaignHp(ch: PartyCharacter, hp: number): void {
   ch.resources = { ...ch.resources, hp };
 }
 
+/**
+ * Spend one spell slot of the given level (0 = 1st) from a caster's persisted
+ * resources. Reads the caster's live-built `spellSlots` — correct whether or
+ * not `resources.slots` was already set (a fresh save reads as fully rested) —
+ * and writes the whole array back. Returns false, spending nothing, if none
+ * remain: store casts (Cure Wounds, Mage Armor) share the same slot pool as
+ * combat, since they're the same spell.
+ */
+function spendSlot(ch: PartyCharacter, caster: Combatant, slotLevelIdx: number): boolean {
+  const current = caster.spellSlots[slotLevelIdx]?.current ?? 0;
+  if (current <= 0) return false;
+  const slots = caster.spellSlots.map((p, i) => (i === slotLevelIdx ? p.current - 1 : p.current));
+  ch.resources = { ...ch.resources, hp: ch.resources?.hp ?? caster.hp, slots };
+  return true;
+}
+
 export interface RestResult {
   totalHealed: number;
 }
 
 /**
  * Testing-friendly short rest: each hero recovers half their maximum HP.
- * It is deliberately unrestricted for now; campaign HP is the only mutable
- * resource persisted between encounters, so spell slots still refresh when a
- * new battle is built.
+ * Spell slots are untouched (matching 5e — only a long rest restores them);
+ * `setCampaignHp` preserves whatever's in `resources.slots` unchanged.
  */
 export function shortRest(c: CampaignState): RestResult {
   let totalHealed = 0;
@@ -615,7 +639,12 @@ export function shortRest(c: CampaignState): RestResult {
   return { totalHealed };
 }
 
-/** Testing-friendly long rest: each hero recovers all missing HP. */
+/**
+ * Testing-friendly long rest: each hero recovers all missing HP and every
+ * spell slot (rebuilding `resources` from scratch drops any `slots` field,
+ * and its absence means fully rested). Mage Armor also lapses on a long rest
+ * in 5e, so it's dropped the same way; a familiar persists.
+ */
 export function longRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   const party = buildCampaignParty(c);
@@ -653,13 +682,16 @@ export interface StoreSpellAction {
   targeting: 'party' | 'self';
   castLabel?: string;
   castNotice?: string;
+  /** Cast as a ritual — no slot spent, so the UI never needs to grey it out
+   *  for being out of slots. */
+  ritual?: true;
 }
 
 const STORE_SPELL_ACTIONS: Record<Id, StoreSpellAction> = {
   'cure-wounds': { spellId: 'cure-wounds', name: 'Cure Wounds', icon: '💚', targeting: 'party' },
   'find-familiar': {
     spellId: 'find-familiar', name: 'Find Familiar', icon: '🦉', targeting: 'self',
-    castLabel: 'Summon owl', castNotice: 'summons a tiny owl familiar',
+    castLabel: 'Summon owl', castNotice: 'summons a tiny owl familiar', ritual: true,
   },
   'mage-armor': {
     spellId: 'mage-armor', name: 'Mage Armor', icon: '🛡️', targeting: 'self',
@@ -682,6 +714,7 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
   const action = caster ? storeSpellActions(caster).find((candidate) => candidate.spellId === spellId) : undefined;
   if (!user || !caster || !action || action.targeting !== 'self') return false;
   if (spellId === 'find-familiar') {
+    // A ritual in 5e: a wizard can cast it without spending a slot.
     user.resources = {
       hp: user.resources?.hp ?? caster.hp,
       effects: { ...user.resources?.effects, familiar: { kind: 'owl' } },
@@ -689,10 +722,9 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     return true;
   }
   if (spellId === 'mage-armor') {
-    user.resources = {
-      hp: user.resources?.hp ?? caster.hp,
-      effects: { ...user.resources?.effects, mageArmor: true },
-    };
+    const slotLevelIdx = SPELLS[spellId]!.level - 1;
+    if (!spendSlot(user, caster, slotLevelIdx)) return false;
+    user.resources = { ...user.resources, hp: user.resources?.hp ?? caster.hp, effects: { ...user.resources?.effects, mageArmor: true } };
     return true;
   }
   return false;
@@ -700,8 +732,9 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
 
 /**
  * Use a healing consumable or Cure Wounds during a store visit. Consumables
- * are spent; Cure Wounds is available to prepared casters without consuming a
- * slot because spell slots are encounter-only campaign state for now.
+ * are spent; Cure Wounds shares its slot pool with combat, so a shop visit
+ * can run a caster dry before the next fight — the same trade-off as casting
+ * it mid-battle.
  */
 export function useStoreHealing(
   c: CampaignState,
@@ -717,7 +750,12 @@ export function useStoreHealing(
   const caster = party[userIdx]!;
   const recipient = party[targetIdx]!;
   const item = source === 'cure-wounds' ? undefined : user.inventory.find((s) => s.itemId === source && s.qty > 0);
-  if (source === 'cure-wounds' ? !caster.spellIds.includes(source) : !item) return undefined;
+  const cureWoundsSlotIdx = SPELLS['cure-wounds']!.level - 1;
+  if (source === 'cure-wounds') {
+    if (!caster.spellIds.includes(source) || (caster.spellSlots[cureWoundsSlotIdx]?.current ?? 0) <= 0) return undefined;
+  } else if (!item) {
+    return undefined;
+  }
 
   let dice = '2d4+2';
   let bonus = 0;
@@ -734,10 +772,122 @@ export function useStoreHealing(
     item.qty -= 1;
     if (item.qty === 0) user.inventory = user.inventory.filter((s) => s !== item);
   }
+  if (source === 'cure-wounds') spendSlot(user, caster, cureWoundsSlotIdx);
   const rolled = roll.total + bonus;
   const hp = Math.min(recipient.maxHp, recipient.hp + rolled);
   setCampaignHp(target, hp);
   return { rolled, healed: hp - recipient.hp };
+}
+
+// ---------------------------------------------------------------------------
+// Spell preparation — ignorable. A character with no `prepared` field plays
+// with the class table's full default loadout, exactly as before this
+// existed; opening the panel and saving a selection is the only way in.
+// ---------------------------------------------------------------------------
+
+/** The leveled spells this character could currently prepare from: the class
+ *  table's unlocked list, plus anything a wizard has copied into their
+ *  spellbook (learnSpellFromScroll). Cantrips aren't included — they're
+ *  always known and never subject to preparation. */
+export function preparableSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  const level = partyLevelOf(c);
+  return [...new Set([...availableLeveledSpells(ch.classId, level), ...(ch.spellbook ?? [])])];
+}
+
+/** How many leveled spells this character may have prepared at once. */
+export function preparedLimit(c: CampaignState, charIdx: number): number {
+  return leveledPreparedCount(partyLevelOf(c));
+}
+
+/** This character's currently prepared leveled spells: their saved choice, or
+ *  (nothing chosen yet) everything available — the default loadout. */
+export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return ch.prepared ?? preparableSpells(c, charIdx);
+}
+
+/** Cantrips this character always has, regardless of preparation. */
+export function knownCantrips(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return classCantrips(ch.classId, partyLevelOf(c));
+}
+
+/**
+ * Save an explicit prepared-spell selection: filtered to spells this
+ * character can actually prepare from, capped at their limit. An empty
+ * selection is a deliberate "prepare nothing" — distinct from never having
+ * opened the panel, which still means "everything."
+ */
+export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): boolean {
+  const ch = c.characters[charIdx];
+  if (!ch) return false;
+  const pool = preparableSpells(c, charIdx);
+  const cap = preparedLimit(c, charIdx);
+  ch.prepared = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, cap);
+  return true;
+}
+
+/** Drop back to the default loadout — the "use recommended" reset a
+ *  new/young player never has to leave in the first place. */
+export function resetPrepared(c: CampaignState, charIdx: number): boolean {
+  const ch = c.characters[charIdx];
+  if (!ch) return false;
+  delete ch.prepared;
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Wizard spellbook — learning new spells from scrolls found in play.
+// ---------------------------------------------------------------------------
+
+/** The spell a scroll item teaches, if it's a spell scroll at all. */
+function scrollSpellId(itemId: Id): Id | undefined {
+  const item = ITEMS[itemId];
+  return item?.targeting.kind === 'spell' ? item.targeting.spellId : undefined;
+}
+
+/** Scribing fee to copy a spell into a spellbook — 50 gp per spell level (the
+ *  5e rate), floored so a stray level-0 entry never costs nothing. */
+function scribingFee(spellId: Id): number {
+  return Math.max(25, (SPELLS[spellId]?.level ?? 1) * 50);
+}
+
+/**
+ * Whether a scroll in this wizard's pack can be copied into their spellbook:
+ * a wizard-list spell (classes.ts's `learnableExtra`) they haven't already
+ * learned. Returns the spell and its fee for the shop UI to show, regardless
+ * of whether the party can currently afford it — the caller checks gold.
+ */
+export function scrollLearnable(c: CampaignState, charIdx: number, itemId: Id): { spellId: Id; fee: number } | undefined {
+  const ch = c.characters[charIdx];
+  if (!ch || ch.classId !== 'wizard') return undefined;
+  const spellId = scrollSpellId(itemId);
+  if (!spellId) return undefined;
+  if (!CLASSES.wizard?.spellcasting?.learnableExtra?.includes(spellId)) return undefined;
+  if ((ch.spellbook ?? []).includes(spellId)) return undefined;
+  return { spellId, fee: scribingFee(spellId) };
+}
+
+/**
+ * Copy a scroll's spell into a wizard's spellbook: consumes the scroll,
+ * charges the scribing fee, and adds it to the spells they can prepare from.
+ * It isn't immediately prepared by itself (see setPrepared) unless the
+ * character is still on the default loadout, in which case it just joins it.
+ */
+export function learnSpellFromScroll(c: CampaignState, charIdx: number, itemId: Id): boolean {
+  const ch = c.characters[charIdx];
+  const learnable = ch ? scrollLearnable(c, charIdx, itemId) : undefined;
+  const stack = ch?.inventory.find((s) => s.itemId === itemId && s.qty > 0);
+  if (!ch || !learnable || !stack || c.gold < learnable.fee) return false;
+  c.gold -= learnable.fee;
+  stack.qty -= 1;
+  if (stack.qty === 0) ch.inventory = ch.inventory.filter((s) => s !== stack);
+  ch.spellbook = [...(ch.spellbook ?? []), learnable.spellId];
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -1011,6 +1161,7 @@ export function applyVictory(
       ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
       ch.resources = {
         hp: fought.hp,
+        ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
         ...(fought.familiar || fought.mageArmor || ch.resources?.effects
           ? {
               effects: {

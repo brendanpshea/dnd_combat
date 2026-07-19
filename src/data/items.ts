@@ -115,6 +115,15 @@ export const ITEMS: Record<Id, ConsumableData> = {
     targeting: { kind: 'spell', spellId: 'web' }, cost: 120, rarity: 'uncommon',
     apply: scrollApply('web'),
   },
+  // Ray of Sickness isn't on any class's default table — a wizard has to find
+  // this scroll and copy it in (campaign.ts's learnSpellFromScroll) before it
+  // can be prepared. The scroll itself still casts the spell once, like any
+  // other, whether or not it's ever copied.
+  'scroll-ray-of-sickness': {
+    id: 'scroll-ray-of-sickness', name: 'Scroll of Ray of Sickness', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'ray-of-sickness' }, cost: 60, rarity: 'uncommon',
+    apply: scrollApply('ray-of-sickness'),
+  },
   'scroll-scorching-ray': {
     id: 'scroll-scorching-ray', name: 'Scroll of Scorching Ray', useTime: 'action',
     targeting: { kind: 'spell', spellId: 'scorching-ray' }, cost: 120, rarity: 'uncommon',
