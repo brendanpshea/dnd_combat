@@ -496,10 +496,12 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (action.offhand) {
         actor.turn.bonusActionUsed = true;
       } else if (!actor.turn.actionUsed) {
-        // First attack of the Attack action: bank any multiattack follow-ups.
+        // First attack of the Attack action: bank any multiattack follow-ups
+        // (plus Haste's one extra attack, banked the same way).
         actor.turn.actionUsed = true;
         actor.turn.attackedThisTurn = true;
-        actor.turn.attacksLeft = actor.attacksPerAction - 1;
+        const hasteBonus = actor.conditions.some((c) => c.id === 'hasted') ? 1 : 0;
+        actor.turn.attacksLeft = actor.attacksPerAction - 1 + hasteBonus;
       } else {
         actor.turn.attacksLeft -= 1;
       }

@@ -33,7 +33,7 @@ describe('character builder', () => {
     expect(acOf(w)).toBe(13); // 10 + dex 16 → +3
     expect(w.maxHp).toBe(7);
     expect(w.spellcastingAbility).toBe('int');
-    expect(w.spellIds).toHaveLength(8);
+    expect(w.spellIds).toHaveLength(12);
     expect(w.spellIds).toContain('find-familiar');
     expect(w.spellIds).toContain('mage-armor');
     expect(w.spellIds).toContain('shield');

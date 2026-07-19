@@ -66,6 +66,9 @@ export type ConditionId =
   | 'shielded'     // Shield reaction: +5 AC (and Magic Missile immunity) until next turn
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws
+  | 'baned'        // Bane: -1d4 to attack rolls and saving throws
+  | 'warded'       // Shield of Faith: +2 AC
+  | 'hasted'       // Haste: double speed, +2 AC, one extra attack
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
   | 'hidden'       // unseen: cannot be directly targeted; next attack has advantage
   | 'noReactions'  // Shocking Grasp rider

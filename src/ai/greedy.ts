@@ -293,6 +293,106 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       }
       return v - slotCost;
     }
+    case 'ray-of-frost': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const p = hitProb(spellAtkBonus, acOf(t), 'flat');
+      // Small kiting bonus: slowing a melee-only target buys the caster
+      // another turn of distance before it can close again.
+      const kiteBonus = t.equipped.mainHand && WEAPONS[t.equipped.mainHand]?.melee !== false ? 1 : 0.3;
+      return damageValue(p * avgDice('1d8'), t) + p * kiteBonus;
+    }
+    case 'acid-splash': {
+      const anchor = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(anchor)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || t.team === actor.team) continue;
+        v += damageValue(saveFailProb(state, t, 'dex', dc) * avgDice('1d6'), t);
+      }
+      return v;
+    }
+    case 'color-spray': {
+      const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
+      let v = 0;
+      for (const pos of cone15(actor.position, dir)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || t.team === actor.team || t.conditions.some((c) => c.id === 'blinded')) continue;
+        v += saveFailProb(state, t, 'con', dc) * 4; // one turn of disadvantage-out/advantage-in
+      }
+      return v - slotCost;
+    }
+    case 'false-life': {
+      const current = actor.tempHp ?? 0;
+      const amount = avgDice('1d4') + 4;
+      if (current >= amount) return 0; // wouldn't improve on what's already there
+      // A defensive pick, most worth it before the caster has taken a hit.
+      return (amount - current) * 0.4 - slotCost;
+    }
+    case 'inflict-wounds': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('2d10'), t) - slotCost;
+    }
+    case 'blindness': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      // Blinded is real but milder than paralysis (no auto-crit): weight below hold-person.
+      return saveFailProb(state, t, 'con', dc) * (5 + t.hp / 5) - slotCost;
+    }
+    case 'invisibility': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'hidden')) return 0;
+      // Most valuable on a squishy caster who isn't already safe.
+      const exposed = nearestEnemyDist(state, t.position, t.team) <= 3;
+      return (exposed ? 5 : 2.5) - slotCost;
+    }
+    case 'lesser-restoration': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const WEIGHT: Partial<Record<Id, number>> = { paralyzed: 9, blinded: 4, poisoned: 3 };
+      const curable = t.conditions.filter((c) => c.id in WEIGHT);
+      if (curable.length === 0) return -slotCost;
+      return curable.reduce((s, c) => s + (WEIGHT[c.id] ?? 0), 0) - slotCost;
+    }
+    case 'dispel-magic': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.team === actor.team) {
+        // Freeing an ally from an enemy's concentration debuff.
+        const held = t.conditions.filter((c) => c.concentration);
+        return held.length > 0 ? held.length * 4 - slotCost : -slotCost;
+      }
+      // Ending an enemy caster's ongoing spell (Bless, Web, Fear, ...).
+      return t.concentratingOn ? 5 - slotCost : -slotCost;
+    }
+    case 'bane': {
+      if (actor.concentratingOn) return 0;
+      let v = 0;
+      for (const tg of a.targets) {
+        const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
+        v += saveFailProb(state, t, 'cha', dc) * 3;
+      }
+      return v - slotCost;
+    }
+    case 'shield-of-faith': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'warded')) return 0;
+      // Worth more on a target enemies are already reaching for.
+      const threatened = nearestEnemyDist(state, t.position, t.team) <= 2;
+      return (threatened ? 3.5 : 1.5) - slotCost;
+    }
+    case 'haste': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'hasted')) return 0;
+      // Best on a melee ally who can turn the extra attack into real damage;
+      // still solid on anyone as +2 AC and a mobility boost.
+      const w = t.equipped.mainHand ? WEAPONS[t.equipped.mainHand] : undefined;
+      const meleeBonus = w?.melee ? avgDice(w.damage) : 0;
+      return 4 + meleeBonus - slotCost;
+    }
     default:
       return 0;
   }
@@ -463,13 +563,25 @@ export function chooseAction(state: GameState, actorId: Id): Action {
   const actions = legalActions(state, actorId);
   let best: Action = { kind: 'endTurn' };
   let bestScore = END_TURN_THRESHOLD;
+  // Stalemate breaker: a unit boxed in by walls/allies may only be able to
+  // shave the gap to the nearest enemy by a single cell per move — scoreMove
+  // rates that ~0.4, under the 0.5 end-turn bar, so without this it just
+  // stands still forever (two such units can deadlock a whole battle). Track
+  // the best strictly-positive closing/repositioning move on the side, and
+  // fall back to it only when nothing else — attack, spell, feature, dash,
+  // anything — cleared the normal bar either.
+  let fallbackMove: Action | undefined;
+  let fallbackMoveScore = 0;
 
   for (const a of actions) {
     let s = 0;
     switch (a.kind) {
       case 'attack': s = scoreAttack(state, actor, a); break;
       case 'castSpell': s = scoreSpell(state, actor, a); break;
-      case 'move': s = scoreMove(state, actor, a.to); break;
+      case 'move':
+        s = scoreMove(state, actor, a.to);
+        if (s > fallbackMoveScore) { fallbackMoveScore = s; fallbackMove = a; }
+        break;
       case 'useFeature': s = scoreFeature(state, actor, a); break;
       case 'useItem': s = scoreItem(state, actor, a); break;
       case 'dash':
@@ -497,5 +609,6 @@ export function chooseAction(state: GameState, actorId: Id): Action {
       best = a;
     }
   }
+  if (best.kind === 'endTurn' && fallbackMove) return fallbackMove;
   return best;
 }

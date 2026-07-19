@@ -194,6 +194,11 @@ export function resolveAttack(
     state.rng = d4.state;
     total += d4.total;
   }
+  if (attacker.conditions.some((c) => c.id === 'baned')) {
+    const d4 = rollDice(state.rng, '1d4');
+    state.rng = d4.state;
+    total -= d4.total;
+  }
 
   // Champion widens the crit range to 19-20.
   const critFloor = attacker.featureIds.includes('improved-critical') ? 19 : 20;

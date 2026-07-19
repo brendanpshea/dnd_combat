@@ -46,13 +46,19 @@ export function startTurn(state: GameState): GameEvent[] {
   const c = currentCombatant(state);
   const events: GameEvent[] = [...discoverHidden(state, c.id)];
 
-  // Dodging, noReactions and Shield last until the start of the owner's next turn.
+  // Dodging, noReactions and Shield last until the start of the owner's next
+  // turn. A fixed-duration Blind (Color Spray: no save to end it early) is the
+  // same shape, so it rides the same clock — but only when it has no
+  // `repeatSave`: Blindness the spell applies the same condition id with a
+  // repeat save instead, and that flavor must survive here and expire only
+  // through the generic save-ends machinery (runEndOfTurnSaves).
+  const selfClearing = (k: { id: string; repeatSave?: unknown }) =>
+    k.id === 'dodging' || k.id === 'noReactions' || k.id === 'shielded' ||
+    (k.id === 'blinded' && !k.repeatSave);
   for (const cond of c.conditions) {
-    if (cond.id === 'dodging' || cond.id === 'noReactions' || cond.id === 'shielded') {
-      events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });
-    }
+    if (selfClearing(cond)) events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });
   }
-  c.conditions = c.conditions.filter((k) => k.id !== 'dodging' && k.id !== 'noReactions' && k.id !== 'shielded');
+  c.conditions = c.conditions.filter((k) => !selfClearing(k));
 
   // Expire round-limited conditions (e.g. Unconscious's 1-minute cap).
   for (const cond of c.conditions) {
@@ -71,6 +77,9 @@ export function startTurn(state: GameState): GameEvent[] {
   // it would strip the prone that marks it as a body on the floor.
   const helpless = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed');
   let speed = helpless ? 0 : c.speed;
+  // Haste: double speed (before prone/restrained/slowed apply their own
+  // reductions on top, same as any other speed-affecting condition would).
+  if (!helpless && c.conditions.some((k) => k.id === 'hasted')) speed *= 2;
   // Command: the target grovels — drops prone and loses this whole turn (the
   // `commanded` condition blocks its actions, then clears at end of turn). It
   // stays on the ground; standing up waits for its following turn.

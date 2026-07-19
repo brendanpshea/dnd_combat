@@ -363,6 +363,46 @@ and Shield (a reaction the engine **autocasts** for a defender when +5 AC would
 turn a hit into a miss, and which blocks Magic Missile outright). Guidance is
 out-of-combat only: a party cleric adds +1d4 to shop skill checks.
 
+**SRD 2024 wave (cantrip–3rd level).** A second pass widening both casters'
+tables — real choices for the prepare panel (§8b), not just more spells —
+added entirely as spell/class data plus `src/ai/greedy.ts` scoring cases; only
+three needed a genuinely new mechanic:
+- **Bane** and **Shield of Faith** introduce `baned` (-1d4 to attack rolls and
+  saves — the exact mirror of `blessed`'s +1d4, wired at the same three call
+  sites: `resolveAttack`, `spellAttack`, `savingThrow`) and `warded` (+2 AC,
+  read in `acOf` next to `shielded`'s +5).
+- **Haste** adds `hasted`, read in three places: `turn.ts`'s `startTurn`
+  doubles speed, `acOf` adds +2, and the Attack-action handler in `actions.ts`
+  banks one extra attack alongside ordinary multiattack follow-ups. No
+  lethargy-on-end penalty yet.
+- **Color Spray** and **Blindness** both apply `blinded`, but with different
+  lifetimes — Color Spray is a fixed "until your own next turn" (no save),
+  Blindness is save-ends (`repeatSave`). `startTurn`'s self-clearing list
+  (previously just `dodging`/`noReactions`/`shielded`) now includes `blinded`
+  *only when it has no `repeatSave`*, so the two flavors of the same condition
+  id expire correctly on their own separate clocks.
+- **Dispel Magic** needed no new mechanic at all: it strips every
+  `concentration: true` condition on its target and calls the existing
+  `breakConcentration` on it, covering both classic uses (freeing an ally from
+  an enemy's Web/Hold Person/Fear, or ending an enemy caster's Bless/Web/Fear)
+  off primitives that already existed.
+- **Ray of Sickness** (added earlier, alongside the wizard spellbook feature)
+  and now **Ray of Sickness's sibling** — none of the new cantrips/1st-level
+  spells needed anything beyond existing hooks: Ray of Frost reuses `slowed`
+  exactly as the Slow weapon mastery does; Acid Splash and Color Spray reuse
+  `sphere2x2`/`cone15` targeting; False Life reuses the non-stacking `tempHp`
+  pattern Adrenaline Rush established; Lesser Restoration strips a fixed list
+  of curable conditions.
+
+Adding this wave surfaced a latent AI bug, not caused by the new content but
+exposed by it (a different RNG trajectory reached a state the old one never
+had): `scoreMove` in `greedy.ts` can rate a move that only closes the gap to
+the nearest enemy by one cell (common when boxed in by walls) at ~0.4, just
+under the 0.5 end-turn threshold — so a unit in that spot simply stood still,
+forever, and two such units could deadlock a whole battle. `chooseAction` now
+tracks the best strictly-positive move as a fallback and takes it whenever
+nothing else — attack, spell, feature, dash — cleared the normal bar either.
+
 **Turn Undead** is the base Channel Divinity every cleric gets at level 2
 (separate from Life Domain's Preserve Life at 3). RAW turns — forces to flee —
 every undead within 30 ft that fails a Wisdom save; with no "must flee" AI, a

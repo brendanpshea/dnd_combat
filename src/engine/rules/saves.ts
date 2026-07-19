@@ -36,6 +36,11 @@ export function savingThrow(
     state.rng = d4.state;
     total += d4.total;
   }
+  if (c.conditions.some((k) => k.id === 'baned')) {
+    const d4 = rollDice(state.rng, '1d4');
+    state.rng = d4.state;
+    total -= d4.total;
+  }
   const success = total >= dc;
   return {
     success,

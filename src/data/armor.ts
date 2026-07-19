@@ -65,12 +65,12 @@ export function acOf(c: Combatant): number {
   if (c.acOverride !== undefined) return c.acOverride;
   const shield = shieldBonus(c.equipped.offHand);
   if (c.mageArmor && c.equipped.armor === undefined) {
-    return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c);
+    return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
   }
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
-  return base + defense + trinketAc(c) + shieldedAc(c);
+  return base + defense + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
 }
 
 /** Cloak of Protection (trinket): +1 AC, granted as a feature the builder folds. */
@@ -81,6 +81,16 @@ function trinketAc(c: Combatant): number {
 /** Shield spell reaction: +5 AC until the caster's next turn. */
 function shieldedAc(c: Combatant): number {
   return c.conditions.some((k) => k.id === 'shielded') ? 5 : 0;
+}
+
+/** Shield of Faith: +2 AC, held by concentration. */
+function wardedAc(c: Combatant): number {
+  return c.conditions.some((k) => k.id === 'warded') ? 2 : 0;
+}
+
+/** Haste: +2 AC (on top of the speed/extra-attack pieces read elsewhere). */
+function hastedAc(c: Combatant): number {
+  return c.conditions.some((k) => k.id === 'hasted') ? 2 : 0;
 }
 
 /** Is the combatant wearing metal armor (Shocking Grasp rider)? */

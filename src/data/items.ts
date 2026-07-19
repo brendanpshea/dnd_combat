@@ -144,6 +144,41 @@ export const ITEMS: Record<Id, ConsumableData> = {
     targeting: { kind: 'spell', spellId: 'lightning-bolt' }, cost: 250, rarity: 'rare',
     apply: scrollApply('lightning-bolt'),
   },
+  'scroll-color-spray': {
+    id: 'scroll-color-spray', name: 'Scroll of Color Spray', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'color-spray' }, cost: 50, rarity: 'common',
+    apply: scrollApply('color-spray'),
+  },
+  'scroll-bane': {
+    id: 'scroll-bane', name: 'Scroll of Bane', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'bane' }, cost: 50, rarity: 'common',
+    apply: scrollApply('bane'),
+  },
+  'scroll-shield-of-faith': {
+    id: 'scroll-shield-of-faith', name: 'Scroll of Shield of Faith', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'shield-of-faith' }, cost: 50, rarity: 'common',
+    apply: scrollApply('shield-of-faith'),
+  },
+  'scroll-blindness': {
+    id: 'scroll-blindness', name: 'Scroll of Blindness', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'blindness' }, cost: 120, rarity: 'uncommon',
+    apply: scrollApply('blindness'),
+  },
+  'scroll-invisibility': {
+    id: 'scroll-invisibility', name: 'Scroll of Invisibility', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'invisibility' }, cost: 120, rarity: 'uncommon',
+    apply: scrollApply('invisibility'),
+  },
+  'scroll-dispel-magic': {
+    id: 'scroll-dispel-magic', name: 'Scroll of Dispel Magic', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'dispel-magic' }, cost: 250, rarity: 'rare',
+    apply: scrollApply('dispel-magic'),
+  },
+  'scroll-haste': {
+    id: 'scroll-haste', name: 'Scroll of Haste', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'haste' }, cost: 250, rarity: 'rare',
+    apply: scrollApply('haste'),
+  },
 
   // --- resistance potions: grants resistance to a damage type for the rest
   // of the encounter (like Mage Armor, a persisted flag rather than a

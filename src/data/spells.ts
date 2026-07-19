@@ -7,12 +7,12 @@
  * - sphere2x2: pick an anchor cell for the 2x2 template
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
-import type { GameState, Combatant, Id, Ability, Position, CreatureType } from '../engine/types.js';
+import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield } from '../engine/rules/attack.js';
+import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
@@ -125,6 +125,11 @@ function spellAttack(
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;
     total += d4.total;
+  }
+  if (caster.conditions.some((c) => c.id === 'baned')) {
+    const d4 = rollDice(state.rng, '1d4');
+    state.rng = d4.state;
+    total -= d4.total;
   }
   const unconsciousAdjacent =
     target.conditions.some((c) => c.id === 'unconscious') && opts.melee;
@@ -1022,6 +1027,323 @@ export const SPELLS: Record<Id, SpellData> = {
         // healing — which is what raising their hit points means.
         events.push(...applyHealing(state, tid, casterId, amount));
       }
+      return events;
+    },
+  },
+
+  /** Ray of Frost: a ranged spell attack, cold damage, and — on a hit — the
+   *  target's speed drops 10 ft until its own next turn. Reuses `slowed`
+   *  exactly as the Slow weapon mastery does (see turn.ts's startTurn): no new
+   *  expiry logic needed, it already clears itself on schedule. */
+  'ray-of-frost': {
+    id: 'ray-of-frost', name: 'Ray of Frost', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '❄️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: false });
+      const events: GameEvent[] = [atk.event];
+      if (atk.hit) {
+        const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'cold', dmg.rolls));
+        const target = state.combatants[targetId]!;
+        if (target.alive && !target.conditions.some((c) => c.id === 'slowed')) {
+          target.conditions.push({ id: 'slowed', sourceId: casterId });
+          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'slowed', sourceId: casterId });
+        }
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Acid Splash: a small area cantrip — simplified from the 2024 "up to two
+   * creatures within 5 ft of each other" to the same sphere2x2 anchor-cell
+   * template Sleep and Faerie Fire already use, rather than inventing a new
+   * targeting shape for one spell. Enemies only (a caster choosing their own
+   * targets would never pick an ally); a cantrip, so a successful save takes
+   * no damage at all, unlike the half-on-save area spells.
+   */
+  'acid-splash': {
+    id: 'acid-splash', name: 'Acid Splash', level: 0, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 60 },
+    concentration: false,
+    icon: '🧪',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team) continue;
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        if (!save.success) {
+          const dmg = rollDice(state.rng, cantripDice('1d6', caster.level));
+          state.rng = dmg.state;
+          events.push(...applyDamage(state, tid, casterId, dmg.total, 'acid', dmg.rolls));
+        }
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Color Spray: a cone of blinding light, Constitution save, no concentration
+   * — a fixed "until your next turn" blind rather than the save-ends flavor
+   * Blindness applies with the same condition id. turn.ts's startTurn tells
+   * the two apart by whether the condition carries a `repeatSave`.
+   */
+  'color-spray': {
+    id: 'color-spray', name: 'Color Spray', level: 1, castingTime: 'action',
+    targeting: { kind: 'cone15' },
+    concentration: false,
+    icon: '🌈',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dir = directionFromDelta(caster.position, positions[0]!);
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      for (const pos of cone15(caster.position, dir)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team || t.conditions.some((c) => c.id === 'blinded')) continue;
+        const save = savingThrow(state, tid, 'con', dc);
+        events.push(save.event);
+        if (!save.success) {
+          t.conditions.push({ id: 'blinded', sourceId: casterId });
+          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'blinded', sourceId: casterId });
+        }
+      }
+      return events;
+    },
+  },
+
+  /**
+   * False Life: a defensive self-buff, temporary HP that doesn't stack (the
+   * same Math.max pattern Adrenaline Rush uses). A `self` target, so — like
+   * Mage Armor and Find Familiar — there's no per-target event; the spellCast
+   * event alone narrates the cast.
+   */
+  'false-life': {
+    id: 'false-life', name: 'False Life', level: 1, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '💀',
+    cast({ state, casterId, slotLevel }) {
+      const c = state.combatants[casterId]!;
+      const roll = rollDice(state.rng, '1d4');
+      state.rng = roll.state;
+      const amount = roll.total + 4 + (slotLevel - 1) * 5; // 1d4+4 at slot 1, +5 per slot above
+      c.tempHp = Math.max(c.tempHp ?? 0, amount);
+      return [];
+    },
+  },
+
+  /**
+   * Inflict Wounds: the cleric's offensive counterpart to Cure Wounds — a
+   * melee spell attack (touch range, like Cure Wounds) instead of a save, so
+   * a cleric has a reason to be adjacent to something worth hurting.
+   */
+  'inflict-wounds': {
+    id: 'inflict-wounds', name: 'Inflict Wounds', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '👻',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: true });
+      const events: GameEvent[] = [atk.event];
+      if (atk.hit) {
+        const dmg = rollDice(state.rng, `${1 + slotLevel}d10`, atk.crit); // 2d10 at slot 1
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'necrotic', dmg.rolls));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Blindness: a straight Constitution save, no concentration — the ghoul-
+   * paralysis pattern (attack.ts's onHitSave) as a spell instead of a weapon
+   * rider. Persists until the target saves at the end of its turn
+   * (`repeatSave`), which is exactly what tells turn.ts not to auto-clear it
+   * the way Color Spray's fixed-duration blind clears.
+   */
+  blindness: {
+    id: 'blindness', name: 'Blindness', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🙈',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'con', dc);
+      const events: GameEvent[] = [save.event];
+      if (!save.success) {
+        const t = state.combatants[targetId]!;
+        t.conditions.push({ id: 'blinded', sourceId: casterId, repeatSave: { ability: 'con', dc } });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'blinded', sourceId: casterId });
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Invisibility: grants `hidden` with no `hideCheck`, so — like a wood elf's
+   * Fey Invisibility — it can't be stripped by a passive Perception beat; only
+   * attacking or casting a spell ends it (endHide, called from every attack
+   * and cast path already). Touch range, ally-or-self, held by concentration.
+   */
+  invisibility: {
+    id: 'invisibility', name: 'Invisibility', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '👤',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      if (!t.conditions.some((c) => c.id === 'hidden')) {
+        t.conditions.push({ id: 'hidden', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'hidden', sourceId: casterId });
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'invisibility', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Lesser Restoration: touch an ally and strip one of the SRD's short list of
+   * curable conditions, if they're carrying any of them — the party's first
+   * answer to a save-ends lockdown that hasn't broken on its own.
+   */
+  'lesser-restoration': {
+    id: 'lesser-restoration', name: 'Lesser Restoration', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: false,
+    icon: '💫',
+    cast({ state, targetIds }) {
+      const CURABLE: ConditionId[] = ['blinded', 'paralyzed', 'poisoned'];
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const removed = t.conditions.filter((c) => CURABLE.includes(c.id));
+      t.conditions = t.conditions.filter((c) => !CURABLE.includes(c.id));
+      return removed.map((c) => ({ type: 'conditionRemoved' as const, combatantId: targetId, condition: c.id }));
+    },
+  },
+
+  /**
+   * Dispel Magic: strips every concentration-linked condition currently on
+   * the target (freeing an ally from an enemy's Web/Hold Person/Fear without
+   * needing to target the caster who cast it) and, if the target is itself
+   * concentrating on something, ends that too (breakConcentration) — so
+   * pointing it at an enemy caster ends whatever they're sustaining. One
+   * spell, both classic uses, entirely off existing primitives.
+   */
+  'dispel-magic': {
+    id: 'dispel-magic', name: 'Dispel Magic', level: 3, castingTime: 'action',
+    targeting: { kind: 'creature', range: 120, who: 'any', count: 1 },
+    concentration: false,
+    icon: '🚫',
+    cast({ state, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      const held = t.conditions.filter((c) => c.concentration);
+      if (held.length > 0) {
+        t.conditions = t.conditions.filter((c) => !c.concentration);
+        for (const c of held) events.push({ type: 'conditionRemoved', combatantId: targetId, condition: c.id });
+      }
+      events.push(...breakConcentration(state, targetId));
+      return events;
+    },
+  },
+
+  /**
+   * Bane: the enemy mirror of Bless — up to 3 targets, -1d4 instead of +1d4,
+   * on both attack rolls and saving throws. Unlike Bless's willing allies,
+   * Bane's targets get a Charisma save to resist. `baned` rides the exact
+   * same "roll a d4, apply it" hooks `blessed` already touches in
+   * resolveAttack, spellAttack, and savingThrow — three symmetric additions,
+   * no new mechanism.
+   */
+  bane: {
+    id: 'bane', name: 'Bane', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 3 },
+    concentration: true,
+    icon: '💀',
+    cast({ state, casterId, targetIds }) {
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const caught: Id[] = [];
+      for (const tid of new Set(targetIds)) {
+        const save = savingThrow(state, tid, 'cha', dc);
+        events.push(save.event);
+        if (!save.success) {
+          const t = state.combatants[tid]!;
+          if (!t.conditions.some((c) => c.id === 'baned')) {
+            t.conditions.push({ id: 'baned', sourceId: casterId, concentration: true });
+            events.push({ type: 'conditionApplied', combatantId: tid, condition: 'baned', sourceId: casterId });
+          }
+          caught.push(tid);
+        }
+      }
+      if (caught.length > 0) state.combatants[casterId]!.concentratingOn = { spellId: 'bane', targetIds: caught };
+      return events;
+    },
+  },
+
+  /**
+   * Shield of Faith: a bonus-action ward, +2 AC, no save (a willing ally, like
+   * Bless). `warded` is read in armor.ts's acOf the same way `shielded` (the
+   * Shield spell's +5) already is — one new line there, plus the condition.
+   */
+  'shield-of-faith': {
+    id: 'shield-of-faith', name: 'Shield of Faith', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 60, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '🛡️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      if (!t.conditions.some((c) => c.id === 'warded')) {
+        t.conditions.push({ id: 'warded', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'warded', sourceId: casterId });
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'shield-of-faith', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Haste: the headline 3rd-level buff. `hasted` is read in three places —
+   * turn.ts's startTurn doubles speed, armor.ts's acOf adds +2, and
+   * actions.ts's Attack-action handler banks one extra attack alongside
+   * multiattack follow-ups — the same three touch points Bless/Bane/Shield of
+   * Faith needed, just one condition wearing all three hats at once. No
+   * lethargy-on-end penalty yet (RAW: incapacitated one turn when it lapses).
+   */
+  haste: {
+    id: 'haste', name: 'Haste', level: 3, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '🐇',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      if (!t.conditions.some((c) => c.id === 'hasted')) {
+        t.conditions.push({ id: 'hasted', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'hasted', sourceId: casterId });
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'haste', targetIds: [targetId] };
       return events;
     },
   },

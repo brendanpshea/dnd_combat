@@ -211,7 +211,8 @@ export function xpAward(encounterId: Id, partySize: number): number {
 const TREASURE_POOL: Record<Rarity, Id[]> = {
   common: [
     'potion-healing', 'alchemists-fire', 'scroll-magic-missile', 'scroll-burning-hands',
-    'scroll-command', 'scroll-guiding-bolt', 'chain-shirt',
+    'scroll-command', 'scroll-guiding-bolt', 'scroll-color-spray', 'scroll-bane', 'scroll-shield-of-faith',
+    'chain-shirt',
     'handaxe', 'spear', 'morningstar',
     'gem-quartz', 'gem-moss-agate', 'gem-onyx', 'gem-carnelian',
     'jewelry-wooden-bracer', 'jewelry-brass-ring', 'jewelry-bronze-figurine', 'jewelry-obsidian-necklace',
@@ -219,7 +220,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
   uncommon: [
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
-    'scroll-ray-of-sickness',
+    'scroll-ray-of-sickness', 'scroll-blindness', 'scroll-invisibility',
     'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
     'potion-giant-strength-hill',
     'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-chain-mail', 'adamantine-splint',
@@ -232,7 +233,8 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1',
     'greatsword-plus1', 'longbow-plus1', 'warhammer-plus1', 'rapier-plus1',
     'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1',
-    'scroll-fireball', 'scroll-lightning-bolt', 'potion-giant-strength-frost',
+    'scroll-fireball', 'scroll-lightning-bolt', 'scroll-dispel-magic', 'scroll-haste',
+    'potion-giant-strength-frost',
     'moontouched-shortsword', 'moontouched-warhammer',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
@@ -303,7 +305,8 @@ export const SHOP_STOCK: Id[] = [
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
   'scroll-magic-missile', 'scroll-burning-hands', 'scroll-command', 'scroll-guiding-bolt',
   'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person', 'scroll-fireball', 'scroll-lightning-bolt',
-  'scroll-ray-of-sickness',
+  'scroll-ray-of-sickness', 'scroll-color-spray', 'scroll-bane', 'scroll-shield-of-faith',
+  'scroll-blindness', 'scroll-invisibility', 'scroll-dispel-magic', 'scroll-haste',
   'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
   'potion-giant-strength-hill',
   // weapons

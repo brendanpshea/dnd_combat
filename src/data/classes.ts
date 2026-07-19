@@ -123,10 +123,10 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'wis',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       spellsByLevel: {
-        1: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'],
+        1: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith'],
         2: ['guiding-bolt'],
-        3: ['hold-person', 'aid', 'spiritual-weapon'],
-        5: ['mass-healing-word', 'spiritual-guardians'], // 3rd-level slot arrives here
+        3: ['hold-person', 'aid', 'spiritual-weapon', 'blindness', 'lesser-restoration'],
+        5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {
@@ -158,10 +158,13 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'int',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       spellsByLevel: {
-        1: ['fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands', 'find-familiar', 'mage-armor', 'shield'],
+        1: [
+          'fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands',
+          'find-familiar', 'mage-armor', 'shield', 'ray-of-frost', 'acid-splash', 'color-spray', 'false-life',
+        ],
         2: ['thunderwave'],
-        3: ['scorching-ray', 'misty-step', 'suggestion', 'web'],
-        5: ['fireball', 'fear', 'lightning-bolt'], // 3rd-level slot arrives here
+        3: ['scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness'],
+        5: ['fireball', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
       },
       learnableExtra: ['ray-of-sickness'],
     },
