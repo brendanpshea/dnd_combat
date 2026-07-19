@@ -61,6 +61,21 @@ export interface BuildOptions {
   equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
   /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
   choices?: Record<Id, Id>;
+  /**
+   * Campaign override: remaining spell slots by level (index 0 = 1st), from
+   * before a long rest. Missing entries (new slot levels from a level-up, or
+   * the field itself) default to full — a level-up never strands a hero with
+   * fewer slots than the table grants.
+   */
+  spellSlotsOverride?: number[];
+  /**
+   * Campaign override: exactly which spells this caster has prepared/known,
+   * replacing the class table's full default list. Missing = the default —
+   * a player who never opens the spellbook plays with today's behavior.
+   */
+  preparedOverride?: Id[];
+  /** Wizard only: spells copied into the spellbook beyond the class default. */
+  spellbookExtra?: Id[];
 }
 
 export function buildCharacter(opts: BuildOptions): Combatant {

@@ -32,11 +32,23 @@ export interface PartyCharacter {
   /** Mutable adventuring state. Missing means a fully rested legacy save. */
   resources?: {
     hp: number;
+    /** Remaining spell slots, index 0 = 1st-level. Absent = full — a fresh
+     *  save, a non-caster, or a caster since their last long rest. */
+    slots?: number[];
     effects?: {
       familiar?: { kind: 'owl' };
       mageArmor?: true;
     };
   };
+  /**
+   * Prepared/known spells, overriding the class defaults. Absent means the
+   * character prepares exactly what the class table grants — a new player who
+   * never opens the spellbook plays with today's behavior unchanged.
+   */
+  prepared?: Id[];
+  /** Wizard only: spells copied into the spellbook from scrolls, beyond the
+   *  class's default known list. Absent = just the defaults. */
+  spellbook?: Id[];
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
