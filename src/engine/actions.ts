@@ -498,7 +498,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (f.trigger === 'bonus') actor.turn.bonusActionUsed = true;
       if (f.trigger === 'action') actor.turn.actionUsed = true;
       const uses = actor.featureUses[action.featureId];
-      if (uses) uses.current -= 1;
+      if (uses && !f.manualUses) uses.current -= 1;
       events.push(...(f.apply?.({ state: draft, actorId }) ?? []));
       break;
     }

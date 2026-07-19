@@ -198,4 +198,84 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  ranger: {
+    id: 'ranger', name: 'Ranger', hitDie: 10,
+    savingThrows: ['str', 'dex'],
+    armorProfs: ['light', 'medium', 'shield'],
+    skillProfs: ['stealth', 'perception'],
+    statPriority: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
+    // 2024 half-caster progression: slots from 1st level, second-level slots
+    // arrive at 5th alongside Extra Attack.
+    spellcasting: {
+      ability: 'wis',
+      slotsByLevel: [[2], [2], [3], [3], [4, 2]],
+      spellsByLevel: {
+        1: ['hunters-mark', 'cure-wounds', 'animal-friendship'],
+        5: ['misty-step'], // 2nd-level slot arrives here
+      },
+    },
+    featuresByLevel: {
+      1: [], // Hunter's Mark (the spell) is the level-1 identity, not a feature
+      3: ['colossus-slayer'], // Hunter's Prey
+      // 4: Ability Score Increase (builder).
+      5: ['extra-attack'],
+    },
+    choices: [{
+      id: 'fighting-style', label: 'Fighting Style', atLevel: 2, default: 'archery',
+      options: [
+        { id: 'archery', name: 'Archery', blurb: '+2 to attack rolls with ranged weapons.', grants: { featureIds: ['archery'] } },
+        { id: 'defense', name: 'Defense', blurb: '+1 AC while wearing armor.', grants: { featureIds: ['defense'] } },
+        { id: 'dueling', name: 'Dueling', blurb: '+2 damage with a one-handed weapon (shield ok).', grants: { featureIds: ['dueling'] } },
+        { id: 'two-weapon-fighting', name: 'Two-Weapon Fighting', blurb: 'Add your ability modifier to off-hand damage.', grants: { featureIds: ['two-weapon-fighting'] } },
+      ],
+    }],
+    weaponMasteries: ['longbow', 'longbow-plus1', 'shortsword', 'shortsword-plus1'],
+    equipment: {
+      mainHand: 'longbow', armor: 'studded-leather',
+      inventory: [
+        { itemId: 'shortsword', qty: 2 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
+  paladin: {
+    id: 'paladin', name: 'Paladin', hitDie: 10,
+    savingThrows: ['wis', 'cha'],
+    armorProfs: ['light', 'medium', 'heavy', 'shield'],
+    skillProfs: ['intimidation'],
+    statPriority: ['str', 'cha', 'con', 'wis', 'dex', 'int'],
+    // Same half-caster progression as the Ranger; the spell list is support
+    // and control, since Divine Smite is the class's real damage engine.
+    spellcasting: {
+      ability: 'cha',
+      slotsByLevel: [[2], [2], [3], [3], [4, 2]],
+      spellsByLevel: {
+        1: ['bless', 'cure-wounds', 'command'],
+        5: ['aid'], // 2nd-level slot arrives here
+      },
+    },
+    featuresByLevel: {
+      1: ['lay-on-hands'],
+      2: ['divine-smite'],
+      3: ['sacred-weapon'], // Devotion: Channel Divinity
+      // 4: Ability Score Increase (builder).
+      5: ['extra-attack'],
+    },
+    choices: [{
+      id: 'fighting-style', label: 'Fighting Style', atLevel: 2, default: 'defense',
+      options: [
+        { id: 'defense', name: 'Defense', blurb: '+1 AC while wearing armor.', grants: { featureIds: ['defense'] } },
+        { id: 'dueling', name: 'Dueling', blurb: '+2 damage with a one-handed weapon (shield ok).', grants: { featureIds: ['dueling'] } },
+        { id: 'great-weapon-fighting', name: 'Great Weapon Fighting', blurb: 'Reroll 1s and 2s on two-handed weapon damage.', grants: { featureIds: ['great-weapon-fighting'] } },
+      ],
+    }],
+    weaponMasteries: ['longsword', 'longsword-plus1', 'warhammer', 'warhammer-plus1'],
+    equipment: {
+      mainHand: 'longsword', offHand: 'shield', armor: 'chain-mail',
+      inventory: [
+        { itemId: 'javelin', qty: 2 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
 };
