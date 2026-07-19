@@ -181,13 +181,13 @@ describe('second monster batch', () => {
         seed,
         combatants: [
           buildMonster('giant-constrictor-snake', 'team2', { x: 3, y: 4 }, '1'),
-          makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, hp: 1000, maxHp: 1000 }),
+          makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, hp: 1000, maxHp: 1000, abilities: { str: 1, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } }),
         ],
       });
       until(c, 'team2-giant-constrictor-snake1');
       const events = c.apply({ kind: 'attack', weaponId: 'snake-constrict', targetId: 'pc' });
-      const hit = events.find((e) => e.type === 'attackRolled' && e.hit);
-      if (hit) {
+      const applied = events.find((e) => e.type === 'conditionApplied' && e.condition === 'restrained');
+      if (applied) {
         const pc = c.state.combatants['pc']!;
         expect(pc.conditions.some((cond) => cond.id === 'restrained')).toBe(true);
         verified = true;
@@ -205,7 +205,8 @@ describe('new encounters complete under AI', () => {
       'badger-den', 'toad-swamp', 'hyena-pack', 'boar-stampede', 'snake-pit',
       'gargoyle-perch', 'fire-nexus', 'water-vortex', 'earth-tremor', 'tempest-eye', 'elemental-cataclysm',
       'sprite-glade', 'satyr-revelry', 'dryad-grove', 'hag-coven', 'unicorn-sanctuary',
-      'cockatrice-flock', 'harpy-roost', 'owlbear-den', 'manticore-cliff', 'gorgon-maze'
+      'cockatrice-flock', 'harpy-roost', 'owlbear-den', 'manticore-cliff', 'gorgon-maze',
+      'shadow-ambush', 'specter-haunt', 'wight-tomb', 'mummy-crypt', 'wisp-bog'
     ]) {
       const c = new Combat({
         seed: 7,

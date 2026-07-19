@@ -31,6 +31,7 @@ IDS = [
     "gargoyle", "fire-elemental", "water-elemental", "earth-elemental", "air-elemental",
     "sprite", "satyr", "dryad", "green-hag", "unicorn",
     "cockatrice", "harpy", "manticore", "owlbear", "gorgon",
+    "shadow", "specter", "will-o-wisp", "wight", "mummy",
 ]
 
 os.makedirs(OUT, exist_ok=True)

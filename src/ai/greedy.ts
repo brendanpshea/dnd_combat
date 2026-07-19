@@ -375,6 +375,48 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
       .reduce((s, c) => s + Math.min(Math.floor(c.maxHp / 2) - c.hp, pool), 0);
     return Math.min(healable, pool) * 1.2;
   }
+  // Area restrain-on-failed-save (water elemental Whelm, gorgon Petrifying
+  // Breath): value each unrestrained enemy in range like a soft lockdown,
+  // weighted by its odds of failing.
+  if (a.featureId === 'whelm' || a.featureId === 'petrifying-breath') {
+    const ability = a.featureId === 'whelm' ? 'str' : 'con';
+    const range = a.featureId === 'whelm' ? 5 : 15;
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities[ability]);
+    return Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        distanceFeet(actor.position, c.position) <= range &&
+        !c.conditions.some((k) => k.id === 'restrained'))
+      .reduce((s, c) => s + saveFailProb(state, c, ability, dc) * 3, 0);
+  }
+  // Whirlwind (air elemental): 3d8 to each adjacent enemy, half on a save.
+  if (a.featureId === 'whirlwind') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.str);
+    const dmg = avgDice('3d8');
+    return Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        distanceFeet(actor.position, c.position) <= 5)
+      .reduce((s, c) => {
+        const fail = saveFailProb(state, c, 'str', dc);
+        return s + fail * dmg + (1 - fail) * dmg / 2;
+      }, 0);
+  }
+  // Charm-away songs (dryad Fey Charm — nearest foe; harpy Luring Song — all in
+  // 30 ft): a removed enemy is worth its full remaining HP, like Turn Undead.
+  if (a.featureId === 'fey-charm' || a.featureId === 'luring-song') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.cha);
+    let foes = Object.values(state.combatants).filter(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        distanceFeet(actor.position, c.position) <= 30,
+    );
+    if (a.featureId === 'fey-charm') {
+      foes = foes.sort((x, y) => distanceFeet(actor.position, x.position) - distanceFeet(actor.position, y.position)).slice(0, 1);
+    }
+    return foes.reduce((s, c) => s + saveFailProb(state, c, 'wis', dc) * damageValue(c.hp, c), 0);
+  }
+  // Fey Invisibility (sprite/green hag): turn hidden for the attack bonus.
+  if (a.featureId === 'fey-invisibility') {
+    return actor.conditions.some((c) => c.id === 'hidden') ? 0 : 1.5;
+  }
   return 0;
 }
 

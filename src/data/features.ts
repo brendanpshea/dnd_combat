@@ -10,7 +10,8 @@ import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow } from '../engine/rules/saves.js';
-import { charmAway } from '../engine/rules/attack.js';
+import { charmAway, applyDamage } from '../engine/rules/attack.js';
+import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
@@ -231,22 +232,154 @@ export const FEATURES: Record<Id, FeatureData> = {
   'bracers-archery': { id: 'bracers-archery', name: 'Bracers of Archery', trigger: 'passive' },
   'boots-winterlands': { id: 'boots-winterlands', name: 'Boots of the Winterlands', trigger: 'passive' },
   'gloves-thievery': { id: 'gloves-thievery', name: 'Gloves of Thievery', trigger: 'passive' },
+  // Monster passives — consulted by the rules via featureIds (see attack.ts and
+  // movement.ts), no apply hook needed.
+  // Long-Limbed (Bugbear): 10-ft melee reach — read in resolveAttack/canAttackWith.
   'long-limbed': { id: 'long-limbed', name: 'Long-Limbed', trigger: 'passive' },
+  // Brute (Bugbear): +1 weapon damage die on a melee hit — read in resolveAttack.
   brute: { id: 'brute', name: 'Brute', trigger: 'passive' },
+  // Rampage (Gnoll/Giant Hyena): a bonus melee attack after a melee kill.
   rampage: { id: 'rampage', name: 'Rampage', trigger: 'passive' },
-  swallow: { id: 'swallow', name: 'Swallow', trigger: 'passive' },
-  relentless: { id: 'relentless', name: 'Relentless', trigger: 'passive' },
+  // Charge (Boar): extra weapon die after moving 15+ ft — read in resolveAttack.
   charge: { id: 'charge', name: 'Charge', trigger: 'passive' },
+  // Burrow / Earth Glide: ignore difficult terrain — read in movement.ts.
   burrow: { id: 'burrow', name: 'Burrow', trigger: 'passive' },
-  'fire-form': { id: 'fire-form', name: 'Fire Form', trigger: 'passive' },
-  whelm: { id: 'whelm', name: 'Whelm', trigger: 'action', uses: { count: 1, per: 'encounter' } },
-  whirlwind: { id: 'whirlwind', name: 'Whirlwind', trigger: 'action', uses: { count: 1, per: 'encounter' } },
   'earth-glide': { id: 'earth-glide', name: 'Earth Glide', trigger: 'passive' },
-  'fey-invisibility': { id: 'fey-invisibility', name: 'Fey Invisibility', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  // Fire Form (Fire Elemental): melee attackers take fire damage — resolveAttack.
+  'fire-form': { id: 'fire-form', name: 'Fire Form', trigger: 'passive' },
+  // Magic Resistance (Satyr/Unicorn): advantage on saves vs spells — saves.ts.
   'magic-resistance': { id: 'magic-resistance', name: 'Magic Resistance', trigger: 'passive' },
-  'fey-charm': { id: 'fey-charm', name: 'Fey Charm', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  // Horn Charge (Unicorn): extra weapon die after moving 15+ ft — resolveAttack.
   'unicorn-charge': { id: 'unicorn-charge', name: 'Horn Charge', trigger: 'passive' },
-  'luring-song': { id: 'luring-song', name: 'Luring Song', trigger: 'action', uses: { count: 1, per: 'encounter' } },
-  'petrifying-breath': { id: 'petrifying-breath', name: 'Petrifying Breath', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  // Trampling Charge (Gorgon): charge + knock prone on a failed Str save.
   'trampling-charge': { id: 'trampling-charge', name: 'Trampling Charge', trigger: 'passive' },
+
+  // Whelm (Water Elemental): each adjacent enemy makes a Strength save or is
+  // restrained (save ends).
+  whelm: {
+    id: 'whelm', name: 'Whelm', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.str);
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+        if (distanceFeet(me.position, t.position) > 5) continue;
+        if (t.conditions.some((c) => c.id === 'restrained')) continue;
+        const { success, event } = savingThrow(state, t.id, 'str', dc);
+        events.push(event);
+        if (!success) {
+          t.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } });
+          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'restrained', sourceId: actorId });
+        }
+      }
+      return events;
+    },
+  },
+  // Whirlwind (Air Elemental): each adjacent enemy makes a Strength save,
+  // taking 3d8 bludgeoning and a 10-ft shove on a failure (half, no push, on a
+  // success).
+  whirlwind: {
+    id: 'whirlwind', name: 'Whirlwind', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.str);
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+        if (distanceFeet(me.position, t.position) > 5) continue;
+        const { success, event } = savingThrow(state, t.id, 'str', dc);
+        events.push(event);
+        const dmg = rollDice(state.rng, '3d8');
+        state.rng = dmg.state;
+        const amount = success ? Math.floor(dmg.total / 2) : dmg.total;
+        events.push(...applyDamage(state, t.id, actorId, amount, 'bludgeoning', dmg.rolls));
+        if (!success && state.combatants[t.id]!.alive) {
+          const dir = {
+            x: Math.sign(t.position.x - me.position.x),
+            y: Math.sign(t.position.y - me.position.y),
+          };
+          if (dir.x !== 0 || dir.y !== 0) events.push(...pushCreature(state, t.id, dir, 2));
+        }
+        if (state.winner) break;
+      }
+      return events;
+    },
+  },
+  // Fey Invisibility (Sprite/Green Hag): vanish, gaining the benefits of being
+  // hidden until the creature attacks.
+  'fey-invisibility': {
+    id: 'fey-invisibility', name: 'Fey Invisibility', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      if (me.conditions.some((c) => c.id === 'hidden')) return [];
+      me.conditions.push({ id: 'hidden', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'hidden', sourceId: actorId }];
+    },
+  },
+  // Fey Charm (Dryad): the nearest enemy within 30 ft makes a Wisdom save or is
+  // charmed out of the fight.
+  'fey-charm': {
+    id: 'fey-charm', name: 'Fey Charm', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
+      const foes = Object.values(state.combatants)
+        .filter((c) => c.alive && c.hp > 0 && c.team !== me.team &&
+          distanceFeet(me.position, c.position) <= 30)
+        .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position));
+      const target = foes[0];
+      if (!target) return [];
+      const { success, event } = savingThrow(state, target.id, 'wis', dc);
+      const events: GameEvent[] = [event];
+      if (!success) events.push(...charmAway(state, target.id));
+      return events;
+    },
+  },
+  // Luring Song (Harpy): every enemy within 30 ft that fails a Wisdom save is
+  // charmed out of the fight.
+  'luring-song': {
+    id: 'luring-song', name: 'Luring Song', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
+      const events: GameEvent[] = [];
+      const foes = Object.values(state.combatants).filter(
+        (c) => c.alive && c.hp > 0 && c.team !== me.team &&
+          distanceFeet(me.position, c.position) <= 30,
+      );
+      for (const t of foes) {
+        const { success, event } = savingThrow(state, t.id, 'wis', dc);
+        events.push(event);
+        if (!success) events.push(...charmAway(state, t.id));
+        if (state.winner) break;
+      }
+      return events;
+    },
+  },
+  // Petrifying Breath (Gorgon): each enemy within 15 ft makes a Constitution
+  // save or begins to turn to stone — modeled as restrained (save ends), the
+  // engine's closest analogue to petrification.
+  'petrifying-breath': {
+    id: 'petrifying-breath', name: 'Petrifying Breath', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.con);
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+        if (distanceFeet(me.position, t.position) > 15) continue;
+        if (t.conditions.some((c) => c.id === 'restrained')) continue;
+        const { success, event } = savingThrow(state, t.id, 'con', dc);
+        events.push(event);
+        if (!success) {
+          t.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'con', dc } });
+          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'restrained', sourceId: actorId });
+        }
+      }
+      return events;
+    },
+  },
+  'consume-life': { id: 'consume-life', name: 'Consume Life', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  'dreadful-glare': { id: 'dreadful-glare', name: 'Dreadful Glare', trigger: 'action', uses: { count: 1, per: 'encounter' } },
 };

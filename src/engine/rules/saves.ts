@@ -13,12 +13,16 @@ export function savingThrow(
   combatantId: Id,
   ability: Ability,
   dc: number,
+  opts: { magical?: boolean } = {},
 ): { success: boolean; event: GameEvent } {
   const c = state.combatants[combatantId]!;
   // Gnomish Cunning and the like: advantage on saves of a listed ability. No
   // disadvantage-on-saves source exists yet, so 'flat' is the only other case
   // — the mode is exactly "does a feature grant this?".
-  const hasAdvantage = c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability));
+  // Magic Resistance (Satyr/Unicorn): advantage on saves against spells.
+  const hasAdvantage =
+    c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
+    (opts.magical === true && c.featureIds.includes('magic-resistance'));
   const mode = hasAdvantage ? 'advantage' : 'flat';
   const d20 = applyLucky(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;

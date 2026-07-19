@@ -16,7 +16,14 @@ import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, 
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { pushCreature } from '../engine/rules/movement.js';
-import { savingThrow } from '../engine/rules/saves.js';
+import { savingThrow as rawSavingThrow } from '../engine/rules/saves.js';
+
+// Every saving throw a spell forces is a save against magic, so Magic
+// Resistance (Satyr, Unicorn) grants advantage here without each spell needing
+// to opt in.
+function savingThrow(state: GameState, combatantId: Id, ability: Ability, dc: number) {
+  return rawSavingThrow(state, combatantId, ability, dc, { magical: true });
+}
 import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
 import { acOf, wearsMetal } from './armor.js';

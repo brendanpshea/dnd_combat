@@ -240,6 +240,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'toad-bite', name: 'Bite', damage: '1d10', damageType: 'piercing',
     properties: [], melee: true,
     extraDamage: { dice: '1d10', type: 'poison' },
+    // Swallow: the bite grabs its prey — a Strength save or restrained (save-ends).
+    onHitSave: { condition: 'restrained', ability: 'str', dc: 13 },
   },
   'hyena-bite': {
     id: 'hyena-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
@@ -252,7 +254,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'snake-constrict': {
     id: 'snake-constrict', name: 'Constrict', damage: '2d8', damageType: 'bludgeoning',
     properties: [], melee: true,
-    onHitCondition: 'restrained',
+    // Grappled/restrained, but escapable: a Strength save at the end of each turn.
+    onHitSave: { condition: 'restrained', ability: 'str', dc: 14 },
   },
   'gargoyle-bite': {
     id: 'gargoyle-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
@@ -282,7 +285,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'sprite-shortbow': {
     id: 'sprite-shortbow', name: 'Shortbow', damage: '1d4', damageType: 'piercing',
     properties: [], range: { normal: 40, long: 160 }, melee: false,
-    onHitCondition: 'poisoned',
+    // Sleep-poison arrow: a Constitution save or poisoned (save-ends).
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 10 },
   },
   'satyr-shortsword': {
     id: 'satyr-shortsword', name: 'Shortsword', damage: '1d6', damageType: 'piercing',
@@ -312,7 +316,9 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'cockatrice-bite': {
     id: 'cockatrice-bite', name: 'Bite', damage: '1d4', damageType: 'piercing',
     properties: [], melee: true,
-    onHitCondition: 'restrained',
+    // Petrification, approximated as restrained (turning to stone) — Con save,
+    // save-ends, so a hit isn't a permanent lockout.
+    onHitSave: { condition: 'restrained', ability: 'con', dc: 11 },
   },
   'harpy-claws': {
     id: 'harpy-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
@@ -349,5 +355,34 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'gorgon-hooves': {
     id: 'gorgon-hooves', name: 'Hooves', damage: '2d6', damageType: 'bludgeoning',
     properties: [], melee: true,
+  },
+  'shadow-drain': {
+    id: 'shadow-drain', name: 'Strength Drain', damage: '1d6', damageType: 'necrotic',
+    properties: [], melee: true,
+    onHitSave: { dc: 10, ability: 'con', condition: 'sapped' },
+  },
+  'specter-drain': {
+    id: 'specter-drain', name: 'Life Drain', damage: '3d6', damageType: 'necrotic',
+    properties: [], melee: true,
+    onHitSave: { dc: 10, ability: 'con', condition: 'slowed' },
+  },
+  'wisp-shock': {
+    id: 'wisp-shock', name: 'Shock', damage: '2d8', damageType: 'lightning',
+    properties: [], melee: true,
+  },
+  'wight-longsword': {
+    id: 'wight-longsword', name: 'Longsword', damage: '1d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'wight-drain': {
+    id: 'wight-drain', name: 'Life Drain', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+    extraDamage: { dice: '1d6', type: 'necrotic' },
+    onHitSave: { dc: 11, ability: 'con', condition: 'slowed' },
+  },
+  'mummy-fist': {
+    id: 'mummy-fist', name: 'Rotting Fist', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+    extraDamage: { dice: '3d6', type: 'necrotic' },
   },
 };

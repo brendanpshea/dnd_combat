@@ -8,7 +8,7 @@ import { WEAPONS, WeaponData } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
-import { distanceFeet, adjacent, hasLineOfSight } from '../grid.js';
+import { distanceFeet, distanceCells, adjacent, hasLineOfSight } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -41,7 +41,8 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   if (isHidden(t)) return false;
   if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
-  const inMelee = w.melee && adjacent(actor.position, t.position);
+  const reachCells = actor.featureIds.includes('long-limbed') ? 2 : 1;
+  const inMelee = w.melee && distanceCells(actor.position, t.position) <= reachCells;
   const inRange =
     w.range !== undefined && dist <= w.range.long &&
     hasLineOfSight(state.grid, actor.position, t.position);
@@ -58,6 +59,8 @@ export interface AttackContext {
    * the damage, exactly as the usual modifier does.
    */
   abilityOverride?: Ability;
+  /** Internal guard: a Rampage bonus attack must not itself trigger Rampage. */
+  noRampage?: boolean;
 }
 
 /**
@@ -170,7 +173,9 @@ export function resolveAttack(
   const attacker = state.combatants[attackerId]!;
   const target = state.combatants[targetId]!;
   const weapon = WEAPONS[weaponId]!;
-  const isMeleeAttack = adjacent(attacker.position, target.position) && weapon.melee;
+  // Long-Limbed (Bugbear): 10-ft reach with melee weapons instead of 5 ft.
+  const reachCells = attacker.featureIds.includes('long-limbed') ? 2 : 1;
+  const isMeleeAttack = distanceCells(attacker.position, target.position) <= reachCells && weapon.melee;
 
   const { adv, dis } = collectAttackSources(state, attacker, target, weapon, isMeleeAttack);
   const mode = resolveRollMode(adv, dis);
@@ -280,6 +285,38 @@ export function resolveAttack(
     tags.push('Bracers of Archery');
   }
 
+  // Brute (Bugbear): a melee hit deals one extra weapon damage die.
+  if (attacker.featureIds.includes('brute') && isMeleeAttack) {
+    const faces = weapon.damage.match(/d(\d+)/)?.[1];
+    if (faces) {
+      const extra = rollDice(state.rng, `1d${faces}`, crit);
+      state.rng = extra.state;
+      amount += extra.total;
+      rolls = [...rolls, ...extra.rolls];
+      tags.push('Brute');
+    }
+  }
+
+  // Charge (Boar/Unicorn/Gorgon): moving at least 15 ft before a melee hit
+  // adds an extra weapon damage die. The unicorn's horn and the gorgon's
+  // trampling gore use the same lunge.
+  const charged =
+    isMeleeAttack &&
+    attacker.turn.movementUsed >= 15 &&
+    (attacker.featureIds.includes('charge') ||
+      attacker.featureIds.includes('unicorn-charge') ||
+      attacker.featureIds.includes('trampling-charge'));
+  if (charged) {
+    const faces = weapon.damage.match(/d(\d+)/)?.[1];
+    if (faces) {
+      const extra = rollDice(state.rng, `1d${faces}`, crit);
+      state.rng = extra.state;
+      amount += extra.total;
+      rolls = [...rolls, ...extra.rolls];
+      tags.push('Charge');
+    }
+  }
+
   // Sneak Attack: once per turn, finesse/ranged weapon, and either advantage
   // or an ally adjacent to the target — never while at disadvantage.
   if (
@@ -383,6 +420,41 @@ export function resolveAttack(
       }
     }
   }
+
+  // Trampling Charge (Gorgon): a charging gore knocks the target prone on a
+  // failed Strength save.
+  if (charged && attacker.featureIds.includes('trampling-charge') && target.alive &&
+      !target.conditions.some((c) => c.id === 'prone')) {
+    const dc = 8 + proficiencyBonus(attacker.level) + abilityMod(attacker.abilities.str);
+    const save = savingThrow(state, targetId, 'str', dc);
+    events.push(save.event);
+    if (!save.success) {
+      target.conditions.push({ id: 'prone', sourceId: attackerId });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: attackerId });
+    }
+  }
+
+  // Fire Form (Fire Elemental): a creature that hits it in melee takes fire
+  // damage in return.
+  if (target.alive && target.featureIds.includes('fire-form') && isMeleeAttack && attacker.alive) {
+    const burn = rollDice(state.rng, '1d10');
+    state.rng = burn.state;
+    events.push(...applyDamage(state, attackerId, targetId, burn.total, 'fire', burn.rolls, { tags: ['Fire Form'] }));
+  }
+
+  // Rampage (Gnoll/Giant Hyena): dropping a foe with a melee hit grants one
+  // immediate bonus melee attack against another adjacent enemy.
+  if (!ctx.noRampage && attacker.featureIds.includes('rampage') && isMeleeAttack &&
+      target.hp === 0 && attacker.alive) {
+    const next = Object.values(state.combatants).find(
+      (c) => c.alive && !isDown(c) && c.team !== attacker.team && c.id !== targetId &&
+             adjacent(c.position, attacker.position),
+    );
+    if (next) {
+      events.push(...resolveAttack(state, attackerId, next.id, weaponId, { noRampage: true }));
+    }
+  }
+
   return events;
 }
 

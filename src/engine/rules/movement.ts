@@ -13,6 +13,18 @@ import type { GameEvent } from '../events.js';
 export const HAZARD_DAMAGE = '1d4';
 
 /**
+ * Creatures that ignore the movement cost of difficult terrain: Boots of the
+ * Winterlands (trinket), and burrowers/earth-gliders that move through it.
+ */
+function ignoresDifficult(mover: Combatant): boolean {
+  return (
+    mover.featureIds.includes('boots-winterlands') ||
+    mover.featureIds.includes('burrow') ||
+    mover.featureIds.includes('earth-glide')
+  );
+}
+
+/**
  * Hostiles that actually stand in your way. A downed one doesn't: you step over
  * a body rather than being walled off by it — the mover still can't *end* on the
  * square (moveDestinations rejects any occupied cell), which is the real rule.
@@ -33,7 +45,7 @@ export function hostileIds(state: GameState, mover: Combatant): Set<Id> {
 export function moveDestinations(state: GameState, mover: Combatant): Position[] {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   if (budget <= 0) return [];
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, mover.featureIds.includes('boots-winterlands'));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, ignoresDifficult(mover));
   const out: Position[] = [];
   for (const k of r.costs.keys()) {
     const [x, y] = k.split(',').map(Number) as [number, number];
@@ -117,7 +129,7 @@ function maxHit(c: Combatant, weaponId: Id): number {
  */
 export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Position): number {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), mover.featureIds.includes('boots-winterlands'));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover));
   const path = pathTo(r, mover.position, to);
   if (!path) return 0;
 
@@ -156,7 +168,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const events: GameEvent[] = [];
   const mover = state.combatants[moverId]!;
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), mover.featureIds.includes('boots-winterlands'));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover));
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   const cost = r.costs.get(`${to.x},${to.y}`)!;

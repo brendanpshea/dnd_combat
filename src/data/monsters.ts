@@ -294,7 +294,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     ac: 11, hp: 39, speed: 30,
     creatureType: 'beast',
     abilities: { str: 15, dex: 13, con: 13, int: 2, wis: 10, cha: 3 },
-    featureIds: ['swallow'],
+    featureIds: [],
     weaponIds: ['toad-bite'],
   },
   'giant-hyena': {
@@ -310,7 +310,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     ac: 12, hp: 42, speed: 40,
     creatureType: 'beast',
     abilities: { str: 17, dex: 10, con: 16, int: 2, wis: 7, cha: 5 },
-    featureIds: ['charge', 'relentless'],
+    featureIds: ['charge', 'relentless-endurance'],
     weaponIds: ['boar-tusk'],
   },
   'giant-constrictor-snake': {
@@ -398,7 +398,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 10, dex: 12, con: 11, int: 14, wis: 15, cha: 18 },
     featureIds: ['fey-charm'],
     weaponIds: ['dryad-club'],
-    spellcasting: { ability: 'wis', slots: [3], spellIds: ['cure-wounds', 'web'] },
+    // A 2nd-level slot so Web (its control spell) is actually castable.
+    spellcasting: { ability: 'wis', slots: [3, 1], spellIds: ['cure-wounds', 'web'] },
   },
   'green-hag': {
     id: 'green-hag', name: 'Green Hag',
@@ -459,6 +460,58 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['petrifying-breath', 'trampling-charge'],
     weaponIds: ['gorgon-gore', 'gorgon-hooves'],
     attacksPerAction: 2,
+  },
+
+  shadow: {
+    id: 'shadow', name: 'Shadow',
+    ac: 12, hp: 16, speed: 40,
+    creatureType: 'undead',
+    abilities: { str: 6, dex: 14, con: 13, int: 6, wis: 10, cha: 8 },
+    weaponIds: ['shadow-drain'],
+    vulnerabilities: ['radiant'],
+    immunities: ['necrotic', 'poison'],
+    resistances: ['acid', 'fire', 'lightning', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+  },
+  specter: {
+    id: 'specter', name: 'Specter',
+    ac: 12, hp: 22, speed: 50,
+    creatureType: 'undead',
+    abilities: { str: 1, dex: 14, con: 11, int: 10, wis: 10, cha: 11 },
+    weaponIds: ['specter-drain'],
+    immunities: ['necrotic', 'poison'],
+    resistances: ['acid', 'fire', 'lightning', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+  },
+  'will-o-wisp': {
+    id: 'will-o-wisp', name: "Will-o'-Wisp",
+    ac: 19, hp: 22, speed: 50,
+    creatureType: 'undead',
+    abilities: { str: 1, dex: 28, con: 10, int: 13, wis: 14, cha: 11 },
+    featureIds: ['consume-life'],
+    weaponIds: ['wisp-shock'],
+    immunities: ['lightning', 'poison'],
+    resistances: ['acid', 'fire', 'necrotic', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+  },
+  wight: {
+    id: 'wight', name: 'Wight',
+    ac: 14, hp: 45, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 15, dex: 14, con: 16, int: 10, wis: 13, cha: 15 },
+    weaponIds: ['wight-longsword', 'wight-drain'],
+    attacksPerAction: 2,
+    immunities: ['poison'],
+    resistances: ['necrotic', 'bludgeoning', 'piercing', 'slashing'],
+  },
+  mummy: {
+    id: 'mummy', name: 'Mummy',
+    ac: 11, hp: 58, speed: 20,
+    creatureType: 'undead',
+    abilities: { str: 16, dex: 8, con: 15, int: 6, wis: 10, cha: 12 },
+    featureIds: ['dreadful-glare'],
+    weaponIds: ['mummy-fist'],
+    attacksPerAction: 2,
+    vulnerabilities: ['fire'],
+    immunities: ['necrotic', 'poison'],
+    resistances: ['bludgeoning', 'piercing', 'slashing'],
   },
 };
 
@@ -697,6 +750,26 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'gorgon-maze', name: 'Gorgon Lair', suggestedLevel: 5,
     members: ['gorgon'],
   },
+  'shadow-ambush': {
+    id: 'shadow-ambush', name: 'Shadow Ambush', suggestedLevel: 1,
+    members: ['shadow', 'shadow'],
+  },
+  'specter-haunt': {
+    id: 'specter-haunt', name: 'Specter Haunt', suggestedLevel: 2,
+    members: ['specter', 'specter'],
+  },
+  'wight-tomb': {
+    id: 'wight-tomb', name: 'Wight Tomb', suggestedLevel: 3,
+    members: ['wight', 'skeleton', 'skeleton'],
+  },
+  'mummy-crypt': {
+    id: 'mummy-crypt', name: 'Mummy Crypt', suggestedLevel: 3,
+    members: ['mummy', 'zombie', 'zombie'],
+  },
+  'wisp-bog': {
+    id: 'wisp-bog', name: 'Wisp Bog', suggestedLevel: 4,
+    members: ['will-o-wisp', 'will-o-wisp', 'specter'],
+  },
 };
 
 /**
@@ -715,6 +788,7 @@ export const MONSTER_XP: Record<Id, number> = {
   gargoyle: 450, 'fire-elemental': 1800, 'water-elemental': 1800, 'earth-elemental': 1800, 'air-elemental': 1800,
   sprite: 50, satyr: 100, dryad: 200, 'green-hag': 700, unicorn: 1800,
   cockatrice: 100, harpy: 200, manticore: 700, owlbear: 700, gorgon: 1800,
+  shadow: 100, specter: 200, 'will-o-wisp': 450, wight: 700, mummy: 700,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

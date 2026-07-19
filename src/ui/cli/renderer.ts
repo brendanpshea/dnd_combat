@@ -26,6 +26,7 @@ const CLASS_LETTER: Record<string, string> = {
   gargoyle: 'Y', 'fire-elemental': 'F', 'water-elemental': 'V', 'earth-elemental': 'T', 'air-elemental': 'A',
   sprite: 'p', satyr: 'S', dryad: 'R', 'green-hag': 'H', unicorn: 'C',
   cockatrice: 'c', harpy: 'h', manticore: 'M', owlbear: 'O', gorgon: 'G',
+  shadow: 'S', specter: 's', 'will-o-wisp': 'i', wight: 'W', mummy: 'M',
 };
 
 export function cellName(p: Position): string {
