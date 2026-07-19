@@ -101,6 +101,9 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   display: grid;
   gap: 0;
   background: #14101f;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 4px;
   border-radius: 10px;
   user-select: none;
@@ -139,10 +142,35 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 /* ---- board themes -------------------------------------------------------
    Each map is styled as a place: the checkerboard, walls, and difficult
    ground all take the theme's palette, rather than a splotch of colour in
-   the middle of a purple board. Terrain still lives in `background` only. */
+   the middle of a purple board. Terrain still lives in `background` only.
+
+   Cell colours are translucent (not flat hex) so the generated backdrop
+   (art/arena-prompts.md; set inline as background-image by Board.tsx, since
+   a plain CSS url() can't follow the GitHub Pages base path the way the
+   BASE_URL-aware art helpers do) shows through underneath — the flat hex is
+   still the fallback `background-color` for a theme whose art hasn't
+   generated. Alpha (~0.55) was chosen by compositing a checkerboard over
+   each backdrop and eyeballing contrast (art/_preview_board.py); the same
+   inset grid line and terrain overlays that made the old flat colours
+   readable still carry the actual affordance. */
+.board.theme-stone { background: #201f33; }
+.board.theme-stone .cell { background: rgba(107, 100, 128, 0.55); }
+.board.theme-stone .cell.dark { background: rgba(69, 63, 92, 0.55); }
+.board.theme-stone .cell.terrain-wall {
+  /* broken columns / rubble */
+  --wall-hi: #847da0; --wall-lo: #524a72;
+}
+.board.theme-stone .cell.terrain-difficult {
+  /* damp seepage pooling between cracked flagstones */
+  background:
+    radial-gradient(90% 70% at 30% 25%, #4d8fa8cc, transparent 62%),
+    radial-gradient(90% 70% at 72% 78%, #3b6fa3cc, transparent 62%),
+    linear-gradient(150deg, #2c4f68, #26385f);
+}
+
 .board.theme-forest { background: #10180f; }
-.board.theme-forest .cell { background: #46693c; }
-.board.theme-forest .cell.dark { background: #3d5d34; }
+.board.theme-forest .cell { background: rgba(70, 105, 60, 0.55); }
+.board.theme-forest .cell.dark { background: rgba(61, 93, 52, 0.55); }
 .board.theme-forest .cell.terrain-wall {
   /* mossy boulders / tree cover */
   --wall-hi: #6a7d55; --wall-lo: #445531;
@@ -157,8 +185,8 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-graveyard { background: #0d1014; }
-.board.theme-graveyard .cell { background: #3b4048; }
-.board.theme-graveyard .cell.dark { background: #343941; }
+.board.theme-graveyard .cell { background: rgba(59, 64, 72, 0.55); }
+.board.theme-graveyard .cell.dark { background: rgba(52, 57, 65, 0.55); }
 .board.theme-graveyard .cell.terrain-wall {
   /* headstones / crypt masonry */
   --wall-hi: #7b8391; --wall-lo: #4b525f;
@@ -171,8 +199,8 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-ember { background: #170d0b; }
-.board.theme-ember .cell { background: #4a3630; }
-.board.theme-ember .cell.dark { background: #412e29; }
+.board.theme-ember .cell { background: rgba(74, 54, 48, 0.55); }
+.board.theme-ember .cell.dark { background: rgba(65, 46, 41, 0.55); }
 .board.theme-ember .cell.terrain-wall {
   --wall-hi: #7c5e52; --wall-lo: #4e3a32;
 }

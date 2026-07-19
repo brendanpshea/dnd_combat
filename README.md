@@ -36,7 +36,9 @@ npm run campaign  # terminal campaign: 14-battle ladder with XP, leveling, loot
 
 ## Web UI
 
-React + Vite, no external art — CSS board, emoji tokens, inline SVG icon,
+React + Vite. The board and its terrain are CSS, layered over a generated
+painterly backdrop per map theme; characters get generated art tokens/
+portraits with an emoji fallback per unit; plus an inline SVG icon and
 WebAudio-synthesized sound. Main menu offers **Campaign** (progress persists
 in localStorage) and **Single battle** (hot-seat / vs AI / AI spectate /
 monster encounters, with map/level/seed selection).

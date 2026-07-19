@@ -1,10 +1,10 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { GameState, Position, Combatant, Id } from '../../src/engine/types.js';
 import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
-import { hasArt, tokenUrl, tokenScale } from './art.js';
+import { hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG } from './art.js';
 import { conditionBadges, conditionTint } from './conditions.js';
 
 const TOKEN: Record<string, string> = {
@@ -231,9 +231,19 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
     );
   });
 
+  const boardTheme = theme ?? 'stone';
+  const boardStyle: CSSProperties = { gridTemplateColumns: `repeat(${width}, 1fr)` };
+  if (HAS_BOARD_BG.has(boardTheme)) {
+    // A painterly backdrop per theme, sitting behind the CSS-drawn grid — see
+    // art/arena-prompts.md. Set inline (not in styles.css) so the URL goes
+    // through the same BASE_URL-aware helper as token/portrait art, which a
+    // plain CSS `url()` can't: the GitHub Pages build serves from a subpath.
+    boardStyle.backgroundImage = `url(${boardBgUrl(boardTheme)})`;
+  }
+
   return (
     <div className="board-wrap">
-      <div className={`board theme-${theme ?? 'stone'}`} style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}>
+      <div className={`board theme-${boardTheme}`} style={boardStyle}>
         {cells}
         <div className="token-layer">{tokens}</div>
         {bolts.length > 0 && <div className="token-layer projectile-layer">{bolts}</div>}

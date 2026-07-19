@@ -808,8 +808,20 @@ into "pick a cell" prompts. Every `GameEvent` renders as an English log line.
 
 `web/` is a React + Vite app importing the engine directly (no engine
 changes were needed — the browser is just another driver of
-`legalActions`/`step`). No external art: CSS board, emoji tokens, an
-authored SVG icon, WebAudio-synthesized sound effects.
+`legalActions`/`step`). The board and its dynamic terrain (walls, difficult
+ground, hazards) stay 100% CSS — generated art is layered in behind them, not
+instead: character tokens/portraits (`art/prompts.md`, `art/process.py`) with
+an emoji fallback per unit, a painterly arena backdrop per map theme
+(`art/arena-prompts.md`, `art/process_backgrounds.py`) behind the grid, an
+authored SVG icon, and WebAudio-synthesized sound effects.
+- **Arena backdrops:** one generated image per `MapTheme` (stone/forest/
+  graveyard/ember — `src/data/maps.ts`), reused across every map that shares
+  a theme. Set as an inline `background-image` in `Board.tsx` (`boardBgUrl` in
+  `art.ts`, the same `BASE_URL`-aware helper tokens/portraits use — a plain
+  CSS `url()` can't follow the GitHub Pages subpath the way that does) behind
+  the existing CSS-drawn grid. Cell colours are translucent (`rgba`, ~0.55
+  alpha) rather than flat hex so the backdrop shows through; walls, difficult
+  terrain, and hazards remain fully opaque CSS gradients on top, unchanged.
 
 - **Interaction:** legal actions are painted onto the board — tinted cells
   for moves (tokens slide via a transform-positioned token layer), red/green

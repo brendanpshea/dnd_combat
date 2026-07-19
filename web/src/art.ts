@@ -34,6 +34,13 @@ export function portraitUrl(id: string): string {
   return `${BASE}art/portrait-${id}.webp`;
 }
 
+/** Themes with a generated arena backdrop (see art/arena-prompts.md). */
+export const HAS_BOARD_BG = new Set<string>(['stone', 'forest', 'graveyard', 'ember']);
+
+export function boardBgUrl(theme: string): string {
+  return `${BASE}art/bg-${theme}.webp`;
+}
+
 /**
  * Board render scale, amplifying the size tiers the source framing only hints
  * at (so an ogre visibly towers over a kobold). 1 = default cell fit.
