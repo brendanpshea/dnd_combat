@@ -664,15 +664,36 @@ the number of item rolls and the rarity ceiling both scale with XP (a rarity-
 tiered pool, no per-stage authoring); the finale forces one guaranteed rare
 drop. The pool itself (`TREASURE_POOL`) spans gemstones and jewelry
 (`src/data/valuables.ts` — pure sell-value, no combat use, so they're never
-offered as a useItem action), a wider mundane weapon selection, moon-touched
-(silvered) weapons that carry no attack/damage bonus but bypass resistance to
-their damage type (`WeaponData.magic` → `applyDamage`'s `bypassResistance`
-option — dormant today since no monster yet resists a physical type, but ready
-for were-creatures/elementals), resistance and giant-strength potions (both
-persist for the rest of the encounter by mutating the combatant directly,
-matching how Mage Armor already persists), and spell scrolls, tuned so a
-hoard averages roughly 50 gp of value per character level. Loot and XP use the
-battle's final RNG state, so seeded campaigns are reproducible end-to-end. Old saves migrate: a missing `xp` is back-filled from
+offered as a useItem action), a wider mundane weapon selection, adamantine
+armor (`ArmorData.noCrit`, checked in `resolveAttack` alongside the crit-range
+calc — any crit against the wearer downgrades to a normal hit), a fuller line
+of +1 weapons/armor/`shield-plus1` (rare tier, the higher-level reward), a
+couple of moon-touched (silvered) weapons that carry no attack/damage bonus
+but bypass resistance to their damage type (`WeaponData.magic` →
+`applyDamage`'s `bypassResistance` option — dormant today since no monster yet
+resists a physical type, but ready for were-creatures/elementals), resistance
+and giant-strength potions (both persist for the rest of the encounter by
+mutating the combatant directly, matching how Mage Armor already persists),
+and spell scrolls from cantrip through 3rd level, tuned so a hoard averages
+roughly 50 gp of value per character level.
+
+**Trinkets** (`src/data/trinkets.ts`) are a fourth equipment slot
+(`Equipped.trinket`) — one wondrous item, worn alongside main hand/off-hand/
+armor, equipped and priced through the same generic `equipBlocked`/
+`equipItem`/`itemPrice` machinery (a trinket blocks in every other slot and
+only unblocks in its own). Each trinket declares a `grants` bundle the builder
+folds exactly like a species/choice-point grant: feature ids (whose effects
+live in the relevant rule — Cloak of Protection's +1 AC/saves in `armor.ts`/
+`saves.ts`, Brooch of Shielding's Magic Missile immunity in `spells.ts`,
+Bracers of Archery's ranged damage in `attack.ts`, Boots of the Winterlands'
+difficult-terrain-ignore threaded through `reachable`'s new `ignoreDifficult`
+parameter, Gloves of Thievery's Sleight of Hand bonus in `bestAtSkill`), damage
+resistances, or an ability-score floor (Gauntlets of Ogre Power, Headband of
+Intellect) applied before HP/AC-relevant modifiers are computed. Adding a new
+trinket is data plus, at most, one feature check in the rule it touches.
+
+Loot and XP use the battle's final RNG state, so seeded campaigns are
+reproducible end-to-end. Old saves migrate: a missing `xp` is back-filled from
 the ladder so nobody de-levels. Between battles the shop buys/sells
 (half price back) from
 `SHOP_STOCK` — consumables, weapons (incl. +1 longsword/shortsword with
