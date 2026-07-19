@@ -115,6 +115,7 @@ export function startTurn(state: GameState): GameEvent[] {
     attacksLeft: 0,
     interacted: false,
     sneakAttackUsed: false,
+    colossusUsed: false,
   };
   // Spiritual Weapon fades once its duration runs out.
   if (c.spiritualWeapon && state.round > c.spiritualWeapon.expiresAtRound) delete c.spiritualWeapon;

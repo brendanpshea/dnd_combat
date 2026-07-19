@@ -73,6 +73,16 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
       dmg += avgDice(`${Math.ceil(actor.level / 2)}d6`);
     }
   }
+  if (target.conditions.some((c) => c.id === 'marked' && c.sourceId === actor.id)) dmg += avgDice('1d6');
+  if (actor.featureIds.includes('colossus-slayer') && !actor.turn.colossusUsed && target.hp < target.maxHp) {
+    dmg += avgDice('1d8');
+  }
+  if (
+    actor.featureIds.includes('divine-smite') && isMelee && !actor.turn.bonusActionUsed &&
+    actor.spellSlots.some((s) => s.current > 0)
+  ) {
+    dmg += avgDice('2d8'); // rough EV of the cheapest auto-smite
+  }
   return damageValue(hitProb(bonus, acOf(target), mode) * dmg, target);
 }
 
@@ -280,6 +290,13 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       }
       return v - slotCost;
     }
+    case 'hunters-mark': {
+      if (actor.concentratingOn) return 0;
+      // Roughly two rounds of attacks' worth of extra 1d6 hits, discounted for
+      // the chance the target dies or the mark breaks before then.
+      const expectedHits = actor.attacksPerAction * 2;
+      return avgDice('1d6') * expectedHits * 0.6 - slotCost;
+    }
     case 'fear': {
       if (actor.concentratingOn) return 0;
       const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
@@ -400,8 +417,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
 
 /** Does this combatant prefer to fight up close? */
 function isMeleeFighter(c: Combatant): boolean {
-  if (c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric') return true;
-  if (c.classId === 'wizard') return false;
+  if (c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric' || c.classId === 'paladin') return true;
+  if (c.classId === 'wizard' || c.classId === 'ranger') return false;
   // Monsters: charge if they carry any pure-melee weapon (no ranged profile).
   return attackableWeapons(c).some((w) => {
     const weapon = WEAPONS[w];
@@ -517,6 +534,19 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   if (a.featureId === 'fey-invisibility') {
     return actor.conditions.some((c) => c.id === 'hidden') ? 0 : 1.5;
   }
+  if (a.featureId === 'lay-on-hands') {
+    const pool = actor.featureUses['lay-on-hands']?.current ?? 0;
+    if (pool <= 0) return 0;
+    const target = Object.values(state.combatants)
+      .filter((c) => c.alive && c.team === actor.team && c.hp < c.maxHp &&
+        (c.id === actor.id || adjacent(actor.position, c.position)))
+      .sort((a2, b2) => a2.hp / a2.maxHp - b2.hp / b2.maxHp)[0];
+    if (!target) return 0;
+    const missing = target.maxHp - target.hp;
+    const heal = Math.min(pool, missing);
+    return heal * (missing >= target.maxHp / 2 ? 1.4 : 0.6);
+  }
+  if (a.featureId === 'sacred-weapon') return 3;
   return 0;
 }
 

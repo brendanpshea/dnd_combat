@@ -8,6 +8,8 @@ export const CLASS_BLURB: Record<string, string> = {
   cleric: 'Healer and buffer. Cure Wounds, Bless, Turn Undead.',
   wizard: 'Glass-cannon caster. Magic Missile, Sleep, area spells.',
   rogue: 'Skirmisher. Sneak Attack, Cunning Action, hides as a bonus action.',
+  ranger: "Marksman. Hunter's Mark, Colossus Slayer, a bow and a blade.",
+  paladin: 'Holy tank. Lay on Hands, Divine Smite, heavy armor and a shield.',
 };
 
 export const SPECIES_BLURB: Record<string, string> = {

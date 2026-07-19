@@ -4,8 +4,8 @@ A grid-based tactical combat game using a simplified subset of the SRD 5.2.1
 rules. The engine is headless, deterministic, and data-driven; the terminal
 CLI, the web app, and the greedy AI all drive it through the same action API.
 
-**Status: phases 1–8 implemented** — full hot-seat and vs-AI play, four
-classes at levels 1–3 with one subclass each, six SRD monsters in four
+**Status: phases 1–8 implemented** — full hot-seat and vs-AI play, six
+classes at levels 1–5 with one subclass each, six SRD monsters in four
 encounters, five battle maps with terrain, inventory/equipment, a persistent
 campaign (shop, loot, skill gambits), and a deployed web frontend
 (https://brendanpshea.github.io/dnd_combat/). See §10 for the roadmap.
@@ -437,6 +437,36 @@ carry their RAW mastery in data; a mastery only fires for a wielder whose class
 trains that weapon (`weaponMasteries`). Cleave and Nick are deferred — they
 need multi-target and off-hand action-economy changes the current single-target
 attack resolution doesn't support.
+
+**Ranger (Hunter) and Paladin (Devotion)**, the fifth and sixth classes,
+follow the 2024 half-caster progression — spellcasting from 1st level, slots
+`[[2],[2],[3],[3],[4,2]]`, Fighting Style at 2nd rather than 1st. Both are
+mostly `ClassData`: standard array, standard gear, a Fighting Style choice
+point, and (mostly) spells the cleric/wizard lists already carry. Four
+mechanics are new. **Hunter's Mark** is a bonus-action concentration spell
+that adds 1d6 force to *every* hit against the marked target (not once per
+turn), via a `marked` condition scoped by `sourceId` exactly like Guiding
+Bolt's `guided`. **Colossus Slayer** adds 1d8 once per turn against a target
+below its HP max, gated by a `turn.colossusUsed` flag mirroring Sneak
+Attack's. **Lay on Hands** is a level-scaled HP pool (5 × level) spent in
+partial amounts across many activations rather than a flat per-use
+resource — `FeatureData.manualUses` lets a feature own its own
+`featureUses` decrement instead of the generic "one use" step() applies.
+**Divine Smite** auto-fires as a secondary radiant `applyDamage` call
+(alongside the weapon's own damage, like a monster's secondary poison
+damage) whenever a melee hit lands with a spell slot and the bonus action
+both still free — that pairing is the real balancing lever in the 2024
+rules, and it's also what makes the smite need no explicit player choice
+the AI has to model. **Sacred Weapon** is a 1/encounter Channel Divinity
+that adds Charisma to the paladin's own attack rolls for the rest of the
+encounter, via a `sacredWeapon` condition.
+
+Simplifications versus RAW: Favored Enemy's free (slot-less) Hunter's Mark
+casts are omitted — the mark always costs a slot; recasting it on a new
+target simply breaks concentration on the old one rather than re-targeting
+for free. Divine Smite is always-on rather than a player toggle ("hold
+smites"). Paladin's Find Steed and Ranger's Favored Terrain are out of
+scope, matching the "deliberately out of scope" list in §11.
 
 ### Species (Human, Dwarf, Wood Elf, Orc)
 
@@ -921,10 +951,11 @@ suite before every deploy.
 Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ greedy AI
 → ✅ terrain/maps → ✅ monsters/encounters → ✅ levels 2–3 + subclasses
 → ✅ inventory/equipment → ✅ campaign + shop + random loot + shop skills
-→ ✅ web UI (battle, campaign, effects/sound, PWA, Pages deploy).
+→ ✅ web UI (battle, campaign, effects/sound, PWA, Pages deploy)
+→ ✅ Ranger + Paladin (levels 1–5).
 
 Next candidates, roughly in fun-per-effort order:
-1. **More classes** (Barbarian, Ranger…) — mostly data now.
+1. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.
 2. **Levels 4–5** (ASIs, Extra Attack, 3rd-level spells — Fireball wants a
    bigger sphere template).
 3. **Longer/branching campaign** (more stages, choice of route, revival

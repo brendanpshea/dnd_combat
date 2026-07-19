@@ -189,6 +189,11 @@ export function resolveAttack(
   let total = d20.natural + mod + prof + (weapon.attackBonus ?? 0);
   // Fighting Style: Archery — +2 to attack rolls with ranged weapons.
   if (attacker.featureIds.includes('archery') && !weapon.melee) total += 2;
+  // Sacred Weapon (Devotion Channel Divinity): +Cha to the paladin's own
+  // attack rolls for the rest of the encounter, once activated.
+  if (attacker.conditions.some((c) => c.id === 'sacredWeapon')) {
+    total += abilityMod(attacker.abilities.cha);
+  }
   if (attacker.conditions.some((c) => c.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;
@@ -347,6 +352,32 @@ export function resolveAttack(
     }
   }
 
+  // Hunter's Mark: +1d6 force per hit against the marked target, only for
+  // whoever cast the mark — every hit, not once per turn, which is what makes
+  // the bonus action and concentration worth spending.
+  if (target.conditions.some((c) => c.id === 'marked' && c.sourceId === attackerId)) {
+    const mark = rollDice(state.rng, '1d6', crit);
+    state.rng = mark.state;
+    amount += mark.total;
+    rolls = [...rolls, ...mark.rolls];
+    tags.push("Hunter's Mark");
+  }
+
+  // Colossus Slayer (Hunter's Prey): once per turn, +1d8 on a hit against a
+  // target below its HP max.
+  if (
+    attacker.featureIds.includes('colossus-slayer') &&
+    !attacker.turn.colossusUsed &&
+    target.hp < target.maxHp
+  ) {
+    const extra = rollDice(state.rng, '1d8', crit);
+    state.rng = extra.state;
+    amount += extra.total;
+    rolls = [...rolls, ...extra.rolls];
+    attacker.turn.colossusUsed = true;
+    tags.push('Colossus Slayer');
+  }
+
   // Goblin-style rider: extra dice when the roll had advantage.
   if (weapon.bonusDiceOnAdvantage && mode === 'advantage') {
     const extra = rollDice(state.rng, weapon.bonusDiceOnAdvantage, crit);
@@ -373,6 +404,27 @@ export function resolveAttack(
     const extra = rollDice(state.rng, weapon.extraDamage.dice, crit);
     state.rng = extra.state;
     events.push(...applyDamage(state, targetId, attackerId, extra.total, weapon.extraDamage.type, extra.rolls, { crit }));
+  }
+
+  // Divine Smite: a bonus-action spell cast on a melee hit (2024 rules),
+  // radiant on top of the weapon's own damage type — modeled like a weapon's
+  // secondary damage rather than folded into `amount`, so resistance and
+  // vulnerability apply correctly. Auto-fires whenever a slot and the bonus
+  // action are both still free, which is the real cap: once per turn.
+  if (
+    target.alive &&
+    attacker.featureIds.includes('divine-smite') &&
+    isMeleeAttack &&
+    !attacker.turn.bonusActionUsed
+  ) {
+    const slotIdx = attacker.spellSlots.findIndex((s) => s.current > 0);
+    if (slotIdx >= 0) {
+      attacker.spellSlots[slotIdx]!.current -= 1;
+      attacker.turn.bonusActionUsed = true;
+      const smite = rollDice(state.rng, `${2 + slotIdx}d8`, crit);
+      state.rng = smite.state;
+      events.push(...applyDamage(state, targetId, attackerId, smite.total, 'radiant', smite.rolls, { crit, tags: ['Divine Smite'] }));
+    }
   }
 
   if (weapon.onHitCondition && target.alive &&

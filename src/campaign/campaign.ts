@@ -367,10 +367,19 @@ const SPECIES_PORTRAIT: Partial<Record<Id, Id>> = {
   gnome: 'gnome-bard', halfling: 'halfling-rogue',
 };
 
+/**
+ * Ranger and Paladin have no dedicated class portrait (unlike the original
+ * four, whose class id *is* a portrait id) — they borrow the closest existing
+ * art instead of going blank.
+ */
+const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
+  ranger: 'elf-archer', paladin: 'dragonborn-paladin',
+};
+
 /** Sensible default portrait for a species/class combo: species art if it has
- *  its own, else the class portrait. */
+ *  its own, else the class portrait (or its stand-in). */
 export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
-  return SPECIES_PORTRAIT[speciesId] ?? classId;
+  return SPECIES_PORTRAIT[speciesId] ?? CLASS_PORTRAIT[classId] ?? classId;
 }
 
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {

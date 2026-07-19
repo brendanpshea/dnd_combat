@@ -1347,6 +1347,28 @@ export const SPELLS: Record<Id, SpellData> = {
       return events;
     },
   },
+
+  /**
+   * Hunter's Mark: a bonus-action, concentration mark that adds 1d6 force to
+   * *every* hit against the marked target, not once per turn — that's what
+   * makes the bonus action and concentration worth spending. The condition is
+   * shaped exactly like Guiding Bolt's `guided` or Faerie Fire's `outlined`;
+   * the rider itself lives in resolveAttack, scoped to whoever cast it via
+   * `sourceId`.
+   */
+  'hunters-mark': {
+    id: 'hunters-mark', name: "Hunter's Mark", level: 1, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 90, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '🎯',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const target = state.combatants[targetId]!;
+      target.conditions.push({ id: 'marked', sourceId: casterId, concentration: true });
+      state.combatants[casterId]!.concentratingOn = { spellId: 'hunters-mark', targetIds: [targetId] };
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'marked', sourceId: casterId }];
+    },
+  },
 };
 
 export function directionFromDelta(from: Position, to: Position): Direction8 {

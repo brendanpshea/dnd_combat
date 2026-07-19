@@ -25,8 +25,16 @@ export interface FeatureData {
   id: Id;
   name: string;
   trigger: 'action' | 'bonus' | 'free' | 'passive';
-  uses?: { count: number | 'proficiency'; per: 'encounter' };
+  uses?: { count: number | 'proficiency' | 'fiveTimesLevel'; per: 'encounter' };
   apply?(ctx: FeatureContext): GameEvent[];
+  /**
+   * This feature spends a variable amount from its own pool inside `apply`
+   * (Lay on Hands: 1-63 HP off a level-scaled total) rather than one flat "use"
+   * — the mirror of Preserve Life's *internal* pool, except this one persists
+   * across activations instead of resetting each cast. Set true to skip
+   * step()'s generic `uses.current -= 1` so `apply` owns the decrement.
+   */
+  manualUses?: boolean;
   /**
    * Extra damage dice this feature contributes when the attack has advantage.
    * The mirror of a weapon's `bonusDiceOnAdvantage`, and the single source of
@@ -382,4 +390,46 @@ export const FEATURES: Record<Id, FeatureData> = {
   },
   'consume-life': { id: 'consume-life', name: 'Consume Life', trigger: 'action', uses: { count: 1, per: 'encounter' } },
   'dreadful-glare': { id: 'dreadful-glare', name: 'Dreadful Glare', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
+  // target below its HP max. Existence alone is the feature — the rider and
+  // the once-per-turn gate live in resolveAttack, next to Sneak Attack.
+  'colossus-slayer': { id: 'colossus-slayer', name: "Hunter's Prey: Colossus Slayer", trigger: 'passive' },
+  'lay-on-hands': {
+    id: 'lay-on-hands', name: 'Lay on Hands', trigger: 'action',
+    uses: { count: 'fiveTimesLevel', per: 'encounter' },
+    manualUses: true,
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const pool = me.featureUses['lay-on-hands']?.current ?? 0;
+      if (pool <= 0) return [];
+      // Touch range: the most wounded ally adjacent (or self), same
+      // most-wounded-first sort Preserve Life uses for its 30 ft radius.
+      const target = Object.values(state.combatants)
+        .filter((c) => c.alive && c.team === me.team && c.hp < c.maxHp &&
+          (c.id === me.id || distanceFeet(me.position, c.position) <= 5))
+        .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (!target) return [];
+      const amount = Math.min(pool, target.maxHp - target.hp);
+      me.featureUses['lay-on-hands']!.current -= amount;
+      return applyHealing(state, target.id, actorId, amount);
+    },
+  },
+  // Divine Smite (Paladin): a bonus-action spell cast on a melee hit, in the
+  // 2024 rules. The engine resolves an attack atomically with no "react to
+  // your own hit" prompt, so this fires automatically in resolveAttack —
+  // consuming the lowest available slot and the bonus action, which is what
+  // caps a real smite to once per turn.
+  'divine-smite': { id: 'divine-smite', name: 'Divine Smite', trigger: 'passive' },
+  // Sacred Weapon (Paladin, Devotion): a Channel Divinity that adds Charisma
+  // to the paladin's own attack rolls for the rest of the encounter. Applying
+  // it just marks the `sacredWeapon` condition; resolveAttack reads it.
+  'sacred-weapon': {
+    id: 'sacred-weapon', name: 'Channel Divinity: Sacred Weapon', trigger: 'bonus',
+    uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      c.conditions.push({ id: 'sacredWeapon', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'sacredWeapon', sourceId: actorId }];
+    },
+  },
 };

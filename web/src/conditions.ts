@@ -40,9 +40,11 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   baned:          { icon: '💀', label: 'Baned — -1d4 to attacks and saves', kind: 'debuff' },
   warded:         { icon: '🔰', label: 'Warded — +2 AC', kind: 'buff' },
   hasted:         { icon: '🐇', label: 'Hasted — double speed, +2 AC, an extra attack', kind: 'buff' },
+  marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
   inspired:       { icon: '⭐', label: 'Inspired — advantage on next attack', kind: 'buff' },
   shielded:       { icon: '🛡️', label: 'Shielded — +5 AC', kind: 'buff' },
   dodging:        { icon: '💨', label: 'Dodging — attacks against it have disadvantage', kind: 'buff' },
+  sacredWeapon:   { icon: '⚔️', label: 'Sacred Weapon — +Cha to attack rolls', kind: 'buff' },
   // Shown by the token's own dimming, or purely internal — no badge.
   hidden:         { icon: '👻', label: 'Hidden', kind: 'buff', hidden: true },
   noReactions:    { icon: '', label: 'No reactions', kind: 'debuff', hidden: true },
