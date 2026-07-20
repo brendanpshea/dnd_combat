@@ -1658,3 +1658,39 @@ button.category .count {
 .adv-modcard:hover { border-color: var(--blue); }
 .adv-modcard strong { font-family: var(--display); font-size: 1.1rem; }
 .adv-modcard span { color: var(--muted); font-size: .9rem; }
+
+/* ===== Adventure M3: juice + mobile ====================================== */
+.adv-transition { display: flex; flex-direction: column; gap: 14px; animation: sceneWipe .28s ease-out; }
+@keyframes sceneWipe { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Dice celebrations */
+.dicecheck { position: relative; overflow: visible; }
+.dicecheck.shake { animation: critshake .4s; }
+@keyframes critshake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); } 40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); } 80% { transform: translateX(4px); }
+}
+.confetti { position: absolute; top: 90px; left: 50%; width: 0; height: 0; pointer-events: none; z-index: 5; }
+.confetti span {
+  position: absolute; width: 9px; height: 9px; border-radius: 2px; left: 0; top: 0;
+  animation: confettiFly .9s ease-out forwards;
+}
+@keyframes confettiFly {
+  0% { transform: translate(0,0) scale(1) rotate(0); opacity: 1; }
+  100% { transform: translate(var(--cx), var(--cy)) scale(.4) rotate(220deg); opacity: 0; }
+}
+
+/* Mobile audit: safe-area insets + comfortable tap targets */
+.adventure { padding-bottom: env(safe-area-inset-bottom); }
+.adv-top { padding-top: max(10px, env(safe-area-inset-top)); }
+.adv-choice, .shop-row, .primary, .adv-node { min-height: 44px; }
+@media (max-width: 480px) {
+  .adv-stage { padding: 12px; }
+  .adv-art { height: 108px; }
+  .adv-art-glyph { font-size: 52px; }
+  .adv-text { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adv-transition, .confetti span, .dicecheck.shake { animation: none; }
+}

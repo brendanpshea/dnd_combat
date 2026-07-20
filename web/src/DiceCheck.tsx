@@ -5,9 +5,10 @@
  * and a success/failure stamp drops. Never gates on the animation — a tap
  * completes it instantly.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import type { SkillRoll } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
+import { sfx, haptic } from './sound.js';
 
 interface Props {
   roll: SkillRoll;
@@ -21,8 +22,12 @@ export function DiceCheck({ roll, rollerName, onDone }: Props) {
   const [stage, setStage] = useState<Stage>('tumbling');
   const [face, setFace] = useState(1);
 
+  const nat20 = roll.natural === 20;
+  const nat1 = roll.natural === 1;
+
   useEffect(() => {
     if (stage !== 'tumbling') return;
+    sfx('dice');
     // Tumble: flash random faces, then land on the natural roll.
     let ticks = 0;
     const iv = setInterval(() => {
@@ -39,18 +44,25 @@ export function DiceCheck({ roll, rollerName, onDone }: Props) {
 
   useEffect(() => {
     if (stage !== 'landed') return;
+    haptic(nat20 || nat1 ? [20, 40, 20] : 14);
     const t = setTimeout(() => setStage('resolved'), 650);
     return () => clearTimeout(t);
-  }, [stage]);
+  }, [stage, nat20, nat1]);
+
+  useEffect(() => {
+    if (stage !== 'resolved') return;
+    sfx(nat20 ? 'crit-pass' : nat1 ? 'crit-fail' : roll.success ? 'check-pass' : 'check-fail');
+    if (nat20) haptic([30, 30, 30]);
+  }, [stage, nat20, nat1, roll.success]);
 
   const skip = () => { setFace(roll.natural); setStage('resolved'); };
   const bonus = roll.total - roll.natural - (roll.guidance ?? 0);
-  const nat20 = roll.natural === 20;
-  const nat1 = roll.natural === 1;
   const pct = Math.max(0, Math.min(100, (roll.total / Math.max(roll.dc, roll.total, 1)) * 100));
 
   return (
-    <div className="dicecheck" onClick={stage === 'resolved' ? onDone : skip}>
+    <div className={`dicecheck ${stage === 'resolved' && nat1 ? 'shake' : ''}`}
+      onClick={stage === 'resolved' ? onDone : skip}>
+      {stage === 'resolved' && nat20 && <Confetti />}
       <div className="dc-roller">{rollerName} · {SKILL_LABEL[roll.skill]}</div>
 
       <div className={`d20 ${stage} ${nat20 ? 'nat20' : ''} ${nat1 ? 'nat1' : ''}`}>
@@ -81,6 +93,29 @@ export function DiceCheck({ roll, rollerName, onDone }: Props) {
       )}
 
       <div className="dc-hint">{stage === 'resolved' ? 'Tap to continue' : 'Tap to skip'}</div>
+    </div>
+  );
+}
+
+/** A one-shot particle burst for a natural 20. Pure CSS, no assets. */
+function Confetti() {
+  const colors = ['#ffd166', '#6ee7a0', '#4a9eff', '#ff5a5a', '#c792ff'];
+  const bits = Array.from({ length: 24 }, (_, i) => {
+    const angle = (i / 24) * Math.PI * 2;
+    const dist = 90 + (i % 5) * 22;
+    return {
+      x: Math.cos(angle) * dist, y: Math.sin(angle) * dist,
+      color: colors[i % colors.length], delay: (i % 6) * 0.02,
+    };
+  });
+  return (
+    <div className="confetti" aria-hidden>
+      {bits.map((b, i) => (
+        <span key={i} style={{
+          '--cx': `${b.x}px`, '--cy': `${b.y}px`, background: b.color,
+          animationDelay: `${b.delay}s`,
+        } as CSSProperties} />
+      ))}
     </div>
   );
 }

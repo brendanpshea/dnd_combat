@@ -6,7 +6,10 @@
 export type Sfx =
   | 'melee' | 'ranged' | 'miss'
   | 'fire' | 'lightning' | 'radiant' | 'force' | 'poison' | 'necrotic' | 'thunder' | 'cold' | 'acid' | 'psychic'
-  | 'heal' | 'death' | 'victory' | 'condition' | 'cast';
+  | 'heal' | 'death' | 'victory' | 'condition' | 'cast'
+  // adventure mode
+  | 'dice' | 'check-pass' | 'check-fail' | 'crit-pass' | 'crit-fail'
+  | 'coin' | 'item' | 'levelup' | 'page' | 'secret';
 
 let ctx: AudioContext | undefined;
 let muted = localStorage.getItem('dnd-muted') === '1';
@@ -150,5 +153,67 @@ export function sfx(kind: Sfx): void {
         { freq: 1047, dur: 0.3, at: 0.36, type: 'square', vol: 0.1 },
       ]);
       break;
+    case 'dice':
+      // A short clatter — noise burst with a couple of woody ticks.
+      play([
+        { freq: 200, dur: 0.04, type: 'square', vol: 0.05 },
+        { freq: 320, dur: 0.04, at: 0.06, type: 'square', vol: 0.05 },
+        { freq: 260, dur: 0.04, at: 0.12, type: 'square', vol: 0.04 },
+      ], { dur: 0.18, vol: 0.06 });
+      break;
+    case 'check-pass':
+      play([
+        { freq: 587, dur: 0.1, type: 'triangle', vol: 0.09 },
+        { freq: 880, dur: 0.16, at: 0.09, type: 'triangle', vol: 0.09 },
+      ]);
+      break;
+    case 'check-fail':
+      play([{ freq: 300, dur: 0.22, type: 'sawtooth', vol: 0.08, glide: 150 }], { dur: 0.1, vol: 0.06 });
+      break;
+    case 'crit-pass':
+      play([
+        { freq: 659, dur: 0.1, type: 'square', vol: 0.1 },
+        { freq: 988, dur: 0.1, at: 0.1, type: 'square', vol: 0.1 },
+        { freq: 1319, dur: 0.28, at: 0.2, type: 'square', vol: 0.11 },
+      ]);
+      break;
+    case 'crit-fail':
+      play([
+        { freq: 180, dur: 0.3, type: 'sawtooth', vol: 0.14, glide: 60 },
+      ], { dur: 0.3, vol: 0.16 });
+      break;
+    case 'coin':
+      play([
+        { freq: 1568, dur: 0.06, type: 'square', vol: 0.06 },
+        { freq: 2093, dur: 0.08, at: 0.05, type: 'square', vol: 0.05 },
+      ]);
+      break;
+    case 'item':
+      play([{ freq: 784, dur: 0.08, type: 'triangle', vol: 0.08, glide: 1047 }]);
+      break;
+    case 'levelup':
+      play([
+        { freq: 523, dur: 0.1, type: 'square', vol: 0.09 },
+        { freq: 784, dur: 0.1, at: 0.1, type: 'square', vol: 0.09 },
+        { freq: 1047, dur: 0.1, at: 0.2, type: 'square', vol: 0.09 },
+        { freq: 1319, dur: 0.32, at: 0.3, type: 'triangle', vol: 0.1 },
+      ]);
+      break;
+    case 'page':
+      play([{ freq: 520, dur: 0.05, type: 'sine', vol: 0.04, glide: 380 }], { dur: 0.08, vol: 0.05 });
+      break;
+    case 'secret':
+      play([
+        { freq: 660, dur: 0.12, type: 'sine', vol: 0.06 },
+        { freq: 990, dur: 0.16, at: 0.1, type: 'sine', vol: 0.06 },
+        { freq: 1320, dur: 0.2, at: 0.22, type: 'triangle', vol: 0.05 },
+      ]);
+      break;
   }
+}
+
+/** A short haptic tap where supported (dice landings, celebrations). */
+export function haptic(pattern: number | number[] = 12): void {
+  if (muted) return;
+  try { navigator.vibrate?.(pattern); } catch { /* unsupported */ }
 }
