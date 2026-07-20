@@ -36,7 +36,12 @@ function refsOf(scene: Scene): Id[] {
     case 'check': fromOutcome(scene.success); fromOutcome(scene.failure); break;
     case 'battle': fromOutcome(scene.onWin); if (scene.onLoss) fromOutcome(scene.onLoss); break;
     case 'shop': case 'rest': refs.push(scene.next); break;
-    case 'explore': scene.map.nodes.forEach((n) => refs.push(n.scene)); break;
+    case 'explore':
+      scene.map.nodes.forEach((n) => {
+        refs.push(n.scene);
+        if (n.wandering) refs.push(n.wandering.battleScene);
+      });
+      break;
     case 'ending': break;
   }
   return refs;

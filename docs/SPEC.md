@@ -968,9 +968,10 @@ Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ g
 → ✅ Ranger + Paladin (levels 1–5)
 → 🚧 Adventure mode (story/exploration/skills) — M0 (18 skills, per-character
   and group checks, backgrounds) + M1 (pure scene runtime, validator, classic
-  module, headless CLI + auto-player, web story panel + dice-check ritual)
-  shipped; see `docs/adventure-mode-plan.md` for M2–M4 (exploration UI, juice,
-  the authored module).
+  module, headless CLI + auto-player, web story panel + dice-check ritual) +
+  M2 (explore node-maps with fog/secrets/wandering encounters, journal drawer,
+  shop-as-scene, module picker, the "Bandit Hideout" demo module) shipped; see
+  `docs/adventure-mode-plan.md` for M3–M4 (art/juice pass, the authored module).
 
 Next candidates, roughly in fun-per-effort order:
 1. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.

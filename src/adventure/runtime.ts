@@ -14,6 +14,7 @@
  * from immutability). The event stream is the log/replay/render format.
  */
 import type { Id } from '../engine/types.js';
+import { rollDie } from '../engine/rng.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
@@ -29,6 +30,10 @@ export interface AdventureState {
   sceneId: Id;
   flags: Record<string, boolean | number>;
   visited: Id[];
+  /** Explore-node ids the party has entered (drives fog-of-war). */
+  exploredNodes: Id[];
+  /** Explore-node ids whose wandering-encounter roll has already happened. */
+  wanderingRolled: Id[];
   journal: JournalEntry[];
   /** Scene ids whose once-per-scene Guidance has been spent (checks after the
    *  first in a scene get no cleric +1d4). */
@@ -57,7 +62,8 @@ export type AdventureEvent =
 export function startAdventure(campaign: CampaignState, module: Module): AdventureState {
   const state: AdventureState = {
     campaign, moduleId: module.id, sceneId: module.start,
-    flags: {}, visited: [], journal: [], guidanceSpent: [],
+    flags: {}, visited: [], exploredNodes: [], wanderingRolled: [],
+    journal: [], guidanceSpent: [],
   };
   return state;
 }
@@ -325,6 +331,8 @@ export interface VisibleNode {
   blocked: string | null;
   /** A secret whose DC the party met on arrival — now revealed. */
   secret: boolean;
+  /** The party has already entered this node (drives fog-of-war dimming). */
+  explored: boolean;
 }
 
 /** The nodes to render for the current explore scene: gated nodes carry a
@@ -337,18 +345,32 @@ export function exploreNodes(state: AdventureState, module: Module): VisibleNode
   for (const node of scene.map.nodes) {
     const secret = !!node.hidden;
     if (secret && passive < node.hidden!.dc) continue; // undiscovered
-    out.push({ node, blocked: blockedReason(state, node.requires), secret });
+    out.push({
+      node, blocked: blockedReason(state, node.requires), secret,
+      explored: state.exploredNodes.includes(node.id),
+    });
   }
   return out;
 }
 
-/** Enter an explore node's scene (after its requirements). */
+/** Enter an explore node's scene (after its requirements). A wandering roll may
+ *  divert to a battle first (rolled once per node, on the campaign rng). */
 export function enterNode(state: AdventureState, module: Module, nodeId: Id): AdventureEvent[] {
   const scene = currentScene(state, module);
   if (scene.kind !== 'explore') throw new Error('enterNode outside an explore scene');
   const node = scene.map.nodes.find((n) => n.id === nodeId);
   if (!node) throw new Error(`No node ${nodeId}`);
   if (blockedReason(state, node.requires)) throw new Error(`Node ${nodeId} is blocked`);
+  if (!state.exploredNodes.includes(nodeId)) state.exploredNodes.push(nodeId);
+
+  if (node.wandering && !state.wanderingRolled.includes(nodeId)) {
+    state.wanderingRolled.push(nodeId);
+    const c = state.campaign;
+    const r = rollDie(c.rng, 1000); c.rng = r.state;
+    if ((r.value - 1) / 1000 < node.wandering.chance) {
+      return enterScene(state, module, node.wandering.battleScene);
+    }
+  }
   return enterScene(state, module, node.scene);
 }
 
