@@ -242,7 +242,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       const f = FEATURES[action.featureId];
       if (!f || !f.apply || !actor.featureIds.includes(action.featureId)) return false;
       const uses = actor.featureUses[action.featureId];
-      if (f.uses && (!uses || uses.current <= 0)) return false;
+      if ((f.uses || f.recharge) && (!uses || uses.current <= 0)) return false;
       if (f.trigger === 'bonus' && actor.turn.bonusActionUsed) return false;
       if (f.trigger === 'action' && actor.turn.actionUsed) return false;
       if ((action.featureId === 'cunning-hide' || action.featureId === 'nimble-hide') && !canHide(state, actor)) return false;

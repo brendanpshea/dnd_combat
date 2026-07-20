@@ -32,6 +32,7 @@ IDS = [
     "sprite", "satyr", "dryad", "green-hag", "unicorn",
     "cockatrice", "harpy", "manticore", "owlbear", "gorgon",
     "shadow", "specter", "will-o-wisp", "wight", "mummy",
+    "red-wyrmling", "white-wyrmling", "green-wyrmling", "blue-wyrmling", "black-wyrmling",
 ]
 
 os.makedirs(OUT, exist_ok=True)

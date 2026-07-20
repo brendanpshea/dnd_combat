@@ -182,6 +182,8 @@ export function buildCharacter(opts: BuildOptions): Combatant {
         f.uses.count === 'fiveTimesLevel' ? 5 * level :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
+    } else if (f?.recharge) {
+      featureUses[fid] = { current: 1, max: 1 }; // starts charged; recharge roll in startTurn
     }
   }
 

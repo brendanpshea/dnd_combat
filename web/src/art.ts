@@ -20,6 +20,7 @@ export const HAS_ART = new Set<string>([
   'sprite', 'satyr', 'dryad', 'green-hag', 'unicorn',
   'cockatrice', 'harpy', 'manticore', 'owlbear', 'gorgon',
   'shadow', 'specter', 'will-o-wisp', 'wight', 'mummy',
+  'red-wyrmling', 'white-wyrmling', 'green-wyrmling', 'blue-wyrmling', 'black-wyrmling',
 ]);
 
 /**
@@ -81,6 +82,7 @@ const SCALE: Record<string, number> = {
   sprite: 0.8, satyr: 1.0, dryad: 1.0, 'green-hag': 1.15, unicorn: 1.35,
   cockatrice: 0.85, harpy: 1.0, manticore: 1.35, owlbear: 1.35, gorgon: 1.4,
   shadow: 0.95, specter: 1.0, 'will-o-wisp': 0.75, wight: 1.1, mummy: 1.1,
+  'red-wyrmling': 1.15, 'white-wyrmling': 1.1, 'green-wyrmling': 1.1, 'blue-wyrmling': 1.15, 'black-wyrmling': 1.15,
 };
 
 export function tokenScale(id: string): number {

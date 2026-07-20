@@ -26,6 +26,14 @@ export interface FeatureData {
   name: string;
   trigger: 'action' | 'bonus' | 'free' | 'passive';
   uses?: { count: number | 'proficiency' | 'fiveTimesLevel'; per: 'encounter' };
+  /**
+   * A recharge ability (dragon breath): starts available, is spent on use, and
+   * at the start of the owner's turn rolls a d6 — on a result at or above this
+   * threshold it recharges. `recharge: 5` is the classic "Recharge 5–6", `6` is
+   * "Recharge 6". Stored as a one-charge `featureUses` pool, so the same gate
+   * and decrement that serve `uses` serve it; the roll lives in startTurn.
+   */
+  recharge?: number;
   apply?(ctx: FeatureContext): GameEvent[];
   /**
    * This feature spends a variable amount from its own pool inside `apply`

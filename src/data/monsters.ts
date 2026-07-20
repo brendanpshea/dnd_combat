@@ -544,6 +544,8 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
         f.uses.count === 'fiveTimesLevel' ? 5 :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
+    } else if (f?.recharge) {
+      featureUses[fid] = { current: 1, max: 1 }; // starts charged; the d6 recharge roll lives in startTurn
     }
   }
   return {
