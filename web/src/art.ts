@@ -30,7 +30,14 @@ export const HAS_ART = new Set<string>([
  * archetypes) and the "actually generated" set stay independent.
  */
 export const HAS_NPC_ART = new Set<string>([
-  // add npc-<archetype> ids here as their portraits are generated
+  'npc-innkeeper',
+  'npc-elder',
+  'npc-merchant',
+  'npc-guard',
+  'npc-scout',
+  'npc-commoner',
+  'npc-child',
+  'npc-noble',
 ]);
 
 export function hasArt(id: string): boolean {
@@ -62,6 +69,10 @@ export const HAS_SCENE_ART = new Set<string>([
   'loc-camp',
   'loc-keep',
   'loc-temple',
+  'loc-throne',
+  'loc-throne-elf',
+  'loc-throne-dwarf',
+  'loc-throne-evil',
 ]);
 
 export function hasSceneArt(id: string | undefined): boolean {

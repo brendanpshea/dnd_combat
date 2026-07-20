@@ -33,6 +33,11 @@ IDS = [
     "cockatrice", "harpy", "manticore", "owlbear", "gorgon",
     "shadow", "specter", "will-o-wisp", "wight", "mummy",
     "red-wyrmling", "white-wyrmling", "green-wyrmling", "blue-wyrmling", "black-wyrmling",
+    # Adventure NPC archetypes
+    "npc-innkeeper", "npc-elder", "npc-merchant", "npc-guard",
+    "npc-scout", "npc-commoner", "npc-child", "npc-noble",
+    "npc-priest", "npc-sage", "npc-stranger", "npc-wounded",
+    "npc-bandit", "npc-captain", "npc-cultist", "npc-barbarian",
 ]
 
 os.makedirs(OUT, exist_ok=True)

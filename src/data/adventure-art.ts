@@ -45,6 +45,9 @@ export const LOCATION_ART: Record<string, ArtEntry> = {
   'loc-keep': { id: 'loc-keep', label: 'Fortress hall', emoji: '🏰' },
   'loc-temple': { id: 'loc-temple', label: 'Temple', emoji: '⛩️' },
   'loc-throne': { id: 'loc-throne', label: 'Warlord hall', emoji: '👑' },
+  'loc-throne-elf': { id: 'loc-throne-elf', label: 'Elven throne room', emoji: '🌿' },
+  'loc-throne-dwarf': { id: 'loc-throne-dwarf', label: 'Dwarven throne hall', emoji: '💎' },
+  'loc-throne-evil': { id: 'loc-throne-evil', label: 'Dark emperor hall', emoji: '💀' },
 };
 
 /**

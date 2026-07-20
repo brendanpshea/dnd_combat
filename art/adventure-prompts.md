@@ -152,9 +152,10 @@ Each id matches `LOCATION_ART` in `src/data/adventure-art.ts`.
   flagged floor, arrow-slit light, a heavy portcullis at the far end.
 - **`loc-temple`** — a serene temple or shrine interior: a stone altar, tall
   windows with colored light, columns, offering candles. Calm, reverent.
-- **`loc-throne`** — a smoky warlord's hall: a rough throne of bones and
-  plunder on a dais, guttering braziers, trophy banners, heavy shadow. The
-  boss-room mood — menacing, not gory.
+- **`loc-throne`** — a medieval human warlord hall: a heavy carved stone-and-oak throne on a low dais, heraldic banners, stone columns, warm braziers.
+- **`loc-throne-elf`** (variant) — a forest elven throne room: a throne grown from living wood and flowering vines inside a giant tree hollow, silver canopy light, glowing fairy motes.
+- **`loc-throne-dwarf`** (variant) — a dwarven mountain hall: a massive stone throne encrusted with glowing gemstones and gold veins, flanked by giant crystal pillars.
+- **`loc-throne-evil`** (variant) — an evil emperor hall: a menacing throne of jagged obsidian and dark iron on a steep dais, smoky red-purple braziers.
 
 ---
 
@@ -250,8 +251,17 @@ vocabulary — so there is never a dangling art reference, generated or not.
 
 ## 6. Processing
 
-NPC portraits go through the **existing** character pipeline unchanged
-(`art/process.py` — they're just more `portrait-*.png` sources with alpha).
+NPC portraits can be generated in 4-portrait batches as a single square 2x2 grid image against a solid green screen background (`#00FF00`). Slice the sheet into transparent RGBA `portrait-<id>.png` files in `art/source/` via:
+
+```
+python art/slice_portraits.py art/raw/npc-batch-1.png npc-innkeeper npc-elder npc-merchant npc-guard
+```
+
+Then process the source PNGs into web-appropriate WebP assets (`web/public/art/portrait-*.webp`):
+
+```
+python art/process.py
+```
 
 Location scenes can be generated in 4-scene batches as single square images featuring 4 wide horizontal landscape rows stacked top-to-bottom. Slice the sheet into individual `scene-<id>.png` files in `art/source/` via:
 
