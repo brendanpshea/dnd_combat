@@ -1747,6 +1747,15 @@ button.category .count {
 }
 .shop-gambit:hover { border-color: var(--blue); }
 .shop-gambit.risky:hover { border-color: var(--red); }
+.shop-focus { display: flex; flex-wrap: wrap; gap: 6px; }
+.shop-focus-chip {
+  display: flex; align-items: center; gap: 5px; padding: 4px 10px 4px 5px; border-radius: 999px;
+  background: var(--panel2); color: var(--muted); border: 1px solid transparent; cursor: pointer;
+  font-size: .82rem; min-height: 34px;
+}
+.shop-focus-chip.on { color: var(--text); border-color: var(--blue); background: var(--panel); }
+.shop-focus-chip .portrait { width: 24px; height: 24px; }
+.shop-focus-chip > span { font-size: 1.05rem; }
 
 /* Journal drawer */
 .journal-scrim {
