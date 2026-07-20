@@ -12,6 +12,8 @@ import {
 } from '../src/adventure/runtime.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { CLASSIC_MODULE } from '../src/data/modules/classic.js';
+import { HIDEOUT_MODULE } from '../src/data/modules/demo.js';
+import { MODULES } from '../src/data/modules/index.js';
 import type { Module } from '../src/adventure/types.js';
 
 // --- M0: skills -------------------------------------------------------------
@@ -185,6 +187,67 @@ describe('adventure runtime vocabulary', () => {
     expect(nodes.map((n) => n.node.id).sort()).toEqual(['exit', 'vault']);
     const events = enterNode(state, DEMO, 'vault');
     expect(events.some((e) => e.type === 'ending')).toBe(true);
+  });
+});
+
+// --- M2: exploration, wandering, journal ------------------------------------
+
+describe('exploration (M2)', () => {
+  it('every registered module validates', () => {
+    for (const m of MODULES) expect(validateModule(m)).toEqual([]);
+  });
+
+  it('the hideout demo validates and auto-plays to an ending', () => {
+    expect(validateModule(HIDEOUT_MODULE)).toEqual([]);
+    let n = 42;
+    const rand = () => (n = (n * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => rand() > 0.25 };
+    const result = runModule(newCampaign(4), HIDEOUT_MODULE, policy, 3000);
+    expect(['victory', 'defeat']).toContain(result.ending);
+  });
+
+  it('entering a node marks it explored (fog clears)', () => {
+    const c = newCampaign(1);
+    const state = startAdventure(c, DEMO);
+    enterScene(state, DEMO, 'inside');
+    expect(exploreNodes(state, DEMO).find((n) => n.node.id === 'exit')!.explored).toBe(false);
+    // exit routes to an ending, so peek via the state instead of entering it:
+    state.exploredNodes.push('exit');
+    expect(exploreNodes(state, DEMO).find((n) => n.node.id === 'exit')!.explored).toBe(true);
+  });
+
+  it('a wandering node diverts to its battle scene on a hit, deterministically', () => {
+    const mod: Module = {
+      id: 'w', title: 'W', blurb: '', start: 'map',
+      scenes: {
+        map: { id: 'map', kind: 'explore', map: { title: 'M', nodes: [
+          { id: 'n', x: 50, y: 50, label: 'Path', icon: '🌿', scene: 'safe',
+            wandering: { chance: 1, battleScene: 'fight' } },
+        ] } },
+        safe: { id: 'safe', kind: 'ending', outcome: 'victory', text: ['safe'] },
+        fight: { id: 'fight', kind: 'battle', encounterId: 'kobolds', mapId: 'ruins',
+          onWin: { to: 'safe' } },
+      },
+    };
+    expect(validateModule(mod)).toEqual([]);
+    const state = startAdventure(newCampaign(1), mod);
+    enterScene(state, mod, 'map');
+    const events = enterNode(state, mod, 'n'); // chance 1 → always diverts
+    expect(events.some((e) => e.type === 'startBattle')).toBe(true);
+    expect(state.sceneId).toBe('fight');
+  });
+
+  it('journal effects accumulate without duplicates', () => {
+    const c = newCampaign(1);
+    const state = startAdventure(c, HIDEOUT_MODULE);
+    // Press on adds the "Clear the Hideout" quest.
+    choose(state, HIDEOUT_MODULE, 'go');
+    expect(state.journal.some((j) => j.id === 'q1')).toBe(true);
+    const count = state.journal.length;
+    // Re-applying the same journal entry is idempotent.
+    enterScene(state, HIDEOUT_MODULE, 'road');
+    choose(state, HIDEOUT_MODULE, 'go');
+    expect(state.journal.length).toBe(count);
   });
 });
 

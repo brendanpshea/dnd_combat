@@ -100,14 +100,18 @@ export interface ExploreNode {
   requires?: Requirement[];     // locked door / gated route
   /** A secret: revealed only if the party's passive Perception ≥ dc on arrival. */
   hidden?: { dc: number };
+  /** Danger on the way: on entering, a `chance` (0–1) rng roll may divert to a
+   *  battle scene first (its onWin should route back here). Rolled once per
+   *  node — a fight already braved doesn't re-trigger. */
+  wandering?: { chance: number; battleScene: SceneRef };
 }
 
 export interface ExploreMap {
   art: SceneArt;
   title: string;
+  /** MapTheme for the backdrop tint (stone/forest/graveyard/ember). */
+  theme?: string;
   nodes: ExploreNode[];
-  /** Optional wandering-monster edges, rolled on the campaign rng when travelled. */
-  edges?: Array<{ from: Id; to: Id; encounterChance?: number; encounterId?: Id; mapId?: Id }>;
 }
 
 export type Scene =
@@ -122,7 +126,9 @@ export type Scene =
       onWin: Outcome; onLoss?: Outcome;
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
-  | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[] }
+  | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];
+      /** Per-location stock (item ids). Absent = the default SHOP_STOCK. */
+      stock?: Id[]; title?: string }
   | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Paragraph[] }
   | { id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt };
 

@@ -1599,3 +1599,62 @@ button.category .count {
 @media (prefers-reduced-motion: reduce) {
   .d20.tumbling, .adv-node-icon { animation: none; }
 }
+
+/* ===== Adventure M2: fog, shop, journal ================================== */
+.adv-map { background-size: cover; background-position: center; }
+.adv-node.fog .adv-node-icon { opacity: .55; filter: grayscale(.4); border-style: dashed; }
+.adv-node.fog .adv-node-label { opacity: .7; }
+.adv-node.explored .adv-node-icon { border-color: var(--green); }
+.adv-maphint { text-align: center; color: var(--muted); font-size: .82rem; }
+
+/* Shop scene */
+.adv-shop { display: flex; flex-direction: column; gap: 12px; }
+.shop-head { display: flex; align-items: center; justify-content: space-between; }
+.shop-head h2 { font-family: var(--display); }
+.shop-tabs { display: flex; gap: 8px; }
+.shop-tabs button {
+  flex: 1; padding: 8px; border-radius: 10px; background: var(--panel2); color: var(--muted);
+  border: 1px solid transparent; font-weight: 700; cursor: pointer;
+}
+.shop-tabs button.on { color: var(--text); border-color: var(--blue); background: var(--panel); }
+.shop-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.shop-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 10px; background: var(--panel2); color: var(--text);
+  border: 1px solid transparent; cursor: pointer; text-align: left; font-size: .95rem;
+}
+.shop-row:hover:not(:disabled) { border-color: var(--blue); }
+.shop-row:disabled { opacity: .5; cursor: not-allowed; }
+.shop-price { font-weight: 700; color: var(--gold); white-space: nowrap; }
+.shop-price.poor { color: var(--red); }
+.shop-price.sell { color: var(--green); }
+.shop-owner { color: var(--muted); font-style: normal; font-size: .82rem; }
+
+/* Journal drawer */
+.journal-scrim {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50;
+  display: flex; justify-content: flex-end; animation: fadein .15s;
+}
+.journal {
+  width: min(420px, 88vw); height: 100%; background: var(--panel); padding: 18px;
+  overflow-y: auto; box-shadow: -8px 0 24px rgba(0,0,0,.4); animation: slidein .2s ease-out;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.journal-head { display: flex; align-items: center; justify-content: space-between; }
+.journal-head h2 { font-family: var(--display); }
+.journal-section h3 { font-size: .95rem; color: var(--muted); margin-bottom: 6px; }
+.journal-entry { background: var(--panel2); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.journal-entry strong { display: block; margin-bottom: 3px; }
+.journal-entry p { font-size: .9rem; line-height: 1.45; color: var(--text); }
+.adv-journal-btn { font-size: 1rem; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slidein { from { transform: translateX(30px); opacity: .6; } to { transform: none; opacity: 1; } }
+
+.adv-modcard {
+  display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 14px 16px;
+  border-radius: 12px; background: var(--panel2); border: 1px solid transparent; color: var(--text);
+  cursor: pointer; width: 100%; max-width: 360px;
+}
+.adv-modcard:hover { border-color: var(--blue); }
+.adv-modcard strong { font-family: var(--display); font-size: 1.1rem; }
+.adv-modcard span { color: var(--muted); font-size: .9rem; }

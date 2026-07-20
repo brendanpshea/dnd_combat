@@ -14,6 +14,7 @@ import {
 import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
 import { SKILL_LABEL } from '../../data/classes.js';
 import { CLASSIC_MODULE } from '../../data/modules/classic.js';
+import { HIDEOUT_MODULE } from '../../data/modules/demo.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
@@ -22,7 +23,7 @@ import {
 import type { Module } from '../../adventure/types.js';
 import { runBattle } from './battle.js';
 
-const MODULES: Record<string, Module> = { classic: CLASSIC_MODULE };
+const MODULES: Record<string, Module> = { classic: CLASSIC_MODULE, hideout: HIDEOUT_MODULE };
 
 function argValue(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);

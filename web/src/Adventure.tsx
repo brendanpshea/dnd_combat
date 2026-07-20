@@ -18,21 +18,47 @@ import {
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene } from '../../src/adventure/types.js';
-import { CLASSIC_MODULE } from '../../src/data/modules/classic.js';
+import { MODULES } from '../../src/data/modules/index.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
+import { AdventureShop } from './AdventureShop.js';
+import { JournalDrawer } from './Journal.js';
+import { HAS_BOARD_BG, boardBgUrl } from './art.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
-  module?: Module;
   onExit(): void;
 }
 
 /** A check event pulled from an action's stream, shown as a dice overlay. */
 type DiceOverlay = Extract<AdventureEvent, { type: 'check' }>;
 
-export function AdventureScreen({ Battle, module = CLASSIC_MODULE, onExit }: Props) {
+/** Pick a module, then hand off to the player (remounted fresh per module). */
+export function AdventureScreen({ Battle, onExit }: Props) {
+  const [module, setModule] = useState<Module | null>(null);
+  if (!module) return <ModulePicker onPick={setModule} onExit={onExit} />;
+  return <AdventurePlayer key={module.id} Battle={Battle} module={module} onExit={onExit} />;
+}
+
+function ModulePicker({ onPick, onExit }: { onPick(m: Module): void; onExit(): void }) {
+  return (
+    <div className="setup">
+      <h1>📜 Adventures</h1>
+      {MODULES.map((m) => (
+        <button key={m.id} className="adv-modcard" onClick={() => onPick(m)}>
+          <strong>{m.title}</strong>
+          <span>{m.blurb}</span>
+        </button>
+      ))}
+      <button className="ghost" onClick={onExit}>← Back</button>
+      <p className="hint">Adventure mode is in beta: story scenes, exploration, and skill
+        checks between fights. Progress isn't saved yet.</p>
+    </div>
+  );
+}
+
+function AdventurePlayer({ Battle, module, onExit }: Props & { module: Module }) {
   const stateRef = useRef<AdventureState | null>(null);
   if (!stateRef.current) {
     const campaign = newCampaign(Math.floor(Math.random() * 2 ** 31));
@@ -47,12 +73,13 @@ export function AdventureScreen({ Battle, module = CLASSIC_MODULE, onExit }: Pro
   const rerender = () => setVersion((v) => v + 1);
   const [dice, setDice] = useState<DiceOverlay | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
+  const [journalOpen, setJournalOpen] = useState(false);
 
   const scene = currentScene(state, module);
 
-  // Auto-resolve shop/rest scenes (the runtime just advances to `next`).
+  // Rest scenes auto-resolve (they only heal and advance). Shops render a panel.
   useEffect(() => {
-    if (scene.kind === 'shop' || scene.kind === 'rest') {
+    if (scene.kind === 'rest') {
       const evs = resolveShopOrRest(state, module);
       note(evs);
       rerender();
@@ -130,8 +157,13 @@ export function AdventureScreen({ Battle, module = CLASSIC_MODULE, onExit }: Pro
       <div className="adv-top">
         <button className="ghost" onClick={onExit}>✕ Menu</button>
         <span className="adv-title">{module.title}</span>
+        <button className="ghost adv-journal-btn" onClick={() => setJournalOpen(true)}>
+          📖{state.journal.length > 0 ? ` ${state.journal.length}` : ''}
+        </button>
         <span className="adv-gold">💰 {campaign.gold}</span>
       </div>
+
+      {journalOpen && <JournalDrawer entries={state.journal} onClose={() => setJournalOpen(false)} />}
 
       <div className="adv-stage">
         <SceneArtBanner scene={scene} />
@@ -150,6 +182,7 @@ export function AdventureScreen({ Battle, module = CLASSIC_MODULE, onExit }: Pro
             onChoice={onChoice}
             onRollScene={onRollScene}
             onNode={(nodeId) => process(enterNode(state, module, nodeId))}
+            onLeaveShop={() => process(resolveShopOrRest(state, module))}
             onExit={onExit}
           />
         )}
@@ -190,10 +223,11 @@ interface BodyProps {
   onChoice: (id: string, actorIdx?: number) => void;
   onRollScene: (actorIdx?: number) => void;
   onNode: (nodeId: string) => void;
+  onLeaveShop: () => void;
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onLeaveShop, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -256,14 +290,18 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onExit
 
   if (scene.kind === 'explore') {
     const nodes = exploreNodes(state, module);
+    const theme = scene.map.theme;
+    const bg = theme && HAS_BOARD_BG.has(theme)
+      ? { backgroundImage: `linear-gradient(rgba(20,16,32,.35), rgba(20,16,32,.7)), url(${boardBgUrl(theme)})` }
+      : undefined;
     return (
       <div className="adv-scene">
         <h2 className="adv-maptitle">{scene.map.title}</h2>
-        <div className="adv-map">
-          {nodes.map(({ node, blocked, secret }) => (
+        <div className="adv-map" style={bg}>
+          {nodes.map(({ node, blocked, secret, explored }) => (
             <button
               key={node.id}
-              className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''}`}
+              className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'}`}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
               disabled={!!blocked}
               title={blocked ?? node.label}
@@ -274,11 +312,23 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onExit
             </button>
           ))}
         </div>
+        <p className="adv-maphint">Tap a marker to explore. Dimmed markers are unvisited.</p>
       </div>
     );
   }
 
-  // shop/rest auto-resolve via the effect above; render a brief placeholder.
+  if (scene.kind === 'shop') {
+    return (
+      <AdventureShop
+        campaign={campaign}
+        {...(scene.stock ? { stock: scene.stock } : {})}
+        {...(scene.title ? { title: scene.title } : {})}
+        onLeave={onLeaveShop}
+      />
+    );
+  }
+
+  // rest auto-resolves via the effect above; render a brief placeholder.
   return <div className="adv-scene"><p className="adv-text">…</p></div>;
 }
 
