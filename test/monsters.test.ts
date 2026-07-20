@@ -130,7 +130,7 @@ describe('monster mechanics', () => {
     let guard = 0;
     while (!bit && guard++ < 40) {
       if (wolves.includes(c.activeId)) {
-        const events = c.apply({ kind: 'attack', weaponId: 'bite', targetId: 'pc' });
+        const events = c.apply({ kind: 'attack', weaponId: 'wolf-bite', targetId: 'pc' });
         const roll = events.find((e) => e.type === 'attackRolled')!;
         if (roll.type !== 'attackRolled') throw new Error();
         expect(roll.advSources).toContain('pack tactics');

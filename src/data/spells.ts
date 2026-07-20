@@ -285,11 +285,11 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '☠️',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
-      const dc = spellDc(state, casterId);
-      const save = savingThrow(state, targetId, 'con', dc);
-      const events: GameEvent[] = [save.event];
-      if (!save.success) {
-        const dmg = rollDice(state.rng, cantripDice('1d12', state.combatants[casterId]!.level));
+      // 2024: Poison Spray is a ranged spell attack (not a Con save).
+      const atk = spellAttack(state, casterId, targetId, { melee: false });
+      const events: GameEvent[] = [atk.event];
+      if (atk.hit) {
+        const dmg = rollDice(state.rng, cantripDice('1d12', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       }
@@ -600,7 +600,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🩹',
     cast({ state, casterId, slotLevel, targetIds }) {
       const mod = spellMod(state, casterId);
-      const heal = rollDice(state.rng, `${1 + slotLevel}d4`); // 2d4 at 1st, +1d4 per higher slot
+      const heal = rollDice(state.rng, `${2 * slotLevel}d4`); // 2024: 2d4 at 1st, +2d4 per higher slot
       state.rng = heal.state;
       return applyHealing(state, targetIds[0]!, casterId, heal.total + mod);
     },
@@ -1168,9 +1168,9 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '💀',
     cast({ state, casterId, slotLevel }) {
       const c = state.combatants[casterId]!;
-      const roll = rollDice(state.rng, '1d4');
+      const roll = rollDice(state.rng, '2d4');
       state.rng = roll.state;
-      const amount = roll.total + 4 + (slotLevel - 1) * 5; // 1d4+4 at slot 1, +5 per slot above
+      const amount = roll.total + 4 + (slotLevel - 1) * 5; // 2d4+4 at slot 1, +5 per slot above
       c.tempHp = Math.max(c.tempHp ?? 0, amount);
       return [];
     },

@@ -155,7 +155,13 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   bite: {
     id: 'bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
-    properties: ['finesse'], melee: true, onHitCondition: 'prone',
+    properties: [], melee: true,
+  },
+  'wolf-bite': {
+    // The wolf's trip: its bite knocks the target prone (this game's flavor of
+    // Pack Tactics). A dedicated weapon so plain biters don't inherit the rider.
+    id: 'wolf-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   greatclub: {
     id: 'greatclub', name: 'Greatclub', damage: '2d8', damageType: 'bludgeoning',
@@ -179,7 +185,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'hand-crossbow': {
     id: 'hand-crossbow', name: 'Hand Crossbow', damage: '1d6', damageType: 'piercing',
-    properties: ['light'], range: { normal: 30, long: 120 }, melee: false, mastery: 'slow', cost: 75,
+    properties: ['light'], range: { normal: 30, long: 120 }, melee: false, mastery: 'vex', cost: 75, // 2024: Vex
   },
   'dire-wolf-bite': {
     id: 'dire-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',

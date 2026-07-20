@@ -1221,7 +1221,9 @@ export function applyVictory(
       ch.inventory = fought.inventory.map((s) => ({ ...s }));
       ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
       ch.resources = {
-        hp: fought.hp,
+        // The fallen recover: a hero downed to 0 in a won fight comes back at
+        // 1 HP rather than starting the next battle unconscious.
+        hp: Math.max(1, fought.hp),
         ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
         ...(fought.familiar || fought.mageArmor || ch.resources?.effects
           ? {

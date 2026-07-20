@@ -12,6 +12,9 @@ export interface MonsterData {
   id: Id;
   name: string;
   ac: number;
+  /** Challenge Rating. Drives proficiency bonus for to-hit and save DCs.
+   *  Omit for CR <= 4 (PB +2, the default). */
+  cr?: number;
   hp: number; // average from the stat block
   speed: number;
   abilities: AbilityScores;
@@ -65,7 +68,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'beast',
     abilities: { str: 14, dex: 15, con: 12, int: 3, wis: 12, cha: 6 },
     featureIds: ['pack-tactics'],
-    weaponIds: ['bite'],
+    weaponIds: ['wolf-bite'],
   },
   zombie: {
     id: 'zombie', name: 'Zombie',
@@ -196,7 +199,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   minotaur: {
     id: 'minotaur', name: 'Minotaur',
     ac: 14, hp: 76, speed: 40,
-    creatureType: 'giant', // no 'monstrosity' type; giant is the closest tag
+    creatureType: 'monstrosity',
     abilities: { str: 18, dex: 11, con: 16, int: 6, wis: 16, cha: 9 },
     weaponIds: ['minotaur-greataxe', 'minotaur-gore'],
     // One brutal chop a turn — the Reckless-charger shape, not a flurry.
@@ -227,7 +230,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'ogre-mage': {
     id: 'ogre-mage', name: 'Ogre Mage',
-    ac: 15, hp: 90, speed: 30, // AC 15 assumes Mage Armor precast (13 + Dex 2)
+    ac: 15, cr: 7, hp: 90, speed: 30, // AC 15 assumes Mage Armor precast (13 + Dex 2)
     creatureType: 'giant',
     abilities: { str: 19, dex: 14, con: 17, int: 14, wis: 12, cha: 15 },
     savingThrowProfs: ['con', 'int'],
@@ -332,7 +335,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'fire-elemental': {
     id: 'fire-elemental', name: 'Fire Elemental',
-    ac: 13, hp: 102, speed: 50,
+    ac: 13, cr: 5, hp: 102, speed: 50,
     creatureType: 'elemental',
     abilities: { str: 10, dex: 17, con: 16, int: 6, wis: 10, cha: 7 },
     featureIds: ['fire-form'],
@@ -343,7 +346,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'water-elemental': {
     id: 'water-elemental', name: 'Water Elemental',
-    ac: 14, hp: 114, speed: 30,
+    ac: 14, cr: 5, hp: 114, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 18, dex: 14, con: 18, int: 5, wis: 10, cha: 8 },
     featureIds: ['whelm'],
@@ -354,7 +357,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'earth-elemental': {
     id: 'earth-elemental', name: 'Earth Elemental',
-    ac: 17, hp: 126, speed: 30,
+    ac: 17, cr: 5, hp: 126, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 20, dex: 8, con: 20, int: 5, wis: 10, cha: 5 },
     featureIds: ['earth-glide'],
@@ -365,7 +368,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'air-elemental': {
     id: 'air-elemental', name: 'Air Elemental',
-    ac: 15, hp: 90, speed: 30,
+    ac: 15, cr: 5, hp: 90, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 14, dex: 20, con: 14, int: 6, wis: 10, cha: 6 },
     featureIds: ['whirlwind'],
@@ -412,7 +415,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   unicorn: {
     id: 'unicorn', name: 'Unicorn',
-    ac: 12, hp: 67, speed: 50,
+    ac: 12, cr: 5, hp: 67, speed: 50,
     creatureType: 'fey',
     abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 17, cha: 16 },
     featureIds: ['unicorn-charge', 'magic-resistance'],
@@ -454,7 +457,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   gorgon: {
     id: 'gorgon', name: 'Gorgon',
-    ac: 19, hp: 114, speed: 40,
+    ac: 19, cr: 5, hp: 114, speed: 40,
     creatureType: 'monstrosity',
     abilities: { str: 20, dex: 11, con: 18, int: 2, wis: 12, cha: 7 },
     featureIds: ['petrifying-breath', 'trampling-charge'],
@@ -515,6 +518,19 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
 };
 
+/**
+ * Map a Challenge Rating onto a character level whose proficiency bonus matches
+ * the CR's (CR 0-4 → PB +2, 5-8 → +3, 9-12 → +4, ...). We reuse the character
+ * `level` field so `proficiencyBonus(level)` yields the stat-block PB.
+ */
+function levelForCr(cr: number): number {
+  if (cr >= 17) return 17;
+  if (cr >= 13) return 13;
+  if (cr >= 9) return 9;
+  if (cr >= 5) return 5;
+  return 1;
+}
+
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
   const m = MONSTERS[monsterId];
   if (!m) throw new Error(`Unknown monster: ${monsterId}`);
@@ -536,7 +552,9 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     team,
     classId: monsterId,
     speciesId: 'monster',
-    level: 1, // PB +2, matching all CR ≤ 2 stat blocks here
+    // A representative level whose proficiency bonus matches the monster's CR,
+    // so high-CR stat blocks get the right to-hit and save DCs (PB +3 at CR 5+).
+    level: levelForCr(m.cr ?? 0),
     abilities: { ...m.abilities },
     maxHp: m.hp,
     hp: m.hp,

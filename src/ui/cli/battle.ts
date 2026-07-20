@@ -56,7 +56,16 @@ export async function runBattle(
     if (line) console.log(line);
   }
 
+  let steps = 0;
   while (!combat.isOver()) {
+    // Safety valve: an all-AI battle can stalemate (mutual kiting). Cap the
+    // step count like the arena does and award the draw on remaining HP.
+    if (++steps > 4000) {
+      const hpOf = (team: TeamId) => Object.values(combat.state.combatants)
+        .filter((c) => c.team === team && c.alive).reduce((n, c) => n + c.hp, 0);
+      console.log('\n[stalemate] step cap reached — awarding on remaining HP.');
+      return hpOf('team1') >= hpOf('team2') ? 'team1' : 'team2';
+    }
     const state = combat.state;
     const me = state.combatants[combat.activeId]!;
 

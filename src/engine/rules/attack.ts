@@ -335,8 +335,10 @@ export function resolveAttack(
     (weapon.properties.includes('finesse') || !weapon.melee)
   ) {
     const allyAdjacent = Object.values(state.combatants).some(
-      (c) => c.alive && c.id !== attackerId && c.team === attacker.team &&
-             adjacent(c.position, target.position),
+      (c) => c.alive && !isDown(c) && c.id !== attackerId && c.team === attacker.team &&
+             adjacent(c.position, target.position) &&
+             // 2024: the enabling ally must not be Incapacitated.
+             !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious'),
     );
     const qualifies = mode === 'advantage' || (allyAdjacent && mode !== 'disadvantage');
     if (qualifies) {

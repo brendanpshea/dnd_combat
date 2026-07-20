@@ -70,6 +70,38 @@ describe('cantrips', () => {
     const dmg = events.find((e) => e.type === 'damageDealt');
     expect(save.success ? dmg === undefined : dmg !== undefined).toBe(true);
   });
+
+  it('a paralyzed target auto-fails the sacred flame Dex save', () => {
+    const c = new Combat({
+      seed: 9,
+      combatants: [
+        place('cleric', 'team1', { x: 0, y: 0 }, { id: 'clr' }),
+        place('rogue', 'team2', { x: 4, y: 4 }, {
+          id: 'rog', conditions: [{ id: 'paralyzed', sourceId: 'clr' }],
+        }),
+      ],
+    });
+    until(c, 'clr');
+    const events = c.apply({ kind: 'castSpell', spellId: 'sacred-flame', slotLevel: 0, targets: [{ combatantId: 'rog' }] });
+    const save = events.find((e) => e.type === 'savingThrow')!;
+    if (save.type !== 'savingThrow') throw new Error();
+    expect(save.success).toBe(false); // Str/Dex saves auto-fail while paralyzed
+    expect(events.some((e) => e.type === 'damageDealt')).toBe(true);
+  });
+
+  it('poison spray is a ranged spell attack (2024), not a save', () => {
+    const c = new Combat({
+      seed: 9,
+      combatants: [
+        place('wizard', 'team1', { x: 0, y: 0 }, { id: 'wiz', spellIds: ['poison-spray'] }),
+        place('fighter', 'team2', { x: 4, y: 4 }, { id: 'ftr' }),
+      ],
+    });
+    until(c, 'wiz');
+    const events = c.apply({ kind: 'castSpell', spellId: 'poison-spray', slotLevel: 0, targets: [{ combatantId: 'ftr' }] });
+    expect(events.some((e) => e.type === 'attackRolled')).toBe(true);
+    expect(events.some((e) => e.type === 'savingThrow')).toBe(false);
+  });
 });
 
 describe('leveled spells', () => {
