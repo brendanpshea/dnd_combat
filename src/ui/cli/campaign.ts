@@ -20,6 +20,7 @@ import {
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest, longRest,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
+  spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
   knownRitualSpells, setPrepared, setCantrips, resetPrepared,
   scrollLearnable, learnSpellFromScroll,
 } from '../../campaign/campaign.js';
@@ -127,21 +128,25 @@ async function prepareSpellsFlow(c: CampaignState, rl: readline.Interface): Prom
   const ch = c.characters[idx]!;
 
   for (;;) {
-    const pool = preparableSpells(c, idx);
-    const cap = preparedLimit(c, idx);
-    const prepared = preparedSpells(c, idx);
     const cPool = cantripPool(c, idx);
     const cCap = cantripLimit(c, idx);
     const cantrips = knownCantrips(c, idx);
+    const bookPool = spellbookPool(c, idx);        // empty for a knows-all caster
+    const bookCap = spellbookLimit(c, idx);        // undefined for a cleric
+    const book = chosenSpellbook(c, idx);
+    const pool = preparableSpells(c, idx);         // what can be prepared from
+    const cap = preparedLimit(c, idx);
+    const prepared = preparedSpells(c, idx);
     const rituals = knownRitualSpells(c, idx);
     if (rituals.length > 0) {
       console.log(`\n${ch.name} — always ready (rituals): ${rituals.map((id) => SPELLS[id]?.name ?? id).join(', ')}`);
     }
-    console.log(`Cantrips ${cantrips.length}/${cCap}   ${ch.classId === 'wizard' ? 'Spellbook' : 'Prepared'} ${prepared.length}/${cap}`);
-    // One combined menu: cantrip toggles, then leveled toggles, then actions.
+    console.log(`Cantrips ${cantrips.length}/${cCap}${bookCap !== undefined ? `   Spellbook ${book.length}/${bookCap}` : ''}   Prepared ${prepared.length}/${cap}`);
+    // Sections: cantrip toggles, spellbook toggles (wizard), prepared toggles.
     const options = [
       ...cPool.map((id) => `[cantrip] ${cantrips.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id}`),
-      ...pool.map((id) => `${prepared.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id} (L${SPELLS[id]?.level ?? 1})`),
+      ...bookPool.map((id) => `[book] ${book.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id}`),
+      ...pool.map((id) => `[prep] ${prepared.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id} (L${SPELLS[id]?.level ?? 1})`),
       'Use recommended',
       'Done',
     ];
@@ -150,18 +155,18 @@ async function prepareSpellsFlow(c: CampaignState, rl: readline.Interface): Prom
     if (pick === options.length - 2) { resetPrepared(c, idx); continue; }
     if (pick < cPool.length) {
       const id = cPool[pick]!;
-      if (!cantrips.includes(id) && cantrips.length >= cCap) {
-        console.log(`Already at the cantrip limit (${cCap}) — drop one first.`);
-        continue;
-      }
+      if (!cantrips.includes(id) && cantrips.length >= cCap) { console.log(`At the cantrip limit (${cCap}) — drop one first.`); continue; }
       setCantrips(c, idx, cantrips.includes(id) ? cantrips.filter((x) => x !== id) : [...cantrips, id]);
       continue;
     }
-    const spellId = pool[pick - cPool.length]!;
-    if (!prepared.includes(spellId) && prepared.length >= cap) {
-      console.log(`Already at the limit (${cap}) — drop one first.`);
+    if (pick < cPool.length + bookPool.length) {
+      const id = bookPool[pick - cPool.length]!;
+      if (!book.includes(id) && bookCap !== undefined && book.length >= bookCap) { console.log(`Spellbook full (${bookCap}) — remove one first.`); continue; }
+      setSpellbook(c, idx, book.includes(id) ? book.filter((x) => x !== id) : [...book, id]);
       continue;
     }
+    const spellId = pool[pick - cPool.length - bookPool.length]!;
+    if (!prepared.includes(spellId) && prepared.length >= cap) { console.log(`At the prepared limit (${cap}) — drop one first.`); continue; }
     setPrepared(c, idx, prepared.includes(spellId) ? prepared.filter((id) => id !== spellId) : [...prepared, spellId]);
   }
 }

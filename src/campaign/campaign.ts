@@ -12,7 +12,7 @@ import type { Id, Combatant, ItemStack, TeamId, Ability } from '../engine/types.
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import {
   buildCharacter, assignStats,
-  availableLeveledSpells, classCantrips, classRituals, cantripsKnownCount, spellsKnownCount,
+  availableLeveledSpells, classCantrips, classRituals, cantripsKnownCount, spellbookSize, preparedCount,
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
@@ -46,17 +46,22 @@ export interface PartyCharacter {
     };
   };
   /**
-   * The leveled spells this caster knows/prepares, chosen from the class pool
-   * (a wizard's spellbook, or the cleric's whole list). Absent = the
-   * auto-default. Capped at the class's `spellsKnownByLevel`.
+   * The leveled spells this caster has *prepared* (castable), a subset of what
+   * it knows. Absent = the auto-default. Capped at `preparedByLevel`.
    */
   prepared?: Id[];
   /** The cantrips this caster knows, chosen from the class cantrip pool.
-   *  Absent = the auto-default. Capped at `cantripsKnownByLevel`. */
+   *  Absent = the auto-default. Capped at `cantripsKnownByLevel`. Always
+   *  prepared. */
   cantrips?: Id[];
-  /** Wizard only: spells copied into the spellbook from scrolls, beyond the
-   *  class's default known list. Absent = just the defaults. */
+  /** Wizard only: the chosen base spellbook (leveled spells known), from the
+   *  class list, capped at `spellbookByLevel`. Absent = the auto-default. A
+   *  cleric ignores this (it knows its whole list). */
   spellbook?: Id[];
+  /** Wizard only: extra spells scribed from scrolls, added to what it knows on
+   *  top of the base spellbook (may include off-list spells like Ray of
+   *  Sickness). Absent = none scribed. */
+  scribedSpells?: Id[];
   inventory: ItemStack[];
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
@@ -612,12 +617,13 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
-      // Always hand the builder the effective known set (hand-picked or the
-      // auto-default), so a campaign caster knows exactly what the prepare panel
-      // shows — never the full class list a skirmish caster would get.
+      // Hand the builder the effective prepared + cantrip sets (hand-picked or
+      // auto-default), so a campaign caster casts exactly what the panel shows.
+      // Scribed off-list scrolls widen the builder's pool so those prepared
+      // spells validate.
       preparedOverride: preparedSpells(c, i),
       cantripsOverride: knownCantrips(c, i),
-      ...(ch.spellbook ? { spellbookExtra: ch.spellbook } : {}),
+      ...(ch.scribedSpells ? { spellbookExtra: ch.scribedSpells } : {}),
     });
     if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
       combatant.hp = Math.max(0, Math.min(ch.resources.hp, combatant.maxHp));
@@ -823,13 +829,13 @@ export function useStoreHealing(
 }
 
 // ---------------------------------------------------------------------------
-// Spells known & prepared — a "spells known" model. Each caster knows a capped
-// number of cantrips and leveled spells (classes.ts's cantripsKnownByLevel /
-// spellsKnownByLevel), chosen here from the class pool with a sensible default.
-// The wizard's pool is its spellbook (grows via scribed scrolls); the cleric
-// "knows" its whole list and simply prepares a subset. Ignorable: a character
-// with no saved choice gets the auto-default. Rituals (Find Familiar) are
-// always known and don't occupy a slot (excluded from the pool).
+// The 2024 three-tier spell model (classes.ts holds the per-level counts):
+//   1. Cantrips known — chosen from the class cantrip list, always all prepared.
+//   2. Known leveled — a wizard's *spellbook* (a chosen subset of its class
+//      list that grows via scribed scrolls); a cleric knows its whole list.
+//   3. Prepared — the castable subset of what's known.
+// Each chosen set is stored on the PartyCharacter; absent means an auto-default
+// (strongest first). Rituals (Find Familiar) are always known, counted nowhere.
 // ---------------------------------------------------------------------------
 
 /** Sort a spell pool strongest-first (highest spell level, then pool order),
@@ -838,22 +844,13 @@ function byStrength(pool: Id[]): Id[] {
   return [...pool].sort((a, b) => (SPELLS[b]?.level ?? 0) - (SPELLS[a]?.level ?? 0));
 }
 
-/** The leveled spells this character can prepare from: the wizard's spellbook
- *  (class table + scribed scrolls) or the cleric's whole list. Cantrips and
- *  always-known rituals are excluded. */
-export function preparableSpells(c: CampaignState, charIdx: number): Id[] {
-  const ch = c.characters[charIdx];
-  if (!ch) return [];
-  const level = partyLevelOf(c);
-  return [...new Set([...availableLeveledSpells(ch.classId, level), ...(ch.spellbook ?? [])])];
+/** The auto-default set for a caster who hasn't hand-picked one: strongest
+ *  spells first, trimmed to the limit. */
+function defaultKnown(pool: Id[], limit: number): Id[] {
+  return byStrength(pool).slice(0, limit);
 }
 
-/** How many leveled spells this character knows/prepares at once. 0 = non-caster. */
-export function preparedLimit(c: CampaignState, charIdx: number): number {
-  const ch = c.characters[charIdx];
-  if (!ch || !CLASSES[ch.classId]?.spellcasting) return 0;
-  return spellsKnownCount(ch.classId, partyLevelOf(c));
-}
+// --- tier 1: cantrips ------------------------------------------------------
 
 /** The cantrips this character can choose from. */
 export function cantripPool(c: CampaignState, charIdx: number): Id[] {
@@ -869,42 +866,11 @@ export function cantripLimit(c: CampaignState, charIdx: number): number {
   return cantripsKnownCount(ch.classId, partyLevelOf(c));
 }
 
-/** The auto-default known set for a caster who hasn't hand-picked one:
- *  strongest spells first, trimmed to the limit. */
-function defaultKnown(pool: Id[], limit: number): Id[] {
-  return byStrength(pool).slice(0, limit);
-}
-
-/** This character's currently prepared leveled spells: their saved choice, or
- *  the auto-default. Capped, and matches what buildCampaignParty builds. */
-export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
-  const ch = c.characters[charIdx];
-  if (!ch) return [];
-  return ch.prepared ?? defaultKnown(preparableSpells(c, charIdx), preparedLimit(c, charIdx));
-}
-
-/** This character's known cantrips: their saved choice, or the auto-default. */
+/** This character's known cantrips (all always prepared): saved choice or default. */
 export function knownCantrips(c: CampaignState, charIdx: number): Id[] {
   const ch = c.characters[charIdx];
   if (!ch) return [];
   return ch.cantrips ?? defaultKnown(cantripPool(c, charIdx), cantripLimit(c, charIdx));
-}
-
-/** Always-known ritual spells (Find Familiar) this caster has regardless of
- *  what it prepared — shown in the panel as a note, castable in the store. */
-export function knownRitualSpells(c: CampaignState, charIdx: number): Id[] {
-  const ch = c.characters[charIdx];
-  if (!ch) return [];
-  return classRituals(ch.classId, partyLevelOf(c));
-}
-
-/** Save an explicit prepared-spell selection, filtered to the pool and capped. */
-export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): boolean {
-  const ch = c.characters[charIdx];
-  if (!ch) return false;
-  const pool = preparableSpells(c, charIdx);
-  ch.prepared = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, preparedLimit(c, charIdx));
-  return true;
 }
 
 /** Save an explicit cantrip selection, filtered to the pool and capped. */
@@ -916,12 +882,104 @@ export function setCantrips(c: CampaignState, charIdx: number, spellIds: Id[]): 
   return true;
 }
 
-/** Drop leveled and cantrip choices back to the auto-defaults. */
+// --- tier 2: known leveled (spellbook) -------------------------------------
+
+/** True for a spellbook caster (wizard): knows a chosen subset that grows via
+ *  scrolls, rather than its whole list (cleric). */
+function usesSpellbook(classId: Id, level: number): boolean {
+  return spellbookSize(classId, level) !== undefined;
+}
+
+/** The leveled spells a wizard chooses its spellbook FROM (its class list).
+ *  Empty for a caster that knows its whole list — it has no spellbook to pick. */
+export function spellbookPool(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch || !usesSpellbook(ch.classId, partyLevelOf(c))) return [];
+  return availableLeveledSpells(ch.classId, partyLevelOf(c));
+}
+
+/** How many base spellbook spells a wizard picks (undefined = knows-all caster). */
+export function spellbookLimit(c: CampaignState, charIdx: number): number | undefined {
+  const ch = c.characters[charIdx];
+  if (!ch) return undefined;
+  return spellbookSize(ch.classId, partyLevelOf(c));
+}
+
+/** The chosen base spellbook (saved or default) — wizard only. */
+export function chosenSpellbook(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  const size = spellbookLimit(c, charIdx);
+  if (!ch || size === undefined) return [];
+  return ch.spellbook ?? defaultKnown(spellbookPool(c, charIdx), size);
+}
+
+/** Save an explicit spellbook selection (wizard), filtered to the class pool
+ *  and capped at the spellbook size. Scribed scrolls are kept separately. */
+export function setSpellbook(c: CampaignState, charIdx: number, spellIds: Id[]): boolean {
+  const size = spellbookLimit(c, charIdx);
+  const ch = c.characters[charIdx];
+  if (!ch || size === undefined) return false;
+  const pool = spellbookPool(c, charIdx);
+  ch.spellbook = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, size);
+  return true;
+}
+
+/** The leveled spells this character KNOWS — the pool it prepares from. A
+ *  wizard's spellbook (base + scribed scrolls); a cleric's whole class list. */
+export function knownLeveledSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  if (!usesSpellbook(ch.classId, partyLevelOf(c))) {
+    return availableLeveledSpells(ch.classId, partyLevelOf(c)); // cleric knows all
+  }
+  return [...new Set([...chosenSpellbook(c, charIdx), ...(ch.scribedSpells ?? [])])];
+}
+
+/** Always-known ritual spells (Find Familiar) — castable regardless, counted
+ *  against nothing; shown in the panel as a note. */
+export function knownRitualSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return classRituals(ch.classId, partyLevelOf(c));
+}
+
+// --- tier 3: prepared ------------------------------------------------------
+
+/** The leveled spells this character can prepare from — everything it knows. */
+export function preparableSpells(c: CampaignState, charIdx: number): Id[] {
+  return knownLeveledSpells(c, charIdx);
+}
+
+/** How many leveled spells this character can prepare at once. 0 = non-caster. */
+export function preparedLimit(c: CampaignState, charIdx: number): number {
+  const ch = c.characters[charIdx];
+  if (!ch || !CLASSES[ch.classId]?.spellcasting) return 0;
+  return preparedCount(ch.classId, partyLevelOf(c));
+}
+
+/** This character's prepared leveled spells: saved choice or auto-default. */
+export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return ch.prepared ?? defaultKnown(preparableSpells(c, charIdx), preparedLimit(c, charIdx));
+}
+
+/** Save an explicit prepared selection, filtered to what's known and capped. */
+export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): boolean {
+  const ch = c.characters[charIdx];
+  if (!ch) return false;
+  const pool = preparableSpells(c, charIdx);
+  ch.prepared = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, preparedLimit(c, charIdx));
+  return true;
+}
+
+/** Drop cantrip, spellbook, and prepared choices back to the auto-defaults. */
 export function resetPrepared(c: CampaignState, charIdx: number): boolean {
   const ch = c.characters[charIdx];
   if (!ch) return false;
   delete ch.prepared;
   delete ch.cantrips;
+  delete ch.spellbook;
   return true;
 }
 
@@ -953,7 +1011,7 @@ export function scrollLearnable(c: CampaignState, charIdx: number, itemId: Id): 
   const spellId = scrollSpellId(itemId);
   if (!spellId) return undefined;
   if (!CLASSES.wizard?.spellcasting?.learnableExtra?.includes(spellId)) return undefined;
-  if ((ch.spellbook ?? []).includes(spellId)) return undefined;
+  if (knownLeveledSpells(c, charIdx).includes(spellId)) return undefined; // already in the spellbook
   return { spellId, fee: scribingFee(spellId) };
 }
 
@@ -971,7 +1029,7 @@ export function learnSpellFromScroll(c: CampaignState, charIdx: number, itemId: 
   c.gold -= learnable.fee;
   stack.qty -= 1;
   if (stack.qty === 0) ch.inventory = ch.inventory.filter((s) => s !== stack);
-  ch.spellbook = [...(ch.spellbook ?? []), learnable.spellId];
+  ch.scribedSpells = [...(ch.scribedSpells ?? []), learnable.spellId]; // grows the spellbook beyond the base
   return true;
 }
 

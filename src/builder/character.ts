@@ -37,23 +37,33 @@ export function classCantrips(classId: Id, level: number): Id[] {
 }
 
 /** Ritual spells a class grants at or below a level (Find Familiar): always
- *  known, never counted against `spellsKnownByLevel`. */
+ *  known, never counted against the spellbook or prepared totals. */
 export function classRituals(classId: Id, level: number): Id[] {
   return classSpells(classId, level, (l) => l > 0).filter((id) => SPELLS[id]?.ritual);
 }
 
-/** How many cantrips this caster knows at this level (default: all it's
- *  offered, i.e. no reduction). */
-export function cantripsKnownCount(classId: Id, level: number): number {
-  const t = CLASSES[classId]?.spellcasting?.cantripsKnownByLevel;
-  return t ? (t[level - 1] ?? t[t.length - 1] ?? 0) : classCantrips(classId, level).length;
+/** Read a per-level count table off the class, clamping to the last entry. */
+function levelTable(table: number[] | undefined, level: number): number | undefined {
+  return table ? (table[level - 1] ?? table[table.length - 1]) : undefined;
 }
 
-/** How many leveled spells this caster knows at this level (default: all it's
+/** How many cantrips this caster knows at this level (default: all it's offered). */
+export function cantripsKnownCount(classId: Id, level: number): number {
+  return levelTable(CLASSES[classId]?.spellcasting?.cantripsKnownByLevel, level)
+    ?? classCantrips(classId, level).length;
+}
+
+/** How many leveled spells a *spellbook* caster (wizard) knows at this level, or
+ *  undefined for a caster that knows its whole leveled list (cleric). */
+export function spellbookSize(classId: Id, level: number): number | undefined {
+  return levelTable(CLASSES[classId]?.spellcasting?.spellbookByLevel, level);
+}
+
+/** How many leveled spells this caster can prepare at once (default: all it's
  *  offered — the half-caster/legacy behavior). */
-export function spellsKnownCount(classId: Id, level: number): number {
-  const t = CLASSES[classId]?.spellcasting?.spellsKnownByLevel;
-  return t ? (t[level - 1] ?? t[t.length - 1] ?? 0) : availableLeveledSpells(classId, level).length;
+export function preparedCount(classId: Id, level: number): number {
+  return levelTable(CLASSES[classId]?.spellcasting?.preparedByLevel, level)
+    ?? availableLeveledSpells(classId, level).length;
 }
 
 /**
@@ -116,10 +126,10 @@ export interface BuildOptions {
    */
   spellSlotsOverride?: number[];
   /**
-   * Campaign override: exactly which leveled spells this caster knows, chosen
-   * from `availableLeveledSpells` and trimmed to `spellsKnownCount`. Missing =
-   * the full class list (skirmish / AI / mirror match, which have no prepare
-   * step to narrow it). Always-known rituals fold in regardless.
+   * Campaign override: exactly which leveled spells this caster has *prepared*
+   * (castable), trimmed to `preparedCount`. Missing = the full class list
+   * (skirmish / AI / mirror match, which have no prepare step). Always-known
+   * rituals fold in regardless.
    */
   preparedOverride?: Id[];
   /** Campaign override: which cantrips this caster knows, chosen from
@@ -216,7 +226,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ? opts.cantripsOverride.filter((id) => cantripPool.includes(id)).slice(0, cantripsKnownCount(opts.classId, level))
     : cantripPool;
   const knownLeveled = opts.preparedOverride && cls.spellcasting
-    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, spellsKnownCount(opts.classId, level))
+    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, preparedCount(opts.classId, level))
     : leveledPool;
 
   // Class magic, plus whatever the species brings of its own — a wood elf knows

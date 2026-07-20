@@ -862,40 +862,41 @@ the next round.
 $13 + \text{Dexterity modifier}$ (and still allows a shield); it persists
 between battles but ends at the next long rest.
 
-**Spells known & prepared** — a "spells known" model. Each caster knows a
-fixed number of **cantrips** and **leveled spells** per level, set on the
-class (`spellcasting.cantripsKnownByLevel` / `spellsKnownByLevel` in
-classes.ts) and *chosen* from the class pool with a sensible default. A
-level-1 wizard knows 3 cantrips (of 4 offered) and 5 leveled spells (of 7),
-plus Find Familiar (a ritual — always ready, never a slot). `character.ts`
-splits `spellsByLevel` into `classCantrips`, `availableLeveledSpells` (the
-choosable leveled pool, rituals excluded), and `classRituals` (always known);
-`cantripsKnownCount`/`spellsKnownCount` read the class arrays (a class with no
-array — the half-casters — knows its whole list, the prior behavior).
+**Spells known & prepared** — the 2024 **three-tier** model, per-level counts
+on the class (`spellcasting.cantripsKnownByLevel` / `spellbookByLevel` /
+`preparedByLevel` in classes.ts), each tier *chosen* from a pool with a
+sensible auto-default:
+1. **Cantrips known** — chosen from the class cantrip list, **always all
+   prepared**. Wizard `[3,3,3,4,4]`, cleric `[2,2]`.
+2. **Known leveled** — a wizard's **spellbook**: a chosen subset of its class
+   list (`spellbookByLevel [6,8,10,12,14]`) that grows via scribed scrolls. A
+   cleric has no `spellbookByLevel` and knows its **whole** leveled list.
+3. **Prepared** — the castable subset of what's known, the wizard's official
+   "Prepared Spells" column `preparedByLevel [4,5,6,7,9]` (both classes).
 
-**Wizard vs cleric** mirror 5e: a wizard's pool is its *spellbook* (the class
-table, growable via scribed scrolls — see below), and it knows a capped
-selection of it. A cleric "knows" its entire list and simply *prepares* a
-capped subset — same mechanic (`preparableSpells` returns the full cleric
-list), different flavor, surfaced as a "Spellbook" vs "Prepared spells" label
-in the panel.
+So a level-1 wizard chooses 3 of 7 cantrips (Fire Bolt/Ray of Frost/…/Poison
+Spray/True Strike/Minor Illusion), a spellbook of 6 of its 7 class spells, and
+prepares 4 of those 6 — plus Find Familiar (a ritual, always ready, counted
+nowhere). `character.ts` splits `spellsByLevel` into `classCantrips`,
+`availableLeveledSpells` (rituals excluded), and `classRituals`;
+`cantripsKnownCount` / `spellbookSize` (undefined = knows-all) / `preparedCount`
+read the class arrays, defaulting to the whole list for a class with none (the
+half-caster/legacy path). campaign.ts stores each chosen tier on the
+`PartyCharacter` (`cantrips` / `spellbook` base / `scribedSpells` scrolls /
+`prepared`); absent means the strongest-first auto-default.
 
 The counts are **campaign-scoped**. `buildCharacter` with no override — a
-skirmish, a mirror match, an AI party, a monster stat block — leaves a caster
-knowing its whole class list, since those contexts have no prepare step.
-`buildCampaignParty` always passes `preparedOverride` **and**
-`cantripsOverride` (the hand-picked sets, or auto-defaults of the strongest
-spells known, highest spell level first, trimmed to the limits) plus folds in
-always-known rituals, so a campaign caster carries exactly what the panel
-shows. The consequence, by design: a leveled spell not known — Color Spray, or
-a just-scribed scroll spell — can't be cast until chosen; Find Familiar is the
-exception, always castable as a ritual. The web panel
-(`web/src/Campaign.tsx`'s `prepareFor`/`prepareDraft`/`cantripDraft` state) is
-two capped checklists (cantrips + leveled) with a rituals note and a "Use
-recommended" reset; the CLI's `prepareSpellsFlow` is the equivalent. Guidance
-is a cleric cantrip flagged `outOfCombat` (SpellData) — known and shown in the
-panel, but never offered as a combat action, since its only effect is the
-shop skill-check bonus.
+skirmish, mirror match, AI party, or monster — knows its whole class list.
+`buildCampaignParty` passes `cantripsOverride` + `preparedOverride` (+ scribed
+scrolls as `spellbookExtra`), so a campaign caster casts exactly the panel's
+cantrips + prepared set. Consequence by design: an unprepared/unknown leveled
+spell can't be cast until chosen; Find Familiar is the ritual exception. The
+web panel (`web/src/Campaign.tsx`, opened from **both** the forge and the shop
+via `openSpells`) is three capped checklists — Cantrips, Spellbook (wizard
+only), Prepared — where unchecking a spellbook spell also unprepares it; the
+CLI's `prepareSpellsFlow` is the equivalent. Guidance is a cleric cantrip
+flagged `outOfCombat` (SpellData) — known and shown, never offered in combat
+(its only effect is the shop skill-check bonus).
 
 **Wizard spellbook growth** (`scrollLearnable`/`learnSpellFromScroll`): a
 class's `spellcasting.learnableExtra` (classes.ts) names spells available only

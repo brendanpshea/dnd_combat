@@ -11,6 +11,7 @@ import {
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
+  spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
   scrollLearnable, learnSpellFromScroll,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
@@ -761,18 +762,22 @@ describe('spell preparation (ignorable — a sensible default is auto-prepared)'
 });
 
 describe('spells-known model (cantrips chosen, rituals always ready)', () => {
-  it('a level-1 wizard defaults to 3 cantrips and 5 leveled, Shield in, Color Spray/False Life out', () => {
+  it('a level-1 wizard: 3 cantrips, spellbook 6, prepares 4 (2024 counts)', () => {
     const c = newCampaign();
     const w = 1;
     expect(cantripLimit(c, w)).toBe(3);
-    expect(preparedLimit(c, w)).toBe(5);
-    expect(knownCantrips(c, w)).toEqual(['fire-bolt', 'shocking-grasp', 'ray-of-frost']); // Acid Splash off
-    const leveled = preparedSpells(c, w);
-    expect(leveled).toContain('shield');
-    expect(leveled).not.toContain('color-spray');
-    expect(leveled).not.toContain('false-life');
-    // But Color Spray/False Life remain in the choosable pool.
-    expect(preparableSpells(c, w)).toEqual(expect.arrayContaining(['color-spray', 'false-life']));
+    expect(spellbookLimit(c, w)).toBe(6);
+    expect(preparedLimit(c, w)).toBe(4);
+    expect(knownCantrips(c, w)).toEqual(['fire-bolt', 'ray-of-frost', 'shocking-grasp']);
+    const book = chosenSpellbook(c, w);
+    expect(book).toHaveLength(6);
+    expect(book).toContain('shield');
+    expect(book).not.toContain('false-life'); // last in order, trimmed from the 6
+    const prepared = preparedSpells(c, w);
+    expect(prepared).toHaveLength(4);
+    expect(prepared).toContain('shield');
+    // False Life stays available to scribe into the spellbook (the class pool).
+    expect(spellbookPool(c, w)).toContain('false-life');
   });
 
   it('Find Familiar is an always-ready ritual: castable even though it is not in the prepared pool', () => {
@@ -791,17 +796,32 @@ describe('spells-known model (cantrips chosen, rituals always ready)', () => {
     const c = newCampaign();
     const w = 1;
     const pool = cantripPool(c, w);
-    expect(pool).toHaveLength(4);
+    expect(pool).toHaveLength(7); // fire-bolt, ray-of-frost, shocking-grasp, poison-spray, true-strike, acid-splash, minor-illusion
+    expect(pool).toEqual(expect.arrayContaining(['poison-spray', 'true-strike', 'minor-illusion']));
     setCantrips(c, w, ['acid-splash', 'ray-of-frost']);
     expect(knownCantrips(c, w)).toEqual(['acid-splash', 'ray-of-frost']);
     expect(buildCampaignParty(c)[w]!.spellIds).toContain('acid-splash');
     expect(buildCampaignParty(c)[w]!.spellIds).not.toContain('fire-bolt'); // unchosen
     // Over-cap is trimmed to the limit.
-    setCantrips(c, w, pool); // all 4
+    setCantrips(c, w, pool); // all 7
     expect(knownCantrips(c, w)).toHaveLength(cantripLimit(c, w));
     // Reset restores the default.
     resetPrepared(c, w);
-    expect(knownCantrips(c, w)).toEqual(['fire-bolt', 'shocking-grasp', 'ray-of-frost']);
+    expect(knownCantrips(c, w)).toEqual(['fire-bolt', 'ray-of-frost', 'shocking-grasp']);
+  });
+
+  it('a wizard chooses its spellbook, and can only prepare from it', () => {
+    const c = newCampaign();
+    const w = 1;
+    // Choose a specific spellbook (6 of the class pool), including False Life.
+    setSpellbook(c, w, ['magic-missile', 'sleep', 'burning-hands', 'shield', 'mage-armor', 'false-life']);
+    expect(chosenSpellbook(c, w)).toContain('false-life');
+    expect(preparableSpells(c, w)).not.toContain('color-spray'); // left out of the spellbook
+    // Preparing filters to the spellbook — color-spray can't be prepared.
+    setPrepared(c, w, ['color-spray', 'false-life']);
+    expect(c.characters[w]!.prepared).toEqual(['false-life']);
+    expect(buildCampaignParty(c)[w]!.spellIds).toContain('false-life');
+    expect(buildCampaignParty(c)[w]!.spellIds).not.toContain('color-spray');
   });
 
   it('a cleric knows its whole list (incl. Guidance cantrip) and prepares a subset', () => {
@@ -837,7 +857,7 @@ describe('wizard spellbook: learning spells from scrolls', () => {
     expect(learnSpellFromScroll(c, wizardIdx, 'scroll-ray-of-sickness')).toBe(true);
     expect(c.gold).toBe(goldBefore - learnable!.fee);
     expect(c.characters[wizardIdx]!.inventory.some((s) => s.itemId === 'scroll-ray-of-sickness')).toBe(false);
-    expect(c.characters[wizardIdx]!.spellbook).toEqual(['ray-of-sickness']);
+    expect(c.characters[wizardIdx]!.scribedSpells).toEqual(['ray-of-sickness']);
 
     // Once learned it joins the pool the prepare panel draws from. It isn't
     // auto-prepared (a real cap means a just-learned spell has to be chosen),

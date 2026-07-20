@@ -89,16 +89,23 @@ export interface ClassData {
     slotsByLevel: number[][];
     spellsByLevel: Record<number, Id[]>; // spells known at each character level
     /**
-     * How many cantrips / leveled spells this caster *knows* at each level
-     * (index = characterLevel - 1) — a "spells known" model: the class table
-     * above is the menu to choose from, these are how many you pick, with the
-     * rest changeable in the campaign's prepare panel. Rituals (Find Familiar)
-     * are always known and don't count against `spellsKnownByLevel`. Omit
-     * either array to mean "knows the whole list" (the half-caster default,
-     * and what a class had before this model).
+     * The 2024 three-tier "spells known" model, per character level (index =
+     * level - 1). The class table above is the menu; these are how many you
+     * take, chosen at party creation and editable in the prepare panel.
+     *  - `cantripsKnownByLevel`: cantrips known — always all prepared.
+     *  - `spellbookByLevel`: for a *spellbook* caster (wizard), how many leveled
+     *    spells it knows. This chosen set is the pool it prepares from, and it
+     *    grows via scribed scrolls. Omit for a caster that knows its whole
+     *    leveled list (cleric).
+     *  - `preparedByLevel`: how many leveled spells can be prepared at once —
+     *    the wizard's "Prepared Spells" column, `[4,5,6,7,9]`.
+     * Rituals (Find Familiar) are always known and count against none of these.
+     * All omitted → the caster knows/prepares its whole list (the half-caster
+     * default, and what a class had before this model).
      */
     cantripsKnownByLevel?: number[];
-    spellsKnownByLevel?: number[];
+    spellbookByLevel?: number[];
+    preparedByLevel?: number[];
     /**
      * Spells this class can learn beyond its default table — a wizard's
      * spellbook growing from scrolls found in play, rather than every copy
@@ -163,7 +170,8 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'wis',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       cantripsKnownByLevel: [2, 2, 2, 2, 2], // both cleric cantrips (Sacred Flame, Guidance)
-      spellsKnownByLevel: [5, 6, 7, 8, 9],
+      // Cleric knows its whole leveled list (no spellbook); it prepares a subset.
+      preparedByLevel: [4, 5, 6, 7, 9],
       spellsByLevel: {
         1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith'],
         2: ['guiding-bolt'],
@@ -200,11 +208,16 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'int',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       cantripsKnownByLevel: [3, 3, 3, 4, 4],
-      spellsKnownByLevel: [5, 6, 7, 8, 9], // Find Familiar is a ritual, always known on top of these
+      spellbookByLevel: [6, 8, 10, 12, 14], // known leveled spells (grows via scribed scrolls too)
+      preparedByLevel: [4, 5, 6, 7, 9],     // the 2024 Wizard "Prepared Spells" column
       spellsByLevel: {
         1: [
-          'fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands',
-          'find-familiar', 'mage-armor', 'shield', 'ray-of-frost', 'acid-splash', 'color-spray', 'false-life',
+          // cantrips (choose 3 of these 6) then leveled (spellbook order sets
+          // the sensible auto-default: the first 6 non-ritual are the default
+          // spellbook, the first 4 the default prepared).
+          'fire-bolt', 'ray-of-frost', 'shocking-grasp', 'poison-spray', 'true-strike', 'acid-splash', 'minor-illusion',
+          'magic-missile', 'sleep', 'burning-hands', 'shield', 'mage-armor', 'color-spray', 'false-life',
+          'find-familiar', // ritual: always known, never counts against the spellbook
         ],
         2: ['thunderwave'],
         3: ['scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness'],
