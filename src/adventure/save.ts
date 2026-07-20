@@ -51,6 +51,7 @@ export function parseAdventure(json: string, module: Module): AdventureState | u
     state.wanderingRolled ??= [];
     state.journal ??= [];
     state.guidanceSpent ??= [];
+    state.consumedChoices ??= [];
     return state;
   } catch {
     return undefined;

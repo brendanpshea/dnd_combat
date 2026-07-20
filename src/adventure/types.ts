@@ -69,7 +69,16 @@ export interface Choice {
   check?: { skill: SkillId; dc: number; roller?: Roller; failTo: SceneRef; failEffects?: Effect[] };
   /** Hide entirely when its requirements fail (default: show greyed with reason). */
   hideWhenBlocked?: boolean;
+  /** Once taken (attempt, not just success), never offered again. The anti-grind
+   *  / anti-farm guard that makes a revisitable scene safe: a social check can't
+   *  be re-rolled, a one-time reward can't be re-claimed. */
+  once?: boolean;
 }
+
+/** The special SceneRef `@hub` resolves at runtime to the explore scene the
+ *  party most recently entered — a generic "return to where I was" that any
+ *  location's sub-scenes can route to without hard-coding the hub's id. */
+export const HUB_REF = '@hub';
 
 export type Roller = 'chosen' | 'best' | 'group';
 
@@ -115,8 +124,10 @@ export interface ExploreMap {
 }
 
 export type Scene =
-  | { id: Id; kind: 'story'; text: Paragraph[]; art?: SceneArt; next: Choice[] }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Paragraph[]; art?: SceneArt; next: Choice[] }
+  // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
+  // beat the player shouldn't be able to walk away from.
+  | { id: Id; kind: 'story'; text: Paragraph[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Paragraph[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
       intro: Paragraph[]; art?: SceneArt; success: Outcome; failure: Outcome;

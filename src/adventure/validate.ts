@@ -12,7 +12,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt } from '../data/adventure-art.js';
-import type { Module, Scene, Choice, Effect, Requirement, Outcome } from './types.js';
+import { HUB_REF, type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome } from './types.js';
 
 function itemExists(id: Id): boolean {
   return !!(ITEMS[id] || WEAPONS[id] || ARMOR[id] || TRINKETS[id]);
@@ -102,7 +102,7 @@ export function validateModule(module: Module): string[] {
     if (scene.id !== id) at(id, `scene.id '${scene.id}' does not match its key`);
 
     for (const ref of refsOf(scene)) {
-      if (!ids.has(ref)) at(id, `routes to unknown scene '${ref}'`);
+      if (ref !== HUB_REF && !ids.has(ref)) at(id, `routes to unknown scene '${ref}'`);
     }
     for (const eff of effectsOf(scene)) {
       if (eff.kind === 'addItem' || eff.kind === 'removeItem') {
