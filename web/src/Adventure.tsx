@@ -120,6 +120,10 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
   const [journalOpen, setJournalOpen] = useState(false);
   const [campOpen, setCampOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
+  /** Shop focus (which hero the buy/sell view is scoped to) — lifted here so
+   *  the bottom party strip doubles as the shop's hero selector instead of the
+   *  shop repeating the party's portraits as its own chip row. */
+  const [shopFocus, setShopFocus] = useState<number | 'all' | 'stash'>('all');
   /** The battle scene the player has hit "Fight" on. A battle first shows a
    *  pre-fight intro (enemy portraits + set-up text); only after arming it does
    *  the shared Combat mount, so a fight always opens with a beat, not a jolt. */
@@ -139,6 +143,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
     } else {
       saveAdventureWeb(state);
     }
+    setShopFocus('all'); // a fresh shop starts on the whole party
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
@@ -301,6 +306,8 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
               onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
               onShopRoll={(events) => process(events, scene)}
               onShopChange={() => { saveAdventureWeb(state); rerender(); }}
+              shopFocus={shopFocus}
+              setShopFocus={setShopFocus}
               onExit={onExit}
             />
           )}
@@ -322,7 +329,15 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
         )}
       </div>
 
-      {!isExplore && <PartyStrip campaign={campaign} />}
+      {!isExplore && (
+        <PartyStrip
+          campaign={campaign}
+          {...(scene.kind === 'shop' ? {
+            onSelect: (i: number) => setShopFocus((f) => (f === i ? 'all' : i)),
+            ...(typeof shopFocus === 'number' ? { active: shopFocus } : {}),
+          } : {})}
+        />
+      )}
     </div>
   );
 }
@@ -412,22 +427,34 @@ function FrozenScene({ scene }: { scene: Scene }) {
   );
 }
 
-/** A compact party read-out (portrait + HP) filling the base of story scenes. */
-function PartyStrip({ campaign }: { campaign: CampaignState }) {
+/** A compact party read-out (portrait + HP) at the base of most scenes. In the
+ *  shop it doubles as the hero selector: `onSelect` makes each member tappable
+ *  to scope buy/sell to them, and `active` marks the chosen one. */
+function PartyStrip(
+  { campaign, active, onSelect }: {
+    campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
+  },
+) {
   const party = buildCampaignParty(campaign);
+  const selectable = !!onSelect;
   return (
-    <div className="adv-party-strip">
+    <div className={`adv-party-strip ${selectable ? 'selectable' : ''}`}>
       {party.map((c, i) => {
         const pct = Math.max(0, Math.round((c.hp / c.maxHp) * 100));
-        return (
-          <div key={i} className={`adv-party-member ${c.hp === 0 ? 'down' : ''}`}>
+        const body = (
+          <>
             {hasArt(campaign.characters[i]?.portraitId ?? c.classId)
               ? <Portrait id={campaign.characters[i]?.portraitId ?? c.classId} team="team1" />
               : <span className="adv-party-emoji">🧑</span>}
             <div className="adv-party-hpbar"><div style={{ width: `${pct}%` }} /></div>
             <span className="adv-party-hp">{c.hp}/{c.maxHp}</span>
-          </div>
+          </>
         );
+        const cls = `adv-party-member ${c.hp === 0 ? 'down' : ''} ${active === i ? 'active' : ''}`;
+        return selectable
+          ? <button key={i} className={cls} onClick={() => onSelect!(i)}
+              title={`Focus ${campaign.characters[i]?.name}`}>{body}</button>
+          : <div key={i} className={cls}>{body}</div>;
       })}
     </div>
   );
@@ -694,10 +721,12 @@ interface BodyProps {
   onLeaveShop: () => void;
   onShopRoll: (events: AdventureEvent[]) => void;
   onShopChange: () => void;
+  shopFocus: number | 'all' | 'stash';
+  setShopFocus: (f: number | 'all' | 'stash') => void;
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -811,6 +840,8 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
         state={state}
         module={module}
         scene={scene}
+        focus={shopFocus}
+        setFocus={setShopFocus}
         onRoll={onShopRoll}
         onChange={onShopChange}
         onLeave={onLeaveShop}

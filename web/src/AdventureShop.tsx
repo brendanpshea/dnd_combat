@@ -12,9 +12,9 @@
  */
 import { useState } from 'react';
 import {
-  buyItem, sellItem, itemName, itemIcon, itemPrice,
+  buyItem, sellItem, itemName, itemIcon, itemPrice, itemCategory,
   partyStash, claimFromStash, scrollLearnable, learnSpellFromScroll,
-  type CampaignState,
+  type CampaignState, type ItemCategory,
 } from '../../src/campaign/campaign.js';
 import {
   shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, type HaggleSkill,
@@ -27,6 +27,16 @@ import { artEmoji } from '../../src/data/adventure-art.js';
 
 type ShopScene = Extract<Scene, { kind: 'shop' }>;
 
+const CAT_META: Record<ItemCategory, { icon: string; label: string }> = {
+  weapon: { icon: '⚔️', label: 'Weapons' },
+  armor: { icon: '🛡️', label: 'Armor' },
+  potion: { icon: '🧪', label: 'Potions' },
+  scroll: { icon: '📜', label: 'Scrolls' },
+  trinket: { icon: '💍', label: 'Trinkets' },
+  other: { icon: '📦', label: 'Other' },
+};
+const CAT_ORDER: ItemCategory[] = ['weapon', 'armor', 'potion', 'scroll', 'trinket', 'other'];
+
 const HAGGLE_OPTS: Array<{ skill: HaggleSkill; label: string; note: string }> = [
   { skill: 'persuasion', label: '🤝 Persuade', note: 'safe · 20% off' },
   { skill: 'deception', label: '🎭 Deceive', note: '15% off / 15% up' },
@@ -38,26 +48,32 @@ interface Props {
   state: AdventureState;
   module: Module;
   scene: ShopScene;
+  /** Whose wares we're looking at — the whole party, one hero (chosen from the
+   *  party strip below), or the shared loot. Lifted to the player so the strip
+   *  is the hero selector; the shop only adds the All / Loot alternatives. */
+  focus: number | 'all' | 'stash';
+  setFocus: (f: number | 'all' | 'stash') => void;
   onRoll: (events: AdventureEvent[]) => void;
   onChange: () => void;
   onLeave: () => void;
 }
 
-export function AdventureShop({ campaign, state, module, scene, onRoll, onChange, onLeave }: Props) {
+export function AdventureShop({ campaign, state, module, scene, focus, setFocus, onRoll, onChange, onLeave }: Props) {
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const [pickBuy, setPickBuy] = useState<string | null>(null);
   const [haggling, setHaggling] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  /** Whose wares we're looking at: the whole party, one hero, or the shared
-   *  loot. Scopes both tabs — buy goes straight to a focused hero, sell shows
-   *  only their pack (or the stash). */
-  const [focus, setFocus] = useState<number | 'all' | 'stash'>('all');
+  const [cat, setCat] = useState<ItemCategory | 'all'>('all');
 
   const visit = shopVisitOf(state, scene.id);
   const npc = scene.npc;
   const portraitId = npc?.portraitId ?? 'npc-merchant';
   const stock = shopStock(scene);
   const priceOf = (id: string) => shopPrice(state, scene.id, id);
+  // Which shelves this shop actually stocks, and the buy list filtered to the
+  // chosen one (a single shelf shows no filter — nothing to narrow).
+  const cats = CAT_ORDER.filter((k) => stock.some((id) => itemCategory(id) === k));
+  const shownStock = cat === 'all' ? stock : stock.filter((id) => itemCategory(id) === cat);
 
   // Every distinct item any hero holds, plus the shared stash, for the Sell tab.
   const sellable: Array<{ itemId: string; charIdx: number | 'stash'; label: string }> = [];
@@ -109,25 +125,37 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
           <button className={tab === 'sell' ? 'on' : ''} onClick={() => { setTab('sell'); setPickBuy(null); }}>Sell</button>
         </div>
 
-        {/* Focus strip: scope both tabs to the party, one hero, or party loot. */}
+        {/* Hero selection lives in the party strip below (tap a portrait); the
+            shop only offers the whole-party and party-loot alternatives. */}
         <div className="shop-focus">
           <button className={`shop-focus-chip ${focus === 'all' ? 'on' : ''}`}
             onClick={() => { setFocus('all'); setPickBuy(null); }}>👥 Party</button>
-          {campaign.characters.map((ch, i) => (
-            <button key={i} className={`shop-focus-chip ${focus === i ? 'on' : ''}`}
-              onClick={() => { setFocus(i); setPickBuy(null); }}>
-              {hasArt(ch.portraitId ?? ch.classId)
-                ? <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
-                : <span>🧑</span>}
-              {ch.name.split(' ')[0]}
-            </button>
-          ))}
           <button className={`shop-focus-chip ${focus === 'stash' ? 'on' : ''}`}
             onClick={() => { setFocus('stash'); setTab('sell'); setPickBuy(null); }}>🎁 Loot</button>
+          <span className="shop-focus-hint">
+            {typeof focus === 'number' ? '' : 'tap a hero below to shop for them'}
+          </span>
         </div>
 
+        {/* Shelf filter: narrow the buy list by kind (only when there's more
+            than one kind on the shelves). */}
+        {tab === 'buy' && cats.length > 1 && (
+          <div className="shop-focus shop-cats">
+            <button className={`shop-focus-chip ${cat === 'all' ? 'on' : ''}`} onClick={() => setCat('all')}>All</button>
+            {cats.map((k) => (
+              <button key={k} className={`shop-focus-chip ${cat === k ? 'on' : ''}`} onClick={() => setCat(k)}>
+                {CAT_META[k].icon} {CAT_META[k].label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === 'buy' && typeof focus === 'number' && (
+          <p className="adv-shop-buyfor">Buying for {campaign.characters[focus]?.name}.</p>
+        )}
+
         <div className="shop-list">
-          {tab === 'buy' ? stock.map((id) => {
+          {tab === 'buy' ? shownStock.map((id) => {
             const price = priceOf(id);
             const afford = campaign.gold >= price;
             const picking = pickBuy === id;

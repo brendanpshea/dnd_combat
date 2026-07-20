@@ -12,7 +12,7 @@ import {
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
   spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
-  scrollLearnable, learnSpellFromScroll,
+  scrollLearnable, learnSpellFromScroll, itemCategory,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -414,6 +414,27 @@ describe('equipment management', () => {
     expect(party[0]!.equipped.mainHand).toBe('longsword-plus1');
     // Mastery persists on the +1 blade.
     expect(party[0]!.weaponMasteries).toContain('longsword-plus1');
+  });
+});
+
+describe('item categories (shop shelf filter)', () => {
+  it('buckets each item by shelf', () => {
+    expect(itemCategory('greatsword')).toBe('weapon');
+    expect(itemCategory('longbow')).toBe('weapon');
+    expect(itemCategory('half-plate')).toBe('armor');
+    expect(itemCategory('shield')).toBe('armor');
+    expect(itemCategory('shield-plus1')).toBe('armor');
+    expect(itemCategory('potion-healing')).toBe('potion');
+    expect(itemCategory('alchemists-fire')).toBe('potion'); // non-scroll consumable
+    expect(itemCategory('scroll-fireball')).toBe('scroll');
+    expect(itemCategory('cloak-protection')).toBe('trinket');
+  });
+
+  it('every priced shop item lands in a real category', () => {
+    for (const id of SHOP_STOCK) {
+      if (itemPrice(id) === undefined) continue;
+      expect(['weapon', 'armor', 'potion', 'scroll', 'trinket', 'other']).toContain(itemCategory(id));
+    }
   });
 });
 
