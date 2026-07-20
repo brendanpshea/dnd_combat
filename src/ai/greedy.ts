@@ -534,6 +534,33 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   if (a.featureId === 'fey-invisibility') {
     return actor.conditions.some((c) => c.id === 'hidden') ? 0 : 1.5;
   }
+  // Consume Life (will-o'-wisp): drain the nearest adjacent enemy — 3d8 necrotic
+  // (half on a save) plus a self-heal of the damage dealt. Worth more when the
+  // wisp is hurt, since the heal is then real rather than wasted overflow.
+  if (a.featureId === 'consume-life') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.con);
+    const target = Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team && distanceFeet(actor.position, c.position) <= 5)
+      .sort((x, y) => distanceFeet(actor.position, x.position) - distanceFeet(actor.position, y.position))[0];
+    if (!target) return 0;
+    const fail = saveFailProb(state, target, 'con', dc);
+    const dmg = avgDice('3d8') * (fail + (1 - fail) * 0.5);
+    const heal = Math.min(dmg, actor.maxHp - actor.hp);
+    return damageValue(dmg, target) + heal;
+  }
+  // Dreadful Glare (mummy): frighten the nearest enemy (paralyze on a big fail),
+  // save-ends. Value it like a soft lockdown weighted by fail odds and the
+  // target's threat — a little richer than Fear, since it can escalate.
+  if (a.featureId === 'dreadful-glare') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.cha);
+    const target = Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        distanceFeet(actor.position, c.position) <= 60 &&
+        !c.conditions.some((k) => k.id === 'frightened' || k.id === 'paralyzed'))
+      .sort((x, y) => distanceFeet(actor.position, x.position) - distanceFeet(actor.position, y.position))[0];
+    if (!target) return 0;
+    return saveFailProb(state, target, 'wis', dc) * (5 + target.hp / 4);
+  }
   if (a.featureId === 'lay-on-hands') {
     const pool = actor.featureUses['lay-on-hands']?.current ?? 0;
     if (pool <= 0) return 0;

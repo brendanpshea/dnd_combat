@@ -195,6 +195,57 @@ describe('second monster batch', () => {
     }
     expect(verified).toBe(true);
   });
+
+  it("will-o'-wisp Consume Life drains an adjacent enemy and heals the wisp", () => {
+    let verified = false;
+    for (let seed = 1; seed <= 30 && !verified; seed++) {
+      const wisp = { ...buildMonster('will-o-wisp', 'team2', { x: 3, y: 3 }, '1'), hp: 8 }; // wounded, so the heal is real
+      const c = new Combat({
+        seed,
+        combatants: [
+          wisp,
+          makeCombatant({ id: 'pc', team: 'team1', position: { x: 4, y: 3 }, hp: 1000, maxHp: 1000, abilities: { str: 10, dex: 10, con: 6, int: 10, wis: 10, cha: 10 } }),
+        ],
+      });
+      until(c, 'team2-will-o-wisp1');
+      const use = c.legalActions().find((a) => a.kind === 'useFeature' && a.featureId === 'consume-life');
+      if (!use) continue;
+      const hpBefore = c.state.combatants['team2-will-o-wisp1']!.hp;
+      const events = c.apply(use);
+      const w = c.state.combatants['team2-will-o-wisp1']!; // fresh state after apply
+      const dmg = events.find((e) => e.type === 'damageDealt' && e.damageType === 'necrotic');
+      if (dmg && dmg.type === 'damageDealt' && dmg.amount > 0) {
+        expect(w.hp).toBeGreaterThan(hpBefore);        // drained life back into itself
+        expect(w.hp).toBeLessThanOrEqual(w.maxHp);     // never over-heals
+        verified = true;
+      }
+    }
+    expect(verified).toBe(true);
+  });
+
+  it('mummy Dreadful Glare frightens, and paralyzes on a save failed by 5+', () => {
+    let sawFright = false;
+    let sawParalyze = false;
+    for (let seed = 1; seed <= 80 && !(sawFright && sawParalyze); seed++) {
+      const c = new Combat({
+        seed,
+        combatants: [
+          buildMonster('mummy', 'team2', { x: 3, y: 3 }, '1'),
+          makeCombatant({ id: 'pc', team: 'team1', position: { x: 5, y: 3 }, hp: 1000, maxHp: 1000, abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 6, cha: 10 } }),
+        ],
+      });
+      until(c, 'team2-mummy1');
+      const use = c.legalActions().find((a) => a.kind === 'useFeature' && a.featureId === 'dreadful-glare');
+      if (!use) continue;
+      const applied = c.apply(use).find((e) => e.type === 'conditionApplied');
+      if (applied?.type === 'conditionApplied') {
+        if (applied.condition === 'frightened') sawFright = true;
+        if (applied.condition === 'paralyzed') sawParalyze = true;
+      }
+    }
+    expect(sawFright).toBe(true);
+    expect(sawParalyze).toBe(true);
+  });
 });
 
 describe('new encounters complete under AI', () => {

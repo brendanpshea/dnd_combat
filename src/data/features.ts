@@ -388,8 +388,60 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
-  'consume-life': { id: 'consume-life', name: 'Consume Life', trigger: 'action', uses: { count: 1, per: 'encounter' } },
-  'dreadful-glare': { id: 'dreadful-glare', name: 'Dreadful Glare', trigger: 'action', uses: { count: 1, per: 'encounter' } },
+  // Consume Life (Will-o'-Wisp): a bonus-action life drain on the nearest
+  // adjacent living enemy — a Constitution save halves 3d8 necrotic, and the
+  // wisp regains hit points equal to the damage dealt. The SRD version only
+  // finishes creatures already at 0 HP; that's toothless here, where downed
+  // heroes never die, so this drains the living instead, keeping the "feed to
+  // heal itself" identity that makes the wisp dangerous in a drawn-out fight.
+  'consume-life': {
+    id: 'consume-life', name: 'Consume Life', trigger: 'bonus', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.con);
+      const target = Object.values(state.combatants)
+        .filter((c) => c.alive && c.hp > 0 && c.team !== me.team && distanceFeet(me.position, c.position) <= 5)
+        .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
+      if (!target) return [];
+      const { success, event } = savingThrow(state, target.id, 'con', dc);
+      const events: GameEvent[] = [event];
+      const roll = rollDice(state.rng, '3d8');
+      state.rng = roll.state;
+      const dealt = success ? Math.floor(roll.total / 2) : roll.total;
+      events.push(...applyDamage(state, target.id, actorId, dealt, 'necrotic', roll.rolls));
+      // Drain what it dealt back into itself (capped by the target's real loss
+      // and the wisp's own maximum, both handled by applyHealing).
+      if (dealt > 0) events.push(...applyHealing(state, actorId, actorId, dealt));
+      return events;
+    },
+  },
+  // Dreadful Glare (Mummy): an action that fixes a baleful stare on the nearest
+  // enemy within 60 ft — a Wisdom save or be frightened (save ends). A badly
+  // failed save (by 5 or more) locks them rigid with terror instead: paralyzed
+  // (save ends), the SRD escalation that makes the mummy a genuine threat.
+  'dreadful-glare': {
+    id: 'dreadful-glare', name: 'Dreadful Glare', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
+      const target = Object.values(state.combatants)
+        .filter((c) => c.alive && c.hp > 0 && c.team !== me.team &&
+          distanceFeet(me.position, c.position) <= 60 &&
+          !c.conditions.some((k) => k.id === 'frightened' || k.id === 'paralyzed'))
+        .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
+      if (!target) return [];
+      const { success, event } = savingThrow(state, target.id, 'wis', dc);
+      const events: GameEvent[] = [event];
+      if (!success) {
+        // Failing by 5 or more escalates fright to full paralysis.
+        const bigFail = event.type === 'savingThrow' && event.total <= dc - 5;
+        const condition = bigFail ? 'paralyzed' : 'frightened';
+        target.conditions.push({ id: condition, sourceId: actorId, repeatSave: { ability: 'wis', dc } });
+        events.push({ type: 'conditionApplied', combatantId: target.id, condition, sourceId: actorId });
+      }
+      return events;
+    },
+  },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.
