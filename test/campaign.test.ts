@@ -107,6 +107,14 @@ describe('campaign state', () => {
     expect(c.victories).toEqual(['kobolds']);
   });
 
+  it('a hero downed in a won fight recovers to 1 HP, not 0', () => {
+    const c = newCampaign();
+    const party = buildCampaignParty(c);
+    party[0]!.hp = 0; // downed but alive (the party still won)
+    applyVictory(c, party, 12345);
+    expect(buildCampaignParty(c)[0]!.hp).toBe(1);
+  });
+
   it('persists battle HP and rests restore the expected amount', () => {
     const c = newCampaign();
     const party = buildCampaignParty(c);

@@ -183,10 +183,10 @@ export const ITEMS: Record<Id, ConsumableData> = {
   // --- resistance potions: grants resistance to a damage type for the rest
   // of the encounter (like Mage Armor, a persisted flag rather than a
   // duration-tracked condition — nothing rebuilds the combatant mid-fight) --
-  'potion-fire-resistance': resistancePotion('fire-resistance', 'Potion of Fire Resistance', 'fire'),
-  'potion-poison-resistance': resistancePotion('poison-resistance', 'Potion of Poison Resistance', 'poison'),
-  'potion-cold-resistance': resistancePotion('cold-resistance', 'Potion of Cold Resistance', 'cold'),
-  'potion-acid-resistance': resistancePotion('acid-resistance', 'Potion of Acid Resistance', 'acid'),
+  'potion-fire-resistance': resistancePotion('potion-fire-resistance', 'Potion of Fire Resistance', 'fire'),
+  'potion-poison-resistance': resistancePotion('potion-poison-resistance', 'Potion of Poison Resistance', 'poison'),
+  'potion-cold-resistance': resistancePotion('potion-cold-resistance', 'Potion of Cold Resistance', 'cold'),
+  'potion-acid-resistance': resistancePotion('potion-acid-resistance', 'Potion of Acid Resistance', 'acid'),
 
   // --- giant strength: sets Strength to the giant's, if higher. Combat-scoped
   // (ability scores aren't part of a saved character, so nothing to revert) --

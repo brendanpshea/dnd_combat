@@ -172,7 +172,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         <h1>{phase.p === 'complete' ? '🏆 Campaign complete!' : '☠️ The party has fallen'}</h1>
         <p className="hint">
           {phase.p === 'complete'
-            ? `The ogre is slain. Final gold: ${c.gold}. Battles won: ${c.victories.length}/${STAGES.length}.`
+            ? `${ENCOUNTERS[STAGES[STAGES.length - 1]!.encounterId]!.name} is vanquished. Final gold: ${c.gold}. Battles won: ${c.victories.length}/${STAGES.length}.`
             : 'The campaign is over. A new party awaits.'}
         </p>
         <button
@@ -389,7 +389,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   const party = buildCampaignParty(c);
   const stockedItems = SHOP_STOCK.filter((id) => shopCategory(id) === stockCategory);
   const healingCount = c.characters.reduce(
-    (total, ch) => total + ch.inventory.filter((s) => s.itemId.includes('potion')).reduce((n, s) => n + s.qty, 0),
+    (total, ch) => total + ch.inventory.filter((s) => s.itemId.includes('potion-healing') || s.itemId.includes('greater-healing')).reduce((n, s) => n + s.qty, 0),
     0,
   );
   const lowestAc = Math.min(...party.map(acOf));
@@ -411,7 +411,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             if (!confirm('Abandon this campaign and delete your save?')) return;
             deleteCampaignWeb();
             stateRef.current = newCampaign(Math.floor(Math.random() * 2 ** 31));
-            setPhase({ p: 'shop' });
+            setPhase({ p: 'forge' });
             setRolls([]);
           }}
         >

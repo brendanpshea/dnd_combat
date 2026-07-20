@@ -61,7 +61,9 @@ describe('weapon swapping (free interaction)', () => {
     const c = new Combat({
       seed: 3,
       combatants: [
-        place('fighter', 'team1', { x: 0, y: 0 }, { id: 'ftr' }),
+        // Level 2 for Action Surge (a 2024 level-2 feature), used here to get a
+        // second action after the free weapon swap is spent.
+        { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 2 }), id: 'ftr' },
         place('rogue', 'team2', { x: 5, y: 5 }, { id: 'rog' }),
       ],
     });

@@ -4,7 +4,7 @@
 import type { Id, DamageType, Ability, ConditionId } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
-export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze';
+export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze' | 'nick' | 'cleave';
 
 export interface WeaponData {
   id: Id;
@@ -68,7 +68,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   dagger: {
     id: 'dagger', name: 'Dagger', damage: '1d4', damageType: 'piercing',
-    properties: ['finesse', 'light', 'thrown'], range: { normal: 20, long: 60 }, melee: true, cost: 2,
+    properties: ['finesse', 'light', 'thrown'], range: { normal: 20, long: 60 }, melee: true, mastery: 'nick', cost: 2,
   },
   greatsword: {
     id: 'greatsword', name: 'Greatsword', damage: '2d6', damageType: 'slashing',
@@ -155,7 +155,13 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   bite: {
     id: 'bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
-    properties: ['finesse'], melee: true, onHitCondition: 'prone',
+    properties: [], melee: true,
+  },
+  'wolf-bite': {
+    // The wolf's trip: its bite knocks the target prone (this game's flavor of
+    // Pack Tactics). A dedicated weapon so plain biters don't inherit the rider.
+    id: 'wolf-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   greatclub: {
     id: 'greatclub', name: 'Greatclub', damage: '2d8', damageType: 'bludgeoning',
@@ -171,7 +177,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   scimitar: {
     id: 'scimitar', name: 'Scimitar', damage: '1d6', damageType: 'slashing',
-    properties: ['finesse', 'light'], melee: true,
+    properties: ['finesse', 'light'], melee: true, mastery: 'nick',
   },
   'light-crossbow': {
     id: 'light-crossbow', name: 'Light Crossbow', damage: '1d8', damageType: 'piercing',
@@ -179,7 +185,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'hand-crossbow': {
     id: 'hand-crossbow', name: 'Hand Crossbow', damage: '1d6', damageType: 'piercing',
-    properties: ['light'], range: { normal: 30, long: 120 }, melee: false, mastery: 'slow', cost: 75,
+    properties: ['light'], range: { normal: 30, long: 120 }, melee: false, mastery: 'vex', cost: 75, // 2024: Vex
   },
   'dire-wolf-bite': {
     id: 'dire-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
@@ -206,7 +212,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   greataxe: {
     id: 'greataxe', name: 'Greataxe', damage: '1d12', damageType: 'slashing',
-    properties: ['two-handed'], melee: true, cost: 30,
+    properties: ['two-handed'], melee: true, mastery: 'cleave', cost: 30,
   },
   'bear-bite': {
     id: 'bear-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',

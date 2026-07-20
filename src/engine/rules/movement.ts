@@ -194,8 +194,11 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         if (adjacent(h.position, from) && !adjacent(h.position, step)) {
           h.turn.reactionUsed = true;
           events.push(...resolveAttack(state, hid, moverId, weapon, { opportunity: true }));
-          if (!mover.alive) {
-            // kill() cleared occupancy; the mover simply stops where it fell.
+          if (!mover.alive || isDown(mover)) {
+            // Killed or dropped to 0 (unconscious): the mover stops where it
+            // fell rather than walking on to claim the destination cell. A
+            // kill clears occupancy; a downed body still occupies its cell.
+            if (mover.alive) cellAt(state.grid, mover.position)!.occupantId = moverId;
             events.unshift({ type: 'moved', combatantId: moverId, path: walked });
             return events;
           }
@@ -217,7 +220,8 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       const dmg = rollDice(state.rng, HAZARD_DAMAGE);
       state.rng = dmg.state;
       events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls));
-      if (!mover.alive) {
+      if (!mover.alive || isDown(mover)) {
+        if (mover.alive) cellAt(state.grid, mover.position)!.occupantId = moverId;
         events.unshift({ type: 'moved', combatantId: moverId, path: walked });
         return events;
       }

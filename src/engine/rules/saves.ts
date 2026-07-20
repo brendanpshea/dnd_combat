@@ -16,14 +16,25 @@ export function savingThrow(
   opts: { magical?: boolean } = {},
 ): { success: boolean; event: GameEvent } {
   const c = state.combatants[combatantId]!;
-  // Gnomish Cunning and the like: advantage on saves of a listed ability. No
-  // disadvantage-on-saves source exists yet, so 'flat' is the only other case
-  // — the mode is exactly "does a feature grant this?".
+
+  // 2024: the Paralyzed and Unconscious conditions auto-fail Strength and
+  // Dexterity saving throws outright — no roll.
+  if ((ability === 'str' || ability === 'dex') &&
+      c.conditions.some((k) => k.id === 'paralyzed' || k.id === 'unconscious')) {
+    return {
+      success: false,
+      event: { type: 'savingThrow', combatantId, ability, dc, natural: 1, total: 1, success: false },
+    };
+  }
+
+  // Gnomish Cunning and the like: advantage on saves of a listed ability.
   // Magic Resistance (Satyr/Unicorn): advantage on saves against spells.
   const hasAdvantage =
     c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
     (opts.magical === true && c.featureIds.includes('magic-resistance'));
-  const mode = hasAdvantage ? 'advantage' : 'flat';
+  // 2024: Restrained imposes disadvantage on Dexterity saving throws.
+  const hasDisadvantage = ability === 'dex' && c.conditions.some((k) => k.id === 'restrained');
+  const mode = hasAdvantage === hasDisadvantage ? 'flat' : hasAdvantage ? 'advantage' : 'disadvantage';
   const d20 = applyLucky(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   let total =

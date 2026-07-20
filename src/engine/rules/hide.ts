@@ -1,6 +1,6 @@
 /** Hide, direct-target visibility, and turn-start passive discovery. */
 import type { Combatant, GameState, Id } from '../types.js';
-import { abilityMod, proficiencyBonus } from '../types.js';
+import { abilityMod, proficiencyBonus, isDown } from '../types.js';
 import { rollD20 } from '../dice.js';
 import { hasLineOfSight } from '../grid.js';
 import { CLASSES } from '../../data/classes.js';
@@ -16,12 +16,15 @@ export function isHidden(c: Combatant): boolean {
   return hiddenCondition(c) !== undefined;
 }
 
-/** A creature can Hide only if every living enemy currently lacks line of sight. */
+/** A creature can Hide only if no enemy that can actually see currently has
+ *  line of sight — a downed (unconscious) or blinded enemy is not watching. */
 export function canHide(state: GameState, actor: Combatant): boolean {
   if (isHidden(actor)) return false;
   if (actor.conditions.some((c) => c.id === 'outlined')) return false;   // outlined; can't slip away
   return !Object.values(state.combatants).some(
-    (other) => other.alive && other.team !== actor.team && hasLineOfSight(state.grid, other.position, actor.position),
+    (other) => other.alive && !isDown(other) && other.team !== actor.team &&
+      !other.conditions.some((c) => c.id === 'blinded' || c.id === 'unconscious') &&
+      hasLineOfSight(state.grid, other.position, actor.position),
   );
 }
 
@@ -63,7 +66,8 @@ function passivePerceptionWithAdvantage(observer: Combatant): number {
   // Proficiency counts. It didn't before, which made "perception" a stat nobody
   // could be good at: every creature in the game spotted hidden rogues equally
   // well, whatever it was.
-  const proficient = observer.featureIds.some((f) => FEATURES[f]?.grantsSkill === 'perception');
+  const proficient = (CLASSES[observer.classId]?.skillProfs.includes('perception') ?? false) ||
+    observer.featureIds.some((f) => FEATURES[f]?.grantsSkill === 'perception');
   return 15 + abilityMod(observer.abilities.wis) + (proficient ? proficiencyBonus(observer.level) : 0);
 }
 

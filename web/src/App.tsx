@@ -12,6 +12,7 @@ import { logLinesFor, type LogLine } from './log.js';
 import { sphere2x2, sphere5x5, cone15, cube15, line15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
+import { STAGES } from '../../src/campaign/campaign.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
@@ -128,7 +129,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         </button>
       )}
       <p className="hint">
-        Campaign: a persistent party fights an 11-battle ladder, leveling up and
+        Campaign: a persistent party fights a {STAGES.length}-battle ladder, leveling up and
         collecting treasure as they go. Progress saves in your browser.
       </p>
     </div>
@@ -577,7 +578,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
 
       {active && (
         <div className="statusline" title={tooltipFor(active)}>
-          <Portrait id={active.classId} team={active.team} />
+          <Portrait id={active.portraitId ?? active.classId} team={active.team} />
           <strong>{active.name}</strong>
           <span className={active.team}>{active.team === 'team1' ? 'Blue' : 'Red'}</span>
           <span>HP {active.hp}/{active.maxHp}</span>
@@ -680,7 +681,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         <div className="chooser" onClick={() => setChooser(null)}>
           <div className="chooser-box" onClick={(e) => e.stopPropagation()}>
             <div className="chooser-head">
-              <Portrait id={chooser.target.classId} team={chooser.target.team} big />
+              <Portrait id={chooser.target.portraitId ?? chooser.target.classId} team={chooser.target.team} big />
               <h3>{chooser.target.name}</h3>
             </div>
             {chooser.options.map((o, i) => (

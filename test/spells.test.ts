@@ -32,19 +32,21 @@ describe('cantrips', () => {
     expect(c.state.combatants['wiz']!.turn.actionUsed).toBe(true);
   });
 
-  it('shocking grasp gets advantage vs metal armor and blocks reactions', () => {
+  it('shocking grasp no longer keys off metal armor, and blocks reactions on hit', () => {
     const c = new Combat({
       seed: 6,
       combatants: [
         place('wizard', 'team1', { x: 3, y: 3 }, { id: 'wiz' }),
-        place('fighter', 'team2', { x: 3, y: 4 }, { id: 'ftr' }), // scale mail = metal
+        // Prone (not the armor) is what grants advantage here — a reliable hit
+        // to exercise the reaction-blocking rider. Scale mail is still metal.
+        place('fighter', 'team2', { x: 3, y: 4 }, { id: 'ftr', conditions: [{ id: 'prone' }] }),
       ],
     });
     until(c, 'wiz');
     let events = c.apply({ kind: 'castSpell', spellId: 'shocking-grasp', slotLevel: 0, targets: [{ combatantId: 'ftr' }] });
     let roll = events.find((e) => e.type === 'attackRolled')!;
     if (roll.type !== 'attackRolled') throw new Error();
-    expect(roll.advSources).toContain('metal armor');
+    expect(roll.advSources).not.toContain('metal armor'); // 2024: removed
     if (roll.hit) {
       expect(c.state.combatants['ftr']!.conditions.some((k) => k.id === 'noReactions')).toBe(true);
       // Walking away must not provoke an OA now.
@@ -69,6 +71,38 @@ describe('cantrips', () => {
     expect(save.dc).toBe(13); // 8 + 2 + 3
     const dmg = events.find((e) => e.type === 'damageDealt');
     expect(save.success ? dmg === undefined : dmg !== undefined).toBe(true);
+  });
+
+  it('a paralyzed target auto-fails the sacred flame Dex save', () => {
+    const c = new Combat({
+      seed: 9,
+      combatants: [
+        place('cleric', 'team1', { x: 0, y: 0 }, { id: 'clr' }),
+        place('rogue', 'team2', { x: 4, y: 4 }, {
+          id: 'rog', conditions: [{ id: 'paralyzed', sourceId: 'clr' }],
+        }),
+      ],
+    });
+    until(c, 'clr');
+    const events = c.apply({ kind: 'castSpell', spellId: 'sacred-flame', slotLevel: 0, targets: [{ combatantId: 'rog' }] });
+    const save = events.find((e) => e.type === 'savingThrow')!;
+    if (save.type !== 'savingThrow') throw new Error();
+    expect(save.success).toBe(false); // Str/Dex saves auto-fail while paralyzed
+    expect(events.some((e) => e.type === 'damageDealt')).toBe(true);
+  });
+
+  it('poison spray is a ranged spell attack (2024), not a save', () => {
+    const c = new Combat({
+      seed: 9,
+      combatants: [
+        place('wizard', 'team1', { x: 0, y: 0 }, { id: 'wiz', spellIds: ['poison-spray'] }),
+        place('fighter', 'team2', { x: 4, y: 4 }, { id: 'ftr' }),
+      ],
+    });
+    until(c, 'wiz');
+    const events = c.apply({ kind: 'castSpell', spellId: 'poison-spray', slotLevel: 0, targets: [{ combatantId: 'ftr' }] });
+    expect(events.some((e) => e.type === 'attackRolled')).toBe(true);
+    expect(events.some((e) => e.type === 'savingThrow')).toBe(false);
   });
 });
 
@@ -297,7 +331,8 @@ describe('features', () => {
     const c = new Combat({
       seed: 3,
       combatants: [
-        place('fighter', 'team1', { x: 3, y: 3 }, { id: 'ftr' }),
+        // Action Surge is a level-2 feature in 2024.
+        { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 3, y: 3 }, level: 2 }), id: 'ftr' },
         place('rogue', 'team2', { x: 3, y: 4 }, { id: 'rog' }),
       ],
     });

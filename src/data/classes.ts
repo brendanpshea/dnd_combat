@@ -99,7 +99,8 @@ export const CLASSES: Record<Id, ClassData> = {
     skillProfs: ['intimidation'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
-      1: ['second-wind', 'action-surge'],
+      1: ['second-wind'],
+      2: ['action-surge'], // 2024: Action Surge is a level-2 feature.
       3: ['improved-critical'], // Champion
       // 4: Ability Score Increase (applied in the builder, not a feature).
       5: ['extra-attack'],
@@ -127,7 +128,7 @@ export const CLASSES: Record<Id, ClassData> = {
   cleric: {
     id: 'cleric', name: 'Cleric', hitDie: 8,
     savingThrows: ['wis', 'cha'],
-    armorProfs: ['light', 'medium', 'heavy', 'shield'], // heavy via Life Domain
+    armorProfs: ['light', 'medium', 'heavy', 'shield'], // heavy via Protector Divine Order (2024)
     skillProfs: ['persuasion'],
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
@@ -185,7 +186,12 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     featuresByLevel: {
       1: [],
-      3: ['sculpt-spells'], // Evoker
+      // Evoker subclass at level 3: a simplified Enhanced Cantrip (adds the
+      // evoker's Int modifier to its damaging cantrips). Sculpt Spells is a
+      // level-6 feature in the 2024 PHB and lands there for when the campaign
+      // eventually reaches that level.
+      3: ['enhanced-cantrip'],
+      6: ['sculpt-spells'],
       // 4: Ability Score Increase (builder).
     },
     weaponMasteries: [],

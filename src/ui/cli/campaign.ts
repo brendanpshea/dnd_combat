@@ -333,6 +333,13 @@ async function main() {
 
     const winner = await runBattle(combat, aiTeams, rl, (argValue('--ai') ?? 'normal') as AiLevel);
     if (winner !== 'team1') {
+      if (campaign.storyMode) {
+        // Story mode: no permadeath — the party regroups and retries this fight.
+        // The stage isn't advanced and the save is kept, so the loop re-enters here.
+        console.log('\nThe party retreats to regroup. Take another run at it!');
+        saveCampaign(campaign);
+        continue;
+      }
       console.log('\nThe party has fallen. The campaign is over.');
       deleteSave();
       rl.close();
@@ -352,7 +359,8 @@ async function main() {
     }
   }
 
-  console.log('\n##### THE CAMPAIGN IS COMPLETE — the ogre has fallen! #####');
+  const finale = STAGES[STAGES.length - 1]!;
+  console.log(`\n##### THE CAMPAIGN IS COMPLETE — ${ENCOUNTERS[finale.encounterId]!.name} has fallen! #####`);
   console.log(partySummary(campaign));
   deleteSave();
   rl.close();
