@@ -1732,6 +1732,21 @@ button.category .count {
 .shop-price.poor { color: var(--red); }
 .shop-price.sell { color: var(--green); }
 .shop-owner { color: var(--muted); font-style: normal; font-size: .82rem; }
+.adv-shop-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.adv-npc.compact { flex-direction: row; align-items: center; gap: 8px; margin: 0; }
+.adv-npc.compact .portrait { width: 40px; height: 40px; }
+.adv-npc.compact .adv-npc-name { font-weight: 700; }
+.shop-greeting { font-style: italic; margin: 0; }
+.adv-shop-deal { margin: 0; font-size: .85rem; color: var(--gold); }
+.shop-item { display: flex; flex-direction: column; gap: 6px; }
+.shop-item .adv-item-acts { padding-left: 8px; }
+.adv-shop-gambits { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.shop-gambit {
+  padding: 8px 12px; border-radius: 10px; background: var(--panel2); color: var(--text);
+  border: 1px solid transparent; cursor: pointer; font-size: .88rem; min-height: 38px;
+}
+.shop-gambit:hover { border-color: var(--blue); }
+.shop-gambit.risky:hover { border-color: var(--red); }
 
 /* Journal drawer */
 .journal-scrim {

@@ -135,6 +135,9 @@ export function validateModule(module: Module): string[] {
     if (scene.kind === 'dialogue' && scene.npc.portraitId && !isNpcArt(scene.npc.portraitId)) {
       at(id, `NPC portraitId '${scene.npc.portraitId}' is not a known archetype`);
     }
+    if (scene.kind === 'shop' && scene.npc?.portraitId && !isNpcArt(scene.npc.portraitId)) {
+      at(id, `shop NPC portraitId '${scene.npc.portraitId}' is not a known archetype`);
+    }
     if (scene.kind === 'battle') {
       if (!encounterExists(scene.encounterId)) at(id, `unknown encounter '${scene.encounterId}'`);
       if (!MAPS[scene.mapId]) at(id, `unknown map '${scene.mapId}'`);
