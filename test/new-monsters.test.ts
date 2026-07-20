@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty, buildCharacter } from '../src/builder/character.js';
-import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS, MONSTER_XP, encounterXP } from '../src/data/monsters.js';
+import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS, MONSTER_XP, encounterXP, monsterLevel } from '../src/data/monsters.js';
 import { SPELLS } from '../src/data/spells.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { makeCombatant } from './helpers.js';
@@ -246,6 +246,27 @@ describe('second monster batch', () => {
     }
     expect(sawFright).toBe(true);
     expect(sawParalyze).toBe(true);
+  });
+});
+
+describe('monster proficiency scales with CR', () => {
+  it('maps CR to the SRD proficiency-bonus table', () => {
+    // CR band -> PB: 0-4=+2, 5-8=+3, 9-12=+4, 13-16=+5, 17-20=+6, 21-24=+7.
+    const expected: Array<[number, number]> = [
+      [0.25, 2], [1, 2], [4, 2], [5, 3], [8, 3], [9, 4], [12, 4], [13, 5], [17, 6], [21, 7], [24, 7],
+    ];
+    for (const [cr, pb] of expected) {
+      expect(proficiencyBonus(monsterLevel(cr))).toBe(pb);
+    }
+    // Absent CR defaults to level 1 / PB +2 (every current monster).
+    expect(monsterLevel(undefined)).toBe(1);
+  });
+
+  it('a CR-4 wyrmling still casts its breath at PB +2 (DC 8 + 2 + Con)', () => {
+    const red = buildMonster('red-wyrmling', 'team2', { x: 0, y: 0 });
+    expect(red.level).toBe(4); // from cr: 4
+    // Breath DC = 8 + PB(4) + Con mod(17 -> +3) = 13, the SRD red wyrmling DC.
+    expect(8 + proficiencyBonus(red.level) + abilityMod(red.abilities.con)).toBe(13);
   });
 });
 

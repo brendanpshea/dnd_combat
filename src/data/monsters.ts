@@ -26,6 +26,15 @@ export interface MonsterData {
   resistances?: DamageType[];
   vulnerabilities?: DamageType[];
   immunities?: DamageType[];
+  /**
+   * Challenge rating, used only to set the built combatant's proficiency (and
+   * cantrip/feature scaling): `proficiencyBonus` shares the CR→PB table's ÷4
+   * breakpoints, so the builder maps `level = round(cr)` and everything —
+   * spell save DCs, spell-attack bonuses, feature save DCs, cantrip dice — lands
+   * at the stat block's real numbers. Omit for CR ≤ 4 monsters: they default to
+   * PB +2 (level 1), which is already correct across that whole band.
+   */
+  cr?: number;
   /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
   spellcasting?: { ability: Ability; slots: number[]; spellIds: Id[] };
   /** SRD creature type. Beast is the load-bearing one today -- Animal
@@ -523,7 +532,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // CR 2–4) makes their breath DCs land at the SRD's 11–13.
   'black-wyrmling': {
     id: 'black-wyrmling', name: 'Black Dragon Wyrmling',
-    ac: 17, hp: 33, speed: 30,
+    ac: 17, hp: 33, speed: 30, cr: 2,
     creatureType: 'dragon',
     abilities: { str: 15, dex: 14, con: 13, int: 10, wis: 11, cha: 13 },
     featureIds: ['breath-acid'],
@@ -532,7 +541,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'blue-wyrmling': {
     id: 'blue-wyrmling', name: 'Blue Dragon Wyrmling',
-    ac: 17, hp: 32, speed: 30,
+    ac: 17, hp: 32, speed: 30, cr: 3,
     creatureType: 'dragon',
     abilities: { str: 17, dex: 10, con: 15, int: 12, wis: 11, cha: 15 },
     featureIds: ['breath-lightning'],
@@ -541,7 +550,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'green-wyrmling': {
     id: 'green-wyrmling', name: 'Green Dragon Wyrmling',
-    ac: 17, hp: 38, speed: 30,
+    ac: 17, hp: 38, speed: 30, cr: 2,
     creatureType: 'dragon',
     abilities: { str: 15, dex: 12, con: 13, int: 14, wis: 11, cha: 13 },
     featureIds: ['breath-poison'],
@@ -550,7 +559,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'red-wyrmling': {
     id: 'red-wyrmling', name: 'Red Dragon Wyrmling',
-    ac: 17, hp: 56, speed: 30,
+    ac: 17, hp: 56, speed: 30, cr: 4,
     creatureType: 'dragon',
     abilities: { str: 19, dex: 10, con: 17, int: 12, wis: 11, cha: 15 },
     featureIds: ['breath-fire'],
@@ -559,7 +568,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'white-wyrmling': {
     id: 'white-wyrmling', name: 'White Dragon Wyrmling',
-    ac: 16, hp: 32, speed: 30,
+    ac: 16, hp: 32, speed: 30, cr: 2,
     creatureType: 'dragon',
     abilities: { str: 14, dex: 10, con: 14, int: 8, wis: 11, cha: 12 },
     featureIds: ['breath-cold'],
@@ -569,29 +578,27 @@ export const MONSTERS: Record<Id, MonsterData> = {
 };
 
 /**
- * Map a Challenge Rating onto a character level whose proficiency bonus matches
- * the CR's (CR 0-4 → PB +2, 5-8 → +3, 9-12 → +4, ...). We reuse the character
- * `level` field so `proficiencyBonus(level)` yields the stat-block PB.
+ * The combatant level a monster is built at, from its CR. `proficiencyBonus`
+ * shares the CR→PB table's ÷4 breakpoints, so `round(cr)` as a level makes save
+ * DCs, spell-attack bonuses, and cantrip/feature scaling all land on the stat
+ * block's real numbers. Absent CR → level 1 / PB +2 (correct for every CR ≤ 4).
  */
-function levelForCr(cr: number): number {
-  if (cr >= 17) return 17;
-  if (cr >= 13) return 13;
-  if (cr >= 9) return 9;
-  if (cr >= 5) return 5;
-  return 1;
+export function monsterLevel(cr?: number): number {
+  return cr !== undefined ? Math.max(1, Math.round(cr)) : 1;
 }
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
   const m = MONSTERS[monsterId];
   if (!m) throw new Error(`Unknown monster: ${monsterId}`);
-  // Feature-use pools, same as the character builder (level 1 → PB +2).
+  const level = monsterLevel(m.cr);
+  // Feature-use pools, same as the character builder.
   const featureUses: Record<Id, ResourcePool> = {};
   for (const fid of m.featureIds ?? []) {
     const f = FEATURES[fid];
     if (f?.uses) {
       const count =
-        f.uses.count === 'proficiency' ? proficiencyBonus(1) :
-        f.uses.count === 'fiveTimesLevel' ? 5 :
+        f.uses.count === 'proficiency' ? proficiencyBonus(level) :
+        f.uses.count === 'fiveTimesLevel' ? 5 * level :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
     } else if (f?.recharge) {
@@ -604,9 +611,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     team,
     classId: monsterId,
     speciesId: 'monster',
-    // A representative level whose proficiency bonus matches the monster's CR,
-    // so high-CR stat blocks get the right to-hit and save DCs (PB +3 at CR 5+).
-    level: levelForCr(m.cr ?? 0),
+    level, // from CR (default 1 / PB +2)
     abilities: { ...m.abilities },
     maxHp: m.hp,
     hp: m.hp,

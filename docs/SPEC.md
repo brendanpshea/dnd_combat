@@ -118,10 +118,19 @@ threshold and emitting a `recharged` event. It reuses the one-charge
 features serve it; charged features never roll, so there's zero RNG churn (and
 zero test impact) until a breath is actually spent. This is the mechanism
 adult and ancient dragons inherit later — their breath just grows in dice, and
-their spells hang on the existing `spellcasting` field. (The one thing older
-dragons will still need is a `cr`/proficiency field on `MonsterData`, since
-every monster is currently built at level 1 / PB +2 — correct for wyrmlings,
-too low for an ancient's DCs.)
+their spells hang on the existing `spellcasting` field.
+
+**Monster proficiency scales with CR.** `MonsterData.cr` sets the built
+combatant's `level` via `monsterLevel` (`round(cr)`), and because
+`proficiencyBonus` shares the CR→PB table's ÷4 breakpoints that lands every
+save DC, spell-attack bonus, and cantrip/feature-use count on the stat block's
+real numbers — a CR 17 adult dragon builds at PB +6, a CR 24 ancient at +7.
+Omit `cr` and a monster defaults to level 1 / PB +2, which is correct across
+the entire CR 0–4 band (the whole current bestiary; the wyrmlings carry a `cr`
+for documentation but stay at +2). Before this, every monster was hardcoded to
+level 1, so caster monsters cast at the right DC only by coincidence of that
+band — a priest's DC 13 is `8 + PB(+2) + Wis(+3)`, right *because* it's CR 2;
+the first CR 5+ caster would have been a point low. Now it just works.
 
 **Abyssal Tiefling** is the third: poison resistance, a free **Poison Spray**
 cantrip (Con save, short range — 10 ft, 2 cells), and an innate **Ray of
