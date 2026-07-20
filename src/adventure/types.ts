@@ -119,12 +119,23 @@ export interface ExploreNode {
   wandering?: { chance: number; battleScene: SceneRef };
 }
 
+/** Whether a location lets the party make camp — and at what risk.
+ *  Its *presence* enables the Rest options on the party screen; absence leaves
+ *  only gear management (you can always rummage your packs, but not everywhere
+ *  is safe to sleep). `risky` means a long rest may be interrupted: a `chance`
+ *  (0–1) rng roll can divert to `battleScene` (whose onWin should route home). */
+export interface CampRule {
+  risky?: { chance: number; battleScene: SceneRef };
+}
+
 export interface ExploreMap {
   art: SceneArt;
   title: string;
   /** MapTheme for the backdrop tint (stone/forest/graveyard/ember). */
   theme?: string;
   nodes: ExploreNode[];
+  /** Present = the party may rest here (see CampRule). Absent = no rest. */
+  camp?: CampRule;
 }
 
 export type Scene =

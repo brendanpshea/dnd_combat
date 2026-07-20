@@ -8,17 +8,24 @@ import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import {
   newCampaign, buildCampaignParty, applyVictory, type CampaignState,
+  partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
+  itemName, itemIcon, type EquipSlot,
+  storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
+  cantripLimit, preparedLimit, preparedSpells,
 } from '../../src/campaign/campaign.js';
+import { acOf } from '../../src/data/armor.js';
+import { SPELLS } from '../../src/data/spells.js';
+import { SpellTray } from './SpellTray.js';
 import { buildEncounter, ENCOUNTERS, MONSTERS } from '../../src/data/monsters.js';
 import { MAPS } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
-  hubReturn, returnToHub,
+  hubReturn, returnToHub, campRule, campRest,
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
-import type { Module, Scene } from '../../src/adventure/types.js';
+import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
 import { MODULES } from '../../src/data/modules/index.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
@@ -111,6 +118,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
   const [dice, setDice] = useState<DiceContext | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
   const [journalOpen, setJournalOpen] = useState(false);
+  const [campOpen, setCampOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
   /** The battle scene the player has hit "Fight" on. A battle first shows a
    *  pre-fight intro (enemy portraits + set-up text); only after arming it does
@@ -245,6 +253,11 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
         <button className="ghost adv-journal-btn" onClick={() => setJournalOpen(true)}>
           📖{state.journal.length > 0 ? ` ${state.journal.length}` : ''}
         </button>
+        {scene.kind !== 'ending' && !dice && (
+          <button className="ghost adv-journal-btn" title="Party & camp" onClick={() => setCampOpen(true)}>
+            🎒
+          </button>
+        )}
         <button className="ghost adv-journal-btn" title={muted ? 'Unmute' : 'Mute'}
           onClick={() => { const m = !muted; setMuted(m); setMutedState(m); if (!m) initAudio(); }}>
           {muted ? '🔇' : '🔊'}
@@ -253,6 +266,19 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
       </div>
 
       {journalOpen && <JournalDrawer entries={state.journal} onClose={() => setJournalOpen(false)} />}
+      {campOpen && (
+        <CampScreen
+          campaign={campaign}
+          camp={campRule(state, module)}
+          onRest={(variant) => {
+            const evs = campRest(state, module, variant);
+            setCampOpen(false);
+            process(evs, scene);
+          }}
+          onChange={rerender}
+          onClose={() => setCampOpen(false)}
+        />
+      )}
 
       <div className={`adv-stage ${isExplore ? 'explore' : ''}`}>
         <Backdrop artId={backdropArt} glyph={artEmoji(backdropArt) ?? sceneGlyph(facing)} />
@@ -401,6 +427,241 @@ function PartyStrip({ campaign }: { campaign: CampaignState }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
+
+type CampPick =
+  | { kind: 'pack'; charIdx: number; itemId: string }
+  | { kind: 'stash'; itemId: string }
+  | { kind: 'equipped'; charIdx: number; slot: EquipSlot; itemId: string }
+  | { kind: 'spell'; charIdx: number; spellId: string }
+  | null;
+
+/** The party screen: gear management is always available (you can rummage your
+ *  packs anywhere); Rest only appears where the location is campable (`camp`).
+ *  Tap an item, then choose what to do with it — the same verb-after-noun flow
+ *  as the campaign's between-battle screen, reusing the same state helpers. */
+function CampScreen(
+  { campaign, camp, onRest, onChange, onClose }: {
+    campaign: CampaignState;
+    camp: CampRule | null;
+    onRest: (variant: 'short' | 'long') => void;
+    onChange: () => void;
+    onClose: () => void;
+  },
+) {
+  const [picked, setPicked] = useState<CampPick>(null);
+  const [spellsFor, setSpellsFor] = useState<number | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const party = buildCampaignParty(campaign);
+  const stash = partyStash(campaign).filter((s) => s.qty > 0);
+
+  const act = (fn: () => boolean | void, msg: string) => {
+    fn();
+    setPicked(null);
+    if (msg) setNotice(msg); // '' lets fn set its own notice (e.g. heal amounts)
+    onChange();
+  };
+
+  return (
+    <div className="adv-camp-scrim" onClick={onClose}>
+      <div className="adv-camp" onClick={(e) => e.stopPropagation()}>
+        <div className="adv-camp-head">
+          <h2>🎒 Party</h2>
+          <button className="ghost" onClick={onClose}>✕</button>
+        </div>
+
+        {/* Rest — only where you can safely (or riskily) make camp. */}
+        <div className="adv-camp-rest">
+          {camp ? (
+            <>
+              <div className="adv-rest-btns">
+                <button className="primary" onClick={() => onRest('short')}>🌤 Short rest</button>
+                <button className="primary" onClick={() => onRest('long')}>🌙 Long rest</button>
+              </div>
+              {camp.risky && (
+                <p className="adv-rest-warn">⚠ This is open country — a long rest here may be interrupted.</p>
+              )}
+            </>
+          ) : (
+            <p className="adv-rest-warn muted">No safe place to rest here. You can still sort your gear.</p>
+          )}
+        </div>
+
+        {notice && <p className="adv-camp-notice">{notice}</p>}
+
+        {/* Party loot: claim shared items to a chosen hero. */}
+        {stash.length > 0 && (
+          <div className="adv-camp-stash">
+            <span className="adv-camp-label">🎁 Party Loot</span>
+            <div className="adv-camp-items">
+              {stash.map((s) => (
+                <button
+                  key={s.itemId}
+                  className={`adv-item ${picked?.kind === 'stash' && picked.itemId === s.itemId ? 'sel' : ''}`}
+                  onClick={() => setPicked(picked?.kind === 'stash' && picked.itemId === s.itemId ? null : { kind: 'stash', itemId: s.itemId })}
+                >
+                  {itemIcon(s.itemId)} {itemName(s.itemId)}{s.qty > 1 ? ` ×${s.qty}` : ''}
+                </button>
+              ))}
+            </div>
+            {picked?.kind === 'stash' && (
+              <div className="adv-item-acts">
+                <span className="muted">Give to:</span>
+                {campaign.characters.map((ch, i) => (
+                  <button key={i} onClick={() => act(() => claimFromStash(campaign, i, picked.itemId), `${ch.name} takes ${itemName(picked.itemId)}`)}>
+                    {ch.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Each hero: worn gear (tap to unequip) + pack (tap for equip/give/stash). */}
+        {campaign.characters.map((ch, idx) => (
+          <div key={idx} className="adv-camp-char">
+            <div className="adv-camp-charhead">
+              {hasArt(ch.portraitId ?? ch.classId)
+                ? <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
+                : <span className="adv-party-emoji">🧑</span>}
+              <div>
+                <strong>{ch.name}</strong>
+                <span className="muted"> · HP {party[idx]!.hp}/{party[idx]!.maxHp} · 🛡 {acOf(party[idx]!)}</span>
+              </div>
+            </div>
+
+            <div className="adv-camp-gear">
+              {EQUIP_SLOTS.map((slot) => {
+                const held = ch.equipped[slot];
+                if (!held) return null;
+                const sel = picked?.kind === 'equipped' && picked.charIdx === idx && picked.slot === slot;
+                return (
+                  <button
+                    key={slot}
+                    className={`adv-item gear ${sel ? 'sel' : ''}`}
+                    onClick={() => setPicked(sel ? null : { kind: 'equipped', charIdx: idx, slot, itemId: held })}
+                  >
+                    {itemIcon(held)} {itemName(held)}
+                  </button>
+                );
+              })}
+            </div>
+            {picked?.kind === 'equipped' && picked.charIdx === idx && (
+              <div className="adv-item-acts">
+                <button onClick={() => act(() => unequipSlot(campaign, idx, picked.slot), `${ch.name} stows ${itemName(picked.itemId)}`)}>Unequip</button>
+              </div>
+            )}
+
+            <div className="adv-camp-items">
+              {ch.inventory.filter((s) => s.qty > 0).map((s) => {
+                const sel = picked?.kind === 'pack' && picked.charIdx === idx && picked.itemId === s.itemId;
+                return (
+                  <button
+                    key={s.itemId}
+                    className={`adv-item ${sel ? 'sel' : ''}`}
+                    onClick={() => setPicked(sel ? null : { kind: 'pack', charIdx: idx, itemId: s.itemId })}
+                  >
+                    {itemIcon(s.itemId)} {itemName(s.itemId)}{s.qty > 1 ? ` ×${s.qty}` : ''}
+                  </button>
+                );
+              })}
+              {ch.inventory.every((s) => s.qty <= 0) && <span className="muted">(pack empty)</span>}
+            </div>
+            {picked?.kind === 'pack' && picked.charIdx === idx && (
+              <div className="adv-item-acts">
+                {EQUIP_SLOTS.filter((slot) => equipBlocked(campaign, idx, picked.itemId, slot) === undefined).map((slot) => (
+                  <button key={slot} onClick={() => act(() => equipItem(campaign, idx, picked.itemId, slot), `${ch.name} equips ${itemName(picked.itemId)}`)}>
+                    Equip{slot === 'offHand' ? ' (off-hand)' : slot === 'mainHand' ? ' (main)' : ''}
+                  </button>
+                ))}
+                {isStoreHealingSource(picked.itemId) && campaign.characters.map((target, t) => (
+                  <button key={`h${t}`} onClick={() => act(() => {
+                    const r = useStoreHealing(campaign, idx, t, picked.itemId as Parameters<typeof useStoreHealing>[3]);
+                    setNotice(r ? `${ch.name} heals ${target.name} for ${r.healed} HP.` : 'Nothing to heal.');
+                  }, '')}>
+                    💚 {target.name}
+                  </button>
+                ))}
+                {campaign.characters.map((other, j) => j === idx ? null : (
+                  <button key={j} onClick={() => act(() => giveItem(campaign, idx, j, picked.itemId), `${other.name} takes ${itemName(picked.itemId)}`)}>
+                    → {other.name}
+                  </button>
+                ))}
+                <button onClick={() => act(() => stashItem(campaign, idx, picked.itemId), `${itemName(picked.itemId)} to party loot`)}>Stash</button>
+              </div>
+            )}
+
+            {/* Camp spellcasting: Cure Wounds, Mage Armor, Find Familiar, … —
+                the same out-of-combat casts as the old between-battle store. */}
+            {(() => {
+              const spells = storeSpellActions(party[idx]!);
+              const canPrepare = cantripLimit(campaign, idx) > 0;
+              if (spells.length === 0 && !canPrepare) return null;
+              return (
+                <>
+                  <div className="adv-camp-items">
+                    {canPrepare && (
+                      <button className="adv-item" onClick={() => setSpellsFor(idx)}>
+                        📖 Prepare ({preparedSpells(campaign, idx).length}/{preparedLimit(campaign, idx)})
+                      </button>
+                    )}
+                    {spells.map((sp) => {
+                      const sel = picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === sp.spellId;
+                      const slotIdx = (SPELLS[sp.spellId]?.level ?? 1) - 1;
+                      const outOfSlots = !sp.ritual && (party[idx]!.spellSlots[slotIdx]?.current ?? 0) <= 0;
+                      return (
+                        <button
+                          key={sp.spellId}
+                          className={`adv-item ${sel ? 'sel' : ''}`}
+                          disabled={outOfSlots}
+                          title={outOfSlots ? 'No spell slots left — rest to recover them' : undefined}
+                          onClick={() => setPicked(sel ? null : { kind: 'spell', charIdx: idx, spellId: sp.spellId })}
+                        >
+                          {sp.icon} {sp.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {picked?.kind === 'spell' && picked.charIdx === idx && (() => {
+                    const sp = spells.find((s) => s.spellId === picked.spellId)!;
+                    return (
+                      <div className="adv-item-acts">
+                        {sp.targeting === 'self' && (
+                          <button onClick={() => act(() => {
+                            useStoreSpell(campaign, idx, sp.spellId);
+                          }, `${ch.name} ${sp.castNotice ?? `casts ${sp.name}`}.`)}>
+                            {sp.castLabel ?? 'Cast'}
+                          </button>
+                        )}
+                        {isStoreHealingSource(sp.spellId) && campaign.characters.map((target, t) => (
+                          <button key={t} onClick={() => act(() => {
+                            const r = useStoreHealing(campaign, idx, t, sp.spellId as Parameters<typeof useStoreHealing>[3]);
+                            setNotice(r ? `${ch.name} heals ${target.name} for ${r.healed} HP.` : 'No slots left.');
+                          }, '')}>
+                            💚 {target.name}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </>
+              );
+            })()}
+          </div>
+        ))}
+        {spellsFor !== null && (
+          <SpellTray
+            campaign={campaign}
+            idx={spellsFor}
+            onClose={() => setSpellsFor(null)}
+            onSaved={(msg) => { setNotice(msg); onChange(); }}
+          />
+        )}
+      </div>
     </div>
   );
 }
