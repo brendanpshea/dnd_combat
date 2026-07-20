@@ -19,6 +19,7 @@ import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, Project
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
+import { AdventureScreen } from './Adventure.js';
 import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
@@ -84,7 +85,8 @@ type Screen =
   | { view: 'menu' }
   | { view: 'skirmish-setup' }
   | { view: 'skirmish'; config: SetupConfig }
-  | { view: 'campaign' };
+  | { view: 'campaign' }
+  | { view: 'adventure' };
 
 export function App() {
   const [screen, setScreen] = useState<Screen>({ view: 'menu' });
@@ -103,6 +105,8 @@ export function App() {
       );
     case 'campaign':
       return <CampaignScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
+    case 'adventure':
+      return <AdventureScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
   }
 }
 
@@ -115,6 +119,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
       <button className="primary" onClick={() => onPick({ view: 'campaign' })}>
         🏰 Campaign{hasSave ? ' (resume)' : ''}
       </button>
+      <button onClick={() => onPick({ view: 'adventure' })}>📜 Adventure (beta)</button>
       <button onClick={() => onPick({ view: 'skirmish-setup' })}>⚔️ Single battle</button>
       {hasSave && (
         <button
