@@ -38,6 +38,14 @@ export const HAS_NPC_ART = new Set<string>([
   'npc-commoner',
   'npc-child',
   'npc-noble',
+  'npc-priest',
+  'npc-sage',
+  'npc-stranger',
+  'npc-wounded',
+  'npc-bandit',
+  'npc-captain',
+  'npc-cultist',
+  'npc-barbarian',
 ]);
 
 export function hasArt(id: string): boolean {

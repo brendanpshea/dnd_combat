@@ -53,7 +53,7 @@ for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
         if im.size != (SIZE, SIZE):
             im = im.resize((SIZE, SIZE), Image.LANCZOS)
         dst = os.path.join(OUT, f"{kind}-{cid}.webp")
-        im.save(dst, "WEBP", quality=QUALITY, method=6)
+        im.save(dst, "WEBP", quality=QUALITY, method=4)
         total += os.path.getsize(dst)
         bucket.append(cid)
 
