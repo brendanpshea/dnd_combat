@@ -1507,6 +1507,15 @@ button.category .count {
 .adv-panel.full { max-height: 100%; height: 100%; border-radius: 0; background: linear-gradient(rgba(36,31,51,.94), rgba(26,22,37,.97)); }
 
 .adv-text { line-height: 1.55; font-size: 1.05rem; }
+
+/* Pre-battle intro: set-up text + the faces you're about to fight. */
+.adv-battle-intro { align-items: center; text-align: center; }
+.adv-battle-title { margin: 0; font-size: 1.4rem; color: var(--red, #e26); }
+.adv-foes { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin: 6px 0 4px; }
+.adv-foe { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 84px; }
+.adv-foe-emoji { font-size: 2.4rem; }
+.adv-foe-name { font-size: .78rem; line-height: 1.2; color: var(--muted); }
+.adv-fight { text-align: center; align-items: center; }
 .adv-prompt { color: var(--muted); font-weight: 600; }
 
 .adv-npc { display: flex; align-items: center; gap: 12px; }
@@ -1634,6 +1643,8 @@ button.category .count {
 /* ===== Adventure M2: fog, shop, journal ================================== */
 .adv-node.fog .adv-node-icon { opacity: .55; filter: grayscale(.4); border-style: dashed; }
 .adv-node.fog .adv-node-label { opacity: .7; }
+.adv-node.mystery .adv-node-icon { border-color: var(--gold); border-style: dashed; }
+.adv-node.mystery .adv-node-label { font-style: italic; opacity: .85; }
 .adv-node.explored .adv-node-icon { border-color: var(--green); }
 .adv-maphint {
   position: absolute; bottom: 8px; left: 12px; right: 12px; text-align: center;

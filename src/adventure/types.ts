@@ -104,6 +104,10 @@ export interface ExploreNode {
   x: number;
   y: number;
   label: string;
+  /** Shown in place of `label` until the party has entered this node — a marker
+   *  you can see but don't yet *know* (e.g. "?" / "Something in the reeds").
+   *  Distinct from `hidden`, which withholds the node entirely until perceived. */
+  mystery?: string;
   icon: string;                 // SvgIconId / emoji, resolved by the UI
   scene: SceneRef;              // tapping enters this scene
   requires?: Requirement[];     // locked door / gated route

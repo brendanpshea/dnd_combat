@@ -257,6 +257,18 @@ describe('hubs and once-choices', () => {
     expect(legalChoices(state, hollow).some((o) => o.choice.id === 'insight')).toBe(false);
   });
 
+  it('a mystery node is unexplored until entered (drives the hidden label)', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'trail');
+    const before = exploreNodes(state, hollow).find((n) => n.node.id === 'scout')!;
+    expect(before.node.mystery).toBeTruthy();
+    expect(before.explored).toBe(false); // UI shows node.mystery here
+    enterNode(state, hollow, 'scout');
+    enterScene(state, hollow, 'trail'); // back on the map
+    const after = exploreNodes(state, hollow).find((n) => n.node.id === 'scout')!;
+    expect(after.explored).toBe(true); // UI now shows the real label
+  });
+
   it('consumedChoices survives a save round-trip', () => {
     const state = startAdventure(newCampaign(1), hollow);
     enterScene(state, hollow, 'board');

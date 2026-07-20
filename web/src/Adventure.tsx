@@ -9,7 +9,7 @@ import { Combat } from '../../src/engine/combat.js';
 import {
   newCampaign, buildCampaignParty, applyVictory, type CampaignState,
 } from '../../src/campaign/campaign.js';
-import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
+import { buildEncounter, ENCOUNTERS, MONSTERS } from '../../src/data/monsters.js';
 import { MAPS } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
@@ -112,6 +112,10 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
   const [banner, setBanner] = useState<string[]>([]);
   const [journalOpen, setJournalOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
+  /** The battle scene the player has hit "Fight" on. A battle first shows a
+   *  pre-fight intro (enemy portraits + set-up text); only after arming it does
+   *  the shared Combat mount, so a fight always opens with a beat, not a jolt. */
+  const [armedBattle, setArmedBattle] = useState<string | null>(null);
   /** Last scene that carried a location backdrop — inherited by scenes that
    *  don't declare their own, so a whole conversation stays *in* the tavern. */
   const locationArt = useRef<string | undefined>(undefined);
@@ -184,9 +188,18 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
     rerender();
   }
 
-  // --- Battle scene: hand off to the shared Battle component ---------------
+  // --- Battle scene: a pre-fight intro, then the shared Battle component ---
   if (scene.kind === 'battle') {
     const enc = ENCOUNTERS[scene.encounterId];
+    if (armedBattle !== scene.id) {
+      return (
+        <BattleIntro
+          scene={scene}
+          onFight={() => { sfx('melee'); setArmedBattle(scene.id); }}
+          onExit={onExit}
+        />
+      );
+    }
     const combat = new Combat({
       seed: battleSeed(state, scene.id),
       mapId: scene.mapId,
@@ -208,6 +221,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
             const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
             applyVictory(campaign, survivors, combat.state.rng);
           }
+          setArmedBattle(null); // re-arm the intro if a later fight reuses this
           process(resolveBattle(state, module, won), scene);
         }}
       />
@@ -291,6 +305,60 @@ function Backdrop({ artId, glyph }: { artId: string | undefined; glyph: string }
     return <div className="adv-backdrop" style={{ backgroundImage: `url(${sceneArtUrl(artId)})` }} />;
   }
   return <div className="adv-backdrop glyph"><span>{glyph}</span></div>;
+}
+
+/** The beat before a fight: the set-up text and the faces you're about to
+ *  meet. Distinct enemy types are shown as portraits with a count, so a battle
+ *  reads as an encounter with *someone*, not a sudden grid. Reusable by any
+ *  module — it derives everything from the encounter's roster. */
+function BattleIntro(
+  { scene, onFight, onExit }: { scene: Extract<Scene, { kind: 'battle' }>; onFight: () => void; onExit: () => void },
+) {
+  const enc = ENCOUNTERS[scene.encounterId];
+  // Distinct monster types in roster order, with how many of each.
+  const roster: Array<{ id: string; count: number }> = [];
+  for (const id of enc?.members ?? []) {
+    const seen = roster.find((r) => r.id === id);
+    if (seen) seen.count++; else roster.push({ id, count: 1 });
+  }
+  const artId = artIdOf(scene);
+  return (
+    <div className="adventure">
+      <div className="adv-stage">
+        <Backdrop artId={artId} glyph={sceneGlyph(scene)} />
+        <div className="adv-content">
+          <div className="adv-scene centered">
+            <div className="adv-panel adv-battle-intro">
+              <h2 className="adv-battle-title">{enc?.name ?? 'A Fight!'}</h2>
+              {(scene.intro ?? ['They move to attack!']).map((p, i) => (
+                <p key={i} className="adv-text">{p}</p>
+              ))}
+              <div className="adv-foes">
+                {roster.map(({ id, count }) => (
+                  <div key={id} className="adv-foe">
+                    {hasArt(id)
+                      ? <Portrait id={id} team="team2" big />
+                      : <span className="adv-foe-emoji">👹</span>}
+                    <span className="adv-foe-name">
+                      {MONSTERS[id]?.name ?? label(id)}{count > 1 ? ` ×${count}` : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="adv-choices">
+                <button className="adv-choice primary adv-fight" onClick={onFight}>
+                  <span>⚔️ Fight!</span>
+                </button>
+                <button className="adv-choice adv-leave" onClick={onExit}>
+                  <span>✕ Menu</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** A non-interactive snapshot of a story/dialogue/check scene — the NPC and
@@ -446,20 +514,26 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
       // Markers sit directly on the full-bleed location backdrop (the stage).
       <div className="adv-explore">
         <h2 className="adv-maptitle">{scene.map.title}</h2>
-        {nodes.map(({ node, blocked, secret, explored }) => (
-          <button
-            key={node.id}
-            className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'}`}
-            style={{ left: `${node.x}%`, top: `${node.y}%` }}
-            title={blocked ?? node.label}
-            // Blocked nodes stay tappable but explain why (a disabled button
-            // gives no feedback on touch).
-            onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
-          >
-            <span className="adv-node-icon">{blocked ? '🔒' : node.icon}</span>
-            <span className="adv-node-label">{node.label}</span>
-          </button>
-        ))}
+        {nodes.map(({ node, blocked, secret, explored }) => {
+          // A mystery marker keeps its name hidden until the party has been
+          // there — you can see there's *something*, not what.
+          const unknown = !explored && !!node.mystery;
+          const shownLabel = unknown ? node.mystery! : node.label;
+          return (
+            <button
+              key={node.id}
+              className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'} ${unknown ? 'mystery' : ''}`}
+              style={{ left: `${node.x}%`, top: `${node.y}%` }}
+              title={blocked ?? shownLabel}
+              // Blocked nodes stay tappable but explain why (a disabled button
+              // gives no feedback on touch).
+              onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
+            >
+              <span className="adv-node-icon">{blocked ? '🔒' : unknown ? '❓' : node.icon}</span>
+              <span className="adv-node-label">{shownLabel}</span>
+            </button>
+          );
+        })}
         <p className="adv-maphint">Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.</p>
       </div>
     );
