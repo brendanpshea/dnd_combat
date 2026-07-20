@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "start": "tsx src/ui/cli/main.ts",
     "campaign": "tsx src/ui/cli/campaign.ts",
+    "adventure": "tsx src/ui/cli/adventure.ts",
     "arena": "tsx scripts/arena.ts",
     "probe": "tsx scripts/probe.ts",
     "species": "tsx scripts/species.ts",

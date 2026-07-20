@@ -965,7 +965,12 @@ Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ g
 → ✅ terrain/maps → ✅ monsters/encounters → ✅ levels 2–3 + subclasses
 → ✅ inventory/equipment → ✅ campaign + shop + random loot + shop skills
 → ✅ web UI (battle, campaign, effects/sound, PWA, Pages deploy)
-→ ✅ Ranger + Paladin (levels 1–5).
+→ ✅ Ranger + Paladin (levels 1–5)
+→ 🚧 Adventure mode (story/exploration/skills) — M0 (18 skills, per-character
+  and group checks, backgrounds) + M1 (pure scene runtime, validator, classic
+  module, headless CLI + auto-player, web story panel + dice-check ritual)
+  shipped; see `docs/adventure-mode-plan.md` for M2–M4 (exploration UI, juice,
+  the authored module).
 
 Next candidates, roughly in fun-per-effort order:
 1. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.

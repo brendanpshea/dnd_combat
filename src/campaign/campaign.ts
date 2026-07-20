@@ -22,6 +22,7 @@ import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
+import { backgroundSkills } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP } from '../data/monsters.js';
 import type { Rarity } from '../data/armor.js';
@@ -60,6 +61,9 @@ export interface PartyCharacter {
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
   choices?: Record<Id, Id>;
+  /** Background id — grants two skill proficiencies (see data/backgrounds.ts).
+   *  Absent = none (legacy saves, skirmish parties). */
+  backgroundId?: Id;
 }
 
 export interface CampaignState {
@@ -387,6 +391,11 @@ export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
 
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
+  // Default backgrounds spread skill coverage across the four roles so an
+  // adventure's varied scene checks land on different heroes.
+  const defaultBackground: Record<Id, Id> = {
+    fighter: 'soldier', wizard: 'sage', cleric: 'acolyte', rogue: 'criminal',
+  };
   return {
     gold: STARTING_GOLD,
     xp: 0,
@@ -404,6 +413,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
         speciesId,
         name: defaultNameFor(classId),
         portraitId: defaultPortraitFor(speciesId, classId),
+        ...(defaultBackground[classId] !== undefined ? { backgroundId: defaultBackground[classId] } : {}),
         inventory: eq.inventory.map((s) => ({ ...s })),
         equipped: {
           mainHand: eq.mainHand,
@@ -647,6 +657,20 @@ export interface RestResult {
  * Spell slots are untouched (matching 5e — only a long rest restores them);
  * `setCampaignHp` preserves whatever's in `resources.slots` unchanged.
  */
+/** Heal every hero by `amount` HP (clamped to max), or 'full' for a long rest.
+ *  Used by adventure `heal` effects and rest scenes. */
+export function healParty(c: CampaignState, amount: number | 'full'): RestResult {
+  if (amount === 'full') return longRest(c);
+  let totalHealed = 0;
+  const party = buildCampaignParty(c);
+  for (const [index, combatant] of party.entries()) {
+    const healed = Math.min(combatant.maxHp, combatant.hp + amount);
+    totalHealed += healed - combatant.hp;
+    setCampaignHp(c.characters[index]!, healed);
+  }
+  return { totalHealed };
+}
+
 export function shortRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   const party = buildCampaignParty(c);
@@ -964,8 +988,11 @@ export const HAGGLE: Record<'intimidation' | 'persuasion' | 'deception',
 };
 export const STEAL_FINE = 50;
 
-/** A character's bonus for a skill (ability mod + proficiency if trained). */
-export function skillBonus(classId: Id, level: number, skill: SkillId, speciesId: Id = 'human'): number {
+/** A character's bonus for a skill (ability mod + proficiency if trained).
+ *  `backgroundId` grants two skills on top of class/species/feature sources. */
+export function skillBonus(
+  classId: Id, level: number, skill: SkillId, speciesId: Id = 'human', backgroundId?: Id,
+): number {
   const cls = CLASSES[classId]!;
   const abilities = assignStats(cls.statPriority);
   const speciesProficiency = SPECIES[speciesId]?.skillProficienciesByClass?.[classId] === skill;
@@ -973,18 +1000,27 @@ export function skillBonus(classId: Id, level: number, skill: SkillId, speciesId
   // regardless of class — the same fact the engine reads to spot hidden foes.
   const featureProficiency = (SPECIES[speciesId]?.featureIds ?? [])
     .some((f) => FEATURES[f]?.grantsSkill === skill);
-  return abilityMod(abilities[SKILL_ABILITY[skill]]) +
-    (cls.skillProfs.includes(skill) || speciesProficiency || featureProficiency ? proficiencyBonus(level) : 0);
+  const backgroundProficiency = backgroundSkills(backgroundId).includes(skill);
+  const proficient = cls.skillProfs.includes(skill) || speciesProficiency ||
+    featureProficiency || backgroundProficiency;
+  return abilityMod(abilities[SKILL_ABILITY[skill]]) + (proficient ? proficiencyBonus(level) : 0);
+}
+
+/** One party member's total bonus for a skill, including trinket riders. */
+export function characterSkillBonus(c: CampaignState, idx: number, skill: SkillId): number {
+  const ch = c.characters[idx];
+  if (!ch) return -Infinity;
+  let bonus = skillBonus(ch.classId, partyLevelOf(c), skill, ch.speciesId, ch.backgroundId);
+  // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
+  if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
+  return bonus;
 }
 
 /** The party member with the highest bonus rolls every party skill check. */
 export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bonus: number } {
-  const level = partyLevelOf(c);
   let best = { idx: 0, bonus: -Infinity };
-  c.characters.forEach((ch, idx) => {
-    let bonus = skillBonus(ch.classId, level, skill, ch.speciesId);
-    // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
-    if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
+  c.characters.forEach((_, idx) => {
+    const bonus = characterSkillBonus(c, idx, skill);
     if (bonus > best.bonus) best = { idx, bonus };
   });
   return best;
@@ -1008,14 +1044,22 @@ export interface SkillRoll {
   guidance?: number;
 }
 
-export function partySkillCheck(c: CampaignState, skill: SkillId, dc: number): SkillRoll {
-  const { idx, bonus } = bestAtSkill(c, skill);
+export interface CheckOptions {
+  /** Suppress the party cleric's Guidance +1d4 (already spent this scene). */
+  noGuidance?: boolean;
+}
+
+/** Roll a skill check for a specific party member (adventure "who steps up"). */
+export function characterSkillCheck(
+  c: CampaignState, idx: number, skill: SkillId, dc: number, opts: CheckOptions = {},
+): SkillRoll {
+  const bonus = characterSkillBonus(c, idx, skill);
   const d = rollDie(c.rng, 20);
   c.rng = d.state;
   let total = d.value + bonus;
   // A party cleric casts Guidance before the check — +1d4, no combat resource.
   let guidance = 0;
-  if (c.characters.some((ch) => ch.classId === 'cleric')) {
+  if (!opts.noGuidance && c.characters.some((ch) => ch.classId === 'cleric')) {
     const g = rollDie(c.rng, 4);
     c.rng = g.state;
     guidance = g.value;
@@ -1026,6 +1070,29 @@ export function partySkillCheck(c: CampaignState, skill: SkillId, dc: number): S
     natural: d.value, total, dc, success: total >= dc,
     ...(guidance ? { guidance } : {}),
   };
+}
+
+/** The party's best character rolls this check (shop skills, group-facing scenes). */
+export function partySkillCheck(
+  c: CampaignState, skill: SkillId, dc: number, opts: CheckOptions = {},
+): SkillRoll {
+  const { idx } = bestAtSkill(c, skill);
+  return characterSkillCheck(c, idx, skill, dc, opts);
+}
+
+export interface GroupCheckResult {
+  rolls: SkillRoll[];
+  /** 5e group check: succeeds when at least half the party passes. */
+  success: boolean;
+}
+
+/** Everyone rolls; the party succeeds if at least half do (5e group check). */
+export function groupSkillCheck(
+  c: CampaignState, skill: SkillId, dc: number, opts: CheckOptions = {},
+): GroupCheckResult {
+  const rolls = c.characters.map((_, idx) => characterSkillCheck(c, idx, skill, dc, opts));
+  const passed = rolls.filter((r) => r.success).length;
+  return { rolls, success: passed * 2 >= rolls.length };
 }
 
 export interface StealResult {

@@ -35,15 +35,43 @@ export interface ChoicePoint {
   options: ChoiceOption[];
 }
 
-export type SkillId = 'stealth' | 'sleight-of-hand' | 'intimidation' | 'persuasion' | 'deception' | 'perception';
+export type SkillId =
+  // the original shop skills
+  | 'stealth' | 'sleight-of-hand' | 'intimidation' | 'persuasion' | 'deception' | 'perception'
+  // the rest of the PHB list, used by adventure-mode scene checks
+  | 'athletics' | 'acrobatics'
+  | 'arcana' | 'history' | 'investigation' | 'nature' | 'religion'
+  | 'animal-handling' | 'insight' | 'medicine' | 'survival'
+  | 'performance';
 
 export const SKILL_ABILITY: Record<SkillId, Ability> = {
-  stealth: 'dex',
+  athletics: 'str',
+  acrobatics: 'dex',
   'sleight-of-hand': 'dex',
-  intimidation: 'cha',
-  persuasion: 'cha',
-  deception: 'cha',
+  stealth: 'dex',
+  arcana: 'int',
+  history: 'int',
+  investigation: 'int',
+  nature: 'int',
+  religion: 'int',
+  'animal-handling': 'wis',
+  insight: 'wis',
+  medicine: 'wis',
   perception: 'wis',
+  survival: 'wis',
+  deception: 'cha',
+  intimidation: 'cha',
+  performance: 'cha',
+  persuasion: 'cha',
+};
+
+/** Human-readable skill labels for UI (derive title-case where obvious). */
+export const SKILL_LABEL: Record<SkillId, string> = {
+  athletics: 'Athletics', acrobatics: 'Acrobatics', 'sleight-of-hand': 'Sleight of Hand',
+  stealth: 'Stealth', arcana: 'Arcana', history: 'History', investigation: 'Investigation',
+  nature: 'Nature', religion: 'Religion', 'animal-handling': 'Animal Handling', insight: 'Insight',
+  medicine: 'Medicine', perception: 'Perception', survival: 'Survival', deception: 'Deception',
+  intimidation: 'Intimidation', performance: 'Performance', persuasion: 'Persuasion',
 };
 
 export interface ClassData {
