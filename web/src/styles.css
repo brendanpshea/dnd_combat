@@ -1694,3 +1694,10 @@ button.category .count {
 @media (prefers-reduced-motion: reduce) {
   .adv-transition, .confetti span, .dicecheck.shake { animation: none; }
 }
+
+.adv-modcard-wrap { display: flex; gap: 8px; width: 100%; max-width: 360px; align-items: stretch; }
+.adv-modcard-wrap .adv-modcard { flex: 1; }
+.adv-resume {
+  padding: 0 16px; border-radius: 12px; background: var(--blue); color: #081120; border: none;
+  font-weight: 700; cursor: pointer; white-space: nowrap;
+}

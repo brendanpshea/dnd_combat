@@ -26,6 +26,7 @@ import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
 import { HAS_BOARD_BG, boardBgUrl } from './art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
+import { saveAdventureWeb, loadAdventureWeb, savedAdventureModule, deleteAdventureWeb } from './adventureStorage.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -35,37 +36,59 @@ interface Props {
 /** A check event pulled from an action's stream, shown as a dice overlay. */
 type DiceOverlay = Extract<AdventureEvent, { type: 'check' }>;
 
-/** Pick a module, then hand off to the player (remounted fresh per module). */
+/** Pick a module (or resume a save), then hand off to the player. */
 export function AdventureScreen({ Battle, onExit }: Props) {
-  const [module, setModule] = useState<Module | null>(null);
-  if (!module) return <ModulePicker onPick={setModule} onExit={onExit} />;
-  return <AdventurePlayer key={module.id} Battle={Battle} module={module} onExit={onExit} />;
+  const [start, setStart] = useState<{ module: Module; resume?: AdventureState } | null>(null);
+  if (!start) return <ModulePicker onStart={setStart} onExit={onExit} />;
+  return (
+    <AdventurePlayer
+      key={start.module.id + (start.resume ? '-resume' : '-new')}
+      Battle={Battle} module={start.module} {...(start.resume ? { resume: start.resume } : {})} onExit={onExit}
+    />
+  );
 }
 
-function ModulePicker({ onPick, onExit }: { onPick(m: Module): void; onExit(): void }) {
+function ModulePicker(
+  { onStart, onExit }: { onStart(s: { module: Module; resume?: AdventureState }): void; onExit(): void },
+) {
+  const savedId = savedAdventureModule();
   return (
     <div className="setup">
       <h1>📜 Adventures</h1>
-      {MODULES.map((m) => (
-        <button key={m.id} className="adv-modcard" onClick={() => { initAudio(); onPick(m); }}>
-          <strong>{m.title}</strong>
-          <span>{m.blurb}</span>
-        </button>
-      ))}
+      {MODULES.map((m) => {
+        const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
+        return (
+          <div key={m.id} className="adv-modcard-wrap">
+            <button className="adv-modcard" onClick={() => { initAudio(); onStart({ module: m }); }}>
+              <strong>{m.title}</strong>
+              <span>{m.blurb}</span>
+            </button>
+            {resume && (
+              <button className="adv-resume" onClick={() => { initAudio(); onStart({ module: m, resume }); }}>
+                ▶ Resume
+              </button>
+            )}
+          </div>
+        );
+      })}
       <button className="ghost" onClick={onExit}>← Back</button>
       <p className="hint">Adventure mode is in beta: story scenes, exploration, and skill
-        checks between fights. Progress isn't saved yet.</p>
+        checks between fights. Your run saves in your browser.</p>
     </div>
   );
 }
 
-function AdventurePlayer({ Battle, module, onExit }: Props & { module: Module }) {
+function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: Module; resume?: AdventureState }) {
   const stateRef = useRef<AdventureState | null>(null);
   if (!stateRef.current) {
-    const campaign = newCampaign(Math.floor(Math.random() * 2 ** 31));
-    campaign.partyReady = true;
-    stateRef.current = startAdventure(campaign, module);
-    enterScene(stateRef.current, module, module.start);
+    if (resume) {
+      stateRef.current = resume;
+    } else {
+      const campaign = newCampaign(Math.floor(Math.random() * 2 ** 31));
+      campaign.partyReady = true;
+      stateRef.current = startAdventure(campaign, module);
+      enterScene(stateRef.current, module, module.start);
+    }
   }
   const state = stateRef.current;
   const campaign = state.campaign;
@@ -79,9 +102,15 @@ function AdventurePlayer({ Battle, module, onExit }: Props & { module: Module })
 
   const scene = currentScene(state, module);
 
-  // Sound the ending fanfare / dirge once when the adventure concludes.
+  // Persist the run on every scene change; clear it once the adventure ends
+  // (a finished run shouldn't offer Resume).
   useEffect(() => {
-    if (scene.kind === 'ending') sfx(scene.outcome === 'victory' ? 'victory' : 'death');
+    if (scene.kind === 'ending') {
+      sfx(scene.outcome === 'victory' ? 'victory' : 'death');
+      deleteAdventureWeb();
+    } else {
+      saveAdventureWeb(state);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 

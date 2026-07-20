@@ -972,9 +972,11 @@ Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ g
   M2 (explore node-maps with fog/secrets/wandering encounters, journal drawer,
   shop-as-scene, module picker, the "Bandit Hideout" demo module) + M3 (juice
   pass: dice-roll/celebration SFX + haptics, nat-20 confetti / nat-1 shake,
-  scene-transition wipes, mute toggle, mobile-audit CSS) shipped; see
-  `docs/adventure-mode-plan.md` for M4 (the authored full module) and the
-  still-open save/resume follow-up.
+  scene-transition wipes, mute toggle, mobile-audit CSS) + M4 ("The Hollow
+  Road" — an original 3-act module: village hub → marsh trail → raider den,
+  ~30 scenes, avoidable fights, flag payoffs; adventure save/resume; a
+  main-menu module selector) shipped. The plan (docs/adventure-mode-plan.md)
+  is now fully implemented.
 
 Next candidates, roughly in fun-per-effort order:
 1. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.
