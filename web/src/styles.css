@@ -1475,22 +1475,43 @@ button.category .count {
 }
 .adv-title { font-family: var(--display); font-weight: 700; flex: 1; text-align: center; }
 .adv-gold { color: var(--gold); font-weight: 700; }
-.adv-stage { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+/* The stage is a fixed frame; the location backdrop fills it and scene content
+   layers on top, so the "place" persists across a whole conversation. */
+.adv-stage { flex: 1; position: relative; overflow: hidden; }
 
-.adv-art {
-  height: 140px; border-radius: 16px; display: grid; place-items: center;
-  background: radial-gradient(circle at 50% 30%, var(--panel2), var(--panel));
-  border: 1px solid var(--panel2);
+.adv-backdrop { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.adv-backdrop::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(rgba(20,16,32,.25) 40%, rgba(20,16,32,.82) 100%); }
+.adv-backdrop.glyph {
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 32%, var(--panel2), var(--bg));
 }
-.adv-art-glyph { font-size: 64px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.5)); }
+.adv-backdrop.glyph::after { display: none; }
+.adv-backdrop.glyph span { font-size: 84px; filter: drop-shadow(0 6px 16px rgba(0,0,0,.5)); opacity: .9; }
 
-.adv-scene { display: flex; flex-direction: column; gap: 12px; }
+.adv-content { position: absolute; inset: 0; display: flex; }
+
+/* A scene body positions its panel within the content layer. */
+.adv-scene { position: relative; width: 100%; height: 100%; display: flex; }
+.adv-scene.bottom { align-items: flex-end; }
+.adv-scene.centered { align-items: center; justify-content: center; padding: 20px; }
+
+/* The frosted panel that carries text/choices over the backdrop. */
+.adv-panel {
+  width: 100%; max-height: 78%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0;
+  background: linear-gradient(rgba(36,31,51,.86), rgba(26,22,37,.95));
+  backdrop-filter: blur(8px); border-top: 1px solid var(--panel2);
+}
+.adv-scene.centered .adv-panel { max-height: none; border-radius: 18px; align-items: center; text-align: center; }
+.adv-panel.full { max-height: 100%; height: 100%; border-radius: 0; background: linear-gradient(rgba(36,31,51,.94), rgba(26,22,37,.97)); }
+
 .adv-text { line-height: 1.55; font-size: 1.05rem; }
 .adv-prompt { color: var(--muted); font-weight: 600; }
-.adv-maptitle { font-family: var(--display); }
 
-.adv-npc { display: flex; align-items: center; gap: 10px; }
-.adv-npc-name { font-family: var(--display); font-weight: 700; font-size: 1.15rem; }
+.adv-npc { display: flex; align-items: center; gap: 12px; }
+.adv-npc .portrait { width: 60px; height: 60px; }
+.adv-npc-name { font-family: var(--display); font-weight: 700; font-size: 1.25rem; }
 
 .adv-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .adv-choice {
@@ -1515,14 +1536,12 @@ button.category .count {
   color: var(--gold); font-size: .9rem;
 }
 
-/* Explore node map */
-.adv-map {
-  position: relative; width: 100%; aspect-ratio: 3 / 2; border-radius: 16px;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(110,231,160,.08), transparent 40%),
-    radial-gradient(circle at 70% 65%, rgba(74,158,255,.08), transparent 40%),
-    var(--panel);
-  border: 1px solid var(--panel2); overflow: hidden;
+/* Explore: markers positioned directly on the full-bleed location backdrop. */
+.adv-explore { position: absolute; inset: 0; }
+.adv-maptitle {
+  position: absolute; top: 10px; left: 0; right: 0; text-align: center; z-index: 2;
+  font-family: var(--display); font-size: 1.3rem; text-shadow: 0 2px 8px rgba(0,0,0,.8);
+  pointer-events: none;
 }
 .adv-node {
   position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
@@ -1611,11 +1630,35 @@ button.category .count {
 }
 
 /* ===== Adventure M2: fog, shop, journal ================================== */
-.adv-map { background-size: cover; background-position: center; }
 .adv-node.fog .adv-node-icon { opacity: .55; filter: grayscale(.4); border-style: dashed; }
 .adv-node.fog .adv-node-label { opacity: .7; }
 .adv-node.explored .adv-node-icon { border-color: var(--green); }
-.adv-maphint { text-align: center; color: var(--muted); font-size: .82rem; }
+.adv-maphint {
+  position: absolute; bottom: 8px; left: 12px; right: 12px; text-align: center;
+  color: rgba(232,228,240,.85); font-size: .8rem; text-shadow: 0 1px 4px rgba(0,0,0,.9);
+  pointer-events: none;
+}
+
+/* Party read-out strip under story scenes (fills the old dead space). */
+.adv-party-strip {
+  display: flex; gap: 8px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--panel2); background: var(--panel);
+}
+.adv-party-member { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+.adv-party-member .portrait { width: 34px; height: 34px; }
+.adv-party-member.down { opacity: .5; filter: grayscale(.6); }
+.adv-party-emoji { font-size: 26px; }
+.adv-party-hpbar { width: 100%; height: 5px; border-radius: 3px; background: var(--panel2); overflow: hidden; }
+.adv-party-hpbar > div { height: 100%; background: linear-gradient(90deg, var(--red), var(--green)); }
+.adv-party-hp { font-size: .68rem; color: var(--muted); }
+
+/* Dice roll: a modal scrim over the frozen scene, so the place/NPC stay visible. */
+.adv-dice-scrim {
+  position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;
+  background: rgba(12,9,20,.72); backdrop-filter: blur(2px); animation: fadein .18s;
+}
+.adv-dice-scrim .dicecheck { background: linear-gradient(rgba(36,31,51,.6), rgba(26,22,37,.75));
+  border-radius: 20px; padding: 24px 28px; }
 
 /* Shop scene */
 .adv-shop { display: flex; flex-direction: column; gap: 12px; }
@@ -1670,8 +1713,8 @@ button.category .count {
 .adv-modcard span { color: var(--muted); font-size: .9rem; }
 
 /* ===== Adventure M3: juice + mobile ====================================== */
-.adv-transition { display: flex; flex-direction: column; gap: 14px; animation: sceneWipe .28s ease-out; }
-@keyframes sceneWipe { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.adv-content { animation: sceneWipe .28s ease-out; }
+@keyframes sceneWipe { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* Dice celebrations */
 .dicecheck { position: relative; overflow: visible; }
@@ -1696,13 +1739,11 @@ button.category .count {
 .adv-top { padding-top: max(10px, env(safe-area-inset-top)); }
 .adv-choice, .shop-row, .primary, .adv-node { min-height: 44px; }
 @media (max-width: 480px) {
-  .adv-stage { padding: 12px; }
-  .adv-art { height: 108px; }
-  .adv-art-glyph { font-size: 52px; }
   .adv-text { font-size: 1rem; }
+  .adv-backdrop.glyph span { font-size: 64px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .adv-transition, .confetti span, .dicecheck.shake { animation: none; }
+  .adv-content, .confetti span, .dicecheck.shake { animation: none; }
 }
 
 .adv-modcard-wrap { display: flex; gap: 8px; width: 100%; max-width: 360px; align-items: stretch; }
@@ -1712,9 +1753,8 @@ button.category .count {
   font-weight: 700; cursor: pointer; white-space: nowrap;
 }
 
-/* Adventure art: generated location backdrop + NPC emoji fallback */
-.adv-art.has-img { background-size: cover; background-position: center; }
+/* NPC emoji fallback (when an archetype portrait isn't generated). */
 .adv-npc-emoji {
-  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 24px; background: var(--panel2); border: 2px solid var(--blue); flex: none;
+  width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 30px; background: var(--panel2); border: 2px solid var(--blue); flex: none;
 }

@@ -24,7 +24,7 @@ import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
 import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
-import { HAS_BOARD_BG, boardBgUrl, hasSceneArt, sceneArtUrl, hasArt } from './art.js';
+import { hasSceneArt, sceneArtUrl, hasArt } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { saveAdventureWeb, loadAdventureWeb, savedAdventureModule, deleteAdventureWeb } from './adventureStorage.js';
@@ -79,6 +79,17 @@ function ModulePicker(
   );
 }
 
+/** The dice overlay plus the scene the player triggered it from, so the roll
+ *  renders over the *place and person* they were interacting with (the runtime
+ *  has already advanced past that scene by the time we show the dice). */
+interface DiceContext { roll: DiceOverlay['roll']; from: Scene; }
+
+/** The location backdrop art id for a scene (its own, or an explore map's). */
+function artIdOf(scene: Scene): string | undefined {
+  if (scene.kind === 'explore') return scene.map.art?.imageId;
+  return 'art' in scene ? scene.art?.imageId : undefined;
+}
+
 function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: Module; resume?: AdventureState }) {
   const stateRef = useRef<AdventureState | null>(null);
   if (!stateRef.current) {
@@ -96,10 +107,13 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
 
   const [, setVersion] = useState(0);
   const rerender = () => setVersion((v) => v + 1);
-  const [dice, setDice] = useState<DiceOverlay | null>(null);
+  const [dice, setDice] = useState<DiceContext | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
   const [journalOpen, setJournalOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
+  /** Last scene that carried a location backdrop — inherited by scenes that
+   *  don't declare their own, so a whole conversation stays *in* the tavern. */
+  const locationArt = useRef<string | undefined>(undefined);
 
   const scene = currentScene(state, module);
 
@@ -137,22 +151,26 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
     setBanner(lines);
   }
 
-  /** Show the dice overlay for a check within an event stream, if present. */
-  function process(events: AdventureEvent[]) {
+  /** Run an action's events. `from` is the scene the player acted from — if the
+   *  action rolled a check, the dice reveal renders over that scene's place and
+   *  NPC, not the scene the runtime has already advanced to. */
+  function process(events: AdventureEvent[], from: Scene) {
     note(events);
     const check = [...events].reverse().find((e): e is DiceOverlay => e.type === 'check');
-    if (check) setDice(check);
+    if (check) setDice({ roll: check.roll, from });
     else rerender();
   }
 
   function onChoice(choiceId: string, actorIdx?: number) {
     setBanner([]);
-    process(choose(state, module, choiceId, actorIdx));
+    const from = scene;
+    process(choose(state, module, choiceId, actorIdx), from);
   }
 
   function onRollScene(actorIdx?: number) {
     setBanner([]);
-    process(rollSceneCheck(state, module, actorIdx));
+    const from = scene;
+    process(rollSceneCheck(state, module, actorIdx), from);
   }
 
   function afterDice() {
@@ -184,11 +202,20 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
             const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
             applyVictory(campaign, survivors, combat.state.rng);
           }
-          process(resolveBattle(state, module, won));
+          process(resolveBattle(state, module, won), scene);
         }}
       />
     );
   }
+
+  // The place the player is looking at: while the dice roll, it's the scene they
+  // acted from; otherwise the current scene — falling back to the last location
+  // seen, so scenes without their own art stay *in* the tavern/village/etc.
+  const facing = dice?.from ?? scene;
+  const ownArt = artIdOf(facing);
+  if (ownArt) locationArt.current = ownArt;
+  const backdropArt = ownArt ?? locationArt.current;
+  const isExplore = scene.kind === 'explore' && !dice;
 
   return (
     <div className="adventure">
@@ -207,17 +234,14 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
 
       {journalOpen && <JournalDrawer entries={state.journal} onClose={() => setJournalOpen(false)} />}
 
-      <div className="adv-stage">
-        {/* key on scene id so a new scene replays the wipe-in animation */}
-        <div className="adv-transition" key={dice ? 'dice' : scene.id}>
-          <SceneArtBanner scene={scene} />
+      <div className={`adv-stage ${isExplore ? 'explore' : ''}`}>
+        <Backdrop artId={backdropArt} glyph={artEmoji(backdropArt) ?? sceneGlyph(facing)} />
 
+        <div className="adv-content" key={dice ? 'dice' : scene.id}>
           {dice ? (
-            <DiceCheck
-              roll={dice.roll}
-              rollerName={campaign.characters[dice.roll.by]?.name ?? 'The party'}
-              onDone={afterDice}
-            />
+            // Freeze the scene the roll came from (NPC + words), so the player
+            // stays *in* the moment while the dice resolve over it.
+            <FrozenScene scene={dice.from} />
           ) : (
             <SceneBody
               scene={scene}
@@ -225,9 +249,9 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
               module={module}
               onChoice={onChoice}
               onRollScene={onRollScene}
-              onNode={(nodeId) => process(enterNode(state, module, nodeId))}
+              onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
-              onLeaveShop={() => process(resolveShopOrRest(state, module))}
+              onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
               onExit={onExit}
             />
           )}
@@ -236,25 +260,78 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
         {banner.length > 0 && !dice && (
           <div className="adv-banner">{banner.map((b, i) => <span key={i}>{b}</span>)}</div>
         )}
+
+        {/* Dice roll as a modal over the frozen scene/NPC, not a replacement. */}
+        {dice && (
+          <div className="adv-dice-scrim">
+            <DiceCheck
+              roll={dice.roll}
+              rollerName={campaign.characters[dice.roll.by]?.name ?? 'The party'}
+              onDone={afterDice}
+            />
+          </div>
+        )}
       </div>
+
+      {!isExplore && <PartyStrip campaign={campaign} />}
+    </div>
+  );
+}
+
+/** Full-bleed location backdrop; a generated painting, else a soft glyph card. */
+function Backdrop({ artId, glyph }: { artId: string | undefined; glyph: string }) {
+  if (artId && hasSceneArt(artId)) {
+    return <div className="adv-backdrop" style={{ backgroundImage: `url(${sceneArtUrl(artId)})` }} />;
+  }
+  return <div className="adv-backdrop glyph"><span>{glyph}</span></div>;
+}
+
+/** A non-interactive snapshot of a story/dialogue/check scene — the NPC and
+ *  their words — shown behind the dice modal so the roll happens *in* the scene. */
+function FrozenScene({ scene }: { scene: Scene }) {
+  const lines = scene.kind === 'story' ? scene.text
+    : scene.kind === 'dialogue' ? scene.lines
+    : scene.kind === 'check' ? scene.intro : [];
+  return (
+    <div className="adv-scene bottom">
+      <div className="adv-panel frozen">
+        {scene.kind === 'dialogue' && (
+          <div className="adv-npc">
+            {hasArt(scene.npc.portraitId ?? scene.npc.id)
+              ? <Portrait id={scene.npc.portraitId ?? scene.npc.id} team="team1" big />
+              : <span className="adv-npc-emoji">{scene.npc.emoji ?? artEmoji(scene.npc.portraitId) ?? '💬'}</span>}
+            <span className="adv-npc-name">{scene.npc.name}</span>
+          </div>
+        )}
+        {lines.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+      </div>
+    </div>
+  );
+}
+
+/** A compact party read-out (portrait + HP) filling the base of story scenes. */
+function PartyStrip({ campaign }: { campaign: CampaignState }) {
+  const party = buildCampaignParty(campaign);
+  return (
+    <div className="adv-party-strip">
+      {party.map((c, i) => {
+        const pct = Math.max(0, Math.round((c.hp / c.maxHp) * 100));
+        return (
+          <div key={i} className={`adv-party-member ${c.hp === 0 ? 'down' : ''}`}>
+            {hasArt(campaign.characters[i]?.portraitId ?? c.classId)
+              ? <Portrait id={campaign.characters[i]?.portraitId ?? c.classId} team="team1" />
+              : <span className="adv-party-emoji">🧑</span>}
+            <div className="adv-party-hpbar"><div style={{ width: `${pct}%` }} /></div>
+            <span className="adv-party-hp">{c.hp}/{c.maxHp}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 function label(itemId: string): string {
   return itemId.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
-}
-
-function SceneArtBanner({ scene }: { scene: Scene }) {
-  const imageId = 'art' in scene ? scene.art?.imageId : undefined;
-  // A generated location backdrop when we have one; otherwise the emoji glyph.
-  if (imageId && hasSceneArt(imageId)) {
-    return <div className="adv-art has-img" style={{ backgroundImage: `url(${sceneArtUrl(imageId)})` }} />;
-  }
-  const emoji = 'art' in scene ? scene.art?.emoji : undefined;
-  const npcEmoji = scene.kind === 'dialogue' ? scene.npc.emoji : undefined;
-  const glyph = emoji ?? npcEmoji ?? artEmoji(imageId) ?? sceneGlyph(scene);
-  return <div className="adv-art"><span className="adv-art-glyph">{glyph}</span></div>;
 }
 
 function sceneGlyph(scene: Scene): string {
@@ -284,10 +361,12 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBloc
 
   if (scene.kind === 'ending') {
     return (
-      <div className="adv-scene">
-        <h1>{scene.outcome === 'victory' ? '🏆 Victory' : '☠️ Defeat'}</h1>
-        {scene.text.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
-        <button className="primary" onClick={onExit}>Return to menu</button>
+      <div className="adv-scene centered">
+        <div className="adv-panel">
+          <h1>{scene.outcome === 'victory' ? '🏆 Victory' : '☠️ Defeat'}</h1>
+          {scene.text.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+          <button className="primary" onClick={onExit}>Return to menu</button>
+        </div>
       </div>
     );
   }
@@ -296,29 +375,32 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBloc
     const lines = scene.kind === 'story' ? scene.text : scene.lines;
     const options = legalChoices(state, module);
     return (
-      <div className="adv-scene">
-        {scene.kind === 'dialogue' && (
-          <div className="adv-npc">
-            {hasArt(scene.npc.portraitId ?? scene.npc.id)
-              ? <Portrait id={scene.npc.portraitId ?? scene.npc.id} team="team1" />
-              : <span className="adv-npc-emoji">{scene.npc.emoji ?? artEmoji(scene.npc.portraitId) ?? '💬'}</span>}
-            <span className="adv-npc-name">{scene.npc.name}</span>
+      // Bottom-anchored panel over the location backdrop (visual-novel style).
+      <div className="adv-scene bottom">
+        <div className="adv-panel">
+          {scene.kind === 'dialogue' && (
+            <div className="adv-npc">
+              {hasArt(scene.npc.portraitId ?? scene.npc.id)
+                ? <Portrait id={scene.npc.portraitId ?? scene.npc.id} team="team1" big />
+                : <span className="adv-npc-emoji">{scene.npc.emoji ?? artEmoji(scene.npc.portraitId) ?? '💬'}</span>}
+              <span className="adv-npc-name">{scene.npc.name}</span>
+            </div>
+          )}
+          {lines.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+          <div className="adv-choices">
+            {options.map(({ choice, blocked }) => (
+              <button
+                key={choice.id}
+                className={`adv-choice ${blocked ? 'blocked' : ''}`}
+                disabled={!!blocked}
+                onClick={() => onChoice(choice.id)}
+              >
+                {choice.check && <span className="adv-chip">🎲 {choice.check.skill} DC {choice.check.dc}</span>}
+                <span>{choice.label}</span>
+                {blocked && <span className="adv-lock">🔒 {blocked}</span>}
+              </button>
+            ))}
           </div>
-        )}
-        {lines.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
-        <div className="adv-choices">
-          {options.map(({ choice, blocked }) => (
-            <button
-              key={choice.id}
-              className={`adv-choice ${blocked ? 'blocked' : ''}`}
-              disabled={!!blocked}
-              onClick={() => onChoice(choice.id)}
-            >
-              {choice.check && <span className="adv-chip">🎲 {choice.check.skill} DC {choice.check.dc}</span>}
-              <span>{choice.label}</span>
-              {blocked && <span className="adv-lock">🔒 {blocked}</span>}
-            </button>
-          ))}
         </div>
       </div>
     );
@@ -326,71 +408,66 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBloc
 
   if (scene.kind === 'check') {
     return (
-      <div className="adv-scene">
-        {scene.intro.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
-        {scene.roller === 'chosen' ? (
-          <>
-            <p className="adv-prompt">Who steps up? ({scene.skill}, DC {scene.dc})</p>
-            <RosterPicker campaign={campaign} onPick={(idx) => onRollScene(idx)} />
-          </>
-        ) : (
-          <button className="primary" onClick={() => onRollScene()}>
-            🎲 Roll {scene.skill} (DC {scene.dc})
-          </button>
-        )}
+      <div className="adv-scene bottom">
+        <div className="adv-panel">
+          {scene.intro.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+          {scene.roller === 'chosen' ? (
+            <>
+              <p className="adv-prompt">Who steps up? ({scene.skill}, DC {scene.dc})</p>
+              <RosterPicker campaign={campaign} onPick={(idx) => onRollScene(idx)} />
+            </>
+          ) : (
+            <button className="primary" onClick={() => onRollScene()}>
+              🎲 Roll {scene.skill} (DC {scene.dc})
+            </button>
+          )}
+        </div>
       </div>
     );
   }
 
   if (scene.kind === 'explore') {
     const nodes = exploreNodes(state, module);
-    const theme = scene.map.theme;
-    const scrim = 'linear-gradient(rgba(20,16,32,.35), rgba(20,16,32,.7))';
-    // Prefer a generated location backdrop; fall back to the combat theme
-    // backdrop, then to the plain gradient the CSS already draws.
-    const locId = scene.map.art?.imageId;
-    const bg = locId && hasSceneArt(locId)
-      ? { backgroundImage: `${scrim}, url(${sceneArtUrl(locId)})` }
-      : theme && HAS_BOARD_BG.has(theme)
-        ? { backgroundImage: `${scrim}, url(${boardBgUrl(theme)})` }
-        : undefined;
     return (
-      <div className="adv-scene">
+      // Markers sit directly on the full-bleed location backdrop (the stage).
+      <div className="adv-explore">
         <h2 className="adv-maptitle">{scene.map.title}</h2>
-        <div className="adv-map" style={bg}>
-          {nodes.map(({ node, blocked, secret, explored }) => (
-            <button
-              key={node.id}
-              className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'}`}
-              style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              title={blocked ?? node.label}
-              // Blocked nodes stay tappable but explain why, instead of doing
-              // nothing (a disabled button gives no feedback on touch).
-              onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
-            >
-              <span className="adv-node-icon">{blocked ? '🔒' : node.icon}</span>
-              <span className="adv-node-label">{node.label}</span>
-            </button>
-          ))}
-        </div>
-        <p className="adv-maphint">Tap a marker to explore. 🔒 markers need something first; dimmed markers are unvisited.</p>
+        {nodes.map(({ node, blocked, secret, explored }) => (
+          <button
+            key={node.id}
+            className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'}`}
+            style={{ left: `${node.x}%`, top: `${node.y}%` }}
+            title={blocked ?? node.label}
+            // Blocked nodes stay tappable but explain why (a disabled button
+            // gives no feedback on touch).
+            onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
+          >
+            <span className="adv-node-icon">{blocked ? '🔒' : node.icon}</span>
+            <span className="adv-node-label">{node.label}</span>
+          </button>
+        ))}
+        <p className="adv-maphint">Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.</p>
       </div>
     );
   }
 
   if (scene.kind === 'shop') {
     return (
-      <AdventureShop
-        campaign={campaign}
-        {...(scene.stock ? { stock: scene.stock } : {})}
-        {...(scene.title ? { title: scene.title } : {})}
-        onLeave={onLeaveShop}
-      />
+      <div className="adv-scene">
+        <div className="adv-panel full">
+          <AdventureShop
+            campaign={campaign}
+            {...(scene.stock ? { stock: scene.stock } : {})}
+            {...(scene.title ? { title: scene.title } : {})}
+            onLeave={onLeaveShop}
+          />
+        </div>
+      </div>
     );
   }
 
   // rest auto-resolves via the effect above; render a brief placeholder.
-  return <div className="adv-scene"><p className="adv-text">…</p></div>;
+  return <div className="adv-scene centered"><p className="adv-text">…</p></div>;
 }
 
 function RosterPicker({ campaign, onPick }: { campaign: CampaignState; onPick: (idx: number) => void }) {
