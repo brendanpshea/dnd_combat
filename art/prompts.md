@@ -130,45 +130,7 @@ ogre towers over a kobold on the board):
 
 ---
 
-## 5. Heroes (human; default launch roster — Tier 1) — all ✅ generated
 
-Generate token **and** portrait for each. Heroes are the default human species.
-A set of **eight species-flavoured portrait variants** is also ✅ generated and
-selectable in the party forge (they share these hero designs' style):
-`orc-barbarian`, `dragonborn-paladin`, `gnome-bard`, `halfling-rogue`,
-`tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard`. **When
-regenerating these, spread skin tone and gender across the set** — and make
-`human-bard` and `elf-archer` explicitly people of colour, since the other six
-already carry fantasy-species variety.
-
-**Fighter** — SIZE M ✅ *(regenerate: currently skews white/male)*
-> A cheerful, sturdy chibi knight — **a Black woman with deep brown skin and
-> short coily hair (or neat box braids)**, a broad confident grin, rosy cheeks.
-> Wearing steel scale mail and a warm-brown tabard, a round wooden shield
-> strapped to one arm, holding a shining longsword upright. Iconic feature: the
-> round shield + upright sword. Steel greys with a warm gold trim.
-
-**Wizard** — SIZE M *(regenerate)*
-> A tiny curious chibi wizard almost entirely under an **enormous floppy pointed
-> hat** (the dominant feature) in deep indigo with a gold star. **An elder with
-> warm tan-olive skin and a long wispy white beard (an East-Asian-sage
-> inflection).** Flowing indigo robe with rolled sleeves, clutching a gnarled
-> wooden staff topped with a small glowing arcane-purple spark. Big kind eyes,
-> small round glasses. Iconic feature: the giant pointed hat + glowing staff.
-
-**Cleric** — SIZE M *(regenerate)*
-> A kindly chibi cleric — **a woman with warm medium-brown skin and locs (or a
-> simple headwrap)**, gentle smiling face, a faint halo glint — in cream-and-gold
-> robes with a warm accent sash, holding a simple mace and a radiant golden holy
-> symbol (sunburst) that gives off a soft warm glow. Iconic feature: the glowing
-> sunburst holy symbol + mace.
-
-**Rogue** — SIZE M *(regenerate)*
-> A sly chibi rogue — **a young man with light brown skin (a Southeast-Asian /
-> Latino inflection)** — in dark teal-green studded leather with a raised hood
-> shadowing a confident smirk and one winking eye, a bright accent scarf. Holds
-> two short daggers in reverse grip. Nimble crouched-ready stance. Iconic
-> feature: the hood + crossed twin daggers.
 
 ---
 
@@ -423,3 +385,22 @@ Prompts for the 5 Fey additions:
 > grid, facing a cartoon goblin warband across the board, warm cozy palette,
 > cel-shaded, thick ink outlines, a dark twilight background with warm rim
 > glow. Landscape 16:9. Leave clear space in the upper third for a title.
+
+---
+
+## 10. Mature Hero Class Variants
+
+Prompts for mature, seasoned battle-hardened versions of the 4 core hero classes (matching existing skin tones and genders):
+
+### Mature Fighter (`fighter-mature` / `human_fighter_mature`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, confident battle-tested expression of a mature Black woman knight with deep brown skin, high cheekbones, and neat dark box braids tucked slightly behind her neck. Wearing steel scale-plate armor with a warm brown tabard and gold trim. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character holding a shining steel longsword upright and carrying a round wooden shield with iron rim on her arm. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Seasoned warrior appearance, not childlike. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm saturated but cozy palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Mature Wizard (`wizard-mature` / `human_wizard_mature`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, wise solemn expression of a mature archmage elder with warm tan-olive skin, fine lines around kind eyes, and a long wispy white beard. Wearing a floppy pointed indigo hat embroidered with gold star constellations and small round spectacles. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in flowing indigo robes with rolled sleeves, holding a gnarled oak staff topped with a glowing purple arcane crystal. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Seasoned archmage appearance, not childlike. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm saturated but cozy palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Mature Cleric (`cleric-mature` / `human_cleric_mature`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, serene resolute expression of a mature cleric woman with warm medium-brown skin, dignified features, and thick braided locs neatly bound. Wearing golden celestial plate armor over cream robes with a soft radiant halo glint. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character holding a radiant golden sunburst holy mace and a glowing sunburst holy symbol. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Seasoned battle priestess appearance, not childlike. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm saturated but cozy palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Mature Rogue (`rogue-mature` / `human_rogue_mature`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, sharp focused smirk of a mature rogue man with light brown skin (Southeast-Asian / Latino inflection), a subtle razor scar across one cheek, shadowed beneath a dark teal cowl hood. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in dark teal-green studded leather armor, holding two steel daggers in reverse grip in a low crouched stance. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Seasoned veteran scout appearance, not childlike. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm saturated but cozy palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
