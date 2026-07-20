@@ -83,6 +83,13 @@ export interface SpellData {
    * it the same way it skips reaction spells.
    */
   outOfCombat?: boolean;
+  /**
+   * A ritual: always available to a caster whose class grants it, without
+   * occupying one of their "known spells" slots — Find Familiar. The builder
+   * folds known rituals onto the combatant like cantrips, and they're excluded
+   * from the choosable/countable leveled pool.
+   */
+  ritual?: boolean;
   cast(ctx: CastContext): GameEvent[];
 }
 
@@ -378,6 +385,7 @@ export const SPELLS: Record<Id, SpellData> = {
 
   'find-familiar': {
     id: 'find-familiar', name: 'Find Familiar', level: 1, castingTime: 'action',
+    ritual: true, // always available, never occupies a known-spell slot
     targeting: { kind: 'self' },
     concentration: false,
     icon: '🦉',

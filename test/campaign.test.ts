@@ -10,6 +10,7 @@ import {
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
+  cantripPool, cantripLimit, setCantrips, knownRitualSpells,
   scrollLearnable, learnSpellFromScroll,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/monsters.js';
@@ -748,6 +749,64 @@ describe('spell preparation (ignorable — a sensible default is auto-prepared)'
     setPrepared(c, wizardIdx, ['fire-bolt']); // an arbitrary prior custom pick
     resetPrepared(c, wizardIdx);
     expect(preparedSpells(c, wizardIdx).length).toBeLessThanOrEqual(preparedLimit(c, wizardIdx));
+  });
+});
+
+describe('spells-known model (cantrips chosen, rituals always ready)', () => {
+  it('a level-1 wizard defaults to 3 cantrips and 5 leveled, Shield in, Color Spray/False Life out', () => {
+    const c = newCampaign();
+    const w = 1;
+    expect(cantripLimit(c, w)).toBe(3);
+    expect(preparedLimit(c, w)).toBe(5);
+    expect(knownCantrips(c, w)).toEqual(['fire-bolt', 'shocking-grasp', 'ray-of-frost']); // Acid Splash off
+    const leveled = preparedSpells(c, w);
+    expect(leveled).toContain('shield');
+    expect(leveled).not.toContain('color-spray');
+    expect(leveled).not.toContain('false-life');
+    // But Color Spray/False Life remain in the choosable pool.
+    expect(preparableSpells(c, w)).toEqual(expect.arrayContaining(['color-spray', 'false-life']));
+  });
+
+  it('Find Familiar is an always-ready ritual: castable even though it is not in the prepared pool', () => {
+    const c = newCampaign();
+    const w = 1;
+    expect(preparableSpells(c, w)).not.toContain('find-familiar'); // not a prepared slot
+    expect(knownRitualSpells(c, w)).toContain('find-familiar');
+    // On the built combatant regardless of what leveled spells were prepared.
+    setPrepared(c, w, ['magic-missile']); // deliberately exclude find-familiar
+    expect(buildCampaignParty(c)[w]!.spellIds).toContain('find-familiar');
+    // And offered in the store.
+    expect(useStoreSpell(c, w, 'find-familiar')).toBe(true);
+  });
+
+  it('cantrips are choosable and capped, changeable and resettable', () => {
+    const c = newCampaign();
+    const w = 1;
+    const pool = cantripPool(c, w);
+    expect(pool).toHaveLength(4);
+    setCantrips(c, w, ['acid-splash', 'ray-of-frost']);
+    expect(knownCantrips(c, w)).toEqual(['acid-splash', 'ray-of-frost']);
+    expect(buildCampaignParty(c)[w]!.spellIds).toContain('acid-splash');
+    expect(buildCampaignParty(c)[w]!.spellIds).not.toContain('fire-bolt'); // unchosen
+    // Over-cap is trimmed to the limit.
+    setCantrips(c, w, pool); // all 4
+    expect(knownCantrips(c, w)).toHaveLength(cantripLimit(c, w));
+    // Reset restores the default.
+    resetPrepared(c, w);
+    expect(knownCantrips(c, w)).toEqual(['fire-bolt', 'shocking-grasp', 'ray-of-frost']);
+  });
+
+  it('a cleric knows its whole list (incl. Guidance cantrip) and prepares a subset', () => {
+    const c = newCampaign();
+    const clr = 2;
+    // Guidance is a known cleric cantrip, shown in the panel.
+    expect(knownCantrips(c, clr)).toContain('guidance');
+    // The preparable pool is the full cleric leveled list, not a limited spellbook.
+    const pool = preparableSpells(c, clr);
+    expect(pool).toEqual(expect.arrayContaining(['cure-wounds', 'bless', 'command', 'bane', 'shield-of-faith']));
+    expect(pool.length).toBeGreaterThan(preparedLimit(c, clr)); // prepares a subset
+    // Guidance is never offered in combat (outOfCombat), even though known.
+    expect(buildCampaignParty(c)[clr]!.spellIds).toContain('guidance');
   });
 });
 

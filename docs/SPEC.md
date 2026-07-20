@@ -826,32 +826,40 @@ the next round.
 $13 + \text{Dexterity modifier}$ (and still allows a shield); it persists
 between battles but ends at the next long rest.
 
-**Spell preparation** (`preparableSpells`/`preparedSpells`/`setPrepared`/
-`resetPrepared` in campaign.ts) uses the real 5e limit:
-`preparedCount(spellMod, level) = max(1, spellcasting-modifier + caster
-level)`. A level-1 wizard (Int +3) prepares 4 of the ~8 leveled spells it
-knows — preparation is a genuine choice, and the panel can never show a limit
-larger than the spellbook it draws from (the "8 of 12" and "9/6" displays two
-earlier attempts produced are both gone). `character.ts` splits each class's
-`spellsByLevel` into always-known cantrips (`classCantrips`) and a leveled
-pool a prepared selection draws from (`availableLeveledSpells`).
+**Spells known & prepared** — a "spells known" model. Each caster knows a
+fixed number of **cantrips** and **leveled spells** per level, set on the
+class (`spellcasting.cantripsKnownByLevel` / `spellsKnownByLevel` in
+classes.ts) and *chosen* from the class pool with a sensible default. A
+level-1 wizard knows 3 cantrips (of 4 offered) and 5 leveled spells (of 7),
+plus Find Familiar (a ritual — always ready, never a slot). `character.ts`
+splits `spellsByLevel` into `classCantrips`, `availableLeveledSpells` (the
+choosable leveled pool, rituals excluded), and `classRituals` (always known);
+`cantripsKnownCount`/`spellsKnownCount` read the class arrays (a class with no
+array — the half-casters — knows its whole list, the prior behavior).
 
-The cap is **campaign-scoped**: it only constrains an explicit prepared list,
-which the campaign always supplies. `buildCharacter` with no `preparedOverride`
-— a skirmish, a mirror match, an AI party, a monster stat block — leaves the
-caster knowing its whole class list, since those contexts have no prepare step
-to narrow it. `buildCampaignParty` always passes `preparedOverride:
-preparedSpells(...)` (the hand-picked list, or an auto-default of the
-strongest spells known, highest spell level first, trimmed to the limit), so a
-campaign caster carries exactly what the panel shows. The consequence, by
-design: a spell not prepared — including a just-learned scroll spell, Mage
-Armor, or Shield — genuinely can't be cast until the player prepares it.
-`casterSpellMod` recomputes the modifier the way the builder does (stat
-priority, the level-4 ASI, an Int/Wis-boosting trinket) so the cap the panel
-shows matches the combatant the builder makes. The web panel
-(`web/src/Campaign.tsx`'s `prepareFor`/`prepareDraft` state) is a checkbox
-list with a live count and a "Use recommended" reset button; the CLI has the
-equivalent `prepareSpellsFlow`.
+**Wizard vs cleric** mirror 5e: a wizard's pool is its *spellbook* (the class
+table, growable via scribed scrolls — see below), and it knows a capped
+selection of it. A cleric "knows" its entire list and simply *prepares* a
+capped subset — same mechanic (`preparableSpells` returns the full cleric
+list), different flavor, surfaced as a "Spellbook" vs "Prepared spells" label
+in the panel.
+
+The counts are **campaign-scoped**. `buildCharacter` with no override — a
+skirmish, a mirror match, an AI party, a monster stat block — leaves a caster
+knowing its whole class list, since those contexts have no prepare step.
+`buildCampaignParty` always passes `preparedOverride` **and**
+`cantripsOverride` (the hand-picked sets, or auto-defaults of the strongest
+spells known, highest spell level first, trimmed to the limits) plus folds in
+always-known rituals, so a campaign caster carries exactly what the panel
+shows. The consequence, by design: a leveled spell not known — Color Spray, or
+a just-scribed scroll spell — can't be cast until chosen; Find Familiar is the
+exception, always castable as a ritual. The web panel
+(`web/src/Campaign.tsx`'s `prepareFor`/`prepareDraft`/`cantripDraft` state) is
+two capped checklists (cantrips + leveled) with a rituals note and a "Use
+recommended" reset; the CLI's `prepareSpellsFlow` is the equivalent. Guidance
+is a cleric cantrip flagged `outOfCombat` (SpellData) — known and shown in the
+panel, but never offered as a combat action, since its only effect is the
+shop skill-check bonus.
 
 **Wizard spellbook growth** (`scrollLearnable`/`learnSpellFromScroll`): a
 class's `spellcasting.learnableExtra` (classes.ts) names spells available only

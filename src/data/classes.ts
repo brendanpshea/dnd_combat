@@ -61,6 +61,17 @@ export interface ClassData {
     slotsByLevel: number[][];
     spellsByLevel: Record<number, Id[]>; // spells known at each character level
     /**
+     * How many cantrips / leveled spells this caster *knows* at each level
+     * (index = characterLevel - 1) — a "spells known" model: the class table
+     * above is the menu to choose from, these are how many you pick, with the
+     * rest changeable in the campaign's prepare panel. Rituals (Find Familiar)
+     * are always known and don't count against `spellsKnownByLevel`. Omit
+     * either array to mean "knows the whole list" (the half-caster default,
+     * and what a class had before this model).
+     */
+    cantripsKnownByLevel?: number[];
+    spellsKnownByLevel?: number[];
+    /**
      * Spells this class can learn beyond its default table — a wizard's
      * spellbook growing from scrolls found in play, rather than every copy
      * being one already known for free. Campaign-only: nothing here is
@@ -122,6 +133,8 @@ export const CLASSES: Record<Id, ClassData> = {
     spellcasting: {
       ability: 'wis',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 2, 2], // both cleric cantrips (Sacred Flame, Guidance)
+      spellsKnownByLevel: [5, 6, 7, 8, 9],
       spellsByLevel: {
         1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith'],
         2: ['guiding-bolt'],
@@ -157,6 +170,8 @@ export const CLASSES: Record<Id, ClassData> = {
     spellcasting: {
       ability: 'int',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
+      cantripsKnownByLevel: [3, 3, 3, 4, 4],
+      spellsKnownByLevel: [5, 6, 7, 8, 9], // Find Familiar is a ritual, always known on top of these
       spellsByLevel: {
         1: [
           'fire-bolt', 'shocking-grasp', 'magic-missile', 'sleep', 'burning-hands',

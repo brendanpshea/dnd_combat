@@ -10,43 +10,50 @@ import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
 
-/** Every leveled (non-cantrip) spell a class's table grants at or below a
- *  character level — the pool a "prepared" selection is drawn from. Cantrips
- *  are split out because they're always known, never subject to preparation. */
-export function availableLeveledSpells(classId: Id, level: number): Id[] {
+/** Every spell a class's table grants at or below a character level, matching
+ *  a predicate on the spell's own level. */
+function classSpells(classId: Id, level: number, keep: (spellLevel: number) => boolean): Id[] {
   const cls = CLASSES[classId];
   if (!cls?.spellcasting) return [];
   return Object.entries(cls.spellcasting.spellsByLevel)
     .filter(([lvl]) => Number(lvl) <= level)
     .flatMap(([, ids]) => ids)
-    .filter((id) => (SPELLS[id]?.level ?? 0) > 0);
-}
-
-/** Cantrips a class grants at or below a level — always known, never prepared. */
-export function classCantrips(classId: Id, level: number): Id[] {
-  const cls = CLASSES[classId];
-  if (!cls?.spellcasting) return [];
-  return Object.entries(cls.spellcasting.spellsByLevel)
-    .filter(([lvl]) => Number(lvl) <= level)
-    .flatMap(([, ids]) => ids)
-    .filter((id) => (SPELLS[id]?.level ?? 0) === 0);
+    .filter((id) => keep(SPELLS[id]?.level ?? 0));
 }
 
 /**
- * How many leveled spells a caster may have prepared at once — the real 5e
- * rule: spellcasting-ability modifier + caster level (minimum 1). A level-1
- * wizard with Intelligence 16 (+3) prepares 4; that's fewer than the ~8
- * leveled spells it knows, which is the whole point — preparation is a
- * genuine choice, not a formality, and the panel can never show a limit
- * larger than the spellbook it's drawn from.
- *
- * This is a campaign-only constraint. There is no prepare step in a skirmish,
- * a mirror match, or a monster stat block, so a caster built with no explicit
- * prepared list (see buildCharacter) simply knows its whole class list; only
- * an explicit selection — which the campaign always supplies — is capped.
+ * The leveled (non-cantrip, non-ritual) spells a class grants at or below a
+ * level — the menu a caster's "known spells" are chosen from. Rituals (Find
+ * Familiar) are excluded: they're always known and never occupy a slot.
  */
-export function preparedCount(spellMod: number, level: number): number {
-  return Math.max(1, spellMod + level);
+export function availableLeveledSpells(classId: Id, level: number): Id[] {
+  return classSpells(classId, level, (l) => l > 0).filter((id) => !SPELLS[id]?.ritual);
+}
+
+/** Cantrips a class grants at or below a level — the menu its known cantrips
+ *  are chosen from. */
+export function classCantrips(classId: Id, level: number): Id[] {
+  return classSpells(classId, level, (l) => l === 0);
+}
+
+/** Ritual spells a class grants at or below a level (Find Familiar): always
+ *  known, never counted against `spellsKnownByLevel`. */
+export function classRituals(classId: Id, level: number): Id[] {
+  return classSpells(classId, level, (l) => l > 0).filter((id) => SPELLS[id]?.ritual);
+}
+
+/** How many cantrips this caster knows at this level (default: all it's
+ *  offered, i.e. no reduction). */
+export function cantripsKnownCount(classId: Id, level: number): number {
+  const t = CLASSES[classId]?.spellcasting?.cantripsKnownByLevel;
+  return t ? (t[level - 1] ?? t[t.length - 1] ?? 0) : classCantrips(classId, level).length;
+}
+
+/** How many leveled spells this caster knows at this level (default: all it's
+ *  offered — the half-caster/legacy behavior). */
+export function spellsKnownCount(classId: Id, level: number): number {
+  const t = CLASSES[classId]?.spellcasting?.spellsKnownByLevel;
+  return t ? (t[level - 1] ?? t[t.length - 1] ?? 0) : availableLeveledSpells(classId, level).length;
 }
 
 /**
@@ -109,11 +116,16 @@ export interface BuildOptions {
    */
   spellSlotsOverride?: number[];
   /**
-   * Campaign override: exactly which spells this caster has prepared/known,
-   * replacing the class table's full default list. Missing = the default —
-   * a player who never opens the spellbook plays with today's behavior.
+   * Campaign override: exactly which leveled spells this caster knows, chosen
+   * from `availableLeveledSpells` and trimmed to `spellsKnownCount`. Missing =
+   * the full class list (skirmish / AI / mirror match, which have no prepare
+   * step to narrow it). Always-known rituals fold in regardless.
    */
   preparedOverride?: Id[];
+  /** Campaign override: which cantrips this caster knows, chosen from
+   *  `classCantrips` and trimmed to `cantripsKnownCount`. Missing = the full
+   *  cantrip list. */
+  cantripsOverride?: Id[];
   /** Wizard only: spells copied into the spellbook beyond the class default. */
   spellbookExtra?: Id[];
 }
@@ -185,29 +197,33 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     if (s.atLevel <= level) innateSpells[s.spellId] = { current: s.uses, max: s.uses };
   }
 
-  // Cantrips are always known — preparation never touches them. Leveled spells
-  // draw from the class table plus any wizard spellbook additions (scrolls
-  // copied in campaign play). An explicit prepared selection (the campaign
-  // always supplies one) is filtered to the pool and trimmed to the caster's
-  // real preparation limit; with no override — skirmish, an AI party, a mirror
-  // match — the caster simply knows its whole list, since those contexts have
-  // no prepare step to narrow it.
-  const cantrips = cls.spellcasting ? classCantrips(opts.classId, level) : [];
+  // "Spells known" model: the class table is the menu; the caster knows a
+  // capped selection of cantrips and leveled spells, chosen in the campaign's
+  // prepare panel or defaulted. An explicit override (which the campaign always
+  // supplies) is filtered to the pool and trimmed to the class's known-count;
+  // with no override — skirmish, an AI party, a mirror match — the caster knows
+  // its whole list, since those contexts have no prepare step to narrow it.
+  // Rituals (Find Familiar) are always known on top, never counted.
+  const cantripPool = cls.spellcasting ? classCantrips(opts.classId, level) : [];
   const leveledPool = cls.spellcasting
     ? [...new Set([...availableLeveledSpells(opts.classId, level), ...(opts.spellbookExtra ?? [])])]
     : [];
-  let preparedLeveled = leveledPool;
-  if (opts.preparedOverride && cls.spellcasting) {
-    const cap = preparedCount(abilityMod(abilities[cls.spellcasting.ability]), level);
-    preparedLeveled = opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, cap);
-  }
+  const rituals = cls.spellcasting ? classRituals(opts.classId, level) : [];
+
+  const cantrips = opts.cantripsOverride && cls.spellcasting
+    ? opts.cantripsOverride.filter((id) => cantripPool.includes(id)).slice(0, cantripsKnownCount(opts.classId, level))
+    : cantripPool;
+  const knownLeveled = opts.preparedOverride && cls.spellcasting
+    ? opts.preparedOverride.filter((id) => leveledPool.includes(id)).slice(0, spellsKnownCount(opts.classId, level))
+    : leveledPool;
 
   // Class magic, plus whatever the species brings of its own — a wood elf knows
   // True Strike (cantrip) and, from 3rd, Faerie Fire (innate) whether or not it
   // ever opened a spellbook.
   const spellIds = [...new Set([
     ...cantrips,
-    ...preparedLeveled,
+    ...knownLeveled,
+    ...rituals,
     ...known(species?.spellsByLevel),
     ...Object.keys(innateSpells),
     ...grants.spellIds,

@@ -19,7 +19,8 @@ import {
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest, longRest,
-  preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
+  preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
+  knownRitualSpells, setPrepared, setCantrips, resetPrepared,
   scrollLearnable, learnSpellFromScroll,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
@@ -129,24 +130,39 @@ async function prepareSpellsFlow(c: CampaignState, rl: readline.Interface): Prom
     const pool = preparableSpells(c, idx);
     const cap = preparedLimit(c, idx);
     const prepared = preparedSpells(c, idx);
+    const cPool = cantripPool(c, idx);
+    const cCap = cantripLimit(c, idx);
     const cantrips = knownCantrips(c, idx);
-    console.log(`\n${ch.name} — cantrips: ${cantrips.map((id) => SPELLS[id]?.name ?? id).join(', ') || '(none)'}`);
-    console.log(`Prepared ${prepared.length}/${cap}: ${prepared.map((id) => SPELLS[id]?.name ?? id).join(', ') || '(none)'}`);
+    const rituals = knownRitualSpells(c, idx);
+    if (rituals.length > 0) {
+      console.log(`\n${ch.name} — always ready (rituals): ${rituals.map((id) => SPELLS[id]?.name ?? id).join(', ')}`);
+    }
+    console.log(`Cantrips ${cantrips.length}/${cCap}   ${ch.classId === 'wizard' ? 'Spellbook' : 'Prepared'} ${prepared.length}/${cap}`);
+    // One combined menu: cantrip toggles, then leveled toggles, then actions.
     const options = [
+      ...cPool.map((id) => `[cantrip] ${cantrips.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id}`),
       ...pool.map((id) => `${prepared.includes(id) ? '[x]' : '[ ]'} ${SPELLS[id]?.name ?? id} (L${SPELLS[id]?.level ?? 1})`),
-      `Use recommended (${Math.min(pool.length, cap)}/${cap})`,
+      'Use recommended',
       'Done',
     ];
     const pick = await chooseFrom(rl, 'Toggle a spell, or:', options);
     if (pick === options.length - 1) return;
     if (pick === options.length - 2) { resetPrepared(c, idx); continue; }
-    const spellId = pool[pick]!;
-    if (!prepared.includes(spellId) && prepared.length >= cap) {
-      console.log(`Already at the limit (${cap}) — unprepare something first.`);
+    if (pick < cPool.length) {
+      const id = cPool[pick]!;
+      if (!cantrips.includes(id) && cantrips.length >= cCap) {
+        console.log(`Already at the cantrip limit (${cCap}) — drop one first.`);
+        continue;
+      }
+      setCantrips(c, idx, cantrips.includes(id) ? cantrips.filter((x) => x !== id) : [...cantrips, id]);
       continue;
     }
-    const next = prepared.includes(spellId) ? prepared.filter((id) => id !== spellId) : [...prepared, spellId];
-    setPrepared(c, idx, next);
+    const spellId = pool[pick - cPool.length]!;
+    if (!prepared.includes(spellId) && prepared.length >= cap) {
+      console.log(`Already at the limit (${cap}) — drop one first.`);
+      continue;
+    }
+    setPrepared(c, idx, prepared.includes(spellId) ? prepared.filter((id) => id !== spellId) : [...prepared, spellId]);
   }
 }
 

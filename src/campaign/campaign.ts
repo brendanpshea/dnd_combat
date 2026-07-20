@@ -12,7 +12,7 @@ import type { Id, Combatant, ItemStack, TeamId, Ability } from '../engine/types.
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import {
   buildCharacter, assignStats,
-  availableLeveledSpells, classCantrips, preparedCount as leveledPreparedCount,
+  availableLeveledSpells, classCantrips, classRituals, cantripsKnownCount, spellsKnownCount,
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
@@ -45,11 +45,14 @@ export interface PartyCharacter {
     };
   };
   /**
-   * Prepared/known spells, overriding the class defaults. Absent means the
-   * character prepares exactly what the class table grants — a new player who
-   * never opens the spellbook plays with today's behavior unchanged.
+   * The leveled spells this caster knows/prepares, chosen from the class pool
+   * (a wizard's spellbook, or the cleric's whole list). Absent = the
+   * auto-default. Capped at the class's `spellsKnownByLevel`.
    */
   prepared?: Id[];
+  /** The cantrips this caster knows, chosen from the class cantrip pool.
+   *  Absent = the auto-default. Capped at `cantripsKnownByLevel`. */
+  cantrips?: Id[];
   /** Wizard only: spells copied into the spellbook from scrolls, beyond the
    *  class's default known list. Absent = just the defaults. */
   spellbook?: Id[];
@@ -599,10 +602,11 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
-      // Always hand the builder the effective prepared list (hand-picked or the
+      // Always hand the builder the effective known set (hand-picked or the
       // auto-default), so a campaign caster knows exactly what the prepare panel
       // shows — never the full class list a skirmish caster would get.
       preparedOverride: preparedSpells(c, i),
+      cantripsOverride: knownCantrips(c, i),
       ...(ch.spellbook ? { spellbookExtra: ch.spellbook } : {}),
     });
     if (typeof ch.resources?.hp === 'number' && Number.isFinite(ch.resources.hp)) {
@@ -795,15 +799,24 @@ export function useStoreHealing(
 }
 
 // ---------------------------------------------------------------------------
-// Spell preparation — ignorable. A character with no `prepared` field plays
-// with the class table's full default loadout, exactly as before this
-// existed; opening the panel and saving a selection is the only way in.
+// Spells known & prepared — a "spells known" model. Each caster knows a capped
+// number of cantrips and leveled spells (classes.ts's cantripsKnownByLevel /
+// spellsKnownByLevel), chosen here from the class pool with a sensible default.
+// The wizard's pool is its spellbook (grows via scribed scrolls); the cleric
+// "knows" its whole list and simply prepares a subset. Ignorable: a character
+// with no saved choice gets the auto-default. Rituals (Find Familiar) are
+// always known and don't occupy a slot (excluded from the pool).
 // ---------------------------------------------------------------------------
 
-/** The leveled spells this character could currently prepare from: the class
- *  table's unlocked list, plus anything a wizard has copied into their
- *  spellbook (learnSpellFromScroll). Cantrips aren't included — they're
- *  always known and never subject to preparation. */
+/** Sort a spell pool strongest-first (highest spell level, then pool order),
+ *  the order the auto-default fills from. */
+function byStrength(pool: Id[]): Id[] {
+  return [...pool].sort((a, b) => (SPELLS[b]?.level ?? 0) - (SPELLS[a]?.level ?? 0));
+}
+
+/** The leveled spells this character can prepare from: the wizard's spellbook
+ *  (class table + scribed scrolls) or the cleric's whole list. Cantrips and
+ *  always-known rituals are excluded. */
 export function preparableSpells(c: CampaignState, charIdx: number): Id[] {
   const ch = c.characters[charIdx];
   if (!ch) return [];
@@ -811,94 +824,80 @@ export function preparableSpells(c: CampaignState, charIdx: number): Id[] {
   return [...new Set([...availableLeveledSpells(ch.classId, level), ...(ch.spellbook ?? [])])];
 }
 
-/**
- * The spellcasting-ability modifier that sets a caster's preparation limit,
- * computed the way buildCharacter would — stat priority, the level-4 ASI, and
- * an ability-boosting trinket (a Headband of Intellect raises a wizard's INT,
- * and so its prepared count) — so the campaign's cap matches the combatant the
- * builder produces. Undefined for a non-caster.
- */
-function casterSpellMod(ch: PartyCharacter, level: number): number | undefined {
-  const cls = CLASSES[ch.classId];
-  if (!cls?.spellcasting) return undefined;
-  const abilities = assignStats(cls.statPriority);
-  if (level >= 4) {
-    const primary = cls.statPriority[0];
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
-  const trinket = ch.equipped.trinket ? TRINKETS[ch.equipped.trinket] : undefined;
-  for (const [ab, floor] of Object.entries(trinket?.grants.abilityFloor ?? {})) {
-    abilities[ab as Ability] = Math.max(abilities[ab as Ability], floor);
-  }
-  return abilityMod(abilities[cls.spellcasting.ability]);
-}
-
-/** How many leveled spells this character may have prepared at once — the real
- *  5e limit (spellcasting modifier + level). 0 for a non-caster. */
+/** How many leveled spells this character knows/prepares at once. 0 = non-caster. */
 export function preparedLimit(c: CampaignState, charIdx: number): number {
   const ch = c.characters[charIdx];
-  if (!ch) return 0;
-  const level = partyLevelOf(c);
-  const mod = casterSpellMod(ch, level);
-  return mod === undefined ? 0 : leveledPreparedCount(mod, level);
+  if (!ch || !CLASSES[ch.classId]?.spellcasting) return 0;
+  return spellsKnownCount(ch.classId, partyLevelOf(c));
 }
 
-/**
- * The auto-prepared loadout for a caster who hasn't hand-picked one: the
- * strongest spells they know (highest spell level first, then class-table
- * order), trimmed to their preparation limit. A level-1 wizard defaults to
- * preparing a sensible 4 of its 8 known spells; a level-5 one leads with its
- * 3rd-level spells. Used for both the display and the built combatant, so the
- * two never disagree.
- */
-function defaultPrepared(c: CampaignState, charIdx: number): Id[] {
-  const pool = preparableSpells(c, charIdx);
-  const cap = preparedLimit(c, charIdx);
-  return [...pool]
-    .sort((a, b) => (SPELLS[b]?.level ?? 0) - (SPELLS[a]?.level ?? 0))
-    .slice(0, cap);
-}
-
-/**
- * This character's currently prepared leveled spells: their saved choice, or —
- * nothing chosen yet — the auto-prepared default. Either way it's capped at
- * the preparation limit and matches what buildCampaignParty puts on the
- * combatant, so the panel's count is always honest.
- */
-export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
-  const ch = c.characters[charIdx];
-  if (!ch) return [];
-  return ch.prepared ?? defaultPrepared(c, charIdx);
-}
-
-/** Cantrips this character always has, regardless of preparation. */
-export function knownCantrips(c: CampaignState, charIdx: number): Id[] {
+/** The cantrips this character can choose from. */
+export function cantripPool(c: CampaignState, charIdx: number): Id[] {
   const ch = c.characters[charIdx];
   if (!ch) return [];
   return classCantrips(ch.classId, partyLevelOf(c));
 }
 
-/**
- * Save an explicit prepared-spell selection: filtered to spells this
- * character can actually prepare from, capped at their limit. An empty
- * selection is a deliberate "prepare nothing" — distinct from never having
- * opened the panel, which still means "everything."
- */
+/** How many cantrips this character knows. 0 = non-caster / no cantrips. */
+export function cantripLimit(c: CampaignState, charIdx: number): number {
+  const ch = c.characters[charIdx];
+  if (!ch || !CLASSES[ch.classId]?.spellcasting) return 0;
+  return cantripsKnownCount(ch.classId, partyLevelOf(c));
+}
+
+/** The auto-default known set for a caster who hasn't hand-picked one:
+ *  strongest spells first, trimmed to the limit. */
+function defaultKnown(pool: Id[], limit: number): Id[] {
+  return byStrength(pool).slice(0, limit);
+}
+
+/** This character's currently prepared leveled spells: their saved choice, or
+ *  the auto-default. Capped, and matches what buildCampaignParty builds. */
+export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return ch.prepared ?? defaultKnown(preparableSpells(c, charIdx), preparedLimit(c, charIdx));
+}
+
+/** This character's known cantrips: their saved choice, or the auto-default. */
+export function knownCantrips(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return ch.cantrips ?? defaultKnown(cantripPool(c, charIdx), cantripLimit(c, charIdx));
+}
+
+/** Always-known ritual spells (Find Familiar) this caster has regardless of
+ *  what it prepared — shown in the panel as a note, castable in the store. */
+export function knownRitualSpells(c: CampaignState, charIdx: number): Id[] {
+  const ch = c.characters[charIdx];
+  if (!ch) return [];
+  return classRituals(ch.classId, partyLevelOf(c));
+}
+
+/** Save an explicit prepared-spell selection, filtered to the pool and capped. */
 export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): boolean {
   const ch = c.characters[charIdx];
   if (!ch) return false;
   const pool = preparableSpells(c, charIdx);
-  const cap = preparedLimit(c, charIdx);
-  ch.prepared = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, cap);
+  ch.prepared = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, preparedLimit(c, charIdx));
   return true;
 }
 
-/** Drop back to the default loadout — the "use recommended" reset a
- *  new/young player never has to leave in the first place. */
+/** Save an explicit cantrip selection, filtered to the pool and capped. */
+export function setCantrips(c: CampaignState, charIdx: number, spellIds: Id[]): boolean {
+  const ch = c.characters[charIdx];
+  if (!ch) return false;
+  const pool = cantripPool(c, charIdx);
+  ch.cantrips = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, cantripLimit(c, charIdx));
+  return true;
+}
+
+/** Drop leveled and cantrip choices back to the auto-defaults. */
 export function resetPrepared(c: CampaignState, charIdx: number): boolean {
   const ch = c.characters[charIdx];
   if (!ch) return false;
   delete ch.prepared;
+  delete ch.cantrips;
   return true;
 }
 

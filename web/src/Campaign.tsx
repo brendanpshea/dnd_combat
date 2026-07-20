@@ -23,7 +23,8 @@ import {
   partyLevelOf, LEVEL_XP, MAX_LEVEL, setPartyClass, setPartyChoice, setPartySpecies, shortRest, longRest,
   PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
   isStoreHealingSource, storeSpellActions, useStoreHealing, useStoreSpell,
-  preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
+  preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
+  knownRitualSpells, setPrepared, setCantrips, resetPrepared,
   scrollLearnable, learnSpellFromScroll,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
@@ -104,8 +105,9 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   const [editingMember, setEditingMember] = useState<number | null>(null);
   /** Character index whose prepare-spells panel is open, or null. */
   const [prepareFor, setPrepareFor] = useState<number | null>(null);
-  /** Working selection inside the prepare panel — committed on Save. */
+  /** Working selections inside the prepare panel — committed on Save. */
   const [prepareDraft, setPrepareDraft] = useState<Id[]>([]);
+  const [cantripDraft, setCantripDraft] = useState<Id[]>([]);
 
   const mutate = (fn: () => void) => {
     initAudio();
@@ -605,36 +607,52 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         const ch = c.characters[idx]!;
         const pool = preparableSpells(c, idx);
         const cap = preparedLimit(c, idx);
-        const cantrips = knownCantrips(c, idx);
-        const isDefault = ch.prepared === undefined;
+        const cPool = cantripPool(c, idx);
+        const cCap = cantripLimit(c, idx);
+        const rituals = knownRitualSpells(c, idx);
+        const isDefault = ch.prepared === undefined && ch.cantrips === undefined;
         const atCap = prepareDraft.length >= cap;
+        const cAtCap = cantripDraft.length >= cCap;
         const close = () => setPrepareFor(null);
         const toggle = (spellId: Id) => setPrepareDraft((d) =>
           d.includes(spellId) ? d.filter((id) => id !== spellId) : atCap ? d : [...d, spellId]);
+        const toggleCantrip = (spellId: Id) => setCantripDraft((d) =>
+          d.includes(spellId) ? d.filter((id) => id !== spellId) : cAtCap ? d : [...d, spellId]);
+        // A wizard chooses which spells fill its spellbook; a cleric knows the
+        // whole list and simply prepares a subset of it.
+        const leveledLabel = ch.classId === 'wizard' ? 'Spellbook' : 'Prepared spells';
         return (
           <div className="tray-backdrop" onClick={close}>
             <div className="tray" onClick={(e) => e.stopPropagation()}>
               <div className="tray-head">
                 📖 {ch.name}'s Spells
-                <span className="muted">— {prepareDraft.length}/{cap} prepared</span>
+                <span className="muted">— {cantripDraft.length}/{cCap} cantrips, {prepareDraft.length}/{cap} spells</span>
                 <button className="ghost" onClick={close}>✕</button>
               </div>
               {isDefault && (
                 <p className="hint">
-                  Prepares a sensible default by itself — no need to touch this unless you
-                  want to swap spells out.
+                  A sensible set is chosen by default — no need to touch this unless you
+                  want to swap spells.
                 </p>
               )}
-              {cantrips.length > 0 && (
-                <div className="sheet-row">
-                  <span className="sheet-label">Cantrips (always known)</span>
-                  {cantrips.map((id) => (
-                    <span key={id} className="item-chip muted">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
-                  ))}
+              {cPool.length > 0 && (
+                <div className="sheet-row prepare-list">
+                  <span className="sheet-label">Cantrips ({cantripDraft.length}/{cCap})</span>
+                  <div className="prepare-grid">
+                    {cPool.map((id) => {
+                      const checked = cantripDraft.includes(id);
+                      return (
+                        <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
+                          <input type="checkbox" checked={checked} disabled={!checked && cAtCap} onChange={() => toggleCantrip(id)} />
+                          {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
               <div className="sheet-row prepare-list">
-                <span className="sheet-label">Leveled spells</span>
+                <span className="sheet-label">{leveledLabel} ({prepareDraft.length}/{cap})</span>
                 <div className="prepare-grid">
                   {pool.map((id) => {
                     const checked = prepareDraft.includes(id);
@@ -653,17 +671,26 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                   })}
                 </div>
               </div>
+              {rituals.length > 0 && (
+                <div className="sheet-row">
+                  <span className="sheet-label">Rituals (always ready)</span>
+                  {rituals.map((id) => (
+                    <span key={id} className="item-chip muted">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
+                  ))}
+                </div>
+              )}
               <div className="sheet-row">
                 <button className="mini" onClick={() => mutate(() => {
                   resetPrepared(c, idx);
-                  setNotice(`${ch.name} prepares the recommended spells.`);
+                  setNotice(`${ch.name} takes the recommended spells.`);
                   close();
                 })}>
-                  Use recommended ({Math.min(pool.length, cap)}/{cap})
+                  Use recommended
                 </button>
                 <button className="mini primary" onClick={() => mutate(() => {
                   setPrepared(c, idx, prepareDraft);
-                  setNotice(`${ch.name}'s prepared spells are set.`);
+                  setCantrips(c, idx, cantripDraft);
+                  setNotice(`${ch.name}'s spells are set.`);
                   close();
                 })}>
                   Save
@@ -760,7 +787,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             {preparableSpells(c, idx).length > 0 && (
               <button
                 className="mini prepare-btn"
-                onClick={() => { setPrepareFor(idx); setPrepareDraft(preparedSpells(c, idx)); }}
+                onClick={() => { setPrepareFor(idx); setPrepareDraft(preparedSpells(c, idx)); setCantripDraft(knownCantrips(c, idx)); }}
               >
                 📖 Prepare spells ({preparedSpells(c, idx).length}/{preparedLimit(c, idx)})
               </button>
