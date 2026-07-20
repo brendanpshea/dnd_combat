@@ -11,6 +11,7 @@ import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
+import { isLocationArt, isNpcArt } from '../data/adventure-art.js';
 import type { Module, Scene, Choice, Effect, Requirement, Outcome } from './types.js';
 
 function itemExists(id: Id): boolean {
@@ -121,6 +122,17 @@ export function validateModule(module: Module): string[] {
     }
     if (scene.kind === 'check' && (scene.dc < 1 || scene.dc > 30)) {
       at(id, `check DC ${scene.dc} out of sane range (1–30)`);
+    }
+    // Art vocabulary: location backdrops and NPC portraits must name a shared
+    // reusable id (src/data/adventure-art.ts) so the generated set stays
+    // curated and every module is art-complete for free.
+    const artId = 'art' in scene ? scene.art?.imageId : undefined;
+    if (artId && !isLocationArt(artId)) at(id, `art.imageId '${artId}' is not a known location (see adventure-art.ts)`);
+    if (scene.kind === 'explore' && scene.map.art?.imageId && !isLocationArt(scene.map.art.imageId)) {
+      at(id, `explore map art '${scene.map.art.imageId}' is not a known location`);
+    }
+    if (scene.kind === 'dialogue' && scene.npc.portraitId && !isNpcArt(scene.npc.portraitId)) {
+      at(id, `NPC portraitId '${scene.npc.portraitId}' is not a known archetype`);
     }
     if (scene.kind === 'battle') {
       if (!encounterExists(scene.encounterId)) at(id, `unknown encounter '${scene.encounterId}'`);

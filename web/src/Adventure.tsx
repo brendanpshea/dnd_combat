@@ -24,7 +24,8 @@ import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
 import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
-import { HAS_BOARD_BG, boardBgUrl } from './art.js';
+import { HAS_BOARD_BG, boardBgUrl, hasSceneArt, sceneArtUrl, hasArt } from './art.js';
+import { artEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { saveAdventureWeb, loadAdventureWeb, savedAdventureModule, deleteAdventureWeb } from './adventureStorage.js';
 
@@ -244,9 +245,14 @@ function label(itemId: string): string {
 }
 
 function SceneArtBanner({ scene }: { scene: Scene }) {
+  const imageId = 'art' in scene ? scene.art?.imageId : undefined;
+  // A generated location backdrop when we have one; otherwise the emoji glyph.
+  if (imageId && hasSceneArt(imageId)) {
+    return <div className="adv-art has-img" style={{ backgroundImage: `url(${sceneArtUrl(imageId)})` }} />;
+  }
   const emoji = 'art' in scene ? scene.art?.emoji : undefined;
   const npcEmoji = scene.kind === 'dialogue' ? scene.npc.emoji : undefined;
-  const glyph = emoji ?? npcEmoji ?? sceneGlyph(scene);
+  const glyph = emoji ?? npcEmoji ?? artEmoji(imageId) ?? sceneGlyph(scene);
   return <div className="adv-art"><span className="adv-art-glyph">{glyph}</span></div>;
 }
 
@@ -291,7 +297,9 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onLeav
       <div className="adv-scene">
         {scene.kind === 'dialogue' && (
           <div className="adv-npc">
-            <Portrait id={scene.npc.portraitId ?? scene.npc.id} team="team1" />
+            {hasArt(scene.npc.portraitId ?? scene.npc.id)
+              ? <Portrait id={scene.npc.portraitId ?? scene.npc.id} team="team1" />
+              : <span className="adv-npc-emoji">{scene.npc.emoji ?? artEmoji(scene.npc.portraitId) ?? '💬'}</span>}
             <span className="adv-npc-name">{scene.npc.name}</span>
           </div>
         )}
@@ -335,9 +343,15 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onLeav
   if (scene.kind === 'explore') {
     const nodes = exploreNodes(state, module);
     const theme = scene.map.theme;
-    const bg = theme && HAS_BOARD_BG.has(theme)
-      ? { backgroundImage: `linear-gradient(rgba(20,16,32,.35), rgba(20,16,32,.7)), url(${boardBgUrl(theme)})` }
-      : undefined;
+    const scrim = 'linear-gradient(rgba(20,16,32,.35), rgba(20,16,32,.7))';
+    // Prefer a generated location backdrop; fall back to the combat theme
+    // backdrop, then to the plain gradient the CSS already draws.
+    const locId = scene.map.art?.imageId;
+    const bg = locId && hasSceneArt(locId)
+      ? { backgroundImage: `${scrim}, url(${sceneArtUrl(locId)})` }
+      : theme && HAS_BOARD_BG.has(theme)
+        ? { backgroundImage: `${scrim}, url(${boardBgUrl(theme)})` }
+        : undefined;
     return (
       <div className="adv-scene">
         <h2 className="adv-maptitle">{scene.map.title}</h2>

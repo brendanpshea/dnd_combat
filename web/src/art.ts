@@ -22,8 +22,34 @@ export const HAS_ART = new Set<string>([
   'shadow', 'specter', 'will-o-wisp', 'wight', 'mummy',
 ]);
 
+/**
+ * Adventure NPC-archetype portraits with generated art (`portrait-<id>.webp`),
+ * e.g. 'npc-innkeeper'. Empty until generated — see art/adventure-prompts.md
+ * and src/data/adventure-art.ts. Kept separate so the vocabulary (all
+ * archetypes) and the "actually generated" set stay independent.
+ */
+export const HAS_NPC_ART = new Set<string>([
+  // add npc-<archetype> ids here as their portraits are generated
+]);
+
 export function hasArt(id: string): boolean {
-  return HAS_ART.has(id);
+  return HAS_ART.has(id) || HAS_NPC_ART.has(id);
+}
+
+/**
+ * Adventure location-scene backdrops with generated art (`scene-<id>.webp`),
+ * e.g. 'loc-tavern'. Empty until generated.
+ */
+export const HAS_SCENE_ART = new Set<string>([
+  // add loc-<type> ids here as their scenes are generated
+]);
+
+export function hasSceneArt(id: string | undefined): boolean {
+  return !!id && HAS_SCENE_ART.has(id);
+}
+
+export function sceneArtUrl(id: string): string {
+  return `${BASE}art/scene-${id}.webp`;
 }
 
 export function tokenUrl(id: string): string {

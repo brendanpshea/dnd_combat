@@ -11,14 +11,17 @@
  */
 import type { Module, Scene } from '../../adventure/types.js';
 
-const MIRA = { id: 'npc-mira', name: 'Mira the Innkeeper', emoji: '🍺' };
-const SCOUT = { id: 'npc-scout', name: 'Wounded Scout', emoji: '🤕' };
-const LIEUTENANT = { id: 'npc-vex', name: 'Vex, the Lieutenant', emoji: '🗡️' };
+// NPCs name a reusable archetype `portraitId` (src/data/adventure-art.ts) so
+// they share art with every other module's innkeeper / scout / captain; the
+// emoji is the fallback until that portrait is generated.
+const MIRA = { id: 'npc-mira', name: 'Mira the Innkeeper', portraitId: 'npc-innkeeper', emoji: '🍺' };
+const SCOUT = { id: 'npc-scout-hr', name: 'Wounded Scout', portraitId: 'npc-wounded', emoji: '🤕' };
+const LIEUTENANT = { id: 'npc-vex', name: 'Vex, the Lieutenant', portraitId: 'npc-captain', emoji: '🗡️' };
 
 const scenes: Record<string, Scene> = {
   // === ACT 1 — THORNWICK (village hub) ===================================
   start: {
-    id: 'start', kind: 'story', art: { emoji: '🏘️' },
+    id: 'start', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: [
       'The village of Thornwick huddles under grey hills, its gate scorched and its people wary.',
       'For a month the Ashfang raiders have bled the road dry. The reeve\'s bounty — and a plea — brought you here.',
@@ -27,7 +30,7 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'End the raiders plaguing Thornwick. Start by learning where they den.' } }] }],
   },
   tavern: {
-    id: 'tavern', kind: 'dialogue', npc: MIRA, art: { emoji: '🍺' },
+    id: 'tavern', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
       '"Sellswords, are you? Good. The reeve\'s too proud to beg, so I will."',
       '"The Ashfang came from the marsh road. But there\'s more folk won\'t say aloud…"',
@@ -62,7 +65,7 @@ const scenes: Record<string, Scene> = {
   square: {
     id: 'square', kind: 'explore',
     map: {
-      title: 'Thornwick Square', theme: 'stone', art: { emoji: '⛲' },
+      title: 'Thornwick Square', theme: 'stone', art: { imageId: 'loc-village', emoji: '⛲' },
       nodes: [
         { id: 'market', x: 26, y: 34, label: 'Market', icon: '🛒', scene: 'market' },
         { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: '📜', scene: 'board' },
@@ -82,7 +85,7 @@ const scenes: Record<string, Scene> = {
         { kind: 'journal', entry: { id: 'c-bounty', kind: 'clue', title: 'The Reeve\'s Bounty', body: 'Extra reward for the Ashfang banner as proof.' } }] }],
   },
   'spy-confront': {
-    id: 'spy-confront', kind: 'dialogue', npc: { id: 'npc-peddler', name: 'The Peddler', emoji: '🕵️' },
+    id: 'spy-confront', kind: 'dialogue', npc: { id: 'npc-peddler', name: 'The Peddler', portraitId: 'npc-merchant', emoji: '🕵️' },
     art: { emoji: '🕵️' },
     lines: ['A peddler you\'ve seen watching the gate too closely goes stiff as you approach.'],
     next: [
@@ -109,14 +112,14 @@ const scenes: Record<string, Scene> = {
 
   // === ACT 2 — THE MARSH ROAD (wilderness) ==============================
   trailhead: {
-    id: 'trailhead', kind: 'story', art: { emoji: '🌫️' },
+    id: 'trailhead', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌫️' },
     text: ['The marsh road leaves Thornwick behind. Reeds close in; the hills wait beyond a maze of black water and game trails.'],
     next: [{ id: 'go', label: 'Into the marsh', to: 'trail' }],
   },
   trail: {
     id: 'trail', kind: 'explore',
     map: {
-      title: 'The Marsh Road', theme: 'forest', art: { emoji: '🌾' },
+      title: 'The Marsh Road', theme: 'forest', art: { imageId: 'loc-marsh', emoji: '🌾' },
       nodes: [
         { id: 'tracks', x: 28, y: 40, label: 'Fresh Tracks', icon: '👣', scene: 'tracks' },
         { id: 'ravine', x: 55, y: 62, label: 'Sunken Ravine', icon: '🪨', scene: 'ravine',
@@ -189,7 +192,7 @@ const scenes: Record<string, Scene> = {
 
   // === ACT 3 — THE ASHFANG DEN (dungeon) ================================
   gate: {
-    id: 'gate', kind: 'story', art: { emoji: '🏚️' },
+    id: 'gate', kind: 'story', art: { imageId: 'loc-camp', emoji: '🏚️' },
     text: ['A palisade of lashed timber rings the hollow. A watch-post looms over the only gate. Beyond: the chief.'],
     next: [
       { id: 'signal', label: 'Give the stolen watch-signal', to: 'inner',
@@ -209,7 +212,7 @@ const scenes: Record<string, Scene> = {
   inner: {
     id: 'inner', kind: 'explore',
     map: {
-      title: 'Inside the Den', theme: 'ember', art: { emoji: '🔥' },
+      title: 'Inside the Den', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🔥' },
       nodes: [
         { id: 'cache', x: 30, y: 34, label: 'Plunder Tent', icon: '📦', scene: 'cache',
           hidden: { dc: 13 } },
@@ -251,7 +254,7 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'vex-hostile' }] }],
   },
   'boss-approach': {
-    id: 'boss-approach', kind: 'story', art: { emoji: '👑' },
+    id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
     text: [
       'The chief\'s hall reeks of smoke and old blood. The Ashfang warlord rises, axe in hand.',
       'Around him, his guards tense — or do they hesitate?',
@@ -269,7 +272,7 @@ const scenes: Record<string, Scene> = {
   // can't) claim — blocked options show *why*, so what you did back in the
   // village and the marsh visibly mattered.
   aftermath: {
-    id: 'aftermath', kind: 'story', art: { emoji: '🏘️' },
+    id: 'aftermath', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: ['Back in Thornwick, the square fills. There are debts to settle in your favor now.'],
     next: [
       { id: 'bounty', label: 'Claim the reeve\'s bounty for the chief\'s head', to: 'aftermath',

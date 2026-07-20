@@ -976,7 +976,11 @@ Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ g
   Road" — an original 3-act module: village hub → marsh trail → raider den,
   ~30 scenes, avoidable fights, flag payoffs; adventure save/resume; a
   main-menu module selector) shipped. The plan (docs/adventure-mode-plan.md)
-  is now fully implemented.
+  is now fully implemented. A reusable **adventure-art vocabulary**
+  (`src/data/adventure-art.ts`, `art/adventure-prompts.md`) keys location
+  backdrops and NPC portraits to *setting types* and *archetypes* — a fixed
+  generated set every future module composes for free; ids are validated and
+  fall back to emoji until generated.
 
 Next candidates, roughly in fun-per-effort order:
 1. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.

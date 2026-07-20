@@ -1701,3 +1701,10 @@ button.category .count {
   padding: 0 16px; border-radius: 12px; background: var(--blue); color: #081120; border: none;
   font-weight: 700; cursor: pointer; white-space: nowrap;
 }
+
+/* Adventure art: generated location backdrop + NPC emoji fallback */
+.adv-art.has-img { background-size: cover; background-position: center; }
+.adv-npc-emoji {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 24px; background: var(--panel2); border: 2px solid var(--blue); flex: none;
+}

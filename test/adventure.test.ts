@@ -12,6 +12,7 @@ import {
 } from '../src/adventure/runtime.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
+import { isLocationArt, isNpcArt } from '../src/data/adventure-art.js';
 import { CLASSIC_MODULE } from '../src/data/modules/classic.js';
 import { HIDEOUT_MODULE } from '../src/data/modules/demo.js';
 import { MODULES } from '../src/data/modules/index.js';
@@ -289,6 +290,35 @@ describe('The Hollow Road (M4)', () => {
       const result = runModule(newCampaign(seed), hollow, policy, 4000);
       expect(['victory', 'defeat']).toContain(result.ending);
     }
+  });
+});
+
+describe('reusable art vocabulary', () => {
+  it('The Hollow Road composes shared location + NPC archetype ids', () => {
+    const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+    const locs = new Set<string>();
+    const npcs = new Set<string>();
+    for (const s of Object.values(hollow.scenes)) {
+      if ('art' in s && s.art?.imageId) locs.add(s.art.imageId);
+      if (s.kind === 'explore' && s.map.art?.imageId) locs.add(s.map.art.imageId);
+      if (s.kind === 'dialogue' && s.npc.portraitId) npcs.add(s.npc.portraitId);
+    }
+    expect(locs.size).toBeGreaterThanOrEqual(4);
+    expect(npcs.size).toBeGreaterThanOrEqual(3);
+    for (const l of locs) expect(isLocationArt(l)).toBe(true);
+    for (const n of npcs) expect(isNpcArt(n)).toBe(true);
+  });
+
+  it('the validator rejects an unknown art id', () => {
+    const bad: Module = {
+      id: 'bad', title: 'B', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'story', art: { imageId: 'loc-nonsense' }, text: ['x'],
+          next: [{ id: 'go', label: 'go', to: 'e' }] },
+        e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    };
+    expect(validateModule(bad).some((e) => e.includes('loc-nonsense'))).toBe(true);
   });
 });
 
