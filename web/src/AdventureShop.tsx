@@ -48,6 +48,10 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
   const [pickBuy, setPickBuy] = useState<string | null>(null);
   const [haggling, setHaggling] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  /** Whose wares we're looking at: the whole party, one hero, or the shared
+   *  loot. Scopes both tabs — buy goes straight to a focused hero, sell shows
+   *  only their pack (or the stash). */
+  const [focus, setFocus] = useState<number | 'all' | 'stash'>('all');
 
   const visit = shopVisitOf(state, scene.id);
   const npc = scene.npc;
@@ -61,6 +65,10 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
     for (const s of ch.inventory) if (s.qty > 0) sellable.push({ itemId: s.itemId, charIdx, label: ch.name });
   });
   for (const s of partyStash(campaign)) if (s.qty > 0) sellable.push({ itemId: s.itemId, charIdx: 'stash', label: 'party loot' });
+
+  // Focused view filters the sell list; 'stash' focus targets party loot only.
+  const shownSellable = sellable.filter(({ charIdx }) =>
+    focus === 'all' ? true : focus === 'stash' ? charIdx === 'stash' : charIdx === focus);
 
   const say = (msg: string) => { setNotice(msg); onChange(); };
 
@@ -101,6 +109,23 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
           <button className={tab === 'sell' ? 'on' : ''} onClick={() => { setTab('sell'); setPickBuy(null); }}>Sell</button>
         </div>
 
+        {/* Focus strip: scope both tabs to the party, one hero, or party loot. */}
+        <div className="shop-focus">
+          <button className={`shop-focus-chip ${focus === 'all' ? 'on' : ''}`}
+            onClick={() => { setFocus('all'); setPickBuy(null); }}>👥 Party</button>
+          {campaign.characters.map((ch, i) => (
+            <button key={i} className={`shop-focus-chip ${focus === i ? 'on' : ''}`}
+              onClick={() => { setFocus(i); setPickBuy(null); }}>
+              {hasArt(ch.portraitId ?? ch.classId)
+                ? <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
+                : <span>🧑</span>}
+              {ch.name.split(' ')[0]}
+            </button>
+          ))}
+          <button className={`shop-focus-chip ${focus === 'stash' ? 'on' : ''}`}
+            onClick={() => { setFocus('stash'); setTab('sell'); setPickBuy(null); }}>🎁 Loot</button>
+        </div>
+
         <div className="shop-list">
           {tab === 'buy' ? stock.map((id) => {
             const price = priceOf(id);
@@ -109,13 +134,20 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
             return (
               <div key={id} className="shop-item">
                 <button
-                  className="shop-row" disabled={!afford && !picking}
-                  onClick={() => setPickBuy(picking ? null : id)}
+                  className="shop-row" disabled={!afford}
+                  onClick={() => {
+                    if (typeof focus === 'number') {
+                      // A hero is in focus — buy straight to them, one tap.
+                      if (buyItem(campaign, focus, id, price)) say(`${campaign.characters[focus]?.name} buys ${itemName(id)}.`);
+                    } else {
+                      setPickBuy(picking ? null : id);
+                    }
+                  }}
                 >
                   <span>{itemIcon(id)} {itemName(id)}</span>
                   <span className={`shop-price ${afford ? '' : 'poor'}`}>💰 {price}</span>
                 </button>
-                {picking && (
+                {picking && typeof focus !== 'number' && (
                   <div className="adv-item-acts">
                     <span className="muted">Buy for:</span>
                     {campaign.characters.map((ch, i) => (
@@ -128,9 +160,9 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
                 )}
               </div>
             );
-          }) : sellable.length === 0 ? (
-            <p className="adv-text">The party's packs are empty.</p>
-          ) : sellable.map(({ itemId, charIdx, label }, i) => {
+          }) : shownSellable.length === 0 ? (
+            <p className="adv-text">{focus === 'stash' ? 'No party loot to sell.' : 'Nothing to sell here.'}</p>
+          ) : shownSellable.map(({ itemId, charIdx, label }, i) => {
             const resale = Math.floor((itemPrice(itemId) ?? 0) / 2);
             // Scribing is offered on a scroll the holding wizard can learn.
             const scribe = charIdx !== 'stash'
