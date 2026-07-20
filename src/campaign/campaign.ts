@@ -364,6 +364,20 @@ export function itemIcon(itemId: Id): string {
   return '📦';
 }
 
+export type ItemCategory = 'weapon' | 'armor' | 'potion' | 'scroll' | 'trinket' | 'other';
+
+/** A coarse shop-shelf bucket for an item, so a long stock list can be filtered
+ *  by kind (weapons / armor / potions / scrolls / trinkets). Consumables that
+ *  aren't scrolls land in 'potion' (the flasks-and-vials shelf). */
+export function itemCategory(itemId: Id): ItemCategory {
+  if (itemId === 'shield' || itemId === 'shield-plus1') return 'armor';
+  if (TRINKETS[itemId]) return 'trinket';
+  if (ITEMS[itemId]) return itemId.includes('scroll') ? 'scroll' : 'potion';
+  if (WEAPONS[itemId]) return 'weapon';
+  if (ARMOR[itemId]) return 'armor';
+  return 'other';
+}
+
 /** Re-exported so callers don't reach past this layer for a party's names. */
 export { HERO_NAMES as DEFAULT_NAMES, defaultNameFor };
 

@@ -1756,6 +1756,8 @@ button.category .count {
 .shop-focus-chip.on { color: var(--text); border-color: var(--blue); background: var(--panel); }
 .shop-focus-chip .portrait { width: 24px; height: 24px; }
 .shop-focus-chip > span { font-size: 1.05rem; }
+.shop-cats { margin-top: -4px; }
+.adv-shop-buyfor { margin: 0; font-size: .82rem; color: var(--muted); }
 
 /* Journal drawer */
 .journal-scrim {
