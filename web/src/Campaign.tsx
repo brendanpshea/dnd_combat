@@ -36,6 +36,7 @@ import { classBlurb, speciesBlurb } from './blurbs.js';
 import { LootScreen } from './Loot.js';
 import { initAudio } from './sound.js';
 import { SlotPips } from './SlotPips.js';
+import { SpellTray } from './SpellTray.js';
 import { SPELLS } from '../../src/data/spells.js';
 
 type Phase =
@@ -106,10 +107,6 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   const [editingMember, setEditingMember] = useState<number | null>(null);
   /** Character index whose prepare-spells panel is open, or null. */
   const [prepareFor, setPrepareFor] = useState<number | null>(null);
-  /** Working selections inside the prepare panel — committed on Save. */
-  const [prepareDraft, setPrepareDraft] = useState<Id[]>([]);
-  const [cantripDraft, setCantripDraft] = useState<Id[]>([]);
-  const [spellbookDraft, setSpellbookDraft] = useState<Id[]>([]);
 
   const mutate = (fn: () => void) => {
     initAudio();
@@ -118,13 +115,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     setVersion((v) => v + 1);
   };
 
-  /** Open the spell panel for a caster, seeding all three draft tiers. */
-  const openSpells = (idx: number) => {
-    setPrepareFor(idx);
-    setCantripDraft(knownCantrips(c, idx));
-    setSpellbookDraft(chosenSpellbook(c, idx));
-    setPrepareDraft(preparedSpells(c, idx));
-  };
+  /** Open the shared spell tray for a caster (it seeds its own drafts). */
+  const openSpells = (idx: number) => setPrepareFor(idx);
 
   const stage = currentStage(c);
   const visit = shopVisitFor(c);
@@ -213,119 +205,17 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     );
   }
 
-  // The spell-selection tray (cantrips / spellbook / prepared). Rendered in
-  // both the forge and the shop, since openSpells can fire from either phase.
-  const spellPanel = prepareFor !== null && (() => {
-    const idx = prepareFor;
-    const ch = c.characters[idx]!;
-    const cPool = cantripPool(c, idx);
-    const cCap = cantripLimit(c, idx);
-    const bookPool = spellbookPool(c, idx);          // empty for a knows-all caster (cleric)
-    const bookCap = spellbookLimit(c, idx);          // undefined for a cleric
-    const usesBook = bookCap !== undefined;
-    const cap = preparedLimit(c, idx);
-    const rituals = knownRitualSpells(c, idx);
-    // A wizard prepares from its drafted spellbook; a cleric from its whole list.
-    const leveledPool = usesBook ? spellbookDraft : preparableSpells(c, idx);
-    const isDefault = ch.prepared === undefined && ch.cantrips === undefined && ch.spellbook === undefined;
-    const cAtCap = cantripDraft.length >= cCap;
-    const bookAtCap = usesBook && spellbookDraft.length >= (bookCap ?? 0);
-    const atCap = prepareDraft.length >= cap;
-    const close = () => setPrepareFor(null);
-    const toggleCantrip = (id: Id) => setCantripDraft((d) =>
-      d.includes(id) ? d.filter((x) => x !== id) : cAtCap ? d : [...d, id]);
-    const toggleBook = (id: Id) => setSpellbookDraft((d) => {
-      if (d.includes(id)) { setPrepareDraft((p) => p.filter((x) => x !== id)); return d.filter((x) => x !== id); }
-      return bookAtCap ? d : [...d, id];
-    });
-    const togglePrepare = (id: Id) => setPrepareDraft((d) =>
-      d.includes(id) ? d.filter((x) => x !== id) : atCap ? d : [...d, id]);
-    return (
-      <div className="tray-backdrop" onClick={close}>
-        <div className="tray" onClick={(e) => e.stopPropagation()}>
-          <div className="tray-head">
-            📖 {ch.name}'s Spells
-            <span className="muted">
-              — {cantripDraft.length}/{cCap} cantrips{usesBook ? `, ${spellbookDraft.length}/${bookCap} known` : ''}, {prepareDraft.length}/{cap} prepared
-            </span>
-            <button className="ghost" onClick={close}>✕</button>
-          </div>
-          {isDefault && (
-            <p className="hint">A sensible set is chosen by default — adjust only if you want to.</p>
-          )}
-          {cPool.length > 0 && (
-            <div className="sheet-row prepare-list">
-              <span className="sheet-label">Cantrips ({cantripDraft.length}/{cCap}) — always ready</span>
-              <div className="prepare-grid">
-                {cPool.map((id) => {
-                  const checked = cantripDraft.includes(id);
-                  return (
-                    <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
-                      <input type="checkbox" checked={checked} disabled={!checked && cAtCap} onChange={() => toggleCantrip(id)} />
-                      {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {usesBook && (
-            <div className="sheet-row prepare-list">
-              <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
-              <div className="prepare-grid">
-                {bookPool.map((id) => {
-                  const checked = spellbookDraft.includes(id);
-                  return (
-                    <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
-                      <input type="checkbox" checked={checked} disabled={!checked && bookAtCap} onChange={() => toggleBook(id)} />
-                      {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          <div className="sheet-row prepare-list">
-            <span className="sheet-label">Prepared ({prepareDraft.length}/{cap})</span>
-            <div className="prepare-grid">
-              {leveledPool.map((id) => {
-                const checked = prepareDraft.includes(id);
-                return (
-                  <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
-                    <input type="checkbox" checked={checked} disabled={!checked && atCap} onChange={() => togglePrepare(id)} />
-                    {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}<span className="muted"> (L{SPELLS[id]?.level ?? 1})</span>
-                  </label>
-                );
-              })}
-              {leveledPool.length === 0 && <span className="muted">Pick spellbook spells above first.</span>}
-            </div>
-          </div>
-          {rituals.length > 0 && (
-            <div className="sheet-row">
-              <span className="sheet-label">Rituals (always ready)</span>
-              {rituals.map((id) => (
-                <span key={id} className="item-chip muted">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
-              ))}
-            </div>
-          )}
-          <div className="sheet-row">
-            <button className="mini" onClick={() => mutate(() => {
-              resetPrepared(c, idx);
-              setNotice(`${ch.name} takes the recommended spells.`);
-              close();
-            })}>Use recommended</button>
-            <button className="mini primary" onClick={() => mutate(() => {
-              setCantrips(c, idx, cantripDraft);
-              if (usesBook) setSpellbook(c, idx, spellbookDraft);
-              setPrepared(c, idx, prepareDraft);
-              setNotice(`${ch.name}'s spells are set.`);
-              close();
-            })}>Save</button>
-          </div>
-        </div>
-      </div>
-    );
-  })();
+  // The spell-selection tray (cantrips / spellbook / prepared), shared with the
+  // adventure camp screen. Rendered in both the forge and the shop, since
+  // openSpells can fire from either phase.
+  const spellPanel = prepareFor !== null && (
+    <SpellTray
+      campaign={c}
+      idx={prepareFor}
+      onClose={() => setPrepareFor(null)}
+      onSaved={(msg) => mutate(() => setNotice(msg))}
+    />
+  );
 
   if (phase.p === 'forge') {
     return (

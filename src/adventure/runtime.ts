@@ -18,12 +18,12 @@ import { rollDie } from '../engine/rng.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
-  levelForXp, partyStash, addItem, healParty, shortRest,
+  levelForXp, partyStash, addItem, healParty, shortRest, longRest,
 } from '../campaign/campaign.js';
 import {
   HUB_REF,
   type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome,
-  type Roller, type ExploreNode, type JournalEntry,
+  type Roller, type ExploreNode, type JournalEntry, type CampRule,
 } from './types.js';
 
 export interface AdventureState {
@@ -429,6 +429,40 @@ export function resolveShopOrRest(state: AdventureState, module: Module): Advent
     else shortRest(state.campaign);
   }
   return enterScene(state, module, scene.next);
+}
+
+// --- Camp (rest + party management) -----------------------------------------
+
+/** The camp rule where the party is standing: the current explore scene's, or
+ *  its hub's when they're in one of that location's sub-scenes. Null = the
+ *  party can't rest here (gear management is always allowed; sleeping isn't). */
+export function campRule(state: AdventureState, module: Module): CampRule | null {
+  const scene = currentScene(state, module);
+  if (scene.kind === 'explore') return scene.map.camp ?? null;
+  const hub = state.hub ? module.scenes[state.hub] : undefined;
+  return hub && hub.kind === 'explore' ? (hub.map.camp ?? null) : null;
+}
+
+/** Rest at a campable location. A long rest at a `risky` camp may be
+ *  interrupted: a chance roll on the campaign rng diverts to its battle scene
+ *  (whose onWin routes home). Returns the event stream (heal, maybe a battle).
+ *  Throws if there is no camp here — the UI only offers rest when campRule set. */
+export function campRest(
+  state: AdventureState, module: Module, variant: 'short' | 'long',
+): AdventureEvent[] {
+  const rule = campRule(state, module);
+  if (!rule) throw new Error('No camp at this location');
+  const events: AdventureEvent[] = [];
+  const c = state.campaign;
+  const { totalHealed } = variant === 'long' ? longRest(c) : shortRest(c);
+  events.push({ type: 'heal', amount: totalHealed });
+  if (variant === 'long' && rule.risky) {
+    const r = rollDie(c.rng, 1000); c.rng = r.state;
+    if ((r.value - 1) / 1000 < rule.risky.chance) {
+      events.push(...enterScene(state, module, rule.risky.battleScene));
+    }
+  }
+  return events;
 }
 
 /** A seed for a battle scene: campaign rng + scene id + retry count, so a

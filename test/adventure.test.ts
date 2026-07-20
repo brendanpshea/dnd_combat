@@ -8,7 +8,7 @@ import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
-  requirementMet, exploreNodes, enterNode, hubReturn, returnToHub,
+  requirementMet, exploreNodes, enterNode, hubReturn, returnToHub, campRule, campRest,
 } from '../src/adventure/runtime.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
@@ -276,6 +276,83 @@ describe('hubs and once-choices', () => {
     const restored = parseAdventure(serializeAdventure(state), hollow)!;
     expect(restored.consumedChoices).toContain('board:ok');
     expect(restored.hub).toBe(state.hub);
+  });
+});
+
+// --- Camp: rest + party management (Phase 4) ---------------------------------
+
+describe('camp', () => {
+  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+
+  it('campRule reflects the location: safe town, risky marsh, none in the den', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'square');
+    expect(campRule(state, hollow)).toEqual({}); // safe
+    enterScene(state, hollow, 'trail');
+    expect(campRule(state, hollow)?.risky).toBeTruthy();
+    enterScene(state, hollow, 'inner');
+    expect(campRule(state, hollow)).toBeNull(); // no rest in a hostile den
+  });
+
+  it('campRule follows the hub from a location sub-scene', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'square'); // hub = square (safe camp)
+    enterScene(state, hollow, 'board');  // a sub-scene of the square
+    expect(campRule(state, hollow)).toEqual({});
+  });
+
+  it('a long rest heals the party to full', () => {
+    const c = newCampaign(1);
+    c.characters[0]!.resources = { hp: 1 };
+    const state = startAdventure(c, hollow);
+    enterScene(state, hollow, 'square');
+    const events = campRest(state, hollow, 'long');
+    const heal = events.find((e) => e.type === 'heal');
+    expect(heal && heal.type === 'heal' && heal.amount).toBeGreaterThan(0);
+  });
+
+  it('resting where there is no camp throws', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'inner'); // no camp
+    expect(() => campRest(state, hollow, 'long')).toThrow(/No camp/);
+  });
+
+  it('a risky long rest can divert to its ambush battle', () => {
+    // chance 1 → always interrupted; chance 0 → never.
+    const mk = (chance: number): Module => ({
+      id: 'camp-test', title: 'T', blurb: '', start: 'field',
+      scenes: {
+        field: { id: 'field', kind: 'explore', map: {
+          title: 'Field', art: {}, camp: { risky: { chance, battleScene: 'ambush' } }, nodes: [
+            { id: 'go', x: 50, y: 50, label: 'Leave', icon: '🚪', scene: 'end' },
+          ] } },
+        ambush: { id: 'ambush', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
+          onWin: { to: '@hub' } },
+        end: { id: 'end', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    });
+    const always = mk(1);
+    expect(validateModule(always)).toEqual([]);
+    const s1 = startAdventure(newCampaign(3), always);
+    enterScene(s1, always, 'field');
+    const e1 = campRest(s1, always, 'long');
+    expect(e1.some((e) => e.type === 'startBattle')).toBe(true);
+    expect(s1.sceneId).toBe('ambush');
+
+    const never = mk(0);
+    const s2 = startAdventure(newCampaign(3), never);
+    enterScene(s2, never, 'field');
+    const e2 = campRest(s2, never, 'long');
+    expect(e2.some((e) => e.type === 'startBattle')).toBe(false);
+    expect(s2.sceneId).toBe('field'); // stayed put
+  });
+
+  it('a short rest never triggers a risky ambush', () => {
+    const state = startAdventure(newCampaign(5), hollow);
+    enterScene(state, hollow, 'trail');
+    const events = campRest(state, hollow, 'short');
+    expect(events.some((e) => e.type === 'startBattle')).toBe(false);
+    expect(state.sceneId).toBe('trail');
   });
 });
 

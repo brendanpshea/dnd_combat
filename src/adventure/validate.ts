@@ -42,6 +42,7 @@ function refsOf(scene: Scene): Id[] {
         refs.push(n.scene);
         if (n.wandering) refs.push(n.wandering.battleScene);
       });
+      if (scene.map.camp?.risky) refs.push(scene.map.camp.risky.battleScene);
       break;
     case 'ending': break;
   }

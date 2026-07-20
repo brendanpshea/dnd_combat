@@ -70,6 +70,7 @@ const scenes: Record<string, Scene> = {
     id: 'square', kind: 'explore',
     map: {
       title: 'Thornwick Square', theme: 'stone', art: { imageId: 'loc-village', emoji: '⛲' },
+      camp: {}, // safe: rest freely in town
       nodes: [
         { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: '🍺', scene: 'tavern' },
         { id: 'market', x: 40, y: 40, label: 'Market', icon: '🛒', scene: 'market' },
@@ -129,6 +130,7 @@ const scenes: Record<string, Scene> = {
     id: 'trail', kind: 'explore',
     map: {
       title: 'The Marsh Road', theme: 'forest', art: { imageId: 'loc-marsh', emoji: '🌾' },
+      camp: { risky: { chance: 0.4, battleScene: 'camp-ambush' } }, // sleep here at your peril
       nodes: [
         { id: 'tracks', x: 28, y: 40, label: 'Fresh Tracks', icon: '👣', scene: 'tracks' },
         { id: 'ravine', x: 55, y: 62, label: 'Sunken Ravine', icon: '🪨', scene: 'ravine',
@@ -180,6 +182,12 @@ const scenes: Record<string, Scene> = {
     id: 'marsh-wolves', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
     intro: ['Marsh-wolves, half-starved and bold, break from the reeds!'],
     onWin: { to: 'ravine', text: ['The pack breaks. The ravine still waits.'], effects: [{ kind: 'xp', amount: 30 }] },
+  },
+  'camp-ambush': {
+    id: 'camp-ambush', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
+    intro: ['Your watch-fire draws them: marsh-wolves slink out of the dark, drawn by the smell of blood and rations.'],
+    onWin: { to: '@hub', text: ['The pack is driven off. You bank the fire and see out the rest of the night.'],
+      effects: [{ kind: 'xp', amount: 20 }] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
