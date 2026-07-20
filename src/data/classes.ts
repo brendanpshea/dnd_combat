@@ -123,7 +123,7 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'wis',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       spellsByLevel: {
-        1: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith'],
+        1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith'],
         2: ['guiding-bolt'],
         3: ['hold-person', 'aid', 'spiritual-weapon', 'blindness', 'lesser-restoration'],
         5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic'], // 3rd-level slot arrives here

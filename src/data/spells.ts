@@ -76,6 +76,13 @@ export interface SpellData {
    * — that's derivable from `targeting`, and menus say it in words.
    */
   icon: string;
+  /**
+   * Known and preparable, but never offered as a combat action — Guidance,
+   * whose only effect (a +1d4 to an ability check) applies to the campaign's
+   * shop skill checks, not to anything on the battle grid. legalActions skips
+   * it the same way it skips reaction spells.
+   */
+  outOfCombat?: boolean;
   cast(ctx: CastContext): GameEvent[];
 }
 
@@ -337,6 +344,22 @@ export const SPELLS: Record<Id, SpellData> = {
       }
       return events;
     },
+  },
+
+  /**
+   * Guidance: a cantrip with no battle-grid effect — its +1d4 helps an ability
+   * check, and the only ability checks in this game are the campaign's shop
+   * skill gambits, where a party cleric already grants it (partySkillCheck).
+   * It exists here so it can be shown and prepared like any other cleric
+   * cantrip; `outOfCombat` keeps legalActions from ever offering it in a fight.
+   */
+  guidance: {
+    id: 'guidance', name: 'Guidance', level: 0, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '🔮',
+    outOfCombat: true,
+    cast() { return []; },
   },
 
   'cure-wounds': {

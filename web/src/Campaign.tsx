@@ -284,7 +284,6 @@ export function CampaignScreen({ Battle, onExit }: Props) {
                             aria-checked={character.classId === candidate.id}
                             onClick={() => mutate(() => setPartyClass(c, idx, candidate.id))}
                           >
-                            <Portrait id={candidate.id} team="team1" label="" />
                             <b>{candidate.name}</b>
                             <small>{classBlurb(candidate.id)}</small>
                           </button>

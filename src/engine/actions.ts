@@ -220,7 +220,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'castSpell': {
       if (incap) return false;
       const spell = SPELLS[action.spellId];
-      if (!spell) return false;
+      if (!spell || spell.outOfCombat) return false; // Guidance and the like never resolve in a fight
       const costsAction = spell.castingTime === 'action';
       if (costsAction && actor.turn.actionUsed) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
@@ -404,7 +404,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
 
   for (const sid of actor.spellIds) {
     const spell = SPELLS[sid]!;
-    if (spell.castingTime === 'reaction') continue; // e.g. Shield — the engine autocasts it
+    if (spell.castingTime === 'reaction' || spell.outOfCombat) continue; // Shield autocasts; Guidance is shop-only
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
     // Spiritual Weapon's re-attack is free once the weapon is out.
