@@ -48,20 +48,21 @@ interface Props {
   state: AdventureState;
   module: Module;
   scene: ShopScene;
+  /** Whose wares we're looking at — the whole party, one hero (chosen from the
+   *  party strip below), or the shared loot. Lifted to the player so the strip
+   *  is the hero selector; the shop only adds the All / Loot alternatives. */
+  focus: number | 'all' | 'stash';
+  setFocus: (f: number | 'all' | 'stash') => void;
   onRoll: (events: AdventureEvent[]) => void;
   onChange: () => void;
   onLeave: () => void;
 }
 
-export function AdventureShop({ campaign, state, module, scene, onRoll, onChange, onLeave }: Props) {
+export function AdventureShop({ campaign, state, module, scene, focus, setFocus, onRoll, onChange, onLeave }: Props) {
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const [pickBuy, setPickBuy] = useState<string | null>(null);
   const [haggling, setHaggling] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  /** Whose wares we're looking at: the whole party, one hero, or the shared
-   *  loot. Scopes both tabs — buy goes straight to a focused hero, sell shows
-   *  only their pack (or the stash). */
-  const [focus, setFocus] = useState<number | 'all' | 'stash'>('all');
   const [cat, setCat] = useState<ItemCategory | 'all'>('all');
 
   const visit = shopVisitOf(state, scene.id);
@@ -124,21 +125,16 @@ export function AdventureShop({ campaign, state, module, scene, onRoll, onChange
           <button className={tab === 'sell' ? 'on' : ''} onClick={() => { setTab('sell'); setPickBuy(null); }}>Sell</button>
         </div>
 
-        {/* Focus strip: scope both tabs to the party, one hero, or party loot. */}
+        {/* Hero selection lives in the party strip below (tap a portrait); the
+            shop only offers the whole-party and party-loot alternatives. */}
         <div className="shop-focus">
           <button className={`shop-focus-chip ${focus === 'all' ? 'on' : ''}`}
             onClick={() => { setFocus('all'); setPickBuy(null); }}>👥 Party</button>
-          {campaign.characters.map((ch, i) => (
-            <button key={i} className={`shop-focus-chip ${focus === i ? 'on' : ''}`}
-              onClick={() => { setFocus(i); setPickBuy(null); }}>
-              {hasArt(ch.portraitId ?? ch.classId)
-                ? <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
-                : <span>🧑</span>}
-              {ch.name.split(' ')[0]}
-            </button>
-          ))}
           <button className={`shop-focus-chip ${focus === 'stash' ? 'on' : ''}`}
             onClick={() => { setFocus('stash'); setTab('sell'); setPickBuy(null); }}>🎁 Loot</button>
+          <span className="shop-focus-hint">
+            {typeof focus === 'number' ? '' : 'tap a hero below to shop for them'}
+          </span>
         </div>
 
         {/* Shelf filter: narrow the buy list by kind (only when there's more

@@ -1658,6 +1658,13 @@ button.category .count {
   border-top: 1px solid var(--panel2); background: var(--panel);
 }
 .adv-party-member { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+/* In the shop the members are tappable hero-focus buttons. */
+.adv-party-strip.selectable .adv-party-member {
+  background: none; border: 1px solid transparent; border-radius: 10px; padding: 3px 2px; cursor: pointer;
+}
+.adv-party-strip.selectable .adv-party-member.active { border-color: var(--blue); background: var(--panel2); }
+.adv-party-strip.selectable .adv-party-member .portrait { transition: transform .1s; }
+.adv-party-strip.selectable .adv-party-member.active .portrait { transform: scale(1.05); }
 .adv-party-member .portrait { width: 34px; height: 34px; }
 .adv-party-member.down { opacity: .5; filter: grayscale(.6); }
 .adv-party-emoji { font-size: 26px; }
@@ -1711,7 +1718,13 @@ button.category .count {
   border-radius: 20px; padding: 24px 28px; }
 
 /* Shop scene */
-.adv-shop { display: flex; flex-direction: column; gap: 12px; }
+/* The shop is control-heavy, so it takes most of the stage and lets the item
+   list flex to fill whatever the chrome leaves — only the list scrolls. */
+.adv-panel.adv-shop { max-height: 94%; height: 94%; overflow: hidden; gap: 8px; }
+.adv-shop { display: flex; flex-direction: column; gap: 8px; }
+/* Only the item list flexes; every other row keeps its natural height (an
+   auto-overflow flex child would otherwise collapse to a sliver). */
+.adv-shop > *:not(.shop-list) { flex: 0 0 auto; }
 .shop-head { display: flex; align-items: center; justify-content: space-between; }
 .shop-head h2 { font-family: var(--display); }
 .shop-tabs { display: flex; gap: 8px; }
@@ -1720,7 +1733,7 @@ button.category .count {
   border: 1px solid transparent; font-weight: 700; cursor: pointer;
 }
 .shop-tabs button.on { color: var(--text); border-color: var(--blue); background: var(--panel); }
-.shop-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.shop-list { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; min-height: 96px; overflow-y: auto; }
 .shop-row {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
   padding: 12px 14px; border-radius: 10px; background: var(--panel2); color: var(--text);
@@ -1736,7 +1749,8 @@ button.category .count {
 .adv-npc.compact { flex-direction: row; align-items: center; gap: 8px; margin: 0; }
 .adv-npc.compact .portrait { width: 40px; height: 40px; }
 .adv-npc.compact .adv-npc-name { font-weight: 700; }
-.shop-greeting { font-style: italic; margin: 0; }
+.shop-greeting { font-style: italic; margin: 0; font-size: .9rem; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adv-shop-deal { margin: 0; font-size: .85rem; color: var(--gold); }
 .shop-item { display: flex; flex-direction: column; gap: 6px; }
 .shop-item .adv-item-acts { padding-left: 8px; }
@@ -1747,7 +1761,11 @@ button.category .count {
 }
 .shop-gambit:hover { border-color: var(--blue); }
 .shop-gambit.risky:hover { border-color: var(--red); }
-.shop-focus { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Focus / shelf chips stay on one line and scroll sideways, so they never
+   wrap into a second row that eats the item list's height. */
+.shop-focus { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.shop-focus::-webkit-scrollbar { display: none; }
+.shop-focus-chip { flex: 0 0 auto; white-space: nowrap; }
 .shop-focus-chip {
   display: flex; align-items: center; gap: 5px; padding: 4px 10px 4px 5px; border-radius: 999px;
   background: var(--panel2); color: var(--muted); border: 1px solid transparent; cursor: pointer;
@@ -1756,6 +1774,7 @@ button.category .count {
 .shop-focus-chip.on { color: var(--text); border-color: var(--blue); background: var(--panel); }
 .shop-focus-chip .portrait { width: 24px; height: 24px; }
 .shop-focus-chip > span { font-size: 1.05rem; }
+.shop-focus-hint { font-size: .74rem; color: var(--muted); align-self: center; white-space: nowrap; font-style: italic; }
 .shop-cats { margin-top: -4px; }
 .adv-shop-buyfor { margin: 0; font-size: .82rem; color: var(--muted); }
 
