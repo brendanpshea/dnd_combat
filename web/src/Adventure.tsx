@@ -25,6 +25,7 @@ import { DiceCheck } from './DiceCheck.js';
 import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
 import { HAS_BOARD_BG, boardBgUrl } from './art.js';
+import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -46,7 +47,7 @@ function ModulePicker({ onPick, onExit }: { onPick(m: Module): void; onExit(): v
     <div className="setup">
       <h1>📜 Adventures</h1>
       {MODULES.map((m) => (
-        <button key={m.id} className="adv-modcard" onClick={() => onPick(m)}>
+        <button key={m.id} className="adv-modcard" onClick={() => { initAudio(); onPick(m); }}>
           <strong>{m.title}</strong>
           <span>{m.blurb}</span>
         </button>
@@ -74,8 +75,15 @@ function AdventurePlayer({ Battle, module, onExit }: Props & { module: Module })
   const [dice, setDice] = useState<DiceOverlay | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
   const [journalOpen, setJournalOpen] = useState(false);
+  const [muted, setMutedState] = useState(isMuted());
 
   const scene = currentScene(state, module);
+
+  // Sound the ending fanfare / dirge once when the adventure concludes.
+  useEffect(() => {
+    if (scene.kind === 'ending') sfx(scene.outcome === 'victory' ? 'victory' : 'death');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene.id]);
 
   // Rest scenes auto-resolve (they only heal and advance). Shops render a panel.
   useEffect(() => {
@@ -90,11 +98,11 @@ function AdventurePlayer({ Battle, module, onExit }: Props & { module: Module })
   function note(events: AdventureEvent[]) {
     const lines: string[] = [];
     for (const e of events) {
-      if (e.type === 'gold') lines.push(`${e.amount >= 0 ? '+' : ''}${e.amount} gold`);
-      if (e.type === 'item' && e.gained) lines.push(`Gained ${label(e.itemId)}`);
-      if (e.type === 'xp') lines.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`);
-      if (e.type === 'heal' && e.amount > 0) lines.push(`Healed ${e.amount} HP`);
-      if (e.type === 'journal') lines.push(`Journal: ${e.entry.title}`);
+      if (e.type === 'gold' && e.amount !== 0) { lines.push(`${e.amount >= 0 ? '+' : ''}${e.amount} gold`); sfx('coin'); }
+      if (e.type === 'item' && e.gained) { lines.push(`Gained ${label(e.itemId)}`); sfx('item'); }
+      if (e.type === 'xp') { lines.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`); sfx(e.leveledTo ? 'levelup' : 'item'); }
+      if (e.type === 'heal' && e.amount > 0) { lines.push(`Healed ${e.amount} HP`); sfx('heal'); }
+      if (e.type === 'journal') { lines.push(`Journal: ${e.entry.title}`); sfx('page'); }
     }
     setBanner(lines);
   }
@@ -160,32 +168,39 @@ function AdventurePlayer({ Battle, module, onExit }: Props & { module: Module })
         <button className="ghost adv-journal-btn" onClick={() => setJournalOpen(true)}>
           📖{state.journal.length > 0 ? ` ${state.journal.length}` : ''}
         </button>
+        <button className="ghost adv-journal-btn" title={muted ? 'Unmute' : 'Mute'}
+          onClick={() => { const m = !muted; setMuted(m); setMutedState(m); if (!m) initAudio(); }}>
+          {muted ? '🔇' : '🔊'}
+        </button>
         <span className="adv-gold">💰 {campaign.gold}</span>
       </div>
 
       {journalOpen && <JournalDrawer entries={state.journal} onClose={() => setJournalOpen(false)} />}
 
       <div className="adv-stage">
-        <SceneArtBanner scene={scene} />
+        {/* key on scene id so a new scene replays the wipe-in animation */}
+        <div className="adv-transition" key={dice ? 'dice' : scene.id}>
+          <SceneArtBanner scene={scene} />
 
-        {dice ? (
-          <DiceCheck
-            roll={dice.roll}
-            rollerName={campaign.characters[dice.roll.by]?.name ?? 'The party'}
-            onDone={afterDice}
-          />
-        ) : (
-          <SceneBody
-            scene={scene}
-            state={state}
-            module={module}
-            onChoice={onChoice}
-            onRollScene={onRollScene}
-            onNode={(nodeId) => process(enterNode(state, module, nodeId))}
-            onLeaveShop={() => process(resolveShopOrRest(state, module))}
-            onExit={onExit}
-          />
-        )}
+          {dice ? (
+            <DiceCheck
+              roll={dice.roll}
+              rollerName={campaign.characters[dice.roll.by]?.name ?? 'The party'}
+              onDone={afterDice}
+            />
+          ) : (
+            <SceneBody
+              scene={scene}
+              state={state}
+              module={module}
+              onChoice={onChoice}
+              onRollScene={onRollScene}
+              onNode={(nodeId) => process(enterNode(state, module, nodeId))}
+              onLeaveShop={() => process(resolveShopOrRest(state, module))}
+              onExit={onExit}
+            />
+          )}
+        </div>
 
         {banner.length > 0 && !dice && (
           <div className="adv-banner">{banner.map((b, i) => <span key={i}>{b}</span>)}</div>
