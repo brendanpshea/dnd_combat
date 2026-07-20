@@ -11,6 +11,11 @@ tiles, UI frames, health bars, targeting highlights, and spell/particle effects
 are hand-authored SVG/CSS in the app, not generated — keep them out of scope
 here so the raster set stays tight and consistent.
 
+**Companion docs:** `art/arena-prompts.md` covers the top-down combat backdrops
+(one per map theme); `art/adventure-prompts.md` covers adventure mode's
+eye-level **location scenes** and **NPC-archetype portraits** — the NPC set
+reuses this doc's style bible verbatim.
+
 **Status legend:** ✅ generated and wired in the engine (`HAS_ART` in
 `web/src/art.ts`) · ⬜ needed (still on the emoji fallback). As of this writing
 the four heroes, eight species portraits, and all Tier 1–3 monsters are ✅; the

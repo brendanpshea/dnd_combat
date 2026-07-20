@@ -11,6 +11,8 @@ import {
   requirementMet, exploreNodes, enterNode,
 } from '../src/adventure/runtime.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
+import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
+import { isLocationArt, isNpcArt } from '../src/data/adventure-art.js';
 import { CLASSIC_MODULE } from '../src/data/modules/classic.js';
 import { HIDEOUT_MODULE } from '../src/data/modules/demo.js';
 import { MODULES } from '../src/data/modules/index.js';
@@ -248,6 +250,103 @@ describe('exploration (M2)', () => {
     enterScene(state, HIDEOUT_MODULE, 'road');
     choose(state, HIDEOUT_MODULE, 'go');
     expect(state.journal.length).toBe(count);
+  });
+});
+
+// --- M4: the authored module + save/resume ----------------------------------
+
+describe('The Hollow Road (M4)', () => {
+  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+
+  it('validates', () => {
+    expect(hollow).toBeDefined();
+    expect(validateModule(hollow)).toEqual([]);
+  });
+
+  it('is skill-diverse (uses several distinct skills across scenes)', () => {
+    const skills = new Set<string>();
+    for (const s of Object.values(hollow.scenes)) {
+      if (s.kind === 'check') skills.add(s.skill);
+      if (s.kind === 'story' || s.kind === 'dialogue') for (const ch of s.next) if (ch.check) skills.add(ch.check.skill);
+    }
+    expect(skills.size).toBeGreaterThanOrEqual(6);
+  });
+
+  it('has avoidable fights (a battle the party can route around)', () => {
+    // The gate can be passed by signal or group stealth without gate-fight.
+    const gate = hollow.scenes['gate'];
+    expect(gate?.kind).toBe('story');
+    if (gate?.kind === 'story') {
+      const nonCombat = gate.next.filter((c) => c.to !== 'gate-fight' && c.check?.failTo !== 'gate-fight');
+      expect(nonCombat.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('auto-plays to an ending across 40 seeded runs', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      let nn = seed * 7 + 1;
+      const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+      const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => rand() > 0.2 };
+      const result = runModule(newCampaign(seed), hollow, policy, 4000);
+      expect(['victory', 'defeat']).toContain(result.ending);
+    }
+  });
+});
+
+describe('reusable art vocabulary', () => {
+  it('The Hollow Road composes shared location + NPC archetype ids', () => {
+    const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+    const locs = new Set<string>();
+    const npcs = new Set<string>();
+    for (const s of Object.values(hollow.scenes)) {
+      if ('art' in s && s.art?.imageId) locs.add(s.art.imageId);
+      if (s.kind === 'explore' && s.map.art?.imageId) locs.add(s.map.art.imageId);
+      if (s.kind === 'dialogue' && s.npc.portraitId) npcs.add(s.npc.portraitId);
+    }
+    expect(locs.size).toBeGreaterThanOrEqual(4);
+    expect(npcs.size).toBeGreaterThanOrEqual(3);
+    for (const l of locs) expect(isLocationArt(l)).toBe(true);
+    for (const n of npcs) expect(isNpcArt(n)).toBe(true);
+  });
+
+  it('the validator rejects an unknown art id', () => {
+    const bad: Module = {
+      id: 'bad', title: 'B', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'story', art: { imageId: 'loc-nonsense' }, text: ['x'],
+          next: [{ id: 'go', label: 'go', to: 'e' }] },
+        e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    };
+    expect(validateModule(bad).some((e) => e.includes('loc-nonsense'))).toBe(true);
+  });
+});
+
+describe('save/resume', () => {
+  it('round-trips a mid-run state and restores progress', () => {
+    const c = newCampaign(3);
+    const state = startAdventure(c, HIDEOUT_MODULE);
+    enterScene(state, HIDEOUT_MODULE, 'road');
+    choose(state, HIDEOUT_MODULE, 'go'); // adds the quest, moves to hollow
+    state.flags['test'] = 7;
+
+    const restored = parseAdventure(serializeAdventure(state), HIDEOUT_MODULE);
+    expect(restored).toBeDefined();
+    expect(restored!.sceneId).toBe(state.sceneId);
+    expect(restored!.flags['test']).toBe(7);
+    expect(restored!.journal.map((j) => j.id)).toEqual(state.journal.map((j) => j.id));
+    expect(restored!.campaign.gold).toBe(c.gold);
+  });
+
+  it('rejects a save from a different module or a stale scene', () => {
+    const state = startAdventure(newCampaign(1), HIDEOUT_MODULE);
+    enterScene(state, HIDEOUT_MODULE, 'hollow');
+    const json = serializeAdventure(state);
+    // Wrong module.
+    expect(parseAdventure(json, CLASSIC_MODULE)).toBeUndefined();
+    // Same module id but a scene it no longer has.
+    const orphan = serializeAdventure({ ...state, sceneId: 'no-such-scene' });
+    expect(parseAdventure(orphan, HIDEOUT_MODULE)).toBeUndefined();
   });
 });
 

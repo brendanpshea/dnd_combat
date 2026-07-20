@@ -20,6 +20,7 @@ import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
 import { AdventureScreen } from './Adventure.js';
+import { savedAdventureModule } from './adventureStorage.js';
 import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
@@ -113,13 +114,16 @@ export function App() {
 function Menu({ onPick }: { onPick(s: Screen): void }) {
   const [, force] = useState(0);
   const hasSave = !!loadCampaignWeb();
+  const hasAdventureSave = !!savedAdventureModule();
   return (
     <div className="setup">
       <h1>⚔️ D&D Grid Combat</h1>
-      <button className="primary" onClick={() => onPick({ view: 'campaign' })}>
-        🏰 Campaign{hasSave ? ' (resume)' : ''}
+      <button className="primary" onClick={() => onPick({ view: 'adventure' })}>
+        📜 Adventures{hasAdventureSave ? ' (resume)' : ''}
       </button>
-      <button onClick={() => onPick({ view: 'adventure' })}>📜 Adventure (beta)</button>
+      <button onClick={() => onPick({ view: 'campaign' })}>
+        🏰 Classic Campaign{hasSave ? ' (resume)' : ''}
+      </button>
       <button onClick={() => onPick({ view: 'skirmish-setup' })}>⚔️ Single battle</button>
       {hasSave && (
         <button
@@ -134,8 +138,9 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         </button>
       )}
       <p className="hint">
-        Campaign: a persistent party fights a {STAGES.length}-battle ladder, leveling up and
-        collecting treasure as they go. Progress saves in your browser.
+        Adventures: story, exploration, and skill checks between fights — pick a module,
+        including the full <em>Hollow Road</em> campaign. Classic Campaign is the pure
+        {' '}{STAGES.length}-battle ladder. Both save in your browser.
       </p>
     </div>
   );

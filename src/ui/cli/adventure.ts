@@ -15,6 +15,7 @@ import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
 import { SKILL_LABEL } from '../../data/classes.js';
 import { CLASSIC_MODULE } from '../../data/modules/classic.js';
 import { HIDEOUT_MODULE } from '../../data/modules/demo.js';
+import { HOLLOW_ROAD_MODULE } from '../../data/modules/hollow-road.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
@@ -23,7 +24,9 @@ import {
 import type { Module } from '../../adventure/types.js';
 import { runBattle } from './battle.js';
 
-const MODULES: Record<string, Module> = { classic: CLASSIC_MODULE, hideout: HIDEOUT_MODULE };
+const MODULES: Record<string, Module> = {
+  classic: CLASSIC_MODULE, hideout: HIDEOUT_MODULE, 'hollow-road': HOLLOW_ROAD_MODULE,
+};
 
 function argValue(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -61,7 +64,9 @@ function render(events: AdventureEvent[], c: CampaignState): void {
 
 async function pickIndex(rl: readline.Interface, labels: string[], auto: boolean): Promise<number> {
   labels.forEach((l, i) => console.log(`  ${i + 1}) ${l}`));
-  if (auto) return 0;
+  // --auto picks at random so it makes real progress through explore maps
+  // (always-index-0 would loop on a node that returns to the map).
+  if (auto) return Math.floor(Math.random() * labels.length);
   while (true) {
     const ans = await rl.question('> ');
     const n = parseInt(ans, 10);
