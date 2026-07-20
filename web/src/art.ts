@@ -42,7 +42,26 @@ export function hasArt(id: string): boolean {
  * e.g. 'loc-tavern'. Empty until generated.
  */
 export const HAS_SCENE_ART = new Set<string>([
-  // add loc-<type> ids here as their scenes are generated
+  'loc-village',
+  'loc-town',
+  'loc-tavern',
+  'loc-market',
+  'loc-road',
+  'loc-crossroads',
+  'loc-field',
+  'loc-forest',
+  'loc-marsh',
+  'loc-river',
+  'loc-hills',
+  'loc-mountain',
+  'loc-coast',
+  'loc-cave',
+  'loc-dungeon',
+  'loc-ruins',
+  'loc-crypt',
+  'loc-camp',
+  'loc-keep',
+  'loc-temple',
 ]);
 
 export function hasSceneArt(id: string | undefined): boolean {

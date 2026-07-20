@@ -26,15 +26,6 @@ export interface MonsterData {
   resistances?: DamageType[];
   vulnerabilities?: DamageType[];
   immunities?: DamageType[];
-  /**
-   * Challenge rating, used only to set the built combatant's proficiency (and
-   * cantrip/feature scaling): `proficiencyBonus` shares the CR→PB table's ÷4
-   * breakpoints, so the builder maps `level = round(cr)` and everything —
-   * spell save DCs, spell-attack bonuses, feature save DCs, cantrip dice — lands
-   * at the stat block's real numbers. Omit for CR ≤ 4 monsters: they default to
-   * PB +2 (level 1), which is already correct across that whole band.
-   */
-  cr?: number;
   /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
   spellcasting?: { ability: Ability; slots: number[]; spellIds: Id[] };
   /** SRD creature type. Beast is the load-bearing one today -- Animal

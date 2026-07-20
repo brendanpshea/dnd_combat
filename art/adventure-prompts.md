@@ -253,10 +253,13 @@ vocabulary — so there is never a dangling art reference, generated or not.
 NPC portraits go through the **existing** character pipeline unchanged
 (`art/process.py` — they're just more `portrait-*.png` sources with alpha).
 
-Location scenes need their own pass (landscape, opaque, no alpha), so there's a
-sibling script `art/process_scenes.py` mirroring `process_backgrounds.py`:
-it reads `art/source/scene-*.png`, downscales to a web-appropriate landscape
-size, and emits opaque WebP into `web/public/art/`. Run:
+Location scenes can be generated in 4-scene batches as single square images featuring 4 wide horizontal landscape rows stacked top-to-bottom. Slice the sheet into individual `scene-<id>.png` files in `art/source/` via:
+
+```
+python art/slice_scenes.py art/raw/scenes-batch-1.png loc-village loc-town loc-tavern loc-market
+```
+
+Then process the source PNGs into web-appropriate WebP assets (`web/public/art/scene-*.webp`):
 
 ```
 python art/process_scenes.py

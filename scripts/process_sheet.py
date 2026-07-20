@@ -12,14 +12,22 @@ def find_bounding_box(img_half, threshold=15, min_line_pixels=8, gap_tolerance=2
     w, h = img_half.size
     pixels = img_half.load()
     
+    # Auto-detect background chroma key (green vs magenta) from top-left corner
+    corner_r, corner_g, corner_b = pixels[0, 0][:3]
+    is_magenta_bg = (corner_r > 150 and corner_b > 150 and corner_g < 120)
+
     # 1. Calculate foreground pixel count per row
     row_counts = [0] * h
     for y in range(h):
         for x in range(w):
             r, g, b = pixels[x, y][:3]
-            greenness = g - max(r, b)
-            is_green = (greenness > threshold) or (g > 1.2 * r and g > 1.2 * b and g > 80)
-            if not is_green:
+            if is_magenta_bg:
+                magentanness = min(r, b) - g
+                is_bg = (magentanness > threshold) or (r > 1.2 * g and b > 1.2 * g and r > 80 and b > 80)
+            else:
+                greenness = g - max(r, b)
+                is_bg = (greenness > threshold) or (g > 1.2 * r and g > 1.2 * b and g > 80)
+            if not is_bg:
                 row_counts[y] += 1
                 
     # 2. Find row indices meeting the threshold
