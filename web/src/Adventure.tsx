@@ -226,6 +226,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
               onChoice={onChoice}
               onRollScene={onRollScene}
               onNode={(nodeId) => process(enterNode(state, module, nodeId))}
+              onBlockedNode={(reason) => setBanner([reason])}
               onLeaveShop={() => process(resolveShopOrRest(state, module))}
               onExit={onExit}
             />
@@ -273,11 +274,12 @@ interface BodyProps {
   onChoice: (id: string, actorIdx?: number) => void;
   onRollScene: (actorIdx?: number) => void;
   onNode: (nodeId: string) => void;
+  onBlockedNode: (reason: string) => void;
   onLeaveShop: () => void;
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onLeaveShop, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBlockedNode, onLeaveShop, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -361,16 +363,17 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onLeav
               key={node.id}
               className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'}`}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              disabled={!!blocked}
               title={blocked ?? node.label}
-              onClick={() => onNode(node.id)}
+              // Blocked nodes stay tappable but explain why, instead of doing
+              // nothing (a disabled button gives no feedback on touch).
+              onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
             >
               <span className="adv-node-icon">{blocked ? '🔒' : node.icon}</span>
               <span className="adv-node-label">{node.label}</span>
             </button>
           ))}
         </div>
-        <p className="adv-maphint">Tap a marker to explore. Dimmed markers are unvisited.</p>
+        <p className="adv-maphint">Tap a marker to explore. 🔒 markers need something first; dimmed markers are unvisited.</p>
       </div>
     );
   }
