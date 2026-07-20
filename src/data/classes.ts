@@ -99,10 +99,8 @@ export const CLASSES: Record<Id, ClassData> = {
     skillProfs: ['intimidation'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
-      // Action Surge is a level-2 feature in the 2024 PHB, but this campaign
-      // starts at level 1, so — like the Evoker's Sculpt Spells below — it's
-      // brought forward to give the Fighter its signature toy from the outset.
-      1: ['second-wind', 'action-surge'],
+      1: ['second-wind'],
+      2: ['action-surge'], // 2024: Action Surge is a level-2 feature.
       3: ['improved-critical'], // Champion
       // 4: Ability Score Increase (applied in the builder, not a feature).
       5: ['extra-attack'],
@@ -188,10 +186,12 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     featuresByLevel: {
       1: [],
-      // Evoker. Sculpt Spells is a level-6 feature in the 2024 PHB, but this
-      // campaign caps at level 5, so it's brought forward to level 3 (when the
-      // subclass is chosen) to give the Evoker its signature feature in-range.
-      3: ['sculpt-spells'],
+      // Evoker subclass at level 3: a simplified Enhanced Cantrip (adds the
+      // evoker's Int modifier to its damaging cantrips). Sculpt Spells is a
+      // level-6 feature in the 2024 PHB and lands there for when the campaign
+      // eventually reaches that level.
+      3: ['enhanced-cantrip'],
+      6: ['sculpt-spells'],
       // 4: Ability Score Increase (builder).
     },
     weaponMasteries: [],

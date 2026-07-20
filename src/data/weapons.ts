@@ -4,7 +4,7 @@
 import type { Id, DamageType, Ability, ConditionId } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
-export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze';
+export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze' | 'nick' | 'cleave';
 
 export interface WeaponData {
   id: Id;
@@ -68,7 +68,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   dagger: {
     id: 'dagger', name: 'Dagger', damage: '1d4', damageType: 'piercing',
-    properties: ['finesse', 'light', 'thrown'], range: { normal: 20, long: 60 }, melee: true, cost: 2,
+    properties: ['finesse', 'light', 'thrown'], range: { normal: 20, long: 60 }, melee: true, mastery: 'nick', cost: 2,
   },
   greatsword: {
     id: 'greatsword', name: 'Greatsword', damage: '2d6', damageType: 'slashing',
@@ -177,7 +177,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   scimitar: {
     id: 'scimitar', name: 'Scimitar', damage: '1d6', damageType: 'slashing',
-    properties: ['finesse', 'light'], melee: true,
+    properties: ['finesse', 'light'], melee: true, mastery: 'nick',
   },
   'light-crossbow': {
     id: 'light-crossbow', name: 'Light Crossbow', damage: '1d8', damageType: 'piercing',
@@ -212,7 +212,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   greataxe: {
     id: 'greataxe', name: 'Greataxe', damage: '1d12', damageType: 'slashing',
-    properties: ['two-handed'], melee: true, cost: 30,
+    properties: ['two-handed'], melee: true, mastery: 'cleave', cost: 30,
   },
   'bear-bite': {
     id: 'bear-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',

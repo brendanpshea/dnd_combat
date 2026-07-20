@@ -10,9 +10,13 @@ describe('character builder', () => {
     expect(f.abilities.str).toBe(16);
     expect(f.abilities.con).toBe(16);
     expect(f.weaponMasteries).toContain('longsword');
-    expect(f.featureIds).toEqual(expect.arrayContaining(['second-wind', 'action-surge', 'dueling']));
+    expect(f.featureIds).toEqual(expect.arrayContaining(['second-wind', 'dueling']));
     expect(f.featureUses['second-wind']).toEqual({ current: 2, max: 2 });
-    expect(f.featureUses['action-surge']).toEqual({ current: 1, max: 1 });
+    // 2024: Action Surge is a level-2 feature, so a level-1 fighter lacks it.
+    expect(f.featureIds).not.toContain('action-surge');
+    const f2 = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 2 });
+    expect(f2.featureIds).toContain('action-surge');
+    expect(f2.featureUses['action-surge']).toEqual({ current: 1, max: 1 });
   });
 
   it('cleric: AC 18, HP 11, wis caster with 2 slots and life domain', () => {

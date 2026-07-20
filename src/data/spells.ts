@@ -26,7 +26,7 @@ function savingThrow(state: GameState, combatantId: Id, ability: Ability, dc: nu
 }
 import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
-import { acOf, wearsMetal } from './armor.js';
+import { acOf } from './armor.js';
 import { WEAPONS } from './weapons.js';
 
 export type SpellTargeting =
@@ -115,6 +115,17 @@ export function cantripDice(base: string, level: number): string {
   if (!m) return base;
   const tier = level >= 17 ? 4 : level >= 11 ? 3 : level >= 5 ? 2 : 1;
   return `${Number(m[1]) * tier}d${m[2]}`;
+}
+
+/**
+ * Enhanced Cantrip (Evoker, level 3): a simplified model of the 2024 Evocation
+ * line — the evoker adds its Intelligence modifier to the damage of its
+ * damaging cantrips. Returns 0 for casters without the feature.
+ */
+function enhancedCantripBonus(state: GameState, casterId: Id): number {
+  const c = state.combatants[casterId]!;
+  if (!c.featureIds.includes('enhanced-cantrip')) return 0;
+  return Math.max(0, abilityMod(c.abilities.int));
 }
 
 /** Spell attack roll: shares the adv/dis machinery with weapon attacks. */
@@ -219,7 +230,7 @@ export const SPELLS: Record<Id, SpellData> = {
       if (atk.hit) {
         const dmg = rollDice(state.rng, cantripDice('1d10', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'fire', dmg.rolls));
+        events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'fire', dmg.rolls));
       }
       return events;
     },
@@ -261,14 +272,13 @@ export const SPELLS: Record<Id, SpellData> = {
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const target = state.combatants[targetId]!;
-      const atk = spellAttack(state, casterId, targetId, {
-        melee: true, extraAdv: wearsMetal(target) ? ['metal armor'] : [],
-      });
+      // 2024: no advantage vs metal armor (that 2014 rider was removed).
+      const atk = spellAttack(state, casterId, targetId, { melee: true });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
         const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'lightning', dmg.rolls));
+        events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'lightning', dmg.rolls));
         if (target.alive) {
           target.conditions.push({ id: 'noReactions', sourceId: casterId });
           events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'noReactions', sourceId: casterId });
@@ -291,7 +301,7 @@ export const SPELLS: Record<Id, SpellData> = {
       if (atk.hit) {
         const dmg = rollDice(state.rng, cantripDice('1d12', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
+        events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'poison', dmg.rolls));
       }
       return events;
     },
@@ -1078,7 +1088,7 @@ export const SPELLS: Record<Id, SpellData> = {
       if (atk.hit) {
         const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'cold', dmg.rolls));
+        events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'cold', dmg.rolls));
         const target = state.combatants[targetId]!;
         if (target.alive && !target.conditions.some((c) => c.id === 'slowed')) {
           target.conditions.push({ id: 'slowed', sourceId: casterId });
@@ -1116,7 +1126,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!save.success) {
           const dmg = rollDice(state.rng, cantripDice('1d6', caster.level));
           state.rng = dmg.state;
-          events.push(...applyDamage(state, tid, casterId, dmg.total, 'acid', dmg.rolls));
+          events.push(...applyDamage(state, tid, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'acid', dmg.rolls));
         }
       }
       return events;

@@ -32,19 +32,21 @@ describe('cantrips', () => {
     expect(c.state.combatants['wiz']!.turn.actionUsed).toBe(true);
   });
 
-  it('shocking grasp gets advantage vs metal armor and blocks reactions', () => {
+  it('shocking grasp no longer keys off metal armor, and blocks reactions on hit', () => {
     const c = new Combat({
       seed: 6,
       combatants: [
         place('wizard', 'team1', { x: 3, y: 3 }, { id: 'wiz' }),
-        place('fighter', 'team2', { x: 3, y: 4 }, { id: 'ftr' }), // scale mail = metal
+        // Prone (not the armor) is what grants advantage here — a reliable hit
+        // to exercise the reaction-blocking rider. Scale mail is still metal.
+        place('fighter', 'team2', { x: 3, y: 4 }, { id: 'ftr', conditions: [{ id: 'prone' }] }),
       ],
     });
     until(c, 'wiz');
     let events = c.apply({ kind: 'castSpell', spellId: 'shocking-grasp', slotLevel: 0, targets: [{ combatantId: 'ftr' }] });
     let roll = events.find((e) => e.type === 'attackRolled')!;
     if (roll.type !== 'attackRolled') throw new Error();
-    expect(roll.advSources).toContain('metal armor');
+    expect(roll.advSources).not.toContain('metal armor'); // 2024: removed
     if (roll.hit) {
       expect(c.state.combatants['ftr']!.conditions.some((k) => k.id === 'noReactions')).toBe(true);
       // Walking away must not provoke an OA now.
@@ -329,7 +331,8 @@ describe('features', () => {
     const c = new Combat({
       seed: 3,
       combatants: [
-        place('fighter', 'team1', { x: 3, y: 3 }, { id: 'ftr' }),
+        // Action Surge is a level-2 feature in 2024.
+        { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 3, y: 3 }, level: 2 }), id: 'ftr' },
         place('rogue', 'team2', { x: 3, y: 4 }, { id: 'rog' }),
       ],
     });

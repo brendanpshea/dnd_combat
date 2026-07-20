@@ -58,6 +58,28 @@ describe('Weapon mastery: Topple', () => {
   });
 });
 
+describe('Weapon mastery: Nick (modeled as Vex)', () => {
+  it('a dagger hit grants the wielder advantage on the next attack vs that target', () => {
+    const atk = wielder({ x: 3, y: 3 }, 'a', 'dagger');
+    const t = target({ x: 4, y: 3 }, 't', 1); // AC 1 → always hit
+    const c = new Combat({ seed: 3, mapId: 'open', combatants: [atk, t] });
+    resolveAttack(c.state, 'a', 't', 'dagger');
+    expect(c.state.combatants['a']!.conditions.some((k) => k.id === 'vexed' && k.sourceId === 't')).toBe(true);
+  });
+});
+
+describe('Weapon mastery: Cleave (modeled as Graze)', () => {
+  it('a greataxe deals the wielder ability modifier in damage even on a miss', () => {
+    const atk = wielder({ x: 3, y: 3 }, 'a', 'greataxe');
+    const t = target({ x: 4, y: 3 }, 't', 99); // AC 99 → always miss
+    const c = new Combat({ seed: 2, mapId: 'open', combatants: [atk, t] });
+    const evs = resolveAttack(c.state, 'a', 't', 'greataxe');
+    expect(evs.find((e) => e.type === 'attackRolled' && !(e as { hit: boolean }).hit)).toBeDefined();
+    const dmg = evs.find((e) => e.type === 'damageDealt');
+    expect((dmg as { amount: number }).amount).toBe(abilityMod(atk.abilities.str));
+  });
+});
+
 describe('Weapon mastery: Graze', () => {
   it('deals the attacker ability modifier in damage even on a miss', () => {
     const atk = wielder({ x: 3, y: 3 }, 'a', 'greatsword');

@@ -24,7 +24,7 @@ describe('level progression', () => {
     const w = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 0, y: 0 }, level: 3 });
     expect(w.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
     expect(w.spellIds).toEqual(expect.arrayContaining(['thunderwave', 'scorching-ray', 'misty-step']));
-    expect(w.featureIds).toContain('sculpt-spells');
+    expect(w.featureIds).toContain('enhanced-cantrip'); // Evoker level 3 (Sculpt Spells now at 6)
     expect(w.maxHp).toBe(7 + 2 * 5); // 4+1 per level after 1st
   });
 
@@ -91,10 +91,14 @@ describe('subclass features', () => {
   });
 
   it('sculpt spells: burning hands spares allies in the cone', () => {
+    // Sculpt Spells is a level-6 feature (2024) and the campaign caps at 5, so
+    // it's not buildable in-range; grant it directly to still exercise the rule.
+    const wiz = place('wizard', 'team1', { x: 0, y: 0 }, 3, { id: 'wiz' });
+    wiz.featureIds = [...wiz.featureIds, 'sculpt-spells'];
     const c = new Combat({
       seed: 4,
       combatants: [
-        place('wizard', 'team1', { x: 0, y: 0 }, 3, { id: 'wiz' }),
+        wiz,
         place('fighter', 'team1', { x: 1, y: 1 }, 3, { id: 'ally' }),
         makeCombatant({ id: 'foe', team: 'team2', position: { x: 2, y: 2 }, hp: 1000, maxHp: 1000 }),
       ],
@@ -345,9 +349,33 @@ describe('levels 4-5', () => {
     throw new Error('never hit across 60 seeds');
   });
 
+  it('Enhanced Cantrip: an evoker adds its Int modifier to cantrip damage', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const wiz = place('wizard', 'team1', { x: 3, y: 3 }, 3, { id: 'wiz' }); // Int 16 (+3)
+      expect(wiz.featureIds).toContain('enhanced-cantrip');
+      const c = new Combat({
+        seed,
+        combatants: [
+          wiz,
+          makeCombatant({ id: 'foe', team: 'team2', position: { x: 4, y: 3 }, hp: 1000, maxHp: 1000 }),
+        ],
+      });
+      until(c, 'wiz');
+      const events = c.apply({ kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'foe' }] });
+      const dmg = events.find((e) => e.type === 'damageDealt');
+      if (!dmg || dmg.type !== 'damageDealt') continue;
+      const diceSum = dmg.rolls.reduce((a, b) => a + b, 0);
+      expect(dmg.amount).toBe(diceSum + 3); // + Int modifier
+      return;
+    }
+    throw new Error('never hit across 60 seeds');
+  });
+
   it('Fireball hits every enemy in the 5x5 blast and spares allies (Sculpt Spells)', () => {
+    // Sculpt Spells is a level-6 feature (2024); grant it directly since the
+    // campaign caps at level 5, keeping the blast-shaping behavior under test.
     const wiz = place('wizard', 'team1', { x: 1, y: 1 }, 5, { id: 'wiz' });
-    expect(wiz.featureIds).toContain('sculpt-spells');
+    wiz.featureIds = [...wiz.featureIds, 'sculpt-spells'];
     const c = new Combat({
       seed: 4,
       combatants: [

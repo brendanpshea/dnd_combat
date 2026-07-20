@@ -146,6 +146,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   'improved-critical': { id: 'improved-critical', name: 'Improved Critical (Champion)', trigger: 'passive' },
   assassinate: { id: 'assassinate', name: 'Assassinate', trigger: 'passive' },
   'sculpt-spells': { id: 'sculpt-spells', name: 'Sculpt Spells (Evoker)', trigger: 'passive' },
+  'enhanced-cantrip': { id: 'enhanced-cantrip', name: 'Enhanced Cantrip (Evoker)', trigger: 'passive' },
   'cunning-dash': {
     id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {

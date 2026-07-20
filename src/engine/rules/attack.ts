@@ -237,8 +237,10 @@ export function resolveAttack(
 
   if (!hit) {
     // Graze mastery: a miss still deals the attacker's ability modifier in
-    // damage (no dice), for a trained wielder.
-    if (weapon.mastery === 'graze' && attacker.weaponMasteries.includes(weaponId) &&
+    // damage (no dice), for a trained wielder. Cleave is modeled with the same
+    // mechanic (the heavy blade carries through even on a glancing swing).
+    if ((weapon.mastery === 'graze' || weapon.mastery === 'cleave') &&
+        attacker.weaponMasteries.includes(weaponId) &&
         target.alive && mod > 0) {
       events.push(...applyDamage(state, attackerId, targetId, mod, weapon.damageType, []));
     }
@@ -453,7 +455,8 @@ export function resolveAttack(
     if (weapon.mastery === 'sap' && !target.conditions.some((c) => c.id === 'sapped')) {
       target.conditions.push({ id: 'sapped', sourceId: attackerId });
       events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: attackerId });
-    } else if (weapon.mastery === 'vex') {
+    } else if (weapon.mastery === 'vex' || weapon.mastery === 'nick') {
+      // Nick is modeled with Vex's mechanic (a quick nick opens the follow-up).
       if (!attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === targetId)) {
         attacker.conditions.push({ id: 'vexed', sourceId: targetId });
         events.push({ type: 'conditionApplied', combatantId: attackerId, condition: 'vexed', sourceId: targetId });
