@@ -391,4 +391,26 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
     extraDamage: { dice: '3d6', type: 'necrotic' },
   },
+  // Chromatic wyrmling bites: piercing plus a small splash of the dragon's
+  // element (the 2024 stat blocks' extra elemental damage on the bite).
+  'wyrmling-black-bite': {
+    id: 'wyrmling-black-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'acid' },
+  },
+  'wyrmling-blue-bite': {
+    id: 'wyrmling-blue-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'lightning' },
+  },
+  'wyrmling-green-bite': {
+    id: 'wyrmling-green-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'poison' },
+  },
+  'wyrmling-red-bite': {
+    id: 'wyrmling-red-bite', name: 'Bite', damage: '1d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'fire' },
+  },
+  'wyrmling-white-bite': {
+    id: 'wyrmling-white-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
+  },
 };

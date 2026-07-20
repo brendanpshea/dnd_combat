@@ -516,6 +516,56 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['necrotic', 'poison'],
     resistances: ['bludgeoning', 'piercing', 'slashing'],
   },
+
+  // Chromatic dragon wyrmlings. Bite + a Recharge-5–6 elemental breath (shape,
+  // save, and dice per BREATH_WEAPONS); each is immune to its own element. Fly
+  // speed isn't modelled, so they keep a ground speed. PB +2 (all wyrmlings are
+  // CR 2–4) makes their breath DCs land at the SRD's 11–13.
+  'black-wyrmling': {
+    id: 'black-wyrmling', name: 'Black Dragon Wyrmling',
+    ac: 17, hp: 33, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 15, dex: 14, con: 13, int: 10, wis: 11, cha: 13 },
+    featureIds: ['breath-acid'],
+    weaponIds: ['wyrmling-black-bite'],
+    immunities: ['acid'],
+  },
+  'blue-wyrmling': {
+    id: 'blue-wyrmling', name: 'Blue Dragon Wyrmling',
+    ac: 17, hp: 32, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 17, dex: 10, con: 15, int: 12, wis: 11, cha: 15 },
+    featureIds: ['breath-lightning'],
+    weaponIds: ['wyrmling-blue-bite'],
+    immunities: ['lightning'],
+  },
+  'green-wyrmling': {
+    id: 'green-wyrmling', name: 'Green Dragon Wyrmling',
+    ac: 17, hp: 38, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 15, dex: 12, con: 13, int: 14, wis: 11, cha: 13 },
+    featureIds: ['breath-poison'],
+    weaponIds: ['wyrmling-green-bite'],
+    immunities: ['poison'],
+  },
+  'red-wyrmling': {
+    id: 'red-wyrmling', name: 'Red Dragon Wyrmling',
+    ac: 17, hp: 56, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 19, dex: 10, con: 17, int: 12, wis: 11, cha: 15 },
+    featureIds: ['breath-fire'],
+    weaponIds: ['wyrmling-red-bite'],
+    immunities: ['fire'],
+  },
+  'white-wyrmling': {
+    id: 'white-wyrmling', name: 'White Dragon Wyrmling',
+    ac: 16, hp: 32, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 14, dex: 10, con: 14, int: 8, wis: 11, cha: 12 },
+    featureIds: ['breath-cold'],
+    weaponIds: ['wyrmling-white-bite'],
+    immunities: ['cold'],
+  },
 };
 
 /**
@@ -794,6 +844,32 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'wisp-bog', name: 'Wisp Bog', suggestedLevel: 4,
     members: ['will-o-wisp', 'will-o-wisp', 'specter'],
   },
+  // Dragon wyrmlings — solo threats, some with kobold servitors. Breath is a
+  // recharging AoE, so these hit hard for their tier; levels are set high.
+  'black-dragon-den': {
+    id: 'black-dragon-den', name: "Black Wyrmling's Bog", suggestedLevel: 2,
+    members: ['black-wyrmling', 'kobold', 'kobold'],
+  },
+  'green-dragon-den': {
+    id: 'green-dragon-den', name: "Green Wyrmling's Thicket", suggestedLevel: 2,
+    members: ['green-wyrmling', 'kobold', 'kobold'],
+  },
+  'white-dragon-den': {
+    id: 'white-dragon-den', name: "White Wyrmling's Cave", suggestedLevel: 2,
+    members: ['white-wyrmling', 'kobold', 'kobold'],
+  },
+  'blue-dragon-den': {
+    id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 3,
+    members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold'],
+  },
+  'red-dragon-den': {
+    id: 'red-dragon-den', name: "Red Wyrmling's Forge", suggestedLevel: 4,
+    members: ['red-wyrmling', 'kobold', 'kobold'],
+  },
+  'chromatic-clutch': {
+    id: 'chromatic-clutch', name: 'Chromatic Clutch', suggestedLevel: 4,
+    members: ['black-wyrmling', 'green-wyrmling', 'white-wyrmling'],
+  },
 };
 
 /**
@@ -813,6 +889,8 @@ export const MONSTER_XP: Record<Id, number> = {
   sprite: 50, satyr: 100, dryad: 200, 'green-hag': 700, unicorn: 1800,
   cockatrice: 100, harpy: 200, manticore: 700, owlbear: 700, gorgon: 1800,
   shadow: 100, specter: 200, 'will-o-wisp': 450, wight: 700, mummy: 700,
+  'black-wyrmling': 450, 'green-wyrmling': 450, 'white-wyrmling': 450,
+  'blue-wyrmling': 700, 'red-wyrmling': 1100,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */

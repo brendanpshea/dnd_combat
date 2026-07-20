@@ -823,7 +823,12 @@ export const SPELLS: Record<Id, SpellData> = {
       const caster = state.combatants[casterId]!;
       const dir = directionFromDelta(caster.position, positions[0]!);
       const events: GameEvent[] = [];
-      const dc = spellDc(state, casterId);
+      // 2024 dragonborn: the save DC is Constitution-based (not the caster's
+      // spellcasting ability — a dragonborn fighter has none), and the damage
+      // is 1d10, growing to 2d10 / 3d10 / 4d10 at levels 5 / 11 / 17 exactly as
+      // cantripDice steps it.
+      const dc = 8 + proficiencyBonus(caster.level) + abilityMod(caster.abilities.con);
+      const dice = cantripDice('1d10', caster.level);
       for (const pos of cone15(caster.position, dir)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (!tid) continue;
@@ -832,7 +837,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!hasLineOfSight(state.grid, caster.position, pos)) continue;
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
-        const dmg = rollDice(state.rng, '2d6');
+        const dmg = rollDice(state.rng, dice);
         state.rng = dmg.state;
         const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));

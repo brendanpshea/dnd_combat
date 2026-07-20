@@ -173,6 +173,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     }
     case 'dashed':
       return `${nm(e.combatantId)} dashes.`;
+    case 'recharged':
+      return `${nm(e.combatantId)}'s ${FEATURES[e.featureId]?.name ?? e.featureId} recharges!`;
     case 'disengaged':
       return `${nm(e.combatantId)} disengages.`;
     case 'dodging':

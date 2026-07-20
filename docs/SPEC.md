@@ -91,10 +91,37 @@ the party, so a fresh pool is automatic. The AI values the pool as option value,
 like feature uses and slots, so it saves the cast for a worthwhile cluster.
 
 **Dragonborn** is the second user, and the innate path's *damage* shape: fire
-resistance (`resistances`) plus a **Breath Weapon** — a cone, Dex save for half,
-twice a fight, enemies only (a dragonborn aims its own breath, so no friendly
-fire to confuse a player or the AI). It needed no new mechanism; it's a data
-entry plus one spell, and the AI values it through simulated damage.
+resistance (`resistances`) plus a **Breath Weapon** — a cone, Dexterity save
+for half, twice a fight, enemies only (a dragonborn aims its own breath, so no
+friendly fire to confuse a player or the AI). Per the 2024 rules its damage is
+`1d10`, stepping to 2d10 / 3d10 / 4d10 at levels 5 / 11 / 17 (the same
+`cantripDice` progression), and the save DC is Constitution-based (a
+dragonborn fighter has no spellcasting ability to key it off). No new
+mechanism; a data entry plus one spell, valued by the AI through simulated
+damage.
+
+**Dragon breath (monsters)** shares nothing with the dragonborn spell but the
+theme. A dragon can't aim a targeted cell — feature `apply` hooks get only
+`{state, actorId}` — so the five chromatic wyrmlings' breaths **auto-aim**:
+`bestBreathDirection` picks the one of eight directions whose cone (or line)
+covers the most enemy HP, and both the `apply` hook and the AI's scorer read
+that plus the per-color numbers from a shared `BREATH_WEAPONS` registry (Black
+5d8 acid line, Blue 6d6 lightning line, Green 6d6 poison cone, Red 7d6 fire
+cone, White 5d8 cold cone — red breathes hardest, per SRD). Save DC is the
+dragon's Constitution; each wyrmling is immune to its own element.
+
+Breath is the first **Recharge 5–6** ability (`FeatureData.recharge`): it
+starts charged, spends on use, and at the start of the owner's turn a spent
+one rolls a d6 in `startTurn` — recharging on a result at or above the
+threshold and emitting a `recharged` event. It reuses the one-charge
+`featureUses` pool, so the same gate and decrement that serve limited-use
+features serve it; charged features never roll, so there's zero RNG churn (and
+zero test impact) until a breath is actually spent. This is the mechanism
+adult and ancient dragons inherit later — their breath just grows in dice, and
+their spells hang on the existing `spellcasting` field. (The one thing older
+dragons will still need is a `cr`/proficiency field on `MonsterData`, since
+every monster is currently built at level 1 / PB +2 — correct for wyrmlings,
+too low for an ancient's DCs.)
 
 **Abyssal Tiefling** is the third: poison resistance, a free **Poison Spray**
 cantrip (Con save, short range — 10 ft, 2 cells), and an innate **Ray of

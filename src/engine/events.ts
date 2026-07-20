@@ -44,6 +44,7 @@ export type GameEvent =
   | { type: 'equipped'; combatantId: Id; weaponId: Id }
   | { type: 'itemUsed'; combatantId: Id; itemId: Id; targetId?: Id }
   | { type: 'dashed'; combatantId: Id }
+  | { type: 'recharged'; combatantId: Id; featureId: Id }
   | { type: 'disengaged'; combatantId: Id }
   | { type: 'dodging'; combatantId: Id }
   | { type: 'died'; combatantId: Id }

@@ -14,6 +14,7 @@ import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
+import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
 import { attackAbility, collectAttackSources } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
 import { legalActions, Action } from '../engine/actions.js';
@@ -533,6 +534,27 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   // Fey Invisibility (sprite/green hag): turn hidden for the attack bonus.
   if (a.featureId === 'fey-invisibility') {
     return actor.conditions.some((c) => c.id === 'hidden') ? 0 : 1.5;
+  }
+  // Dragon breath: aim the cone/line the feature would, and value the damage
+  // (half on a save) summed over the enemies it catches — a big AoE the AI
+  // should spend eagerly whenever it lands on someone.
+  const breath = BREATH_WEAPONS[a.featureId];
+  if (breath) {
+    const dir = bestBreathDirection(state, actor, a.featureId);
+    if (!dir) return 0;
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.con);
+    const cells = breath.shape === 'line' ? line15(actor.position, dir, breath.length) : cone15(actor.position, dir);
+    let v = 0;
+    for (const pos of cells) {
+      const occ = cellAt(state.grid, pos)?.occupantId;
+      if (!occ) continue;
+      const t = state.combatants[occ]!;
+      if (!t.alive || isDown(t) || t.team === actor.team) continue;
+      const pFail = saveFailProb(state, t, breath.save, dc);
+      const ev = avgDice(breath.dice) * (pFail + (1 - pFail) * 0.5);
+      v += damageValue(ev, t);
+    }
+    return v;
   }
   // Consume Life (will-o'-wisp): drain the nearest adjacent enemy — 3d8 necrotic
   // (half on a save) plus a self-heal of the damage dealt. Worth more when the

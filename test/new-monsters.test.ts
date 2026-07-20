@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
-import { buildParty } from '../src/builder/character.js';
+import { buildParty, buildCharacter } from '../src/builder/character.js';
 import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS, MONSTER_XP, encounterXP } from '../src/data/monsters.js';
+import { SPELLS } from '../src/data/spells.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
@@ -248,6 +249,97 @@ describe('second monster batch', () => {
   });
 });
 
+describe('dragon wyrmling breath weapons', () => {
+  it('a red wyrmling breathes fire in an auto-aimed cone, halved on a save', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const red = { ...buildMonster('red-wyrmling', 'team2', { x: 3, y: 3 }, '1') };
+      const c = new Combat({
+        seed,
+        combatants: [
+          red,
+          makeCombatant({ id: 'a', team: 'team1', position: { x: 4, y: 3 }, hp: 500, maxHp: 500, abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } }),
+          makeCombatant({ id: 'b', team: 'team1', position: { x: 5, y: 3 }, hp: 500, maxHp: 500, abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } }),
+        ],
+      });
+      until(c, 'team2-red-wyrmling1');
+      const use = c.legalActions().find((x) => x.kind === 'useFeature' && x.featureId === 'breath-fire');
+      if (!use) continue;
+      const ev = c.apply(use);
+      const fire = ev.filter((e) => e.type === 'damageDealt' && e.damageType === 'fire');
+      if (fire.length === 0) continue;
+      expect(fire.length).toBeGreaterThanOrEqual(1); // the cone caught someone
+      // Save-for-half: a successful save takes at most half of 7d6's max (21).
+      for (const e of ev) {
+        if (e.type === 'savingThrow' && e.success) {
+          const dealt = fire.find((f) => f.type === 'damageDealt' && f.targetId === e.combatantId);
+          if (dealt && dealt.type === 'damageDealt') expect(dealt.amount).toBeLessThanOrEqual(21);
+        }
+      }
+      return;
+    }
+    throw new Error('red wyrmling never breathed across 30 seeds');
+  });
+
+  it('a wyrmling is immune to its own element', () => {
+    const r1 = { ...buildMonster('red-wyrmling', 'team2', { x: 3, y: 3 }, '1') };
+    const r2 = { ...buildMonster('red-wyrmling', 'team1', { x: 4, y: 3 }, '2') }; // enemy, in the cone
+    const c = new Combat({ seed: 1, combatants: [r1, r2] });
+    until(c, 'team2-red-wyrmling1');
+    const use = c.legalActions().find((x) => x.kind === 'useFeature' && x.featureId === 'breath-fire')!;
+    const ev = c.apply(use);
+    const dealtToR2 = ev.filter((e) => e.type === 'damageDealt' && e.targetId === 'team1-red-wyrmling2')
+      .reduce((s, e) => s + (e.type === 'damageDealt' ? e.amount : 0), 0);
+    expect(dealtToR2).toBe(0); // fire-immune
+  });
+
+  it('breath is Recharge 5–6: spent on use, and comes back on a d6 roll', () => {
+    const red = { ...buildMonster('red-wyrmling', 'team2', { x: 3, y: 3 }, '1') };
+    const c = new Combat({
+      seed: 2,
+      combatants: [red, makeCombatant({ id: 'a', team: 'team1', position: { x: 4, y: 3 }, hp: 500, maxHp: 500 })],
+    });
+    until(c, 'team2-red-wyrmling1');
+    expect(c.state.combatants['team2-red-wyrmling1']!.featureUses['breath-fire']!.current).toBe(1); // charged
+    c.apply(c.legalActions().find((x) => x.kind === 'useFeature' && x.featureId === 'breath-fire')!);
+    expect(c.state.combatants['team2-red-wyrmling1']!.featureUses['breath-fire']!.current).toBe(0); // spent
+
+    // Over enough of its turns, the d6 eventually recharges it (emits an event).
+    let recharged = false;
+    for (let i = 0; i < 60 && !recharged; i++) {
+      const events = c.apply({ kind: 'endTurn' });
+      if (events.some((e) => e.type === 'recharged' && e.featureId === 'breath-fire')) recharged = true;
+    }
+    expect(recharged).toBe(true);
+    expect(c.state.combatants['team2-red-wyrmling1']!.featureUses['breath-fire']!.current).toBe(1);
+  });
+});
+
+describe('2024 dragonborn breath weapon', () => {
+  const castBreath = (level: number, seed: number) => {
+    const db = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 3, y: 3 }, speciesId: 'dragonborn', level }), id: 'db' };
+    const c = new Combat({ seed, combatants: [db, makeCombatant({ id: 'foe', team: 'team2', position: { x: 3, y: 4 }, hp: 500, maxHp: 500, abilities: { str: 10, dex: 1, con: 10, int: 10, wis: 10, cha: 10 } })] });
+    return SPELLS['breath-weapon']!.cast({ state: c.state, casterId: 'db', slotLevel: 0, targetIds: [], positions: [{ x: 3, y: 4 }] });
+  };
+
+  it('uses a Constitution-based save DC (8 + PB + Con mod)', () => {
+    const db = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 3, y: 3 }, speciesId: 'dragonborn', level: 1 });
+    const expected = 8 + proficiencyBonus(1) + abilityMod(db.abilities.con);
+    const ev = castBreath(1, 1);
+    const save = ev.find((e) => e.type === 'savingThrow');
+    expect(save?.type === 'savingThrow' && save.dc).toBe(expected);
+  });
+
+  it('scales past 1d10 by level 5 (2d10)', () => {
+    // A level-1 breath can never exceed 10; a level-5 (2d10) routinely does.
+    let sawBig = false;
+    for (let seed = 1; seed <= 40 && !sawBig; seed++) {
+      const dealt = castBreath(5, seed).find((e) => e.type === 'damageDealt');
+      if (dealt?.type === 'damageDealt' && dealt.amount > 10) sawBig = true;
+    }
+    expect(sawBig).toBe(true);
+  });
+});
+
 describe('new encounters complete under AI', () => {
   it('party beats or loses each new encounter without stalling', () => {
     for (const encId of [
@@ -257,7 +349,8 @@ describe('new encounters complete under AI', () => {
       'gargoyle-perch', 'fire-nexus', 'water-vortex', 'earth-tremor', 'tempest-eye', 'elemental-cataclysm',
       'sprite-glade', 'satyr-revelry', 'dryad-grove', 'hag-coven', 'unicorn-sanctuary',
       'cockatrice-flock', 'harpy-roost', 'owlbear-den', 'manticore-cliff', 'gorgon-maze',
-      'shadow-ambush', 'specter-haunt', 'wight-tomb', 'mummy-crypt', 'wisp-bog'
+      'shadow-ambush', 'specter-haunt', 'wight-tomb', 'mummy-crypt', 'wisp-bog',
+      'black-dragon-den', 'green-dragon-den', 'white-dragon-den', 'blue-dragon-den', 'red-dragon-den', 'chromatic-clutch'
     ]) {
       const c = new Combat({
         seed: 7,

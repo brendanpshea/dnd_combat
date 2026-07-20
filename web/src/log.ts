@@ -54,6 +54,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'downed':
     case 'revived':
     case 'dashed':
+    case 'recharged':
     case 'disengaged':
     case 'dodging':
     case 'conditionApplied':

@@ -8,6 +8,7 @@ import { rollDie, coinFlip } from './rng.js';
 import { rollDice } from './dice.js';
 import { expireIllusions, distanceFeet } from './grid.js';
 import { discoverHidden } from './rules/hide.js';
+import { FEATURES } from '../data/features.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
 import type { GameEvent } from './events.js';
@@ -119,6 +120,21 @@ export function startTurn(state: GameState): GameEvent[] {
   };
   // Spiritual Weapon fades once its duration runs out.
   if (c.spiritualWeapon && state.round > c.spiritualWeapon.expiresAtRound) delete c.spiritualWeapon;
+
+  // Recharge abilities (dragon breath): a spent one rolls a d6 and comes back
+  // on a result at or above its threshold. Only spent features roll, so a
+  // creature that never uses its breath consumes no RNG.
+  for (const fid of c.featureIds) {
+    const threshold = FEATURES[fid]?.recharge;
+    const pool = c.featureUses[fid];
+    if (threshold === undefined || !pool || pool.current > 0) continue;
+    const roll = rollDie(state.rng, 6);
+    state.rng = roll.state;
+    if (roll.value >= threshold) {
+      pool.current = pool.max;
+      events.push({ type: 'recharged', combatantId: c.id, featureId: fid });
+    }
+  }
 
   // Spiritual Guardians: an enemy that starts its turn within 15 ft of an active
   // aura takes 3d8 radiant, halved on a Wisdom save.

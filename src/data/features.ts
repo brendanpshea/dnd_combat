@@ -3,8 +3,8 @@
  * consulted by the rules (Dueling, Sneak Attack, Disciple of Life) via their
  * presence in combatant.featureIds.
  */
-import type { GameState, Id, Ability } from '../engine/types.js';
-import { proficiencyBonus } from '../engine/types.js';
+import type { GameState, Id, Ability, DamageType, Combatant } from '../engine/types.js';
+import { proficiencyBonus, cellAt } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
@@ -12,7 +12,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import { charmAway, applyDamage } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
-import { distanceFeet } from '../engine/grid.js';
+import { distanceFeet, cone15, line15, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
 
@@ -71,6 +71,76 @@ export interface FeatureData {
    * to just the fear save — is another one-line feature, not new mechanism.
    */
   saveAdvantage?: Ability[];
+}
+
+// --- dragon breath weapons -------------------------------------------------
+// One shape for every chromatic wyrmling: a cone or line of elemental damage,
+// half on a save. The per-color numbers are the only difference, so they live
+// in a registry the feature apply and the AI both read (src/ai prices it off
+// the same spec without naming a color).
+
+export interface BreathSpec {
+  shape: 'cone' | 'line';
+  length?: number;           // line reach in cells (cone is fixed by cone15)
+  save: Ability;             // the ability the *target* rolls
+  damageType: DamageType;
+  dice: string;              // SRD wyrmling dice — red breathes hardest
+}
+
+export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
+  'breath-acid':      { shape: 'line', length: 3, save: 'dex', damageType: 'acid',      dice: '5d8' }, // Black
+  'breath-lightning': { shape: 'line', length: 6, save: 'dex', damageType: 'lightning', dice: '6d6' }, // Blue
+  'breath-poison':    { shape: 'cone',            save: 'con', damageType: 'poison',    dice: '6d6' }, // Green
+  'breath-fire':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d6' }, // Red
+  'breath-cold':      { shape: 'cone',            save: 'con', damageType: 'cold',      dice: '5d8' }, // White
+};
+
+/** The cells a breath covers when aimed a given direction. */
+function breathCells(me: Combatant, dir: Direction8, spec: BreathSpec) {
+  return spec.shape === 'line' ? line15(me.position, dir, spec.length) : cone15(me.position, dir);
+}
+
+/** Auto-aim: the direction whose cone/line covers the most enemy hit points.
+ *  Undefined when no direction catches an enemy (don't waste the breath). */
+export function bestBreathDirection(state: GameState, me: Combatant, featureId: Id): Direction8 | undefined {
+  const spec = BREATH_WEAPONS[featureId];
+  if (!spec) return undefined;
+  let best: Direction8 | undefined;
+  let bestHp = 0;
+  for (const dir of Object.keys(DIRECTIONS) as Direction8[]) {
+    let hp = 0;
+    for (const pos of breathCells(me, dir, spec)) {
+      const t = cellAt(state.grid, pos)?.occupantId ? state.combatants[cellAt(state.grid, pos)!.occupantId!] : undefined;
+      if (t && t.alive && t.hp > 0 && t.team !== me.team) hp += t.hp;
+    }
+    if (hp > bestHp) { bestHp = hp; best = dir; }
+  }
+  return best;
+}
+
+/** The `apply` hook for a breath feature: aim, then save-for-half everyone caught. */
+function breathApply(featureId: Id) {
+  return ({ state, actorId }: FeatureContext): GameEvent[] => {
+    const me = state.combatants[actorId]!;
+    const spec = BREATH_WEAPONS[featureId]!;
+    const dir = bestBreathDirection(state, me, featureId);
+    if (!dir) return [];
+    const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.con);
+    const events: GameEvent[] = [];
+    for (const pos of breathCells(me, dir, spec)) {
+      const tid = cellAt(state.grid, pos)?.occupantId;
+      if (!tid) continue;
+      const t = state.combatants[tid]!;
+      if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+      const { success, event } = savingThrow(state, t.id, spec.save, dc);
+      events.push(event);
+      const roll = rollDice(state.rng, spec.dice);
+      state.rng = roll.state;
+      const amount = success ? Math.floor(roll.total / 2) : roll.total;
+      if (amount > 0) events.push(...applyDamage(state, t.id, actorId, amount, spec.damageType, roll.rolls));
+    }
+    return events;
+  };
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
@@ -451,6 +521,14 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
+  // Chromatic wyrmling breath weapons (Recharge 5–6). Shape/element/save/dice
+  // come from BREATH_WEAPONS; the DC is the dragon's Constitution. Auto-aimed at
+  // the direction catching the most foes, since a monster ability picks no cell.
+  'breath-acid':      { id: 'breath-acid',      name: 'Acid Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-acid') },
+  'breath-lightning': { id: 'breath-lightning', name: 'Lightning Breath', trigger: 'action', recharge: 5, apply: breathApply('breath-lightning') },
+  'breath-poison':    { id: 'breath-poison',    name: 'Poison Breath',    trigger: 'action', recharge: 5, apply: breathApply('breath-poison') },
+  'breath-fire':      { id: 'breath-fire',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire') },
+  'breath-cold':      { id: 'breath-cold',      name: 'Cold Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-cold') },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.
