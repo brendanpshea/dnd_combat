@@ -82,7 +82,8 @@ const scenes: Record<string, Scene> = {
     },
   },
   market: { id: 'market', kind: 'shop', title: 'Thornwick Market', next: 'square',
-    intro: ['Stalls of oddments and a wary quartermaster who\'ll buy your spare gear at a pinch.'] },
+    npc: { id: 'npc-quartermaster', name: 'Bram the Quartermaster', portraitId: 'npc-merchant', emoji: '🧑‍🌾' },
+    intro: ['"Coin\'s coin, sellsword. Buying, or have you got something to shift?"'] },
   board: {
     id: 'board', kind: 'story', art: { emoji: '📜' },
     text: ['A weathered bounty: the reeve promises coin for proof the Ashfang chief is dead — and more for their banner.'],

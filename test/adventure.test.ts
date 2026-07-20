@@ -9,7 +9,9 @@ import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
   requirementMet, exploreNodes, enterNode, hubReturn, returnToHub, campRule, campRest,
+  shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal,
 } from '../src/adventure/runtime.js';
+import { SHOP_STOCK, itemPrice } from '../src/campaign/campaign.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
 import { isLocationArt, isNpcArt } from '../src/data/adventure-art.js';
@@ -276,6 +278,113 @@ describe('hubs and once-choices', () => {
     const restored = parseAdventure(serializeAdventure(state), hollow)!;
     expect(restored.consumedChoices).toContain('board:ok');
     expect(restored.hub).toBe(state.hub);
+  });
+});
+
+// --- Shop: gambits + per-visit state (Phase 5) -------------------------------
+
+describe('shop', () => {
+  const shopModule = (stock?: string[]): Module => ({
+    id: 'shop-test', title: 'S', blurb: '', start: 'mart',
+    scenes: {
+      mart: { id: 'mart', kind: 'shop', next: 'done', ...(stock ? { stock } : {}) },
+      done: { id: 'done', kind: 'ending', outcome: 'victory', text: ['bye'] },
+    },
+  });
+
+  it('validates with a shop NPC and per-location stock', () => {
+    const m: Module = {
+      id: 'shopnpc', title: 'S', blurb: '', start: 'mart',
+      scenes: {
+        mart: { id: 'mart', kind: 'shop', next: 'done', stock: ['dagger', 'leather'],
+          npc: { id: 'n', name: 'Bram', portraitId: 'npc-merchant' } },
+        done: { id: 'done', kind: 'ending', outcome: 'victory', text: ['bye'] },
+      },
+    };
+    expect(validateModule(m)).toEqual([]);
+  });
+
+  it('the validator rejects an unknown shop NPC archetype', () => {
+    const m: Module = {
+      id: 'badshop', title: 'S', blurb: '', start: 'mart',
+      scenes: {
+        mart: { id: 'mart', kind: 'shop', next: 'done', npc: { id: 'n', name: 'X', portraitId: 'npc-nonsense' } },
+        done: { id: 'done', kind: 'ending', outcome: 'victory', text: ['bye'] },
+      },
+    };
+    expect(validateModule(m).some((e) => e.includes('npc-nonsense'))).toBe(true);
+  });
+
+  it('stock defaults to the shop list, or a location override', () => {
+    const s = startAdventure(newCampaign(1), shopModule());
+    expect(shopStock(currentScene(s, shopModule())).length).toBe(SHOP_STOCK.filter((id) => itemPrice(id) !== undefined).length);
+    const m = shopModule(['dagger', 'leather', 'not-a-real-item']);
+    const s2 = startAdventure(newCampaign(1), m);
+    enterScene(s2, m, 'mart');
+    expect(shopStock(currentScene(s2, m))).toEqual(['dagger', 'leather']); // junk filtered
+  });
+
+  it('a haggle shifts prices for the visit and is single-use', () => {
+    const m = shopModule(['greatsword']);
+    const s = startAdventure(newCampaign(4), m);
+    enterScene(s, m, 'mart');
+    const base = shopPrice(s, 'mart', 'greatsword');
+    // Intimidation moves the multiplier off 1 whether it passes (−25%) or fails (+25%).
+    const events = shopHaggle(s, m, 'intimidation');
+    expect(events.some((e) => e.type === 'check')).toBe(true);
+    expect(shopVisitOf(s, 'mart').haggleUsed).toBe(true);
+    expect(shopVisitOf(s, 'mart').priceMult).not.toBe(1);
+    expect(shopPrice(s, 'mart', 'greatsword')).not.toBe(base); // a pricey item shows the move
+    expect(() => shopHaggle(s, m, 'intimidation')).toThrow(/already used/i);
+  });
+
+  it('re-entering the shop resets the visit (a fresh haggle)', () => {
+    const m = shopModule(['dagger']);
+    const s = startAdventure(newCampaign(4), m);
+    enterScene(s, m, 'mart');
+    shopHaggle(s, m, 'intimidation');
+    expect(shopVisitOf(s, 'mart').haggleUsed).toBe(true);
+    enterScene(s, m, 'done');
+    enterScene(s, m, 'mart'); // walk back in
+    expect(shopVisitOf(s, 'mart').haggleUsed).toBe(false);
+    expect(shopVisitOf(s, 'mart').priceMult).toBe(1);
+  });
+
+  it('a steal is single-use and, on success, grabs only from this shop stock', () => {
+    // Find a seed where the steal succeeds, then assert the grabbed item ∈ stock.
+    const stock = ['dagger', 'leather'];
+    let checked = false;
+    for (let seed = 1; seed <= 60 && !checked; seed++) {
+      const m = shopModule(stock);
+      const s = startAdventure(newCampaign(seed), m);
+      enterScene(s, m, 'mart');
+      const events = shopSteal(s, m);
+      expect(shopVisitOf(s, 'mart').stealUsed).toBe(true);
+      expect(() => shopSteal(s, m)).toThrow(/already/i);
+      const grabbed = events.find((e) => e.type === 'item');
+      if (grabbed && grabbed.type === 'item') {
+        expect(stock).toContain(grabbed.itemId); // never something the shop doesn't sell
+        checked = true;
+      }
+    }
+    expect(checked).toBe(true); // some seed in range did succeed
+  });
+
+  it('a caught steal fines the party (no item), fine-only', () => {
+    const stock = ['dagger'];
+    for (let seed = 1; seed <= 60; seed++) {
+      const m = shopModule(stock);
+      const c = newCampaign(seed); c.gold = 100;
+      const s = startAdventure(c, m);
+      enterScene(s, m, 'mart');
+      const events = shopSteal(s, m);
+      const fine = events.find((e) => e.type === 'gold');
+      if (fine && fine.type === 'gold') {
+        expect(fine.amount).toBeLessThan(0);
+        expect(c.gold).toBeLessThan(100);
+        return; // found a caught case
+      }
+    }
   });
 });
 

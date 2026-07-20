@@ -1162,16 +1162,18 @@ export interface StealResult {
   fine: number;
 }
 
-/** Steal attempt: Stealth AND Sleight of Hand vs DC 13. Success grabs a
- * random shop item (into the roller's pack); getting caught costs a fine. */
-export function attemptSteal(c: CampaignState): StealResult {
+/** Steal attempt: Stealth AND Sleight of Hand vs DC 13. Success grabs a random
+ * item from `stock` (into the roller's pack); getting caught costs a fine.
+ * `stock` defaults to the whole shop list, but a location can pass its own so a
+ * thief never walks off with something the shop doesn't even sell. */
+export function attemptSteal(c: CampaignState, stock: Id[] = SHOP_STOCK): StealResult {
   const stealth = partySkillCheck(c, 'stealth', STEAL_DC);
   const sleight = partySkillCheck(c, 'sleight-of-hand', STEAL_DC);
   const rolls = [stealth, sleight];
-  if (stealth.success && sleight.success) {
+  if (stealth.success && sleight.success && stock.length > 0) {
     const r = next(c.rng);
     c.rng = r.state;
-    const itemId = SHOP_STOCK[Math.floor(r.value * SHOP_STOCK.length)]!;
+    const itemId = stock[Math.floor(r.value * stock.length)]!;
     const thief = c.characters[sleight.by] ?? c.characters[0]!;
     addItem(thief.inventory, itemId);
     return { rolls, success: true, itemId, fine: 0 };

@@ -19,6 +19,7 @@ import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, partyStash, addItem, healParty, shortRest, longRest,
+  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE,
 } from '../campaign/campaign.js';
 import {
   HUB_REF,
@@ -45,6 +46,17 @@ export interface AdventureState {
   hub?: Id;
   /** `sceneId:choiceId` keys of taken `once` choices, never offered again. */
   consumedChoices: string[];
+  /** Per-shop-scene visit state, reset each time that shop is entered. Keyed by
+   *  scene id so two shops in a module never share a haggle discount or a
+   *  spent gambit. */
+  shopVisits: Record<Id, ShopVisit>;
+}
+
+export interface ShopVisit {
+  /** Multiplier on list prices from a successful/failed haggle (1 = untouched). */
+  priceMult: number;
+  haggleUsed: boolean;
+  stealUsed: boolean;
 }
 
 export type AdventureEvent =
@@ -70,7 +82,7 @@ export function startAdventure(campaign: CampaignState, module: Module): Adventu
   const state: AdventureState = {
     campaign, moduleId: module.id, sceneId: module.start,
     flags: {}, visited: [], exploredNodes: [], wanderingRolled: [],
-    journal: [], guidanceSpent: [], consumedChoices: [],
+    journal: [], guidanceSpent: [], consumedChoices: [], shopVisits: {},
   };
   return state;
 }
@@ -209,6 +221,8 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
       events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
       break;
     case 'shop':
+      // A fresh visit: haggle discount and spent gambits reset each entry.
+      state.shopVisits[resolved] = { priceMult: 1, haggleUsed: false, stealUsed: false };
       if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
       events.push({ type: 'enterShop', next: scene.next });
       break;
@@ -429,6 +443,65 @@ export function resolveShopOrRest(state: AdventureState, module: Module): Advent
     else shortRest(state.campaign);
   }
   return enterScene(state, module, scene.next);
+}
+
+// --- Shop (buy/sell live in the UI; gambits roll here) ----------------------
+
+export type HaggleSkill = keyof typeof HAGGLE;
+
+/** The items a shop scene offers (its own stock, or the default), filtered to
+ *  those with a real price. */
+export function shopStock(scene: Scene): Id[] {
+  if (scene.kind !== 'shop') return [];
+  return (scene.stock ?? SHOP_STOCK).filter((id) => itemPrice(id) !== undefined);
+}
+
+/** The visit record for a shop scene (created on enter; a safe default if not). */
+export function shopVisitOf(state: AdventureState, sceneId: Id): ShopVisit {
+  return state.shopVisits[sceneId] ?? { priceMult: 1, haggleUsed: false, stealUsed: false };
+}
+
+/** An item's price this visit, list price scaled by any haggle result. */
+export function shopPrice(state: AdventureState, sceneId: Id, itemId: Id): number {
+  return Math.ceil((itemPrice(itemId) ?? 0) * shopVisitOf(state, sceneId).priceMult);
+}
+
+/** Haggle once per visit: a party skill check that shifts every price up or
+ *  down for the rest of the visit. Returns the roll as a `check` event so the
+ *  dice ritual reveals it, exactly like a scene check. */
+export function shopHaggle(state: AdventureState, module: Module, skill: HaggleSkill): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'shop') throw new Error(`shopHaggle on a ${scene.kind} scene`);
+  const visit = state.shopVisits[scene.id];
+  if (!visit || visit.haggleUsed) throw new Error('Haggle already used this visit');
+  visit.haggleUsed = true;
+  const { roll, priceMultiplier } = attemptHaggle(state.campaign, skill);
+  visit.priceMult = priceMultiplier;
+  return [{ type: 'check', roll, success: roll.success }];
+}
+
+/** Steal once per visit: Stealth AND Sleight of Hand vs the shop. On success a
+ *  random item from *this shop's* stock lands in a pack; caught, a fine. The
+ *  decisive roll is surfaced as a `check` event (its success matching the
+ *  overall outcome), plus the item/gold consequence. */
+export function shopSteal(state: AdventureState, module: Module): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'shop') throw new Error(`shopSteal on a ${scene.kind} scene`);
+  const visit = state.shopVisits[scene.id];
+  if (!visit || visit.stealUsed) throw new Error('Already tried to steal this visit');
+  visit.stealUsed = true;
+  const c = state.campaign;
+  const result = attemptSteal(c, shopStock(scene));
+  const decisive = result.success
+    ? result.rolls[1]!                                   // the successful grab
+    : (result.rolls.find((r) => !r.success) ?? result.rolls[0]!); // whichever tripped
+  const events: AdventureEvent[] = [{ type: 'check', roll: decisive, success: result.success }];
+  if (result.success && result.itemId) {
+    events.push({ type: 'item', itemId: result.itemId, qty: 1, gained: true });
+  } else if (result.fine > 0) {
+    events.push({ type: 'gold', amount: -result.fine, total: c.gold });
+  }
+  return events;
 }
 
 // --- Camp (rest + party management) -----------------------------------------

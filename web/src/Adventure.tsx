@@ -299,6 +299,8 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
               onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
               onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
+              onShopRoll={(events) => process(events, scene)}
+              onShopChange={() => { saveAdventureWeb(state); rerender(); }}
               onExit={onExit}
             />
           )}
@@ -690,10 +692,12 @@ interface BodyProps {
   onNode: (nodeId: string) => void;
   onBlockedNode: (reason: string) => void;
   onLeaveShop: () => void;
+  onShopRoll: (events: AdventureEvent[]) => void;
+  onShopChange: () => void;
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -802,16 +806,15 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
 
   if (scene.kind === 'shop') {
     return (
-      <div className="adv-scene">
-        <div className="adv-panel full">
-          <AdventureShop
-            campaign={campaign}
-            {...(scene.stock ? { stock: scene.stock } : {})}
-            {...(scene.title ? { title: scene.title } : {})}
-            onLeave={onLeaveShop}
-          />
-        </div>
-      </div>
+      <AdventureShop
+        campaign={campaign}
+        state={state}
+        module={module}
+        scene={scene}
+        onRoll={onShopRoll}
+        onChange={onShopChange}
+        onLeave={onLeaveShop}
+      />
     );
   }
 

@@ -154,7 +154,11 @@ export type Scene =
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];
       /** Per-location stock (item ids). Absent = the default SHOP_STOCK. */
-      stock?: Id[]; title?: string }
+      stock?: Id[]; title?: string;
+      /** The shopkeeper — rendered like a dialogue NPC so a shop reads as a
+       *  conversation with someone, not a bare list. Defaults to a generic
+       *  merchant archetype when absent. */
+      npc?: NpcRef }
   | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Paragraph[] }
   | { id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt };
 
