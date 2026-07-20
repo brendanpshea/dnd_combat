@@ -133,7 +133,7 @@ const scenes: Record<string, Scene> = {
         { id: 'tracks', x: 28, y: 40, label: 'Fresh Tracks', icon: '👣', scene: 'tracks' },
         { id: 'ravine', x: 55, y: 62, label: 'Sunken Ravine', icon: '🪨', scene: 'ravine',
           wandering: { chance: 0.5, battleScene: 'marsh-wolves' } },
-        { id: 'scout', x: 34, y: 78, label: 'A Cry for Help', icon: '🆘', scene: 'wounded' },
+        { id: 'scout', x: 34, y: 78, label: 'A Cry for Help', mystery: 'A faint sound…', icon: '🆘', scene: 'wounded' },
         { id: 'approach', x: 80, y: 40, label: 'The Hollow Ahead', icon: '⛰️', scene: 'ambush',
           requires: [{ kind: 'flag', flag: 'trail-read' }] },
       ],
