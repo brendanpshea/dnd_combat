@@ -8,7 +8,7 @@ import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
-  requirementMet, exploreNodes, enterNode,
+  requirementMet, exploreNodes, enterNode, hubReturn, returnToHub,
 } from '../src/adventure/runtime.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
@@ -189,6 +189,81 @@ describe('adventure runtime vocabulary', () => {
     expect(nodes.map((n) => n.node.id).sort()).toEqual(['exit', 'vault']);
     const events = enterNode(state, DEMO, 'vault');
     expect(events.some((e) => e.type === 'ending')).toBe(true);
+  });
+});
+
+// --- Revisitable hubs + `once` (Phase 2) ------------------------------------
+
+describe('hubs and once-choices', () => {
+  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+
+  it('entering an explore scene records it as the hub', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'square');
+    expect(state.hub).toBe('square');
+  });
+
+  it('@hub routes back to the last explore scene', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'square');   // hub = square
+    enterScene(state, hollow, 'board');    // wander into a sub-scene
+    returnToHub(state, hollow);
+    expect(state.sceneId).toBe('square');
+  });
+
+  it('hubReturn offers the hub from a sub-scene but not from the hub itself', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'square');
+    enterScene(state, hollow, 'board');
+    expect(hubReturn(state, hollow)).toBe('square');
+    enterScene(state, hollow, 'square');
+    expect(hubReturn(state, hollow)).toBeNull(); // explore scene, and == hub
+  });
+
+  it('a once-choice is consumed after it is taken and never re-offered', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'board');
+    expect(legalChoices(state, hollow).some((o) => o.choice.id === 'ok')).toBe(true);
+    choose(state, hollow, 'ok'); // claim the retainer (once)
+    // Board is left behind; come back to it and the claim is gone.
+    enterScene(state, hollow, 'board');
+    const ids = legalChoices(state, hollow).map((o) => o.choice.id);
+    expect(ids).not.toContain('ok');
+    expect(ids).toContain('leave');
+  });
+
+  it('a once reward cannot be farmed by revisiting', () => {
+    const c = newCampaign(1);
+    const state = startAdventure(c, hollow);
+    const before = c.gold;
+    enterScene(state, hollow, 'board');
+    choose(state, hollow, 'ok');
+    const afterOnce = c.gold;
+    expect(afterOnce).toBe(before + 25);
+    // Revisit and take whatever remains — gold must not grow again.
+    enterScene(state, hollow, 'board');
+    const leave = legalChoices(state, hollow).find((o) => o.choice.id === 'leave')!;
+    choose(state, hollow, leave.choice.id);
+    expect(c.gold).toBe(afterOnce);
+  });
+
+  it('a failed once social check is still spent (no re-rolling on revisit)', () => {
+    // Force the Insight check to fail by draining the roll: DC 12 with a
+    // guaranteed low roll is hard to force here, so assert consumption directly.
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'tavern');
+    choose(state, hollow, 'insight'); // consumes regardless of pass/fail
+    enterScene(state, hollow, 'tavern');
+    expect(legalChoices(state, hollow).some((o) => o.choice.id === 'insight')).toBe(false);
+  });
+
+  it('consumedChoices survives a save round-trip', () => {
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'board');
+    choose(state, hollow, 'ok');
+    const restored = parseAdventure(serializeAdventure(state), hollow)!;
+    expect(restored.consumedChoices).toContain('board:ok');
+    expect(restored.hub).toBe(state.hub);
   });
 });
 

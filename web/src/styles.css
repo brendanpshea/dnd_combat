@@ -1521,6 +1521,8 @@ button.category .count {
 }
 .adv-choice:hover:not(:disabled) { border-color: var(--blue); transform: translateY(-1px); }
 .adv-choice.blocked { opacity: .5; cursor: not-allowed; }
+.adv-choice.adv-leave { background: transparent; color: var(--muted); text-align: center; }
+.adv-choice.adv-leave:hover:not(:disabled) { color: var(--text); border-color: var(--muted); }
 .adv-chip {
   align-self: flex-start; font-size: .78rem; font-weight: 700; padding: 2px 8px;
   border-radius: 999px; background: rgba(74,158,255,.18); color: var(--blue);

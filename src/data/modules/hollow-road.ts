@@ -29,6 +29,9 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern',
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'End the raiders plaguing Thornwick. Start by learning where they den.' } }] }],
   },
+  // The tavern is a small loop, not a one-way door (#6): each social read is a
+  // `once` choice that returns you here, so you can try Insight *and*
+  // Persuasion but never re-roll either. "Head to the square" is the way out.
   tavern: {
     id: 'tavern', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
@@ -37,29 +40,30 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'insight', label: '[Insight DC 12] Something she\'s holding back?', to: 'tavern-spy',
-        check: { skill: 'insight', dc: 12, failTo: 'tavern-plain' } },
+        once: true, check: { skill: 'insight', dc: 12, failTo: 'tavern-plain' } },
       { id: 'persuade', label: '[Persuasion DC 12] Buy the room a round', to: 'tavern-trail',
-        check: { skill: 'persuasion', dc: 12, failTo: 'tavern-plain' } },
-      { id: 'plain', label: 'Just ask the way', to: 'tavern-plain' },
+        once: true, check: { skill: 'persuasion', dc: 12, failTo: 'tavern-plain' } },
+      { id: 'plain', label: 'Just ask the way', to: 'tavern-plain', once: true },
+      { id: 'leave', label: 'Head out to the square', to: 'square' },
     ],
   },
   'tavern-spy': {
     id: 'tavern-spy', kind: 'story', art: { emoji: '👁️' },
     text: ['Her eyes flick to the door. "Someone here feeds them word of every caravan. I\'d start at the market, if I were you."'],
-    next: [{ id: 'ok', label: 'To the square', to: 'square',
+    next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'know-spy' },
         { kind: 'journal', entry: { id: 'c-spy', kind: 'clue', title: 'An Informant', body: 'A spy in Thornwick feeds the raiders. Mira suspects the market.' } }] }],
   },
   'tavern-trail': {
     id: 'tavern-trail', kind: 'story', art: { emoji: '🗺️' },
     text: ['The room loosens. An old trapper sketches the marsh road on the bar and taps a hollow in the hills. "Their den. But the trail bites back."'],
-    next: [{ id: 'ok', label: 'To the square', to: 'square',
+    next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'trail-known' }] }],
   },
   'tavern-plain': {
     id: 'tavern-plain', kind: 'story', art: { emoji: '🍺' },
     text: ['"The marsh road, then. Mind yourself." She turns back to her taps.'],
-    next: [{ id: 'ok', label: 'To the square', to: 'square' }],
+    next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
 
   square: {
@@ -67,7 +71,8 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'Thornwick Square', theme: 'stone', art: { imageId: 'loc-village', emoji: '⛲' },
       nodes: [
-        { id: 'market', x: 26, y: 34, label: 'Market', icon: '🛒', scene: 'market' },
+        { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: '🍺', scene: 'tavern' },
+        { id: 'market', x: 40, y: 40, label: 'Market', icon: '🛒', scene: 'market' },
         { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: '📜', scene: 'board' },
         { id: 'informant', x: 48, y: 66, label: 'Furtive Peddler', icon: '🕵️', scene: 'spy-confront',
           requires: [{ kind: 'flag', flag: 'know-spy' }] },
@@ -80,9 +85,13 @@ const scenes: Record<string, Scene> = {
   board: {
     id: 'board', kind: 'story', art: { emoji: '📜' },
     text: ['A weathered bounty: the reeve promises coin for proof the Ashfang chief is dead — and more for their banner.'],
-    next: [{ id: 'ok', label: 'Note it and turn away', to: 'square',
-      effects: [{ kind: 'setFlag', flag: 'bounty' }, { kind: 'gold', amount: 25 },
-        { kind: 'journal', entry: { id: 'c-bounty', kind: 'clue', title: 'The Reeve\'s Bounty', body: 'Extra reward for the Ashfang banner as proof.' } }] }],
+    next: [
+      // `once` so the reeve's retainer can't be re-claimed by revisiting the board.
+      { id: 'ok', label: 'Take the retainer (+25 gold)', to: 'square', once: true,
+        effects: [{ kind: 'setFlag', flag: 'bounty' }, { kind: 'gold', amount: 25 },
+          { kind: 'journal', entry: { id: 'c-bounty', kind: 'clue', title: 'The Reeve\'s Bounty', body: 'Extra reward for the Ashfang banner as proof.' } }] },
+      { id: 'leave', label: 'Turn away', to: 'square' },
+    ],
   },
   'spy-confront': {
     id: 'spy-confront', kind: 'dialogue', npc: { id: 'npc-peddler', name: 'The Peddler', portraitId: 'npc-merchant', emoji: '🕵️' },
@@ -90,9 +99,9 @@ const scenes: Record<string, Scene> = {
     lines: ['A peddler you\'ve seen watching the gate too closely goes stiff as you approach.'],
     next: [
       { id: 'investigate', label: '[Investigation DC 13] Search his wares', to: 'spy-caught',
-        check: { skill: 'investigation', dc: 13, failTo: 'spy-bolts' } },
+        once: true, check: { skill: 'investigation', dc: 13, failTo: 'spy-bolts' } },
       { id: 'intimidate', label: '[Intimidation DC 14] "Talk. Now."', to: 'spy-caught',
-        check: { skill: 'intimidation', dc: 14, failTo: 'spy-bolts' } },
+        once: true, check: { skill: 'intimidation', dc: 14, failTo: 'spy-bolts' } },
       { id: 'leave', label: 'Let him be', to: 'square' },
     ],
   },
@@ -150,7 +159,7 @@ const scenes: Record<string, Scene> = {
     lines: ['A reeve\'s scout lies pinned under a dead horse, arrow in her leg. "They… they took the east watch-post. Help me and I\'ll tell you how they stand."'],
     next: [
       { id: 'medicine', label: '[Medicine DC 12] Tend her wound', to: 'scout-saved',
-        check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
+        once: true, check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
       { id: 'leave', label: 'No time — press on', to: 'trail' },
     ],
   },
@@ -235,9 +244,9 @@ const scenes: Record<string, Scene> = {
     lines: ['Vex meets you with a bared blade and a bitter smile. "The chief sent his best to die at the gate. Not me. So — what do you offer?"'],
     next: [
       { id: 'persuade', label: '[Persuasion DC 13] Offer him the chief\'s seat', to: 'vex-turned',
-        check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
+        once: true, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
       { id: 'intimidate', label: '[Intimidation DC 14] Promise him a quick end otherwise', to: 'vex-turned',
-        check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses' } },
+        once: true, check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses' } },
       { id: 'refuse', label: 'Refuse to bargain with raiders', to: 'inner' },
     ],
   },

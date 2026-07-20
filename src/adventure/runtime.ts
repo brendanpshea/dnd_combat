@@ -20,8 +20,10 @@ import {
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, partyStash, addItem, healParty, shortRest,
 } from '../campaign/campaign.js';
-import type {
-  Module, Scene, Choice, Effect, Requirement, Outcome, Roller, ExploreNode, JournalEntry,
+import {
+  HUB_REF,
+  type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome,
+  type Roller, type ExploreNode, type JournalEntry,
 } from './types.js';
 
 export interface AdventureState {
@@ -38,6 +40,11 @@ export interface AdventureState {
   /** Scene ids whose once-per-scene Guidance has been spent (checks after the
    *  first in a scene get no cleric +1d4). */
   guidanceSpent: Id[];
+  /** The explore scene most recently entered — the location `@hub` returns to
+   *  and the implicit "leave" target for its sub-scenes. */
+  hub?: Id;
+  /** `sceneId:choiceId` keys of taken `once` choices, never offered again. */
+  consumedChoices: string[];
 }
 
 export type AdventureEvent =
@@ -63,7 +70,7 @@ export function startAdventure(campaign: CampaignState, module: Module): Adventu
   const state: AdventureState = {
     campaign, moduleId: module.id, sceneId: module.start,
     flags: {}, visited: [], exploredNodes: [], wanderingRolled: [],
-    journal: [], guidanceSpent: [],
+    journal: [], guidanceSpent: [], consumedChoices: [],
   };
   return state;
 }
@@ -183,12 +190,15 @@ function applyEffects(state: AdventureState, effects: Effect[] | undefined, even
 // --- Navigation -------------------------------------------------------------
 
 /** Enter a scene: mark visited, emit its entry event and any intro text. Does
- *  NOT auto-resolve checks/battles/shops — the driver drives those. */
+ *  NOT auto-resolve checks/battles/shops — the driver drives those. The special
+ *  ref `@hub` routes back to the location the party last explored. */
 export function enterScene(state: AdventureState, module: Module, sceneId: Id): AdventureEvent[] {
-  state.sceneId = sceneId;
-  if (!state.visited.includes(sceneId)) state.visited.push(sceneId);
+  const resolved = sceneId === HUB_REF ? (state.hub ?? module.start) : sceneId;
+  state.sceneId = resolved;
+  if (!state.visited.includes(resolved)) state.visited.push(resolved);
   const scene = currentScene(state, module);
-  const events: AdventureEvent[] = [{ type: 'scene', sceneId, kind: scene.kind }];
+  if (scene.kind === 'explore') state.hub = resolved; // this is now the location
+  const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind }];
 
   switch (scene.kind) {
     case 'story': events.push({ type: 'text', paragraphs: scene.text }); break;
@@ -277,15 +287,34 @@ function rollChosen(
 
 // --- Choices ----------------------------------------------------------------
 
-/** The choices offered at the current story/dialogue scene, with block status. */
+const choiceKey = (sceneId: Id, choiceId: Id) => `${sceneId}:${choiceId}`;
+
+/** The choices offered at the current story/dialogue scene, with block status.
+ *  A taken `once` choice is gone for good (never re-offered on a revisit). */
 export function legalChoices(
   state: AdventureState, module: Module,
 ): Array<{ choice: Choice; blocked: string | null }> {
   const scene = currentScene(state, module);
   const next = scene.kind === 'story' || scene.kind === 'dialogue' ? scene.next : [];
   return next
+    .filter((choice) => !(choice.once && state.consumedChoices.includes(choiceKey(scene.id, choice.id))))
     .map((choice) => ({ choice, blocked: blockedReason(state, choice.requires) }))
     .filter(({ choice, blocked }) => !(blocked && choice.hideWhenBlocked));
+}
+
+/** The location the party can leave the current scene to, or null. Offered on
+ *  story/dialogue scenes reached from a hub (unless the scene sets `noBack`),
+ *  so the player is never trapped and can walk back out of a conversation. */
+export function hubReturn(state: AdventureState, module: Module): Id | null {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'story' && scene.kind !== 'dialogue') return null;
+  if (scene.noBack || !state.hub || state.hub === scene.id) return null;
+  return state.hub;
+}
+
+/** Walk back to the current hub location (the implicit "leave" affordance). */
+export function returnToHub(state: AdventureState, module: Module): AdventureEvent[] {
+  return enterScene(state, module, HUB_REF);
 }
 
 /** Take a choice at a story/dialogue scene. Rolls an inline check if present. */
@@ -297,6 +326,9 @@ export function choose(
   const choice = list.find((c) => c.id === choiceId);
   if (!choice) throw new Error(`No choice ${choiceId} at ${state.sceneId}`);
   if (blockedReason(state, choice.requires)) throw new Error(`Choice ${choiceId} is blocked`);
+  // Record a `once` choice as spent up front — a failed social check is still
+  // spent, so it can't be re-rolled by revisiting.
+  if (choice.once) state.consumedChoices.push(choiceKey(scene.id, choice.id));
 
   const events: AdventureEvent[] = [];
   applyEffects(state, choice.effects, events);

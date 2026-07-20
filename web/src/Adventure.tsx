@@ -15,6 +15,7 @@ import type { TeamId } from '../../src/engine/types.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
+  hubReturn, returnToHub,
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene } from '../../src/adventure/types.js';
@@ -173,6 +174,11 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
     process(rollSceneCheck(state, module, actorIdx), from);
   }
 
+  function onLeave() {
+    setBanner([]);
+    process(returnToHub(state, module), scene);
+  }
+
   function afterDice() {
     setDice(null);
     rerender();
@@ -249,6 +255,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
               module={module}
               onChoice={onChoice}
               onRollScene={onRollScene}
+              onLeave={onLeave}
               onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
               onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
@@ -350,13 +357,14 @@ interface BodyProps {
   module: Module;
   onChoice: (id: string, actorIdx?: number) => void;
   onRollScene: (actorIdx?: number) => void;
+  onLeave: () => void;
   onNode: (nodeId: string) => void;
   onBlockedNode: (reason: string) => void;
   onLeaveShop: () => void;
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBlockedNode, onLeaveShop, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -374,6 +382,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBloc
   if (scene.kind === 'story' || scene.kind === 'dialogue') {
     const lines = scene.kind === 'story' ? scene.text : scene.lines;
     const options = legalChoices(state, module);
+    const leaveTo = hubReturn(state, module);
     return (
       // Bottom-anchored panel over the location backdrop (visual-novel style).
       <div className="adv-scene bottom">
@@ -400,6 +409,11 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onNode, onBloc
                 {blocked && <span className="adv-lock">🔒 {blocked}</span>}
               </button>
             ))}
+            {leaveTo && (
+              <button className="adv-choice adv-leave" onClick={onLeave}>
+                <span>← Leave</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
