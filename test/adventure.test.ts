@@ -9,9 +9,11 @@ import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
   requirementMet, exploreNodes, enterNode, hubReturn, returnToHub, campRule, campRest,
-  shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal,
+  shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, resolveBattle,
 } from '../src/adventure/runtime.js';
-import { SHOP_STOCK, itemPrice } from '../src/campaign/campaign.js';
+import {
+  SHOP_STOCK, itemPrice, applyAdventureVictory, buildCampaignParty as buildCampaignPartyFor,
+} from '../src/campaign/campaign.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
 import { isLocationArt, isNpcArt } from '../src/data/adventure-art.js';
@@ -385,6 +387,50 @@ describe('shop', () => {
         return; // found a caught case
       }
     }
+  });
+});
+
+// --- Playtest fixes: defeat, finished locations, battle rewards --------------
+
+describe('defeat, finished locations, battle rewards', () => {
+  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+
+  it('a lost battle with no onLoss routes to the module defeat scene, revived', () => {
+    const c = newCampaign(1);
+    const s = startAdventure(c, hollow);
+    enterScene(s, hollow, 'spy-bolts'); // a battle with onWin but no onLoss
+    // Wound the party so we can see the revive.
+    c.characters.forEach((ch) => { ch.resources = { hp: 0 }; });
+    const events = resolveBattle(s, hollow, false);
+    expect(s.sceneId).toBe('defeat');
+    expect(events.some((e) => e.type === 'scene' && e.sceneId === 'defeat')).toBe(true);
+    // Everyone back on their feet at half HP (> 0).
+    const party = buildCampaignPartyFor(c);
+    expect(party.every((p) => p.hp > 0)).toBe(true);
+  });
+
+  it('a finished location redirects via sceneWhen instead of replaying', () => {
+    const s = startAdventure(newCampaign(1), hollow);
+    enterScene(s, hollow, 'trail');
+    enterNode(s, hollow, 'scout');
+    expect(s.sceneId).toBe('wounded'); // first visit: the full scene
+    enterScene(s, hollow, 'trail');
+    s.flags['scout-met'] = true;       // now the scout has been dealt with
+    enterNode(s, hollow, 'scout');
+    expect(s.sceneId).toBe('scout-gone'); // revisit: the short "already done" beat
+  });
+
+  it('applyAdventureVictory awards XP + treasure without touching the ladder stage', () => {
+    const c = newCampaign(7);
+    const party = buildCampaignPartyFor(c);
+    const goldBefore = c.gold, xpBefore = c.xp, stageBefore = c.stage;
+    const v = applyAdventureVictory(c, party, 'raiders-forward', 987654);
+    expect(v.xpGained).toBeGreaterThan(0);
+    expect(c.xp).toBe(xpBefore + v.xpGained);
+    expect(c.gold).toBe(goldBefore + v.gold);
+    expect(c.stage).toBe(stageBefore); // never advances an adventure past a ladder end
+    const stashCount = (c.stash ?? []).reduce((n, s) => n + s.qty, 0);
+    expect(stashCount).toBe(v.items.reduce((n, it) => n + it.qty, 0));
   });
 });
 

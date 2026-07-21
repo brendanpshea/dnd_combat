@@ -1343,6 +1343,71 @@ export interface VictoryResult {
   leveledTo?: number;
 }
 
+/** Read surviving gear/resources back onto the party after a won fight. Shared
+ *  by the campaign ladder and adventure mode: consumables spent in battle stay
+ *  spent, weapon swaps and slots persist, and a hero downed to 0 in a won fight
+ *  revives at 1 HP rather than starting the next fight unconscious. */
+export function readBackSurvivors(c: CampaignState, finalTeam: Combatant[]): void {
+  for (const ch of c.characters) {
+    const fought = finalTeam.find((x) => x.classId === ch.classId);
+    if (!fought) continue;
+    ch.inventory = fought.inventory.map((s) => ({ ...s }));
+    ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
+    ch.resources = {
+      hp: Math.max(1, fought.hp),
+      ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
+      ...(fought.familiar || fought.mageArmor || ch.resources?.effects
+        ? {
+            effects: {
+              ...ch.resources?.effects,
+              ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
+              ...(fought.mageArmor ? { mageArmor: true as const } : {}),
+            },
+          }
+        : {}),
+    };
+  }
+}
+
+export interface AdventureVictory {
+  gold: number;
+  items: ItemStack[];
+  xpGained: number;
+  leveledFrom?: number;
+  leveledTo?: number;
+}
+
+/** A won *adventure* battle (not the campaign ladder): read survivors back,
+ *  award XP + treasure from the *actual* encounter fought (not a ladder stage),
+ *  and drop the loot into the shared stash. Unlike applyVictory it never
+ *  touches `c.stage`, so an adventure can run any number of fights. */
+export function applyAdventureVictory(
+  c: CampaignState, finalTeam: Combatant[], encounterId: Id, rng: RngState = 1,
+): AdventureVictory {
+  readBackSurvivors(c, finalTeam);
+  const xpGained = xpAward(encounterId, c.characters.length);
+  const beforeLevel = levelForXp(c.xp);
+  c.xp += xpGained;
+  const afterLevel = levelForXp(c.xp);
+  const treasure = treasureFor(encounterXP(encounterId), rng);
+  c.gold += treasure.gold;
+  if (!c.stash) c.stash = [];
+  for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);
+  return {
+    gold: treasure.gold, items: treasure.items, xpGained,
+    ...(afterLevel > beforeLevel ? { leveledFrom: beforeLevel, leveledTo: afterLevel } : {}),
+  };
+}
+
+/** Bring a wiped party back on its feet (defeat → regroup): everyone to half
+ *  their max HP, alive, conditions cleared. Slots are left as they were. */
+export function reviveParty(c: CampaignState): void {
+  const party = buildCampaignParty(c);
+  for (const [i, combatant] of party.entries()) {
+    setCampaignHp(c.characters[i]!, Math.max(1, Math.floor(combatant.maxHp / 2)));
+  }
+}
+
 /**
  * After a victory: read surviving gear back (consumables spent in battle stay
  * spent, weapon swaps persist), award XP (possibly leveling the party),
@@ -1356,28 +1421,7 @@ export function applyVictory(
 ): VictoryResult {
   const stage = currentStage(c);
   if (!stage) throw new Error('Campaign already complete');
-  for (const ch of c.characters) {
-    const fought = finalTeam.find((x) => x.classId === ch.classId);
-    if (fought) {
-      ch.inventory = fought.inventory.map((s) => ({ ...s }));
-      ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
-      ch.resources = {
-        // The fallen recover: a hero downed to 0 in a won fight comes back at
-        // 1 HP rather than starting the next battle unconscious.
-        hp: Math.max(1, fought.hp),
-        ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
-        ...(fought.familiar || fought.mageArmor || ch.resources?.effects
-          ? {
-              effects: {
-                ...ch.resources?.effects,
-                ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
-                ...(fought.mageArmor ? { mageArmor: true as const } : {}),
-              },
-            }
-          : {}),
-      };
-    }
-  }
+  readBackSurvivors(c, finalTeam);
 
   const xpGained = xpAward(stage.encounterId, c.characters.length);
   const beforeLevel = levelForXp(c.xp);

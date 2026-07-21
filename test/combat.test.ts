@@ -14,6 +14,28 @@ function duel(seed = 1) {
   });
 }
 
+describe('surprise (ambush)', () => {
+  it('the surprised team is incapacitated through round 1, freed at round 2', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [
+        makeCombatant({ id: 'a', team: 'team1', position: { x: 1, y: 1 } }),
+        makeCombatant({ id: 'b', team: 'team2', position: { x: 6, y: 6 } }),
+      ],
+      surprisedTeam: 'team2',
+    });
+    const b = c.state.combatants['b']!;
+    expect(b.conditions.some((k) => k.id === 'incapacitated')).toBe(true);
+    // The un-surprised side is free from the start.
+    expect(c.state.combatants['a']!.conditions.some((k) => k.id === 'incapacitated')).toBe(false);
+  });
+
+  it('does nothing when no team is surprised', () => {
+    const c = duel(5);
+    expect(Object.values(c.state.combatants).every((x) => !x.conditions.some((k) => k.id === 'incapacitated'))).toBe(true);
+  });
+});
+
 describe('combat setup', () => {
   it('rolls initiative for everyone and starts round 1', () => {
     const c = duel();
