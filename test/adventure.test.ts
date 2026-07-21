@@ -807,6 +807,20 @@ describe('The Hollow Road (M4)', () => {
     expect(validateModule(hollow).filter((e) => e.includes('resolvedBy'))).toEqual([]);
   });
 
+  it('opens with an early ambush — combat in the first minute', () => {
+    // The start scene is a short road intro whose only way forward is a battle,
+    // and that battle fields the Ashfang (so the enemy is named up front and the
+    // first fight fires the shared battle tutorial).
+    const start = hollow.scenes[hollow.start];
+    expect(start?.kind).toBe('story');
+    if (start?.kind !== 'story') return;
+    const dests = start.next.map((c) => c.to);
+    expect(dests.length).toBe(1);
+    const first = hollow.scenes[dests[0]!];
+    expect(first?.kind).toBe('battle');
+    if (first?.kind === 'battle') expect(first.encounterId).toContain('raiders');
+  });
+
   it('is skill-diverse (uses several distinct skills across scenes)', () => {
     const skills = new Set<string>();
     for (const s of Object.values(hollow.scenes)) {
