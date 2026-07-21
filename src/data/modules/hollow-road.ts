@@ -81,21 +81,21 @@ const scenes: Record<string, Scene> = {
   tavern: {
     id: 'tavern', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
-      'Inside the **Wander-Inn**, the fire is low and the talk lower. A broad woman with flour on her sleeves sets down a cloth and looks you over.',
-      '"Sellswords, are you? Good." **Mira** doesn\'t smile. "The reeve\'s too proud to beg, so I\'ll do it for him."',
-      '"The **Ashfang** came down the **marsh road**, out past the reeds. That much everyone knows. But there\'s more that folk won\'t say with the door open…"',
+      'Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
+      '"Sellswords. Good." **Mira** doesn\'t smile — you get the feeling she keeps it somewhere safe, for special occasions. "The reeve\'s too proud to beg, so I do it for him. Sit."',
+      '"The **Ashfang** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. But there\'s more — the kind folk won\'t say with the door open."',
     ],
     next: [
-      { id: 'insight', label: '[Insight DC 12] Something she\'s holding back?', to: 'tavern-spy',
+      { id: 'insight', label: '[Insight DC 12] Read what she isn\'t saying', to: 'tavern-spy',
         once: true, check: { skill: 'insight', dc: 12, failTo: 'tavern-plain' } },
-      { id: 'persuade', label: '[Persuasion DC 12] Buy the room a round', to: 'tavern-trail',
+      { id: 'persuade', label: '[Persuasion DC 12] Buy the whole room a round', to: 'tavern-trail',
         once: true, check: { skill: 'persuasion', dc: 12, failTo: 'tavern-plain' } },
-      { id: 'plain', label: 'Just ask the way', to: 'tavern-plain', once: true },
+      { id: 'plain', label: 'Just ask the road to the den', to: 'tavern-plain', once: true },
       // A paid long rest: cheap, but a real gold sink and the place to re-prepare
       // spells. Gated on having the coin; the effect deducts it before resting.
       { id: 'room', label: 'Take a room for the night — 1 gold (long rest)', to: 'inn-rest',
         requires: [{ kind: 'gold', atLeast: 1 }], effects: [{ kind: 'gold', amount: -1 }] },
-      { id: 'leave', label: 'Head out to the square', to: 'square' },
+      { id: 'leave', label: 'Step out into the square', to: 'square' },
     ],
   },
   'inn-rest': {
@@ -147,33 +147,36 @@ const scenes: Record<string, Scene> = {
   },
   market: { id: 'market', kind: 'shop', title: 'Thornwick Market', next: 'square',
     npc: { id: 'npc-quartermaster', name: 'Bram the Quartermaster', portraitId: 'npc-merchant', emoji: '🧑‍🌾' },
-    intro: ['"Coin\'s coin, sellsword. Buying, or have you got something to shift?"'] },
+    intro: ['"Coin\'s coin, and I\'ll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are honest — a dead customer never comes back for more, and I do like the repeat trade."'] },
   board: {
     id: 'board', kind: 'story', art: { emoji: '📜' },
-    text: ['A weathered bounty: the reeve promises coin for proof the Ashfang chief is dead — and more for their banner.'],
+    text: [
+      'A bounty, nailed up and gone grey at the edges: the reeve will pay good coin for proof the **Ashfang chief** is dead, and better coin still for their banner brought back whole.',
+      'Someone has added a line at the bottom in a smaller, prouder hand — *"Thornwick does not beg. It pays its debts."* That ink is newer than the rest.',
+    ],
     next: [
       // `once` so the reeve's retainer can't be re-claimed by revisiting the board.
-      { id: 'ok', label: 'Take the retainer (+25 gold)', to: 'square', once: true,
+      { id: 'ok', label: 'Take the reeve\'s retainer up front (25 gold)', to: 'square', once: true,
         effects: [{ kind: 'setFlag', flag: 'bounty' }, { kind: 'gold', amount: 25 },
-          { kind: 'journal', entry: { id: 'c-bounty', kind: 'clue', title: 'The Reeve\'s Bounty', body: 'Extra reward for the Ashfang banner as proof.' } }] },
-      { id: 'leave', label: 'Turn away', to: 'square' },
+          { kind: 'journal', entry: { id: 'c-bounty', kind: 'clue', title: 'The Reeve\'s Bounty', body: 'The reeve pays for the Ashfang chief dead, and pays extra for their banner brought back as proof. You took the retainer up front.' } }] },
+      { id: 'leave', label: 'Leave it for now', to: 'square' },
     ],
   },
   'spy-confront': {
     id: 'spy-confront', kind: 'dialogue', npc: { id: 'npc-peddler', name: 'The Peddler', portraitId: 'npc-merchant', emoji: '🕵️' },
     art: { emoji: '🕵️' },
-    lines: ['A peddler you\'ve seen watching the gate too closely goes stiff as you approach.'],
+    lines: ['The peddler\'s stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He watches the gate the way a cat watches a mousehole, and when your shadow falls across his goods he goes very still, and very interested in the buttons.'],
     next: [
-      { id: 'investigate', label: '[Investigation DC 13] Search his wares', to: 'spy-caught',
+      { id: 'investigate', label: '[Investigation DC 13] Turn over his "wares"', to: 'spy-caught',
         once: true, check: { skill: 'investigation', dc: 13, failTo: 'spy-bolts' } },
-      { id: 'intimidate', label: '[Intimidation DC 14] "Talk. Now."', to: 'spy-caught',
+      { id: 'intimidate', label: '[Intimidation DC 14] Lean in close — "Talk."', to: 'spy-caught',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'spy-bolts' } },
-      { id: 'leave', label: 'Let him be', to: 'square' },
+      { id: 'leave', label: 'Let him sweat, and walk on', to: 'square' },
     ],
   },
   'spy-caught': {
     id: 'spy-caught', kind: 'story', art: { emoji: '🔗' },
-    text: ['Under the false bottom: a raider tally of every caravan. He talks — the den\'s watch expects a signal you can now fake.'],
+    text: ['Under the false bottom of his cart: a tally of every caravan to leave Thornwick in a month, marked in a hand that isn\'t his. He folds like wet paper. "I only carried word — I never lifted a blade at anyone!" And, babbling, he gives it up: **the raiders\' gate-signal. You can walk into the den wearing their own password.**'],
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
         { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'The spy gave up the raiders\' gate signal — the den\'s watch can be fooled.' } }] }],
@@ -264,18 +267,18 @@ const scenes: Record<string, Scene> = {
   },
   wounded: {
     id: 'wounded', kind: 'dialogue', npc: SCOUT, art: { emoji: '🤕' },
-    lines: ['A reeve\'s scout lies pinned under a dead horse, arrow in her leg. "They… they took the east watch-post. Help me and I\'ll tell you how they stand."'],
+    lines: ['A young scout in the reeve\'s colours lies pinned under a dead horse, an arrow through her leg, her jaw set hard against the pain. "I\'m fine," she says — a lie you can see from here. "Get the horse off me and I\'ll tell you everything. How they\'re set, where they watch. I counted. That\'s the job."'],
     next: [
-      { id: 'medicine', label: '[Medicine DC 12] Tend her wound', to: 'scout-saved',
+      { id: 'medicine', label: '[Medicine DC 12] Ease her out and bind the leg', to: 'scout-saved',
         once: true, check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
-      { id: 'leave', label: 'No time — press on', to: 'trail' },
+      { id: 'leave', label: 'No time to spare her — press on', to: 'trail' },
     ],
   },
   'scout-saved': {
     id: 'scout-saved', kind: 'story', art: { emoji: '❤️‍🩹' },
     text: [
-      'The bleeding stops. Grateful, the scout — **Wren**, she says — maps the den\'s watch-posts in the mud, then grips your wrist.',
-      '"There\'s one of them who hates the chief worse than you do. **Vex**, the lieutenant. Offer Vex a way out when you reach the den\'s fire and he might just take it — and stand his guards aside."',
+      'The horse comes off and the bleeding stops, and the scout lets out a breath she looks like she\'d been saving all week. "**Wren**," she offers, as if admitting to a name costs her something. She scratches the den\'s watch-posts into the mud, quick and exact. She really did count.',
+      '"One thing more, and then I owe you twice over." She catches your wrist. "There\'s a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."',
     ],
     next: [{ id: 'ok', label: 'Send Wren back to Thornwick', to: 'trail',
       effects: [{ kind: 'setFlag', flag: 'saved-scout' }, { kind: 'setFlag', flag: 'scout-met' }, { kind: 'setFlag', flag: 'know-vex' },
@@ -400,25 +403,25 @@ const scenes: Record<string, Scene> = {
   },
   'vex-parley': {
     id: 'vex-parley', kind: 'dialogue', npc: LIEUTENANT, art: { emoji: '🗡️' },
-    lines: ['Vex meets you with a bared blade and a bitter smile. "The chief sent his best to die at the gate. Not me. So — what do you offer?"'],
+    lines: ['Vex is older than you expected, and more tired — he holds his bared blade like a man who\'d rather be leaning on it. "The chief sent his best to die at the gate. I notice he didn\'t send me." A thin smile, gone as fast. "So. You\'ve come this far through his people. What do you offer a man for stepping aside?"'],
     next: [
-      { id: 'persuade', label: '[Persuasion DC 13] Offer him the chief\'s seat', to: 'vex-turned',
+      { id: 'persuade', label: '[Persuasion DC 13] Offer him the chief\'s seat, once it\'s empty', to: 'vex-turned',
         once: true, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
-      { id: 'intimidate', label: '[Intimidation DC 14] Promise him a quick end otherwise', to: 'vex-turned',
+      { id: 'intimidate', label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses' } },
-      { id: 'refuse', label: 'Refuse to bargain with raiders', to: 'inner' },
+      { id: 'refuse', label: 'Refuse to deal with a raider', to: 'inner' },
     ],
   },
   'vex-turned': {
     id: 'vex-turned', kind: 'story', art: { emoji: '🤝' },
-    text: ['Vex sheathes his blade. "The chief\'s guards answer to me. They\'ll stand aside — this once." He melts into the smoke.'],
+    text: ['Vex weighs it, then slides the blade home. "The chief\'s guards answer to me, not him. They\'ll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I\'m tired of soldiering for a man who burns barns and calls it strategy."'],
     next: [{ id: 'ok', label: 'On to the chief', to: 'inner',
       effects: [{ kind: 'setFlag', flag: 'vex-turned' }, { kind: 'setFlag', flag: 'met-vex' },
-        { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: 'Vex', body: 'The lieutenant Vex will stand his guards aside when you face the chief.' } }] }],
+        { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: 'Vex, Turned', body: 'Vex the lieutenant took your offer. His guards will stand aside when you face the Ashfang chief — this once.' } }] }],
   },
   'vex-refuses': {
     id: 'vex-refuses', kind: 'story', art: { emoji: '💢' },
-    text: ['"Thought not." Vex spits and vanishes — you\'ll meet his blade again at the chief\'s side.'],
+    text: ['Vex studies you a long moment, then shakes his head, almost sorry about it. "No. You\'d hang me the morning after, and we both know it." He melts back into the dark. "Pity. I\'d have made a better chief than either of us." You\'ll meet his blade again — at the warlord\'s side.'],
     next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'vex-hostile' }, { kind: 'setFlag', flag: 'met-vex' }] }],
   },
   'boss-approach': {
@@ -432,7 +435,7 @@ const scenes: Record<string, Scene> = {
   },
   boss: {
     id: 'boss', kind: 'battle', encounterId: 'bandits', mapId: 'firepit',
-    intro: ['"You\'ve cost me everything," the warlord snarls. "Bleed for it."'],
+    intro: ['The warlord doesn\'t rise so much as unfold — a big man gone to scar and appetite. "You\'ve cost me a good season," he says, almost mild, and rolls the great axe off his shoulder. "I\'ll take it back out of you. Slowly."'],
     loot: { bonusTier: 'rare' }, // a warlord's hoard — guaranteed trophy
     onWin: { to: 'aftermath', text: ['The warlord falls. The **Ashfang** are broken.'],
       effects: [{ kind: 'setFlag', flag: 'chief-dead' }, { kind: 'gold', amount: 100 }] },
@@ -443,7 +446,10 @@ const scenes: Record<string, Scene> = {
   // village and the marsh visibly mattered.
   aftermath: {
     id: 'aftermath', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
-    text: ['Back in Thornwick, the square fills. There are debts to settle in your favor now.'],
+    text: [
+      'You come back down the marsh road into a Thornwick with its shutters thrown open for the first time in a month. Word runs ahead of you; by the time you reach the square, the square is full.',
+      'The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He pays. "Thornwick settles its debts," he says, as though daring you to make something of it. Behind him, Mira catches your eye and very nearly smiles.',
+    ],
     next: [
       { id: 'bounty', label: 'Claim the reeve\'s bounty for the chief\'s head', to: 'aftermath',
         requires: [{ kind: 'flag', flag: 'bounty' }, { kind: 'notFlag', flag: 'got-bounty' }],
@@ -472,10 +478,11 @@ const scenes: Record<string, Scene> = {
   epilogue: {
     id: 'epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'The Ashfang banner burns in Thornwick square, and the marsh road runs safe again.',
-      'Mira pours the first round on the house. The road ahead is quieter — for now.',
+      'The Ashfang banner burns in the square, and the marsh road runs quiet again — quiet enough that the carters have started complaining about the state of it, which Mira says is the surest sign a place has stopped being afraid.',
+      'She pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.',
     ],
   },
+
 };
 
 export const HOLLOW_ROAD_MODULE: Module = {
