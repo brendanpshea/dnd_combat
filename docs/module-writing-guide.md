@@ -57,6 +57,26 @@ inherit the same register.
 - **The Ashfang chief** — entitled brutality. Speaks of a burned town the way
   another man speaks of a good harvest.
 
+## Encounters: a distinct roster per fight
+
+A module is also a tour of the bestiary — part of its job is to *show the
+monsters off*. So:
+
+- **Never drop the same encounter into three different battles.** Reusing one
+  encounter for two mutually-exclusive variants of a single fight (a surprise
+  version and a caught-flat-footed version) is fine; shipping the same three
+  goblins as the "climax" of three separate scenes is not. Give each fight its
+  own composition. (A test enforces this on The Hollow Road.)
+- **Vary the creature types across acts** — humanoids, beasts, undead, fey,
+  giants — so fights *feel* different, not just differ on paper.
+- **When something non-obvious fights for the villain, explain why in the
+  fiction.** Beasts, undead, and lizardfolk serving "bandits" isn't a bestiary
+  grab-bag — on the Hollow Road it's the green hag's pact (the chief sold her the
+  marsh; she lends him her creatures). The story is what earns the variety.
+- **Boss and act-climax fights should bite.** Tune them at the level they're
+  *actually fought* (the party is far stronger at L3 than the XP budget implies),
+  and prefer a nastier mixed roster or a real single threat over more mooks.
+
 ## Mechanics of prose in a scene
 
 - **Story/dialogue `text`/`lines`** unveil one beat per tap — write each entry as

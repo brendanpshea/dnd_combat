@@ -21,6 +21,7 @@ import { isLocationArt, isNpcArt } from '../src/data/adventure-art.js';
 import { CLASSIC_MODULE } from '../src/data/modules/classic.js';
 import { HIDEOUT_MODULE } from '../src/data/modules/demo.js';
 import { MODULES } from '../src/data/modules/index.js';
+import { ENCOUNTERS } from '../src/data/monsters.js';
 import type { Module } from '../src/adventure/types.js';
 
 // --- M0: skills -------------------------------------------------------------
@@ -805,6 +806,26 @@ describe('The Hollow Road (M4)', () => {
     expect(leads.length).toBeGreaterThan(0);
     // No validator error means each resolver flag is written somewhere.
     expect(validateModule(hollow).filter((e) => e.includes('resolvedBy'))).toEqual([]);
+  });
+
+  it('fields a varied bestiary — a distinct roster per fight, no lazy reuse', () => {
+    // Collect every battle scene's encounter and the monsters it fields.
+    const enc = new Map<string, number>();
+    const monsters = new Set<string>();
+    for (const s of Object.values(hollow.scenes)) {
+      if (s.kind !== 'battle') continue;
+      enc.set(s.encounterId, (enc.get(s.encounterId) ?? 0) + 1);
+      for (const m of ENCOUNTERS[s.encounterId]?.members ?? []) monsters.add(m);
+    }
+    // A good spread of distinct encounters and a real tour of the bestiary.
+    expect(enc.size).toBeGreaterThanOrEqual(8);
+    expect(monsters.size).toBeGreaterThanOrEqual(12);
+    // No encounter drives more than two scenes — the only doubles allowed are
+    // mutually-exclusive variants of one fight (the spy ambush, the hollow
+    // ambush), never the same encounter dropped into three different battles.
+    for (const [id, count] of enc) {
+      expect(count, `encounter '${id}' is reused in ${count} battles`).toBeLessThanOrEqual(2);
+    }
   });
 
   it('opens with an early ambush — combat in the first minute', () => {
