@@ -1688,10 +1688,28 @@ button.category .count {
 
 /* Party read-out strip under story scenes (fills the old dead space). */
 .adv-party-strip {
-  display: flex; gap: 8px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  display: flex; gap: 10px; align-items: center; padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--panel2); background: var(--panel);
 }
+.adv-party-members { display: flex; gap: 8px; flex: 1; min-width: 0; }
 .adv-party-member { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+
+/* Journal / Party pills — the affordances moved out of the top bar. */
+.adv-strip-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+.adv-strip-pill {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 52px; min-height: 46px; padding: 4px 8px; border-radius: 12px;
+  background: var(--panel2); border: 1px solid transparent; color: var(--text); cursor: pointer; font-size: 18px;
+}
+.adv-strip-pill:hover { border-color: var(--blue); }
+.adv-pill-label { font-size: .6rem; color: var(--muted); letter-spacing: .02em; }
+.adv-pill-dot {
+  position: absolute; top: 3px; right: 5px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 0 2px var(--panel2); animation: nodepulse 1.6s infinite;
+}
+.adv-pill-count {
+  position: absolute; top: 1px; right: 2px; font-size: .62rem; font-weight: 700; color: var(--muted);
+}
 /* In the shop the members are tappable hero-focus buttons. */
 .adv-party-strip.selectable .adv-party-member {
   background: none; border: 1px solid transparent; border-radius: 10px; padding: 3px 2px; cursor: pointer;
@@ -1866,6 +1884,11 @@ button.category .count {
 .journal-entry { background: var(--panel2); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
 .journal-entry strong { display: block; margin-bottom: 3px; }
 .journal-entry p { font-size: .9rem; line-height: 1.45; color: var(--text); }
+.journal-entry.resolved { opacity: .6; }
+.journal-entry.resolved strong { text-decoration: line-through; text-decoration-color: rgba(232,228,240,.4); }
+.lead-mark { color: var(--gold); margin-right: 6px; }
+.journal-entry.resolved .lead-mark { color: var(--green); }
+.lead-done { font-weight: 400; font-size: .8rem; color: var(--green); text-decoration: none; }
 .adv-journal-btn { font-size: 1rem; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slidein { from { transform: translateX(30px); opacity: .6; } to { transform: none; opacity: 1; } }

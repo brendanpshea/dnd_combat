@@ -105,6 +105,9 @@ export function validateModule(module: Module): string[] {
   // Flag hygiene: every flag read somewhere must be written somewhere.
   const written = new Set<string>();
   const read = new Set<string>();
+  // A journal lead resolves when its `resolvedBy` flag fires — track where each
+  // is opened so a lead that can never close is caught as an authoring error.
+  const leadResolvers = new Map<string, Id>();
 
   for (const [id, scene] of Object.entries(module.scenes)) {
     if (scene.id !== id) at(id, `scene.id '${scene.id}' does not match its key`);
@@ -118,6 +121,9 @@ export function validateModule(module: Module): string[] {
       }
       if (eff.kind === 'setFlag') written.add(eff.flag);
       if (eff.kind === 'clearFlag') written.add(eff.flag);
+      if (eff.kind === 'journal' && eff.entry.kind === 'lead' && eff.entry.resolvedBy) {
+        leadResolvers.set(eff.entry.resolvedBy, id);
+      }
     }
     for (const req of requirementsOf(scene)) {
       if (req.kind === 'flag' || req.kind === 'notFlag') read.add(req.flag);
@@ -187,6 +193,9 @@ export function validateModule(module: Module): string[] {
 
   for (const flag of read) {
     if (!written.has(flag)) errors.push(`flag '${flag}' is read but never set by any scene`);
+  }
+  for (const [flag, id] of leadResolvers) {
+    if (!written.has(flag)) at(id, `journal lead's resolvedBy flag '${flag}' is never set, so the lead can never close`);
   }
 
   // Reachability: BFS from start over unconditional-ish refs (we treat every

@@ -46,7 +46,12 @@ export interface JournalEntry {
   id: Id;
   title: string;
   body: Paragraph;
-  kind: 'quest' | 'clue' | 'npc';
+  /** quest = the mission; lead = an open thread to follow (a named place/person
+   *  to investigate); clue = a fact learned; npc = someone met. */
+  kind: 'quest' | 'lead' | 'clue' | 'npc';
+  /** For a `lead`: the flag whose firing closes it. When that flag is set the
+   *  journal shows the lead as followed up, so open threads read as progress. */
+  resolvedBy?: string;
 }
 
 /** Where a check/branch lands, plus what it does on the way. */

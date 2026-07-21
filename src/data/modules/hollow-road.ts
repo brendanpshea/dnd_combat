@@ -28,7 +28,7 @@ const scenes: Record<string, Scene> = {
       'The reeve\'s bounty drew you up the valley. But it was the plea nailed beneath it, in a shakier hand, that made you come: "Help us. There is no one else."',
     ],
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern',
-      effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'End the raiders plaguing Thornwick. Start by learning where they den.' } }] }],
+      effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'Mira, who keeps the Wander-Inn, begged your help against the Ashfang raiders bleeding Thornwick dry. Learn where they den — the market and the marsh road are the places to ask — then end them.' } }] }],
   },
   // The tavern is a small loop, not a one-way door (#6): each social read is a
   // `once` choice that returns you here, so you can try Insight *and*
@@ -53,11 +53,13 @@ const scenes: Record<string, Scene> = {
     id: 'tavern-spy', kind: 'story', art: { emoji: '👁️' },
     text: [
       '**Mira** reads the doubt on your face and lowers her voice until it barely carries over the fire.',
-      '"The **Ashfang** always seem to know which wagon\'s worth taking. Someone here feeds them word of every caravan that leaves." Her eyes flick to the door. "If I were you, I\'d start at the **market**. Watch who watches the gate."',
+      '"The **Ashfang** always seem to know which wagon\'s worth taking. Someone here feeds them word of every caravan that leaves — and I think I know who."',
+      '"There\'s a **furtive peddler** who sets up by the **market**, near the gate. Sells nothing, buys nothing, but he\'s there every time a train rolls out. Watch him. If anyone\'s carrying word to the raiders, it\'s him."',
     ],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'know-spy' },
-        { kind: 'journal', entry: { id: 'c-spy', kind: 'clue', title: 'An Informant', body: 'A spy in Thornwick feeds the raiders. Mira suspects the market.' } }] }],
+        { kind: 'journal', entry: { id: 'lead-spy', kind: 'lead', resolvedBy: 'spy-caught',
+          title: 'The Furtive Peddler', body: 'Mira named a peddler who loiters by the market gate as the raiders\' informant. Find him in Thornwick Square and deal with him.' } }] }],
   },
   'tavern-trail': {
     id: 'tavern-trail', kind: 'story', art: { emoji: '🗺️' },
@@ -186,10 +188,15 @@ const scenes: Record<string, Scene> = {
   },
   'scout-saved': {
     id: 'scout-saved', kind: 'story', art: { emoji: '❤️‍🩹' },
-    text: ['The bleeding stops. Grateful, she maps the den\'s watch-posts and the lieutenant who hates the chief. "Vex. Offer Vex a way out and he might take it."'],
-    next: [{ id: 'ok', label: 'Send her back to Thornwick', to: 'trail',
+    text: [
+      'The bleeding stops. Grateful, the scout — **Wren**, she says — maps the den\'s watch-posts in the mud, then grips your wrist.',
+      '"There\'s one of them who hates the chief worse than you do. **Vex**, the lieutenant. Offer Vex a way out when you reach the den\'s fire and he might just take it — and stand his guards aside."',
+    ],
+    next: [{ id: 'ok', label: 'Send Wren back to Thornwick', to: 'trail',
       effects: [{ kind: 'setFlag', flag: 'saved-scout' }, { kind: 'setFlag', flag: 'scout-met' }, { kind: 'setFlag', flag: 'know-vex' },
-        { kind: 'journal', entry: { id: 'n-scout', kind: 'npc', title: 'The Scout', body: 'You saved a reeve\'s scout. She named Vex, the chief\'s resentful lieutenant.' } }] }],
+        { kind: 'journal', entry: { id: 'npc-wren', kind: 'npc', title: 'Wren, the Scout', body: 'You pulled a reeve\'s scout, Wren, out from under a dead horse on the marsh road. She mapped the den for you.' } },
+        { kind: 'journal', entry: { id: 'lead-vex', kind: 'lead', resolvedBy: 'met-vex',
+          title: 'Vex, the Lieutenant', body: 'Wren named Vex, the Ashfang chief\'s resentful lieutenant. Seek out his fire inside the den — he may turn on the chief if offered a way out.' } }] }],
   },
   'scout-fail': {
     id: 'scout-fail', kind: 'story', art: { emoji: '🩸' },
@@ -294,13 +301,13 @@ const scenes: Record<string, Scene> = {
     id: 'vex-turned', kind: 'story', art: { emoji: '🤝' },
     text: ['Vex sheathes his blade. "The chief\'s guards answer to me. They\'ll stand aside — this once." He melts into the smoke.'],
     next: [{ id: 'ok', label: 'On to the chief', to: 'inner',
-      effects: [{ kind: 'setFlag', flag: 'vex-turned' },
+      effects: [{ kind: 'setFlag', flag: 'vex-turned' }, { kind: 'setFlag', flag: 'met-vex' },
         { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: 'Vex', body: 'The lieutenant Vex will stand his guards aside when you face the chief.' } }] }],
   },
   'vex-refuses': {
     id: 'vex-refuses', kind: 'story', art: { emoji: '💢' },
     text: ['"Thought not." Vex spits and vanishes — you\'ll meet his blade again at the chief\'s side.'],
-    next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'vex-hostile' }] }],
+    next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'vex-hostile' }, { kind: 'setFlag', flag: 'met-vex' }] }],
   },
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
