@@ -210,6 +210,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'endTurn':
       return true;
     case 'move':
+      // Incapacitated/paralyzed/etc. take no movement either (their turn grants
+      // zero speed, but gate here too so no stale budget slips a step through).
+      if (incap) return false;
       return moveDestinations(state, actor).some((p) => posEq(p, action.to));
     case 'attack':
       if (incap) return false;
@@ -362,8 +365,14 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   const enemies = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
   const allies = Object.values(state.combatants).filter((c) => c.alive && c.team === actor.team);
 
-  for (const to of moveDestinations(state, actor)) {
-    actions.push({ kind: 'move', to });
+  // No movement while incapacitated — mirrors the `move` gate in isLegalAction.
+  // This matters mid-turn too: a creature dropped to 0 HP by an opportunity
+  // attack while moving is now unconscious but still the active turn, and its
+  // stale movement budget must not offer (illegal) further steps.
+  if (!isIncapacitated(actor)) {
+    for (const to of moveDestinations(state, actor)) {
+      actions.push({ kind: 'move', to });
+    }
   }
 
   for (const wid of attackableWeapons(actor)) {
