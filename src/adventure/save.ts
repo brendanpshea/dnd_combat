@@ -52,6 +52,7 @@ export function parseAdventure(json: string, module: Module): AdventureState | u
     state.journal ??= [];
     state.guidanceSpent ??= [];
     state.consumedChoices ??= [];
+    state.spentApproaches ??= [];
     state.shopVisits ??= {};
     return state;
   } catch {

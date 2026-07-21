@@ -18,6 +18,7 @@ import { HIDEOUT_MODULE } from '../../data/modules/demo.js';
 import { HOLLOW_ROAD_MODULE } from '../../data/modules/hollow-road.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
+  legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
   type AdventureState, type AdventureEvent,
 } from '../../adventure/runtime.js';
@@ -105,6 +106,17 @@ async function main() {
       void playable;
     } else if (scene.kind === 'check') {
       render(rollSceneCheck(state, module), campaign);
+    } else if (scene.kind === 'challenge') {
+      const options = legalApproaches(state, module);
+      console.log('\nHow do you handle this?');
+      const idx = await pickIndex(rl, options.map((o) => {
+        const chip = `[${o.approach.skill} DC ${o.approach.dc}]`;
+        const tag = o.blocked ? ` — (${o.blocked})` : o.spent ? ' — (already tried)' : '';
+        return `${chip} ${o.approach.label}${tag}`;
+      }), auto);
+      const pick = options[idx]!;
+      if (pick.blocked || pick.spent) { console.log('Not available.'); continue; }
+      render(tryApproach(state, module, pick.approach.id), campaign);
     } else if (scene.kind === 'explore') {
       const nodes = exploreNodes(state, module);
       console.log(`\n🗺️  ${scene.map.title}`);

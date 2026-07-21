@@ -156,6 +156,7 @@ const scenes: Record<string, Scene> = {
         { id: 'scout', x: 34, y: 82, label: 'A Cry for Help', mystery: 'A faint sound…', icon: 'tok-person', scene: 'wounded',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
         { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
           wandering: { chance: 0.5, battleScene: 'marsh-wolves' } },
         { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
           requires: [{ kind: 'flag', flag: 'trail-read' }] },
@@ -171,11 +172,37 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'trail-read' }] },
   },
   ravine: {
-    id: 'ravine', kind: 'check', skill: 'athletics', dc: 13, art: { emoji: '🪨' },
-    intro: ['A collapsed ravine cuts the trail. A hard climb saves an hour — a fall costs blood.'],
-    success: { to: 'trail', text: ['You haul the party up and over. The shortcut is yours.'],
-      effects: [{ kind: 'setFlag', flag: 'shortcut' }, { kind: 'xp', amount: 30 }] },
-    failure: { to: 'trail', text: ['Loose scree turns an ankle or two before you find the long way round.'] },
+    id: 'ravine', kind: 'challenge', art: { emoji: '🪨' },
+    intro: ['A collapsed ravine cuts the trail. The far side is close — but the gap is raw scree and broken stone. There\'s more than one way across.'],
+    // `perApproach`: a botched climb doesn't strand you — you can still scramble
+    // the rubble or take the slow way round. Only when every line fails do you
+    // lose the hour outright.
+    retry: 'perApproach',
+    approaches: [
+      { id: 'climb', label: 'Climb it head-on', hint: 'Muscle up the sheer face — fastest, if you don\'t fall.',
+        skill: 'athletics', dc: 13,
+        success: { to: 'trail', text: ['You haul the party up and over hand over hand. The shortcut is yours.'],
+          effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'setFlag', flag: 'shortcut' }, { kind: 'xp', amount: 30 }] },
+        failure: { to: 'ravine', text: ['A hold crumbles and you slide back down in a clatter of stone. No good that way.'] } },
+      { id: 'scramble', label: 'Pick across the rubble', hint: 'Balance over the loose scree where it\'s fallen shallowest.',
+        skill: 'acrobatics', dc: 12,
+        success: { to: 'trail', text: ['Light on your feet, you thread the shifting stones and reach the far lip. The shortcut is yours.'],
+          effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'setFlag', flag: 'shortcut' }, { kind: 'xp', amount: 30 }] },
+        failure: { to: 'ravine', text: ['The scree gives all at once and you scramble back before it takes an ankle with it.'] } },
+      { id: 'detour', label: 'Find the long way round', hint: 'Read the ground for a safe line — slower, but no broken bones.',
+        skill: 'survival', dc: 11,
+        success: { to: 'trail', text: ['You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.'],
+          effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 15 }] } },
+    ],
+    // Reached only if every line of attack fails (or is spent).
+    success: { to: 'trail', effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }] },
+    failure: { to: 'trail', text: ['Every way across fights you. In the end you give up the hour and take the long, muddy detour — bruised and behind schedule.'],
+      effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }] },
+  },
+  'ravine-done': {
+    id: 'ravine-done', kind: 'story', art: { emoji: '🪨' },
+    text: ['The broken ravine lies behind you now, already crossed. Nothing waits here but the wind in the scree.'],
+    next: [{ id: 'ok', label: 'Press on', to: 'trail' }], noBack: true,
   },
   wounded: {
     id: 'wounded', kind: 'dialogue', npc: SCOUT, art: { emoji: '🤕' },

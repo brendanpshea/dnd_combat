@@ -22,6 +22,7 @@ import { MAPS } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
+  legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
   hubReturn, returnToHub, campRule, campRest,
   type AdventureState, type AdventureEvent,
@@ -286,6 +287,12 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
     process(rollSceneCheck(state, module, actorIdx), from);
   }
 
+  function onApproach(approachId: string, actorIdx?: number) {
+    setBanner([]);
+    const from = scene;
+    process(tryApproach(state, module, approachId, actorIdx), from);
+  }
+
   function onLeave() {
     setBanner([]);
     process(returnToHub(state, module), scene);
@@ -411,6 +418,7 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
               module={module}
               onChoice={onChoice}
               onRollScene={onRollScene}
+              onApproach={onApproach}
               onLeave={onLeave}
               onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
@@ -559,7 +567,8 @@ function BattleIntro(
 function FrozenScene({ scene }: { scene: Scene }) {
   const lines = scene.kind === 'story' ? scene.text
     : scene.kind === 'dialogue' ? scene.lines
-    : scene.kind === 'check' ? scene.intro : [];
+    : scene.kind === 'check' ? scene.intro
+    : scene.kind === 'challenge' ? scene.intro : [];
   return (
     <div className="adv-scene bottom">
       <div className="adv-panel frozen">
@@ -887,6 +896,7 @@ interface BodyProps {
   module: Module;
   onChoice: (id: string, actorIdx?: number) => void;
   onRollScene: (actorIdx?: number) => void;
+  onApproach: (id: string, actorIdx?: number) => void;
   onLeave: () => void;
   onNode: (nodeId: string) => void;
   onBlockedNode: (reason: string) => void;
@@ -900,7 +910,7 @@ interface BodyProps {
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -986,6 +996,15 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
     );
   }
 
+  if (scene.kind === 'challenge') {
+    return (
+      <ChallengeBody
+        scene={scene} state={state} module={module}
+        onApproach={onApproach} onLeave={onLeave}
+      />
+    );
+  }
+
   if (scene.kind === 'explore') {
     const nodes = exploreNodes(state, module);
     const visibleIds = new Set(nodes.map((n) => n.node.id));
@@ -1066,6 +1085,73 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
 
   // rest auto-resolves via the effect above; render a brief placeholder.
   return <div className="adv-scene centered"><p className="adv-text">…</p></div>;
+}
+
+/** A challenge scene: the intro, then the lines of attack as pickable buttons.
+ *  Each approach carries its own skill/DC; a `roller: 'chosen'` one asks "who
+ *  steps up?" before rolling. A `perApproach` challenge greys out a line once
+ *  tried, so the party sees what they've already spent. */
+function ChallengeBody(
+  { scene, state, module, onApproach, onLeave }: {
+    scene: Extract<Scene, { kind: 'challenge' }>;
+    state: AdventureState; module: Module;
+    onApproach: (id: string, actorIdx?: number) => void;
+    onLeave: () => void;
+  },
+) {
+  // The approach awaiting a hero pick (a `roller: 'chosen'` line), or null.
+  const [pickFor, setPickFor] = useState<string | null>(null);
+  const options = legalApproaches(state, module);
+  const leaveTo = hubReturn(state, module);
+  const pending = pickFor ? scene.approaches.find((a) => a.id === pickFor) : null;
+
+  if (pending) {
+    return (
+      <div className="adv-scene bottom">
+        <div className="adv-panel">
+          <p className="adv-prompt">Who steps up? ({pending.skill}, DC {pending.dc})</p>
+          <RosterPicker campaign={state.campaign} onPick={(idx) => { setPickFor(null); onApproach(pending.id, idx); }} />
+          <button className="adv-choice adv-leave" onClick={() => setPickFor(null)}><span>← Back</span></button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="adv-scene bottom">
+      <div className="adv-panel">
+        {scene.intro.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+        <p className="adv-prompt">How do you handle this?</p>
+        <div className="adv-choices">
+          {options.map(({ approach, blocked, spent }) => {
+            const disabled = !!blocked || spent;
+            const onTap = () => {
+              if (disabled) return;
+              if ((approach.roller ?? 'best') === 'chosen') setPickFor(approach.id);
+              else onApproach(approach.id);
+            };
+            return (
+              <button
+                key={approach.id}
+                className={`adv-choice adv-approach ${blocked ? 'blocked' : ''} ${spent ? 'spent' : ''}`}
+                disabled={disabled}
+                onClick={onTap}
+              >
+                <span className="adv-chip">🎲 {approach.skill} DC {approach.dc}</span>
+                <span className="adv-approach-label">{approach.label}</span>
+                {approach.hint && <span className="adv-approach-hint">{approach.hint}</span>}
+                {blocked && <span className="adv-lock">🔒 {blocked}</span>}
+                {!blocked && spent && <span className="adv-lock">✓ tried</span>}
+              </button>
+            );
+          })}
+          {leaveTo && (
+            <button className="adv-choice adv-leave" onClick={onLeave}><span>← Leave</span></button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function RosterPicker({ campaign, onPick }: { campaign: CampaignState; onPick: (idx: number) => void }) {

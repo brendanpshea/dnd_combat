@@ -1550,6 +1550,12 @@ button.category .count {
 }
 .adv-lock { font-size: .8rem; color: var(--muted); }
 
+/* Challenge approaches: a chosen line of attack, its label and a texture line. */
+.adv-approach-label { font-weight: 600; }
+.adv-approach-hint { font-size: .86rem; color: var(--muted); line-height: 1.35; }
+.adv-choice.adv-approach.spent { opacity: .5; cursor: not-allowed; }
+.adv-choice.adv-approach.spent .adv-approach-label { text-decoration: line-through; }
+
 .adv-banner {
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 8px;
 }

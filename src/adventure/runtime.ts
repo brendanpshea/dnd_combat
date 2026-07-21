@@ -24,7 +24,7 @@ import {
 import {
   HUB_REF,
   type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome,
-  type Roller, type ExploreNode, type JournalEntry, type CampRule,
+  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach,
 } from './types.js';
 
 export interface AdventureState {
@@ -49,6 +49,9 @@ export interface AdventureState {
   hub?: Id;
   /** `sceneId:choiceId` keys of taken `once` choices, never offered again. */
   consumedChoices: string[];
+  /** `sceneId::approachId` keys of challenge approaches already attempted (a
+   *  `perApproach` challenge spends each try; a `single` one ends on the first). */
+  spentApproaches: string[];
   /** Per-shop-scene visit state, reset each time that shop is entered. Keyed by
    *  scene id so two shops in a module never share a haggle discount or a
    *  spent gambit. */
@@ -85,7 +88,7 @@ export function startAdventure(campaign: CampaignState, module: Module): Adventu
   const state: AdventureState = {
     campaign, moduleId: module.id, sceneId: module.start,
     flags: {}, visited: [], exploredNodes: [], wanderingRolled: [],
-    journal: [], guidanceSpent: [], consumedChoices: [], shopVisits: {},
+    journal: [], guidanceSpent: [], consumedChoices: [], spentApproaches: [], shopVisits: {},
   };
   return state;
 }
@@ -220,6 +223,7 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
     case 'story': events.push({ type: 'text', paragraphs: scene.text }); break;
     case 'dialogue': events.push({ type: 'text', paragraphs: scene.lines }); break;
     case 'check': events.push({ type: 'text', paragraphs: scene.intro }); break;
+    case 'challenge': events.push({ type: 'text', paragraphs: scene.intro }); break;
     case 'battle':
       if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
       events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
@@ -303,6 +307,71 @@ function rollChosen(
   return roll.success;
 }
 
+// --- Challenges (multi-approach obstacles) ----------------------------------
+
+const approachKey = (sceneId: Id, approachId: Id) => `${sceneId}::${approachId}`;
+
+/** The approaches offered at the current challenge scene, each with its block
+ *  reason and whether it's already been spent (a `perApproach` challenge). */
+export function legalApproaches(
+  state: AdventureState, module: Module,
+): Array<{ approach: Approach; blocked: string | null; spent: boolean }> {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'challenge') return [];
+  return scene.approaches
+    .map((approach) => ({
+      approach,
+      blocked: blockedReason(state, approach.requires),
+      spent: state.spentApproaches.includes(approachKey(scene.id, approach.id)),
+    }))
+    .filter(({ approach, blocked }) => !(blocked && approach.hideWhenBlocked));
+}
+
+/** Attempt one approach at a challenge scene: roll its skill, then route.
+ *  `single` (default): success or failure resolves the whole challenge.
+ *  `perApproach`: a failure spends this approach and returns to the choice
+ *  (its `failure` beat plays), unless it was the last option — then the
+ *  challenge's shared `failure` fires. `actorIdx` picks the hero for a
+ *  `roller: 'chosen'` approach. */
+export function tryApproach(
+  state: AdventureState, module: Module, approachId: Id, actorIdx?: number,
+): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'challenge') throw new Error(`tryApproach on a ${scene.kind} scene`);
+  const approach = scene.approaches.find((a) => a.id === approachId);
+  if (!approach) throw new Error(`No approach ${approachId} at ${state.sceneId}`);
+  if (blockedReason(state, approach.requires)) throw new Error(`Approach ${approachId} is blocked`);
+  const key = approachKey(scene.id, approach.id);
+  if (state.spentApproaches.includes(key)) throw new Error(`Approach ${approachId} already tried`);
+
+  const perApproach = scene.retry === 'perApproach';
+  // Spend the approach up front (a failed try can't be re-rolled). In `single`
+  // mode the whole challenge ends here regardless, so tracking it is harmless.
+  if (perApproach) state.spentApproaches.push(key);
+
+  const events: AdventureEvent[] = [];
+  const roller = approach.roller ?? 'best';
+  const success = actorIdx !== undefined && roller === 'chosen'
+    ? rollChosen(state, approach.skill, approach.dc, actorIdx, events)
+    : rollFor(state, approach.skill, approach.dc, roller, events);
+
+  if (success) {
+    events.push(...applyOutcome(state, module, approach.success ?? scene.success));
+    return events;
+  }
+  if (!perApproach) {
+    events.push(...applyOutcome(state, module, approach.failure ?? scene.failure));
+    return events;
+  }
+  // A `perApproach` failure: show this line's beat and stay — unless nothing
+  // else is left to try, in which case the challenge fails for good.
+  if (approach.failure?.text) events.push({ type: 'text', paragraphs: approach.failure.text });
+  applyEffects(state, approach.failure?.effects, events);
+  const anyLeft = legalApproaches(state, module).some((a) => !a.spent && !a.blocked);
+  if (!anyLeft) events.push(...applyOutcome(state, module, scene.failure));
+  return events;
+}
+
 // --- Choices ----------------------------------------------------------------
 
 const choiceKey = (sceneId: Id, choiceId: Id) => `${sceneId}:${choiceId}`;
@@ -325,7 +394,7 @@ export function legalChoices(
  *  so the player is never trapped and can walk back out of a conversation. */
 export function hubReturn(state: AdventureState, module: Module): Id | null {
   const scene = currentScene(state, module);
-  if (scene.kind !== 'story' && scene.kind !== 'dialogue') return null;
+  if (scene.kind !== 'story' && scene.kind !== 'dialogue' && scene.kind !== 'challenge') return null;
   if (scene.noBack || !state.hub || state.hub === scene.id) return null;
   return state.hub;
 }
