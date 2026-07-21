@@ -136,12 +136,17 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
     <div className="setup landing">
       <header className="landing-head">
         <h1>⚔️ The Free Company</h1>
-        <p className="landing-tag">Tabletop adventures you can play on a laptop or a phone — solo, in your browser, free.</p>
+        <p className="landing-tag">The fifth-edition tabletop rules you already know — solo, in your browser, free.</p>
         <div className="landing-badges">
           <span>📱 Plays anywhere</span>
           <span>🆓 Free &amp; open</span>
-          <span>📜 SRD 5.2 · CC-BY</span>
+          <span>⚔️ 6 classes · 8 ancestries</span>
+          <span>🐉 45+ spells · 55+ monsters</span>
         </div>
+        <p className="landing-legal">
+          Built on the <b>Dungeons &amp; Dragons</b> SRD 5.2, released free under Creative Commons —
+          not affiliated with or endorsed by Wizards of the Coast.
+        </p>
       </header>
 
       <div className="landing-modules">
@@ -202,7 +207,8 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         <div className="overlay" onClick={() => setAbout(false)}>
           <div className="overlay-box about-box" onClick={(e) => e.stopPropagation()}>
             <h2>The Free Company</h2>
-            <p>A little tactics-and-story RPG you can play in a browser, on a phone or a laptop. No account, no cost — your progress saves in this browser.</p>
+            <p>A little tactics-and-story RPG that runs on the fifth-edition <b>Dungeons &amp; Dragons</b> rules — play it in a browser, on a phone or a laptop. No account, no cost; your progress saves in this browser.</p>
+            <p className="muted">Inside: 6 classes, 8 ancestries, 45+ spells, and 55+ monsters, plus the full skill and grid-combat rules — all drawn from the SRD.</p>
             <p className="muted">Built on the <b>System Reference Document 5.2.1</b>, © Wizards of the Coast LLC, released under <b>CC-BY-4.0</b>. This game uses those rules with house rules where noted, and is not affiliated with or endorsed by Wizards of the Coast.</p>
             <p className="muted">Open source — <a href="https://github.com/brendanpshea/dnd_combat" target="_blank" rel="noreferrer">github.com/brendanpshea/dnd_combat</a>.</p>
             <button className="primary" onClick={() => setAbout(false)}>Close</button>
