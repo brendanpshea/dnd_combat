@@ -19,13 +19,47 @@ const SCOUT = { id: 'npc-scout-hr', name: 'Wounded Scout', portraitId: 'npc-woun
 const LIEUTENANT = { id: 'npc-vex', name: 'Vex, the Lieutenant', portraitId: 'npc-captain', emoji: '🗡️' };
 
 const scenes: Record<string, Scene> = {
-  // === ACT 1 — THORNWICK (village hub) ===================================
-  start: {
-    id: 'start', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
+  // === ACT 0 — THE VALLEY ROAD (cold open: a fight in the first minute) ===
+  // The module leads with combat, not conversation: an ambush that teaches the
+  // battle UI (it's the first fight, so the tutorial fires) and names the enemy
+  // — the raiders declare for the Ashfang chief before you ever reach town.
+  road: {
+    id: 'road', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      'The village of **Thornwick** huddles under grey hills, its gate scorched, its people watching you from shuttered windows.',
-      'For a month the **Ashfang raiders** have bled the road dry — burned barns, emptied larders, carried off anyone caught after dark.',
-      'The reeve\'s bounty drew you up the valley. But it was the plea nailed beneath it, in a shakier hand, that made you come: "Help us. There is no one else."',
+      'A day\'s hard walking up the valley, and the country has gone wrong-quiet — no carters, no herders, only crows lifting off the hedgerows as you pass.',
+      'Thornwick lies an hour ahead, its chimney-smoke thin against the grey hills. The reeve\'s bounty is folded in your pack; the plea nailed beneath it is why you kept walking.',
+      'Then the hedges shift on both sides at once — and it\'s already too late to run.',
+    ],
+    next: [{ id: 'go', label: 'Draw steel', to: 'road-ambush' }], noBack: true,
+  },
+  'road-ambush': {
+    id: 'road-ambush', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
+    intro: [
+      'Raiders scramble out of the ditch — an orc with a notched axe, a lean scout nocking an arrow, a bandit already grinning.',
+      '"The road\'s the **Ashfang\'s** now!" the bandit crows. "Chief takes his cut of every throat on it — and yours\'ll do just fine."',
+    ],
+    onWin: { to: 'road-reveal', text: ['The last of them drops into the mud. The road is yours again — for now.'] },
+  },
+  'road-reveal': {
+    id: 'road-reveal', kind: 'story', art: { imageId: 'loc-road', emoji: '🩸' },
+    text: [
+      'The bandit isn\'t dead yet. He laughs wetly through red teeth as you stand over him.',
+      '"You think you\'ve done something? We\'re a hundred strong in the hollow — and the **chief**, he eats towns like the one up the road for sport. The **Ashfang** own this whole valley now."',
+      'His eyes drift to the hills, to a thin smudge of smoke rising somewhere past the marsh. Then they drift to nothing at all.',
+    ],
+    next: [{ id: 'on', label: 'Press on to Thornwick', to: 'thornwick',
+      effects: [{ kind: 'setFlag', flag: 'road-ambushed' },
+        { kind: 'journal', entry: { id: 'c-ashfang', kind: 'clue', title: 'The Ashfang Own the Valley',
+          body: 'Raiders ambushed you on the road, boasting of an Ashfang chief who dens in the hills past the marsh — you saw his smoke rise for yourself. They are many, and they answer to him.' } }] }],
+  },
+
+  // === ACT 1 — THORNWICK (village hub) ===================================
+  thornwick: {
+    id: 'thornwick', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
+    text: [
+      'You limp the last mile into **Thornwick** — gate scorched, shutters barred, faces watching you pass from the dark of doorways.',
+      'So the raiders on the road told it true: for a month the **Ashfang** have bled this valley dry, and the whole country has learned to lock its doors by dark.',
+      'The reeve\'s bounty is what you came for. But it was the plea nailed beneath it, in a shakier hand, that made you keep walking: "Help us. There is no one else."',
     ],
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern',
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'Mira, who keeps the Wander-Inn, begged your help against the Ashfang raiders bleeding Thornwick dry. Learn where they den — the market and the marsh road are the places to ask — then end them.' } }] }],
@@ -396,5 +430,5 @@ const scenes: Record<string, Scene> = {
 export const HOLLOW_ROAD_MODULE: Module = {
   id: 'hollow-road', title: 'The Hollow Road',
   blurb: 'Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit.',
-  start: 'start', scenes, defeatScene: 'defeat',
+  start: 'road', scenes, defeatScene: 'defeat',
 };
