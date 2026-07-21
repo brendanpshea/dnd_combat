@@ -37,6 +37,9 @@ export interface AdventureState {
   exploredNodes: Id[];
   /** Explore-node ids whose wandering-encounter roll has already happened. */
   wanderingRolled: Id[];
+  /** The explore node the party most recently entered — their position on a
+   *  traversal map ("you are here"), and what reveals the next frontier. */
+  lastNode?: Id;
   journal: JournalEntry[];
   /** Scene ids whose once-per-scene Guidance has been spent (checks after the
    *  first in a scene get no cleric +1d4). */
@@ -380,6 +383,29 @@ export interface VisibleNode {
   secret: boolean;
   /** The party has already entered this node (drives fog-of-war dimming). */
   explored: boolean;
+  /** Traversal map: reachable now but not yet reached — shown as an unknown
+   *  token with its title hidden. Always false on a free-roam map. */
+  frontier: boolean;
+  /** The party's current position on the map ("you are here"). */
+  here: boolean;
+}
+
+/** Adjacency for a traversal map's `paths` (undirected). */
+function neighbours(paths: Array<[Id, Id]> | undefined, nodeId: Id): Id[] {
+  const out: Id[] = [];
+  for (const [a, b] of paths ?? []) {
+    if (a === nodeId) out.push(b);
+    else if (b === nodeId) out.push(a);
+  }
+  return out;
+}
+
+/** The party's current node on this map: the last one they entered if it lives
+ *  here, else the first entry (traversal) or none (free-roam). */
+function positionNode(state: AdventureState, map: { nodes: ExploreNode[]; entry?: Id[] }): Id | undefined {
+  const ids = new Set(map.nodes.map((n) => n.id));
+  if (state.lastNode && ids.has(state.lastNode)) return state.lastNode;
+  return map.entry?.[0];
 }
 
 /** The nodes to render for the current explore scene: gated nodes carry a
@@ -387,14 +413,37 @@ export interface VisibleNode {
 export function exploreNodes(state: AdventureState, module: Module): VisibleNode[] {
   const scene = currentScene(state, module);
   if (scene.kind !== 'explore') return [];
+  const map = scene.map;
   const passive = partyPassivePerception(state.campaign);
+  const here = positionNode(state, map);
+  const traversal = !!map.paths; // presence of edges = a path map
+
+  // On a traversal map, the "known" set is the entries plus the neighbours of
+  // every visited node; anything else is still beyond the fog and not shown.
+  let known: Set<Id> | null = null;
+  if (traversal) {
+    known = new Set(map.entry ?? []);
+    for (const n of map.nodes) {
+      if (state.exploredNodes.includes(n.id)) {
+        known.add(n.id);
+        for (const nb of neighbours(map.paths, n.id)) known.add(nb);
+      }
+    }
+    if (here) known.add(here);
+  }
+
   const out: VisibleNode[] = [];
-  for (const node of scene.map.nodes) {
+  for (const node of map.nodes) {
+    if (known && !known.has(node.id)) continue;      // beyond the frontier
     const secret = !!node.hidden;
-    if (secret && passive < node.hidden!.dc) continue; // undiscovered
+    if (secret && passive < node.hidden!.dc) continue; // undiscovered secret
+    const explored = state.exploredNodes.includes(node.id);
+    const isEntry = map.entry?.includes(node.id) ?? false;
+    // Frontier: known but not yet reached (and not the entry you started at).
+    const frontier = traversal && !explored && !isEntry;
     out.push({
-      node, blocked: blockedReason(state, node.requires), secret,
-      explored: state.exploredNodes.includes(node.id),
+      node, blocked: blockedReason(state, node.requires), secret, explored,
+      frontier, here: node.id === here,
     });
   }
   return out;
@@ -408,7 +457,12 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
   const node = scene.map.nodes.find((n) => n.id === nodeId);
   if (!node) throw new Error(`No node ${nodeId}`);
   if (blockedReason(state, node.requires)) throw new Error(`Node ${nodeId} is blocked`);
+  // On a traversal map you can only step to a node the frontier reveals.
+  if (scene.map.paths && !exploreNodes(state, module).some((v) => v.node.id === nodeId)) {
+    throw new Error(`Node ${nodeId} is beyond the frontier`);
+  }
   if (!state.exploredNodes.includes(nodeId)) state.exploredNodes.push(nodeId);
+  state.lastNode = nodeId; // you are here now
 
   if (node.wandering && !state.wanderingRolled.includes(nodeId)) {
     state.wanderingRolled.push(nodeId);

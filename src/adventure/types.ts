@@ -140,6 +140,17 @@ export interface ExploreMap {
   nodes: ExploreNode[];
   /** Present = the party may rest here (see CampRule). Absent = no rest. */
   camp?: CampRule;
+  /**
+   * Trail edges between nodes. Presence turns a free-roam map (a town: every
+   * marker tappable) into a *traversal* map (a wilderness: you move along the
+   * path). On a traversal map only the entry nodes and the neighbours of nodes
+   * you've visited are shown — the frontier — and a frontier node hides its
+   * title until you reach it. Undirected: [a, b] connects both ways.
+   */
+  paths?: Array<[Id, Id]>;
+  /** Where the party starts a traversal map (visible with title from the off).
+   *  Required when `paths` is set; ignored on a free-roam map. */
+  entry?: Id[];
 }
 
 export type Scene =

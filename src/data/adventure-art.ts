@@ -73,6 +73,52 @@ export const NPC_ART: Record<string, ArtEntry> = {
   'npc-barbarian': { id: 'npc-barbarian', label: 'Tribal warrior', emoji: '🪓' },
 };
 
+/**
+ * Map-node tokens — the circular markers on an explore map. One per *kind of
+ * place or beat* (a tavern, a cave mouth, a set of tracks, a danger), reused
+ * across modules and drawn as painterly circular miniatures that sit *on* the
+ * backdrop rather than floating over it. A node's `icon` names one of these;
+ * an unknown `icon` is treated as a raw emoji (back-compat), and the emoji here
+ * is the fallback until the token art is generated.
+ */
+export const NODE_TOKENS: Record<string, ArtEntry> = {
+  // settlement
+  'tok-tavern': { id: 'tok-tavern', label: 'Inn / tavern', emoji: '🍺' },
+  'tok-market': { id: 'tok-market', label: 'Market / shop', emoji: '🛒' },
+  'tok-notice': { id: 'tok-notice', label: 'Notice board', emoji: '📜' },
+  'tok-gate': { id: 'tok-gate', label: 'Gate / way out', emoji: '🚪' },
+  'tok-well': { id: 'tok-well', label: 'Well / fountain', emoji: '⛲' },
+  'tok-house': { id: 'tok-house', label: 'Dwelling', emoji: '🏠' },
+  'tok-temple': { id: 'tok-temple', label: 'Shrine / temple', emoji: '⛩️' },
+  // wilderness
+  'tok-camp': { id: 'tok-camp', label: 'Campsite', emoji: '🏕️' },
+  'tok-cave': { id: 'tok-cave', label: 'Cave mouth', emoji: '🕳️' },
+  'tok-ruin': { id: 'tok-ruin', label: 'Ruin', emoji: '🏛️' },
+  'tok-bridge': { id: 'tok-bridge', label: 'Bridge / crossing', emoji: '🌉' },
+  'tok-crossing': { id: 'tok-crossing', label: 'Ford / rough ground', emoji: '🪨' },
+  'tok-lookout': { id: 'tok-lookout', label: 'Vantage / lookout', emoji: '🔭' },
+  'tok-tracks': { id: 'tok-tracks', label: 'Tracks / trail sign', emoji: '👣' },
+  'tok-tree': { id: 'tok-tree', label: 'Landmark tree', emoji: '🌳' },
+  // people & beats
+  'tok-person': { id: 'tok-person', label: 'Someone in need / met', emoji: '🆘' },
+  'tok-figure': { id: 'tok-figure', label: 'Watched figure', emoji: '🕵️' },
+  'tok-danger': { id: 'tok-danger', label: 'Danger / foes', emoji: '⚔️' },
+  'tok-treasure': { id: 'tok-treasure', label: 'Cache / loot', emoji: '📦' },
+  'tok-fire': { id: 'tok-fire', label: 'Fire / forge', emoji: '🔥' },
+  'tok-boss': { id: 'tok-boss', label: 'Boss / throne', emoji: '👑' },
+  'tok-mystery': { id: 'tok-mystery', label: 'Unknown', emoji: '❓' },
+};
+
+export function isNodeToken(id: string | undefined): boolean {
+  return !!id && id in NODE_TOKENS;
+}
+/** Fallback glyph for a node's `icon`: a token's emoji, or the raw icon string
+ *  (back-compat for modules that put an emoji directly). */
+export function nodeEmoji(icon: string): string {
+  return NODE_TOKENS[icon]?.emoji ?? icon;
+}
+export const NODE_TOKEN_IDS = Object.keys(NODE_TOKENS);
+
 export function isLocationArt(id: string | undefined): boolean {
   return !!id && id in LOCATION_ART;
 }

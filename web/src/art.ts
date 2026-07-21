@@ -91,6 +91,15 @@ export function sceneArtUrl(id: string): string {
   return `${BASE}art/scene-${id}.webp`;
 }
 
+/** Map-node tokens (`tok-*`) with generated circular art (`token-tok-*.webp`).
+ *  Empty until generated — see art/adventure-prompts.md; nodes fall back to the
+ *  token's emoji until then. */
+export const HAS_TOKEN_ART = new Set<string>([
+]);
+export function hasTokenArt(id: string | undefined): boolean {
+  return !!id && HAS_TOKEN_ART.has(id);
+}
+
 export function tokenUrl(id: string): string {
   return `${BASE}art/token-${id}.webp`;
 }
