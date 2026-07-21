@@ -159,6 +159,7 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
   const [dice, setDice] = useState<DiceContext | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
   const [journalOpen, setJournalOpen] = useState(false);
+  const [journalUnread, setJournalUnread] = useState(false);
   const [campOpen, setCampOpen] = useState(false);
   const [muted, setMutedState] = useState(isMuted());
   /** Shop focus (which hero the buy/sell view is scoped to) — lifted here so
@@ -234,7 +235,7 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
       if (e.type === 'item' && e.gained) { rewards.push(`Gained ${label(e.itemId)}`); sfx('item'); }
       if (e.type === 'xp') { rewards.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`); sfx(e.leveledTo ? 'levelup' : 'item'); }
       if (e.type === 'heal' && e.amount > 0) { rewards.push(`Healed ${e.amount} HP`); sfx('heal'); }
-      if (e.type === 'journal') { rewards.push(`📖 ${e.entry.title}`); sfx('page'); }
+      if (e.type === 'journal') { rewards.push(`📖 ${e.entry.title}`); sfx('page'); setJournalUnread(true); }
     }
     return { paragraphs, rewards };
   }
@@ -373,14 +374,6 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
       <div className="adv-top">
         <button className="ghost" onClick={onExit}>✕ Menu</button>
         <span className="adv-title">{module.title}</span>
-        <button className="ghost adv-journal-btn" onClick={() => setJournalOpen(true)}>
-          📖{state.journal.length > 0 ? ` ${state.journal.length}` : ''}
-        </button>
-        {scene.kind !== 'ending' && !dice && (
-          <button className="ghost adv-journal-btn" title="Party & camp" onClick={() => setCampOpen(true)}>
-            🎒
-          </button>
-        )}
         <button className="ghost adv-journal-btn" title={muted ? 'Unmute' : 'Mute'}
           onClick={() => { const m = !muted; setMuted(m); setMutedState(m); if (!m) initAudio(); }}>
           {muted ? '🔇' : '🔊'}
@@ -388,7 +381,7 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
         <span className="adv-gold">💰 {campaign.gold}</span>
       </div>
 
-      {journalOpen && <JournalDrawer entries={state.journal} onClose={() => setJournalOpen(false)} />}
+      {journalOpen && <JournalDrawer entries={state.journal} flags={state.flags} onClose={() => setJournalOpen(false)} />}
       {campOpen && (
         <CampScreen
           campaign={campaign}
@@ -482,9 +475,13 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
         })()}
       </div>
 
-      {!isExplore && (
+      {scene.kind !== 'ending' && !dice && (
         <PartyStrip
           campaign={campaign}
+          onJournal={() => { setJournalUnread(false); setJournalOpen(true); }}
+          onCamp={() => setCampOpen(true)}
+          journalCount={state.journal.length}
+          journalUnread={journalUnread}
           {...(scene.kind === 'shop' ? {
             onSelect: (i: number) => setShopFocus((f) => (f === i ? 'all' : i)),
             ...(typeof shopFocus === 'number' ? { active: shopFocus } : {}),
@@ -583,32 +580,54 @@ function FrozenScene({ scene }: { scene: Scene }) {
 /** A compact party read-out (portrait + HP) at the base of most scenes. In the
  *  shop it doubles as the hero selector: `onSelect` makes each member tappable
  *  to scope buy/sell to them, and `active` marks the chosen one. */
+/** The persistent status bar: party portraits + HP, and — since it's the one
+ *  element on every scene — the Journal and Party/Camp affordances, moved here
+ *  out of the top bar (bottom-anchored, thumb-reachable, styled like the rest). */
 function PartyStrip(
-  { campaign, active, onSelect }: {
+  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread }: {
     campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
+    onJournal?: () => void; onCamp?: () => void; journalCount?: number; journalUnread?: boolean;
   },
 ) {
   const party = buildCampaignParty(campaign);
   const selectable = !!onSelect;
   return (
     <div className={`adv-party-strip ${selectable ? 'selectable' : ''}`}>
-      {party.map((c, i) => {
-        const pct = Math.max(0, Math.round((c.hp / c.maxHp) * 100));
-        const body = (
-          <>
-            {hasArt(campaign.characters[i]?.portraitId ?? c.classId)
-              ? <Portrait id={campaign.characters[i]?.portraitId ?? c.classId} team="team1" />
-              : <span className="adv-party-emoji">🧑</span>}
-            <div className="adv-party-hpbar"><div style={{ width: `${pct}%` }} /></div>
-            <span className="adv-party-hp">{c.hp}/{c.maxHp}</span>
-          </>
-        );
-        const cls = `adv-party-member ${c.hp === 0 ? 'down' : ''} ${active === i ? 'active' : ''}`;
-        return selectable
-          ? <button key={i} className={cls} onClick={() => onSelect!(i)}
-              title={`Focus ${campaign.characters[i]?.name}`}>{body}</button>
-          : <div key={i} className={cls}>{body}</div>;
-      })}
+      <div className="adv-party-members">
+        {party.map((c, i) => {
+          const pct = Math.max(0, Math.round((c.hp / c.maxHp) * 100));
+          const body = (
+            <>
+              {hasArt(campaign.characters[i]?.portraitId ?? c.classId)
+                ? <Portrait id={campaign.characters[i]?.portraitId ?? c.classId} team="team1" />
+                : <span className="adv-party-emoji">🧑</span>}
+              <div className="adv-party-hpbar"><div style={{ width: `${pct}%` }} /></div>
+              <span className="adv-party-hp">{c.hp}/{c.maxHp}</span>
+            </>
+          );
+          const cls = `adv-party-member ${c.hp === 0 ? 'down' : ''} ${active === i ? 'active' : ''}`;
+          return selectable
+            ? <button key={i} className={cls} onClick={() => onSelect!(i)}
+                title={`Focus ${campaign.characters[i]?.name}`}>{body}</button>
+            : <div key={i} className={cls}>{body}</div>;
+        })}
+      </div>
+      {(onJournal || onCamp) && (
+        <div className="adv-strip-actions">
+          {onJournal && (
+            <button className="adv-strip-pill" onClick={onJournal} title="Journal">
+              📖<span className="adv-pill-label">Journal</span>
+              {journalUnread && <span className="adv-pill-dot" aria-label="new entry" />}
+              {!journalUnread && journalCount ? <span className="adv-pill-count">{journalCount}</span> : null}
+            </button>
+          )}
+          {onCamp && (
+            <button className="adv-strip-pill" onClick={onCamp} title="Party & camp">
+              🎒<span className="adv-pill-label">Party</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -593,6 +593,27 @@ describe('traversal maps (paths & frontier)', () => {
     const typo = bad({}); (typo.scenes['x'] as { map: { nodes: Array<{ icon: string }> } }).map.nodes[0]!.icon = 'tok-nonsense';
     expect(validateModule(typo).some((e) => e.includes("'tok-nonsense'"))).toBe(true);
   });
+
+  it('the validator rejects a journal lead whose resolvedBy flag is never set', () => {
+    const mod: Module = {
+      id: 'ld', title: 'T', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'story', text: ['hi'], next: [
+          { id: 'go', label: 'Go', to: 'end', effects: [
+            { kind: 'journal', entry: {
+              id: 'lead-x', title: 'A thread', body: 'chase it',
+              kind: 'lead', resolvedBy: 'never-fires',
+            } },
+          ] },
+        ] },
+        end: { id: 'end', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    };
+    expect(validateModule(mod).some((e) => e.includes("'never-fires'") && e.includes('never close'))).toBe(true);
+    // Add a scene that sets the flag and the error clears.
+    (mod.scenes['s'] as { next: Array<{ effects?: unknown[] }> }).next[0]!.effects!.push({ kind: 'setFlag', flag: 'never-fires' });
+    expect(validateModule(mod).filter((e) => e.includes('resolvedBy'))).toEqual([]);
+  });
 });
 
 describe('exploration (M2)', () => {
@@ -662,6 +683,27 @@ describe('The Hollow Road (M4)', () => {
   it('validates', () => {
     expect(hollow).toBeDefined();
     expect(validateModule(hollow)).toEqual([]);
+  });
+
+  it('carries closable journal leads (resolver flags are actually set)', () => {
+    // Collect every lead's resolvedBy flag from the module's journal effects.
+    const leads: string[] = [];
+    for (const s of Object.values(hollow.scenes)) {
+      const choices = (s.kind === 'story' || s.kind === 'dialogue') ? s.next : [];
+      const outcomes = s.kind === 'check' ? [s.success, s.failure] : [];
+      const effs = [
+        ...choices.flatMap((c) => c.effects ?? []),
+        ...outcomes.flatMap((o) => o.effects ?? []),
+      ];
+      for (const eff of effs) {
+        if (eff.kind === 'journal' && eff.entry.kind === 'lead' && eff.entry.resolvedBy) {
+          leads.push(eff.entry.resolvedBy);
+        }
+      }
+    }
+    expect(leads.length).toBeGreaterThan(0);
+    // No validator error means each resolver flag is written somewhere.
+    expect(validateModule(hollow).filter((e) => e.includes('resolvedBy'))).toEqual([]);
   });
 
   it('is skill-diverse (uses several distinct skills across scenes)', () => {
