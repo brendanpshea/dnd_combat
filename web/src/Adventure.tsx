@@ -29,7 +29,6 @@ import {
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
-import { MODULES } from '../../src/data/modules/index.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
@@ -41,7 +40,7 @@ import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
 import { LootScreen } from './Loot.js';
-import { saveAdventureWeb, loadAdventureWeb, savedAdventureModule, deleteAdventureWeb } from './adventureStorage.js';
+import { saveAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -51,62 +50,15 @@ interface Props {
 /** A check event pulled from an action's stream, shown as a dice overlay. */
 type DiceOverlay = Extract<AdventureEvent, { type: 'check' }>;
 
-/** Pick a module (or resume a save), then hand off to the player. */
-export function AdventureScreen({ Battle, onExit }: Props) {
-  const [start, setStart] = useState<{ module: Module; resume?: AdventureState } | null>(null);
-  if (!start) return <ModulePicker onStart={setStart} onExit={onExit} />;
+/** Play a module the landing chose (resuming a save if one was handed in). */
+export function AdventureScreen(
+  { Battle, module, resume, onExit }: Props & { module: Module; resume?: AdventureState },
+) {
   return (
     <AdventurePlayer
-      key={start.module.id + (start.resume ? '-resume' : '-new')}
-      Battle={Battle} module={start.module} {...(start.resume ? { resume: start.resume } : {})} onExit={onExit}
+      key={module.id + (resume ? '-resume' : '-new')}
+      Battle={Battle} module={module} {...(resume ? { resume } : {})} onExit={onExit}
     />
-  );
-}
-
-function ModulePicker(
-  { onStart, onExit }: { onStart(s: { module: Module; resume?: AdventureState }): void; onExit(): void },
-) {
-  const [, setV] = useState(0);
-  const bump = () => setV((v) => v + 1);
-  const [wipe, setWipe] = useState<string | null>(null); // module id confirming a fresh start
-  const savedId = savedAdventureModule();
-  return (
-    <div className="setup">
-      <h1>📜 Adventures</h1>
-      {MODULES.map((m) => {
-        const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
-        return (
-          <div key={m.id} className="adv-modcard-wrap">
-            {/* When a save exists the card *continues* it — that's the obvious
-                tap target; starting fresh is a deliberate, confirmed choice. */}
-            <button className="adv-modcard" onClick={() => { initAudio(); onStart(resume ? { module: m, resume } : { module: m }); }}>
-              <strong>{m.title}</strong>
-              <span>{m.blurb}</span>
-              {resume && <span className="adv-modcard-continue">▶ Continue your run</span>}
-            </button>
-            {resume && (
-              <div className="adv-modcard-actions">
-                {wipe === m.id ? (
-                  <>
-                    <span className="muted">Erase your saved run?</span>
-                    <button className="mini danger" onClick={() => { deleteAdventureWeb(); setWipe(null); initAudio(); onStart({ module: m }); }}>Yes, start over</button>
-                    <button className="mini" onClick={() => setWipe(null)}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    <button className="mini" onClick={() => setWipe(m.id)}>↺ Start over</button>
-                    <button className="mini" onClick={() => { deleteAdventureWeb(); bump(); }}>🗑 Delete save</button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
-      <button className="ghost" onClick={onExit}>← Back</button>
-      <p className="hint">Adventure mode is in beta: story scenes, exploration, and skill
-        checks between fights. Your run saves in your browser.</p>
-    </div>
   );
 }
 

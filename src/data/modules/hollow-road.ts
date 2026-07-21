@@ -572,5 +572,6 @@ const scenes: Record<string, Scene> = {
 export const HOLLOW_ROAD_MODULE: Module = {
   id: 'hollow-road', title: 'The Hollow Road',
   blurb: 'Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit.',
+  cover: 'loc-village',
   start: 'road', scenes, defeatScene: 'defeat',
 };
