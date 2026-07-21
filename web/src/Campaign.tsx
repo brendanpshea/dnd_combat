@@ -212,6 +212,9 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     <SpellTray
       campaign={c}
       idx={prepareFor}
+      // In the forge you build the spellbook; in the field (the shop, between
+      // battles) only the prepared list may change — cantrips/book are locked.
+      mode={phase.p === 'forge' ? 'create' : 'prepare'}
       onClose={() => setPrepareFor(null)}
       onSaved={(msg) => mutate(() => setNotice(msg))}
     />

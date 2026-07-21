@@ -80,8 +80,16 @@ const scenes: Record<string, Scene> = {
       { id: 'persuade', label: '[Persuasion DC 12] Buy the room a round', to: 'tavern-trail',
         once: true, check: { skill: 'persuasion', dc: 12, failTo: 'tavern-plain' } },
       { id: 'plain', label: 'Just ask the way', to: 'tavern-plain', once: true },
+      // A paid long rest: cheap, but a real gold sink and the place to re-prepare
+      // spells. Gated on having the coin; the effect deducts it before resting.
+      { id: 'room', label: 'Take a room for the night — 1 gold (long rest)', to: 'inn-rest',
+        requires: [{ kind: 'gold', atLeast: 1 }], effects: [{ kind: 'gold', amount: -1 }] },
       { id: 'leave', label: 'Head out to the square', to: 'square' },
     ],
+  },
+  'inn-rest': {
+    id: 'inn-rest', kind: 'rest', variant: 'long', next: 'tavern',
+    intro: ['You take a room above the taproom. For the first time in days you sleep behind a bolted door — and wake clear-headed, wounds closed, spells fresh.'],
   },
   'tavern-spy': {
     id: 'tavern-spy', kind: 'story', art: { emoji: '👁️' },

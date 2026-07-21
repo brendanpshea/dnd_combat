@@ -416,15 +416,24 @@ export function resolveAttack(
   // Divine Smite: a bonus-action spell cast on a melee hit (2024 rules),
   // radiant on top of the weapon's own damage type — modeled like a weapon's
   // secondary damage rather than folded into `amount`, so resistance and
-  // vulnerability apply correctly. Auto-fires whenever a slot and the bonus
-  // action are both still free, which is the real cap: once per turn.
+  // vulnerability apply correctly. Auto-fires as a *finisher only*: the paladin
+  // spends a slot when the radiant is expected to drop the target (average
+  // damage ≥ its remaining HP), so a slot is never burned on a healthy foe.
+  // `target.hp` here is already post-weapon-damage, so this is the exact "would
+  // this finish them" test. Picks the smallest slot big enough; none is → holds.
   if (
     target.alive &&
+    target.hp > 0 &&
     attacker.featureIds.includes('divine-smite') &&
     isMeleeAttack &&
     !attacker.turn.bonusActionUsed
   ) {
-    const slotIdx = attacker.spellSlots.findIndex((s) => s.current > 0);
+    // Nd8 averages N×4.5, and a crit doubles the dice — a slot at index i smites
+    // for (2+i)d8. Find the lowest available slot whose average is expected to kill.
+    const critMult = crit ? 2 : 1;
+    const slotIdx = attacker.spellSlots.findIndex(
+      (s, i) => s.current > 0 && (2 + i) * 4.5 * critMult >= target.hp,
+    );
     if (slotIdx >= 0) {
       attacker.spellSlots[slotIdx]!.current -= 1;
       attacker.turn.bonusActionUsed = true;

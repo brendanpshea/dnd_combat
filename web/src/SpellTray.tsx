@@ -17,14 +17,19 @@ import {
 import { SPELLS } from '../../src/data/spells.js';
 
 export function SpellTray(
-  { campaign: c, idx, onClose, onSaved }: {
+  { campaign: c, idx, mode = 'create', onClose, onSaved }: {
     campaign: CampaignState;
     idx: number;
+    /** `create` (the forge): pick cantrips, spellbook, and prepared freely.
+     *  `prepare` (the field, after a long rest): cantrips and the spellbook are
+     *  locked in — only the prepared list may change. */
+    mode?: 'create' | 'prepare';
     onClose: () => void;
     onSaved: (msg: string) => void;
   },
 ) {
   const ch = c.characters[idx]!;
+  const locked = mode === 'prepare'; // cantrips + spellbook are fixed in the field
   const [cantripDraft, setCantripDraft] = useState<Id[]>(() => knownCantrips(c, idx));
   const [spellbookDraft, setSpellbookDraft] = useState<Id[]>(() => chosenSpellbook(c, idx));
   const [prepareDraft, setPrepareDraft] = useState<Id[]>(() => preparedSpells(c, idx));
@@ -61,40 +66,63 @@ export function SpellTray(
           </span>
           <button className="ghost" onClick={onClose}>✕</button>
         </div>
-        {isDefault && (
+        {isDefault && !locked && (
           <p className="hint">A sensible set is chosen by default — adjust only if you want to.</p>
         )}
+        {locked && (
+          <p className="hint">Rested at last — choose which spells to prepare. Cantrips and your spellbook are fixed until you level up.</p>
+        )}
         {cPool.length > 0 && (
-          <div className="sheet-row prepare-list">
-            <span className="sheet-label">Cantrips ({cantripDraft.length}/{cCap}) — always ready</span>
-            <div className="prepare-grid">
-              {cPool.map((id) => {
-                const checked = cantripDraft.includes(id);
-                return (
-                  <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
-                    <input type="checkbox" checked={checked} disabled={!checked && cAtCap} onChange={() => toggleCantrip(id)} />
-                    {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
-                  </label>
-                );
-              })}
+          locked ? (
+            // Cantrips are known for good — show them, but they can't be swapped.
+            <div className="sheet-row">
+              <span className="sheet-label">Cantrips (always ready)</span>
+              {cantripDraft.map((id) => (
+                <span key={id} className="item-chip muted">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
+              ))}
             </div>
-          </div>
+          ) : (
+            <div className="sheet-row prepare-list">
+              <span className="sheet-label">Cantrips ({cantripDraft.length}/{cCap}) — always ready</span>
+              <div className="prepare-grid">
+                {cPool.map((id) => {
+                  const checked = cantripDraft.includes(id);
+                  return (
+                    <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
+                      <input type="checkbox" checked={checked} disabled={!checked && cAtCap} onChange={() => toggleCantrip(id)} />
+                      {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )
         )}
         {usesBook && (
-          <div className="sheet-row prepare-list">
-            <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
-            <div className="prepare-grid">
-              {bookPool.map((id) => {
-                const checked = spellbookDraft.includes(id);
-                return (
-                  <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
-                    <input type="checkbox" checked={checked} disabled={!checked && bookAtCap} onChange={() => toggleBook(id)} />
-                    {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
-                  </label>
-                );
-              })}
+          locked ? (
+            // The spellbook only grows by leveling or scribing scrolls, never here.
+            <div className="sheet-row">
+              <span className="sheet-label">Spellbook — spells known</span>
+              {spellbookDraft.map((id) => (
+                <span key={id} className="item-chip muted">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
+              ))}
             </div>
-          </div>
+          ) : (
+            <div className="sheet-row prepare-list">
+              <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
+              <div className="prepare-grid">
+                {bookPool.map((id) => {
+                  const checked = spellbookDraft.includes(id);
+                  return (
+                    <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
+                      <input type="checkbox" checked={checked} disabled={!checked && bookAtCap} onChange={() => toggleBook(id)} />
+                      {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )
         )}
         <div className="sheet-row prepare-list">
           <span className="sheet-label">Prepared ({prepareDraft.length}/{cap})</span>
@@ -126,8 +154,10 @@ export function SpellTray(
             onClose();
           }}>Use recommended</button>
           <button className="mini primary" onClick={() => {
-            setCantrips(c, idx, cantripDraft);
-            if (usesBook) setSpellbook(c, idx, spellbookDraft);
+            if (!locked) {
+              setCantrips(c, idx, cantripDraft);
+              if (usesBook) setSpellbook(c, idx, spellbookDraft);
+            }
             setPrepared(c, idx, prepareDraft);
             onSaved(`${ch.name}'s spells are set.`);
             onClose();

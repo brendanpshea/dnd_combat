@@ -24,7 +24,7 @@ import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
 import { backgroundSkills } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
-import { encounterXP } from '../data/monsters.js';
+import { encounterXP, encounterCoinXP } from '../data/monsters.js';
 import type { Rarity } from '../data/armor.js';
 import { rollDice } from '../engine/dice.js';
 import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
@@ -277,17 +277,25 @@ export interface Treasure {
 }
 
 /**
- * Generate treasure from encounter XP. Gold ≈ XP/2 with variance; the number
- * of item rolls and the rarity ceiling both rise with XP. `bonusTier` forces
+ * Generate treasure from encounter XP. Coin and item drops come from the
+ * loot-bearing share of the fight (`coinXp`, default = full `xp`): gold ≈
+ * coinXp × 0.3 with variance, and the number of item rolls scales by how much of
+ * the encounter actually carries loot — so a pack of beasts yields XP but no
+ * purse or gear, while a bandit camp pays out in full. The rarity ceiling still
+ * rises with the total `xp` (how dangerous the fight was). `bonusTier` forces
  * one guaranteed drop of that tier (used for the finale). Deterministic.
  */
-export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity): Treasure {
+export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity, coinXp: number = xp): Treasure {
   let state = rng;
   const roll = () => { const r = next(state); state = r.state; return r.value; };
 
-  const gold = Math.round(xp * 0.5 * (0.8 + 0.4 * roll()));
+  // Coin comes only from loot-bearers; the fraction also gates how many item
+  // rolls the fight earns (all-beast → 0 → gear/gems can't drop either).
+  const lootFraction = xp > 0 ? Math.max(0, Math.min(1, coinXp / xp)) : 0;
+  const gold = Math.round(coinXp * 0.3 * (0.8 + 0.4 * roll()));
 
-  const rolls = xp >= 700 ? 3 : xp >= 300 ? 2 : 1;
+  const baseRolls = xp >= 700 ? 3 : xp >= 300 ? 2 : 1;
+  const rolls = Math.round(baseRolls * lootFraction);
   const tiers: Rarity[] = xp >= 800 ? ['common', 'uncommon', 'rare']
     : xp >= 400 ? ['common', 'uncommon'] : ['common'];
 
@@ -1390,7 +1398,7 @@ export function applyAdventureVictory(
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
-  const treasure = treasureFor(encounterXP(encounterId), rng, bonusTier);
+  const treasure = treasureFor(encounterXP(encounterId), rng, bonusTier, encounterCoinXP(encounterId));
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);
@@ -1431,7 +1439,7 @@ export function applyVictory(
 
   // The final stage guarantees a rare drop as a trophy for finishing.
   const isFinale = c.stage === STAGES.length - 1;
-  const treasure = treasureFor(encounterXP(stage.encounterId), rng, isFinale ? 'rare' : undefined);
+  const treasure = treasureFor(encounterXP(stage.encounterId), rng, isFinale ? 'rare' : undefined, encounterCoinXP(stage.encounterId));
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) {
