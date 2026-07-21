@@ -169,6 +169,10 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               // still there — the point of downing is that you can see who to
               // go and pick up.
               isDown(c) ? 'downed' : '',
+              // Knocked prone but still conscious: toppled like a downed body,
+              // yet in full colour and still in the fight (down already owns the
+              // greyed-out look, so only tilt a prone creature that isn't down).
+              !isDown(c) && c.conditions.some((condition) => condition.id === 'prone') ? 'prone' : '',
             ].join(' ')}
           >
             {c.id === activeId && <div className="turn-arrow" />}

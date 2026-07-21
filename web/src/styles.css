@@ -1381,6 +1381,12 @@ button.category .count {
 }
 .token.downed .base { opacity: 0.35; }
 .token.downed .hpbar { display: none; }
+/* Knocked prone but still conscious: the same toppled posture as a downed body,
+   but in full colour with its HP bar intact — it's flat on its back, not out. */
+.token.prone .art, .token.prone .glyph {
+  transform: rotate(-72deg) scale(0.85) !important;
+  transition: transform 0.35s ease-out;
+}
 .token.downed::after {
   content: '💤';
   position: absolute;

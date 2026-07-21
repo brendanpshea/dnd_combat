@@ -116,13 +116,18 @@ describe('Paladin: Lay on Hands', () => {
 });
 
 describe('Paladin: Divine Smite', () => {
-  it('auto-fires on a melee hit, consuming the lowest slot and the bonus action', () => {
-    const atk = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 2 });
-    const foe = target({ x: 4, y: 3 }, 'foe', 1); // AC 1 → always hits
+  it('fires as a finisher — a low-HP hit spends the lowest slot and the bonus action', () => {
+    // Dagger (1d4+3, ≤7) can't kill a 10-HP foe outright, but leaves ≤7 HP — well
+    // inside a 2d8 smite's expected kill (avg 9), so the finisher reliably fires.
+    const atk = buildCharacter({
+      classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 2,
+      inventory: [{ itemId: 'dagger', qty: 1 }], equipped: { mainHand: 'dagger' },
+    });
+    const foe = target({ x: 4, y: 3 }, 'foe', 1, 10); // AC 1 → always hits; 10 HP
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [atk, foe] });
     const slotsBefore = c.state.combatants[atk.id]!.spellSlots[0]!.current;
 
-    const events = resolveAttack(c.state, atk.id, 'foe', 'longsword');
+    const events = resolveAttack(c.state, atk.id, 'foe', 'dagger');
     const smite = events.find((e) => e.type === 'damageDealt' && (e as { tags?: string[] }).tags?.includes('Divine Smite'));
     expect(smite).toBeDefined();
     expect((smite as { damageType: string }).damageType).toBe('radiant');
@@ -130,16 +135,29 @@ describe('Paladin: Divine Smite', () => {
     expect(c.state.combatants[atk.id]!.turn.bonusActionUsed).toBe(true);
   });
 
-  it('fires at most once per turn', () => {
+  it('holds the slot against a healthy target — smite is a finisher, not an opener', () => {
     const atk = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 2 });
-    const foe = target({ x: 4, y: 3 }, 'foe', 1);
+    const foe = target({ x: 4, y: 3 }, 'foe', 1); // AC 1 → always hits; 999 HP → no smite can finish it
+    const c = new Combat({ seed: 1, mapId: 'open', combatants: [atk, foe] });
+    const slotsBefore = c.state.combatants[atk.id]!.spellSlots[0]!.current;
+
+    const events = resolveAttack(c.state, atk.id, 'foe', 'longsword');
+    const smite = events.find((e) => e.type === 'damageDealt' && (e as { tags?: string[] }).tags?.includes('Divine Smite'));
+    expect(smite).toBeUndefined();
+    expect(c.state.combatants[atk.id]!.spellSlots[0]!.current).toBe(slotsBefore); // slot saved
+    expect(c.state.combatants[atk.id]!.turn.bonusActionUsed).toBe(false);
+  });
+
+  it('does not fire when the bonus action is already spent this turn', () => {
+    const atk = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 2 });
+    const foe = target({ x: 4, y: 3 }, 'foe', 1, 5); // finisher-eligible HP
     const c = new Combat({ seed: 6, mapId: 'open', combatants: [atk, foe] });
-    resolveAttack(c.state, atk.id, 'foe', 'longsword');
-    const slotsAfterFirst = c.state.combatants[atk.id]!.spellSlots[0]!.current;
-    const second = resolveAttack(c.state, atk.id, 'foe', 'longsword');
-    const smite2 = second.find((e) => e.type === 'damageDealt' && (e as { tags?: string[] }).tags?.includes('Divine Smite'));
-    expect(smite2).toBeUndefined();
-    expect(c.state.combatants[atk.id]!.spellSlots[0]!.current).toBe(slotsAfterFirst);
+    c.state.combatants[atk.id]!.turn.bonusActionUsed = true; // already smited/shoved this turn
+    const slotsBefore = c.state.combatants[atk.id]!.spellSlots[0]!.current;
+    const events = resolveAttack(c.state, atk.id, 'foe', 'longsword');
+    const smite = events.find((e) => e.type === 'damageDealt' && (e as { tags?: string[] }).tags?.includes('Divine Smite'));
+    expect(smite).toBeUndefined();
+    expect(c.state.combatants[atk.id]!.spellSlots[0]!.current).toBe(slotsBefore);
   });
 
   it('does not fire on a ranged attack', () => {
