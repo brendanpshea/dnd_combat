@@ -850,6 +850,32 @@ describe('The Hollow Road (M4)', () => {
     }
   });
 
+  it('has an optional inn rumor table that always loops back (a skippable tutorial)', () => {
+    // The regulars' table teaches mechanics in-character but must never trap the
+    // player: it's reached by an ungated choice, every lesson returns to it, and
+    // it always offers a way back to the taproom.
+    const tavern = hollow.scenes['tavern'];
+    expect(tavern?.kind).toBe('dialogue');
+    if (tavern?.kind !== 'dialogue') return;
+    const toRegulars = tavern.next.find((c) => c.to === 'regulars');
+    expect(toRegulars).toBeDefined();
+    expect(toRegulars!.requires ?? []).toEqual([]); // never gated — always offered
+
+    const regulars = hollow.scenes['regulars'];
+    expect(regulars?.kind).toBe('story');
+    if (regulars?.kind !== 'story') return;
+    // An exit back to the taproom, plus at least three `once` lessons.
+    expect(regulars.next.some((c) => c.to === 'tavern')).toBe(true);
+    const lessons = regulars.next.filter((c) => c.once && c.to.startsWith('rumor-'));
+    expect(lessons.length).toBeGreaterThanOrEqual(3);
+    // Every lesson is a real scene that routes straight back to the table.
+    for (const lesson of lessons) {
+      const scene = hollow.scenes[lesson.to];
+      expect(scene?.kind).toBe('story');
+      if (scene?.kind === 'story') expect(scene.next.every((c) => c.to === 'regulars')).toBe(true);
+    }
+  });
+
   it('paces 1 → 3 by milestones alone, whatever the party fought (ignores battle XP)', () => {
     // The headless runner awards NO battle XP (that lands in the web/CLI driver
     // via applyAdventureVictory), so this isolates the milestone spine: M1
