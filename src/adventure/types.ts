@@ -234,6 +234,9 @@ export interface Module {
   id: Id;
   title: string;
   blurb: string;
+  /** Location-art id for the module's landing/hero card (a `loc-*` from
+   *  adventure-art.ts). Absent = the menu falls back to a themed glyph card. */
+  cover?: Id;
   start: SceneRef;
   scenes: Record<Id, Scene>;
   /** Where a total party wipe lands (revived, half HP) instead of a hard game

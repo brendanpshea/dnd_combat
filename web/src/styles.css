@@ -2006,6 +2006,63 @@ button.category .count {
 .adv-modcard-actions .mini { margin-left: 0; }
 .mini.danger { background: var(--red); color: #fff; }
 
+/* ------- The Free Company landing (front door) ------------------------- */
+.setup.landing { max-width: 560px; gap: 22px; }
+.landing-head { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.landing-head h1 { margin: 0; }
+.landing-tag { color: var(--muted); font-size: 1rem; line-height: 1.45; margin: 0 auto; max-width: 30rem; }
+.landing-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.landing-badges span {
+  font-size: .8rem; font-weight: 600; color: var(--muted);
+  background: var(--panel2, #2e2840); border: 1px solid rgba(255,255,255,.06);
+  border-radius: 999px; padding: 4px 11px;
+}
+
+.landing-modules { display: flex; flex-direction: column; gap: 14px; }
+.module-card { display: flex; flex-direction: column; gap: 6px; }
+.module-cover {
+  display: flex; flex-direction: column; text-align: left; padding: 0; overflow: hidden;
+  border-radius: 16px; border: 1px solid rgba(255,255,255,.08); background: var(--panel);
+  cursor: pointer; transition: border-color .12s, transform .12s, box-shadow .12s;
+}
+.module-cover:hover { border-color: var(--blue); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(74,158,255,.18); }
+.module-cover-art {
+  height: 150px; background-size: cover; background-position: center 35%;
+}
+.module-cover-art.glyph { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2e2840, #241f33); }
+.module-cover-art.glyph span { font-size: 3.4rem; filter: grayscale(.15) opacity(.85); }
+.module-cover-body {
+  display: flex; flex-direction: column; gap: 5px; padding: 14px 16px 16px;
+  /* lift the panel over the art with a soft blend at the seam */
+  margin-top: -18px; position: relative;
+  background: linear-gradient(180deg, transparent, var(--panel) 22px);
+}
+.module-cover-body strong { font-family: var(--display); font-size: 1.25rem; }
+.module-cover-body > span { color: var(--muted); font-size: .92rem; line-height: 1.4; }
+.module-cta { color: var(--blue) !important; font-weight: 800; margin-top: 4px; }
+.module-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-left: 4px; }
+.module-actions .muted { font-size: .85rem; }
+
+.landing-more { display: flex; flex-direction: column; gap: 10px; }
+.landing-more-label {
+  text-align: center; font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.landing-more-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.landing-alt {
+  flex: 1 1 200px; display: flex; flex-direction: column; gap: 3px; text-align: left;
+  padding: 12px 14px; border-radius: 12px; background: var(--panel);
+  border: 1px solid rgba(255,255,255,.06); color: var(--text); font-weight: 600; cursor: pointer;
+  transition: border-color .12s;
+}
+.landing-alt:hover { border-color: var(--muted); }
+.landing-alt small { color: var(--muted); font-weight: 400; font-size: .82rem; }
+.landing-about-link { align-self: center; font-size: .85rem; }
+
+.about-box { max-width: 400px; text-align: left; }
+.about-box p { line-height: 1.5; }
+.about-box a { color: var(--blue); }
+
 /* NPC emoji fallback (when an archetype portrait isn't generated). */
 .adv-npc-emoji {
   width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;

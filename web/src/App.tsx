@@ -20,8 +20,13 @@ import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { CampaignScreen } from './Campaign.js';
 import { AdventureScreen } from './Adventure.js';
-import { savedAdventureModule } from './adventureStorage.js';
-import { loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
+import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
+import { loadCampaignWeb } from './campaignStorage.js';
+import { playableModules } from '../../src/data/modules/index.js';
+import type { Module } from '../../src/adventure/types.js';
+import type { AdventureState } from '../../src/adventure/runtime.js';
+import { hasSceneArt, sceneArtUrl } from './art.js';
+import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
 
@@ -87,7 +92,7 @@ type Screen =
   | { view: 'skirmish-setup' }
   | { view: 'skirmish'; config: SetupConfig }
   | { view: 'campaign' }
-  | { view: 'adventure' };
+  | { view: 'adventure'; module: Module; resume?: AdventureState };
 
 export function App() {
   const [screen, setScreen] = useState<Screen>({ view: 'menu' });
@@ -107,41 +112,103 @@ export function App() {
     case 'campaign':
       return <CampaignScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
     case 'adventure':
-      return <AdventureScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
+      return (
+        <AdventureScreen
+          Battle={Battle}
+          module={screen.module}
+          {...(screen.resume ? { resume: screen.resume } : {})}
+          onExit={() => setScreen({ view: 'menu' })}
+        />
+      );
   }
 }
 
+/** The front door. Adventures lead; a saved run is offered as Continue; the
+ *  classic modes sit quietly below. `?dev` reveals the test modules too. */
 function Menu({ onPick }: { onPick(s: Screen): void }) {
-  const [, force] = useState(0);
-  const hasSave = !!loadCampaignWeb();
-  const hasAdventureSave = !!savedAdventureModule();
+  const [about, setAbout] = useState(false);
+  const [confirmWipe, setConfirmWipe] = useState<string | null>(null); // module id
+  const dev = typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev');
+  const modules = playableModules(dev);
+  const savedId = savedAdventureModule();
+
   return (
-    <div className="setup">
-      <h1>⚔️ D&D Grid Combat</h1>
-      <button className="primary" onClick={() => onPick({ view: 'adventure' })}>
-        📜 Adventures{hasAdventureSave ? ' (resume)' : ''}
-      </button>
-      <button onClick={() => onPick({ view: 'campaign' })}>
-        🏰 Classic Campaign{hasSave ? ' (resume)' : ''}
-      </button>
-      <button onClick={() => onPick({ view: 'skirmish-setup' })}>⚔️ Single battle</button>
-      {hasSave && (
-        <button
-          className="ghost"
-          onClick={() => {
-            if (!confirm('Delete your saved campaign?')) return;
-            deleteCampaignWeb();
-            force((n) => n + 1);
-          }}
-        >
-          🗑 Delete saved campaign
-        </button>
+    <div className="setup landing">
+      <header className="landing-head">
+        <h1>⚔️ The Free Company</h1>
+        <p className="landing-tag">Tabletop adventures you can play on a laptop or a phone — solo, in your browser, free.</p>
+        <div className="landing-badges">
+          <span>📱 Plays anywhere</span>
+          <span>🆓 Free &amp; open</span>
+          <span>📜 SRD 5.2 · CC-BY</span>
+        </div>
+      </header>
+
+      <div className="landing-modules">
+        {modules.map((m) => {
+          const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
+          const play = (fresh?: boolean) => {
+            initAudio();
+            onPick({ view: 'adventure', module: m, ...(resume && !fresh ? { resume } : {}) });
+          };
+          const cover = m.cover;
+          return (
+            <div key={m.id} className="module-card">
+              <button className="module-cover" onClick={() => play()} aria-label={`Play ${m.title}`}>
+                {cover && hasSceneArt(cover)
+                  ? <div className="module-cover-art" style={{ backgroundImage: `url(${sceneArtUrl(cover)})` }} />
+                  : <div className="module-cover-art glyph"><span>{(cover && artEmoji(cover)) ?? '📜'}</span></div>}
+                <div className="module-cover-body">
+                  <strong>{m.title}{dev && !['hollow-road'].includes(m.id) ? ' · dev' : ''}</strong>
+                  <span>{m.blurb}</span>
+                  <span className="module-cta">{resume ? '▶ Continue your run' : '▶ Play'}</span>
+                </div>
+              </button>
+              {resume && (
+                <div className="module-actions">
+                  {confirmWipe === m.id ? (
+                    <>
+                      <span className="muted">Erase your saved run and start fresh?</span>
+                      <button className="mini danger" onClick={() => { deleteAdventureWeb(); setConfirmWipe(null); play(true); }}>Start over</button>
+                      <button className="mini" onClick={() => setConfirmWipe(null)}>Cancel</button>
+                    </>
+                  ) : (
+                    <button className="mini ghost" onClick={() => setConfirmWipe(m.id)}>↺ Start over</button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="landing-more">
+        <span className="landing-more-label">More ways to play</span>
+        <div className="landing-more-row">
+          <button className="landing-alt" onClick={() => onPick({ view: 'campaign' })}>
+            🏰 Classic Campaign{loadCampaignWeb() ? ' · resume' : ''}
+            <small>The pure {STAGES.length}-battle tactics ladder.</small>
+          </button>
+          <button className="landing-alt" onClick={() => onPick({ view: 'skirmish-setup' })}>
+            ⚔️ Quick Battle
+            <small>One custom fight, your party vs. anything.</small>
+          </button>
+        </div>
+      </div>
+
+      <button className="ghost landing-about-link" onClick={() => setAbout(true)}>About &amp; credits</button>
+
+      {about && (
+        <div className="overlay" onClick={() => setAbout(false)}>
+          <div className="overlay-box about-box" onClick={(e) => e.stopPropagation()}>
+            <h2>The Free Company</h2>
+            <p>A little tactics-and-story RPG you can play in a browser, on a phone or a laptop. No account, no cost — your progress saves in this browser.</p>
+            <p className="muted">Built on the <b>System Reference Document 5.2.1</b>, © Wizards of the Coast LLC, released under <b>CC-BY-4.0</b>. This game uses those rules with house rules where noted, and is not affiliated with or endorsed by Wizards of the Coast.</p>
+            <p className="muted">Open source — <a href="https://github.com/brendanpshea/dnd_combat" target="_blank" rel="noreferrer">github.com/brendanpshea/dnd_combat</a>.</p>
+            <button className="primary" onClick={() => setAbout(false)}>Close</button>
+          </div>
+        </div>
       )}
-      <p className="hint">
-        Adventures: story, exploration, and skill checks between fights — pick a module,
-        including the full <em>Hollow Road</em> campaign. Classic Campaign is the pure
-        {' '}{STAGES.length}-battle ladder. Both save in your browser.
-      </p>
     </div>
   );
 }
