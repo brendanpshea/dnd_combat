@@ -1565,32 +1565,57 @@ button.category .count {
   font-family: var(--display); font-size: 1.3rem; text-shadow: 0 2px 8px rgba(0,0,0,.8);
   pointer-events: none;
 }
+/* Trail lines under the tokens on a traversal map. */
+.adv-trails { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.adv-trail {
+  stroke: rgba(240,232,210,.7); stroke-width: .7; stroke-linecap: round;
+  stroke-dasharray: 2 2.4; vector-effect: non-scaling-stroke;
+}
+.adv-trail.faint { stroke: rgba(240,232,210,.28); }
+
 .adv-node {
   position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
-  align-items: center; gap: 4px; background: none; border: none; color: var(--text); cursor: pointer;
-  padding: 8px; min-width: 72px; border-radius: 12px;
+  align-items: center; gap: 5px; background: none; border: none; color: var(--text); cursor: pointer;
+  padding: 6px; min-width: 76px; border-radius: 12px; z-index: 2;
 }
 /* The icon/label are decorative — every tap must land on the button itself. */
-.adv-node-icon, .adv-node-label { pointer-events: none; }
-.adv-node:hover:not(:disabled) { background: rgba(74,158,255,.12); }
-/* Keep the centering translate on press: the global `button:active` scale
-   (styles.css) would otherwise REPLACE translate(-50%,-50%) — transform isn't
-   additive — making the absolutely-positioned node jump out from under the tap,
-   so the click lands on the map behind it and nothing happens. */
-.adv-node:active:not(:disabled) { background: rgba(74,158,255,.22); transform: translate(-50%, -50%) scale(0.97); }
+.adv-node-icon, .adv-node-label, .adv-node-here { pointer-events: none; }
+.adv-node:hover:not(:disabled) { background: rgba(74,158,255,.10); }
+/* Keep the centering translate on press: the global `button:active` scale would
+   otherwise REPLACE translate(-50%,-50%) — transform isn't additive — making the
+   node jump out from under the tap so the click lands on the map behind it. */
+.adv-node:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.96); }
+
+/* The token: a painterly circle (or emoji fallback) that sits ON the backdrop —
+   a soft ground shadow, and a ring whose colour is the node's *state*. */
 .adv-node-icon {
-  width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 24px; background: var(--panel2); border: 2px solid var(--blue);
-  box-shadow: 0 0 0 0 rgba(74,158,255,.5); animation: nodepulse 2s infinite;
+  width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 30px; overflow: hidden; background: radial-gradient(circle at 50% 38%, #3b3450, #241f33);
+  border: 2.5px solid var(--blue); box-shadow: 0 5px 10px rgba(0,0,0,.5), 0 0 0 0 rgba(74,158,255,.5);
 }
-.adv-node.secret .adv-node-icon { border-color: var(--gold); }
-.adv-node.blocked { cursor: not-allowed; }
-.adv-node.blocked .adv-node-icon { border-color: var(--muted); animation: none; opacity: .6; }
-.adv-node-label { font-size: .78rem; background: rgba(0,0,0,.55); padding: 1px 6px; border-radius: 6px; }
+.adv-node-icon img { width: 100%; height: 100%; object-fit: cover; }
+.adv-node-label {
+  font-size: .82rem; font-weight: 600; background: rgba(12,9,20,.7); padding: 2px 8px;
+  border-radius: 7px; max-width: 120px; text-shadow: 0 1px 2px rgba(0,0,0,.9);
+}
+.adv-node-here { position: absolute; top: -14px; color: var(--gold); font-size: 18px; animation: herebob 1.4s ease-in-out infinite; }
+@keyframes herebob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+
+/* State rings. Frontier pulses to invite; here glows gold; visited is calm
+   green; secret gold-dashed; locked grey. */
+.adv-node.state-frontier .adv-node-icon { border-color: var(--gold); animation: nodepulse 2s infinite; }
+.adv-node.state-known .adv-node-icon { border-color: var(--blue); animation: nodepulse 2.4s infinite; }
+.adv-node.state-here .adv-node-icon { border-color: var(--gold); box-shadow: 0 5px 10px rgba(0,0,0,.5), 0 0 14px 2px rgba(214,178,74,.55); }
+.adv-node.state-explored .adv-node-icon { border-color: var(--green); }
+.adv-node.state-explored { opacity: .92; }
+.adv-node.state-secret .adv-node-icon { border-color: var(--gold); border-style: dashed; animation: nodepulse 2s infinite; }
+.adv-node.state-blocked { cursor: not-allowed; }
+.adv-node.state-blocked .adv-node-icon { border-color: var(--muted); opacity: .65; }
+.adv-node.state-frontier .adv-node-label { font-style: italic; opacity: .9; }
 @keyframes nodepulse {
-  0% { box-shadow: 0 0 0 0 rgba(74,158,255,.45); }
-  70% { box-shadow: 0 0 0 12px rgba(74,158,255,0); }
-  100% { box-shadow: 0 0 0 0 rgba(74,158,255,0); }
+  0% { box-shadow: 0 5px 10px rgba(0,0,0,.5), 0 0 0 0 rgba(214,178,74,.45); }
+  70% { box-shadow: 0 5px 10px rgba(0,0,0,.5), 0 0 0 12px rgba(214,178,74,0); }
+  100% { box-shadow: 0 5px 10px rgba(0,0,0,.5), 0 0 0 0 rgba(214,178,74,0); }
 }
 
 .adv-roster { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -1652,11 +1677,9 @@ button.category .count {
 }
 
 /* ===== Adventure M2: fog, shop, journal ================================== */
-.adv-node.fog .adv-node-icon { opacity: .55; filter: grayscale(.4); border-style: dashed; }
-.adv-node.fog .adv-node-label { opacity: .7; }
+/* Per-node `mystery` teaser on a free-roam map (italic, gold-dashed). */
 .adv-node.mystery .adv-node-icon { border-color: var(--gold); border-style: dashed; }
 .adv-node.mystery .adv-node-label { font-style: italic; opacity: .85; }
-.adv-node.explored .adv-node-icon { border-color: var(--green); }
 .adv-maphint {
   position: absolute; bottom: 8px; left: 12px; right: 12px; text-align: center;
   color: rgba(232,228,240,.85); font-size: .8rem; text-shadow: 0 1px 4px rgba(0,0,0,.9);

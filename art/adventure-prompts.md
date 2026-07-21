@@ -230,12 +230,48 @@ Each id matches `NPC_ART` in `src/data/adventure-art.ts`.
 
 ---
 
+## 4b. Map-node tokens (`tok-<kind>`)
+
+The circular markers on an explore map — a tavern, a cave mouth, a set of
+tracks. One per *kind of place or beat*, reused across modules. They sit **on**
+the painted backdrop inside a 62px circle with a coloured state ring, so they
+must read as little painted map miniatures, not flat icons.
+
+**Art direction** — a single square painterly miniature, filling the frame
+edge to edge (it's masked to a circle in-app, so no built-in border or ring),
+same cel-shaded warm-brown world as the locations. Slight top-down ¾ view, one
+clear subject centered, warm rim light, soft ground shadow baked in. **No text,
+no UI ring, no circle border** (the app draws the ring). Even background value
+so the state ring reads over it.
+
+Per-token subject (id → what's in the circle):
+
+| id | subject | id | subject |
+| --- | --- | --- | --- |
+| `tok-tavern` | inn sign / mug | `tok-tracks` | muddy footprints |
+| `tok-market` | market stall | `tok-tree` | lone landmark tree |
+| `tok-notice` | posted notice board | `tok-person` | a hand reaching up / bundle |
+| `tok-gate` | town gate / archway | `tok-figure` | cloaked watcher |
+| `tok-well` | stone well | `tok-danger` | crossed weapons |
+| `tok-house` | cottage | `tok-treasure` | chest / sack of loot |
+| `tok-temple` | small shrine | `tok-fire` | campfire / forge glow |
+| `tok-camp` | tent + fire | `tok-boss` | throne / warlord banner |
+| `tok-cave` | dark cave mouth | `tok-mystery` | fog / question in mist |
+| `tok-ruin` | broken pillar | `tok-bridge` | plank bridge |
+| `tok-crossing` | stepping stones / ford | `tok-lookout` | rocky vantage / spyglass |
+
+Generate as 2×2 (or 3×3) green-screen sheets like the portraits, slice to
+`token-tok-<kind>.png` in `art/source/`, process to
+`web/public/art/token-tok-<kind>.webp`, and add the id to `HAS_TOKEN_ART` in
+`web/src/art.ts`. Until then, every node falls back to the token's emoji.
+
 ## 5. Integration
 
 | Family | Source file | Processed asset | Consumed by |
 | --- | --- | --- | --- |
 | Location `loc-<type>` | `art/source/scene-<id>.png` | `web/public/art/scene-<id>.webp` | `sceneArtUrl()` in `web/src/art.ts`; scene banner + explore-map backdrop in `web/src/Adventure.tsx` |
 | NPC `npc-<archetype>` | `art/source/portrait-<id>.png` | `web/public/art/portrait-<id>.webp` | `portraitUrl()` / `<Portrait>` (dialogue) — same path as hero/monster portraits |
+| Node token `tok-<kind>` | `art/source/token-tok-<id>.png` | `web/public/art/token-tok-<id>.webp` | `tokenUrl()` in `web/src/art.ts`; map-node markers in `web/src/Adventure.tsx` |
 
 Wiring a new asset is two steps:
 1. Drop the source PNG in `art/source/` with the exact filename above.

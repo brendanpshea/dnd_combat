@@ -80,13 +80,13 @@ const scenes: Record<string, Scene> = {
       title: 'Thornwick Square', theme: 'stone', art: { imageId: 'loc-village', emoji: '⛲' },
       camp: {}, // safe: rest freely in town
       nodes: [
-        { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: '🍺', scene: 'tavern' },
-        { id: 'market', x: 40, y: 40, label: 'Market', icon: '🛒', scene: 'market' },
-        { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: '📜', scene: 'board' },
-        { id: 'informant', x: 48, y: 66, label: 'Furtive Peddler', icon: '🕵️', scene: 'spy-confront',
+        { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: 'tok-tavern', scene: 'tavern' },
+        { id: 'market', x: 40, y: 40, label: 'Market', icon: 'tok-market', scene: 'market' },
+        { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: 'tok-notice', scene: 'board' },
+        { id: 'informant', x: 48, y: 66, label: 'Furtive Peddler', icon: 'tok-figure', scene: 'spy-confront',
           requires: [{ kind: 'flag', flag: 'know-spy' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'spy-caught' }], to: 'spy-gone' }] },
-        { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: '🚪', scene: 'trailhead' },
+        { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: 'tok-gate', scene: 'trailhead' },
       ],
     },
   },
@@ -144,13 +144,18 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'The Marsh Road', theme: 'forest', art: { imageId: 'loc-marsh', emoji: '🌾' },
       camp: { risky: { chance: 0.4, battleScene: 'camp-ambush' } }, // sleep here at your peril
+      // A traversal map: you start at the tracks and the trail forks — the
+      // sunken ravine ahead, a cry for help off to the south. The hollow reveals
+      // only once you've pushed on past the ravine.
+      entry: ['tracks'],
+      paths: [['tracks', 'ravine'], ['tracks', 'scout'], ['ravine', 'approach']],
       nodes: [
-        { id: 'tracks', x: 28, y: 40, label: 'Fresh Tracks', icon: '👣', scene: 'tracks' },
-        { id: 'ravine', x: 55, y: 62, label: 'Sunken Ravine', icon: '🪨', scene: 'ravine',
-          wandering: { chance: 0.5, battleScene: 'marsh-wolves' } },
-        { id: 'scout', x: 34, y: 78, label: 'A Cry for Help', mystery: 'A faint sound…', icon: '🆘', scene: 'wounded',
+        { id: 'tracks', x: 18, y: 55, label: 'Fresh Tracks', icon: 'tok-tracks', scene: 'tracks' },
+        { id: 'scout', x: 34, y: 82, label: 'A Cry for Help', mystery: 'A faint sound…', icon: 'tok-person', scene: 'wounded',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
-        { id: 'approach', x: 80, y: 40, label: 'The Hollow Ahead', icon: '⛰️', scene: 'ambush',
+        { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
+          wandering: { chance: 0.5, battleScene: 'marsh-wolves' } },
+        { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
           requires: [{ kind: 'flag', flag: 'trail-read' }] },
       ],
     },
@@ -258,11 +263,11 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'Inside the Den', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🔥' },
       nodes: [
-        { id: 'cache', x: 30, y: 34, label: 'Plunder Tent', icon: '📦', scene: 'cache',
+        { id: 'cache', x: 30, y: 34, label: 'Plunder Tent', icon: 'tok-treasure', scene: 'cache',
           hidden: { dc: 13 } },
-        { id: 'vex', x: 58, y: 60, label: 'Vex\'s Fire', icon: '🗡️', scene: 'vex-parley',
+        { id: 'vex', x: 58, y: 60, label: 'Vex\'s Fire', icon: 'tok-fire', scene: 'vex-parley',
           requires: [{ kind: 'flag', flag: 'know-vex' }] },
-        { id: 'throne', x: 82, y: 34, label: 'The Chief\'s Hall', icon: '👑', scene: 'boss-approach' },
+        { id: 'throne', x: 82, y: 34, label: 'The Chief\'s Hall', icon: 'tok-boss', scene: 'boss-approach' },
       ],
     },
   },

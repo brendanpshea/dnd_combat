@@ -11,7 +11,7 @@ import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
-import { isLocationArt, isNpcArt } from '../data/adventure-art.js';
+import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
 import { HUB_REF, type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome } from './types.js';
 
 function itemExists(id: Id): boolean {
@@ -138,6 +138,40 @@ export function validateModule(module: Module): string[] {
     if (artId && !isLocationArt(artId)) at(id, `art.imageId '${artId}' is not a known location (see adventure-art.ts)`);
     if (scene.kind === 'explore' && scene.map.art?.imageId && !isLocationArt(scene.map.art.imageId)) {
       at(id, `explore map art '${scene.map.art.imageId}' is not a known location`);
+    }
+    if (scene.kind === 'explore') {
+      const nodeIds = new Set(scene.map.nodes.map((n) => n.id));
+      // A `tok-` icon must name a real token; a raw emoji is fine (back-compat).
+      for (const n of scene.map.nodes) {
+        if (n.icon.startsWith('tok-') && !isNodeToken(n.icon)) {
+          at(id, `node '${n.id}' icon '${n.icon}' is not a known token (see adventure-art.ts)`);
+        }
+      }
+      // Traversal map: edges and entries must reference real nodes, an entry is
+      // required, and every node must be reachable from an entry along paths.
+      const { paths, entry } = scene.map;
+      if (paths) {
+        for (const [a, b] of paths) {
+          if (!nodeIds.has(a)) at(id, `path edge references unknown node '${a}'`);
+          if (!nodeIds.has(b)) at(id, `path edge references unknown node '${b}'`);
+        }
+        if (!entry || entry.length === 0) at(id, 'a traversal map (with paths) needs at least one entry node');
+        for (const e of entry ?? []) if (!nodeIds.has(e)) at(id, `entry references unknown node '${e}'`);
+        const seenN = new Set<Id>(entry ?? []);
+        const q = [...seenN];
+        while (q.length) {
+          const cur = q.shift()!;
+          for (const [a, b] of paths) {
+            const nb = a === cur ? b : b === cur ? a : undefined;
+            if (nb && !seenN.has(nb)) { seenN.add(nb); q.push(nb); }
+          }
+        }
+        for (const n of scene.map.nodes) {
+          if (!seenN.has(n.id)) at(id, `node '${n.id}' is unreachable from any entry along paths`);
+        }
+      } else if (entry && entry.length) {
+        at(id, 'entry is set but there are no paths (free-roam maps ignore entry)');
+      }
     }
     if (scene.kind === 'dialogue' && scene.npc.portraitId && !isNpcArt(scene.npc.portraitId)) {
       at(id, `NPC portraitId '${scene.npc.portraitId}' is not a known archetype`);

@@ -33,8 +33,8 @@ import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
 import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
-import { hasSceneArt, sceneArtUrl, hasArt } from './art.js';
-import { artEmoji } from '../../src/data/adventure-art.js';
+import { hasSceneArt, sceneArtUrl, hasArt, hasTokenArt, tokenUrl } from './art.js';
+import { artEmoji, nodeEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
@@ -969,31 +969,62 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
 
   if (scene.kind === 'explore') {
     const nodes = exploreNodes(state, module);
+    const visibleIds = new Set(nodes.map((n) => n.node.id));
+    const posOf = (id: string) => scene.map.nodes.find((n) => n.id === id);
+    const traversal = !!scene.map.paths;
     return (
       // Markers sit directly on the full-bleed location backdrop (the stage).
       <div className="adv-explore">
         <h2 className="adv-maptitle">{scene.map.title}</h2>
-        {nodes.map(({ node, blocked, secret, explored }) => {
-          // A mystery marker keeps its name hidden until the party has been
-          // there — you can see there's *something*, not what.
-          const unknown = !explored && !!node.mystery;
-          const shownLabel = unknown ? node.mystery! : node.label;
+
+        {/* Trail lines between discovered nodes; edges into the frontier fade. */}
+        {traversal && (
+          <svg className="adv-trails" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {(scene.map.paths ?? []).map(([a, b], i) => {
+              const pa = posOf(a); const pb = posOf(b);
+              if (!pa || !pb || (!visibleIds.has(a) && !visibleIds.has(b))) return null;
+              const toFrontier = nodes.some((n) => (n.node.id === a || n.node.id === b) && n.frontier);
+              return (
+                <line key={i} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                  className={`adv-trail ${toFrontier ? 'faint' : ''}`} />
+              );
+            })}
+          </svg>
+        )}
+
+        {nodes.map(({ node, blocked, secret, explored, frontier, here }) => {
+          // Frontier (a path map's not-yet-reached node) hides what it is: a
+          // generic "?" token and no title, unless the author gave it a teaser
+          // `mystery` label. A per-node mystery on a free-roam map still applies.
+          const teaser = !explored && !!node.mystery;
+          const hideTitle = frontier || (teaser && !frontier);
+          const shownLabel = frontier ? (node.mystery ?? '') : teaser ? node.mystery! : node.label;
+          const glyph = blocked ? '🔒' : frontier ? '❓' : nodeEmoji(node.icon);
+          const tokenArt = !blocked && !frontier && hasTokenArt(node.icon);
+          const tier = blocked ? 'blocked' : here ? 'here' : explored ? 'explored'
+            : frontier ? 'frontier' : secret ? 'secret' : 'known';
           return (
             <button
               key={node.id}
-              className={`adv-node ${blocked ? 'blocked' : ''} ${secret ? 'secret' : ''} ${explored ? 'explored' : 'fog'} ${unknown ? 'mystery' : ''}`}
+              className={`adv-node state-${tier} ${teaser && !frontier ? 'mystery' : ''}`}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              title={blocked ?? shownLabel}
-              // Blocked nodes stay tappable but explain why (a disabled button
-              // gives no feedback on touch).
+              title={blocked ?? (hideTitle ? shownLabel || 'Unknown' : shownLabel)}
               onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
             >
-              <span className="adv-node-icon">{blocked ? '🔒' : unknown ? '❓' : node.icon}</span>
-              <span className="adv-node-label">{shownLabel}</span>
+              <span className="adv-node-icon">
+                {tokenArt
+                  ? <img src={tokenUrl(node.icon)} alt="" draggable={false} />
+                  : <span>{glyph}</span>}
+              </span>
+              {here && <span className="adv-node-here" aria-hidden>▾</span>}
+              {shownLabel && <span className="adv-node-label">{shownLabel}</span>}
             </button>
           );
         })}
-        <p className="adv-maphint">Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.</p>
+        <p className="adv-maphint">
+          {traversal ? 'Follow the trail — new ground reveals as you go. 🔒 needs something first.'
+            : 'Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.'}
+        </p>
       </div>
     );
   }

@@ -264,13 +264,15 @@ describe('hubs and once-choices', () => {
   it('a mystery node is unexplored until entered (drives the hidden label)', () => {
     const state = startAdventure(newCampaign(1), hollow);
     enterScene(state, hollow, 'trail');
+    state.exploredNodes.push('tracks'); // the marsh is a traversal map: reach the entry to reveal the fork
     const before = exploreNodes(state, hollow).find((n) => n.node.id === 'scout')!;
     expect(before.node.mystery).toBeTruthy();
-    expect(before.explored).toBe(false); // UI shows node.mystery here
+    expect(before.explored).toBe(false); // frontier: title hidden here
+    expect(before.frontier).toBe(true);
     enterNode(state, hollow, 'scout');
     enterScene(state, hollow, 'trail'); // back on the map
     const after = exploreNodes(state, hollow).find((n) => n.node.id === 'scout')!;
-    expect(after.explored).toBe(true); // UI now shows the real label
+    expect(after.explored).toBe(true); // now shows the real label
   });
 
   it('consumedChoices survives a save round-trip', () => {
@@ -412,6 +414,7 @@ describe('defeat, finished locations, battle rewards', () => {
   it('a finished location redirects via sceneWhen instead of replaying', () => {
     const s = startAdventure(newCampaign(1), hollow);
     enterScene(s, hollow, 'trail');
+    s.exploredNodes.push('tracks'); // traversal map: reveal the frontier past the entry
     enterNode(s, hollow, 'scout');
     expect(s.sceneId).toBe('wounded'); // first visit: the full scene
     enterScene(s, hollow, 'trail');
@@ -528,6 +531,69 @@ describe('camp', () => {
 });
 
 // --- M2: exploration, wandering, journal ------------------------------------
+
+describe('traversal maps (paths & frontier)', () => {
+  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+
+  it('a fresh traversal map shows only its entry; the fork is still fogged', () => {
+    const s = startAdventure(newCampaign(1), hollow);
+    enterScene(s, hollow, 'trail');
+    const ids = exploreNodes(s, hollow).map((n) => n.node.id);
+    expect(ids).toEqual(['tracks']);          // entry only
+    const tracks = exploreNodes(s, hollow)[0]!;
+    expect(tracks.frontier).toBe(false);       // the entry isn't a "?" node
+    expect(tracks.here).toBe(true);            // you are here
+  });
+
+  it('visiting a node reveals its neighbours as frontier (title-hidden)', () => {
+    const s = startAdventure(newCampaign(1), hollow);
+    enterScene(s, hollow, 'trail');
+    s.exploredNodes.push('tracks'); s.lastNode = 'tracks';
+    const vis = exploreNodes(s, hollow);
+    const ids = vis.map((n) => n.node.id).sort();
+    expect(ids).toEqual(['ravine', 'scout', 'tracks']); // fork revealed, not 'approach' (beyond)
+    const ravine = vis.find((n) => n.node.id === 'ravine')!;
+    expect(ravine.frontier).toBe(true);
+    expect(exploreNodes(s, hollow).find((n) => n.node.id === 'tracks')!.here).toBe(true);
+  });
+
+  it('entering a node beyond the frontier is rejected', () => {
+    const s = startAdventure(newCampaign(1), hollow);
+    enterScene(s, hollow, 'trail');
+    // 'ravine' is past the entry (tracks) and not otherwise gated — pure frontier.
+    expect(() => enterNode(s, hollow, 'ravine')).toThrow(/frontier/);
+  });
+
+  it('a free-roam map (the town square) shows every node, none as frontier', () => {
+    const s = startAdventure(newCampaign(1), hollow);
+    enterScene(s, hollow, 'square');
+    const vis = exploreNodes(s, hollow);
+    // informant is flag-gated so it may be blocked, but all non-secret nodes show.
+    expect(vis.length).toBeGreaterThanOrEqual(4);
+    expect(vis.every((n) => n.frontier === false)).toBe(true);
+  });
+
+  it('the validator rejects a broken path graph', () => {
+    const bad = (map: Partial<Record<string, unknown>>): Module => ({
+      id: 'pt', title: 'T', blurb: '', start: 'x',
+      scenes: {
+        x: { id: 'x', kind: 'explore', map: {
+          title: 'M', art: {}, nodes: [
+            { id: 'a', x: 10, y: 10, label: 'A', icon: 'tok-tracks', scene: 'end' },
+            { id: 'b', x: 20, y: 20, label: 'B', icon: 'tok-cave', scene: 'end' },
+          ], ...map } as never },
+        end: { id: 'end', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    });
+    expect(validateModule(bad({ paths: [['a', 'nope']], entry: ['a'] })).some((e) => e.includes("unknown node 'nope'"))).toBe(true);
+    expect(validateModule(bad({ paths: [['a', 'b']] })).some((e) => e.includes('needs at least one entry'))).toBe(true);
+    // 'b' unreachable: entry a, but no edge to b.
+    expect(validateModule(bad({ paths: [['a', 'a']], entry: ['a'] })).some((e) => e.includes("'b' is unreachable"))).toBe(true);
+    // A tok- icon typo is caught.
+    const typo = bad({}); (typo.scenes['x'] as { map: { nodes: Array<{ icon: string }> } }).map.nodes[0]!.icon = 'tok-nonsense';
+    expect(validateModule(typo).some((e) => e.includes("'tok-nonsense'"))).toBe(true);
+  });
+});
 
 describe('exploration (M2)', () => {
   it('every registered module validates', () => {
