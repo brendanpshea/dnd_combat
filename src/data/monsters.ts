@@ -884,6 +884,36 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'marsh-dead', name: 'The Marsh Dead', suggestedLevel: 2,
     members: ['ghoul', 'ghoul'],
   },
+  // The Ashfang's goblin outriders: a boss and his swarming pack. The road-out
+  // climax of Act 1 — still the humanoid, hired-blade face of the band.
+  'goblin-outriders': {
+    id: 'goblin-outriders', name: 'Ashfang Outriders', suggestedLevel: 1,
+    members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
+  },
+  // The marsh tribe in the green hag's thrall — lizardfolk driven to serve, herding
+  // one of her monstrous toads. The Act 2 climax: first proof the raiders command
+  // more than hired swords.
+  'hag-thralls': {
+    id: 'hag-thralls', name: 'The Hag\'s Thralls', suggestedLevel: 2,
+    members: ['lizardfolk', 'lizardfolk', 'lizardfolk', 'giant-toad'],
+  },
+  // The den's gate: a bugbear enforcer and the gnolls the Ashfang let run their
+  // perimeter for scraps.
+  'den-gate': {
+    id: 'den-gate', name: 'Gate Enforcers', suggestedLevel: 3,
+    members: ['bugbear', 'gnoll', 'gnoll'],
+  },
+  // The chief and the power behind him: the Ashfang warlord flanked by the green
+  // hag whose marsh he sold his own people to, and one last human blade.
+  'ashfang-warlord': {
+    id: 'ashfang-warlord', name: 'The Ashfang Warlord', suggestedLevel: 3,
+    members: ['bandit-captain', 'green-hag', 'bandit'],
+  },
+  // The Ashfang's kenneled hunting-beasts — two giant hyenas off their chains.
+  'kennel-hyenas': {
+    id: 'kennel-hyenas', name: 'The Kennels', suggestedLevel: 3,
+    members: ['giant-hyena', 'giant-hyena'],
+  },
 };
 
 /**

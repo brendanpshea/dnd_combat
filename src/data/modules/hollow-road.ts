@@ -6,21 +6,23 @@
  * Design targets from docs/adventure-mode-plan.md: ~25 scenes, 3 explore maps,
  * combat never more than 3–4 scenes away, two avoidable fights, skill variety
  * across the 18-skill list, and an epilogue that reads flags back so choices
- * visibly mattered. Zero new stat blocks — every fight reuses an existing
- * encounter. All content is original; no published module text is reproduced.
+ * visibly mattered. No new stat blocks — every encounter is composed from the
+ * existing bestiary. All content is original; no published module text is reproduced.
  *
- * LEVEL BAND 1→3, paced by "acts = levels": three REQUIRED fights carry Act 1
- * (the road-in ambush, the crooked peddler's crew — you can't leave town till
- * he's caught — and a road-out ambush), so 2nd level is earned in blood, not
- * handed over. A milestone tops each act boundary up to the threshold: M1 rides
- * the road-out win → L2, M2 crests the hollow → L3. Milestone + required-fight XP
- * guarantees the floor for a wit-heavy party; a fight-everything run tops out
- * around L4 as the XP thresholds absorb the excess. The party enters the den at
- * L3 and faces the boss there; the boss is tuned as an L3 gauntlet.
- * Encounters are cast for VARIETY across acts (humanoid raiders, giant toads and
- * risen dead in the marsh, a bugbear vanguard and hyena kennel at the den) on a
- * spread of maps (open road, village square, the bog ford, the corridor, the
- * fire-pit) — a tour of the bestiary, not one enemy re-skinned.
+ * LEVEL BAND 1→3, paced by "acts = levels": required fights carry the leveling
+ * and milestones only top up the gap. M1 rides the Act 1 road-out win → L2; M2
+ * rides the Act 2 hollow-ambush win → L3, so both level-ups land on a fight the
+ * party earned. Required-fight + milestone XP guarantees the floor for a
+ * wit-heavy party; a fight-everything run tops out around L4 as the thresholds
+ * absorb it. The party fights the boss at L3.
+ *
+ * MONSTER VARIETY is a goal in itself — this module is a tour of the bestiary,
+ * a distinct roster per fight (goblins, human crooks, the marsh's toads and
+ * risen dead, a hag-thrall lizardfolk war-party, a bugbear/gnoll gate, kenneled
+ * hyenas, and a green-hag-and-warlord finale) across a spread of maps (road,
+ * village square, bog ford, corridor, fire-pit). The connective story explains
+ * *why* beasts, undead and lizardfolk fight for "bandits": chief Vargan sold his
+ * people's marsh to the Reedwife, a green hag, for coin and monsters.
  */
 import type { Module, Scene } from '../../adventure/types.js';
 
@@ -57,7 +59,7 @@ const scenes: Record<string, Scene> = {
     id: 'road-reveal', kind: 'story', art: { imageId: 'loc-road', emoji: '🩸' },
     text: [
       'The bandit isn\'t dead yet. He laughs wetly through red teeth as you stand over him.',
-      '"You think you\'ve done something? We\'re a hundred strong in the hollow — and the **chief**, he eats towns like the one up the road for sport. The **Ashfang** own this whole valley now."',
+      '"You think you\'ve done something? We\'re a hundred strong in the hollow — and the **chief**, he don\'t even answer to himself no more. There\'s something *in the marsh* he feeds, and it feeds him back. The **Ashfang** own this whole valley now, and worse than us owns them."',
       'His eyes drift to the hills, to a thin smudge of smoke rising somewhere past the marsh. Then they drift to nothing at all.',
     ],
     next: [{ id: 'on', label: 'Press on to Thornwick', to: 'thornwick',
@@ -262,14 +264,14 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'go', label: 'Set out on the marsh road', to: 'road-out' }],
   },
   'road-out': {
-    id: 'road-out', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
-    intro: ['Barely a mile from the gate the reeds heave and spit out raiders — the Ashfang watch the road out of Thornwick, and word of you has plainly run ahead. Outriders come up out of the ditch with blades already drawn.'],
+    id: 'road-out', kind: 'battle', encounterId: 'goblin-outriders', mapId: 'open',
+    intro: ['Barely a mile from the gate, the reeds erupt — the Ashfang keep goblin outriders on the road, and word of you has plainly run ahead. A wiry goblin boss lopes out ahead of his pack, scimitar bared, cackling something in Goblin that needs no translation.'],
     // Milestone M1 rides on this fight's win: surviving the road out of town is
     // what dings the party to 2nd level, so the level-up lands on a fight it
     // earned rather than out of nowhere. road-out is on the one-way path into the
     // marsh, so the grant fires exactly once.
-    onWin: { to: 'trail', text: ['You leave the outriders for the crows. Behind you Thornwick; ahead, the marsh swallows the road whole. You feel steadier on your feet than you did a week ago — hardened, and a shade deadlier.'],
-      effects: [{ kind: 'xp', amount: 125 }] },
+    onWin: { to: 'trail', text: ['The last of the pack breaks and vanishes into the reeds. Behind you Thornwick; ahead, the marsh swallows the road whole. You feel steadier on your feet than a week ago — hardened, and a shade deadlier.'],
+      effects: [{ kind: 'xp', amount: 100 }] },
   },
   trail: {
     id: 'trail', kind: 'explore',
@@ -297,7 +299,7 @@ const scenes: Record<string, Scene> = {
     id: 'tracks', kind: 'check', skill: 'survival', dc: 12, art: { emoji: '👣' },
     intro: ['Boot-prints and drag-marks cross the mud. Read them right and the maze unravels.'],
     success: { to: 'trail', text: ['The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You\'ve found the **safe path to the hollow** — and you\'ll see the raiders before they see you.'],
-      effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 40 }] },
+      effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 20 }] },
     failure: { to: 'trail', text: ['The prints tangle and double back on themselves until your eyes water. Still — they point, roughly, toward the hills. You\'ll find the den, but you\'ll be walking in blind.'],
       effects: [{ kind: 'setFlag', flag: 'trail-read' }] },
   },
@@ -385,28 +387,41 @@ const scenes: Record<string, Scene> = {
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
-    intro: ['The hollow opens below — and the reeds are too quiet. Raiders lie in wait. Who spots them first decides everything.'],
-    // Milestone M2: reaching the hollow closes Act 2 and dings the party to 3rd
-    // level, so they enter the den (Act 3) at the module's cap and stay there for
-    // the boss. Granted on whichever branch fires — exactly one does — and
-    // `ambush` sits on the only route to the den (the approach node needs
-    // trail-read, set back at the tracks), so it never gets skipped.
-    success: { to: 'ambush-turned', text: ['You catch the glint of a spearpoint. The ambush becomes yours.'],
-      effects: [{ kind: 'setFlag', flag: 'surprise' }, { kind: 'xp', amount: 550 }] },
-    failure: { to: 'ambush-sprung', text: ['A whistle — too late. They\'re already moving.'],
-      effects: [{ kind: 'xp', amount: 550 }] },
+    intro: ['The hollow opens below — and the reeds are wrong. Too still, and cold where the marsh should be warm, and set with shapes that are neither raider nor beast: scaled things crouched in the shallows, waiting on a word. Who spots the trap first decides everything.'],
+    // The perception check only sets the terms (surprise); Milestone M2 rides the
+    // battle's win, so 3rd level is earned in the fight, not handed over — and the
+    // hollow ambush is the one route to the den (approach needs trail-read from
+    // the tracks), so it never gets skipped.
+    success: { to: 'ambush-turned', text: ['You catch the gleam of an eye among the reeds a breath before it moves. The trap is yours to spring.'],
+      effects: [{ kind: 'setFlag', flag: 'surprise' }] },
+    failure: { to: 'ambush-sprung', text: ['A hiss, a ripple — and the reeds come alive all at once. Too late.'] },
   },
   'ambush-turned': {
-    id: 'ambush-turned', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
+    id: 'ambush-turned', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'enemies', // you spotted them — they lose the first round
-    intro: ['You strike from cover. The outriders scramble, wrong-footed — for a heartbeat they don\'t even see you.'],
-    onWin: { to: 'gate', text: ['The outer band is broken. The den\'s gate stands ahead.'] },
+    intro: ['You strike first. A hunting-party of **lizardfolk** rises from the water where they lay — driven, herded, a monstrous toad lumbering at their backs — and for a heartbeat they don\'t even see you. Whatever bound them here, it did not teach them to watch their own flank.'],
+    onWin: { to: 'hollow-won', text: ['The last of the marsh-folk sinks back into the black water it came from.'],
+      effects: [{ kind: 'xp', amount: 475 }] },
   },
   'ambush-sprung': {
-    id: 'ambush-sprung', kind: 'battle', encounterId: 'raiders-forward', mapId: 'marsh',
+    id: 'ambush-sprung', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'party', // the check failed — they get the drop on you
-    intro: ['The trap springs shut — a whistle, and the outriders are on you before you can set your feet.'],
-    onWin: { to: 'gate', text: ['Bloodied but through, you reach the den\'s gate.'] },
+    intro: ['The reeds erupt around you — **lizardfolk** with hooked spears, a giant toad heaving up through the muck, all of it moving with one dreadful purpose, as if a single hand worked them like puppets.'],
+    onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The marsh-things fall still.'],
+      effects: [{ kind: 'xp', amount: 475 }] },
+  },
+  // The reveal beat: the lizardfolk didn't choose the raiders — something in the
+  // marsh owns them, and now you know its name.
+  'hollow-won': {
+    id: 'hollow-won', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐍' },
+    text: [
+      'You turn the nearest body with your boot. Branded into the scaled hide, still weeping: a crude sigil of reeds and a reaching hand. These weren\'t raiders. They were *owned*.',
+      'Then a voice comes drifting across the water — old, and wet, and amused. "Vargan\'s little dogs, off their leash. No matter. Come up to the fire, sweetlings. The chief and his **Reedwife** have been expecting you." The reeds shiver, and go quiet. **So that is the Ashfang\'s secret: a green hag of the marsh, and a chief who sold his people\'s home to her for coin and cruelty.**',
+    ],
+    next: [{ id: 'ok', label: 'On to the den', to: 'gate',
+      effects: [{ kind: 'setFlag', flag: 'know-hag' },
+        { kind: 'journal', entry: { id: 'c-hag', kind: 'clue', title: 'The Reedwife',
+          body: 'The marsh-creatures serving the Ashfang are branded thralls of a green hag — the "Reedwife". Chief Vargan bargained his people\'s marsh to her: caravans and captives for her, coin and monsters for him. She waits at the den\'s fire beside him.' } }] }],
   },
 
   // === ACT 3 — THE ASHFANG DEN (dungeon) ================================
@@ -423,8 +438,8 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'gate-fight': {
-    id: 'gate-fight', kind: 'battle', encounterId: 'ambush', mapId: 'corridor',
-    intro: ['A horn brays from the watch-post, and the gate-runners answer — a hulking bugbear ducking under the lintel with a pair of goblins snapping at his heels, hemmed into the narrow timber run.'],
+    id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
+    intro: ['A horn brays from the watch-post, and the gate-runners answer — a hulking bugbear ducks under the lintel, and behind him two gnolls come yammering that awful laughing bark, all three hemmed into the narrow timber run.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
   },
@@ -452,7 +467,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'den-hyenas': {
-    id: 'den-hyenas', kind: 'battle', encounterId: 'hyena-pack', mapId: 'open',
+    id: 'den-hyenas', kind: 'battle', encounterId: 'kennel-hyenas', mapId: 'open',
     intro: ['The handler yanks the pins and the hyenas come off their chains in a scrabble of claws and that awful laughing yammer.'],
     onWin: { to: 'inner', text: ['The kennel falls quiet. Among the straw and bones: a raider\'s stashed purse and a half-eaten satchel worth the trouble.'],
       effects: [{ kind: 'setFlag', flag: 'kennel-cleared' }, { kind: 'gold', amount: 30 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
@@ -497,17 +512,17 @@ const scenes: Record<string, Scene> = {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
     text: [
       'The chief\'s hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters — a child\'s shoe, a miller\'s ledger, a reeve\'s chain.',
-      'The **Ashfang** warlord rises from a throne of lashed spears, axe already in hand.',
-      'Around him his guards set their feet — or do they hesitate? For a heartbeat, the whole hall waits to see what you\'ll do.',
+      'The **Ashfang** warlord rises from a throne of lashed spears, axe already in hand. And in the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **Reedwife**, the green hag of the marsh, come up out of her water to see how her investment fares.',
+      '"You\'ve been *busy*," she says, delighted, and the warlord\'s guards set their feet at a flick of her hand. For a heartbeat the whole hall waits to see what you\'ll do.',
     ],
-    next: [{ id: 'fight', label: 'End it', to: 'boss' }],
+    next: [{ id: 'fight', label: 'End them both', to: 'boss' }],
   },
   boss: {
-    id: 'boss', kind: 'battle', encounterId: 'bandits', mapId: 'firepit',
-    intro: ['The warlord doesn\'t rise so much as unfold — a big man gone to scar and appetite. "You\'ve cost me a good season," he says, almost mild, and rolls the great axe off his shoulder. "I\'ll take it back out of you. Slowly."'],
-    loot: { bonusTier: 'rare' }, // a warlord's hoard — guaranteed trophy
-    onWin: { to: 'aftermath', text: ['The warlord falls. The **Ashfang** are broken.'],
-      effects: [{ kind: 'setFlag', flag: 'chief-dead' }, { kind: 'gold', amount: 100 }] },
+    id: 'boss', kind: 'battle', encounterId: 'ashfang-warlord', mapId: 'firepit',
+    intro: ['"You\'ve cost me a good season," the warlord says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don\'t kill them quickly," she tells him. "Waste not."'],
+    loot: { bonusTier: 'rare' }, // a warlord's hoard + a hag's trophies — guaranteed drop
+    onWin: { to: 'aftermath', text: ['The warlord falls, and the **Reedwife** comes apart like wet reeds in a fist, her laughter curdling to a wail that sinks back into the marsh. The **Ashfang** are broken — root and branch.'],
+      effects: [{ kind: 'setFlag', flag: 'chief-dead' }, { kind: 'setFlag', flag: 'hag-dead' }, { kind: 'gold', amount: 100 }] },
   },
 
   // The reckoning: your earlier choices surface here as rewards you can (or
@@ -547,7 +562,7 @@ const scenes: Record<string, Scene> = {
   epilogue: {
     id: 'epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'The Ashfang banner burns in the square, and the marsh road runs quiet again — quiet enough that the carters have started complaining about the state of it, which Mira says is the surest sign a place has stopped being afraid.',
+      'The Ashfang banner burns in the square, and out past the reeds the marsh has gone strangely still — the black water lower than anyone remembers, the wrong-cold lifted, as if something that had been holding its breath for years finally let it out. The **Reedwife** is done. The carters have already started complaining about the state of the road, which Mira says is the surest sign a place has stopped being afraid.',
       'She pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.',
     ],
   },
