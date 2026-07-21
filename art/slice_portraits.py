@@ -122,7 +122,8 @@ def slice_grid_2x2(sheet_path: str, ids: list[str], margin: int = 6):
 
         rgba_crop = remove_greenscreen(crop)
 
-        out_path = os.path.join(SRC_DIR, f"portrait-{npc_id}.png")
+        prefix = "token" if npc_id.startswith("tok-") else "portrait"
+        out_path = os.path.join(SRC_DIR, f"{prefix}-{npc_id}.png")
         rgba_crop.save(out_path, "PNG")
         print(f"  Saved quadrant {i+1} -> {out_path}")
 

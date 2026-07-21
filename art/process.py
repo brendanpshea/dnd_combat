@@ -38,6 +38,13 @@ IDS = [
     "npc-scout", "npc-commoner", "npc-child", "npc-noble",
     "npc-priest", "npc-sage", "npc-stranger", "npc-wounded",
     "npc-bandit", "npc-captain", "npc-cultist", "npc-barbarian",
+    # Adventure map-node tokens
+    "tok-tavern", "tok-market", "tok-notice", "tok-gate",
+    "tok-well", "tok-house", "tok-temple", "tok-camp",
+    "tok-cave", "tok-ruin", "tok-crossing", "tok-tracks",
+    "tok-tree", "tok-person", "tok-figure", "tok-danger",
+    "tok-treasure", "tok-fire", "tok-boss", "tok-mystery",
+    "tok-bridge", "tok-lookout",
 ]
 
 os.makedirs(OUT, exist_ok=True)
