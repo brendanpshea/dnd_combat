@@ -35,6 +35,8 @@ import { JournalDrawer } from './Journal.js';
 import { hasSceneArt, sceneArtUrl, hasArt } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
+import { renderProse } from './prose.js';
+import { PartySetup } from './PartySetup.js';
 import { saveAdventureWeb, loadAdventureWeb, savedAdventureModule, deleteAdventureWeb } from './adventureStorage.js';
 
 interface Props {
@@ -115,19 +117,33 @@ function artIdOf(scene: Scene): string | undefined {
   return 'art' in scene ? scene.art?.imageId : undefined;
 }
 
+/** New runs assemble a party first (resumes skip straight to the saved run). */
 function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: Module; resume?: AdventureState }) {
-  const stateRef = useRef<AdventureState | null>(null);
-  if (!stateRef.current) {
-    if (resume) {
-      stateRef.current = resume;
-    } else {
-      const campaign = newCampaign(Math.floor(Math.random() * 2 ** 31));
-      campaign.partyReady = true;
-      stateRef.current = startAdventure(campaign, module);
-      enterScene(stateRef.current, module, module.start);
-    }
+  const [state, setState] = useState<AdventureState | null>(resume ?? null);
+  const campaignRef = useRef<CampaignState | null>(null);
+  if (!state && !campaignRef.current) {
+    // Leave partyReady false during setup so class/species swaps are allowed;
+    // it's locked in on Begin.
+    campaignRef.current = newCampaign(Math.floor(Math.random() * 2 ** 31));
   }
-  const state = stateRef.current;
+  if (!state) {
+    return (
+      <PartySetup
+        campaign={campaignRef.current!}
+        onExit={onExit}
+        onBegin={() => {
+          campaignRef.current!.partyReady = true;
+          const s = startAdventure(campaignRef.current!, module);
+          enterScene(s, module, module.start);
+          setState(s);
+        }}
+      />
+    );
+  }
+  return <AdventureGame Battle={Battle} module={module} state={state} onExit={onExit} />;
+}
+
+function AdventureGame({ Battle, module, state, onExit }: Props & { module: Module; state: AdventureState }) {
   const campaign = state.campaign;
 
   const [, setVersion] = useState(0);
@@ -141,6 +157,9 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
    *  the bottom party strip doubles as the shop's hero selector instead of the
    *  shop repeating the party's portraits as its own chip row. */
   const [shopFocus, setShopFocus] = useState<number | 'all' | 'stash'>('all');
+  /** How many story/dialogue beats are revealed — a scene's paragraphs unveil
+   *  one tap at a time, so prose reads like a paced scene, not a wall of text. */
+  const [beat, setBeat] = useState(0);
   /** The battle scene the player has hit "Fight" on. A battle first shows a
    *  pre-fight intro (enemy portraits + set-up text); only after arming it does
    *  the shared Combat mount, so a fight always opens with a beat, not a jolt. */
@@ -161,6 +180,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
       saveAdventureWeb(state);
     }
     setShopFocus('all'); // a fresh shop starts on the whole party
+    setBeat(0);          // a new scene reveals from its first beat
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
@@ -331,6 +351,8 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
               onShopChange={() => { saveAdventureWeb(state); rerender(); }}
               shopFocus={shopFocus}
               setShopFocus={setShopFocus}
+              beat={beat}
+              onAdvanceBeat={() => setBeat((b) => b + 1)}
               onExit={onExit}
             />
           )}
@@ -397,7 +419,7 @@ function BattleIntro(
             <div className="adv-panel adv-battle-intro">
               <h2 className="adv-battle-title">{enc?.name ?? 'A Fight!'}</h2>
               {(scene.intro ?? ['They move to attack!']).map((p, i) => (
-                <p key={i} className="adv-text">{p}</p>
+                <p key={i} className="adv-text">{renderProse(p)}</p>
               ))}
               <div className="adv-foes">
                 {roster.map(({ id, count }) => (
@@ -444,7 +466,7 @@ function FrozenScene({ scene }: { scene: Scene }) {
             <span className="adv-npc-name">{scene.npc.name}</span>
           </div>
         )}
-        {lines.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+        {lines.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
       </div>
     </div>
   );
@@ -746,10 +768,12 @@ interface BodyProps {
   onShopChange: () => void;
   shopFocus: number | 'all' | 'stash';
   setShopFocus: (f: number | 'all' | 'stash') => void;
+  beat: number;
+  onAdvanceBeat: () => void;
   onExit(): void;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -757,7 +781,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
       <div className="adv-scene centered">
         <div className="adv-panel">
           <h1>{scene.outcome === 'victory' ? '🏆 Victory' : '☠️ Defeat'}</h1>
-          {scene.text.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+          {scene.text.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
           <button className="primary" onClick={onExit}>Return to menu</button>
         </div>
       </div>
@@ -766,12 +790,16 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
 
   if (scene.kind === 'story' || scene.kind === 'dialogue') {
     const lines = scene.kind === 'story' ? scene.text : scene.lines;
+    // Beats reveal one tap at a time; choices wait until the prose is finished.
+    const revealed = Math.min(beat, lines.length - 1);
+    const shown = lines.slice(0, revealed + 1);
+    const hasMore = revealed < lines.length - 1;
     const options = legalChoices(state, module);
     const leaveTo = hubReturn(state, module);
     return (
       // Bottom-anchored panel over the location backdrop (visual-novel style).
       <div className="adv-scene bottom">
-        <div className="adv-panel">
+        <div className={`adv-panel ${hasMore ? 'advancing' : ''}`} onClick={hasMore ? onAdvanceBeat : undefined}>
           {scene.kind === 'dialogue' && (
             <div className="adv-npc">
               {hasArt(scene.npc.portraitId ?? scene.npc.id)
@@ -780,7 +808,12 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
               <span className="adv-npc-name">{scene.npc.name}</span>
             </div>
           )}
-          {lines.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+          {shown.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+          {hasMore ? (
+            <button className="adv-continue" onClick={(e) => { e.stopPropagation(); onAdvanceBeat(); }}>
+              Continue ▸
+            </button>
+          ) : (
           <div className="adv-choices">
             {options.map(({ choice, blocked }) => (
               <button
@@ -800,6 +833,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
               </button>
             )}
           </div>
+          )}
         </div>
       </div>
     );
@@ -809,7 +843,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onLeave, onNod
     return (
       <div className="adv-scene bottom">
         <div className="adv-panel">
-          {scene.intro.map((p, i) => <p key={i} className="adv-text">{p}</p>)}
+          {scene.intro.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
           {scene.roller === 'chosen' ? (
             <>
               <p className="adv-prompt">Who steps up? ({scene.skill}, DC {scene.dc})</p>
