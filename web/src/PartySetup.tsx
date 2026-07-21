@@ -103,7 +103,7 @@ export function PartySetup(
       <button className="primary adv-begin" onClick={() => { initAudio(); onBegin(); }}>Begin the adventure →</button>
 
       {spellsFor !== null && (
-        <SpellTray campaign={c} idx={spellsFor} onClose={() => setSpellsFor(null)} onSaved={change} />
+        <SpellTray key={spellsFor} campaign={c} idx={spellsFor} onClose={() => setSpellsFor(null)} onSaved={change} />
       )}
     </div>
   );
