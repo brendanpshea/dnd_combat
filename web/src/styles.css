@@ -707,6 +707,9 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   display: inline-block;
 }
 .slot-pip.filled { background: #a78bfa; box-shadow: 0 0 3px #a78bfa99; }
+/* Slot meter under a hero's name in the adventure camp/party screen. */
+.adv-camp-slots { margin-top: 3px; }
+.adv-camp-slots:empty { display: none; }
 
 .portrait {
   width: 40px;
