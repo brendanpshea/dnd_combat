@@ -97,6 +97,10 @@ export function startTurn(state: GameState): GameEvent[] {
   }
   // Web: a restrained creature can't move at all this turn.
   if (c.conditions.some((k) => k.id === 'restrained')) speed = 0;
+  // Incapacitated (e.g. the first stage of Sleep): takes no actions and no
+  // movement — it just stands there until its end-of-turn save. Without this it
+  // kept full speed and the AI would walk it around before rolling to wake.
+  if (c.conditions.some((k) => k.id === 'incapacitated')) speed = 0;
   // Slow mastery: -10 ft this turn, then it clears (lasts to the start of the
   // slowed creature's next turn).
   if (c.conditions.some((k) => k.id === 'slowed')) {

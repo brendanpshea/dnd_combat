@@ -192,12 +192,16 @@ describe('leveled spells', () => {
       const ftr = () => c.state.combatants['ftr']!;
       if (!ftr().conditions.some((k) => k.id === 'incapacitated')) continue;
 
-      // Incapacitated: no actions offered on the fighter's turn (moves + endTurn only).
+      // Incapacitated: no actions AND no movement on the fighter's turn — it just
+      // stands there until its end-of-turn save (only endTurn is offered).
       c.apply({ kind: 'endTurn' });
       expect(c.activeId).toBe('ftr');
       const kinds = new Set(c.legalActions().map((a) => a.kind));
       expect(kinds.has('attack')).toBe(false);
       expect(kinds.has('dash')).toBe(false);
+      expect(kinds.has('move')).toBe(false);
+      expect([...kinds]).toEqual(['endTurn']);
+      expect(c.state.combatants['ftr']!.turn.movementMax).toBe(0);
       c.apply({ kind: 'endTurn' }); // repeat save happens here
       if (!ftr().conditions.some((k) => k.id === 'unconscious')) continue;
 
