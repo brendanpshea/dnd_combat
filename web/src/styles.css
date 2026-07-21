@@ -2017,6 +2017,11 @@ button.category .count {
   background: var(--panel2, #2e2840); border: 1px solid rgba(255,255,255,.06);
   border-radius: 999px; padding: 4px 11px;
 }
+.landing-legal {
+  font-size: .78rem; line-height: 1.45; color: var(--muted);
+  margin: 2px auto 0; max-width: 30rem;
+}
+.landing-legal b { color: var(--text); font-weight: 700; }
 
 .landing-modules { display: flex; flex-direction: column; gap: 14px; }
 .module-card { display: flex; flex-direction: column; gap: 6px; }
