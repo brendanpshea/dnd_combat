@@ -1841,12 +1841,12 @@ button.category .count {
   .adv-content, .confetti span, .dicecheck.shake { animation: none; }
 }
 
-.adv-modcard-wrap { display: flex; gap: 8px; width: 100%; max-width: 360px; align-items: stretch; }
-.adv-modcard-wrap .adv-modcard { flex: 1; }
-.adv-resume {
-  padding: 0 16px; border-radius: 12px; background: var(--blue); color: #081120; border: none;
-  font-weight: 700; cursor: pointer; white-space: nowrap;
-}
+.adv-modcard-wrap { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 360px; }
+.adv-modcard-wrap .adv-modcard { width: 100%; max-width: none; }
+.adv-modcard-continue { color: var(--blue) !important; font-weight: 700; margin-top: 2px; }
+.adv-modcard-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-left: 4px; }
+.adv-modcard-actions .mini { margin-left: 0; }
+.mini.danger { background: var(--red); color: #fff; }
 
 /* NPC emoji fallback (when an archetype portrait isn't generated). */
 .adv-npc-emoji {

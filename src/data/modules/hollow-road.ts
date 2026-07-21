@@ -76,7 +76,8 @@ const scenes: Record<string, Scene> = {
         { id: 'market', x: 40, y: 40, label: 'Market', icon: '🛒', scene: 'market' },
         { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: '📜', scene: 'board' },
         { id: 'informant', x: 48, y: 66, label: 'Furtive Peddler', icon: '🕵️', scene: 'spy-confront',
-          requires: [{ kind: 'flag', flag: 'know-spy' }] },
+          requires: [{ kind: 'flag', flag: 'know-spy' }],
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'spy-caught' }], to: 'spy-gone' }] },
         { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: '🚪', scene: 'trailhead' },
       ],
     },
@@ -136,7 +137,8 @@ const scenes: Record<string, Scene> = {
         { id: 'tracks', x: 28, y: 40, label: 'Fresh Tracks', icon: '👣', scene: 'tracks' },
         { id: 'ravine', x: 55, y: 62, label: 'Sunken Ravine', icon: '🪨', scene: 'ravine',
           wandering: { chance: 0.5, battleScene: 'marsh-wolves' } },
-        { id: 'scout', x: 34, y: 78, label: 'A Cry for Help', mystery: 'A faint sound…', icon: '🆘', scene: 'wounded' },
+        { id: 'scout', x: 34, y: 78, label: 'A Cry for Help', mystery: 'A faint sound…', icon: '🆘', scene: 'wounded',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
         { id: 'approach', x: 80, y: 40, label: 'The Hollow Ahead', icon: '⛰️', scene: 'ambush',
           requires: [{ kind: 'flag', flag: 'trail-read' }] },
       ],
@@ -170,25 +172,36 @@ const scenes: Record<string, Scene> = {
     id: 'scout-saved', kind: 'story', art: { emoji: '❤️‍🩹' },
     text: ['The bleeding stops. Grateful, she maps the den\'s watch-posts and the lieutenant who hates the chief. "Vex. Offer Vex a way out and he might take it."'],
     next: [{ id: 'ok', label: 'Send her back to Thornwick', to: 'trail',
-      effects: [{ kind: 'setFlag', flag: 'saved-scout' }, { kind: 'setFlag', flag: 'know-vex' },
+      effects: [{ kind: 'setFlag', flag: 'saved-scout' }, { kind: 'setFlag', flag: 'scout-met' }, { kind: 'setFlag', flag: 'know-vex' },
         { kind: 'journal', entry: { id: 'n-scout', kind: 'npc', title: 'The Scout', body: 'You saved a reeve\'s scout. She named Vex, the chief\'s resentful lieutenant.' } }] }],
   },
   'scout-fail': {
     id: 'scout-fail', kind: 'story', art: { emoji: '🩸' },
     text: ['Your hands aren\'t enough; she fades before she can say much. She presses a token into your palm — the reeve will know it.'],
     next: [{ id: 'ok', label: 'Cover her and go', to: 'trail',
-      effects: [{ kind: 'addItem', itemId: 'potion-healing', qty: 1 }] }],
+      effects: [{ kind: 'setFlag', flag: 'scout-met' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] }],
+  },
+  // "Already done" beats: a finished location shows this instead of replaying
+  // its full scene (the explore node's sceneWhen routes here once its flag set).
+  'scout-gone': {
+    id: 'scout-gone', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
+    text: ['The dead horse still lies across the trail, flies rising in the heat. Of the scout there\'s no sign — dragged home, or into the reeds. Nothing more for you here.'],
+    next: [{ id: 'ok', label: 'Move on', to: 'trail' }], noBack: true,
+  },
+  'spy-gone': {
+    id: 'spy-gone', kind: 'story', art: { imageId: 'loc-village', emoji: '🕳️' },
+    text: ['The peddler\'s stall stands bare, its awning taken down. The reeve\'s men came for him at first light; the square has already moved on.'],
+    next: [{ id: 'ok', label: 'Turn back to the square', to: 'square' }], noBack: true,
   },
   'marsh-wolves': {
     id: 'marsh-wolves', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
     intro: ['Marsh-wolves, half-starved and bold, break from the reeds!'],
-    onWin: { to: 'ravine', text: ['The pack breaks. The ravine still waits.'], effects: [{ kind: 'xp', amount: 30 }] },
+    onWin: { to: 'ravine', text: ['The pack breaks. The ravine still waits.'] },
   },
   'camp-ambush': {
     id: 'camp-ambush', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
     intro: ['Your watch-fire draws them: marsh-wolves slink out of the dark, drawn by the smell of blood and rations.'],
-    onWin: { to: '@hub', text: ['The pack is driven off. You bank the fire and see out the rest of the night.'],
-      effects: [{ kind: 'xp', amount: 20 }] },
+    onWin: { to: '@hub', text: ['The pack is driven off. You bank the fire and see out the rest of the night.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
@@ -198,13 +211,15 @@ const scenes: Record<string, Scene> = {
     failure: { to: 'ambush-sprung', text: ['A whistle — too late. They\'re already moving.'] },
   },
   'ambush-turned': {
-    id: 'ambush-turned', kind: 'battle', encounterId: 'raiders', mapId: 'open',
-    intro: ['You strike from cover — the raiders scramble, wrong-footed.'],
-    onWin: { to: 'gate', text: ['The outer band is broken. The den\'s gate stands ahead.'], effects: [{ kind: 'xp', amount: 60 }] },
+    id: 'ambush-turned', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
+    surprise: 'enemies', // you spotted them — they lose the first round
+    intro: ['You strike from cover. The outriders scramble, wrong-footed — for a heartbeat they don\'t even see you.'],
+    onWin: { to: 'gate', text: ['The outer band is broken. The den\'s gate stands ahead.'] },
   },
   'ambush-sprung': {
-    id: 'ambush-sprung', kind: 'battle', encounterId: 'raiders', mapId: 'marsh',
-    intro: ['The trap springs shut — raiders on every side!'],
+    id: 'ambush-sprung', kind: 'battle', encounterId: 'raiders-forward', mapId: 'marsh',
+    surprise: 'party', // the check failed — they get the drop on you
+    intro: ['The trap springs shut — a whistle, and the outriders are on you before you can set your feet.'],
     onWin: { to: 'gate', text: ['Bloodied but through, you reach the den\'s gate.'] },
   },
 
@@ -306,6 +321,17 @@ const scenes: Record<string, Scene> = {
     ],
   },
 
+  // A total party wipe lands here (revived at half HP), not a hard game over —
+  // dragged back to Thornwick to lick wounds and try again.
+  defeat: {
+    id: 'defeat', kind: 'story', art: { imageId: 'loc-tavern', emoji: '🍺' },
+    text: [
+      'You wake to lamplight and the smell of Mira\'s hearth. Someone hauled you off the field before the ravens came.',
+      '"Easy, now," she says, setting down a bowl. "The Ashfang are still out there — but you\'re no use to Thornwick dead. Rest, then finish it."',
+    ],
+    next: [{ id: 'up', label: 'Get back on your feet', to: 'square' }], noBack: true,
+  },
+
   epilogue: {
     id: 'epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
@@ -318,5 +344,5 @@ const scenes: Record<string, Scene> = {
 export const HOLLOW_ROAD_MODULE: Module = {
   id: 'hollow-road', title: 'The Hollow Road',
   blurb: 'Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit.',
-  start: 'start', scenes,
+  start: 'start', scenes, defeatScene: 'defeat',
 };

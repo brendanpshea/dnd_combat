@@ -41,6 +41,7 @@ function refsOf(scene: Scene): Id[] {
       scene.map.nodes.forEach((n) => {
         refs.push(n.scene);
         if (n.wandering) refs.push(n.wandering.battleScene);
+        n.sceneWhen?.forEach((w) => refs.push(w.to));
       });
       if (scene.map.camp?.risky) refs.push(scene.map.camp.risky.battleScene);
       break;
@@ -70,7 +71,10 @@ function requirementsOf(scene: Scene): Requirement[] {
   const fromChoice = (ch: Choice) => out.push(...(ch.requires ?? []));
   switch (scene.kind) {
     case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
-    case 'explore': scene.map.nodes.forEach((n) => out.push(...(n.requires ?? []))); break;
+    case 'explore': scene.map.nodes.forEach((n) => {
+      out.push(...(n.requires ?? []));
+      n.sceneWhen?.forEach((w) => out.push(...w.if));
+    }); break;
     default: break;
   }
   return out;
@@ -94,6 +98,9 @@ export function validateModule(module: Module): string[] {
   const at = (id: Id, msg: string) => errors.push(`[${id}] ${msg}`);
 
   if (!module.scenes[module.start]) errors.push(`start scene '${module.start}' does not exist`);
+  if (module.defeatScene && !ids.has(module.defeatScene)) {
+    errors.push(`defeatScene '${module.defeatScene}' does not exist`);
+  }
 
   // Flag hygiene: every flag read somewhere must be written somewhere.
   const written = new Set<string>();
@@ -150,8 +157,9 @@ export function validateModule(module: Module): string[] {
 
   // Reachability: BFS from start over unconditional-ish refs (we treat every
   // ref as potentially reachable — gating is a runtime concern, not a dead end).
-  const seen = new Set<Id>([module.start]);
-  const queue = [module.start];
+  const roots = [module.start, ...(module.defeatScene ? [module.defeatScene] : [])];
+  const seen = new Set<Id>(roots);
+  const queue = [...roots];
   while (queue.length) {
     const scene = module.scenes[queue.shift()!];
     if (!scene) continue;

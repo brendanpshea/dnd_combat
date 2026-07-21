@@ -688,6 +688,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'raiders', name: 'Orc Raiders', suggestedLevel: 2,
     members: ['orc', 'orc', 'scout', 'scout', 'bandit'],
   },
+  'raiders-forward': {
+    // A forward scouting party — a level-1-appropriate first real fight (225 XP
+    // vs the full warband's 425). One orc anchors two lighter humanoids.
+    id: 'raiders-forward', name: 'Ashfang Outriders', suggestedLevel: 1,
+    members: ['orc', 'scout', 'bandit'],
+  },
   wilds: {
     id: 'wilds', name: 'Wild Hunt', suggestedLevel: 2,
     members: ['brown-bear', 'dire-wolf', 'wolf', 'wolf'],

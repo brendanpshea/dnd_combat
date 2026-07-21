@@ -17,6 +17,10 @@ export interface CombatSetup {
   /** Battle map from src/data/maps.ts; omitted = open grid of width×height. */
   mapId?: string;
   combatants: Combatant[]; // positions must be set and unique
+  /** A surprised team loses its first round: every member starts `incapacitated`
+   *  until the top of round 2 (can't act or take reactions). Models an ambush —
+   *  the party surprising raiders, or being caught out. */
+  surprisedTeam?: TeamId;
 }
 
 export function startCombat(setup: CombatSetup): { state: GameState; events: GameEvent[] } {
@@ -46,6 +50,16 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
     turnIndex: 0,
     winner: null,
   };
+  // Surprise: the surprised team is incapacitated through round 1, cleared at
+  // the start of each member's round-2 turn by the expiresAtRound machinery.
+  if (setup.surprisedTeam) {
+    for (const c of Object.values(combatants)) {
+      if (c.team === setup.surprisedTeam) {
+        c.conditions.push({ id: 'incapacitated', expiresAtRound: 1 });
+      }
+    }
+  }
+
   const events = rollInitiative(state);
   return { state, events };
 }

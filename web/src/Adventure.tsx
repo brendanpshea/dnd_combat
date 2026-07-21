@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import {
-  newCampaign, buildCampaignParty, applyVictory, type CampaignState,
+  newCampaign, buildCampaignParty, applyAdventureVictory, type CampaignState,
   partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
@@ -60,6 +60,9 @@ export function AdventureScreen({ Battle, onExit }: Props) {
 function ModulePicker(
   { onStart, onExit }: { onStart(s: { module: Module; resume?: AdventureState }): void; onExit(): void },
 ) {
+  const [, setV] = useState(0);
+  const bump = () => setV((v) => v + 1);
+  const [wipe, setWipe] = useState<string | null>(null); // module id confirming a fresh start
   const savedId = savedAdventureModule();
   return (
     <div className="setup">
@@ -68,14 +71,28 @@ function ModulePicker(
         const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
         return (
           <div key={m.id} className="adv-modcard-wrap">
-            <button className="adv-modcard" onClick={() => { initAudio(); onStart({ module: m }); }}>
+            {/* When a save exists the card *continues* it — that's the obvious
+                tap target; starting fresh is a deliberate, confirmed choice. */}
+            <button className="adv-modcard" onClick={() => { initAudio(); onStart(resume ? { module: m, resume } : { module: m }); }}>
               <strong>{m.title}</strong>
               <span>{m.blurb}</span>
+              {resume && <span className="adv-modcard-continue">▶ Continue your run</span>}
             </button>
             {resume && (
-              <button className="adv-resume" onClick={() => { initAudio(); onStart({ module: m, resume }); }}>
-                ▶ Resume
-              </button>
+              <div className="adv-modcard-actions">
+                {wipe === m.id ? (
+                  <>
+                    <span className="muted">Erase your saved run?</span>
+                    <button className="mini danger" onClick={() => { deleteAdventureWeb(); setWipe(null); initAudio(); onStart({ module: m }); }}>Yes, start over</button>
+                    <button className="mini" onClick={() => setWipe(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    <button className="mini" onClick={() => setWipe(m.id)}>↺ Start over</button>
+                    <button className="mini" onClick={() => { deleteAdventureWeb(); bump(); }}>🗑 Delete save</button>
+                  </>
+                )}
+              </div>
             )}
           </div>
         );
@@ -217,6 +234,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
       seed: battleSeed(state, scene.id),
       mapId: scene.mapId,
       combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', 7)],
+      ...(scene.surprise ? { surprisedTeam: (scene.surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
     });
     return (
       <Battle
@@ -230,12 +248,17 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
         onExit={onExit}
         onDone={(winner) => {
           const won = winner === 'team1';
+          const loot: AdventureEvent[] = [];
           if (won) {
             const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
-            applyVictory(campaign, survivors, combat.state.rng);
+            const v = applyAdventureVictory(campaign, survivors, scene.encounterId, combat.state.rng);
+            if (v.gold > 0) loot.push({ type: 'gold', amount: v.gold, total: campaign.gold });
+            for (const it of v.items) loot.push({ type: 'item', itemId: it.itemId, qty: it.qty, gained: true });
+            if (v.xpGained > 0) loot.push({ type: 'xp', amount: v.xpGained, ...(v.leveledTo ? { leveledTo: v.leveledTo } : {}) });
           }
           setArmedBattle(null); // re-arm the intro if a later fight reuses this
-          process(resolveBattle(state, module, won), scene);
+          // Treasure first, then the scene's own onWin/onLoss text and effects.
+          process([...loot, ...resolveBattle(state, module, won)], scene);
         }}
       />
     );
@@ -280,7 +303,7 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
             setCampOpen(false);
             process(evs, scene);
           }}
-          onChange={rerender}
+          onChange={() => { saveAdventureWeb(state); rerender(); }}
           onClose={() => setCampOpen(false)}
         />
       )}

@@ -110,6 +110,10 @@ export interface ExploreNode {
   mystery?: string;
   icon: string;                 // SvgIconId / emoji, resolved by the UI
   scene: SceneRef;              // tapping enters this scene
+  /** Conditional destinations checked before `scene`: the first entry whose
+   *  requirements all hold wins. Lets a finished location route to a short
+   *  "already done" beat instead of replaying its full scene. */
+  sceneWhen?: Array<{ if: Requirement[]; to: SceneRef }>;
   requires?: Requirement[];     // locked door / gated route
   /** A secret: revealed only if the party's passive Perception ≥ dc on arrival. */
   hidden?: { dc: number };
@@ -150,6 +154,9 @@ export type Scene =
   | {
       id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Paragraph[]; art?: SceneArt;
       onWin: Outcome; onLoss?: Outcome;
+      /** Ambush: `enemies` surprised (a won perception check) or `party` caught
+       *  out (a failed one). The surprised side loses its first round. */
+      surprise?: 'party' | 'enemies';
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];
@@ -168,4 +175,8 @@ export interface Module {
   blurb: string;
   start: SceneRef;
   scenes: Record<Id, Scene>;
+  /** Where a total party wipe lands (revived, half HP) instead of a hard game
+   *  over — usually a safe hub like the town inn. A per-battle `onLoss`
+   *  overrides it; absent both, a lost fight simply retries. */
+  defeatScene?: SceneRef;
 }

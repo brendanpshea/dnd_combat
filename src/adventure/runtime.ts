@@ -18,7 +18,7 @@ import { rollDie } from '../engine/rng.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
-  levelForXp, partyStash, addItem, healParty, shortRest, longRest,
+  levelForXp, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
   attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE,
 } from '../campaign/campaign.js';
 import {
@@ -417,7 +417,10 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
       return enterScene(state, module, node.wandering.battleScene);
     }
   }
-  return enterScene(state, module, node.scene);
+  // A finished location redirects to its "already done" beat: first matching
+  // conditional destination wins, else the node's default scene.
+  const redirect = node.sceneWhen?.find((w) => w.if.every((r) => requirementMet(state, r)));
+  return enterScene(state, module, redirect ? redirect.to : node.scene);
 }
 
 // --- Driver callbacks (battle / shop / rest) --------------------------------
@@ -427,9 +430,14 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   const scene = currentScene(state, module);
   if (scene.kind !== 'battle') throw new Error(`resolveBattle on a ${scene.kind} scene`);
   if (won) return applyOutcome(state, module, scene.onWin);
-  // Story mode with no explicit loss branch: retry the same battle.
-  if (!scene.onLoss) return enterScene(state, module, state.sceneId);
-  return applyOutcome(state, module, scene.onLoss);
+  // Loss: an authored per-battle branch wins; else the module's defeat scene
+  // (the party is dragged back, revived at half HP); else just retry the fight.
+  if (scene.onLoss) return applyOutcome(state, module, scene.onLoss);
+  if (module.defeatScene) {
+    reviveParty(state.campaign);
+    return enterScene(state, module, module.defeatScene);
+  }
+  return enterScene(state, module, state.sceneId);
 }
 
 /** After the driver's shop / rest interaction, advance to the scene's `next`. */
