@@ -13,8 +13,8 @@
 import { useState } from 'react';
 import {
   buyItem, sellItem, itemName, itemIcon, itemPrice, itemCategory,
-  partyStash, claimFromStash, scrollLearnable, learnSpellFromScroll,
-  type CampaignState, type ItemCategory,
+  partyStash, claimFromStash, scrollLearnable, learnSpellFromScroll, equipBlocked,
+  type CampaignState, type ItemCategory, type EquipSlot,
 } from '../../src/campaign/campaign.js';
 import {
   shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, type HaggleSkill,
@@ -36,6 +36,21 @@ const CAT_META: Record<ItemCategory, { icon: string; label: string }> = {
   other: { icon: '📦', label: 'Other' },
 };
 const CAT_ORDER: ItemCategory[] = ['weapon', 'armor', 'potion', 'scroll', 'trinket', 'other'];
+const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
+
+/** For a focused hero, whether an equippable item fits any slot — drives the
+ *  buy-row ✓ / ⚠ hint. Consumables (no slot) return null: nothing to equip. */
+function fitFor(campaign: CampaignState, heroIdx: number, itemId: string): boolean | null {
+  const cat = itemCategory(itemId);
+  if (cat !== 'weapon' && cat !== 'armor' && cat !== 'trinket') return null;
+  // equipBlocked wants the item in inventory; probe against a shallow clone so
+  // we can answer "would this fit?" without owning it yet.
+  const ch = campaign.characters[heroIdx];
+  if (!ch) return null;
+  const probe = { ...campaign, characters: campaign.characters.map((c, i) =>
+    i === heroIdx ? { ...c, inventory: [...c.inventory, { itemId, qty: 1 }] } : c) };
+  return EQUIP_SLOTS.some((slot) => equipBlocked(probe, heroIdx, itemId, slot) === undefined);
+}
 
 const HAGGLE_OPTS: Array<{ skill: HaggleSkill; label: string; note: string }> = [
   { skill: 'persuasion', label: '🤝 Persuade', note: 'safe · 20% off' },
@@ -61,6 +76,7 @@ interface Props {
 export function AdventureShop({ campaign, state, module, scene, focus, setFocus, onRoll, onChange, onLeave }: Props) {
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const [pickBuy, setPickBuy] = useState<string | null>(null);
+  const [pickSell, setPickSell] = useState<string | null>(null); // sell row key awaiting confirm
   const [haggling, setHaggling] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [cat, setCat] = useState<ItemCategory | 'all'>('all');
@@ -172,7 +188,15 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                     }
                   }}
                 >
-                  <span>{itemIcon(id)} {itemName(id)}</span>
+                  <span>
+                    {itemIcon(id)} {itemName(id)}
+                    {/* Equip hint for the focused hero: ✓ fits, ⚠ can't use. */}
+                    {typeof focus === 'number' && (() => {
+                      const fit = fitFor(campaign, focus, id);
+                      return fit === null ? null
+                        : <span className={`shop-fit ${fit ? 'ok' : 'no'}`}>{fit ? '✓ fits' : '⚠ can\'t use'}</span>;
+                    })()}
+                  </span>
                   <span className={`shop-price ${afford ? '' : 'poor'}`}>💰 {price}</span>
                 </button>
                 {picking && typeof focus !== 'number' && (
@@ -192,22 +216,33 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
             <p className="adv-text">{focus === 'stash' ? 'No party loot to sell.' : 'Nothing to sell here.'}</p>
           ) : shownSellable.map(({ itemId, charIdx, label }, i) => {
             const resale = Math.floor((itemPrice(itemId) ?? 0) / 2);
+            const key = `${itemId}-${charIdx}-${i}`;
+            const confirming = pickSell === key;
+            const doSell = () => {
+              if (charIdx === 'stash') {
+                if (claimFromStash(campaign, 0, itemId)) { sellItem(campaign, 0, itemId); say(`Sold ${itemName(itemId)} (+${resale}g).`); }
+              } else if (sellItem(campaign, charIdx, itemId)) {
+                say(`Sold ${itemName(itemId)} (+${resale}g).`);
+              }
+              setPickSell(null);
+            };
             // Scribing is offered on a scroll the holding wizard can learn.
             const scribe = charIdx !== 'stash'
               ? scrollLearnable(campaign, charIdx, itemId)
               : undefined;
             return (
-              <div key={`${itemId}-${i}`} className="shop-item">
-                <button className="shop-row" onClick={() => {
-                  if (charIdx === 'stash') {
-                    if (claimFromStash(campaign, 0, itemId)) { sellItem(campaign, 0, itemId); say(`Sold ${itemName(itemId)} (+${resale}g).`); }
-                  } else if (sellItem(campaign, charIdx, itemId)) {
-                    say(`Sold ${itemName(itemId)} (+${resale}g).`);
-                  }
-                }}>
+              <div key={key} className="shop-item">
+                <button className={`shop-row ${confirming ? 'confirming' : ''}`}
+                  onClick={() => setPickSell(confirming ? null : key)}>
                   <span>{itemIcon(itemId)} {itemName(itemId)} <em className="shop-owner">· {label}</em></span>
                   <span className="shop-price sell">+💰 {resale}</span>
                 </button>
+                {confirming && (
+                  <div className="adv-item-acts">
+                    <button onClick={doSell}>Sell for +{resale}g</button>
+                    <button className="ghost" onClick={() => setPickSell(null)}>Keep</button>
+                  </div>
+                )}
                 {scribe && charIdx !== 'stash' && (
                   <div className="adv-item-acts">
                     <button

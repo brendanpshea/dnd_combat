@@ -23,8 +23,9 @@ const scenes: Record<string, Scene> = {
   start: {
     id: 'start', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: [
-      'The village of Thornwick huddles under grey hills, its gate scorched and its people wary.',
-      'For a month the Ashfang raiders have bled the road dry. The reeve\'s bounty — and a plea — brought you here.',
+      'The village of **Thornwick** huddles under grey hills, its gate scorched, its people watching you from shuttered windows.',
+      'For a month the **Ashfang raiders** have bled the road dry — burned barns, emptied larders, carried off anyone caught after dark.',
+      'The reeve\'s bounty drew you up the valley. But it was the plea nailed beneath it, in a shakier hand, that made you come: *Help us. There is no one else.*',
     ],
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern',
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'End the raiders plaguing Thornwick. Start by learning where they den.' } }] }],
@@ -35,8 +36,9 @@ const scenes: Record<string, Scene> = {
   tavern: {
     id: 'tavern', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
-      '"Sellswords, are you? Good. The reeve\'s too proud to beg, so I will."',
-      '"The Ashfang came from the marsh road. But there\'s more folk won\'t say aloud…"',
+      'Inside the **Wander-Inn**, the fire is low and the talk lower. A broad woman with flour on her sleeves sets down a cloth and looks you over.',
+      '"Sellswords, are you? Good." **Mira** doesn\'t smile. "The reeve\'s too proud to beg, so I\'ll do it for him."',
+      '"The **Ashfang** came down the **marsh road**, out past the reeds. That much everyone knows. But there\'s more that folk won\'t say with the door open…"',
     ],
     next: [
       { id: 'insight', label: '[Insight DC 12] Something she\'s holding back?', to: 'tavern-spy',
@@ -125,7 +127,10 @@ const scenes: Record<string, Scene> = {
   // === ACT 2 — THE MARSH ROAD (wilderness) ==============================
   trailhead: {
     id: 'trailhead', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌫️' },
-    text: ['The marsh road leaves Thornwick behind. Reeds close in; the hills wait beyond a maze of black water and game trails.'],
+    text: [
+      '**Thornwick** falls away behind you, and the **marsh road** takes its place: a ribbon of mud between black water and whispering reeds.',
+      'Somewhere out in that maze the **Ashfang** have their den. Somewhere closer, the trail bites back.',
+    ],
     next: [{ id: 'go', label: 'Into the marsh', to: 'trail' }],
   },
   trail: {
@@ -289,8 +294,9 @@ const scenes: Record<string, Scene> = {
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
     text: [
-      'The chief\'s hall reeks of smoke and old blood. The Ashfang warlord rises, axe in hand.',
-      'Around him, his guards tense — or do they hesitate?',
+      'The chief\'s hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters — a child\'s shoe, a miller\'s ledger, a reeve\'s chain.',
+      'The **Ashfang** warlord rises from a throne of lashed spears, axe already in hand.',
+      'Around him his guards set their feet — or do they hesitate? For a heartbeat, the whole hall waits to see what you\'ll do.',
     ],
     next: [{ id: 'fight', label: 'End it', to: 'boss' }],
   },

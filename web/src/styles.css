@@ -1506,7 +1506,18 @@ button.category .count {
 .adv-scene.centered .adv-panel { max-height: none; border-radius: 18px; align-items: center; text-align: center; }
 .adv-panel.full { max-height: 100%; height: 100%; border-radius: 0; background: linear-gradient(rgba(36,31,51,.94), rgba(26,22,37,.97)); }
 
-.adv-text { line-height: 1.55; font-size: 1.05rem; }
+.adv-text { line-height: 1.6; font-size: 1.15rem; }
+/* Named NPCs / locations highlighted from the narration. */
+.adv-emph { font-style: normal; font-weight: 600; color: var(--gold); }
+/* Tap-to-continue between beats of a multi-paragraph scene. */
+.adv-panel.advancing { cursor: pointer; }
+.adv-continue {
+  align-self: flex-end; padding: 6px 14px; border-radius: 10px; background: var(--panel2);
+  color: var(--muted); border: 1px solid transparent; cursor: pointer; font-size: .9rem;
+  animation: beatpulse 1.6s ease-in-out infinite;
+}
+.adv-continue:hover { color: var(--text); border-color: var(--blue); }
+@keyframes beatpulse { 0%,100% { opacity: .6; } 50% { opacity: 1; } }
 
 /* Pre-battle intro: set-up text + the faces you're about to fight. */
 .adv-battle-intro { align-items: center; text-align: center; }
@@ -1745,6 +1756,10 @@ button.category .count {
 .shop-price.poor { color: var(--red); }
 .shop-price.sell { color: var(--green); }
 .shop-owner { color: var(--muted); font-style: normal; font-size: .82rem; }
+.shop-fit { font-size: .72rem; margin-left: 6px; padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
+.shop-fit.ok { color: var(--green); background: rgba(80,200,120,.12); }
+.shop-fit.no { color: var(--gold); background: rgba(200,160,60,.12); }
+.shop-row.confirming { border-color: var(--gold); }
 .adv-shop-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .adv-npc.compact { flex-direction: row; align-items: center; gap: 8px; margin: 0; }
 .adv-npc.compact .portrait { width: 40px; height: 40px; }
@@ -1834,12 +1849,36 @@ button.category .count {
 .adv-top { padding-top: max(10px, env(safe-area-inset-top)); }
 .adv-choice, .shop-row, .primary, .adv-node { min-height: 44px; }
 @media (max-width: 480px) {
-  .adv-text { font-size: 1rem; }
+  .adv-text { font-size: 1.08rem; }
   .adv-backdrop.glyph span { font-size: 64px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .adv-content, .confetti span, .dicecheck.shake { animation: none; }
 }
+
+/* Adventure party setup */
+.adv-partysetup { max-width: 460px; }
+.adv-setup-head { display: flex; align-items: center; gap: 10px; width: 100%; }
+.adv-setup-head h1 { margin: 0; }
+.adv-templates { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.adv-template {
+  flex: 1 1 45%; text-align: left; padding: 10px 12px; border-radius: 12px; background: var(--panel2);
+  border: 1px solid transparent; color: var(--text); cursor: pointer; display: flex; flex-direction: column; gap: 2px;
+}
+.adv-template:hover { border-color: var(--blue); }
+.adv-template b { font-family: var(--display); }
+.adv-template small { color: var(--muted); font-size: .8rem; }
+.adv-roster-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.adv-roster-card { border-radius: 12px; background: var(--panel2); overflow: hidden; }
+.adv-roster-summary {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px;
+  background: none; border: none; color: var(--text); cursor: pointer; text-align: left;
+}
+.adv-roster-summary .portrait { width: 40px; height: 40px; }
+.adv-roster-id { flex: 1; display: flex; flex-direction: column; }
+.adv-roster-id small { color: var(--muted); font-size: .82rem; }
+.adv-roster-editor { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 12px; }
+.adv-begin { width: 100%; max-width: 460px; margin-top: 4px; }
 
 .adv-modcard-wrap { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 360px; }
 .adv-modcard-wrap .adv-modcard { width: 100%; max-width: none; }
