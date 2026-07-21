@@ -91,6 +91,10 @@ const scenes: Record<string, Scene> = {
       { id: 'persuade', label: '[Persuasion DC 12] Buy the whole room a round', to: 'tavern-trail',
         once: true, check: { skill: 'persuasion', dc: 12, failTo: 'tavern-plain' } },
       { id: 'plain', label: 'Just ask the road to the den', to: 'tavern-plain', once: true },
+      // The rumor table: an optional, in-character tutorial any player can skip.
+      // Each regular teaches one real mechanic; kept as its own loop so it never
+      // gets in the way of the plot choices above.
+      { id: 'regulars', label: 'Drift over to the regulars\' table', to: 'regulars' },
       // A paid long rest: cheap, but a real gold sink and the place to re-prepare
       // spells. Gated on having the coin; the effect deducts it before resting.
       { id: 'room', label: 'Take a room for the night — 1 gold (long rest)', to: 'inn-rest',
@@ -127,6 +131,48 @@ const scenes: Record<string, Scene> = {
     id: 'tavern-plain', kind: 'story', art: { emoji: '🍺' },
     text: ['"The marsh road, then. Mind yourself." She turns back to her taps.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
+  },
+
+  // --- The Regulars' Table: a reusable "lore table" ------------------------
+  // A drop-in, fully optional in-character tutorial. Each regular teaches ONE
+  // real mechanic in the world's own voice; the choices are `once` so a lesson
+  // isn't repeated, and "leave them to it" exits at any time. Any module can
+  // paste this shape into its hub — a hub scene whose `once` choices each route
+  // to a short lore beat that loops back. Skippable by design: advanced players
+  // simply never walk over.
+  regulars: {
+    id: 'regulars', kind: 'story', art: { emoji: '🍻' },
+    text: ['The long table by the fire has been colonised by Thornwick\'s older hands — the sort who\'ve survived enough to have firm opinions about how. They\'ll talk your ear clean off, if you let them. Some of it might even keep you breathing.'],
+    next: [
+      { id: 'tactics', label: 'Ask the old sergeant how a real fight goes', to: 'rumor-tactics', once: true },
+      { id: 'magic', label: 'Ask the hedge-witch about working spells', to: 'rumor-magic', once: true },
+      { id: 'weapons', label: 'Ask the caravan veteran about her axe', to: 'rumor-weapons', once: true },
+      { id: 'back', label: 'Leave them to their ale', to: 'tavern' },
+    ],
+  },
+  'rumor-tactics': {
+    id: 'rumor-tactics', kind: 'story', art: { emoji: '🛡️' },
+    text: [
+      'A grey-bearded man with a soldier\'s too-straight back taps the boards. "Rule one, and it\'s the reason I\'ve still got both legs: don\'t turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you — an *opportunity*, they call it. They don\'t miss those the way they miss in a fair fight."',
+      '"Want out of a scrap without the parting gift? *Disengage* — costs you your whole action, but you walk clear and nobody swings. Especially you wand-wavers: get clear before you start your muttering, or you\'ll be eating steel halfway through the word."',
+    ],
+    next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
+  },
+  'rumor-magic': {
+    id: 'rumor-magic', kind: 'story', art: { emoji: '🔮' },
+    text: [
+      'A woman with river-stones braided into her hair doesn\'t look up from her knitting. "Magic\'s never free, whatever the college boys tell you. Your real spells burn *slots*, and you\'ve precious few. Spend them like your last coppers — because in a long fight, that\'s what they are."',
+      '"And the strong workings — a held foe, a ward of blades — you\'ve to *concentrate* to keep them lit. Take a hard knock and you\'d best hold your focus or the whole thing comes apart in your hands. Can\'t hold two at once, either. So pick the one that\'ll matter."',
+    ],
+    next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
+  },
+  'rumor-weapons': {
+    id: 'rumor-weapons', kind: 'story', art: { emoji: '⚔️' },
+    text: [
+      'A scarred caravan guard rolls her axe over on the table. "Every weapon\'s got a trick in it, if you know how to ask. A heavy blade *cleaves* — bite one man and the swing carries on into the next. A flail\'ll *sap* a foe, so the next of your lot to hit him lands the easier."',
+      '"Learn what the thing in your hand actually *does*, and you\'ll put down men a brute twice your size never lays a finger on. It\'s not the size of the axe, love. It\'s knowing where the grain runs."',
+    ],
+    next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
   },
 
   square: {
