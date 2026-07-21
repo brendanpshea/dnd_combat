@@ -1720,6 +1720,15 @@ button.category .count {
 }
 .adv-item-acts .muted { font-size: .8rem; }
 
+/* Result beat: outcome narration + reward chips, shown after a check/battle. */
+.adv-result { max-width: 460px; border-radius: 18px; gap: 14px; align-items: stretch; }
+.adv-result-rewards { display: flex; flex-wrap: wrap; gap: 8px; }
+.adv-reward-chip {
+  font-size: .9rem; font-weight: 600; padding: 4px 12px; border-radius: 999px;
+  background: rgba(80,200,120,.14); color: var(--green); border: 1px solid rgba(80,200,120,.3);
+}
+.adv-loot-scrim { z-index: 22; }
+
 /* Dice roll: a modal scrim over the frozen scene, so the place/NPC stay visible. */
 .adv-dice-scrim {
   position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;

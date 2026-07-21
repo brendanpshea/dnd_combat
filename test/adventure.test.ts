@@ -432,6 +432,22 @@ describe('defeat, finished locations, battle rewards', () => {
     const stashCount = (c.stash ?? []).reduce((n, s) => n + s.qty, 0);
     expect(stashCount).toBe(v.items.reduce((n, it) => n + it.qty, 0));
   });
+
+  it('a loot bonusTier drops an extra item (a boss trophy)', () => {
+    const plain = applyAdventureVictory(newCampaign(3), buildCampaignPartyFor(newCampaign(3)), 'raiders-forward', 42);
+    const boss = applyAdventureVictory(newCampaign(3), buildCampaignPartyFor(newCampaign(3)), 'raiders-forward', 42, 'rare');
+    const count = (v: { items: Array<{ qty: number }> }) => v.items.reduce((n, i) => n + i.qty, 0);
+    expect(count(boss)).toBe(count(plain) + 1); // same seed + a guaranteed rare drop
+  });
+
+  it('the scene event marks a revisit (first visit false, return true)', () => {
+    const s = startAdventure(newCampaign(1), hollow);
+    const first = enterScene(s, hollow, 'square');
+    expect(first.find((e) => e.type === 'scene' && e.sceneId === 'square')).toMatchObject({ revisit: false });
+    enterScene(s, hollow, 'board');
+    const again = enterScene(s, hollow, 'square');
+    expect(again.find((e) => e.type === 'scene' && e.sceneId === 'square')).toMatchObject({ revisit: true });
+  });
 });
 
 // --- Camp: rest + party management (Phase 4) ---------------------------------

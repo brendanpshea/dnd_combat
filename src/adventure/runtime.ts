@@ -60,7 +60,7 @@ export interface ShopVisit {
 }
 
 export type AdventureEvent =
-  | { type: 'scene'; sceneId: Id; kind: Scene['kind'] }
+  | { type: 'scene'; sceneId: Id; kind: Scene['kind']; revisit: boolean }
   | { type: 'text'; paragraphs: string[] }
   | { type: 'check'; roll: SkillRoll; success: boolean }
   | { type: 'groupCheck'; result: GroupCheckResult; success: boolean }
@@ -206,11 +206,12 @@ function applyEffects(state: AdventureState, effects: Effect[] | undefined, even
  *  ref `@hub` routes back to the location the party last explored. */
 export function enterScene(state: AdventureState, module: Module, sceneId: Id): AdventureEvent[] {
   const resolved = sceneId === HUB_REF ? (state.hub ?? module.start) : sceneId;
+  const revisit = state.visited.includes(resolved); // already been here before
   state.sceneId = resolved;
-  if (!state.visited.includes(resolved)) state.visited.push(resolved);
+  if (!revisit) state.visited.push(resolved);
   const scene = currentScene(state, module);
   if (scene.kind === 'explore') state.hub = resolved; // this is now the location
-  const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind }];
+  const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind, revisit }];
 
   switch (scene.kind) {
     case 'story': events.push({ type: 'text', paragraphs: scene.text }); break;

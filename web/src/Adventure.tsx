@@ -7,7 +7,8 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import {
-  newCampaign, buildCampaignParty, applyAdventureVictory, type CampaignState,
+  newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
+  type CampaignState, type AdventureVictory,
   partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
@@ -37,6 +38,7 @@ import { artEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
+import { LootScreen } from './Loot.js';
 import { saveAdventureWeb, loadAdventureWeb, savedAdventureModule, deleteAdventureWeb } from './adventureStorage.js';
 
 interface Props {
@@ -111,6 +113,12 @@ function ModulePicker(
  *  has already advanced past that scene by the time we show the dice). */
 interface DiceContext { roll: DiceOverlay['roll']; from: Scene; }
 
+/** A modal shown over the (already-advanced) scene before the player acts on
+ *  it: encounter loot, then outcome narration + reward chips. */
+type Overlay =
+  | { kind: 'loot'; victory: AdventureVictory }
+  | { kind: 'result'; paragraphs: string[]; rewards: string[] };
+
 /** The location backdrop art id for a scene (its own, or an explore map's). */
 function artIdOf(scene: Scene): string | undefined {
   if (scene.kind === 'explore') return scene.map.art?.imageId;
@@ -167,6 +175,18 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
   /** Last scene that carried a location backdrop — inherited by scenes that
    *  don't declare their own, so a whole conversation stays *in* the tavern. */
   const locationArt = useRef<string | undefined>(undefined);
+  /** Whether the scene we most recently entered was a revisit (from the runtime
+   *  `scene` event). A revisit (the inn after a check) opens fully revealed, no
+   *  re-tapping through prose. Set by the one-shot event handlers — not the
+   *  render effect, which StrictMode double-invokes. */
+  const sceneRevisitRef = useRef(false);
+  /** A queue of result overlays (loot, then outcome narration) shown over the
+   *  advanced scene before the player acts on it. The single feedback surface:
+   *  every check/battle outcome reports here, so success is never mute. */
+  const [overlays, setOverlays] = useState<Overlay[]>([]);
+  /** Overlays / banner deferred until a dice roll finishes (the roll first). */
+  const pendingOverlays = useRef<Overlay[]>([]);
+  const pendingBanner = useRef<string[]>([]);
 
   const scene = currentScene(state, module);
 
@@ -180,40 +200,77 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
       saveAdventureWeb(state);
     }
     setShopFocus('all'); // a fresh shop starts on the whole party
-    setBeat(0);          // a new scene reveals from its first beat
+    // A revisited scene opens fully revealed; a fresh one paces from beat 0.
+    setBeat(sceneRevisitRef.current ? Number.MAX_SAFE_INTEGER : 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
+
+  /** Record whether the scene an event stream lands on was a revisit. */
+  function markRevisit(events: AdventureEvent[]) {
+    const s = [...events].reverse().find((e) => e.type === 'scene');
+    if (s && s.type === 'scene') sceneRevisitRef.current = s.revisit;
+  }
 
   // Rest scenes auto-resolve (they only heal and advance). Shops render a panel.
   useEffect(() => {
     if (scene.kind === 'rest') {
       const evs = resolveShopOrRest(state, module);
-      note(evs);
+      markRevisit(evs);
+      const { overlay, banner } = presentFeedback(evs);
+      if (overlay) setOverlays([overlay]);
+      setBanner(banner);
       rerender();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
-  function note(events: AdventureEvent[]) {
-    const lines: string[] = [];
+  /** The reward/narration lines an event stream carries (plays their sounds). */
+  function feedback(events: AdventureEvent[]): { paragraphs: string[]; rewards: string[] } {
+    const paragraphs: string[] = [];
+    const rewards: string[] = [];
     for (const e of events) {
-      if (e.type === 'gold' && e.amount !== 0) { lines.push(`${e.amount >= 0 ? '+' : ''}${e.amount} gold`); sfx('coin'); }
-      if (e.type === 'item' && e.gained) { lines.push(`Gained ${label(e.itemId)}`); sfx('item'); }
-      if (e.type === 'xp') { lines.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`); sfx(e.leveledTo ? 'levelup' : 'item'); }
-      if (e.type === 'heal' && e.amount > 0) { lines.push(`Healed ${e.amount} HP`); sfx('heal'); }
-      if (e.type === 'journal') { lines.push(`Journal: ${e.entry.title}`); sfx('page'); }
+      if (e.type === 'text') paragraphs.push(...e.paragraphs);
+      if (e.type === 'gold' && e.amount !== 0) { rewards.push(`${e.amount >= 0 ? '+' : ''}${e.amount} gold`); sfx('coin'); }
+      if (e.type === 'item' && e.gained) { rewards.push(`Gained ${label(e.itemId)}`); sfx('item'); }
+      if (e.type === 'xp') { rewards.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`); sfx(e.leveledTo ? 'levelup' : 'item'); }
+      if (e.type === 'heal' && e.amount > 0) { rewards.push(`Healed ${e.amount} HP`); sfx('heal'); }
+      if (e.type === 'journal') { rewards.push(`📖 ${e.entry.title}`); sfx('page'); }
     }
-    setBanner(lines);
+    return { paragraphs, rewards };
+  }
+
+  /** How an event stream's feedback presents. Only events *before* the scene
+   *  transition count — an outcome's narration and rewards precede `enterScene`,
+   *  while the destination scene's own prose comes after (rendered by the scene,
+   *  not repeated here). A *narrated* outcome (check result, battle) earns a
+   *  result beat with its reward chips; bare rewards (a journal grant on a plain
+   *  choice) take the transient banner instead — no modal for walking in a door. */
+  function presentFeedback(events: AdventureEvent[]): { overlay: Overlay | null; banner: string[] } {
+    const sceneIdx = events.findIndex((e) => e.type === 'scene');
+    const outcome = sceneIdx >= 0 ? events.slice(0, sceneIdx) : events;
+    const { paragraphs, rewards } = feedback(outcome);
+    if (paragraphs.length) return { overlay: { kind: 'result', paragraphs, rewards }, banner: [] };
+    return { overlay: null, banner: rewards };
   }
 
   /** Run an action's events. `from` is the scene the player acted from — if the
    *  action rolled a check, the dice reveal renders over that scene's place and
-   *  NPC, not the scene the runtime has already advanced to. */
+   *  NPC, not the scene the runtime has already advanced to; the result beat
+   *  then follows the roll. */
   function process(events: AdventureEvent[], from: Scene) {
-    note(events);
+    markRevisit(events);
+    const { overlay, banner } = presentFeedback(events);
     const check = [...events].reverse().find((e): e is DiceOverlay => e.type === 'check');
-    if (check) setDice({ roll: check.roll, from });
-    else rerender();
+    if (check) {
+      // Roll first; the result beat (or reward banner) follows the dice.
+      setDice({ roll: check.roll, from });
+      pendingOverlays.current = overlay ? [overlay] : [];
+      pendingBanner.current = banner;
+    } else {
+      setOverlays(overlay ? [overlay] : []);
+      setBanner(banner);
+      rerender();
+    }
   }
 
   function onChoice(choiceId: string, actorIdx?: number) {
@@ -235,6 +292,10 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
 
   function afterDice() {
     setDice(null);
+    setOverlays(pendingOverlays.current); // the result beat follows the roll
+    setBanner(pendingBanner.current);
+    pendingOverlays.current = [];
+    pendingBanner.current = [];
     rerender();
   }
 
@@ -268,17 +329,31 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
         onExit={onExit}
         onDone={(winner) => {
           const won = winner === 'team1';
-          const loot: AdventureEvent[] = [];
+          const battleScene = scene; // capture: resolveBattle advances state
+          let victory: AdventureVictory | undefined;
           if (won) {
             const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
-            const v = applyAdventureVictory(campaign, survivors, scene.encounterId, combat.state.rng);
-            if (v.gold > 0) loot.push({ type: 'gold', amount: v.gold, total: campaign.gold });
-            for (const it of v.items) loot.push({ type: 'item', itemId: it.itemId, qty: it.qty, gained: true });
-            if (v.xpGained > 0) loot.push({ type: 'xp', amount: v.xpGained, ...(v.leveledTo ? { leveledTo: v.leveledTo } : {}) });
+            if (battleScene.loot === false) {
+              readBackSurvivors(campaign, survivors); // gear persists; no rewards
+            } else {
+              victory = applyAdventureVictory(
+                campaign, survivors, battleScene.encounterId, combat.state.rng, battleScene.loot?.bonusTier,
+              );
+            }
           }
           setArmedBattle(null); // re-arm the intro if a later fight reuses this
-          // Treasure first, then the scene's own onWin/onLoss text and effects.
-          process([...loot, ...resolveBattle(state, module, won)], scene);
+          // Loot ceremony (won fights with rewards), then the onWin/onLoss beat.
+          const outcome = resolveBattle(state, module, won);
+          markRevisit(outcome);
+          const { overlay, banner } = presentFeedback(outcome);
+          const queue: Overlay[] = [];
+          if (victory && (victory.gold > 0 || victory.items.length > 0 || victory.xpGained > 0)) {
+            queue.push({ kind: 'loot', victory });
+          }
+          if (overlay) queue.push(overlay);
+          setOverlays(queue);
+          setBanner(banner);
+          rerender();
         }}
       />
     );
@@ -372,6 +447,39 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
             />
           </div>
         )}
+
+        {/* Result beats (loot, then outcome narration) over the advanced scene. */}
+        {!dice && overlays.length > 0 && (() => {
+          const ov = overlays[0]!;
+          const advance = () => setOverlays((o) => o.slice(1));
+          if (ov.kind === 'loot') {
+            return (
+              <div className="adv-dice-scrim adv-loot-scrim">
+                <LootScreen
+                  campaign={campaign}
+                  gold={ov.victory.gold}
+                  items={ov.victory.items}
+                  xpGained={ov.victory.xpGained}
+                  leveledTo={ov.victory.leveledTo}
+                  onContinue={advance}
+                />
+              </div>
+            );
+          }
+          return (
+            <div className="adv-dice-scrim">
+              <div className="adv-panel adv-result">
+                {ov.paragraphs.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+                {ov.rewards.length > 0 && (
+                  <div className="adv-result-rewards">
+                    {ov.rewards.map((r, i) => <span key={i} className="adv-reward-chip">{r}</span>)}
+                  </div>
+                )}
+                <button className="primary" onClick={advance}>Continue</button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {!isExplore && (
