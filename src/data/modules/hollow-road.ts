@@ -8,6 +8,17 @@
  * across the 18-skill list, and an epilogue that reads flags back so choices
  * visibly mattered. Zero new stat blocks — every fight reuses an existing
  * encounter. All content is original; no published module text is reproduced.
+ *
+ * LEVEL BAND 1→3, paced by "acts = levels": milestone XP at each act boundary
+ * (M1 leaving town → L2, M2 cresting the hollow → L3) is sized so the milestones
+ * ALONE cross each threshold, independent of how much a given party chose to
+ * fight — a wit-heavy run still levels, and a fight-everything run only tops out
+ * around L4 (the XP thresholds absorb the excess). The party enters the den at L3
+ * and faces the boss there; the boss is tuned as an L3 gauntlet.
+ * Encounters are cast for VARIETY across acts (humanoid raiders, giant toads and
+ * risen dead in the marsh, a bugbear vanguard and hyena kennel at the den) on a
+ * spread of maps (open road, village square, the bog ford, the corridor, the
+ * fire-pit) — a tour of the bestiary, not one enemy re-skinned.
  */
 import type { Module, Scene } from '../../adventure/types.js';
 
@@ -168,9 +179,9 @@ const scenes: Record<string, Scene> = {
         { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'The spy gave up the raiders\' gate signal — the den\'s watch can be fooled.' } }] }],
   },
   'spy-bolts': {
-    id: 'spy-bolts', kind: 'battle', encounterId: 'kobolds', mapId: 'ruins',
-    intro: ['The peddler whistles — and his hired knives spill from the alley!'],
-    onWin: { to: 'square', text: ['The thugs scatter. The peddler is gone, but so is his cover.'],
+    id: 'spy-bolts', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
+    intro: ['The peddler puts two fingers to his teeth and whistles, sharp. Out of the market crowd his crew shoulders forward — a fixer and two hired knives, blades already low and ready.'],
+    onWin: { to: 'square', text: ['The last of the crew bolts between the stalls. The peddler is long gone — but so is his cover, and the reeve\'s men will hear whose whistle started this.'],
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }] },
   },
 
@@ -181,7 +192,12 @@ const scenes: Record<string, Scene> = {
       '**Thornwick** falls away behind you, and the **marsh road** takes its place: a ribbon of mud between black water and whispering reeds.',
       'Somewhere out in that maze the **Ashfang** have their den. Somewhere closer, the trail bites back.',
     ],
-    next: [{ id: 'go', label: 'Into the marsh', to: 'trail' }],
+    // Milestone M1: clearing Act 1 (the town) dings the party to 2nd level as
+    // they set out — the "acts = levels" pacing spine (see the module header).
+    // Sized so milestones ALONE cross the threshold, independent of how much the
+    // party chose to fight; trailhead is a one-way transition (no path back to
+    // the square), so this flat grant fires exactly once.
+    next: [{ id: 'go', label: 'Into the marsh', to: 'trail', effects: [{ kind: 'xp', amount: 300 }] }],
   },
   trail: {
     id: 'trail', kind: 'explore',
@@ -199,7 +215,7 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
         { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
-          wandering: { chance: 0.5, battleScene: 'marsh-wolves' } },
+          wandering: { chance: 0.5, battleScene: 'bog-toads' } },
         { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
           requires: [{ kind: 'flag', flag: 'trail-read' }] },
       ],
@@ -285,22 +301,28 @@ const scenes: Record<string, Scene> = {
     text: ['The peddler\'s stall stands bare, its awning taken down. The reeve\'s men came for him at first light; the square has already moved on.'],
     next: [{ id: 'ok', label: 'Turn back to the square', to: 'square' }], noBack: true,
   },
-  'marsh-wolves': {
-    id: 'marsh-wolves', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
-    intro: ['Marsh-wolves, half-starved and bold, break from the reeds!'],
-    onWin: { to: 'ravine', text: ['The pack breaks. The ravine still waits.'] },
+  'bog-toads': {
+    id: 'bog-toads', kind: 'battle', encounterId: 'toad-swamp', mapId: 'bog',
+    intro: ['The black water bulges — then heaves. A pair of giant toads haul themselves onto the causeway, wider than a shield and quicker than anything that size has a right to be. A tongue lashes out for the nearest of you.'],
+    onWin: { to: 'ravine', text: ['The last toad shudders and goes still, half in the water. You scrape the slime off and press on — the ravine still waits.'] },
   },
   'camp-ambush': {
-    id: 'camp-ambush', kind: 'battle', encounterId: 'wolves', mapId: 'marsh',
-    intro: ['Your watch-fire draws them: marsh-wolves slink out of the dark, drawn by the smell of blood and rations.'],
-    onWin: { to: '@hub', text: ['The pack is driven off. You bank the fire and see out the rest of the night.'] },
+    id: 'camp-ambush', kind: 'battle', encounterId: 'marsh-dead', mapId: 'bog',
+    intro: ['You wake to the wrongness before you hear it — a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight.'],
+    onWin: { to: '@hub', text: ['You put the dead back down. Nobody sleeps easy after that, but the night passes.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
     intro: ['The hollow opens below — and the reeds are too quiet. Raiders lie in wait. Who spots them first decides everything.'],
+    // Milestone M2: reaching the hollow closes Act 2 and dings the party to 3rd
+    // level, so they enter the den (Act 3) at the module's cap and stay there for
+    // the boss. Granted on whichever branch fires — exactly one does — and
+    // `ambush` sits on the only route to the den (the approach node needs
+    // trail-read, set back at the tracks), so it never gets skipped.
     success: { to: 'ambush-turned', text: ['You catch the glint of a spearpoint. The ambush becomes yours.'],
-      effects: [{ kind: 'setFlag', flag: 'surprise' }] },
-    failure: { to: 'ambush-sprung', text: ['A whistle — too late. They\'re already moving.'] },
+      effects: [{ kind: 'setFlag', flag: 'surprise' }, { kind: 'xp', amount: 600 }] },
+    failure: { to: 'ambush-sprung', text: ['A whistle — too late. They\'re already moving.'],
+      effects: [{ kind: 'xp', amount: 600 }] },
   },
   'ambush-turned': {
     id: 'ambush-turned', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
@@ -329,9 +351,9 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'gate-fight': {
-    id: 'gate-fight', kind: 'battle', encounterId: 'goblins', mapId: 'ruins',
-    intro: ['The watch cries the alarm and the gate-guards charge!'],
-    onWin: { to: 'inner', text: ['The gate is yours — though the whole den knows you\'re here now.'],
+    id: 'gate-fight', kind: 'battle', encounterId: 'ambush', mapId: 'corridor',
+    intro: ['A horn brays from the watch-post, and the gate-runners answer — a hulking bugbear ducking under the lintel with a pair of goblins snapping at his heels, hemmed into the narrow timber run.'],
+    onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
   },
   inner: {
@@ -339,13 +361,34 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'Inside the Den', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🔥' },
       nodes: [
-        { id: 'cache', x: 30, y: 34, label: 'Plunder Tent', icon: 'tok-treasure', scene: 'cache',
+        { id: 'cache', x: 26, y: 32, label: 'Plunder Tent', icon: 'tok-treasure', scene: 'cache',
           hidden: { dc: 13 } },
-        { id: 'vex', x: 58, y: 60, label: 'Vex\'s Fire', icon: 'tok-fire', scene: 'vex-parley',
+        { id: 'kennel', x: 40, y: 74, label: 'The Kennels', mystery: 'Something\'s snarling…', icon: 'tok-figure', scene: 'kennel',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'kennel-cleared' }], to: 'kennel-done' }] },
+        { id: 'vex', x: 60, y: 58, label: 'Vex\'s Fire', icon: 'tok-fire', scene: 'vex-parley',
           requires: [{ kind: 'flag', flag: 'know-vex' }] },
         { id: 'throne', x: 82, y: 34, label: 'The Chief\'s Hall', icon: 'tok-boss', scene: 'boss-approach' },
       ],
     },
+  },
+  kennel: {
+    id: 'kennel', kind: 'story', art: { emoji: '🦴' },
+    text: ['A staked-out run of gnawed bones and rank straw — the Ashfang keep hunting-beasts. Two giant hyenas lunge to the ends of their chains at the sight of you, and a gnoll handler reaches for the pins to loose them.'],
+    next: [
+      { id: 'fight', label: 'Put them down before they\'re loosed', to: 'den-hyenas' },
+      { id: 'leave', label: 'Back away slowly', to: 'inner' },
+    ],
+  },
+  'den-hyenas': {
+    id: 'den-hyenas', kind: 'battle', encounterId: 'hyena-pack', mapId: 'open',
+    intro: ['The handler yanks the pins and the hyenas come off their chains in a scrabble of claws and that awful laughing yammer.'],
+    onWin: { to: 'inner', text: ['The kennel falls quiet. Among the straw and bones: a raider\'s stashed purse and a half-eaten satchel worth the trouble.'],
+      effects: [{ kind: 'setFlag', flag: 'kennel-cleared' }, { kind: 'gold', amount: 30 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
+  },
+  'kennel-done': {
+    id: 'kennel-done', kind: 'story', art: { emoji: '🦴' },
+    text: ['The kennels stand silent now, chains slack in the mud. Nothing left here but flies.'],
+    next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
   },
   cache: {
     id: 'cache', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '📦' },

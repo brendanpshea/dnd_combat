@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   newCampaign, characterSkillCheck, partySkillCheck, groupSkillCheck,
-  characterSkillBonus, bestAtSkill, type CampaignState,
+  characterSkillBonus, bestAtSkill, levelForXp, type CampaignState,
 } from '../src/campaign/campaign.js';
 import { SKILL_ABILITY } from '../src/data/classes.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
@@ -848,6 +848,25 @@ describe('The Hollow Road (M4)', () => {
       const result = runModule(newCampaign(seed), hollow, policy, 4000);
       expect(['victory', 'defeat']).toContain(result.ending);
     }
+  });
+
+  it('paces 1 → 3 by milestones alone, whatever the party fought (ignores battle XP)', () => {
+    // The headless runner awards NO battle XP (that lands in the web/CLI driver
+    // via applyAdventureVictory), so this isolates the milestone spine: M1
+    // (leaving town) and M2 (cresting the hollow) both sit on the only path to
+    // the boss, so *every* victory reaches 3rd level — and never overshoots the
+    // L3 band — no matter which optional fights/checks a run took.
+    let checked = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      let nn = seed * 7 + 3;
+      const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+      const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
+      const result = runModule(newCampaign(seed), hollow, policy, 6000);
+      if (result.ending !== 'victory') continue;
+      expect(levelForXp(result.state.campaign.xp)).toBe(3);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(0);
   });
 });
 
