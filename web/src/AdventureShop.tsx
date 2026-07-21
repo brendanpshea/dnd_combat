@@ -124,6 +124,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
   return (
     <div className="adv-scene bottom">
       <div className="adv-panel adv-shop">
+        <div className="adv-shop-controls">
         <div className="adv-shop-head">
           <div className="adv-npc compact">
             {hasArt(portraitId)
@@ -176,6 +177,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
         {tab === 'buy' && typeof focus === 'number' && (
           <p className="adv-shop-buyfor">Buying for {campaign.characters[focus]?.name}.</p>
         )}
+        </div>
 
         <div className="shop-list">
           {tab === 'buy' ? shownStock.map((id) => {
@@ -209,14 +211,27 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                   <span className={`shop-price ${afford ? '' : 'poor'}`}>💰 {price}</span>
                 </button>
                 {picking && typeof focus !== 'number' && (
-                  <div className="adv-item-acts">
+                  <div className="adv-item-acts adv-buyfor">
                     <span className="muted">Buy for:</span>
-                    {campaign.characters.map((ch, i) => (
-                      <button key={i} disabled={!afford} onClick={() => {
-                        if (buyItem(campaign, i, id, price)) say(`${ch.name} buys ${itemName(id)}.`);
-                        setPickBuy(null);
-                      }}>{ch.name}</button>
-                    ))}
+                    {campaign.characters.map((ch, i) => {
+                      // Each recipient carries a proficiency badge, so you see
+                      // who the item suits right where you pick who gets it.
+                      const fit = fitFor(campaign, i, id);
+                      const mark = fit === 'fits' ? '✓' : fit === 'noprof' ? '⚠' : fit === 'noequip' ? '✕' : '';
+                      const cls = fit === 'fits' ? 'ok' : fit === 'noprof' ? 'warn' : fit === 'noequip' ? 'no' : '';
+                      const title = fit === 'noprof' ? 'Can wield, but adds no proficiency bonus'
+                        : fit === 'noequip' ? "Can't equip this" : undefined;
+                      return (
+                        <button key={i} className="adv-recip" disabled={!afford}
+                          {...(title ? { title } : {})}
+                          onClick={() => {
+                            if (buyItem(campaign, i, id, price)) say(`${ch.name} buys ${itemName(id)}.`);
+                            setPickBuy(null);
+                          }}>
+                          {ch.name.split(' ')[0]}{mark && <span className={`recip-fit ${cls}`}>{mark}</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -269,6 +284,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
           })}
         </div>
 
+        <div className="adv-shop-foot">
         {/* Gambits — each a once-per-visit skill check through the dice ritual. */}
         <div className="adv-shop-gambits">
           {!visit.haggleUsed && !haggling && (
@@ -286,6 +302,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
         </div>
 
         <button className="primary" onClick={onLeave}>Leave</button>
+        </div>
       </div>
     </div>
   );

@@ -1745,6 +1745,24 @@ button.category .count {
 /* Only the item list flexes; every other row keeps its natural height (an
    auto-overflow flex child would otherwise collapse to a sliver). */
 .adv-shop > *:not(.shop-list) { flex: 0 0 auto; }
+/* Mobile: controls / list / foot just stack (the list flexes to fill). */
+.adv-shop-controls, .adv-shop-foot { display: flex; flex-direction: column; gap: 8px; }
+
+/* Laptop/desktop: a two-pane dialog — controls + gambits down the left, the
+   item list taking the full height on the right, using the horizontal space a
+   landscape screen has and the vertical space it doesn't. */
+@media (min-width: 760px) {
+  .adv-panel.adv-shop {
+    max-width: 900px; margin: 0 auto; border-radius: 18px 18px 0 0;
+    height: 90%; max-height: 90%;
+    display: grid; grid-template-columns: minmax(260px, 300px) 1fr;
+    grid-template-rows: 1fr auto; grid-template-areas: "controls list" "foot list";
+    column-gap: 20px; row-gap: 12px; align-content: stretch;
+  }
+  .adv-shop-controls { grid-area: controls; overflow-y: auto; min-height: 0; }
+  .adv-shop .shop-list { grid-area: list; max-height: none; height: 100%; min-height: 0; }
+  .adv-shop-foot { grid-area: foot; }
+}
 .shop-head { display: flex; align-items: center; justify-content: space-between; }
 .shop-head h2 { font-family: var(--display); }
 .shop-tabs { display: flex; gap: 8px; }
@@ -1769,6 +1787,12 @@ button.category .count {
 .shop-fit.ok { color: var(--green); background: rgba(80,200,120,.12); }
 .shop-fit.warn { color: var(--gold); background: rgba(200,160,60,.12); }
 .shop-fit.no { color: var(--red); background: rgba(220,80,80,.12); }
+/* Per-recipient proficiency badge in the "Buy for:" picker (party-mode buys). */
+.adv-buyfor .adv-recip { display: inline-flex; align-items: center; gap: 4px; }
+.recip-fit { font-weight: 700; font-size: .82rem; }
+.recip-fit.ok { color: #b8f5cf; }
+.recip-fit.warn { color: #ffe08a; }
+.recip-fit.no { color: #ffb0b0; }
 .shop-row.confirming { border-color: var(--gold); }
 .adv-shop-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .adv-npc.compact { flex-direction: row; align-items: center; gap: 8px; margin: 0; }
