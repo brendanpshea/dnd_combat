@@ -1767,7 +1767,8 @@ button.category .count {
 .shop-owner { color: var(--muted); font-style: normal; font-size: .82rem; }
 .shop-fit { font-size: .72rem; margin-left: 6px; padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
 .shop-fit.ok { color: var(--green); background: rgba(80,200,120,.12); }
-.shop-fit.no { color: var(--gold); background: rgba(200,160,60,.12); }
+.shop-fit.warn { color: var(--gold); background: rgba(200,160,60,.12); }
+.shop-fit.no { color: var(--red); background: rgba(220,80,80,.12); }
 .shop-row.confirming { border-color: var(--gold); }
 .adv-shop-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .adv-npc.compact { flex-direction: row; align-items: center; gap: 8px; margin: 0; }

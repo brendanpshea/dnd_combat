@@ -1,7 +1,7 @@
 /**
  * Class data: everything the builder needs to assemble a level-N character.
  */
-import type { Id, Ability, ItemStack, DamageType } from '../engine/types.js';
+import type { Id, Ability, ItemStack, DamageType, WeaponProfs } from '../engine/types.js';
 
 export type ArmorProf = 'light' | 'medium' | 'heavy' | 'shield';
 
@@ -80,6 +80,7 @@ export interface ClassData {
   hitDie: number;
   savingThrows: [Ability, Ability];
   armorProfs: ArmorProf[];
+  weaponProfs: WeaponProfs;
   skillProfs: SkillId[];
   /** How 16,16,13,12,10,8 gets assigned, highest first. */
   statPriority: [Ability, Ability, Ability, Ability, Ability, Ability];
@@ -131,6 +132,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'fighter', name: 'Fighter', hitDie: 10,
     savingThrows: ['str', 'con'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'],
+    weaponProfs: { simple: true, martial: true },
     skillProfs: ['intimidation'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
@@ -164,6 +166,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'cleric', name: 'Cleric', hitDie: 8,
     savingThrows: ['wis', 'cha'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'], // heavy via Protector Divine Order (2024)
+    weaponProfs: { simple: true, martial: false },
     skillProfs: ['persuasion'],
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
@@ -202,6 +205,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'wizard', name: 'Wizard', hitDie: 6,
     savingThrows: ['int', 'wis'],
     armorProfs: [],
+    weaponProfs: { simple: true, martial: false },
     skillProfs: [],
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
@@ -252,6 +256,8 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'rogue', name: 'Rogue', hitDie: 8,
     savingThrows: ['dex', 'int'],
     armorProfs: ['light'],
+    // 2024 rogue: simple weapons plus martial weapons with Finesse or Light.
+    weaponProfs: { simple: true, martial: false, finesseLight: true },
     skillProfs: ['stealth', 'sleight-of-hand', 'deception'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
@@ -275,6 +281,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'ranger', name: 'Ranger', hitDie: 10,
     savingThrows: ['str', 'dex'],
     armorProfs: ['light', 'medium', 'shield'],
+    weaponProfs: { simple: true, martial: true },
     skillProfs: ['stealth', 'perception'],
     statPriority: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
     // 2024 half-caster progression: slots from 1st level, second-level slots
@@ -315,6 +322,7 @@ export const CLASSES: Record<Id, ClassData> = {
     id: 'paladin', name: 'Paladin', hitDie: 10,
     savingThrows: ['wis', 'cha'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'],
+    weaponProfs: { simple: true, martial: true },
     skillProfs: ['intimidation'],
     statPriority: ['str', 'cha', 'con', 'wis', 'dex', 'int'],
     // Same half-caster progression as the Ranger; the spell list is support
@@ -352,3 +360,15 @@ export const CLASSES: Record<Id, ClassData> = {
     },
   },
 };
+
+/** Every spell a class can cast from a scroll: its full list plus any
+ *  learnable-extra spells (2024: you can use a spell scroll if the spell is on
+ *  your class's list). Non-casters return an empty set — no scrolls for them. */
+export function classScrollPool(classId: Id): Set<Id> {
+  const sc = CLASSES[classId]?.spellcasting;
+  const ids = new Set<Id>();
+  if (!sc) return ids;
+  for (const list of Object.values(sc.spellsByLevel)) for (const id of list) ids.add(id);
+  for (const id of sc.learnableExtra ?? []) ids.add(id);
+  return ids;
+}

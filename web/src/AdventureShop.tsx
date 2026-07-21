@@ -21,6 +21,8 @@ import {
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene } from '../../src/adventure/types.js';
+import { isWeaponProficient } from '../../src/data/weapons.js';
+import { CLASSES } from '../../src/data/classes.js';
 import { Portrait } from './Portrait.js';
 import { hasArt } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
@@ -38,18 +40,23 @@ const CAT_META: Record<ItemCategory, { icon: string; label: string }> = {
 const CAT_ORDER: ItemCategory[] = ['weapon', 'armor', 'potion', 'scroll', 'trinket', 'other'];
 const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
 
-/** For a focused hero, whether an equippable item fits any slot — drives the
- *  buy-row ✓ / ⚠ hint. Consumables (no slot) return null: nothing to equip. */
-function fitFor(campaign: CampaignState, heroIdx: number, itemId: string): boolean | null {
+/** For a focused hero, how an equippable item suits them — drives the buy-row
+ *  hint. `fits` = wear/wield with full benefit; `noprof` = can wield but adds no
+ *  proficiency bonus (a wizard's greatsword); `noequip` = can't equip at all (a
+ *  wizard's plate). Consumables (no slot) return null. */
+function fitFor(campaign: CampaignState, heroIdx: number, itemId: string): 'fits' | 'noprof' | 'noequip' | null {
   const cat = itemCategory(itemId);
   if (cat !== 'weapon' && cat !== 'armor' && cat !== 'trinket') return null;
-  // equipBlocked wants the item in inventory; probe against a shallow clone so
-  // we can answer "would this fit?" without owning it yet.
   const ch = campaign.characters[heroIdx];
   if (!ch) return null;
+  // equipBlocked wants the item in inventory; probe a shallow clone.
   const probe = { ...campaign, characters: campaign.characters.map((c, i) =>
     i === heroIdx ? { ...c, inventory: [...c.inventory, { itemId, qty: 1 }] } : c) };
-  return EQUIP_SLOTS.some((slot) => equipBlocked(probe, heroIdx, itemId, slot) === undefined);
+  const canEquip = EQUIP_SLOTS.some((slot) => equipBlocked(probe, heroIdx, itemId, slot) === undefined);
+  if (!canEquip) return 'noequip';
+  // A weapon equips freely but may add no proficiency bonus for this class.
+  if (cat === 'weapon' && !isWeaponProficient(CLASSES[ch.classId]?.weaponProfs, itemId)) return 'noprof';
+  return 'fits';
 }
 
 const HAGGLE_OPTS: Array<{ skill: HaggleSkill; label: string; note: string }> = [
@@ -193,8 +200,10 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                     {/* Equip hint for the focused hero: ✓ fits, ⚠ can't use. */}
                     {typeof focus === 'number' && (() => {
                       const fit = fitFor(campaign, focus, id);
-                      return fit === null ? null
-                        : <span className={`shop-fit ${fit ? 'ok' : 'no'}`}>{fit ? '✓ fits' : '⚠ can\'t use'}</span>;
+                      if (fit === null) return null;
+                      if (fit === 'fits') return <span className="shop-fit ok">✓ fits</span>;
+                      if (fit === 'noprof') return <span className="shop-fit warn">⚠ not proficient</span>;
+                      return <span className="shop-fit no">⚠ can't use</span>;
                     })()}
                   </span>
                   <span className={`shop-price ${afford ? '' : 'poor'}`}>💰 {price}</span>

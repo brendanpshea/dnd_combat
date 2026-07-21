@@ -259,6 +259,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
+    weaponProfs: { ...cls.weaponProfs, ...(cls.weaponProfs.specific ? { specific: [...cls.weaponProfs.specific] } : {}) },
     spellSlots: slots.map((n, i) => ({
       current: opts.spellSlotsOverride ? Math.max(0, Math.min(n, opts.spellSlotsOverride[i] ?? n)) : n,
       max: n,
