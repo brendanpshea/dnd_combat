@@ -1785,6 +1785,30 @@ button.category .count {
 }
 .adv-loot-scrim { z-index: 22; }
 
+/* Level-up: a bright, unmissable celebration modal — a new level should never
+   slip past in a one-line banner. */
+.adv-levelup {
+  max-width: 420px; border-radius: 18px; gap: 10px; align-items: center; text-align: center;
+  border: 1px solid rgba(167,139,250,.5);
+  background: linear-gradient(180deg, rgba(167,139,250,.16), var(--panel));
+  box-shadow: 0 0 40px rgba(167,139,250,.25);
+}
+.adv-levelup h2 { margin: 0; font-size: 1.6rem; color: #c4b5fd; letter-spacing: .5px; }
+.adv-levelup-badge {
+  font-size: 3rem; line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(167,139,250,.7));
+  animation: levelup-pop .5s ease-out;
+}
+@keyframes levelup-pop {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  70% { transform: scale(1.25) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.adv-levelup-to { font-size: 1.05rem; margin: 0; }
+.adv-levelup-to strong { color: #c4b5fd; }
+.adv-levelup-note { font-size: .88rem; color: var(--muted); margin: 0; }
+@media (prefers-reduced-motion: reduce) { .adv-levelup-badge { animation: none; } }
+
 /* Dice roll: a modal scrim over the frozen scene, so the place/NPC stay visible. */
 .adv-dice-scrim {
   position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;

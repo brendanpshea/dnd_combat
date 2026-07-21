@@ -12,7 +12,7 @@ import {
   partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
-  cantripLimit, preparedLimit, preparedSpells,
+  cantripLimit, preparedLimit, preparedSpells, levelForXp,
 } from '../../src/campaign/campaign.js';
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
@@ -119,7 +119,10 @@ interface DiceContext { roll: DiceOverlay['roll']; from: Scene; }
  *  it: encounter loot, then outcome narration + reward chips. */
 type Overlay =
   | { kind: 'loot'; victory: AdventureVictory }
-  | { kind: 'result'; paragraphs: string[]; rewards: string[] };
+  | { kind: 'result'; paragraphs: string[]; rewards: string[] }
+  // A level-up always gets its own modal — battle or milestone — so a new level
+  // never slips by in a one-line banner.
+  | { kind: 'levelup'; toLevel: number };
 
 /** The location backdrop art id for a scene (its own, or an explore map's). */
 function artIdOf(scene: Scene): string | undefined {
@@ -227,8 +230,8 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
       const isLong = scene.variant === 'long';
       const evs = resolveShopOrRest(state, module);
       markRevisit(evs);
-      const { overlay, banner } = presentFeedback(evs);
-      if (overlay) setOverlays([overlay]);
+      const { overlays, banner } = presentFeedback(evs);
+      setOverlays(overlays);
       setBanner(banner);
       // A long rest is the moment to re-prepare spells (an inn bed, a safe camp).
       if (isLong) setReprepare(casterIdxs());
@@ -258,12 +261,22 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
    *  not repeated here). A *narrated* outcome (check result, battle) earns a
    *  result beat with its reward chips; bare rewards (a journal grant on a plain
    *  choice) take the transient banner instead — no modal for walking in a door. */
-  function presentFeedback(events: AdventureEvent[]): { overlay: Overlay | null; banner: string[] } {
+  function presentFeedback(events: AdventureEvent[]): { overlays: Overlay[]; banner: string[] } {
     const sceneIdx = events.findIndex((e) => e.type === 'scene');
     const outcome = sceneIdx >= 0 ? events.slice(0, sceneIdx) : events;
     const { paragraphs, rewards } = feedback(outcome);
-    if (paragraphs.length) return { overlay: { kind: 'result', paragraphs, rewards }, banner: [] };
-    return { overlay: null, banner: rewards };
+    const overlays: Overlay[] = [];
+    if (paragraphs.length) overlays.push({ kind: 'result', paragraphs, rewards });
+    // A level-up in this stream (e.g. a milestone XP grant on a plain choice)
+    // earns its own modal, shown after any result beat.
+    const levelled = [...outcome].reverse().find(
+      (e): e is Extract<AdventureEvent, { type: 'xp' }> => e.type === 'xp' && e.leveledTo !== undefined,
+    );
+    if (levelled?.leveledTo) overlays.push({ kind: 'levelup', toLevel: levelled.leveledTo });
+    // Bare rewards (no prose, no level-up) take the transient banner instead —
+    // no modal for walking in a door.
+    const banner = overlays.length ? [] : rewards;
+    return { overlays, banner };
   }
 
   /** Run an action's events. `from` is the scene the player acted from — if the
@@ -272,15 +285,15 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
    *  then follows the roll. */
   function process(events: AdventureEvent[], from: Scene) {
     markRevisit(events);
-    const { overlay, banner } = presentFeedback(events);
+    const { overlays, banner } = presentFeedback(events);
     const check = [...events].reverse().find((e): e is DiceOverlay => e.type === 'check');
     if (check) {
       // Roll first; the result beat (or reward banner) follows the dice.
       setDice({ roll: check.roll, from });
-      pendingOverlays.current = overlay ? [overlay] : [];
+      pendingOverlays.current = overlays;
       pendingBanner.current = banner;
     } else {
-      setOverlays(overlay ? [overlay] : []);
+      setOverlays(overlays);
       setBanner(banner);
       rerender();
     }
@@ -349,6 +362,7 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
         onDone={(winner) => {
           const won = winner === 'team1';
           const battleScene = scene; // capture: resolveBattle advances state
+          const levelBefore = levelForXp(campaign.xp);
           let victory: AdventureVictory | undefined;
           if (won) {
             const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
@@ -364,12 +378,18 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
           // Loot ceremony (won fights with rewards), then the onWin/onLoss beat.
           const outcome = resolveBattle(state, module, won);
           markRevisit(outcome);
-          const { overlay, banner } = presentFeedback(outcome);
+          // presentFeedback may itself queue a levelup (from an onWin xp effect);
+          // strip it so the battle's own end-to-end level check owns the modal.
+          const { overlays, banner } = presentFeedback(outcome);
           const queue: Overlay[] = [];
           if (victory && (victory.gold > 0 || victory.items.length > 0 || victory.xpGained > 0)) {
             queue.push({ kind: 'loot', victory });
           }
-          if (overlay) queue.push(overlay);
+          queue.push(...overlays.filter((o) => o.kind !== 'levelup'));
+          // One level-up modal for the whole resolution (combat XP + any onWin
+          // grant), shown last — the clear "you reached Level N" announcement.
+          const levelAfter = levelForXp(campaign.xp);
+          if (levelAfter > levelBefore) { sfx('levelup'); queue.push({ kind: 'levelup', toLevel: levelAfter }); }
           setOverlays(queue);
           setBanner(banner);
           rerender();
@@ -494,6 +514,19 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
                   leveledTo={ov.victory.leveledTo}
                   onContinue={advance}
                 />
+              </div>
+            );
+          }
+          if (ov.kind === 'levelup') {
+            return (
+              <div className="adv-dice-scrim">
+                <div className="adv-panel adv-levelup">
+                  <div className="adv-levelup-badge">⭐</div>
+                  <h2>Level Up!</h2>
+                  <p className="adv-levelup-to">The party reaches <strong>Level {ov.toLevel}</strong>.</p>
+                  <p className="adv-text adv-levelup-note">More hit points and sharper skills — and spellcasters gain new spell slots. Rest at camp or the inn to prepare fresh spells.</p>
+                  <button className="primary" onClick={advance}>Onward</button>
+                </div>
               </div>
             );
           }
