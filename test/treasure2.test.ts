@@ -6,6 +6,7 @@ import { ITEMS } from '../src/data/items.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { VALUABLES } from '../src/data/valuables.js';
 import { itemPrice, itemName, itemIcon, rarityOf, treasureFor } from '../src/campaign/campaign.js';
+import { encounterXP, encounterCoinXP } from '../src/data/monsters.js';
 import { makeCombatant } from './helpers.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
@@ -94,6 +95,32 @@ describe('Valuables (gems and jewelry)', () => {
     expect(rarityOf('gem-diamond')).toBe('rare');
     expect(rarityOf('jewelry-wooden-bracer')).toBe('common');
     expect(rarityOf('jewelry-dwarven-ring')).toBe('rare');
+  });
+});
+
+describe('Treasure by creature type', () => {
+  it('beasts carry no coin or valuables — a wolf pack yields XP only', () => {
+    expect(encounterCoinXP('wolves')).toBe(0); // all beasts
+    // Full XP for danger, zero coin XP → no gold, no item rolls.
+    for (let seed = 1; seed <= 20; seed++) {
+      const t = treasureFor(encounterXP('wolves'), seed, undefined, encounterCoinXP('wolves'));
+      expect(t.gold).toBe(0);
+      expect(t.items.length).toBe(0);
+    }
+  });
+
+  it('a humanoid warband still pays out in coin', () => {
+    expect(encounterCoinXP('bandits')).toBe(encounterXP('bandits')); // all loot-bearers
+    const t = treasureFor(encounterXP('bandits'), 3, undefined, encounterCoinXP('bandits'));
+    expect(t.gold).toBeGreaterThan(0);
+  });
+
+  it('a mixed pack pays only for its loot-bearing share', () => {
+    // raiders-forward = orc + scout + bandit (all humanoid) → full coin.
+    expect(encounterCoinXP('raiders-forward')).toBe(encounterXP('raiders-forward'));
+    // A gold rate well under the old XP/2: 225 coin-XP → well below 112.
+    const t = treasureFor(225, 5, undefined, 225);
+    expect(t.gold).toBeLessThan(90);
   });
 });
 

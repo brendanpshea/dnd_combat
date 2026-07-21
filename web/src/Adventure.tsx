@@ -162,6 +162,10 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
   const [journalOpen, setJournalOpen] = useState(false);
   const [journalUnread, setJournalUnread] = useState(false);
   const [campOpen, setCampOpen] = useState(false);
+  /** After a long rest, the queue of prepared-caster indices still to re-prepare
+   *  — the only place spells may be re-chosen (2024 rules: prepared changes on a
+   *  long rest; cantrips/spellbook are locked in). Empty = no tray showing. */
+  const [reprepare, setReprepare] = useState<number[]>([]);
   const [muted, setMutedState] = useState(isMuted());
   /** Shop focus (which hero the buy/sell view is scoped to) — lifted here so
    *  the bottom party strip doubles as the shop's hero selector instead of the
@@ -213,14 +217,20 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
     if (s && s.type === 'scene') sceneRevisitRef.current = s.revisit;
   }
 
+  /** The prepared spellcasters, in party order — who a long rest lets re-prepare. */
+  const casterIdxs = () => campaign.characters.map((_, i) => i).filter((i) => preparedLimit(campaign, i) > 0);
+
   // Rest scenes auto-resolve (they only heal and advance). Shops render a panel.
   useEffect(() => {
     if (scene.kind === 'rest') {
+      const isLong = scene.variant === 'long';
       const evs = resolveShopOrRest(state, module);
       markRevisit(evs);
       const { overlay, banner } = presentFeedback(evs);
       if (overlay) setOverlays([overlay]);
       setBanner(banner);
+      // A long rest is the moment to re-prepare spells (an inn bed, a safe camp).
+      if (isLong) setReprepare(casterIdxs());
       rerender();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -397,9 +407,23 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
             const evs = campRest(state, module, variant);
             setCampOpen(false);
             process(evs, scene);
+            // A long rest at camp is also when spells get re-prepared.
+            if (variant === 'long') setReprepare(casterIdxs());
           }}
           onChange={() => { saveAdventureWeb(state); rerender(); }}
           onClose={() => setCampOpen(false)}
+        />
+      )}
+
+      {/* Post-long-rest: walk each prepared caster through re-preparing (the only
+          place spells change, with cantrips/spellbook locked). */}
+      {reprepare.length > 0 && (
+        <SpellTray
+          campaign={campaign}
+          idx={reprepare[0]!}
+          mode="prepare"
+          onClose={() => setReprepare((q) => q.slice(1))}
+          onSaved={() => { saveAdventureWeb(state); rerender(); }}
         />
       )}
 
@@ -664,7 +688,6 @@ function CampScreen(
   },
 ) {
   const [picked, setPicked] = useState<CampPick>(null);
-  const [spellsFor, setSpellsFor] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const party = buildCampaignParty(campaign);
   const stash = partyStash(campaign).filter((s) => s.qty > 0);
@@ -815,9 +838,11 @@ function CampScreen(
                 <>
                   <div className="adv-camp-items">
                     {canPrepare && (
-                      <button className="adv-item" onClick={() => setSpellsFor(idx)}>
-                        📖 Prepare ({preparedSpells(campaign, idx).length}/{preparedLimit(campaign, idx)})
-                      </button>
+                      // Re-preparing is a long-rest activity (camp or inn), not a
+                      // free swap — so this is a read-out, not a button.
+                      <span className="adv-item muted" title="Prepared spells change when you take a long rest">
+                        📖 Prepared {preparedSpells(campaign, idx).length}/{preparedLimit(campaign, idx)} · rest to change
+                      </span>
                     )}
                     {spells.map((sp) => {
                       const sel = picked?.kind === 'spell' && picked.charIdx === idx && picked.spellId === sp.spellId;
@@ -863,14 +888,6 @@ function CampScreen(
             })()}
           </div>
         ))}
-        {spellsFor !== null && (
-          <SpellTray
-            campaign={campaign}
-            idx={spellsFor}
-            onClose={() => setSpellsFor(null)}
-            onSaved={(msg) => { setNotice(msg); onChange(); }}
-          />
-        )}
       </div>
     </div>
   );

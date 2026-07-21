@@ -902,6 +902,24 @@ export function encounterXP(encounterId: Id): number {
   return enc.members.reduce((sum, mid) => sum + (MONSTER_XP[mid] ?? 0), 0);
 }
 
+/** Creature types that carry no coin or valuables — a wolf pack has no purse and
+ *  hoards no gems. Everything else (humanoids, giants, dragons, fiends, fey) is
+ *  assumed to bear or guard loot. Undead/constructs/monstrosities keep loot too,
+ *  since they usually stand over a grave-hoard or a lair. */
+const NO_TREASURE_TYPES = new Set<CreatureType>(['beast', 'elemental']);
+
+/** The share of an encounter's XP that comes from loot-bearing creatures — the
+ *  basis for coin and valuables. An all-beast fight yields 0 (XP only). */
+export function encounterCoinXP(encounterId: Id): number {
+  const enc = ENCOUNTERS[encounterId];
+  if (!enc) return 0;
+  return enc.members.reduce((sum, mid) => {
+    const type = MONSTERS[mid]?.creatureType;
+    const bears = !type || !NO_TREASURE_TYPES.has(type);
+    return sum + (bears ? (MONSTER_XP[mid] ?? 0) : 0);
+  }, 0);
+}
+
 /** Place an encounter on a rank, spread across the files. */
 export function buildEncounter(encounterId: Id, team: TeamId, rank: number): Combatant[] {
   const enc = ENCOUNTERS[encounterId];
