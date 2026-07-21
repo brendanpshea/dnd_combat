@@ -6,7 +6,7 @@
  * combat engine has one `step` behind every UI.
  */
 import type { Module } from './types.js';
-import type { CampaignState } from '../campaign/campaign.js';
+import { type CampaignState, xpAward } from '../campaign/campaign.js';
 import {
   type AdventureState, type AdventureEvent,
   startAdventure, currentScene, enterScene, legalChoices, choose,
@@ -74,6 +74,12 @@ export function runModule(
 
       case 'battle': {
         const won = policy.battle(scene.encounterId, scene.mapId);
+        // Mirror the real driver (applyAdventureVictory): a won fight grants
+        // encounter XP unless the scene opts out with loot:false. Without this,
+        // headless pacing ignored combat entirely and only saw milestone XP.
+        if (won && scene.loot !== false) {
+          state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
+        }
         events.push(...resolveBattle(state, module, won));
         break;
       }

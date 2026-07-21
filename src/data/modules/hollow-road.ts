@@ -9,12 +9,14 @@
  * visibly mattered. Zero new stat blocks — every fight reuses an existing
  * encounter. All content is original; no published module text is reproduced.
  *
- * LEVEL BAND 1→3, paced by "acts = levels": milestone XP at each act boundary
- * (M1 leaving town → L2, M2 cresting the hollow → L3) is sized so the milestones
- * ALONE cross each threshold, independent of how much a given party chose to
- * fight — a wit-heavy run still levels, and a fight-everything run only tops out
- * around L4 (the XP thresholds absorb the excess). The party enters the den at L3
- * and faces the boss there; the boss is tuned as an L3 gauntlet.
+ * LEVEL BAND 1→3, paced by "acts = levels": three REQUIRED fights carry Act 1
+ * (the road-in ambush, the crooked peddler's crew — you can't leave town till
+ * he's caught — and a road-out ambush), so 2nd level is earned in blood, not
+ * handed over. A milestone tops each act boundary up to the threshold: M1 rides
+ * the road-out win → L2, M2 crests the hollow → L3. Milestone + required-fight XP
+ * guarantees the floor for a wit-heavy party; a fight-everything run tops out
+ * around L4 as the XP thresholds absorb the excess. The party enters the den at
+ * L3 and faces the boss there; the boss is tuned as an L3 gauntlet.
  * Encounters are cast for VARIETY across acts (humanoid raiders, giant toads and
  * risen dead in the marsh, a bugbear vanguard and hyena kennel at the den) on a
  * spread of maps (open road, village square, the bog ford, the corridor, the
@@ -184,10 +186,13 @@ const scenes: Record<string, Scene> = {
         { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: 'tok-tavern', scene: 'tavern' },
         { id: 'market', x: 40, y: 40, label: 'Market', icon: 'tok-market', scene: 'market' },
         { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: 'tok-notice', scene: 'board' },
+        // The peddler is always here to be dealt with (the tavern Insight just
+        // names him early). Confronting him always ends in a fight — and the
+        // gate below won't open until he's caught, so no party skips it.
         { id: 'informant', x: 48, y: 66, label: 'Furtive Peddler', icon: 'tok-figure', scene: 'spy-confront',
-          requires: [{ kind: 'flag', flag: 'know-spy' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'spy-caught' }], to: 'spy-gone' }] },
-        { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: 'tok-gate', scene: 'trailhead' },
+        { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: 'tok-gate', scene: 'trailhead',
+          sceneWhen: [{ if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-blocked' }] },
       ],
     },
   },
@@ -211,42 +216,60 @@ const scenes: Record<string, Scene> = {
   'spy-confront': {
     id: 'spy-confront', kind: 'dialogue', npc: { id: 'npc-peddler', name: 'The Peddler', portraitId: 'npc-merchant', emoji: '🕵️' },
     art: { emoji: '🕵️' },
-    lines: ['The peddler\'s stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He watches the gate the way a cat watches a mousehole, and when your shadow falls across his goods he goes very still, and very interested in the buttons.'],
+    lines: [
+      'The peddler\'s stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He watches the gate the way a cat watches a mousehole.',
+      'When your shadow falls across his goods he goes very still. Then he does the last thing you expected of a man selling buttons: he puts two fingers to his teeth and *whistles*, and all round the square the wrong sort of people start setting down their drinks. This won\'t end with words.',
+    ],
     next: [
-      { id: 'investigate', label: '[Investigation DC 13] Turn over his "wares"', to: 'spy-caught',
+      { id: 'investigate', label: '[Investigation DC 13] Pick his crew out of the crowd first', to: 'spy-ambush',
         once: true, check: { skill: 'investigation', dc: 13, failTo: 'spy-bolts' } },
-      { id: 'intimidate', label: '[Intimidation DC 14] Lean in close — "Talk."', to: 'spy-caught',
+      { id: 'intimidate', label: '[Intimidation DC 14] Shout down the hired help before they close', to: 'spy-ambush',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'spy-bolts' } },
-      { id: 'leave', label: 'Let him sweat, and walk on', to: 'square' },
+      { id: 'brace', label: 'Put your backs to the wall and draw', to: 'spy-bolts' },
     ],
   },
   'spy-caught': {
     id: 'spy-caught', kind: 'story', art: { emoji: '🔗' },
-    text: ['Under the false bottom of his cart: a tally of every caravan to leave Thornwick in a month, marked in a hand that isn\'t his. He folds like wet paper. "I only carried word — I never lifted a blade at anyone!" And, babbling, he gives it up: **the raiders\' gate-signal. You can walk into the den wearing their own password.**'],
+    text: ['With his hired knives down, the peddler makes it four steps before you run him down. Under the false bottom of his cart: a tally of every caravan to leave Thornwick in a month, in a hand that isn\'t his. He folds like wet paper. "I only carried word — I never lifted a blade!" And, babbling, he gives it up: **the raiders\' gate-signal. You can walk into the den wearing their own password.**'],
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
-        { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'The spy gave up the raiders\' gate signal — the den\'s watch can be fooled.' } }] }],
+        { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'You caught the Ashfang\'s informant in the market and took the raiders\' gate signal off him — the den\'s watch can be fooled.' } }] }],
+  },
+  'gate-blocked': {
+    id: 'gate-blocked', kind: 'story', art: { imageId: 'loc-village', emoji: '🚧' },
+    text: ['The gate-warden lays his halberd across the road and shakes his head, not unkindly. "Reeve\'s orders, and for once they\'re sound ones. Nobody leaves while the Ashfang still keep a whistler in the **market**, counting who comes and goes. Deal with that first — then the road\'s yours."'],
+    next: [{ id: 'ok', label: 'Back into the square', to: 'square' }], noBack: true,
   },
   'spy-bolts': {
     id: 'spy-bolts', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
-    intro: ['The peddler puts two fingers to his teeth and whistles, sharp. Out of the market crowd his crew shoulders forward — a fixer and two hired knives, blades already low and ready.'],
-    onWin: { to: 'square', text: ['The last of the crew bolts between the stalls. The peddler is long gone — but so is his cover, and the reeve\'s men will hear whose whistle started this.'],
-      effects: [{ kind: 'setFlag', flag: 'spy-caught' }] },
+    intro: ['His crew shoulders out of the market crowd — a fixer and two hired knives, blades already low and level. No surprises left; just the work.'],
+    onWin: { to: 'spy-caught', text: ['The last of the hired help drops his knife and his nerve together, and runs.'] },
+  },
+  'spy-ambush': {
+    id: 'spy-ambush', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
+    surprise: 'enemies', // you read the ambush first — the crew loses its opening round
+    intro: ['You had them marked before the whistle finished. When the crew moves in from the stalls, you\'re already where they didn\'t expect you — and they scramble, a beat behind.'],
+    onWin: { to: 'spy-caught', text: ['Wrong-footed from the first, the crew never finds its feet. The last of them throws down and bolts.'] },
   },
 
   // === ACT 2 — THE MARSH ROAD (wilderness) ==============================
   trailhead: {
-    id: 'trailhead', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌫️' },
+    id: 'trailhead', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      '**Thornwick** falls away behind you, and the **marsh road** takes its place: a ribbon of mud between black water and whispering reeds.',
-      'Somewhere out in that maze the **Ashfang** have their den. Somewhere closer, the trail bites back.',
+      'With the peddler in the reeve\'s cells, the gate-warden stands aside, and **Thornwick** falls away behind you. Ahead the road narrows toward the **marsh** — a ribbon of mud between black water and whispering reeds.',
+      'Somewhere out in that maze the **Ashfang** keep their den. Somewhere a good deal closer, it seems, they keep their eyes on the road.',
     ],
-    // Milestone M1: clearing Act 1 (the town) dings the party to 2nd level as
-    // they set out — the "acts = levels" pacing spine (see the module header).
-    // Sized so milestones ALONE cross the threshold, independent of how much the
-    // party chose to fight; trailhead is a one-way transition (no path back to
-    // the square), so this flat grant fires exactly once.
-    next: [{ id: 'go', label: 'Into the marsh', to: 'trail', effects: [{ kind: 'xp', amount: 300 }] }],
+    next: [{ id: 'go', label: 'Set out on the marsh road', to: 'road-out' }],
+  },
+  'road-out': {
+    id: 'road-out', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
+    intro: ['Barely a mile from the gate the reeds heave and spit out raiders — the Ashfang watch the road out of Thornwick, and word of you has plainly run ahead. Outriders come up out of the ditch with blades already drawn.'],
+    // Milestone M1 rides on this fight's win: surviving the road out of town is
+    // what dings the party to 2nd level, so the level-up lands on a fight it
+    // earned rather than out of nowhere. road-out is on the one-way path into the
+    // marsh, so the grant fires exactly once.
+    onWin: { to: 'trail', text: ['You leave the outriders for the crows. Behind you Thornwick; ahead, the marsh swallows the road whole. You feel steadier on your feet than you did a week ago — hardened, and a shade deadlier.'],
+      effects: [{ kind: 'xp', amount: 125 }] },
   },
   trail: {
     id: 'trail', kind: 'explore',
@@ -369,9 +392,9 @@ const scenes: Record<string, Scene> = {
     // `ambush` sits on the only route to the den (the approach node needs
     // trail-read, set back at the tracks), so it never gets skipped.
     success: { to: 'ambush-turned', text: ['You catch the glint of a spearpoint. The ambush becomes yours.'],
-      effects: [{ kind: 'setFlag', flag: 'surprise' }, { kind: 'xp', amount: 600 }] },
+      effects: [{ kind: 'setFlag', flag: 'surprise' }, { kind: 'xp', amount: 550 }] },
     failure: { to: 'ambush-sprung', text: ['A whistle — too late. They\'re already moving.'],
-      effects: [{ kind: 'xp', amount: 600 }] },
+      effects: [{ kind: 'xp', amount: 550 }] },
   },
   'ambush-turned': {
     id: 'ambush-turned', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
