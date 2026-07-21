@@ -25,7 +25,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'The village of **Thornwick** huddles under grey hills, its gate scorched, its people watching you from shuttered windows.',
       'For a month the **Ashfang raiders** have bled the road dry — burned barns, emptied larders, carried off anyone caught after dark.',
-      'The reeve\'s bounty drew you up the valley. But it was the plea nailed beneath it, in a shakier hand, that made you come: *Help us. There is no one else.*',
+      'The reeve\'s bounty drew you up the valley. But it was the plea nailed beneath it, in a shakier hand, that made you come: "Help us. There is no one else."',
     ],
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern',
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'End the raiders plaguing Thornwick. Start by learning where they den.' } }] }],
@@ -51,14 +51,20 @@ const scenes: Record<string, Scene> = {
   },
   'tavern-spy': {
     id: 'tavern-spy', kind: 'story', art: { emoji: '👁️' },
-    text: ['Her eyes flick to the door. "Someone here feeds them word of every caravan. I\'d start at the market, if I were you."'],
+    text: [
+      '**Mira** reads the doubt on your face and lowers her voice until it barely carries over the fire.',
+      '"The **Ashfang** always seem to know which wagon\'s worth taking. Someone here feeds them word of every caravan that leaves." Her eyes flick to the door. "If I were you, I\'d start at the **market**. Watch who watches the gate."',
+    ],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'know-spy' },
         { kind: 'journal', entry: { id: 'c-spy', kind: 'clue', title: 'An Informant', body: 'A spy in Thornwick feeds the raiders. Mira suspects the market.' } }] }],
   },
   'tavern-trail': {
     id: 'tavern-trail', kind: 'story', art: { emoji: '🗺️' },
-    text: ['The room loosens. An old trapper sketches the marsh road on the bar and taps a hollow in the hills. "Their den. But the trail bites back."'],
+    text: [
+      'A round on your coin loosens the whole room. An old trapper drags a finger through spilled ale, sketching the **marsh road** across the bar.',
+      '"Here\'s the reeds, here\'s the black water — and here," he taps a hollow in the hills, "is where their smoke rises of a morning. That\'s your den. Mind, the **trail** bites back long before you reach it."',
+    ],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'trail-known' }] }],
   },
@@ -152,9 +158,9 @@ const scenes: Record<string, Scene> = {
   tracks: {
     id: 'tracks', kind: 'check', skill: 'survival', dc: 12, art: { emoji: '👣' },
     intro: ['Boot-prints and drag-marks cross the mud. Read them right and the maze unravels.'],
-    success: { to: 'trail', text: ['You read the raiders\' comings and goings — the safe path to the hollow is plain now.'],
+    success: { to: 'trail', text: ['The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You\'ve found the **safe path to the hollow** — and you\'ll see the raiders before they see you.'],
       effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 40 }] },
-    failure: { to: 'trail', text: ['The prints tangle and double back. Still — they point roughly toward the hills.'],
+    failure: { to: 'trail', text: ['The prints tangle and double back on themselves until your eyes water. Still — they point, roughly, toward the hills. You\'ll find the den, but you\'ll be walking in blind.'],
       effects: [{ kind: 'setFlag', flag: 'trail-read' }] },
   },
   ravine: {
@@ -303,7 +309,8 @@ const scenes: Record<string, Scene> = {
   boss: {
     id: 'boss', kind: 'battle', encounterId: 'bandits', mapId: 'firepit',
     intro: ['"You\'ve cost me everything," the warlord snarls. "Bleed for it."'],
-    onWin: { to: 'aftermath', text: ['The warlord falls. The Ashfang are broken.'],
+    loot: { bonusTier: 'rare' }, // a warlord's hoard — guaranteed trophy
+    onWin: { to: 'aftermath', text: ['The warlord falls. The **Ashfang** are broken.'],
       effects: [{ kind: 'setFlag', flag: 'chief-dead' }, { kind: 'gold', amount: 100 }] },
   },
 

@@ -157,6 +157,11 @@ export type Scene =
       /** Ambush: `enemies` surprised (a won perception check) or `party` caught
        *  out (a failed one). The surprised side loses its first round. */
       surprise?: 'party' | 'enemies';
+      /** Encounter rewards. Default (omitted) = full XP + treasure from the
+       *  encounter. `false` = none (a scripted or trivial fight — gear is still
+       *  read back). `{ bonusTier }` = full rewards plus a guaranteed extra drop
+       *  of that rarity (a boss trophy). */
+      loot?: false | { bonusTier?: 'common' | 'uncommon' | 'rare' };
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];

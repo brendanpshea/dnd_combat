@@ -46,6 +46,10 @@ export interface MultiTargetSpec {
   maxTargets: number;
   allowRepeats: boolean;
   validIds: Set<Id>;
+  /** When set, the accumulated targets resolve as *using this item* (a spell
+   *  scroll) rather than casting from a slot — so a Scroll of Magic Missile
+   *  gets the same accumulate-taps flow as the spell. */
+  itemId?: Id;
 }
 
 export interface Grouped {
@@ -246,6 +250,33 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         const qty = state.combatants[actorId]?.inventory
           .find((s) => s.itemId === a.itemId)?.qty ?? 0;
         const note = qty > 1 ? { note: `×${qty}` } : {};
+        // A spell-scroll for a multi-target spell (Magic Missile's darts) goes
+        // through the accumulate-taps tray like the spell — not the tapped-enemy
+        // menu, which can't express "three darts, split how you like".
+        const itemTargeting = ITEMS[a.itemId]?.targeting;
+        const scrollSpell = itemTargeting?.kind === 'spell' ? SPELLS[itemTargeting.spellId] : undefined;
+        const st = scrollSpell?.targeting;
+        if (scrollSpell && st?.kind === 'creature' && st.count > 1) {
+          if (!seenMulti.has(a.itemId)) {
+            seenMulti.add(a.itemId);
+            const validIds = new Set(
+              Object.values(state.combatants)
+                .filter((c: Combatant) => c.alive && validTarget(state, actorId, scrollSpell, c.id))
+                .map((c: Combatant) => c.id),
+            );
+            bar.push({
+              id: `item:${a.itemId}`, label: describeShort(a), group: 'item', ...note,
+              icon: scrollSpell.icon,
+              multi: {
+                spellId: scrollSpell.id, slotLevel: scrollSpell.level, itemId: a.itemId,
+                maxTargets: st.count,
+                allowRepeats: scrollSpell.id === 'magic-missile' || scrollSpell.id === 'scorching-ray',
+                validIds,
+              },
+            });
+          }
+          break;
+        }
         if (first && 'combatantId' in first && first.combatantId !== actorId) {
           pushTarget(first.combatantId, describeShort(a), a);
         } else if (!first) {
@@ -321,5 +352,6 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
 
 export function buildMultiAction(spec: MultiTargetSpec, ids: Id[]): Action {
   const targets: Target[] = ids.map((combatantId) => ({ combatantId }));
+  if (spec.itemId) return { kind: 'useItem', itemId: spec.itemId, targets };
   return { kind: 'castSpell', spellId: spec.spellId, slotLevel: spec.slotLevel, targets };
 }

@@ -1383,13 +1383,14 @@ export interface AdventureVictory {
  *  touches `c.stage`, so an adventure can run any number of fights. */
 export function applyAdventureVictory(
   c: CampaignState, finalTeam: Combatant[], encounterId: Id, rng: RngState = 1,
+  bonusTier?: Rarity,
 ): AdventureVictory {
   readBackSurvivors(c, finalTeam);
   const xpGained = xpAward(encounterId, c.characters.length);
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
-  const treasure = treasureFor(encounterXP(encounterId), rng);
+  const treasure = treasureFor(encounterXP(encounterId), rng, bonusTier);
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);

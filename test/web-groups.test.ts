@@ -60,6 +60,33 @@ describe('web action grouping', () => {
     expect(events.filter((e) => e.type === 'damageDealt')).toHaveLength(3);
   });
 
+  it('a multi-target spell scroll routes through the accumulate-taps tray, not the tapped-enemy menu', () => {
+    // A fighter (no spells) holding a Scroll of Magic Missile.
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        place('fighter', 'team1', { x: 3, y: 3 }, { id: 'ftr',
+          inventory: [{ itemId: 'scroll-magic-missile', qty: 1 }] }),
+        place('fighter', 'team2', { x: 3, y: 4 }, { id: 'foe', hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    until(c, 'ftr');
+    const grouped = groupActions(c.state, 'ftr', c.legalActions());
+    // It's a tray/bar entry with a multi spec (3 darts), NOT a per-target tap.
+    const scroll = grouped.bar.find((b) => b.id === 'item:scroll-magic-missile');
+    expect(scroll?.multi).toBeDefined();
+    expect(scroll!.multi!.maxTargets).toBe(3);
+    expect(scroll!.multi!.itemId).toBe('scroll-magic-missile');
+    // The foe's tap menu should NOT carry the scroll (that was the bug).
+    const foeOpts = grouped.perTarget.get('foe') ?? [];
+    expect(foeOpts.some((o) => o.action.kind === 'useItem' && o.action.itemId === 'scroll-magic-missile')).toBe(false);
+    // The built action uses the item (not a slot the fighter doesn't have) and hits thrice.
+    const built = buildMultiAction(scroll!.multi!, ['foe', 'foe', 'foe']);
+    expect(built.kind).toBe('useItem');
+    const events = c.apply(built);
+    expect(events.filter((e) => e.type === 'damageDealt')).toHaveLength(3);
+  });
+
   it('area cell targets apply legally (sleep anchor)', () => {
     const c = new Combat({
       seed: 6,
