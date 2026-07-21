@@ -872,6 +872,18 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'chromatic-clutch', name: 'Chromatic Clutch', suggestedLevel: 4,
     members: ['black-wyrmling', 'green-wyrmling', 'white-wyrmling'],
   },
+  // A back-alley crew: a fixer (spy) and two hired knives — the muscle a town
+  // informant keeps around. A first-real-fight step up from a bare street mug.
+  cutpurses: {
+    id: 'cutpurses', name: 'Cutpurse Crew', suggestedLevel: 1,
+    members: ['spy', 'bandit', 'bandit'],
+  },
+  // The marsh keeps its dead. A pair of ghouls clawing up out of the black water
+  // at night — a nastier camp-interruption than starving wolves.
+  'marsh-dead': {
+    id: 'marsh-dead', name: 'The Marsh Dead', suggestedLevel: 2,
+    members: ['ghoul', 'ghoul'],
+  },
 };
 
 /**
