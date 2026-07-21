@@ -107,6 +107,36 @@ export const MAPS: Record<string, MapData> = {
       '........',
     ],
   },
+  // A town square: market stalls (walls) frame an open plaza. Cover to duck
+  // behind, lanes to flank down — a street brawl, not a field battle.
+  village: {
+    id: 'village', name: 'Market Square', theme: 'stone',
+    rows: [
+      '........',
+      '.#....#.',
+      '..####..',
+      '........',
+      '........',
+      '..####..',
+      '.#....#.',
+      '........',
+    ],
+  },
+  // A sunken causeway: two channels of black water (difficult) flanking a dry
+  // central lane. Melee presses up the middle; the reeds slow anyone who strays.
+  bog: {
+    id: 'bog', name: 'The Black Ford', theme: 'forest',
+    rows: [
+      '........',
+      '...~~...',
+      '.~~..~~.',
+      '..~..~..',
+      '..~..~..',
+      '.~~..~~.',
+      '...~~...',
+      '........',
+    ],
+  },
 };
 
 export const MAP_IDS = Object.keys(MAPS);
