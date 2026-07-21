@@ -5,7 +5,8 @@ import { resolveAttack } from '../src/engine/rules/attack.js';
 import { savingThrow } from '../src/engine/rules/saves.js';
 import { moveDestinations } from '../src/engine/rules/movement.js';
 import { acOf } from '../src/data/armor.js';
-import { WEAPONS } from '../src/data/weapons.js';
+import { WEAPONS, weaponCategory, isWeaponProficient } from '../src/data/weapons.js';
+import { classScrollPool } from '../src/data/classes.js';
 import { TRINKETS } from '../src/data/trinkets.js';
 import {
   newCampaign, itemPrice, itemName, rarityOf, equipBlocked, equipItem, bestAtSkill,
@@ -148,5 +149,62 @@ describe('New spell scrolls', () => {
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [caster, foe] });
     const action = c.legalActions().find((a) => a.kind === 'useItem' && a.itemId === 'scroll-command');
     expect(action).toBeDefined();
+  });
+});
+
+describe('weapon proficiency (2024: no bonus, not a hard block)', () => {
+  it('categorizes tradable weapons; natural weapons have none', () => {
+    expect(weaponCategory('dagger')).toBe('simple');
+    expect(weaponCategory('quarterstaff')).toBe('simple');
+    expect(weaponCategory('greatsword')).toBe('martial');
+    expect(weaponCategory('longsword-plus1')).toBe('martial'); // magic variant → base
+    expect(weaponCategory('moontouched-warhammer')).toBe('martial');
+    expect(weaponCategory('wolf-bite')).toBeUndefined();       // natural
+  });
+
+  it('isWeaponProficient respects class categories, finesse/light, and safe defaults', () => {
+    const wiz = { simple: true, martial: false };
+    const ftr = { simple: true, martial: true };
+    const rog = { simple: true, martial: false, finesseLight: true };
+    expect(isWeaponProficient(wiz, 'dagger')).toBe(true);
+    expect(isWeaponProficient(wiz, 'greatsword')).toBe(false);  // wizard, martial
+    expect(isWeaponProficient(ftr, 'greatsword')).toBe(true);
+    expect(isWeaponProficient(rog, 'rapier')).toBe(true);       // finesse martial
+    expect(isWeaponProficient(rog, 'greatsword')).toBe(false);  // non-finesse martial
+    expect(isWeaponProficient(wiz, 'wolf-bite')).toBe(true);    // natural → always
+    expect(isWeaponProficient(undefined, 'greatsword')).toBe(true); // unmigrated → don't penalize
+  });
+
+  it('a built wizard is proficient with simple but not martial weapons', () => {
+    const wiz = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 0, y: 0 }, level: 3 });
+    expect(wiz.weaponProfs).toEqual({ simple: true, martial: false });
+    const ftr = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 3 });
+    expect(ftr.weaponProfs?.martial).toBe(true);
+  });
+
+  it('a non-proficient attack loses exactly the proficiency bonus', () => {
+    // Same attacker/target/seed; only the weaponProfs differ.
+    const mk = (profs: { simple: boolean; martial: boolean } | undefined) => {
+      const a = makeCombatant({ id: 'a', team: 'team1', position: { x: 1, y: 1 }, level: 5 });
+      const b = makeCombatant({ id: 'b', team: 'team2', position: { x: 2, y: 1 }, maxHp: 999, hp: 999 });
+      a.weaponProfs = profs as never;
+      a.equipped = { mainHand: 'greatsword' };
+      const c = new Combat({ seed: 3, mapId: 'open', combatants: [a, b] });
+      const ev = resolveAttack(c.state, 'a', 'b', 'greatsword');
+      const roll = ev.find((e) => e.type === 'attackRolled');
+      return roll && roll.type === 'attackRolled' ? roll.total : 0;
+    };
+    const proficient = mk({ simple: true, martial: true });
+    const untrained = mk({ simple: true, martial: false });
+    expect(proficient - untrained).toBe(3); // proficiency bonus at level 5
+  });
+});
+
+describe('scroll class-gating', () => {
+  it('a class can only cast scrolls on its list', () => {
+    expect(classScrollPool('wizard').has('magic-missile')).toBe(true);
+    expect(classScrollPool('wizard').has('cure-wounds')).toBe(false); // divine
+    expect(classScrollPool('cleric').has('cure-wounds')).toBe(true);
+    expect(classScrollPool('fighter').size).toBe(0);                  // non-caster
   });
 });

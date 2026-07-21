@@ -13,6 +13,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
+import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
@@ -235,6 +236,8 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (!stack) return false;
       if (item.useTime === 'action' && actor.turn.actionUsed) return false;
       if (item.useTime === 'bonus' && actor.turn.bonusActionUsed) return false;
+      // A spell scroll only works for a class that has the spell on its list.
+      if (item.targeting.kind === 'spell' && !classScrollPool(actor.classId).has(item.targeting.spellId)) return false;
       return itemTargetsValid(state, actor, action.itemId, action.targets ?? []);
     }
     case 'useFeature': {
@@ -391,8 +394,10 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     } else if (item.targeting.kind === 'thrown') {
       for (const e of enemies) candidates.push([{ combatantId: e.id }]);
     } else {
-      // Scroll: the same target sets the spell itself would offer, so a Scroll
-      // of X plays exactly like casting X (multi-dart, area cells, and all).
+      // Scroll: usable only if the spell is on the actor's class list (2024) —
+      // a fighter can't read a wizard's scroll. Then it plays exactly like
+      // casting X (multi-dart, area cells, and all).
+      if (!classScrollPool(actor.classId).has(item.targeting.spellId)) continue;
       const spell = SPELLS[item.targeting.spellId]!;
       for (const { targets } of spellTargetSets(state, actor, spell)) candidates.push(targets);
     }

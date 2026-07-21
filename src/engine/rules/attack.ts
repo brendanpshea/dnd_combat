@@ -4,7 +4,7 @@
  */
 import type { GameState, Combatant, Id, DamageType, Ability } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../types.js';
-import { WEAPONS, WeaponData } from '../../data/weapons.js';
+import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
@@ -185,7 +185,10 @@ export function resolveAttack(
 
   const ability = ctx.abilityOverride ?? attackAbility(attacker, weapon);
   const mod = abilityMod(attacker.abilities[ability]);
-  const prof = proficiencyBonus(attacker.level); // v1: proficient with all carried weapons
+  // Proficiency bonus only if trained with the weapon (2024: a wizard can swing
+  // a greatsword, they just don't add proficiency). Natural/monster weapons and
+  // un-migrated combatants are always proficient.
+  const prof = isWeaponProficient(attacker.weaponProfs, weapon.id) ? proficiencyBonus(attacker.level) : 0;
   let total = d20.natural + mod + prof + (weapon.attackBonus ?? 0);
   // Fighting Style: Archery — +2 to attack rolls with ranged weapons.
   if (attacker.featureIds.includes('archery') && !weapon.melee) total += 2;

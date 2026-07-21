@@ -1,7 +1,7 @@
 /**
  * Weapon data. Adding a weapon is an entry here — never an engine edit.
  */
-import type { Id, DamageType, Ability, ConditionId } from '../engine/types.js';
+import type { Id, DamageType, Ability, ConditionId, WeaponProfs } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
 export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze' | 'nick' | 'cleave';
@@ -39,6 +39,45 @@ export interface WeaponData {
    * option on applyDamage.
    */
   magic?: boolean;
+}
+
+/** Simple/martial split (5e). A new tradable weapon adds its base id to one of
+ *  these sets; monster/natural weapons stay out (they have no category and are
+ *  always proficient). Magic/moontouched variants resolve to their base. */
+const SIMPLE_WEAPONS = new Set<Id>([
+  'dagger', 'mace', 'quarterstaff', 'javelin', 'handaxe', 'spear', 'sling', 'light-crossbow', 'shortbow',
+]);
+const MARTIAL_WEAPONS = new Set<Id>([
+  'longsword', 'shortsword', 'greatsword', 'greataxe', 'longbow', 'warhammer',
+  'battleaxe', 'morningstar', 'rapier', 'hand-crossbow',
+]);
+
+/** A weapon's base id, stripping magic/moontouched flavor (a +1 longsword is a
+ *  martial weapon like any longsword). */
+export function baseWeaponId(id: Id): Id {
+  return id.replace(/-plus1$/, '').replace(/^moontouched-/, '') as Id;
+}
+
+/** simple / martial for tradable weapons; undefined for natural/monster ones. */
+export function weaponCategory(id: Id): 'simple' | 'martial' | undefined {
+  const base = baseWeaponId(id);
+  if (SIMPLE_WEAPONS.has(base)) return 'simple';
+  if (MARTIAL_WEAPONS.has(base)) return 'martial';
+  return undefined;
+}
+
+/** Whether `profs` cover `weaponId` (natural weapons and absent profs = yes). */
+export function isWeaponProficient(profs: WeaponProfs | undefined, weaponId: Id): boolean {
+  const cat = weaponCategory(weaponId);
+  if (!cat) return true;          // natural / monster weapon
+  if (!profs) return true;        // unmigrated combatant — don't penalize
+  if (cat === 'simple') return profs.simple;
+  if (profs.martial) return true;
+  if (profs.finesseLight) {
+    const props = WEAPONS[baseWeaponId(weaponId)]?.properties ?? [];
+    if (props.includes('finesse') || props.includes('light')) return true;
+  }
+  return profs.specific?.includes(baseWeaponId(weaponId)) ?? false;
 }
 
 export const WEAPONS: Record<Id, WeaponData> = {

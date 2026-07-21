@@ -106,6 +106,16 @@ export interface Equipped {
   trinket?: Id;           // wondrous item (one accessory slot); undefined = none
 }
 
+/** Which weapons a class can wield proficiently. `finesseLight` grants the
+ *  martial weapons with the Finesse or Light property (the 2024 rogue); a class
+ *  can also name `specific` weapon ids it's trained in beyond its categories. */
+export interface WeaponProfs {
+  simple: boolean;
+  martial: boolean;
+  finesseLight?: boolean;
+  specific?: Id[];
+}
+
 export interface Combatant {
   id: Id;
   name: string;
@@ -126,6 +136,10 @@ export interface Combatant {
   position: Position;
   initiative: number;
   savingThrowProfs: Ability[];
+  /** Weapon proficiencies, baked from the class at build time. Absent for
+   *  monsters (natural weapons are always proficient) — a non-proficient
+   *  attacker keeps its ability mod but loses the proficiency bonus. */
+  weaponProfs?: WeaponProfs;
   spellcastingAbility?: Ability;
   spellSlots: ResourcePool[];       // index 0 = level-1 slots
   spellIds: Id[];                   // known/prepared spells incl. cantrips
