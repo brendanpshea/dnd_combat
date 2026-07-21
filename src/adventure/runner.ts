@@ -10,7 +10,8 @@ import type { CampaignState } from '../campaign/campaign.js';
 import {
   type AdventureState, type AdventureEvent,
   startAdventure, currentScene, enterScene, legalChoices, choose,
-  rollSceneCheck, exploreNodes, enterNode, resolveBattle, resolveShopOrRest,
+  rollSceneCheck, legalApproaches, tryApproach, exploreNodes, enterNode,
+  resolveBattle, resolveShopOrRest,
 } from './runtime.js';
 
 export interface RunPolicy {
@@ -57,6 +58,17 @@ export function runModule(
       case 'check': {
         const actor = scene.roller === 'chosen' ? policy.actor?.(scene.skill) : undefined;
         events.push(...rollSceneCheck(state, module, actor));
+        break;
+      }
+
+      case 'challenge': {
+        // Only untried, unblocked approaches are pickable; a `perApproach`
+        // challenge whittles them down until it resolves or runs dry.
+        const options = legalApproaches(state, module).filter((a) => !a.blocked && !a.spent);
+        if (options.length === 0) throw new Error(`Challenge dead end at '${scene.id}'`);
+        const pick = options[policy.pick(options.length, `approach:${scene.id}`)]!;
+        const actor = (pick.approach.roller === 'chosen') ? policy.actor?.(pick.approach.skill) : undefined;
+        events.push(...tryApproach(state, module, pick.approach.id, actor));
         break;
       }
 

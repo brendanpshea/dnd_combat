@@ -80,6 +80,32 @@ export interface Choice {
   once?: boolean;
 }
 
+/** One way to tackle a challenge scene: a named line of attack the party can
+ *  choose, rolled against its own skill/DC. Several approaches on one obstacle
+ *  is how a non-combat node offers a *choice* ("pick your tool") instead of a
+ *  single forced check. */
+export interface Approach {
+  id: Id;
+  label: string;
+  /** A one-line subtitle: what this line of attack actually is ("Force the
+   *  hinges", "Sweet-talk the guard") — the texture that makes the pick a
+   *  decision, not just a skill name. */
+  hint?: string;
+  skill: SkillId;
+  dc: number;
+  roller?: Roller;
+  requires?: Requirement[];
+  /** Hide entirely when blocked (default: show greyed with reason). */
+  hideWhenBlocked?: boolean;
+  /** Where a success lands. Defaults to the challenge's shared `success`. */
+  success?: Outcome;
+  /** A failure's beat. In `single` mode this routes away (defaults to the
+   *  challenge's shared `failure`). In `perApproach` mode its `to` is ignored —
+   *  only its text/effects show, as the flavour before the party tries another
+   *  way. */
+  failure?: Outcome;
+}
+
 /** The special SceneRef `@hub` resolves at runtime to the explore scene the
  *  party most recently entered — a generic "return to where I was" that any
  *  location's sub-scenes can route to without hard-coding the hub's id. */
@@ -178,6 +204,20 @@ export type Scene =
        *  read back). `{ bonusTier }` = full rewards plus a guaranteed extra drop
        *  of that rarity (a boss trophy). */
       loot?: false | { bonusTier?: 'common' | 'uncommon' | 'rare' };
+    }
+  | {
+      id: Id; kind: 'challenge'; intro: Paragraph[]; art?: SceneArt;
+      /** The lines of attack on offer — the player picks how to try. */
+      approaches: Approach[];
+      /** `single` (default): the first approach attempted resolves the whole
+       *  challenge, win or lose — one obstacle, one shot. `perApproach`: each
+       *  approach may be tried once; a failed one is spent but another may be
+       *  tried, and the challenge only fails once every approach is exhausted. */
+      retry?: 'single' | 'perApproach';
+      /** Shared landing spots for an approach that doesn't name its own. */
+      success: Outcome; failure: Outcome;
+      /** Suppress the implicit "leave to the hub" — a forced obstacle. */
+      noBack?: boolean;
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];

@@ -8,6 +8,7 @@ import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
+  legalApproaches, tryApproach,
   requirementMet, exploreNodes, enterNode, hubReturn, returnToHub, campRule, campRest,
   shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, resolveBattle,
 } from '../src/adventure/runtime.js';
@@ -672,6 +673,106 @@ describe('exploration (M2)', () => {
     enterScene(state, HIDEOUT_MODULE, 'road');
     choose(state, HIDEOUT_MODULE, 'go');
     expect(state.journal.length).toBe(count);
+  });
+});
+
+// --- M3.5: multi-approach challenges ----------------------------------------
+
+describe('challenges (multi-approach)', () => {
+  // A challenge with a guaranteed-success line (DC 1), a guaranteed-failure
+  // line (DC 30), and an ungated fallback — enough to drive every branch.
+  const challenge = (retry: 'single' | 'perApproach'): Module => ({
+    id: 'ch', title: 'T', blurb: '', start: 's',
+    scenes: {
+      s: {
+        id: 's', kind: 'challenge', intro: ['A locked door.'], retry,
+        approaches: [
+          { id: 'force', label: 'Force it', skill: 'athletics', dc: 30 },
+          { id: 'pick', label: 'Pick it', skill: 'sleight-of-hand', dc: 1,
+            success: { to: 'win', text: ['Click.'], effects: [{ kind: 'setFlag', flag: 'opened' }] } },
+        ],
+        success: { to: 'win' },
+        failure: { to: 'lose', text: ['You give up.'] },
+      },
+      win: { id: 'win', kind: 'ending', outcome: 'victory', text: ['In.'] },
+      lose: { id: 'lose', kind: 'ending', outcome: 'defeat', text: ['Stuck.'] },
+    },
+  });
+
+  it('validates and offers its approaches', () => {
+    const m = challenge('single');
+    expect(validateModule(m)).toEqual([]);
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 's');
+    expect(legalApproaches(s, m).map((a) => a.approach.id)).toEqual(['force', 'pick']);
+  });
+
+  it('single mode: the first attempt resolves the whole challenge', () => {
+    const m = challenge('single');
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 's');
+    // Fail the forced line — single mode routes straight to the shared failure.
+    const evs = tryApproach(s, m, 'force');
+    expect(evs.some((e) => e.type === 'check' && !e.success)).toBe(true);
+    expect(s.sceneId).toBe('lose');
+  });
+
+  it('perApproach mode: a failed line is spent but another may be tried', () => {
+    const m = challenge('perApproach');
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 's');
+    tryApproach(s, m, 'force'); // DC 30 — fails
+    // Still on the challenge; 'force' now shows spent, 'pick' still open.
+    expect(s.sceneId).toBe('s');
+    const opts = legalApproaches(s, m);
+    expect(opts.find((a) => a.approach.id === 'force')!.spent).toBe(true);
+    expect(opts.find((a) => a.approach.id === 'pick')!.spent).toBe(false);
+    // The winning line still lands.
+    tryApproach(s, m, 'pick');
+    expect(s.sceneId).toBe('win');
+    expect(s.flags['opened']).toBe(true);
+  });
+
+  it('perApproach mode: the challenge fails only once every line is exhausted', () => {
+    // Both lines guaranteed to fail: the shared failure fires after the last.
+    const m = challenge('perApproach');
+    (m.scenes['s'] as { approaches: Array<{ dc: number }> }).approaches[1]!.dc = 30;
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 's');
+    tryApproach(s, m, 'force');
+    expect(s.sceneId).toBe('s'); // one line left, still here
+    tryApproach(s, m, 'pick');
+    expect(s.sceneId).toBe('lose'); // exhausted → shared failure
+  });
+
+  it('a spent approach cannot be tried again', () => {
+    const m = challenge('perApproach');
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 's');
+    tryApproach(s, m, 'force');
+    expect(() => tryApproach(s, m, 'force')).toThrow(/already tried/);
+  });
+
+  it('the validator rejects a challenge with no approaches or no ungated line', () => {
+    const noApproaches: Module = {
+      id: 'x', title: 'T', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'challenge', intro: ['x'], approaches: [], success: { to: 'e' }, failure: { to: 'e' } },
+        e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    };
+    expect(validateModule(noApproaches).some((e) => e.includes('no approaches'))).toBe(true);
+
+    const allGated: Module = {
+      id: 'y', title: 'T', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'challenge', intro: ['x'],
+          approaches: [{ id: 'a', label: 'A', skill: 'athletics', dc: 10, requires: [{ kind: 'flag', flag: 'never' }] }],
+          success: { to: 'e' }, failure: { to: 'e' } },
+        e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    };
+    expect(validateModule(allGated).some((e) => e.includes('always-available approach'))).toBe(true);
   });
 });
 

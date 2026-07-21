@@ -35,6 +35,10 @@ function refsOf(scene: Scene): Id[] {
   switch (scene.kind) {
     case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
     case 'check': fromOutcome(scene.success); fromOutcome(scene.failure); break;
+    case 'challenge':
+      fromOutcome(scene.success); fromOutcome(scene.failure);
+      scene.approaches.forEach((a) => { if (a.success) fromOutcome(a.success); if (a.failure) fromOutcome(a.failure); });
+      break;
     case 'battle': fromOutcome(scene.onWin); if (scene.onLoss) fromOutcome(scene.onLoss); break;
     case 'shop': case 'rest': refs.push(scene.next); break;
     case 'explore':
@@ -59,6 +63,10 @@ function effectsOf(scene: Scene): Effect[] {
   switch (scene.kind) {
     case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
     case 'check': out.push(...(scene.success.effects ?? []), ...(scene.failure.effects ?? [])); break;
+    case 'challenge':
+      out.push(...(scene.success.effects ?? []), ...(scene.failure.effects ?? []));
+      scene.approaches.forEach((a) => out.push(...(a.success?.effects ?? []), ...(a.failure?.effects ?? [])));
+      break;
     case 'battle':
       out.push(...(scene.onWin.effects ?? []), ...(scene.onLoss?.effects ?? [])); break;
     default: break;
@@ -71,6 +79,7 @@ function requirementsOf(scene: Scene): Requirement[] {
   const fromChoice = (ch: Choice) => out.push(...(ch.requires ?? []));
   switch (scene.kind) {
     case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
+    case 'challenge': scene.approaches.forEach((a) => out.push(...(a.requires ?? []))); break;
     case 'explore': scene.map.nodes.forEach((n) => {
       out.push(...(n.requires ?? []));
       n.sceneWhen?.forEach((w) => out.push(...w.if));
@@ -86,6 +95,7 @@ function skillsOf(scene: Scene): string[] {
   switch (scene.kind) {
     case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
     case 'check': out.push(scene.skill); break;
+    case 'challenge': scene.approaches.forEach((a) => out.push(a.skill)); break;
     default: break;
   }
   return out;
@@ -136,6 +146,18 @@ export function validateModule(module: Module): string[] {
     }
     if (scene.kind === 'check' && (scene.dc < 1 || scene.dc > 30)) {
       at(id, `check DC ${scene.dc} out of sane range (1–30)`);
+    }
+    if (scene.kind === 'challenge') {
+      if (scene.approaches.length === 0) at(id, 'challenge has no approaches');
+      for (const a of scene.approaches) {
+        if (a.dc < 1 || a.dc > 30) at(id, `approach '${a.id}' DC ${a.dc} out of sane range (1–30)`);
+      }
+      // At least one approach must never be gated, or the party can arrive at a
+      // challenge with nothing to try (a soft-lock the leave affordance may not
+      // cover on a `noBack` obstacle).
+      if (!scene.approaches.some((a) => !a.requires || a.requires.length === 0)) {
+        at(id, 'challenge needs at least one always-available approach (an ungated line of attack)');
+      }
     }
     // Art vocabulary: location backdrops and NPC portraits must name a shared
     // reusable id (src/data/adventure-art.ts) so the generated set stays
