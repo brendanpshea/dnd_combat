@@ -17,6 +17,7 @@ import {
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
+import { SlotPips } from './SlotPips.js';
 import { buildEncounter, ENCOUNTERS, MONSTERS } from '../../src/data/monsters.js';
 import { MAPS } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
@@ -769,6 +770,10 @@ function CampScreen(
               <div>
                 <strong>{ch.name}</strong>
                 <span className="muted"> · HP {party[idx]!.hp}/{party[idx]!.maxHp} · 🛡 {acOf(party[idx]!)}</span>
+                {/* Spell slots remaining, per level (renders nothing for a
+                    non-caster) — so a wizard down to 1 of 2 first-level slots
+                    reads at a glance, and "rest to recover" has a visible meter. */}
+                <div className="adv-camp-slots"><SlotPips spellSlots={party[idx]!.spellSlots} /></div>
               </div>
             </div>
 
