@@ -419,6 +419,11 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
           place spells change, with cantrips/spellbook locked). */}
       {reprepare.length > 0 && (
         <SpellTray
+          // Keyed per caster: the queue shifts in place (reprepare[0] changes
+          // without unmounting), so without a key the tray would keep the first
+          // caster's seeded drafts and show, e.g., the wizard's cantrips on the
+          // cleric. The key forces a fresh mount — and fresh useState seeds.
+          key={reprepare[0]!}
           campaign={campaign}
           idx={reprepare[0]!}
           mode="prepare"

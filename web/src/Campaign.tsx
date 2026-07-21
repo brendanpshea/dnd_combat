@@ -210,6 +210,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   // openSpells can fire from either phase.
   const spellPanel = prepareFor !== null && (
     <SpellTray
+      key={prepareFor} // fresh drafts per caster — never inherit another's state
       campaign={c}
       idx={prepareFor}
       // In the forge you build the spellbook; in the field (the shop, between

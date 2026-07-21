@@ -70,7 +70,7 @@ export function SpellTray(
           <p className="hint">A sensible set is chosen by default — adjust only if you want to.</p>
         )}
         {locked && (
-          <p className="hint">Rested at last — choose which spells to prepare. Cantrips and your spellbook are fixed until you level up.</p>
+          <p className="hint">Rested at last — choose which spells to prepare. Your cantrips{usesBook ? ' and spellbook are' : ' are'} fixed until you level up.</p>
         )}
         {cPool.length > 0 && (
           locked ? (
