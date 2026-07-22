@@ -27,10 +27,7 @@ CSS color.
 **Six assets** — one per `MapTheme` (`src/data/maps.ts`), reused across the
 maps that share a theme (`open`/`marsh` → forest, `ruins` → stone,
 `firepit` → ember, `corridor` → graveyard, `village` → village,
-`bog` → bog). The four original themes are generated; `village` and `bog`
-were split off from `stone`/`forest` so the town square and the black ford
-get their own floor, and their backdrops are still to be produced — until
-then they fall back to the flat theme colour (see §5), which ships fine.
+`bog` → bog). All six theme backdrops are now generated and integrated.
 
 ---
 
@@ -99,7 +96,7 @@ notch more painterly since it's blurred/darkened behind gameplay UI.
 > hazard glow dynamically on specific cells; a pre-lit background would
 > double up and clash).
 
-**Village** (`theme-village`, map: `village` — Market Square) — *to generate*
+**Village** (`theme-village`, map: `village` — Market Square)
 > Subject: a cobbled town-square plaza floor from directly above — fitted
 > paving stones and packed dirt lanes in warm neutral tones, worn smooth in
 > the middle from foot traffic, a light scatter of straw, spilled produce,
@@ -108,7 +105,7 @@ notch more painterly since it's blurred/darkened behind gameplay UI.
 > awnings, or crates drawn in (those are the CSS-drawn walls); the plaza
 > floor itself should stay open and plain through the middle.
 
-**Bog** (`theme-bog`, map: `bog` — The Black Ford) — *to generate*
+**Bog** (`theme-bog`, map: `bog` — The Black Ford)
 > Subject: a marsh causeway floor from directly above — a dry central line
 > of packed dark earth and matted reeds threading between wet ground, mossy
 > green-black mud, a few tussocks of grass toward the edges. Base color
@@ -171,9 +168,8 @@ Mirrors the existing character-art pipeline (`art/prompts.md` §7,
    `HAS_BOARD_BG` allowlist; a theme not in the set renders on its flat
    `background:` colour alone. So a new backdrop ships in three steps: drop
    `bg-<theme>.webp` into `web/public/art/`, add the theme to `HAS_BOARD_BG`,
-   done. `village` and `bog` are deliberately *not* in the set yet — their
-   floors are themed in CSS and read fine flat until their art exists.
+   done. `village` and `bog` are now included in the set.
 
-Total assets: **6 images** (4 generated, `village`/`bog` still to do), not
+Total assets: **6 images** (all 6 generated), not
 dozens — this is why the background approach is worth doing where a full
 tileset likely isn't.

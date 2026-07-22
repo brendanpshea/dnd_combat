@@ -20,7 +20,7 @@ QUALITY = 78
 
 # MapTheme values (src/data/maps.ts) — one background per theme, reused
 # across every map that shares it.
-THEMES = ["stone", "forest", "graveyard", "ember"]
+THEMES = ["stone", "forest", "graveyard", "ember", "village", "bog"]
 
 os.makedirs(OUT, exist_ok=True)
 total = 0

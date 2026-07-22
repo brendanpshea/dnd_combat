@@ -131,7 +131,7 @@ export function portraitUrl(id: string): string {
 }
 
 /** Themes with a generated arena backdrop (see art/arena-prompts.md). */
-export const HAS_BOARD_BG = new Set<string>(['stone', 'forest', 'graveyard', 'ember']);
+export const HAS_BOARD_BG = new Set<string>(['stone', 'forest', 'graveyard', 'ember', 'village', 'bog']);
 
 export function boardBgUrl(theme: string): string {
   return `${BASE}art/bg-${theme}.webp`;
