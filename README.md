@@ -178,15 +178,26 @@ maps, and battles) interpreted by a pure runtime, so authoring a scene is a
 data edit, never an engine change (see
 [docs/module-writing-guide.md](docs/module-writing-guide.md)).
 
-The flagship module, **The Hollow Road**, is a ~2-hour, three-act adventure:
-break the Ashfang raiders through a village hub, a marsh you traverse node by
-node, and their den — by blade or by wit. It threads combat with inline skill
-checks, branching choices that pay off in an epilogue, a journal of quests and
-leads, milestone leveling that lands on fights you earn, and explore maps that
-reveal as you push deeper. You can camp to rest (safely in town, at a risk in
-the wild — an interrupted rest recovers nothing), shop, and manage gear
-between beats. A tap on any item or spell opens an **ⓘ info card** — derived
-stats plus a plain-English blurb — in camp, the shop, and the spell tray.
+The flagship campaign is a **trilogy** that takes one company from level 1 to
+the level-5 cap, each part a complete evening with its own region and
+bestiary (docs/trilogy-plan.md):
+
+1. **The Hollow Road** (levels 1–3) — break the Ashfang raiders through a
+   village hub, a marsh you traverse node by node, and their den.
+2. **The Sunken Barrows** (levels 3–4) — your victory's bill comes due: the
+   Reedwife was the Undercrypt's jailer, and the barrows are opening.
+3. **The Wyrmcalling** (levels 4–5) — her sisters wake the Calling stone,
+   and the hills answer: wyrms, giants, and elementals.
+
+A victory ending offers **"Continue the company"** — the same party, XP,
+gold, and gear walk into the next part (each part also stands alone, with a
+cold-start level floor). Modules thread combat with inline skill checks,
+branching choices that pay off in epilogues, journals of quests and leads,
+and explore maps that reveal as you push deeper. You can camp to rest (safely
+in town, at a risk in the wild — an interrupted rest recovers nothing), shop,
+and manage gear between beats. A tap on any item or spell opens an **ⓘ info
+card** — derived stats plus a plain-English blurb — in camp, the shop, and
+the spell tray.
 
 ## Project layout
 

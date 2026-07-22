@@ -887,6 +887,68 @@ describe('The Sunken Barrows (trilogy Part 2)', () => {
   });
 });
 
+describe('The Wyrmcalling (trilogy Part 3)', () => {
+  const wyrm = MODULES.find((m) => m.id === 'wyrmcalling')!;
+
+  it('validates, completes the sequel chain, and declares its band', () => {
+    expect(wyrm).toBeDefined();
+    expect(validateModule(wyrm)).toEqual([]);
+    expect(MODULES.find((m) => m.id === 'sunken-barrows')!.sequel).toBe('wyrmcalling');
+    expect(wyrm.sequel).toBeUndefined(); // the trilogy ends here
+    expect(wyrm.levelBand).toEqual({ from: 4, to: 5 });
+  });
+
+  it('fields the top shelf — distinct rosters, none used by Parts 1–2', () => {
+    const enc = new Map<string, number>();
+    const monsters = new Set<string>();
+    for (const s of Object.values(wyrm.scenes)) {
+      if (s.kind !== 'battle') continue;
+      enc.set(s.encounterId, (enc.get(s.encounterId) ?? 0) + 1);
+      for (const m of ENCOUNTERS[s.encounterId]?.members ?? []) monsters.add(m);
+    }
+    expect(enc.size).toBeGreaterThanOrEqual(10);
+    expect(monsters.size).toBeGreaterThanOrEqual(12);
+    for (const [id, count] of enc) {
+      expect(count, `encounter '${id}' is reused in ${count} battles`).toBeLessThanOrEqual(2);
+    }
+    // No battle encounter overlaps the earlier parts' battles.
+    for (const partId of ['hollow-road', 'sunken-barrows']) {
+      const part = MODULES.find((m) => m.id === partId)!;
+      for (const s of Object.values(part.scenes)) {
+        if (s.kind === 'battle') expect(enc.has(s.encounterId), `${s.encounterId} reused from ${partId}`).toBe(false);
+      }
+    }
+  });
+
+  it('a continuing company reaches the L5 cap by the finale', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      let nn = seed * 13 + 7;
+      const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+      const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
+      const c = newCampaign(seed);
+      c.xp = 3050; // a typical company finishing The Sunken Barrows
+      const result = runModule(c, wyrm, policy, 10000);
+      if (result.ending !== 'victory') continue;
+      expect(levelForXp(result.state.campaign.xp)).toBe(5);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('clearing all three wyrm dens routes the last ridge past the clutch', () => {
+    const state = startAdventure(newCampaign(2), wyrm);
+    enterScene(state, wyrm, 'hills');
+    for (const f of ['hills-read', 'green-cleared', 'blue-cleared', 'red-cleared', 'oni-cleared', 'steading-cleared']) {
+      state.flags[f] = true;
+    }
+    // Walk the frontier to the gate: the spine nodes must be explored first.
+    for (const n of ['switchbacks', 'seam', 'onihold', 'steading']) state.exploredNodes.push(n);
+    enterNode(state, wyrm, 'callinggate');
+    expect(state.sceneId).toBe('calling-gate-clear'); // no clutch fight massed
+  });
+});
+
 describe('The Hollow Road (M4)', () => {
   const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
 

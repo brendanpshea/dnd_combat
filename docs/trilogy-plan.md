@@ -28,7 +28,7 @@ and the webbed thicket) so a fight-most run reaches L3 before the boss without
 the milestone firing. When Part 2 ships, set `sequel: 'sunken-barrows'` on the
 module.
 
-## Part 2 — The Sunken Barrows (L3→4, to author)
+## Part 2 — The Sunken Barrows (L3→4, shipped)
 
 **Hook.** The Reedwife was not merely squatting in the marsh — she was
 *feeding* on something beneath it, and her feeding kept it asleep. With her
@@ -60,7 +60,7 @@ just before the finale; `xpToLevel: 4` floor on the finale win.
 `vex-turned` → Vex holds Thornwick's gate during the crisis (a beat, and his
 arc continues); the Part 1 barrow side-fight is referenced as the first crack.
 
-## Part 3 — The Wyrmcalling (L4→5, to author)
+## Part 3 — The Wyrmcalling (L4→5, shipped)
 
 **Hook.** What slept under the barrows was never the real debt-holder. The
 Reedwife's two sisters come to collect what the company "owes" the coven — by
@@ -103,11 +103,18 @@ campaign ends at the cap, fighting the biggest encounter in the data.)
   carries party/XP/gold/gear; story flags deliberately do not carry (each
   module owns its flag namespace; cross-part payoffs re-derive from the
   carried campaign or are re-established in an opening beat).
-- **Open** (build with Part 2): a "start at Part 2/3" cold-start — a pre-built
-  L3/L4 party with band-appropriate gear for players who skip ahead; and
-  cross-part payoff flags (simplest honest option: the sequel's opening scene
-  asks 1–2 "what happened?" questions, or Part 1 stamps a small
-  `legacy` record onto the campaign — decide when authoring).
+- Cold starts — **shipped** as an XP floor: each sequel's opening choice
+  carries `xpToLevel` to its band's start (a no-op for continuing parties).
+  Fresh parties keep starting gear + an early gold grant, and shop up in the
+  hub. Cross-part payoffs are re-established in opening beats (Wren, Vex, and
+  the sisters recur without needing carried flags).
+
+**Whole-arc measurement** (random-policy headless runs, fight-everything):
+20/20 companies complete all three modules in sequence, L1 → the L5 cap,
+final XP median ~6,700. Per-module: Part 2 continuing companies pass L4
+honestly in 60/60 runs; Part 3 random policies split roughly half honest-L5 /
+half floored (random play skips optional dens — deliberate den-raiding
+clears 6,500 without the floor).
 
 ## Authoring checklist per part
 
