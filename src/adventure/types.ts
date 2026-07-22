@@ -39,6 +39,7 @@ export type Effect =
   | { kind: 'addItem'; itemId: Id; qty?: number }               // to the shared stash
   | { kind: 'removeItem'; itemId: Id; qty?: number }            // from the party (first holder)
   | { kind: 'xp'; amount: number }                              // party XP (levelForXp math)
+  | { kind: 'xpToLevel'; level: number }                       // top XP up to the start of `level` (no-op if already past)
   | { kind: 'heal'; amount: number | 'full' }                  // spread across the party
   | { kind: 'journal'; entry: JournalEntry };
 

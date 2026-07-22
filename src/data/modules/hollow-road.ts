@@ -271,7 +271,7 @@ const scenes: Record<string, Scene> = {
     // earned rather than out of nowhere. road-out is on the one-way path into the
     // marsh, so the grant fires exactly once.
     onWin: { to: 'trail', text: ['The last of the pack breaks and vanishes into the reeds. Behind you Thornwick; ahead, the marsh swallows the road whole. You feel steadier on your feet than a week ago — hardened, and a shade deadlier.'],
-      effects: [{ kind: 'xp', amount: 100 }] },
+      effects: [{ kind: 'xpToLevel', level: 2 }] },
   },
   trail: {
     id: 'trail', kind: 'explore',
@@ -382,8 +382,8 @@ const scenes: Record<string, Scene> = {
   },
   'camp-ambush': {
     id: 'camp-ambush', kind: 'battle', encounterId: 'marsh-dead', mapId: 'bog',
-    intro: ['You wake to the wrongness before you hear it — a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight.'],
-    onWin: { to: '@hub', text: ['You put the dead back down. Nobody sleeps easy after that, but the night passes.'] },
+    intro: ['You wake to the wrongness before you hear it — a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight. No time to ready anything — you fight with what you\'ve got.'],
+    onWin: { to: '@hub', text: ['The dead lie still again — but the night\'s ruined, and no one\'s resting now. You got no good of that rest; you\'ll have to bank the fire and try again, if you dare.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
@@ -401,14 +401,14 @@ const scenes: Record<string, Scene> = {
     surprise: 'enemies', // you spotted them — they lose the first round
     intro: ['You strike first. A hunting-party of **lizardfolk** rises from the water where they lay — driven, herded, a monstrous toad lumbering at their backs — and for a heartbeat they don\'t even see you. Whatever bound them here, it did not teach them to watch their own flank.'],
     onWin: { to: 'hollow-won', text: ['The last of the marsh-folk sinks back into the black water it came from.'],
-      effects: [{ kind: 'xp', amount: 475 }] },
+      effects: [{ kind: 'xpToLevel', level: 3 }] },
   },
   'ambush-sprung': {
     id: 'ambush-sprung', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'party', // the check failed — they get the drop on you
     intro: ['The reeds erupt around you — **lizardfolk** with hooked spears, a giant toad heaving up through the muck, all of it moving with one dreadful purpose, as if a single hand worked them like puppets.'],
     onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The marsh-things fall still.'],
-      effects: [{ kind: 'xp', amount: 475 }] },
+      effects: [{ kind: 'xpToLevel', level: 3 }] },
   },
   // The reveal beat: the lizardfolk didn't choose the raiders — something in the
   // marsh owns them, and now you know its name.
