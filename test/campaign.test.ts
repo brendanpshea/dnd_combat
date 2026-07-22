@@ -8,6 +8,7 @@ import {
   treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
+  hitDiceLeft, hitDiceMax,
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
@@ -116,7 +117,7 @@ describe('campaign state', () => {
     expect(buildCampaignParty(c)[0]!.hp).toBe(1);
   });
 
-  it('persists battle HP and rests restore the expected amount', () => {
+  it('persists battle HP; a short rest spends hit dice to heal, a long rest tops off and refreshes dice', () => {
     const c = newCampaign();
     const party = buildCampaignParty(c);
     const fighter = party[0]!;
@@ -124,14 +125,37 @@ describe('campaign state', () => {
     applyVictory(c, party, 12345);
 
     expect(buildCampaignParty(c)[0]!.hp).toBe(1);
+    // A level-1 hero has one hit die; badly hurt, the auto-spender uses it.
+    expect(hitDiceMax(c)).toBe(1);
     const result = shortRest(c);
     const restedFighter = buildCampaignParty(c)[0]!;
-    expect(result.totalHealed).toBe(Math.ceil(fighter.maxHp / 2));
-    expect(restedFighter.hp).toBe(1 + Math.ceil(restedFighter.maxHp / 2));
+    expect(result.hitDiceSpent).toBe(1);
+    expect(result.totalHealed).toBeGreaterThan(0);
+    expect(restedFighter.hp).toBe(1 + result.totalHealed);
+    expect(restedFighter.hp).toBeLessThanOrEqual(restedFighter.maxHp);
+    // The die is spent — a second short rest can't heal further.
+    expect(hitDiceLeft(c, 0)).toBe(0);
+    expect(shortRest(c).hitDiceSpent).toBe(0);
 
+    const beforeLong = buildCampaignParty(c)[0]!;
     const longRestResult = longRest(c);
-    expect(longRestResult.totalHealed).toBe(restedFighter.maxHp - restedFighter.hp);
-    expect(buildCampaignParty(c)[0]!.hp).toBe(restedFighter.maxHp);
+    expect(longRestResult.totalHealed).toBe(beforeLong.maxHp - beforeLong.hp);
+    expect(buildCampaignParty(c)[0]!.hp).toBe(beforeLong.maxHp);
+    // Half the pool comes back (minimum one die).
+    expect(hitDiceLeft(c, 0)).toBe(1);
+  });
+
+  it('a short rest does not waste a hit die on a trivial top-off', () => {
+    const c = newCampaign();
+    const party = buildCampaignParty(c);
+    const fighter = party[0]!;
+    // Only a point or two down — less than a die's average — so a smart
+    // auto-spender leaves the die in the pool rather than burn it.
+    fighter.hp = fighter.maxHp - 1;
+    applyVictory(c, party, 12345);
+    const result = shortRest(c);
+    expect(result.hitDiceSpent).toBe(0);
+    expect(hitDiceLeft(c, 0)).toBe(hitDiceMax(c));
   });
 
   it('persists spell slots spent mid-battle, and a long rest restores them', () => {

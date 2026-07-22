@@ -13,6 +13,7 @@ import {
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
+  hitDiceLeft, hitDiceMax,
 } from '../../src/campaign/campaign.js';
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
@@ -758,6 +759,12 @@ function CampScreen(
               <div>
                 <strong>{ch.name}</strong>
                 <span className="muted"> · HP {party[idx]!.hp}/{party[idx]!.maxHp} · 🛡 {acOf(party[idx]!)}</span>
+                {/* Hit dice left to spend on a short rest — a die per level,
+                    refreshed (half) by a long rest. A short rest auto-spends
+                    them to heal. */}
+                <span className="muted adv-camp-hd" title="Hit dice — spent on a short rest to heal, half restored by a long rest">
+                  {' '}· 🎲 {hitDiceLeft(campaign, idx)}/{hitDiceMax(campaign)} HD
+                </span>
                 {/* Spell slots remaining, per level (renders nothing for a
                     non-caster) — so a wizard down to 1 of 2 first-level slots
                     reads at a glance, and "rest to recover" has a visible meter. */}
