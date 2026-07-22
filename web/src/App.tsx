@@ -19,6 +19,7 @@ import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, Project
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { detectTips, seenTips, markTipSeen, tipsOff, setTipsOff, type Tip } from './tips.js';
+import { makeTrainingCombat, TRAINING_COACH, type CoachStep } from './training.js';
 import { CampaignScreen } from './Campaign.js';
 import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
@@ -92,6 +93,7 @@ type Screen =
   | { view: 'menu' }
   | { view: 'skirmish-setup' }
   | { view: 'skirmish'; config: SetupConfig }
+  | { view: 'training' }
   | { view: 'campaign' }
   | { view: 'adventure'; module: Module; resume?: AdventureState };
 
@@ -102,6 +104,8 @@ export function App() {
       return <Menu onPick={setScreen} />;
     case 'skirmish-setup':
       return <Setup onStart={(config) => setScreen({ view: 'skirmish', config })} />;
+    case 'training':
+      return <TrainingYard onExit={() => setScreen({ view: 'menu' })} />;
     case 'skirmish':
       return (
         <Skirmish
@@ -190,6 +194,11 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         })}
       </div>
 
+      <button className="landing-learn" onClick={() => { initAudio(); onPick({ view: 'training' }); }}>
+        🎓 New to this? Learn the basics
+        <small>A quick guided battle — move, attack, win. Two minutes, no setup.</small>
+      </button>
+
       <div className="landing-more">
         <span className="landing-more-label">More ways to play</span>
         <div className="landing-more-row">
@@ -233,6 +242,26 @@ function Skirmish({ config, onExit }: { config: SetupConfig; onExit(): void }) {
       mapLabel={MAPS[config.mapId]?.name ?? ''}
       theme={MAPS[config.mapId]?.theme}
       doneLabel="New battle"
+      onExit={onExit}
+      onDone={onExit}
+    />
+  );
+}
+
+/** The guided first battle — a fixed skirmish wrapped with the coach script. */
+function TrainingYard({ onExit }: { onExit(): void }) {
+  const ref = useRef<{ combat: Combat; aiTeams: Set<TeamId> } | null>(null);
+  if (!ref.current) ref.current = makeTrainingCombat();
+  return (
+    <Battle
+      combat={ref.current.combat}
+      aiTeams={ref.current.aiTeams}
+      aiLevel="easy"
+      storyMode         // slower beats + narration on, so a newcomer can follow
+      coach={TRAINING_COACH}
+      mapLabel="Training Yard"
+      theme={MAPS.open?.theme}
+      doneLabel="Back to menu"
       onExit={onExit}
       onDone={onExit}
     />
@@ -345,11 +374,14 @@ export interface BattleProps {
   /** Visual theme of the map being fought on. */
   theme?: string | undefined;
   doneLabel: string;
+  /** A step-by-step coach (the Training Yard). Present = show a coach banner
+   *  and advance through the steps off the battle's own events. */
+  coach?: CoachStep[] | undefined;
   onExit(): void;
   onDone(winner: TeamId): void;
 }
 
-export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false, mapLabel, theme, doneLabel, onExit, onDone }: BattleProps) {
+export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false, mapLabel, theme, doneLabel, coach, onExit, onDone }: BattleProps) {
   const [version, setVersion] = useState(0);
   const [log, setLog] = useState<LogLine[]>(() => logLinesFor(combat.state, combat.log));
   const [targeting, setTargeting] = useState<Targeting | null>(null);
@@ -388,6 +420,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // actually happens (an ally goes down, a slot is spent, …). See tips.ts.
   const [tip, setTip] = useState<Tip | null>(null);
   const [tipsMuted, setTipsMuted] = useState(() => tipsOff());
+  // Training Yard: which coach step is showing. Advances off battle events.
+  const [coachStep, setCoachStep] = useState(0);
   const speedRef = useRef(1);
   speedRef.current = speed;
   const logEnd = useRef<HTMLDivElement>(null);
@@ -463,13 +497,24 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         }), 450);
       }
 
+      const isPlayer = (id: Id) => { const t = combat.state.combatants[id]?.team; return !!t && !aiTeams.has(t); };
+
       // Contextual coaching: surface the first not-yet-seen tip these events
       // trigger. Skipped when muted; each tip fires once ever (localStorage).
-      if (!tipsMuted) {
-        const isPlayer = (id: Id) => { const t = combat.state.combatants[id]?.team; return !!t && !aiTeams.has(t); };
+      // The Training Yard suppresses tips — its own coach owns the guidance.
+      if (!tipsMuted && !coach) {
         const seen = seenTips();
         const fresh = detectTips(events, combat.state, isPlayer).find((t) => !seen.has(t.id));
         if (fresh) { markTipSeen(fresh.id); setTip(fresh); }
+      }
+
+      // Training Yard coach: advance a step when this turn's events clear it;
+      // a finished fight always completes the coach (the win screen takes over),
+      // so a fast clear never strands the banner on an unmet step.
+      if (coach) {
+        const ended = events.some((e) => e.type === 'combatEnded');
+        setCoachStep((step) => ended ? coach.length
+          : (step < coach.length && coach[step]!.done(events, combat.state, isPlayer) ? step + 1 : step));
       }
     } catch (err) {
       setLog((l) => [...l, { text: `(${(err as Error).message})`, kind: 'misc' }]);
@@ -659,6 +704,15 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         </button>
         <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>
       </header>
+
+      {/* Training Yard: the step-by-step coach banner. Persists per step until
+          the player does the thing it asks; the last step rides to victory. */}
+      {coach && coachStep < coach.length && (
+        <div className="coach-banner" role="status" aria-live="polite">
+          <span className="coach-step">Step {Math.min(coachStep + 1, coach.length)} of {coach.length}</span>
+          <p>{coach[coachStep]!.text}</p>
+        </div>
+      )}
 
       {/* Just-in-time coaching toast — the first time a mechanic actually
           happens. Dismissible; muted from the header 💡 toggle. */}
