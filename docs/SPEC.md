@@ -784,11 +784,12 @@ while preserving their name, species, and portrait. Confirming the forge sets
 class-portrait defaults during parsing. The selected portrait is passed through
 the builder as `Combatant.portraitId`, so the party card preview and board token
 share the same art identity. The ladder is data (`STAGES`) —
-just `{ encounterId, mapId }`, ordered easy → hard over 11 stages; everything
-else is *derived*. **Party level comes from accumulated XP** (`levelForXp`,
-5e thresholds 300/900, capped at content level 3), not from the stage, so the
-party levels up gradually mid-run and can be under-level for a hard fight (the
-UI warns). Each monster carries an SRD **XP value** (`MONSTER_XP`); a victory
+just `{ encounterId, mapId }`, ordered easy → hard over 34 stages (a tour of
+the bestiary from kobolds to the giant finale); everything else is *derived*.
+**Party level comes from accumulated XP** (`levelForXp`, the SRD thresholds
+`[0, 300, 900, 2700, 6500]`, capped at content level 5), not from the stage,
+so the party levels up gradually mid-run — L2 by stage ~5, L5 just before the
+finale — and can be under-level for a hard fight (the UI warns). Each monster carries an SRD **XP value** (`MONSTER_XP`); a victory
 awards `encounterXP / partySize` (per-character pacing). **Treasure is
 generated from encounter XP** (`treasureFor`): gold ≈ XP/2 with variance, and
 the number of item rolls and the rarity ceiling both scale with XP (a rarity-
@@ -836,13 +837,17 @@ fully rested — a fresh save, a non-caster, or since the last long rest).
 `buildCampaignParty` feeds them back into the builder as a
 `spellSlotsOverride` (`BuildOptions`), clamped per level so a level-up can
 never leave a caster short of what the class table now grants; `applyVictory`
-writes the built combatant's live `spellSlots` back out. A **short rest**
-restores half of each hero's maximum HP and leaves slots untouched (matching
-5e); a **long rest** restores both — rebuilding `resources` from scratch drops
-the `slots` field entirely, and its absence *is* "fully rested." Other
-encounter resources (feature uses, familiar spend flags) still begin full when
-a combatant is rebuilt; only HP and slots are tracked across the campaign
-layer. Casters show a compact slot-pip readout (`web/src/SlotPips.tsx`;
+writes the built combatant's live `spellSlots` back out. Rests follow 5e via
+**hit dice** (`resources.hitDice`, a pool equal to level; absent = full). A
+**short rest** (`shortRest`) auto-spends hit dice to heal — each die rolls the
+class hit die + Con mod, and the auto-spender keeps going only while the
+deficit is at least a die's average roll, so a hurt hero heals up without
+burning a die on a trivial top-off — leaving slots untouched. A **long rest**
+restores HP and every slot (rebuilding `resources` from scratch drops the
+`slots` field entirely, and its absence *is* "fully rested") and refreshes
+half the hit-dice pool (minimum one die). Other encounter resources (feature
+uses, familiar spend flags) still begin full when a combatant is rebuilt; only
+HP, slots, and hit dice are tracked across the campaign layer. Casters show a compact slot-pip readout (`web/src/SlotPips.tsx`;
 `renderStatus` in the CLI) grouped by spell level, in battle and in the shop.
 Healing potions and the cleric's **Cure Wounds**
 use the same store target flow: choose the source, then a party member. Item
@@ -941,14 +946,22 @@ instead: character tokens/portraits (`art/prompts.md`, `art/process.py`) with
 an emoji fallback per unit, a painterly arena backdrop per map theme
 (`art/arena-prompts.md`, `art/process_backgrounds.py`) behind the grid, an
 authored SVG icon, and WebAudio-synthesized sound effects.
-- **Arena backdrops:** one generated image per `MapTheme` (stone/forest/
-  graveyard/ember — `src/data/maps.ts`), reused across every map that shares
-  a theme. Set as an inline `background-image` in `Board.tsx` (`boardBgUrl` in
-  `art.ts`, the same `BASE_URL`-aware helper tokens/portraits use — a plain
-  CSS `url()` can't follow the GitHub Pages subpath the way that does) behind
-  the existing CSS-drawn grid. Cell colours are translucent (`rgba`, ~0.55
-  alpha) rather than flat hex so the backdrop shows through; walls, difficult
-  terrain, and hazards remain fully opaque CSS gradients on top, unchanged.
+- **Themed scenery:** each of the six `MapTheme`s (stone/forest/graveyard/
+  ember/village/bog — `src/data/maps.ts`) styles its own blocking props: the
+  impassable `#` wall is reshaped (via `clip-path`/`border-radius` + layered
+  gradients, all CSS) into brick columns, mossy boulders, headstones, glowing
+  basalt shards, striped market stalls, or wet hummocks, with a sparse
+  `nth-child` scatter of faint floor decals — so a run of walls reads as a
+  place, not identical cubes. Terrain logic is unchanged; this is presentation.
+- **Arena backdrops:** one generated image per `MapTheme`, reused across every
+  map that shares a theme. Set as an inline `background-image` in `Board.tsx`
+  (`boardBgUrl` in `art.ts`, the same `BASE_URL`-aware helper tokens/portraits
+  use — a plain CSS `url()` can't follow the GitHub Pages subpath the way that
+  does) behind the existing CSS-drawn grid, gated on the `HAS_BOARD_BG`
+  allowlist so a theme with no art yet (currently `village`/`bog`) falls back
+  to its flat theme colour. Cell colours are translucent (`rgba`, ~0.55 alpha)
+  rather than flat hex so the backdrop shows through; walls, difficult terrain,
+  and hazards remain fully opaque CSS gradients on top, unchanged.
 
 - **Interaction:** legal actions are painted onto the board — tinted cells
   for moves (tokens slide via a transform-positioned token layer), red/green
