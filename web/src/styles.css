@@ -2228,6 +2228,26 @@ button.category .count {
 .landing-alt:hover { border-color: var(--muted); }
 .landing-alt small { color: var(--muted); font-weight: 400; font-size: .82rem; }
 .landing-about-link { align-self: center; font-size: .85rem; }
+.landing-learn {
+  display: flex; flex-direction: column; gap: 3px; text-align: left;
+  padding: 13px 16px; border-radius: 12px; cursor: pointer; font-weight: 700;
+  color: #eaf2ff; background: linear-gradient(#2c4a6e, #223a58);
+  border: 1px solid #4a78ad; transition: filter .12s;
+}
+.landing-learn:hover { filter: brightness(1.12); }
+.landing-learn small { color: #b9d0ea; font-weight: 400; font-size: .82rem; }
+
+/* Training Yard coach banner — a persistent, prominent step prompt. */
+.coach-banner {
+  margin: 8px 0; padding: 11px 14px; border-radius: 12px;
+  background: linear-gradient(#2a4166, #21344f); border: 1px solid #4a78ad;
+  box-shadow: 0 4px 14px #0006;
+}
+.coach-step {
+  display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: #9fc2ea; margin-bottom: 3px;
+}
+.coach-banner p { margin: 0; font-size: .92rem; line-height: 1.45; color: #eaf2ff; }
 
 .about-box { max-width: 400px; text-align: left; }
 .about-box p { line-height: 1.5; }

@@ -1092,13 +1092,19 @@ authored SVG icon, and WebAudio-synthesized sound effects.
   drives the battlefield token. Saves in localStorage include that identity.
   Once-per-visit shop flags persist in the save so a page refresh can't retry a
   theft.
-- **Onboarding:** a one-time "How to play" modal (the ❓ reference), the 💡
-  **Hint** button (the AI's suggested move), and **just-in-time learning tips**
-  (`web/src/tips.ts`) — one-time toasts keyed to *engine events*, not content,
-  so a mechanic is taught the first time it actually happens in any mode
-  (an ally downed, a slot spent, an opportunity attack provoked, …). Seen-state
-  and an off toggle persist in localStorage. Tapping a token's condition badge
-  explains that condition through the same toast (mobile has no hover tooltip).
+- **Onboarding:** the **Training Yard** (`web/src/training.ts`) — a "Learn the
+  basics" landing button that drops a newcomer into a fixed, gentle, winnable
+  first battle (two heroes vs two kobolds, easy AI, story-mode pacing) wrapped
+  with a `CoachStep[]` the shared `<Battle coach>` steps through off its own
+  events: move → attack → end turn → clear the yard. Tolerant (never hard-rails
+  input; a finished fight always completes the coach). Plus a one-time "How to
+  play" modal (the ❓ reference), the 💡 **Hint** button (the AI's suggested
+  move), and **just-in-time learning tips** (`web/src/tips.ts`) — one-time
+  toasts keyed to *engine events*, not content, so a mechanic is taught the
+  first time it actually happens in any mode (an ally downed, a slot spent, an
+  opportunity attack provoked, …). Seen-state and an off toggle persist in
+  localStorage. Tapping a token's condition badge explains that condition
+  through the same toast (mobile has no hover tooltip).
 - **Info cards:** a shared ⓘ system (`web/src/gameInfo.ts` + `InfoCard.tsx`)
   answers "what does this do?" for any weapon, armour, consumable, or spell —
   stats *derived* from the structured data (damage dice, AC formula, range,
