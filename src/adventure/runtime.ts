@@ -18,7 +18,7 @@ import { rollDie } from '../engine/rng.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
-  levelForXp, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
+  levelForXp, LEVEL_XP, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
   attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE,
 } from '../campaign/campaign.js';
 import {
@@ -187,6 +187,18 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       c.xp += eff.amount;
       const after = levelForXp(c.xp);
       events.push({ type: 'xp', amount: eff.amount, ...(after > before ? { leveledTo: after } : {}) });
+      break;
+    }
+    case 'xpToLevel': {
+      // Top up to the *start* of a level — "just enough to ding" — so a milestone
+      // never overshoots a party that already earned the XP in combat, and never
+      // leaves a wit-heavy party short. No-op if they're already past it.
+      const before = levelForXp(c.xp);
+      const target = LEVEL_XP[eff.level - 1] ?? 0;
+      const gained = Math.max(0, target - c.xp);
+      c.xp = Math.max(c.xp, target);
+      const after = levelForXp(c.xp);
+      events.push({ type: 'xp', amount: gained, ...(after > before ? { leveledTo: after } : {}) });
       break;
     }
     case 'heal': {
@@ -659,14 +671,18 @@ export function campRest(
   if (!rule) throw new Error('No camp at this location');
   const events: AdventureEvent[] = [];
   const c = state.campaign;
-  const { totalHealed } = variant === 'long' ? longRest(c) : shortRest(c);
-  events.push({ type: 'heal', amount: totalHealed });
+  // A risky long rest can be interrupted *before* you get any benefit — roll
+  // first. Interrupted: you fight with the resources you already have and
+  // recover nothing this night (bank the fire and try again after, at another
+  // roll's risk). Short rests are never interrupted.
   if (variant === 'long' && rule.risky) {
     const r = rollDie(c.rng, 1000); c.rng = r.state;
     if ((r.value - 1) / 1000 < rule.risky.chance) {
-      events.push(...enterScene(state, module, rule.risky.battleScene));
+      return enterScene(state, module, rule.risky.battleScene);
     }
   }
+  const { totalHealed } = variant === 'long' ? longRest(c) : shortRest(c);
+  events.push({ type: 'heal', amount: totalHealed });
   return events;
 }
 

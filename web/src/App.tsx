@@ -714,16 +714,16 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           {CATEGORIES.map(({ group, icon, name }) => {
             const entries = grouped.bar.filter((b) => b.group === group);
             if (entries.length === 0) return null;
-            // A category holding one thing shouldn't cost a tap to open — show
-            // the thing. Only 'basic' is always a tray: it's the shelf for the
-            // rarely-used verbs, which is the point of putting them there.
-            if (entries.length === 1 && group !== 'basic') {
-              const only = entries[0]!;
-              return (
-                <button key={group} onClick={() => runEntry(only)}>
+            // Class powers (Turn Undead, Second Wind, …) each get their own bar
+            // button — they're few, situational, and were invisible buried in a
+            // tray. A category holding one thing likewise shows the thing. Only
+            // spells/items/basic collapse to a tray (they grow with level).
+            if (group === 'skill' || (entries.length === 1 && group !== 'basic')) {
+              return entries.map((only) => (
+                <button key={only.id} onClick={() => runEntry(only)}>
                   {only.icon ?? icon} {only.label}
                 </button>
-              );
+              ));
             }
             return (
               <button key={group} className="category" onClick={() => setTray(group)}>

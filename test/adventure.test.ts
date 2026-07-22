@@ -163,6 +163,30 @@ describe('adventure runtime vocabulary', () => {
     expect(state.sceneId).toBe('inside');
   });
 
+  it('xpToLevel tops up to the level threshold, but never overshoots', () => {
+    const mk = (): Module => ({
+      id: 'xt', title: 'T', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'story', text: ['x'], next: [
+          { id: 'go', label: 'Go', to: 'e', effects: [{ kind: 'xpToLevel', level: 2 }] },
+        ] },
+        e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
+      },
+    });
+    // Below the threshold → topped up to exactly the start of L2 (300).
+    const low = newCampaign(1); low.xp = 120;
+    const s1 = startAdventure(low, mk());
+    const evs = choose(s1, mk(), 'go');
+    expect(low.xp).toBe(300);
+    expect(evs.some((e) => e.type === 'xp' && e.amount === 180 && e.leveledTo === 2)).toBe(true);
+    // Already past it (combat got them there) → untouched, no phantom XP.
+    const high = newCampaign(1); high.xp = 550;
+    const s2 = startAdventure(high, mk());
+    const evs2 = choose(s2, mk(), 'go');
+    expect(high.xp).toBe(550);
+    expect(evs2.some((e) => e.type === 'xp' && e.amount === 0)).toBe(true);
+  });
+
   it('requirements block a choice until its flag is set', () => {
     const c = newCampaign(1);
     const state = startAdventure(c, DEMO);
@@ -510,10 +534,14 @@ describe('camp', () => {
     const always = mk(1);
     expect(validateModule(always)).toEqual([]);
     const s1 = startAdventure(newCampaign(3), always);
+    s1.campaign.characters[0]!.resources = { hp: 1 }; // wounded going in
     enterScene(s1, always, 'field');
     const e1 = campRest(s1, always, 'long');
     expect(e1.some((e) => e.type === 'startBattle')).toBe(true);
     expect(s1.sceneId).toBe('ambush');
+    // Interrupted BEFORE any benefit: no recovery this night (roll happens first).
+    expect(e1.some((e) => e.type === 'heal')).toBe(false);
+    expect(s1.campaign.characters[0]!.resources?.hp).toBe(1);
 
     const never = mk(0);
     const s2 = startAdventure(newCampaign(3), never);

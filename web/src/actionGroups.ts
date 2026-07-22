@@ -72,7 +72,11 @@ export function describeShort(a: Action): string {
       return a.weaponId ? `${name} (${WEAPONS[a.weaponId]?.name ?? a.weaponId})` : name;
     }
     case 'useItem': return ITEMS[a.itemId]?.name ?? a.itemId;
-    case 'useFeature': return FEATURES[a.featureId]?.name ?? a.featureId;
+    case 'useFeature':
+      // Drop the "Channel Divinity: " / "Fighting Style: " prefixes so a class
+      // power fits a bar button ("Turn Undead", not the full ritual name).
+      return (FEATURES[a.featureId]?.name ?? a.featureId)
+        .replace(/^Channel Divinity: /, '').replace(/^Fighting Style: /, '');
     case 'shakeAwake': return 'Shake awake';
     case 'dash': return 'Dash';
     case 'disengage': return 'Disengage';
@@ -130,6 +134,13 @@ const weaponIcon = (weaponId: Id): string => (WEAPONS[weaponId]?.melee ? '⚔️
 
 const VERB_ICON: Record<string, string> = {
   dash: '💨', disengage: '🚪', dodge: '🛡️', hide: '👁️',
+};
+
+/** Icons for active class powers promoted to their own bar button. */
+const FEATURE_ICON: Record<string, string> = {
+  'turn-undead': '☀️', 'preserve-life': '💚', 'lay-on-hands': '🙌',
+  'sacred-weapon': '⚔️', 'second-wind': '🌬️', 'action-surge': '⚡',
+  'heroic-inspiration': '✨', 'adrenaline-rush': '🩸',
 };
 
 export function groupActions(state: GameState, actorId: Id, actions: Action[]): Grouped {
@@ -293,6 +304,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         if (verb) break;
         bar.push({
           id: `feat:${a.featureId}`, label: describeShort(a), group: 'skill',
+          ...(FEATURE_ICON[a.featureId] ? { icon: FEATURE_ICON[a.featureId]! } : {}),
           ...(FEATURES[a.featureId]?.trigger === 'bonus' ? { note: 'Bonus' } : {}),
           action: a,
         });
