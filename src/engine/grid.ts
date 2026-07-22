@@ -53,8 +53,15 @@ function terrainMoveCost(t: TerrainId, ignoreDifficult = false): number {
 }
 
 /**
- * Line of sight via a supercover line trace: blocked only if a 'wall' cell
- * strictly between the endpoints intersects the segment between cell centers.
+ * Line of sight via a Bresenham center-to-center trace: blocked only if a
+ * 'wall' cell strictly between the endpoints lies on the traced line.
+ *
+ * Deliberately NOT supercover: an exact diagonal between two orthogonally
+ * adjacent walls passes (the trace steps corner to corner without visiting
+ * either wall). That matches movement — `neighbors` allows the same diagonal
+ * squeeze — so anywhere you can walk, you can see, and walls are exactly as
+ * porous to arrows as they are to feet. Base 5e has no corner-cutting rule
+ * either. If this is ever tightened to supercover, tighten movement with it.
  */
 export function hasLineOfSight(grid: GridState, from: Position, to: Position): boolean {
   for (const p of lineTrace(from, to)) {
@@ -92,7 +99,9 @@ export function expireIllusions(grid: GridState, round: number): Position[] {
   return popped;
 }
 
-/** Cells a segment between two cell centers passes through (supercover Bresenham). */
+/** Cells a Bresenham line between two cell centers visits. Plain Bresenham,
+ *  not supercover — a perfect diagonal skips the two corner cells it grazes
+ *  (see hasLineOfSight for why that's the intended geometry). */
 export function lineTrace(from: Position, to: Position): Position[] {
   const points: Position[] = [];
   let { x, y } = from;

@@ -909,6 +909,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'ashfang-warlord', name: 'The Ashfang Warlord', suggestedLevel: 3,
     members: ['bandit-captain', 'green-hag', 'bandit'],
   },
+  // The same fight after Vex turns: his guard stands down, so the chief and
+  // the hag face the party alone — the parley's promised payoff.
+  'ashfang-warlord-alone': {
+    id: 'ashfang-warlord-alone', name: 'The Ashfang Warlord, Unguarded', suggestedLevel: 3,
+    members: ['bandit-captain', 'green-hag'],
+  },
   // The Ashfang's kenneled hunting-beasts — two giant hyenas off their chains.
   'kennel-hyenas': {
     id: 'kennel-hyenas', name: 'The Kennels', suggestedLevel: 3,

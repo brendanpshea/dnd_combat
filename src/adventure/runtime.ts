@@ -56,6 +56,10 @@ export interface AdventureState {
    *  scene id so two shops in a module never share a haggle discount or a
    *  spent gambit. */
   shopVisits: Record<Id, ShopVisit>;
+  /** How many times each battle scene has been fought (won or lost), so a
+   *  retried fight rolls different dice (`battleSeed`). Optional: absent on
+   *  older saves, back-filled to {} on load. */
+  battleAttempts?: Record<Id, number>;
 }
 
 export interface ShopVisit {
@@ -565,6 +569,9 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
 export function resolveBattle(state: AdventureState, module: Module, won: boolean): AdventureEvent[] {
   const scene = currentScene(state, module);
   if (scene.kind !== 'battle') throw new Error(`resolveBattle on a ${scene.kind} scene`);
+  // Count the attempt (win or lose) so any refight of this scene — a loss
+  // retry, a re-triggered camp ambush — draws a different battleSeed.
+  (state.battleAttempts ??= {})[scene.id] = (state.battleAttempts[scene.id] ?? 0) + 1;
   if (won) return applyOutcome(state, module, scene.onWin);
   // Loss: an authored per-battle branch wins; else the module's defeat scene
   // (the party is dragged back, revived at half HP); else just retry the fight.
@@ -686,10 +693,12 @@ export function campRest(
   return events;
 }
 
-/** A seed for a battle scene: campaign rng + scene id + retry count, so a
- *  retried fight differs (fixing the identical-dice-on-retry wart). */
+/** A seed for a battle scene: campaign rng + scene id + attempt count, so a
+ *  retried fight differs (fixing the identical-dice-on-retry wart). The count
+ *  comes from `battleAttempts` (bumped by resolveBattle) — `visited` can't
+ *  carry it, since enterScene dedupes revisits. */
 export function battleSeed(state: AdventureState, sceneId: Id): number {
-  const attempts = state.visited.filter((v) => v === sceneId).length;
+  const attempts = state.battleAttempts?.[sceneId] ?? 0;
   let h = state.campaign.rng ^ (attempts * 2654435761);
   for (let i = 0; i < sceneId.length; i++) h = (h * 31 + sceneId.charCodeAt(i)) | 0;
   return h >>> 0;

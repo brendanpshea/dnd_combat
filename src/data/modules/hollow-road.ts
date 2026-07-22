@@ -284,14 +284,19 @@ const scenes: Record<string, Scene> = {
       entry: ['tracks'],
       paths: [['tracks', 'ravine'], ['tracks', 'scout'], ['ravine', 'approach']],
       nodes: [
-        { id: 'tracks', x: 18, y: 55, label: 'Fresh Tracks', icon: 'tok-tracks', scene: 'tracks' },
+        { id: 'tracks', x: 18, y: 55, label: 'Fresh Tracks', icon: 'tok-tracks', scene: 'tracks',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'trail-read' }], to: 'tracks-done' }] },
         { id: 'scout', x: 34, y: 82, label: 'A Cry for Help', mystery: 'A faint sound…', icon: 'tok-person', scene: 'wounded',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
         { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
           wandering: { chance: 0.5, battleScene: 'bog-toads' } },
         { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
-          requires: [{ kind: 'flag', flag: 'trail-read' }] },
+          requires: [{ kind: 'flag', flag: 'trail-read' }],
+          // Once the ambush is broken the hollow is a walk, not a re-fightable
+          // reward loop — the return trip from a den retreat passes through
+          // quietly instead of re-rolling the battle (and its XP/treasure).
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'know-hag' }], to: 'hollow-quiet' }] },
       ],
     },
   },
@@ -302,6 +307,16 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 20 }] },
     failure: { to: 'trail', text: ['The prints tangle and double back on themselves until your eyes water. Still — they point, roughly, toward the hills. You\'ll find the den, but you\'ll be walking in blind.'],
       effects: [{ kind: 'setFlag', flag: 'trail-read' }] },
+  },
+  'tracks-done': {
+    id: 'tracks-done', kind: 'story', art: { emoji: '👣' },
+    text: ['The mud has told you all it can — the patrols\' dry line through the reeds is fixed in your memory. Nothing new has passed this way since.'],
+    next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
+  },
+  'hollow-quiet': {
+    id: 'hollow-quiet', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌾' },
+    text: ['The hollow lies quiet where you broke the Reedwife\'s ambush — only flattened reeds and still black water remain. The den\'s palisade waits ahead.'],
+    next: [{ id: 'ok', label: 'On to the den gate', to: 'gate' }], noBack: true,
   },
   ravine: {
     id: 'ravine', kind: 'challenge', art: { emoji: '🪨' },
@@ -575,12 +590,30 @@ const scenes: Record<string, Scene> = {
       'The **Ashfang** warlord rises from a throne of lashed spears, axe already in hand. And in the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **Reedwife**, the green hag of the marsh, come up out of her water to see how her investment fares.',
       '"You\'ve been *busy*," she says, delighted, and the warlord\'s guards set their feet at a flick of her hand. For a heartbeat the whole hall waits to see what you\'ll do.',
     ],
-    next: [{ id: 'fight', label: 'End them both', to: 'boss' }],
+    next: [
+      // Vex's bargain pays off here: his guard stands down, and the chief and
+      // the hag fight alone. The two choices are mutually exclusive on the flag.
+      { id: 'fight-alone', label: 'End them both — Vex\'s guards stand aside', to: 'boss-unguarded',
+        requires: [{ kind: 'flag', flag: 'vex-turned' }], hideWhenBlocked: true },
+      { id: 'fight', label: 'End them both', to: 'boss',
+        requires: [{ kind: 'notFlag', flag: 'vex-turned' }], hideWhenBlocked: true },
+    ],
   },
   boss: {
     id: 'boss', kind: 'battle', encounterId: 'ashfang-warlord', mapId: 'firepit',
     intro: ['"You\'ve cost me a good season," the warlord says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don\'t kill them quickly," she tells him. "Waste not."'],
     loot: { bonusTier: 'rare' }, // a warlord's hoard + a hag's trophies — guaranteed drop
+    onWin: { to: 'aftermath', text: ['The warlord falls, and the **Reedwife** comes apart like wet reeds in a fist, her laughter curdling to a wail that sinks back into the marsh. The **Ashfang** are broken — root and branch.'],
+      effects: [{ kind: 'setFlag', flag: 'chief-dead' }, { kind: 'setFlag', flag: 'hag-dead' }, { kind: 'gold', amount: 100 }] },
+  },
+  // The same hall with Vex's word kept: his guard finds somewhere else to be.
+  'boss-unguarded': {
+    id: 'boss-unguarded', kind: 'battle', encounterId: 'ashfang-warlord-alone', mapId: 'firepit',
+    intro: [
+      'The warlord bellows for his guard — and nothing answers. Somewhere back in the smoke, Vex is very deliberately looking the other way.',
+      '"You\'ve cost me a good season," the chief says anyway, almost mild, and rolls the great axe off his shoulder. The hag\'s laughter falters, just once, counting the blades that didn\'t come.',
+    ],
+    loot: { bonusTier: 'rare' },
     onWin: { to: 'aftermath', text: ['The warlord falls, and the **Reedwife** comes apart like wet reeds in a fist, her laughter curdling to a wail that sinks back into the marsh. The **Ashfang** are broken — root and branch.'],
       effects: [{ kind: 'setFlag', flag: 'chief-dead' }, { kind: 'setFlag', flag: 'hag-dead' }, { kind: 'gold', amount: 100 }] },
   },

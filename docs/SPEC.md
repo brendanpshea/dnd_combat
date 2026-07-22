@@ -606,7 +606,10 @@ skirmish via `--encounter <id>` or the web setup.
 
 - Distance: Chebyshev × 5 ft. Melee reach 1 cell. Ranged: beyond normal range
   = disadvantage; beyond long = illegal; adjacent enemy = disadvantage.
-- LoS: supercover line trace, blocked by walls.
+- LoS: Bresenham center-to-center trace, blocked by walls. Deliberately not
+  supercover — a perfect diagonal squeezes between two orthogonal walls,
+  matching movement (which allows the same diagonal step), so sight and feet
+  agree about what a corner is.
 - Terrain: `open`, `difficult` (double cost), `wall` (blocks move + LoS),
   `hazard` (1d4 fire per cell entered — also on forced movement).
 - Maps are ASCII data (`src/data/maps.ts`): `.` `#` `~` `^`, top rank first.

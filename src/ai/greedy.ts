@@ -67,8 +67,12 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
     actor.featureIds.includes('sneak-attack') && !actor.turn.sneakAttackUsed &&
     (weapon.properties.includes('finesse') || !weapon.melee)
   ) {
+    // Mirror the engine's enabling-ally test (attack.ts): a downed or
+    // incapacitated ally doesn't distract anyone, so it mustn't be priced in.
     const allyAdjacent = Object.values(state.combatants).some(
-      (c) => c.alive && c.id !== actor.id && c.team === actor.team && adjacent(c.position, target.position),
+      (c) => c.alive && !isDown(c) && c.id !== actor.id && c.team === actor.team &&
+        adjacent(c.position, target.position) &&
+        !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious'),
     );
     if (mode === 'advantage' || (allyAdjacent && mode !== 'disadvantage')) {
       dmg += avgDice(`${Math.ceil(actor.level / 2)}d6`);

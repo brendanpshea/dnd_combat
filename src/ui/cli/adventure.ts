@@ -9,7 +9,8 @@
 import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import {
-  newCampaign, buildCampaignParty, applyVictory, type CampaignState,
+  newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
+  type CampaignState,
 } from '../../campaign/campaign.js';
 import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
 import { SKILL_LABEL } from '../../data/classes.js';
@@ -138,8 +139,13 @@ async function main() {
       const winner = await runBattle(combat, aiTeams, rl, 'normal');
       const won = winner === 'team1';
       if (won) {
+        // Mirror the web driver: rewards come from the scene's own encounter
+        // (respecting `loot`), never from the campaign ladder's current stage —
+        // applyVictory here handed out the wrong monsters' XP/treasure and
+        // advanced `stage` until it threw "Campaign already complete".
         const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
-        applyVictory(campaign, survivors, combat.state.rng);
+        if (scene.loot === false) readBackSurvivors(campaign, survivors);
+        else applyAdventureVictory(campaign, survivors, scene.encounterId, combat.state.rng, scene.loot?.bonusTier);
       }
       render(resolveBattle(state, module, won), campaign);
     } else if (scene.kind === 'shop' || scene.kind === 'rest') {
