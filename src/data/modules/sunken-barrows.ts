@@ -446,6 +446,7 @@ export const SUNKEN_BARROWS_MODULE: Module = {
   blurb: 'The Reedwife\'s death broke an old vigil. Follow Thornwick\'s walking dead into the fen — and close what your victory opened.',
   cover: 'loc-crypt',
   levelBand: { from: 3, to: 4 },
-  // Part 3 ("The Wyrmcalling") takes `sequel: 'wyrmcalling'` here when it ships.
+  // Part 2 of the trilogy: a victory carries the company into The Wyrmcalling.
+  sequel: 'wyrmcalling',
   start: 'return', scenes, defeatScene: 'sb-defeat',
 };
