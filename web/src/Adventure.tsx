@@ -44,10 +44,14 @@ import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
 import { LootScreen } from './Loot.js';
 import { saveAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
+import { moduleById } from '../../src/data/modules/index.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
   onExit(): void;
+  /** Carry the company into a sequel module (Module.sequel): the App swaps the
+   *  adventure screen to `module`, resuming from the freshly-started `state`. */
+  onContinue?: ((module: Module, state: AdventureState) => void) | undefined;
 }
 
 /** A check event pulled from an action's stream, shown as a dice overlay. */
@@ -55,12 +59,12 @@ type DiceOverlay = Extract<AdventureEvent, { type: 'check' }>;
 
 /** Play a module the landing chose (resuming a save if one was handed in). */
 export function AdventureScreen(
-  { Battle, module, resume, onExit }: Props & { module: Module; resume?: AdventureState },
+  { Battle, module, resume, onExit, onContinue }: Props & { module: Module; resume?: AdventureState },
 ) {
   return (
     <AdventurePlayer
       key={module.id + (resume ? '-resume' : '-new')}
-      Battle={Battle} module={module} {...(resume ? { resume } : {})} onExit={onExit}
+      Battle={Battle} module={module} {...(resume ? { resume } : {})} onExit={onExit} onContinue={onContinue}
     />
   );
 }
@@ -86,7 +90,7 @@ function artIdOf(scene: Scene): string | undefined {
 }
 
 /** New runs assemble a party first (resumes skip straight to the saved run). */
-function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: Module; resume?: AdventureState }) {
+function AdventurePlayer({ Battle, module, resume, onExit, onContinue }: Props & { module: Module; resume?: AdventureState }) {
   const [state, setState] = useState<AdventureState | null>(resume ?? null);
   const campaignRef = useRef<CampaignState | null>(null);
   if (!state && !campaignRef.current) {
@@ -108,10 +112,10 @@ function AdventurePlayer({ Battle, module, resume, onExit }: Props & { module: M
       />
     );
   }
-  return <AdventureGame Battle={Battle} module={module} state={state} onExit={onExit} />;
+  return <AdventureGame Battle={Battle} module={module} state={state} onExit={onExit} onContinue={onContinue} />;
 }
 
-function AdventureGame({ Battle, module, state, onExit }: Props & { module: Module; state: AdventureState }) {
+function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { module: Module; state: AdventureState }) {
   const campaign = state.campaign;
 
   const [, setVersion] = useState(0);
@@ -435,7 +439,9 @@ function AdventureGame({ Battle, module, state, onExit }: Props & { module: Modu
               beat={beat}
               onAdvanceBeat={() => setBeat((b) => b + 1)}
               onExit={onExit}
+              onContinue={onContinue}
             />
+
           )}
         </div>
 
@@ -933,18 +939,36 @@ interface BodyProps {
   beat: number;
   onAdvanceBeat: () => void;
   onExit(): void;
+  onContinue?: ((module: Module, state: AdventureState) => void) | undefined;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
+    // A victory in a module with a sequel offers to carry the company onward —
+    // the same CampaignState (party, XP, gold, gear) walks into the next part.
+    const sequel = scene.outcome === 'victory' && module.sequel ? moduleById(module.sequel) : undefined;
     return (
       <div className="adv-scene centered">
         <div className="adv-panel">
           <h1>{scene.outcome === 'victory' ? '🏆 Victory' : '☠️ Defeat'}</h1>
           {scene.text.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
-          <button className="primary" onClick={onExit}>Return to menu</button>
+          {sequel && onContinue && (
+            <button
+              className="primary"
+              onClick={() => {
+                const next = startAdventure(campaign, sequel);
+                enterScene(next, sequel, sequel.start);
+                saveAdventureWeb(next);
+                onContinue(sequel, next);
+              }}
+            >
+              ⚔️ Continue the company → {sequel.title}
+              {sequel.levelBand ? ` (levels ${sequel.levelBand.from}–${sequel.levelBand.to})` : ''}
+            </button>
+          )}
+          <button className={sequel && onContinue ? 'ghost' : 'primary'} onClick={onExit}>Return to menu</button>
         </div>
       </div>
     );

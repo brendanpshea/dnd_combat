@@ -244,4 +244,13 @@ export interface Module {
    *  over — usually a safe hub like the town inn. A per-battle `onLoss`
    *  overrides it; absent both, a lost fight simply retries. */
   defeatScene?: SceneRef;
+  /** The next module in a campaign arc. A victory ending offers "continue the
+   *  company": the same CampaignState — party, XP, gold, gear — walks into the
+   *  sequel's opening scene (startAdventure with the carried campaign). Must
+   *  name a registered module; a test enforces the link resolves. */
+  sequel?: Id;
+  /** The level band this module is written for, shown on its menu card and the
+   *  continue button ("The Sunken Barrows · levels 3–4"). Purely informative —
+   *  nothing gates on it. */
+  levelBand?: { from: number; to: number };
 }

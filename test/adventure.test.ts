@@ -807,12 +807,59 @@ describe('challenges (multi-approach)', () => {
 
 // --- M4: the authored module + save/resume ----------------------------------
 
+describe('module sequels (the trilogy arc)', () => {
+  it('every declared sequel resolves to a registered module', () => {
+    for (const m of MODULES) {
+      if (m.sequel) {
+        expect(MODULES.some((x) => x.id === m.sequel), `${m.id} → ${m.sequel}`).toBe(true);
+      }
+    }
+  });
+
+  it('continuing the company carries the same campaign into the next module', () => {
+    const [a, b] = MODULES;
+    const c = newCampaign(7);
+    c.xp = 950; c.gold += 123; // a lived-in company: L3, richer than fresh
+    const first = startAdventure(c, a!);
+    first.flags['some-part1-flag'] = true;
+    // The continuation the ending screen performs: same campaign, new module.
+    const next = startAdventure(first.campaign, b!);
+    expect(next.campaign).toBe(c);           // party, XP, gold, gear — all carried
+    expect(next.campaign.xp).toBe(950);
+    expect(next.moduleId).toBe(b!.id);
+    expect(next.sceneId).toBe(b!.start);
+    expect(next.flags).toEqual({});          // story state does NOT carry
+    expect(next.visited).toEqual([]);
+  });
+});
+
 describe('The Hollow Road (M4)', () => {
   const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
 
   it('validates', () => {
     expect(hollow).toBeDefined();
     expect(validateModule(hollow)).toEqual([]);
+  });
+
+  it('optional side fights are guarded against re-farming', () => {
+    // Each optional battle sets a cleared flag, and its node routes to an
+    // "already done" beat once set — same anti-grind shape as the den fights.
+    const state = startAdventure(newCampaign(1), hollow);
+    enterScene(state, hollow, 'square');
+    state.flags['mill-saved'] = true;
+    enterNode(state, hollow, 'mill');
+    expect(state.sceneId).toBe('mill-done');
+    // The marsh pair declare the same guard in data (the barrow is also a
+    // hidden node, so we assert the shape rather than walk the frontier).
+    for (const [nodeId, flag, done] of [
+      ['barrow', 'barrow-cleared', 'barrow-done'],
+      ['thicket', 'thicket-cleared', 'thicket-done'],
+    ] as const) {
+      const trail = hollow.scenes['trail']!;
+      if (trail.kind !== 'explore') throw new Error('trail is not explore');
+      const node = trail.map.nodes.find((n) => n.id === nodeId)!;
+      expect(node.sceneWhen?.[0]).toEqual({ if: [{ kind: 'flag', flag }], to: done });
+    }
   });
 
   it('carries closable journal leads (resolver flags are actually set)', () => {

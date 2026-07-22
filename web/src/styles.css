@@ -2182,6 +2182,10 @@ button.category .count {
   background: linear-gradient(180deg, transparent, var(--panel) 22px);
 }
 .module-cover-body strong { font-family: var(--display); font-size: 1.25rem; }
+.module-band {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--gold); opacity: .9;
+}
 .module-cover-body > span { color: var(--muted); font-size: .92rem; line-height: 1.4; }
 .module-cta { color: var(--blue) !important; font-weight: 800; margin-top: 4px; }
 .module-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-left: 4px; }

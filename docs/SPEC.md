@@ -1017,6 +1017,15 @@ that XP pacing lands in its intended band (The Hollow Road: L3–L4 at the
 finale). Modules ship behind a `playableModules` gate
 (`src/data/modules/index.ts`) so demo/dev modules stay out of the menu.
 
+**Campaign arcs.** A module may declare a `sequel` (and a `levelBand` shown
+on its menu card): a victory ending offers "continue the company", carrying
+the same `CampaignState` — party, XP, gold, gear — into the next module via
+`startAdventure`. Story flags deliberately do not carry; each module owns its
+flag namespace. The planned arc is a 1→5 trilogy
+([trilogy-plan.md](trilogy-plan.md)): The Hollow Road (1→3) → The Sunken
+Barrows (3→4, undead) → The Wyrmcalling (4→5, dragons/giants/elementals),
+sized so fights carry the leveling and `xpToLevel` milestones are floors.
+
 ## 8. CLI
 
 `npm start` — flags: `--seed n`, `--map id`, `--level 1|2|3`,
@@ -1131,8 +1140,9 @@ every future module composes for free; ids are validated and fall back to
 emoji until generated.
 
 Next candidates, roughly in fun-per-effort order:
-1. **A second shipped adventure module** — the runtime, validator, art
-   vocabulary, and writing guide make this pure authoring.
+1. **The trilogy's Parts 2–3** ([trilogy-plan.md](trilogy-plan.md)) — The
+   Sunken Barrows (L3→4) and The Wyrmcalling (L4→5); continuation mechanics
+   are shipped, so each is pure authoring against a written XP budget.
 2. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.
 3. **Deployment phase** (players place their four units).
 4. **Cross-unit AI coordination** ("I soften, you finish") — the one
