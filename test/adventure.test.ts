@@ -833,6 +833,60 @@ describe('module sequels (the trilogy arc)', () => {
   });
 });
 
+describe('The Sunken Barrows (trilogy Part 2)', () => {
+  const barrows = MODULES.find((m) => m.id === 'sunken-barrows')!;
+
+  it('validates, is Hollow Road\'s sequel, and declares its band', () => {
+    expect(barrows).toBeDefined();
+    expect(validateModule(barrows)).toEqual([]);
+    expect(MODULES.find((m) => m.id === 'hollow-road')!.sequel).toBe('sunken-barrows');
+    expect(barrows.levelBand).toEqual({ from: 3, to: 4 });
+  });
+
+  it('fields its own bestiary slice — distinct rosters, no Part 1 overlap in battles', () => {
+    const enc = new Map<string, number>();
+    const monsters = new Set<string>();
+    for (const s of Object.values(barrows.scenes)) {
+      if (s.kind !== 'battle') continue;
+      enc.set(s.encounterId, (enc.get(s.encounterId) ?? 0) + 1);
+      for (const m of ENCOUNTERS[s.encounterId]?.members ?? []) monsters.add(m);
+    }
+    expect(enc.size).toBeGreaterThanOrEqual(8);
+    expect(monsters.size).toBeGreaterThanOrEqual(10);
+    for (const [id, count] of enc) {
+      expect(count, `encounter '${id}' is reused in ${count} battles`).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('a continuing company paces from L3 into L4 by the finale', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      let nn = seed * 11 + 5;
+      const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+      const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
+      const c = newCampaign(seed);
+      c.xp = 1650; // a typical company finishing The Hollow Road
+      const result = runModule(c, barrows, policy, 8000);
+      if (result.ending !== 'victory') continue;
+      expect(levelForXp(result.state.campaign.xp)).toBe(4);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('a cold-start company is floored to L3 at the door and L4 at the finale', () => {
+    let nn = 99;
+    const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
+    const result = runModule(newCampaign(3), barrows, policy, 8000);
+    if (result.ending === 'victory') {
+      expect(levelForXp(result.state.campaign.xp)).toBe(4);
+    }
+    // The opening choice's xpToLevel(3) fires either way — check the event.
+    expect(result.events.some((e) => e.type === 'xp' && e.leveledTo === 3)).toBe(true);
+  });
+});
+
 describe('The Hollow Road (M4)', () => {
   const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
 

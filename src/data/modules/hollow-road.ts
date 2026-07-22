@@ -753,8 +753,8 @@ export const HOLLOW_ROAD_MODULE: Module = {
   blurb: 'Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit.',
   cover: 'loc-village',
   levelBand: { from: 1, to: 3 },
-  // Part 1 of the trilogy (docs/trilogy-plan.md). When Part 2 ships, set
-  // `sequel: 'sunken-barrows'` here and the victory ending offers to carry
-  // the company onward.
+  // Part 1 of the trilogy (docs/trilogy-plan.md): a victory carries the
+  // company into The Sunken Barrows.
+  sequel: 'sunken-barrows',
   start: 'road', scenes, defeatScene: 'defeat',
 };
