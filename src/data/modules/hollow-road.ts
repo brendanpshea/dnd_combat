@@ -18,9 +18,9 @@
  *
  * MONSTER VARIETY is a goal in itself — this module is a tour of the bestiary,
  * a distinct roster per fight (goblins, human crooks, the marsh's toads and
- * risen dead, a hag-thrall lizardfolk war-party, a bugbear/gnoll gate, kenneled
- * hyenas, and a green-hag-and-warlord finale) across a spread of maps (road,
- * village square, bog ford, corridor, fire-pit). The connective story explains
+ * risen dead, a hag-thrall lizardfolk war-party, a bugbear/gnoll gate, a chained
+ * ogre pit-brute, kenneled hyenas, and a green-hag-and-warlord finale) across a
+ * spread of maps (road, village square, bog ford, ruins, corridor, fire-pit). The connective story explains
  * *why* beasts, undead and lizardfolk fight for "bandits": chief Vargan sold his
  * people's marsh to the Reedwife, a green hag, for coin and monsters.
  */
@@ -443,20 +443,69 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
   },
+  // A traversal dungeon, laid out like the marsh: you enter at the muster yard
+  // and the camp reveals itself node by node as you push deeper. The spine is
+  // forced — yard → the pit → Vex's fire → the chief's hall — so every party
+  // crosses the pit-brute and meets Vex before the throne; the kennels, the
+  // plunder tent, and the road back to the marsh hang off the yard as choices.
   inner: {
     id: 'inner', kind: 'explore',
     map: {
       title: 'Inside the Den', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🔥' },
+      // The den is hostile ground, but you can bank a fire in a cleared corner
+      // and chance a rest — the watch may stumble on you (no recovery if they do).
+      camp: { risky: { chance: 0.35, battleScene: 'den-camp-ambush' } },
+      entry: ['yard'],
+      paths: [
+        ['yard', 'retreat'], ['yard', 'cache'], ['yard', 'kennel'],
+        ['yard', 'muster'], ['muster', 'vex'], ['vex', 'throne'],
+      ],
       nodes: [
-        { id: 'cache', x: 26, y: 32, label: 'Plunder Tent', icon: 'tok-treasure', scene: 'cache',
-          hidden: { dc: 13 } },
-        { id: 'kennel', x: 40, y: 74, label: 'The Kennels', mystery: 'Something\'s snarling…', icon: 'tok-figure', scene: 'kennel',
+        { id: 'yard', x: 12, y: 50, label: 'The Muster Yard', icon: 'tok-fire', scene: 'den-yard' },
+        { id: 'retreat', x: 10, y: 84, label: 'Back to the Marsh Road', icon: 'tok-gate', scene: 'den-retreat' },
+        { id: 'cache', x: 30, y: 24, label: 'Plunder Tent', mystery: 'A guarded tent…', icon: 'tok-treasure', scene: 'cache',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'cache-searched' }], to: 'cache-done' }] },
+        { id: 'kennel', x: 38, y: 80, label: 'The Kennels', mystery: 'Something\'s snarling…', icon: 'tok-figure', scene: 'kennel',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'kennel-cleared' }], to: 'kennel-done' }] },
-        { id: 'vex', x: 60, y: 58, label: 'Vex\'s Fire', icon: 'tok-fire', scene: 'vex-parley',
-          requires: [{ kind: 'flag', flag: 'know-vex' }] },
-        { id: 'throne', x: 82, y: 34, label: 'The Chief\'s Hall', icon: 'tok-boss', scene: 'boss-approach' },
+        { id: 'muster', x: 50, y: 50, label: 'The Pit', mystery: 'Chains and firelight…', icon: 'tok-figure', scene: 'den-muster',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'muster-cleared' }], to: 'muster-done' }] },
+        { id: 'vex', x: 70, y: 56, label: 'Vex\'s Fire', mystery: 'A lone fire, apart…', icon: 'tok-fire', scene: 'vex-parley',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'met-vex' }], to: 'vex-done' }] },
+        { id: 'throne', x: 86, y: 32, label: 'The Chief\'s Hall', icon: 'tok-boss', scene: 'boss-approach' },
       ],
     },
+  },
+  'den-yard': {
+    id: 'den-yard', kind: 'story', art: { imageId: 'loc-camp', emoji: '🏚️' },
+    text: [
+      'Inside the palisade the Ashfang den sprawls around a central fire-pit — a churn of tents, drying-racks, and the reek of a place that has never once been clean.',
+      'Directly ahead, a staked ring of trampled mud: **the pit**, where a chained shape heaves against its irons in the firelight. Past it, apart from the rest, a single small fire burns — someone keeping their own counsel. The chief\'s hall looms beyond, and behind you the gate still opens onto the marsh road, if it comes to that.',
+    ],
+    next: [{ id: 'ok', label: 'Take stock of the camp', to: 'inner' }],
+  },
+  'den-retreat': {
+    id: 'den-retreat', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌾' },
+    text: ['You slip back out through the gate the way you came. The marsh road stretches behind the den — a place to catch your breath, sort your gear, or bank a fire in the reeds before you go back in.'],
+    next: [{ id: 'ok', label: 'Out to the marsh road', to: 'trail' }], noBack: true,
+  },
+  'den-muster': {
+    id: 'den-muster', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins',
+    intro: [
+      'The chained shape in the pit is an **ogre** — half-starved, whip-scarred, and utterly beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they grin and haul the pins.',
+      '"Fresh meat for the pit!" one bellows, and slips the ogre\'s chain.',
+    ],
+    onWin: { to: 'inner', text: ['The ogre crashes down across its own broken chains, and the goaders don\'t outlive it by much. The pit is quiet. Whatever the Ashfang were, they were cruel to their own monsters too.'],
+      effects: [{ kind: 'setFlag', flag: 'muster-cleared' }, { kind: 'gold', amount: 25 }] },
+  },
+  'muster-done': {
+    id: 'muster-done', kind: 'story', art: { emoji: '⛓️' },
+    text: ['The pit stands empty, its chains slack in the churned mud. Nothing moves here but the fire-shadows.'],
+    next: [{ id: 'ok', label: 'On through the camp', to: 'inner' }], noBack: true,
+  },
+  'den-camp-ambush': {
+    id: 'den-camp-ambush', kind: 'battle', encounterId: 'raiders-forward', mapId: 'corridor',
+    intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents — an orc and two hired blades, blinking in the firelight, already shouting the alarm. So much for rest.'],
+    onWin: { to: '@hub', text: ['You put the patrol down before the whole camp wakes — but the night\'s gone, and you got no rest of it. Bank the fire and try again, if you dare.'] },
   },
   kennel: {
     id: 'kennel', kind: 'story', art: { emoji: '🦴' },
@@ -477,17 +526,22 @@ const scenes: Record<string, Scene> = {
     text: ['The kennels stand silent now, chains slack in the mud. Nothing left here but flies.'],
     next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
   },
+  'cache-done': {
+    id: 'cache-done', kind: 'story', art: { emoji: '📦' },
+    text: ['The plunder tent has already been turned over — yours was the hand that did it. Only torn sacking and broken crates remain.'],
+    next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
+  },
   cache: {
     id: 'cache', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '📦' },
     intro: ['A tent of stolen goods, hastily hidden. A careful search turns up the best of it.'],
     success: { to: 'inner', text: ['Beneath the junk: real coin and a caravan\'s lost potions.'],
-      effects: [{ kind: 'gold', amount: 80 }, { kind: 'addItem', itemId: 'potion-greater-healing', qty: 1 }, { kind: 'setFlag', flag: 'looted' }] },
+      effects: [{ kind: 'gold', amount: 80 }, { kind: 'addItem', itemId: 'potion-greater-healing', qty: 1 }, { kind: 'setFlag', flag: 'looted' }, { kind: 'setFlag', flag: 'cache-searched' }] },
     failure: { to: 'inner', text: ['You grab what\'s in reach before the noise draws eyes.'],
-      effects: [{ kind: 'gold', amount: 25 }] },
+      effects: [{ kind: 'gold', amount: 25 }, { kind: 'setFlag', flag: 'cache-searched' }] },
   },
   'vex-parley': {
     id: 'vex-parley', kind: 'dialogue', npc: LIEUTENANT, art: { emoji: '🗡️' },
-    lines: ['Vex is older than you expected, and more tired — he holds his bared blade like a man who\'d rather be leaning on it. "The chief sent his best to die at the gate. I notice he didn\'t send me." A thin smile, gone as fast. "So. You\'ve come this far through his people. What do you offer a man for stepping aside?"'],
+    lines: ['At the lone fire a lean, grey-templed raider watches you come — bared blade across his knees, held like a man who\'d rather be leaning on it. "**Vex**," he offers, unprompted. "The chief\'s lieutenant, for my sins. He sent his best to die at the gate; I notice he didn\'t send me." A thin smile, gone as fast. "You\'ve come this far through his people. So — what do you offer a man for stepping aside?"'],
     next: [
       { id: 'persuade', label: '[Persuasion DC 13] Offer him the chief\'s seat, once it\'s empty', to: 'vex-turned',
         once: true, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
@@ -507,6 +561,12 @@ const scenes: Record<string, Scene> = {
     id: 'vex-refuses', kind: 'story', art: { emoji: '💢' },
     text: ['Vex studies you a long moment, then shakes his head, almost sorry about it. "No. You\'d hang me the morning after, and we both know it." He melts back into the dark. "Pity. I\'d have made a better chief than either of us." You\'ll meet his blade again — at the warlord\'s side.'],
     next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'vex-hostile' }, { kind: 'setFlag', flag: 'met-vex' }] }],
+  },
+  // Passing Vex's fire again once his answer is settled — no second bargain.
+  'vex-done': {
+    id: 'vex-done', kind: 'story', art: { emoji: '🔥' },
+    text: ['Vex\'s little fire still burns, but the man himself is done talking — either your ally now, or your enemy at the throne. There\'s nothing left to say here.'],
+    next: [{ id: 'ok', label: 'On through the camp', to: 'inner' }], noBack: true,
   },
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },

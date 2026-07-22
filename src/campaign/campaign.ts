@@ -199,7 +199,7 @@ export const STAGES: StageData[] = [
 /** XP thresholds by level (index = level − 1); capped at our content's L5.
  *  Tuned to the /party-size award so a full ladder run reaches L4 at the ogre
  *  and L5 just before the giants finale (fighting the boss at full L5 power). */
-export const LEVEL_XP = [0, 300, 900, 1250, 1700] as const;
+export const LEVEL_XP = [0, 300, 900, 2700, 6500] as const;
 export const MAX_LEVEL = LEVEL_XP.length;
 
 export function levelForXp(xp: number): number {
