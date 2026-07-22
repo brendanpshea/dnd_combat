@@ -28,18 +28,22 @@ Rogues and goblins can Hide as a bonus action.
 
 ```bash
 npm install
-npm test          # 389 deterministic engine, campaign, AI, and UI tests
+npm test          # 522 deterministic engine, campaign, AI, and UI tests
 npm run web       # web UI (mobile + desktop) at http://localhost:5173
 npm start         # terminal battle: hot-seat human vs human, random map
-npm run campaign  # terminal campaign: 14-battle ladder with XP, leveling, loot
+npm run campaign  # terminal campaign: 34-battle ladder with XP, leveling, loot
 ```
 
 ## Web UI
 
 React + Vite. The board and its terrain are CSS, layered over a generated
-painterly backdrop per map theme; characters get generated art tokens/
-portraits with an emoji fallback per unit; plus an inline SVG icon and
-WebAudio-synthesized sound. Main menu offers **Campaign** (progress persists
+painterly backdrop per map theme. Each of the six themes (stone, forest,
+graveyard, ember, village, bog) styles its own scenery — the impassable `#`
+walls become brick columns, mossy boulders, headstones, glowing basalt
+shards, striped market stalls, or wet hummocks, with a faint scatter of
+floor decals — so a map reads as a *place*, not a grey grid. Characters get
+generated art tokens/portraits with an emoji fallback per unit; plus an
+inline SVG icon and WebAudio-synthesized sound. Main menu offers **Campaign** (progress persists
 in localStorage) and **Single battle** (hot-seat / vs AI / AI spectate /
 monster encounters, with map/level/seed selection).
 Choose a species for each party member before a skirmish; player-versus-player
@@ -82,10 +86,10 @@ npm run campaign                           # campaign (saves to campaign-save.js
 | Flag | Values | Effect |
 | --- | --- | --- |
 | `--seed <n>` | any integer | Deterministic battle; same seed + same actions = same game |
-| `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` | Battle map (random if omitted) |
+| `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` `village` `bog` | Battle map (random if omitted) |
 | `--level <n>` | `1`–`5` | Party level (both sides in PvP) |
 | `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
-| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `bandits` `spiders` `crypt` `kobolds` `raiders` `wilds` `cult` `knights` `labyrinth` `giants` `temple` `oni` | Fight monsters instead of a mirror party |
+| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `giants` … (40+ rosters — beasts, undead, dragons, elementals; see `ENCOUNTERS` in `src/data/monsters.ts`) | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
 | `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |
 
@@ -105,10 +109,14 @@ legal-action list, so an illegal move is never offered.
 
 ## Campaign mode
 
-A 14-battle ladder ordered easy → hard (Kobold Warren up to the twin-headed Giant finale).
-The party **earns XP and levels up** (1 → 5) as it goes — level is derived from
-accumulated XP, not fixed per stage, so progression is gradual and you can end
-up under-leveled for a tough fight (the UI warns you). **Treasure is generated
+A 34-battle ladder ordered easy → hard (Kobold Warren up to the twin-headed
+Giant finale), a tour of the bestiary — humanoids give way to beasts, undead,
+dragons, and finally elementals and giants.
+The party **earns XP and levels up** (1 → 5, on the SRD XP curve:
+300 / 900 / 2700 / 6500) as it goes — level is derived from accumulated XP,
+not fixed per stage, so progression is gradual (L2 by stage ~5, L5 just before
+the finale) and you can end up under-leveled for a tough fight (the UI warns
+you). **Treasure is generated
 from each encounter's XP**: gold scales with the fight, and bigger fights roll
 more items from higher rarity tiers (the finale guarantees a rare drop).
 The loot pool spans gemstones and jewelry (pure sell-value, ten of each,
@@ -126,11 +134,14 @@ Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
 purchases are proficiency-gated), manage equipment, haggle or steal, then
 fight. Consumables spent in battle stay spent; weapon swaps, remaining HP, and
 **spell slots** all persist between battles and shop visits — casting Cure
-Wounds in the shop spends the same slot pool as casting it mid-fight. The shop
-offers unrestricted testing rests: a **short rest** restores half of every
-hero's maximum HP (slots untouched), while a **long rest** fully restores both
-HP and every spell slot. Defeat ends the campaign and deletes the save
-(there's also a reset/delete option).
+Wounds in the shop spends the same slot pool as casting it mid-fight. Rests
+follow 5e: a **short rest** auto-spends **hit dice** (a pool equal to level)
+to heal — each die rolls the class die + Con, spent advantageously so a hurt
+hero heals up without wasting a die on a trivial top-off — leaving spell slots
+untouched; a **long rest** fully restores HP and every spell slot and refreshes
+half the hit-dice pool. Hit dice and slots show as pips on the party card.
+Defeat ends the campaign and deletes the save (there's also a reset/delete
+option).
 Casters show their remaining slots as a compact row of pips (grouped by spell
 level) next to their HP, in battle and in the shop alike.
 Healing consumables and the cleric's **Cure Wounds** can also be used in the
@@ -158,6 +169,25 @@ party through every battle.
 Seeded runs are reproducible end to end — battles, skill checks, treasure, and
 XP alike.
 
+## Adventure mode
+
+Beyond the skirmish ladder, **adventure modules** are authored, story-driven
+campaigns played through the same combat engine. A module is plain, data-only
+content (a scene graph — story, dialogue, skill checks, shops, rests, explore
+maps, and battles) interpreted by a pure runtime, so authoring a scene is a
+data edit, never an engine change (see
+[docs/module-writing-guide.md](docs/module-writing-guide.md)).
+
+The flagship module, **The Hollow Road**, is a ~2-hour, three-act adventure:
+break the Ashfang raiders through a village hub, a marsh you traverse node by
+node, and their den — by blade or by wit. It threads combat with inline skill
+checks, branching choices that pay off in an epilogue, a journal of quests and
+leads, milestone leveling that lands on fights you earn, and explore maps that
+reveal as you push deeper. You can camp to rest (safely in town, at a risk in
+the wild — an interrupted rest recovers nothing), shop, and manage gear
+between beats. A tap on any item or spell opens an **ⓘ info card** — derived
+stats plus a plain-English blurb — in camp, the shop, and the spell tray.
+
 ## Project layout
 
 ```
@@ -167,6 +197,7 @@ src/
   builder/   # class + level + gear -> combatant construction
   ai/        # greedy expected-value player (same Action API as both UIs)
   campaign/  # meta-game: party, stages, shop, loot, skill checks, save parsing
+  adventure/ # story modules: pure runtime, scene types, validator, headless runner
   ui/cli/    # terminal renderer, battle loop, campaign loop
 web/         # React app: board, battle screen, campaign screens, effects, sound
 test/        # vitest suites, including full AI-vs-AI battle completion tests
