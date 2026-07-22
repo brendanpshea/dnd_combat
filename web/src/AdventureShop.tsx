@@ -24,6 +24,7 @@ import type { Module, Scene } from '../../src/adventure/types.js';
 import { isWeaponProficient } from '../../src/data/weapons.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { Portrait } from './Portrait.js';
+import { ItemInfoDot } from './InfoCard.js';
 import { hasArt } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 
@@ -186,6 +187,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
             const picking = pickBuy === id;
             return (
               <div key={id} className="shop-item">
+                <div className="shop-row-head">
                 <button
                   className="shop-row" disabled={!afford}
                   onClick={() => {
@@ -210,6 +212,8 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                   </span>
                   <span className={`shop-price ${afford ? '' : 'poor'}`}>💰 {price}</span>
                 </button>
+                <ItemInfoDot itemId={id} />
+                </div>
                 {picking && typeof focus !== 'number' && (
                   <div className="adv-item-acts adv-buyfor">
                     <span className="muted">Buy for:</span>
@@ -256,11 +260,14 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
               : undefined;
             return (
               <div key={key} className="shop-item">
+                <div className="shop-row-head">
                 <button className={`shop-row ${confirming ? 'confirming' : ''}`}
                   onClick={() => setPickSell(confirming ? null : key)}>
                   <span>{itemIcon(itemId)} {itemName(itemId)} <em className="shop-owner">· {label}</em></span>
                   <span className="shop-price sell">+💰 {resale}</span>
                 </button>
+                <ItemInfoDot itemId={itemId} />
+                </div>
                 {confirming && (
                   <div className="adv-item-acts">
                     <button onClick={doSell}>Sell for +{resale}g</button>

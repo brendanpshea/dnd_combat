@@ -17,6 +17,8 @@ import {
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
+import { InfoDot } from './InfoCard.js';
+import { infoFor, spellSheet } from './gameInfo.js';
 import { SlotPips } from './SlotPips.js';
 import { buildEncounter, ENCOUNTERS, MONSTERS } from '../../src/data/monsters.js';
 import { MAPS } from '../../src/data/maps.js';
@@ -734,6 +736,7 @@ function CampScreen(
             </div>
             {picked?.kind === 'stash' && (
               <div className="adv-item-acts">
+                <InfoDot sheet={infoFor(picked.itemId)} />
                 <span className="muted">Give to:</span>
                 {campaign.characters.map((ch, i) => (
                   <button key={i} onClick={() => act(() => claimFromStash(campaign, i, picked.itemId), `${ch.name} takes ${itemName(picked.itemId)}`)}>
@@ -780,6 +783,7 @@ function CampScreen(
             </div>
             {picked?.kind === 'equipped' && picked.charIdx === idx && (
               <div className="adv-item-acts">
+                <InfoDot sheet={infoFor(picked.itemId)} />
                 <button onClick={() => act(() => unequipSlot(campaign, idx, picked.slot), `${ch.name} stows ${itemName(picked.itemId)}`)}>Unequip</button>
               </div>
             )}
@@ -801,6 +805,7 @@ function CampScreen(
             </div>
             {picked?.kind === 'pack' && picked.charIdx === idx && (
               <div className="adv-item-acts">
+                <InfoDot sheet={infoFor(picked.itemId)} />
                 {EQUIP_SLOTS.filter((slot) => equipBlocked(campaign, idx, picked.itemId, slot) === undefined).map((slot) => (
                   <button key={slot} onClick={() => act(() => equipItem(campaign, idx, picked.itemId, slot), `${ch.name} equips ${itemName(picked.itemId)}`)}>
                     Equip{slot === 'offHand' ? ' (off-hand)' : slot === 'mainHand' ? ' (main)' : ''}
@@ -860,6 +865,7 @@ function CampScreen(
                     const sp = spells.find((s) => s.spellId === picked.spellId)!;
                     return (
                       <div className="adv-item-acts">
+                        <InfoDot sheet={spellSheet(sp.spellId)} />
                         {sp.targeting === 'self' && (
                           <button onClick={() => act(() => {
                             useStoreSpell(campaign, idx, sp.spellId);

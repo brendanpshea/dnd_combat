@@ -15,6 +15,7 @@ import {
   knownRitualSpells, resetPrepared,
 } from '../../src/campaign/campaign.js';
 import { SPELLS } from '../../src/data/spells.js';
+import { SpellInfoDot } from './InfoCard.js';
 
 export function SpellTray(
   { campaign: c, idx, mode = 'create', onClose, onSaved }: {
@@ -91,6 +92,7 @@ export function SpellTray(
                     <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
                       <input type="checkbox" checked={checked} disabled={!checked && cAtCap} onChange={() => toggleCantrip(id)} />
                       {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
+                      <SpellInfoDot spellId={id} />
                     </label>
                   );
                 })}
@@ -117,6 +119,7 @@ export function SpellTray(
                     <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
                       <input type="checkbox" checked={checked} disabled={!checked && bookAtCap} onChange={() => toggleBook(id)} />
                       {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
+                      <SpellInfoDot spellId={id} />
                     </label>
                   );
                 })}
@@ -133,6 +136,7 @@ export function SpellTray(
                 <label key={id} className={`prepare-option${checked ? ' checked' : ''}`}>
                   <input type="checkbox" checked={checked} disabled={!checked && atCap} onChange={() => togglePrepare(id)} />
                   {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}<span className="muted"> (L{SPELLS[id]?.level ?? 1})</span>
+                  <SpellInfoDot spellId={id} />
                 </label>
               );
             })}
