@@ -173,32 +173,59 @@ export interface StageData {
 /**
  * The ladder, ordered easy → hard. Party level and treasure are *derived*
  * from encounter XP (see levelForXp / treasureFor), so a stage is just which
- * fight, on which map. Ordering by ascending XP gives the gradual ramp: the
- * party accumulates XP and levels up (1 → 2 around stage 5, 2 → 3 around
- * stage 9) across the run.
+ * fight, on which map. The XP-per-character pace (encounterXP / party size)
+ * against the SRD curve (L4 = 2700, L5 = 6500) needs a long ladder to carry a
+ * full party to 5th level: ~28k total encounter XP across the run. It's a tour
+ * of the bestiary — humanoids give way to beasts, undead, dragons, and finally
+ * elementals and giants — with map variety alongside. Roughly: L2 by stage ~5,
+ * L3 by ~10, L4 through the late 20s, L5 just before the giants finale.
  */
 export const STAGES: StageData[] = [
-  { encounterId: 'kobolds', mapId: 'ruins' },   // 150
-  { encounterId: 'wolves', mapId: 'marsh' },    // 250
-  { encounterId: 'undead', mapId: 'corridor' }, // 250
-  { encounterId: 'goblins', mapId: 'ruins' },   // 400  → L2 around here
-  { encounterId: 'raiders', mapId: 'open' },    // 425
-  { encounterId: 'wilds', mapId: 'marsh' },     // 500
-  { encounterId: 'bandits', mapId: 'open' },    // 550
-  { encounterId: 'crypt', mapId: 'corridor' },  // 550  → L3 around here
-  { encounterId: 'spiders', mapId: 'marsh' },   // 800
-  { encounterId: 'cult', mapId: 'ruins' },      // 1100
-  { encounterId: 'ogre', mapId: 'firepit' },    // 550  → L4 around here
-  { encounterId: 'knights', mapId: 'open' },    // 925
-  { encounterId: 'labyrinth', mapId: 'corridor' }, // 775  → L5 around here
-  { encounterId: 'giants', mapId: 'firepit' },  // 1650, L5 boss finale
+  // --- Act I: warm-up (L1 → L2) --------------------------------------------
+  { encounterId: 'kobolds', mapId: 'ruins' },        // 150
+  { encounterId: 'wolves', mapId: 'marsh' },         // 250
+  { encounterId: 'undead', mapId: 'corridor' },      // 250
+  { encounterId: 'goblins', mapId: 'ruins' },        // 400  → L2 around here
+  { encounterId: 'toad-swamp', mapId: 'bog' },       // 400
+  { encounterId: 'raiders', mapId: 'open' },         // 425
+  { encounterId: 'syndicate', mapId: 'village' },    // 450
+  { encounterId: 'wilds', mapId: 'marsh' },          // 500
+  { encounterId: 'hyena-pack', mapId: 'open' },      // 500
+  { encounterId: 'bandits', mapId: 'open' },         // 550
+  { encounterId: 'crypt', mapId: 'corridor' },       // 550  → L3 around here
+  // --- Act II: the long climb (L3 → L4) ------------------------------------
+  { encounterId: 'ogre', mapId: 'firepit' },         // 550
+  { encounterId: 'temple', mapId: 'ruins' },         // 650
+  { encounterId: 'den-muster', mapId: 'ruins' },     // 650
+  { encounterId: 'hag-coven', mapId: 'marsh' },      // 750
+  { encounterId: 'labyrinth', mapId: 'corridor' },   // 775
+  { encounterId: 'spiders', mapId: 'marsh' },        // 800
+  { encounterId: 'manticore-cliff', mapId: 'ruins' },// 800
+  { encounterId: 'wight-tomb', mapId: 'corridor' },  // 800
+  { encounterId: 'mummy-crypt', mapId: 'corridor' }, // 800
+  { encounterId: 'owlbear-den', mapId: 'marsh' },    // 900
+  { encounterId: 'snake-pit', mapId: 'bog' },        // 900
+  { encounterId: 'boar-stampede', mapId: 'open' },   // 900
+  { encounterId: 'gargoyle-perch', mapId: 'ruins' }, // 900
+  { encounterId: 'knights', mapId: 'open' },         // 925  → L4 around here
+  // --- Act III: the gauntlet (L4 → L5 → finale) ----------------------------
+  { encounterId: 'cult', mapId: 'ruins' },           // 1100
+  { encounterId: 'wisp-bog', mapId: 'marsh' },       // 1100
+  { encounterId: 'red-dragon-den', mapId: 'firepit' }, // 1150
+  { encounterId: 'ashfang-warlord', mapId: 'firepit' }, // 1175
+  { encounterId: 'chromatic-clutch', mapId: 'corridor' }, // 1350
+  { encounterId: 'oni', mapId: 'firepit' },          // 1650
+  { encounterId: 'water-vortex', mapId: 'marsh' },   // 1800
+  { encounterId: 'gorgon-maze', mapId: 'ruins' },    // 1800  → L5 around here
+  { encounterId: 'giants', mapId: 'firepit' },       // 1650, boss finale
 ];
 
 // --- XP & leveling ---------------------------------------------------------
 
-/** XP thresholds by level (index = level − 1); capped at our content's L5.
- *  Tuned to the /party-size award so a full ladder run reaches L4 at the ogre
- *  and L5 just before the giants finale (fighting the boss at full L5 power). */
+/** XP thresholds by level (index = level − 1); the SRD table, capped at our
+ *  content's L5. The ladder is sized against the /party-size award so a full
+ *  run reaches L4 in the late Act II fights and L5 just before the giants
+ *  finale (fighting the boss at full L5 power). */
 export const LEVEL_XP = [0, 300, 900, 2700, 6500] as const;
 export const MAX_LEVEL = LEVEL_XP.length;
 

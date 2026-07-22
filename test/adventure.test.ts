@@ -13,7 +13,7 @@ import {
   shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, resolveBattle,
 } from '../src/adventure/runtime.js';
 import {
-  SHOP_STOCK, itemPrice, applyAdventureVictory, buildCampaignParty as buildCampaignPartyFor,
+  SHOP_STOCK, itemPrice, applyAdventureVictory, buildCampaignParty as buildCampaignPartyFor, STAGES,
 } from '../src/campaign/campaign.js';
 import { runModule, type RunPolicy } from '../src/adventure/runner.js';
 import { serializeAdventure, parseAdventure } from '../src/adventure/save.js';
@@ -85,8 +85,8 @@ describe('classic module (M1)', () => {
     const policy: RunPolicy = { pick: () => 0, battle: () => true };
     const result = runModule(newCampaign(1), CLASSIC_MODULE, policy);
     expect(result.ending).toBe('victory');
-    // 14 battles happened.
-    expect(result.events.filter((e) => e.type === 'startBattle')).toHaveLength(14);
+    // One battle per ladder stage.
+    expect(result.events.filter((e) => e.type === 'startBattle')).toHaveLength(STAGES.length);
   });
 
   it('a lost fight retries rather than dead-ending (story mode)', () => {
