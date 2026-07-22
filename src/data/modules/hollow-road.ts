@@ -188,6 +188,9 @@ const scenes: Record<string, Scene> = {
         { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: 'tok-tavern', scene: 'tavern' },
         { id: 'market', x: 40, y: 40, label: 'Market', icon: 'tok-market', scene: 'market' },
         { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: 'tok-notice', scene: 'board' },
+        // Optional side bounty: honest early XP for a party that helps out.
+        { id: 'mill', x: 12, y: 62, label: 'The Old Mill', icon: 'tok-figure', scene: 'mill',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'mill-saved' }], to: 'mill-done' }] },
         // The peddler is always here to be dealt with (the tavern Insight just
         // names him early). Confronting him always ends in a fight — and the
         // gate below won't open until he's caught, so no party skips it.
@@ -242,6 +245,31 @@ const scenes: Record<string, Scene> = {
     text: ['The gate-warden lays his halberd across the road and shakes his head, not unkindly. "Reeve\'s orders, and for once they\'re sound ones. Nobody leaves while the Ashfang still keep a whistler in the **market**, counting who comes and goes. Deal with that first — then the road\'s yours."'],
     next: [{ id: 'ok', label: 'Back into the square', to: 'square' }], noBack: true,
   },
+  // --- Optional: the mill bounty (Act 1 side fight) ------------------------
+  mill: {
+    id: 'mill', kind: 'dialogue', npc: { id: 'npc-miller', name: 'Osk the Miller', portraitId: 'npc-commoner', emoji: '🌾' },
+    art: { emoji: '🌾' },
+    lines: [
+      'The mill\'s sails hang still, and the miller meets you at a barred door with a boat-hook in both hands. "Not raiders, this one. Something\'s roosting in my hedgerows — turned my dog stiff as a fencepost. *Stone*, you understand. Won\'t nobody come near the mill now, and the grain\'s standing."',
+      '"Clear them out and there\'s coin in it. Just — don\'t let the ugly things *touch* you."',
+    ],
+    next: [
+      { id: 'help', label: 'Beat the hedgerows', to: 'mill-fight' },
+      { id: 'later', label: 'Another time', to: 'square' },
+    ],
+  },
+  'mill-fight': {
+    id: 'mill-fight', kind: 'battle', encounterId: 'cockatrice-flock', mapId: 'open',
+    intro: ['Two wattled, bat-winged things explode out of the hedge in a fury of beak and scale — cockatrices, ugly as sin and twice as mean. Mind the bite: flesh that takes it goes to stone.'],
+    onWin: { to: 'square', text: ['The last cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.'],
+      effects: [{ kind: 'setFlag', flag: 'mill-saved' }, { kind: 'gold', amount: 35 }] },
+  },
+  'mill-done': {
+    id: 'mill-done', kind: 'story', art: { emoji: '🌾' },
+    text: ['The mill\'s sails are turning again. The miller waves from the door — and the stone dog keeps its vigil by the gate, forever pointing at nothing.'],
+    next: [{ id: 'ok', label: 'Back to the square', to: 'square' }], noBack: true,
+  },
+
   'spy-bolts': {
     id: 'spy-bolts', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
     intro: ['His crew shoulders out of the market crowd — a fixer and two hired knives, blades already low and level. No surprises left; just the work.'],
@@ -282,12 +310,22 @@ const scenes: Record<string, Scene> = {
       // sunken ravine ahead, a cry for help off to the south. The hollow reveals
       // only once you've pushed on past the ravine.
       entry: ['tracks'],
-      paths: [['tracks', 'ravine'], ['tracks', 'scout'], ['ravine', 'approach']],
+      paths: [
+        ['tracks', 'ravine'], ['tracks', 'scout'], ['ravine', 'approach'],
+        ['scout', 'barrow'], ['ravine', 'thicket'],
+      ],
       nodes: [
         { id: 'tracks', x: 18, y: 55, label: 'Fresh Tracks', icon: 'tok-tracks', scene: 'tracks',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'trail-read' }], to: 'tracks-done' }] },
         { id: 'scout', x: 34, y: 82, label: 'A Cry for Help', mystery: 'A faint sound…', icon: 'tok-person', scene: 'wounded',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
+        // Optional: a sunken barrow, spotted only by a sharp-eyed party.
+        { id: 'barrow', x: 52, y: 90, label: 'A Sunken Barrow', mystery: 'A low mound…', icon: 'tok-cave', scene: 'barrow',
+          hidden: { dc: 12 },
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'barrow-cleared' }], to: 'barrow-done' }] },
+        // Optional: a webbed thicket — plainly dangerous, plainly avoidable.
+        { id: 'thicket', x: 66, y: 70, label: 'Webbed Thicket', mystery: 'Pale shapes in the reeds…', icon: 'tok-tree', scene: 'thicket',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'thicket-cleared' }], to: 'thicket-done' }] },
         { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
           wandering: { chance: 0.5, battleScene: 'bog-toads' } },
@@ -390,6 +428,54 @@ const scenes: Record<string, Scene> = {
     text: ['The peddler\'s stall stands bare, its awning taken down. The reeve\'s men came for him at first light; the square has already moved on.'],
     next: [{ id: 'ok', label: 'Turn back to the square', to: 'square' }], noBack: true,
   },
+  // --- Optional: the sunken barrow (Act 2 side fight, undead teaser) -------
+  barrow: {
+    id: 'barrow', kind: 'story', art: { emoji: '🪦' },
+    text: [
+      'Half-swallowed by the reeds: a barrow-mound older than any kingdom you could name, its capstone cracked and weeping cold air. The marsh has been chewing at it for centuries — and lately, something has been chewing back out.',
+      'Grave-goods glint in the dark below. So does something that moves without touching the water.',
+    ],
+    next: [
+      { id: 'in', label: 'Go down into the dark', to: 'barrow-fight' },
+      { id: 'leave', label: 'Leave the dead their peace', to: 'trail' },
+    ],
+  },
+  'barrow-fight': {
+    id: 'barrow-fight', kind: 'battle', encounterId: 'specter-haunt', mapId: 'corridor',
+    intro: ['The cold answers you. Two shapes pour up out of the grave-earth — men once, now nothing but spite and winter air — and pass *through* the barrow stones to reach you.'],
+    onWin: { to: 'trail', text: ['The specters shred into cold mist. Among the grave-goods you find honest silver — and leave the rest, on balance, where it lies.'],
+      effects: [{ kind: 'setFlag', flag: 'barrow-cleared' }, { kind: 'gold', amount: 45 }] },
+  },
+  'barrow-done': {
+    id: 'barrow-done', kind: 'story', art: { emoji: '🪦' },
+    text: ['The barrow lies quiet now, its cold spent. Whatever walked here walks no more.'],
+    next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
+  },
+
+  // --- Optional: the webbed thicket (Act 2 side fight — hard, telegraphed) --
+  thicket: {
+    id: 'thicket', kind: 'story', art: { emoji: '🕸️' },
+    text: [
+      'The reeds ahead are wrong — sheeted in pale silk, gone grey and still. Bundles hang in the webbing at the height a man\'s shoulders would be. Some of the bundles are man-shaped.',
+      'Whatever spins here has been eating well off the Ashfang\'s road. It is not small, and there is more than one of it. But those cocoons will have purses.',
+    ],
+    next: [
+      { id: 'in', label: 'Cut your way in', to: 'thicket-fight' },
+      { id: 'leave', label: 'Give the webs a wide berth', to: 'trail' },
+    ],
+  },
+  'thicket-fight': {
+    id: 'thicket-fight', kind: 'battle', encounterId: 'spiders', mapId: 'marsh',
+    intro: ['The silk trembles — then the reeds themselves seem to stand up and walk. Giant spiders, four of them, fast as regret and venomous with it, drop from the high webbing on every side.'],
+    onWin: { to: 'trail', text: ['The last spider curls in on itself like a burnt glove. The cocoons yield two dissolved raiders, their purses intact — and one caravan guard, still breathing, who does not stop thanking you until the reeds swallow the sound.'],
+      effects: [{ kind: 'setFlag', flag: 'thicket-cleared' }, { kind: 'gold', amount: 60 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
+  },
+  'thicket-done': {
+    id: 'thicket-done', kind: 'story', art: { emoji: '🕸️' },
+    text: ['The torn webs hang slack and grey. Nothing spins in the thicket now.'],
+    next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
+  },
+
   'bog-toads': {
     id: 'bog-toads', kind: 'battle', encounterId: 'toad-swamp', mapId: 'bog',
     intro: ['The black water bulges — then heaves. A pair of giant toads haul themselves onto the causeway, wider than a shield and quicker than anything that size has a right to be. A tongue lashes out for the nearest of you.'],
@@ -666,5 +752,9 @@ export const HOLLOW_ROAD_MODULE: Module = {
   id: 'hollow-road', title: 'The Hollow Road',
   blurb: 'Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit.',
   cover: 'loc-village',
+  levelBand: { from: 1, to: 3 },
+  // Part 1 of the trilogy (docs/trilogy-plan.md). When Part 2 ships, set
+  // `sequel: 'sunken-barrows'` here and the victory ending offers to carry
+  // the company onward.
   start: 'road', scenes, defeatScene: 'defeat',
 };

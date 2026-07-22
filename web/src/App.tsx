@@ -118,6 +118,7 @@ export function App() {
           module={screen.module}
           {...(screen.resume ? { resume: screen.resume } : {})}
           onExit={() => setScreen({ view: 'menu' })}
+          onContinue={(module, resume) => setScreen({ view: 'adventure', module, resume })}
         />
       );
   }
@@ -165,6 +166,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
                   : <div className="module-cover-art glyph"><span>{(cover && artEmoji(cover)) ?? '📜'}</span></div>}
                 <div className="module-cover-body">
                   <strong>{m.title}{dev && !['hollow-road'].includes(m.id) ? ' · dev' : ''}</strong>
+                  {m.levelBand && <span className="module-band">Levels {m.levelBand.from}–{m.levelBand.to}</span>}
                   <span>{m.blurb}</span>
                   <span className="module-cta">{resume ? '▶ Continue your run' : '▶ Play'}</span>
                 </div>
