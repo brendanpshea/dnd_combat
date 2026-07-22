@@ -40,6 +40,9 @@ export interface PartyCharacter {
     /** Remaining spell slots, index 0 = 1st-level. Absent = full — a fresh
      *  save, a non-caster, or a caster since their last long rest. */
     slots?: number[];
+    /** Hit dice left to spend on a short rest. Absent = a full pool (= level).
+     *  A long rest restores half; a short rest spends them to heal. */
+    hitDice?: number;
     effects?: {
       familiar?: { kind: 'owl' };
       mageArmor?: true;
@@ -678,6 +681,21 @@ function spendSlot(ch: PartyCharacter, caster: Combatant, slotLevelIdx: number):
 
 export interface RestResult {
   totalHealed: number;
+  /** How many hit dice the party spent (short rest only). */
+  hitDiceSpent?: number;
+}
+
+/** A hero's pool of hit dice equals their level (the shared party level). */
+export function hitDiceMax(c: CampaignState): number {
+  return partyLevelOf(c);
+}
+
+/** Hit dice a hero has left to spend. Absent in `resources` = a full pool (a
+ *  fresh save or a hero rested since their last short rest). */
+export function hitDiceLeft(c: CampaignState, idx: number): number {
+  const stored = c.characters[idx]?.resources?.hitDice;
+  const max = hitDiceMax(c);
+  return stored === undefined ? max : Math.max(0, Math.min(stored, max));
 }
 
 /**
@@ -699,15 +717,39 @@ export function healParty(c: CampaignState, amount: number | 'full'): RestResult
   return { totalHealed };
 }
 
+/**
+ * A short rest spends hit dice to heal — the 5e mechanic, applied
+ * automatically and advantageously so the player never micromanages it. Each
+ * die a hero spends rolls its class die + Con mod. The auto-spender keeps
+ * spending only while the deficit is at least a die's average roll, so a hurt
+ * hero heals up most of the way but never burns a whole die to top off a
+ * couple of points. Spell slots are untouched (only a long rest restores
+ * those). Hit dice themselves are refreshed by a long rest.
+ */
 export function shortRest(c: CampaignState): RestResult {
   let totalHealed = 0;
+  let hitDiceSpent = 0;
   const party = buildCampaignParty(c);
   for (const [index, combatant] of party.entries()) {
-    const healedHp = Math.min(combatant.maxHp, combatant.hp + Math.ceil(combatant.maxHp / 2));
-    totalHealed += healedHp - combatant.hp;
-    setCampaignHp(c.characters[index]!, healedHp);
+    const ch = c.characters[index]!;
+    const die = CLASSES[ch.classId]?.hitDie ?? 8;
+    const conMod = abilityMod(combatant.abilities.con);
+    // The average value of one die: the threshold below which spending a die
+    // would waste most of its healing.
+    const avgHeal = die / 2 + 0.5 + Math.max(0, conMod);
+    let hp = combatant.hp;
+    let left = hitDiceLeft(c, index);
+    while (left > 0 && combatant.maxHp - hp >= avgHeal) {
+      const roll = rollDie(c.rng, die);
+      c.rng = roll.state;
+      hp = Math.min(combatant.maxHp, hp + Math.max(1, roll.value + conMod));
+      left -= 1;
+      hitDiceSpent += 1;
+    }
+    totalHealed += hp - combatant.hp;
+    ch.resources = { ...ch.resources, hp, hitDice: left };
   }
-  return { totalHealed };
+  return { totalHealed, hitDiceSpent };
 }
 
 /**
@@ -719,11 +761,17 @@ export function shortRest(c: CampaignState): RestResult {
 export function longRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   const party = buildCampaignParty(c);
+  const max = hitDiceMax(c);
   for (const [index, combatant] of party.entries()) {
     totalHealed += combatant.maxHp - combatant.hp;
     const character = c.characters[index]!;
+    // 5e: a long rest restores half your total hit dice (minimum 1) on top of
+    // whatever's left. Leave the field absent when the pool is full — absent
+    // means full, the same fresh-save signal used for HP and slots.
+    const restored = Math.min(max, hitDiceLeft(c, index) + Math.max(1, Math.floor(max / 2)));
     character.resources = {
       hp: combatant.maxHp,
+      ...(restored < max ? { hitDice: restored } : {}),
       ...(character.resources?.effects?.familiar ? { effects: { familiar: { kind: 'owl' } } } : {}),
     };
   }

@@ -555,8 +555,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             <button className="mini" onClick={() => mutate(() => {
               const result = shortRest(c);
               setNotice(result.totalHealed > 0
-                ? `Short rest: the party recovers ${result.totalHealed} HP.`
-                : 'The party is already fully rested.');
+                ? `Short rest: the party spends ${result.hitDiceSpent} hit ${result.hitDiceSpent === 1 ? 'die' : 'dice'} and recovers ${result.totalHealed} HP.`
+                : 'Short rest: no one needed to spend a hit die.');
             })}>Short rest</button>
             <button className="mini" onClick={() => mutate(() => {
               const result = longRest(c);
