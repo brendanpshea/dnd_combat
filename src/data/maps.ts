@@ -12,7 +12,7 @@
 import type { GridState, Cell, TerrainId } from '../engine/types.js';
 
 /** Visual theme — the whole board is styled as a place, not just its terrain. */
-export type MapTheme = 'stone' | 'forest' | 'graveyard' | 'ember';
+export type MapTheme = 'stone' | 'forest' | 'graveyard' | 'ember' | 'village' | 'bog';
 
 export interface MapData {
   id: string;
@@ -110,7 +110,7 @@ export const MAPS: Record<string, MapData> = {
   // A town square: market stalls (walls) frame an open plaza. Cover to duck
   // behind, lanes to flank down — a street brawl, not a field battle.
   village: {
-    id: 'village', name: 'Market Square', theme: 'stone',
+    id: 'village', name: 'Market Square', theme: 'village',
     rows: [
       '........',
       '.#....#.',
@@ -125,7 +125,7 @@ export const MAPS: Record<string, MapData> = {
   // A sunken causeway: two channels of black water (difficult) flanking a dry
   // central lane. Melee presses up the middle; the reeds slow anyone who strays.
   bog: {
-    id: 'bog', name: 'The Black Ford', theme: 'forest',
+    id: 'bog', name: 'The Black Ford', theme: 'bog',
     rows: [
       '........',
       '...~~...',
