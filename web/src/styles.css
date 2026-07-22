@@ -520,6 +520,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   border: 1.5px solid #000a;
   box-shadow: 0 1px 2px #000a;
   pointer-events: auto;
+  cursor: help;
 }
 /* A hairline colour rim keys the badge to whether it helps or hurts. */
 .cond-badge.control { border-color: #ff6a6a; }
@@ -854,6 +855,27 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .hint-banner b { color: #ffe9a8; text-transform: capitalize; }
 .hint-banner .mini { margin-left: auto; }
+
+/* --- just-in-time learning tips ------------------------------------------ */
+.tips-toggle.off { opacity: 0.4; filter: grayscale(1); }
+.tip-toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 8px 0; padding: 10px 12px; border-radius: 12px;
+  background: linear-gradient(#26314a, #1f2740);
+  border: 1px solid #4a6fa5; box-shadow: 0 4px 14px #0006;
+  animation: tipIn .22s ease-out;
+}
+@keyframes tipIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.tip-icon { font-size: 1.5rem; line-height: 1.1; flex: 0 0 auto; }
+.tip-text { flex: 1; min-width: 0; }
+.tip-text strong { color: #cfe0ff; font-size: .92rem; }
+.tip-text p { margin: 2px 0 0; font-size: .85rem; line-height: 1.4; color: var(--text); }
+.tip-close {
+  flex: 0 0 auto; background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 1rem; padding: 2px 4px; line-height: 1;
+}
+.tip-close:hover { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .tip-toast { animation: none; } }
 
 .actionbar {
   display: flex;

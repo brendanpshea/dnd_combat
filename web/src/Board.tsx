@@ -42,6 +42,9 @@ export interface BoardProps {
   /** Map visual theme — styles the whole board as a place. */
   theme?: string | undefined;
   onCellTap(pos: Position, occupant?: Combatant): void;
+  /** Tapping a condition badge asks for an explanation (mobile has no hover
+   *  tooltip). Absent = badges stay hover-only. */
+  onCondition?: ((label: string, icon: string) => void) | undefined;
 }
 
 /**
@@ -50,7 +53,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, movePaths, theme, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, movePaths, theme, onCellTap, onCondition }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
 
@@ -203,10 +206,16 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
             {badges.length > 0 && (
               <div className="cond-badges">
                 {badges.slice(0, 3).map((m, i) => (
-                  <span key={i} className={`cond-badge ${m.kind}`} title={m.label}>{m.icon}</span>
+                  <span
+                    key={i} className={`cond-badge ${m.kind}`} title={m.label}
+                    onClick={onCondition ? (e) => { e.stopPropagation(); onCondition(m.label, m.icon); } : undefined}
+                  >{m.icon}</span>
                 ))}
                 {badges.length > 3 && (
-                  <span className="cond-badge more" title={badges.slice(3).map((m) => m.label).join('\n')}>
+                  <span
+                    className="cond-badge more" title={badges.slice(3).map((m) => m.label).join('\n')}
+                    onClick={onCondition ? (e) => { e.stopPropagation(); onCondition(badges.slice(3).map((m) => m.label).join(' · '), '🏷️'); } : undefined}
+                  >
                     +{badges.length - 3}
                   </span>
                 )}

@@ -18,6 +18,7 @@ import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec,
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
+import { detectTips, seenTips, markTipSeen, tipsOff, setTipsOff, type Tip } from './tips.js';
 import { CampaignScreen } from './Campaign.js';
 import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
@@ -383,6 +384,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [narrationOn, setNarrationOn] = useState(true);
   const [hint, setHint] = useState<Action | null>(null);
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('dnd-tutorial-seen'));
+  // Just-in-time coaching: a one-time tip surfaces the first time a mechanic
+  // actually happens (an ally goes down, a slot is spent, …). See tips.ts.
+  const [tip, setTip] = useState<Tip | null>(null);
+  const [tipsMuted, setTipsMuted] = useState(() => tipsOff());
   const speedRef = useRef(1);
   speedRef.current = speed;
   const logEnd = useRef<HTMLDivElement>(null);
@@ -456,6 +461,15 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           for (const id of fx.hits) next.delete(id);
           return next;
         }), 450);
+      }
+
+      // Contextual coaching: surface the first not-yet-seen tip these events
+      // trigger. Skipped when muted; each tip fires once ever (localStorage).
+      if (!tipsMuted) {
+        const isPlayer = (id: Id) => { const t = combat.state.combatants[id]?.team; return !!t && !aiTeams.has(t); };
+        const seen = seenTips();
+        const fresh = detectTips(events, combat.state, isPlayer).find((t) => !seen.has(t.id));
+        if (fresh) { markTipSeen(fresh.id); setTip(fresh); }
       }
     } catch (err) {
       setLog((l) => [...l, { text: `(${(err as Error).message})`, kind: 'misc' }]);
@@ -636,8 +650,28 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         <button className="ghost log-toggle" onClick={() => setShowLog((s) => !s)}>
           📜 {showLog ? 'Hide' : 'Log'}
         </button>
+        <button
+          className={`ghost tips-toggle${tipsMuted ? ' off' : ''}`}
+          title={tipsMuted ? 'Learning tips: off' : 'Learning tips: on'}
+          onClick={() => { const next = !tipsMuted; setTipsOff(next); setTipsMuted(next); if (next) setTip(null); }}
+        >
+          💡
+        </button>
         <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>
       </header>
+
+      {/* Just-in-time coaching toast — the first time a mechanic actually
+          happens. Dismissible; muted from the header 💡 toggle. */}
+      {tip && (
+        <div className="tip-toast" role="status">
+          <span className="tip-icon">{tip.icon}</span>
+          <div className="tip-text">
+            <strong>{tip.title}</strong>
+            <p>{tip.body}</p>
+          </div>
+          <button className="tip-close" aria-label="Dismiss tip" onClick={() => setTip(null)}>✕</button>
+        </div>
+      )}
 
       {/* The play area, grouped so the log can be a sibling column on desktop
           rather than a grid item spanning rows. Spanning meant inheriting one
@@ -660,6 +694,12 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         corpses={corpses}
         hitIds={hitIds}
         onCellTap={onCellTap}
+        onCondition={(label, icon) => {
+          // A badge tap explains the condition through the same toast card. The
+          // label is "Name — what it does"; split on the em dash for the title.
+          const [name, ...rest] = label.split(' — ');
+          setTip({ id: 'cond-lookup', icon, title: name!, body: rest.join(' — ') || 'A status effect on this creature.' });
+        }}
       />
 
       {/* Directly under the board: a fixed place to read what just happened,
@@ -815,6 +855,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               <li>🟥 Tap a <b>red-ringed enemy</b> to attack it.</li>
               <li>✨ Use spells, potions, and abilities from the <b>action bar</b> at the bottom.</li>
               <li>💡 Stuck? Tap <b>Hint</b> for a suggested move.</li>
+              <li>🎓 <b>Learning tips</b> pop up the first time something new happens — tap the 💡 in the top bar to turn them off once you know the ropes.</li>
+              <li>🏷️ Tap a <b>status badge</b> on a token to see what that condition does.</li>
               <li>➤ Done? Tap <b>End turn</b>. Defeat all enemies to win!</li>
             </ul>
             <button className="primary" onClick={dismissTutorial}>Got it!</button>
