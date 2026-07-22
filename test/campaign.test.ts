@@ -238,7 +238,9 @@ describe('campaign state', () => {
       }
     }
     expect(sawLevel2).toBe(true);
-    expect(partyLevelOf(c)).toBe(5); // reaches the content cap by the finale
+    // Under the SRD XP curve (L4 = 2700, L5 = 6500) the skirmish ladder's
+    // ~2.2k total XP carries the party to 3rd level by the finale.
+    expect(partyLevelOf(c)).toBe(3);
   });
 
   it('completing all stages finishes the campaign', () => {
@@ -258,9 +260,9 @@ describe('XP, leveling, and treasure', () => {
     expect(levelForXp(300)).toBe(2);
     expect(levelForXp(899)).toBe(2);
     expect(levelForXp(900)).toBe(3);
-    expect(levelForXp(1249)).toBe(3);
-    expect(levelForXp(1250)).toBe(4);
-    expect(levelForXp(1700)).toBe(5);
+    expect(levelForXp(2699)).toBe(3);
+    expect(levelForXp(2700)).toBe(4);
+    expect(levelForXp(6500)).toBe(5);
     expect(levelForXp(99999)).toBe(5);
     expect(LEVEL_XP.length).toBe(5);
   });

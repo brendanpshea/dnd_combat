@@ -914,6 +914,13 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'kennel-hyenas', name: 'The Kennels', suggestedLevel: 3,
     members: ['giant-hyena', 'giant-hyena'],
   },
+  // The muster yard: a captured ogre the Ashfang keep chained as a pit-brute,
+  // loosed on you by two orc goaders. A unique roster (the module's only ogre)
+  // and the first thing you meet inside the palisade.
+  'den-muster': {
+    id: 'den-muster', name: 'The Pit-Brute', suggestedLevel: 3,
+    members: ['ogre', 'orc', 'orc'],
+  },
 };
 
 /**

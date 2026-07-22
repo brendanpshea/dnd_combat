@@ -484,14 +484,14 @@ describe('defeat, finished locations, battle rewards', () => {
 describe('camp', () => {
   const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
 
-  it('campRule reflects the location: safe town, risky marsh, none in the den', () => {
+  it('campRule reflects the location: safe town, risky marsh, risky den', () => {
     const state = startAdventure(newCampaign(1), hollow);
     enterScene(state, hollow, 'square');
     expect(campRule(state, hollow)).toEqual({}); // safe
     enterScene(state, hollow, 'trail');
     expect(campRule(state, hollow)?.risky).toBeTruthy();
     enterScene(state, hollow, 'inner');
-    expect(campRule(state, hollow)).toBeNull(); // no rest in a hostile den
+    expect(campRule(state, hollow)?.risky).toBeTruthy(); // rest in the den, at a price
   });
 
   it('campRule follows the hub from a location sub-scene', () => {
@@ -513,7 +513,7 @@ describe('camp', () => {
 
   it('resting where there is no camp throws', () => {
     const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'inner'); // no camp
+    enterScene(state, hollow, 'gate'); // the den gate — no explore hub, no camp
     expect(() => campRest(state, hollow, 'long')).toThrow(/No camp/);
   });
 
