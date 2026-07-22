@@ -24,9 +24,13 @@ lift: the grid and all its dynamic terrain logic stay exactly as they are;
 the image just gives the "floor" underneath more atmosphere than a flat
 CSS color.
 
-**Four assets needed** — one per `MapTheme` (`src/data/maps.ts`), reused
-across the maps that share a theme (`open`/`marsh` → forest,
-`ruins` → stone, `firepit` → ember, `corridor` → graveyard).
+**Six assets** — one per `MapTheme` (`src/data/maps.ts`), reused across the
+maps that share a theme (`open`/`marsh` → forest, `ruins` → stone,
+`firepit` → ember, `corridor` → graveyard, `village` → village,
+`bog` → bog). The four original themes are generated; `village` and `bog`
+were split off from `stone`/`forest` so the town square and the black ford
+get their own floor, and their backdrops are still to be produced — until
+then they fall back to the flat theme colour (see §5), which ships fine.
 
 ---
 
@@ -95,6 +99,24 @@ notch more painterly since it's blurred/darkened behind gameplay UI.
 > hazard glow dynamically on specific cells; a pre-lit background would
 > double up and clash).
 
+**Village** (`theme-village`, map: `village` — Market Square) — *to generate*
+> Subject: a cobbled town-square plaza floor from directly above — fitted
+> paving stones and packed dirt lanes in warm neutral tones, worn smooth in
+> the middle from foot traffic, a light scatter of straw, spilled produce,
+> and a stray cart-rut toward the edges. Base color family: warm tan-greys
+> (`#7a6e60`/`#5e5448` range) matching the village cell palette. No stalls,
+> awnings, or crates drawn in (those are the CSS-drawn walls); the plaza
+> floor itself should stay open and plain through the middle.
+
+**Bog** (`theme-bog`, map: `bog` — The Black Ford) — *to generate*
+> Subject: a marsh causeway floor from directly above — a dry central line
+> of packed dark earth and matted reeds threading between wet ground, mossy
+> green-black mud, a few tussocks of grass toward the edges. Base color
+> family: dark desaturated greens (`#3a5440`/`#304636` range) matching the
+> bog cell palette. Keep the open channels of black water OUT of this pass —
+> the app draws the deep-water "difficult" tiles dynamically on top; the
+> backdrop is just the darker, wetter ground they sit in.
+
 ## 4. QA checklist
 
 - [ ] **Flat overhead** — no perspective tilt, no tall objects that would
@@ -143,11 +165,15 @@ Mirrors the existing character-art pipeline (`art/prompts.md` §7,
 5. **Leave walls/hazards/difficult terrain exactly as they are** — those
    stay 100% CSS-drawn on top of the new backdrop; nothing in `Board.tsx`
    or the terrain logic changes.
-6. **No `HAS_ART`-style allowlist needed** — there are only 4 themes and
-   all of them should have art before shipping this (unlike character art,
-   where partial coverage is fine because of the emoji fallback per-unit).
-   If only some themes get generated, gate on file presence the same way
-   (`background-image` simply omitted for a theme with no WebP yet).
+6. **Gate on the `HAS_BOARD_BG` set** (`web/src/art.ts`) — the implementation
+   diverged from the original "pure CSS" plan: `Board.tsx` sets the backdrop
+   inline via `boardBgUrl(theme)`, but only for themes listed in the
+   `HAS_BOARD_BG` allowlist; a theme not in the set renders on its flat
+   `background:` colour alone. So a new backdrop ships in three steps: drop
+   `bg-<theme>.webp` into `web/public/art/`, add the theme to `HAS_BOARD_BG`,
+   done. `village` and `bog` are deliberately *not* in the set yet — their
+   floors are themed in CSS and read fine flat until their art exists.
 
-Total new assets: **4 images**, not dozens — this is why the background
-approach is worth doing where a full tileset likely isn't.
+Total assets: **6 images** (4 generated, `village`/`bog` still to do), not
+dozens — this is why the background approach is worth doing where a full
+tileset likely isn't.

@@ -213,13 +213,116 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .cell.terrain-wall { --wall-hi: #6b6480; --wall-lo: #453f5c; z-index: 1; }
 .cell.terrain-wall::before {
   content: ''; position: absolute; inset: 3px; border-radius: 5px; z-index: 0;
+  background: linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+  box-shadow:
+    inset 2px 2px 0 #ffffff36, inset -2px -3px 0 #0000006b, 2px 3px 4px #00000080;
+}
+
+/* ---- themed blocking props ----------------------------------------------
+   A wall is impassable cover, but *what* it is belongs to the place: mossy
+   boulders in a forest, headstones in a graveyard, a market awning in the
+   square. Each theme reshapes the raised block (silhouette via clip-path or
+   border-radius, material via layered gradients) so a run of `#` tiles reads
+   as scenery, not identical grey cubes. The base bevel/shadow above is the
+   fallback for any theme that doesn't restyle. */
+
+/* Stone ruins — broken masonry: the original mortared-brick block. */
+.board.theme-stone .cell.terrain-wall::before {
   background:
     repeating-linear-gradient(0deg, transparent 0 32%, #0000004d 32% 35%),
     repeating-linear-gradient(90deg, transparent 0 47%, #0000004d 47% 50%),
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
-  box-shadow:
-    inset 2px 2px 0 #ffffff36, inset -2px -3px 0 #0000006b, 2px 3px 4px #00000080;
 }
+
+/* Forest — a mossy boulder: an organic rounded lump, moss catching the light. */
+.board.theme-forest .cell.terrain-wall::before {
+  border-radius: 46% 54% 52% 48% / 54% 48% 52% 46%;
+  background:
+    radial-gradient(38% 30% at 33% 30%, #9bb06a66, transparent 60%),
+    radial-gradient(30% 24% at 70% 66%, #55692c77, transparent 60%),
+    linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+}
+.board.theme-forest .cell.terrain-wall:nth-child(3n)::before { transform: scaleX(-1) rotate(6deg); }
+.board.theme-forest .cell.terrain-wall:nth-child(4n+1)::before { transform: rotate(-8deg); }
+
+/* Graveyard — a headstone: rounded-top slab standing on a flat base. */
+.board.theme-graveyard .cell.terrain-wall::before {
+  border-radius: 46% 46% 7% 7% / 32% 32% 7% 7%;
+  background:
+    radial-gradient(26% 30% at 50% 40%, #00000026, transparent 60%),
+    linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+}
+
+/* Ember — a basalt spire with a glowing crack, no soft bevel (it's jagged). */
+.board.theme-ember .cell.terrain-wall { --wall-hi: #7c5e52; --wall-lo: #33221c; }
+.board.theme-ember .cell.terrain-wall::before {
+  border-radius: 0;
+  clip-path: polygon(50% 2%, 63% 26%, 85% 22%, 72% 47%, 92% 74%, 63% 69%, 50% 98%, 37% 69%, 8% 74%, 28% 47%, 15% 22%, 37% 26%);
+  background:
+    linear-gradient(118deg, transparent 46%, #ff7a3a99 49%, transparent 53%),
+    linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+  box-shadow: none;
+  filter: drop-shadow(0 0 3px #ff5a2e55) drop-shadow(1px 2px 2px #0009);
+}
+.board.theme-ember .cell.terrain-wall:nth-child(2n)::before { transform: scaleX(-1); }
+
+/* Village — a market stall: a peaked, striped canvas awning over a plank table. */
+.board.theme-village .cell.terrain-wall { --wall-hi: #8a6a4a; --wall-lo: #573c28; }
+.board.theme-village .cell.terrain-wall::before {
+  border-radius: 0;
+  clip-path: polygon(3% 27%, 50% 3%, 97% 27%, 97% 100%, 3% 100%);
+  background:
+    repeating-linear-gradient(90deg, #e6d9be 0 17%, #b0503a 17% 34%) 0 0 / 100% 46% no-repeat,
+    linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+  box-shadow: inset 2px 2px 0 #ffffff2e;
+  filter: drop-shadow(1px 2px 2px #0008);
+}
+
+/* Bog — a mossy hummock heaving out of the black water: wet, dark, rounded. */
+.board.theme-bog .cell.terrain-wall { --wall-hi: #5c7150; --wall-lo: #2c3b28; }
+.board.theme-bog .cell.terrain-wall::before {
+  border-radius: 52% 48% 46% 54% / 50% 54% 46% 50%;
+  background:
+    radial-gradient(42% 26% at 38% 28%, #b6cc8a55, transparent 62%),
+    radial-gradient(30% 22% at 68% 68%, #1f2b1c88, transparent 60%),
+    linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
+}
+.board.theme-bog .cell.terrain-wall:nth-child(3n+1)::before { transform: scaleX(-1) rotate(5deg); }
+
+/* Village & bog floors (the two themes that used to borrow stone/forest). */
+.board.theme-village { background: #26212b; }
+.board.theme-village .cell { background: rgba(122, 110, 96, 0.52); }
+.board.theme-village .cell.dark { background: rgba(94, 84, 72, 0.52); }
+
+.board.theme-bog { background: #0b1310; }
+.board.theme-bog .cell { background: rgba(58, 84, 64, 0.5); }
+.board.theme-bog .cell.dark { background: rgba(48, 70, 54, 0.5); }
+.board.theme-bog .cell.terrain-difficult {
+  /* the Black Ford: oilier and darker than a green forest bog */
+  background:
+    radial-gradient(90% 70% at 34% 28%, #245049cc, transparent 62%),
+    radial-gradient(85% 65% at 70% 74%, #14313acc, transparent 60%),
+    linear-gradient(150deg, #133029, #0d2430);
+}
+
+/* ---- floor decals -------------------------------------------------------
+   A faint, sparse scatter of theme detail on open ground (via nth-child so
+   only some cells get one) — leaves, straw, bone-flecks — to break the bare
+   checkerboard. Kept low-contrast and beneath the token layer so it never
+   competes with figures or terrain affordances. `:not(.illusion)` leaves the
+   illusion overlay's own glyph alone. */
+.cell.terrain-open:not(.illusion)::after {
+  position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%);
+  font-size: clamp(8px, 2.1vmin, 12px); line-height: 1; opacity: 0.16;
+  pointer-events: none; z-index: 0; filter: grayscale(0.3);
+}
+.board.theme-forest .cell.terrain-open:nth-child(6n+2):not(.illusion)::after { content: '🍂'; }
+.board.theme-forest .cell.terrain-open:nth-child(11n+5):not(.illusion)::after { content: '🌿'; }
+.board.theme-bog .cell.terrain-open:nth-child(7n+3):not(.illusion)::after { content: '🌾'; }
+.board.theme-graveyard .cell.terrain-open:nth-child(9n+4):not(.illusion)::after { content: '🦴'; opacity: 0.13; }
+.board.theme-ember .cell.terrain-open:nth-child(8n+3):not(.illusion)::after { content: '🪨'; }
+.board.theme-village .cell.terrain-open:nth-child(7n+2):not(.illusion)::after { content: '🌾'; opacity: 0.13; }
+.board.theme-stone .cell.terrain-open:nth-child(10n+6):not(.illusion)::after { content: '🪨'; opacity: 0.12; }
 /* `.board ` prefix so the terrain background outweighs a theme's own
    `.board.theme-x .cell` rule (equal class count would otherwise let the plain
    floor win — that hid the lava on the ember board entirely). */
