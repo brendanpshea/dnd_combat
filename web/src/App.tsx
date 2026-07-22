@@ -365,6 +365,15 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [speed, setSpeed] = useState(1);
   /** Wall-clock time before which the AI must not act — see beatFor. */
   const dwellUntil = useRef(0);
+  // Decorative-effect timers (floats, bursts, hit flashes…). Tracked so exiting
+  // the battle mid-flourish clears them instead of firing setState on an
+  // unmounted component — the same cleanup discipline the AI-turn effect has.
+  const fxTimers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const fxTimeout = (fn: () => void, ms: number) => {
+    const t = setTimeout(() => { fxTimers.current.delete(t); fn(); }, ms);
+    fxTimers.current.add(t);
+  };
+  useEffect(() => () => { for (const t of fxTimers.current) clearTimeout(t); }, []);
   const [narration, setNarration] = useState<string | null>(null);
   const [tray, setTray] = useState<BarGroup | null>(null);
   // Default on: on a phone the log is hidden, so this is the only running
@@ -407,40 +416,40 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       if (fx.floats.length > 0) {
         setFloats((f) => [...f, ...fx.floats]);
         const ids = new Set(fx.floats.map((f) => f.id));
-        setTimeout(() => setFloats((f) => f.filter((x) => !ids.has(x.id))), 1600);
+        fxTimeout(() => setFloats((f) => f.filter((x) => !ids.has(x.id))), 1600);
       }
       if (fx.corpses.length > 0) {
         setCorpses((c) => [...c, ...fx.corpses]);
         const ids = new Set(fx.corpses.map((c) => c.id));
-        setTimeout(() => setCorpses((c) => c.filter((x) => !ids.has(x.id))), 1800);
+        fxTimeout(() => setCorpses((c) => c.filter((x) => !ids.has(x.id))), 1800);
       }
       if (fx.bursts.length > 0) {
         setBursts((b) => [...b, ...fx.bursts]);
         const ids = new Set(fx.bursts.map((b) => b.id));
-        setTimeout(() => setBursts((b) => b.filter((x) => !ids.has(x.id))), 900);
+        fxTimeout(() => setBursts((b) => b.filter((x) => !ids.has(x.id))), 900);
       }
       if (fx.areas.length > 0) {
         setAreas((a) => [...a, ...fx.areas]);
         const ids = new Set(fx.areas.map((a) => a.id));
-        setTimeout(() => setAreas((a) => a.filter((x) => !ids.has(x.id))), 1100);
+        fxTimeout(() => setAreas((a) => a.filter((x) => !ids.has(x.id))), 1100);
       }
       if (fx.projectiles.length > 0) {
         setProjectiles((p) => [...p, ...fx.projectiles]);
         const ids = new Set(fx.projectiles.map((p) => p.id));
-        setTimeout(() => setProjectiles((p) => p.filter((x) => !ids.has(x.id))), 450);
+        fxTimeout(() => setProjectiles((p) => p.filter((x) => !ids.has(x.id))), 450);
       }
       if (fx.casterId !== undefined) {
         const id = fx.casterId;
         setCastingId(id);
-        setTimeout(() => setCastingId((c) => (c === id ? undefined : c)), 450);
+        fxTimeout(() => setCastingId((c) => (c === id ? undefined : c)), 450);
       }
       if (fx.critFlash) {
         setCritFlash(true);
-        setTimeout(() => setCritFlash(false), 260);
+        fxTimeout(() => setCritFlash(false), 260);
       }
       if (fx.hits.length > 0) {
         setHitIds((h) => new Set([...h, ...fx.hits]));
-        setTimeout(() => setHitIds((h) => {
+        fxTimeout(() => setHitIds((h) => {
           const next = new Set(h);
           for (const id of fx.hits) next.delete(id);
           return next;

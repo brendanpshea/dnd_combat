@@ -9,6 +9,7 @@ import { SPELLS, type SpellTargeting } from '../../src/data/spells.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { ARMOR } from '../../src/data/armor.js';
 import { ITEMS } from '../../src/data/items.js';
+import { TRINKETS } from '../../src/data/trinkets.js';
 
 export interface InfoSheet {
   name: string;
@@ -112,16 +113,21 @@ function weaponSheet(id: string): InfoSheet | null {
   if (!w) return null;
   const props = w.properties.length ? w.properties.map((p) => p.replace('-', ' ')).join(', ') : '—';
   const stats: InfoSheet['stats'] = [
-    { label: 'Damage', value: `${w.damage} ${w.damageType}` },
+    { label: 'Damage', value: `${w.damage}${w.damageBonus ? `+${w.damageBonus}` : ''} ${w.damageType}` },
     { label: 'Reach', value: w.range ? `${w.range.normal}/${w.range.long} ft` : (w.melee ? 'Melee (5 ft)' : '—') },
     { label: 'Properties', value: props },
   ];
+  if (w.attackBonus) stats.push({ label: 'To hit', value: `+${w.attackBonus} bonus` });
   if (w.mastery) stats.push({ label: 'Mastery', value: MASTERY_BLURB[w.mastery]?.name ?? w.mastery });
+  // Magic first (the thing a shopper is paying for), then the mastery trick.
+  const magic = w.attackBonus
+    ? `Enchanted: +${w.attackBonus} to attack rolls and +${w.damageBonus ?? 0} damage. `
+    : w.magic ? 'Moon-touched: counts as magical, cutting through resistance to its damage. ' : '';
   return {
     name: w.name, icon: w.melee ? '⚔️' : '🏹',
-    kind: 'Weapon',
+    kind: w.attackBonus || w.magic ? 'Magic weapon' : 'Weapon',
     stats,
-    blurb: w.mastery ? (MASTERY_BLURB[w.mastery]?.text ?? '') : 'A weapon.',
+    blurb: `${magic}${w.mastery ? (MASTERY_BLURB[w.mastery]?.text ?? '') : magic ? '' : 'A weapon.'}`.trim(),
   };
 }
 
@@ -149,11 +155,25 @@ function armorSheet(id: string): InfoSheet | null {
   const a = ARMOR[id];
   if (!a) return null;
   const dex = a.dexCap === 'full' ? ' + Dex' : a.dexCap === 'none' ? '' : ` + Dex (max ${a.dexCap})`;
+  const plus1 = id.endsWith('-plus1');
   return {
     name: a.name, icon: '🥋',
-    kind: `${a.category[0]!.toUpperCase()}${a.category.slice(1)} armour`,
+    kind: `${plus1 || a.noCrit ? 'Magic ' : ''}${a.category} armour`,
     stats: [{ label: 'AC', value: `${a.base}${dex}` }],
-    blurb: a.noCrit ? 'Adamantine: you can’t be critically hit while you wear it.' : 'Worn armour.',
+    blurb: a.noCrit ? 'Adamantine: you can’t be critically hit while you wear it.'
+      : plus1 ? 'Enchanted: +1 AC over the ordinary version (already counted above).'
+      : 'Worn armour.',
+  };
+}
+
+function trinketSheet(id: string): InfoSheet | null {
+  const t = TRINKETS[id];
+  if (!t) return null;
+  return {
+    name: t.name, icon: t.icon,
+    kind: 'Wondrous item (trinket slot)',
+    stats: [],
+    blurb: t.blurb,
   };
 }
 
@@ -192,7 +212,7 @@ function itemGlyph(id: string): string {
   return '🎒';
 }
 
-/** The info sheet for any game id (weapon / armour / consumable), or null. */
+/** The info sheet for any game id (weapon / armour / trinket / consumable), or null. */
 export function infoFor(id: string): InfoSheet | null {
-  return weaponSheet(id) ?? armorSheet(id) ?? consumableSheet(id);
+  return weaponSheet(id) ?? armorSheet(id) ?? trinketSheet(id) ?? consumableSheet(id);
 }

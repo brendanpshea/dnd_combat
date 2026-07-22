@@ -2,19 +2,32 @@
 
 A grid-based tactical combat game using a simplified subset of the SRD 5.2.1
 rules. The engine is headless, deterministic, and data-driven; the terminal
-CLI, the web app, and the greedy AI all drive it through the same action API.
+CLI, the web app, and both AIs drive it through the same action API.
 
-**Status: phases 1–8 implemented** — full hot-seat and vs-AI play, six
-classes at levels 1–5 with one subclass each, six SRD monsters in four
-encounters, five battle maps with terrain, inventory/equipment, a persistent
-campaign (shop, loot, skill gambits), and a deployed web frontend
-(https://brendanpshea.github.io/dnd_combat/). See §10 for the roadmap.
+**Status: all planned phases shipped.** Six classes at levels 1–5 (one
+subclass each), eight species, 48 spells, 58 SRD monsters in 62 encounters,
+seven themed battle maps, inventory/equipment/trinkets, a persistent 34-stage
+campaign (shop, loot, skill gambits, hit-dice rests), a data-driven
+**adventure mode** with a flagship story module (The Hollow Road), and a
+deployed web frontend (https://brendanpshea.github.io/dnd_combat/). See §10
+for history and next candidates.
+
+**How to read this document.** §1–§6 are the combat rules model and its
+architecture; §7 is the AI (including its measured tuning history — the
+numbers there are empirical claims, kept so nobody re-litigates them from
+instinct); §7b is the campaign meta-game; §7c is adventure mode; §8–8b the
+two frontends; §9–§11 testing, history, and scope. Sibling docs:
+[adventure-mode-plan.md](adventure-mode-plan.md) (the original build plan,
+now fully implemented) and
+[module-writing-guide.md](module-writing-guide.md) (how to author a new
+story module). Where this file and the code disagree, the code is right —
+fix the file.
 
 ## 1. Core decisions
 
 | Question | Decision |
 | --- | --- |
-| Interface | Terminal CLI (ASCII board), engine fully headless underneath |
+| Interface | Headless engine; three drivers — terminal CLI, React web app, and the AIs — all through one action API |
 | Rules depth | Faithful core; simplified edges (no cover, no readied actions, no components) |
 | Grid | Square, 5 ft cells, Chebyshev distance (diagonal costs 5 ft) |
 | Data | Data-driven: classes, weapons, armor, spells, monsters, maps are typed data |
@@ -34,16 +47,23 @@ call engine *helpers* inside spell/feature hooks, but never drive the loop).
 ```
 src/
   data/            # content: no game loop logic
-    classes.ts features.ts spells.ts weapons.ts armor.ts monsters.ts maps.ts
+    classes.ts features.ts spells.ts weapons.ts armor.ts items.ts trinkets.ts
+    valuables.ts species.ts backgrounds.ts monsters.ts maps.ts
+    adventure-art.ts           # reusable location/NPC art vocabulary
+    modules/                   # story modules (hollow-road.ts, classic.ts, …)
   engine/
     rng.ts dice.ts grid.ts types.ts events.ts
-    rules/         attack.ts saves.ts movement.ts
+    rules/         attack.ts saves.ts movement.ts heal.ts luck.ts equipment.ts
     actions.ts     # Action vocabulary, isLegalAction, legalActions, step()
     turn.ts        # initiative, turn/round loop, action economy
     combat.ts      # setup + thin stateful Combat facade
   builder/         # class + species + level + gear -> Combatant
-  ai/              # greedy.ts: (GameState, actorId) -> Action
-  ui/cli/          # renderer.ts (board + English events), main.ts (menu loop)
+  ai/              # greedy.ts + simulated.ts/evaluate.ts (see §7); arena.ts
+  campaign/        # meta-game: party, stages, shop, loot, rests, saves (§7b)
+  adventure/       # story runtime: scenes, effects, validator, runner (§7c)
+  ui/cli/          # renderer.ts (board + English events), main.ts, campaign.ts
+web/               # React app (§8b): battle, campaign, adventure screens
+test/              # vitest suites (§9)
 ```
 
 ### The engine contract
@@ -356,9 +376,11 @@ alchemist's fire and two javelins.
 
 ## 4. Classes (levels 1–5, one subclass each)
 
-All classes: standard array by priority, standard gear, weapon masteries per
-the 5.5e list. Level 1 details (AC/HP/features) are authoritative in
-`src/data/classes.ts`; summary:
+Six classes ship. All: standard array by priority, standard gear, weapon
+masteries per the 5.5e list. Level 1 details (AC/HP/features) are
+authoritative in `src/data/classes.ts`. The founding four are summarized
+below; **Ranger (Hunter)** and **Paladin (Devotion)** follow in prose later
+in this section:
 
 | | Fighter (Champion) | Cleric (Life) | Wizard (Evoker) | Rogue (Assassin) |
 | --- | --- | --- | --- | --- |
@@ -572,21 +594,28 @@ Because these are save-ends riders and `charmAway` exits (not permanent
 conditions or kills), none of them can lock a hero out of the fight forever —
 an earlier version of the constrictor/cockatrice restraint could.
 
-Encounters (`--encounter`): goblins (L1), wolves (L1), undead (L2), ogre (L3),
-bandits (L2, camp), spiders (L2, nest), crypt (L3, acolyte + ghouls + skeletons),
-kobolds (L1, warren), raiders (L2, orcs + scouts), wilds (L2, bear + wolves),
-cult (L3, fanatic + acolyte + ghouls + animated armor). Monsters are always
-AI-run.
+The bestiary now spans 58 stat blocks in 62 authored encounters
+(`ENCOUNTERS` in `src/data/monsters.ts` is the authority — the early ones
+above are just the mechanically notable seeds): humanoid crews, beast packs,
+undead, fey, elementals, giants, hags, and the five chromatic wyrmlings. Each
+encounter carries a `suggestedLevel` and every monster an SRD `MONSTER_XP`
+entry (a test enforces the pairing). Monsters are always AI-run; pick one in
+skirmish via `--encounter <id>` or the web setup.
 
 ## 6. Grid, terrain, maps
 
 - Distance: Chebyshev × 5 ft. Melee reach 1 cell. Ranged: beyond normal range
   = disadvantage; beyond long = illegal; adjacent enemy = disadvantage.
-- LoS: supercover line trace, blocked by walls.
+- LoS: Bresenham center-to-center trace, blocked by walls. Deliberately not
+  supercover — a perfect diagonal squeezes between two orthogonal walls,
+  matching movement (which allows the same diagonal step), so sight and feet
+  agree about what a corner is.
 - Terrain: `open`, `difficult` (double cost), `wall` (blocks move + LoS),
   `hazard` (1d4 fire per cell entered — also on forced movement).
 - Maps are ASCII data (`src/data/maps.ts`): `.` `#` `~` `^`, top rank first.
-  Five ship: open, ruins, marsh, firepit, corridor. Spawn ranks stay walkable.
+  Seven ship — open, ruins, marsh, firepit, corridor, village (market square),
+  bog (the Black Ford) — each tagged with a `MapTheme` that drives the board's
+  whole look (§8b). Spawn ranks stay walkable.
 
 **AoE templates.** Sphere 5-ft = a chosen 2×2 block. Cone 15-ft = fixed 6-cell
 wedge in one of 8 directions (orthogonal 1/2/3; mirrored diagonal). Templates
@@ -929,6 +958,65 @@ persist), adds loot, and advances. Only a full wipe ends the campaign. Entry
 point: `npm run campaign`
 (`--auto` = AI-played, `--new` = fresh start).
 
+## 7c. Adventure mode
+
+`src/adventure/` plays authored story modules through the same campaign layer
+and combat engine. The design discipline mirrors the engine's: a **module is
+plain, JSON-serializable data** (no functions), interpreted by a pure runtime
+(`runtime.ts`) — a `Module` is to the runtime what a battle's
+`(seed, actions[])` is to `step()`. Anything fancy must be a new *scene kind*
+(reviewed like an engine change), never a script hook. Authoring guidance
+lives in [module-writing-guide.md](module-writing-guide.md).
+
+**Scene kinds** (`types.ts`): `story` (paragraph beats + choices), `dialogue`
+(an NPC speaking), `check` (one skill roll with success/failure outcomes),
+`challenge` (several *approaches* — named skill lines of attack — with
+`single` or `perApproach` retry), `battle` (an encounter + map, with
+`onWin`/`onLoss` outcomes, optional `surprise` side and `loot` policy),
+`explore` (a node map), `shop`, `rest`, and `ending`. Choices can carry
+requirements (flags, items, gold, class/species in party), inline skill
+checks, `once` (the anti-grind guard — a social roll can't be re-rolled by
+revisiting), and `hideWhenBlocked`.
+
+**Effects** are a deliberately tiny vocabulary: `setFlag`/`clearFlag`,
+`gold`, `addItem`/`removeItem`, `xp`, **`xpToLevel`** (top party XP up to the
+start of a level, never overshooting — how milestone level-ups ride on the
+fights that earn them), `heal`, and `journal` (quests/leads/clues/NPCs; a
+lead names the flag that resolves it, so the journal shows threads closing).
+
+**Explore maps** come in two shapes. A free-roam map (a town) shows every
+node; adding `paths` + `entry` turns it into a **traversal** map (a
+wilderness, a dungeon) where only the frontier — entries plus neighbours of
+visited nodes — is visible, and unvisited nodes can hide behind a `mystery`
+label. Nodes support `requires` gates, passive-Perception `hidden` secrets,
+`wandering` encounter rolls (once per node), and `sceneWhen` re-routing so a
+finished location plays a short "already done" beat instead of replaying.
+The Hollow Road uses this twice: the marsh trail and the Ashfang den are both
+traversal maps with a forced spine (the den: yard → pit → Vex → throne).
+
+**Camp & rests.** An explore map's `camp` rule enables resting there:
+present-and-empty = safe (town), `risky: { chance, battleScene }` = a long
+rest may be interrupted — rolled *before* any benefit, so an interrupted
+party fights with what it has and recovers nothing (banking the fire and
+trying again is the player's call). Short rests are never interrupted and
+spend hit dice per §7b. `rest` scenes (a paid inn room) apply the same
+campaign helpers.
+
+**Determinism & failure.** Battle seeds derive from campaign RNG + scene id +
+retry count (`battleSeed`) so a retried fight rolls differently but a seeded
+run replays exactly. A total party wipe routes to the module's `defeatScene`
+(revived at half HP — defeat costs progress, not the campaign) unless a
+battle overrides with `onLoss`. Shop scenes reuse the campaign shop plus
+once-per-visit **gambits** (haggle by three skills, steal) persisted on the
+adventure save.
+
+**Tooling.** `validate.ts` statically checks a module (every `to:` target
+exists, requirements reference real content, leads resolve); `runner.ts` is
+a headless auto-player used by tests to prove a module is completable and
+that XP pacing lands in its intended band (The Hollow Road: L3–L4 at the
+finale). Modules ship behind a `playableModules` gate
+(`src/data/modules/index.ts`) so demo/dev modules stay out of the menu.
+
 ## 8. CLI
 
 `npm start` — flags: `--seed n`, `--map id`, `--level 1|2|3`,
@@ -958,8 +1046,8 @@ authored SVG icon, and WebAudio-synthesized sound effects.
   (`boardBgUrl` in `art.ts`, the same `BASE_URL`-aware helper tokens/portraits
   use — a plain CSS `url()` can't follow the GitHub Pages subpath the way that
   does) behind the existing CSS-drawn grid, gated on the `HAS_BOARD_BG`
-  allowlist so a theme with no art yet (currently `village`/`bog`) falls back
-  to its flat theme colour. Cell colours are translucent (`rgba`, ~0.55 alpha)
+  allowlist so a theme whose art hasn't been generated falls back to its flat
+  theme colour (all six currently have art). Cell colours are translucent (`rgba`, ~0.55 alpha)
   rather than flat hex so the backdrop shows through; walls, difficult terrain,
   and hazards remain fully opaque CSS gradients on top, unchanged.
 
@@ -995,6 +1083,18 @@ authored SVG icon, and WebAudio-synthesized sound effects.
   drives the battlefield token. Saves in localStorage include that identity.
   Once-per-visit shop flags persist in the save so a page refresh can't retry a
   theft.
+- **Info cards:** a shared ⓘ system (`web/src/gameInfo.ts` + `InfoCard.tsx`)
+  answers "what does this do?" for any weapon, armour, consumable, or spell —
+  stats *derived* from the structured data (damage dice, AC formula, range,
+  casting time/concentration), one-line blurbs authored in `gameInfo.ts`
+  (the rules live in each spell's `cast()`, not in prose), scrolls delegating
+  to the spell they cast. Wired into camp, the shop, and the spell tray.
+- **Adventure screens:** the runtime's scenes render over location backdrops
+  with a frosted text panel; every visible check rolls through a dice ritual
+  (animated d20, nat-20 confetti / nat-1 shake); explore maps place tappable
+  nodes on the art; the journal is a drawer; battles delegate to the shared
+  `<Battle>`. The landing menu ("The Free Company") fronts playable modules
+  with a hero card and an About dialog covering the SRD/CC-BY attribution.
 - **PWA:** manifest + service worker (network-first navigation, cache-first
   hashed assets) — installable on phones, works offline.
 - **Deployment:** GitHub Actions builds on every push to `main` (gated on
@@ -1002,49 +1102,51 @@ authored SVG icon, and WebAudio-synthesized sound effects.
 
 ## 9. Testing
 
-182 vitest tests: deterministic replay of full battles, rules-level unit
-tests (advantage cancellation, crit math, OA triggers, condition lifecycles,
-resistances, multiattack banking), AI completion across seeds/maps/encounters,
-stat-block fidelity checks against the SRD's printed attack bonuses, campaign
-state/loot/skill-check coverage, and web action-grouping tests. CI runs the
-suite before every deploy.
+522 vitest tests across 36 suites: deterministic replay of full battles,
+rules-level unit tests (advantage cancellation, crit math, OA triggers,
+condition lifecycles, resistances, multiattack banking), AI completion across
+seeds/maps/encounters plus the arena regression floor, stat-block fidelity
+checks against the SRD's printed attack bonuses, campaign state/loot/rest/
+skill-check coverage, module validation and headless full-module playthroughs
+(including the XP-pacing band), and web action-grouping tests against the
+live engine. CI runs the suite before every deploy.
 
-## 10. Roadmap
+## 10. History & next candidates
 
-Done: ✅ foundation → ✅ weapons combat → ✅ classes/spells/CLI → ✅ greedy AI
-→ ✅ terrain/maps → ✅ monsters/encounters → ✅ levels 2–3 + subclasses
-→ ✅ inventory/equipment → ✅ campaign + shop + random loot + shop skills
-→ ✅ web UI (battle, campaign, effects/sound, PWA, Pages deploy)
-→ ✅ Ranger + Paladin (levels 1–5)
-→ 🚧 Adventure mode (story/exploration/skills) — M0 (18 skills, per-character
-  and group checks, backgrounds) + M1 (pure scene runtime, validator, classic
-  module, headless CLI + auto-player, web story panel + dice-check ritual) +
-  M2 (explore node-maps with fog/secrets/wandering encounters, journal drawer,
-  shop-as-scene, module picker, the "Bandit Hideout" demo module) + M3 (juice
-  pass: dice-roll/celebration SFX + haptics, nat-20 confetti / nat-1 shake,
-  scene-transition wipes, mute toggle, mobile-audit CSS) + M4 ("The Hollow
-  Road" — an original 3-act module: village hub → marsh trail → raider den,
-  ~30 scenes, avoidable fights, flag payoffs; adventure save/resume; a
-  main-menu module selector) shipped. The plan (docs/adventure-mode-plan.md)
-  is now fully implemented. A reusable **adventure-art vocabulary**
-  (`src/data/adventure-art.ts`, `art/adventure-prompts.md`) keys location
-  backdrops and NPC portraits to *setting types* and *archetypes* — a fixed
-  generated set every future module composes for free; ids are validated and
-  fall back to emoji until generated.
+All planned phases are shipped, in rough order: foundation → weapons combat →
+classes/spells/CLI → greedy AI → terrain/maps → monsters/encounters → levels
+2–5 + subclasses (ASIs, Extra Attack, Fireball) → inventory/equipment →
+campaign + shop + random loot + shop skills → web UI (battle, campaign,
+effects/sound, PWA, Pages deploy) → simulated AI + arena/probe tooling →
+Ranger + Paladin → species (eight) → trinkets/valuables/expanded loot →
+adventure mode M0–M4 (18 skills + backgrounds; pure scene runtime + validator
++ headless runner; explore maps with fog/secrets/wandering; journal;
+shop-as-scene; dice-ritual juice pass; **The Hollow Road**, the flagship
+3-act module — see §7c and docs/adventure-mode-plan.md) → hit-dice rests →
+the 34-stage SRD-curve ladder → themed battlefield scenery + six arena
+backdrops. A reusable **adventure-art vocabulary** (`src/data/
+adventure-art.ts`, `art/adventure-prompts.md`) keys location backdrops and
+NPC portraits to *setting types* and *archetypes* — a fixed generated set
+every future module composes for free; ids are validated and fall back to
+emoji until generated.
 
 Next candidates, roughly in fun-per-effort order:
-1. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.
-2. **Levels 4–5** (ASIs, Extra Attack, 3rd-level spells — Fireball wants a
-   bigger sphere template).
-3. **Longer/branching campaign** (more stages, choice of route, revival
-   costs; the stage ladder is already data).
-4. **Deployment phase** (players place their four units).
-5. **Smarter AI** (one-ply lookahead via the pure `step`, terrain valuation,
-   focus fire).
-6. **Bigger/asymmetric maps, more encounters.**
+1. **A second shipped adventure module** — the runtime, validator, art
+   vocabulary, and writing guide make this pure authoring.
+2. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.
+3. **Deployment phase** (players place their four units).
+4. **Cross-unit AI coordination** ("I soften, you finish") — the one
+   measured gap left in §7; a large build.
+5. **Bigger/asymmetric maps** — the parser already takes any rectangle.
+6. **Auto-tuning evaluator weights** against arena win rate — open,
+   well-tooled follow-up.
 
 ## 11. Deliberately out of scope
 
-Cover, reactions beyond opportunity attacks, readied actions, death saves,
-spell components, rituals, rests as a play loop, multiclassing, exhaustion,
-mounts, elevation, lighting/vision, hiding/stealth.
+Cover, reactions beyond opportunity attacks (and the Shield spell's autocast),
+readied actions, death saves, spell components, multiclassing, feats (the L4
+ASI is a fixed +2), exhaustion, mounts, elevation, lighting/vision, creature
+size (each combatant occupies one cell), and upcasting by the AI (players can
+upcast; the AI never does). Formerly on this list but since implemented:
+hiding/stealth (§3), rituals (Find Familiar), and rests (hit dice, §7b) —
+scope is a decision, not a fence.
