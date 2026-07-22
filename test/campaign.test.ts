@@ -238,9 +238,7 @@ describe('campaign state', () => {
       }
     }
     expect(sawLevel2).toBe(true);
-    // Under the SRD XP curve (L4 = 2700, L5 = 6500) the skirmish ladder's
-    // ~2.2k total XP carries the party to 3rd level by the finale.
-    expect(partyLevelOf(c)).toBe(3);
+    expect(partyLevelOf(c)).toBe(5); // the extended ladder reaches the L5 cap by the finale
   });
 
   it('completing all stages finishes the campaign', () => {
