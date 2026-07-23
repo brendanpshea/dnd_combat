@@ -138,6 +138,12 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
   const dev = typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev');
   const modules = playableModules(dev);
   const savedId = savedAdventureModule();
+  // Float a module with an in-progress save to the top, so "Continue" is the
+  // first thing you see — otherwise a saved Chapter 2 hides below a fresh
+  // Chapter 1 you've already finished.
+  const orderedModules = savedId
+    ? [...modules].sort((a, b) => Number(b.id === savedId) - Number(a.id === savedId))
+    : modules;
 
   return (
     <div className="setup landing">
@@ -157,7 +163,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
       </header>
 
       <div className="landing-modules">
-        {modules.map((m) => {
+        {orderedModules.map((m) => {
           const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
           const play = (fresh?: boolean) => {
             initAudio();
@@ -165,7 +171,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           };
           const cover = m.cover;
           return (
-            <div key={m.id} className="module-card">
+            <div key={m.id} className={`module-card${resume ? ' resuming' : ''}`}>
               <button className="module-cover" onClick={() => play()} aria-label={`Play ${m.title}`}>
                 {cover && hasSceneArt(cover)
                   ? <div className="module-cover-art" style={{ backgroundImage: `url(${sceneArtUrl(cover)})` }} />

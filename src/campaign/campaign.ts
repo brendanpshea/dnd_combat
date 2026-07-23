@@ -951,6 +951,18 @@ export function longRest(c: CampaignState): RestResult {
   return { totalHealed };
 }
 
+/** A full reset for the downtime *between adventures*: marching from one module
+ *  into its sequel is days on the road, so everything comes back — full HP,
+ *  every spell slot, the whole hit-die pool — and any lingering camp buff
+ *  (giant strength, a resistance potion) wears off. Clearing `resources`
+ *  outright is exactly that: absent means full for HP/slots/hit dice, and a
+ *  familiar is re-granted by the builder from the caster's own spell list, so
+ *  the owl still returns. Unlike `longRest` (which is a single night and
+ *  restores only half your hit dice), this is the "arrive fresh" reset. */
+export function fullRest(c: CampaignState): void {
+  for (const ch of c.characters) delete ch.resources;
+}
+
 /** Healing sources that can be used between battles from the store. */
 export type StoreHealingSource =
   | 'potion-healing'

@@ -2303,6 +2303,10 @@ button.category .count {
 
 .landing-modules { display: flex; flex-direction: column; gap: 14px; }
 .module-card { display: flex; flex-direction: column; gap: 6px; }
+/* The chapter you're mid-run on: a gold frame so "Continue" reads at a glance
+   even amid finished and not-yet-started chapters. */
+.module-card.resuming .module-cover { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.module-card.resuming .module-cta { color: var(--gold); font-weight: 700; }
 .module-cover {
   display: flex; flex-direction: column; text-align: left; padding: 0; overflow: hidden;
   border-radius: 16px; border: 1px solid rgba(255,255,255,.08); background: var(--panel);
