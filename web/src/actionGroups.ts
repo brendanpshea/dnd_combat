@@ -17,6 +17,10 @@ export interface TargetOption {
   /** Glyph, so a chooser of three weapon names says which is which at a glance. */
   icon?: string;
   action: Action;
+  /** Multi-target enemy spells (Scorching Ray, Magic Missile) also hang off a
+   *  tapped enemy — but tapping this option *starts* the accumulate-taps flow
+   *  with that enemy pre-picked, rather than firing `action` immediately. */
+  multi?: MultiTargetSpec;
 }
 
 /**
@@ -230,8 +234,12 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         } else if (t.kind === 'creature' && first && 'combatantId' in first) {
           // Fast path: a single-target enemy spell also hangs off the enemy, so
           // attacking stays two taps (tap the goblin, tap Fire Bolt) rather than
-          // three via the tray. It's the most common action in the game.
-          if (t.who === 'enemy' && a.targets.length === 1) {
+          // three via the tray. It's the most common action in the game. Guard
+          // on `t.count === 1`, not the built action's length — a lone enemy
+          // makes Scorching Ray's default set one target too, and firing that
+          // single ray was the bug (it should fling all its rays like Magic
+          // Missile). Multi-count spells take the accumulate-taps path below.
+          if (t.who === 'enemy' && t.count === 1 && a.targets.length === 1) {
             pushTarget(first.combatantId, describeShort(a), a, spell.icon);
           }
           // ...and *every* creature-targeted spell gets a tray entry, because
@@ -244,19 +252,36 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
                 .filter((c: Combatant) => c.alive && validTarget(state, actorId, spell, c.id))
                 .map((c: Combatant) => c.id),
             );
+            const multi: MultiTargetSpec = {
+              spellId: a.spellId, slotLevel: a.slotLevel,
+              maxTargets: t.count,
+              allowRepeats: a.spellId === 'magic-missile' || a.spellId === 'scorching-ray',
+              validIds,
+            };
             bar.push({
               id: `spell:${a.spellId}`,
               label: spell.name,
               icon: spell.icon,
               group: 'spell',
               note: spellNote(spell),
-              multi: {
-                spellId: a.spellId, slotLevel: a.slotLevel,
-                maxTargets: t.count,
-                allowRepeats: a.spellId === 'magic-missile' || a.spellId === 'scorching-ray',
-                validIds,
-              },
+              multi,
             });
+            // A multi-target enemy spell (Scorching Ray, Magic Missile) also
+            // hangs off each enemy you can tap — so the natural "tap the goblin,
+            // pick the spell" gesture works for it too, not only the 🔮 tray.
+            // Tapping the option *starts* the accumulate-taps flow with that
+            // enemy pre-picked (its first ray/dart), then you pick the rest.
+            if (t.who === 'enemy' && t.count > 1) {
+              const unit = a.spellId === 'scorching-ray' ? 'rays' : a.spellId === 'magic-missile' ? 'darts' : 'hits';
+              for (const id of validIds) {
+                // Anchor the flow on the tapped enemy (its first ray/dart), then
+                // pick the rest; falls back to a single-target cast if applied.
+                const firstAction: Action = { kind: 'castSpell', spellId: a.spellId, slotLevel: a.slotLevel, targets: [{ combatantId: id }] };
+                const list = perTarget.get(id) ?? [];
+                list.push({ label: `${spell.name} (${t.count} ${unit})`, icon: spell.icon, action: firstAction, multi });
+                perTarget.set(id, list);
+              }
+            }
           }
         }
         break;

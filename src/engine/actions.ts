@@ -300,12 +300,21 @@ export function spellTargetSets(
     if (t.count === 1) {
       for (const v of valid) out.push({ targets: [{ combatantId: v.id }] });
     } else if (valid.length > 0) {
-      // Default selection: Magic Missile → all darts at first target;
-      // Bless / Mass Healing Word → up to `count` allies (self first).
+      // Default selection depends on whether the spell's "shots" can double up
+      // on one creature:
+      //   Magic Missile  → every dart at the first target (its classic use);
+      //   Scorching Ray  → one ray per enemy, but *all* rays still fire — with a
+      //                    lone target every ray lands on it (previously it fired
+      //                    just one), and with too few enemies the extras pile on
+      //                    the last rather than vanishing;
+      //   Bless / Mass Healing Word → distinct allies, so no doubling up.
+      const stackable = spell.id === 'magic-missile' || spell.id === 'scorching-ray';
       const targets: Target[] =
         spell.id === 'magic-missile'
           ? Array.from({ length: t.count }, () => ({ combatantId: valid[0]!.id }))
-          : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
+          : stackable
+            ? Array.from({ length: t.count }, (_, i) => ({ combatantId: valid[Math.min(i, valid.length - 1)]!.id }))
+            : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
       out.push({ targets });
     }
   } else if (t.kind === 'self') {

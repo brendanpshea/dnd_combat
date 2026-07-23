@@ -908,7 +908,24 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               <h3>{chooser.target.name}</h3>
             </div>
             {chooser.options.map((o, i) => (
-              <button key={i} onClick={() => apply(o.action)}>
+              <button key={i} onClick={() => {
+                // A multi-target spell tapped off an enemy starts the
+                // accumulate-taps flow with that enemy pre-picked as its first
+                // ray/dart — pick the rest, or hit "Cast now" to fire what you
+                // have. Everything else applies immediately.
+                if (o.multi) {
+                  const anchor = chooser.target.id;
+                  const spec = o.multi;
+                  if (spec.maxTargets <= 1) apply(buildMultiAction(spec, [anchor]));
+                  else {
+                    setChooser(null);
+                    const name = SPELLS[spec.spellId]?.name ?? o.label;
+                    setTargeting({ type: 'multi', label: `${name} — pick the rest (or Cast now)`, spec, picked: [anchor] });
+                  }
+                } else {
+                  apply(o.action);
+                }
+              }}>
                 {o.icon && <span className="opt-ico">{o.icon}</span>}
                 {o.label}
               </button>
