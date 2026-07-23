@@ -31,6 +31,7 @@ import { hasSceneArt, sceneArtUrl } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
+import { CharacterSheet } from './CharacterSheet.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -420,6 +421,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // actually happens (an ally goes down, a slot is spent, …). See tips.ts.
   const [tip, setTip] = useState<Tip | null>(null);
   const [tipsMuted, setTipsMuted] = useState(() => tipsOff());
+  // Tap the status line to inspect the active combatant's full sheet.
+  const [sheetFor, setSheetFor] = useState<Combatant | null>(null);
   // Training Yard: which coach step is showing. Advances off battle events.
   const [coachStep, setCoachStep] = useState(0);
   const speedRef = useRef(1);
@@ -770,7 +773,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       )}
 
       {active && (
-        <div className="statusline" title={tooltipFor(active)}>
+        <div
+          className="statusline statusline-tap"
+          title="Tap for full character sheet"
+          role="button"
+          tabIndex={0}
+          onClick={() => setSheetFor(active)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetFor(active); } }}
+        >
           <Portrait id={active.portraitId ?? active.classId} team={active.team} />
           <strong>{active.name}</strong>
           {/* From a solo-human game (campaign/adventure/vs-AI) read the side as
@@ -785,6 +795,16 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
           {!isHumanTurn && !combat.isOver() && <em className="thinking">AI thinking…</em>}
         </div>
+      )}
+
+      {sheetFor && (
+        <CharacterSheet
+          c={sheetFor}
+          subtitle={youTeam
+            ? (sheetFor.team === youTeam ? 'Your hero' : 'Enemy')
+            : (sheetFor.team === 'team1' ? 'Blue team' : 'Red team')}
+          onClose={() => setSheetFor(null)}
+        />
       )}
 
       {targeting && (
