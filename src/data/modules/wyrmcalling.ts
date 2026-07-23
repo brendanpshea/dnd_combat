@@ -442,5 +442,5 @@ export const WYRMCALLING_MODULE: Module = {
   blurb: 'The Reedwife\'s sisters wake the Calling stone, and the hills answer — wyrms, giants, and worse. Climb, thin the choir, and silence it.',
   cover: 'loc-mountain',
   levelBand: { from: 4, to: 5 },
-  start: 'muster', scenes, defeatScene: 'wc-defeat',
+  start: 'muster', scenes, defeatScene: 'wc-defeat', town: 'warcamp',
 };

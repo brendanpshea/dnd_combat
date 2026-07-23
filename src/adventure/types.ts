@@ -240,6 +240,12 @@ export interface Module {
   cover?: Id;
   start: SceneRef;
   scenes: Record<Id, Scene>;
+  /** The module's home base — a safe explore hub with a shop/inn (Thornwick's
+   *  square, the war-camp). Once the party has discovered it, they may fast-
+   *  travel back to it (and out to any other location they've been) from any
+   *  location's map, so a supply run isn't a long walk back through the wild.
+   *  Must name an `explore` scene; absent = no fast travel. */
+  town?: Id;
   /** Where a total party wipe lands (revived, half HP) instead of a hard game
    *  over — usually a safe hub like the town inn. A per-battle `onLoss`
    *  overrides it; absent both, a lost fight simply retries. */

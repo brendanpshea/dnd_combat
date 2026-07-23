@@ -448,5 +448,5 @@ export const SUNKEN_BARROWS_MODULE: Module = {
   levelBand: { from: 3, to: 4 },
   // Part 2 of the trilogy: a victory carries the company into The Wyrmcalling.
   sequel: 'wyrmcalling',
-  start: 'return', scenes, defeatScene: 'sb-defeat',
+  start: 'return', scenes, defeatScene: 'sb-defeat', town: 'town',
 };

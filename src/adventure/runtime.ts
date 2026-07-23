@@ -420,6 +420,50 @@ export function returnToHub(state: AdventureState, module: Module): AdventureEve
   return enterScene(state, module, HUB_REF);
 }
 
+/** The name of the location a "leave" would drop the party back at, so the UI
+ *  can label the button "← Back to the Marsh Road" instead of a bare "Leave". */
+export function hubReturnTitle(state: AdventureState, module: Module): string | null {
+  const hub = hubReturn(state, module);
+  if (!hub) return null;
+  const scene = module.scenes[hub];
+  return scene?.kind === 'explore' ? scene.map.title : null;
+}
+
+/** A place the party can fast-travel to from the location they're standing in.
+ *  `town` marks the home base so the UI can flag it. */
+export interface TravelDest { sceneId: Id; title: string; isTown: boolean }
+
+/**
+ * Fast-travel destinations from the current scene: every *explore* location the
+ * party has already discovered, minus the one they're in. Only offered while
+ * standing on a location map (a hub) — you fast-travel *between* places you know,
+ * not out of the middle of a conversation or a fight. Restricting to already
+ * visited hubs is what keeps it safe: it can never skip a one-way gate the party
+ * hasn't cleared (an unvisited location isn't a destination). The home town, if
+ * discovered, sorts first.
+ */
+export function travelDestinations(state: AdventureState, module: Module): TravelDest[] {
+  const here = currentScene(state, module);
+  if (here.kind !== 'explore') return [];
+  const dests: TravelDest[] = [];
+  for (const sceneId of state.visited) {
+    if (sceneId === state.sceneId) continue;
+    const scene = module.scenes[sceneId];
+    if (scene?.kind !== 'explore') continue;
+    dests.push({ sceneId, title: scene.map.title, isTown: sceneId === module.town });
+  }
+  return dests.sort((a, b) => Number(b.isTown) - Number(a.isTown) || a.title.localeCompare(b.title));
+}
+
+/** Fast-travel to a discovered location. Validates the destination is really on
+ *  offer (a known explore hub, reachable from where you stand), then walks in. */
+export function fastTravel(state: AdventureState, module: Module, toSceneId: Id): AdventureEvent[] {
+  if (!travelDestinations(state, module).some((d) => d.sceneId === toSceneId)) {
+    throw new Error(`Cannot fast-travel to ${toSceneId} from ${state.sceneId}`);
+  }
+  return enterScene(state, module, toSceneId);
+}
+
 /** Take a choice at a story/dialogue scene. Rolls an inline check if present. */
 export function choose(
   state: AdventureState, module: Module, choiceId: Id, actorIdx?: number,
