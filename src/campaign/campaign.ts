@@ -1152,6 +1152,26 @@ function defaultKnown(pool: Id[], limit: number): Id[] {
   return byStrength(pool).slice(0, limit);
 }
 
+/**
+ * Grow a hand-picked list into new capacity: keep every valid pick, then top up
+ * with the strongest spells it doesn't already have until it fills the limit.
+ * Returns null when nothing needs adding (already at/over the limit), so the
+ * caller only rewrites a stored array that actually changed. This is what a
+ * level-up calls so a customized caster's loadout grows with the new level
+ * instead of silently staying small — while a player who deliberately prepared
+ * fewer at their *current* level is left alone (the getters never call this).
+ */
+function grownToLimit(saved: Id[], pool: Id[], limit: number): Id[] | null {
+  const kept = [...new Set(saved)].filter((id) => pool.includes(id)).slice(0, limit);
+  if (kept.length >= limit) return null;
+  const have = new Set(kept);
+  for (const id of byStrength(pool)) {
+    if (kept.length >= limit) break;
+    if (!have.has(id)) { kept.push(id); have.add(id); }
+  }
+  return kept.length > saved.length ? kept : null;
+}
+
 // --- tier 1: cantrips ------------------------------------------------------
 
 /** The cantrips this character can choose from. */
@@ -1273,6 +1293,34 @@ export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): 
   const pool = preparableSpells(c, charIdx);
   ch.prepared = [...new Set(spellIds)].filter((id) => pool.includes(id)).slice(0, preparedLimit(c, charIdx));
   return true;
+}
+
+/**
+ * On level-up, grow every caster's *hand-picked* spell lists into the new
+ * capacity — new cantrips known, a bigger spellbook, more prepared — so a
+ * customized loadout keeps up with the party instead of silently staying at its
+ * old, smaller size (which used to force a full "Use recommended" reset that
+ * wiped the player's choices). Lists left at the auto-default are untouched:
+ * absent already means "the level-appropriate default", so they track the level
+ * for free. Grow the spellbook before the prepared list, since what's
+ * preparable is drawn from it. Only called when the level actually rises.
+ */
+export function growSpellsForLevel(c: CampaignState): void {
+  for (let i = 0; i < c.characters.length; i++) {
+    const ch = c.characters[i]!;
+    if (ch.cantrips) {
+      const g = grownToLimit(ch.cantrips, cantripPool(c, i), cantripLimit(c, i));
+      if (g) ch.cantrips = g;
+    }
+    if (ch.spellbook) {
+      const g = grownToLimit(ch.spellbook, spellbookPool(c, i), spellbookLimit(c, i) ?? 0);
+      if (g) ch.spellbook = g;
+    }
+    if (ch.prepared) {
+      const g = grownToLimit(ch.prepared, preparableSpells(c, i), preparedLimit(c, i));
+      if (g) ch.prepared = g;
+    }
+  }
 }
 
 /** Drop cantrip, spellbook, and prepared choices back to the auto-defaults. */
@@ -1705,6 +1753,7 @@ export function applyAdventureVictory(
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
+  if (afterLevel > beforeLevel) growSpellsForLevel(c);
   const treasure = treasureFor(encounterXP(encounterId), rng, bonusTier, encounterCoinXP(encounterId));
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
@@ -1743,6 +1792,7 @@ export function applyVictory(
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
+  if (afterLevel > beforeLevel) growSpellsForLevel(c);
 
   // The final stage guarantees a rare drop as a trophy for finishing.
   const isFinale = c.stage === STAGES.length - 1;
