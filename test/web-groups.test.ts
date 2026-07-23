@@ -87,6 +87,34 @@ describe('web action grouping', () => {
     expect(events.filter((e) => e.type === 'damageDealt')).toHaveLength(3);
   });
 
+  it('an area spell scroll collapses to ONE pick-a-cell entry, not one per aim cell', () => {
+    // A level-5 wizard (Fireball is on the arcane list) holding one scroll.
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        place('wizard', 'team1', { x: 3, y: 3 }, { id: 'wiz', level: 5,
+          inventory: [{ itemId: 'scroll-fireball', qty: 1 }] }),
+        place('fighter', 'team2', { x: 5, y: 5 }, { id: 'foe', hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    until(c, 'wiz');
+    const grouped = groupActions(c.state, 'wiz', c.legalActions());
+    // Exactly one bar entry for the scroll (the bug rendered dozens), and it's a
+    // pick-a-cell tray, not an auto-firing button.
+    const scrolls = grouped.bar.filter((b) => b.id === 'item:scroll-fireball');
+    expect(scrolls).toHaveLength(1);
+    expect(scrolls[0]!.cellTargets).toBeDefined();
+    expect(scrolls[0]!.cellTargets!.size).toBeGreaterThan(1); // many aim cells, one entry
+    expect(scrolls[0]!.action).toBeUndefined();               // never a one-tap auto-cast
+    // Casting the scroll at a cell telegraphs a spellCast (so the blast animates)
+    // and deals fire damage to the foe in the blast.
+    const aim = [...scrolls[0]!.cellTargets!.values()].find((a) =>
+      a.kind === 'useItem' && a.targets?.some((t) => 'position' in t && t.position.x === 5 && t.position.y === 5))!;
+    const events = c.apply(aim);
+    expect(events.some((e) => e.type === 'spellCast' && e.spellId === 'fireball')).toBe(true);
+    expect(events.some((e) => e.type === 'damageDealt' && e.damageType === 'fire')).toBe(true);
+  });
+
   it('a non-caster cannot use a spell scroll (fighter can\'t read a wizard scroll)', () => {
     const c = new Combat({
       seed: 4,

@@ -148,6 +148,11 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
   const perTarget = new Map<Id, TargetOption[]>();
   const bar: BarEntry[] = [];
   const cellSpells = new Map<string, Map<string, Action>>();
+  // Area/teleport scrolls (a Fireball scroll aims at a cell) collapse into one
+  // "pick a cell" tray entry, exactly like the spell they cast — otherwise
+  // legalActions' one-useItem-per-target-cell floods the Items tray with dozens
+  // of identical buttons.
+  const cellItems = new Map<string, Map<string, Action>>();
   const seenMulti = new Set<string>();
 
   // Cunning Action / Nimble Escape do exactly what Dash, Disengage and Hide do,
@@ -288,6 +293,14 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           }
           break;
         }
+        // An area/teleport scroll aims at a cell: gather one entry per aim
+        // point into a single pick-a-cell tray (like the area-spell path).
+        if (first && 'position' in first) {
+          const m = cellItems.get(a.itemId) ?? new Map<string, Action>();
+          m.set(posKey(first.position), a);
+          cellItems.set(a.itemId, m);
+          break;
+        }
         if (first && 'combatantId' in first && first.combatantId !== actorId) {
           pushTarget(first.combatantId, describeShort(a), a);
         } else if (!first) {
@@ -355,6 +368,21 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
       ...(spell ? { icon: spell.icon } : {}),
       group: 'spell',
       ...(spell ? { note: spellNote(spell, innateLeft(me, spellId)) } : {}),
+      cellTargets: cells,
+    });
+  }
+  // One pick-a-cell entry per area/teleport scroll (the spell it casts supplies
+  // the icon), with a ×qty note when the pack holds more than one.
+  for (const [itemId, cells] of cellItems) {
+    const it = ITEMS[itemId];
+    const scrollSpell = it?.targeting.kind === 'spell' ? SPELLS[it.targeting.spellId] : undefined;
+    const qty = me.inventory.find((s) => s.itemId === itemId)?.qty ?? 0;
+    bar.push({
+      id: `item:${itemId}`,
+      label: it?.name ?? itemId,
+      group: 'item',
+      ...(scrollSpell ? { icon: scrollSpell.icon } : {}),
+      ...(qty > 1 ? { note: `×${qty}` } : {}),
       cellTargets: cells,
     });
   }

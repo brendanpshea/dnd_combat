@@ -554,6 +554,18 @@ export function step(state: GameState, action: Action): { state: GameState; even
       const positions = targets.flatMap((t) => ('position' in t ? [t.position] : []));
       events.push({ type: 'itemUsed', combatantId: actorId, itemId: action.itemId, ...(targetIds[0] !== undefined ? { targetId: targetIds[0] } : {}) });
       if (item.targeting.kind === 'thrown') events.push(...endHide(actor));
+      // A spell scroll casts its spell for real — so telegraph the cast and its
+      // footprint the same way castSpell does, or the frontend has nothing to
+      // animate (a Fireball scroll would detonate invisibly).
+      if (item.targeting.kind === 'spell') {
+        const scrollSpell = SPELLS[item.targeting.spellId];
+        if (scrollSpell) {
+          events.push({
+            type: 'spellCast', casterId: actorId, spellId: scrollSpell.id,
+            origin: actor.position, cells: spellFootprint(draft, actor, scrollSpell, targets),
+          });
+        }
+      }
       events.push(...item.apply({ state: draft, userId: actorId, targetIds, positions }));
       break;
     }
