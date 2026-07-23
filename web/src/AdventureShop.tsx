@@ -30,6 +30,11 @@ import { artEmoji } from '../../src/data/adventure-art.js';
 
 type ShopScene = Extract<Scene, { kind: 'shop' }>;
 
+/** Callback ref: when a confirm row appears, pull it into view within the
+ *  scrolling list — otherwise a tap near the bottom expands its Buy/Sell
+ *  buttons below the fold and the player can't find them. */
+const revealConfirm = (el: HTMLDivElement | null) => el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
 const CAT_META: Record<ItemCategory, { icon: string; label: string }> = {
   weapon: { icon: '⚔️', label: 'Weapons' },
   armor: { icon: '🛡️', label: 'Armor' },
@@ -215,7 +220,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                 <ItemInfoDot itemId={id} />
                 </div>
                 {picking && typeof focus !== 'number' && (
-                  <div className="adv-item-acts adv-buyfor">
+                  <div className="adv-item-acts adv-buyfor" ref={revealConfirm}>
                     <span className="muted">Buy for:</span>
                     {campaign.characters.map((ch, i) => {
                       // Each recipient carries a proficiency badge, so you see
@@ -269,7 +274,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                 <ItemInfoDot itemId={itemId} />
                 </div>
                 {confirming && (
-                  <div className="adv-item-acts">
+                  <div className="adv-item-acts" ref={revealConfirm}>
                     <button onClick={doSell}>Sell for +{resale}g</button>
                     <button className="ghost" onClick={() => setPickSell(null)}>Keep</button>
                   </div>

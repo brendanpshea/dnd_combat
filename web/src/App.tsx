@@ -659,6 +659,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   }
 
   const winner = combat.winner();
+  // When exactly one side is human-controlled (vs-AI, campaign, adventure, the
+  // training yard), the outcome is "yours" — say so instead of a team colour.
+  // Symmetric matches (hot-seat, AI-vs-AI spectate) keep Blue/Red.
+  const soloHuman = (['team1', 'team2'] as TeamId[]).filter((t) => !aiTeams.has(t));
+  const youTeam = soloHuman.length === 1 ? soloHuman[0] : undefined;
 
   return (
     <div className="battle">
@@ -893,7 +898,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       {winner && (
         <div className="overlay">
           <div className="overlay-box">
-            <h2>{winner === 'team1' ? '🔵 Blue team wins!' : '🔴 Red team wins!'}</h2>
+            <h2>
+              {youTeam
+                ? (winner === youTeam ? '🎉 You win!' : '💀 You were defeated')
+                : (winner === 'team1' ? '🔵 Blue team wins!' : '🔴 Red team wins!')}
+            </h2>
             <button className="primary" onClick={() => onDone(winner)}>{doneLabel}</button>
           </div>
         </div>
