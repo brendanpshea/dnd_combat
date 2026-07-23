@@ -6,6 +6,8 @@ import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG } from './art.js';
 import { conditionBadges, conditionTint } from './conditions.js';
+import { boardThemeVars } from './boardTheme.js';
+import type { MapTheme } from '../../src/data/maps.js';
 
 const TOKEN: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',
@@ -244,8 +246,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
     );
   });
 
-  const boardTheme = theme ?? 'stone';
-  const boardStyle: CSSProperties = { gridTemplateColumns: `repeat(${width}, 1fr)` };
+  const boardTheme = (theme ?? 'stone') as MapTheme;
+  // Floor + blocking-prop colours come from the palette (boardTheme.ts), fed in
+  // as custom properties so styles.css holds only the shapes — and a contrast
+  // test can hold the colours to a legibility floor.
+  const boardStyle: CSSProperties = { gridTemplateColumns: `repeat(${width}, 1fr)`, ...boardThemeVars(boardTheme) };
   if (HAS_BOARD_BG.has(boardTheme)) {
     // A painterly backdrop per theme, sitting behind the CSS-drawn grid — see
     // art/arena-prompts.md. Set inline (not in styles.css) so the URL goes
