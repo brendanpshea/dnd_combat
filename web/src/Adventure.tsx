@@ -44,6 +44,7 @@ import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
 import { LootScreen } from './Loot.js';
+import { LevelUpModal } from './LevelUp.js';
 import { saveAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { moduleById } from '../../src/data/modules/index.js';
 
@@ -82,7 +83,7 @@ type Overlay =
   | { kind: 'result'; paragraphs: string[]; rewards: string[] }
   // A level-up always gets its own modal — battle or milestone — so a new level
   // never slips by in a one-line banner.
-  | { kind: 'levelup'; toLevel: number };
+  | { kind: 'levelup'; fromLevel: number; toLevel: number };
 
 /** The location backdrop art id for a scene (its own, or an explore map's). */
 function artIdOf(scene: Scene): string | undefined {
@@ -232,7 +233,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
     const levelled = [...outcome].reverse().find(
       (e): e is Extract<AdventureEvent, { type: 'xp' }> => e.type === 'xp' && e.leveledTo !== undefined,
     );
-    if (levelled?.leveledTo) overlays.push({ kind: 'levelup', toLevel: levelled.leveledTo });
+    if (levelled?.leveledTo) overlays.push({ kind: 'levelup', fromLevel: levelled.leveledFrom ?? levelled.leveledTo - 1, toLevel: levelled.leveledTo });
     // Bare rewards (no prose, no level-up) take the transient banner instead —
     // no modal for walking in a door.
     const banner = overlays.length ? [] : rewards;
@@ -349,7 +350,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           // One level-up modal for the whole resolution (combat XP + any onWin
           // grant), shown last — the clear "you reached Level N" announcement.
           const levelAfter = levelForXp(campaign.xp);
-          if (levelAfter > levelBefore) { sfx('levelup'); queue.push({ kind: 'levelup', toLevel: levelAfter }); }
+          if (levelAfter > levelBefore) { sfx('levelup'); queue.push({ kind: 'levelup', fromLevel: levelBefore, toLevel: levelAfter }); }
           setOverlays(queue);
           setBanner(banner);
           rerender();
@@ -481,15 +482,13 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           }
           if (ov.kind === 'levelup') {
             return (
-              <div className="adv-dice-scrim">
-                <div className="adv-panel adv-levelup">
-                  <div className="adv-levelup-badge">⭐</div>
-                  <h2>Level Up!</h2>
-                  <p className="adv-levelup-to">The party reaches <strong>Level {ov.toLevel}</strong>.</p>
-                  <p className="adv-text adv-levelup-note">More hit points and sharper skills — and spellcasters gain new spell slots. Rest at camp or the inn to prepare fresh spells.</p>
-                  <button className="primary" onClick={advance}>Onward</button>
-                </div>
-              </div>
+              <LevelUpModal
+                campaign={campaign}
+                fromLevel={ov.fromLevel}
+                toLevel={ov.toLevel}
+                onChange={() => { saveAdventureWeb(state); rerender(); }}
+                onClose={advance}
+              />
             );
           }
           return (

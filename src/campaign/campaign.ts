@@ -618,6 +618,126 @@ export function setPartyChoice(c: CampaignState, charIdx: number, pointId: Id, o
   return true;
 }
 
+/** Record a build-choice pick mid-run — the level-up flow, once the party is
+ *  launched (setPartyChoice guards against exactly that, so this is its
+ *  after-launch sibling). The pick just updates `choices`; buildCampaignParty
+ *  folds it on the next build, so a Fighting Style chosen at 2nd level is live
+ *  from the next fight. */
+export function setLevelChoice(c: CampaignState, charIdx: number, pointId: Id, optionId: Id): boolean {
+  const character = c.characters[charIdx];
+  if (!character) return false;
+  const point = CLASSES[character.classId]?.choices?.find((p) => p.id === pointId);
+  if (!point || !point.options.some((o) => o.id === optionId)) return false;
+  character.choices = { ...character.choices, [pointId]: optionId };
+  return true;
+}
+
+// --- Level-up summary -------------------------------------------------------
+
+export interface LevelChoiceOption { id: Id; name: string; blurb: string }
+export interface LevelChoice {
+  pointId: Id; label: string; atLevel: number;
+  /** The option currently in force (the pick, or the point's default). */
+  current: Id;
+  options: LevelChoiceOption[];
+}
+
+/** What one character gained crossing from `fromLevel` to `toLevel`. Every
+ *  field is *derived* by building the character at both levels and diffing —
+ *  no per-class authoring, so a new class/subclass is summarised for free. */
+export interface LevelGain {
+  charIdx: number;
+  name: string;
+  classId: Id;
+  hp: number;                 // maximum-HP increase
+  proficiency: number;        // proficiency-bonus increase (0 or 1)
+  extraAttack: boolean;       // attacks per action went up
+  /** New class/subclass features, display names, deduped by their pre-colon
+   *  label so "Cunning Action: Dash/Disengage/Hide" reads as one gain. */
+  features: string[];
+  /** The highest spell level newly openable (3 → "3rd-level spells"), if any. */
+  newSpellLevel?: number;
+  moreSlots: boolean;         // any existing slot tier grew
+  cantrips: number;           // cantrips-known capacity increase
+  spellbook: number;          // wizard spellbook capacity increase
+  prepared: number;           // prepared-spells capacity increase
+  /** Build choices that unlock in this band and want the player's attention. */
+  choices: LevelChoice[];
+  /** True for a caster — the UI offers "choose new spells" (opens the tray). */
+  isCaster: boolean;
+}
+
+/** Build one party character fresh (full resources) at an arbitrary level, for
+ *  diffing. Mirrors buildCampaignParty's per-character construction minus the
+ *  persisted HP/slot overrides, so the result reflects the *class table* at
+ *  that level, not the current save's spent resources. */
+function buildAtLevel(c: CampaignState, idx: number, level: number): Combatant {
+  const ch = c.characters[idx]!;
+  return buildCharacter({
+    classId: ch.classId, team: 'team1', level,
+    speciesId: ch.speciesId, name: ch.name, portraitId: ch.portraitId,
+    position: { x: 0, y: 0 },
+    equipped: { ...ch.equipped },
+    ...(ch.choices ? { choices: { ...ch.choices } } : {}),
+    ...(ch.scribedSpells ? { spellbookExtra: ch.scribedSpells } : {}),
+  });
+}
+
+const shortFeatureName = (id: Id): string => (FEATURES[id]?.name ?? id).split(':')[0]!.trim();
+
+export function levelUpSummary(c: CampaignState, fromLevel: number, toLevel: number): LevelGain[] {
+  if (toLevel <= fromLevel) return [];
+  return c.characters.map((ch, idx): LevelGain => {
+    const lo = buildAtLevel(c, idx, fromLevel);
+    const hi = buildAtLevel(c, idx, toLevel);
+
+    // New features, deduped by pre-colon label (three Cunning Actions → one).
+    const seenName = new Set<string>();
+    const features: string[] = [];
+    for (const f of hi.featureIds) {
+      if (lo.featureIds.includes(f)) continue;
+      const name = shortFeatureName(f);
+      if (!seenName.has(name)) { seenName.add(name); features.push(name); }
+    }
+
+    // Spell slots: a brand-new tier, and/or a bigger existing tier.
+    let newSpellLevel: number | undefined;
+    let moreSlots = false;
+    for (let i = 0; i < hi.spellSlots.length; i++) {
+      const before = lo.spellSlots[i]?.max ?? 0;
+      const after = hi.spellSlots[i]?.max ?? 0;
+      if (after > 0 && before === 0) newSpellLevel = i + 1; // highest wins (loop ascends)
+      else if (after > before) moreSlots = true;
+    }
+
+    const cap = (fn: (id: Id, lv: number) => number | undefined) =>
+      (fn(ch.classId, toLevel) ?? 0) - (fn(ch.classId, fromLevel) ?? 0);
+
+    const choices: LevelChoice[] = (CLASSES[ch.classId]?.choices ?? [])
+      .filter((p) => p.atLevel > fromLevel && p.atLevel <= toLevel)
+      .map((p) => ({
+        pointId: p.id, label: p.label, atLevel: p.atLevel,
+        current: ch.choices?.[p.id] ?? p.default,
+        options: p.options.map((o) => ({ id: o.id, name: o.name, blurb: o.blurb })),
+      }));
+
+    return {
+      charIdx: idx, name: ch.name, classId: ch.classId,
+      hp: hi.maxHp - lo.maxHp,
+      proficiency: proficiencyBonus(toLevel) - proficiencyBonus(fromLevel),
+      extraAttack: hi.attacksPerAction > lo.attacksPerAction,
+      features,
+      ...(newSpellLevel !== undefined ? { newSpellLevel } : {}),
+      moreSlots,
+      cantrips: cap(cantripsKnownCount),
+      spellbook: cap(spellbookSize),
+      prepared: cap(preparedCount),
+      choices,
+      isCaster: hi.spellSlots.some((s) => s.max > 0),
+    };
+  });
+}
+
 export function currentStage(c: CampaignState): StageData | undefined {
   return STAGES[c.stage];
 }

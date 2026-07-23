@@ -1109,6 +1109,16 @@ authored SVG icon, and WebAudio-synthesized sound effects.
   opportunity attack provoked, …). Seen-state and an off toggle persist in
   localStorage. Tapping a token's condition badge explains that condition
   through the same toast (mobile has no hover tooltip).
+- **Level-up modal** (`web/src/LevelUp.tsx`, shared by the shop's loot screen
+  and the adventure overlay): one card per hero showing what they *gained* —
+  every field **derived** by `levelUpSummary` (campaign.ts) building the
+  character at both levels and diffing (HP, new features, Extra Attack, spell
+  slots/tiers, caster capacity deltas, proficiency), so a new class is
+  summarised for free. It also surfaces the choices a level unlocks: a build
+  choice (`ChoicePoint.atLevel` — a Fighting Style at 2nd) as a picker wired
+  to `setLevelChoice`, and, for casters, a "choose new spells" button opening
+  the spell tray. All optional — Continue always works, defaults stand. The
+  CLI prints the same derived summary.
 - **Info cards:** a shared ⓘ system (`web/src/gameInfo.ts` + `InfoCard.tsx`)
   answers "what does this do?" for any weapon, armour, consumable, or spell —
   stats *derived* from the structured data (damage dice, AC formula, range,

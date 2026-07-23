@@ -17,6 +17,7 @@ import type { ItemStack } from '../../src/engine/types.js';
 import {
   itemName, itemIcon, itemPrice, rarityOf, partyLevelOf, LEVEL_XP,
 } from '../../src/campaign/campaign.js';
+import { LevelUpModal } from './LevelUp.js';
 
 export interface LootProps {
   campaign: CampaignState;
@@ -24,6 +25,9 @@ export interface LootProps {
   items: ItemStack[];
   xpGained: number;
   leveledTo?: number | undefined;
+  leveledFrom?: number | undefined;
+  /** Persist after a level-up choice/spell edit (the caller owns the save). */
+  onLevelChange?: (() => void) | undefined;
   onContinue(): void;
 }
 
@@ -46,7 +50,9 @@ function useCountUp(from: number, to: number, ms = 700): number {
   return n;
 }
 
-export function LootScreen({ campaign, gold, items, xpGained, leveledTo, onContinue }: LootProps) {
+export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, onContinue }: LootProps) {
+  // On a level-up, open the gains modal straight away — the gains are the point.
+  const [showLevel, setShowLevel] = useState<boolean>(!!leveledTo);
   const level = partyLevelOf(campaign);
   const floor = LEVEL_XP[level - 1] ?? 0;
   const next = LEVEL_XP[level] as number | undefined;   // undefined at max level
@@ -71,7 +77,19 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, onConti
       <h1>🎉 Victory!</h1>
 
       {leveledTo && (
-        <div className="levelup">⭐ Level up! The party is now level {leveledTo}</div>
+        <button className="levelup levelup-btn" onClick={() => setShowLevel(true)}>
+          ⭐ Level up! Now level {leveledTo} — see what you gained
+        </button>
+      )}
+
+      {showLevel && leveledTo && (
+        <LevelUpModal
+          campaign={campaign}
+          fromLevel={leveledFrom ?? leveledTo - 1}
+          toLevel={leveledTo}
+          {...(onLevelChange ? { onChange: onLevelChange } : {})}
+          onClose={() => setShowLevel(false)}
+        />
       )}
 
       <div className="loot-panel">
