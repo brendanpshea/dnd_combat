@@ -7,7 +7,7 @@ import {
   buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
   treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
-  partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
+  partySkillCheck, attemptSteal, shortRest, longRest, fullRest, useStoreHealing, useStoreSpell,
   hitDiceLeft, hitDiceMax, isCampBuffPotion, drinkCampBuffPotion,
   levelUpSummary, setLevelChoice, partyNeedsRest,
   partyStash, claimFromStash, stashItem, sellFromStash,
@@ -144,6 +144,27 @@ describe('campaign state', () => {
     expect(buildCampaignParty(c)[0]!.hp).toBe(beforeLong.maxHp);
     // Half the pool comes back (minimum one die).
     expect(hitDiceLeft(c, 0)).toBe(1);
+  });
+
+  it('fullRest restores HP, slots, and the whole hit-die pool between adventures', () => {
+    const c = newCampaign(500); // a few levels in, so casters have slots and >1 hit die
+    // Wound the whole party, drain a slot, and spend every hit die.
+    for (const ch of c.characters) ch.resources = { hp: 1, slots: [0], hitDice: 0 };
+    // One hero is also nursing a camp giant-strength buff.
+    const fighter = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    c.characters[fighter]!.resources = { hp: 1, hitDice: 0, effects: { giantStrength: 23 } };
+
+    fullRest(c);
+
+    const party = buildCampaignParty(c);
+    for (let i = 0; i < c.characters.length; i++) {
+      // No lingering resources object at all: absent means full everywhere.
+      expect(c.characters[i]!.resources).toBeUndefined();
+      expect(party[i]!.hp).toBe(party[i]!.maxHp);
+      expect(hitDiceLeft(c, i)).toBe(hitDiceMax(c));
+    }
+    // The camp giant-strength buff is gone (no Strength 23 carried over).
+    expect(party[fighter]!.abilities.str).toBeLessThan(23);
   });
 
   it('a short rest does not waste a hit die on a trivial top-off', () => {

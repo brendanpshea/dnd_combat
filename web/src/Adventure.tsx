@@ -14,7 +14,7 @@ import {
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
   isCampBuffPotion, drinkCampBuffPotion, partyNeedsRest,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
-  hitDiceLeft, hitDiceMax, characterSkills,
+  hitDiceLeft, hitDiceMax, characterSkills, fullRest,
 } from '../../src/campaign/campaign.js';
 import { CharacterSheet } from './CharacterSheet.js';
 import { seenTips, markTipSeen } from './tips.js';
@@ -1023,6 +1023,8 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
             <button
               className="primary"
               onClick={() => {
+                // Days on the road between chapters: the company arrives fresh.
+                fullRest(campaign);
                 const next = startAdventure(campaign, sequel);
                 enterScene(next, sequel, sequel.start);
                 saveAdventureWeb(next);
