@@ -9,7 +9,8 @@ import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
   legalApproaches, tryApproach,
-  requirementMet, exploreNodes, enterNode, hubReturn, returnToHub, campRule, campRest,
+  requirementMet, exploreNodes, enterNode, hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
+  travelDestinations, fastTravel,
   shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, resolveBattle,
 } from '../src/adventure/runtime.js';
 import {
@@ -185,6 +186,58 @@ describe('adventure runtime vocabulary', () => {
     const evs2 = choose(s2, mk(), 'go');
     expect(high.xp).toBe(550);
     expect(evs2.some((e) => e.type === 'xp' && e.amount === 0)).toBe(true);
+  });
+
+  const TOWN_MOD: Module = {
+    id: 'tm', title: 'T', blurb: '', start: 'square', town: 'square',
+    scenes: {
+      square: { id: 'square', kind: 'explore', map: { title: 'The Square', art: {}, nodes: [
+        { id: 'inn', x: 10, y: 10, label: 'Inn', icon: 'x', scene: 'inn' },
+        { id: 'gate', x: 90, y: 90, label: 'Gate', icon: 'x', scene: 'wild' },
+      ] } },
+      inn: { id: 'inn', kind: 'dialogue', npc: { id: 'n', name: 'N' }, lines: ['hi'], next: [] },
+      wild: { id: 'wild', kind: 'explore', map: { title: 'The Wild', art: {}, nodes: [
+        { id: 'cave', x: 50, y: 50, label: 'Cave', icon: 'x', scene: 'cave' },
+      ] } },
+      cave: { id: 'cave', kind: 'story', text: ['dark'], next: [] },
+    },
+  };
+
+  it('the leave affordance names the location it returns to', () => {
+    const state = startAdventure(newCampaign(1), TOWN_MOD);
+    enterScene(state, TOWN_MOD, 'square');   // now standing in the town hub
+    enterScene(state, TOWN_MOD, 'inn');      // walked into a sub-scene
+    expect(hubReturn(state, TOWN_MOD)).toBe('square');
+    expect(hubReturnTitle(state, TOWN_MOD)).toBe('The Square');
+  });
+
+  it('fast travel hops between discovered locations, town flagged and first', () => {
+    const state = startAdventure(newCampaign(1), TOWN_MOD);
+    enterScene(state, TOWN_MOD, 'square');   // discover town
+    enterScene(state, TOWN_MOD, 'wild');     // discover the wild (now standing here)
+
+    // From the wild, the only known destination is the town — flagged as such.
+    const fromWild = travelDestinations(state, TOWN_MOD);
+    expect(fromWild.map((d) => d.sceneId)).toEqual(['square']);
+    expect(fromWild[0]!.isTown).toBe(true);
+    expect(fromWild[0]!.title).toBe('The Square');
+
+    // Fast-travel there, and it becomes the current hub.
+    fastTravel(state, TOWN_MOD, 'square');
+    expect(state.sceneId).toBe('square');
+    // From town, the wild is now a known destination (not the town itself).
+    expect(travelDestinations(state, TOWN_MOD).map((d) => d.sceneId)).toEqual(['wild']);
+  });
+
+  it('fast travel refuses an undiscovered or non-location destination', () => {
+    const state = startAdventure(newCampaign(1), TOWN_MOD);
+    enterScene(state, TOWN_MOD, 'square');
+    // 'wild' is not yet visited; 'inn' is not an explore hub — both illegal.
+    expect(() => fastTravel(state, TOWN_MOD, 'wild')).toThrow(/Cannot fast-travel/);
+    expect(() => fastTravel(state, TOWN_MOD, 'inn')).toThrow(/Cannot fast-travel/);
+    // Off a non-explore scene there are no destinations at all.
+    enterScene(state, TOWN_MOD, 'inn');
+    expect(travelDestinations(state, TOWN_MOD)).toEqual([]);
   });
 
   it('requirements block a choice until its flag is set', () => {

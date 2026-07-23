@@ -756,5 +756,5 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // Part 1 of the trilogy (docs/trilogy-plan.md): a victory carries the
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
-  start: 'road', scenes, defeatScene: 'defeat',
+  start: 'road', scenes, defeatScene: 'defeat', town: 'square',
 };

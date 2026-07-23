@@ -31,7 +31,8 @@ import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
-  hubReturn, returnToHub, campRule, campRest,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
+  travelDestinations, fastTravel,
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
@@ -442,6 +443,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
               onApproach={onApproach}
               onLeave={onLeave}
               onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
+              onTravel={(sceneId) => process(fastTravel(state, module, sceneId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
               onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
               onShopRoll={(events) => process(events, scene)}
@@ -995,6 +997,7 @@ interface BodyProps {
   onApproach: (id: string, actorIdx?: number) => void;
   onLeave: () => void;
   onNode: (nodeId: string) => void;
+  onTravel: (sceneId: string) => void;
   onBlockedNode: (reason: string) => void;
   onLeaveShop: () => void;
   onShopRoll: (events: AdventureEvent[]) => void;
@@ -1007,7 +1010,7 @@ interface BodyProps {
   onContinue?: ((module: Module, state: AdventureState) => void) | undefined;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
   const campaign = state.campaign;
 
   if (scene.kind === 'ending') {
@@ -1049,6 +1052,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     const hasMore = revealed < lines.length - 1;
     const options = legalChoices(state, module);
     const leaveTo = hubReturn(state, module);
+    const leaveLabel = hubReturnTitle(state, module);
     return (
       // Bottom-anchored panel over the location backdrop (visual-novel style).
       <div className="adv-scene bottom">
@@ -1082,7 +1086,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
             ))}
             {leaveTo && (
               <button className="adv-choice adv-leave" onClick={onLeave}>
-                <span>← Leave</span>
+                <span>← {leaveLabel ? `Back to ${leaveLabel}` : 'Leave'}</span>
               </button>
             )}
           </div>
@@ -1126,6 +1130,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     const visibleIds = new Set(nodes.map((n) => n.node.id));
     const posOf = (id: string) => scene.map.nodes.find((n) => n.id === id);
     const traversal = !!scene.map.paths;
+    const travel = travelDestinations(state, module);
     return (
       // Markers sit directly on the full-bleed location backdrop (the stage).
       <div className="adv-explore">
@@ -1179,6 +1184,19 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
           {traversal ? 'Follow the trail — new ground reveals as you go. 🔒 needs something first.'
             : 'Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.'}
         </p>
+
+        {/* Fast travel: hop back to town (or any location you've already been)
+            without walking the trail again. Only places you've discovered. */}
+        {travel.length > 0 && (
+          <div className="adv-travel">
+            <span className="adv-travel-label">🧭 Travel to</span>
+            {travel.map((d) => (
+              <button key={d.sceneId} className="adv-travel-dest" onClick={() => onTravel(d.sceneId)}>
+                {d.isTown ? '🏘️ ' : '📍 '}{d.title}{d.isTown ? ' (town)' : ''}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -1219,6 +1237,7 @@ function ChallengeBody(
   const [pickFor, setPickFor] = useState<string | null>(null);
   const options = legalApproaches(state, module);
   const leaveTo = hubReturn(state, module);
+  const leaveLabel = hubReturnTitle(state, module);
   const pending = pickFor ? scene.approaches.find((a) => a.id === pickFor) : null;
 
   if (pending) {
@@ -1262,7 +1281,7 @@ function ChallengeBody(
             );
           })}
           {leaveTo && (
-            <button className="adv-choice adv-leave" onClick={onLeave}><span>← Leave</span></button>
+            <button className="adv-choice adv-leave" onClick={onLeave}><span>← {leaveLabel ? `Back to ${leaveLabel}` : 'Leave'}</span></button>
           )}
         </div>
       </div>

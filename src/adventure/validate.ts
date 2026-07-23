@@ -111,6 +111,12 @@ export function validateModule(module: Module): string[] {
   if (module.defeatScene && !ids.has(module.defeatScene)) {
     errors.push(`defeatScene '${module.defeatScene}' does not exist`);
   }
+  // The fast-travel home must be a real explore hub (that's where its map lives).
+  if (module.town) {
+    const townScene = module.scenes[module.town];
+    if (!townScene) errors.push(`town '${module.town}' does not exist`);
+    else if (townScene.kind !== 'explore') errors.push(`town '${module.town}' must be an explore scene, not ${townScene.kind}`);
+  }
 
   // Flag hygiene: every flag read somewhere must be written somewhere.
   const written = new Set<string>();
