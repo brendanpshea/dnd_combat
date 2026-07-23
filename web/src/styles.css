@@ -858,14 +858,30 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 
 /* --- just-in-time learning tips ------------------------------------------ */
 .tips-toggle.off { opacity: 0.4; filter: grayscale(1); }
+/* Notifications float over the board instead of sitting in the column flow —
+   otherwise, on a short laptop screen, each one shoved the board (and the
+   action bar under it) down and out of view. Fixed + centered near the top,
+   above the board, dismissible / transient. */
+.tip-toast, .coach-banner {
+  position: fixed; z-index: 45;
+  top: calc(var(--topbar-h, 46px) + 8px);
+  left: 50%; transform: translateX(-50%);
+  width: min(94vw, 560px); margin: 0;
+}
+/* On desktop the board and the enemies' starting row live on the left; the
+   right column (the log) has room to spare, so float notifications there
+   instead of over the board. */
+@media (min-width: 900px) {
+  .tip-toast, .coach-banner { left: auto; right: 16px; transform: none; width: 324px; }
+}
 .tip-toast {
   display: flex; align-items: flex-start; gap: 10px;
-  margin: 8px 0; padding: 10px 12px; border-radius: 12px;
+  padding: 10px 12px; border-radius: 12px;
   background: linear-gradient(#26314a, #1f2740);
-  border: 1px solid #4a6fa5; box-shadow: 0 4px 14px #0006;
+  border: 1px solid #4a6fa5; box-shadow: 0 6px 20px #0008;
   animation: tipIn .22s ease-out;
 }
-@keyframes tipIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes tipIn { from { opacity: 0; } to { opacity: 1; } }
 .tip-icon { font-size: 1.5rem; line-height: 1.1; flex: 0 0 auto; }
 .tip-text { flex: 1; min-width: 0; }
 .tip-text strong { color: #cfe0ff; font-size: .92rem; }
@@ -875,7 +891,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   cursor: pointer; font-size: 1rem; padding: 2px 4px; line-height: 1;
 }
 .tip-close:hover { color: var(--text); }
-@media (prefers-reduced-motion: reduce) { .tip-toast { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tip-toast, .coach-banner { animation: none; } }
 
 .actionbar {
   display: flex;
@@ -2239,9 +2255,9 @@ button.category .count {
 
 /* Training Yard coach banner — a persistent, prominent step prompt. */
 .coach-banner {
-  margin: 8px 0; padding: 11px 14px; border-radius: 12px;
+  padding: 11px 14px; border-radius: 12px;
   background: linear-gradient(#2a4166, #21344f); border: 1px solid #4a78ad;
-  box-shadow: 0 4px 14px #0006;
+  box-shadow: 0 6px 20px #0008; animation: tipIn .22s ease-out;
 }
 .coach-step {
   display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .05em;
