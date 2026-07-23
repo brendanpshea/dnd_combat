@@ -332,6 +332,21 @@ describe('leveled spells', () => {
     // Cantrips still available.
     expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'fire-bolt')).toBe(true);
   });
+
+  it('out-of-combat rituals (Find Familiar) are never offered in a fight', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        place('wizard', 'team1', { x: 0, y: 0 }, { id: 'wiz' }),
+        place('fighter', 'team2', { x: 5, y: 5 }, { id: 'ftr' }),
+      ],
+    });
+    until(c, 'wiz');
+    // Find Familiar is on the wizard's list but is a 10-minute ritual, not a
+    // combat action — it must not appear among castable spells.
+    expect(c.state.combatants['wiz']!.spellIds).toContain('find-familiar');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'find-familiar')).toBe(false);
+  });
 });
 
 describe('features', () => {

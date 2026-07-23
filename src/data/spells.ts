@@ -396,6 +396,10 @@ export const SPELLS: Record<Id, SpellData> = {
   'find-familiar': {
     id: 'find-familiar', name: 'Find Familiar', level: 1, castingTime: 'action',
     ritual: true, // always available, never occupies a known-spell slot
+    // A 10-minute ritual to summon a pet, not a combat action — and the familiar
+    // is already granted before a fight starts, so casting it mid-battle would
+    // do nothing anyway. Keep it off the in-combat action bar entirely.
+    outOfCombat: true,
     targeting: { kind: 'self' },
     concentration: false,
     icon: '🦉',

@@ -276,6 +276,8 @@ describe('the Spells tray shows every spell', () => {
     for (const spellId of me.spellIds) {
       // Shield is a reaction the engine autocasts — never offered as an action.
       if (SPELLS[spellId]?.castingTime === 'reaction') continue;
+      // Find Familiar and other out-of-combat rituals never appear in a fight.
+      if (SPELLS[spellId]?.outOfCombat) continue;
       expect(tray, `${spellId} missing from the Spells tray`).toContain(`spell:${spellId}`);
     }
   });
