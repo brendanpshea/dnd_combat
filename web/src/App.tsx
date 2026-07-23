@@ -773,7 +773,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         <div className="statusline" title={tooltipFor(active)}>
           <Portrait id={active.portraitId ?? active.classId} team={active.team} />
           <strong>{active.name}</strong>
-          <span className={active.team}>{active.team === 'team1' ? 'Blue' : 'Red'}</span>
+          {/* From a solo-human game (campaign/adventure/vs-AI) read the side as
+              You / Enemy; a symmetric match keeps the neutral Blue / Red. */}
+          <span className={active.team}>
+            {youTeam ? (active.team === youTeam ? 'You' : 'Enemy') : (active.team === 'team1' ? 'Blue' : 'Red')}
+          </span>
           <span>HP {active.hp}/{active.maxHp}</span>
           <span>AC {acOf(active)}</span>
           <SlotPips spellSlots={active.spellSlots} />

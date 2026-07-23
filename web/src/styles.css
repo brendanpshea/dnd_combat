@@ -1902,6 +1902,7 @@ button.category .count {
 .adv-rest-warn.muted { color: var(--muted); }
 .adv-camp-notice { font-size: .85rem; color: var(--green); margin: 0; }
 .adv-camp-hd { white-space: nowrap; }
+.adv-camp-buffs { color: var(--green); white-space: nowrap; }
 .adv-camp-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .adv-camp-stash, .adv-camp-char { border-top: 1px solid var(--panel2); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .adv-camp-charhead { display: flex; align-items: center; gap: 8px; }

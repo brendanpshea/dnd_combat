@@ -73,6 +73,18 @@ const DMG_SFX: Record<DamageType, Sfx> = {
   force: 'force', psychic: 'psychic',
 };
 
+/** Buff consumables whose effect is a silent stat change — floated on use so
+ *  the drinker gets visible confirmation of what they gained. Items that
+ *  already show a number (healing, thrown fire) are absent by design. */
+const BUFF_ITEM_FLOAT: Record<string, string> = {
+  'potion-giant-strength-hill': '💪 Giant Strength!',
+  'potion-giant-strength-frost': '💪 Giant Strength!',
+  'potion-fire-resistance': '🛡 Fire Resist',
+  'potion-cold-resistance': '🛡 Cold Resist',
+  'potion-poison-resistance': '🛡 Poison Resist',
+  'potion-acid-resistance': '🛡 Acid Resist',
+};
+
 /**
  * Build effects for a batch of events. `state` is the post-apply state
  * (dead combatants keep their position). Sounds are scheduled with the same
@@ -201,6 +213,23 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
           floats.push({ id: nextId++, cellKey: cell, text: `${meta.icon} ${word}`.trim(), cls: 'cond', delayMs: stagger + 120 });
           bursts.push({ id: nextId++, cellKey: cell, kind: 'cond', delayMs: stagger + 120 });
           sound('condition', stagger + 120);
+        }
+        break;
+      }
+      case 'itemUsed': {
+        // Buff potions (giant strength, resistances) change stats silently —
+        // no damage or heal number lands — so shout what they did over the
+        // drinker. Items that already show their own effect (healing → a heal
+        // float, alchemist's fire → damage) get no extra label.
+        const label = BUFF_ITEM_FLOAT[e.itemId];
+        if (label) {
+          const cell = cellOf(e.targetId ?? e.combatantId);
+          if (cell) {
+            floats.push({ id: nextId++, cellKey: cell, text: label, cls: 'cond', delayMs: stagger + 60 });
+            bursts.push({ id: nextId++, cellKey: cell, kind: 'heal', delayMs: stagger + 60 });
+            sound('condition', stagger + 60);
+            stagger += 150;
+          }
         }
         break;
       }

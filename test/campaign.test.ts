@@ -8,7 +8,7 @@ import {
   treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
-  hitDiceLeft, hitDiceMax,
+  hitDiceLeft, hitDiceMax, isCampBuffPotion, drinkCampBuffPotion,
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
@@ -943,5 +943,44 @@ describe('wizard spellbook: learning spells from scrolls', () => {
     c.characters[wizardIdx]!.inventory.push({ itemId: 'scroll-fireball', qty: 1 });
     // Fireball is already on the wizard's default table — nothing to learn.
     expect(scrollLearnable(c, wizardIdx, 'scroll-fireball')).toBeUndefined();
+  });
+});
+
+describe('camp buff potions (drink before the fight, lasts until a rest)', () => {
+  it('drinking giant strength in camp raises the built combatant\'s Strength', () => {
+    const c = newCampaign();
+    const fighter = 0;
+    const base = buildCampaignParty(c)[fighter]!.abilities.str;
+    c.characters[fighter]!.inventory.push({ itemId: 'potion-giant-strength-hill', qty: 1 });
+    expect(isCampBuffPotion('potion-giant-strength-hill')).toBe(true);
+    expect(drinkCampBuffPotion(c, fighter, 'potion-giant-strength-hill')).toContain('Strength');
+    // Consumed from the pack, and now applied when the party is built.
+    expect(c.characters[fighter]!.inventory.some((s) => s.itemId === 'potion-giant-strength-hill' && s.qty > 0)).toBe(false);
+    expect(buildCampaignParty(c)[fighter]!.abilities.str).toBe(21);
+    expect(21).toBeGreaterThan(base);
+  });
+
+  it('a resistance potion grants the damage-type resistance until a rest', () => {
+    const c = newCampaign();
+    const i = 2;
+    c.characters[i]!.inventory.push({ itemId: 'potion-fire-resistance', qty: 1 });
+    drinkCampBuffPotion(c, i, 'potion-fire-resistance');
+    expect(buildCampaignParty(c)[i]!.resistances).toContain('fire');
+    // A short rest ends the 1-hour potion.
+    shortRest(c);
+    expect(buildCampaignParty(c)[i]!.resistances).not.toContain('fire');
+    expect(c.characters[i]!.resources?.effects?.resistances).toBeUndefined();
+  });
+
+  it('a long rest also clears a camp buff, and refuses to drink what you don\'t hold', () => {
+    const c = newCampaign();
+    const i = 0;
+    expect(drinkCampBuffPotion(c, i, 'potion-giant-strength-frost')).toBeNull(); // none in pack
+    c.characters[i]!.inventory.push({ itemId: 'potion-giant-strength-frost', qty: 1 });
+    drinkCampBuffPotion(c, i, 'potion-giant-strength-frost');
+    expect(buildCampaignParty(c)[i]!.abilities.str).toBe(23);
+    longRest(c);
+    expect(c.characters[i]!.resources?.effects?.giantStrength).toBeUndefined();
+    expect(buildCampaignParty(c)[i]!.abilities.str).toBeLessThan(23);
   });
 });
