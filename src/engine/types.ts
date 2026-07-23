@@ -44,6 +44,15 @@ export interface Cell {
    * its own after a few rounds regardless.
    */
   illusion?: { sourceId: Id; expiresAtRound: number };
+  /**
+   * A lingering Web: strands of webbing filling the cell while the caster
+   * concentrates. Unlike the old fire-and-forget Web (which only caught who
+   * stood in the blast at cast time), this persists — a creature that *enters*
+   * the cell must save or be restrained, and it stays visible on the board so
+   * you can read and route around it. Cleared when the caster drops
+   * concentration (see breakConcentration). `sourceId`'s team is friendly to it.
+   */
+  web?: { sourceId: Id; dc: number };
 }
 
 export interface GridState {

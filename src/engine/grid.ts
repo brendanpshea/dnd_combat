@@ -99,6 +99,30 @@ export function expireIllusions(grid: GridState, round: number): Position[] {
   return popped;
 }
 
+/** Stamp a lingering Web onto a cell (open/difficult ground — never a wall). */
+export function webCell(grid: GridState, p: Position, sourceId: Id, dc: number): boolean {
+  const cell = cellAt(grid, p);
+  if (!cell || cell.terrain === 'wall') return false;
+  cell.web = { sourceId, dc };
+  return true;
+}
+
+/** Clear every Web strand a given caster laid (their concentration dropped),
+ *  returning the cleared cells so the UI can animate them fading. */
+export function clearWebBySource(grid: GridState, sourceId: Id): Position[] {
+  const cleared: Position[] = [];
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const cell = cellAt(grid, { x, y })!;
+      if (cell.web?.sourceId === sourceId) {
+        delete cell.web;
+        cleared.push({ x, y });
+      }
+    }
+  }
+  return cleared;
+}
+
 /** Cells a Bresenham line between two cell centers visits. Plain Bresenham,
  *  not supercover — a perfect diagonal skips the two corner cells it grazes
  *  (see hasLineOfSight for why that's the intended geometry). */

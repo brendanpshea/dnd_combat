@@ -189,6 +189,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} conjures a shimmering illusion at ${cellName(e.position)}.`;
     case 'illusionPopped':
       return `  The illusion at ${cellName(e.position)} fades away.`;
+    case 'webSpun':
+      return `${nm(e.sourceId)} fills the ground with thick, clinging webs.`;
+    case 'webCleared':
+      return `  The webs wither and fall away.`;
     case 'downed':
       return `*** ${nm(e.combatantId)} is down! (unconscious — heal them to revive) ***`;
     case 'revived':

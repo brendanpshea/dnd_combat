@@ -38,7 +38,9 @@ function kindOf(e: GameEvent): string {
     case 'savingThrow': return e.success ? 'saved' : 'failed';
     case 'conditionApplied':
     case 'conditionRemoved':
-    case 'concentrationBroken': return 'cond';
+    case 'concentrationBroken':
+    case 'webSpun':
+    case 'webCleared': return 'cond';
     case 'moved': return 'move';
     default: return 'misc';
   }
@@ -65,7 +67,8 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'savingThrow': return e.combatantId;
     case 'damageDealt':
     case 'healed': return e.targetId;
-    case 'illusionCast': return e.sourceId;
+    case 'illusionCast':
+    case 'webSpun': return e.sourceId;
     default: return undefined;
   }
 }

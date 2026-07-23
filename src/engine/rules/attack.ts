@@ -8,7 +8,7 @@ import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
-import { distanceFeet, distanceCells, adjacent, hasLineOfSight } from '../grid.js';
+import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -642,6 +642,20 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   delete c.concentratingOn;
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
+  // A lingering Web: clear its strands from the grid, and free everyone its
+  // strands still hold — not only the `targetIds` caught at cast time, but also
+  // any creature that wandered in afterwards (matched by source + concentration).
+  if (spellId === 'web') {
+    const cleared = clearWebBySource(state.grid, combatantId);
+    if (cleared.length > 0) events.push({ type: 'webCleared', sourceId: combatantId, cells: cleared });
+    for (const other of Object.values(state.combatants)) {
+      const held = other.conditions.some((k) => k.sourceId === combatantId && k.concentration && k.id === 'restrained');
+      if (held) {
+        events.push({ type: 'conditionRemoved', combatantId: other.id, condition: 'restrained' });
+        other.conditions = other.conditions.filter((k) => !(k.sourceId === combatantId && k.concentration && k.id === 'restrained'));
+      }
+    }
+  }
   // Remove conditions this concentration was sustaining on its targets.
   for (const tid of targetIds) {
     const t = state.combatants[tid];

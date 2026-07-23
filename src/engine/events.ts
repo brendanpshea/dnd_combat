@@ -60,4 +60,8 @@ export type GameEvent =
   | { type: 'illusionCast'; position: Position; sourceId: Id }
   /** Revealed — walked through, or simply expired. */
   | { type: 'illusionPopped'; position: Position }
+  /** A Web's strands take hold across these cells (and linger there). */
+  | { type: 'webSpun'; sourceId: Id; cells: Position[] }
+  /** The strands clear when the caster's concentration drops. */
+  | { type: 'webCleared'; sourceId: Id; cells: Position[] }
   | { type: 'combatEnded'; winner: TeamId };
