@@ -96,6 +96,8 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       // is, so it can't just be another terrain-* class (that would replace
       // the ground it's covering rather than sitting on it).
       if (cell.illusion) classes.push('illusion');
+      // A lingering Web overlay — strands you can see and route around.
+      if (cell.web) classes.push('webbed');
       if (hl) classes.push(`hl-${hl}`);
       if ((x + y) % 2 === 0) classes.push('dark');
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];

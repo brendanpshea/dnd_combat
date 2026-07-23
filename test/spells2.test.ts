@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
+import { webCell } from '../src/engine/grid.js';
+import { breakConcentration } from '../src/engine/rules/attack.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, level: number, position: Position, id: string, over: Partial<Combatant> = {}): Combatant =>
@@ -107,6 +109,54 @@ describe('Web', () => {
       return;
     }
     throw new Error('no goblin was ever webbed across 40 seeds');
+  });
+
+  it('the web lingers on the grid and clears when concentration drops', () => {
+    const c = new Combat({
+      seed: 7,
+      combatants: [
+        pc('wizard', 5, { x: 1, y: 1 }, 'wiz'),
+        foe('goblin-warrior', { x: 5, y: 5 }, 'gob'),
+      ],
+    });
+    until(c, 'wiz');
+    const cast = c.apply({ kind: 'castSpell', spellId: 'web', slotLevel: 2, targets: [{ position: { x: 5, y: 5 } }] });
+    expect(cast.some((e) => e.type === 'webSpun')).toBe(true);
+    expect(c.state.grid.cells.filter((cell) => cell.web?.sourceId === 'wiz').length).toBeGreaterThan(0);
+    // Concentration is held so the strands persist (even if the save was made).
+    expect(c.state.combatants['wiz']!.concentratingOn?.spellId).toBe('web');
+
+    // Dropping the caster's concentration (damage, a new spell, death) sweeps
+    // the strands off the grid.
+    const evs = breakConcentration(c.state, 'wiz');
+    expect(evs.some((e) => e.type === 'webCleared')).toBe(true);
+    expect(c.state.grid.cells.some((cell) => cell.web?.sourceId === 'wiz')).toBe(false);
+    expect(c.state.combatants['wiz']!.concentratingOn).toBeUndefined();
+  });
+
+  it('walking into lingering strands forces a save, restrains, and stops the mover', () => {
+    const c = new Combat({
+      seed: 3,
+      combatants: [
+        pc('wizard', 8, { x: 0, y: 0 }, 'wiz'),         // high Web DC
+        foe('goblin-warrior', { x: 6, y: 2 }, 'gob'),
+      ],
+    });
+    // Lay strands across the goblin's approach lane (as a lingering web would),
+    // held by the wizard's concentration.
+    for (let x = 2; x <= 4; x++) webCell(c.state.grid, { x, y: 2 }, 'wiz', 25);
+    c.state.combatants['wiz']!.concentratingOn = { spellId: 'web', targetIds: [] };
+
+    until(c, 'gob');
+    // The goblin advances toward the party and hits the strands at (4,2).
+    const into = c.legalActions().find((a) => a.kind === 'move' && a.to.x === 4 && a.to.y === 2);
+    expect(into, 'a move into the webbed lane should exist').toBeDefined();
+    const ev = c.apply(into!);
+    expect(ev.some((e) => e.type === 'savingThrow')).toBe(true);
+    const gob = c.state.combatants['gob']!;
+    expect(gob.conditions.some((k) => k.id === 'restrained')).toBe(true);
+    // Caught on entry: it stops in the strands rather than walking on past them.
+    expect(gob.position).toEqual({ x: 4, y: 2 });
   });
 });
 

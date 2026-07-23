@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
+import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -661,10 +661,13 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
-   * Web: a 5x5 patch of sticky strands. Enemies caught (Dex save) are
-   * restrained — no movement, disadvantage to attack, easy to hit — and get a
-   * fresh Dex save at the end of each of their turns (repeatSave). Concentration
-   * holds the web; dropping it frees everyone still stuck.
+   * Web: a 5x5 patch of sticky strands that *lingers* on the board while the
+   * caster concentrates. Enemies caught (Dex save) are restrained — no movement,
+   * disadvantage to attack, easy to hit — and get a fresh Dex save at the end of
+   * each of their turns (repeatSave). The strands stay put: a creature that
+   * later *walks into* the web must save too (handled in movement), so a web
+   * laid across a doorway keeps working long after the cast. Dropping
+   * concentration clears the strands and frees everyone still stuck.
    */
   web: {
     id: 'web', name: 'Web', level: 2, castingTime: 'action',
@@ -676,7 +679,12 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const events: GameEvent[] = [];
       const caught: Id[] = [];
+      const webbed: Position[] = [];
       for (const pos of sphere5x5(positions[0]!)) {
+        // Lay the strands down first (they persist on the grid, cleared when
+        // concentration drops) — then catch whoever is standing in them now.
+        if (!webCell(state.grid, pos, casterId, dc)) continue;
+        webbed.push(pos);
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;
@@ -689,7 +697,11 @@ export const SPELLS: Record<Id, SpellData> = {
           caught.push(tid);
         }
       }
-      if (caught.length > 0) caster.concentratingOn = { spellId: 'web', targetIds: caught };
+      if (webbed.length > 0) events.push({ type: 'webSpun', sourceId: casterId, cells: webbed });
+      // Hold concentration even if nobody's caught yet — the web lingers and
+      // catches whoever wanders in. Clearing it (breakConcentration) sweeps the
+      // strands and frees the restrained by source, so targetIds needn't be exhaustive.
+      caster.concentratingOn = { spellId: 'web', targetIds: caught };
       return events;
     },
   },
