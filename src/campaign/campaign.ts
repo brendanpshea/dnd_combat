@@ -379,6 +379,68 @@ export const SHOP_STOCK: Id[] = [
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
 ];
 
+/** The party level at which each rarity tier first appears on a shelf, so a
+ *  1st-level party isn't offered +1 plate they could never afford or use. */
+const RARITY_MIN_LEVEL: Record<Rarity, number> = { common: 1, uncommon: 3, rare: 5 };
+
+/** A magical / enchanted ware — the stuff a shop shouldn't always carry: any
+ *  trinket, an enchanted weapon or armor (+1, adamantine, moontouched), or a
+ *  potion/scroll above the common tier (healing potions and basic common
+ *  scrolls stay staples). Mundane weapons and armor are never magical, even the
+ *  ones the loot tables rate "uncommon" (a plain rapier), so they always stock. */
+function isMagicalWare(itemId: Id): boolean {
+  if (itemId === 'shield-plus1') return true;
+  if (itemId === 'shield') return false;
+  if (TRINKETS[itemId]) return true;
+  const w = WEAPONS[itemId];
+  if (w) return !!w.magic || itemId.endsWith('plus1') || itemId.includes('moontouched');
+  if (ARMOR[itemId]) return itemId.endsWith('plus1') || itemId.includes('adamantine');
+  if (ITEMS[itemId]) {
+    if (itemId.includes('potion-healing') || itemId.includes('greater-healing')) return false;
+    return rarityOf(itemId) !== 'common'; // resistance/strength potions, stronger scrolls
+  }
+  return false;
+}
+
+/** Staples a merchant always keeps: everything that isn't a magical ware. */
+function isShopStaple(itemId: Id): boolean {
+  return !isMagicalWare(itemId);
+}
+
+/** A small string→uint hash so a shop id + level makes a stable RNG seed. */
+function hashKey(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) || 1;
+}
+
+/**
+ * A shop's actual shelf: every mundane staple, plus a *limited, level-scaled*
+ * rotation of the magical wares — no merchant carries the whole enchanted
+ * catalogue at once. Magical items only appear once the party is high enough
+ * for their tier (uncommon at level 3, rare at level 5), and only a handful are
+ * stocked, that count growing with level.
+ *
+ * Deterministic in (stock, level, seedKey): the same shelf every time you
+ * re-enter at the same level (so you can't re-roll a shop by leaving and coming
+ * back), a *different* mix from one shop to the next, and a fresh selection when
+ * the party levels up. Staple order in the source list is preserved.
+ */
+export function shopOffering(stock: Id[], level: number, seedKey: string): Id[] {
+  const magical = stock.filter((id) => !isShopStaple(id) && level >= RARITY_MIN_LEVEL[rarityOf(id)]);
+  const slots = Math.min(magical.length, 3 + Math.floor(level / 2)); // L1→3, L3→4, L5→5, …
+  // Seeded Fisher–Yates over the eligible magical wares, then keep the first N.
+  let rng = seedRng(hashKey(`${seedKey}:${level}`));
+  const shuffled = [...magical];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const r = next(rng); rng = r.state;
+    const j = Math.floor(r.value * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
+  const chosen = new Set(shuffled.slice(0, slots));
+  return stock.filter((id) => isShopStaple(id) || chosen.has(id));
+}
+
 export function itemName(itemId: Id): string {
   return ITEMS[itemId]?.name ?? WEAPONS[itemId]?.name ?? ARMOR[itemId]?.name ?? VALUABLES[itemId]?.name ??
     TRINKETS[itemId]?.name ??

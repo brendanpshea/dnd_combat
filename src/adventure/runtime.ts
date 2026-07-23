@@ -19,7 +19,7 @@ import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, LEVEL_XP, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
-  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE,
+  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf,
 } from '../campaign/campaign.js';
 import {
   HUB_REF,
@@ -646,9 +646,13 @@ export type HaggleSkill = keyof typeof HAGGLE;
 
 /** The items a shop scene offers (its own stock, or the default), filtered to
  *  those with a real price. */
-export function shopStock(scene: Scene): Id[] {
+export function shopStock(scene: Scene, level?: number): Id[] {
   if (scene.kind !== 'shop') return [];
-  return (scene.stock ?? SHOP_STOCK).filter((id) => itemPrice(id) !== undefined);
+  const priced = (scene.stock ?? SHOP_STOCK).filter((id) => itemPrice(id) !== undefined);
+  // With a party level, thin the magical wares to a limited, level-scaled
+  // rotation (seeded by the shop's id so each merchant differs). Without one
+  // (a headless/legacy caller), the full shelf is returned unchanged.
+  return level === undefined ? priced : shopOffering(priced, level, scene.id);
 }
 
 /** The visit record for a shop scene (created on enter; a safe default if not). */
@@ -686,7 +690,7 @@ export function shopSteal(state: AdventureState, module: Module): AdventureEvent
   if (!visit || visit.stealUsed) throw new Error('Already tried to steal this visit');
   visit.stealUsed = true;
   const c = state.campaign;
-  const result = attemptSteal(c, shopStock(scene));
+  const result = attemptSteal(c, shopStock(scene, partyLevelOf(c)));
   const decisive = result.success
     ? result.rolls[1]!                                   // the successful grab
     : (result.rolls.find((r) => !r.success) ?? result.rolls[0]!); // whichever tripped
