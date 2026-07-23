@@ -978,6 +978,18 @@ export function isCampBuffPotion(itemId: Id): boolean {
   return itemId in CAMP_BUFF_POTIONS;
 }
 
+/** Is the party depleted enough that resting is the sensible next move? True
+ *  when any hero is at or below half HP, or a caster is down to half its spell
+ *  slots or fewer. Drives the "needs a rest" nudge for new players. */
+export function partyNeedsRest(c: CampaignState): boolean {
+  return buildCampaignParty(c).some((m) => {
+    if (m.hp <= m.maxHp / 2) return true;
+    const max = m.spellSlots.reduce((n, s) => n + s.max, 0);
+    const cur = m.spellSlots.reduce((n, s) => n + s.current, 0);
+    return max > 0 && cur <= max / 2;
+  });
+}
+
 /** Drink a duration buff potion in camp: consume it from the hero's pack and
  *  set the persisted effect (lasts until the next short or long rest). Returns
  *  a short description of what happened, or null if it couldn't be drunk. */

@@ -12,10 +12,11 @@ import {
   partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
-  isCampBuffPotion, drinkCampBuffPotion,
+  isCampBuffPotion, drinkCampBuffPotion, partyNeedsRest,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
   hitDiceLeft, hitDiceMax,
 } from '../../src/campaign/campaign.js';
+import { seenTips, markTipSeen } from './tips.js';
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
@@ -127,6 +128,12 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const [journalOpen, setJournalOpen] = useState(false);
   const [journalUnread, setJournalUnread] = useState(false);
   const [campOpen, setCampOpen] = useState(false);
+  // "Needs a rest" nudge: the amber dot on the Party pill, plus a one-time tip
+  // the first time the party is worn down outside battle (restTip computed once
+  // `scene` is known, below).
+  const needsRest = partyNeedsRest(campaign);
+  const [restTipDismissed, setRestTipDismissed] = useState(() => seenTips().has('needs-rest'));
+  const dismissRestTip = () => { markTipSeen('needs-rest'); setRestTipDismissed(true); };
   /** After a long rest, the queue of prepared-caster indices still to re-prepare
    *  — the only place spells may be re-chosen (2024 rules: prepared changes on a
    *  long rest; cantrips/spellbook are locked in). Empty = no tray showing. */
@@ -160,6 +167,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const pendingBanner = useRef<string[]>([]);
 
   const scene = currentScene(state, module);
+  const restTip = needsRest && !restTipDismissed && !campOpen &&
+    (scene.kind === 'explore' || scene.kind === 'story' || scene.kind === 'dialogue');
 
   // Persist the run on every scene change; clear it once the adventure ends
   // (a finished run shouldn't offer Resume).
@@ -511,14 +520,28 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         <PartyStrip
           campaign={campaign}
           onJournal={() => { setJournalUnread(false); setJournalOpen(true); }}
-          onCamp={() => setCampOpen(true)}
+          onCamp={() => { setCampOpen(true); if (!restTipDismissed) dismissRestTip(); }}
           journalCount={state.journal.length}
           journalUnread={journalUnread}
+          needsRest={needsRest}
           {...(scene.kind === 'shop' ? {
             onSelect: (i: number) => setShopFocus((f) => (f === i ? 'all' : i)),
             ...(typeof shopFocus === 'number' ? { active: shopFocus } : {}),
           } : {})}
         />
+      )}
+
+      {/* One-time nudge the first time the party is worn down out of battle —
+          teaches the rest loop a new 5e player won't know to reach for. */}
+      {restTip && (
+        <div className="tip-toast adv-rest-tip" role="status">
+          <span className="tip-icon">🏕️</span>
+          <div className="tip-text">
+            <strong>Your party is hurting</strong>
+            <p>Tap <b>🎒 Party</b> below to make camp. A <b>short rest</b> spends hit dice to heal; a <b>long rest</b> (in town, or at a safe camp) restores HP and spells.</p>
+          </div>
+          <button className="tip-close" aria-label="Dismiss" onClick={dismissRestTip}>✕</button>
+        </div>
       )}
     </div>
   );
@@ -617,9 +640,10 @@ function FrozenScene({ scene }: { scene: Scene }) {
  *  element on every scene — the Journal and Party/Camp affordances, moved here
  *  out of the top bar (bottom-anchored, thumb-reachable, styled like the rest). */
 function PartyStrip(
-  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread }: {
+  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread, needsRest }: {
     campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
     onJournal?: () => void; onCamp?: () => void; journalCount?: number; journalUnread?: boolean;
+    needsRest?: boolean;
   },
 ) {
   const party = buildCampaignParty(campaign);
@@ -655,8 +679,10 @@ function PartyStrip(
             </button>
           )}
           {onCamp && (
-            <button className="adv-strip-pill" onClick={onCamp} title="Party & camp">
+            <button className={`adv-strip-pill ${needsRest ? 'wants-rest' : ''}`} onClick={onCamp}
+              title={needsRest ? 'Party is hurt — make camp to rest' : 'Party & camp'}>
               🎒<span className="adv-pill-label">Party</span>
+              {needsRest && <span className="adv-pill-rest" aria-label="party needs rest" />}
             </button>
           )}
         </div>

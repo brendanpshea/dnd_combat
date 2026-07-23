@@ -1910,6 +1910,15 @@ button.category .count {
 .adv-pill-count {
   position: absolute; top: 1px; right: 2px; font-size: .62rem; font-weight: 700; color: var(--muted);
 }
+/* "Needs a rest" — an amber dot on the Party pill, plus a soft glow so a new
+   player's eye lands on the thing they should do next. */
+.adv-pill-rest {
+  position: absolute; top: 3px; right: 5px; width: 9px; height: 9px; border-radius: 50%;
+  background: #f0a53a; box-shadow: 0 0 0 2px var(--panel2); animation: nodepulse 1.4s infinite;
+}
+.adv-strip-pill.wants-rest { border-color: #f0a53a88; }
+.adv-rest-tip { border-color: #f0a53a; }
+.adv-rest-tip .tip-text strong { color: #ffcf8a; }
 /* In the shop the members are tappable hero-focus buttons. */
 .adv-party-strip.selectable .adv-party-member {
   background: none; border: 1px solid transparent; border-radius: 10px; padding: 3px 2px; cursor: pointer;
