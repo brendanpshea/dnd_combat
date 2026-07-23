@@ -295,6 +295,18 @@ a flat roll — the real 5e rule.
 resistance(½) / vulnerability(×2) → HP → Undead Fortitude → wake-the-unconscious
 → concentration save → death *or downing* → win check.
 
+**Termination guard.** A real fight ends inside ~15 rounds; a battle that runs
+past `MAX_ROUNDS` (100) is a pathological stall — two sides that can't finish
+each other (a zombie surviving on Undead Fortitude while nothing lands
+radiant, say). `endTurn` forces a result there so the game never hangs: the
+side with more standing HP wins, ties to team2 (so a campaign party retries
+rather than gets an unearned pass). It only ever fires on a genuine stall.
+
+**Familiars by default.** Find Familiar is a slot-free ritual that never dies
+in this model, so a caster who knows it has no reason not to have cast it — the
+builder grants the owl automatically (players and the AI kept forgetting to
+summon it). The campaign familiar flag still applies, redundantly.
+
 **Downed heroes** (`unconsciousAtZero`, set by the builder — the engine must not
 know what a "character" is). A downed creature is `alive` with `hp === 0`, and
 that pair is the entire state: `isDown()`. It is unconscious and prone, keeps its

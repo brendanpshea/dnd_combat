@@ -9,7 +9,7 @@ import {
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
   hitDiceLeft, hitDiceMax, isCampBuffPotion, drinkCampBuffPotion,
-  levelUpSummary, setLevelChoice,
+  levelUpSummary, setLevelChoice, partyNeedsRest,
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
@@ -990,6 +990,22 @@ describe('level-up summary (derived gains + choices)', () => {
     const pick = fs.options.find((o) => o.id !== fs.current)!;
     expect(setLevelChoice(c, 0, 'fighting-style', pick.id)).toBe(true);
     expect(c.characters[0]!.choices?.['fighting-style']).toBe(pick.id);
+  });
+});
+
+describe('needs-a-rest nudge', () => {
+  it('is false at full strength and true once a hero is badly hurt', () => {
+    const c = newCampaign();
+    expect(partyNeedsRest(c)).toBe(false);
+    c.characters[0]!.resources = { hp: 1 };   // fighter down to 1 HP
+    expect(partyNeedsRest(c)).toBe(true);
+  });
+
+  it('fires when a caster has burned through its slots', () => {
+    const c = newCampaign();
+    // Wizard (idx 1) at level 1 has [2] first-level slots; spend both.
+    c.characters[1]!.resources = { hp: c.characters[1]!.resources?.hp ?? 7, slots: [0] };
+    expect(partyNeedsRest(c)).toBe(true);
   });
 });
 

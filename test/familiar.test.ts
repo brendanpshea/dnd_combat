@@ -8,6 +8,15 @@ import { acOf } from '../src/data/armor.js';
 import { makeCombatant } from './helpers.js';
 
 describe('owl familiar', () => {
+  it('a caster who knows the ritual has the owl by default — no cast needed', () => {
+    // Find Familiar is on the wizard list, so a freshly built wizard walks in
+    // with the owl already summoned (nobody has to remember to cast it).
+    const campaign = newCampaign();
+    expect(buildCampaignParty(campaign)[1]!.familiar).toEqual({ kind: 'owl' });
+    // A class without the ritual (the fighter) has no familiar.
+    expect(buildCampaignParty(campaign)[0]!.familiar).toBeUndefined();
+  });
+
   it('persists through long rests and projects into each new battle', () => {
     const campaign = newCampaign();
     expect(useStoreSpell(campaign, 1, 'find-familiar')).toBe(true);

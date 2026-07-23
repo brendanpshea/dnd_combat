@@ -2,7 +2,7 @@
  * Initiative, turn start/end, round advance. Mutates draft state; step() owns
  * cloning.
  */
-import type { GameState, Combatant, Id } from './types.js';
+import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollDice } from './dice.js';
@@ -12,6 +12,10 @@ import { FEATURES } from '../data/features.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
 import type { GameEvent } from './events.js';
+
+/** A hard ceiling on battle length. Real fights end well inside ~15 rounds;
+ *  this only ever fires on a pathological stall, to guarantee termination. */
+export const MAX_ROUNDS = 100;
 
 export function rollInitiative(state: GameState): GameEvent[] {
   const entries: Array<{ id: Id; initiative: number; dex: number; tiebreak: number }> = [];
@@ -195,6 +199,21 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
         events.push({ type: 'illusionPopped', position: p });
       }
       events.push({ type: 'roundStarted', round: state.round });
+      // Termination guard: a real fight ends inside ~15 rounds; anything past
+      // MAX_ROUNDS is a pathological stall (two sides that can't finish each
+      // other, e.g. a zombie surviving on Undead Fortitude while nothing lands
+      // radiant). Force a result so the game never hangs — the side with more
+      // standing HP wins, ties to team2 so a campaign party retries rather than
+      // gets an unearned pass.
+      if (state.round > MAX_ROUNDS && !state.winner) {
+        const standingHp = (team: TeamId) => Object.values(state.combatants)
+          .filter((cc) => cc.alive && cc.hp > 0 && cc.team === team)
+          .reduce((sum, cc) => sum + cc.hp, 0);
+        const winner: TeamId = standingHp('team1') > standingHp('team2') ? 'team1' : 'team2';
+        state.winner = winner;
+        events.push({ type: 'combatEnded', winner });
+        return events;
+      }
     }
     state.turnIndex = idx;
     events.push(...startTurn(state));
