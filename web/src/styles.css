@@ -128,7 +128,9 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .cell {
   aspect-ratio: 1;
-  background: var(--cell);
+  /* Floor colour comes from the theme palette (boardTheme.ts) via --floor;
+     the flat --cell is the fallback before a theme is applied. */
+  background: var(--floor, var(--cell));
   box-shadow: inset 0 0 0 1px #14101f;
   border-radius: 4px;
   position: relative;
@@ -137,7 +139,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   justify-content: center;
   cursor: pointer;
 }
-.cell.dark { background: var(--cell-dark); }
+.cell.dark { background: var(--floor-dark, var(--cell-dark)); }
 
 /* ---- board themes -------------------------------------------------------
    Each map is styled as a place: the checkerboard, walls, and difficult
@@ -154,12 +156,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
    inset grid line and terrain overlays that made the old flat colours
    readable still carry the actual affordance. */
 .board.theme-stone { background: #201f33; }
-.board.theme-stone .cell { background: rgba(107, 100, 128, 0.55); }
-.board.theme-stone .cell.dark { background: rgba(69, 63, 92, 0.55); }
-.board.theme-stone .cell.terrain-wall {
-  /* broken columns / rubble */
-  --wall-hi: #847da0; --wall-lo: #524a72;
-}
 .board.theme-stone .cell.terrain-difficult {
   /* damp seepage pooling between cracked flagstones */
   background:
@@ -169,12 +165,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-forest { background: #10180f; }
-.board.theme-forest .cell { background: rgba(70, 105, 60, 0.55); }
-.board.theme-forest .cell.dark { background: rgba(61, 93, 52, 0.55); }
-.board.theme-forest .cell.terrain-wall {
-  /* mossy boulders / tree cover */
-  --wall-hi: #6a7d55; --wall-lo: #445531;
-}
 .board.theme-forest .cell.terrain-difficult {
   /* boggy water pooling in the undergrowth — clearly wetter and lighter than
      the surrounding green so the field reads without relying on the badge */
@@ -185,12 +175,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-graveyard { background: #0d1014; }
-.board.theme-graveyard .cell { background: rgba(59, 64, 72, 0.55); }
-.board.theme-graveyard .cell.dark { background: rgba(52, 57, 65, 0.55); }
-.board.theme-graveyard .cell.terrain-wall {
-  /* headstones / crypt masonry */
-  --wall-hi: #7b8391; --wall-lo: #4b525f;
-}
 .board.theme-graveyard .cell.terrain-difficult {
   /* grave-mist — a pale cool haze that lifts clearly off the grey floor */
   background:
@@ -199,23 +183,24 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-ember { background: #170d0b; }
-.board.theme-ember .cell { background: rgba(74, 54, 48, 0.55); }
-.board.theme-ember .cell.dark { background: rgba(65, 46, 41, 0.55); }
-.board.theme-ember .cell.terrain-wall {
-  --wall-hi: #7c5e52; --wall-lo: #4e3a32;
-}
 /* Effect terrain lives in `background`; highlights use box-shadow, so the two
    never fight and a highlight ring shows on any terrain. Walls are the
    exception: they read as raised solid blocks via a ::before face (a
    lighter-than-floor material, a bevel — light top-left, dark bottom-right —
    and a cast shadow onto neighbours), so "impassable / blocks sight" is carried
    by relief, not a subtle hue shift. Per-theme colour is just two custom props. */
-.cell.terrain-wall { --wall-hi: #6b6480; --wall-lo: #453f5c; z-index: 1; }
+.cell.terrain-wall { --wall-hi: #6b6480; --wall-lo: #453f5c; --wall-rim: #e8e4f0; z-index: 1; }
 .cell.terrain-wall::before {
   content: ''; position: absolute; inset: 3px; border-radius: 5px; z-index: 0;
   background: linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
   box-shadow:
     inset 2px 2px 0 #ffffff36, inset -2px -3px 0 #0000006b, 2px 3px 4px #00000080;
+  /* A light rim hugging the silhouette (drop-shadow follows the block's rounded
+     or clipped shape) so a blocking prop always separates from the ground and
+     the painterly backdrop, however bright or dark — this is the fix for props
+     that used to vanish into a dark board. Per-theme ::before rules that set
+     their own `filter` (ember, village) fold this rim in rather than drop it. */
+  filter: drop-shadow(0 0 1.1px var(--wall-rim)) drop-shadow(0 0 1.1px var(--wall-rim));
 }
 
 /* ---- themed blocking props ----------------------------------------------
@@ -234,16 +219,21 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
 }
 
-/* Forest — a mossy boulder: an organic rounded lump, moss catching the light. */
+/* Forest — a leafy shrub/tree: a bushy canopy of overlapping leaf clumps, so a
+   grassy map's blocking tiles read as foliage to duck behind, not grey blocks.
+   The clumped lighter-green highlights over the olive material give the round,
+   bushy silhouette its volume. */
 .board.theme-forest .cell.terrain-wall::before {
-  border-radius: 46% 54% 52% 48% / 54% 48% 52% 46%;
+  border-radius: 50% 50% 46% 46% / 56% 56% 44% 44%;
   background:
-    radial-gradient(38% 30% at 33% 30%, #9bb06a66, transparent 60%),
-    radial-gradient(30% 24% at 70% 66%, #55692c77, transparent 60%),
+    radial-gradient(30% 27% at 31% 29%, #c0d488cc, transparent 62%),
+    radial-gradient(27% 24% at 67% 31%, #a2c06ecc, transparent 62%),
+    radial-gradient(32% 30% at 51% 61%, #82a651bb, transparent 64%),
+    radial-gradient(22% 20% at 30% 71%, #4f6a2caa, transparent 60%),
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
 }
-.board.theme-forest .cell.terrain-wall:nth-child(3n)::before { transform: scaleX(-1) rotate(6deg); }
-.board.theme-forest .cell.terrain-wall:nth-child(4n+1)::before { transform: rotate(-8deg); }
+.board.theme-forest .cell.terrain-wall:nth-child(3n)::before { transform: scaleX(-1) rotate(4deg); }
+.board.theme-forest .cell.terrain-wall:nth-child(4n+1)::before { transform: rotate(-6deg); }
 
 /* Graveyard — a headstone: rounded-top slab standing on a flat base. */
 .board.theme-graveyard .cell.terrain-wall::before {
@@ -254,7 +244,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 /* Ember — a basalt spire with a glowing crack, no soft bevel (it's jagged). */
-.board.theme-ember .cell.terrain-wall { --wall-hi: #7c5e52; --wall-lo: #33221c; }
 .board.theme-ember .cell.terrain-wall::before {
   border-radius: 0;
   clip-path: polygon(50% 2%, 63% 26%, 85% 22%, 72% 47%, 92% 74%, 63% 69%, 50% 98%, 37% 69%, 8% 74%, 28% 47%, 15% 22%, 37% 26%);
@@ -262,12 +251,11 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
     linear-gradient(118deg, transparent 46%, #ff7a3a99 49%, transparent 53%),
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
   box-shadow: none;
-  filter: drop-shadow(0 0 3px #ff5a2e55) drop-shadow(1px 2px 2px #0009);
+  filter: drop-shadow(0 0 1.1px var(--wall-rim)) drop-shadow(0 0 3px #ff5a2e55) drop-shadow(1px 2px 2px #0009);
 }
 .board.theme-ember .cell.terrain-wall:nth-child(2n)::before { transform: scaleX(-1); }
 
 /* Village — a market stall: a peaked, striped canvas awning over a plank table. */
-.board.theme-village .cell.terrain-wall { --wall-hi: #8a6a4a; --wall-lo: #573c28; }
 .board.theme-village .cell.terrain-wall::before {
   border-radius: 0;
   clip-path: polygon(3% 27%, 50% 3%, 97% 27%, 97% 100%, 3% 100%);
@@ -275,11 +263,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
     repeating-linear-gradient(90deg, #e6d9be 0 17%, #b0503a 17% 34%) 0 0 / 100% 46% no-repeat,
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
   box-shadow: inset 2px 2px 0 #ffffff2e;
-  filter: drop-shadow(1px 2px 2px #0008);
+  filter: drop-shadow(0 0 1.1px var(--wall-rim)) drop-shadow(1px 2px 2px #0008);
 }
 
 /* Bog — a mossy hummock heaving out of the black water: wet, dark, rounded. */
-.board.theme-bog .cell.terrain-wall { --wall-hi: #5c7150; --wall-lo: #2c3b28; }
 .board.theme-bog .cell.terrain-wall::before {
   border-radius: 52% 48% 46% 54% / 50% 54% 46% 50%;
   background:
@@ -289,14 +276,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .board.theme-bog .cell.terrain-wall:nth-child(3n+1)::before { transform: scaleX(-1) rotate(5deg); }
 
-/* Village & bog floors (the two themes that used to borrow stone/forest). */
+/* Village & bog solid fallback backdrops (floors come from the palette). */
 .board.theme-village { background: #26212b; }
-.board.theme-village .cell { background: rgba(122, 110, 96, 0.52); }
-.board.theme-village .cell.dark { background: rgba(94, 84, 72, 0.52); }
 
 .board.theme-bog { background: #0b1310; }
-.board.theme-bog .cell { background: rgba(58, 84, 64, 0.5); }
-.board.theme-bog .cell.dark { background: rgba(48, 70, 54, 0.5); }
 .board.theme-bog .cell.terrain-difficult {
   /* the Black Ford: oilier and darker than a green forest bog */
   background:

@@ -122,6 +122,36 @@ export const MAPS: Record<string, MapData> = {
       '........',
     ],
   },
+  // A grassy clearing dotted with trees and shrubs (walls): scattered cover to
+  // break line of sight and flank around, without walling off any lane.
+  grove: {
+    id: 'grove', name: 'Sunlit Grove', theme: 'forest',
+    rows: [
+      '........',
+      '..#...#.',
+      '......#.',
+      '...#....',
+      '....#...',
+      '.#......',
+      '.#...#..',
+      '........',
+    ],
+  },
+  // Denser woodland: two thickets of trees frame a central glade, with a
+  // shrub-lined lane down each flank. More cover, tighter approaches.
+  thicket: {
+    id: 'thicket', name: 'Bramble Thicket', theme: 'forest',
+    rows: [
+      '........',
+      '.#.##.#.',
+      '.#....#.',
+      '...##...',
+      '...##...',
+      '.#....#.',
+      '.#.##.#.',
+      '........',
+    ],
+  },
   // A sunken causeway: two channels of black water (difficult) flanking a dry
   // central lane. Melee presses up the middle; the reeds slow anyone who strays.
   bog: {
