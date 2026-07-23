@@ -194,15 +194,10 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
               <div key={id} className="shop-item">
                 <div className="shop-row-head">
                 <button
-                  className="shop-row" disabled={!afford}
-                  onClick={() => {
-                    if (typeof focus === 'number') {
-                      // A hero is in focus — buy straight to them, one tap.
-                      if (buyItem(campaign, focus, id, price)) say(`${campaign.characters[focus]?.name} buys ${itemName(id)}.`);
-                    } else {
-                      setPickBuy(picking ? null : id);
-                    }
-                  }}
+                  className={`shop-row ${picking ? 'confirming' : ''}`} disabled={!afford}
+                  // Always confirm before spending gold — even a one-hero buy
+                  // now asks, so a stray tap never quietly empties the purse.
+                  onClick={() => setPickBuy(picking ? null : id)}
                 >
                   <span>
                     {itemIcon(id)} {itemName(id)}
@@ -219,6 +214,16 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                 </button>
                 <ItemInfoDot itemId={id} />
                 </div>
+                {picking && typeof focus === 'number' && (
+                  <div className="adv-item-acts" ref={revealConfirm}>
+                    <button disabled={!afford}
+                      onClick={() => {
+                        if (buyItem(campaign, focus, id, price)) say(`${campaign.characters[focus]?.name} buys ${itemName(id)}.`);
+                        setPickBuy(null);
+                      }}>Buy for {campaign.characters[focus]?.name?.split(' ')[0]} — 💰 {price}</button>
+                    <button className="ghost" onClick={() => setPickBuy(null)}>Cancel</button>
+                  </div>
+                )}
                 {picking && typeof focus !== 'number' && (
                   <div className="adv-item-acts adv-buyfor" ref={revealConfirm}>
                     <span className="muted">Buy for:</span>

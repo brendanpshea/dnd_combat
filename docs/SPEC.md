@@ -833,10 +833,14 @@ couple of moon-touched (silvered) weapons that carry no attack/damage bonus
 but bypass resistance to their damage type (`WeaponData.magic` →
 `applyDamage`'s `bypassResistance` option — dormant today since no monster yet
 resists a physical type, but ready for were-creatures/elementals), resistance
-and giant-strength potions (both persist for the rest of the encounter by
-mutating the combatant directly, matching how Mage Armor already persists),
-and spell scrolls from cantrip through 3rd level, tuned so a hoard averages
-roughly 50 gp of value per character level.
+and giant-strength potions (in battle they persist for the rest of the
+encounter by mutating the combatant directly, matching how Mage Armor already
+persists; because they're 1-hour buffs they can also be **drunk in camp**
+before a fight — `drinkCampBuffPotion` stores the effect on
+`resources.effects.{giantStrength,resistances}`, `buildCampaignParty` applies
+it, and it lasts until the next short *or* long rest), and spell scrolls from
+cantrip through 3rd level, tuned so a hoard averages roughly 50 gp of value
+per character level.
 
 **Trinkets** (`src/data/trinkets.ts`) are a fourth equipment slot
 (`Equipped.trinket`) — one wondrous item, worn alongside main hand/off-hand/
@@ -1124,7 +1128,7 @@ authored SVG icon, and WebAudio-synthesized sound effects.
 
 ## 9. Testing
 
-522 vitest tests across 36 suites: deterministic replay of full battles,
+540+ vitest tests across 38 suites: deterministic replay of full battles,
 rules-level unit tests (advantage cancellation, crit math, OA triggers,
 condition lifecycles, resistances, multiattack banking), AI completion across
 seeds/maps/encounters plus the arena regression floor, stat-block fidelity

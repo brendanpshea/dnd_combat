@@ -12,6 +12,7 @@ import {
   partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
+  isCampBuffPotion, drinkCampBuffPotion,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
   hitDiceLeft, hitDiceMax,
 } from '../../src/campaign/campaign.js';
@@ -771,6 +772,19 @@ function CampScreen(
                 <span className="muted adv-camp-hd" title="Hit dice — spent on a short rest to heal, half restored by a long rest">
                   {' '}· 🎲 {hitDiceLeft(campaign, idx)}/{hitDiceMax(campaign)} HD
                 </span>
+                {/* Active camp-drunk buff potions (until the next rest), so a
+                    drink you took before the fight visibly stuck. */}
+                {(() => {
+                  const eff = ch.resources?.effects;
+                  const chips: string[] = [];
+                  if (eff?.giantStrength) chips.push(`💪 Str ${eff.giantStrength}`);
+                  for (const r of eff?.resistances ?? []) chips.push(`🛡 ${r} resist`);
+                  return chips.length ? (
+                    <span className="muted adv-camp-buffs" title="Camp buff — lasts until the next short or long rest">
+                      {' · '}{chips.join(' · ')}
+                    </span>
+                  ) : null;
+                })()}
                 {/* Spell slots remaining, per level (renders nothing for a
                     non-caster) — so a wizard down to 1 of 2 first-level slots
                     reads at a glance, and "rest to recover" has a visible meter. */}
@@ -832,6 +846,14 @@ function CampScreen(
                     💚 {target.name}
                   </button>
                 ))}
+                {isCampBuffPotion(picked.itemId) && (
+                  <button onClick={() => act(() => {
+                    const msg = drinkCampBuffPotion(campaign, idx, picked.itemId);
+                    if (msg) setNotice(msg);
+                  }, '')}>
+                    🧪 Drink now
+                  </button>
+                )}
                 {campaign.characters.map((other, j) => j === idx ? null : (
                   <button key={j} onClick={() => act(() => giveItem(campaign, idx, j, picked.itemId), `${other.name} takes ${itemName(picked.itemId)}`)}>
                     → {other.name}

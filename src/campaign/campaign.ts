@@ -8,7 +8,7 @@
  * inventory back afterwards.
  */
 import { HERO_NAMES, defaultNameFor } from '../builder/names.js';
-import type { Id, Combatant, ItemStack, TeamId, Ability } from '../engine/types.js';
+import type { Id, Combatant, ItemStack, TeamId, Ability, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import {
   buildCharacter, assignStats,
@@ -46,6 +46,12 @@ export interface PartyCharacter {
     effects?: {
       familiar?: { kind: 'owl' };
       mageArmor?: true;
+      /** A giant-strength potion drunk in camp: sets Strength to this score.
+       *  Lasts until the next short or long rest (a 1-hour potion). */
+      giantStrength?: number;
+      /** Damage types a camp-drunk resistance potion grants until the next
+       *  short or long rest. */
+      resistances?: DamageType[];
     };
   };
   /**
@@ -682,6 +688,12 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
     }
     if (ch.resources?.effects?.familiar) combatant.familiar = { kind: 'owl' };
     if (ch.resources?.effects?.mageArmor) combatant.mageArmor = true;
+    // Camp-drunk buff potions, still in effect (cleared by the next rest).
+    const str = ch.resources?.effects?.giantStrength;
+    if (typeof str === 'number') combatant.abilities.str = Math.max(combatant.abilities.str, str);
+    for (const dt of ch.resources?.effects?.resistances ?? []) {
+      if (!combatant.resistances.includes(dt)) combatant.resistances.push(dt);
+    }
     return combatant;
   });
 }
@@ -775,8 +787,22 @@ export function shortRest(c: CampaignState): RestResult {
     }
     totalHealed += hp - combatant.hp;
     ch.resources = { ...ch.resources, hp, hitDice: left };
+    // A short rest ends the 1-hour camp buff potions (giant strength,
+    // resistances); familiar/mageArmor keep their own longer clocks.
+    clearCampBuffs(ch);
   }
   return { totalHealed, hitDiceSpent };
+}
+
+/** Drop the camp-drunk buff-potion effects (giant strength, resistances) from
+ *  a character's resources, deleting `effects` entirely if nothing else is in
+ *  it. A no-op if none are set. */
+function clearCampBuffs(ch: PartyCharacter): void {
+  const eff = ch.resources?.effects;
+  if (!eff || (eff.giantStrength === undefined && eff.resistances === undefined)) return;
+  const { giantStrength: _s, resistances: _r, ...rest } = eff;
+  if (Object.keys(rest).length) ch.resources = { ...ch.resources!, effects: rest };
+  else { const { effects: _e, ...noEffects } = ch.resources!; ch.resources = noEffects; }
 }
 
 /**
@@ -814,6 +840,41 @@ export type StoreHealingSource =
 export function isStoreHealingSource(itemId: Id): itemId is StoreHealingSource {
   return itemId === 'potion-healing' || itemId === 'potion-greater-healing' ||
     itemId === 'cure-wounds';
+}
+
+/** Buff potions with a real (1-hour) duration, so it makes sense to drink them
+ *  in camp — before a fight, not only during one. Maps each to the persisted
+ *  effect it grants until the next short or long rest. */
+const CAMP_BUFF_POTIONS: Record<Id, { giantStrength?: number; resistance?: DamageType; label: string }> = {
+  'potion-giant-strength-hill': { giantStrength: 21, label: 'Strength becomes 21' },
+  'potion-giant-strength-frost': { giantStrength: 23, label: 'Strength becomes 23' },
+  'potion-fire-resistance': { resistance: 'fire', label: 'resistant to fire' },
+  'potion-cold-resistance': { resistance: 'cold', label: 'resistant to cold' },
+  'potion-poison-resistance': { resistance: 'poison', label: 'resistant to poison' },
+  'potion-acid-resistance': { resistance: 'acid', label: 'resistant to acid' },
+};
+
+export function isCampBuffPotion(itemId: Id): boolean {
+  return itemId in CAMP_BUFF_POTIONS;
+}
+
+/** Drink a duration buff potion in camp: consume it from the hero's pack and
+ *  set the persisted effect (lasts until the next short or long rest). Returns
+ *  a short description of what happened, or null if it couldn't be drunk. */
+export function drinkCampBuffPotion(c: CampaignState, charIdx: number, itemId: Id): string | null {
+  const spec = CAMP_BUFF_POTIONS[itemId];
+  const ch = c.characters[charIdx];
+  const stack = ch?.inventory.find((s) => s.itemId === itemId && s.qty > 0);
+  if (!spec || !ch || !stack) return null;
+  stack.qty -= 1;
+  if (stack.qty === 0) ch.inventory = ch.inventory.filter((s) => s !== stack);
+  const effects = { ...ch.resources?.effects };
+  if (spec.giantStrength !== undefined) effects.giantStrength = spec.giantStrength;
+  if (spec.resistance) {
+    effects.resistances = [...new Set([...(effects.resistances ?? []), spec.resistance])];
+  }
+  ch.resources = { ...ch.resources, hp: ch.resources?.hp ?? buildCampaignParty(c)[charIdx]!.maxHp, effects };
+  return `${ch.name} is ${spec.label} (until the next rest).`;
 }
 
 export interface StoreHealingResult {
