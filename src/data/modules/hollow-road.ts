@@ -41,7 +41,7 @@ const scenes: Record<string, Scene> = {
   road: {
     id: 'road', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      'A day\'s hard walking up the valley, and the country has gone wrong-quiet — no carters, no herders, only crows lifting off the hedgerows as you pass.',
+      'A day\'s hard walk up the valley. The country has gone wrong-quiet. No carters, no herders. Only crows lift off the hedgerows as you pass.',
       'Thornwick lies an hour ahead, its chimney-smoke thin against the grey hills. The reeve\'s bounty is folded in your pack; the plea nailed beneath it is why you kept walking.',
       'Then the hedges shift on both sides at once — and it\'s already too late to run.',
     ],
@@ -50,7 +50,7 @@ const scenes: Record<string, Scene> = {
   'road-ambush': {
     id: 'road-ambush', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
     intro: [
-      'Raiders scramble out of the ditch — an orc with a notched axe, a lean scout nocking an arrow, a bandit already grinning.',
+      'Raiders scramble out of the ditch. An orc hefts a notched axe. A lean scout nocks an arrow. A bandit is already grinning.',
       '"The road\'s the **Ashfang\'s** now!" the bandit crows. "Chief takes his cut of every throat on it — and yours\'ll do just fine."',
     ],
     onWin: { to: 'road-reveal', text: ['The last of them drops into the mud. The road is yours again — for now.'] },
@@ -73,7 +73,7 @@ const scenes: Record<string, Scene> = {
     id: 'thornwick', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: [
       'You limp the last mile into **Thornwick** — gate scorched, shutters barred, faces watching you pass from the dark of doorways.',
-      'So the raiders on the road told it true: for a month the **Ashfang** have bled this valley dry, and the whole country has learned to lock its doors by dark.',
+      'So the raiders on the road told it true. For a month the **Ashfang** have bled this valley dry. The whole country has learned to lock its doors by dark.',
       'The reeve\'s bounty is what you came for. But it was the plea nailed beneath it, in a shakier hand, that made you keep walking: "Help us. There is no one else."',
     ],
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern',
@@ -207,7 +207,7 @@ const scenes: Record<string, Scene> = {
   board: {
     id: 'board', kind: 'story', art: { emoji: '📜' },
     text: [
-      'A bounty, nailed up and gone grey at the edges: the reeve will pay good coin for proof the **Ashfang chief** is dead, and better coin still for their banner brought back whole.',
+      'A bounty, nailed up and gone grey at the edges. The reeve will pay good coin for proof the **Ashfang chief** is dead. He will pay better coin still for their banner brought back whole.',
       'Someone has added a line at the bottom in a smaller, prouder hand — *"Thornwick does not beg. It pays its debts."* That ink is newer than the rest.',
     ],
     next: [
@@ -286,14 +286,14 @@ const scenes: Record<string, Scene> = {
   trailhead: {
     id: 'trailhead', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      'With the peddler in the reeve\'s cells, the gate-warden stands aside, and **Thornwick** falls away behind you. Ahead the road narrows toward the **marsh** — a ribbon of mud between black water and whispering reeds.',
+      'The peddler is in the reeve\'s cells now. The gate-warden stands aside, and **Thornwick** falls away behind you. Ahead the road narrows toward the **marsh**. It is a ribbon of mud between black water and whispering reeds.',
       'Somewhere out in that maze the **Ashfang** keep their den. Somewhere a good deal closer, it seems, they keep their eyes on the road.',
     ],
     next: [{ id: 'go', label: 'Set out on the marsh road', to: 'road-out' }],
   },
   'road-out': {
     id: 'road-out', kind: 'battle', encounterId: 'goblin-outriders', mapId: 'open',
-    intro: ['Barely a mile from the gate, the reeds erupt — the Ashfang keep goblin outriders on the road, and word of you has plainly run ahead. A wiry goblin boss lopes out ahead of his pack, scimitar bared, cackling something in Goblin that needs no translation.'],
+    intro: ['Barely a mile from the gate, the reeds erupt. The Ashfang keep goblin outriders on the road, and word of you has run ahead. A wiry goblin boss lopes out in front of his pack. His scimitar is bared, and he cackles something in Goblin that needs no translation.'],
     // Milestone M1 rides on this fight's win: surviving the road out of town is
     // what dings the party to 2nd level, so the level-up lands on a fight it
     // earned rather than out of nowhere. road-out is on the one-way path into the
@@ -432,7 +432,7 @@ const scenes: Record<string, Scene> = {
   barrow: {
     id: 'barrow', kind: 'story', art: { emoji: '🪦' },
     text: [
-      'Half-swallowed by the reeds: a barrow-mound older than any kingdom you could name, its capstone cracked and weeping cold air. The marsh has been chewing at it for centuries — and lately, something has been chewing back out.',
+      'Half-swallowed by the reeds is a barrow-mound older than any kingdom you could name. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something has been chewing back out.',
       'Grave-goods glint in the dark below. So does something that moves without touching the water.',
     ],
     next: [
@@ -507,7 +507,7 @@ const scenes: Record<string, Scene> = {
   'ambush-sprung': {
     id: 'ambush-sprung', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'party', // the check failed — they get the drop on you
-    intro: ['The reeds erupt around you — **lizardfolk** with hooked spears, a giant toad heaving up through the muck, all of it moving with one dreadful purpose, as if a single hand worked them like puppets.'],
+    intro: ['The reeds erupt around you. **Lizardfolk** rush in with hooked spears. A giant toad heaves up through the muck. All of it moves with one dreadful purpose, as if a single hand worked them like puppets.'],
     onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The marsh-things fall still.'],
       effects: [{ kind: 'xpToLevel', level: 3 }] },
   },
@@ -540,7 +540,7 @@ const scenes: Record<string, Scene> = {
   },
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
-    intro: ['A horn brays from the watch-post, and the gate-runners answer — a hulking bugbear ducks under the lintel, and behind him two gnolls come yammering that awful laughing bark, all three hemmed into the narrow timber run.'],
+    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks under the lintel. Behind him two gnolls come yammering that awful laughing bark. All three are hemmed into the narrow timber run.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
   },
@@ -579,7 +579,7 @@ const scenes: Record<string, Scene> = {
   'den-yard': {
     id: 'den-yard', kind: 'story', art: { imageId: 'loc-camp', emoji: '🏚️' },
     text: [
-      'Inside the palisade the Ashfang den sprawls around a central fire-pit — a churn of tents, drying-racks, and the reek of a place that has never once been clean.',
+      'Inside the palisade the Ashfang den sprawls around a central fire-pit. Tents and drying-racks churn together. Over it all hangs the reek of a place that has never once been clean.',
       'Directly ahead, a staked ring of trampled mud: **the pit**, where a chained shape heaves against its irons in the firelight. Past it, apart from the rest, a single small fire burns — someone keeping their own counsel. The chief\'s hall looms beyond, and behind you the gate still opens onto the marsh road, if it comes to that.',
     ],
     next: [{ id: 'ok', label: 'Take stock of the camp', to: 'inner' }],
@@ -618,7 +618,7 @@ const scenes: Record<string, Scene> = {
   },
   'den-hyenas': {
     id: 'den-hyenas', kind: 'battle', encounterId: 'kennel-hyenas', mapId: 'open',
-    intro: ['The handler yanks the pins and the hyenas come off their chains in a scrabble of claws and that awful laughing yammer.'],
+    intro: ['The handler yanks the pins. The hyenas come off their chains in a scrabble of claws and that awful laughing yammer.'],
     onWin: { to: 'inner', text: ['The kennel falls quiet. Among the straw and bones: a raider\'s stashed purse and a half-eaten satchel worth the trouble.'],
       effects: [{ kind: 'setFlag', flag: 'kennel-cleared' }, { kind: 'gold', amount: 30 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
   },
@@ -696,7 +696,7 @@ const scenes: Record<string, Scene> = {
   'boss-unguarded': {
     id: 'boss-unguarded', kind: 'battle', encounterId: 'ashfang-warlord-alone', mapId: 'firepit',
     intro: [
-      'The warlord bellows for his guard — and nothing answers. Somewhere back in the smoke, Vex is very deliberately looking the other way.',
+      'The warlord bellows for his guard. Nothing answers. Somewhere back in the smoke, Vex is looking the other way on purpose.',
       '"You\'ve cost me a good season," the chief says anyway, almost mild, and rolls the great axe off his shoulder. The hag\'s laughter falters, just once, counting the blades that didn\'t come.',
     ],
     loot: { bonusTier: 'rare' },
@@ -741,7 +741,7 @@ const scenes: Record<string, Scene> = {
   epilogue: {
     id: 'epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'The Ashfang banner burns in the square, and out past the reeds the marsh has gone strangely still — the black water lower than anyone remembers, the wrong-cold lifted, as if something that had been holding its breath for years finally let it out. The **Reedwife** is done. The carters have already started complaining about the state of the road, which Mira says is the surest sign a place has stopped being afraid.',
+      'The Ashfang banner burns in the square. Out past the reeds the marsh has gone strangely still. The black water is lower than anyone remembers, and the wrong-cold has lifted. It is as if something held its breath for years and finally let it out. The **Reedwife** is done. The carters have already started complaining about the state of the road. Mira says that is the surest sign a place has stopped being afraid.',
       'She pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.',
     ],
   },
