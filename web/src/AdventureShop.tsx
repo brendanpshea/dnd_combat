@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import {
   buyItem, sellItem, itemName, itemIcon, itemPrice, itemCategory,
-  partyStash, claimFromStash, scrollLearnable, learnSpellFromScroll, equipBlocked,
+  partyStash, claimFromStash, scrollLearnable, learnSpellFromScroll, equipBlocked, partyLevelOf,
   type CampaignState, type ItemCategory, type EquipSlot,
 } from '../../src/campaign/campaign.js';
 import {
@@ -97,7 +97,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
   const visit = shopVisitOf(state, scene.id);
   const npc = scene.npc;
   const portraitId = npc?.portraitId ?? 'npc-merchant';
-  const stock = shopStock(scene);
+  const stock = shopStock(scene, partyLevelOf(campaign));
   const priceOf = (id: string) => shopPrice(state, scene.id, id);
   // Which shelves this shop actually stocks, and the buy list filtered to the
   // chosen one (a single shelf shows no filter — nothing to narrow).

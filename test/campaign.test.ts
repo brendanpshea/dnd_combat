@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
-  buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
+  buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK, shopOffering,
   treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, fullRest, useStoreHealing, useStoreSpell,
@@ -58,6 +58,36 @@ describe('campaign state', () => {
       expect(itemPrice(id)).toBeGreaterThan(0);
       expect(itemName(id)).not.toBe(id); // resolved to a human name
     }
+  });
+
+  it('shopOffering stocks staples always, magical wares limited and level-scaled', () => {
+    const l1 = shopOffering(SHOP_STOCK, 1, 'sb-market');
+    const l3 = shopOffering(SHOP_STOCK, 3, 'sb-market');
+    const l5 = shopOffering(SHOP_STOCK, 5, 'sb-market');
+
+    // Mundane staples are on the shelf at every level — even ones the loot
+    // tables rate "uncommon" (a plain rapier), and always the healing potion.
+    for (const shelf of [l1, l3, l5]) {
+      for (const staple of ['potion-healing', 'rapier', 'greatsword', 'leather', 'longbow']) {
+        expect(shelf, `staple ${staple}`).toContain(staple);
+      }
+    }
+    // A 1st-level party is offered NO enchanted gear (no +1, adamantine, trinkets).
+    const enchanted = (id: string) => id.endsWith('plus1') || id.includes('adamantine') || id.includes('moontouched')
+      || ['gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding', 'bracers-archery', 'boots-winterlands', 'gloves-thievery'].includes(id);
+    expect(l1.some(enchanted)).toBe(false);
+    // Magical rotation grows with level, and never carries the whole catalogue.
+    const magical = (shelf: string[]) => shelf.filter((id) => enchanted(id) || id.includes('resistance') || id.includes('giant-strength') || (id.includes('scroll') && itemPrice(id)! > 60));
+    expect(magical(l5).length).toBeGreaterThan(magical(l1).length);
+    expect(l5.length).toBeLessThan(SHOP_STOCK.length); // not everything at once
+  });
+
+  it('shopOffering is stable per (level, shop) but varies across both', () => {
+    // Same shop, same level → identical shelf (no re-rolling by leaving/re-entering).
+    expect(shopOffering(SHOP_STOCK, 4, 'sb-market')).toEqual(shopOffering(SHOP_STOCK, 4, 'sb-market'));
+    // Different shop, or a level-up → a different magical mix.
+    expect(shopOffering(SHOP_STOCK, 4, 'sb-market')).not.toEqual(shopOffering(SHOP_STOCK, 4, 'wc-stores'));
+    expect(shopOffering(SHOP_STOCK, 4, 'sb-market')).not.toEqual(shopOffering(SHOP_STOCK, 6, 'sb-market'));
   });
 
   it('buildCampaignParty uses the XP-derived level and persisted gear', () => {
