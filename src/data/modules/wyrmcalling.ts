@@ -37,8 +37,8 @@ const scenes: Record<string, Scene> = {
   muster: {
     id: 'muster', kind: 'story', art: { imageId: 'loc-camp', emoji: '⚔️' },
     text: [
-      'The valley has finally stopped waiting to be saved. Below the high hills a **war-camp** sprawls across the water-meadows. Thornwick\'s levies stand there, fen-folk with boar-spears, carters turned pikemen. This time everyone can see the trouble coming. It stands on the skyline every night: fires in the high passes that no shepherd lit.',
-      'The story runs ahead of you through the camp. The **Reedwife\'s sisters** — two of them, tall as door-frames, seen at the fen\'s edge the night the barrows closed — have gone up into the hills and woken something called the **Calling stone**. And the hills have begun to *answer*. Wyrmlings on the wing at dusk. Giant-sign in the orchards. Whole streams running the wrong way, as if the water had been called too.',
+      'The valley has finally stopped waiting to be saved. Below the high hills a **war-camp** sprawls across the water-meadows. Thornwick\'s recruits stand there, fen-folk with boar-spears, carters turned pikemen. This time everyone can see the trouble coming. It stands on the skyline every night: fires in the high passes that no shepherd lit.',
+      'The story runs ahead of you through the camp. The **Reedwife\'s sisters** have gone up into the hills. Two of them, tall as door-frames. Folk saw them at the fen\'s edge the night the barrows closed. Now they have woken something called the **Calling stone**. And the hills have begun to *answer*. Wyrmlings on the wing at dusk. Giant-sign in the orchards. Whole streams running the wrong way, as if the water had been called too.',
       'You are, by unanimous and unrequested acclaim, the company that broke the Ashfang and shut the Undercrypt. The camp parts around you like water around a keel, all the way to the command tent. Nobody says *it\'s your debt they\'re collecting*. Nobody has to.',
     ],
     next: [{ id: 'go', label: 'Report to the command tent', to: 'envoys',
@@ -67,7 +67,7 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'on', label: 'Take the war-camp', to: 'warcamp',
       effects: [{ kind: 'setFlag', flag: 'briefed' },
         { kind: 'journal', entry: { id: 'n-vex3', kind: 'npc', title: 'Captain Vex',
-          body: 'The Ashfang\'s old lieutenant, now captain of the valley muster — tired, precise, and right too often for anyone\'s comfort. His arithmetic: every den and beast cleared in the hills is one voice fewer when the Calling peaks.' } },
+          body: 'The Ashfang\'s old lieutenant now leads the valley war-camp. He is tired, careful, and right too often for anyone\'s comfort. His math is simple. Every den and beast you clear in the hills is one voice fewer when the Calling peaks.' } },
         { kind: 'journal', entry: { id: 'lead-stone', kind: 'lead', resolvedBy: 'calling-found',
           title: 'The Calling Stone', body: 'Somewhere past the oni\'s pass and the giants\' steading, the sisters tend the stone that calls the hills down. Climb until you find it.' } }] }],
   },
@@ -89,12 +89,12 @@ const scenes: Record<string, Scene> = {
   },
   command: {
     id: 'command', kind: 'story', art: { emoji: '🗺️' },
-    text: ['The command tent, minus its captain\'s patience: Vex is mid-argument with three levies about picket rotations, conducting with a map-weight. He spares you a nod that means *the hills are that way and you know your business*. It is, from Vex, effusive.'],
+    text: ['The command tent, minus its captain\'s patience: Vex is mid-argument with three recruits about guard rotations, conducting with a map-weight. He spares you a nod that means *the hills are that way and you know your business*. It is, from Vex, effusive.'],
     next: [{ id: 'ok', label: 'Leave him to the war', to: 'warcamp' }],
   },
   'command-done': {
     id: 'command-done', kind: 'story', art: { emoji: '🗺️' },
-    text: ['The command tent hums on — pickets, rations, the grinding arithmetic of keeping frightened people pointed the right way. Vex\'s map grows a new pin for every fight you win in the hills. He\'d never say so, but he keeps them in a tidy little row.'],
+    text: ['The command tent hums on. Guard-posts, rations, the grinding work of keeping frightened people pointed the right way. Vex\'s map grows a new pin for every fight you win in the hills. He\'d never say so, but he keeps them in a tidy little row.'],
     next: [{ id: 'ok', label: 'Back to the camp', to: 'warcamp' }], noBack: true,
   },
   'wc-stores': { id: 'wc-stores', kind: 'shop', title: 'The War-Stores', next: 'warcamp',
@@ -119,7 +119,7 @@ const scenes: Record<string, Scene> = {
   },
   'hills-out': {
     id: 'hills-out', kind: 'story', art: { imageId: 'loc-hills', emoji: '⛰️' },
-    text: ['The high trail leaves the last picket behind at a cairn the levies have taken to saluting. Above, the hills stack into the sky, pass over pass. Over the highest of them, faint as a held note, you hear it for the first time: the **Calling**. It is not so much a sound as a *pull*. It feels like a door standing open somewhere above the weather.'],
+    text: ['The high trail leaves the last lookout behind at a stone marker the recruits have taken to saluting. Above, the hills stack into the sky, pass over pass. Over the highest of them, faint as a held note, you hear it for the first time: the **Calling**. It is not so much a sound as a *pull*. It feels like a door standing open somewhere above the weather.'],
     next: [{ id: 'up', label: 'Climb', to: 'hills' }],
   },
 
@@ -202,7 +202,7 @@ const scenes: Record<string, Scene> = {
   'tollcliff-fight': {
     id: 'tollcliff-fight', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'ruins',
     intro: ['"*Steel*, then," the manticore sighs, sounding truly put out. Its tail comes over its shoulder like a drawn bow. From the rocks behind it, two goblin lackeys scramble up with spears. They are sheep-payers, most likely, working off a debt.'],
-    onWin: { to: 'hills', text: ['The manticore crashes to the trail with a last, affronted "*…toll*", and its lackeys bolt for a lower altitude and better employer. The cliff-hoard in the overhang holds the fees of a decade\'s frightened travellers.'],
+    onWin: { to: 'hills', text: ['The manticore crashes to the trail with a last, offended "*…toll*". Its lackeys bolt for lower ground and a better boss. The hoard in the overhang holds ten years of tolls, paid by frightened travellers.'],
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'gold', amount: 110 }] },
   },
   'tollcliff-done': {
@@ -224,7 +224,7 @@ const scenes: Record<string, Scene> = {
   'boarruns-fight': {
     id: 'boarruns-fight', kind: 'battle', encounterId: 'boar-stampede', mapId: 'open',
     intro: ['The drumming becomes weather. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are like ploughshares, their eyes mad with the Calling. And the narrows, you now see, narrow *behind* you as well.'],
-    onWin: { to: 'hills', text: ['The stampede breaks around its fallen leaders and scatters downslope, called or not. The herd will keep to the low country now — and the muster below is spared a battering-ram with opinions.'],
+    onWin: { to: 'hills', text: ['The stampede breaks around its fallen leaders and scatters downslope, called or not. The herd will keep to the low country now. The war-camp below is spared a battering-ram with opinions.'],
       effects: [{ kind: 'setFlag', flag: 'boarruns-cleared' }, { kind: 'gold', amount: 40 }] },
   },
   'boarruns-done': {
@@ -249,14 +249,14 @@ const scenes: Record<string, Scene> = {
   seam: {
     id: 'seam', kind: 'story', art: { emoji: '🌊' },
     text: [
-      'Here is Wren\'s walking stream. A mountain beck runs *up* the seam of the pass, briskly, against all persuasion of gravity — and where it pools at the top, the pool has a shape. Shoulders. A suggestion of patience.',
-      'The Undercrypt\'s ward kept more doors shut than one. This came through a seam the broken vigil left thin, and the Calling is holding it here like a stopper in the pass: the road to the middle pass runs straight through its pool.',
+      'Here is Wren\'s walking stream. A mountain beck runs *up* the seam of the pass, briskly, against all persuasion of gravity. And where it pools at the top, the pool has a shape. Shoulders. A suggestion of patience.',
+      'The Undercrypt\'s ward kept more doors shut than one. This came through a seam the broken vigil left thin. The Calling is holding it here like a stopper in the pass. The road to the middle pass runs straight through its pool.',
     ],
     next: [{ id: 'fight', label: 'Break the water', to: 'seam-fight' }],
   },
   'seam-fight': {
     id: 'seam-fight', kind: 'battle', encounterId: 'water-vortex', mapId: 'bog',
-    intro: ['The pool stands up. Twelve feet of mountain water in the rough draft of a giant, cold as the seam it came through, and it hits like the flood it technically is. The **water elemental** does not roar. It simply *pours* — at you.'],
+    intro: ['The pool stands up. Twelve feet of mountain water in the rough draft of a giant, cold as the seam it came through. It hits like the flood it technically is. The **water elemental** does not roar. It simply *pours* — at you.'],
     onWin: { to: 'hills', text: ['The elemental loses its argument with gravity all at once, collapsing into a hundred gallons of ordinary beck that hurries away downhill as if embarrassed. The seam behind it sighs shut. The pass is open.'],
       effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, { kind: 'gold', amount: 50 }] },
   },
@@ -268,10 +268,10 @@ const scenes: Record<string, Scene> = {
   blueden: {
     id: 'blueden', kind: 'battle', encounterId: 'blue-dragon-den', mapId: 'ruins',
     intro: [
-      'The mesa smells of storms. A **blue wyrmling** has claimed the old watchtower ruin at its crown. Its kobolds have been *busy*: copper rods lashed to every standing wall, a nest wired like a thunderhead waiting on a signature.',
-      'The wyrmling uncoils along a broken parapet, crackling with self-satisfaction, and the air goes sharp with ozone. It has clearly been told it is going to be enormous someday. It has not been told about you.',
+      'The mesa smells of storms. A **blue wyrmling** has claimed the old watchtower ruin at its crown. Its kobolds have been *busy*. Copper rods are lashed to every standing wall, a nest wired like a storm-cloud waiting to go off.',
+      'The wyrmling uncoils along a broken wall, crackling with pride, and the air goes sharp and metallic. It has clearly been told it is going to be enormous someday. It has not been told about you.',
     ],
-    onWin: { to: 'hills', text: ['The wyrmling drops from the parapet trailing dead sparks, and its kobolds\' lightning-farm shorts into scrap. The mesa\'s hoard — tribute wired for a dragon\'s future — funds a company\'s present instead.'],
+    onWin: { to: 'hills', text: ['The wyrmling drops from the wall trailing dead sparks. Its kobolds\' lightning-farm shorts into scrap. The mesa\'s hoard was tribute saved for a dragon\'s future. It funds a company\'s present instead.'],
       effects: [{ kind: 'setFlag', flag: 'blue-cleared' }, { kind: 'gold', amount: 95 }] },
   },
   'blueden-done': {
@@ -282,15 +282,15 @@ const scenes: Record<string, Scene> = {
   onihold: {
     id: 'onihold', kind: 'story', art: { imageId: 'loc-keep', emoji: '🏯' },
     text: [
-      'The middle pass is held. Not squatted in — *held*, with a soldier\'s eye: a drystone hold rebuilt in a week by hands that lift boulders like bread, pickets of sharpened pine, a horn on the wall that has already sounded once.',
-      'On the wall above the gate stands the holder: an **ogre-mage**, blue-skinned and beautiful in lacquered scraps of ancient armour, and the look it gives you down the pass is the worst thing in the hills so far — *intelligent*. "The stone sings," it calls down, pleasantly. "We answered first, and the first to answer holds the door. Toll, tithe, or try us, little debtors."',
+      'The middle pass is held. Not squatted in. *Held*, with a soldier\'s eye. A drystone hold rebuilt in a week by hands that lift boulders like bread. Guard-posts of sharpened pine. A horn on the wall that has already sounded once.',
+      'On the wall above the gate stands the holder. An **ogre-mage**, blue-skinned and beautiful in lacquered scraps of ancient armour. The look it gives you down the pass is the worst thing in the hills so far. *Intelligent*. "The stone sings," it calls down, pleasantly. "We answered first, and the first to answer holds the door. Toll, tithe, or try us, little debtors."',
     ],
     next: [{ id: 'fight', label: 'Try them', to: 'onihold-fight' }],
   },
   'onihold-fight': {
     id: 'onihold-fight', kind: 'battle', encounterId: 'oni', mapId: 'corridor',
     intro: ['The horn sounds twice. The gate opens on the oni\'s honour-guard: an ogre with a knocked-together maul and an orc veteran in stolen mail. Then the ogre-mage itself rises from the wall on a cold wind, blade in hand. It darkens the air around it like ink in water.'],
-    onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished to the last, and its warband breaks with it. The middle pass — the road to the steading and the stone — stands open, and the hold\'s war-chest is yours by right of arithmetic.'],
+    onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished to the last, and its warband breaks with it. The middle pass stands open now, the road to the steading and the stone. The hold\'s war-chest is yours, fair and square.'],
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'gold', amount: 130 }] },
   },
   'onihold-done': {
@@ -315,8 +315,8 @@ const scenes: Record<string, Scene> = {
   gorgonvale: {
     id: 'gorgonvale', kind: 'story', art: { emoji: '🗿' },
     text: [
-      'Wren\'s vale. The statues are, as advertised, too good: a shepherd mid-stride, arm flung up; a wolf caught turning; a hag\'s sell-sword with his blade half-drawn and an expression you can read at thirty paces. No sculptor ever chose these subjects. No sculptor was ever this *fast*.',
-      'At the vale\'s head, cropping the grass between its own masterworks, stands a bull of black iron plates — a **gorgon**, steam curling from its nostrils in the cold. The Calling has drawn it down from some higher, worse pasture. It hasn\'t noticed you yet. The statues suggest that state of affairs tends not to last.',
+      'Wren\'s vale. The statues are, as advertised, too good. A shepherd mid-stride, arm flung up. A wolf caught turning. A hag\'s sell-sword with his blade half-drawn and an expression you can read at thirty paces. No sculptor ever chose these subjects. No sculptor was ever this *fast*.',
+      'At the vale\'s head stands a bull of black iron plates, cropping the grass between its own masterworks. A **gorgon**, steam curling from its nostrils in the cold. The Calling has drawn it down from some higher, worse pasture. It hasn\'t noticed you yet. The statues suggest that state of affairs tends not to last.',
     ],
     next: [
       { id: 'fight', label: 'Go in blade-first', to: 'gorgonvale-fight' },
@@ -337,10 +337,10 @@ const scenes: Record<string, Scene> = {
   steading: {
     id: 'steading', kind: 'battle', encounterId: 'giants', mapId: 'ruins',
     intro: [
-      'Above the tree-line stands the steading: a hall of whole pines and doorway-sized flagstones. Something built it in a season, treating the work as mere stacking. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing over one enormous body. An ogre lieutenant and an orc runner scramble in its wake.',
+      'Above the tree-line stands the steading. It is a hall of whole pine trunks and doorway-sized stone blocks. Something built it in a season, treating the work as mere stacking. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing over one enormous body. An ogre lieutenant and an orc runner scramble in its wake.',
       '"THE STONE PROMISED US THE VALLEY," booms the left head. "*I* heard the stone promise *me* the valley," corrects the right. Both heads notice you at the same time, and for the first time all day, agree.',
     ],
-    onWin: { to: 'hills', text: ['The ettin goes down still bickering about whose fault it was, and its retinue does not stay to arbitrate. The steading\'s hall — tribute, plunder, and one entire pickled orchard — stands open to the muster below. The last strong voice on the mountain is out of the choir.'],
+    onWin: { to: 'hills', text: ['The ettin goes down still bickering about whose fault it was. Its followers do not stay to settle the argument. The steading\'s hall stands open. Inside is tribute, plunder, and one entire pickled orchard, all bound for the war-camp below. The last strong voice on the mountain is out of the choir.'],
       effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'gold', amount: 140 }] },
   },
   'steading-done': {
@@ -355,8 +355,8 @@ const scenes: Record<string, Scene> = {
   'calling-gate': {
     id: 'calling-gate', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌄' },
     text: [
-      'The last ridge. The Calling is no longer a pull here — it is a *pressure*, a note held so long the mountain hums it back. Beyond the ridge-line, a corrie of bare rock cups the sky, and at its centre stands the **stone**: a single black fang, old past guessing, wrapped in a light that bruises to look at.',
-      'And on the wind, wingbeats. The corrie\'s rim is the wyrms\' mustering ground, and what remains of the brood — the question you\'ve been answering, den by den, all the way up the mountain — is *gathering to answer you back*.',
+      'The last ridge. The Calling is no longer a pull here — it is a *pressure*, a note held so long the mountain hums it back. Beyond the ridge-line, a corrie of bare rock cups the sky. At its centre stands the **stone**. A single black fang, old past guessing, wrapped in a light that bruises to look at.',
+      'And on the wind, wingbeats. The corrie\'s rim is the wyrms\' gathering ground. What remains of the brood is *gathering to answer you back*. It is the question you\'ve been answering, den by den, all the way up the mountain.',
     ],
     next: [{ id: 'on', label: 'Meet the clutch on the rim', to: 'clutch-fight',
       effects: [{ kind: 'setFlag', flag: 'calling-found' }] }],
@@ -366,8 +366,8 @@ const scenes: Record<string, Scene> = {
   'calling-gate-clear': {
     id: 'calling-gate-clear', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌄' },
     text: [
-      'The last ridge. The Calling is no longer a pull here — it is a *pressure*, a note held so long the mountain hums it back. Beyond the ridge-line, a corrie of bare rock cups the sky, and at its centre stands the **stone**: a single black fang, old past guessing, wrapped in a light that bruises to look at.',
-      'And overhead — nothing. The corrie\'s rim is a mustering ground with no muster: you emptied the dens one by one on the way up, and the sky the Calling promised its wyrms is clean. You cross the ridge unopposed, which is what thoroughness buys.',
+      'The last ridge. The Calling is no longer a pull here — it is a *pressure*, a note held so long the mountain hums it back. Beyond the ridge-line, a corrie of bare rock cups the sky. At its centre stands the **stone**. A single black fang, old past guessing, wrapped in a light that bruises to look at.',
+      'And overhead — nothing. The corrie\'s rim is a gathering ground with no gathering. You emptied the dens one by one on the way up. The sky the Calling promised its wyrms is clean. You cross the ridge unopposed, which is what thoroughness buys.',
     ],
     next: [{ id: 'on', label: 'Down into the corrie', to: 'calling-approach',
       effects: [{ kind: 'setFlag', flag: 'calling-found' }, { kind: 'setFlag', flag: 'clutch-skipped' }] }],
@@ -381,13 +381,13 @@ const scenes: Record<string, Scene> = {
   'clutch-fight': {
     id: 'clutch-fight', kind: 'battle', encounterId: 'chromatic-clutch', mapId: 'open',
     intro: ['They come over the rim together: the brood of the high hills, every wyrmling the Calling could still summon. They are black and green and white, shrieking in three keys of greed. The dens you emptied stay empty. The ones you didn\'t are all here, and they have decided the debt is *theirs* to collect.'],
-    onWin: { to: 'calling-approach', text: ['The last wyrmling drops out of the bruised light and does not rise. The rim is yours; the corrie below waits; the stone\'s note wavers, as if it has just now noticed how few voices are left to answer it.'],
+    onWin: { to: 'calling-approach', text: ['The last wyrmling drops out of the bruised light and does not rise. The rim is yours. The hollow below waits. The stone\'s note wavers, as if it has just noticed how few voices are left to answer it.'],
       effects: [{ kind: 'setFlag', flag: 'clutch-beaten' }] },
   },
   'calling-approach': {
     id: 'calling-approach', kind: 'story', art: { imageId: 'loc-cave', emoji: '🗿' },
     text: [
-      'Down in the corrie, at the stone\'s foot, the **sisters** are waiting. Two of them, tall as door-frames, green fingers sunk to the knuckle in the black rock — and this close you understand, finally, what the Calling is. They are not commanding the stone. They are *spending themselves into it*: hair gone to river-weed and wire, faces burning down like tallow, two long lives being poured through a fang of old rock to hold a door open.',
+      'Down in the corrie, at the stone\'s foot, the **sisters** are waiting. Two of them, tall as door-frames, green fingers sunk to the knuckle in the black rock — and this close you understand, finally, what the Calling is. They are not commanding the stone. They are *spending themselves into it*. Hair gone to river-weed and wire. Faces burning down like tallow. Two long lives poured through a fang of old rock to hold a door open.',
       '"Sister-killers," they say, in one voice, without turning. "Vigil-breakers. Debt is debt, and we are *almost done paying it into the hills*. Everything that answers is yours to keep." The stone\'s light thickens. The ground under it begins, gently, to burn. "But you came so far. Stay. The last of the collection is just arriving — out of the fire, and out of the ground."',
     ],
     next: [{ id: 'fight', label: 'Break the stone, and the sisters with it', to: 'calling-battle' }],
@@ -395,8 +395,8 @@ const scenes: Record<string, Scene> = {
   'calling-battle': {
     id: 'calling-battle', kind: 'battle', encounterId: 'elemental-cataclysm', mapId: 'firepit',
     loot: { bonusTier: 'rare' },
-    intro: ['The sisters pour the last of themselves through the stone, and the stone SPENDS it. The corrie floor splits along a burning seam. What comes through is the debt made flesh at last: a roaring pillar of living fire, and the mountain\'s own bones shrugging up into a shape with fists. The sisters collapse into drifts of dry reeds, smiling. The Calling\'s final note is a cataclysm, and it has your name in it.'],
-    onWin: { to: 'calling-won', text: ['The fire gutters out of the air and the stone shape shakes itself back into scree — and the black fang, with nothing left to spend and no one left to spend it, cracks from crown to root and goes silent. The Calling ends not with thunder but with the enormous, ringing quiet of a note finally released.'],
+    intro: ['The sisters pour the last of themselves through the stone, and the stone SPENDS it. The corrie floor splits along a burning seam. What comes through is the debt made flesh at last. A roaring pillar of living fire. The mountain\'s own bones shrugging up into a shape with fists. The sisters collapse into drifts of dry reeds, smiling. The Calling\'s final note is a cataclysm, and it has your name in it.'],
+    onWin: { to: 'calling-won', text: ['The fire gutters out of the air. The stone shape shakes itself back into loose rubble. The black fang has nothing left to spend, and no one left to spend it. It cracks from top to bottom and goes silent. The Calling does not end with thunder. It ends with the huge, ringing quiet of a note finally let go.'],
       effects: [{ kind: 'xpToLevel', level: 5 }, { kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
   },
   'calling-won': {
@@ -410,8 +410,8 @@ const scenes: Record<string, Scene> = {
   'wc-aftermath': {
     id: 'wc-aftermath', kind: 'story', art: { imageId: 'loc-camp', emoji: '🎉' },
     text: [
-      'You come down the hill on your feet — traditional now — into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown. Vex shakes your hand like a man signing off on a ledger he never expected to balance. "Three for three," he says. "Do stop before the odds notice."',
-      'Wren says nothing at all. She just looks at the four of you, and up at the quiet hills, and grins her whole age for once — then remembers she is Chief of Scouts, coughs, and asks for your route report.',
+      'You come down the hill on your feet. Traditional now. You walk into a camp that has stopped being an army. It has started being the biggest festival the valley has ever thrown. Vex shakes your hand like a man signing off on a ledger he never expected to balance. "Three for three," he says. "Do stop before the odds notice."',
+      'Wren says nothing at all. She just looks at the four of you, and up at the quiet hills, and grins her whole age for once. Then she remembers she is Chief of Scouts, coughs, and asks for your route report.',
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'wc-aftermath',
@@ -431,8 +431,8 @@ const scenes: Record<string, Scene> = {
   'wc-epilogue': {
     id: 'wc-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'The valley remembers it as the year of the three wars — the raiders, the graves, and the hills — and the same four names run through all three stories like a bright thread. The Ashfang broken. The Undercrypt sealed. The Calling silenced, and the coven\'s long debt burned to reeds on a mountain wind.',
-      'Mira pours the first round on the house, the second without being asked, and the third with the observation that heroes drink no more carefully than anyone else. The reeve commissions a plaque. Wren corrects its geography. Vex, who has seen every side of this valley\'s troubles and finally picked the right one, raises a quiet glass to the four of you: **the Free Company** — paid in full, and free indeed.',
+      'The valley remembers it as the year of the three wars. The raiders, the graves, and the hills. The same four names run through all three stories like a bright thread. The Ashfang broken. The Undercrypt sealed. The Calling silenced, and the coven\'s long debt burned to reeds on a mountain wind.',
+      'Mira pours the first round on the house, the second without being asked. The third comes with the observation that heroes drink no more carefully than anyone else. The reeve commissions a plaque. Wren corrects its geography. Vex has seen every side of this valley\'s troubles, and finally picked the right one. He raises a quiet glass to the four of you. To **the Free Company**, paid in full, and free indeed.',
     ],
   },
 };
