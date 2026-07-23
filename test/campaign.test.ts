@@ -9,6 +9,7 @@ import {
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
   partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
   hitDiceLeft, hitDiceMax, isCampBuffPotion, drinkCampBuffPotion,
+  levelUpSummary, setLevelChoice,
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
@@ -943,6 +944,52 @@ describe('wizard spellbook: learning spells from scrolls', () => {
     c.characters[wizardIdx]!.inventory.push({ itemId: 'scroll-fireball', qty: 1 });
     // Fireball is already on the wizard's default table — nothing to learn.
     expect(scrollLearnable(c, wizardIdx, 'scroll-fireball')).toBeUndefined();
+  });
+});
+
+describe('level-up summary (derived gains + choices)', () => {
+  it('surfaces the headline gains for each class, diffed from the class table', () => {
+    const c = newCampaign();
+    const g = levelUpSummary(c, 4, 5);
+    const fighter = g.find((x) => x.classId === 'fighter')!;
+    expect(fighter.hp).toBeGreaterThan(0);
+    expect(fighter.proficiency).toBe(1);       // +2 → +3 at level 5
+    expect(fighter.extraAttack).toBe(true);    // the level-5 spike
+    expect(fighter.features).toContain('Extra Attack');
+    expect(fighter.isCaster).toBe(false);
+
+    const wizard = g.find((x) => x.classId === 'wizard')!;
+    expect(wizard.newSpellLevel).toBe(3);      // Fireball tier opens
+    expect(wizard.spellbook).toBeGreaterThan(0);
+    expect(wizard.prepared).toBeGreaterThan(0);
+    expect(wizard.isCaster).toBe(true);
+  });
+
+  it('collapses repeated feature families and reports nothing for a no-op', () => {
+    const c = newCampaign();
+    const rogue = levelUpSummary(c, 1, 2).find((x) => x.classId === 'rogue')!;
+    // Cunning Action: Dash / Disengage / Hide → one gain, not three.
+    expect(rogue.features).toEqual(['Cunning Action']);
+    expect(levelUpSummary(c, 3, 3)).toEqual([]); // toLevel <= fromLevel
+  });
+
+  it('offers a build choice only in the band it unlocks, and setLevelChoice applies it mid-run', () => {
+    const c = newCampaign();
+    // Swap a member to Paladin, whose Fighting Style unlocks at 2nd level.
+    setPartyClass(c, 0, 'paladin');
+    c.partyReady = true;
+    expect(levelUpSummary(c, 1, 1)).toEqual([]);
+    const at2 = levelUpSummary(c, 1, 2)[0]!;
+    const fs = at2.choices.find((ch) => ch.pointId === 'fighting-style')!;
+    expect(fs).toBeDefined();
+    expect(fs.atLevel).toBe(2);
+    expect(fs.options.length).toBeGreaterThan(1);
+    // Not offered again once past its level.
+    expect(levelUpSummary(c, 2, 3)[0]!.choices.some((ch) => ch.pointId === 'fighting-style')).toBe(false);
+    // The pick sticks after launch (setPartyChoice would have refused).
+    const pick = fs.options.find((o) => o.id !== fs.current)!;
+    expect(setLevelChoice(c, 0, 'fighting-style', pick.id)).toBe(true);
+    expect(c.characters[0]!.choices?.['fighting-style']).toBe(pick.id);
   });
 });
 

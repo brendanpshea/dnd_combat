@@ -18,6 +18,7 @@ import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
+  levelUpSummary,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest, longRest,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
   spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
@@ -357,7 +358,20 @@ async function main() {
       (done.items.length > 0
         ? `, ${done.items.map((i) => `${itemName(i.itemId)}×${i.qty}`).join(', ')}`
         : ''));
-    if (done.leveledTo) console.log(`*** LEVEL UP! The party is now level ${done.leveledTo}. ***`);
+    if (done.leveledTo) {
+      console.log(`\n*** LEVEL UP! The party is now level ${done.leveledTo}. ***`);
+      for (const g of levelUpSummary(campaign, done.leveledFrom ?? done.leveledTo - 1, done.leveledTo)) {
+        const bits: string[] = [`+${g.hp} HP`];
+        if (g.extraAttack) bits.push('Extra Attack');
+        for (const f of g.features) if (!(g.extraAttack && f === 'Extra Attack')) bits.push(f);
+        if (g.newSpellLevel) bits.push(`${g.newSpellLevel === 3 ? '3rd' : g.newSpellLevel + 'th'}-level spells`);
+        if (g.spellbook > 0) bits.push(`+${g.spellbook} spellbook`);
+        if (g.prepared > 0) bits.push(`+${g.prepared} prepared`);
+        if (g.proficiency) bits.push(`proficiency +${g.proficiency}`);
+        console.log(`  ${g.name} (${g.classId}): ${bits.join(', ')}`);
+        for (const ch of g.choices) console.log(`    → choose your ${ch.label} at camp/forge (default: ${ch.current})`);
+      }
+    }
     if (!isComplete(campaign)) {
       saveCampaign(campaign);
       console.log('(progress saved)');

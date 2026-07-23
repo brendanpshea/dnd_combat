@@ -77,7 +77,7 @@ export type AdventureEvent =
   | { type: 'flag'; flag: string; value: boolean | number }
   | { type: 'gold'; amount: number; total: number }
   | { type: 'item'; itemId: Id; qty: number; gained: boolean }
-  | { type: 'xp'; amount: number; leveledTo?: number }
+  | { type: 'xp'; amount: number; leveledFrom?: number; leveledTo?: number }
   | { type: 'heal'; amount: number }
   | { type: 'journal'; entry: JournalEntry }
   | { type: 'secretRevealed'; nodeId: Id }
@@ -190,7 +190,7 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       const before = levelForXp(c.xp);
       c.xp += eff.amount;
       const after = levelForXp(c.xp);
-      events.push({ type: 'xp', amount: eff.amount, ...(after > before ? { leveledTo: after } : {}) });
+      events.push({ type: 'xp', amount: eff.amount, ...(after > before ? { leveledFrom: before, leveledTo: after } : {}) });
       break;
     }
     case 'xpToLevel': {
@@ -202,7 +202,7 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       const gained = Math.max(0, target - c.xp);
       c.xp = Math.max(c.xp, target);
       const after = levelForXp(c.xp);
-      events.push({ type: 'xp', amount: gained, ...(after > before ? { leveledTo: after } : {}) });
+      events.push({ type: 'xp', amount: gained, ...(after > before ? { leveledFrom: before, leveledTo: after } : {}) });
       break;
     }
     case 'heal': {

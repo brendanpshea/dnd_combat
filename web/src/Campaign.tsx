@@ -42,7 +42,7 @@ type Phase =
   | { p: 'forge' }
   | { p: 'shop' }
   | { p: 'battle'; combat: Combat; aiTeams: Set<TeamId> }
-  | { p: 'loot'; gold: number; items: ItemStack[]; xpGained: number; leveledTo?: number | undefined }
+  | { p: 'loot'; gold: number; items: ItemStack[]; xpGained: number; leveledTo?: number | undefined; leveledFrom?: number | undefined }
   | { p: 'over' }
   | { p: 'complete' };
 
@@ -147,7 +147,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     const result = applyVictory(c, survivors, combat.state.rng);
     if (isComplete(c)) deleteCampaignWeb();
     else saveCampaignWeb(c);
-    setPhase({ p: 'loot', gold: result.gold, items: result.items, xpGained: result.xpGained, leveledTo: result.leveledTo });
+    setPhase({ p: 'loot', gold: result.gold, items: result.items, xpGained: result.xpGained, leveledTo: result.leveledTo, leveledFrom: result.leveledFrom });
   }
 
   if (phase.p === 'battle') {
@@ -199,6 +199,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         items={phase.items}
         xpGained={phase.xpGained}
         leveledTo={phase.leveledTo}
+        leveledFrom={phase.leveledFrom}
+        onLevelChange={() => saveCampaignWeb(c)}
         onContinue={() => setPhase(isComplete(c) ? { p: 'complete' } : { p: 'shop' })}
       />
     );
