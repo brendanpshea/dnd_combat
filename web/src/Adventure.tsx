@@ -14,8 +14,9 @@ import {
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
   isCampBuffPotion, drinkCampBuffPotion, partyNeedsRest,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
-  hitDiceLeft, hitDiceMax,
+  hitDiceLeft, hitDiceMax, characterSkills,
 } from '../../src/campaign/campaign.js';
+import { CharacterSheet } from './CharacterSheet.js';
 import { seenTips, markTipSeen } from './tips.js';
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
@@ -715,6 +716,7 @@ function CampScreen(
 ) {
   const [picked, setPicked] = useState<CampPick>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [sheetIdx, setSheetIdx] = useState<number | null>(null);
   const party = buildCampaignParty(campaign);
   const stash = partyStash(campaign).filter((s) => s.qty > 0);
 
@@ -784,12 +786,19 @@ function CampScreen(
         {/* Each hero: worn gear (tap to unequip) + pack (tap for equip/give/stash). */}
         {campaign.characters.map((ch, idx) => (
           <div key={idx} className="adv-camp-char">
-            <div className="adv-camp-charhead">
+            <div
+              className="adv-camp-charhead adv-camp-charhead-tap"
+              role="button"
+              tabIndex={0}
+              title="Tap for full character sheet"
+              onClick={() => setSheetIdx(idx)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetIdx(idx); } }}
+            >
               {hasArt(ch.portraitId ?? ch.classId)
                 ? <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
                 : <span className="adv-party-emoji">🧑</span>}
               <div>
-                <strong>{ch.name}</strong>
+                <strong>{ch.name} <span className="adv-camp-sheethint">ⓘ</span></strong>
                 <span className="muted"> · HP {party[idx]!.hp}/{party[idx]!.maxHp} · 🛡 {acOf(party[idx]!)}</span>
                 {/* Hit dice left to spend on a short rest — a die per level,
                     refreshed (half) by a long rest. A short rest auto-spends
@@ -950,6 +959,15 @@ function CampScreen(
           </div>
         ))}
       </div>
+
+      {sheetIdx !== null && campaign.characters[sheetIdx] && party[sheetIdx] && (
+        <CharacterSheet
+          c={party[sheetIdx]!}
+          subtitle={`${label(campaign.characters[sheetIdx]!.classId)} · Level ${levelForXp(campaign.xp)}`}
+          skills={characterSkills(campaign, sheetIdx)}
+          onClose={() => setSheetIdx(null)}
+        />
+      )}
     </div>
   );
 }

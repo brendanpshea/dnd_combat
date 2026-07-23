@@ -2136,6 +2136,55 @@ button.category .count {
 .shop-cats { margin-top: -4px; }
 .adv-shop-buyfor { margin: 0; font-size: .82rem; color: var(--muted); }
 
+/* --- Character sheet (tap-to-inspect) ----------------------------------- */
+/* The depth advanced players want, summoned on tap and gone on dismiss. Same
+   dark-glass language as the info-card, but a scrollable full modal. */
+.sheet-scrim {
+  position: fixed; inset: 0; z-index: 50;
+  background: #0a0812c8;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fade-in 0.12s ease-out;
+}
+.sheet {
+  width: min(440px, 100%); max-height: 88vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 18px; border-radius: 16px; border: 1px solid var(--panel2);
+  background: linear-gradient(rgba(40,34,56,.99), rgba(28,23,40,1));
+  box-shadow: 0 12px 40px #000a;
+}
+.sheet-head { display: flex; align-items: flex-start; gap: 10px; }
+.sheet-head strong { font-size: 1.1rem; }
+.sheet-head > div:first-child { flex: 1; }
+.sheet-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.sheet-core { display: flex; flex-direction: column; gap: 2px; font-size: .82rem; text-align: right; white-space: nowrap; }
+.sheet-abilities { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.sheet-abil {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 7px 2px; border-radius: 10px; background: var(--panel2); border: 1px solid transparent;
+}
+.sheet-abil.save { border-color: var(--gold); }
+.sheet-abil-label { font-size: .68rem; color: var(--muted); font-weight: 700; letter-spacing: .03em; }
+.sheet-abil-mod { font-size: 1.05rem; font-weight: 800; font-family: var(--display); }
+.sheet-abil-score { font-size: .72rem; color: var(--muted); }
+.sheet-note { margin: -8px 0 0; font-size: .72rem; color: var(--muted); font-style: italic; }
+.sheet-block { display: flex; flex-direction: column; gap: 7px; }
+.sheet-block-label { font-size: .78rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.sheet-skills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px 14px; }
+.sheet-skill { display: flex; justify-content: space-between; gap: 8px; font-size: .84rem; color: var(--muted); }
+.sheet-skill.prof { color: var(--text); }
+.sheet-skill-b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.sheet-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.sheet-tag {
+  padding: 4px 10px; border-radius: 999px; background: var(--panel2);
+  font-size: .8rem; color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) { .sheet-scrim { animation: none; } }
+.adv-camp-charhead-tap { cursor: pointer; border-radius: 10px; }
+.adv-camp-charhead-tap:hover { background: #ffffff0d; }
+.adv-camp-sheethint { color: var(--muted); font-size: .8em; font-weight: 400; }
+.statusline-tap { cursor: pointer; }
+
 /* Journal drawer */
 .journal-scrim {
   position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50;

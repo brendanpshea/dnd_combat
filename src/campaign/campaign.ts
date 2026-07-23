@@ -21,7 +21,7 @@ import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.j
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
-import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
+import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
 import { backgroundSkills } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/monsters.js';
@@ -1352,6 +1352,33 @@ export function skillBonus(
   const proficient = cls.skillProfs.includes(skill) || speciesProficiency ||
     featureProficiency || backgroundProficiency;
   return abilityMod(abilities[SKILL_ABILITY[skill]]) + (proficient ? proficiencyBonus(level) : 0);
+}
+
+/** Is this member proficient in `skill` (class / species / feature / background)? */
+export function characterSkillProficient(c: CampaignState, idx: number, skill: SkillId): boolean {
+  const ch = c.characters[idx];
+  if (!ch) return false;
+  const cls = CLASSES[ch.classId];
+  if (!cls) return false;
+  const speciesProf = SPECIES[ch.speciesId]?.skillProficienciesByClass?.[ch.classId] === skill;
+  const featureProf = (SPECIES[ch.speciesId]?.featureIds ?? []).some((f) => FEATURES[f]?.grantsSkill === skill);
+  const bgProf = backgroundSkills(ch.backgroundId).includes(skill);
+  return cls.skillProfs.includes(skill) || speciesProf || featureProf || bgProf;
+}
+
+export interface SkillRow { skill: SkillId; label: string; bonus: number; proficient: boolean }
+
+/** Every skill for one member with its total bonus, proficient ones flagged —
+ *  the character-sheet's skill list. Sorted proficient-and-highest first. */
+export function characterSkills(c: CampaignState, idx: number): SkillRow[] {
+  if (!c.characters[idx]) return [];
+  return (Object.keys(SKILL_LABEL) as SkillId[])
+    .map((skill) => ({
+      skill, label: SKILL_LABEL[skill],
+      bonus: characterSkillBonus(c, idx, skill),
+      proficient: characterSkillProficient(c, idx, skill),
+    }))
+    .sort((a, b) => Number(b.proficient) - Number(a.proficient) || b.bonus - a.bonus || a.label.localeCompare(b.label));
 }
 
 /** One party member's total bonus for a skill, including trinket riders. */

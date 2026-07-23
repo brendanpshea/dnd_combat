@@ -348,6 +348,32 @@ describe('party loot stash', () => {
     expect(noCleric.guidance).toBeUndefined();
   });
 
+  it('characterSkills lists every skill, proficient ones first and starred', () => {
+    const c = newCampaign();
+    const rogueIdx = c.characters.findIndex((ch) => ch.classId === 'rogue');
+    expect(rogueIdx).toBeGreaterThanOrEqual(0);
+    const rows = campaignModule.characterSkills(c, rogueIdx);
+    // Every D&D skill appears exactly once.
+    expect(rows.length).toBe(18);
+    expect(new Set(rows.map((r) => r.skill)).size).toBe(18);
+    // The rogue is proficient in at least a couple of skills, and they sort
+    // ahead of the non-proficient ones.
+    const firstNonProf = rows.findIndex((r) => !r.proficient);
+    expect(firstNonProf).toBeGreaterThan(0);
+    expect(rows.slice(0, firstNonProf).every((r) => r.proficient)).toBe(true);
+    expect(rows.slice(firstNonProf).every((r) => !r.proficient)).toBe(true);
+    // A proficient skill's bonus matches the raw bonus helper.
+    const prof = rows[0]!;
+    expect(prof.bonus).toBe(campaignModule.characterSkillBonus(c, rogueIdx, prof.skill));
+    expect(campaignModule.characterSkillProficient(c, rogueIdx, prof.skill)).toBe(true);
+  });
+
+  it('characterSkills returns [] for an out-of-range index', () => {
+    const c = newCampaign();
+    expect(campaignModule.characterSkills(c, 99)).toEqual([]);
+    expect(campaignModule.characterSkillProficient(c, 99, 'stealth')).toBe(false);
+  });
+
   it('loading a save converts retired Scroll of Cure Wounds into healing potions', () => {
     const c = newCampaign(3);
     c.characters[2]!.inventory = [
