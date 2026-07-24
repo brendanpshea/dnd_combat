@@ -24,6 +24,7 @@ import { buildEncounter } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { ITEMS } from '../src/data/items.js';
 import { CLASSES } from '../src/data/classes.js';
+import { SPELLS } from '../src/data/spells.js';
 import { attackableWeapons } from '../src/engine/rules/equipment.js';
 import { buildParty } from '../src/builder/character.js';
 
@@ -833,7 +834,7 @@ describe('spell preparation (ignorable — a sensible default is auto-prepared)'
     expect(c.characters[wizardIdx]!.prepared).toHaveLength(Math.min(cap, pool.length));
   });
 
-  it('growSpellsForLevel fills hand-picked lists into the new cap, keeping picks', () => {
+  it('growSpellsForLevel fills the known tiers (cantrips, spellbook) but never touches prepared', () => {
     const c = newCampaign();
     c.xp = LEVEL_XP[2]!; // level 3
     const w = 1;
@@ -848,34 +849,38 @@ describe('spell preparation (ignorable — a sensible default is auto-prepared)'
     c.xp = LEVEL_XP[4]!; // level 5
     campaignModule.growSpellsForLevel(c);
 
-    // Every tier now fills its higher limit...
+    // The KNOWN tiers grow to their new caps, keeping every pick...
     expect(c.characters[w]!.cantrips!.length).toBe(cantripLimit(c, w));
     expect(c.characters[w]!.spellbook!.length).toBe(spellbookLimit(c, w));
-    expect(c.characters[w]!.prepared!.length).toBe(preparedLimit(c, w));
-    // ...without dropping any of the player's own picks.
     for (const id of keptBook) expect(c.characters[w]!.spellbook).toContain(id);
-    for (const id of keptPrepared) expect(c.characters[w]!.prepared).toContain(id);
+    // ...but the PREPARED list is left exactly as the player set it — no
+    // auto-preparing of new high-level spells, no forgetting the lean loadout.
+    expect(c.characters[w]!.prepared).toEqual(keptPrepared);
   });
 
-  it('a level-up victory grows a customized caster; a non-leveling win leaves it', () => {
+  it('a level-up victory never rewrites a customized prepared list', () => {
     const w = 1;
-    // A win that does NOT cross a level boundary leaves a short list untouched.
-    const c1 = newCampaign();
-    setPrepared(c1, w, [preparableSpells(c1, w)[0]!]);
-    const before = c1.characters[w]!.prepared!.slice();
-    applyVictory(c1, buildCampaignParty(c1), 1);
-    expect(levelForXp(c1.xp)).toBe(1);           // kobolds don't level a fresh party
-    expect(c1.characters[w]!.prepared).toEqual(before);
+    // A win that crosses into the next level used to flood prepared with the
+    // strongest spells; now it leaves the player's exact choice alone.
+    const c = newCampaign();
+    c.xp = LEVEL_XP[3]! - 1;                      // one XP shy of level 4
+    setPrepared(c, w, [preparableSpells(c, w)[0]!]);
+    const before = c.characters[w]!.prepared!.slice();
+    applyVictory(c, buildCampaignParty(c), 1);
+    expect(levelForXp(c.xp)).toBe(4);            // the level really did rise
+    expect(c.characters[w]!.prepared).toEqual(before); // untouched
+  });
 
-    // A win that crosses into the next level grows the short list to the new cap.
-    const c2 = newCampaign();
-    c2.xp = LEVEL_XP[3]! - 1;                     // one XP shy of level 4
-    setPrepared(c2, w, [preparableSpells(c2, w)[0]!]);
-    const kept = c2.characters[w]!.prepared![0]!;
-    applyVictory(c2, buildCampaignParty(c2), 1);
-    expect(levelForXp(c2.xp)).toBe(4);
-    expect(c2.characters[w]!.prepared!.length).toBe(preparedLimit(c2, w));
-    expect(c2.characters[w]!.prepared).toContain(kept);
+  it('the auto-default prepares a spread of spell levels, not only the strongest', () => {
+    const c = newCampaign();
+    c.xp = LEVEL_XP[4]!; // level 5 wizard: level-1/2/3 spells all available
+    const w = 1;
+    const levels = preparedSpells(c, w).map((id) => SPELLS[id]?.level ?? 0);
+    // The default set spans more than one spell level, so lower slots aren't
+    // wasted on an all-top-tier loadout.
+    expect(new Set(levels).size).toBeGreaterThan(1);
+    expect(levels).toContain(1); // still has a low-level spell to fill a 1st slot
+    expect(Math.max(...levels)).toBeGreaterThan(1); // and a strong one
   });
 
   it('resetPrepared drops back to the auto-prepared default', () => {
