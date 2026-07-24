@@ -189,6 +189,16 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} conjures a shimmering illusion at ${cellName(e.position)}.`;
     case 'illusionPopped':
       return `  The illusion at ${cellName(e.position)} fades away.`;
+    case 'summonPlaced':
+      return e.kind === 'flaming-sphere'
+        ? `${nm(e.casterId)} conjures a rolling sphere of fire at ${cellName(e.position)}.`
+        : `${nm(e.casterId)} conjures a spectral hammer at ${cellName(e.position)}.`;
+    case 'summonMoved':
+      return undefined; // the board shows the glide; a log line each turn is noise
+    case 'summonExpired':
+      return e.kind === 'flaming-sphere'
+        ? '  The flaming sphere gutters out.'
+        : '  The spectral hammer fades away.';
     case 'webSpun':
       return `${nm(e.sourceId)} fills the ground with thick, clinging webs.`;
     case 'webCleared':

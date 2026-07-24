@@ -263,11 +263,26 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       return v - slotCost;
     }
     case 'spiritual-weapon': {
-      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      // One hammer at a time; recasting the same summon buys nothing.
+      if (actor.summons?.some((s) => s.kind === 'spiritual-weapon')) return 0;
+      // Placed beside an enemy it strikes immediately, then keeps attacking on
+      // its own every turn — the future value is what makes the slot worth it.
+      const pos = (a.targets[0] as { position: Position }).position;
+      const t = Object.values(state.combatants)
+        .find((c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(pos, c.position));
+      if (!t) return 0; // only value a placement that bonks someone now
       const dmg = hitProb(spellAtkBonus, acOf(t), 'flat') * (avgDice('1d8') + castMod);
-      // First cast (slot spent) also buys a bonus-action attack for later turns.
-      const setup = slotCost > 0 ? 4 : 0;
-      return damageValue(dmg, t) + setup - slotCost;
+      return damageValue(dmg, t) + 6 - slotCost; // +6 ≈ the free attacks to come
+    }
+    case 'flaming-sphere': {
+      if (actor.concentratingOn) return 0;
+      const pos = (a.targets[0] as { position: Position }).position;
+      const t = Object.values(state.combatants)
+        .find((c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(pos, c.position));
+      if (!t) return 0;
+      const pFail = saveFailProb(state, t, 'dex', dc);
+      const ev = avgDice('2d6') * (pFail + (1 - pFail) * 0.5);
+      return damageValue(ev, t) + 5 - slotCost; // +5 ≈ the rolling re-rams
     }
     case 'spiritual-guardians': {
       if (actor.concentratingOn) return 0;

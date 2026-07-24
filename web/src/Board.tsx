@@ -230,6 +230,34 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       );
     });
 
+  // Conjured summons (Spiritual Weapon, Flaming Sphere): visible, roaming
+  // tokens of their own. Keyed by caster+kind, so a summon that moves keeps its
+  // element and the CSS transform transition glides it across the board.
+  const SUMMON_GLYPH: Record<string, { icon: string; label: string }> = {
+    'spiritual-weapon': { icon: '🔨', label: 'Spiritual Weapon — strikes on its own each turn' },
+    'flaming-sphere': { icon: '🔥', label: 'Flaming Sphere — rolls and rams on its own each turn' },
+  };
+  const summonTokens = Object.values(state.combatants)
+    .filter((c) => c.alive && c.summons?.length)
+    .flatMap((c) => (c.summons ?? []).map((s) => {
+      const glyph = SUMMON_GLYPH[s.kind] ?? { icon: '✨', label: s.kind };
+      return (
+        <div
+          key={`${c.id}:${s.kind}`}
+          className="token-slot summon-slot"
+          style={{
+            width: `${100 / width}%`,
+            height: `${100 / height}%`,
+            transform: `translate(${s.position.x * 100}%, ${(height - 1 - s.position.y) * 100}%)`,
+            zIndex: height - s.position.y,
+          }}
+          title={glyph.label}
+        >
+          <div className={`summon-token ${c.team} kind-${s.kind}`}>{glyph.icon}</div>
+        </div>
+      );
+    }));
+
   const bolts = (projectiles ?? []).map((p) => {
     const fx = p.from.x * 100, fy = (height - 1 - p.from.y) * 100;
     const tx = p.to.x * 100, ty = (height - 1 - p.to.y) * 100;
@@ -265,6 +293,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
     <div className="board-wrap">
       <div className={`board theme-${boardTheme}`} style={boardStyle}>
         {cells}
+        {summonTokens.length > 0 && <div className="token-layer summon-layer">{summonTokens}</div>}
         <div className="token-layer">{tokens}</div>
         {bolts.length > 0 && <div className="token-layer projectile-layer">{bolts}</div>}
       </div>

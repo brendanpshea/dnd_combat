@@ -642,6 +642,13 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   delete c.concentratingOn;
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
+  // Flaming Sphere is a concentration-held summon: sweep it off the board.
+  if (spellId === 'flaming-sphere' && c.summons) {
+    for (const s of c.summons.filter((x) => x.kind === 'flaming-sphere')) {
+      events.push({ type: 'summonExpired', casterId: combatantId, kind: s.kind, position: { ...s.position } });
+    }
+    c.summons = c.summons.filter((x) => x.kind !== 'flaming-sphere');
+  }
   // A lingering Web: clear its strands from the grid, and free everyone its
   // strands still hold — not only the `targetIds` caught at cast time, but also
   // any creature that wandered in afterwards (matched by source + concentration).
@@ -730,9 +737,20 @@ function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
   return events;
 }
 
+/** A dead (or removed) caster's summons wink out — the will animating them is gone. */
+function expireSummonsOf(state: GameState, casterId: Id): GameEvent[] {
+  const c = state.combatants[casterId]!;
+  if (!c.summons?.length) return [];
+  const events: GameEvent[] = c.summons.map((s) => (
+    { type: 'summonExpired', casterId, kind: s.kind, position: { ...s.position } } as GameEvent
+  ));
+  delete c.summons;
+  return events;
+}
+
 export function kill(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
-  const events: GameEvent[] = [...transferHuntersMark(state, combatantId)];
+  const events: GameEvent[] = [...transferHuntersMark(state, combatantId), ...expireSummonsOf(state, combatantId)];
   c.alive = false;
   c.hp = 0;
   c.conditions = [];
@@ -759,7 +777,7 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
  */
 export function charmAway(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
-  const events: GameEvent[] = [...transferHuntersMark(state, combatantId)];
+  const events: GameEvent[] = [...transferHuntersMark(state, combatantId), ...expireSummonsOf(state, combatantId)];
   c.alive = false;
   c.hp = 0;
   c.conditions = [];
