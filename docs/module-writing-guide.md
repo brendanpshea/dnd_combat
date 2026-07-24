@@ -40,6 +40,36 @@ stand-up bit, cut it.
    understatement or a narrator's deadpan — never slapstick, never anachronism.
    - ✅ Mira, on the raiders: "They came down the marsh road. Everyone knows that. Knowing it never filled a cart back up."
 
+6. **Every image resolves inside the passage.** A simile the reader has to solve
+   is a wall, not a picture. Say the thing; don't set a riddle whose answer lives
+   in your head. This is the rule the readability checker cannot enforce — a
+   sentence can be short, active, and made of concrete nouns and still refer to
+   nothing the reader can reach.
+   - ✅ "A boulder sits beside the trail with a handprint pressed into it. The hand was wider than a door."
+   - ❌ "A boulder with a hand-print in it, if hands came in half-doors."
+   - ❌ "eyes flat as coins already spent" / "patient as gravity" / "less like math and more like mercy"
+
+7. **Anchor a proper noun to something physical the first time.** A capitalised
+   name with no referent is a debt the reader carries for the rest of the scene.
+   Introduce it attached to a sound, a sight, or a feeling — and let a character
+   say what it *means* for the party.
+   - ✅ "you hear it for the first time: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds."
+   - ❌ "The Calling threads through it all… one voice fewer when the Calling peaks."
+
+8. **The narrator describes; a character explains.** When a scene carries
+   information the player must act on — what a place costs, why a fight is worth
+   taking — put it in dialogue. Vex saying "every den you burn out is one monster
+   fewer on the day" lands; the narrator musing about arithmetic does not.
+
+### Register
+
+One idea per sentence. Short sentences beat long ones, and a paragraph of four
+short ones beats a single sentence with four clauses in it. Prefer the word a
+nine-year-old already owns: *hall* over *steading*, *loose rock* over *scree*,
+*empty shepherds' huts* over *abandoned shielings*, *brook* over *beck*. Break
+a description into its own short paragraph per beat — text boxes are read on
+phones, and white space is comprehension.
+
 ## Cast voice sheet (The Hollow Road)
 
 Reusable archetypes — a future module's innkeeper or turncoat lieutenant can

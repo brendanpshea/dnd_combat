@@ -128,6 +128,9 @@ const BASE_VERBS = new Set([
   'stand', 'take', 'make', 'come', 'go', 'walk', 'run', 'burn', 'draw', 'hold', 'keep',
   'open', 'close', 'fall', 'rise', 'sit', 'lie', 'lead', 'turn', 'look', 'watch', 'wait',
   'call', 'name', 'know', 'see', 'hear', 'smell', 'feel', 'mean', 'say', 'tell', 'ask',
+  // "talk" without these reads as a plural noun after an out-of-lexicon subject
+  // ("The manticore talks." parsed like "TED talks"), flagging a real sentence.
+  'talk', 'listen', 'sound', 'graze', 'drill', 'salute', 'chalk', 'wire',
   'answer', 'pay', 'buy', 'sell', 'break', 'build', 'leave', 'arrive', 'reach', 'cross',
   'climb', 'drop', 'hang', 'stay', 'live', 'die', 'kill', 'fight', 'win', 'lose', 'find',
   'hide', 'seek', 'hunt', 'follow', 'chase', 'catch', 'carry', 'bring', 'send', 'put',
