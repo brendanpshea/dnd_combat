@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { buildParty } from '../../src/builder/character.js';
@@ -27,7 +27,7 @@ import { loadCampaignWeb } from './campaignStorage.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
 import type { AdventureState } from '../../src/adventure/runtime.js';
-import { hasSceneArt, sceneArtUrl } from './art.js';
+import { hasSceneArt, sceneArtUrl, hasSpellIcon, spellIconUrl } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
@@ -552,6 +552,19 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   }
 
   /** Play a bar entry: fire it, or enter its targeting mode. */
+  // An action's icon as generated art when we have it (spell-icon webp), else
+  // the emoji glyph. `id` is 'spell:<id>' / 'item:scroll-<id>'; a raw spellId
+  // also works. Rendered on a uniform plate so the mixed art styles normalize.
+  function actionIcon(emoji: string | undefined, entryId?: string): ReactNode {
+    const raw = entryId?.startsWith('spell:') ? entryId.slice(6)
+      : entryId?.startsWith('item:scroll-') ? entryId.slice('item:scroll-'.length)
+      : entryId && hasSpellIcon(entryId) ? entryId : undefined;
+    if (raw && hasSpellIcon(raw)) {
+      return <span className="act-ico-img"><img src={spellIconUrl(raw)} alt="" draggable={false} /></span>;
+    }
+    return emoji ? <>{emoji}</> : null;
+  }
+
   function runEntry(b: BarEntry) {
     setTray(null);
     if (b.action) apply(b.action);
@@ -861,7 +874,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
             if (group === 'skill' || (entries.length === 1 && group !== 'basic')) {
               return entries.map((only) => (
                 <button key={only.id} onClick={() => runEntry(only)}>
-                  {only.icon ?? icon} {only.label}
+                  {actionIcon(only.icon ?? icon, only.id)} {only.label}
                 </button>
               ));
             }
@@ -890,7 +903,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
             <div className="tray-grid">
               {grouped.bar.filter((b) => b.group === tray).map((b) => (
                 <button key={b.id} className="chip" onClick={() => runEntry(b)}>
-                  {b.icon && <span className="chip-ico">{b.icon}</span>}
+                  <span className="chip-ico">{actionIcon(b.icon, b.id)}</span>
                   <span className="chip-label">{b.label}</span>
                   {b.note && <span className="chip-note">{b.note}</span>}
                 </button>
@@ -926,7 +939,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
                   apply(o.action);
                 }
               }}>
-                {o.icon && <span className="opt-ico">{o.icon}</span>}
+                <span className="opt-ico">{actionIcon(o.icon, o.action.kind === 'castSpell' ? `spell:${o.action.spellId}` : undefined)}</span>
                 {o.label}
               </button>
             ))}

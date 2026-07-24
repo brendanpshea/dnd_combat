@@ -4,7 +4,7 @@ import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
-import { hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG } from './art.js';
+import { hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl } from './art.js';
 import { conditionBadges, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
 import type { MapTheme } from '../../src/data/maps.js';
@@ -96,8 +96,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       // is, so it can't just be another terrain-* class (that would replace
       // the ground it's covering rather than sitting on it).
       if (cell.illusion) classes.push('illusion');
-      // A lingering Web overlay — strands you can see and route around.
-      if (cell.web) classes.push('webbed');
+      // A lingering Web overlay — strands you can see and route around. Real
+      // web art when it's built (a square-plated icon that fits a cell), else
+      // the CSS strand hatching.
+      const webbed = !!cell.web;
+      if (webbed) classes.push(hasSpellIcon('web') ? 'webbed webbed-art' : 'webbed');
       if (hl) classes.push(`hl-${hl}`);
       if ((x + y) % 2 === 0) classes.push('dark');
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];
@@ -108,6 +111,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
         <div
           key={key}
           className={classes.join(' ')}
+          style={webbed && hasSpellIcon('web') ? { ['--web-img' as string]: `url(${spellIconUrl('web')})` } : undefined}
           onClick={() => onCellTap(pos, cell.occupantId ? state.combatants[cell.occupantId] : undefined)}
         >
           {cellAreas.map((a) => (
@@ -233,14 +237,17 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
   // Conjured summons (Spiritual Weapon, Flaming Sphere): visible, roaming
   // tokens of their own. Keyed by caster+kind, so a summon that moves keeps its
   // element and the CSS transform transition glides it across the board.
-  const SUMMON_GLYPH: Record<string, { icon: string; label: string }> = {
-    'spiritual-weapon': { icon: '🔨', label: 'Spiritual Weapon — strikes on its own each turn' },
-    'flaming-sphere': { icon: '🔥', label: 'Flaming Sphere — rolls and rams on its own each turn' },
+  // Each summon kind maps to a spell icon (Flaming Sphere borrows Fireball's
+  // for now) and an emoji fallback if the art isn't built.
+  const SUMMON_GLYPH: Record<string, { icon: string; iconId: string; label: string }> = {
+    'spiritual-weapon': { icon: '🔨', iconId: 'spiritual-weapon', label: 'Spiritual Weapon — strikes on its own each turn' },
+    'flaming-sphere': { icon: '🔥', iconId: 'fireball', label: 'Flaming Sphere — rolls and rams on its own each turn' },
   };
   const summonTokens = Object.values(state.combatants)
     .filter((c) => c.alive && c.summons?.length)
     .flatMap((c) => (c.summons ?? []).map((s) => {
-      const glyph = SUMMON_GLYPH[s.kind] ?? { icon: '✨', label: s.kind };
+      const glyph = SUMMON_GLYPH[s.kind] ?? { icon: '✨', iconId: s.kind, label: s.kind };
+      const art = hasSpellIcon(glyph.iconId);
       return (
         <div
           key={`${c.id}:${s.kind}`}
@@ -253,7 +260,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
           }}
           title={glyph.label}
         >
-          <div className={`summon-token ${c.team} kind-${s.kind}`}>{glyph.icon}</div>
+          <div className={`summon-token ${c.team} kind-${s.kind}${art ? ' art' : ''}`}>
+            {art
+              ? <img src={spellIconUrl(glyph.iconId)} alt="" draggable={false} />
+              : glyph.icon}
+          </div>
         </div>
       );
     }));
