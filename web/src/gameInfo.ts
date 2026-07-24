@@ -69,7 +69,7 @@ const SPELL_BLURB: Record<string, string> = {
   'fear': 'Foes in a cone flee in terror on a failed Wisdom save (concentration).',
   'find-familiar': 'Summon a spirit companion (an owl) that can Help you in a fight. (Ritual.)',
   'animal-friendship': 'Charms a beast out of the fight on a failed Wisdom save.',
-  'hunters-mark': 'Mark a foe for an extra 1d6 on your weapon hits (bonus action, concentration).',
+  'hunters-mark': 'Mark a foe for an extra 1d6 on your weapon hits. When it drops, the mark leaps to the next foe (bonus action, concentration).',
   'breath-weapon': 'A dragonborn’s elemental breath in a cone or line — save for half.',
 };
 

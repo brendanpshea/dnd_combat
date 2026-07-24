@@ -102,6 +102,49 @@ describe("Ranger: Hunter's Mark", () => {
     expect((dmg as { tags?: string[] }).tags ?? []).not.toContain("Hunter's Mark");
   });
 
+  it('when the marked target dies, the mark auto-transfers to the nearest enemy', () => {
+    const atk = buildCharacter({ classId: 'ranger', team: 'team1', position: { x: 3, y: 3 } });
+    const quarry = target({ x: 4, y: 3 }, 'quarry', 1, 1);       // adjacent, one hit kills
+    const near = target({ x: 3, y: 5 }, 'near', 1, 999);         // 10 ft away
+    const far = target({ x: 7, y: 7 }, 'far', 1, 999);           // further out
+    quarry.conditions.push({ id: 'marked', sourceId: atk.id, concentration: true });
+    atk.concentratingOn = { spellId: 'hunters-mark', targetIds: ['quarry'] };
+    const c = new Combat({ seed: 9, mapId: 'open', combatants: [atk, quarry, near, far] });
+
+    // Kill the quarry (AC 1, 1 HP — any hit lands and drops it).
+    const events = resolveAttack(c.state, atk.id, 'quarry', 'longbow');
+    expect(events.some((e) => e.type === 'died' && e.combatantId === 'quarry')).toBe(true);
+
+    // The mark leapt to the NEAREST living enemy, concentration intact.
+    expect(c.state.combatants['near']!.conditions.some((k) => k.id === 'marked' && k.sourceId === atk.id)).toBe(true);
+    expect(c.state.combatants['far']!.conditions.some((k) => k.id === 'marked')).toBe(false);
+    expect(c.state.combatants[atk.id]!.concentratingOn).toEqual({ spellId: 'hunters-mark', targetIds: ['near'] });
+    expect(events.some((e) => e.type === 'conditionApplied' && e.condition === 'marked' && e.combatantId === 'near')).toBe(true);
+
+    // No slot was spent for the transfer — it's free.
+    // (resolveAttack never touches slots; this documents the intent.)
+    const followUp = resolveAttack(c.state, atk.id, 'near', 'longbow');
+    const dmg = followUp.find((e) => e.type === 'damageDealt');
+    if (dmg) expect((dmg as { tags?: string[] }).tags).toContain("Hunter's Mark");
+  });
+
+  it('killing the last enemy ends cleanly — no transfer target, fight over', () => {
+    const atk = buildCharacter({ classId: 'ranger', team: 'team1', position: { x: 3, y: 3 } });
+    const quarry = target({ x: 4, y: 3 }, 'quarry', 1, 1);
+    quarry.conditions.push({ id: 'marked', sourceId: atk.id, concentration: true });
+    atk.concentratingOn = { spellId: 'hunters-mark', targetIds: ['quarry'] };
+    const c = new Combat({ seed: 11, mapId: 'open', combatants: [atk, quarry] });
+
+    const events = resolveAttack(c.state, atk.id, 'quarry', 'longbow');
+    expect(events.some((e) => e.type === 'died')).toBe(true);
+    expect(events.some((e) => e.type === 'combatEnded')).toBe(true);
+    // Concentration still nominally points at the dead quarry; harmless — the
+    // fight is over. What matters is no crash and no phantom mark anywhere.
+    for (const cb of Object.values(c.state.combatants)) {
+      if (cb.id !== 'quarry') expect(cb.conditions.some((k) => k.id === 'marked')).toBe(false);
+    }
+  });
+
   it('recasting on a new target breaks concentration and moves the mark', () => {
     const c = new Combat({
       seed: 3,
