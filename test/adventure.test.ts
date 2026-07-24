@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   newCampaign, characterSkillCheck, partySkillCheck, groupSkillCheck,
-  characterSkillBonus, bestAtSkill, levelForXp, type CampaignState,
+  characterSkillBonus, bestAtSkill, levelForXp, setPartyBackground, setPartyClass,
+  type CampaignState,
 } from '../src/campaign/campaign.js';
 import { SKILL_ABILITY } from '../src/data/classes.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
@@ -52,6 +53,65 @@ describe('skills (M0)', () => {
       expect(bg.skills).toHaveLength(2);
       for (const s of bg.skills) expect(SKILL_ABILITY[s]).toBeDefined();
     }
+  });
+
+  // The list is the SRD 5.2 (2024) set. Two 2014 entries were retired to get
+  // there — Folk Hero became Farmer, Investigator became Scribe — so this
+  // pins the roster against drifting back to the old names.
+  it('offers the SRD 2024 backgrounds, and none of the retired ones', () => {
+    const ids = Object.keys(BACKGROUNDS).sort();
+    expect(ids).toEqual([
+      'acolyte', 'artisan', 'charlatan', 'criminal', 'entertainer', 'farmer',
+      'guard', 'guide', 'hermit', 'merchant', 'noble', 'sage', 'sailor',
+      'scribe', 'soldier', 'wayfarer',
+    ]);
+    expect(ids).not.toContain('folk-hero');
+    expect(ids).not.toContain('investigator');
+  });
+
+  it('matches the SRD skill pairs on the ones that were previously wrong', () => {
+    expect(BACKGROUNDS['guide']!.skills).toEqual(['stealth', 'survival']);
+    expect(BACKGROUNDS['entertainer']!.skills).toEqual(['acrobatics', 'performance']);
+    expect(BACKGROUNDS['farmer']!.skills).toEqual(['animal-handling', 'nature']);
+    expect(BACKGROUNDS['scribe']!.skills).toEqual(['investigation', 'perception']);
+  });
+
+  it('every party member starts with a background, so nobody is skill-less', () => {
+    const c = newCampaign(11);
+    for (const ch of c.characters) {
+      expect(ch.backgroundId, `${ch.classId} has no background`).toBeDefined();
+      expect(BACKGROUNDS[ch.backgroundId!]).toBeDefined();
+    }
+  });
+
+  // The bug this fixes: a wizard had `skillProfs: []` and, with no background
+  // picker, was proficient in nothing at all — every Arcana check, the
+  // signature move of the class, was a raw ability roll.
+  it('a wizard is proficient in Arcana', () => {
+    const c = newCampaign(12);
+    const wiz = c.characters.findIndex((ch) => ch.classId === 'wizard');
+    const untrained = characterSkillBonus(c, wiz, 'nature');
+    expect(characterSkillBonus(c, wiz, 'arcana')).toBeGreaterThan(untrained);
+  });
+
+  it('picking a background changes what that hero is good at', () => {
+    const c = newCampaign(13);
+    const idx = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    const before = characterSkillBonus(c, idx, 'nature');
+    expect(setPartyBackground(c, idx, 'farmer')).toBe(true);
+    expect(characterSkillBonus(c, idx, 'nature')).toBe(before + 2);
+  });
+
+  it('an untouched background follows a class switch; a chosen one stays put', () => {
+    const c = newCampaign(14);
+    const idx = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    expect(c.characters[idx]!.backgroundId).toBe('soldier');
+    setPartyClass(c, idx, 'ranger');
+    expect(c.characters[idx]!.backgroundId).toBe('guide');   // followed the role
+
+    setPartyBackground(c, idx, 'noble');
+    setPartyClass(c, idx, 'wizard');
+    expect(c.characters[idx]!.backgroundId).toBe('noble');   // the player's pick survives
   });
 
   it('characterSkillCheck is deterministic on the campaign rng', () => {

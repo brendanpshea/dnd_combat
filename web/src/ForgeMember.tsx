@@ -12,10 +12,12 @@
  */
 import {
   type CampaignState,
-  setPartyClass, setPartySpecies, setPartyChoice, partyLevelOf, cantripLimit,
+  setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, partyLevelOf, cantripLimit,
 } from '../../src/campaign/campaign.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
+import { BACKGROUNDS, defaultBackgroundFor } from '../../src/data/backgrounds.js';
+import { SKILL_LABEL } from '../../src/data/classes.js';
 import { Portrait } from './Portrait.js';
 import { PORTRAITS } from './portraits.js';
 import { classBlurb, speciesBlurb } from './blurbs.js';
@@ -96,6 +98,33 @@ export function ForgeMemberEditor(
               <Portrait id={portrait.id} team="team1" label={`${portrait.name} portrait`} />
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Background: where this character was before the adventure, and the
+          main source of skill proficiency in the 2024 rules. It sits above the
+          class choice points because it changes what the party can *do* outside
+          a fight, which is most of adventure mode. */}
+      <div className="forge-field card-picker">
+        <span>Background</span>
+        <div className="card-grid" role="radiogroup" aria-label={`${ch.name} background`}>
+          {Object.values(BACKGROUNDS).map((bg) => {
+            const selected = (ch.backgroundId ?? defaultBackgroundFor(ch.classId)) === bg.id;
+            return (
+              <button
+                key={bg.id}
+                className={selected ? 'pick-card selected' : 'pick-card'}
+                role="radio" aria-checked={selected}
+                onClick={() => mutate(() => setPartyBackground(c, idx, bg.id))}
+              >
+                <b>{bg.name}</b>
+                <small>{bg.blurb}</small>
+                <small className="pick-grants">
+                  {bg.skills.map((sk) => SKILL_LABEL[sk]).join(' · ')}
+                </small>
+              </button>
+            );
+          })}
         </div>
       </div>
 

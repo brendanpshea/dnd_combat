@@ -133,7 +133,7 @@ export const CLASSES: Record<Id, ClassData> = {
     savingThrows: ['str', 'con'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'],
     weaponProfs: { simple: true, martial: true },
-    skillProfs: ['intimidation'],
+    skillProfs: ['athletics', 'intimidation'],
     statPriority: ['str', 'con', 'dex', 'wis', 'int', 'cha'],
     featuresByLevel: {
       1: ['second-wind'],
@@ -167,7 +167,7 @@ export const CLASSES: Record<Id, ClassData> = {
     savingThrows: ['wis', 'cha'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'], // heavy via Protector Divine Order (2024)
     weaponProfs: { simple: true, martial: false },
-    skillProfs: ['persuasion'],
+    skillProfs: ['religion', 'persuasion'],
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
       ability: 'wis',
@@ -206,7 +206,7 @@ export const CLASSES: Record<Id, ClassData> = {
     savingThrows: ['int', 'wis'],
     armorProfs: [],
     weaponProfs: { simple: true, martial: false },
-    skillProfs: [],
+    skillProfs: ['arcana', 'investigation'],
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
       ability: 'int',
@@ -258,7 +258,7 @@ export const CLASSES: Record<Id, ClassData> = {
     armorProfs: ['light'],
     // 2024 rogue: simple weapons plus martial weapons with Finesse or Light.
     weaponProfs: { simple: true, martial: false, finesseLight: true },
-    skillProfs: ['stealth', 'sleight-of-hand', 'deception'],
+    skillProfs: ['stealth', 'sleight-of-hand', 'deception', 'perception'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
       1: ['sneak-attack'],
@@ -282,7 +282,7 @@ export const CLASSES: Record<Id, ClassData> = {
     savingThrows: ['str', 'dex'],
     armorProfs: ['light', 'medium', 'shield'],
     weaponProfs: { simple: true, martial: true },
-    skillProfs: ['stealth', 'perception'],
+    skillProfs: ['stealth', 'perception', 'survival'],
     statPriority: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
     // 2024 half-caster progression: slots from 1st level, second-level slots
     // arrive at 5th alongside Extra Attack.
@@ -323,7 +323,7 @@ export const CLASSES: Record<Id, ClassData> = {
     savingThrows: ['wis', 'cha'],
     armorProfs: ['light', 'medium', 'heavy', 'shield'],
     weaponProfs: { simple: true, martial: true },
-    skillProfs: ['intimidation'],
+    skillProfs: ['athletics', 'intimidation'],
     statPriority: ['str', 'cha', 'con', 'wis', 'dex', 'int'],
     // Same half-caster progression as the Ranger; the spell list is support
     // and control, since Divine Smite is the class's real damage engine.

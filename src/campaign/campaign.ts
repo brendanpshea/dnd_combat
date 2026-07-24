@@ -22,7 +22,7 @@ import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
-import { backgroundSkills } from '../data/backgrounds.js';
+import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/monsters.js';
 import type { Rarity } from '../data/armor.js';
@@ -516,11 +516,6 @@ export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
 
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
-  // Default backgrounds spread skill coverage across the four roles so an
-  // adventure's varied scene checks land on different heroes.
-  const defaultBackground: Record<Id, Id> = {
-    fighter: 'soldier', wizard: 'sage', cleric: 'acolyte', rogue: 'criminal',
-  };
   return {
     gold: STARTING_GOLD,
     xp: 0,
@@ -538,7 +533,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
         speciesId,
         name: defaultNameFor(classId),
         portraitId: defaultPortraitFor(speciesId, classId),
-        ...(defaultBackground[classId] !== undefined ? { backgroundId: defaultBackground[classId] } : {}),
+        backgroundId: defaultBackgroundFor(classId),
         inventory: eq.inventory.map((s) => ({ ...s })),
         equipped: {
           mainHand: eq.mainHand,
@@ -642,6 +637,11 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
     if (target.portraitId === defaultPortraitFor(target.speciesId, target.classId)) {
       target.portraitId = defaultPortraitFor(target.speciesId, nextClassId);
     }
+    // An un-customized background follows the class too, so a player who
+    // switches role still starts with skills that fit it.
+    if (target.backgroundId === defaultBackgroundFor(target.classId)) {
+      target.backgroundId = defaultBackgroundFor(nextClassId);
+    }
     target.classId = nextClassId;
     // Fighting Style and other picks belong to the old class; drop them so the
     // new class resolves to its own defaults.
@@ -669,6 +669,13 @@ export function setPartySpecies(c: CampaignState, charIdx: number, speciesId: Id
     character.portraitId = defaultPortraitFor(speciesId, character.classId);
   }
   character.speciesId = speciesId;
+  return true;
+}
+
+/** Choose a party member's background (its two skill proficiencies), pre-launch. */
+export function setPartyBackground(c: CampaignState, charIdx: number, backgroundId: Id): boolean {
+  if (c.partyReady || !BACKGROUNDS[backgroundId] || !c.characters[charIdx]) return false;
+  c.characters[charIdx]!.backgroundId = backgroundId;
   return true;
 }
 

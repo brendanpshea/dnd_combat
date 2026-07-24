@@ -2540,3 +2540,10 @@ button.category .count {
   text-shadow: 0 0 10px #ffb32e, 0 2px 3px #000c;
   letter-spacing: 0.02em;
 }
+
+/* The skills a background grants, under its blurb — the reason to pick one. */
+.pick-card .pick-grants {
+  margin-top: 3px;
+  color: #9fd8b0;
+  font-weight: 700;
+}
