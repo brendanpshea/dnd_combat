@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { playableModules } from '../src/data/modules/index.js';
 import {
-  collectModuleProse, readabilityIssues, wordCount,
-  sentenceFragments, passiveConstructions,
+  collectModuleProse, collectModuleLabels, readabilityIssues, wordCount,
+  sentenceFragments, passiveConstructions, hardWordsIn,
 } from '../src/adventure/readability.js';
 
 /**
@@ -52,6 +52,25 @@ describe('adventure reading level', () => {
 
       const report = flagged.map((p) => `  ${p.where}\n     ${p.issues.join('\n     ')}`).join('\n');
       expect(flagged.length, `passages with readability issues:\n${report}`).toBe(0);
+    });
+  }
+});
+
+/**
+ * Buttons and map pins are read (and tapped) as much as any paragraph, but they
+ * are too short to grade — a three-word label has no meaningful reading level.
+ * So they get the vocabulary check alone. Without this, archaic words hid in
+ * plain sight on the UI: "Slip over the palisade", "The Muster Yard".
+ */
+describe('adventure label vocabulary', () => {
+  for (const mod of playableModules()) {
+    it(`${mod.id}: buttons and map pins use plain words`, () => {
+      const flagged = collectModuleLabels(mod)
+        .map((p) => ({ where: p.where, text: p.text, words: hardWordsIn(p.text) }))
+        .filter((p) => p.words.length > 0);
+
+      const report = flagged.map((p) => `  ${p.where}: "${p.text}" → ${p.words.join(', ')}`).join('\n');
+      expect(flagged.length, `labels with archaic words:\n${report}`).toBe(0);
     });
   }
 });
