@@ -7,7 +7,7 @@
  * (via the builder's gear overrides) before a battle and reads surviving
  * inventory back afterwards.
  */
-import { HERO_NAMES, defaultNameFor } from '../builder/names.js';
+import { HERO_NAMES, defaultNameFor, randomNameFor } from '../builder/names.js';
 import type { Id, Combatant, ItemStack, TeamId, Ability, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import {
@@ -493,11 +493,27 @@ export { HERO_NAMES as DEFAULT_NAMES, defaultNameFor };
  * portrait, which is what the four class images depict. Keep in sync with the
  * web portrait registry.
  */
-const SPECIES_PORTRAIT: Partial<Record<Id, Id>> = {
-  dwarf: 'dwarf-berserker', elf: 'elf-archer', orc: 'orc-barbarian',
-  dragonborn: 'dragonborn-paladin', tiefling: 'tiefling-warlock',
-  gnome: 'gnome-bard', halfling: 'halfling-rogue',
+/**
+ * Species art, and what each piece actually depicts. Portraits are the one
+ * place species shows on the board, so species wins over class — but only when
+ * the art doesn't fight the role: the dwarf is a bare-armed berserker and the
+ * orc a barbarian, which read wrong on a robed wizard. `martial` art is skipped
+ * for casters, who fall back to their class portrait.
+ */
+const SPECIES_PORTRAIT: Partial<Record<Id, { id: Id; martial: boolean }>> = {
+  dwarf: { id: 'dwarf-berserker', martial: true },
+  elf: { id: 'elf-archer', martial: true },
+  orc: { id: 'orc-barbarian', martial: true },
+  dragonborn: { id: 'dragonborn-paladin', martial: true },
+  tiefling: { id: 'tiefling-warlock', martial: false },
+  gnome: { id: 'gnome-bard', martial: false },
+  halfling: { id: 'halfling-rogue', martial: false },
+  // Human has no entry on purpose: the class portraits *are* the human art, so
+  // a human fighter should look like the Fighter, not like the bard.
 };
+
+/** Classes whose look is robes and spellbooks rather than mail and axes. */
+const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric']);
 
 /**
  * Ranger and Paladin have no dedicated class portrait (unlike the original
@@ -511,7 +527,29 @@ const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
 /** Sensible default portrait for a species/class combo: species art if it has
  *  its own, else the class portrait (or its stand-in). */
 export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
-  return SPECIES_PORTRAIT[speciesId] ?? CLASS_PORTRAIT[classId] ?? classId;
+  const species = SPECIES_PORTRAIT[speciesId];
+  const classPortrait = CLASS_PORTRAIT[classId] ?? classId;
+  if (!species) return classPortrait;
+  // Don't put the axe-wielding dwarf on a cleric; the class art is truer.
+  if (species.martial && CASTER_CLASSES.has(classId)) return classPortrait;
+  return species.id;
+}
+
+/**
+ * The default portrait, avoiding art already worn by someone else in the party.
+ * Two elves both defaulting to the elf archer looks like a copy-paste bug on
+ * the party strip, and the picker is right there for anyone who wants the
+ * clash. Falls back to the class portrait, then to whatever the default was —
+ * a duplicate beats a blank.
+ */
+export function freshPortraitFor(c: CampaignState, charIdx: number, speciesId: Id, classId: Id): Id {
+  const taken = new Set(
+    c.characters.filter((_, i) => i !== charIdx).map((ch) => ch.portraitId).filter(Boolean) as Id[],
+  );
+  const preferred = defaultPortraitFor(speciesId, classId);
+  if (!taken.has(preferred)) return preferred;
+  const classPortrait = CLASS_PORTRAIT[classId] ?? classId;
+  return taken.has(classPortrait) ? preferred : classPortrait;
 }
 
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
@@ -547,75 +585,133 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
 
 /**
  * Prebuilt parties for the forge's Quick Start shelf: a beginner taps one and
- * plays, never touching the editor. Each keys species/style/name by class, so a
- * template just overlays the fixed four-role party — the role model is untouched.
- * Fighter styles are limited to Dueling/Defense here because the default kit
- * (longsword + shield) is what makes the others (Archery, Great Weapon, Two-
- * Weapon) fire, and it has none of those weapons yet.
+ * plays, never touching the editor.
+ *
+ * A template names the whole roster including classes, so the shelf can show
+ * parties the default four roles can't — a paladin's holy order, a ranger-led
+ * hunt. Names are rolled from the species pools rather than fixed, so tapping
+ * the same template twice gives different people. Fighter styles stay on
+ * Dueling/Defense because the starting kit (longsword + shield) is what makes
+ * the others (Archery, Great Weapon, Two-Weapon) fire, and it has none of
+ * those weapons yet.
  */
 export interface PartyTemplate {
   id: string;
   name: string;
   blurb: string;
-  members: Partial<Record<Id, { speciesId: Id; style?: Id; name?: string }>>;
+  /** The whole roster, in order — classes included, so a template can field a
+   *  ranger or a paladin instead of the default fighter/wizard/cleric/rogue. */
+  members: Array<{ classId: Id; speciesId: Id; style?: Id; backgroundId?: Id }>;
 }
 
 export const PARTY_TEMPLATES: PartyTemplate[] = [
   {
-    id: 'classic', name: 'Classic Four', blurb: 'The balanced starting party — all human.',
-    members: {
-      fighter: { speciesId: 'human', style: 'dueling' },
-      wizard: { speciesId: 'human' }, cleric: { speciesId: 'human' }, rogue: { speciesId: 'human' },
-    },
+    id: 'classic', name: 'Classic Four', blurb: 'The balanced starting party — sword, spell, prayer, and knife.',
+    members: [
+      { classId: 'fighter', speciesId: 'human', style: 'dueling', backgroundId: 'soldier' },
+      { classId: 'wizard', speciesId: 'human', backgroundId: 'sage' },
+      { classId: 'cleric', speciesId: 'human', backgroundId: 'acolyte' },
+      { classId: 'rogue', speciesId: 'halfling', backgroundId: 'criminal' },
+    ],
   },
   {
     id: 'frontier', name: 'Frontier Band', blurb: 'Hardy and stealthy — a dwarf shield-wall and a halfling scout.',
-    members: {
-      fighter: { speciesId: 'dwarf', style: 'defense', name: 'Bruni' },
-      wizard: { speciesId: 'elf', name: 'Faelar' },
-      cleric: { speciesId: 'human', name: 'Mara' },
-      rogue: { speciesId: 'halfling', name: 'Pip' },
-    },
+    members: [
+      { classId: 'fighter', speciesId: 'dwarf', style: 'defense', backgroundId: 'guard' },
+      { classId: 'wizard', speciesId: 'elf', backgroundId: 'sage' },
+      { classId: 'cleric', speciesId: 'human', backgroundId: 'hermit' },
+      { classId: 'rogue', speciesId: 'halfling', backgroundId: 'charlatan' },
+    ],
   },
   {
     id: 'bloodline', name: 'Strange Bloodlines', blurb: 'Exotic ancestries — draconic, infernal, and fey.',
-    members: {
-      fighter: { speciesId: 'dragonborn', style: 'dueling', name: 'Rhogar' },
-      wizard: { speciesId: 'tiefling', name: 'Nemeia' },
-      cleric: { speciesId: 'gnome', name: 'Fibblewick' },
-      rogue: { speciesId: 'orc', name: 'Grazt' },
-    },
+    members: [
+      { classId: 'fighter', speciesId: 'dragonborn', style: 'dueling', backgroundId: 'noble' },
+      { classId: 'wizard', speciesId: 'tiefling', backgroundId: 'charlatan' },
+      { classId: 'cleric', speciesId: 'gnome', backgroundId: 'acolyte' },
+      { classId: 'rogue', speciesId: 'orc', backgroundId: 'criminal' },
+    ],
+  },
+  {
+    id: 'wardens', name: 'The Wardens', blurb: 'An oath-sworn front line, with a ranger reading the ground ahead.',
+    members: [
+      { classId: 'paladin', speciesId: 'dragonborn', backgroundId: 'acolyte' },
+      { classId: 'ranger', speciesId: 'elf', backgroundId: 'guide' },
+      { classId: 'cleric', speciesId: 'dwarf', backgroundId: 'hermit' },
+      { classId: 'rogue', speciesId: 'gnome', backgroundId: 'scribe' },
+    ],
+  },
+  {
+    id: 'hunt', name: 'The Long Hunt', blurb: 'Trackers and skirmishers — light on armour, hard to corner.',
+    members: [
+      { classId: 'ranger', speciesId: 'human', backgroundId: 'guide' },
+      { classId: 'rogue', speciesId: 'halfling', backgroundId: 'wayfarer' },
+      { classId: 'wizard', speciesId: 'gnome', backgroundId: 'artisan' },
+      { classId: 'fighter', speciesId: 'orc', style: 'defense', backgroundId: 'soldier' },
+    ],
+  },
+  {
+    id: 'order', name: 'The Iron Order', blurb: 'Two holy warriors, a scholar, and someone to pick the locks.',
+    members: [
+      { classId: 'paladin', speciesId: 'human', backgroundId: 'noble' },
+      { classId: 'cleric', speciesId: 'dwarf', backgroundId: 'acolyte' },
+      { classId: 'wizard', speciesId: 'elf', backgroundId: 'sage' },
+      { classId: 'rogue', speciesId: 'tiefling', backgroundId: 'criminal' },
+    ],
   },
 ];
 
-/** Overlay a template onto the current (pre-launch) party, keeping the four roles. */
+/** Rebuild one party slot from scratch: class kit, species, background, art. */
+function fitCharacter(
+  c: CampaignState, ch: PartyCharacter,
+  spec: { classId: Id; speciesId: Id; style?: Id; backgroundId?: Id },
+  charIdx: number,
+): void {
+  const equipment = CLASSES[spec.classId]!.equipment;
+  ch.classId = spec.classId;
+  ch.speciesId = spec.speciesId;
+  ch.backgroundId = spec.backgroundId ?? defaultBackgroundFor(spec.classId);
+  ch.portraitId = freshPortraitFor(c, charIdx, spec.speciesId, spec.classId);
+  const rolled = randomNameFor(spec.speciesId, c.rng);
+  c.rng = rolled.state;
+  ch.name = rolled.value;
+  if (spec.style) ch.choices = { 'fighting-style': spec.style };
+  else delete ch.choices;
+  delete ch.scribedSpells;
+  ch.inventory = equipment.inventory.map((stack) => ({ ...stack }));
+  ch.equipped = {
+    mainHand: equipment.mainHand,
+    ...(equipment.offHand !== undefined ? { offHand: equipment.offHand } : {}),
+    ...(equipment.armor !== undefined ? { armor: equipment.armor } : {}),
+  };
+}
+
+/**
+ * Load a template over the current (pre-launch) party. Unlike the old version
+ * this replaces classes too, so a template can field a paladin or a ranger; and
+ * names are rolled per species, so the same template twice gives different
+ * people rather than the same four every time.
+ */
 export function applyPartyTemplate(c: CampaignState, templateId: string): boolean {
   const t = PARTY_TEMPLATES.find((x) => x.id === templateId);
   if (c.partyReady || !t) return false;
-  for (const ch of c.characters) {
-    const m = t.members[ch.classId];
-    if (!m) continue;
-    ch.speciesId = m.speciesId;
-    ch.portraitId = defaultPortraitFor(m.speciesId, ch.classId);
-    if (m.name) ch.name = m.name;
-    if (m.style) ch.choices = { 'fighting-style': m.style };
-    else delete ch.choices;
-  }
+  t.members.forEach((spec, i) => {
+    const ch = c.characters[i];
+    if (ch) fitCharacter(c, ch, spec, i);
+  });
   return true;
 }
 
-/** Randomize every member's species (and reset names/choices to defaults). */
+/** Randomize every member's species and name, keeping their roles. */
 export function randomizeParty(c: CampaignState): boolean {
   if (c.partyReady) return false;
   const speciesIds = Object.keys(SPECIES);
-  for (const ch of c.characters) {
-    const { value, state } = next(c.rng);
-    c.rng = state;
-    ch.speciesId = speciesIds[Math.floor(value * speciesIds.length)] ?? 'human';
-    ch.portraitId = defaultPortraitFor(ch.speciesId, ch.classId);
-    ch.name = defaultNameFor(ch.classId);
-    delete ch.choices;
-  }
+  c.characters.forEach((ch, i) => {
+    const roll = next(c.rng);
+    c.rng = roll.state;
+    const speciesId = speciesIds[Math.floor(roll.value * speciesIds.length)] ?? 'human';
+    fitCharacter(c, ch, { classId: ch.classId, speciesId }, i);
+  });
   return true;
 }
 
@@ -666,9 +762,19 @@ export function setPartySpecies(c: CampaignState, charIdx: number, speciesId: Id
   if (c.partyReady || !SPECIES[speciesId] || !c.characters[charIdx]) return false;
   const character = c.characters[charIdx]!;
   if (character.portraitId === defaultPortraitFor(character.speciesId, character.classId)) {
-    character.portraitId = defaultPortraitFor(speciesId, character.classId);
+    character.portraitId = freshPortraitFor(c, charIdx, speciesId, character.classId);
   }
   character.speciesId = speciesId;
+  return true;
+}
+
+/** Roll a fresh name for a member from its species' pool, pre-launch. */
+export function rerollPartyName(c: CampaignState, charIdx: number): boolean {
+  const ch = c.characters[charIdx];
+  if (c.partyReady || !ch) return false;
+  const rolled = randomNameFor(ch.speciesId, c.rng);
+  c.rng = rolled.state;
+  ch.name = rolled.value;
   return true;
 }
 

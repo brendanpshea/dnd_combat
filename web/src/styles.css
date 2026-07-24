@@ -2547,3 +2547,8 @@ button.category .count {
   color: #9fd8b0;
   font-weight: 700;
 }
+
+/* Name field + its dice button sit on one line. */
+.name-row { display: flex; gap: 6px; align-items: center; }
+.name-row input { flex: 1; min-width: 0; }
+.reroll-name { flex: none; font-size: 15px; line-height: 1; padding: 6px 9px; }
