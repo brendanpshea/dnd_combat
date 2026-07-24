@@ -12,7 +12,8 @@
  */
 import {
   type CampaignState,
-  setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, partyLevelOf, cantripLimit,
+  setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, rerollPartyName,
+  partyLevelOf, cantripLimit,
 } from '../../src/campaign/campaign.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
@@ -45,11 +46,20 @@ export function ForgeMemberEditor(
     <div className="member-editor">
       <label className="forge-field">
         <span>Name</span>
-        <input
-          value={ch.name}
-          maxLength={24}
-          onChange={(e) => mutate(() => { ch.name = e.target.value || classData.name; })}
-        />
+        <div className="name-row">
+          <input
+            value={ch.name}
+            maxLength={24}
+            onChange={(e) => mutate(() => { ch.name = e.target.value || classData.name; })}
+          />
+          {/* Rolls from this species' own name pool — dwarves get dwarf names. */}
+          <button
+            type="button" className="mini reroll-name"
+            title={`Roll a new ${SPECIES[ch.speciesId]?.name ?? ''} name`}
+            aria-label="Roll a new name"
+            onClick={() => mutate(() => rerollPartyName(c, idx))}
+          >🎲</button>
+        </div>
       </label>
 
       <div className="forge-field card-picker">

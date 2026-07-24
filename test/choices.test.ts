@@ -2,9 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { buildCharacter } from '../src/builder/character.js';
 import {
   newCampaign, setPartyClass, setPartyChoice, setPartySpecies, buildCampaignParty,
-  PARTY_TEMPLATES, applyPartyTemplate, randomizeParty, defaultPortraitFor,
+  PARTY_TEMPLATES, applyPartyTemplate, randomizeParty, defaultPortraitFor, rerollPartyName,
 } from '../src/campaign/campaign.js';
 import { SPECIES } from '../src/data/species.js';
+import { CLASSES } from '../src/data/classes.js';
+import { randomNameFor } from '../src/builder/names.js';
+import { seedRng } from '../src/engine/rng.js';
 
 const SPECIES_IDS = Object.keys(SPECIES);
 
@@ -105,12 +108,19 @@ describe('build-choice points', () => {
     expect(cleric.portraitId).toBe('cleric'); // human → class image
   });
 
-  it('randomizeParty gives each member a portrait matching its rolled species', () => {
+  // Portraits now de-duplicate: two elves don't both wear the elf archer, since
+  // that reads as a copy-paste bug on the party strip. So a member gets either
+  // its species default or — if another member already took it — its class art.
+  it('randomizeParty gives each member species-appropriate art, and no two the same', () => {
     const c = newCampaign(3);
     randomizeParty(c);
     for (const ch of c.characters) {
-      expect(ch.portraitId).toBe(defaultPortraitFor(ch.speciesId, ch.classId));
+      const preferred = defaultPortraitFor(ch.speciesId, ch.classId);
+      const classArt = ch.classId;
+      expect([preferred, classArt]).toContain(ch.portraitId);
     }
+    const used = c.characters.map((ch) => ch.portraitId);
+    expect(new Set(used).size, `duplicate portraits: ${used.join(', ')}`).toBe(used.length);
   });
 
   it('changing species updates an un-customized portrait but leaves a hand-picked one', () => {
@@ -125,10 +135,44 @@ describe('build-choice points', () => {
     expect(c.characters[fi]!.portraitId).toBe('gnome-bard');
   });
 
-  it('every template covers all four class roles', () => {
+  // Templates now carry their own classes, so they can field a paladin or a
+  // ranger — the point being that the shelf shows parties you can't reach by
+  // only editing species.
+  it('every template fields four real, distinct classes', () => {
     for (const t of PARTY_TEMPLATES) {
-      expect(Object.keys(t.members).sort()).toEqual(['cleric', 'fighter', 'rogue', 'wizard']);
+      expect(t.members, `${t.id} roster size`).toHaveLength(4);
+      for (const m of t.members) {
+        expect(CLASSES[m.classId], `${t.id}: unknown class ${m.classId}`).toBeDefined();
+        expect(SPECIES[m.speciesId], `${t.id}: unknown species ${m.speciesId}`).toBeDefined();
+      }
+      const classes = t.members.map((m) => m.classId);
+      expect(new Set(classes).size, `${t.id} repeats a class`).toBe(4);
     }
+  });
+
+  it('the shelf offers classes the default four roles never show', () => {
+    const offered = new Set(PARTY_TEMPLATES.flatMap((t) => t.members.map((m) => m.classId)));
+    expect(offered).toContain('paladin');
+    expect(offered).toContain('ranger');
+  });
+
+  it('a template replaces classes, not just species', () => {
+    const c = newCampaign(21);
+    expect(c.characters.map((ch) => ch.classId)).toEqual(['fighter', 'wizard', 'cleric', 'rogue']);
+    applyPartyTemplate(c, 'wardens');
+    expect(c.characters.map((ch) => ch.classId)).toEqual(['paladin', 'ranger', 'cleric', 'rogue']);
+    // …and re-kits them: a paladin must not be holding the fighter's loadout.
+    expect(c.characters[0]!.equipped.mainHand).toBe(CLASSES['paladin']!.equipment.mainHand);
+    expect(c.characters[0]!.backgroundId).toBe('acolyte');
+  });
+
+  it('template names are rolled, so the same template twice gives different people', () => {
+    const a = newCampaign(31); applyPartyTemplate(a, 'frontier');
+    const b = newCampaign(99); applyPartyTemplate(b, 'frontier');
+    expect(a.characters.map((ch) => ch.name)).not.toEqual(b.characters.map((ch) => ch.name));
+    // …but a given seed still rebuilds exactly, like everything else here.
+    const again = newCampaign(31); applyPartyTemplate(again, 'frontier');
+    expect(again.characters.map((ch) => ch.name)).toEqual(a.characters.map((ch) => ch.name));
   });
 
   it('swapping a slot to a new class clears its old choices', () => {
@@ -144,5 +188,60 @@ describe('build-choice points', () => {
     const anyArchery = party.some((p) => p.featureIds.includes('archery'));
     expect(anyArchery).toBe(false);
     expect(wi).toBeGreaterThanOrEqual(0);
+  });
+});
+
+/**
+ * Names are curated per species rather than generated, because syllable-mashers
+ * produce a lot of "Vrelnag" — pronounceable in theory, unreadable in a text box
+ * a nine-year-old is scanning mid-fight.
+ */
+describe('random names', () => {
+  it('every species has a pool, and every roll is non-empty', () => {
+    for (const speciesId of Object.keys(SPECIES)) {
+      let rng = seedRng(4);
+      for (let i = 0; i < 20; i++) {
+        const r = randomNameFor(speciesId, rng);
+        rng = r.state;
+        expect(r.value.trim().length, `${speciesId} rolled an empty name`).toBeGreaterThan(0);
+        expect(r.value).not.toContain('undefined');
+      }
+    }
+  });
+
+  it('draws from the species own pool — a dwarf never gets an elf name', () => {
+    let rng = seedRng(9);
+    const dwarves = new Set<string>();
+    for (let i = 0; i < 60; i++) {
+      const r = randomNameFor('dwarf', rng); rng = r.state;
+      dwarves.add(r.value.split(' ')[0]!);
+    }
+    let rng2 = seedRng(9);
+    const elves = new Set<string>();
+    for (let i = 0; i < 60; i++) {
+      const r = randomNameFor('elf', rng2); rng2 = r.state;
+      elves.add(r.value.split(' ')[0]!);
+    }
+    for (const d of dwarves) expect(elves.has(d), `${d} appears in both pools`).toBe(false);
+  });
+
+  it('is deterministic on the rng, and varies across seeds', () => {
+    expect(randomNameFor('elf', seedRng(5)).value).toBe(randomNameFor('elf', seedRng(5)).value);
+    const many = new Set<string>();
+    let rng = seedRng(1);
+    for (let i = 0; i < 40; i++) { const r = randomNameFor('human', rng); rng = r.state; many.add(r.value); }
+    expect(many.size, 'the generator should not keep returning one name').toBeGreaterThan(10);
+  });
+
+  it('rerollPartyName gives that member a new name and advances the rng', () => {
+    const c = newCampaign(17);
+    const before = c.characters[0]!.name;
+    const rngBefore = c.rng;
+    expect(rerollPartyName(c, 0)).toBe(true);
+    expect(c.rng).not.toBe(rngBefore);
+    // Same pool could in principle repeat, so assert over several rolls.
+    const seen = new Set([before, c.characters[0]!.name]);
+    for (let i = 0; i < 8; i++) { rerollPartyName(c, 0); seen.add(c.characters[0]!.name); }
+    expect(seen.size).toBeGreaterThan(1);
   });
 });
