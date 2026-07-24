@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
 import { acOf } from '../src/data/armor.js';
+import { CLASSES, SKILL_ABILITY } from '../src/data/classes.js';
 
 describe('character builder', () => {
   it('fighter: AC 17, HP 13, str-based stats, sap mastery', () => {
@@ -77,5 +78,35 @@ describe('character builder', () => {
     expect(party).toHaveLength(4);
     expect(new Set(party.map((c) => c.classId)).size).toBe(4);
     expect(party.every((c) => c.position.y === 0)).toBe(true);
+  });
+});
+
+/**
+ * Skill proficiency counts follow the 2024 class tables. These were badly
+ * under-granted before — a wizard had *none at all*, which in adventure mode
+ * meant every Arcana check was a raw ability roll.
+ */
+describe('class skill proficiencies (2024 counts)', () => {
+  const EXPECTED: Record<string, number> = {
+    fighter: 2, cleric: 2, wizard: 2, rogue: 4, ranger: 3, paladin: 2,
+  };
+
+  it('grants the right number per class', () => {
+    for (const [classId, count] of Object.entries(EXPECTED)) {
+      expect(CLASSES[classId]!.skillProfs, `${classId} skill count`).toHaveLength(count);
+    }
+  });
+
+  it('names only real skills, with no duplicates', () => {
+    for (const cls of Object.values(CLASSES)) {
+      for (const s of cls.skillProfs) expect(SKILL_ABILITY[s], `${cls.id}: ${s}`).toBeDefined();
+      expect(new Set(cls.skillProfs).size, `${cls.id} has a duplicate`).toBe(cls.skillProfs.length);
+    }
+  });
+
+  it('every class is proficient in something', () => {
+    for (const cls of Object.values(CLASSES)) {
+      expect(cls.skillProfs.length, `${cls.id} is proficient in nothing`).toBeGreaterThan(0);
+    }
   });
 });
