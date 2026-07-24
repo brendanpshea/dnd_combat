@@ -1416,7 +1416,9 @@ export const SPELLS: Record<Id, SpellData> = {
    * makes the bonus action and concentration worth spending. The condition is
    * shaped exactly like Guiding Bolt's `guided` or Faerie Fire's `outlined`;
    * the rider itself lives in resolveAttack, scoped to whoever cast it via
-   * `sourceId`.
+   * `sourceId`. When the quarry drops, the mark automatically leaps to the
+   * caster's nearest living enemy (transferHuntersMark in attack.ts) — one
+   * cast covers the whole fight, no re-casting after every kill.
    */
   'hunters-mark': {
     id: 'hunters-mark', name: "Hunter's Mark", level: 1, castingTime: 'bonus',
