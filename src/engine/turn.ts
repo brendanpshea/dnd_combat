@@ -9,6 +9,7 @@ import { rollDice } from './dice.js';
 import { expireIllusions, distanceFeet } from './grid.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
+import { activateSummons } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
 import type { GameEvent } from './events.js';
@@ -126,8 +127,16 @@ export function startTurn(state: GameState): GameEvent[] {
     sneakAttackUsed: false,
     colossusUsed: false,
   };
-  // Spiritual Weapon fades once its duration runs out.
-  if (c.spiritualWeapon && state.round > c.spiritualWeapon.expiresAtRound) delete c.spiritualWeapon;
+  // The caster's summons act on their own: the Spiritual Weapon hammer and the
+  // Flaming Sphere chase the nearest enemy and strike, and anything out of
+  // duration winks out — all before the caster lifts a finger.
+  events.push(...activateSummons(state, c.id));
+  if (!c.alive || state.winner) {
+    // A summon can't kill its own caster, but its damage events run the full
+    // rule set (win check included) — bail out cleanly if the fight just ended.
+    events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
+    return events;
+  }
 
   // Recharge abilities (dragon breath): a spent one rolls a d6 and comes back
   // on a result at or above its threshold. Only spent features roll, so a

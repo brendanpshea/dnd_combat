@@ -224,7 +224,7 @@ export const CLASSES: Record<Id, ClassData> = {
           'find-familiar', // ritual: always known, never counts against the spellbook
         ],
         2: ['thunderwave'],
-        3: ['scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness'],
+        3: ['scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness', 'flaming-sphere'],
         5: ['fireball', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
       },
       learnableExtra: ['ray-of-sickness'],

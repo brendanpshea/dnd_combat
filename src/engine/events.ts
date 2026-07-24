@@ -60,6 +60,12 @@ export type GameEvent =
   | { type: 'illusionCast'; position: Position; sourceId: Id }
   /** Revealed — walked through, or simply expired. */
   | { type: 'illusionPopped'; position: Position }
+  /** A conjured summon (Spiritual Weapon, Flaming Sphere) appears on a cell. */
+  | { type: 'summonPlaced'; casterId: Id; kind: string; position: Position }
+  /** …glides across the board chasing its prey (start of the caster's turn). */
+  | { type: 'summonMoved'; casterId: Id; kind: string; from: Position; to: Position }
+  /** …winks out — duration up, or its caster's concentration broke. */
+  | { type: 'summonExpired'; casterId: Id; kind: string; position: Position }
   /** A Web's strands take hold across these cells (and linger there). */
   | { type: 'webSpun'; sourceId: Id; cells: Position[] }
   /** The strands clear when the caster's concentration drops. */

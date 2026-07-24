@@ -126,6 +126,33 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
      (see Board.tsx) — no CSS transition, which would cut straight through
      walls and other tokens. */
 }
+/* Conjured summons (Spiritual Weapon hammer, Flaming Sphere): small roaming
+   tokens under the creature layer. Unlike creature tokens they DO use a CSS
+   transform transition — a spectral hammer gliding straight through a wall is
+   the point, not a bug. A gentle bob sells "floating with a will of its own". */
+.summon-layer { z-index: 2; }
+.summon-slot { transition: transform 0.45s ease-in-out; }
+.summon-token {
+  font-size: clamp(14px, 4.4vmin, 26px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px #000a);
+  animation: summon-bob 1.6s ease-in-out infinite alternate;
+}
+.summon-token.kind-flaming-sphere {
+  filter: drop-shadow(0 0 6px #ff7a3add) drop-shadow(0 2px 3px #000a);
+}
+.summon-token.kind-spiritual-weapon {
+  filter: drop-shadow(0 0 5px #ffd166aa) drop-shadow(0 2px 3px #000a);
+}
+@keyframes summon-bob {
+  from { transform: translateY(-6%); }
+  to   { transform: translateY(6%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .summon-slot { transition: none; }
+  .summon-token { animation: none; }
+}
+
 .cell {
   aspect-ratio: 1;
   /* Floor colour comes from the theme palette (boardTheme.ts) via --floor;

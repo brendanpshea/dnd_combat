@@ -39,6 +39,8 @@ function kindOf(e: GameEvent): string {
     case 'conditionApplied':
     case 'conditionRemoved':
     case 'concentrationBroken':
+    case 'summonPlaced':
+    case 'summonExpired':
     case 'webSpun':
     case 'webCleared': return 'cond';
     case 'moved': return 'move';
@@ -69,6 +71,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'healed': return e.targetId;
     case 'illusionCast':
     case 'webSpun': return e.sourceId;
+    case 'summonPlaced': return e.casterId;
     default: return undefined;
   }
 }
