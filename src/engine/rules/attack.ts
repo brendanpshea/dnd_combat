@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
@@ -105,9 +105,8 @@ export function collectAttackSources(
   // Pack Tactics: an un-incapacitated ally of the attacker adjacent to the target.
   if (attacker.featureIds.includes('pack-tactics')) {
     const packed = Object.values(state.combatants).some(
-      (c) => c.alive && c.id !== attacker.id && c.team === attacker.team &&
-             adjacent(c.position, target.position) &&
-             !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious'),
+      (c) => c.alive && !isDown(c) && c.id !== attacker.id && c.team === attacker.team &&
+             adjacent(c.position, target.position) && !isIncapacitated(c),
     );
     if (packed) adv.push('pack tactics');
   }
@@ -343,7 +342,7 @@ export function resolveAttack(
       (c) => c.alive && !isDown(c) && c.id !== attackerId && c.team === attacker.team &&
              adjacent(c.position, target.position) &&
              // 2024: the enabling ally must not be Incapacitated.
-             !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious'),
+             !isIncapacitated(c),
     );
     const qualifies = mode === 'advantage' || (allyAdjacent && mode !== 'disadvantage');
     if (qualifies) {

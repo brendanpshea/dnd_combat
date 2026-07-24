@@ -270,6 +270,24 @@ export function isDown(c: Combatant): boolean {
   return c.alive && c.hp === 0;
 }
 
+/**
+ * Can't take actions or reactions, and doesn't threaten anyone.
+ *
+ * `paralyzed` and `unconscious` include the incapacitated condition in the
+ * rules, but this engine applies them standalone (Hold Person, ghoul claws,
+ * Fear's critical failure), so every "is it out of the fight?" check has to
+ * name all three. Callers kept hand-rolling that list and disagreeing — a
+ * paralyzed creature was still taking opportunity attacks — so it lives here.
+ *
+ * Deliberately excludes `commanded`: Command spends the target's turn, but it
+ * can still react.
+ */
+export function isIncapacitated(c: Combatant): boolean {
+  return c.conditions.some(
+    (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed',
+  );
+}
+
 export function cellAt(grid: GridState, p: Position): Cell | undefined {
   if (p.x < 0 || p.y < 0 || p.x >= grid.width || p.y >= grid.height) return undefined;
   return grid.cells[p.y * grid.width + p.x];
