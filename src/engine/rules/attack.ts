@@ -542,7 +542,7 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
-  opts: { crit?: boolean; tags?: string[]; bypassResistance?: boolean } = {},
+  opts: { crit?: boolean; tags?: string[]; bypassResistance?: boolean; via?: string } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -563,6 +563,7 @@ export function applyDamage(
   events.push({
     type: 'damageDealt', targetId, sourceId, amount, damageType, rolls,
     ...(opts.tags && opts.tags.length > 0 ? { tags: opts.tags } : {}),
+    ...(opts.via ? { via: opts.via } : {}),
   });
 
   // Undead Fortitude: unless radiant or a crit, Con save DC 5 + damage to

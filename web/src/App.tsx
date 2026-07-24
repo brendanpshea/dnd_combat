@@ -402,6 +402,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [castingId, setCastingId] = useState<Id | undefined>(undefined);
   const [critFlash, setCritFlash] = useState(false);
   const [hitIds, setHitIds] = useState<Set<Id>>(new Set());
+  const [strikingSummons, setStrikingSummons] = useState<Set<string>>(new Set());
   const [movePaths, setMovePaths] = useState<Map<Id, Position[]>>(new Map());
   const [muted, setMutedState] = useState(isMuted());
   const [speed, setSpeed] = useState(1);
@@ -496,6 +497,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       if (fx.critFlash) {
         setCritFlash(true);
         fxTimeout(() => setCritFlash(false), 260);
+      }
+      if (fx.summonStrikes.length > 0) {
+        setStrikingSummons((h) => new Set([...h, ...fx.summonStrikes]));
+        fxTimeout(() => setStrikingSummons((h) => {
+          const next = new Set(h);
+          for (const k of fx.summonStrikes) next.delete(k);
+          return next;
+        }), 420);
       }
       if (fx.hits.length > 0) {
         setHitIds((h) => new Set([...h, ...fx.hits]));
@@ -774,6 +783,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         castingId={castingId}
         corpses={corpses}
         hitIds={hitIds}
+        strikingSummons={strikingSummons}
         onCellTap={onCellTap}
         onCondition={(label, icon) => {
           // A badge tap explains the condition through the same toast card. The

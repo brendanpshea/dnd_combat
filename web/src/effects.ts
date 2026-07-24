@@ -58,6 +58,10 @@ export interface EffectBatch {
   projectiles: ProjectileEffect[];
   /** Token ids to shake briefly. */
   hits: Id[];
+  /** Summon tokens that struck this batch, keyed `casterId:kind` (the Board's
+   *  own key). Flashed so the hammer visibly swings — otherwise a summon's
+   *  attack happens with nothing moving on the board. */
+  summonStrikes: string[];
   /** Caster to pulse with a brief spell wind-up. */
   casterId?: Id;
   /** A crit landed this batch — trigger a brief screen flash. */
@@ -97,6 +101,7 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
   const areas: AreaEffect[] = [];
   const projectiles: ProjectileEffect[] = [];
   const hits: Id[] = [];
+  const summonStrikes: string[] = [];
   let casterId: Id | undefined;
   let critFlash = false;
   // One cast per action, so the batch's damage type (if any) colours its
@@ -147,6 +152,8 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
       }
       case 'attackRolled': {
         pendingCrit = e.hit && e.crit;
+        // Flash the conjuration, hit or miss — the swing is the thing to see.
+        if (e.via) summonStrikes.push(`${e.attackerId}:${e.via}`);
         if (!e.hit) {
           const cell = cellOf(e.targetId);
           if (cell) floats.push({ id: nextId++, cellKey: cell, text: 'miss', cls: 'miss', delayMs: stagger });
@@ -177,6 +184,8 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
           if (cell) floats.push({ id: nextId++, cellKey: cell, text: `${tag}!`, cls: 'tag', delayMs: stagger + 90 });
         }
         hits.push(e.targetId);
+        // The Flaming Sphere rolls no attack, so its ram is only visible here.
+        if (e.via) summonStrikes.push(`${e.sourceId}:${e.via}`);
         sound(DMG_SFX[e.damageType], stagger);
         stagger += 150;
         break;
@@ -255,6 +264,6 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         break;
     }
   }
-  return { floats, corpses, bursts, areas, projectiles, hits, critFlash, ...(casterId !== undefined ? { casterId } : {}) };
+  return { floats, corpses, bursts, areas, projectiles, hits, summonStrikes, critFlash, ...(casterId !== undefined ? { casterId } : {}) };
 }
 

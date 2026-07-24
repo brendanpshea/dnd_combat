@@ -133,7 +133,7 @@ function spellAttack(
   state: GameState,
   casterId: Id,
   targetId: Id,
-  opts: { melee: boolean; extraAdv?: string[] },
+  opts: { melee: boolean; extraAdv?: string[]; via?: string },
 ): { hit: boolean; crit: boolean; event: GameEvent } {
   const caster = state.combatants[casterId]!;
   const target = state.combatants[targetId]!;
@@ -170,6 +170,7 @@ function spellAttack(
       natural: d20.natural, total, targetAc,
       mode, advSources: adv, disSources: dis,
       hit, crit: hit && crit, opportunity: false,
+      ...(opts.via ? { via: opts.via } : {}),
     },
   };
 }
@@ -228,14 +229,18 @@ function summonStrike(state: GameState, casterId: Id, s: Summon): GameEvent[] {
   const prey = summonPrey(state, caster.team, s.position);
   if (!prey || !adjacent(s.position, prey.position)) return [];
   const events: GameEvent[] = [];
+  // `via` re-labels the log ("Elaine's Spiritual Weapon attacks…" rather than
+  // "Elaine attacks…") and tells the board which summon token to flash. The
+  // mechanics are unchanged: it is still the caster's spell attack and the
+  // caster's save DC.
   if (s.kind === 'spiritual-weapon') {
     // A melee spell attack: 1d8 + spell mod force.
-    const atk = spellAttack(state, casterId, prey.id, { melee: true });
+    const atk = spellAttack(state, casterId, prey.id, { melee: true, via: s.kind });
     events.push(atk.event);
     if (atk.hit) {
       const dmg = rollDice(state.rng, '1d8', atk.crit);
       state.rng = dmg.state;
-      events.push(...applyDamage(state, prey.id, casterId, dmg.total + spellMod(state, casterId), 'force', dmg.rolls));
+      events.push(...applyDamage(state, prey.id, casterId, dmg.total + spellMod(state, casterId), 'force', dmg.rolls, { via: s.kind }));
     }
   } else {
     // The sphere rams: 2d6 fire, Dexterity save for half.
@@ -244,7 +249,7 @@ function summonStrike(state: GameState, casterId: Id, s: Summon): GameEvent[] {
     const dmg = rollDice(state.rng, '2d6');
     state.rng = dmg.state;
     const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
-    if (amount > 0) events.push(...applyDamage(state, prey.id, casterId, amount, 'fire', dmg.rolls));
+    if (amount > 0) events.push(...applyDamage(state, prey.id, casterId, amount, 'fire', dmg.rolls, { via: s.kind }));
   }
   return events;
 }
