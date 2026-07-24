@@ -162,6 +162,26 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   from { transform: translateY(-6%); }
   to   { transform: translateY(6%); }
 }
+/* The strike: a summon acts on its caster's turn without the caster moving, so
+   without this the hammer swings with nothing on screen changing. Overrides the
+   idle bob for its duration, and brightens so it reads at token size. */
+.summon-token.striking {
+  animation: summon-strike 0.42s ease-out;
+}
+@keyframes summon-strike {
+  0%   { transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 2px 3px #000a); }
+  35%  { transform: scale(1.45) rotate(-16deg); filter: brightness(1.9) drop-shadow(0 0 10px #fff8); }
+  70%  { transform: scale(1.15) rotate(10deg); filter: brightness(1.4) drop-shadow(0 0 7px #fff6); }
+  100% { transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 2px 3px #000a); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the cue, drop the lunge: a flash still says "this acted". */
+  .summon-token.striking { animation: summon-strike-flash 0.42s ease-out; }
+  @keyframes summon-strike-flash {
+    0%, 100% { filter: brightness(1); }
+    40%      { filter: brightness(1.9); }
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .summon-slot { transition: none; }
   .summon-token { animation: none; }

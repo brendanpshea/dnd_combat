@@ -18,6 +18,11 @@ export type GameEvent =
       mode: RollMode; advSources: string[]; disSources: string[];
       hit: boolean; crit: boolean;
       opportunity: boolean;
+      /** A conjuration swung this, not the caster's own arm — the summon's kind
+       *  ('spiritual-weapon'). Everything mechanical still hangs off
+       *  `attackerId` (it is the caster's spell attack); this only re-labels who
+       *  the log says is swinging, and tells the board which token to flash. */
+      via?: string;
     }
   | {
       type: 'damageDealt';
@@ -25,6 +30,10 @@ export type GameEvent =
       rolls: number[];
       /** Named contributors (e.g. 'Sneak Attack', 'Dueling') for the log/toasts. */
       tags?: string[];
+      /** Dealt by the caster's summon rather than the caster (see
+       *  `attackRolled.via`). The Flaming Sphere has no attack roll, so this is
+       *  the only place its ram is attributed. */
+      via?: string;
     }
   | { type: 'healed'; targetId: Id; sourceId: Id; amount: number }
   /** A hero hit 0 HP: unconscious, still on the board, revivable. Not death. */

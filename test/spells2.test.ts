@@ -4,6 +4,7 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { webCell } from '../src/engine/grid.js';
 import { breakConcentration } from '../src/engine/rules/attack.js';
+import { renderEvent } from '../src/ui/cli/renderer.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, level: number, position: Position, id: string, over: Partial<Combatant> = {}): Combatant =>
@@ -223,6 +224,43 @@ describe('Spiritual Weapon', () => {
     while (c.activeId !== 'clr') startEvents = c.apply({ kind: 'endTurn' });
     expect(startEvents.some((e) => e.type === 'attackRolled' && e.attackerId === 'clr')).toBe(true);
     expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon' && a.slotLevel === 0)).toBe(false);
+  });
+
+  // The hammer's attack is mechanically the caster's spell attack, so without a
+  // marker the log reads "Elaine attacks the goblin" for a weapon hovering
+  // twenty feet away. `via` re-labels the line and tells the board which token
+  // to swing; the attacker id stays the caster so no rule changes.
+  it('tags its attack and damage as coming from the summon, and the log says so', () => {
+    const c = new Combat({
+      seed: 3,
+      combatants: [pc('cleric', 3, { x: 3, y: 3 }, 'clr'), foe('goblin-warrior', { x: 5, y: 3 }, 'gob')],
+    });
+    until(c, 'clr');
+    const events = c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 4, y: 3 } }] });
+    const atk = events.find((e) => e.type === 'attackRolled');
+    if (atk?.type !== 'attackRolled') throw new Error('no attack');
+    expect(atk.via).toBe('spiritual-weapon');
+    expect(atk.attackerId).toBe('clr'); // still the caster's attack, mechanically
+    expect(renderEvent(c.state, atk, { tagTeams: false })).toMatch(/^\S.*'s Spiritual Weapon attacks /);
+
+    const dmg = events.find((e) => e.type === 'damageDealt');
+    if (dmg && dmg.type === 'damageDealt') {
+      expect(dmg.via).toBe('spiritual-weapon');
+      expect(renderEvent(c.state, dmg, { tagTeams: false })).toMatch(/from .*'s Spiritual Weapon\.$/);
+    }
+  });
+
+  it('an ordinary attack carries no summon tag', () => {
+    const c = new Combat({
+      seed: 3,
+      combatants: [pc('fighter', 3, { x: 3, y: 3 }, 'ftr'), foe('goblin-warrior', { x: 3, y: 4 }, 'gob')],
+    });
+    until(c, 'ftr');
+    const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'gob' });
+    const atk = events.find((e) => e.type === 'attackRolled');
+    if (atk?.type !== 'attackRolled') throw new Error('no attack');
+    expect(atk.via).toBeUndefined();
+    expect(renderEvent(c.state, atk, { tagTeams: false })).toContain(' with ');
   });
 
   it('the hammer chases: it glides toward the nearest enemy at the start of each turn', () => {

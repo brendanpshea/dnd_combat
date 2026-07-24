@@ -112,8 +112,22 @@ function name(state: GameState, id: Id, opts: RenderOpts = {}): string {
   return `${c.name}(${c.team === 'team1' ? 'T1' : 'T2'})`;
 }
 
+/** Display names for the conjurations that act on their own. */
+const SUMMON_NAMES: Record<string, string> = {
+  'spiritual-weapon': 'Spiritual Weapon',
+  'flaming-sphere': 'Flaming Sphere',
+};
+
 export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {}): string | undefined {
   const nm = (id: Id): string => name(state, id, opts);
+  /**
+   * Who the log should say acted. A summon's attack is mechanically the
+   * caster's, but "Elaine attacks the goblin" for a hammer floating twenty feet
+   * away reads as a bug. Keep the caster possessive so two clerics' weapons stay
+   * tellable apart.
+   */
+  const actor = (id: Id, via?: string): string =>
+    via && SUMMON_NAMES[via] ? `${nm(id)}'s ${SUMMON_NAMES[via]}` : nm(id);
   switch (e.type) {
     case 'combatStarted':
       return 'Initiative: ' + e.order.map((o) => `${nm(o.id)} ${o.initiative}`).join(', ');
@@ -133,7 +147,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       const result = e.hit ? (e.crit ? 'CRIT!' : 'hit') : 'miss';
       // Roll20-style math: the bonus is whatever the engine added on top of
       // the die (proficiency, ability, Bless's d4, a +1 weapon...).
-      return `${nm(e.attackerId)} attacks ${nm(e.targetId)} with ${w}${oa}: ` +
+      // A summon *is* the weapon, so "with a spell" would be noise on top of a
+      // line that already names the hammer.
+      const wielding = e.via ? '' : ` with ${w}`;
+      return `${actor(e.attackerId, e.via)} attacks ${nm(e.targetId)}${wielding}${oa}: ` +
         `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}${familiar}`;
     }
     case 'damageDealt': {
@@ -146,7 +163,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
         : mod >= 0 ? ` [${e.rolls.join('+')}${signed(mod)}]`
         : ` [rolled ${rolled} → ${e.amount}]`;
       const tags = e.tags && e.tags.length > 0 ? ` (${e.tags.join(', ')})` : '';
-      return `  ${nm(e.targetId)} takes ${e.amount} ${e.damageType}${dice}${tags}.`;
+      // The Flaming Sphere never rolls to hit, so without this its damage line
+      // would be the only trace of the hit and would name nobody at all.
+      const from = e.via ? ` from ${actor(e.sourceId, e.via)}` : '';
+      return `  ${nm(e.targetId)} takes ${e.amount} ${e.damageType}${dice}${tags}${from}.`;
     }
     case 'healed':
       return `${nm(e.targetId)} regains ${e.amount} HP (${state.combatants[e.targetId]?.hp}/${state.combatants[e.targetId]?.maxHp}).`;

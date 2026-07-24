@@ -40,6 +40,8 @@ export interface BoardProps {
   projectiles?: ProjectileEffect[];
   castingId?: Id | undefined;
   hitIds?: Set<Id>;
+  /** Summon tokens mid-strike, keyed `casterId:kind` — briefly lunges them. */
+  strikingSummons?: Set<string>;
   movePaths?: Map<Id, Position[]>;
   /** Map visual theme — styles the whole board as a place. */
   theme?: string | undefined;
@@ -55,7 +57,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, movePaths, theme, onCellTap, onCondition }: BoardProps) {
+export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
 
@@ -248,9 +250,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
     .flatMap((c) => (c.summons ?? []).map((s) => {
       const glyph = SUMMON_GLYPH[s.kind] ?? { icon: '✨', iconId: s.kind, label: s.kind };
       const art = hasSpellIcon(glyph.iconId);
+      const key = `${c.id}:${s.kind}`;
+      const striking = strikingSummons?.has(key) ?? false;
       return (
         <div
-          key={`${c.id}:${s.kind}`}
+          key={key}
           className="token-slot summon-slot"
           style={{
             width: `${100 / width}%`,
@@ -260,7 +264,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
           }}
           title={glyph.label}
         >
-          <div className={`summon-token ${c.team} kind-${s.kind}${art ? ' art' : ''}`}>
+          <div className={`summon-token ${c.team} kind-${s.kind}${art ? ' art' : ''}${striking ? ' striking' : ''}`}>
             {art
               ? <img src={spellIconUrl(glyph.iconId)} alt="" draggable={false} />
               : glyph.icon}
