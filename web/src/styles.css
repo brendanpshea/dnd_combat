@@ -2530,3 +2530,13 @@ button.category .count {
   width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
   font-size: 30px; background: var(--panel2); border: 2px solid var(--blue); flex: none;
 }
+
+/* The smite shout: bigger and gold, because this is the paladin's whole class
+   fantasy and it used to render as a small tag under a damage number. */
+.float.tag.smite {
+  font-size: 1.5em;
+  font-weight: 900;
+  color: #ffd76a;
+  text-shadow: 0 0 10px #ffb32e, 0 2px 3px #000c;
+  letter-spacing: 0.02em;
+}

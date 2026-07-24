@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
-import { buildEncounter } from '../src/data/monsters.js';
+import { buildEncounter, buildMonster } from '../src/data/monsters.js';
 import { groupActions, buildMultiAction, posKey } from '../web/src/actionGroups.js';
 import { SPELLS } from '../src/data/spells.js';
 import type { Combatant, Position } from '../src/engine/types.js';
@@ -318,5 +318,38 @@ describe('the Spells tray shows every spell', () => {
     const opts = [...g.perTarget.values()].flat();
     expect(opts.find((o) => o.label === 'Shortsword')?.icon).toBe('⚔️');
     expect(opts.find((o) => o.label === 'Shortbow')?.icon).toBe('🏹');
+  });
+
+  // The paladin's smites are the one place the tray offers the same spell at
+  // more than one slot level — "how much do I spend on this swing" is the
+  // decision the class is built around.
+  it('offers every smite in the tray, at each slot level the paladin can pay for', () => {
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 5 }), id: 'pal' };
+    const foe = { ...buildMonster('ogre', 'team2', { x: 3, y: 4 }), id: 'og' };
+    const c = new Combat({ seed: 5, mapId: 'open', combatants: [pal, foe] });
+    let guard = 0;
+    while (c.activeId !== 'pal' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const g = groupActions(c.state, 'pal', c.legalActions());
+    const ids = g.bar.filter((b) => b.group === 'spell').map((b) => b.id);
+
+    for (const id of ['divine-smite', 'searing-smite', 'thunderous-smite', 'wrathful-smite']) {
+      expect(ids, `${id} missing from the tray`).toContain(`spell:${id}`);
+      // A level-5 paladin has 2nd-level slots, so each smite also offers an upcast.
+      expect(ids, `${id} upcast missing`).toContain(`spell:${id}@2`);
+    }
+    const upcast = g.bar.find((b) => b.id === 'spell:divine-smite@2')!;
+    expect(upcast.label).toBe('Divine Smite (L2)');
+    expect(upcast.note).toBe('L2 · self');
+  });
+
+  it('drops the smite entries once one is armed', () => {
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 5 }), id: 'pal' };
+    const foe = { ...buildMonster('ogre', 'team2', { x: 3, y: 4 }), id: 'og' };
+    const c = new Combat({ seed: 5, mapId: 'open', combatants: [pal, foe] });
+    let guard = 0;
+    while (c.activeId !== 'pal' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    c.apply({ kind: 'castSpell', spellId: 'divine-smite', slotLevel: 1, targets: [] });
+    const g = groupActions(c.state, 'pal', c.legalActions());
+    expect(g.bar.some((b) => b.id.includes('smite'))).toBe(false);
   });
 });

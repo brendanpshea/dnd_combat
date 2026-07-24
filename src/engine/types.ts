@@ -77,6 +77,8 @@ export type ConditionId =
   | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'baned'        // Bane: -1d4 to attack rolls and saving throws
   | 'warded'       // Shield of Faith: +2 AC
+  | 'smiting'      // a smite is armed; the next melee hit discharges it
+  | 'burning'      // Searing Smite: 1d6 fire at end of turn until a Con save
   | 'hasted'       // Haste: double speed, +2 AC, one extra attack
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
   | 'hidden'       // unseen: cannot be directly targeted; next attack has advantage
@@ -229,6 +231,14 @@ export interface Combatant {
   /** Spiritual Guardians: a radiant aura around the caster that hurts enemies
    *  who start their turn near it (held by concentration). */
   spiritualGuardians?: { dc: number; mod: number };
+  /**
+   * A smite held ready: the slot is already spent, and the next melee hit
+   * discharges it. Every smite works this way (Divine, Searing, Thunderous,
+   * Wrathful) so the player picks *which* and *how big* up front, rather than
+   * being asked mid-swing — this engine resolves an attack atomically and has
+   * nowhere to put a "react to your own hit" prompt.
+   */
+  armedSmite?: { spellId: Id; slotLevel: number };
   /**
    * SRD creature type (humanoid, beast, undead...). Optional and mostly
    * decorative today — nothing gates on it except Animal Friendship, which

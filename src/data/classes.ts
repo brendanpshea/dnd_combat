@@ -332,6 +332,10 @@ export const CLASSES: Record<Id, ClassData> = {
       slotsByLevel: [[2], [2], [3], [3], [4, 2]],
       spellsByLevel: {
         1: ['bless', 'cure-wounds', 'command'],
+        // The smites arrive with Divine Smite itself. They are the paladin's
+        // real decision each turn: which rider is worth a slot here — burn,
+        // knockdown, or fear — against just swinging.
+        2: ['searing-smite', 'thunderous-smite', 'wrathful-smite'],
         5: ['aid'], // 2nd-level slot arrives here
       },
     },

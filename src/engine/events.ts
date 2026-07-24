@@ -70,6 +70,9 @@ export type GameEvent =
   /** Revealed — walked through, or simply expired. */
   | { type: 'illusionPopped'; position: Position }
   /** A conjured summon (Spiritual Weapon, Flaming Sphere) appears on a cell. */
+  /** A smite discharged into a melee hit — its own event so the log can shout
+   *  it and the UI can flash. The damage arrives separately as `damageDealt`. */
+  | { type: 'smited'; attackerId: Id; targetId: Id; spellId: Id; slotLevel: number; amount: number; crit: boolean }
   | { type: 'summonPlaced'; casterId: Id; kind: string; position: Position }
   /** …glides across the board chasing its prey (start of the caster's turn). */
   | { type: 'summonMoved'; casterId: Id; kind: string; from: Position; to: Position }

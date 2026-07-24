@@ -6,6 +6,7 @@ import { cellAt } from '../../engine/types.js';
 import type { GameEvent } from '../../engine/events.js';
 import type { Action } from '../../engine/actions.js';
 import { WEAPONS } from '../../data/weapons.js';
+import { SMITE_SPECS } from '../../engine/rules/attack.js';
 import { SPELLS } from '../../data/spells.js';
 import { FEATURES } from '../../data/features.js';
 import { ITEMS } from '../../data/items.js';
@@ -152,6 +153,15 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       const wielding = e.via ? '' : ` with ${w}`;
       return `${actor(e.attackerId, e.via)} attacks ${nm(e.targetId)}${wielding}${oa}: ` +
         `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}${familiar}`;
+    }
+    case 'smited': {
+      // The paladin's signature, so it gets its own shouted line rather than a
+      // parenthetical on a damage number.
+      const spec = SMITE_SPECS[e.spellId];
+      const rider = spec?.riderText ? ` ${spec.riderText}` : '';
+      const bang = e.crit ? ' CRITICAL' : '';
+      return `  ⚡${bang} ${nm(e.attackerId)} smites ${nm(e.targetId)} — ` +
+        `${spec?.name ?? e.spellId} at level ${e.slotLevel}, ${e.amount} ${spec?.damageType ?? ''}${rider}!`;
     }
     case 'damageDealt': {
       const rolled = sum(e.rolls);
