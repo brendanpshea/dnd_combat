@@ -10,6 +10,7 @@
  * is almost always "split the long sentence", which is exactly what makes a
  * beat easier to follow on a phone mid-fight.
  */
+import nlp from 'compromise';
 import type { Module, Paragraph } from './types.js';
 
 /** Strip the markdown and glyphs the UI renders, so scoring sees only prose. */
@@ -105,6 +106,186 @@ function sentences(text: string): string[] {
   return plain(text).split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
 }
 
+// --- Fragment + passive-voice detection ------------------------------------
+// Narration should be complete, active sentences: "Cold light burning in its
+// sockets." makes the reader supply the missing verb, and "the graves were
+// opened" hides *who* opened them — both cost clarity. Dialogue is exempt
+// (people talk in fragments), so quoted spans are stripped before checking.
+
+/** Auxiliaries + modals: any of these makes a sentence verb-bearing. */
+const AUX_VERBS = new Set([
+  'is', 'are', 'was', 'were', 'am', 'be', 'been', 'being',
+  'has', 'have', 'had', 'do', 'does', 'did',
+  'will', 'would', 'can', 'could', 'shall', 'should', 'may', 'might', 'must',
+  "isn't", "aren't", "wasn't", "weren't", "hasn't", "haven't", "hadn't",
+  "don't", "doesn't", "didn't", "won't", "wouldn't", "can't", "couldn't", "shouldn't",
+]);
+
+/** Common base verbs of adventure narration — enough to recognise a finite verb
+ *  in present tense (base or 3rd-person -s). Not exhaustive English; tuned so
+ *  real module sentences pass and real fragments fail. */
+const BASE_VERBS = new Set([
+  'stand', 'take', 'make', 'come', 'go', 'walk', 'run', 'burn', 'draw', 'hold', 'keep',
+  'open', 'close', 'fall', 'rise', 'sit', 'lie', 'lead', 'turn', 'look', 'watch', 'wait',
+  'call', 'name', 'know', 'see', 'hear', 'smell', 'feel', 'mean', 'say', 'tell', 'ask',
+  'answer', 'pay', 'buy', 'sell', 'break', 'build', 'leave', 'arrive', 'reach', 'cross',
+  'climb', 'drop', 'hang', 'stay', 'live', 'die', 'kill', 'fight', 'win', 'lose', 'find',
+  'hide', 'seek', 'hunt', 'follow', 'chase', 'catch', 'carry', 'bring', 'send', 'put',
+  'set', 'cut', 'hit', 'strike', 'swing', 'throw', 'roll', 'move', 'step', 'pass',
+  'enter', 'descend', 'gather', 'count', 'read', 'write', 'speak', 'whisper', 'shout',
+  'sing', 'ring', 'sound', 'echo', 'begin', 'end', 'stop', 'start', 'finish', 'need',
+  'want', 'help', 'serve', 'work', 'try', 'seem', 'appear', 'remain', 'become', 'get',
+  'give', 'grow', 'point', 'aim', 'fire', 'shoot', 'guard', 'seal', 'bless', 'pray',
+  'feed', 'eat', 'drink', 'sleep', 'wake', 'remember', 'forget', 'learn', 'believe',
+  'trust', 'fear', 'hope', 'promise', 'swear', 'agree', 'refuse', 'offer', 'accept',
+  'choose', 'decide', 'plan', 'prepare', 'spend', 'cost', 'owe', 'steal', 'bleed',
+  'heal', 'hurt', 'wound', 'save', 'free', 'trap', 'lock', 'bar', 'block', 'clear',
+  'pour', 'fill', 'empty', 'sink', 'float', 'swim', 'wade', 'march', 'ride', 'fly',
+  'glide', 'crawl', 'creep', 'sneak', 'slip', 'slide', 'stumble', 'land', 'jump',
+  'leap', 'duck', 'dodge', 'kneel', 'beg', 'thank', 'greet', 'meet', 'join', 'split',
+  'share', 'spread', 'stretch', 'bend', 'twist', 'wrap', 'tie', 'bind', 'snap',
+  'crack', 'shatter', 'smash', 'crush', 'grind', 'tear', 'rip', 'pull', 'push',
+  'lift', 'raise', 'lower', 'settle', 'rest', 'breathe', 'smile', 'laugh', 'cry',
+  'nod', 'shake', 'wave', 'reply', 'notice', 'ignore', 'welcome', 'warn', 'threaten',
+  'attack', 'defend', 'charge', 'retreat', 'flee', 'scatter', 'surround', 'press',
+  'lean', 'pretend', 'mention', 'suggest', 'expect', 'wonder', 'matter', 'happen',
+  'belong', 'depend', 'change', 'stink', 'reek', 'glint', 'gleam', 'glow', 'flicker',
+  'shine', 'darken', 'brighten', 'loom', 'lurk', 'wear', 'show', 'hand', 'trade',
+  'stock', 'haggle', 'travel', 'return', 'visit', 'explore', 'search', 'check',
+  // Motion, gesture, and sound verbs the POS tagger tends to read as nouns.
+  'scramble', 'flop', 'lope', 'erupt', 'drift', 'loosen', 'narrow', 'tap', 'crow',
+  'sigh', 'groan', 'creak', 'rattle', 'hiss', 'growl', 'snarl', 'bark', 'howl',
+  'roar', 'shriek', 'wail', 'mutter', 'grumble', 'chuckle', 'grin', 'frown',
+  'shrug', 'blink', 'stare', 'gaze', 'glance', 'peer', 'squint', 'gesture',
+  'stride', 'trot', 'gallop', 'dash', 'bolt', 'sprint', 'hurry', 'wander',
+  'roam', 'linger', 'pause', 'hesitate', 'tremble', 'shiver', 'shudder',
+  'flinch', 'sway', 'wobble', 'collapse', 'crumble', 'topple', 'tumble',
+  'plunge', 'dive', 'soar', 'hover', 'perch', 'cling', 'grip', 'grasp',
+  'clutch', 'snatch', 'grab', 'yank', 'shove', 'heave', 'haul', 'drag', 'tug',
+  'fling', 'hurl', 'toss', 'flick', 'slap', 'punch', 'kick', 'stomp',
+  'trample', 'bulge', 'gutter', 'wink', 'lash', 'coil', 'uncoil', 'slither',
+  'scuttle', 'skitter', 'lurch', 'stagger', 'limp', 'shuffle', 'stalk',
+  'prowl', 'pounce', 'lunge', 'swoop', 'flap', 'flutter', 'twitch', 'jerk',
+  'bob', 'dip', 'tilt', 'crane', 'cock', 'curl', 'clench', 'brace', 'steady',
+  'straighten', 'stiffen', 'relax', 'ease', 'settle', 'crouch', 'squat',
+  'sprawl', 'slump', 'sag', 'droop', 'wilt', 'bloom', 'sprout', 'swell',
+  'shrink', 'fade', 'dim', 'blaze', 'flare', 'spark', 'smoke', 'smoulder',
+  'seep', 'ooze', 'trickle', 'gush', 'splash', 'ripple', 'churn', 'boil',
+  'simmer', 'freeze', 'thaw', 'melt', 'crackle', 'pop', 'thud', 'thump',
+  'clang', 'clatter', 'chime', 'toll', 'hum', 'buzz', 'drone', 'murmur',
+  'rustle', 'crunch', 'squelch', 'squeal', 'yelp', 'whine', 'whimper', 'purr',
+  'cackle', 'jeer', 'sneer', 'scoff', 'boast', 'brag', 'bicker', 'argue',
+  'debate', 'insist', 'declare', 'announce', 'proclaim', 'vow', 'plead',
+  'urge', 'command', 'order', 'demand', 'summon', 'dismiss', 'banish',
+  'intercept', 'short', 'commission', 'stampede',
+]);
+
+/** Common irregular past forms (the -ed heuristic can't see these). */
+const IRREGULAR_PASTS = new Set([
+  'came', 'went', 'stood', 'took', 'made', 'found', 'left', 'drew', 'held', 'kept',
+  'fell', 'rose', 'sat', 'lay', 'led', 'knew', 'saw', 'heard', 'felt', 'meant',
+  'said', 'told', 'paid', 'bought', 'sold', 'broke', 'built', 'brought', 'sent',
+  'got', 'gave', 'grew', 'began', 'sang', 'rang', 'ran', 'won', 'lost', 'fought',
+  'caught', 'taught', 'thought', 'sought', 'struck', 'swung', 'threw', 'flew',
+  'slew', 'wore', 'tore', 'swore', 'bore', 'spoke', 'woke', 'chose', 'froze',
+  'stole', 'drove', 'rode', 'rode', 'ate', 'drank', 'sank', 'swam', 'sprang',
+  'hung', 'stuck', 'dug', 'spun', 'bled', 'fed', 'fled', 'sped', 'met', 'lit',
+  'hid', 'slid', 'bit', 'fit', 'spat', 'shot', 'shut', 'burst', 'cast', 'let',
+  'read', 'spread', 'wound', 'bound', 'ground', 'stank', 'burnt', 'dreamt',
+  'leapt', 'crept', 'slept', 'swept', 'wept', 'dealt', 'knelt', 'shone',
+]);
+
+/** Participles that are really adjectives in everyday use — "she is tired" is
+ *  not the passive voice the check is hunting. */
+const ADJECTIVAL_PARTICIPLES = new Set([
+  'tired', 'armed', 'armored', 'dressed', 'worried', 'pleased', 'scared',
+  'ashamed', 'surprised', 'disappointed', 'interested', 'excited', 'exhausted',
+  'wounded', 'dead', 'gone', 'alone', 'open', 'shut', 'closed', 'crowded',
+  'deserted', 'abandoned', 'ruined', 'rotted', 'cracked', 'crooked', 'pointed',
+  'jagged', 'twisted', 'hooded', 'bearded', 'aged', 'sacred', 'wicked', 'naked',
+]);
+
+const IRREGULAR_PARTICIPLES = new Set([
+  'taken', 'given', 'held', 'kept', 'built', 'made', 'found', 'left', 'sworn',
+  'worn', 'torn', 'broken', 'chosen', 'driven', 'drawn', 'thrown', 'known',
+  'shown', 'seen', 'done', 'begun', 'sung', 'hung', 'struck', 'bound', 'wound',
+  'laid', 'paid', 'said', 'sold', 'told', 'brought', 'bought', 'caught',
+  'taught', 'fought', 'sent', 'spent', 'bent', 'lost', 'meant', 'set', 'put',
+  'cut', 'hit', 'hurt', 'let', 'led', 'fed', 'bled', 'met', 'lit', 'hidden',
+  'ridden', 'risen', 'fallen', 'beaten', 'eaten', 'forgotten', 'written',
+  'frozen', 'stolen', 'woken', 'spoken', 'borne', 'born', 'slain', 'lain',
+  'heard', 'buried', 'carried', 'slept', 'swept', 'kept', 'crept',
+]);
+
+const norm = (w: string) => w.toLowerCase().replace(/[^a-z']/g, '');
+
+/** Does this token read as a finite verb (or auxiliary)? */
+function isVerbToken(word: string): boolean {
+  const w = norm(word);
+  if (!w) return false;
+  if (AUX_VERBS.has(w) || BASE_VERBS.has(w) || IRREGULAR_PASTS.has(w)) return true;
+  if (w.length > 3 && w.endsWith('ed')) return true;                 // walked, opened
+  if (w.endsWith('s')) {                                            // takes, watches
+    const stem = w.endsWith('es') ? w.slice(0, -2) : w.slice(0, -1);
+    if (BASE_VERBS.has(stem) || BASE_VERBS.has(w.slice(0, -1))) return true;
+  }
+  return false;
+}
+
+/** Narration with quoted dialogue removed — fragments in speech are fine. */
+function narrationOnly(text: string): string {
+  return text.replace(/"[^"]*"/g, ' ').replace(/“[^”]*”/g, ' ');
+}
+
+/**
+ * Sentences (outside dialogue) with three or more words and no finite verb —
+ * "Cold light burning in its sockets.", "The hall of the old dead kings." A
+ * 1–2-word punch ("**THORNWICK**.") is allowed; it's the run of verbless
+ * imagery that hurts.
+ *
+ * Two independent verb detectors vote, and a sentence is flagged only when
+ * BOTH find nothing finite — precision over recall, so the lint never bullies
+ * a good sentence: the compromise POS tagger (which knows English inflection
+ * but mis-tags noun/verb-ambiguous words in fantasy register: "raiders
+ * scramble") unioned with a curated lexicon (which knows this corpus's verbs
+ * but not all of English). A bare gerund with no auxiliary ("light *burning*")
+ * is non-finite for both — that's the classic fragment.
+ */
+export function sentenceFragments(text: string): string[] {
+  const out: string[] = [];
+  for (const s of sentences(narrationOnly(text))) {
+    const words = s.split(/\s+/).filter((w) => norm(w).length > 0);
+    if (words.length < 3) continue;
+    if (words.some(isVerbToken)) continue; // lexicon vote: has a finite verb
+    const d = nlp(s);
+    // POS vote: a #Verb that isn't merely a dangling gerund (or the particle
+    // of one — "burning *in*") counts as finite.
+    const finite = d.match('#Verb').not('#Gerund').not('#Particle').found
+      || d.has('(#Copula|#Auxiliary|#Modal) #Adverb? #Gerund');
+    if (!finite) out.push(s);
+  }
+  return out;
+}
+
+/** Passive-voice constructions — "the graves were opened", "the road is
+ *  watched" — via the POS tagger: a form of "be" + optional adverb + a past
+ *  participle. Active voice names the actor; that's the house style. The
+ *  adjectival-participle allowlist ("she is tired") suppresses the classic
+ *  false positives. */
+export function passiveConstructions(text: string): string[] {
+  const out: string[] = [];
+  for (const s of sentences(narrationOnly(text))) {
+    const d = nlp(s);
+    const m = d.match('(is|are|was|were|been|being|be) #Adverb? #PastTense');
+    if (!m.found) continue;
+    // Skip when the "participle" is really an adjective in everyday use.
+    const parts = m.match('#PastTense').out('array') as string[];
+    if (parts.every((p) => ADJECTIVAL_PARTICIPLES.has(norm(p)))) continue;
+    out.push(s);
+  }
+  return [...new Set(out)];
+}
+
 /**
  * Every concrete reason a passage is harder to read than our target, as short
  * human-readable strings (empty = clean). Drives the readability test, so a
@@ -127,6 +308,8 @@ export function readabilityIssues(text: string): string[] {
       issues.push(`${breaks} clause-breaks (— ; :) in one sentence: "${s.trim().slice(0, 50)}…"`);
     }
   }
+  for (const s of sentenceFragments(text)) issues.push(`sentence fragment (no verb): "${s.slice(0, 60)}"`);
+  for (const s of passiveConstructions(text)) issues.push(`passive voice: "${s.slice(0, 60)}"`);
   return issues;
 }
 

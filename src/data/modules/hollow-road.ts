@@ -41,8 +41,8 @@ const scenes: Record<string, Scene> = {
   road: {
     id: 'road', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      'A day\'s hard walk up the valley. The country has gone wrong-quiet. No carters, no herders. Only crows lift off the hedgerows as you pass.',
-      'Thornwick lies an hour ahead, its chimney-smoke thin against the grey hills. The reeve\'s bounty is folded in your pack; the plea nailed beneath it is why you kept walking.',
+      'A day\'s hard walk up the valley. The country has gone wrong-quiet. The road holds no carters and no herders. Only crows lift off the hedgerows as you pass.',
+      'Thornwick lies an hour ahead, its chimney-smoke thin against the grey hills. You carry the reeve\'s bounty folded in your pack. The plea that hung beneath it is why you kept walking.',
       'Then the hedges shift on both sides at once — and it\'s already too late to run.',
     ],
     next: [{ id: 'go', label: 'Draw steel', to: 'road-ambush' }], noBack: true,
@@ -146,7 +146,7 @@ const scenes: Record<string, Scene> = {
   // simply never walk over.
   regulars: {
     id: 'regulars', kind: 'story', art: { emoji: '🍻' },
-    text: ['The long table by the fire has been colonised by Thornwick\'s older hands — the sort who\'ve survived enough to have firm opinions about how. They\'ll talk your ear clean off, if you let them. Some of it might even keep you breathing.'],
+    text: ['Thornwick\'s older hands have claimed the long table by the fire — the sort who\'ve survived enough to have firm opinions about how. They\'ll talk your ear clean off, if you let them. Some of it might even keep you breathing.'],
     next: [
       { id: 'tactics', label: 'Ask the old sergeant how a real fight goes', to: 'rumor-tactics', once: true },
       { id: 'magic', label: 'Ask the hedge-witch about working spells', to: 'rumor-magic', once: true },
@@ -238,7 +238,7 @@ const scenes: Record<string, Scene> = {
     text: ['With his hired knives down, the peddler makes it four steps before you run him down. Under the false bottom of his cart: a tally of every caravan to leave Thornwick in a month, in a hand that isn\'t his. He folds like wet paper. "I only carried word. I never lifted a blade!" And, babbling, he gives it up: **the raiders\' gate-signal. You can walk into the den wearing their own password.**'],
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
-        { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'You caught the Ashfang\'s informant in the market and took the raiders\' gate signal off him. The den\'s watch can be fooled.' } }] }],
+        { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'You caught the Ashfang\'s informant in the market and took the raiders\' gate signal off him. With it, you can fool the den\'s watch.' } }] }],
   },
   'gate-blocked': {
     id: 'gate-blocked', kind: 'story', art: { imageId: 'loc-village', emoji: '🚧' },
@@ -348,7 +348,7 @@ const scenes: Record<string, Scene> = {
   },
   'tracks-done': {
     id: 'tracks-done', kind: 'story', art: { emoji: '👣' },
-    text: ['The mud has told you all it can — the patrols\' dry line through the reeds is fixed in your memory. Nothing new has passed this way since.'],
+    text: ['The mud has told you all it can — you now hold the patrols\' dry line through the reeds fixed in your memory. Nothing new has passed this way since.'],
     next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
   },
   'hollow-quiet': {
@@ -368,7 +368,7 @@ const scenes: Record<string, Scene> = {
         skill: 'athletics', dc: 13,
         success: { to: 'trail', text: ['You haul the party up and over hand over hand. The shortcut is yours.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'setFlag', flag: 'shortcut' }, { kind: 'xp', amount: 30 }] },
-        failure: { to: 'ravine', text: ['A hold crumbles and you slide back down in a clatter of stone. No good that way.'] } },
+        failure: { to: 'ravine', text: ['A hold crumbles and you slide back down in a clatter of stone. That way will not work.'] } },
       { id: 'scramble', label: 'Pick across the rubble', hint: 'Balance over the loose scree where it\'s fallen shallowest.',
         skill: 'acrobatics', dc: 12,
         success: { to: 'trail', text: ['Light on your feet, you thread the shifting stones and reach the far lip. The shortcut is yours.'],
@@ -420,7 +420,7 @@ const scenes: Record<string, Scene> = {
   // its full scene (the explore node's sceneWhen routes here once its flag set).
   'scout-gone': {
     id: 'scout-gone', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
-    text: ['The dead horse still lies across the trail, flies rising in the heat. Of the scout there\'s no sign — dragged home, or into the reeds. Nothing more for you here.'],
+    text: ['The dead horse still lies across the trail, flies rising in the heat. Of the scout there\'s no sign — dragged home, or into the reeds. Nothing more remains for you here.'],
     next: [{ id: 'ok', label: 'Move on', to: 'trail' }], noBack: true,
   },
   'spy-gone': {
@@ -442,7 +442,7 @@ const scenes: Record<string, Scene> = {
   },
   'barrow-fight': {
     id: 'barrow-fight', kind: 'battle', encounterId: 'specter-haunt', mapId: 'corridor',
-    intro: ['The cold answers you. Two shapes pour up out of the grave-earth. Men once, now nothing but spite and winter air. They pass *through* the barrow stones to reach you.'],
+    intro: ['The cold answers you. Two shapes pour up out of the grave-earth. They were men once, and now they are nothing but spite and winter air. They pass *through* the barrow stones to reach you.'],
     onWin: { to: 'trail', text: ['The specters shred into cold mist. Among the grave-goods you find honest silver — and leave the rest, on balance, where it lies.'],
       effects: [{ kind: 'setFlag', flag: 'barrow-cleared' }, { kind: 'gold', amount: 45 }] },
   },
@@ -516,13 +516,13 @@ const scenes: Record<string, Scene> = {
   'hollow-won': {
     id: 'hollow-won', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐍' },
     text: [
-      'You turn the nearest body with your boot. Branded into the scaled hide, still weeping: a crude mark of reeds and a reaching hand. These weren\'t raiders. They were *owned*.',
+      'You turn the nearest body with your boot. Branded into the scaled hide, still weeping: a crude mark of reeds and a reaching hand. These weren\'t raiders. Someone *owned* them, and marked them like cattle.',
       'Then a voice comes drifting across the water — old, and wet, and amused. "Vargan\'s little dogs, off their leash. No matter. Come up to the fire, sweetlings. The chief and his **Reedwife** have been expecting you." The reeds shiver, and go quiet. **So that is the Ashfang\'s secret: a green hag of the marsh, and a chief who sold his people\'s home to her for coin and cruelty.**',
     ],
     next: [{ id: 'ok', label: 'On to the den', to: 'gate',
       effects: [{ kind: 'setFlag', flag: 'know-hag' },
         { kind: 'journal', entry: { id: 'c-hag', kind: 'clue', title: 'The Reedwife',
-          body: 'The marsh-creatures serving the Ashfang are branded slaves of a green hag, the "Reedwife". Chief Vargan sold his people\'s marsh to her. She gets caravans and captives. He gets coin and monsters. She waits at the den\'s fire beside him.' } }] }],
+          body: 'A green hag called the "Reedwife" owns and brands the marsh-creatures that serve the Ashfang. Chief Vargan sold his people\'s marsh to her. She gets caravans and captives. He gets coin and monsters. She waits at the den\'s fire beside him.' } }] }],
   },
 
   // === ACT 3 — THE ASHFANG DEN (dungeon) ================================
@@ -540,7 +540,7 @@ const scenes: Record<string, Scene> = {
   },
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
-    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks under the lintel. Behind him two gnolls come yammering that awful laughing bark. All three are hemmed into the narrow timber run.'],
+    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks under the lintel. Behind him two gnolls come yammering that awful laughing bark. The narrow timber run hems all three in.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
   },
@@ -629,7 +629,7 @@ const scenes: Record<string, Scene> = {
   },
   'cache-done': {
     id: 'cache-done', kind: 'story', art: { emoji: '📦' },
-    text: ['The plunder tent has already been turned over — yours was the hand that did it. Only torn sacking and broken crates remain.'],
+    text: ['You already turned the plunder tent over yourself. Only torn sacking and broken crates remain.'],
     next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
   },
   cache: {
