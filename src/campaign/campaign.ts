@@ -1208,10 +1208,36 @@ function byStrength(pool: Id[]): Id[] {
   return [...pool].sort((a, b) => (SPELLS[b]?.level ?? 0) - (SPELLS[a]?.level ?? 0));
 }
 
-/** The auto-default set for a caster who hasn't hand-picked one: strongest
- *  spells first, trimmed to the limit. */
+/**
+ * The auto-default (and "Use recommended") set for a caster who hasn't
+ * hand-picked one. NOT simply "the strongest N": a wizard whose whole prepared
+ * list is level-3 spells can only cast with its two level-3 slots and wastes
+ * every lower one. Instead this takes a *spread* — round-robin from the highest
+ * spell level down to the lowest, best-in-pool-order within each level — so the
+ * loadout always has something to cast at every slot level it owns, while still
+ * favouring the stronger spells. Cantrips (one level) fall back to pool order.
+ */
 function defaultKnown(pool: Id[], limit: number): Id[] {
-  return byStrength(pool).slice(0, limit);
+  const byLevel = new Map<number, Id[]>();
+  for (const id of pool) {
+    const lvl = SPELLS[id]?.level ?? 0;
+    if (!byLevel.has(lvl)) byLevel.set(lvl, []);
+    byLevel.get(lvl)!.push(id); // preserves pool order = the sensible-default order
+  }
+  const levels = [...byLevel.keys()].sort((a, b) => b - a); // high → low
+  const out: Id[] = [];
+  let progressed = true;
+  while (out.length < limit && progressed) {
+    progressed = false;
+    for (const lvl of levels) {
+      const group = byLevel.get(lvl)!;
+      if (group.length === 0) continue;
+      out.push(group.shift()!);
+      progressed = true;
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
 }
 
 /**
@@ -1358,14 +1384,19 @@ export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): 
 }
 
 /**
- * On level-up, grow every caster's *hand-picked* spell lists into the new
- * capacity — new cantrips known, a bigger spellbook, more prepared — so a
- * customized loadout keeps up with the party instead of silently staying at its
- * old, smaller size (which used to force a full "Use recommended" reset that
- * wiped the player's choices). Lists left at the auto-default are untouched:
- * absent already means "the level-appropriate default", so they track the level
- * for free. Grow the spellbook before the prepared list, since what's
- * preparable is drawn from it. Only called when the level actually rises.
+ * On level-up, grow only a caster's *permanent, known* tiers into their new
+ * capacity: the cantrips it knows and (for a wizard) its spellbook. Those two
+ * are set once and rarely revisited, so a frozen spellbook would leave a
+ * level-5 wizard unable to even prepare the level-3 spells it should now have.
+ * Growth keeps every pick and only tops up empty room.
+ *
+ * The *prepared* list is deliberately NOT grown. Prepared spells are re-chosen
+ * every long rest with the player in full control, so auto-filling them just
+ * overrode a deliberately lean loadout and dumped in every high-level spell
+ * (the strongest-first top-up) — which read as "the game keeps auto-preparing
+ * things I didn't pick and forgetting my choices". A player's prepared list now
+ * stays exactly as they left it until they change it themselves; if they're
+ * under the new cap, the next long-rest prepare prompt lets them fill it in.
  */
 export function growSpellsForLevel(c: CampaignState): void {
   for (let i = 0; i < c.characters.length; i++) {
@@ -1377,10 +1408,6 @@ export function growSpellsForLevel(c: CampaignState): void {
     if (ch.spellbook) {
       const g = grownToLimit(ch.spellbook, spellbookPool(c, i), spellbookLimit(c, i) ?? 0);
       if (g) ch.spellbook = g;
-    }
-    if (ch.prepared) {
-      const g = grownToLimit(ch.prepared, preparableSpells(c, i), preparedLimit(c, i));
-      if (g) ch.prepared = g;
     }
   }
 }
