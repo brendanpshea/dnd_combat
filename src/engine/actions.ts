@@ -95,6 +95,15 @@ function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, target
 
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
   if (!actor.spellIds.includes(spell.id)) return false;
+  // Already concentrating on this exact spell? Recasting it would only drop and
+  // re-establish the same effect — a wasted action and slot. Don't offer it
+  // (Hunter's Mark, Faerie Fire, Bless…); a *different* concentration spell is
+  // still fine and correctly replaces this one.
+  if (spell.concentration && actor.concentratingOn?.spellId === spell.id) return false;
+  // A one-per-caster summon (Spiritual Weapon, Flaming Sphere) that's already on
+  // the board — recasting just re-places the same conjuration. Its kind is the
+  // spell id, so match on that.
+  if (actor.summons?.some((s) => s.kind === spell.id)) return false;
   if (spell.level === 0) return slotLevel === 0;
   // Innate: cast at slotLevel 0 (spending no slot), limited by its own pool.
   // Checked before the slot path so a fighter — which has no slots at all — can

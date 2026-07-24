@@ -367,3 +367,33 @@ describe('Fear', () => {
     throw new Error('goblin never got frightened across 40 seeds');
   });
 });
+
+describe('no wasteful recasts', () => {
+  it('a concentration spell is not offered again while it is already active', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [pc('wizard', 5, { x: 0, y: 0 }, 'wiz'), foe('goblin-warrior', { x: 4, y: 4 }, 'gob')],
+    });
+    until(c, 'wiz');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'web')).toBe(true);
+    c.apply({ kind: 'castSpell', spellId: 'web', slotLevel: 2, targets: [{ position: { x: 4, y: 4 } }] });
+    // Round-trip back to the wizard (its action is free again, but Web is still up).
+    c.apply({ kind: 'endTurn' });
+    while (c.activeId !== 'wiz') c.apply({ kind: 'endTurn' });
+    // Concentrating on Web — it must not be offered a second time...
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'web')).toBe(false);
+    // ...but a non-concentration action spell (Magic Missile) still is.
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'magic-missile')).toBe(true);
+  });
+
+  it('a one-per-caster summon is not offered again while it is on the board', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [pc('cleric', 3, { x: 0, y: 0 }, 'clr'), foe('goblin-warrior', { x: 5, y: 5 }, 'gob')],
+    });
+    until(c, 'clr');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon')).toBe(true);
+    c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 1, y: 1 } }] });
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon')).toBe(false);
+  });
+});

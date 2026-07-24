@@ -145,7 +145,7 @@ describe("Ranger: Hunter's Mark", () => {
     }
   });
 
-  it('recasting on a new target breaks concentration and moves the mark', () => {
+  it('is not offered again while already concentrating on it (no wasteful recasts)', () => {
     const c = new Combat({
       seed: 3,
       combatants: [
@@ -155,14 +155,17 @@ describe("Ranger: Hunter's Mark", () => {
       ],
     });
     until(c, 'rgr');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'hunters-mark')).toBe(true);
     c.apply({ kind: 'castSpell', spellId: 'hunters-mark', slotLevel: 1, targets: [{ combatantId: 'foe1' }] });
-    // Bonus action is spent; end the turn and come back around to cast again.
+    // Round-trip back to the ranger: the bonus action is free again, but the
+    // mark is already up, so it must NOT be offered a second time — recasting
+    // it would just waste a slot re-marking. (It moves on its own when the
+    // marked target dies; see the transfer test above.)
     c.apply({ kind: 'endTurn' });
     until(c, 'rgr');
-    c.apply({ kind: 'castSpell', spellId: 'hunters-mark', slotLevel: 1, targets: [{ combatantId: 'foe2' }] });
-    expect(c.state.combatants['foe1']!.conditions.some((k) => k.id === 'marked')).toBe(false);
-    expect(c.state.combatants['foe2']!.conditions.some((k) => k.id === 'marked' && k.sourceId === 'rgr')).toBe(true);
-    expect(c.state.combatants['rgr']!.concentratingOn).toEqual({ spellId: 'hunters-mark', targetIds: ['foe2'] });
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'hunters-mark')).toBe(false);
+    // And the mark is still on the original target.
+    expect(c.state.combatants['foe1']!.conditions.some((k) => k.id === 'marked' && k.sourceId === 'rgr')).toBe(true);
   });
 });
 
