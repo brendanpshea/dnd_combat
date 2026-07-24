@@ -128,9 +128,15 @@ const BASE_VERBS = new Set([
   'stand', 'take', 'make', 'come', 'go', 'walk', 'run', 'burn', 'draw', 'hold', 'keep',
   'open', 'close', 'fall', 'rise', 'sit', 'lie', 'lead', 'turn', 'look', 'watch', 'wait',
   'call', 'name', 'know', 'see', 'hear', 'smell', 'feel', 'mean', 'say', 'tell', 'ask',
-  // "talk" without these reads as a plural noun after an out-of-lexicon subject
-  // ("The manticore talks." parsed like "TED talks"), flagging a real sentence.
-  'talk', 'listen', 'sound', 'graze', 'drill', 'salute', 'chalk', 'wire',
+  // Without these the tagger reads them as plural nouns after an out-of-lexicon
+  // subject ("The manticore talks." parses like "TED talks"; "the broth steams"
+  // like a dish called steams), flagging real sentences as fragments.
+  // Added only when a real sentence was being flagged: the tagger reads these
+  // as plural nouns after an out-of-lexicon subject ("The manticore talks."
+  // parses like "TED talks"). Keep this list minimal and evidence-driven —
+  // every entry is a blind spot, and an ambiguous noun-verb (row, rank, file,
+  // pile) would silently excuse "A row of skulls in the dark."
+  'talk', 'steam',
   'answer', 'pay', 'buy', 'sell', 'break', 'build', 'leave', 'arrive', 'reach', 'cross',
   'climb', 'drop', 'hang', 'stay', 'live', 'die', 'kill', 'fight', 'win', 'lose', 'find',
   'hide', 'seek', 'hunt', 'follow', 'chase', 'catch', 'carry', 'bring', 'send', 'put',
@@ -359,6 +365,23 @@ export function collectModuleLabels(mod: Module): ProsePassage[] {
   }
   push(mod.title, `${mod.id}:title`);
   push(mod.blurb, `${mod.id}:blurb`);
+  // Journal *titles* are headings in the quest log — read every time the player
+  // opens it, and (unlike the bodies) never checked until now.
+  const seen = new Set<string>();
+  const sweepTitles = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach(sweepTitles); return; }
+    const o = node as Record<string, unknown>;
+    if (o['kind'] === 'journal' && o['entry'] && typeof o['entry'] === 'object') {
+      const e = o['entry'] as { id?: string; title?: string };
+      if (e.title && !seen.has(e.title)) {
+        seen.add(e.title);
+        push(e.title, `${mod.id}:journal:${e.id ?? '?'}:title`);
+      }
+    }
+    for (const k of Object.keys(o)) sweepTitles(o[k]);
+  };
+  sweepTitles(mod.scenes);
   return out;
 }
 

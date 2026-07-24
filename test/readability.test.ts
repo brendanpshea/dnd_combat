@@ -34,6 +34,17 @@ describe('fragment + passive detectors (calibration)', () => {
     expect(sentenceFragments('"Steel, then. No parley." The manticore sighs.')).toHaveLength(0); // dialogue exempt
   });
 
+  // The verb lexicon is the fragment check's second opinion, so every word added
+  // to it is a blind spot. These are the ambiguous noun-verbs most tempting to
+  // add (a passage gets flagged, someone "fixes" the lexicon) — each one would
+  // silently excuse a whole shape of real fragment. Keep them out.
+  it('still catches fragments headed by ambiguous noun-verbs', () => {
+    expect(sentenceFragments('A row of skulls in the dark.')).toHaveLength(1);
+    expect(sentenceFragments('A rank of dead men in the water.')).toHaveLength(1);
+    expect(sentenceFragments('A file of footprints in the mud.')).toHaveLength(1);
+    expect(sentenceFragments('A pile of broken stone.')).toHaveLength(1);
+  });
+
   it('flags passive voice but not actives or adjectival participles', () => {
     expect(passiveConstructions('The graves were opened from below.')).toHaveLength(1);
     expect(passiveConstructions('The road is watched by the Ashfang.')).toHaveLength(1);
