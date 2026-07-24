@@ -227,6 +227,28 @@ describe('opportunity attacks', () => {
     expect(events.some((e) => e.type === 'attackRolled')).toBe(false);
   });
 
+  // Paralyzed/unconscious imply Incapacitated in the rules, but this engine
+  // applies them standalone — so the reaction gate has to name all three, and
+  // once didn't: held creatures were still swinging as you walked away.
+  for (const cond of ['paralyzed', 'unconscious', 'incapacitated'] as const) {
+    it(`a ${cond} creature takes no opportunity attack`, () => {
+      const c = new Combat({
+        seed: 11,
+        combatants: [
+          makeCombatant({ id: 'a', team: 'team1', position: { x: 3, y: 3 } }),
+          makeCombatant({ id: 'b', team: 'team2', position: { x: 3, y: 4 } }),
+        ],
+      });
+      const mover = c.activeId;
+      const threat = c.state.combatants[mover === 'a' ? 'b' : 'a']!;
+      threat.conditions.push({ id: cond, sourceId: threat.id });
+      const dest = mover === 'a' ? { x: 0, y: 0 } : { x: 6, y: 7 };
+      const events = c.apply({ kind: 'move', to: dest });
+      expect(events.some((e) => e.type === 'attackRolled')).toBe(false);
+      expect(threat.turn.reactionUsed).toBe(false);
+    });
+  }
+
   it('moving within reach (adjacent to adjacent) does not provoke', () => {
     const c = new Combat({
       seed: 13,

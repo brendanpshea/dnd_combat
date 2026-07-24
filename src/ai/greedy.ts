@@ -4,7 +4,7 @@
  * state — no engine backdoors, exactly the Action API the CLI uses.
  */
 import type { GameState, Id, Combatant, Position } from '../engine/types.js';
-import { isDown } from '../engine/types.js';
+import { isDown, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
@@ -71,8 +71,7 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
     // incapacitated ally doesn't distract anyone, so it mustn't be priced in.
     const allyAdjacent = Object.values(state.combatants).some(
       (c) => c.alive && !isDown(c) && c.id !== actor.id && c.team === actor.team &&
-        adjacent(c.position, target.position) &&
-        !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious'),
+        adjacent(c.position, target.position) && !isIncapacitated(c),
     );
     if (mode === 'advantage' || (allyAdjacent && mode !== 'disadvantage')) {
       dmg += avgDice(`${Math.ceil(actor.level / 2)}d6`);

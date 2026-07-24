@@ -8,7 +8,7 @@
  * spells; drivers may customize targets and step() re-validates.
  */
 import type { GameState, Id, Position, Combatant } from './types.js';
-import { posEq, cellAt, isDown } from './types.js';
+import { posEq, cellAt, isDown, isIncapacitated } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
@@ -44,11 +44,10 @@ function trueStrikeWeapons(c: Combatant): Id[] {
   return attackableWeapons(c);
 }
 
-function isIncapacitated(c: Combatant): boolean {
-  return c.conditions.some(
-    (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed' ||
-      k.id === 'commanded', // Command: grovels, no actions this turn
-  );
+/** Can't take an *action* — the shared incapacitated set, plus Command (which
+ *  costs the turn's actions but, unlike the rest, leaves the reaction). */
+function cannotAct(c: Combatant): boolean {
+  return isIncapacitated(c) || c.conditions.some((k) => k.id === 'commanded');
 }
 
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
@@ -210,7 +209,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
   const actor = state.combatants[actorId];
   if (!actor || !actor.alive || state.winner) return false;
   if (currentCombatant(state).id !== actorId) return false;
-  const incap = isIncapacitated(actor);
+  const incap = cannotAct(actor);
 
   switch (action.kind) {
     case 'endTurn':
@@ -384,7 +383,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   // This matters mid-turn too: a creature dropped to 0 HP by an opportunity
   // attack while moving is now unconscious but still the active turn, and its
   // stale movement budget must not offer (illegal) further steps.
-  if (!isIncapacitated(actor)) {
+  if (!cannotAct(actor)) {
     for (const to of moveDestinations(state, actor)) {
       actions.push({ kind: 'move', to });
     }

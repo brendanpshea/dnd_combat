@@ -2,7 +2,7 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
-import { cellAt, abilityMod, isDown } from '../types.js';
+import { cellAt, abilityMod, isDown, isIncapacitated } from '../types.js';
 import { reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
@@ -102,8 +102,10 @@ function meleeWeaponOf(c: Combatant): Id | undefined {
 function canTakeReaction(c: Combatant): boolean {
   return (
     c.alive &&
+    !isDown(c) &&
     !c.turn.reactionUsed &&
-    !c.conditions.some((k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'noReactions')
+    !isIncapacitated(c) &&
+    !c.conditions.some((k) => k.id === 'noReactions')
   );
 }
 
