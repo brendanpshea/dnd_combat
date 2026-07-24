@@ -44,6 +44,15 @@ export interface Cell {
    * its own after a few rounds regardless.
    */
   illusion?: { sourceId: Id; expiresAtRound: number };
+  /**
+   * A lingering Web: strands of webbing filling the cell while the caster
+   * concentrates. Unlike the old fire-and-forget Web (which only caught who
+   * stood in the blast at cast time), this persists — a creature that *enters*
+   * the cell must save or be restrained, and it stays visible on the board so
+   * you can read and route around it. Cleared when the caster drops
+   * concentration (see breakConcentration). `sourceId`'s team is friendly to it.
+   */
+  web?: { sourceId: Id; dc: number };
 }
 
 export interface GridState {
@@ -202,9 +211,21 @@ export interface Combatant {
   unconsciousAtZero?: boolean;
   /** Round the combatant last spent Uncanny Dodge (once per round). */
   uncannyDodgeRound?: number;
-  /** Spiritual Weapon: a floating weapon that grants a bonus-action force
-   *  attack each turn until it expires (cleared in startTurn). */
-  spiritualWeapon?: { expiresAtRound: number };
+  /**
+   * Conjured battlefield effects this caster owns — a Spiritual Weapon hammer,
+   * a Flaming Sphere — that live on the board with a position of their own.
+   * They are NOT combatants: no HP, no AC, no initiative slot, untargetable,
+   * and they never occupy a cell. Instead each one *acts by itself* at the
+   * start of its caster's turn (activateSummons in turn.ts): it chases the
+   * nearest enemy and strikes. The Spiritual Weapon runs on a duration clock
+   * (`expiresAtRound`); the Flaming Sphere is held by concentration and is
+   * swept by breakConcentration instead.
+   */
+  summons?: Array<{
+    kind: 'spiritual-weapon' | 'flaming-sphere';
+    position: Position;
+    expiresAtRound?: number;
+  }>;
   /** Spiritual Guardians: a radiant aura around the caster that hurts enemies
    *  who start their turn near it (held by concentration). */
   spiritualGuardians?: { dc: number; mod: number };

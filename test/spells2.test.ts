@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
+import { webCell } from '../src/engine/grid.js';
+import { breakConcentration } from '../src/engine/rules/attack.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, level: number, position: Position, id: string, over: Partial<Combatant> = {}): Combatant =>
@@ -108,6 +110,54 @@ describe('Web', () => {
     }
     throw new Error('no goblin was ever webbed across 40 seeds');
   });
+
+  it('the web lingers on the grid and clears when concentration drops', () => {
+    const c = new Combat({
+      seed: 7,
+      combatants: [
+        pc('wizard', 5, { x: 1, y: 1 }, 'wiz'),
+        foe('goblin-warrior', { x: 5, y: 5 }, 'gob'),
+      ],
+    });
+    until(c, 'wiz');
+    const cast = c.apply({ kind: 'castSpell', spellId: 'web', slotLevel: 2, targets: [{ position: { x: 5, y: 5 } }] });
+    expect(cast.some((e) => e.type === 'webSpun')).toBe(true);
+    expect(c.state.grid.cells.filter((cell) => cell.web?.sourceId === 'wiz').length).toBeGreaterThan(0);
+    // Concentration is held so the strands persist (even if the save was made).
+    expect(c.state.combatants['wiz']!.concentratingOn?.spellId).toBe('web');
+
+    // Dropping the caster's concentration (damage, a new spell, death) sweeps
+    // the strands off the grid.
+    const evs = breakConcentration(c.state, 'wiz');
+    expect(evs.some((e) => e.type === 'webCleared')).toBe(true);
+    expect(c.state.grid.cells.some((cell) => cell.web?.sourceId === 'wiz')).toBe(false);
+    expect(c.state.combatants['wiz']!.concentratingOn).toBeUndefined();
+  });
+
+  it('walking into lingering strands forces a save, restrains, and stops the mover', () => {
+    const c = new Combat({
+      seed: 3,
+      combatants: [
+        pc('wizard', 8, { x: 0, y: 0 }, 'wiz'),         // high Web DC
+        foe('goblin-warrior', { x: 6, y: 2 }, 'gob'),
+      ],
+    });
+    // Lay strands across the goblin's approach lane (as a lingering web would),
+    // held by the wizard's concentration.
+    for (let x = 2; x <= 4; x++) webCell(c.state.grid, { x, y: 2 }, 'wiz', 25);
+    c.state.combatants['wiz']!.concentratingOn = { spellId: 'web', targetIds: [] };
+
+    until(c, 'gob');
+    // The goblin advances toward the party and hits the strands at (4,2).
+    const into = c.legalActions().find((a) => a.kind === 'move' && a.to.x === 4 && a.to.y === 2);
+    expect(into, 'a move into the webbed lane should exist').toBeDefined();
+    const ev = c.apply(into!);
+    expect(ev.some((e) => e.type === 'savingThrow')).toBe(true);
+    const gob = c.state.combatants['gob']!;
+    expect(gob.conditions.some((k) => k.id === 'restrained')).toBe(true);
+    // Caught on entry: it stops in the strands rather than walking on past them.
+    expect(gob.position).toEqual({ x: 4, y: 2 });
+  });
 });
 
 describe('Shield (autocast reaction)', () => {
@@ -151,30 +201,112 @@ describe('Shield (autocast reaction)', () => {
 });
 
 describe('Spiritual Weapon', () => {
-  it('summons a floating weapon (bonus action, slot spent) and re-attacks free next turn', () => {
+  it('conjures a roaming hammer: placed beside a foe it strikes at once, then acts by itself', () => {
     const c = new Combat({
       seed: 3,
-      combatants: [pc('cleric', 3, { x: 3, y: 3 }, 'clr'), foe('goblin-warrior', { x: 4, y: 3 }, 'gob')],
+      combatants: [pc('cleric', 3, { x: 3, y: 3 }, 'clr'), foe('goblin-warrior', { x: 5, y: 3 }, 'gob')],
     });
     until(c, 'clr');
     const slotsBefore = c.state.combatants['clr']!.spellSlots[1]!.current;
-    const events = c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ combatantId: 'gob' }] });
-    expect(c.state.combatants['clr']!.spiritualWeapon).toBeDefined();
+    // Place the hammer next to the goblin: it appears and bonks immediately.
+    const events = c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 4, y: 3 } }] });
+    expect(events.some((e) => e.type === 'summonPlaced')).toBe(true);
     expect(events.some((e) => e.type === 'attackRolled')).toBe(true);
-    expect(c.state.combatants['clr']!.spellSlots[1]!.current).toBe(slotsBefore - 1); // first cast spends a slot
+    expect(c.state.combatants['clr']!.summons?.[0]).toMatchObject({ kind: 'spiritual-weapon', position: { x: 4, y: 3 } });
+    expect(c.state.combatants['clr']!.spellSlots[1]!.current).toBe(slotsBefore - 1);
     expect(c.state.combatants['clr']!.turn.bonusActionUsed).toBe(true);
 
-    // Round trip back to the cleric: the re-attack is now a free bonus action.
-    c.apply({ kind: 'endTurn' }); // cleric -> goblin
-    c.apply({ kind: 'endTurn' }); // goblin -> cleric (new round)
-    expect(c.activeId).toBe('clr');
-    const recast = c.legalActions().find((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon');
-    expect(recast).toBeDefined();
-    if (recast?.kind !== 'castSpell') throw new Error();
-    expect(recast.slotLevel).toBe(0); // free
-    const slotsNow = c.state.combatants['clr']!.spellSlots[1]!.current;
-    c.apply(recast);
-    expect(c.state.combatants['clr']!.spellSlots[1]!.current).toBe(slotsNow); // no slot spent
+    // Back around to the cleric: the hammer attacks again ON ITS OWN — no
+    // action from the caster, no free-recast entry in the action list.
+    c.apply({ kind: 'endTurn' });
+    let startEvents: typeof events = [];
+    while (c.activeId !== 'clr') startEvents = c.apply({ kind: 'endTurn' });
+    expect(startEvents.some((e) => e.type === 'attackRolled' && e.attackerId === 'clr')).toBe(true);
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon' && a.slotLevel === 0)).toBe(false);
+  });
+
+  it('the hammer chases: it glides toward the nearest enemy at the start of each turn', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [pc('cleric', 3, { x: 0, y: 0 }, 'clr'), foe('skeleton', { x: 7, y: 7 }, 'sk')],
+    });
+    until(c, 'clr');
+    // Place it far from the skeleton so it must travel.
+    c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 1, y: 1 } }] });
+    c.apply({ kind: 'endTurn' });
+    let startEvents: ReturnType<typeof c.apply> = [];
+    while (c.activeId !== 'clr') startEvents = c.apply({ kind: 'endTurn' });
+    const moved = startEvents.find((e) => e.type === 'summonMoved');
+    expect(moved).toBeDefined();
+    if (moved?.type !== 'summonMoved') throw new Error();
+    // 20 ft = 4 cells of chase, closing on the prey.
+    const before = Math.max(Math.abs(1 - 7), Math.abs(1 - 7));
+    const pos = c.state.combatants['clr']!.summons![0]!.position;
+    const after = Math.max(Math.abs(pos.x - 7), Math.abs(pos.y - 7));
+    expect(after).toBe(before - 4);
+  });
+
+  it('expires after its duration runs out', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [pc('cleric', 3, { x: 0, y: 0 }, 'clr'), foe('skeleton', { x: 7, y: 7 }, 'sk', )],
+    });
+    until(c, 'clr');
+    c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 1, y: 1 } }] });
+    // Force the clock forward past the expiry and cycle to the cleric's turn.
+    c.state.combatants['clr']!.summons![0]!.expiresAtRound = 0;
+    c.apply({ kind: 'endTurn' });
+    let startEvents: ReturnType<typeof c.apply> = [];
+    while (c.activeId !== 'clr') startEvents = c.apply({ kind: 'endTurn' });
+    expect(startEvents.some((e) => e.type === 'summonExpired')).toBe(true);
+    expect(c.state.combatants['clr']!.summons ?? []).toHaveLength(0);
+  });
+});
+
+describe('Flaming Sphere', () => {
+  it('rolls after the nearest enemy and rams — 2d6 fire, Dex save for half — until concentration drops', () => {
+    const wiz = pc('wizard', 3, { x: 0, y: 0 }, 'wiz');
+    wiz.spellIds = [...wiz.spellIds, 'flaming-sphere'];
+    const c = new Combat({
+      seed: 6,
+      combatants: [wiz, foe('skeleton', { x: 4, y: 0 }, 'sk')],
+    });
+    until(c, 'wiz');
+    const hpBefore = c.state.combatants['sk']!.hp;
+    // Cast beside the skeleton: it appears and rams immediately (save + fire).
+    const events = c.apply({ kind: 'castSpell', spellId: 'flaming-sphere', slotLevel: 2, targets: [{ position: { x: 3, y: 0 } }] });
+    expect(events.some((e) => e.type === 'summonPlaced')).toBe(true);
+    expect(events.some((e) => e.type === 'savingThrow' && e.combatantId === 'sk')).toBe(true);
+    expect(c.state.combatants['sk']!.hp).toBeLessThan(hpBefore); // 2d6, min 1 even on a save
+    expect(c.state.combatants['wiz']!.concentratingOn?.spellId).toBe('flaming-sphere');
+
+    // Concentration drops → the sphere gutters out.
+    const evs = breakConcentration(c.state, 'wiz');
+    expect(evs.some((e) => e.type === 'summonExpired')).toBe(true);
+    expect(c.state.combatants['wiz']!.summons ?? []).toHaveLength(0);
+  });
+
+  it('a physical sphere is stopped by walls; the spectral hammer is not', () => {
+    // The corridor map has interior walls to test against — but simpler: park
+    // both kinds against a wall cell and step them by activation.
+    const wiz = pc('wizard', 3, { x: 0, y: 0 }, 'wiz');
+    wiz.spellIds = [...wiz.spellIds, 'flaming-sphere'];
+    const c = new Combat({
+      seed: 7, mapId: 'ruins',
+      combatants: [wiz, foe('skeleton', { x: 4, y: 4 }, 'sk')],
+    });
+    // Ruins has walls at (2,y) columns per its ASCII; place summons directly.
+    c.state.combatants['wiz']!.summons = [
+      { kind: 'spiritual-weapon', position: { x: 1, y: 5 }, expiresAtRound: 99 },
+      { kind: 'flaming-sphere', position: { x: 1, y: 3 } },
+    ];
+    c.state.combatants['wiz']!.concentratingOn = { spellId: 'flaming-sphere', targetIds: [] };
+    until(c, 'wiz');
+    // Both moved (or tried): neither may stand ON a wall cell.
+    for (const s of c.state.combatants['wiz']!.summons!) {
+      const cell = c.state.grid.cells[s.position.y * c.state.grid.width + s.position.x]!;
+      expect(cell.terrain === 'wall' && s.kind === 'flaming-sphere').toBe(false);
+    }
   });
 });
 
@@ -233,5 +365,35 @@ describe('Fear', () => {
       return;
     }
     throw new Error('goblin never got frightened across 40 seeds');
+  });
+});
+
+describe('no wasteful recasts', () => {
+  it('a concentration spell is not offered again while it is already active', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [pc('wizard', 5, { x: 0, y: 0 }, 'wiz'), foe('goblin-warrior', { x: 4, y: 4 }, 'gob')],
+    });
+    until(c, 'wiz');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'web')).toBe(true);
+    c.apply({ kind: 'castSpell', spellId: 'web', slotLevel: 2, targets: [{ position: { x: 4, y: 4 } }] });
+    // Round-trip back to the wizard (its action is free again, but Web is still up).
+    c.apply({ kind: 'endTurn' });
+    while (c.activeId !== 'wiz') c.apply({ kind: 'endTurn' });
+    // Concentrating on Web — it must not be offered a second time...
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'web')).toBe(false);
+    // ...but a non-concentration action spell (Magic Missile) still is.
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'magic-missile')).toBe(true);
+  });
+
+  it('a one-per-caster summon is not offered again while it is on the board', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [pc('cleric', 3, { x: 0, y: 0 }, 'clr'), foe('goblin-warrior', { x: 5, y: 5 }, 'gob')],
+    });
+    until(c, 'clr');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon')).toBe(true);
+    c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 1, y: 1 } }] });
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon')).toBe(false);
   });
 });

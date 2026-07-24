@@ -111,6 +111,12 @@ export function validateModule(module: Module): string[] {
   if (module.defeatScene && !ids.has(module.defeatScene)) {
     errors.push(`defeatScene '${module.defeatScene}' does not exist`);
   }
+  // The fast-travel home must be a real explore hub (that's where its map lives).
+  if (module.town) {
+    const townScene = module.scenes[module.town];
+    if (!townScene) errors.push(`town '${module.town}' does not exist`);
+    else if (townScene.kind !== 'explore') errors.push(`town '${module.town}' must be an explore scene, not ${townScene.kind}`);
+  }
 
   // Flag hygiene: every flag read somewhere must be written somewhere.
   const written = new Set<string>();
@@ -197,8 +203,15 @@ export function validateModule(module: Module): string[] {
         for (const n of scene.map.nodes) {
           if (!seenN.has(n.id)) at(id, `node '${n.id}' is unreachable from any entry along paths`);
         }
-      } else if (entry && entry.length) {
-        at(id, 'entry is set but there are no paths (free-roam maps ignore entry)');
+      } else if (entry?.length) {
+        // Free-roam entry is legal now: it's where the party pawn stands on
+        // first arrival. It still has to name a real node.
+        for (const e of entry) if (!nodeIds.has(e)) at(id, `entry references unknown node '${e}'`);
+      }
+      // Visual roads (free-roam overworld look) must reference real nodes too.
+      for (const [a, b] of scene.map.roads ?? []) {
+        if (!nodeIds.has(a)) at(id, `road references unknown node '${a}'`);
+        if (!nodeIds.has(b)) at(id, `road references unknown node '${b}'`);
       }
     }
     if (scene.kind === 'dialogue' && scene.npc.portraitId && !isNpcArt(scene.npc.portraitId)) {

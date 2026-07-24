@@ -292,6 +292,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     alive: true,
   };
   if (cls.spellcasting) combatant.spellcastingAbility = cls.spellcasting.ability;
+  // Find Familiar is a slot-free ritual that never dies in this model, so a
+  // caster who knows it has no reason not to have cast it — grant the owl by
+  // default (players, and the AI, forgot to summon it otherwise). The campaign
+  // familiar flag still applies, redundantly and harmlessly.
+  if (spellIds.includes('find-familiar')) combatant.familiar = { kind: 'owl' };
   return combatant;
 }
 

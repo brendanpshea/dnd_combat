@@ -290,4 +290,22 @@ describe('death and turn order', () => {
     expect(c.log.some((e) => e.type === 'combatEnded')).toBe(true);
     expect(c.legalActions()).toHaveLength(0);
   });
+
+  it('a pathological stall terminates at the round cap, favouring the side ahead on HP', () => {
+    // Two combatants that never damage each other (they only ever pass) — the
+    // fight can't resolve on its own, so the MAX_ROUNDS guard must end it. The
+    // team1 unit is healthier, so it takes the timeout.
+    const c = new Combat({
+      seed: 3,
+      combatants: [
+        makeCombatant({ id: 'a', team: 'team1', position: { x: 0, y: 0 }, hp: 20, maxHp: 20 }),
+        makeCombatant({ id: 'b', team: 'team2', position: { x: 7, y: 7 }, hp: 5, maxHp: 20 }),
+      ],
+    });
+    let guard = 0;
+    while (!c.isOver() && guard++ < 100000) c.apply({ kind: 'endTurn' }); // never attack
+    expect(c.isOver()).toBe(true);
+    expect(c.winner()).toBe('team1');
+    expect(c.state.round).toBeGreaterThan(100);
+  });
 });

@@ -4,12 +4,12 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import {
   newCampaign, currentStage, isComplete, buildCampaignParty, applyVictory,
-  buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK,
+  buyItem, sellItem, itemPrice, itemName, STAGES, STARTING_GOLD, SHOP_STOCK, shopOffering,
   treasureFor, rarityOf, levelForXp, partyLevelOf, xpAward, LEVEL_XP,
   giveItem, equipItem, equipBlocked, unequipSlot, setPartyClass, parseCampaign,
-  partySkillCheck, attemptSteal, shortRest, longRest, useStoreHealing, useStoreSpell,
+  partySkillCheck, attemptSteal, shortRest, longRest, fullRest, useStoreHealing, useStoreSpell,
   hitDiceLeft, hitDiceMax, isCampBuffPotion, drinkCampBuffPotion,
-  levelUpSummary, setLevelChoice,
+  levelUpSummary, setLevelChoice, partyNeedsRest,
   partyStash, claimFromStash, stashItem, sellFromStash,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
@@ -24,6 +24,7 @@ import { buildEncounter } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { ITEMS } from '../src/data/items.js';
 import { CLASSES } from '../src/data/classes.js';
+import { SPELLS } from '../src/data/spells.js';
 import { attackableWeapons } from '../src/engine/rules/equipment.js';
 import { buildParty } from '../src/builder/character.js';
 
@@ -58,6 +59,36 @@ describe('campaign state', () => {
       expect(itemPrice(id)).toBeGreaterThan(0);
       expect(itemName(id)).not.toBe(id); // resolved to a human name
     }
+  });
+
+  it('shopOffering stocks staples always, magical wares limited and level-scaled', () => {
+    const l1 = shopOffering(SHOP_STOCK, 1, 'sb-market');
+    const l3 = shopOffering(SHOP_STOCK, 3, 'sb-market');
+    const l5 = shopOffering(SHOP_STOCK, 5, 'sb-market');
+
+    // Mundane staples are on the shelf at every level — even ones the loot
+    // tables rate "uncommon" (a plain rapier), and always the healing potion.
+    for (const shelf of [l1, l3, l5]) {
+      for (const staple of ['potion-healing', 'rapier', 'greatsword', 'leather', 'longbow']) {
+        expect(shelf, `staple ${staple}`).toContain(staple);
+      }
+    }
+    // A 1st-level party is offered NO enchanted gear (no +1, adamantine, trinkets).
+    const enchanted = (id: string) => id.endsWith('plus1') || id.includes('adamantine') || id.includes('moontouched')
+      || ['gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding', 'bracers-archery', 'boots-winterlands', 'gloves-thievery'].includes(id);
+    expect(l1.some(enchanted)).toBe(false);
+    // Magical rotation grows with level, and never carries the whole catalogue.
+    const magical = (shelf: string[]) => shelf.filter((id) => enchanted(id) || id.includes('resistance') || id.includes('giant-strength') || (id.includes('scroll') && itemPrice(id)! > 60));
+    expect(magical(l5).length).toBeGreaterThan(magical(l1).length);
+    expect(l5.length).toBeLessThan(SHOP_STOCK.length); // not everything at once
+  });
+
+  it('shopOffering is stable per (level, shop) but varies across both', () => {
+    // Same shop, same level → identical shelf (no re-rolling by leaving/re-entering).
+    expect(shopOffering(SHOP_STOCK, 4, 'sb-market')).toEqual(shopOffering(SHOP_STOCK, 4, 'sb-market'));
+    // Different shop, or a level-up → a different magical mix.
+    expect(shopOffering(SHOP_STOCK, 4, 'sb-market')).not.toEqual(shopOffering(SHOP_STOCK, 4, 'wc-stores'));
+    expect(shopOffering(SHOP_STOCK, 4, 'sb-market')).not.toEqual(shopOffering(SHOP_STOCK, 6, 'sb-market'));
   });
 
   it('buildCampaignParty uses the XP-derived level and persisted gear', () => {
@@ -144,6 +175,27 @@ describe('campaign state', () => {
     expect(buildCampaignParty(c)[0]!.hp).toBe(beforeLong.maxHp);
     // Half the pool comes back (minimum one die).
     expect(hitDiceLeft(c, 0)).toBe(1);
+  });
+
+  it('fullRest restores HP, slots, and the whole hit-die pool between adventures', () => {
+    const c = newCampaign(500); // a few levels in, so casters have slots and >1 hit die
+    // Wound the whole party, drain a slot, and spend every hit die.
+    for (const ch of c.characters) ch.resources = { hp: 1, slots: [0], hitDice: 0 };
+    // One hero is also nursing a camp giant-strength buff.
+    const fighter = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    c.characters[fighter]!.resources = { hp: 1, hitDice: 0, effects: { giantStrength: 23 } };
+
+    fullRest(c);
+
+    const party = buildCampaignParty(c);
+    for (let i = 0; i < c.characters.length; i++) {
+      // No lingering resources object at all: absent means full everywhere.
+      expect(c.characters[i]!.resources).toBeUndefined();
+      expect(party[i]!.hp).toBe(party[i]!.maxHp);
+      expect(hitDiceLeft(c, i)).toBe(hitDiceMax(c));
+    }
+    // The camp giant-strength buff is gone (no Strength 23 carried over).
+    expect(party[fighter]!.abilities.str).toBeLessThan(23);
   });
 
   it('a short rest does not waste a hit die on a trivial top-off', () => {
@@ -346,6 +398,32 @@ describe('party loot stash', () => {
     for (const ch of c.characters) if (ch.classId === 'cleric') ch.classId = 'rogue';
     const noCleric = campaignModule.partySkillCheck(c, 'persuasion', 15);
     expect(noCleric.guidance).toBeUndefined();
+  });
+
+  it('characterSkills lists every skill, proficient ones first and starred', () => {
+    const c = newCampaign();
+    const rogueIdx = c.characters.findIndex((ch) => ch.classId === 'rogue');
+    expect(rogueIdx).toBeGreaterThanOrEqual(0);
+    const rows = campaignModule.characterSkills(c, rogueIdx);
+    // Every D&D skill appears exactly once.
+    expect(rows.length).toBe(18);
+    expect(new Set(rows.map((r) => r.skill)).size).toBe(18);
+    // The rogue is proficient in at least a couple of skills, and they sort
+    // ahead of the non-proficient ones.
+    const firstNonProf = rows.findIndex((r) => !r.proficient);
+    expect(firstNonProf).toBeGreaterThan(0);
+    expect(rows.slice(0, firstNonProf).every((r) => r.proficient)).toBe(true);
+    expect(rows.slice(firstNonProf).every((r) => !r.proficient)).toBe(true);
+    // A proficient skill's bonus matches the raw bonus helper.
+    const prof = rows[0]!;
+    expect(prof.bonus).toBe(campaignModule.characterSkillBonus(c, rogueIdx, prof.skill));
+    expect(campaignModule.characterSkillProficient(c, rogueIdx, prof.skill)).toBe(true);
+  });
+
+  it('characterSkills returns [] for an out-of-range index', () => {
+    const c = newCampaign();
+    expect(campaignModule.characterSkills(c, 99)).toEqual([]);
+    expect(campaignModule.characterSkillProficient(c, 99, 'stealth')).toBe(false);
   });
 
   it('loading a save converts retired Scroll of Cure Wounds into healing potions', () => {
@@ -756,6 +834,55 @@ describe('spell preparation (ignorable — a sensible default is auto-prepared)'
     expect(c.characters[wizardIdx]!.prepared).toHaveLength(Math.min(cap, pool.length));
   });
 
+  it('growSpellsForLevel fills the known tiers (cantrips, spellbook) but never touches prepared', () => {
+    const c = newCampaign();
+    c.xp = LEVEL_XP[2]!; // level 3
+    const w = 1;
+    // Hand-pick deliberately short lists at this level.
+    setCantrips(c, w, knownCantrips(c, w).slice(0, 2));
+    setSpellbook(c, w, chosenSpellbook(c, w).slice(0, 3));
+    setPrepared(c, w, preparableSpells(c, w).slice(0, 2));
+    const keptBook = c.characters[w]!.spellbook!.slice();
+    const keptPrepared = c.characters[w]!.prepared!.slice();
+
+    // Level up, then grow (as a victory that crosses a level boundary does).
+    c.xp = LEVEL_XP[4]!; // level 5
+    campaignModule.growSpellsForLevel(c);
+
+    // The KNOWN tiers grow to their new caps, keeping every pick...
+    expect(c.characters[w]!.cantrips!.length).toBe(cantripLimit(c, w));
+    expect(c.characters[w]!.spellbook!.length).toBe(spellbookLimit(c, w));
+    for (const id of keptBook) expect(c.characters[w]!.spellbook).toContain(id);
+    // ...but the PREPARED list is left exactly as the player set it — no
+    // auto-preparing of new high-level spells, no forgetting the lean loadout.
+    expect(c.characters[w]!.prepared).toEqual(keptPrepared);
+  });
+
+  it('a level-up victory never rewrites a customized prepared list', () => {
+    const w = 1;
+    // A win that crosses into the next level used to flood prepared with the
+    // strongest spells; now it leaves the player's exact choice alone.
+    const c = newCampaign();
+    c.xp = LEVEL_XP[3]! - 1;                      // one XP shy of level 4
+    setPrepared(c, w, [preparableSpells(c, w)[0]!]);
+    const before = c.characters[w]!.prepared!.slice();
+    applyVictory(c, buildCampaignParty(c), 1);
+    expect(levelForXp(c.xp)).toBe(4);            // the level really did rise
+    expect(c.characters[w]!.prepared).toEqual(before); // untouched
+  });
+
+  it('the auto-default prepares a spread of spell levels, not only the strongest', () => {
+    const c = newCampaign();
+    c.xp = LEVEL_XP[4]!; // level 5 wizard: level-1/2/3 spells all available
+    const w = 1;
+    const levels = preparedSpells(c, w).map((id) => SPELLS[id]?.level ?? 0);
+    // The default set spans more than one spell level, so lower slots aren't
+    // wasted on an all-top-tier loadout.
+    expect(new Set(levels).size).toBeGreaterThan(1);
+    expect(levels).toContain(1); // still has a low-level spell to fill a 1st slot
+    expect(Math.max(...levels)).toBeGreaterThan(1); // and a strong one
+  });
+
   it('resetPrepared drops back to the auto-prepared default', () => {
     const c = newCampaign();
     const wizardIdx = 1;
@@ -990,6 +1117,22 @@ describe('level-up summary (derived gains + choices)', () => {
     const pick = fs.options.find((o) => o.id !== fs.current)!;
     expect(setLevelChoice(c, 0, 'fighting-style', pick.id)).toBe(true);
     expect(c.characters[0]!.choices?.['fighting-style']).toBe(pick.id);
+  });
+});
+
+describe('needs-a-rest nudge', () => {
+  it('is false at full strength and true once a hero is badly hurt', () => {
+    const c = newCampaign();
+    expect(partyNeedsRest(c)).toBe(false);
+    c.characters[0]!.resources = { hp: 1 };   // fighter down to 1 HP
+    expect(partyNeedsRest(c)).toBe(true);
+  });
+
+  it('fires when a caster has burned through its slots', () => {
+    const c = newCampaign();
+    // Wizard (idx 1) at level 1 has [2] first-level slots; spend both.
+    c.characters[1]!.resources = { hp: c.characters[1]!.resources?.hp ?? 7, slots: [0] };
+    expect(partyNeedsRest(c)).toBe(true);
   });
 });
 

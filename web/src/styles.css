@@ -126,9 +126,38 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
      (see Board.tsx) — no CSS transition, which would cut straight through
      walls and other tokens. */
 }
+/* Conjured summons (Spiritual Weapon hammer, Flaming Sphere): small roaming
+   tokens under the creature layer. Unlike creature tokens they DO use a CSS
+   transform transition — a spectral hammer gliding straight through a wall is
+   the point, not a bug. A gentle bob sells "floating with a will of its own". */
+.summon-layer { z-index: 2; }
+.summon-slot { transition: transform 0.45s ease-in-out; }
+.summon-token {
+  font-size: clamp(14px, 4.4vmin, 26px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px #000a);
+  animation: summon-bob 1.6s ease-in-out infinite alternate;
+}
+.summon-token.kind-flaming-sphere {
+  filter: drop-shadow(0 0 6px #ff7a3add) drop-shadow(0 2px 3px #000a);
+}
+.summon-token.kind-spiritual-weapon {
+  filter: drop-shadow(0 0 5px #ffd166aa) drop-shadow(0 2px 3px #000a);
+}
+@keyframes summon-bob {
+  from { transform: translateY(-6%); }
+  to   { transform: translateY(6%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .summon-slot { transition: none; }
+  .summon-token { animation: none; }
+}
+
 .cell {
   aspect-ratio: 1;
-  background: var(--cell);
+  /* Floor colour comes from the theme palette (boardTheme.ts) via --floor;
+     the flat --cell is the fallback before a theme is applied. */
+  background: var(--floor, var(--cell));
   box-shadow: inset 0 0 0 1px #14101f;
   border-radius: 4px;
   position: relative;
@@ -137,7 +166,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   justify-content: center;
   cursor: pointer;
 }
-.cell.dark { background: var(--cell-dark); }
+.cell.dark { background: var(--floor-dark, var(--cell-dark)); }
 
 /* ---- board themes -------------------------------------------------------
    Each map is styled as a place: the checkerboard, walls, and difficult
@@ -154,12 +183,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
    inset grid line and terrain overlays that made the old flat colours
    readable still carry the actual affordance. */
 .board.theme-stone { background: #201f33; }
-.board.theme-stone .cell { background: rgba(107, 100, 128, 0.55); }
-.board.theme-stone .cell.dark { background: rgba(69, 63, 92, 0.55); }
-.board.theme-stone .cell.terrain-wall {
-  /* broken columns / rubble */
-  --wall-hi: #847da0; --wall-lo: #524a72;
-}
 .board.theme-stone .cell.terrain-difficult {
   /* damp seepage pooling between cracked flagstones */
   background:
@@ -169,12 +192,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-forest { background: #10180f; }
-.board.theme-forest .cell { background: rgba(70, 105, 60, 0.55); }
-.board.theme-forest .cell.dark { background: rgba(61, 93, 52, 0.55); }
-.board.theme-forest .cell.terrain-wall {
-  /* mossy boulders / tree cover */
-  --wall-hi: #6a7d55; --wall-lo: #445531;
-}
 .board.theme-forest .cell.terrain-difficult {
   /* boggy water pooling in the undergrowth — clearly wetter and lighter than
      the surrounding green so the field reads without relying on the badge */
@@ -185,12 +202,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-graveyard { background: #0d1014; }
-.board.theme-graveyard .cell { background: rgba(59, 64, 72, 0.55); }
-.board.theme-graveyard .cell.dark { background: rgba(52, 57, 65, 0.55); }
-.board.theme-graveyard .cell.terrain-wall {
-  /* headstones / crypt masonry */
-  --wall-hi: #7b8391; --wall-lo: #4b525f;
-}
 .board.theme-graveyard .cell.terrain-difficult {
   /* grave-mist — a pale cool haze that lifts clearly off the grey floor */
   background:
@@ -199,23 +210,24 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 .board.theme-ember { background: #170d0b; }
-.board.theme-ember .cell { background: rgba(74, 54, 48, 0.55); }
-.board.theme-ember .cell.dark { background: rgba(65, 46, 41, 0.55); }
-.board.theme-ember .cell.terrain-wall {
-  --wall-hi: #7c5e52; --wall-lo: #4e3a32;
-}
 /* Effect terrain lives in `background`; highlights use box-shadow, so the two
    never fight and a highlight ring shows on any terrain. Walls are the
    exception: they read as raised solid blocks via a ::before face (a
    lighter-than-floor material, a bevel — light top-left, dark bottom-right —
    and a cast shadow onto neighbours), so "impassable / blocks sight" is carried
    by relief, not a subtle hue shift. Per-theme colour is just two custom props. */
-.cell.terrain-wall { --wall-hi: #6b6480; --wall-lo: #453f5c; z-index: 1; }
+.cell.terrain-wall { --wall-hi: #6b6480; --wall-lo: #453f5c; --wall-rim: #e8e4f0; z-index: 1; }
 .cell.terrain-wall::before {
   content: ''; position: absolute; inset: 3px; border-radius: 5px; z-index: 0;
   background: linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
   box-shadow:
     inset 2px 2px 0 #ffffff36, inset -2px -3px 0 #0000006b, 2px 3px 4px #00000080;
+  /* A light rim hugging the silhouette (drop-shadow follows the block's rounded
+     or clipped shape) so a blocking prop always separates from the ground and
+     the painterly backdrop, however bright or dark — this is the fix for props
+     that used to vanish into a dark board. Per-theme ::before rules that set
+     their own `filter` (ember, village) fold this rim in rather than drop it. */
+  filter: drop-shadow(0 0 1.1px var(--wall-rim)) drop-shadow(0 0 1.1px var(--wall-rim));
 }
 
 /* ---- themed blocking props ----------------------------------------------
@@ -234,16 +246,21 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
 }
 
-/* Forest — a mossy boulder: an organic rounded lump, moss catching the light. */
+/* Forest — a leafy shrub/tree: a bushy canopy of overlapping leaf clumps, so a
+   grassy map's blocking tiles read as foliage to duck behind, not grey blocks.
+   The clumped lighter-green highlights over the olive material give the round,
+   bushy silhouette its volume. */
 .board.theme-forest .cell.terrain-wall::before {
-  border-radius: 46% 54% 52% 48% / 54% 48% 52% 46%;
+  border-radius: 50% 50% 46% 46% / 56% 56% 44% 44%;
   background:
-    radial-gradient(38% 30% at 33% 30%, #9bb06a66, transparent 60%),
-    radial-gradient(30% 24% at 70% 66%, #55692c77, transparent 60%),
+    radial-gradient(30% 27% at 31% 29%, #c0d488cc, transparent 62%),
+    radial-gradient(27% 24% at 67% 31%, #a2c06ecc, transparent 62%),
+    radial-gradient(32% 30% at 51% 61%, #82a651bb, transparent 64%),
+    radial-gradient(22% 20% at 30% 71%, #4f6a2caa, transparent 60%),
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
 }
-.board.theme-forest .cell.terrain-wall:nth-child(3n)::before { transform: scaleX(-1) rotate(6deg); }
-.board.theme-forest .cell.terrain-wall:nth-child(4n+1)::before { transform: rotate(-8deg); }
+.board.theme-forest .cell.terrain-wall:nth-child(3n)::before { transform: scaleX(-1) rotate(4deg); }
+.board.theme-forest .cell.terrain-wall:nth-child(4n+1)::before { transform: rotate(-6deg); }
 
 /* Graveyard — a headstone: rounded-top slab standing on a flat base. */
 .board.theme-graveyard .cell.terrain-wall::before {
@@ -254,7 +271,6 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 /* Ember — a basalt spire with a glowing crack, no soft bevel (it's jagged). */
-.board.theme-ember .cell.terrain-wall { --wall-hi: #7c5e52; --wall-lo: #33221c; }
 .board.theme-ember .cell.terrain-wall::before {
   border-radius: 0;
   clip-path: polygon(50% 2%, 63% 26%, 85% 22%, 72% 47%, 92% 74%, 63% 69%, 50% 98%, 37% 69%, 8% 74%, 28% 47%, 15% 22%, 37% 26%);
@@ -262,12 +278,11 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
     linear-gradient(118deg, transparent 46%, #ff7a3a99 49%, transparent 53%),
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
   box-shadow: none;
-  filter: drop-shadow(0 0 3px #ff5a2e55) drop-shadow(1px 2px 2px #0009);
+  filter: drop-shadow(0 0 1.1px var(--wall-rim)) drop-shadow(0 0 3px #ff5a2e55) drop-shadow(1px 2px 2px #0009);
 }
 .board.theme-ember .cell.terrain-wall:nth-child(2n)::before { transform: scaleX(-1); }
 
 /* Village — a market stall: a peaked, striped canvas awning over a plank table. */
-.board.theme-village .cell.terrain-wall { --wall-hi: #8a6a4a; --wall-lo: #573c28; }
 .board.theme-village .cell.terrain-wall::before {
   border-radius: 0;
   clip-path: polygon(3% 27%, 50% 3%, 97% 27%, 97% 100%, 3% 100%);
@@ -275,11 +290,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
     repeating-linear-gradient(90deg, #e6d9be 0 17%, #b0503a 17% 34%) 0 0 / 100% 46% no-repeat,
     linear-gradient(150deg, var(--wall-hi), var(--wall-lo));
   box-shadow: inset 2px 2px 0 #ffffff2e;
-  filter: drop-shadow(1px 2px 2px #0008);
+  filter: drop-shadow(0 0 1.1px var(--wall-rim)) drop-shadow(1px 2px 2px #0008);
 }
 
 /* Bog — a mossy hummock heaving out of the black water: wet, dark, rounded. */
-.board.theme-bog .cell.terrain-wall { --wall-hi: #5c7150; --wall-lo: #2c3b28; }
 .board.theme-bog .cell.terrain-wall::before {
   border-radius: 52% 48% 46% 54% / 50% 54% 46% 50%;
   background:
@@ -289,14 +303,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 .board.theme-bog .cell.terrain-wall:nth-child(3n+1)::before { transform: scaleX(-1) rotate(5deg); }
 
-/* Village & bog floors (the two themes that used to borrow stone/forest). */
+/* Village & bog solid fallback backdrops (floors come from the palette). */
 .board.theme-village { background: #26212b; }
-.board.theme-village .cell { background: rgba(122, 110, 96, 0.52); }
-.board.theme-village .cell.dark { background: rgba(94, 84, 72, 0.52); }
 
 .board.theme-bog { background: #0b1310; }
-.board.theme-bog .cell { background: rgba(58, 84, 64, 0.5); }
-.board.theme-bog .cell.dark { background: rgba(48, 70, 54, 0.5); }
 .board.theme-bog .cell.terrain-difficult {
   /* the Black Ford: oilier and darker than a green forest bog */
   background:
@@ -311,18 +321,18 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
    checkerboard. Kept low-contrast and beneath the token layer so it never
    competes with figures or terrain affordances. `:not(.illusion)` leaves the
    illusion overlay's own glyph alone. */
-.cell.terrain-open:not(.illusion)::after {
+.cell.terrain-open:not(.illusion):not(.webbed)::after {
   position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%);
   font-size: clamp(8px, 2.1vmin, 12px); line-height: 1; opacity: 0.16;
   pointer-events: none; z-index: 0; filter: grayscale(0.3);
 }
-.board.theme-forest .cell.terrain-open:nth-child(6n+2):not(.illusion)::after { content: '🍂'; }
-.board.theme-forest .cell.terrain-open:nth-child(11n+5):not(.illusion)::after { content: '🌿'; }
-.board.theme-bog .cell.terrain-open:nth-child(7n+3):not(.illusion)::after { content: '🌾'; }
-.board.theme-graveyard .cell.terrain-open:nth-child(9n+4):not(.illusion)::after { content: '🦴'; opacity: 0.13; }
-.board.theme-ember .cell.terrain-open:nth-child(8n+3):not(.illusion)::after { content: '🪨'; }
-.board.theme-village .cell.terrain-open:nth-child(7n+2):not(.illusion)::after { content: '🌾'; opacity: 0.13; }
-.board.theme-stone .cell.terrain-open:nth-child(10n+6):not(.illusion)::after { content: '🪨'; opacity: 0.12; }
+.board.theme-forest .cell.terrain-open:nth-child(6n+2):not(.illusion):not(.webbed)::after { content: '🍂'; }
+.board.theme-forest .cell.terrain-open:nth-child(11n+5):not(.illusion):not(.webbed)::after { content: '🌿'; }
+.board.theme-bog .cell.terrain-open:nth-child(7n+3):not(.illusion):not(.webbed)::after { content: '🌾'; }
+.board.theme-graveyard .cell.terrain-open:nth-child(9n+4):not(.illusion):not(.webbed)::after { content: '🦴'; opacity: 0.13; }
+.board.theme-ember .cell.terrain-open:nth-child(8n+3):not(.illusion):not(.webbed)::after { content: '🪨'; }
+.board.theme-village .cell.terrain-open:nth-child(7n+2):not(.illusion):not(.webbed)::after { content: '🌾'; opacity: 0.13; }
+.board.theme-stone .cell.terrain-open:nth-child(10n+6):not(.illusion):not(.webbed)::after { content: '🪨'; opacity: 0.12; }
 /* `.board ` prefix so the terrain background outweighs a theme's own
    `.board.theme-x .cell` rule (equal class count would otherwise let the plain
    floor win — that hid the lava on the ember board entirely). */
@@ -376,6 +386,21 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 @media (prefers-reduced-motion: reduce) {
   .cell.illusion { animation: none; }
+}
+
+/* A lingering Web: pale sticky strands filling the cell, so a hazard that
+   used to fire once and vanish now stays on the board to read and route
+   around. A faint web glyph plus a criss-cross sheen; sits under tokens. */
+.cell.webbed {
+  background:
+    repeating-linear-gradient(45deg, #ffffff14 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(-45deg, #ffffff14 0 2px, transparent 2px 7px),
+    radial-gradient(circle at 50% 50%, #e8e4f033, transparent 70%);
+}
+.cell.webbed::after {
+  content: '🕸️'; position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  font-size: clamp(13px, 3.6vmin, 20px); opacity: 0.5; z-index: 0; pointer-events: none;
 }
 
 .hl-move { box-shadow: inset 0 0 0 3px #4a9eff88; }
@@ -1760,6 +1785,50 @@ button.category .count {
 
 /* Explore: markers positioned directly on the full-bleed location backdrop. */
 .adv-explore { position: absolute; inset: 0; }
+
+/* --- The overworld look --------------------------------------------------
+   An explore screen should read as a MAP, not a photo with buttons. The scenic
+   art (a first-person view) fights the top-down markers, so on explore screens
+   it's pushed way back — desaturated, darkened — under a parchment wash and
+   vignette, with ink roads and chunky node plates on top. The same paintings
+   still hit full-bleed on story/dialogue scenes, where they belong. */
+.adv-stage.explore .adv-backdrop { filter: saturate(0.4) brightness(0.55) contrast(0.9); }
+.adv-explore::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(120% 90% at 50% 40%, rgba(96,78,52,.20), rgba(30,22,14,.55) 78%),
+    linear-gradient(rgba(214,188,140,.10), rgba(214,188,140,.05) 30%, rgba(20,14,8,.35) 100%);
+}
+
+/* The party pawn: you, standing on the map. Position transitions do the
+   walking; the bob sells "someone is standing here". Above roads, below the
+   tapped marker's press states don't matter (pointer-events: none). */
+.adv-pawn {
+  position: absolute; z-index: 4; pointer-events: none;
+  transform: translate(-50%, -100%); /* feet on the node, body above it */
+  margin-top: -14px; /* stand on the plate's top edge, not its centre */
+  transition: left 0.45s ease-in-out, top 0.45s ease-in-out;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.65));
+  animation: pawnbob 1.6s ease-in-out infinite;
+}
+.adv-pawn .portrait { width: 34px; height: 34px; border: 2px solid var(--gold); box-shadow: 0 0 10px rgba(214,178,74,.5); }
+.adv-pawn-flag { font-size: 26px; }
+.adv-pawn.walking { animation: pawnstride 0.3s ease-in-out infinite; }
+@keyframes pawnbob { 0%, 100% { margin-top: -14px; } 50% { margin-top: -18px; } }
+@keyframes pawnstride { 0%, 100% { transform: translate(-50%, -100%) rotate(-4deg); } 50% { transform: translate(-50%, -100%) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .adv-pawn { transition: none; animation: none; }
+  .adv-pawn.walking { animation: none; }
+}
+
+/* Cleared-stop stamp: the Mario "beaten level" dot. */
+.adv-node-done {
+  position: absolute; top: -6px; right: -8px; z-index: 3;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--green); color: #10240f; font-size: 12px; font-weight: 800;
+  box-shadow: 0 2px 4px rgba(0,0,0,.55); pointer-events: none;
+}
 .adv-maptitle {
   position: absolute; top: 10px; left: 0; right: 0; text-align: center; z-index: 2;
   font-family: var(--display); font-size: 1.3rem; text-shadow: 0 2px 8px rgba(0,0,0,.8);
@@ -1886,6 +1955,25 @@ button.category .count {
   pointer-events: none;
 }
 
+/* Fast-travel chips: a floating cluster top-right of a location map, so a
+   supply run back to town is one tap from anywhere you've been. */
+.adv-travel {
+  position: absolute; top: 46px; right: 10px; z-index: 3;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+  max-width: 60%;
+}
+.adv-travel-label {
+  font-size: .72rem; color: rgba(232,228,240,.9); text-shadow: 0 1px 4px rgba(0,0,0,.9);
+  font-weight: 700; letter-spacing: .02em;
+}
+.adv-travel-dest {
+  padding: 5px 11px; border-radius: 999px; font-size: .82rem;
+  background: rgba(36,31,51,.92); color: var(--text); border: 1px solid var(--panel2);
+  box-shadow: 0 2px 8px rgba(0,0,0,.5); cursor: pointer; white-space: nowrap;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+}
+.adv-travel-dest:hover { border-color: var(--gold); }
+
 /* Party read-out strip under story scenes (fills the old dead space). */
 .adv-party-strip {
   display: flex; gap: 10px; align-items: center; padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
@@ -1910,6 +1998,15 @@ button.category .count {
 .adv-pill-count {
   position: absolute; top: 1px; right: 2px; font-size: .62rem; font-weight: 700; color: var(--muted);
 }
+/* "Needs a rest" — an amber dot on the Party pill, plus a soft glow so a new
+   player's eye lands on the thing they should do next. */
+.adv-pill-rest {
+  position: absolute; top: 3px; right: 5px; width: 9px; height: 9px; border-radius: 50%;
+  background: #f0a53a; box-shadow: 0 0 0 2px var(--panel2); animation: nodepulse 1.4s infinite;
+}
+.adv-strip-pill.wants-rest { border-color: #f0a53a88; }
+.adv-rest-tip { border-color: #f0a53a; }
+.adv-rest-tip .tip-text strong { color: #ffcf8a; }
 /* In the shop the members are tappable hero-focus buttons. */
 .adv-party-strip.selectable .adv-party-member {
   background: none; border: 1px solid transparent; border-radius: 10px; padding: 3px 2px; cursor: pointer;
@@ -2127,6 +2224,55 @@ button.category .count {
 .shop-cats { margin-top: -4px; }
 .adv-shop-buyfor { margin: 0; font-size: .82rem; color: var(--muted); }
 
+/* --- Character sheet (tap-to-inspect) ----------------------------------- */
+/* The depth advanced players want, summoned on tap and gone on dismiss. Same
+   dark-glass language as the info-card, but a scrollable full modal. */
+.sheet-scrim {
+  position: fixed; inset: 0; z-index: 50;
+  background: #0a0812c8;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fade-in 0.12s ease-out;
+}
+.sheet {
+  width: min(440px, 100%); max-height: 88vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 18px; border-radius: 16px; border: 1px solid var(--panel2);
+  background: linear-gradient(rgba(40,34,56,.99), rgba(28,23,40,1));
+  box-shadow: 0 12px 40px #000a;
+}
+.sheet-head { display: flex; align-items: flex-start; gap: 10px; }
+.sheet-head strong { font-size: 1.1rem; }
+.sheet-head > div:first-child { flex: 1; }
+.sheet-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.sheet-core { display: flex; flex-direction: column; gap: 2px; font-size: .82rem; text-align: right; white-space: nowrap; }
+.sheet-abilities { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.sheet-abil {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 7px 2px; border-radius: 10px; background: var(--panel2); border: 1px solid transparent;
+}
+.sheet-abil.save { border-color: var(--gold); }
+.sheet-abil-label { font-size: .68rem; color: var(--muted); font-weight: 700; letter-spacing: .03em; }
+.sheet-abil-mod { font-size: 1.05rem; font-weight: 800; font-family: var(--display); }
+.sheet-abil-score { font-size: .72rem; color: var(--muted); }
+.sheet-note { margin: -8px 0 0; font-size: .72rem; color: var(--muted); font-style: italic; }
+.sheet-block { display: flex; flex-direction: column; gap: 7px; }
+.sheet-block-label { font-size: .78rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.sheet-skills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px 14px; }
+.sheet-skill { display: flex; justify-content: space-between; gap: 8px; font-size: .84rem; color: var(--muted); }
+.sheet-skill.prof { color: var(--text); }
+.sheet-skill-b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.sheet-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.sheet-tag {
+  padding: 4px 10px; border-radius: 999px; background: var(--panel2);
+  font-size: .8rem; color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) { .sheet-scrim { animation: none; } }
+.adv-camp-charhead-tap { cursor: pointer; border-radius: 10px; }
+.adv-camp-charhead-tap:hover { background: #ffffff0d; }
+.adv-camp-sheethint { color: var(--muted); font-size: .8em; font-weight: 400; }
+.statusline-tap { cursor: pointer; }
+
 /* Journal drawer */
 .journal-scrim {
   position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50;
@@ -2245,6 +2391,10 @@ button.category .count {
 
 .landing-modules { display: flex; flex-direction: column; gap: 14px; }
 .module-card { display: flex; flex-direction: column; gap: 6px; }
+/* The chapter you're mid-run on: a gold frame so "Continue" reads at a glance
+   even amid finished and not-yet-started chapters. */
+.module-card.resuming .module-cover { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.module-card.resuming .module-cta { color: var(--gold); font-weight: 700; }
 .module-cover {
   display: flex; flex-direction: column; text-align: left; padding: 0; overflow: hidden;
   border-radius: 16px; border: 1px solid rgba(255,255,255,.08); background: var(--panel);

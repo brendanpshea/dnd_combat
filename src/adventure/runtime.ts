@@ -19,7 +19,7 @@ import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, LEVEL_XP, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
-  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE,
+  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf,
 } from '../campaign/campaign.js';
 import {
   HUB_REF,
@@ -420,6 +420,50 @@ export function returnToHub(state: AdventureState, module: Module): AdventureEve
   return enterScene(state, module, HUB_REF);
 }
 
+/** The name of the location a "leave" would drop the party back at, so the UI
+ *  can label the button "← Back to the Marsh Road" instead of a bare "Leave". */
+export function hubReturnTitle(state: AdventureState, module: Module): string | null {
+  const hub = hubReturn(state, module);
+  if (!hub) return null;
+  const scene = module.scenes[hub];
+  return scene?.kind === 'explore' ? scene.map.title : null;
+}
+
+/** A place the party can fast-travel to from the location they're standing in.
+ *  `town` marks the home base so the UI can flag it. */
+export interface TravelDest { sceneId: Id; title: string; isTown: boolean }
+
+/**
+ * Fast-travel destinations from the current scene: every *explore* location the
+ * party has already discovered, minus the one they're in. Only offered while
+ * standing on a location map (a hub) — you fast-travel *between* places you know,
+ * not out of the middle of a conversation or a fight. Restricting to already
+ * visited hubs is what keeps it safe: it can never skip a one-way gate the party
+ * hasn't cleared (an unvisited location isn't a destination). The home town, if
+ * discovered, sorts first.
+ */
+export function travelDestinations(state: AdventureState, module: Module): TravelDest[] {
+  const here = currentScene(state, module);
+  if (here.kind !== 'explore') return [];
+  const dests: TravelDest[] = [];
+  for (const sceneId of state.visited) {
+    if (sceneId === state.sceneId) continue;
+    const scene = module.scenes[sceneId];
+    if (scene?.kind !== 'explore') continue;
+    dests.push({ sceneId, title: scene.map.title, isTown: sceneId === module.town });
+  }
+  return dests.sort((a, b) => Number(b.isTown) - Number(a.isTown) || a.title.localeCompare(b.title));
+}
+
+/** Fast-travel to a discovered location. Validates the destination is really on
+ *  offer (a known explore hub, reachable from where you stand), then walks in. */
+export function fastTravel(state: AdventureState, module: Module, toSceneId: Id): AdventureEvent[] {
+  if (!travelDestinations(state, module).some((d) => d.sceneId === toSceneId)) {
+    throw new Error(`Cannot fast-travel to ${toSceneId} from ${state.sceneId}`);
+  }
+  return enterScene(state, module, toSceneId);
+}
+
 /** Take a choice at a story/dialogue scene. Rolls an inline check if present. */
 export function choose(
   state: AdventureState, module: Module, choiceId: Id, actorIdx?: number,
@@ -602,9 +646,13 @@ export type HaggleSkill = keyof typeof HAGGLE;
 
 /** The items a shop scene offers (its own stock, or the default), filtered to
  *  those with a real price. */
-export function shopStock(scene: Scene): Id[] {
+export function shopStock(scene: Scene, level?: number): Id[] {
   if (scene.kind !== 'shop') return [];
-  return (scene.stock ?? SHOP_STOCK).filter((id) => itemPrice(id) !== undefined);
+  const priced = (scene.stock ?? SHOP_STOCK).filter((id) => itemPrice(id) !== undefined);
+  // With a party level, thin the magical wares to a limited, level-scaled
+  // rotation (seeded by the shop's id so each merchant differs). Without one
+  // (a headless/legacy caller), the full shelf is returned unchanged.
+  return level === undefined ? priced : shopOffering(priced, level, scene.id);
 }
 
 /** The visit record for a shop scene (created on enter; a safe default if not). */
@@ -642,7 +690,7 @@ export function shopSteal(state: AdventureState, module: Module): AdventureEvent
   if (!visit || visit.stealUsed) throw new Error('Already tried to steal this visit');
   visit.stealUsed = true;
   const c = state.campaign;
-  const result = attemptSteal(c, shopStock(scene));
+  const result = attemptSteal(c, shopStock(scene, partyLevelOf(c)));
   const decisive = result.success
     ? result.rolls[1]!                                   // the successful grab
     : (result.rolls.find((r) => !r.success) ?? result.rolls[0]!); // whichever tripped

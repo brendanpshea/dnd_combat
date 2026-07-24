@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight } from '../engine/grid.js';
+import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -172,6 +172,125 @@ function spellAttack(
       hit, crit: hit && crit, opportunity: false,
     },
   };
+}
+
+// --- Summons: AI-driven conjurations ---------------------------------------
+// A Spiritual Weapon hammer or a Flaming Sphere is a *thing on the board*: it
+// has a position, a token, and a will of its own. At the start of its caster's
+// turn (activateSummons, called from startTurn) it chases the caster's nearest
+// enemy and strikes — the caster spends nothing after the initial cast. They
+// are not combatants: no HP, no AC, untargetable, and they never occupy a cell.
+
+type Summon = NonNullable<Combatant['summons']>[number];
+
+const SUMMON_SPECS: Record<Summon['kind'], { moveCells: number; spectral: boolean }> = {
+  // 20-ft glide; spectral — passes through walls and creatures alike.
+  'spiritual-weapon': { moveCells: 4, spectral: true },
+  // 30-ft roll; a physical ball of fire — walls stop it.
+  'flaming-sphere': { moveCells: 6, spectral: false },
+};
+
+/** The caster's nearest living enemy, measured from the summon (id tiebreak). */
+function summonPrey(state: GameState, casterTeam: string, from: Position): Combatant | undefined {
+  return Object.values(state.combatants)
+    .filter((c) => c.alive && !isDown(c) && c.team !== casterTeam)
+    .sort((a, b) =>
+      distanceFeet(from, a.position) - distanceFeet(from, b.position) || a.id.localeCompare(b.id))[0];
+}
+
+/** One step of the chase: prefer the diagonal toward the prey, fall back to
+ *  either axis. A spectral summon ignores walls and creatures; a physical one
+ *  needs an unoccupied, non-wall cell. Returns null when boxed in. */
+function summonStep(state: GameState, s: Summon, toward: Position): Position | null {
+  const dx = Math.sign(toward.x - s.position.x);
+  const dy = Math.sign(toward.y - s.position.y);
+  const candidates: Position[] = [
+    { x: s.position.x + dx, y: s.position.y + dy },
+    { x: s.position.x + dx, y: s.position.y },
+    { x: s.position.x, y: s.position.y + dy },
+  ];
+  const spectral = SUMMON_SPECS[s.kind].spectral;
+  for (const p of candidates) {
+    if (p.x === s.position.x && p.y === s.position.y) continue;
+    const cell = cellAt(state.grid, p);
+    if (!cell) continue;
+    if (!spectral && (cell.terrain === 'wall' || cell.occupantId)) continue;
+    if (spectral && cell.occupantId) continue; // may pass walls, but not stand on someone
+    return p;
+  }
+  return null;
+}
+
+/** The summon's strike, shared by cast (an immediate hit if placed well) and
+ *  the start-of-turn activation. Attacks/damage are attributed to the caster. */
+function summonStrike(state: GameState, casterId: Id, s: Summon): GameEvent[] {
+  const caster = state.combatants[casterId]!;
+  const prey = summonPrey(state, caster.team, s.position);
+  if (!prey || !adjacent(s.position, prey.position)) return [];
+  const events: GameEvent[] = [];
+  if (s.kind === 'spiritual-weapon') {
+    // A melee spell attack: 1d8 + spell mod force.
+    const atk = spellAttack(state, casterId, prey.id, { melee: true });
+    events.push(atk.event);
+    if (atk.hit) {
+      const dmg = rollDice(state.rng, '1d8', atk.crit);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, prey.id, casterId, dmg.total + spellMod(state, casterId), 'force', dmg.rolls));
+    }
+  } else {
+    // The sphere rams: 2d6 fire, Dexterity save for half.
+    const save = savingThrow(state, prey.id, 'dex', spellDc(state, casterId));
+    events.push(save.event);
+    const dmg = rollDice(state.rng, '2d6');
+    state.rng = dmg.state;
+    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    if (amount > 0) events.push(...applyDamage(state, prey.id, casterId, amount, 'fire', dmg.rolls));
+  }
+  return events;
+}
+
+/** Place (or re-place — one of each kind per caster) a summon on the board,
+ *  striking immediately if it lands beside an enemy. */
+function placeSummon(state: GameState, casterId: Id, s: Summon): GameEvent[] {
+  const caster = state.combatants[casterId]!;
+  caster.summons = [...(caster.summons ?? []).filter((x) => x.kind !== s.kind), s];
+  return [
+    { type: 'summonPlaced', casterId, kind: s.kind, position: { ...s.position } },
+    ...summonStrike(state, casterId, s),
+  ];
+}
+
+/**
+ * Run the caster's summons at the start of their turn: expire what's out of
+ * time, then each survivor glides toward the nearest enemy and strikes if it
+ * reaches one. Called from startTurn for the combatant whose turn begins.
+ */
+export function activateSummons(state: GameState, casterId: Id): GameEvent[] {
+  const caster = state.combatants[casterId];
+  if (!caster?.summons?.length) return [];
+  const events: GameEvent[] = [];
+  const expired = caster.summons.filter((s) => s.expiresAtRound !== undefined && state.round > s.expiresAtRound);
+  for (const s of expired) {
+    events.push({ type: 'summonExpired', casterId, kind: s.kind, position: { ...s.position } });
+  }
+  caster.summons = caster.summons.filter((s) => !expired.includes(s));
+
+  for (const s of caster.summons) {
+    const prey = summonPrey(state, caster.team, s.position);
+    if (!prey) continue;
+    const from = { ...s.position };
+    for (let i = 0; i < SUMMON_SPECS[s.kind].moveCells; i++) {
+      if (adjacent(s.position, prey.position)) break;
+      const next = summonStep(state, s, prey.position);
+      if (!next) break;
+      s.position = next;
+    }
+    if (s.position.x !== from.x || s.position.y !== from.y) {
+      events.push({ type: 'summonMoved', casterId, kind: s.kind, from, to: { ...s.position } });
+    }
+    events.push(...summonStrike(state, casterId, s));
+  }
+  return events;
 }
 
 /** All healing goes through the one rule, so all healing revives. */
@@ -396,6 +515,10 @@ export const SPELLS: Record<Id, SpellData> = {
   'find-familiar': {
     id: 'find-familiar', name: 'Find Familiar', level: 1, castingTime: 'action',
     ritual: true, // always available, never occupies a known-spell slot
+    // A 10-minute ritual to summon a pet, not a combat action — and the familiar
+    // is already granted before a fight starts, so casting it mid-battle would
+    // do nothing anyway. Keep it off the in-combat action bar entirely.
+    outOfCombat: true,
     targeting: { kind: 'self' },
     concentration: false,
     icon: '🦉',
@@ -657,10 +780,13 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
-   * Web: a 5x5 patch of sticky strands. Enemies caught (Dex save) are
-   * restrained — no movement, disadvantage to attack, easy to hit — and get a
-   * fresh Dex save at the end of each of their turns (repeatSave). Concentration
-   * holds the web; dropping it frees everyone still stuck.
+   * Web: a 5x5 patch of sticky strands that *lingers* on the board while the
+   * caster concentrates. Enemies caught (Dex save) are restrained — no movement,
+   * disadvantage to attack, easy to hit — and get a fresh Dex save at the end of
+   * each of their turns (repeatSave). The strands stay put: a creature that
+   * later *walks into* the web must save too (handled in movement), so a web
+   * laid across a doorway keeps working long after the cast. Dropping
+   * concentration clears the strands and frees everyone still stuck.
    */
   web: {
     id: 'web', name: 'Web', level: 2, castingTime: 'action',
@@ -672,7 +798,12 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const events: GameEvent[] = [];
       const caught: Id[] = [];
+      const webbed: Position[] = [];
       for (const pos of sphere5x5(positions[0]!)) {
+        // Lay the strands down first (they persist on the grid, cleared when
+        // concentration drops) — then catch whoever is standing in them now.
+        if (!webCell(state.grid, pos, casterId, dc)) continue;
+        webbed.push(pos);
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;
@@ -685,36 +816,56 @@ export const SPELLS: Record<Id, SpellData> = {
           caught.push(tid);
         }
       }
-      if (caught.length > 0) caster.concentratingOn = { spellId: 'web', targetIds: caught };
+      if (webbed.length > 0) events.push({ type: 'webSpun', sourceId: casterId, cells: webbed });
+      // Hold concentration even if nobody's caught yet — the web lingers and
+      // catches whoever wanders in. Clearing it (breakConcentration) sweeps the
+      // strands and frees the restrained by source, so targetIds needn't be exhaustive.
+      caster.concentratingOn = { spellId: 'web', targetIds: caught };
       return events;
     },
   },
 
   /**
-   * Spiritual Weapon: a floating force blade. Casting it (a bonus action, a
-   * 2nd-level slot) summons the weapon and makes its first attack; while it
-   * lasts, the caster re-attacks each turn as a free bonus action (offered at
-   * slotLevel 0, no slot). Anchored to the caster — it strikes an adjacent
-   * enemy rather than roaming the board.
+   * Spiritual Weapon: a spectral hammer conjured onto the board (a bonus
+   * action, a 2nd-level slot). It's a summon with a mind of its own: each of
+   * the caster's turns it glides up to 20 ft toward the nearest enemy —
+   * through walls, it's spectral — and strikes (1d8 + spell mod force, a melee
+   * spell attack), all automatic (activateSummons). Place it beside an enemy
+   * and it bonks them on the way in. No concentration; ~1 minute duration.
    */
   'spiritual-weapon': {
     id: 'spiritual-weapon', name: 'Spiritual Weapon', level: 2, castingTime: 'bonus',
-    targeting: { kind: 'creature', range: 5, who: 'enemy', count: 1 },
+    targeting: { kind: 'emptyCell', range: 60 },
     concentration: false,
-    icon: '🌟',
-    cast({ state, casterId, slotLevel, targetIds }) {
+    icon: '🔨',
+    cast({ state, casterId, positions }) {
+      return placeSummon(state, casterId, {
+        kind: 'spiritual-weapon',
+        position: { ...positions[0]! },
+        expiresAtRound: state.round + 10,
+      });
+    },
+  },
+
+  /**
+   * Flaming Sphere: a rolling ball of fire (an action, a 2nd-level slot,
+   * concentration). The same summon chassis as Spiritual Weapon: each of the
+   * caster's turns it rolls up to 30 ft after the nearest enemy — it's
+   * physical, so walls stop it — and rams (2d6 fire, Dexterity save for
+   * half). It burns until concentration drops (breakConcentration sweeps it).
+   */
+  'flaming-sphere': {
+    id: 'flaming-sphere', name: 'Flaming Sphere', level: 2, castingTime: 'action',
+    targeting: { kind: 'emptyCell', range: 60 },
+    concentration: true,
+    icon: '🔥',
+    cast({ state, casterId, positions }) {
       const caster = state.combatants[casterId]!;
-      const events: GameEvent[] = [];
-      if (slotLevel >= 2) caster.spiritualWeapon = { expiresAtRound: state.round + 10 };
-      const targetId = targetIds[0]!;
-      const atk = spellAttack(state, casterId, targetId, { melee: true });
-      events.push(atk.event);
-      if (atk.hit) {
-        const dmg = rollDice(state.rng, '1d8', atk.crit);
-        state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total + spellMod(state, casterId), 'force', dmg.rolls));
-      }
-      return events;
+      caster.concentratingOn = { spellId: 'flaming-sphere', targetIds: [] };
+      return placeSummon(state, casterId, {
+        kind: 'flaming-sphere',
+        position: { ...positions[0]! },
+      });
     },
   },
 
@@ -1400,7 +1551,9 @@ export const SPELLS: Record<Id, SpellData> = {
    * makes the bonus action and concentration worth spending. The condition is
    * shaped exactly like Guiding Bolt's `guided` or Faerie Fire's `outlined`;
    * the rider itself lives in resolveAttack, scoped to whoever cast it via
-   * `sourceId`.
+   * `sourceId`. When the quarry drops, the mark automatically leaps to the
+   * caster's nearest living enemy (transferHuntersMark in attack.ts) — one
+   * cast covers the whole fight, no re-casting after every kill.
    */
   'hunters-mark': {
     id: 'hunters-mark', name: "Hunter's Mark", level: 1, castingTime: 'bonus',

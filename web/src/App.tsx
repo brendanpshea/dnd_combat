@@ -31,6 +31,7 @@ import { hasSceneArt, sceneArtUrl } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
+import { CharacterSheet } from './CharacterSheet.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -137,6 +138,12 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
   const dev = typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev');
   const modules = playableModules(dev);
   const savedId = savedAdventureModule();
+  // Float a module with an in-progress save to the top, so "Continue" is the
+  // first thing you see — otherwise a saved Chapter 2 hides below a fresh
+  // Chapter 1 you've already finished.
+  const orderedModules = savedId
+    ? [...modules].sort((a, b) => Number(b.id === savedId) - Number(a.id === savedId))
+    : modules;
 
   return (
     <div className="setup landing">
@@ -156,7 +163,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
       </header>
 
       <div className="landing-modules">
-        {modules.map((m) => {
+        {orderedModules.map((m) => {
           const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
           const play = (fresh?: boolean) => {
             initAudio();
@@ -164,7 +171,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           };
           const cover = m.cover;
           return (
-            <div key={m.id} className="module-card">
+            <div key={m.id} className={`module-card${resume ? ' resuming' : ''}`}>
               <button className="module-cover" onClick={() => play()} aria-label={`Play ${m.title}`}>
                 {cover && hasSceneArt(cover)
                   ? <div className="module-cover-art" style={{ backgroundImage: `url(${sceneArtUrl(cover)})` }} />
@@ -420,6 +427,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // actually happens (an ally goes down, a slot is spent, …). See tips.ts.
   const [tip, setTip] = useState<Tip | null>(null);
   const [tipsMuted, setTipsMuted] = useState(() => tipsOff());
+  // Tap the status line to inspect the active combatant's full sheet.
+  const [sheetFor, setSheetFor] = useState<Combatant | null>(null);
   // Training Yard: which coach step is showing. Advances off battle events.
   const [coachStep, setCoachStep] = useState(0);
   const speedRef = useRef(1);
@@ -770,7 +779,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       )}
 
       {active && (
-        <div className="statusline" title={tooltipFor(active)}>
+        <div
+          className="statusline statusline-tap"
+          title="Tap for full character sheet"
+          role="button"
+          tabIndex={0}
+          onClick={() => setSheetFor(active)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetFor(active); } }}
+        >
           <Portrait id={active.portraitId ?? active.classId} team={active.team} />
           <strong>{active.name}</strong>
           {/* From a solo-human game (campaign/adventure/vs-AI) read the side as
@@ -785,6 +801,16 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
           {!isHumanTurn && !combat.isOver() && <em className="thinking">AI thinking…</em>}
         </div>
+      )}
+
+      {sheetFor && (
+        <CharacterSheet
+          c={sheetFor}
+          subtitle={youTeam
+            ? (sheetFor.team === youTeam ? 'Your hero' : 'Enemy')
+            : (sheetFor.team === 'team1' ? 'Blue team' : 'Red team')}
+          onClose={() => setSheetFor(null)}
+        />
       )}
 
       {targeting && (
@@ -882,7 +908,24 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               <h3>{chooser.target.name}</h3>
             </div>
             {chooser.options.map((o, i) => (
-              <button key={i} onClick={() => apply(o.action)}>
+              <button key={i} onClick={() => {
+                // A multi-target spell tapped off an enemy starts the
+                // accumulate-taps flow with that enemy pre-picked as its first
+                // ray/dart — pick the rest, or hit "Cast now" to fire what you
+                // have. Everything else applies immediately.
+                if (o.multi) {
+                  const anchor = chooser.target.id;
+                  const spec = o.multi;
+                  if (spec.maxTargets <= 1) apply(buildMultiAction(spec, [anchor]));
+                  else {
+                    setChooser(null);
+                    const name = SPELLS[spec.spellId]?.name ?? o.label;
+                    setTargeting({ type: 'multi', label: `${name} — pick the rest (or Cast now)`, spec, picked: [anchor] });
+                  }
+                } else {
+                  apply(o.action);
+                }
+              }}>
                 {o.icon && <span className="opt-ico">{o.icon}</span>}
                 {o.label}
               </button>

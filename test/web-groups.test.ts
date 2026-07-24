@@ -60,6 +60,36 @@ describe('web action grouping', () => {
     expect(events.filter((e) => e.type === 'damageDealt')).toHaveLength(3);
   });
 
+  it('a multi-target enemy spell also hangs off a tapped enemy, anchored on it', () => {
+    // A fresh fight per spell so a spent action/slot never confounds the next.
+    for (const spellId of ['magic-missile', 'scorching-ray']) {
+      // Two foes on the board, so the multi spell carries >1 target (its default
+      // action would otherwise skip the tapped-enemy fast path).
+      const wiz = place('wizard', 'team1', { x: 3, y: 3 }, { id: 'wiz' });
+      wiz.spellIds = [...wiz.spellIds, 'scorching-ray'];
+      const c = new Combat({
+        seed: 4,
+        combatants: [
+          wiz,
+          place('fighter', 'team2', { x: 6, y: 6 }, { id: 'foeA', hp: 1000, maxHp: 1000 }),
+          place('fighter', 'team2', { x: 7, y: 6 }, { id: 'foeB', hp: 1000, maxHp: 1000 }),
+        ],
+      });
+      until(c, 'wiz');
+      const grouped = groupActions(c.state, 'wiz', c.legalActions());
+
+      const opt = (grouped.perTarget.get('foeA') ?? []).find((o) => o.multi?.spellId === spellId);
+      expect(opt, `${spellId} should be tappable off an enemy`).toBeDefined();
+      expect(opt!.multi!.maxTargets).toBe(3);
+      // Anchored on the tapped enemy: starting with it pre-picked and adding the
+      // other foe casts a spread the engine accepts.
+      const built = buildMultiAction(opt!.multi!, ['foeA', 'foeB', 'foeB']);
+      expect(built.kind).toBe('castSpell');
+      const events = c.apply(built);
+      expect(events.filter((e) => e.type === 'damageDealt').length).toBeGreaterThan(0);
+    }
+  });
+
   it('a multi-target spell scroll routes through the accumulate-taps tray, not the tapped-enemy menu', () => {
     // A wizard (Magic Missile is on the arcane list) holding a scroll of it.
     const c = new Combat({
@@ -246,6 +276,8 @@ describe('the Spells tray shows every spell', () => {
     for (const spellId of me.spellIds) {
       // Shield is a reaction the engine autocasts — never offered as an action.
       if (SPELLS[spellId]?.castingTime === 'reaction') continue;
+      // Find Familiar and other out-of-combat rituals never appear in a fight.
+      if (SPELLS[spellId]?.outOfCombat) continue;
       expect(tray, `${spellId} missing from the Spells tray`).toContain(`spell:${spellId}`);
     }
   });

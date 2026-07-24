@@ -176,6 +176,29 @@ describe('leveled spells', () => {
     expect(c.state.combatants['ftr']!.hp).toBe(before - total);
   });
 
+  it('scorching ray fires all three rays at a lone enemy (not a single burst)', () => {
+    // A level-5 wizard (2nd-level slots) who knows Scorching Ray, one target.
+    const wiz = buildCharacter({ classId: 'wizard', team: 'team1', level: 5, position: { x: 0, y: 0 } });
+    wiz.spellIds = [...wiz.spellIds, 'scorching-ray'];
+    const c = new Combat({
+      seed: 30,
+      combatants: [
+        { ...wiz, id: 'wiz' },
+        place('fighter', 'team2', { x: 5, y: 5 }, { id: 'ftr', hp: 200, maxHp: 200 }),
+      ],
+    });
+    until(c, 'wiz');
+    // The default legal action for a lone enemy carries all three rays.
+    const ray = c.legalActions().find((a) => a.kind === 'castSpell' && a.spellId === 'scorching-ray');
+    expect(ray, 'scorching ray should be castable').toBeDefined();
+    expect(ray!.kind === 'castSpell' && ray!.targets.length).toBe(3);
+    const events = c.apply(ray!);
+    // Three separate attack rolls, all at the one enemy.
+    const rolls = events.filter((e) => e.type === 'attackRolled');
+    expect(rolls).toHaveLength(3);
+    expect(rolls.every((e) => e.type === 'attackRolled' && e.targetId === 'ftr')).toBe(true);
+  });
+
   it('sleep: failed save → incapacitated; failed repeat → unconscious; damage wakes', () => {
     // Try seeds until one produces the full chain (save fails twice).
     let done = false;
@@ -308,6 +331,21 @@ describe('leveled spells', () => {
     expect(() => c.apply(mm())).toThrow(/Illegal/);
     // Cantrips still available.
     expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'fire-bolt')).toBe(true);
+  });
+
+  it('out-of-combat rituals (Find Familiar) are never offered in a fight', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        place('wizard', 'team1', { x: 0, y: 0 }, { id: 'wiz' }),
+        place('fighter', 'team2', { x: 5, y: 5 }, { id: 'ftr' }),
+      ],
+    });
+    until(c, 'wiz');
+    // Find Familiar is on the wizard's list but is a 10-minute ritual, not a
+    // combat action — it must not appear among castable spells.
+    expect(c.state.combatants['wiz']!.spellIds).toContain('find-familiar');
+    expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'find-familiar')).toBe(false);
   });
 });
 

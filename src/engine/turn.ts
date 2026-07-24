@@ -2,16 +2,21 @@
  * Initiative, turn start/end, round advance. Mutates draft state; step() owns
  * cloning.
  */
-import type { GameState, Combatant, Id } from './types.js';
+import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollDice } from './dice.js';
 import { expireIllusions, distanceFeet } from './grid.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
+import { activateSummons } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
 import type { GameEvent } from './events.js';
+
+/** A hard ceiling on battle length. Real fights end well inside ~15 rounds;
+ *  this only ever fires on a pathological stall, to guarantee termination. */
+export const MAX_ROUNDS = 100;
 
 export function rollInitiative(state: GameState): GameEvent[] {
   const entries: Array<{ id: Id; initiative: number; dex: number; tiebreak: number }> = [];
@@ -122,8 +127,16 @@ export function startTurn(state: GameState): GameEvent[] {
     sneakAttackUsed: false,
     colossusUsed: false,
   };
-  // Spiritual Weapon fades once its duration runs out.
-  if (c.spiritualWeapon && state.round > c.spiritualWeapon.expiresAtRound) delete c.spiritualWeapon;
+  // The caster's summons act on their own: the Spiritual Weapon hammer and the
+  // Flaming Sphere chase the nearest enemy and strike, and anything out of
+  // duration winks out — all before the caster lifts a finger.
+  events.push(...activateSummons(state, c.id));
+  if (!c.alive || state.winner) {
+    // A summon can't kill its own caster, but its damage events run the full
+    // rule set (win check included) — bail out cleanly if the fight just ended.
+    events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
+    return events;
+  }
 
   // Recharge abilities (dragon breath): a spent one rolls a d6 and comes back
   // on a result at or above its threshold. Only spent features roll, so a
@@ -195,6 +208,21 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
         events.push({ type: 'illusionPopped', position: p });
       }
       events.push({ type: 'roundStarted', round: state.round });
+      // Termination guard: a real fight ends inside ~15 rounds; anything past
+      // MAX_ROUNDS is a pathological stall (two sides that can't finish each
+      // other, e.g. a zombie surviving on Undead Fortitude while nothing lands
+      // radiant). Force a result so the game never hangs — the side with more
+      // standing HP wins, ties to team2 so a campaign party retries rather than
+      // gets an unearned pass.
+      if (state.round > MAX_ROUNDS && !state.winner) {
+        const standingHp = (team: TeamId) => Object.values(state.combatants)
+          .filter((cc) => cc.alive && cc.hp > 0 && cc.team === team)
+          .reduce((sum, cc) => sum + cc.hp, 0);
+        const winner: TeamId = standingHp('team1') > standingHp('team2') ? 'team1' : 'team2';
+        state.winner = winner;
+        events.push({ type: 'combatEnded', winner });
+        return events;
+      }
     }
     state.turnIndex = idx;
     events.push(...startTurn(state));

@@ -21,7 +21,7 @@ import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.j
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
-import { CLASSES, SkillId, SKILL_ABILITY } from '../data/classes.js';
+import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
 import { backgroundSkills } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/monsters.js';
@@ -378,6 +378,68 @@ export const SHOP_STOCK: Id[] = [
   'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
 ];
+
+/** The party level at which each rarity tier first appears on a shelf, so a
+ *  1st-level party isn't offered +1 plate they could never afford or use. */
+const RARITY_MIN_LEVEL: Record<Rarity, number> = { common: 1, uncommon: 3, rare: 5 };
+
+/** A magical / enchanted ware — the stuff a shop shouldn't always carry: any
+ *  trinket, an enchanted weapon or armor (+1, adamantine, moontouched), or a
+ *  potion/scroll above the common tier (healing potions and basic common
+ *  scrolls stay staples). Mundane weapons and armor are never magical, even the
+ *  ones the loot tables rate "uncommon" (a plain rapier), so they always stock. */
+function isMagicalWare(itemId: Id): boolean {
+  if (itemId === 'shield-plus1') return true;
+  if (itemId === 'shield') return false;
+  if (TRINKETS[itemId]) return true;
+  const w = WEAPONS[itemId];
+  if (w) return !!w.magic || itemId.endsWith('plus1') || itemId.includes('moontouched');
+  if (ARMOR[itemId]) return itemId.endsWith('plus1') || itemId.includes('adamantine');
+  if (ITEMS[itemId]) {
+    if (itemId.includes('potion-healing') || itemId.includes('greater-healing')) return false;
+    return rarityOf(itemId) !== 'common'; // resistance/strength potions, stronger scrolls
+  }
+  return false;
+}
+
+/** Staples a merchant always keeps: everything that isn't a magical ware. */
+function isShopStaple(itemId: Id): boolean {
+  return !isMagicalWare(itemId);
+}
+
+/** A small string→uint hash so a shop id + level makes a stable RNG seed. */
+function hashKey(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) || 1;
+}
+
+/**
+ * A shop's actual shelf: every mundane staple, plus a *limited, level-scaled*
+ * rotation of the magical wares — no merchant carries the whole enchanted
+ * catalogue at once. Magical items only appear once the party is high enough
+ * for their tier (uncommon at level 3, rare at level 5), and only a handful are
+ * stocked, that count growing with level.
+ *
+ * Deterministic in (stock, level, seedKey): the same shelf every time you
+ * re-enter at the same level (so you can't re-roll a shop by leaving and coming
+ * back), a *different* mix from one shop to the next, and a fresh selection when
+ * the party levels up. Staple order in the source list is preserved.
+ */
+export function shopOffering(stock: Id[], level: number, seedKey: string): Id[] {
+  const magical = stock.filter((id) => !isShopStaple(id) && level >= RARITY_MIN_LEVEL[rarityOf(id)]);
+  const slots = Math.min(magical.length, 3 + Math.floor(level / 2)); // L1→3, L3→4, L5→5, …
+  // Seeded Fisher–Yates over the eligible magical wares, then keep the first N.
+  let rng = seedRng(hashKey(`${seedKey}:${level}`));
+  const shuffled = [...magical];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const r = next(rng); rng = r.state;
+    const j = Math.floor(r.value * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
+  const chosen = new Set(shuffled.slice(0, slots));
+  return stock.filter((id) => isShopStaple(id) || chosen.has(id));
+}
 
 export function itemName(itemId: Id): string {
   return ITEMS[itemId]?.name ?? WEAPONS[itemId]?.name ?? ARMOR[itemId]?.name ?? VALUABLES[itemId]?.name ??
@@ -951,6 +1013,18 @@ export function longRest(c: CampaignState): RestResult {
   return { totalHealed };
 }
 
+/** A full reset for the downtime *between adventures*: marching from one module
+ *  into its sequel is days on the road, so everything comes back — full HP,
+ *  every spell slot, the whole hit-die pool — and any lingering camp buff
+ *  (giant strength, a resistance potion) wears off. Clearing `resources`
+ *  outright is exactly that: absent means full for HP/slots/hit dice, and a
+ *  familiar is re-granted by the builder from the caster's own spell list, so
+ *  the owl still returns. Unlike `longRest` (which is a single night and
+ *  restores only half your hit dice), this is the "arrive fresh" reset. */
+export function fullRest(c: CampaignState): void {
+  for (const ch of c.characters) delete ch.resources;
+}
+
 /** Healing sources that can be used between battles from the store. */
 export type StoreHealingSource =
   | 'potion-healing'
@@ -976,6 +1050,18 @@ const CAMP_BUFF_POTIONS: Record<Id, { giantStrength?: number; resistance?: Damag
 
 export function isCampBuffPotion(itemId: Id): boolean {
   return itemId in CAMP_BUFF_POTIONS;
+}
+
+/** Is the party depleted enough that resting is the sensible next move? True
+ *  when any hero is at or below half HP, or a caster is down to half its spell
+ *  slots or fewer. Drives the "needs a rest" nudge for new players. */
+export function partyNeedsRest(c: CampaignState): boolean {
+  return buildCampaignParty(c).some((m) => {
+    if (m.hp <= m.maxHp / 2) return true;
+    const max = m.spellSlots.reduce((n, s) => n + s.max, 0);
+    const cur = m.spellSlots.reduce((n, s) => n + s.current, 0);
+    return max > 0 && cur <= max / 2;
+  });
 }
 
 /** Drink a duration buff potion in camp: consume it from the hero's pack and
@@ -1122,10 +1208,56 @@ function byStrength(pool: Id[]): Id[] {
   return [...pool].sort((a, b) => (SPELLS[b]?.level ?? 0) - (SPELLS[a]?.level ?? 0));
 }
 
-/** The auto-default set for a caster who hasn't hand-picked one: strongest
- *  spells first, trimmed to the limit. */
+/**
+ * The auto-default (and "Use recommended") set for a caster who hasn't
+ * hand-picked one. NOT simply "the strongest N": a wizard whose whole prepared
+ * list is level-3 spells can only cast with its two level-3 slots and wastes
+ * every lower one. Instead this takes a *spread* — round-robin from the highest
+ * spell level down to the lowest, best-in-pool-order within each level — so the
+ * loadout always has something to cast at every slot level it owns, while still
+ * favouring the stronger spells. Cantrips (one level) fall back to pool order.
+ */
 function defaultKnown(pool: Id[], limit: number): Id[] {
-  return byStrength(pool).slice(0, limit);
+  const byLevel = new Map<number, Id[]>();
+  for (const id of pool) {
+    const lvl = SPELLS[id]?.level ?? 0;
+    if (!byLevel.has(lvl)) byLevel.set(lvl, []);
+    byLevel.get(lvl)!.push(id); // preserves pool order = the sensible-default order
+  }
+  const levels = [...byLevel.keys()].sort((a, b) => b - a); // high → low
+  const out: Id[] = [];
+  let progressed = true;
+  while (out.length < limit && progressed) {
+    progressed = false;
+    for (const lvl of levels) {
+      const group = byLevel.get(lvl)!;
+      if (group.length === 0) continue;
+      out.push(group.shift()!);
+      progressed = true;
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}
+
+/**
+ * Grow a hand-picked list into new capacity: keep every valid pick, then top up
+ * with the strongest spells it doesn't already have until it fills the limit.
+ * Returns null when nothing needs adding (already at/over the limit), so the
+ * caller only rewrites a stored array that actually changed. This is what a
+ * level-up calls so a customized caster's loadout grows with the new level
+ * instead of silently staying small — while a player who deliberately prepared
+ * fewer at their *current* level is left alone (the getters never call this).
+ */
+function grownToLimit(saved: Id[], pool: Id[], limit: number): Id[] | null {
+  const kept = [...new Set(saved)].filter((id) => pool.includes(id)).slice(0, limit);
+  if (kept.length >= limit) return null;
+  const have = new Set(kept);
+  for (const id of byStrength(pool)) {
+    if (kept.length >= limit) break;
+    if (!have.has(id)) { kept.push(id); have.add(id); }
+  }
+  return kept.length > saved.length ? kept : null;
 }
 
 // --- tier 1: cantrips ------------------------------------------------------
@@ -1251,6 +1383,35 @@ export function setPrepared(c: CampaignState, charIdx: number, spellIds: Id[]): 
   return true;
 }
 
+/**
+ * On level-up, grow only a caster's *permanent, known* tiers into their new
+ * capacity: the cantrips it knows and (for a wizard) its spellbook. Those two
+ * are set once and rarely revisited, so a frozen spellbook would leave a
+ * level-5 wizard unable to even prepare the level-3 spells it should now have.
+ * Growth keeps every pick and only tops up empty room.
+ *
+ * The *prepared* list is deliberately NOT grown. Prepared spells are re-chosen
+ * every long rest with the player in full control, so auto-filling them just
+ * overrode a deliberately lean loadout and dumped in every high-level spell
+ * (the strongest-first top-up) — which read as "the game keeps auto-preparing
+ * things I didn't pick and forgetting my choices". A player's prepared list now
+ * stays exactly as they left it until they change it themselves; if they're
+ * under the new cap, the next long-rest prepare prompt lets them fill it in.
+ */
+export function growSpellsForLevel(c: CampaignState): void {
+  for (let i = 0; i < c.characters.length; i++) {
+    const ch = c.characters[i]!;
+    if (ch.cantrips) {
+      const g = grownToLimit(ch.cantrips, cantripPool(c, i), cantripLimit(c, i));
+      if (g) ch.cantrips = g;
+    }
+    if (ch.spellbook) {
+      const g = grownToLimit(ch.spellbook, spellbookPool(c, i), spellbookLimit(c, i) ?? 0);
+      if (g) ch.spellbook = g;
+    }
+  }
+}
+
 /** Drop cantrip, spellbook, and prepared choices back to the auto-defaults. */
 export function resetPrepared(c: CampaignState, charIdx: number): boolean {
   const ch = c.characters[charIdx];
@@ -1340,6 +1501,33 @@ export function skillBonus(
   const proficient = cls.skillProfs.includes(skill) || speciesProficiency ||
     featureProficiency || backgroundProficiency;
   return abilityMod(abilities[SKILL_ABILITY[skill]]) + (proficient ? proficiencyBonus(level) : 0);
+}
+
+/** Is this member proficient in `skill` (class / species / feature / background)? */
+export function characterSkillProficient(c: CampaignState, idx: number, skill: SkillId): boolean {
+  const ch = c.characters[idx];
+  if (!ch) return false;
+  const cls = CLASSES[ch.classId];
+  if (!cls) return false;
+  const speciesProf = SPECIES[ch.speciesId]?.skillProficienciesByClass?.[ch.classId] === skill;
+  const featureProf = (SPECIES[ch.speciesId]?.featureIds ?? []).some((f) => FEATURES[f]?.grantsSkill === skill);
+  const bgProf = backgroundSkills(ch.backgroundId).includes(skill);
+  return cls.skillProfs.includes(skill) || speciesProf || featureProf || bgProf;
+}
+
+export interface SkillRow { skill: SkillId; label: string; bonus: number; proficient: boolean }
+
+/** Every skill for one member with its total bonus, proficient ones flagged —
+ *  the character-sheet's skill list. Sorted proficient-and-highest first. */
+export function characterSkills(c: CampaignState, idx: number): SkillRow[] {
+  if (!c.characters[idx]) return [];
+  return (Object.keys(SKILL_LABEL) as SkillId[])
+    .map((skill) => ({
+      skill, label: SKILL_LABEL[skill],
+      bonus: characterSkillBonus(c, idx, skill),
+      proficient: characterSkillProficient(c, idx, skill),
+    }))
+    .sort((a, b) => Number(b.proficient) - Number(a.proficient) || b.bonus - a.bonus || a.label.localeCompare(b.label));
 }
 
 /** One party member's total bonus for a skill, including trinket riders. */
@@ -1654,6 +1842,7 @@ export function applyAdventureVictory(
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
+  if (afterLevel > beforeLevel) growSpellsForLevel(c);
   const treasure = treasureFor(encounterXP(encounterId), rng, bonusTier, encounterCoinXP(encounterId));
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
@@ -1692,6 +1881,7 @@ export function applyVictory(
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
+  if (afterLevel > beforeLevel) growSpellsForLevel(c);
 
   // The final stage guarantees a rare drop as a trophy for finishing.
   const isFinale = c.stage === STAGES.length - 1;

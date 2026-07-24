@@ -95,10 +95,16 @@ function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, target
 
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
   if (!actor.spellIds.includes(spell.id)) return false;
+  // Already concentrating on this exact spell? Recasting it would only drop and
+  // re-establish the same effect — a wasted action and slot. Don't offer it
+  // (Hunter's Mark, Faerie Fire, Bless…); a *different* concentration spell is
+  // still fine and correctly replaces this one.
+  if (spell.concentration && actor.concentratingOn?.spellId === spell.id) return false;
+  // A one-per-caster summon (Spiritual Weapon, Flaming Sphere) that's already on
+  // the board — recasting just re-places the same conjuration. Its kind is the
+  // spell id, so match on that.
+  if (actor.summons?.some((s) => s.kind === spell.id)) return false;
   if (spell.level === 0) return slotLevel === 0;
-  // Spiritual Weapon: while the summoned weapon lasts, its bonus-action re-attack
-  // is free (slotLevel 0). The initial cast still spends a slot (normal path).
-  if (spell.id === 'spiritual-weapon' && slotLevel === 0) return !!actor.spiritualWeapon;
   // Innate: cast at slotLevel 0 (spending no slot), limited by its own pool.
   // Checked before the slot path so a fighter — which has no slots at all — can
   // still cast it, and so a caster elf spends the free innate use before a slot.
@@ -300,12 +306,21 @@ export function spellTargetSets(
     if (t.count === 1) {
       for (const v of valid) out.push({ targets: [{ combatantId: v.id }] });
     } else if (valid.length > 0) {
-      // Default selection: Magic Missile → all darts at first target;
-      // Bless / Mass Healing Word → up to `count` allies (self first).
+      // Default selection depends on whether the spell's "shots" can double up
+      // on one creature:
+      //   Magic Missile  → every dart at the first target (its classic use);
+      //   Scorching Ray  → one ray per enemy, but *all* rays still fire — with a
+      //                    lone target every ray lands on it (previously it fired
+      //                    just one), and with too few enemies the extras pile on
+      //                    the last rather than vanishing;
+      //   Bless / Mass Healing Word → distinct allies, so no doubling up.
+      const stackable = spell.id === 'magic-missile' || spell.id === 'scorching-ray';
       const targets: Target[] =
         spell.id === 'magic-missile'
           ? Array.from({ length: t.count }, () => ({ combatantId: valid[0]!.id }))
-          : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
+          : stackable
+            ? Array.from({ length: t.count }, (_, i) => ({ combatantId: valid[Math.min(i, valid.length - 1)]!.id }))
+            : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
       out.push({ targets });
     }
   } else if (t.kind === 'self') {
@@ -421,8 +436,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     if (spell.castingTime === 'reaction' || spell.outOfCombat) continue; // Shield autocasts; Guidance is shop-only
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
-    // Spiritual Weapon's re-attack is free once the weapon is out.
-    const slotLevel = actor.innateSpells[sid] || (sid === 'spiritual-weapon' && actor.spiritualWeapon) ? 0 : spell.level;
+    const slotLevel = actor.innateSpells[sid] ? 0 : spell.level;
     if (!spellAvailable(actor, spell, slotLevel)) continue;
     for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
       const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };

@@ -12,10 +12,12 @@ import {
   partyStash, claimFromStash, stashItem, giveItem, equipItem, equipBlocked, unequipSlot,
   itemName, itemIcon, type EquipSlot,
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
-  isCampBuffPotion, drinkCampBuffPotion,
+  isCampBuffPotion, drinkCampBuffPotion, partyNeedsRest,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
-  hitDiceLeft, hitDiceMax,
+  hitDiceLeft, hitDiceMax, characterSkills, fullRest,
 } from '../../src/campaign/campaign.js';
+import { CharacterSheet } from './CharacterSheet.js';
+import { seenTips, markTipSeen } from './tips.js';
 import { acOf } from '../../src/data/armor.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
@@ -29,7 +31,8 @@ import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
-  hubReturn, returnToHub, campRule, campRest,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
+  travelDestinations, fastTravel,
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
@@ -127,6 +130,12 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const [journalOpen, setJournalOpen] = useState(false);
   const [journalUnread, setJournalUnread] = useState(false);
   const [campOpen, setCampOpen] = useState(false);
+  // "Needs a rest" nudge: the amber dot on the Party pill, plus a one-time tip
+  // the first time the party is worn down outside battle (restTip computed once
+  // `scene` is known, below).
+  const needsRest = partyNeedsRest(campaign);
+  const [restTipDismissed, setRestTipDismissed] = useState(() => seenTips().has('needs-rest'));
+  const dismissRestTip = () => { markTipSeen('needs-rest'); setRestTipDismissed(true); };
   /** After a long rest, the queue of prepared-caster indices still to re-prepare
    *  — the only place spells may be re-chosen (2024 rules: prepared changes on a
    *  long rest; cantrips/spellbook are locked in). Empty = no tray showing. */
@@ -160,6 +169,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const pendingBanner = useRef<string[]>([]);
 
   const scene = currentScene(state, module);
+  const restTip = needsRest && !restTipDismissed && !campOpen &&
+    (scene.kind === 'explore' || scene.kind === 'story' || scene.kind === 'dialogue');
 
   // Persist the run on every scene change; clear it once the adventure ends
   // (a finished run shouldn't offer Resume).
@@ -432,6 +443,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
               onApproach={onApproach}
               onLeave={onLeave}
               onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
+              onTravel={(sceneId) => process(fastTravel(state, module, sceneId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
               onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
               onShopRoll={(events) => process(events, scene)}
@@ -511,14 +523,28 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         <PartyStrip
           campaign={campaign}
           onJournal={() => { setJournalUnread(false); setJournalOpen(true); }}
-          onCamp={() => setCampOpen(true)}
+          onCamp={() => { setCampOpen(true); if (!restTipDismissed) dismissRestTip(); }}
           journalCount={state.journal.length}
           journalUnread={journalUnread}
+          needsRest={needsRest}
           {...(scene.kind === 'shop' ? {
             onSelect: (i: number) => setShopFocus((f) => (f === i ? 'all' : i)),
             ...(typeof shopFocus === 'number' ? { active: shopFocus } : {}),
           } : {})}
         />
+      )}
+
+      {/* One-time nudge the first time the party is worn down out of battle —
+          teaches the rest loop a new 5e player won't know to reach for. */}
+      {restTip && (
+        <div className="tip-toast adv-rest-tip" role="status">
+          <span className="tip-icon">🏕️</span>
+          <div className="tip-text">
+            <strong>Your party is hurting</strong>
+            <p>Tap <b>🎒 Party</b> below to make camp. A <b>short rest</b> spends hit dice to heal; a <b>long rest</b> (in town, or at a safe camp) restores HP and spells.</p>
+          </div>
+          <button className="tip-close" aria-label="Dismiss" onClick={dismissRestTip}>✕</button>
+        </div>
       )}
     </div>
   );
@@ -617,9 +643,10 @@ function FrozenScene({ scene }: { scene: Scene }) {
  *  element on every scene — the Journal and Party/Camp affordances, moved here
  *  out of the top bar (bottom-anchored, thumb-reachable, styled like the rest). */
 function PartyStrip(
-  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread }: {
+  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread, needsRest }: {
     campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
     onJournal?: () => void; onCamp?: () => void; journalCount?: number; journalUnread?: boolean;
+    needsRest?: boolean;
   },
 ) {
   const party = buildCampaignParty(campaign);
@@ -655,8 +682,10 @@ function PartyStrip(
             </button>
           )}
           {onCamp && (
-            <button className="adv-strip-pill" onClick={onCamp} title="Party & camp">
+            <button className={`adv-strip-pill ${needsRest ? 'wants-rest' : ''}`} onClick={onCamp}
+              title={needsRest ? 'Party is hurt — make camp to rest' : 'Party & camp'}>
               🎒<span className="adv-pill-label">Party</span>
+              {needsRest && <span className="adv-pill-rest" aria-label="party needs rest" />}
             </button>
           )}
         </div>
@@ -689,6 +718,7 @@ function CampScreen(
 ) {
   const [picked, setPicked] = useState<CampPick>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [sheetIdx, setSheetIdx] = useState<number | null>(null);
   const party = buildCampaignParty(campaign);
   const stash = partyStash(campaign).filter((s) => s.qty > 0);
 
@@ -758,12 +788,19 @@ function CampScreen(
         {/* Each hero: worn gear (tap to unequip) + pack (tap for equip/give/stash). */}
         {campaign.characters.map((ch, idx) => (
           <div key={idx} className="adv-camp-char">
-            <div className="adv-camp-charhead">
+            <div
+              className="adv-camp-charhead adv-camp-charhead-tap"
+              role="button"
+              tabIndex={0}
+              title="Tap for full character sheet"
+              onClick={() => setSheetIdx(idx)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetIdx(idx); } }}
+            >
               {hasArt(ch.portraitId ?? ch.classId)
                 ? <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
                 : <span className="adv-party-emoji">🧑</span>}
               <div>
-                <strong>{ch.name}</strong>
+                <strong>{ch.name} <span className="adv-camp-sheethint">ⓘ</span></strong>
                 <span className="muted"> · HP {party[idx]!.hp}/{party[idx]!.maxHp} · 🛡 {acOf(party[idx]!)}</span>
                 {/* Hit dice left to spend on a short rest — a die per level,
                     refreshed (half) by a long rest. A short rest auto-spends
@@ -924,6 +961,15 @@ function CampScreen(
           </div>
         ))}
       </div>
+
+      {sheetIdx !== null && campaign.characters[sheetIdx] && party[sheetIdx] && (
+        <CharacterSheet
+          c={party[sheetIdx]!}
+          subtitle={`${label(campaign.characters[sheetIdx]!.classId)} · Level ${levelForXp(campaign.xp)}`}
+          skills={characterSkills(campaign, sheetIdx)}
+          onClose={() => setSheetIdx(null)}
+        />
+      )}
     </div>
   );
 }
@@ -951,6 +997,7 @@ interface BodyProps {
   onApproach: (id: string, actorIdx?: number) => void;
   onLeave: () => void;
   onNode: (nodeId: string) => void;
+  onTravel: (sceneId: string) => void;
   onBlockedNode: (reason: string) => void;
   onLeaveShop: () => void;
   onShopRoll: (events: AdventureEvent[]) => void;
@@ -963,8 +1010,12 @@ interface BodyProps {
   onContinue?: ((module: Module, state: AdventureState) => void) | undefined;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
   const campaign = state.campaign;
+  // Overworld walk: the node the party pawn is mid-stride toward. Tapping a
+  // marker sends the pawn walking there first; the scene opens when it arrives
+  // (a beat later), which is what makes the map read as a place you travel.
+  const [walkTo, setWalkTo] = useState<string | null>(null);
 
   if (scene.kind === 'ending') {
     // A victory in a module with a sequel offers to carry the company onward —
@@ -979,6 +1030,8 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
             <button
               className="primary"
               onClick={() => {
+                // Days on the road between chapters: the company arrives fresh.
+                fullRest(campaign);
                 const next = startAdventure(campaign, sequel);
                 enterScene(next, sequel, sequel.start);
                 saveAdventureWeb(next);
@@ -1003,6 +1056,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     const hasMore = revealed < lines.length - 1;
     const options = legalChoices(state, module);
     const leaveTo = hubReturn(state, module);
+    const leaveLabel = hubReturnTitle(state, module);
     return (
       // Bottom-anchored panel over the location backdrop (visual-novel style).
       <div className="adv-scene bottom">
@@ -1036,7 +1090,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
             ))}
             {leaveTo && (
               <button className="adv-choice adv-leave" onClick={onLeave}>
-                <span>← Leave</span>
+                <span>← {leaveLabel ? `Back to ${leaveLabel}` : 'Leave'}</span>
               </button>
             )}
           </div>
@@ -1080,22 +1134,30 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     const visibleIds = new Set(nodes.map((n) => n.node.id));
     const posOf = (id: string) => scene.map.nodes.find((n) => n.id === id);
     const traversal = !!scene.map.paths;
+    const travel = travelDestinations(state, module);
     return (
       // Markers sit directly on the full-bleed location backdrop (the stage).
       <div className="adv-explore">
         <h2 className="adv-maptitle">{scene.map.title}</h2>
 
-        {/* Trail lines between discovered nodes; edges into the frontier fade. */}
-        {traversal && (
+        {/* Roads everywhere: a traversal map draws its gating paths (frontier
+            edges fade), a free-roam town draws its purely visual roads — either
+            way the stops read as one connected place, not floating markers. */}
+        {(traversal || (scene.map.roads?.length ?? 0) > 0) && (
           <svg className="adv-trails" viewBox="0 0 100 100" preserveAspectRatio="none">
             {(scene.map.paths ?? []).map(([a, b], i) => {
               const pa = posOf(a); const pb = posOf(b);
               if (!pa || !pb || (!visibleIds.has(a) && !visibleIds.has(b))) return null;
               const toFrontier = nodes.some((n) => (n.node.id === a || n.node.id === b) && n.frontier);
               return (
-                <line key={i} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                <line key={`p${i}`} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
                   className={`adv-trail ${toFrontier ? 'faint' : ''}`} />
               );
+            })}
+            {(scene.map.roads ?? []).map(([a, b], i) => {
+              const pa = posOf(a); const pb = posOf(b);
+              if (!pa || !pb) return null;
+              return <line key={`r${i}`} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} className="adv-trail" />;
             })}
           </svg>
         )}
@@ -1117,22 +1179,66 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
               className={`adv-node state-${tier} ${teaser && !frontier ? 'mystery' : ''}`}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
               title={blocked ?? (hideTitle ? shownLabel || 'Unknown' : shownLabel)}
-              onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
+              onClick={() => {
+                if (blocked) { onBlockedNode(blocked); return; }
+                if (walkTo) return; // pawn already mid-stride — let it arrive
+                // Overworld travel: send the pawn walking to the marker, then
+                // open the scene when it arrives. Already standing there (or
+                // reduced motion) → open immediately.
+                const hereNode = nodes.find((n) => n.here);
+                const skipWalk = !hereNode || hereNode.node.id === node.id
+                  || (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                if (skipWalk) { onNode(node.id); return; }
+                setWalkTo(node.id);
+                window.setTimeout(() => { setWalkTo(null); onNode(node.id); }, 460);
+              }}
             >
               <span className="adv-node-icon">
                 {tokenArt
                   ? <img src={tokenUrl(node.icon)} alt="" draggable={false} />
                   : <span>{glyph}</span>}
               </span>
-              {here && <span className="adv-node-here" aria-hidden>▾</span>}
+              {explored && !here && !blocked && <span className="adv-node-done" aria-hidden>✓</span>}
               {shownLabel && <span className="adv-node-label">{shownLabel}</span>}
             </button>
           );
         })}
+
+        {/* The party pawn: you, standing on the map. It glides along to a
+            tapped marker before the scene opens — the little walk that turns a
+            screen of buttons into an overworld. */}
+        {(() => {
+          const hereNode = nodes.find((n) => n.here)?.node;
+          const target = walkTo ? scene.map.nodes.find((n) => n.id === walkTo) : undefined;
+          const at = target ?? hereNode;
+          if (!at) return null;
+          const lead = campaign.characters[0];
+          const leadArt = lead && hasArt(lead.portraitId ?? lead.classId);
+          return (
+            <div className={`adv-pawn${target ? ' walking' : ''}`} style={{ left: `${at.x}%`, top: `${at.y}%` }} aria-hidden>
+              {leadArt
+                ? <Portrait id={lead!.portraitId ?? lead!.classId} team="team1" />
+                : <span className="adv-pawn-flag">🚩</span>}
+            </div>
+          );
+        })()}
         <p className="adv-maphint">
           {traversal ? 'Follow the trail — new ground reveals as you go. 🔒 needs something first.'
             : 'Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.'}
         </p>
+
+        {/* Fast travel: hop back to town (or any location you've already been)
+            without walking the trail again. Only places you've discovered. */}
+        {travel.length > 0 && (
+          <div className="adv-travel">
+            <span className="adv-travel-label">🧭 Travel to</span>
+            {travel.map((d) => (
+              <button key={d.sceneId} className="adv-travel-dest" onClick={() => onTravel(d.sceneId)}>
+                {d.isTown ? '🏘️ ' : '📍 '}{d.title}{d.isTown ? ' (town)' : ''}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -1173,6 +1279,7 @@ function ChallengeBody(
   const [pickFor, setPickFor] = useState<string | null>(null);
   const options = legalApproaches(state, module);
   const leaveTo = hubReturn(state, module);
+  const leaveLabel = hubReturnTitle(state, module);
   const pending = pickFor ? scene.approaches.find((a) => a.id === pickFor) : null;
 
   if (pending) {
@@ -1216,7 +1323,7 @@ function ChallengeBody(
             );
           })}
           {leaveTo && (
-            <button className="adv-choice adv-leave" onClick={onLeave}><span>← Leave</span></button>
+            <button className="adv-choice adv-leave" onClick={onLeave}><span>← {leaveLabel ? `Back to ${leaveLabel}` : 'Leave'}</span></button>
           )}
         </div>
       </div>

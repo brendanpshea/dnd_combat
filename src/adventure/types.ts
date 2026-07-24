@@ -180,8 +180,15 @@ export interface ExploreMap {
    * title until you reach it. Undirected: [a, b] connects both ways.
    */
   paths?: Array<[Id, Id]>;
-  /** Where the party starts a traversal map (visible with title from the off).
-   *  Required when `paths` is set; ignored on a free-roam map. */
+  /**
+   * Purely visual roads on a *free-roam* map (a town): drawn like trail edges
+   * so the stops read as one connected place — the overworld look — but with
+   * no gating whatsoever; every marker stays tappable. A traversal map's
+   * `paths` already draw, so it never needs these. Undirected.
+   */
+  roads?: Array<[Id, Id]>;
+  /** Where the party starts: required on a traversal map (with `paths`), and
+   *  on any map it's where the party pawn stands on first arrival. */
   entry?: Id[];
 }
 
@@ -240,6 +247,12 @@ export interface Module {
   cover?: Id;
   start: SceneRef;
   scenes: Record<Id, Scene>;
+  /** The module's home base — a safe explore hub with a shop/inn (Thornwick's
+   *  square, the war-camp). Once the party has discovered it, they may fast-
+   *  travel back to it (and out to any other location they've been) from any
+   *  location's map, so a supply run isn't a long walk back through the wild.
+   *  Must name an `explore` scene; absent = no fast travel. */
+  town?: Id;
   /** Where a total party wipe lands (revived, half HP) instead of a hard game
    *  over — usually a safe hub like the town inn. A per-battle `onLoss`
    *  overrides it; absent both, a lost fight simply retries. */

@@ -8,7 +8,7 @@ import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode } from '../dice.js';
-import { distanceFeet, distanceCells, adjacent, hasLineOfSight } from '../grid.js';
+import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -642,6 +642,27 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   delete c.concentratingOn;
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
+  // Flaming Sphere is a concentration-held summon: sweep it off the board.
+  if (spellId === 'flaming-sphere' && c.summons) {
+    for (const s of c.summons.filter((x) => x.kind === 'flaming-sphere')) {
+      events.push({ type: 'summonExpired', casterId: combatantId, kind: s.kind, position: { ...s.position } });
+    }
+    c.summons = c.summons.filter((x) => x.kind !== 'flaming-sphere');
+  }
+  // A lingering Web: clear its strands from the grid, and free everyone its
+  // strands still hold — not only the `targetIds` caught at cast time, but also
+  // any creature that wandered in afterwards (matched by source + concentration).
+  if (spellId === 'web') {
+    const cleared = clearWebBySource(state.grid, combatantId);
+    if (cleared.length > 0) events.push({ type: 'webCleared', sourceId: combatantId, cells: cleared });
+    for (const other of Object.values(state.combatants)) {
+      const held = other.conditions.some((k) => k.sourceId === combatantId && k.concentration && k.id === 'restrained');
+      if (held) {
+        events.push({ type: 'conditionRemoved', combatantId: other.id, condition: 'restrained' });
+        other.conditions = other.conditions.filter((k) => !(k.sourceId === combatantId && k.concentration && k.id === 'restrained'));
+      }
+    }
+  }
   // Remove conditions this concentration was sustaining on its targets.
   for (const tid of targetIds) {
     const t = state.combatants[tid];
@@ -668,8 +689,46 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
  * the winner check, and a party could be wiped out with the battle grinding on
  * forever.
  */
+/**
+ * Hunter's Mark auto-transfer: when the marked quarry falls, the mark leaps to
+ * the nearest of the caster's living enemies — concentration holds, no re-cast
+ * needed. This is the 2024 "move the mark when the target drops" made free and
+ * automatic: without it, a dead mark quietly zeroed the ranger's bonus damage
+ * unless the player remembered (and spent a fresh slot) to re-cast. Call this
+ * BEFORE the fallen combatant's conditions are cleared, or the mark to move is
+ * already gone.
+ */
+function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
+  const fallen = state.combatants[fallenId]!;
+  const events: GameEvent[] = [];
+  for (const cond of fallen.conditions.filter((k) => k.id === 'marked' && k.sourceId)) {
+    const caster = state.combatants[cond.sourceId!];
+    if (!caster?.alive || caster.concentratingOn?.spellId !== 'hunters-mark') continue;
+    // Nearest living enemy of the caster; id as a deterministic tiebreak.
+    const next = Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.id !== fallenId && c.team !== caster.team)
+      .sort((a, b) =>
+        distanceFeet(caster.position, a.position) - distanceFeet(caster.position, b.position) ||
+        a.id.localeCompare(b.id))[0];
+    if (!next) continue; // no quarry left — the fight is over anyway
+    // Lift the mark off the fallen (a killed body loses all conditions anyway,
+    // but a *downed* hero keeps his — without this the stale mark lingers there).
+    fallen.conditions = fallen.conditions.filter((k) => !(k.id === 'marked' && k.sourceId === caster.id));
+    if (!next.conditions.some((k) => k.id === 'marked' && k.sourceId === caster.id)) {
+      next.conditions.push({ id: 'marked', sourceId: caster.id, concentration: true });
+      events.push({ type: 'conditionApplied', combatantId: next.id, condition: 'marked', sourceId: caster.id });
+    }
+    caster.concentratingOn = { spellId: 'hunters-mark', targetIds: [next.id] };
+  }
+  return events;
+}
+
 function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
-  const events = [...downCombatant(state, combatantId), ...breakConcentration(state, combatantId)];
+  const events = [
+    ...transferHuntersMark(state, combatantId),
+    ...downCombatant(state, combatantId),
+    ...breakConcentration(state, combatantId),
+  ];
   const winner = checkWinner(state);
   if (winner) {
     state.winner = winner;
@@ -678,17 +737,29 @@ function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
   return events;
 }
 
+/** A dead (or removed) caster's summons wink out — the will animating them is gone. */
+function expireSummonsOf(state: GameState, casterId: Id): GameEvent[] {
+  const c = state.combatants[casterId]!;
+  if (!c.summons?.length) return [];
+  const events: GameEvent[] = c.summons.map((s) => (
+    { type: 'summonExpired', casterId, kind: s.kind, position: { ...s.position } } as GameEvent
+  ));
+  delete c.summons;
+  return events;
+}
+
 export function kill(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
+  const events: GameEvent[] = [...transferHuntersMark(state, combatantId), ...expireSummonsOf(state, combatantId)];
   c.alive = false;
   c.hp = 0;
   c.conditions = [];
   const cell = cellAt(state.grid, c.position);
   if (cell && cell.occupantId === combatantId) delete cell.occupantId;
-  const events: GameEvent[] = [
+  events.push(
     { type: 'died', combatantId },
     ...breakConcentration(state, combatantId),
-  ];
+  );
   const winner = checkWinner(state);
   if (winner) {
     state.winner = winner;
@@ -706,15 +777,16 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
  */
 export function charmAway(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
+  const events: GameEvent[] = [...transferHuntersMark(state, combatantId), ...expireSummonsOf(state, combatantId)];
   c.alive = false;
   c.hp = 0;
   c.conditions = [];
   const cell = cellAt(state.grid, c.position);
   if (cell && cell.occupantId === combatantId) delete cell.occupantId;
-  const events: GameEvent[] = [
+  events.push(
     { type: 'charmedAway', combatantId },
     ...breakConcentration(state, combatantId),
-  ];
+  );
   const winner = checkWinner(state);
   if (winner) {
     state.winner = winner;

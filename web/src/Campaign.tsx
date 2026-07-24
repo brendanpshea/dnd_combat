@@ -16,7 +16,7 @@ import { acOf } from '../../src/data/armor.js';
 import { TRINKETS } from '../../src/data/trinkets.js';
 import {
   CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
-  applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, STAGES,
+  applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, shopOffering, STAGES,
   giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
   partyStash, claimFromStash, stashItem, sellFromStash,
   attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
@@ -322,7 +322,10 @@ export function CampaignScreen({ Battle, onExit }: Props) {
   // The characters have names; the shop was showing their classes.
   const charNames = c.characters.map((ch) => ch.name);
   const party = buildCampaignParty(c);
-  const stockedItems = SHOP_STOCK.filter((id) => shopCategory(id) === stockCategory);
+  // A limited, level-scaled rotation of magical wares (staples always stocked),
+  // seeded per campaign level so it's stable until the party levels up.
+  const shelf = shopOffering(SHOP_STOCK, partyLevelOf(c), 'classic-campaign');
+  const stockedItems = shelf.filter((id) => shopCategory(id) === stockCategory);
   const healingCount = c.characters.reduce(
     (total, ch) => total + ch.inventory.filter((s) => s.itemId.includes('potion-healing') || s.itemId.includes('greater-healing')).reduce((n, s) => n + s.qty, 0),
     0,
@@ -685,7 +688,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           </label>
         </div>
         <div className="shop-tabs" role="tablist" aria-label="Shop category">
-          {SHOP_CATEGORIES.map((category) => (
+          {SHOP_CATEGORIES.filter((category) => shelf.some((id) => shopCategory(id) === category.id)).map((category) => (
             <button
               key={category.id}
               className={stockCategory === category.id ? 'selected' : ''}

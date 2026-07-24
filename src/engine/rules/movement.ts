@@ -6,6 +6,7 @@ import { cellAt, abilityMod, isDown } from '../types.js';
 import { reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
+import { savingThrow } from './saves.js';
 import { rollDice, parseDice } from '../dice.js';
 import type { GameEvent } from '../events.js';
 
@@ -224,6 +225,28 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         if (mover.alive) cellAt(state.grid, mover.position)!.occupantId = moverId;
         events.unshift({ type: 'moved', combatantId: moverId, path: walked });
         return events;
+      }
+    }
+
+    // Walking into a lingering Web: a creature not on the caster's side must
+    // save (Dex) or be restrained and stop dead in the strands. Already-caught
+    // creatures don't re-roll. The web is friendly to whoever spun it.
+    const web = cellAt(state.grid, step)!.web;
+    if (web) {
+      const source = state.combatants[web.sourceId];
+      const alreadyStuck = mover.conditions.some((k) => k.id === 'restrained');
+      if (source && source.team !== mover.team && !alreadyStuck) {
+        const save = savingThrow(state, moverId, 'dex', web.dc);
+        events.push(save.event);
+        if (!save.success) {
+          mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability: 'dex', dc: web.dc } });
+          events.push({ type: 'conditionApplied', combatantId: moverId, condition: 'restrained', sourceId: web.sourceId });
+          // Caught: the mover stops here rather than walking on through the web.
+          cellAt(state.grid, mover.position)!.occupantId = moverId;
+          mover.turn.movementUsed += r.costs.get(`${step.x},${step.y}`) ?? cost;
+          events.unshift({ type: 'moved', combatantId: moverId, path: walked });
+          return events;
+        }
       }
     }
   }
