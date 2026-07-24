@@ -17,10 +17,11 @@ eye-level **location scenes** and **NPC-archetype portraits** — the NPC set
 reuses this doc's style bible verbatim.
 
 **Status legend:** ✅ generated and wired in the engine (`HAS_ART` in
-`web/src/art.ts`) · ⬜ needed (still on the emoji fallback). As of this writing
-the four heroes, eight species portraits, and all Tier 1–3 monsters are ✅; the
-five level 4–5 additions in **§6 Tier 4** are ⬜ and the reason this doc was
-last touched.
+`web/src/art.ts`) · ⬜ needed (still on the emoji fallback). The four heroes,
+eight species portraits, and all Tier 1–4 monsters are ✅. Outstanding: the ten
+**species × role portraits in §6b**, which is the reason this doc was last
+touched — the forge's species × class matrix currently has holes it fills with
+the wrong picture (human rangers with elf ears, dwarf wizards drawn as humans).
 
 ---
 
@@ -288,6 +289,152 @@ front the level 4–5 ladder; Priest and Ogre Mage are spellcasters.
 
 ---
 
+## 6b. Species × role portraits — ⬜ NEEDED
+
+**Why these exist.** `portraitId` drives *both* the board token and the bust
+(`Board.tsx` reads `c.portraitId ?? c.classId`), and the forge picks a default
+from a species × class matrix (`defaultPortraitFor`, campaign.ts). Each species
+currently has exactly **one** portrait, tagged martial or not, so the matrix has
+holes it fills with the wrong picture:
+
+- A **human ranger** wears `elf-archer` — pointed ears on a human — and a
+  **human paladin** wears `dragonborn-paladin`, a dragon's head. Ranger and
+  Paladin have no species-neutral art at all.
+- A **dwarf wizard** falls back to the generic human `wizard`, because the only
+  dwarf art is a bare-armed berserker. Same for elf, orc and dragonborn casters.
+- A **tiefling fighter** gets the robed warlock, because the only tiefling art
+  is a spellcaster. Same for gnome and halfling fighters.
+
+The goal is **two archetypes per species — one martial, one caster** — plus the
+two missing class portraits. That closes the matrix at 10 new assets rather than
+the 48 a full species × class grid would need.
+
+**Both files per asset** (`token-<id>.png` + `portrait-<id>.png`), same as the
+existing species variants.
+
+### Distinctness rule (read before generating)
+
+Each new asset shares a species with an existing one, so it **must not read as
+the same character in a different hat**. For every entry below, the subject line
+deliberately changes *at least three* of: silhouette, gender presentation, age,
+skin/scale colour, hair colour and style, and palette. Generate the new one
+side-by-side with its existing sibling and reject anything that could be
+mistaken for a recolour.
+
+Existing siblings, for reference: `dwarf-berserker` is a **young red-bearded
+man**, warm orange/brown; `elf-archer` is a **silver-haired woman**, pale
+green-tinted, gold leaf motifs; `orc-barbarian` is a **young woman** with black
+beaded braids and leopard fur; `dragonborn-paladin` is **gold-scaled** in silver
+plate with a purple sash; `tiefling-warlock` is a **red-skinned woman** with
+curled ram horns and a teal star robe; `gnome-bard` is a **young woman**, brown
+skin, black curls, orange kente; `halfling-rogue` is a **brown-haired boy** in a
+navy hood.
+
+### Tier A — species-neutral class art (fixes visibly wrong pictures)
+
+**Ranger** (`ranger`) — SIZE M
+> A chibi human ranger — **a man of Middle-Eastern descent with warm brown skin,
+> a close-cropped black beard, early thirties**. A deep-hooded forest-green
+> travelling cloak thrown back off one shoulder, worn leather bracers, a
+> longbow held upright at his side and a quiver of green-fletched arrows. A
+> small hawk perched on his shoulder. Calm, watchful half-smile. Iconic feature:
+> the upright longbow and the hawk. Palette: forest green, tan leather, muted
+> gold. Deliberately **not** elven — round ears, sturdier build, no silver hair.
+
+**Paladin** (`paladin`) — SIZE M
+> A chibi human paladin — **a woman of Central-American descent with deep brown
+> skin and black hair in a thick braided crown, late twenties**. Dark blued-steel
+> plate with a clean white tabard, a stylised gold sun blazon on the chest. One
+> gauntleted fist over her heart in an oath. Warm determined expression. Iconic
+> feature: the white tabard with the gold sun. Palette: dark steel, white, warm
+> gold. Deliberately **not** draconic — human face, no scales, no purple sash.
+
+### Tier B — casters of the martial species
+
+**Dwarf Cleric** (`dwarf-cleric`) — SIZE M
+> A chibi dwarf priest — **an elder woman with deep brown skin, silver-white hair
+> in two heavy braided loops, laugh lines, Himalayan-inflected dress**. A
+> saffron and deep-blue layered robe over a mail shirt, a heavy stone
+> prayer-amulet, a short warhammer resting head-down. Serene, kindly, formidable.
+> Iconic feature: the round stone amulet glowing softly. Palette: saffron, deep
+> blue, cool silver — a cold palette against the berserker's warm orange.
+
+**Elf Wizard** (`elf-wizard`) — SIZE M
+> A chibi elf mage — **a man with deep brown skin and long black locs pulled
+> back, South-Asian-inflected dress, ageless adult**. Indigo and brass robes with
+> geometric embroidery, a floating open codex at his shoulder, one hand raised
+> with a small violet rune spinning above the palm. Thoughtful, amused.
+> Iconic feature: the floating book and rune. Palette: indigo, brass, violet —
+> nothing of the archer's silver and leaf-gold.
+
+**Orc Shaman** (`orc-shaman`) — SIZE M
+> A chibi orc shaman — **an elder man, grey-green skin, a white topknot and a
+> short white beard, weathered face, Pacific-Islander-inflected ornament**. A
+> cloak of woven grass and feathers, bone-and-shell necklaces, a gnarled staff
+> topped with a carved spirit-mask. Wise, wry, unbothered. Iconic feature: the
+> spirit-mask staff head. Palette: bone white, moss green, sky blue — cool and
+> pale against the barbarian's leopard-tan.
+
+**Dragonborn Sorcerer** (`dragonborn-sorcerer`) — SIZE M
+> A chibi dragonborn sorcerer with **deep blue-and-teal scales**, a slender
+> narrow snout, and a swept-back crest of fin-like frills instead of horns.
+> No armour: flowing storm-grey robes with silver trim, arcs of pale lightning
+> crackling between the clawed fingertips. Sly, delighted expression. Iconic
+> feature: the frilled crest and the crackling hands. Palette: blue, teal,
+> storm grey, white lightning — the opposite of the paladin's gold and silver
+> plate.
+
+### Tier C — martials of the caster species
+
+**Tiefling Knight** (`tiefling-knight`) — SIZE M
+> A chibi tiefling knight — **a man with deep blue-violet skin and straight
+> forward-swept horns** (not curled), white hair in a short military crop, a
+> scar through one eyebrow. Battered dark-iron plate, a heavy crimson cloak
+> clasped at the shoulder, a greatsword resting point-down. Grim, steady, kind
+> around the eyes. Iconic feature: the straight forward horns over heavy plate.
+> Palette: dark iron, crimson, blue-violet skin — no teal, no gold stars.
+
+**Gnome Warden** (`gnome-warden`) — SIZE M
+> A chibi gnome warrior — **an older man with ruddy tan skin, a huge white
+> walrus moustache and bushy white eyebrows, bald on top**. A brass-and-leather
+> breastplate a size too big, a crossbow slung across the back, brass goggles
+> pushed up on the forehead. Cheerful and pugnacious. Iconic feature: the white
+> moustache over the brass breastplate. Palette: brass, oxblood leather, cream —
+> nothing of the bard's orange kente.
+
+**Halfling Warrior** (`halfling-warrior`) — SIZE M
+> A chibi halfling fighter — **a woman with deep brown skin and tightly coiled
+> black hair in a short puff, freckles across the nose, broad-shouldered for a
+> halfling**. A mail shirt over a russet gambeson, a round shield with a green
+> spiral device on her arm, chin up. Bright and unintimidated. Iconic feature:
+> the round green-spiral shield. Palette: russet, steel, leaf green — no hood,
+> no navy.
+
+**Halfling Priest** (`halfling-priest`) — SIZE M
+> A chibi halfling cleric — **an older man with light-tan skin, a neat grey
+> beard, East-Asian-inflected dress, round spectacles**. Cream and jade layered
+> robes, a lantern held up in one hand casting a warm glow on his face, a string
+> of wooden prayer beads. Gentle, slightly tired, patient. Iconic feature: the
+> raised lantern. Palette: cream, jade, lantern-amber.
+
+### Tier D — optional third archetype (only if the set is going wide)
+
+Not needed to close the matrix; listed so nobody re-derives them later. Each
+would give its species a light/skirmisher look distinct from both siblings:
+`dwarf-scout`, `elf-blade`, `orc-hunter`, `dragonborn-monk`, `gnome-tinker`.
+
+### Wiring after generation
+
+1. Drop `token-<id>.png` and `portrait-<id>.png` in `art/source/`.
+2. Add the ids to `IDS` in `art/process.py` and to `HAS_ART` in `web/src/art.ts`.
+3. Run `python art/process.py`.
+4. Point the matrix at them in `src/campaign/campaign.ts`: `CLASS_PORTRAIT`
+   gains real `ranger` / `paladin` entries (they currently borrow `elf-archer`
+   and `dragonborn-paladin`), and `SPECIES_PORTRAIT` becomes a per-species
+   `{ martial, caster }` pair rather than a single tagged entry.
+
+---
+
 ## 7. Integration — filenames & mapping
 
 Save each asset with these exact names. IDs match `classId` / monster id in the
@@ -330,6 +477,21 @@ Species portrait variants (✅, forge only — token + portrait both present):
 `orc-barbarian`, `dragonborn-paladin`, `gnome-bard`, `halfling-rogue`,
 `tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard` — files
 `token-<id>.png` / `portrait-<id>.png`.
+
+Species × role portraits still needed (⬜, see §6b) — same file convention:
+
+| Asset | Id | Why |
+| --- | --- | --- |
+| Ranger | `ranger` | human rangers currently wear `elf-archer` |
+| Paladin | `paladin` | human paladins currently wear `dragonborn-paladin` |
+| Dwarf Cleric | `dwarf-cleric` | dwarf casters fall back to the human wizard |
+| Elf Wizard | `elf-wizard` | elf casters fall back to the human wizard |
+| Orc Shaman | `orc-shaman` | orc casters fall back to the human wizard |
+| Dragonborn Sorcerer | `dragonborn-sorcerer` | dragonborn casters fall back to the human wizard |
+| Tiefling Knight | `tiefling-knight` | tiefling fighters wear the robed warlock |
+| Gnome Warden | `gnome-warden` | gnome fighters wear the bard |
+| Halfling Warrior | `halfling-warrior` | halfling fighters wear the hooded rogue |
+| Halfling Priest | `halfling-priest` | halflings have no caster art |
 
 **After generating the ⬜ art:** drop the source PNGs in `art/source/`, add the
 ids to `IDS` in `art/process.py` and `HAS_ART` in `web/src/art.ts`, then run
