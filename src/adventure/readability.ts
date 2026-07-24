@@ -322,8 +322,48 @@ export interface ProsePassage {
   text: string;
 }
 
+/**
+ * Every short player-facing *label*: choice buttons, approach names and hints,
+ * map-node names, and the mystery text an unvisited node shows. These are read
+ * and tapped as much as any paragraph, but they're too short to grade — so they
+ * get the vocabulary check only, and `collectModuleProse` leaves them alone.
+ *
+ * Collected separately because they were invisible to the checker for a long
+ * time, which is how "Slip over the palisade" and "The Muster Yard" survived
+ * every readability pass the paragraphs went through.
+ */
+export function collectModuleLabels(mod: Module): ProsePassage[] {
+  const out: ProsePassage[] = [];
+  const push = (text: string | undefined, where: string) => {
+    if (text) out.push({ where, text });
+  };
+  for (const scene of Object.values(mod.scenes)) {
+    const at = `${mod.id}:${scene.id}`;
+    if ('title' in scene) push(scene.title, `${at}:title`);
+    if ('next' in scene && Array.isArray(scene.next)) {
+      for (const c of scene.next) push(c.label, `${at}:choice:${c.id}`);
+    }
+    if ('approaches' in scene) {
+      for (const a of scene.approaches ?? []) {
+        push(a.label, `${at}:approach:${a.id}`);
+        push(a.hint, `${at}:approach:${a.id}:hint`);
+      }
+    }
+    if ('map' in scene) {
+      push(scene.map.title, `${at}:map:title`);
+      for (const n of scene.map.nodes) {
+        push(n.label, `${at}:node:${n.id}`);
+        push(n.mystery, `${at}:node:${n.id}:mystery`);
+      }
+    }
+  }
+  push(mod.title, `${mod.id}:title`);
+  push(mod.blurb, `${mod.id}:blurb`);
+  return out;
+}
+
 /** Every substantial prose passage in a module — the narration a player reads,
- *  not the short choice/approach labels. */
+ *  not the short choice/approach labels (see `collectModuleLabels`). */
 export function collectModuleProse(mod: Module): ProsePassage[] {
   const out: ProsePassage[] = [];
   const add = (paras: Paragraph[] | undefined, where: string) => {

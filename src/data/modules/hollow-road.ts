@@ -267,7 +267,7 @@ const scenes: Record<string, Scene> = {
   },
   'mill-fight': {
     id: 'mill-fight', kind: 'battle', encounterId: 'cockatrice-flock', mapId: 'open',
-    intro: ['Two wattled, bat-winged things explode out of the hedge in a fury of beak and scale — cockatrices, ugly as sin and twice as mean. Mind the bite: flesh that takes it goes to stone.'],
+    intro: ['Two bat-winged things explode out of the hedge in a fury of beak and scale — cockatrices, ugly as sin and twice as mean. Mind the bite: flesh that takes it goes to stone.'],
     onWin: { to: 'square', text: ['The last cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.'],
       effects: [{ kind: 'setFlag', flag: 'mill-saved' }, { kind: 'gold', amount: 35 }] },
   },
@@ -365,7 +365,7 @@ const scenes: Record<string, Scene> = {
   },
   ravine: {
     id: 'ravine', kind: 'challenge', art: { emoji: '🪨' },
-    intro: ['A collapsed ravine cuts the trail. The far side is close — but the gap is raw scree and broken stone. There\'s more than one way across.'],
+    intro: ['A collapsed ravine cuts the trail. The far side is close — but the gap is loose stone and broken rock. There\'s more than one way across.'],
     // `perApproach`: a botched climb doesn't strand you — you can still scramble
     // the rubble or take the slow way round. Only when every line fails do you
     // lose the hour outright.
@@ -376,11 +376,11 @@ const scenes: Record<string, Scene> = {
         success: { to: 'trail', text: ['You haul the party up and over hand over hand. The shortcut is yours.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'setFlag', flag: 'shortcut' }, { kind: 'xp', amount: 30 }] },
         failure: { to: 'ravine', text: ['A hold crumbles and you slide back down in a clatter of stone. That way will not work.'] } },
-      { id: 'scramble', label: 'Pick across the rubble', hint: 'Balance over the loose scree where it\'s fallen shallowest.',
+      { id: 'scramble', label: 'Pick across the rubble', hint: 'Balance over the loose stone where it has fallen shallowest.',
         skill: 'acrobatics', dc: 12,
         success: { to: 'trail', text: ['Light on your feet, you thread the shifting stones and reach the far lip. The shortcut is yours.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'setFlag', flag: 'shortcut' }, { kind: 'xp', amount: 30 }] },
-        failure: { to: 'ravine', text: ['The scree gives all at once and you scramble back before it takes an ankle with it.'] } },
+        failure: { to: 'ravine', text: ['The loose stone gives all at once and you scramble back before it takes an ankle with it.'] } },
       { id: 'detour', label: 'Find the long way round', hint: 'Read the ground for a safe line — slower, but no broken bones.',
         skill: 'survival', dc: 11,
         success: { to: 'trail', text: ['You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.'],
@@ -393,7 +393,7 @@ const scenes: Record<string, Scene> = {
   },
   'ravine-done': {
     id: 'ravine-done', kind: 'story', art: { emoji: '🪨' },
-    text: ['The broken ravine lies behind you now, already crossed. Nothing waits here but the wind in the scree.'],
+    text: ['The broken ravine lies behind you now, already crossed. Nothing waits here but the wind over the loose stone.'],
     next: [{ id: 'ok', label: 'Press on', to: 'trail' }], noBack: true,
   },
   wounded: {
@@ -473,7 +473,7 @@ const scenes: Record<string, Scene> = {
   },
   'thicket-fight': {
     id: 'thicket-fight', kind: 'battle', encounterId: 'spiders', mapId: 'marsh',
-    intro: ['The silk trembles — then the reeds themselves seem to stand up and walk. Giant spiders, four of them, fast as regret and venomous with it, drop from the high webbing on every side.'],
+    intro: ['The silk trembles — then the reeds themselves seem to stand up and walk. Giant spiders, four of them, drop from the high webbing on every side. They are quick, and their bite carries venom.'],
     onWin: { to: 'trail', text: ['The last spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He does not stop thanking you until the reeds swallow the sound.'],
       effects: [{ kind: 'setFlag', flag: 'thicket-cleared' }, { kind: 'gold', amount: 60 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
   },
@@ -540,14 +540,14 @@ const scenes: Record<string, Scene> = {
       { id: 'signal', label: 'Give the stolen watch-signal', to: 'inner',
         requires: [{ kind: 'flag', flag: 'know-signal' }],
         effects: [{ kind: 'setFlag', flag: 'walked-in' }] },
-      { id: 'sneak', label: '[Stealth] Slip over the palisade (whole party)', to: 'inner',
+      { id: 'sneak', label: '[Stealth] Slip over the wall (whole party)', to: 'inner',
         check: { skill: 'stealth', dc: 13, roller: 'group', failTo: 'gate-fight' } },
       { id: 'fight', label: 'Storm the gate', to: 'gate-fight' },
     ],
   },
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
-    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks under the lintel. Behind him two gnolls come yammering that awful laughing bark. The narrow timber run hems all three in.'],
+    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks through the gateway. Behind him two gnolls come yammering that awful laughing bark. The narrow timber run hems all three in.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
   },
@@ -569,7 +569,7 @@ const scenes: Record<string, Scene> = {
         ['yard', 'muster'], ['muster', 'vex'], ['vex', 'throne'],
       ],
       nodes: [
-        { id: 'yard', x: 12, y: 50, label: 'The Muster Yard', icon: 'tok-fire', scene: 'den-yard' },
+        { id: 'yard', x: 12, y: 50, label: 'The Gathering Yard', icon: 'tok-fire', scene: 'den-yard' },
         { id: 'retreat', x: 10, y: 84, label: 'Back to the Marsh Road', icon: 'tok-gate', scene: 'den-retreat' },
         { id: 'cache', x: 30, y: 24, label: 'Plunder Tent', mystery: 'A guarded tent…', icon: 'tok-treasure', scene: 'cache',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'cache-searched' }], to: 'cache-done' }] },

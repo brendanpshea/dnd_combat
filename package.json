@@ -13,6 +13,7 @@
     "adventure": "tsx src/ui/cli/adventure.ts",
     "arena": "tsx scripts/arena.ts",
     "probe": "tsx scripts/probe.ts",
+    "prose": "tsx scripts/prose.ts",
     "species": "tsx scripts/species.ts",
     "web": "vite --config web/vite.config.ts",
     "web:build": "vite build --config web/vite.config.ts",
