@@ -144,6 +144,20 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .summon-token.kind-spiritual-weapon {
   filter: drop-shadow(0 0 5px #ffd166aa) drop-shadow(0 2px 3px #000a);
 }
+/* Generated icon in place of the emoji: fill the slot, keep the bob + glow the
+   drop-shadow filters above already give it. */
+.summon-token.art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.summon-token.art img {
+  width: clamp(22px, 7vmin, 40px);
+  height: clamp(22px, 7vmin, 40px);
+  object-fit: contain;
+}
 @keyframes summon-bob {
   from { transform: translateY(-6%); }
   to   { transform: translateY(6%); }
@@ -401,6 +415,13 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   content: '🕸️'; position: absolute; inset: 0; display: flex;
   align-items: center; justify-content: center;
   font-size: clamp(13px, 3.6vmin, 20px); opacity: 0.5; z-index: 0; pointer-events: none;
+}
+/* With real web art: fill the cell with the icon instead of the emoji glyph,
+   dimmed so tokens and highlights still read on top. */
+.cell.webbed-art { background: none; }
+.cell.webbed-art::after {
+  content: ''; background-image: var(--web-img);
+  background-size: cover; background-position: center; opacity: 0.62;
 }
 
 .hl-move { box-shadow: inset 0 0 0 3px #4a9eff88; }
@@ -1582,6 +1603,28 @@ button.category .count {
    ask. Sized to be scannable without shouting over the label. */
 .chip-ico { font-size: 17px; flex: none; }
 .opt-ico { margin-right: 7px; }
+
+/* Generated spell icons come in mixed styles (free silhouettes vs dark plates);
+   a small uniform rounded plate normalizes them so the bar reads as one set.
+   Sits inline where the emoji glyph would, sized to match the text run. */
+.act-ico-img {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55em;
+  height: 1.55em;
+  vertical-align: -0.42em;
+  border-radius: 5px;
+  background: #0b1220cc;
+  box-shadow: inset 0 0 0 1px #ffffff1c;
+  overflow: hidden;
+}
+.act-ico-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.chip-ico .act-ico-img { width: 1.7em; height: 1.7em; }
 
 /* A downed hero: face-down, drained of colour, unmistakably out — but still on
    the board, because someone can still go and get them up. */

@@ -130,6 +130,32 @@ export function portraitUrl(id: string): string {
   return `${BASE}art/portrait-${id}.webp`;
 }
 
+/**
+ * Spell ids with a generated icon (`icon-<spellId>.webp`, see
+ * art/process_icons.py). Used in the action bar / spell tray / prepare lists,
+ * and on the board for summons and the web overlay. Anything not here falls
+ * back to the spell's emoji glyph.
+ */
+export const HAS_SPELL_ICON = new Set<string>([
+  'acid-splash', 'fire-bolt', 'guidance', 'minor-illusion', 'poison-spray',
+  'ray-of-frost', 'sacred-flame', 'shocking-grasp', 'true-strike',
+  'animal-friendship', 'bane', 'bless', 'burning-hands', 'color-spray',
+  'command', 'cure-wounds', 'faerie-fire', 'false-life', 'guiding-bolt',
+  'healing-word', 'hunters-mark', 'inflict-wounds', 'mage-armor',
+  'magic-missile', 'ray-of-sickness', 'shield', 'shield-of-faith', 'sleep',
+  'aid', 'blindness', 'hold-person', 'invisibility', 'lesser-restoration',
+  'misty-step', 'scorching-ray', 'spiritual-weapon', 'suggestion', 'web',
+  'dispel-magic', 'fear', 'fireball', 'haste', 'lightning-bolt',
+  'mass-healing-word', 'spiritual-guardians', 'find-familiar', 'thunderwave',
+  'breath-weapon',
+]);
+export function hasSpellIcon(spellId: string | undefined): boolean {
+  return !!spellId && HAS_SPELL_ICON.has(spellId);
+}
+export function spellIconUrl(spellId: string): string {
+  return `${BASE}art/icon-${spellId}.webp`;
+}
+
 /** Themes with a generated arena backdrop (see art/arena-prompts.md). */
 export const HAS_BOARD_BG = new Set<string>(['stone', 'forest', 'graveyard', 'ember', 'village', 'bog']);
 
