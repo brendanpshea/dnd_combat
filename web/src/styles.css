@@ -1785,6 +1785,50 @@ button.category .count {
 
 /* Explore: markers positioned directly on the full-bleed location backdrop. */
 .adv-explore { position: absolute; inset: 0; }
+
+/* --- The overworld look --------------------------------------------------
+   An explore screen should read as a MAP, not a photo with buttons. The scenic
+   art (a first-person view) fights the top-down markers, so on explore screens
+   it's pushed way back — desaturated, darkened — under a parchment wash and
+   vignette, with ink roads and chunky node plates on top. The same paintings
+   still hit full-bleed on story/dialogue scenes, where they belong. */
+.adv-stage.explore .adv-backdrop { filter: saturate(0.4) brightness(0.55) contrast(0.9); }
+.adv-explore::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(120% 90% at 50% 40%, rgba(96,78,52,.20), rgba(30,22,14,.55) 78%),
+    linear-gradient(rgba(214,188,140,.10), rgba(214,188,140,.05) 30%, rgba(20,14,8,.35) 100%);
+}
+
+/* The party pawn: you, standing on the map. Position transitions do the
+   walking; the bob sells "someone is standing here". Above roads, below the
+   tapped marker's press states don't matter (pointer-events: none). */
+.adv-pawn {
+  position: absolute; z-index: 4; pointer-events: none;
+  transform: translate(-50%, -100%); /* feet on the node, body above it */
+  margin-top: -14px; /* stand on the plate's top edge, not its centre */
+  transition: left 0.45s ease-in-out, top 0.45s ease-in-out;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.65));
+  animation: pawnbob 1.6s ease-in-out infinite;
+}
+.adv-pawn .portrait { width: 34px; height: 34px; border: 2px solid var(--gold); box-shadow: 0 0 10px rgba(214,178,74,.5); }
+.adv-pawn-flag { font-size: 26px; }
+.adv-pawn.walking { animation: pawnstride 0.3s ease-in-out infinite; }
+@keyframes pawnbob { 0%, 100% { margin-top: -14px; } 50% { margin-top: -18px; } }
+@keyframes pawnstride { 0%, 100% { transform: translate(-50%, -100%) rotate(-4deg); } 50% { transform: translate(-50%, -100%) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .adv-pawn { transition: none; animation: none; }
+  .adv-pawn.walking { animation: none; }
+}
+
+/* Cleared-stop stamp: the Mario "beaten level" dot. */
+.adv-node-done {
+  position: absolute; top: -6px; right: -8px; z-index: 3;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--green); color: #10240f; font-size: 12px; font-weight: 800;
+  box-shadow: 0 2px 4px rgba(0,0,0,.55); pointer-events: none;
+}
 .adv-maptitle {
   position: absolute; top: 10px; left: 0; right: 0; text-align: center; z-index: 2;
   font-family: var(--display); font-size: 1.3rem; text-shadow: 0 2px 8px rgba(0,0,0,.8);

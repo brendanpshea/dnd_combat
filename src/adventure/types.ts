@@ -180,8 +180,15 @@ export interface ExploreMap {
    * title until you reach it. Undirected: [a, b] connects both ways.
    */
   paths?: Array<[Id, Id]>;
-  /** Where the party starts a traversal map (visible with title from the off).
-   *  Required when `paths` is set; ignored on a free-roam map. */
+  /**
+   * Purely visual roads on a *free-roam* map (a town): drawn like trail edges
+   * so the stops read as one connected place — the overworld look — but with
+   * no gating whatsoever; every marker stays tappable. A traversal map's
+   * `paths` already draw, so it never needs these. Undirected.
+   */
+  roads?: Array<[Id, Id]>;
+  /** Where the party starts: required on a traversal map (with `paths`), and
+   *  on any map it's where the party pawn stands on first arrival. */
   entry?: Id[];
 }
 

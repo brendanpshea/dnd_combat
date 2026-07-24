@@ -77,6 +77,11 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'The War-Camp', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🏕️' },
       camp: {}, // safe: the one place in the valley with walls of spears
+      // Overworld dressing: arrive at the command tent; tracks link the camp.
+      entry: ['command'],
+      roads: [
+        ['command', 'stores'], ['stores', 'scouts'], ['stores', 'trailhead'],
+      ],
       nodes: [
         { id: 'command', x: 25, y: 30, label: 'The Command Tent', icon: 'tok-fire', scene: 'command',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'briefed' }], to: 'command-done' }] },

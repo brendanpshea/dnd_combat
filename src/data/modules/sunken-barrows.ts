@@ -70,6 +70,12 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'Thornwick', theme: 'stone', art: { imageId: 'loc-town', emoji: '🏘️' },
       camp: {}, // safe: beds and walls
+      // Overworld dressing: arrive at the inn; lanes tie the town together.
+      entry: ['inn'],
+      roads: [
+        ['inn', 'market'], ['market', 'reeve'], ['market', 'graves'],
+        ['reeve', 'fen-gate'], ['graves', 'fen-gate'],
+      ],
       nodes: [
         { id: 'inn', x: 22, y: 32, label: 'The Wander-Inn', icon: 'tok-tavern', scene: 'inn' },
         { id: 'market', x: 44, y: 42, label: 'Market', icon: 'tok-market', scene: 'sb-market' },

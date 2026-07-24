@@ -184,6 +184,13 @@ const scenes: Record<string, Scene> = {
     map: {
       title: 'Thornwick Square', theme: 'stone', art: { imageId: 'loc-village', emoji: '⛲' },
       camp: {}, // safe: rest freely in town
+      // Overworld dressing: the party pawn arrives at the inn, and lanes link
+      // the stops so the square reads as one place, not floating markers.
+      entry: ['inn'],
+      roads: [
+        ['inn', 'market'], ['market', 'board'], ['inn', 'mill'],
+        ['market', 'informant'], ['informant', 'gate'], ['board', 'gate'],
+      ],
       nodes: [
         { id: 'inn', x: 20, y: 30, label: 'The Wander-Inn', icon: 'tok-tavern', scene: 'tavern' },
         { id: 'market', x: 40, y: 40, label: 'Market', icon: 'tok-market', scene: 'market' },

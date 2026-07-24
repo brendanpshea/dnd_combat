@@ -1235,3 +1235,26 @@ describe('auto-player', () => {
     }
   });
 });
+
+describe('overworld dressing (roads + pawn position)', () => {
+  it('town maps have an entry pawn-start and visual roads over real nodes', () => {
+    for (const [modId, hub] of [['hollow-road', 'square'], ['sunken-barrows', 'town'], ['wyrmcalling', 'warcamp']] as const) {
+      const mod = MODULES.find((m) => m.id === modId)!;
+      const scene = mod.scenes[hub]!;
+      if (scene.kind !== 'explore') throw new Error(`${hub} is not explore`);
+      expect(scene.map.entry?.length, `${modId}:${hub} entry`).toBeGreaterThan(0);
+      expect(scene.map.roads?.length, `${modId}:${hub} roads`).toBeGreaterThan(0);
+      expect(scene.map.paths, `${modId}:${hub} must stay free-roam`).toBeUndefined();
+    }
+  });
+
+  it('the pawn starts at the entry on a free-roam map and follows the last node entered', () => {
+    const mod = MODULES.find((m) => m.id === 'sunken-barrows')!;
+    const s = startAdventure(newCampaign(), mod);
+    enterScene(s, mod, 'town');
+    expect(exploreNodes(s, mod).find((n) => n.here)?.node.id).toBe('inn');
+    enterNode(s, mod, 'market');
+    enterScene(s, mod, 'town');
+    expect(exploreNodes(s, mod).find((n) => n.here)?.node.id).toBe('market');
+  });
+});

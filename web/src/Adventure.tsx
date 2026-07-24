@@ -1012,6 +1012,10 @@ interface BodyProps {
 
 function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
   const campaign = state.campaign;
+  // Overworld walk: the node the party pawn is mid-stride toward. Tapping a
+  // marker sends the pawn walking there first; the scene opens when it arrives
+  // (a beat later), which is what makes the map read as a place you travel.
+  const [walkTo, setWalkTo] = useState<string | null>(null);
 
   if (scene.kind === 'ending') {
     // A victory in a module with a sequel offers to carry the company onward —
@@ -1136,17 +1140,24 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
       <div className="adv-explore">
         <h2 className="adv-maptitle">{scene.map.title}</h2>
 
-        {/* Trail lines between discovered nodes; edges into the frontier fade. */}
-        {traversal && (
+        {/* Roads everywhere: a traversal map draws its gating paths (frontier
+            edges fade), a free-roam town draws its purely visual roads — either
+            way the stops read as one connected place, not floating markers. */}
+        {(traversal || (scene.map.roads?.length ?? 0) > 0) && (
           <svg className="adv-trails" viewBox="0 0 100 100" preserveAspectRatio="none">
             {(scene.map.paths ?? []).map(([a, b], i) => {
               const pa = posOf(a); const pb = posOf(b);
               if (!pa || !pb || (!visibleIds.has(a) && !visibleIds.has(b))) return null;
               const toFrontier = nodes.some((n) => (n.node.id === a || n.node.id === b) && n.frontier);
               return (
-                <line key={i} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                <line key={`p${i}`} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
                   className={`adv-trail ${toFrontier ? 'faint' : ''}`} />
               );
+            })}
+            {(scene.map.roads ?? []).map(([a, b], i) => {
+              const pa = posOf(a); const pb = posOf(b);
+              if (!pa || !pb) return null;
+              return <line key={`r${i}`} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} className="adv-trail" />;
             })}
           </svg>
         )}
@@ -1168,18 +1179,49 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
               className={`adv-node state-${tier} ${teaser && !frontier ? 'mystery' : ''}`}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
               title={blocked ?? (hideTitle ? shownLabel || 'Unknown' : shownLabel)}
-              onClick={() => (blocked ? onBlockedNode(blocked) : onNode(node.id))}
+              onClick={() => {
+                if (blocked) { onBlockedNode(blocked); return; }
+                if (walkTo) return; // pawn already mid-stride — let it arrive
+                // Overworld travel: send the pawn walking to the marker, then
+                // open the scene when it arrives. Already standing there (or
+                // reduced motion) → open immediately.
+                const hereNode = nodes.find((n) => n.here);
+                const skipWalk = !hereNode || hereNode.node.id === node.id
+                  || (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                if (skipWalk) { onNode(node.id); return; }
+                setWalkTo(node.id);
+                window.setTimeout(() => { setWalkTo(null); onNode(node.id); }, 460);
+              }}
             >
               <span className="adv-node-icon">
                 {tokenArt
                   ? <img src={tokenUrl(node.icon)} alt="" draggable={false} />
                   : <span>{glyph}</span>}
               </span>
-              {here && <span className="adv-node-here" aria-hidden>▾</span>}
+              {explored && !here && !blocked && <span className="adv-node-done" aria-hidden>✓</span>}
               {shownLabel && <span className="adv-node-label">{shownLabel}</span>}
             </button>
           );
         })}
+
+        {/* The party pawn: you, standing on the map. It glides along to a
+            tapped marker before the scene opens — the little walk that turns a
+            screen of buttons into an overworld. */}
+        {(() => {
+          const hereNode = nodes.find((n) => n.here)?.node;
+          const target = walkTo ? scene.map.nodes.find((n) => n.id === walkTo) : undefined;
+          const at = target ?? hereNode;
+          if (!at) return null;
+          const lead = campaign.characters[0];
+          const leadArt = lead && hasArt(lead.portraitId ?? lead.classId);
+          return (
+            <div className={`adv-pawn${target ? ' walking' : ''}`} style={{ left: `${at.x}%`, top: `${at.y}%` }} aria-hidden>
+              {leadArt
+                ? <Portrait id={lead!.portraitId ?? lead!.classId} team="team1" />
+                : <span className="adv-pawn-flag">🚩</span>}
+            </div>
+          );
+        })()}
         <p className="adv-maphint">
           {traversal ? 'Follow the trail — new ground reveals as you go. 🔒 needs something first.'
             : 'Tap a marker to explore. 🔒 needs something first; dimmed are unvisited.'}
