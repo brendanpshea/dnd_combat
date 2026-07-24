@@ -117,14 +117,17 @@ export function targetingNote(spell: SpellData): string {
     case 'cube15': return '3×3 blast';
     case 'line15': return 'line';
     case 'emptyCell': return 'teleport';
-    case 'self': return 'burst';
+    case 'self': return 'self';
   }
 }
 
-/** Level + aim: "L1 · 2×2 area". Cantrips cost no slot, so they show only aim. */
-function spellNote(spell: SpellData, innateUsesLeft?: number): string {
+/** Level + aim: "L1 · 2×2 area". Cantrips cost no slot, so they show only aim.
+ *  `castLevel` overrides the spell's own level for an upcast (a smite paid for
+ *  with a bigger slot), so the note reports the slot actually being spent. */
+function spellNote(spell: SpellData, innateUsesLeft?: number, castLevel?: number): string {
+  const level = castLevel ?? spell.level;
   const cost = innateUsesLeft !== undefined ? `${innateUsesLeft} left`
-    : spell.level > 0 ? `L${spell.level}` : '';
+    : level > 0 ? `L${level}` : '';
   return [cost, targetingNote(spell)].filter(Boolean).join(' · ');
 }
 
@@ -199,14 +202,21 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           m.set(posKey(first.position), a);
           cellSpells.set(a.spellId, m);
         } else if (t.kind === 'self') {
-          if (!seenMulti.has(a.spellId)) {
-            seenMulti.add(a.spellId);
+          // Smites are offered at every slot level the caster can pay for, so
+          // the key has to carry the level too — otherwise "Divine Smite L1"
+          // and "L2" collide into one entry.
+          const key = `${a.spellId}@${a.slotLevel}`;
+          if (!seenMulti.has(key)) {
+            seenMulti.add(key);
+            // Only an upcast carries the level in its id, so the base entry
+            // keeps the stable `spell:<id>` every other lookup expects.
+            const upcast = a.slotLevel > spell.level;
             bar.push({
-              id: `spell:${a.spellId}`,
-              label: spell.name,
+              id: upcast ? `spell:${a.spellId}@${a.slotLevel}` : `spell:${a.spellId}`,
+              label: upcast ? `${spell.name} (L${a.slotLevel})` : spell.name,
               icon: spell.icon,
               group: 'spell',
-              note: spellNote(spell),
+              note: spellNote(spell, undefined, a.slotLevel),
               action: a,
             });
           }

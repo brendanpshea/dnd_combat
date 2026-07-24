@@ -15,7 +15,7 @@ import { attackableWeapons } from '../engine/rules/equipment.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
-import { attackAbility, collectAttackSources } from '../engine/rules/attack.js';
+import { attackAbility, collectAttackSources, smiteDice } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
 import { legalActions, Action } from '../engine/actions.js';
 
@@ -81,11 +81,18 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
   if (actor.featureIds.includes('colossus-slayer') && !actor.turn.colossusUsed && target.hp < target.maxHp) {
     dmg += avgDice('1d8');
   }
-  if (
+  // An armed smite is already paid for and discharges on this hit — full value.
+  if (actor.armedSmite && isMelee) {
+    dmg += avgDice(smiteDice(actor.armedSmite.spellId, actor.armedSmite.slotLevel));
+  } else if (
     actor.featureIds.includes('divine-smite') && isMelee && !actor.turn.bonusActionUsed &&
     actor.spellSlots.some((s) => s.current > 0)
   ) {
-    dmg += avgDice('2d8'); // rough EV of the cheapest auto-smite
+    // The auto-smite is no longer a given: it fires on a crit (~5%, doubled
+    // dice) or when it would finish the target. Pricing it at a flat 2d8 badly
+    // over-valued every melee swing a paladin could make.
+    dmg += 0.05 * avgDice('4d8');
+    if (target.hp <= avgDice('2d8')) dmg += avgDice('2d8') * 0.5;
   }
   return damageValue(hitProb(bonus, acOf(target), mode) * dmg, target);
 }
@@ -127,6 +134,28 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'bless': {
       if (actor.concentratingOn) return 0;
       return 3 * a.targets.length + (state.round <= 2 ? 3 : 0) - slotCost;
+    }
+    case 'divine-smite':
+    case 'searing-smite':
+    case 'thunderous-smite':
+    case 'wrathful-smite': {
+      // Only worth arming if there is something to hit this turn — the slot is
+      // spent at cast time, so loading up with no enemy in reach throws it away.
+      const foe = Object.values(state.combatants)
+        .filter((c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(actor.position, c.position))
+        .sort((x, y) => x.hp - y.hp)[0];
+      // Mirrors isLegalAction's attack gate: an attack must still be possible
+      // this turn, or the slot is spent on a swing that never comes.
+      const canStillAttack = !actor.turn.actionUsed || actor.turn.attacksLeft > 0;
+      if (!foe || !canStillAttack) return 0;
+      let v = avgDice(smiteDice(a.spellId, a.slotLevel));
+      // Riders are worth about a slot's cost again on a target that will live
+      // long enough to suffer them; on something nearly dead, raw damage wins.
+      const durable = foe.hp > avgDice('2d8') * 1.5;
+      if (durable && a.spellId === 'searing-smite') v += 3;
+      if (durable && a.spellId === 'thunderous-smite') v += 4;   // prone + push
+      if (durable && a.spellId === 'wrathful-smite') v += 3;
+      return v - slotCost;
     }
     case 'sleep': {
       const anchor = (a.targets[0] as { position: Position }).position;

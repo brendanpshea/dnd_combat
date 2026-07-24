@@ -7,7 +7,7 @@ import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated } from '.
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
-import { rollD20, rollDice, resolveRollMode } from '../dice.js';
+import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
@@ -412,33 +412,39 @@ export function resolveAttack(
     events.push(...applyDamage(state, targetId, attackerId, extra.total, weapon.extraDamage.type, extra.rolls, { crit }));
   }
 
-  // Divine Smite: a bonus-action spell cast on a melee hit (2024 rules),
-  // radiant on top of the weapon's own damage type — modeled like a weapon's
-  // secondary damage rather than folded into `amount`, so resistance and
-  // vulnerability apply correctly. Auto-fires as a *finisher only*: the paladin
-  // spends a slot when the radiant is expected to drop the target (average
-  // damage ≥ its remaining HP), so a slot is never burned on a healthy foe.
-  // `target.hp` here is already post-weapon-damage, so this is the exact "would
-  // this finish them" test. Picks the smallest slot big enough; none is → holds.
-  if (
-    target.alive &&
-    target.hp > 0 &&
-    attacker.featureIds.includes('divine-smite') &&
-    isMeleeAttack &&
-    !attacker.turn.bonusActionUsed
-  ) {
-    // Nd8 averages N×4.5, and a crit doubles the dice — a slot at index i smites
-    // for (2+i)d8. Find the lowest available slot whose average is expected to kill.
-    const critMult = crit ? 2 : 1;
-    const slotIdx = attacker.spellSlots.findIndex(
-      (s, i) => s.current > 0 && (2 + i) * 4.5 * critMult >= target.hp,
-    );
-    if (slotIdx >= 0) {
-      attacker.spellSlots[slotIdx]!.current -= 1;
-      attacker.turn.bonusActionUsed = true;
-      const smite = rollDice(state.rng, `${2 + slotIdx}d8`, crit);
-      state.rng = smite.state;
-      events.push(...applyDamage(state, targetId, attackerId, smite.total, 'radiant', smite.rolls, { crit, tags: ['Divine Smite'] }));
+  // Smites, in priority order: an armed one always discharges (the slot is
+  // already spent, so holding it back would just lose it), otherwise the
+  // Divine Smite *feature* may fire on its own.
+  if (target.alive && isMeleeAttack) {
+    if (attacker.armedSmite) {
+      events.push(...dischargeSmite(state, attackerId, targetId, crit));
+    } else if (
+      target.hp > 0 &&
+      attacker.featureIds.includes('divine-smite') &&
+      !attacker.turn.bonusActionUsed
+    ) {
+      // Auto-fire on the two moments a paladin would never *not* smite:
+      //
+      //  - a crit, because the dice double and this is the swing the whole
+      //    class fantasy is about. The old code fired on expected kills only,
+      //    which meant it pointedly never triggered on a natural 20 against a
+      //    healthy boss — the exact moment players are waiting for.
+      //  - a finisher, when the radiant is expected to drop the target
+      //    (average ≥ remaining HP), so a slot is never burned on a healthy foe.
+      //
+      // `target.hp` here is already post-weapon-damage, so the finisher test is
+      // exactly "would this kill them". Takes the smallest slot that qualifies;
+      // on a crit that is simply the smallest slot available.
+      const critMult = crit ? 2 : 1;
+      const slotIdx = attacker.spellSlots.findIndex(
+        (s, i) => s.current > 0 && (crit || (2 + i) * 4.5 * critMult >= target.hp),
+      );
+      if (slotIdx >= 0) {
+        attacker.spellSlots[slotIdx]!.current -= 1;
+        attacker.turn.bonusActionUsed = true;
+        attacker.armedSmite = { spellId: 'divine-smite', slotLevel: slotIdx + 1 };
+        events.push(...dischargeSmite(state, attackerId, targetId, crit));
+      }
     }
   }
 
@@ -535,6 +541,120 @@ export function resolveAttack(
  * Apply damage: resist/vuln/immune adjustment, HP, Undead Fortitude,
  * concentration save, waking the unconscious, death, win check.
  */
+/**
+ * The smite table: what each smite spell does when it lands. Dice are for a
+ * 1st-level slot; `perLevel` is added for each slot level above that.
+ *
+ * Smite damage is applied as its own `applyDamage` call rather than folded into
+ * the weapon's total, so resistance and vulnerability are checked against the
+ * *smite's* type — a fire-immune target should shrug off Searing Smite while
+ * still feeling the sword.
+ */
+export const SMITE_SPECS: Record<string, {
+  name: string;
+  dice: string;
+  perLevel: string;
+  damageType: DamageType;
+  /** Extra effect on the target after the damage lands. */
+  rider?: (state: GameState, attackerId: Id, targetId: Id, dc: number) => GameEvent[];
+  riderText?: string;
+}> = {
+  'divine-smite': {
+    name: 'Divine Smite', dice: '2d8', perLevel: '1d8', damageType: 'radiant',
+  },
+  'searing-smite': {
+    name: 'Searing Smite', dice: '1d6', perLevel: '1d6', damageType: 'fire',
+    riderText: 'and sets them alight',
+    rider(state, attackerId, targetId, dc) {
+      const t = state.combatants[targetId]!;
+      if (!t.alive || t.conditions.some((k) => k.id === 'burning')) return [];
+      t.conditions.push({ id: 'burning', sourceId: attackerId, repeatSave: { ability: 'con', dc } });
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'burning', sourceId: attackerId }];
+    },
+  },
+  'thunderous-smite': {
+    name: 'Thunderous Smite', dice: '2d6', perLevel: '1d6', damageType: 'thunder',
+    riderText: 'and the thunder throws them back',
+    rider(state, attackerId, targetId, dc) {
+      const attacker = state.combatants[attackerId]!;
+      const t = state.combatants[targetId]!;
+      if (!t.alive) return [];
+      const events: GameEvent[] = [];
+      const save = savingThrow(state, targetId, 'str', dc);
+      events.push(save.event);
+      if (save.success) return events;
+      // 10 ft straight back, then flat on their face — which is what makes this
+      // one tactical: it breaks up a melee line and hands the party advantage.
+      const dir = {
+        x: Math.sign(t.position.x - attacker.position.x),
+        y: Math.sign(t.position.y - attacker.position.y),
+      };
+      if (dir.x !== 0 || dir.y !== 0) events.push(...pushCreature(state, targetId, dir, 2));
+      if (t.alive && !t.conditions.some((k) => k.id === 'prone')) {
+        t.conditions.push({ id: 'prone', sourceId: attackerId });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: attackerId });
+      }
+      return events;
+    },
+  },
+  'wrathful-smite': {
+    name: 'Wrathful Smite', dice: '1d6', perLevel: '1d6', damageType: 'psychic',
+    riderText: 'and fills them with dread',
+    rider(state, attackerId, targetId, dc) {
+      const t = state.combatants[targetId]!;
+      if (!t.alive || t.conditions.some((k) => k.id === 'frightened')) return [];
+      const events: GameEvent[] = [];
+      const save = savingThrow(state, targetId, 'wis', dc);
+      events.push(save.event);
+      if (save.success) return events;
+      t.conditions.push({ id: 'frightened', sourceId: attackerId, repeatSave: { ability: 'wis', dc } });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'frightened', sourceId: attackerId });
+      return events;
+    },
+  },
+};
+
+/** Dice for a smite at a given slot level: base, plus `perLevel` per step up. */
+export function smiteDice(spellId: string, slotLevel: number): string {
+  const spec = SMITE_SPECS[spellId];
+  if (!spec) return '0d6';
+  const base = parseDice(spec.dice);
+  const up = parseDice(spec.perLevel);
+  const steps = Math.max(0, slotLevel - 1);
+  return `${base.count + up.count * steps}d${base.sides}`;
+}
+
+/**
+ * Spend the armed smite on a hit that just landed. Clears the armed state
+ * whether or not the rider fires, because the slot is gone either way.
+ */
+export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, crit: boolean): GameEvent[] {
+  const attacker = state.combatants[attackerId]!;
+  const armed = attacker.armedSmite;
+  if (!armed) return [];
+  delete attacker.armedSmite;
+  attacker.conditions = attacker.conditions.filter((k) => k.id !== 'smiting');
+  const spec = SMITE_SPECS[armed.spellId];
+  if (!spec) return [];
+
+  const roll = rollDice(state.rng, smiteDice(armed.spellId, armed.slotLevel), crit);
+  state.rng = roll.state;
+  // Shout first: "X is no longer smiting" ahead of the smite itself reads like
+  // the spell fizzled.
+  const events: GameEvent[] = [{
+    type: 'smited',
+    attackerId, targetId, spellId: armed.spellId,
+    slotLevel: armed.slotLevel, amount: roll.total, crit,
+  }, { type: 'conditionRemoved', combatantId: attackerId, condition: 'smiting' }];
+  events.push(...applyDamage(state, targetId, attackerId, roll.total, spec.damageType, roll.rolls,
+    { crit, tags: [spec.name] }));
+  if (spec.rider) {
+    events.push(...spec.rider(state, attackerId, targetId, 8 + proficiencyBonus(attacker.level) +
+      abilityMod(attacker.abilities[attacker.spellcastingAbility ?? 'cha'])));
+  }
+  return events;
+}
+
 export function applyDamage(
   state: GameState,
   targetId: Id,

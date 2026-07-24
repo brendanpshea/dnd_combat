@@ -35,6 +35,7 @@ function kindOf(e: GameEvent): string {
     case 'healed': return 'heal';
     case 'damageDealt': return e.tags?.includes('Critical Hit') ? 'dmg crit' : 'dmg';
     case 'attackRolled': return e.hit ? 'hit' : 'miss';
+    case 'smited': return 'hit';
     case 'savingThrow': return e.success ? 'saved' : 'failed';
     case 'conditionApplied':
     case 'conditionRemoved':
@@ -66,6 +67,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'concentrationBroken':
     case 'hideCheck': return e.combatantId;
     case 'attackRolled': return e.attackerId;
+    case 'smited': return e.attackerId;
     case 'savingThrow': return e.combatantId;
     case 'damageDealt':
     case 'healed': return e.targetId;

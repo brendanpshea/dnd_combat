@@ -39,6 +39,8 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   blessed:        { icon: '✨', label: 'Blessed', kind: 'buff' },
   baned:          { icon: '💀', label: 'Baned — -1d4 to attacks and saves', kind: 'debuff' },
   warded:         { icon: '🔰', label: 'Warded — +2 AC', kind: 'buff' },
+  smiting:        { icon: '⚡', label: 'Smite ready — the next melee hit unleashes it', kind: 'buff' },
+  burning:        { icon: '🔥', label: 'Burning — 1d6 fire each turn until it saves', kind: 'debuff' },
   hasted:         { icon: '🐇', label: 'Hasted — double speed, +2 AC, an extra attack', kind: 'buff' },
   marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
   inspired:       { icon: '⭐', label: 'Inspired — advantage on next attack', kind: 'buff' },

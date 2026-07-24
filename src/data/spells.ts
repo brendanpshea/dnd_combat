@@ -106,6 +106,20 @@ export function spellDc(state: GameState, casterId: Id): number {
 }
 
 /**
+ * Hold a smite ready. The slot is spent now and the next melee hit discharges
+ * it (see `dischargeSmite` in engine/rules/attack.ts). The `smiting` condition
+ * carries none of the data — it exists so the board shows a badge and the
+ * player can see the swing is loaded.
+ */
+function armSmite({ state, casterId, slotLevel }: CastContext, spellId: Id): GameEvent[] {
+  const c = state.combatants[casterId]!;
+  c.armedSmite = { spellId, slotLevel };
+  if (c.conditions.some((k) => k.id === 'smiting')) return [];
+  c.conditions.push({ id: 'smiting', sourceId: casterId });
+  return [{ type: 'conditionApplied', combatantId: casterId, condition: 'smiting', sourceId: casterId }];
+}
+
+/**
  * Damage cantrips gain a die at levels 5/11/17. Scales the leading die count of
  * a dice expression ('1d10' → '2d10' at level 5), so a cantrip's damage roll is
  * `rollDice(rng, cantripDice(base, caster.level))`.
@@ -1560,6 +1574,51 @@ export const SPELLS: Record<Id, SpellData> = {
    * caster's nearest living enemy (transferHuntersMark in attack.ts) — one
    * cast covers the whole fight, no re-casting after every kill.
    */
+  /**
+   * The smites. All four are bonus-action self-buffs that *arm* the next melee
+   * hit rather than reacting to one, because this engine resolves an attack
+   * atomically — there is nowhere to ask "smite? y/n" between the hit and the
+   * damage. Arming up front is also the better game: it makes the paladin spend
+   * a resource on a prediction, and it puts the choice in the spell tray where
+   * the player can see slots, icons and info cards.
+   *
+   * Divine Smite is here too, as a spell with no rider, so choosing the slot
+   * level is a real decision. It stays a *feature* as well: with the bonus
+   * action free and nothing armed, `resolveAttack` still fires it automatically
+   * on a crit or a kill, so a player who never opens the tray loses nothing.
+   *
+   * The dice and riders live in SMITE_SPECS (engine/rules/attack.ts), next to
+   * the code that discharges them.
+   */
+  'divine-smite': {
+    id: 'divine-smite', name: 'Divine Smite', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '⚡',
+    cast: (ctx) => armSmite(ctx, 'divine-smite'),
+  },
+  'searing-smite': {
+    id: 'searing-smite', name: 'Searing Smite', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '🔥',
+    cast: (ctx) => armSmite(ctx, 'searing-smite'),
+  },
+  'thunderous-smite': {
+    id: 'thunderous-smite', name: 'Thunderous Smite', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '💥',
+    cast: (ctx) => armSmite(ctx, 'thunderous-smite'),
+  },
+  'wrathful-smite': {
+    id: 'wrathful-smite', name: 'Wrathful Smite', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '😱',
+    cast: (ctx) => armSmite(ctx, 'wrathful-smite'),
+  },
+
   'hunters-mark': {
     id: 'hunters-mark', name: "Hunter's Mark", level: 1, castingTime: 'bonus',
     targeting: { kind: 'creature', range: 90, who: 'enemy', count: 1 },

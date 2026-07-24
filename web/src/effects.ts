@@ -164,6 +164,24 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         }
         break;
       }
+      case 'smited': {
+        // The class's signature moment: a golden burst on the target, a screen
+        // flash, and its own shout. Previously this landed as a small tag float
+        // under the damage number and read like a rounding error.
+        const cell = cellOf(e.targetId);
+        if (cell) {
+          areas.push({ id: nextId++, cellKeys: [cell], centerKey: cell, kind: 'radiant', delayMs: stagger });
+          floats.push({
+            id: nextId++, cellKey: cell,
+            text: e.crit ? 'CRITICAL SMITE!' : 'SMITE!',
+            cls: 'tag smite', delayMs: stagger,
+          });
+        }
+        critFlash = true;
+        sound('radiant', stagger);
+        stagger += 220;
+        break;
+      }
       case 'damageDealt': {
         const cell = cellOf(e.targetId);
         const crit = pendingCrit;

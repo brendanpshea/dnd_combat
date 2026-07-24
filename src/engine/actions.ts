@@ -17,7 +17,8 @@ import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
-import { resolveAttack, breakConcentration, canAttackWith } from './rules/attack.js';
+import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS } from './rules/attack.js';
+import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
 import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
@@ -103,6 +104,9 @@ function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): 
   // the board — recasting just re-places the same conjuration. Its kind is the
   // spell id, so match on that.
   if (actor.summons?.some((s) => s.kind === spell.id)) return false;
+  // A smite is already held ready: arming a second would silently overwrite the
+  // first and burn the slot for nothing. Discharge it, then load another.
+  if (actor.armedSmite && SMITE_SPECS[spell.id]) return false;
   if (spell.level === 0) return slotLevel === 0;
   // Innate: cast at slotLevel 0 (spending no slot), limited by its own pool.
   // Checked before the slot path so a fighter — which has no slots at all — can
@@ -435,11 +439,19 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     if (spell.castingTime === 'reaction' || spell.outOfCombat) continue; // Shield autocasts; Guidance is shop-only
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
-    const slotLevel = actor.innateSpells[sid] ? 0 : spell.level;
-    if (!spellAvailable(actor, spell, slotLevel)) continue;
-    for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
-      const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };
-      if (isLegalAction(state, actorId, a)) actions.push(a);
+    const baseLevel = actor.innateSpells[sid] ? 0 : spell.level;
+    // Smites are the one place upcasting is a real decision rather than a menu
+    // full of near-duplicates: the whole point of a paladin's turn is choosing
+    // how much of the tank to spend on this swing. Every other spell is offered
+    // at its base level only, as before.
+    const levels = SMITE_SPECS[sid]
+      ? actor.spellSlots.map((_, i) => i + 1).filter((lvl) => spellAvailable(actor, spell, lvl))
+      : spellAvailable(actor, spell, baseLevel) ? [baseLevel] : [];
+    for (const slotLevel of levels) {
+      for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
+        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };
+        if (isLegalAction(state, actorId, a)) actions.push(a);
+      }
     }
   }
 
@@ -648,6 +660,16 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
     events.push(save.event);
     if (save.success) {
       events.push({ type: 'conditionRemoved', combatantId: id, condition: cond.id });
+    } else if (cond.id === 'burning') {
+      // Searing Smite: still alight, so it bites again. The only save-ends
+      // condition that *does* something on a failure rather than merely
+      // persisting — which is what makes it worth a slot on a target that will
+      // live a few more rounds.
+      const burn = rollDice(state.rng, '1d6');
+      state.rng = burn.state;
+      events.push(...applyDamage(state, id, cond.sourceId ?? id, burn.total, 'fire', burn.rolls,
+        { tags: ['Searing Smite'] }));
+      if (state.combatants[id]!.alive) keep.push(cond);
     } else if (cond.id === 'incapacitated') {
       const esc = {
         id: 'unconscious' as const,

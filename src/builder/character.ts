@@ -297,6 +297,12 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   // default (players, and the AI, forgot to summon it otherwise). The campaign
   // familiar flag still applies, redundantly and harmlessly.
   if (spellIds.includes('find-familiar')) combatant.familiar = { kind: 'owl' };
+  // Divine Smite is a class *feature*, so it rides along free rather than
+  // competing for one of the paladin's prepared spells — it just happens to be
+  // expressed as a castable spell so the player can choose the slot level.
+  if (combatant.featureIds.includes('divine-smite') && !combatant.spellIds.includes('divine-smite')) {
+    combatant.spellIds.push('divine-smite');
+  }
   return combatant;
 }
 

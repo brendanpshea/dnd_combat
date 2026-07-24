@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
-import { resolveAttack } from '../src/engine/rules/attack.js';
+import { resolveAttack, smiteDice } from '../src/engine/rules/attack.js';
 import { acOf } from '../src/data/armor.js';
 import { abilityMod } from '../src/engine/types.js';
 import type { Combatant, Position } from '../src/engine/types.js';
@@ -135,17 +135,42 @@ describe('Paladin: Divine Smite', () => {
     expect(c.state.combatants[atk.id]!.turn.bonusActionUsed).toBe(true);
   });
 
-  it('holds the slot against a healthy target — smite is a finisher, not an opener', () => {
+  it('holds the slot on an ordinary hit against a healthy target', () => {
     const atk = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 2 });
     const foe = target({ x: 4, y: 3 }, 'foe', 1); // AC 1 → always hits; 999 HP → no smite can finish it
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [atk, foe] });
     const slotsBefore = c.state.combatants[atk.id]!.spellSlots[0]!.current;
 
     const events = resolveAttack(c.state, atk.id, 'foe', 'longsword');
+    const rolled = events.find((e) => e.type === 'attackRolled') as { crit: boolean } | undefined;
+    expect(rolled?.crit, 'seed 1 must be an ordinary hit for this test to mean anything').toBe(false);
     const smite = events.find((e) => e.type === 'damageDealt' && (e as { tags?: string[] }).tags?.includes('Divine Smite'));
     expect(smite).toBeUndefined();
     expect(c.state.combatants[atk.id]!.spellSlots[0]!.current).toBe(slotsBefore); // slot saved
     expect(c.state.combatants[atk.id]!.turn.bonusActionUsed).toBe(false);
+  });
+
+  // The old rule fired on predicted kills *only*, which meant it pointedly
+  // never triggered on a natural 20 against a healthy boss — the exact swing
+  // the class exists for. A crit doubles the smite dice, so it is the moment a
+  // paladin would never choose to hold the slot.
+  it('fires on a crit even against a full-health target', () => {
+    for (let seed = 1; seed < 400; seed++) {
+      const atk = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 2 });
+      const foe = target({ x: 4, y: 3 }, 'foe', 1); // 999 HP: no smite could ever "finish" it
+      const c = new Combat({ seed, mapId: 'open', combatants: [atk, foe] });
+      const events = resolveAttack(c.state, atk.id, 'foe', 'longsword');
+      const rolled = events.find((e) => e.type === 'attackRolled') as { crit: boolean } | undefined;
+      if (!rolled?.crit) continue;
+      const smited = events.find((e) => e.type === 'smited');
+      expect(smited, 'a crit must smite').toBeDefined();
+      expect((smited as { crit: boolean }).crit).toBe(true);
+      // Crit doubles the dice: 2d8 → 4d8, so at least 4.
+      expect((smited as { amount: number }).amount).toBeGreaterThanOrEqual(4);
+      expect(c.state.combatants[atk.id]!.spellSlots[0]!.current).toBe(1);
+      return;
+    }
+    throw new Error('no crit across 400 seeds');
   });
 
   it('does not fire when the bonus action is already spent this turn', () => {
@@ -209,5 +234,134 @@ describe('Paladin: Sacred Weapon', () => {
     const totalAfter = (after.find((e) => e.type === 'attackRolled') as { total: number }).total;
 
     expect(totalAfter - totalBefore).toBe(abilityMod(pal.abilities.cha));
+  });
+});
+
+/**
+ * The smite spells: bonus-action self-buffs that arm the next melee hit. This
+ * engine resolves an attack atomically, so there is nowhere to ask "smite?"
+ * between the hit and the damage — arming up front is both what the engine can
+ * express and the more interesting decision.
+ */
+describe('Paladin: smite spells', () => {
+  const armed = (c: Combat, id: string) => c.state.combatants[id]!.armedSmite;
+
+  it('a paladin knows the smites from level 2, and Divine Smite rides along free', () => {
+    const l1 = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 1, y: 1 }, level: 1 });
+    expect(l1.spellIds).not.toContain('divine-smite');
+
+    const p = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 1, y: 1 }, level: 2 });
+    expect(p.spellIds).toEqual(expect.arrayContaining(
+      ['divine-smite', 'searing-smite', 'thunderous-smite', 'wrathful-smite']));
+  });
+
+  it('arming spends the slot and the bonus action; the next melee hit discharges it', () => {
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 3 }), id: 'pal' };
+    const foe = target({ x: 4, y: 3 }, 'foe', 1);
+    const c = new Combat({ seed: 5, mapId: 'open', combatants: [pal, foe] });
+    until(c, 'pal');
+    const slots = c.state.combatants['pal']!.spellSlots[0]!.current;
+
+    c.apply({ kind: 'castSpell', spellId: 'divine-smite', slotLevel: 1, targets: [] });
+    expect(armed(c, 'pal')).toMatchObject({ spellId: 'divine-smite', slotLevel: 1 });
+    expect(c.state.combatants['pal']!.spellSlots[0]!.current).toBe(slots - 1);
+    expect(c.state.combatants['pal']!.turn.bonusActionUsed).toBe(true);
+    expect(c.state.combatants['pal']!.conditions.some((k) => k.id === 'smiting')).toBe(true);
+
+    const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'foe' });
+    expect(events.some((e) => e.type === 'smited')).toBe(true);
+    expect(armed(c, 'pal')).toBeUndefined();
+    expect(c.state.combatants['pal']!.conditions.some((k) => k.id === 'smiting')).toBe(false);
+  });
+
+  it('a second smite is not offered while one is already held', () => {
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 5 }), id: 'pal' };
+    const foe = target({ x: 4, y: 3 }, 'foe', 1);
+    const c = new Combat({ seed: 5, mapId: 'open', combatants: [pal, foe] });
+    until(c, 'pal');
+    const smiteOffered = () => c.legalActions()
+      .some((a) => a.kind === 'castSpell' && a.spellId.endsWith('-smite'));
+    expect(smiteOffered()).toBe(true);
+    c.apply({ kind: 'castSpell', spellId: 'searing-smite', slotLevel: 1, targets: [] });
+    expect(smiteOffered()).toBe(false);
+  });
+
+  it('an armed smite suppresses the automatic one — never two on a single hit', () => {
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 3 }), id: 'pal' };
+    const foe = target({ x: 4, y: 3 }, 'foe', 1); // durable, so the hit can't end it early
+    const c = new Combat({ seed: 6, mapId: 'open', combatants: [pal, foe] });
+    until(c, 'pal');
+    c.apply({ kind: 'castSpell', spellId: 'wrathful-smite', slotLevel: 1, targets: [] });
+    const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'foe' });
+    expect(events.filter((e) => e.type === 'smited')).toHaveLength(1);
+    expect((events.find((e) => e.type === 'smited') as { spellId: string }).spellId).toBe('wrathful-smite');
+  });
+
+  // These smites last a minute in the rules, discharging on the next hit that
+  // lands — so a weapon blow that kills outright leaves the smite still held
+  // rather than wasting the slot on a corpse.
+  it('stays armed when the weapon blow alone kills the target', () => {
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 3 }), id: 'pal' };
+    const weak = target({ x: 4, y: 3 }, 'weak', 1, 1);   // dies to any hit
+    const tough = target({ x: 2, y: 3 }, 'tough', 1);
+    const c = new Combat({ seed: 6, mapId: 'open', combatants: [pal, weak, tough] });
+    until(c, 'pal');
+    c.apply({ kind: 'castSpell', spellId: 'divine-smite', slotLevel: 1, targets: [] });
+    const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'weak' });
+    expect(c.state.combatants['weak']!.alive).toBe(false);
+    expect(events.some((e) => e.type === 'smited')).toBe(false);
+    expect(c.state.combatants['pal']!.armedSmite).toMatchObject({ spellId: 'divine-smite' });
+  });
+
+  it('upcasting adds a die per slot level', () => {
+    expect(smiteDice('divine-smite', 1)).toBe('2d8');
+    expect(smiteDice('divine-smite', 3)).toBe('4d8');
+    expect(smiteDice('searing-smite', 1)).toBe('1d6');
+    expect(smiteDice('searing-smite', 2)).toBe('2d6');
+  });
+
+  it('Thunderous Smite knocks the target back and prone on a failed save', () => {
+    for (let seed = 1; seed < 120; seed++) {
+      const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 3 }), id: 'pal' };
+      const foe = target({ x: 3, y: 4 }, 'foe', 1);
+      const c = new Combat({ seed, mapId: 'open', combatants: [pal, foe] });
+      until(c, 'pal');
+      c.apply({ kind: 'castSpell', spellId: 'thunderous-smite', slotLevel: 1, targets: [] });
+      const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'foe' });
+      if (!events.some((e) => e.type === 'smited')) continue;
+      const f = c.state.combatants['foe']!;
+      if (!f.conditions.some((k) => k.id === 'prone')) continue; // made the save
+      expect(f.position.y).toBeGreaterThan(4);  // shoved straight back
+      return;
+    }
+    throw new Error('thunderous smite never landed its rider across 120 seeds');
+  });
+
+  it('Searing Smite burns on: damage at the end of the victim’s turn until it saves', () => {
+    for (let seed = 1; seed < 120; seed++) {
+      const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 3 }), id: 'pal' };
+      const foe = target({ x: 4, y: 3 }, 'foe', 1);
+      const c = new Combat({ seed, mapId: 'open', combatants: [pal, foe] });
+      until(c, 'pal');
+      c.apply({ kind: 'castSpell', spellId: 'searing-smite', slotLevel: 1, targets: [] });
+      c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'foe' });
+      if (!c.state.combatants['foe']!.conditions.some((k) => k.id === 'burning')) continue;
+
+      // Walk to the end of the burning creature's own turn, where the save is
+      // rolled: fail and it takes fire, succeed and the flames go out.
+      until(c, 'foe');
+      const hpBefore = c.state.combatants['foe']!.hp;
+      const events = c.apply({ kind: 'endTurn' });
+      const burned = events.some((e) => e.type === 'damageDealt' &&
+        (e as { tags?: string[] }).tags?.includes('Searing Smite'));
+      if (burned) {
+        expect(c.state.combatants['foe']!.hp).toBeLessThan(hpBefore);
+        expect(c.state.combatants['foe']!.conditions.some((k) => k.id === 'burning')).toBe(true);
+      } else {
+        expect(c.state.combatants['foe']!.conditions.some((k) => k.id === 'burning')).toBe(false);
+      }
+      return;
+    }
+    throw new Error('searing smite never caught across 120 seeds');
   });
 });
