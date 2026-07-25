@@ -439,6 +439,135 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['harpy-claws', 'harpy-club'],
     attacksPerAction: 2,
   },
+  // ---- CR 5-10 ----------------------------------------------------------
+  // The roster had nothing above CR 5, which left the arena's late waves
+  // buying headcount instead of quality: at a level-5 even-fight budget the
+  // generator could only ever field six bodies drawn from the same handful of
+  // 1,800 XP blocks. These are the shelf above that.
+  'hill-giant': {
+    id: 'hill-giant', name: 'Hill Giant',
+    ac: 13, cr: 5, hp: 105, speed: 40,
+    creatureType: 'giant',
+    abilities: { str: 21, dex: 8, con: 19, int: 5, wis: 9, cha: 6 },
+    weaponIds: ['giant-greatclub', 'giant-rock'],
+    attacksPerAction: 2,
+  },
+  'stone-giant': {
+    id: 'stone-giant', name: 'Stone Giant',
+    ac: 17, cr: 7, hp: 126, speed: 40,
+    creatureType: 'giant',
+    abilities: { str: 23, dex: 15, con: 20, int: 10, wis: 12, cha: 9 },
+    savingThrowProfs: ['dex', 'con', 'wis'],
+    weaponIds: ['giant-greatclub', 'greater-giant-rock'],
+    attacksPerAction: 2,
+  },
+  'frost-giant': {
+    id: 'frost-giant', name: 'Frost Giant',
+    ac: 15, cr: 8, hp: 138, speed: 40,
+    creatureType: 'giant',
+    abilities: { str: 23, dex: 9, con: 21, int: 9, wis: 10, cha: 12 },
+    savingThrowProfs: ['con', 'wis', 'cha'],
+    weaponIds: ['frost-giant-greataxe', 'greater-giant-rock'],
+    metalArmor: true, // patchwork plate
+    attacksPerAction: 2,
+    immunities: ['cold'],
+  },
+  'fire-giant': {
+    id: 'fire-giant', name: 'Fire Giant',
+    ac: 18, cr: 9, hp: 162, speed: 30,
+    creatureType: 'giant',
+    abilities: { str: 25, dex: 9, con: 23, int: 10, wis: 14, cha: 13 },
+    savingThrowProfs: ['dex', 'con', 'cha'],
+    weaponIds: ['fire-giant-greatsword', 'greater-giant-rock'],
+    metalArmor: true,
+    attacksPerAction: 2,
+    immunities: ['fire'],
+  },
+  chimera: {
+    id: 'chimera', name: 'Chimera',
+    ac: 14, cr: 6, hp: 114, speed: 30,
+    creatureType: 'monstrosity',
+    abilities: { str: 19, dex: 11, con: 19, int: 3, wis: 14, cha: 10 },
+    featureIds: ['breath-fire-chimera'],
+    weaponIds: ['chimera-bite', 'chimera-horns', 'chimera-claws'],
+    attacksPerAction: 3,
+  },
+  wyvern: {
+    id: 'wyvern', name: 'Wyvern',
+    ac: 13, cr: 6, hp: 110, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 19, dex: 10, con: 16, int: 5, wis: 12, cha: 6 },
+    weaponIds: ['wyvern-sting', 'wyvern-bite'],
+    attacksPerAction: 2,
+  },
+  // Five heads, five bites: the hydra is the action-economy monster, a wall of
+  // attacks on one body rather than the reverse.
+  hydra: {
+    id: 'hydra', name: 'Hydra',
+    ac: 15, cr: 8, hp: 172, speed: 30,
+    creatureType: 'monstrosity',
+    abilities: { str: 20, dex: 12, con: 20, int: 2, wis: 10, cha: 7 },
+    savingThrowProfs: ['dex', 'con', 'wis'],
+    weaponIds: ['hydra-bite'],
+    attacksPerAction: 5,
+  },
+  // Young dragons: the wyrmlings one age category on. Same shape as the
+  // wyrmling blocks, with the heavier breath spec and a claw routine.
+  'young-white': {
+    id: 'young-white', name: 'Young White Dragon',
+    ac: 17, cr: 6, hp: 133, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 18, dex: 10, con: 18, int: 6, wis: 11, cha: 12 },
+    savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
+    featureIds: ['breath-cold-young'],
+    weaponIds: ['young-white-bite', 'young-dragon-claws'],
+    attacksPerAction: 3,
+    immunities: ['cold'],
+  },
+  'young-black': {
+    id: 'young-black', name: 'Young Black Dragon',
+    ac: 18, cr: 7, hp: 127, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 19, dex: 14, con: 17, int: 12, wis: 11, cha: 15 },
+    savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
+    featureIds: ['breath-acid-young'],
+    weaponIds: ['young-black-bite', 'young-dragon-claws'],
+    attacksPerAction: 3,
+    immunities: ['acid'],
+  },
+  'young-green': {
+    id: 'young-green', name: 'Young Green Dragon',
+    ac: 18, cr: 8, hp: 136, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 19, dex: 12, con: 17, int: 16, wis: 13, cha: 15 },
+    savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
+    featureIds: ['breath-poison-young'],
+    weaponIds: ['young-green-bite', 'young-dragon-claws'],
+    attacksPerAction: 3,
+    immunities: ['poison'],
+  },
+  'young-blue': {
+    id: 'young-blue', name: 'Young Blue Dragon',
+    ac: 18, cr: 9, hp: 152, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 21, dex: 10, con: 19, int: 14, wis: 13, cha: 17 },
+    savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
+    featureIds: ['breath-lightning-young'],
+    weaponIds: ['young-blue-bite', 'young-dragon-claws'],
+    attacksPerAction: 3,
+    immunities: ['lightning'],
+  },
+  'young-red': {
+    id: 'young-red', name: 'Young Red Dragon',
+    ac: 18, cr: 10, hp: 178, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 23, dex: 10, con: 21, int: 14, wis: 11, cha: 19 },
+    savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
+    featureIds: ['breath-fire-young'],
+    weaponIds: ['young-red-bite', 'young-dragon-claws'],
+    attacksPerAction: 3,
+    immunities: ['fire'],
+  },
   manticore: {
     id: 'manticore', name: 'Manticore',
     ac: 14, hp: 68, speed: 30,
@@ -948,6 +1077,12 @@ export const MONSTER_XP: Record<Id, number> = {
   shadow: 100, specter: 200, 'will-o-wisp': 450, wight: 700, mummy: 700,
   'black-wyrmling': 450, 'green-wyrmling': 450, 'white-wyrmling': 450,
   'blue-wyrmling': 700, 'red-wyrmling': 1100,
+  // CR 5-10. The band above 1,800 was empty before these.
+  'hill-giant': 1800, chimera: 2300, wyvern: 2300, 'young-white': 2300,
+  'stone-giant': 2900, 'young-black': 2900,
+  'frost-giant': 3900, hydra: 3900, 'young-green': 3900,
+  'fire-giant': 5000, 'young-blue': 5000,
+  'young-red': 5900,
 };
 
 /** Total XP an encounter is worth (sum of member XP). */
