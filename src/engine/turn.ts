@@ -211,35 +211,50 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   if (state.winner) return events;
 
   const n = state.initiativeOrder.length;
-  for (let i = 1; i <= n; i++) {
-    const idx = (state.turnIndex + i) % n;
-    const next = state.combatants[state.initiativeOrder[idx]!]!;
-    if (!next.alive || isDown(next)) continue;
-    if (idx <= state.turnIndex) {
-      state.round += 1;
-      for (const p of expireIllusions(state.grid, state.round)) {
-        events.push({ type: 'illusionPopped', position: p });
+  // Advancing can need more than one hop. A creature can die *inside* its own
+  // startTurn -- Spiritual Guardians burns it down before it ever acts -- and
+  // it would then sit there as the active combatant, dead, with no legal
+  // action able to move the fight on: not even endTurn, which requires a live
+  // actor. That is a softlock, and it only shows up when a slow monster ends
+  // its approach inside the aura. So the scan below runs until it lands on
+  // someone actually able to take a turn.
+  for (let hop = 0; hop <= n; hop++) {
+    let moved = false;
+    for (let i = 1; i <= n; i++) {
+      const idx = (state.turnIndex + i) % n;
+      const next = state.combatants[state.initiativeOrder[idx]!]!;
+      if (!next.alive || isDown(next)) continue;
+      if (idx <= state.turnIndex) {
+        state.round += 1;
+        for (const p of expireIllusions(state.grid, state.round)) {
+          events.push({ type: 'illusionPopped', position: p });
+        }
+        events.push({ type: 'roundStarted', round: state.round });
+        // Termination guard: a real fight ends inside ~15 rounds; anything past
+        // MAX_ROUNDS is a pathological stall (two sides that can't finish each
+        // other, e.g. a zombie surviving on Undead Fortitude while nothing lands
+        // radiant). Force a result so the game never hangs — the side with more
+        // standing HP wins, ties to team2 so a campaign party retries rather than
+        // gets an unearned pass.
+        if (state.round > MAX_ROUNDS && !state.winner) {
+          const standingHp = (team: TeamId) => Object.values(state.combatants)
+            .filter((cc) => cc.alive && cc.hp > 0 && cc.team === team)
+            .reduce((sum, cc) => sum + cc.hp, 0);
+          const winner: TeamId = standingHp('team1') > standingHp('team2') ? 'team1' : 'team2';
+          state.winner = winner;
+          events.push({ type: 'combatEnded', winner });
+          return events;
+        }
       }
-      events.push({ type: 'roundStarted', round: state.round });
-      // Termination guard: a real fight ends inside ~15 rounds; anything past
-      // MAX_ROUNDS is a pathological stall (two sides that can't finish each
-      // other, e.g. a zombie surviving on Undead Fortitude while nothing lands
-      // radiant). Force a result so the game never hangs — the side with more
-      // standing HP wins, ties to team2 so a campaign party retries rather than
-      // gets an unearned pass.
-      if (state.round > MAX_ROUNDS && !state.winner) {
-        const standingHp = (team: TeamId) => Object.values(state.combatants)
-          .filter((cc) => cc.alive && cc.hp > 0 && cc.team === team)
-          .reduce((sum, cc) => sum + cc.hp, 0);
-        const winner: TeamId = standingHp('team1') > standingHp('team2') ? 'team1' : 'team2';
-        state.winner = winner;
-        events.push({ type: 'combatEnded', winner });
-        return events;
-      }
+      state.turnIndex = idx;
+      events.push(...startTurn(state));
+      moved = true;
+      break;
     }
-    state.turnIndex = idx;
-    events.push(...startTurn(state));
-    return events;
+    if (!moved) return events;   // no living combatants — combat already ended
+    if (state.winner) return events;
+    const active = currentCombatant(state);
+    if (active.alive && !isDown(active)) return events;
   }
-  return events; // no living combatants — combat already ended
+  return events;
 }
