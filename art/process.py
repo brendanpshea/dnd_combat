@@ -67,6 +67,14 @@ MIN_PAD = 0.03
 # sits in the interior at 400-900 px. Dust is a handful of pixels anywhere.
 DUST_MAX_PX = 32            # smaller than 6x6 — never meaningful art
 EDGE_ARTIFACT_MAX_SHARE = 0.10   # a border blob this small is a keying leftover
+CAPTION_BAND = 0.20         # a caption lives in the bottom fifth of the canvas
+CAPTION_MAX_HEIGHT = 0.09   # …and is a line of text, not a picture
+CAPTION_MIN_HEIGHT = 0.02   # …tall enough to be type: a 3px band is a shadow
+CAPTION_MIN_GAP = 6         # …with clear space between it and the figure
+# "Clear space" has to tolerate a keying hairline: several sources carry a
+# few opaque pixels on every row down the full height, which would otherwise
+# mean no row is ever empty and no caption is ever found.
+CAPTION_NOISE_ROW = 0.02    # a row this sparse counts as empty
 
 
 def ink_bbox(im, thresh=40):
@@ -190,6 +198,55 @@ def strip_specks(im):
     return out, len(doomed)
 
 
+def strip_caption(im):
+    """Remove a baked-in caption row ("TOKEN" / "PORTRAIT") left by slicing.
+
+    The generation sheets label each tile, and a slice that takes a few pixels
+    too many carries the label into the asset. It survives strip_specks: the
+    letters are far bigger than dust and, being centred, touch no edge.
+
+    Deliberately narrow, for the same reason strip_specks is. The rule is the
+    *shape* of a caption, not "small thing near the bottom": every blob must
+    sit inside the bottom fifth, the whole band must be short enough to be a
+    line of type, and there must be clear space between it and the figure. A
+    creature standing on detached ground, or a dropped weapon at its feet,
+    fails the gap test and is left alone.
+    """
+    w, h = im.size
+    a = im.split()[3].load()
+    noise = max(2, int(w * CAPTION_NOISE_ROW))
+    rows = [sum(1 for x in range(w) if a[x, y] > 40) > noise for y in range(h)]
+    if not any(rows):
+        return im, 0
+    band_top = int(h * (1 - CAPTION_BAND))
+    # Walk up from the bottom: the caption is the last run of ink, and what
+    # marks it as a caption rather than the figure's feet is the gap above it.
+    last = max(y for y in range(h) if rows[y])
+    y = last
+    while y > 0 and rows[y]:
+        y -= 1
+    run_top = y + 1
+    if run_top < band_top:
+        return im, 0                      # the ink reaches up out of the band
+    band_h = last - run_top + 1
+    if band_h > h * CAPTION_MAX_HEIGHT:
+        return im, 0                      # too tall to be a line of type
+    if band_h < h * CAPTION_MIN_HEIGHT:
+        return im, 0                      # a hairline: a shadow or a base, not type
+    gap = 0
+    while y > 0 and not rows[y]:
+        gap += 1
+        y -= 1
+    if gap < CAPTION_MIN_GAP:
+        return im, 0                      # attached to the figure
+    out = im.copy()
+    px = out.load()
+    for yy in range(run_top, last + 1):
+        for xx in range(w):
+            px[xx, yy] = (0, 0, 0, 0)
+    return out, last - run_top + 1
+
+
 def normalize_framing(im, kind):
     """Scale a roster asset down if it fills more of its frame than the house
     ceiling allows. Never scales up — an asset drawn small is drawn small on
@@ -270,6 +327,7 @@ total = 0
 have_token, have_portrait = [], []
 reframed = []
 despeckled = []
+captioned = []
 
 for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
     for cid in IDS:
@@ -277,6 +335,9 @@ for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
         if not os.path.exists(src):
             continue
         im = Image.open(src).convert("RGBA")
+        im, caption = strip_caption(im)
+        if caption:
+            captioned.append(f"{kind}-{cid} ({caption}px)")
         if cid in ROSTER:
             im, curtains = strip_edge_curtains(im)
             im, specks = strip_specks(im)
@@ -296,6 +357,8 @@ print(f"tokens:    {len(have_token)} -> {sorted(have_token)}")
 print(f"portraits: {len(have_portrait)} -> {sorted(have_portrait)}")
 if despeckled:
     print(f"stray marks cleared: {len(despeckled)} -> {despeckled}")
+if captioned:
+    print(f"baked-in captions removed: {len(captioned)} -> {captioned}")
 if reframed:
     print(f"scaled down to the framing ceiling: {len(reframed)} -> {reframed}")
 if CHECK_ONLY:
