@@ -104,7 +104,7 @@ describe('build-choice points', () => {
     const rogue = c.characters.find((ch) => ch.classId === 'rogue')!;     // halfling
     const cleric = c.characters.find((ch) => ch.classId === 'cleric')!;   // human
     expect(fighter.portraitId).toBe('dwarf-berserker');
-    expect(rogue.portraitId).toBe('halfling-rogue');
+    expect(rogue.portraitId).toBe('halfling-warrior');
     expect(cleric.portraitId).toBe('cleric'); // human → class image
   });
 

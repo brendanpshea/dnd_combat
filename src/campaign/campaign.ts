@@ -500,14 +500,14 @@ export { HERO_NAMES as DEFAULT_NAMES, defaultNameFor };
  * orc a barbarian, which read wrong on a robed wizard. `martial` art is skipped
  * for casters, who fall back to their class portrait.
  */
-const SPECIES_PORTRAIT: Partial<Record<Id, { id: Id; martial: boolean }>> = {
-  dwarf: { id: 'dwarf-berserker', martial: true },
-  elf: { id: 'elf-archer', martial: true },
-  orc: { id: 'orc-barbarian', martial: true },
-  dragonborn: { id: 'dragonborn-paladin', martial: true },
-  tiefling: { id: 'tiefling-warlock', martial: false },
-  gnome: { id: 'gnome-bard', martial: false },
-  halfling: { id: 'halfling-rogue', martial: false },
+const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id }>> = {
+  dwarf: { martial: 'dwarf-berserker', caster: 'dwarf-cleric' },
+  elf: { martial: 'elf-archer', caster: 'elf-wizard' },
+  orc: { martial: 'orc-barbarian', caster: 'orc-shaman' },
+  dragonborn: { martial: 'dragonborn-paladin', caster: 'dragonborn-sorcerer' },
+  tiefling: { martial: 'tiefling-knight', caster: 'tiefling-warlock' },
+  gnome: { martial: 'gnome-warden', caster: 'gnome-bard' },
+  halfling: { martial: 'halfling-warrior', caster: 'halfling-priest' },
   // Human has no entry on purpose: the class portraits *are* the human art, so
   // a human fighter should look like the Fighter, not like the bard.
 };
@@ -516,12 +516,11 @@ const SPECIES_PORTRAIT: Partial<Record<Id, { id: Id; martial: boolean }>> = {
 const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric']);
 
 /**
- * Ranger and Paladin have no dedicated class portrait (unlike the original
- * four, whose class id *is* a portrait id) — they borrow the closest existing
- * art instead of going blank.
+ * Class portraits for hero classes — ranger and paladin now have dedicated art.
  */
 const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
-  ranger: 'elf-archer', paladin: 'dragonborn-paladin',
+  ranger: 'ranger',
+  paladin: 'paladin',
 };
 
 /** Sensible default portrait for a species/class combo: species art if it has
@@ -530,9 +529,7 @@ export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
   const species = SPECIES_PORTRAIT[speciesId];
   const classPortrait = CLASS_PORTRAIT[classId] ?? classId;
   if (!species) return classPortrait;
-  // Don't put the axe-wielding dwarf on a cleric; the class art is truer.
-  if (species.martial && CASTER_CLASSES.has(classId)) return classPortrait;
-  return species.id;
+  return CASTER_CLASSES.has(classId) ? species.caster : species.martial;
 }
 
 /**

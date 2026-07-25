@@ -332,90 +332,40 @@ navy hood.
 
 ### Tier A — species-neutral class art (fixes visibly wrong pictures)
 
-**Ranger** (`ranger`) — SIZE M
-> A chibi human ranger — **a man of Middle-Eastern descent with warm brown skin,
-> a close-cropped black beard, early thirties**. A deep-hooded forest-green
-> travelling cloak thrown back off one shoulder, worn leather bracers, a
-> longbow held upright at his side and a quiver of green-fletched arrows. A
-> small hawk perched on his shoulder. Calm, watchful half-smile. Iconic feature:
-> the upright longbow and the hawk. Palette: forest green, tan leather, muted
-> gold. Deliberately **not** elven — round ears, sturdier build, no silver hair.
+### Ranger (`ranger`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, calm watchful half-smile of a chibi human ranger, a man of Middle-Eastern descent with warm brown skin, a close-cropped black beard, and early thirties appearance, wearing a deep-hooded forest-green travelling cloak thrown back off one shoulder and a small hawk perched on his shoulder. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in worn leather bracers, holding an upright longbow at his side with a quiver of green-fletched arrows. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm saturated but cozy palette in forest green, tan leather, and muted gold. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Paladin** (`paladin`) — SIZE M
-> A chibi human paladin — **a woman of Central-American descent with deep brown
-> skin and black hair in a thick braided crown, late twenties**. Dark blued-steel
-> plate with a clean white tabard, a stylised gold sun blazon on the chest. One
-> gauntleted fist over her heart in an oath. Warm determined expression. Iconic
-> feature: the white tabard with the gold sun. Palette: dark steel, white, warm
-> gold. Deliberately **not** draconic — human face, no scales, no purple sash.
+### Paladin (`paladin`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, warm determined expression of a chibi human paladin, a woman of Central-American descent with deep brown skin and black hair in a thick braided crown, wearing dark blued-steel plate with a clean white tabard and a stylized gold sun blazon on the chest. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character with one gauntleted fist over her heart in an oath, wearing dark blued-steel armor and a white sun-embroidered tabard. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm saturated but cozy palette in dark steel, crisp white, and warm gold. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ### Tier B — casters of the martial species
 
-**Dwarf Cleric** (`dwarf-cleric`) — SIZE M
-> A chibi dwarf priest — **an elder woman with deep brown skin, silver-white hair
-> in two heavy braided loops, laugh lines, Himalayan-inflected dress**. A
-> saffron and deep-blue layered robe over a mail shirt, a heavy stone
-> prayer-amulet, a short warhammer resting head-down. Serene, kindly, formidable.
-> Iconic feature: the round stone amulet glowing softly. Palette: saffron, deep
-> blue, cool silver — a cold palette against the berserker's warm orange.
+### Dwarf Cleric (`dwarf-cleric`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, serene kindly expression with laugh lines of an elder chibi dwarf priestess woman with deep brown skin and silver-white hair in two heavy braided loops, wearing a heavy stone prayer-amulet glowing softly and Himalayan-inflected robes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character wearing saffron and deep-blue layered robes over mail, holding a short warhammer resting head-down. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Saffron, deep blue, and cool silver palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Elf Wizard** (`elf-wizard`) — SIZE M
-> A chibi elf mage — **a man with deep brown skin and long black locs pulled
-> back, South-Asian-inflected dress, ageless adult**. Indigo and brass robes with
-> geometric embroidery, a floating open codex at his shoulder, one hand raised
-> with a small violet rune spinning above the palm. Thoughtful, amused.
-> Iconic feature: the floating book and rune. Palette: indigo, brass, violet —
-> nothing of the archer's silver and leaf-gold.
+### Elf Wizard (`elf-wizard`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, thoughtful amused smile of an ageless chibi elf mage man with deep brown skin and long pointed elf ears, black locs pulled back, wearing indigo and brass robes with geometric embroidery and a floating open magic book at his shoulder. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in South-Asian-inflected indigo robes, with one hand raised casting a small spinning violet arcane rune. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Indigo, brass, and violet palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Orc Shaman** (`orc-shaman`) — SIZE M
-> A chibi orc shaman — **an elder man, grey-green skin, a white topknot and a
-> short white beard, weathered face, Pacific-Islander-inflected ornament**. A
-> cloak of woven grass and feathers, bone-and-shell necklaces, a gnarled staff
-> topped with a carved spirit-mask. Wise, wry, unbothered. Iconic feature: the
-> spirit-mask staff head. Palette: bone white, moss green, sky blue — cool and
-> pale against the barbarian's leopard-tan.
+### Orc Shaman (`orc-shaman`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, wise wry unbothered expression of an elder chibi orc shaman man with grey-green skin, a white topknot, a short white beard, small tusks, and bone-and-shell necklaces. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character wearing a cloak of woven grass and feathers, holding a gnarled staff topped with a carved spirit-mask. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Bone white, moss green, and sky blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Dragonborn Sorcerer** (`dragonborn-sorcerer`) — SIZE M
-> A chibi dragonborn sorcerer with **deep blue-and-teal scales**, a slender
-> narrow snout, and a swept-back crest of fin-like frills instead of horns.
-> No armour: flowing storm-grey robes with silver trim, arcs of pale lightning
-> crackling between the clawed fingertips. Sly, delighted expression. Iconic
-> feature: the frilled crest and the crackling hands. Palette: blue, teal,
-> storm grey, white lightning — the opposite of the paladin's gold and silver
-> plate.
+### Dragonborn Sorcerer (`dragonborn-sorcerer`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, sly delighted expression of a chibi dragonborn sorcerer with deep blue-and-teal scales, a slender snout, glowing eyes, and a swept-back crest of fin-like frills. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in flowing storm-grey robes with silver trim, with arcs of pale lightning crackling between clawed fingertips. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Deep blue, teal, storm grey, and white lightning palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ### Tier C — martials of the caster species
 
-**Tiefling Knight** (`tiefling-knight`) — SIZE M
-> A chibi tiefling knight — **a man with deep blue-violet skin and straight
-> forward-swept horns** (not curled), white hair in a short military crop, a
-> scar through one eyebrow. Battered dark-iron plate, a heavy crimson cloak
-> clasped at the shoulder, a greatsword resting point-down. Grim, steady, kind
-> around the eyes. Iconic feature: the straight forward horns over heavy plate.
-> Palette: dark iron, crimson, blue-violet skin — no teal, no gold stars.
+### Tiefling Knight (`tiefling-knight`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, grim steady kind expression of a chibi tiefling knight man with deep blue-violet skin, straight forward-swept horns, cropped white hair, and a scar through one eyebrow. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character wearing battered dark-iron plate armor, a heavy crimson cloak clasped at the shoulder, holding a greatsword resting point-down. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Dark iron, crimson, and blue-violet palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Gnome Warden** (`gnome-warden`) — SIZE M
-> A chibi gnome warrior — **an older man with ruddy tan skin, a huge white
-> walrus moustache and bushy white eyebrows, bald on top**. A brass-and-leather
-> breastplate a size too big, a crossbow slung across the back, brass goggles
-> pushed up on the forehead. Cheerful and pugnacious. Iconic feature: the white
-> moustache over the brass breastplate. Palette: brass, oxblood leather, cream —
-> nothing of the bard's orange kente.
+### Gnome Warden (`gnome-warden`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, cheerful pugnacious expression of an older chibi gnome warrior man with ruddy tan skin, a huge bushy white walrus moustache, bushy eyebrows, bald top, and brass goggles pushed up on his forehead. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character wearing a brass-and-leather breastplate and carrying a crossbow slung across his back. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Warm brass, oxblood leather, and cream palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Halfling Warrior** (`halfling-warrior`) — SIZE M
-> A chibi halfling fighter — **a woman with deep brown skin and tightly coiled
-> black hair in a short puff, freckles across the nose, broad-shouldered for a
-> halfling**. A mail shirt over a russet gambeson, a round shield with a green
-> spiral device on her arm, chin up. Bright and unintimidated. Iconic feature:
-> the round green-spiral shield. Palette: russet, steel, leaf green — no hood,
-> no navy.
+### Halfling Warrior (`halfling-warrior`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, bright unintimidated smile of a chibi halfling fighter woman with deep brown skin, tightly coiled black hair in a short puff, freckles across her nose, and broad shoulders. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character wearing a mail shirt over a russet gambeson, holding a round shield with a green spiral device on her arm. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Russet, steel, and leaf green palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
-**Halfling Priest** (`halfling-priest`) — SIZE M
-> A chibi halfling cleric — **an older man with light-tan skin, a neat grey
-> beard, East-Asian-inflected dress, round spectacles**. Cream and jade layered
-> robes, a lantern held up in one hand casting a warm glow on his face, a string
-> of wooden prayer beads. Gentle, slightly tired, patient. Iconic feature: the
-> raised lantern. Palette: cream, jade, lantern-amber.
+### Halfling Priest (`halfling-priest`) — Size Medium
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, gentle patient expression of an older chibi halfling cleric man with light-tan skin, a neat grey beard, round spectacles, wearing cream and jade layered robes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in East-Asian-inflected robes, holding up a brass lantern in one hand casting a warm glowing light on his face, with wooden prayer beads. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. Cream, jade, and lantern-amber palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 
 ### Tier D — optional third archetype (only if the set is going wide)
 
