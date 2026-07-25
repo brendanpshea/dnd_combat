@@ -7,6 +7,7 @@ import { BREATH_WEAPONS } from '../src/data/features.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { applyDamage } from '../src/engine/rules/attack.js';
+import { arenaRoster } from '../src/arena/encounter.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
 
@@ -640,6 +641,81 @@ describe('fiends, oozes and constructs', () => {
       const c = new Combat({
         seed: 4, mapId: 'ruins',
         combatants: [...buildParty('team1', 0, 5), buildMonster(id, 'team2', { x: 4, y: 7 })],
+      });
+      let steps = 0;
+      while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));
+      expect(c.isOver(), `${id} did not resolve`).toBe(true);
+    }
+  }, 60000);
+});
+
+/**
+ * Type ceilings. The measured problem: at a level-5 even-fight budget,
+ * undead/beast/humanoid turned up in 5-7% of generated fights while
+ * dragon/giant/monstrosity ran 20-27%. The generator was working correctly --
+ * those types simply had no member expensive enough to fill a high-budget
+ * slot, so the reroll-on-underfill wrapper kept discarding them.
+ */
+describe('creature type ceilings', () => {
+  const NEW = [
+    'ghast', 'banshee', 'ghost', 'wraith', 'vampire-spawn',
+    'giant-scorpion', 'elephant', 'giant-crocodile', 'mammoth', 'giant-ape',
+    'berserker', 'veteran', 'gladiator', 'mage', 'assassin',
+    'scarecrow', 'shield-guardian', 'stone-golem',
+    'magmin', 'azer', 'salamander', 'invisible-stalker',
+  ];
+
+  it('all build, are priced, and carry a CR where they need one', () => {
+    for (const id of NEW) {
+      const m = MONSTERS[id];
+      expect(m, id).toBeDefined();
+      expect(MONSTER_XP[id], `${id} has no XP`).toBeGreaterThan(0);
+      // Anything past CR 4 must declare its CR or it derives PB +2 and fights
+      // like a CR 1 monster wearing a big HP bar.
+      if ((MONSTER_XP[id] ?? 0) > 1100) expect(m!.cr, `${id} has no CR`).toBeGreaterThanOrEqual(5);
+      expect(() => buildMonster(id, 'team2', { x: 0, y: 0 }), id).not.toThrow();
+    }
+  });
+
+  // The actual fix, stated as an invariant: every type the arena can field
+  // must have something that can headline a big fight. Without this a type
+  // silently drops out of the late game.
+  it('every arena creature type reaches at least 1800 XP', () => {
+    // Two types the SRD gives no top end to, so they can't meet the bar and
+    // aren't failures. Both show up in generated fights at roughly half the
+    // rate of the others, which is the cost of the gap rather than a bug:
+    //   fey  - nothing above the green hag (CR 3); the one creature that did
+    //          qualify, the unicorn, is excluded as a benign guardian.
+    //   ooze - the SRD has exactly four, topping out at the black pudding.
+    const NO_SRD_TOP_END = new Set(['fey', 'ooze']);
+    const ceiling = new Map<string, number>();
+    for (const m of arenaRoster()) {
+      ceiling.set(m.type, Math.max(ceiling.get(m.type) ?? 0, m.xp));
+    }
+    const low = [...ceiling.entries()]
+      .filter(([t, xp]) => xp < 1800 && !NO_SRD_TOP_END.has(t))
+      .map(([t, xp]) => `${t}=${xp}`);
+    expect(low, `types with no top end: ${low.join(', ')}`).toEqual([]);
+  });
+
+  it('the mage is a real caster, not a dagger with a hat', () => {
+    const m = buildMonster('mage', 'team2', { x: 0, y: 0 });
+    expect(m.spellcastingAbility).toBe('int');
+    expect(m.spellIds).toEqual(expect.arrayContaining(['fireball', 'web', 'magic-missile']));
+    // Every spell it knows has to exist, or casting throws mid-fight.
+    for (const sid of m.spellIds) expect(SPELLS[sid], sid).toBeDefined();
+  });
+
+  it('the assassin brings its rogue kit', () => {
+    const a = MONSTERS['assassin']!;
+    expect(a.featureIds).toEqual(expect.arrayContaining(['sneak-attack', 'assassinate']));
+  });
+
+  it('each resolves into a finished fight', () => {
+    for (const id of NEW) {
+      const c = new Combat({
+        seed: 6, mapId: 'ruins',
+        combatants: [...buildParty('team1', 0, 6), buildMonster(id, 'team2', { x: 4, y: 7 })],
       });
       let steps = 0;
       while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));
