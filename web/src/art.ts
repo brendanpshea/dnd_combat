@@ -186,6 +186,7 @@ const SCALE: Record<string, number> = {
   cockatrice: 0.85, harpy: 1.0, manticore: 1.35, owlbear: 1.35, gorgon: 1.4,
   shadow: 0.95, specter: 1.0, 'will-o-wisp': 0.75, wight: 1.1, mummy: 1.1,
   'red-wyrmling': 1.15, 'white-wyrmling': 1.1, 'green-wyrmling': 1.1, 'blue-wyrmling': 1.15, 'black-wyrmling': 1.15,
+  otyugh: 1.35, aboleth: 1.45,
   'dust-mephit': 0.8, 'mud-mephit': 0.8, 'smoke-mephit': 0.8, 'ice-mephit': 0.8,
   'magma-mephit': 0.8, 'steam-mephit': 0.8,
   'shadow-demon': 1.05, succubus: 1.0, 'bearded-devil': 1.1, 'night-hag': 1.05,

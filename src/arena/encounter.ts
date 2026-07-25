@@ -102,10 +102,19 @@ function pick<T>(list: T[], state: RngState): { value: T; state: RngState } {
  *
  * Elementals, dragons and giants have no member under 450 XP, so at a low
  * budget they can only ever fail to fit — picking types uniformly would have
- * the generator thrash. Construct is a lone animated armor, so it can fill a
- * slot but never carry a fight; it's allowed as the second type only.
+ * the generator thrash.
+ *
+ * The bar is the *solo cap*, not the whole budget. A type whose cheapest
+ * member costs more than one monster is allowed to cost can't legally field
+ * anything here: rollCount finds no headcount it can pay for, falls back to
+ * one body, and the "always leave something affordable" floor then waves that
+ * single over-cap monster through. Aberrations (cheapest 1,800) hit this the
+ * moment they were added. Excluding the type up front is the fix — the reroll
+ * wrapper just picks another one.
  */
-function affordableTypes(roster: ReturnType<typeof arenaRoster>, budget: number): CreatureType[] {
+function affordableTypes(
+  roster: ReturnType<typeof arenaRoster>, budget: number, soloShare: number,
+): CreatureType[] {
   const cheapest = new Map<CreatureType, number>();
   const population = new Map<CreatureType, number>();
   for (const m of roster) {
@@ -113,7 +122,7 @@ function affordableTypes(roster: ReturnType<typeof arenaRoster>, budget: number)
     population.set(m.type, (population.get(m.type) ?? 0) + 1);
   }
   return [...cheapest.entries()]
-    .filter(([t, min]) => min <= budget && (population.get(t) ?? 0) >= 2)
+    .filter(([t, min]) => min <= budget * soloShare && (population.get(t) ?? 0) >= 2)
     .map(([t]) => t)
     .sort();
 }
@@ -183,7 +192,7 @@ function generateOnce(
   const roster = arenaRoster();
   let rng = state;
 
-  const types = affordableTypes(roster, opts.budget);
+  const types = affordableTypes(roster, opts.budget, soloShare);
   const primaryPick = pick(types, rng); rng = primaryPick.state;
   const chosen: CreatureType[] = [primaryPick.value];
 

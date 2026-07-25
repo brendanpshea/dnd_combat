@@ -134,6 +134,25 @@ describe('encounter generation', () => {
     }
   });
 
+  /**
+   * A type whose cheapest member costs more than the solo cap must not be
+   * offered at all. Otherwise rollCount finds no headcount it can pay for,
+   * falls back to a single body, and the "always leave something affordable"
+   * floor waves that over-cap monster through. Aberrations (cheapest 1,800)
+   * hit exactly this when they were added.
+   */
+  it('never offers a type whose cheapest member breaks the solo cap', () => {
+    let rng = seedRng(47);
+    for (const budget of [500, 1000, 2000]) {
+      for (let i = 0; i < 200; i++) {
+        const r = generateEncounter({ budget }, rng); rng = r.state;
+        if (r.value.members.length !== 1) continue;
+        expect(rawXp(r.value.members), `solo over cap at ${budget}: ${r.value.members[0]}`)
+          .toBeLessThanOrEqual(budget * 0.75);
+      }
+    }
+  });
+
   it('never fields an excluded monster', () => {
     expect(ARENA_EXCLUDED.has('unicorn'), 'the unicorn is a benign guardian').toBe(true);
     expect(arenaRoster().some((m) => m.id === 'unicorn')).toBe(false);
