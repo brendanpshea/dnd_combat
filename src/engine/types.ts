@@ -266,7 +266,7 @@ export interface Combatant {
 
 export type CreatureType =
   | 'humanoid' | 'beast' | 'undead' | 'giant' | 'construct' | 'fiend' | 'dragon' | 'elemental' | 'fey' | 'monstrosity'
-  | 'ooze' | 'aberration';
+  | 'ooze' | 'aberration' | 'celestial' | 'plant';
 
 export interface GameState {
   rng: RngState;

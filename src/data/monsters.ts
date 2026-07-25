@@ -140,9 +140,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'] },
   },
   kobold: {
-    id: 'kobold', name: 'Kobold',
-    ac: 12, hp: 5, speed: 30,
-    creatureType: 'humanoid',
+    id: 'kobold', name: 'Kobold Warrior',
+    ac: 14, hp: 7, speed: 30,
+    creatureType: 'dragon',
     abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 7, cha: 8 },
     featureIds: ['pack-tactics'],
     weaponIds: ['dagger', 'sling'],
@@ -165,7 +165,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'brown-bear': {
     id: 'brown-bear', name: 'Brown Bear',
-    ac: 11, hp: 34, speed: 40,
+    ac: 11, hp: 22, speed: 40,
     creatureType: 'beast',
     abilities: { str: 19, dex: 10, con: 16, int: 2, wis: 13, cha: 7 },
     weaponIds: ['bear-claws', 'bear-bite'],
@@ -202,8 +202,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
   },
   minotaur: {
-    id: 'minotaur', name: 'Minotaur',
-    ac: 14, hp: 76, speed: 40,
+    id: 'minotaur', name: 'Minotaur of Baphomet',
+    ac: 14, hp: 85, speed: 40,
     creatureType: 'monstrosity',
     abilities: { str: 18, dex: 11, con: 16, int: 6, wis: 16, cha: 9 },
     weaponIds: ['minotaur-greataxe', 'minotaur-gore'],
@@ -221,7 +221,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // Spellcaster stat blocks that exercise the wider spell list.
   priest: {
     id: 'priest', name: 'Priest',
-    ac: 13, hp: 27, speed: 30, // chain shirt
+    ac: 13, hp: 38, speed: 30, // chain shirt
     creatureType: 'humanoid',
     abilities: { str: 10, dex: 10, con: 12, int: 13, wis: 16, cha: 13 },
     savingThrowProfs: ['wis'],
@@ -234,9 +234,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     },
   },
   'ogre-mage': {
-    id: 'ogre-mage', name: 'Ogre Mage',
-    ac: 15, cr: 7, hp: 90, speed: 30, // AC 15 assumes Mage Armor precast (13 + Dex 2)
-    creatureType: 'giant',
+    id: 'ogre-mage', name: 'Oni',
+    ac: 17, cr: 7, hp: 119, speed: 30, // natural armor
+    creatureType: 'fiend',
     abilities: { str: 19, dex: 14, con: 17, int: 14, wis: 12, cha: 15 },
     savingThrowProfs: ['con', 'int'],
     weaponIds: ['greatclub'],
@@ -256,8 +256,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     metalArmor: true,
   },
   bugbear: {
-    id: 'bugbear', name: 'Bugbear',
-    ac: 16, hp: 27, speed: 30,
+    id: 'bugbear', name: 'Bugbear Warrior',
+    ac: 14, hp: 33, speed: 30,
     // Fey since 2024, with the rest of the goblinoids.
     creatureType: 'fey',
     abilities: { str: 15, dex: 14, con: 13, int: 8, wis: 11, cha: 9 },
@@ -272,8 +272,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['mace', 'bite'],
   },
   gnoll: {
-    id: 'gnoll', name: 'Gnoll',
-    ac: 15, hp: 22, speed: 30,
+    id: 'gnoll', name: 'Gnoll Warrior',
+    ac: 15, hp: 27, speed: 30,
     // Fiend since 2024: gnolls are demonic in origin, not a mortal people.
     creatureType: 'fiend',
     abilities: { str: 14, dex: 12, con: 11, int: 6, wis: 10, cha: 7 },
@@ -292,7 +292,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
 
   'giant-badger': {
     id: 'giant-badger', name: 'Giant Badger',
-    ac: 13, hp: 13, speed: 30,
+    ac: 13, hp: 15, speed: 30,
     creatureType: 'beast',
     abilities: { str: 13, dex: 10, con: 15, int: 2, wis: 12, cha: 5 },
     featureIds: ['burrow'],
@@ -317,7 +317,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'giant-boar': {
     id: 'giant-boar', name: 'Giant Boar',
-    ac: 12, hp: 42, speed: 40,
+    ac: 13, hp: 42, speed: 40,
     creatureType: 'beast',
     abilities: { str: 17, dex: 10, con: 16, int: 2, wis: 7, cha: 5 },
     featureIds: ['charge', 'relentless-endurance'],
@@ -333,7 +333,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
 
   gargoyle: {
     id: 'gargoyle', name: 'Gargoyle',
-    ac: 15, hp: 52, speed: 30,
+    ac: 15, hp: 67, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 15, dex: 11, con: 16, int: 6, wis: 11, cha: 7 },
     weaponIds: ['gargoyle-bite', 'gargoyle-claws'],
@@ -342,7 +342,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'fire-elemental': {
     id: 'fire-elemental', name: 'Fire Elemental',
-    ac: 13, cr: 5, hp: 102, speed: 50,
+    ac: 13, cr: 5, hp: 93, speed: 50,
     creatureType: 'elemental',
     abilities: { str: 10, dex: 17, con: 16, int: 6, wis: 10, cha: 7 },
     featureIds: ['fire-form'],
@@ -364,7 +364,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'earth-elemental': {
     id: 'earth-elemental', name: 'Earth Elemental',
-    ac: 17, cr: 5, hp: 126, speed: 30,
+    ac: 17, cr: 5, hp: 147, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 20, dex: 8, con: 20, int: 5, wis: 10, cha: 5 },
     featureIds: ['earth-glide'],
@@ -387,7 +387,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
 
   sprite: {
     id: 'sprite', name: 'Sprite',
-    ac: 15, hp: 2, speed: 10,
+    ac: 15, hp: 10, speed: 10,
     creatureType: 'fey',
     abilities: { str: 3, dex: 18, con: 10, int: 14, wis: 13, cha: 11 },
     featureIds: ['fey-invisibility'],
@@ -395,7 +395,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   satyr: {
     id: 'satyr', name: 'Satyr',
-    ac: 14, hp: 31, speed: 40,
+    ac: 13, hp: 31, speed: 40,
     creatureType: 'fey',
     abilities: { str: 12, dex: 16, con: 11, int: 12, wis: 10, cha: 14 },
     featureIds: ['magic-resistance'],
@@ -422,8 +422,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   unicorn: {
     id: 'unicorn', name: 'Unicorn',
-    ac: 12, cr: 5, hp: 67, speed: 50,
-    creatureType: 'fey',
+    ac: 12, cr: 5, hp: 97, speed: 50,
+    creatureType: 'celestial',
     abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 17, cha: 16 },
     featureIds: ['unicorn-charge', 'magic-resistance'],
     weaponIds: ['unicorn-horn', 'unicorn-hooves'],
@@ -432,7 +432,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
 
   cockatrice: {
     id: 'cockatrice', name: 'Cockatrice',
-    ac: 11, hp: 27, speed: 20,
+    ac: 11, hp: 22, speed: 20,
     creatureType: 'monstrosity',
     abilities: { str: 6, dex: 12, con: 12, int: 2, wis: 13, cha: 5 },
     weaponIds: ['cockatrice-bite'],
@@ -470,7 +470,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'frost-giant': {
     id: 'frost-giant', name: 'Frost Giant',
-    ac: 15, cr: 8, hp: 138, speed: 40,
+    ac: 15, cr: 8, hp: 149, speed: 40,
     creatureType: 'giant',
     abilities: { str: 23, dex: 9, con: 21, int: 9, wis: 10, cha: 12 },
     savingThrowProfs: ['con', 'wis', 'cha'],
@@ -530,7 +530,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'magma-mephit': {
     id: 'magma-mephit', name: 'Magma Mephit',
-    ac: 11, hp: 22, speed: 30,
+    ac: 11, hp: 18, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 8, dex: 12, con: 12, int: 7, wis: 10, cha: 10 },
     featureIds: ['breath-mephit-fire'],
@@ -540,7 +540,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'steam-mephit': {
     id: 'steam-mephit', name: 'Steam Mephit',
-    ac: 10, hp: 21, speed: 30,
+    ac: 10, hp: 17, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 5, dex: 11, con: 10, int: 11, wis: 10, cha: 12 },
     featureIds: ['breath-mephit-fire'],
@@ -564,7 +564,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   succubus: {
     id: 'succubus', name: 'Succubus',
-    ac: 15, cr: 4, hp: 66, speed: 30,
+    ac: 15, cr: 4, hp: 71, speed: 30,
     creatureType: 'fiend',
     abilities: { str: 8, dex: 17, con: 13, int: 15, wis: 12, cha: 20 },
     featureIds: ['charm'],
@@ -573,7 +573,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'bearded-devil': {
     id: 'bearded-devil', name: 'Bearded Devil',
-    ac: 13, cr: 5, hp: 52, speed: 30,
+    ac: 13, cr: 3, hp: 58, speed: 30,
     creatureType: 'fiend',
     abilities: { str: 16, dex: 15, con: 15, int: 9, wis: 11, cha: 11 },
     savingThrowProfs: ['str', 'con', 'wis'],
@@ -599,7 +599,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'chain-devil': {
     id: 'chain-devil', name: 'Chain Devil',
-    ac: 16, cr: 8, hp: 85, speed: 30,
+    ac: 15, cr: 8, hp: 85, speed: 30,
     creatureType: 'fiend',
     abilities: { str: 18, dex: 15, con: 18, int: 11, wis: 12, cha: 14 },
     savingThrowProfs: ['con', 'wis', 'cha'],
@@ -611,7 +611,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   hezrou: {
     id: 'hezrou', name: 'Hezrou',
-    ac: 16, cr: 8, hp: 136, speed: 30,
+    ac: 18, cr: 8, hp: 157, speed: 30,
     creatureType: 'fiend',
     abilities: { str: 19, dex: 17, con: 20, int: 5, wis: 12, cha: 13 },
     savingThrowProfs: ['str', 'con', 'wis'],
@@ -623,7 +623,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   glabrezu: {
     id: 'glabrezu', name: 'Glabrezu',
-    ac: 17, cr: 9, hp: 157, speed: 40,
+    ac: 17, cr: 9, hp: 189, speed: 40,
     creatureType: 'fiend',
     abilities: { str: 20, dex: 15, con: 21, int: 19, wis: 17, cha: 16 },
     savingThrowProfs: ['str', 'con', 'wis', 'cha'],
@@ -635,7 +635,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'horned-devil': {
     id: 'horned-devil', name: 'Horned Devil',
-    ac: 18, cr: 11, hp: 178, speed: 30,
+    ac: 18, cr: 11, hp: 199, speed: 30,
     creatureType: 'fiend',
     abilities: { str: 22, dex: 17, con: 21, int: 12, wis: 16, cha: 17 },
     savingThrowProfs: ['str', 'dex', 'wis', 'cha'],
@@ -660,7 +660,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'rust-monster': {
     id: 'rust-monster', name: 'Rust Monster',
-    ac: 14, hp: 27, speed: 40,
+    ac: 14, hp: 33, speed: 40,
     creatureType: 'monstrosity',
     abilities: { str: 13, dex: 12, con: 13, int: 2, wis: 13, cha: 6 },
     weaponIds: ['rust-monster-antennae'],
@@ -733,7 +733,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // are the SRD's other two, which also give the type a top end.
   otyugh: {
     id: 'otyugh', name: 'Otyugh',
-    ac: 14, cr: 5, hp: 114, speed: 30,
+    ac: 14, cr: 5, hp: 104, speed: 30,
     creatureType: 'aberration',
     abilities: { str: 16, dex: 11, con: 19, int: 6, wis: 13, cha: 6 },
     savingThrowProfs: ['con'],
@@ -742,7 +742,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   aboleth: {
     id: 'aboleth', name: 'Aboleth',
-    ac: 17, cr: 10, hp: 135, speed: 10,
+    ac: 17, cr: 10, hp: 150, speed: 10,
     creatureType: 'aberration',
     abilities: { str: 21, dex: 9, con: 15, int: 18, wis: 15, cha: 18 },
     savingThrowProfs: ['con', 'int', 'wis'],
@@ -813,7 +813,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'vampire-spawn': {
     id: 'vampire-spawn', name: 'Vampire Spawn',
-    ac: 15, cr: 5, hp: 82, speed: 30,
+    ac: 16, cr: 5, hp: 90, speed: 30,
     creatureType: 'undead',
     abilities: { str: 16, dex: 16, con: 16, int: 11, wis: 10, cha: 12 },
     savingThrowProfs: ['dex', 'wis'],
@@ -858,7 +858,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'giant-ape': {
     id: 'giant-ape', name: 'Giant Ape',
-    ac: 12, cr: 7, hp: 157, speed: 40,
+    ac: 12, cr: 7, hp: 168, speed: 40,
     creatureType: 'beast',
     abilities: { str: 23, dex: 14, con: 18, int: 7, wis: 12, cha: 7 },
     weaponIds: ['ape-fist'],
@@ -877,8 +877,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['greataxe'],
   },
   veteran: {
-    id: 'veteran', name: 'Veteran',
-    ac: 17, cr: 3, hp: 58, speed: 30,
+    id: 'veteran', name: 'Warrior Veteran',
+    ac: 17, cr: 3, hp: 65, speed: 30,
     creatureType: 'humanoid',
     abilities: { str: 16, dex: 13, con: 14, int: 10, wis: 11, cha: 10 },
     weaponIds: ['longsword', 'shortsword', 'light-crossbow'],
@@ -898,7 +898,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   mage: {
     id: 'mage', name: 'Mage',
-    ac: 15, cr: 6, hp: 67, speed: 30, // AC 15 assumes Mage Armor precast
+    ac: 15, cr: 6, hp: 81, speed: 30, // AC 15 assumes Mage Armor precast
     creatureType: 'humanoid',
     abilities: { str: 9, dex: 14, con: 11, int: 17, wis: 12, cha: 11 },
     savingThrowProfs: ['int', 'wis'],
@@ -911,7 +911,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   assassin: {
     id: 'assassin', name: 'Assassin',
-    ac: 15, cr: 8, hp: 78, speed: 30,
+    ac: 16, cr: 8, hp: 97, speed: 30,
     creatureType: 'humanoid',
     abilities: { str: 11, dex: 16, con: 14, int: 13, wis: 11, cha: 10 },
     savingThrowProfs: ['dex', 'int'],
@@ -942,7 +942,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'stone-golem': {
     id: 'stone-golem', name: 'Stone Golem',
-    ac: 17, cr: 10, hp: 178, speed: 30,
+    ac: 18, cr: 10, hp: 220, speed: 30,
     creatureType: 'construct',
     abilities: { str: 22, dex: 9, con: 20, int: 3, wis: 11, cha: 1 },
     featureIds: ['magic-resistance'],
@@ -955,7 +955,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // end to fill a slot with and no high end to headline one.
   magmin: {
     id: 'magmin', name: 'Magmin',
-    ac: 14, hp: 9, speed: 30,
+    ac: 14, hp: 13, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 7, dex: 15, con: 12, int: 8, wis: 11, cha: 10 },
     weaponIds: ['magmin-touch'],
@@ -985,7 +985,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'invisible-stalker': {
     id: 'invisible-stalker', name: 'Invisible Stalker',
-    ac: 14, cr: 6, hp: 104, speed: 50,
+    ac: 14, cr: 6, hp: 97, speed: 50,
     creatureType: 'elemental',
     abilities: { str: 16, dex: 19, con: 14, int: 10, wis: 15, cha: 11 },
     featureIds: ['fey-invisibility'],
@@ -1001,7 +1001,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // fight with save-or-suck spells has to find another answer.
   imp: {
     id: 'imp', name: 'Imp',
-    ac: 13, cr: 1, hp: 10, speed: 20,
+    ac: 13, cr: 1, hp: 21, speed: 20,
     creatureType: 'fiend',
     abilities: { str: 6, dex: 17, con: 13, int: 11, wis: 12, cha: 14 },
     featureIds: ['magic-resistance'],
@@ -1011,7 +1011,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   quasit: {
     id: 'quasit', name: 'Quasit',
-    ac: 13, cr: 1, hp: 7, speed: 40,
+    ac: 13, cr: 1, hp: 25, speed: 40,
     creatureType: 'fiend',
     abilities: { str: 5, dex: 17, con: 10, int: 7, wis: 10, cha: 10 },
     featureIds: ['magic-resistance'],
@@ -1031,7 +1031,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'hell-hound': {
     id: 'hell-hound', name: 'Hell Hound',
-    ac: 15, cr: 3, hp: 45, speed: 50,
+    ac: 15, cr: 3, hp: 58, speed: 50,
     creatureType: 'fiend',
     abilities: { str: 17, dex: 12, con: 14, int: 6, wis: 13, cha: 6 },
     featureIds: ['pack-tactics', 'breath-fire-hound'],
@@ -1052,7 +1052,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   vrock: {
     id: 'vrock', name: 'Vrock',
-    ac: 15, cr: 6, hp: 104, speed: 40,
+    ac: 15, cr: 6, hp: 152, speed: 40,
     creatureType: 'fiend',
     abilities: { str: 17, dex: 15, con: 18, int: 8, wis: 13, cha: 8 },
     savingThrowProfs: ['dex', 'wis', 'cha'],
@@ -1069,7 +1069,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // question is what it's sitting on top of.
   'gray-ooze': {
     id: 'gray-ooze', name: 'Gray Ooze',
-    ac: 8, hp: 22, speed: 10,
+    ac: 9, hp: 22, speed: 10,
     creatureType: 'ooze',
     abilities: { str: 12, dex: 6, con: 16, int: 1, wis: 6, cha: 2 },
     weaponIds: ['gray-ooze-pseudopod'],
@@ -1078,7 +1078,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'ochre-jelly': {
     id: 'ochre-jelly', name: 'Ochre Jelly',
-    ac: 8, cr: 2, hp: 45, speed: 10,
+    ac: 8, cr: 2, hp: 52, speed: 10,
     creatureType: 'ooze',
     abilities: { str: 15, dex: 6, con: 14, int: 2, wis: 6, cha: 1 },
     weaponIds: ['ochre-jelly-pseudopod'],
@@ -1087,7 +1087,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'gelatinous-cube': {
     id: 'gelatinous-cube', name: 'Gelatinous Cube',
-    ac: 6, cr: 2, hp: 84, speed: 15,
+    ac: 6, cr: 2, hp: 63, speed: 15,
     creatureType: 'ooze',
     abilities: { str: 14, dex: 3, con: 20, int: 1, wis: 6, cha: 1 },
     weaponIds: ['cube-pseudopod'],
@@ -1095,7 +1095,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'black-pudding': {
     id: 'black-pudding', name: 'Black Pudding',
-    ac: 7, cr: 4, hp: 85, speed: 20,
+    ac: 7, cr: 4, hp: 68, speed: 20,
     creatureType: 'ooze',
     abilities: { str: 16, dex: 5, con: 16, int: 1, wis: 6, cha: 1 },
     weaponIds: ['black-pudding-pseudopod'],
@@ -1106,7 +1106,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // One animated armor was the whole type.
   'flying-sword': {
     id: 'flying-sword', name: 'Animated Flying Sword',
-    ac: 17, hp: 17, speed: 30,
+    ac: 17, hp: 14, speed: 30,
     creatureType: 'construct',
     abilities: { str: 12, dex: 15, con: 11, int: 1, wis: 5, cha: 1 },
     weaponIds: ['flying-sword-blade'],
@@ -1114,8 +1114,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['poison', 'psychic'],
   },
   'rug-of-smothering': {
-    id: 'rug-of-smothering', name: 'Rug of Smothering',
-    ac: 12, cr: 2, hp: 33, speed: 10,
+    id: 'rug-of-smothering', name: 'Animated Rug of Smothering',
+    ac: 12, cr: 2, hp: 27, speed: 10,
     creatureType: 'construct',
     abilities: { str: 17, dex: 14, con: 10, int: 1, wis: 3, cha: 1 },
     weaponIds: ['rug-smother'],
@@ -1123,7 +1123,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'flesh-golem': {
     id: 'flesh-golem', name: 'Flesh Golem',
-    ac: 9, cr: 5, hp: 93, speed: 30,
+    ac: 9, cr: 5, hp: 127, speed: 30,
     creatureType: 'construct',
     abilities: { str: 19, dex: 9, con: 18, int: 6, wis: 10, cha: 5 },
     weaponIds: ['golem-slam'],
@@ -1136,7 +1136,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // around, which is a decision rather than a bigger number.
   troll: {
     id: 'troll', name: 'Troll',
-    ac: 15, cr: 5, hp: 84, speed: 30,
+    ac: 15, cr: 5, hp: 94, speed: 30,
     creatureType: 'giant',
     abilities: { str: 18, dex: 13, con: 20, int: 7, wis: 9, cha: 7 },
     weaponIds: ['troll-claw', 'troll-bite'],
@@ -1154,7 +1154,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   wyvern: {
     id: 'wyvern', name: 'Wyvern',
-    ac: 13, cr: 6, hp: 110, speed: 30,
+    ac: 14, cr: 6, hp: 127, speed: 30,
     creatureType: 'dragon',
     abilities: { str: 19, dex: 10, con: 16, int: 5, wis: 12, cha: 6 },
     weaponIds: ['wyvern-sting', 'wyvern-bite'],
@@ -1164,7 +1164,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // attacks on one body rather than the reverse.
   hydra: {
     id: 'hydra', name: 'Hydra',
-    ac: 15, cr: 8, hp: 172, speed: 30,
+    ac: 15, cr: 8, hp: 184, speed: 30,
     creatureType: 'monstrosity',
     abilities: { str: 20, dex: 12, con: 20, int: 2, wis: 10, cha: 7 },
     savingThrowProfs: ['dex', 'con', 'wis'],
@@ -1175,7 +1175,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // wyrmling blocks, with the heavier breath spec and a claw routine.
   'young-white': {
     id: 'young-white', name: 'Young White Dragon',
-    ac: 17, cr: 6, hp: 133, speed: 30,
+    ac: 17, cr: 6, hp: 123, speed: 30,
     creatureType: 'dragon',
     abilities: { str: 18, dex: 10, con: 18, int: 6, wis: 11, cha: 12 },
     savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
@@ -1247,7 +1247,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   gorgon: {
     id: 'gorgon', name: 'Gorgon',
     ac: 19, cr: 5, hp: 114, speed: 40,
-    creatureType: 'monstrosity',
+    creatureType: 'construct',
     abilities: { str: 20, dex: 11, con: 18, int: 2, wis: 12, cha: 7 },
     featureIds: ['petrifying-breath', 'trampling-charge'],
     weaponIds: ['gorgon-gore', 'gorgon-hooves'],
@@ -1256,7 +1256,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
 
   shadow: {
     id: 'shadow', name: 'Shadow',
-    ac: 12, hp: 16, speed: 40,
+    ac: 12, hp: 27, speed: 40,
     creatureType: 'undead',
     abilities: { str: 6, dex: 14, con: 13, int: 6, wis: 10, cha: 8 },
     weaponIds: ['shadow-drain'],
@@ -1275,7 +1275,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'will-o-wisp': {
     id: 'will-o-wisp', name: "Will-o'-Wisp",
-    ac: 19, hp: 22, speed: 50,
+    ac: 19, hp: 27, speed: 50,
     creatureType: 'undead',
     abilities: { str: 1, dex: 28, con: 10, int: 13, wis: 14, cha: 11 },
     featureIds: ['consume-life'],
@@ -1285,7 +1285,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   wight: {
     id: 'wight', name: 'Wight',
-    ac: 14, hp: 45, speed: 30,
+    ac: 14, hp: 82, speed: 30,
     creatureType: 'undead',
     abilities: { str: 15, dex: 14, con: 16, int: 10, wis: 13, cha: 15 },
     weaponIds: ['wight-longsword', 'wight-drain'],
@@ -1321,7 +1321,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'blue-wyrmling': {
     id: 'blue-wyrmling', name: 'Blue Dragon Wyrmling',
-    ac: 17, hp: 32, speed: 30, cr: 3,
+    ac: 17, hp: 65, speed: 30, cr: 3,
     creatureType: 'dragon',
     abilities: { str: 17, dex: 10, con: 15, int: 12, wis: 11, cha: 15 },
     featureIds: ['breath-lightning'],
@@ -1339,7 +1339,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'red-wyrmling': {
     id: 'red-wyrmling', name: 'Red Dragon Wyrmling',
-    ac: 17, hp: 56, speed: 30, cr: 4,
+    ac: 17, hp: 75, speed: 30, cr: 4,
     creatureType: 'dragon',
     abilities: { str: 19, dex: 10, con: 17, int: 12, wis: 11, cha: 15 },
     featureIds: ['breath-fire'],
@@ -1513,7 +1513,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['priest', 'acolyte', 'acolyte', 'skeleton', 'skeleton'],
   },
   oni: {
-    id: 'oni', name: 'Ogre Mage\'s Warband', suggestedLevel: 5,
+    id: 'oni', name: 'Oni\'s Warband', suggestedLevel: 5,
     members: ['ogre-mage', 'ogre', 'orc'],
   },
   watch: {
@@ -1750,7 +1750,7 @@ export const MONSTER_XP: Record<Id, number> = {
   // Mephits, fiend mid/top, monstrosity mid/top.
   'dust-mephit': 50, 'mud-mephit': 50, 'smoke-mephit': 50,
   'ice-mephit': 100, 'magma-mephit': 100, 'steam-mephit': 100,
-  'shadow-demon': 1100, succubus: 1100, 'bearded-devil': 1800, 'night-hag': 1800,
+  'shadow-demon': 1100, succubus: 1100, 'bearded-devil': 700, 'night-hag': 1800,
   'chain-devil': 3900, hezrou: 3900, glabrezu: 5000, 'horned-devil': 7200,
   worg: 100, 'rust-monster': 100, griffon: 450, ettercap: 450,
   basilisk: 700, 'winter-wolf': 700, roper: 1800, bulette: 1800, remorhaz: 7200,

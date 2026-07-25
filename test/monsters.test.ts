@@ -27,7 +27,7 @@ describe('stat blocks', () => {
     const oni = buildMonster('ogre-mage', 'team2', { x: 0, y: 0 });
     expect(oni.spellcastingAbility).toBe('int');
     expect(oni.spellIds).toEqual(expect.arrayContaining(['fireball', 'web', 'magic-missile', 'fire-bolt']));
-    expect(oni.acOverride).toBe(15); // Mage Armor precast
+    expect(oni.acOverride).toBe(17); // natural armor
   });
 
   it('encounters build with unique ids and legal placement', () => {
