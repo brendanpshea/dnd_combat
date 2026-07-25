@@ -476,6 +476,81 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'fire-giant-greatsword', name: 'Greatsword', damage: '6d6', damageType: 'slashing',
     properties: ['two-handed'], melee: true,
   },
+  // ---- fiends -----------------------------------------------------------
+  'imp-sting': {
+    id: 'imp-sting', name: 'Sting', damage: '1d4', damageType: 'piercing',
+    properties: ['finesse'], melee: true, extraDamage: { dice: '3d6', type: 'poison' },
+  },
+  'quasit-claw': {
+    id: 'quasit-claw', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 10 },
+  },
+  'dretch-bite': {
+    id: 'dretch-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'dretch-claws': {
+    id: 'dretch-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'hell-hound-bite': {
+    id: 'hell-hound-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },
+  },
+  'barbed-devil-claw': {
+    id: 'barbed-devil-claw', name: 'Claw', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'barbed-devil-tail': {
+    id: 'barbed-devil-tail', name: 'Tail', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'vrock-beak': {
+    id: 'vrock-beak', name: 'Beak', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'vrock-talons': {
+    id: 'vrock-talons', name: 'Talons', damage: '2d10', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+
+  // ---- oozes ------------------------------------------------------------
+  // An ooze is its pseudopod: one slow, heavy, corrosive hit. The acid rider
+  // is most of the damage, which is what makes armour a poor answer to them.
+  'gray-ooze-pseudopod': {
+    id: 'gray-ooze-pseudopod', name: 'Pseudopod', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'acid' },
+  },
+  'ochre-jelly-pseudopod': {
+    id: 'ochre-jelly-pseudopod', name: 'Pseudopod', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'acid' },
+  },
+  'cube-pseudopod': {
+    id: 'cube-pseudopod', name: 'Pseudopod', damage: '3d6', damageType: 'acid',
+    properties: [], melee: true,
+  },
+  'black-pudding-pseudopod': {
+    id: 'black-pudding-pseudopod', name: 'Pseudopod', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '4d8', type: 'acid' },
+  },
+
+  // ---- constructs -------------------------------------------------------
+  'flying-sword-blade': {
+    id: 'flying-sword-blade', name: 'Longsword', damage: '1d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  // The rug wins by pinning someone and holding them there; the damage is
+  // almost beside the point.
+  'rug-smother': {
+    id: 'rug-smother', name: 'Smother', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'restrained',
+  },
+  'golem-slam': {
+    id: 'golem-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+
   'troll-bite': {
     id: 'troll-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
     properties: [], melee: true,

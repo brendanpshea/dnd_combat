@@ -104,6 +104,9 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   // The chimera's goat head breathes fire on the same recharge, at its own
   // (lower) CR 6 scale — it is not a dragon and shouldn't hit like one.
   'breath-fire-chimera':    { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d8' },
+  // The hell hound's is a CR 3 cone — a pack of them is the threat, not any
+  // one breath.
+  'breath-fire-hound':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '6d6' },
 };
 
 /** The cells a breath covers when aimed a given direction. */
@@ -546,6 +549,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   'breath-fire-young':      { id: 'breath-fire-young',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-young') },
   'breath-cold-young':      { id: 'breath-cold-young',      name: 'Cold Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-cold-young') },
   'breath-fire-chimera':    { id: 'breath-fire-chimera',    name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-chimera') },
+  'breath-fire-hound':      { id: 'breath-fire-hound',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-hound') },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.
