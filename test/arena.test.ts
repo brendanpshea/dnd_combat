@@ -336,3 +336,53 @@ describe('generated fights complete', () => {
     }
   }, 60000);
 });
+
+/**
+ * EVEN_BUDGET is a *measurement*, not a rule, and measurements decay. The
+ * first calibration was taken against a 58-monster roster; by the time anyone
+ * checked again the bestiary had grown to 132 and the party was winning 78%
+ * at the L3 "even" budget instead of 50% — every wave softer than the ramp
+ * claimed, with nothing in the suite noticing.
+ *
+ * This is a tripwire, not a calibration. It is fully seeded, so it computes a
+ * fixed number for a given roster rather than sampling — the band is set from
+ * measurement, not from a confidence interval:
+ *
+ *   calibrated constants   L3 53%   L5 55%
+ *   the stale ones         L3 62%   L5 67%
+ *
+ * 0.35–0.60 separates those. A failure means **go re-measure** (80 fights a
+ * point, find the budget where the win rate crosses 50%, update EVEN_BUDGET),
+ * not that something is broken. Re-measuring is a few minutes; widening this
+ * band to make it pass is how the constants went stale in the first place.
+ */
+describe('arena difficulty calibration', () => {
+  it('an even-budget fight is still roughly even', () => {
+    const files = [3, 1, 5, 2, 6, 0, 7, 4];
+    for (const level of [3, 5]) {
+      const budget = evenBudgetFor(level);
+      let rng = seedRng(level * 7919);
+      let wins = 0;
+      const N = 60;
+      for (let i = 0; i < N; i++) {
+        const e = generateEncounter({ budget }, rng); rng = e.state;
+        const m = generateArenaMap({}, rng); rng = m.state;
+        const g = parseMap(m.value.map);
+        const foes = e.value.members.map((mid, k) =>
+          buildMonster(mid, 'team2', { x: files[k % 8]!, y: g.height - 1 }, String(k + 1)));
+        const c = new Combat({
+          seed: i + 1, map: m.value.map,
+          combatants: [...buildParty('team1', 0, level), ...foes],
+        });
+        let steps = 0;
+        while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));
+        if (c.winner() === 'team1') wins++;
+      }
+      const rate = wins / N;
+      expect(rate, `L${level} at budget ${budget}: ${Math.round(rate * 100)}% — EVEN_BUDGET needs re-measuring`)
+        .toBeGreaterThan(0.35);
+      expect(rate, `L${level} at budget ${budget}: ${Math.round(rate * 100)}% — EVEN_BUDGET needs re-measuring`)
+        .toBeLessThan(0.6);
+    }
+  }, 120000);
+});

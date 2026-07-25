@@ -21,11 +21,18 @@ import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap } from './map.js';
 
 /**
- * Adjusted-XP budget for a roughly even fight, by party level. L1 (~1,400) and
- * L3 (~4,500) are simulator-measured 50% win points; L2/L4/L5 sit on the
- * geometric curve through them (about x1.8 per level).
+ * Adjusted-XP budget for a roughly even fight, by party level. L1, L3 and L5
+ * are simulator-measured 50% win points (80 fights each, so about +/-6 points:
+ * 48%, 45%, 49%). L2 and L4 sit on the geometric curve through them.
+ *
+ * RE-MEASURE THIS WHEN THE BESTIARY CHANGES SHAPE. The first calibration was
+ * taken against a 58-monster roster and quietly went stale as that grew to
+ * 132: by the time it was next checked the party was winning 78% at the L3
+ * "even" budget and 65% at L5, so every wave was softer than the ramp claimed.
+ * Adding monsters changes what a budget buys, and nothing in the test suite
+ * notices — the constants are a measurement, not a rule, and they decay.
  */
-export const EVEN_BUDGET = [1400, 2500, 4500, 8000, 14000];
+export const EVEN_BUDGET = [1500, 2900, 5700, 9400, 15500];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;
