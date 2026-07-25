@@ -93,6 +93,17 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   'breath-poison':    { shape: 'cone',            save: 'con', damageType: 'poison',    dice: '6d6' }, // Green
   'breath-fire':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d6' }, // Red
   'breath-cold':      { shape: 'cone',            save: 'con', damageType: 'cold',      dice: '5d8' }, // White
+  // Young dragons, one age category up. A wyrmling's breath is a strong hit; a
+  // young dragon's is the reason the fight is about positioning, so the line
+  // ones reach further as well as hitting harder.
+  'breath-acid-young':      { shape: 'line', length: 6, save: 'dex', damageType: 'acid',      dice: '11d8' },
+  'breath-lightning-young': { shape: 'line', length: 12, save: 'dex', damageType: 'lightning', dice: '10d10' },
+  'breath-poison-young':    { shape: 'cone',            save: 'con', damageType: 'poison',    dice: '12d6' },
+  'breath-fire-young':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '16d6' },
+  'breath-cold-young':      { shape: 'cone',            save: 'con', damageType: 'cold',      dice: '8d8' },
+  // The chimera's goat head breathes fire on the same recharge, at its own
+  // (lower) CR 6 scale — it is not a dragon and shouldn't hit like one.
+  'breath-fire-chimera':    { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d8' },
 };
 
 /** The cells a breath covers when aimed a given direction. */
@@ -529,6 +540,12 @@ export const FEATURES: Record<Id, FeatureData> = {
   'breath-poison':    { id: 'breath-poison',    name: 'Poison Breath',    trigger: 'action', recharge: 5, apply: breathApply('breath-poison') },
   'breath-fire':      { id: 'breath-fire',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire') },
   'breath-cold':      { id: 'breath-cold',      name: 'Cold Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-cold') },
+  'breath-acid-young':      { id: 'breath-acid-young',      name: 'Acid Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-acid-young') },
+  'breath-lightning-young': { id: 'breath-lightning-young', name: 'Lightning Breath', trigger: 'action', recharge: 5, apply: breathApply('breath-lightning-young') },
+  'breath-poison-young':    { id: 'breath-poison-young',    name: 'Poison Breath',    trigger: 'action', recharge: 5, apply: breathApply('breath-poison-young') },
+  'breath-fire-young':      { id: 'breath-fire-young',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-young') },
+  'breath-cold-young':      { id: 'breath-cold-young',      name: 'Cold Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-cold-young') },
+  'breath-fire-chimera':    { id: 'breath-fire-chimera',    name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-chimera') },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.

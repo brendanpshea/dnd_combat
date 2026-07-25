@@ -452,4 +452,80 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'wyrmling-white-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
   },
+
+  // ---- CR 6-10 natural weapons ------------------------------------------
+  // Giants throw as readily as they swing, so each carries a rock alongside
+  // its melee weapon; the AI free-swaps to whichever the range allows.
+  'giant-greatclub': {
+    id: 'giant-greatclub', name: 'Greatclub', damage: '3d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'giant-rock': {
+    id: 'giant-rock', name: 'Rock', damage: '3d10', damageType: 'bludgeoning',
+    properties: ['thrown'], melee: true, range: { normal: 60, long: 240 },
+  },
+  'greater-giant-rock': {
+    id: 'greater-giant-rock', name: 'Rock', damage: '4d10', damageType: 'bludgeoning',
+    properties: ['thrown'], melee: true, range: { normal: 60, long: 240 },
+  },
+  'frost-giant-greataxe': {
+    id: 'frost-giant-greataxe', name: 'Greataxe', damage: '3d12', damageType: 'slashing',
+    properties: ['two-handed'], melee: true,
+  },
+  'fire-giant-greatsword': {
+    id: 'fire-giant-greatsword', name: 'Greatsword', damage: '6d6', damageType: 'slashing',
+    properties: ['two-handed'], melee: true,
+  },
+  'chimera-bite': {
+    id: 'chimera-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'chimera-horns': {
+    id: 'chimera-horns', name: 'Horns', damage: '1d12', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'chimera-claws': {
+    id: 'chimera-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'wyvern-bite': {
+    id: 'wyvern-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  // The sting is the wyvern: a hit that lands poison damage *and* the
+  // condition is what makes it worth fearing over its bite.
+  'wyvern-sting': {
+    id: 'wyvern-sting', name: 'Stinger', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+    extraDamage: { dice: '4d6', type: 'poison' },
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 15 },
+  },
+  'hydra-bite': {
+    id: 'hydra-bite', name: 'Bite', damage: '1d10', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'young-black-bite': {
+    id: 'young-black-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d8', type: 'acid' },
+  },
+  'young-blue-bite': {
+    id: 'young-blue-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d10', type: 'lightning' },
+  },
+  'young-green-bite': {
+    id: 'young-green-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'poison' },
+  },
+  'young-red-bite': {
+    id: 'young-red-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },
+  },
+  'young-white-bite': {
+    id: 'young-white-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
+  },
+  'young-dragon-claws': {
+    id: 'young-dragon-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
 };

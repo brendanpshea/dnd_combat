@@ -3,6 +3,8 @@ import { Combat } from '../src/engine/combat.js';
 import { buildParty, buildCharacter } from '../src/builder/character.js';
 import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS, MONSTER_XP, encounterXP, monsterLevel } from '../src/data/monsters.js';
 import { SPELLS } from '../src/data/spells.js';
+import { BREATH_WEAPONS } from '../src/data/features.js';
+import { WEAPONS } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
@@ -383,6 +385,78 @@ describe('new encounters complete under AI', () => {
         c.apply(chooseAction(c.state, c.activeId));
       }
       expect(c.isOver()).toBe(true);
+    }
+  }, 60000);
+});
+
+/**
+ * The CR 5-10 shelf. The roster topped out at 1,800 XP, which meant the arena
+ * could only make a high-budget wave harder by adding bodies — and it caps at
+ * six. These blocks are what a big budget buys instead.
+ */
+describe('CR 5-10 monsters', () => {
+  const SHELF = [
+    'hill-giant', 'stone-giant', 'frost-giant', 'fire-giant',
+    'chimera', 'wyvern', 'hydra',
+    'young-white', 'young-black', 'young-green', 'young-blue', 'young-red',
+  ];
+
+  it('all build, are priced, and carry a CR', () => {
+    for (const id of SHELF) {
+      const m = MONSTERS[id];
+      expect(m, id).toBeDefined();
+      // Without a CR they'd derive PB +2 and hit like a CR 1 monster.
+      expect(m!.cr, `${id} has no CR`).toBeGreaterThanOrEqual(5);
+      expect(MONSTER_XP[id], `${id} has no XP`).toBeGreaterThan(0);
+      expect(() => buildMonster(id, 'team2', { x: 0, y: 0 }), id).not.toThrow();
+    }
+  });
+
+  it('fills the XP band above 1800, which was empty', () => {
+    const above = Object.values(MONSTERS).filter((m) => (MONSTER_XP[m.id] ?? 0) > 1800);
+    expect(above.length).toBeGreaterThanOrEqual(11);
+    // …and reaches high enough that a level-5 even fight (~14,000 adjusted)
+    // can be built out of a few real threats rather than six of anything.
+    expect(Math.max(...Object.values(MONSTER_XP))).toBeGreaterThanOrEqual(5900);
+  });
+
+  it('a young dragon out-hits its wyrmling on both bite and breath', () => {
+    for (const [young, wyrmling] of [
+      ['young-red', 'red-wyrmling'], ['young-white', 'white-wyrmling'],
+      ['young-black', 'black-wyrmling'], ['young-blue', 'blue-wyrmling'],
+      ['young-green', 'green-wyrmling'],
+    ]) {
+      const y = MONSTERS[young!]!, w = MONSTERS[wyrmling!]!;
+      expect(y.hp, young).toBeGreaterThan(w.hp);
+      expect(y.cr!, young).toBeGreaterThan(w.cr ?? 0);
+      const yb = BREATH_WEAPONS[y.featureIds![0]!]!, wb = BREATH_WEAPONS[w.featureIds![0]!]!;
+      const avg = (d: string) => {
+        const [n, f] = d.split('d').map(Number);
+        return n! * (f! + 1) / 2;
+      };
+      expect(avg(yb.dice), `${young} breath`).toBeGreaterThan(avg(wb.dice));
+    }
+  });
+
+  it('the hydra trades a big body for a wall of attacks', () => {
+    const h = MONSTERS['hydra']!;
+    expect(h.attacksPerAction).toBe(5);
+    // Five small bites, not five huge ones — the point is the action economy.
+    expect(WEAPONS[h.weaponIds[0]!]!.damage).toBe('1d10');
+  });
+
+  it('each resolves into a finished fight against a level-8 party', () => {
+    for (const id of SHELF) {
+      const c = new Combat({
+        seed: 3, mapId: 'ruins',
+        combatants: [
+          ...buildParty('team1', 0, 8),
+          buildMonster(id, 'team2', { x: 4, y: 7 }),
+        ],
+      });
+      let steps = 0;
+      while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));
+      expect(c.isOver(), `${id} did not resolve`).toBe(true);
     }
   }, 60000);
 });
