@@ -188,6 +188,9 @@ const SCALE: Record<string, number> = {
   'red-wyrmling': 1.15, 'white-wyrmling': 1.1, 'green-wyrmling': 1.1, 'blue-wyrmling': 1.15, 'black-wyrmling': 1.15,
   // Huge creatures. They share one cell like everything else, so scale is the
   // only thing telling a player a fire giant isn't an ogre.
+  imp: 0.75, quasit: 0.75, dretch: 0.95, 'hell-hound': 1.1, 'barbed-devil': 1.15, vrock: 1.2,
+  'gray-ooze': 0.95, 'ochre-jelly': 1.1, 'gelatinous-cube': 1.35, 'black-pudding': 1.2,
+  'flying-sword': 0.9, 'rug-of-smothering': 1.1, 'flesh-golem': 1.2,
   troll: 1.3, 'hill-giant': 1.4, 'stone-giant': 1.45, 'frost-giant': 1.45, 'fire-giant': 1.5,
   chimera: 1.4, wyvern: 1.4, hydra: 1.5,
   'young-white': 1.45, 'young-black': 1.45, 'young-green': 1.45,

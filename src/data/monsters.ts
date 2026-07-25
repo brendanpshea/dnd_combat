@@ -486,6 +486,143 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['fire'],
   },
+  // ---- fiends -----------------------------------------------------------
+  // The roster had no fiends at all, which is a conspicuous hole in a game
+  // whose paladin and cleric kits are built to answer them. Magic Resistance
+  // on the higher ones is the point of the type: a party that solves every
+  // fight with save-or-suck spells has to find another answer.
+  imp: {
+    id: 'imp', name: 'Imp',
+    ac: 13, cr: 1, hp: 10, speed: 20,
+    creatureType: 'fiend',
+    abilities: { str: 6, dex: 17, con: 13, int: 11, wis: 12, cha: 14 },
+    featureIds: ['magic-resistance'],
+    weaponIds: ['imp-sting'],
+    resistances: ['cold'],
+    immunities: ['fire', 'poison'],
+  },
+  quasit: {
+    id: 'quasit', name: 'Quasit',
+    ac: 13, cr: 1, hp: 7, speed: 40,
+    creatureType: 'fiend',
+    abilities: { str: 5, dex: 17, con: 10, int: 7, wis: 10, cha: 10 },
+    featureIds: ['magic-resistance'],
+    weaponIds: ['quasit-claw'],
+    resistances: ['cold', 'fire', 'lightning'],
+    immunities: ['poison'],
+  },
+  dretch: {
+    id: 'dretch', name: 'Dretch',
+    ac: 11, hp: 18, speed: 20,
+    creatureType: 'fiend',
+    abilities: { str: 11, dex: 11, con: 12, int: 5, wis: 8, cha: 3 },
+    weaponIds: ['dretch-claws', 'dretch-bite'],
+    attacksPerAction: 2,
+    resistances: ['cold', 'fire', 'lightning'],
+    immunities: ['poison'],
+  },
+  'hell-hound': {
+    id: 'hell-hound', name: 'Hell Hound',
+    ac: 15, cr: 3, hp: 45, speed: 50,
+    creatureType: 'fiend',
+    abilities: { str: 17, dex: 12, con: 14, int: 6, wis: 13, cha: 6 },
+    featureIds: ['pack-tactics', 'breath-fire-hound'],
+    weaponIds: ['hell-hound-bite'],
+    immunities: ['fire'],
+  },
+  'barbed-devil': {
+    id: 'barbed-devil', name: 'Barbed Devil',
+    ac: 15, cr: 5, hp: 110, speed: 30,
+    creatureType: 'fiend',
+    abilities: { str: 16, dex: 17, con: 18, int: 12, wis: 14, cha: 14 },
+    savingThrowProfs: ['str', 'con', 'wis', 'cha'],
+    featureIds: ['magic-resistance'],
+    weaponIds: ['barbed-devil-tail', 'barbed-devil-claw'],
+    attacksPerAction: 3,
+    resistances: ['cold'],
+    immunities: ['fire', 'poison'],
+  },
+  vrock: {
+    id: 'vrock', name: 'Vrock',
+    ac: 15, cr: 6, hp: 104, speed: 40,
+    creatureType: 'fiend',
+    abilities: { str: 17, dex: 15, con: 18, int: 8, wis: 13, cha: 8 },
+    savingThrowProfs: ['dex', 'wis', 'cha'],
+    featureIds: ['magic-resistance'],
+    weaponIds: ['vrock-talons', 'vrock-beak'],
+    attacksPerAction: 2,
+    resistances: ['cold', 'fire', 'lightning'],
+    immunities: ['poison'],
+  },
+
+  // ---- oozes ------------------------------------------------------------
+  // Slow, blind, nearly mindless, and immune to most of what a party reaches
+  // for first. An ooze is a positioning problem: it cannot chase, so the
+  // question is what it's sitting on top of.
+  'gray-ooze': {
+    id: 'gray-ooze', name: 'Gray Ooze',
+    ac: 8, hp: 22, speed: 10,
+    creatureType: 'ooze',
+    abilities: { str: 12, dex: 6, con: 16, int: 1, wis: 6, cha: 2 },
+    weaponIds: ['gray-ooze-pseudopod'],
+    resistances: ['acid', 'cold', 'fire'],
+    immunities: ['poison'],
+  },
+  'ochre-jelly': {
+    id: 'ochre-jelly', name: 'Ochre Jelly',
+    ac: 8, cr: 2, hp: 45, speed: 10,
+    creatureType: 'ooze',
+    abilities: { str: 15, dex: 6, con: 14, int: 2, wis: 6, cha: 1 },
+    weaponIds: ['ochre-jelly-pseudopod'],
+    resistances: ['acid'],
+    immunities: ['lightning', 'slashing', 'poison'],
+  },
+  'gelatinous-cube': {
+    id: 'gelatinous-cube', name: 'Gelatinous Cube',
+    ac: 6, cr: 2, hp: 84, speed: 15,
+    creatureType: 'ooze',
+    abilities: { str: 14, dex: 3, con: 20, int: 1, wis: 6, cha: 1 },
+    weaponIds: ['cube-pseudopod'],
+    immunities: ['poison'],
+  },
+  'black-pudding': {
+    id: 'black-pudding', name: 'Black Pudding',
+    ac: 7, cr: 4, hp: 85, speed: 20,
+    creatureType: 'ooze',
+    abilities: { str: 16, dex: 5, con: 16, int: 1, wis: 6, cha: 1 },
+    weaponIds: ['black-pudding-pseudopod'],
+    immunities: ['acid', 'cold', 'lightning', 'slashing', 'poison'],
+  },
+
+  // ---- constructs -------------------------------------------------------
+  // One animated armor was the whole type.
+  'flying-sword': {
+    id: 'flying-sword', name: 'Animated Flying Sword',
+    ac: 17, hp: 17, speed: 30,
+    creatureType: 'construct',
+    abilities: { str: 12, dex: 15, con: 11, int: 1, wis: 5, cha: 1 },
+    weaponIds: ['flying-sword-blade'],
+    metalArmor: true,
+    immunities: ['poison', 'psychic'],
+  },
+  'rug-of-smothering': {
+    id: 'rug-of-smothering', name: 'Rug of Smothering',
+    ac: 12, cr: 2, hp: 33, speed: 10,
+    creatureType: 'construct',
+    abilities: { str: 17, dex: 14, con: 10, int: 1, wis: 3, cha: 1 },
+    weaponIds: ['rug-smother'],
+    immunities: ['poison', 'psychic'],
+  },
+  'flesh-golem': {
+    id: 'flesh-golem', name: 'Flesh Golem',
+    ac: 9, cr: 5, hp: 93, speed: 30,
+    creatureType: 'construct',
+    abilities: { str: 19, dex: 9, con: 18, int: 6, wis: 10, cha: 5 },
+    weaponIds: ['golem-slam'],
+    attacksPerAction: 2,
+    immunities: ['lightning', 'poison'],
+  },
+
   // The troll is the roster's first "bring the right damage type" monster.
   // Chip damage alone loses to 10 HP a turn; acid or fire turns the fight
   // around, which is a decision rather than a bigger number.
@@ -1098,6 +1235,9 @@ export const MONSTER_XP: Record<Id, number> = {
   'black-wyrmling': 450, 'green-wyrmling': 450, 'white-wyrmling': 450,
   'blue-wyrmling': 700, 'red-wyrmling': 1100,
   // CR 5-10. The band above 1,800 was empty before these.
+  imp: 200, quasit: 200, dretch: 50, 'hell-hound': 700, 'barbed-devil': 1800, vrock: 2300,
+  'gray-ooze': 100, 'ochre-jelly': 450, 'gelatinous-cube': 450, 'black-pudding': 1100,
+  'flying-sword': 50, 'rug-of-smothering': 450, 'flesh-golem': 1800,
   troll: 1800, 'hill-giant': 1800, chimera: 2300, wyvern: 2300, 'young-white': 2300,
   'stone-giant': 2900, 'young-black': 2900,
   'frost-giant': 3900, hydra: 3900, 'young-green': 3900,

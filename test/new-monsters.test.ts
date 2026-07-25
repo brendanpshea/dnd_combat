@@ -577,3 +577,73 @@ describe('troll regeneration', () => {
     expect(meanRounds(true)).toBeGreaterThan(meanRounds(false));
   });
 });
+
+/**
+ * Tier 2: the empty creature types. Fiends were zero in a game whose paladin
+ * and cleric kits exist to answer them; oozes were zero; constructs were one.
+ */
+describe('fiends, oozes and constructs', () => {
+  const FIENDS = ['imp', 'quasit', 'dretch', 'hell-hound', 'barbed-devil', 'vrock'];
+  const OOZES = ['gray-ooze', 'ochre-jelly', 'gelatinous-cube', 'black-pudding'];
+  const CONSTRUCTS = ['flying-sword', 'rug-of-smothering', 'flesh-golem'];
+
+  it('all build, are typed, and are priced', () => {
+    for (const [ids, type] of [[FIENDS, 'fiend'], [OOZES, 'ooze'], [CONSTRUCTS, 'construct']] as const) {
+      for (const id of ids) {
+        const m = MONSTERS[id];
+        expect(m, id).toBeDefined();
+        expect(m!.creatureType, id).toBe(type);
+        expect(MONSTER_XP[id], `${id} has no XP`).toBeGreaterThan(0);
+        expect(() => buildMonster(id, 'team2', { x: 0, y: 0 }), id).not.toThrow();
+      }
+    }
+  });
+
+  it('fills the three types that had nothing (or almost nothing) in them', () => {
+    const count = (t: string) => Object.values(MONSTERS).filter((m) => m.creatureType === t).length;
+    expect(count('fiend')).toBeGreaterThanOrEqual(6);
+    expect(count('ooze')).toBeGreaterThanOrEqual(4);
+    expect(count('construct')).toBeGreaterThanOrEqual(4);
+  });
+
+  // The reason to field a fiend over an equal-XP humanoid.
+  it('the bigger fiends carry Magic Resistance', () => {
+    for (const id of ['imp', 'quasit', 'barbed-devil', 'vrock']) {
+      expect(MONSTERS[id]!.featureIds, id).toContain('magic-resistance');
+    }
+  });
+
+  // An ooze that a sword can't hurt is a different tactical problem from one
+  // with more HP, and this is the line that makes it so.
+  it("an ochre jelly ignores a rogue's shortsword but not a mace", () => {
+    const jelly = buildMonster('ochre-jelly', 'team2', { x: 0, y: 0 });
+    const c = new Combat({ seed: 1, mapId: 'ruins', combatants: [...buildParty('team1', 0, 3), jelly] });
+    const before = c.state.combatants[jelly.id]!.hp;
+    applyDamage(c.state, jelly.id, jelly.id, 12, 'slashing');
+    expect(c.state.combatants[jelly.id]!.hp, 'slashing should be ignored').toBe(before);
+    applyDamage(c.state, jelly.id, jelly.id, 12, 'bludgeoning');
+    expect(c.state.combatants[jelly.id]!.hp).toBe(before - 12);
+  });
+
+  it('oozes are slow enough that positioning beats them', () => {
+    for (const id of OOZES) {
+      expect(MONSTERS[id]!.speed, id).toBeLessThanOrEqual(20);
+    }
+  });
+
+  it('the rug pins what it hits', () => {
+    expect(WEAPONS[MONSTERS['rug-of-smothering']!.weaponIds[0]!]!.onHitCondition).toBe('restrained');
+  });
+
+  it('each resolves into a finished fight', () => {
+    for (const id of [...FIENDS, ...OOZES, ...CONSTRUCTS]) {
+      const c = new Combat({
+        seed: 4, mapId: 'ruins',
+        combatants: [...buildParty('team1', 0, 5), buildMonster(id, 'team2', { x: 4, y: 7 })],
+      });
+      let steps = 0;
+      while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));
+      expect(c.isOver(), `${id} did not resolve`).toBe(true);
+    }
+  }, 60000);
+});
