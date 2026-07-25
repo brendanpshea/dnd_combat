@@ -1,0 +1,132 @@
+/**
+ * The arena run: a series of generated fights at an escalating budget, with a
+ * full rest and a shop between each.
+ *
+ * DIFFICULTY IS MEASURED, NOT GUESSED. `EVEN_BUDGET` below is the adjusted-XP
+ * budget at which a standard party wins about half its fights, taken by
+ * simulating generated encounters against the greedy AI (see
+ * test/arena.test.ts, which re-checks the shape of the curve). Levels 1 and 3
+ * are measured directly; the rest interpolate on the geometric fit between
+ * them, because a full sweep at level 5 costs more compute than it's worth for
+ * a number the wave ramp re-tunes anyway.
+ *
+ * Full rest between waves is deliberate: it removes attrition as a difficulty
+ * axis, which makes every wave an independent tactical problem and — the
+ * reason it matters here — makes the win rate a clean measurement instead of a
+ * number confounded by how much healing was left over from wave three.
+ */
+import type { MapData } from '../data/maps.js';
+import type { RngState } from '../engine/rng.js';
+import { generateEncounter, type GeneratedEncounter } from './encounter.js';
+import { generateArenaMap } from './map.js';
+
+/**
+ * Adjusted-XP budget for a roughly even fight, by party level. L1 (~1,400) and
+ * L3 (~4,500) are simulator-measured 50% win points; L2/L4/L5 sit on the
+ * geometric curve through them (about x1.8 per level).
+ */
+export const EVEN_BUDGET = [1400, 2500, 4500, 8000, 14000];
+
+export function evenBudgetFor(level: number): number {
+  const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;
+  return EVEN_BUDGET[i]!;
+}
+
+/**
+ * How hard a wave should be, as a share of the even-fight budget.
+ *
+ * Wave 1 opens well under an even fight so a run doesn't die on the doorstep,
+ * and the ramp crosses "even" around wave 6 and keeps climbing — so a run has
+ * a natural end, found by the player rather than imposed by a wave cap.
+ */
+export function waveDifficulty(wave: number): number {
+  return 0.55 + 0.09 * (wave - 1);
+}
+
+export function waveBudget(level: number, wave: number): number {
+  return Math.round(evenBudgetFor(level) * waveDifficulty(wave));
+}
+
+/** Gold paid for clearing a wave — the shop between fights is the point of it. */
+export function wavePurse(level: number, wave: number): number {
+  return Math.round(40 + waveBudget(level, wave) * 0.02);
+}
+
+export interface ArenaWave {
+  wave: number;
+  encounter: GeneratedEncounter;
+  map: MapData;
+  /** Budget this wave was generated against, for display and for tests. */
+  budget: number;
+  purse: number;
+}
+
+/**
+ * Build wave `n`. Seeded off the run seed and the wave number rather than a
+ * rolling state, so a retry regenerates *the same fight* — a wave you failed is
+ * a tactical problem to solve, not a slot machine to reroll until it's easy.
+ */
+export function buildWave(runSeed: number, level: number, wave: number): ArenaWave {
+  // Mix the two so consecutive waves don't correlate.
+  let rng: RngState = (runSeed * 2654435761 + wave * 40503) >>> 0;
+  const budget = waveBudget(level, wave);
+  const e = generateEncounter({ budget }, rng); rng = e.state;
+  const m = generateArenaMap({}, rng); rng = m.state;
+  return { wave, encounter: e.value, map: m.value.map, budget, purse: wavePurse(level, wave) };
+}
+
+export interface ArenaRunState {
+  seed: number;
+  /** The wave about to be fought (1-based). */
+  wave: number;
+  /** Waves cleared. */
+  cleared: number;
+  /** Waves cleared on the first attempt — the score that actually means
+   *  something, since retries are unlimited. */
+  clearedFirstTry: number;
+  /** Attempts spent on the current wave (0 = not yet tried). */
+  attempts: number;
+  /** Total fights fought, for the run's win rate. */
+  fights: number;
+  /** Total fights won. */
+  wins: number;
+  gold: number;
+}
+
+export function newArenaRun(seed: number): ArenaRunState {
+  return { seed, wave: 1, cleared: 0, clearedFirstTry: 0, attempts: 0, fights: 0, wins: 0, gold: 0 };
+}
+
+/** Record an attempt at the current wave. A win advances; a loss stays put. */
+export function recordResult(run: ArenaRunState, won: boolean, purse: number): ArenaRunState {
+  const fights = run.fights + 1;
+  const wins = run.wins + (won ? 1 : 0);
+  if (!won) {
+    return { ...run, fights, wins, attempts: run.attempts + 1 };
+  }
+  return {
+    ...run,
+    fights,
+    wins,
+    cleared: run.cleared + 1,
+    clearedFirstTry: run.clearedFirstTry + (run.attempts === 0 ? 1 : 0),
+    wave: run.wave + 1,
+    attempts: 0,
+    gold: run.gold + purse,
+  };
+}
+
+/** Win rate across every fight in the run, 0–1. Undefined before the first. */
+export function winRate(run: ArenaRunState): number | undefined {
+  return run.fights === 0 ? undefined : run.wins / run.fights;
+}
+
+/** A short human line for the run summary. */
+export function runSummary(run: ArenaRunState): string {
+  if (run.cleared === 0) return 'No waves cleared yet.';
+  const rate = winRate(run);
+  const pct = rate === undefined ? '' : ` · ${Math.round(rate * 100)}% of fights won`;
+  return `${run.cleared} wave${run.cleared === 1 ? '' : 's'} cleared ` +
+    `(${run.clearedFirstTry} first try)${pct}`;
+}
+
