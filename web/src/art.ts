@@ -19,8 +19,6 @@ export const HAS_ART = new Set<string>([
   'ranger', 'paladin', 'dwarf-cleric', 'elf-wizard', 'orc-shaman',
   'dragonborn-sorcerer', 'tiefling-knight', 'gnome-warden',
   'halfling-warrior', 'halfling-priest',
-  'ranger', 'paladin', 'dwarf-cleric', 'elf-wizard', 'orc-shaman',
-  'dragonborn-sorcerer', 'tiefling-knight', 'gnome-warden', 'halfling-warrior', 'halfling-priest',
   'knight', 'minotaur', 'ettin', 'priest', 'ogre-mage',
   'guard', 'bugbear', 'lizardfolk', 'gnoll', 'spy',
   'giant-badger', 'giant-toad', 'giant-hyena', 'giant-boar', 'giant-constrictor-snake',
