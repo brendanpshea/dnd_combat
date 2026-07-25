@@ -21,9 +21,11 @@ import { initAudio, isMuted, setMuted } from './sound.js';
 import { detectTips, seenTips, markTipSeen, tipsOff, setTipsOff, type Tip } from './tips.js';
 import { makeTrainingCombat, TRAINING_COACH, type CoachStep } from './training.js';
 import { CampaignScreen } from './Campaign.js';
+import { ArenaScreen } from './Arena.js';
 import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { loadCampaignWeb } from './campaignStorage.js';
+import { loadArenaWeb } from './arenaStorage.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
 import type { AdventureState } from '../../src/adventure/runtime.js';
@@ -96,6 +98,7 @@ type Screen =
   | { view: 'skirmish'; config: SetupConfig }
   | { view: 'training' }
   | { view: 'campaign' }
+  | { view: 'arena' }
   | { view: 'adventure'; module: Module; resume?: AdventureState };
 
 export function App() {
@@ -117,6 +120,8 @@ export function App() {
       );
     case 'campaign':
       return <CampaignScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
+    case 'arena':
+      return <ArenaScreen Battle={Battle} onExit={() => setScreen({ view: 'menu' })} />;
     case 'adventure':
       return (
         <AdventureScreen
@@ -212,6 +217,10 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           <button className="landing-alt" onClick={() => onPick({ view: 'campaign' })}>
             🏰 Classic Campaign{loadCampaignWeb() ? ' · resume' : ''}
             <small>The pure {STAGES.length}-battle tactics ladder.</small>
+          </button>
+          <button className="landing-alt" onClick={() => onPick({ view: 'arena' })}>
+            🏟️ The Arena{loadArenaWeb() ? ' · resume' : ''}
+            <small>Endless generated waves. Rest and shop between fights.</small>
           </button>
           <button className="landing-alt" onClick={() => onPick({ view: 'skirmish-setup' })}>
             ⚔️ Quick Battle

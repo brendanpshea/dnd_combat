@@ -5,6 +5,7 @@ import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { cellAt } from './types.js';
 import { makeGrid } from './grid.js';
 import { MAPS, parseMap } from '../data/maps.js';
+import type { MapData } from '../data/maps.js';
 import { seedRng } from './rng.js';
 import { rollInitiative, currentCombatant } from './turn.js';
 import { legalActions, step, Action } from './actions.js';
@@ -16,6 +17,9 @@ export interface CombatSetup {
   height?: number;
   /** Battle map from src/data/maps.ts; omitted = open grid of width×height. */
   mapId?: string;
+  /** A map passed by value rather than by id — the arena generates its boards,
+   *  so they never live in MAPS. Takes precedence over `mapId`. */
+  map?: MapData;
   combatants: Combatant[]; // positions must be set and unique
   /** A surprised team loses its first round: every member starts `incapacitated`
    *  until the top of round 2 (can't act or take reactions). Models an ambush —
@@ -25,7 +29,9 @@ export interface CombatSetup {
 
 export function startCombat(setup: CombatSetup): { state: GameState; events: GameEvent[] } {
   let grid;
-  if (setup.mapId !== undefined) {
+  if (setup.map !== undefined) {
+    grid = parseMap(setup.map);
+  } else if (setup.mapId !== undefined) {
     const map = MAPS[setup.mapId];
     if (!map) throw new Error(`Unknown map: ${setup.mapId}`);
     grid = parseMap(map);
