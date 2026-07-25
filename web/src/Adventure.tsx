@@ -642,7 +642,7 @@ function FrozenScene({ scene }: { scene: Scene }) {
 /** The persistent status bar: party portraits + HP, and — since it's the one
  *  element on every scene — the Journal and Party/Camp affordances, moved here
  *  out of the top bar (bottom-anchored, thumb-reachable, styled like the rest). */
-function PartyStrip(
+export function PartyStrip(
   { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread, needsRest }: {
     campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
     onJournal?: () => void; onCamp?: () => void; journalCount?: number; journalUnread?: boolean;

@@ -968,7 +968,13 @@ const NO_TREASURE_TYPES = new Set<CreatureType>(['beast', 'elemental']);
 export function encounterCoinXP(encounterId: Id): number {
   const enc = ENCOUNTERS[encounterId];
   if (!enc) return 0;
-  return enc.members.reduce((sum, mid) => {
+  return membersCoinXP(enc.members);
+}
+
+/** As `encounterCoinXP`, for a roster with no encounter id — the arena builds
+ *  its fights on the fly, and a generated wolf pack has no purse either. */
+export function membersCoinXP(members: readonly Id[]): number {
+  return members.reduce((sum, mid) => {
     const type = MONSTERS[mid]?.creatureType;
     const bears = !type || !NO_TREASURE_TYPES.has(type);
     return sum + (bears ? (MONSTER_XP[mid] ?? 0) : 0);

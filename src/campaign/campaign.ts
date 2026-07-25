@@ -1976,6 +1976,7 @@ export function applyAdventureVictory(
  */
 export function applyArenaVictory(
   c: CampaignState, finalTeam: Combatant[], encounterRawXp: number, rng: RngState = 1,
+  coinXp: number = encounterRawXp,
 ): AdventureVictory {
   readBackSurvivors(c, finalTeam);
   const xpGained = Math.round(encounterRawXp / Math.max(1, c.characters.length));
@@ -1983,7 +1984,7 @@ export function applyArenaVictory(
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
   if (afterLevel > beforeLevel) growSpellsForLevel(c);
-  const treasure = treasureFor(encounterRawXp, rng);
+  const treasure = treasureFor(encounterRawXp, rng, undefined, coinXp);
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);
