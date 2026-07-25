@@ -62,7 +62,7 @@ export function ForgeMemberEditor(
         </div>
       </label>
 
-      <div className="forge-field card-picker">
+      <div className="forge-field">
         <span>Class</span>
         <div className="card-grid" role="radiogroup" aria-label={`${ch.name} class`}>
           {Object.values(CLASSES).map((cl) => (
@@ -78,7 +78,7 @@ export function ForgeMemberEditor(
         </div>
       </div>
 
-      <div className="forge-field card-picker">
+      <div className="forge-field">
         <span>Species</span>
         <div className="card-grid" role="radiogroup" aria-label={`${ch.name} species`}>
           {Object.values(SPECIES).map((sp) => (
@@ -115,7 +115,7 @@ export function ForgeMemberEditor(
           main source of skill proficiency in the 2024 rules. It sits above the
           class choice points because it changes what the party can *do* outside
           a fight, which is most of adventure mode. */}
-      <div className="forge-field card-picker">
+      <div className="forge-field">
         <span>Background</span>
         <div className="card-grid" role="radiogroup" aria-label={`${ch.name} background`}>
           {Object.values(BACKGROUNDS).map((bg) => {
@@ -141,7 +141,7 @@ export function ForgeMemberEditor(
       {choicePoints.map((cp) => {
         const selected = ch.choices?.[cp.id] ?? cp.default;
         return (
-          <div className="forge-field choice-point" key={cp.id}>
+          <div className="forge-field" key={cp.id}>
             <span>{cp.label}</span>
             <div className="card-grid" role="radiogroup" aria-label={`${ch.name} ${cp.label}`}>
               {cp.options.map((opt) => (

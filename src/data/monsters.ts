@@ -1733,7 +1733,11 @@ export const MONSTER_XP: Record<Id, number> = {
   bandit: 25, 'bandit-captain': 450, 'dire-wolf': 200, ghoul: 200, 'giant-spider': 200, acolyte: 50,
   kobold: 25, scout: 100, orc: 100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
   knight: 700, minotaur: 700, ettin: 1100,
-  priest: 450, 'ogre-mage': 1100,
+  priest: 450,
+  // CR 7 -- 90 HP, AC 15, Fireball. It was priced at 1,100 (the CR 4 value),
+  // so every fight holding one was budgeted at well under half what it plays
+  // like, in the arena and on the ladder alike.
+  'ogre-mage': 2900,
   guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
   'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
   gargoyle: 450, 'fire-elemental': 1800, 'water-elemental': 1800, 'earth-elemental': 1800, 'air-elemental': 1800,

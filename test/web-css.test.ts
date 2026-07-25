@@ -9,10 +9,12 @@ import { join } from 'node:path';
  * typo'd root class (`adv-root` for `adventure`) did to the arena. Nothing
  * throws, nothing logs; the page is just empty.
  *
- * So: every `adv-*` and `arena-*` class the web code names must exist in the
- * stylesheet. Those two prefixes are the layout scaffolding — panels, stages,
- * scenes — where a missing rule costs the whole view rather than a bit of
- * polish.
+ * So: every class the web code names must exist in the stylesheet. Started as
+ * a check on the `adv-*`/`arena-*` layout scaffolding, where a missing rule
+ * costs the whole view; widened to everything after a sweep turned up four
+ * more dead ones (`card-picker`, `choice-point`, `prepare-list`, `frozen`).
+ * Those were harmless — each rode along on a styled primary class — but they
+ * read as styling that isn't there.
  */
 const WEB = new URL('../web/src/', import.meta.url).pathname;
 const CSS = readFileSync(join(WEB, 'styles.css'), 'utf8');
@@ -35,14 +37,16 @@ function classNamesIn(src: string): string[] {
 }
 
 describe('web stylesheet coverage', () => {
-  it('every adv-/arena- layout class the code names has a rule', () => {
+  it('every class the code names has a rule', () => {
     const defined = new Set(
       [...CSS.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]!),
     );
     const missing = new Set<string>();
     for (const file of tsxFiles()) {
       for (const cls of classNamesIn(readFileSync(file, 'utf8'))) {
-        if (!/^(adv|arena)-/.test(cls)) continue;
+        // A trailing hyphen is the literal half of an interpolated name
+        // (`fx-${kind}`), not a class anyone wrote a rule for.
+        if (cls.endsWith('-')) continue;
         if (!defined.has(cls)) missing.add(cls);
       }
     }

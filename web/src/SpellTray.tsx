@@ -83,7 +83,7 @@ export function SpellTray(
               ))}
             </div>
           ) : (
-            <div className="sheet-row prepare-list">
+            <div className="sheet-row">
               <span className="sheet-label">Cantrips ({cantripDraft.length}/{cCap}) — always ready</span>
               <div className="prepare-grid">
                 {cPool.map((id) => {
@@ -115,7 +115,7 @@ export function SpellTray(
               ))}
             </div>
           ) : (
-            <div className="sheet-row prepare-list">
+            <div className="sheet-row">
               <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
               <div className="prepare-grid">
                 {bookPool.map((id) => {
@@ -134,7 +134,7 @@ export function SpellTray(
             </div>
           )
         )}
-        <div className="sheet-row prepare-list">
+        <div className="sheet-row">
           <span className="sheet-label">Prepared ({prepareDraft.length}/{cap})</span>
           <div className="prepare-grid">
             {leveledPool.map((id) => {

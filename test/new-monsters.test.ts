@@ -832,3 +832,42 @@ describe('2024 creature types', () => {
     }
   });
 });
+
+/**
+ * CR and XP have to agree. They are two statements of the same thing -- CR
+ * drives proficiency bonus and save DCs, XP drives what the arena and the
+ * ladder will pay for the fight -- so a mismatch means a monster that hits
+ * like one thing and is priced like another, with nothing to announce it.
+ *
+ * Caught the Ogre Mage: CR 7, 90 HP, AC 15, casts Fireball, priced at 1,100
+ * (the CR 4 figure). Every fight holding one was budgeted at well under half
+ * what it plays like.
+ */
+describe('CR and XP agree', () => {
+  const CR_XP: Record<number, number> = {
+    0: 10, 0.125: 25, 0.25: 50, 0.5: 100, 1: 200, 2: 450, 3: 700, 4: 1100,
+    5: 1800, 6: 2300, 7: 2900, 8: 3900, 9: 5000, 10: 5900, 11: 7200, 12: 8400,
+  };
+
+  it('every declared CR matches the SRD XP for it', () => {
+    const bad: string[] = [];
+    for (const m of Object.values(MONSTERS)) {
+      if (m.cr === undefined) continue;
+      const expected = CR_XP[m.cr];
+      if (expected !== undefined && MONSTER_XP[m.id] !== expected) {
+        bad.push(`${m.id}: CR ${m.cr} implies ${expected} XP, priced ${MONSTER_XP[m.id]}`);
+      }
+    }
+    expect(bad, bad.join('; ')).toEqual([]);
+  });
+
+  // An absent CR means the builder derives level 1 and PB +2, which is only
+  // right through CR 4. Anything priced above that must say so out loud or it
+  // fights several points below its price.
+  it('anything priced above CR 4 declares its CR', () => {
+    const bad = Object.values(MONSTERS)
+      .filter((m) => m.cr === undefined && (MONSTER_XP[m.id] ?? 0) > 1100)
+      .map((m) => `${m.id} (${MONSTER_XP[m.id]} XP)`);
+    expect(bad, `no CR, so they derive PB +2: ${bad.join(', ')}`).toEqual([]);
+  });
+});
