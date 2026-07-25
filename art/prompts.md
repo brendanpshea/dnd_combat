@@ -20,7 +20,7 @@ reuses this doc's style bible verbatim.
 `web/src/art.ts`) · ⬜ needed (still on the emoji fallback). **§5 has the
 full status by category and the per-monster list.** In short: every hero,
 species, and species×role portrait is ✅ and the forge matrix is fully
-covered; **58 of the 132 monsters are ✅, and the remaining 74 have prompts
+covered; **67 of the 132 monsters are ✅, and the remaining 65 have prompts
 ready to generate in §8.**
 
 ---
@@ -169,8 +169,8 @@ Two things are fully done and enforced by tests: the **player-character art**
 
 | Creature type | Have art | Still needed |
 | --- | --- | --- |
-| Humanoid | 11/16 | Assassin, Berserker, Gladiator, Mage, Warrior Veteran |
-| Beast | 9/15 | Elephant, Giant Ape, Giant Crocodile, Giant Scorpion, Mammoth, Tyrannosaurus Rex |
+| Humanoid | 16/16 | — |
+| Beast | 13/15 | Giant Ape, Mammoth |
 | Fey | 7/8 | Worg |
 | Undead | 8/13 | Banshee, Ghast, Ghost, Vampire Spawn, Wraith |
 | Fiend | 2/16 | Barbed Devil, Bearded Devil, Chain Devil, Dretch, Glabrezu, Hell Hound, Hezrou, Horned Devil, Imp, Night Hag, Quasit, Shadow Demon, Succubus, Vrock |
@@ -182,7 +182,7 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Construct | 2/8 | Animated Flying Sword, Animated Rug of Smothering, Flesh Golem, Scarecrow, Shield Guardian, Stone Golem |
 | Ooze | 0/4 | Black Pudding, Gelatinous Cube, Gray Ooze, Ochre Jelly |
 | Celestial | 1/1 | — |
-| **Total** | **58/132** | **74 needed** |
+| **Total** | **67/132** | **65 needed** |
 
 **Every monster, with status** (✅ = art present and wired · ⬜ = prompt ready in §8, emoji fallback until generated):
 
@@ -249,20 +249,20 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Aboleth | `aboleth` | aberration | ⬜ |
 | Animated Flying Sword | `flying-sword` | construct | ⬜ |
 | Animated Rug of Smothering | `rug-of-smothering` | construct | ⬜ |
-| Assassin | `assassin` | humanoid | ⬜ |
+| Assassin | `assassin` | humanoid | ✅ |
 | Azer Sentinel | `azer` | elemental | ⬜ |
 | Banshee | `banshee` | undead | ⬜ |
 | Barbed Devil | `barbed-devil` | fiend | ⬜ |
 | Basilisk | `basilisk` | monstrosity | ⬜ |
 | Bearded Devil | `bearded-devil` | fiend | ⬜ |
-| Berserker | `berserker` | humanoid | ⬜ |
+| Berserker | `berserker` | humanoid | ✅ |
 | Black Pudding | `black-pudding` | ooze | ⬜ |
 | Bulette | `bulette` | monstrosity | ⬜ |
 | Chain Devil | `chain-devil` | fiend | ⬜ |
 | Chimera | `chimera` | monstrosity | ⬜ |
 | Dretch | `dretch` | fiend | ⬜ |
 | Dust Mephit | `dust-mephit` | elemental | ⬜ |
-| Elephant | `elephant` | beast | ⬜ |
+| Elephant | `elephant` | beast | ✅ |
 | Ettercap | `ettercap` | monstrosity | ⬜ |
 | Fire Giant | `fire-giant` | giant | ⬜ |
 | Flesh Golem | `flesh-golem` | construct | ⬜ |
@@ -271,10 +271,10 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Ghast | `ghast` | undead | ⬜ |
 | Ghost | `ghost` | undead | ⬜ |
 | Giant Ape | `giant-ape` | beast | ⬜ |
-| Giant Crocodile | `giant-crocodile` | beast | ⬜ |
-| Giant Scorpion | `giant-scorpion` | beast | ⬜ |
+| Giant Crocodile | `giant-crocodile` | beast | ✅ |
+| Giant Scorpion | `giant-scorpion` | beast | ✅ |
 | Glabrezu | `glabrezu` | fiend | ⬜ |
-| Gladiator | `gladiator` | humanoid | ⬜ |
+| Gladiator | `gladiator` | humanoid | ✅ |
 | Gray Ooze | `gray-ooze` | ooze | ⬜ |
 | Griffon | `griffon` | monstrosity | ⬜ |
 | Hell Hound | `hell-hound` | fiend | ⬜ |
@@ -285,7 +285,7 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Ice Mephit | `ice-mephit` | elemental | ⬜ |
 | Imp | `imp` | fiend | ⬜ |
 | Invisible Stalker | `invisible-stalker` | elemental | ⬜ |
-| Mage | `mage` | humanoid | ⬜ |
+| Mage | `mage` | humanoid | ✅ |
 | Magma Mephit | `magma-mephit` | elemental | ⬜ |
 | Magmin | `magmin` | elemental | ⬜ |
 | Mammoth | `mammoth` | beast | ⬜ |
@@ -307,10 +307,10 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Stone Golem | `stone-golem` | construct | ⬜ |
 | Succubus | `succubus` | fiend | ⬜ |
 | Troll | `troll` | giant | ⬜ |
-| Tyrannosaurus Rex | `tyrannosaurus` | beast | ⬜ |
+| Tyrannosaurus Rex | `tyrannosaurus` | beast | ✅ |
 | Vampire Spawn | `vampire-spawn` | undead | ⬜ |
 | Vrock | `vrock` | fiend | ⬜ |
-| Warrior Veteran | `veteran` | humanoid | ⬜ |
+| Warrior Veteran | `veteran` | humanoid | ✅ |
 | Winter Wolf | `winter-wolf` | monstrosity | ⬜ |
 | Worg | `worg` | fey | ⬜ |
 | Wraith | `wraith` | undead | ⬜ |

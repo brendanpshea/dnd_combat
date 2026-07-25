@@ -27,6 +27,8 @@ export const HAS_ART = new Set<string>([
   'cockatrice', 'harpy', 'manticore', 'owlbear', 'gorgon',
   'shadow', 'specter', 'will-o-wisp', 'wight', 'mummy',
   'red-wyrmling', 'white-wyrmling', 'green-wyrmling', 'blue-wyrmling', 'black-wyrmling',
+  'berserker', 'veteran', 'gladiator', 'mage', 'assassin',
+  'tyrannosaurus', 'giant-scorpion', 'elephant', 'giant-crocodile',
 ]);
 
 /**

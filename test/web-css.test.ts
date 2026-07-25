@@ -16,7 +16,9 @@ import { join } from 'node:path';
  * Those were harmless — each rode along on a styled primary class — but they
  * read as styling that isn't there.
  */
-const WEB = new URL('../web/src/', import.meta.url).pathname;
+import { fileURLToPath } from 'node:url';
+
+const WEB = fileURLToPath(new URL('../web/src/', import.meta.url));
 const CSS = readFileSync(join(WEB, 'styles.css'), 'utf8');
 
 function tsxFiles(): string[] {
