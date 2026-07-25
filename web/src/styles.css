@@ -2562,3 +2562,19 @@ button.category .count {
 .name-row { display: flex; gap: 6px; align-items: center; }
 .name-row input { flex: 1; min-width: 0; }
 .reroll-name { flex: none; font-size: 15px; line-height: 1; padding: 6px 9px; }
+
+/* Arena wave brief: what's coming, before you commit to the fight. */
+.arena-card {
+  background: #241f38;
+  border: 1px solid #3a3352;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+.arena-stat { font-size: 17px; margin-bottom: 3px; }
+.shop-list { margin: 10px 0; }
+.shop-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px; border-bottom: 1px solid #2f2947;
+}
+.shop-row span:first-child { flex: 1; }

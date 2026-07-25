@@ -1969,6 +1969,30 @@ export function applyAdventureVictory(
   };
 }
 
+/**
+ * A won *arena* wave. Like `applyAdventureVictory`, but the encounter was
+ * generated rather than authored, so there is no id to look XP up from — the
+ * caller passes the raw XP the fight was worth. Never touches `c.stage`.
+ */
+export function applyArenaVictory(
+  c: CampaignState, finalTeam: Combatant[], encounterRawXp: number, rng: RngState = 1,
+): AdventureVictory {
+  readBackSurvivors(c, finalTeam);
+  const xpGained = Math.round(encounterRawXp / Math.max(1, c.characters.length));
+  const beforeLevel = levelForXp(c.xp);
+  c.xp += xpGained;
+  const afterLevel = levelForXp(c.xp);
+  if (afterLevel > beforeLevel) growSpellsForLevel(c);
+  const treasure = treasureFor(encounterRawXp, rng);
+  c.gold += treasure.gold;
+  if (!c.stash) c.stash = [];
+  for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);
+  return {
+    gold: treasure.gold, items: treasure.items, xpGained,
+    ...(afterLevel > beforeLevel ? { leveledFrom: beforeLevel, leveledTo: afterLevel } : {}),
+  };
+}
+
 /** Bring a wiped party back on its feet (defeat → regroup): everyone to half
  *  their max HP, alive, conditions cleared. Slots are left as they were. */
 export function reviveParty(c: CampaignState): void {

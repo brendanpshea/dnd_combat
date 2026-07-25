@@ -11,6 +11,9 @@ import {
 import { seedRng } from '../src/engine/rng.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty } from '../src/builder/character.js';
+import {
+  newCampaign, buildCampaignParty, applyArenaVictory, longRest,
+} from '../src/campaign/campaign.js';
 import { chooseAction } from '../src/ai/greedy.js';
 
 /**
@@ -209,6 +212,44 @@ describe('arena run', () => {
         expect(() => buildMonster(mid, 'team2', { x: 0, y: 0 }), mid).not.toThrow();
       }
     }
+  });
+});
+
+describe('arena plumbing', () => {
+  it('Combat accepts a generated map by value', () => {
+    const w = buildWave(77, 2, 3);
+    const grid = parseMap(w.map);
+    const c = new Combat({
+      seed: 1, map: w.map,
+      combatants: [...buildParty('team1', 0, 2)],
+    });
+    expect(c.state.grid.width).toBe(grid.width);
+    expect(c.state.grid.height).toBe(grid.height);
+    // The terrain really came from the generated board, not a blank grid.
+    expect(c.state.grid.cells.map((x) => x.terrain))
+      .toEqual(grid.cells.map((x) => x.terrain));
+  });
+
+  it('applyArenaVictory awards XP and treasure from raw XP, without a stage', () => {
+    const camp = newCampaign(3);
+    camp.partyReady = true;
+    const before = { xp: camp.xp, gold: camp.gold, stage: camp.stage };
+    const party = buildCampaignParty(camp);
+    const result = applyArenaVictory(camp, party, 1200, 9);
+    expect(result.xpGained).toBe(Math.round(1200 / camp.characters.length));
+    expect(camp.xp).toBe(before.xp + result.xpGained);
+    expect(camp.gold).toBeGreaterThanOrEqual(before.gold);
+    // The arena is not the ladder — it must never advance the campaign stage.
+    expect(camp.stage).toBe(before.stage);
+  });
+
+  it('a full rest between waves puts the party back to full', () => {
+    const camp = newCampaign(4);
+    camp.partyReady = true;
+    for (const ch of camp.characters) ch.hp = 1;
+    longRest(camp);
+    const party = buildCampaignParty(camp);
+    for (const p of party) expect(p.hp, p.name).toBe(p.maxHp);
   });
 });
 
