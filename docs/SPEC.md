@@ -5,10 +5,11 @@ rules. The engine is headless, deterministic, and data-driven; the terminal
 CLI, the web app, and both AIs drive it through the same action API.
 
 **Status: all planned phases shipped.** Six classes at levels 1–5 (one
-subclass each), eight species, 48 spells, 58 SRD monsters in 62 encounters,
-seven themed battle maps, inventory/equipment/trinkets, a persistent 34-stage
-campaign (shop, loot, skill gambits, hit-dice rests), a data-driven
-**adventure mode** with a flagship story module (The Hollow Road), and a
+subclass each), eight species, 48 spells, 132 SRD monsters in 62 authored
+encounters, seven themed battle maps plus a map generator, inventory/
+equipment/trinkets, a persistent 34-stage campaign (shop, loot, skill gambits,
+hit-dice rests), a data-driven **adventure mode** with a flagship story
+trilogy, an **arena mode** of generated fights on generated maps, and a
 deployed web frontend (https://brendanpshea.github.io/dnd_combat/). See §10
 for history and next candidates.
 
@@ -58,6 +59,7 @@ src/
     turn.ts        # initiative, turn/round loop, action economy
     combat.ts      # setup + thin stateful Combat facade
   builder/         # class + species + level + gear -> Combatant
+  arena/           # arena mode (§7d): encounter.ts, map.ts, run.ts
   ai/              # greedy.ts + simulated.ts/evaluate.ts (see §7); arena.ts
   campaign/        # meta-game: party, stages, shop, loot, rests, saves (§7b)
   adventure/       # story runtime: scenes, effects, validator, runner (§7c)
@@ -173,7 +175,7 @@ innate spells — a gnome can talk its way past a wolf pack from level 1).
 
 Animal Friendship needed a way to say "beast, not humanoid": `Combatant
 .creatureType` (`humanoid | beast | undead | giant | construct | fiend |
-dragon`), tagged on every monster stat block and read by a new
+dragon | elemental | fey | monstrosity | ooze | aberration`), tagged on every monster stat block and read by a new
 `SpellTargeting.creatureType` filter in `validTarget` — so `legalActions`
 simply never offers it against a goblin, the same as Cure Wounds never
 appearing in the tray at full HP. A failed Wisdom save doesn't damage the
@@ -606,13 +608,45 @@ Because these are save-ends riders and `charmAway` exits (not permanent
 conditions or kills), none of them can lock a hero out of the fight forever —
 an earlier version of the constrictor/cockatrice restraint could.
 
-The bestiary now spans 58 stat blocks in 62 authored encounters
+The bestiary now spans 132 stat blocks in 62 authored encounters
 (`ENCOUNTERS` in `src/data/monsters.ts` is the authority — the early ones
-above are just the mechanically notable seeds): humanoid crews, beast packs,
-undead, fey, elementals, giants, hags, and the five chromatic wyrmlings. Each
-encounter carries a `suggestedLevel` and every monster an SRD `MONSTER_XP`
-entry (a test enforces the pairing). Monsters are always AI-run; pick one in
+above are just the mechanically notable seeds), across twelve creature types
+from CR 1/8 to CR 11. Each encounter carries a `suggestedLevel` and every
+monster an SRD `MONSTER_XP` entry (a test enforces the pairing).
+
+**Every creature type carries a top end**, which is a generator constraint
+rather than a flavour one. Arena fights are drafted by creature type, and a
+type whose dearest member can't fill a high-budget slot is silently discarded
+by the underfill reroll — measured, undead/beast/humanoid were appearing in
+5–7% of late fights against dragon/giant/monstrosity at 20–27%. A test holds
+every type to reaching 1,800 XP, with **fey** and **ooze** named as
+exceptions: the SRD provides no high-CR fey once the unicorn is set aside, and
+exactly four oozes. Type share now runs 18% down to 5% at the top budget.
+
+Creature types follow the **2024 rules**, which moved several: goblinoids and
+worgs are fey, gnolls are fiends, and the roper is an aberration. That
+retyping is not cosmetic — `creatureType` gates spell targeting, so it had to
+come with a widened target set for Command and Suggestion (gated to
+`humanoid` as shorthand for "has a mind and ears", which would have left
+goblins immune to both) and with company for the aberration, since the
+generator never picks a type with fewer than two members. Monsters are always AI-run; pick one in
 skirmish via `--encounter <id>` or the web setup.
+
+### Regeneration
+
+The one trait added to the engine rather than expressed as data: a
+`regeneration` field on `Combatant`, a suppression flag set in `applyDamage`,
+and a heal at the top of `startTurn`. Suppression keys off the damage **type**
+rather than how much landed — a fire hit soaked by temp HP or halved by
+resistance still burns the troll — and costs exactly one turn before
+re-arming, so a party has to keep burning rather than burn once. It's the
+roster's only "bring the right damage type" monster, which is a decision
+rather than a bigger number.
+
+5e also says a regenerating creature dies only if it starts its turn at 0 HP
+without regenerating. There are no monster death saves here — a monster at 0
+is dead — so that clause has nothing to attach to, and regeneration only ever
+matters above 0.
 
 ## 6. Grid, terrain, maps
 
@@ -1042,6 +1076,64 @@ flag namespace. The planned arc is a 1→5 trilogy
 Barrows (3→4, undead) → The Wyrmcalling (4→5, dragons/giants/elementals),
 sized so fights carry the leveling and `xpToLevel` milestones are floors.
 
+## 7d. Arena mode
+
+Generated fights on generated maps, at a budget that rises with the wave and
+scales with party level. `src/arena/` is three files: `encounter.ts` drafts a
+roster, `map.ts` draws a board, `run.ts` holds the wave/budget curve and the
+run's score.
+
+**The roster is `MONSTERS`, not a list.** A monster added to the game is arena
+opposition the same day; the opt-out is `ARENA_EXCLUDED` (currently the
+unicorn, a benign guardian that was fronting a third of high-budget fights).
+Two invariants make that safe, both test-enforced: every monster has an XP
+value — one without would read as *free* and get stacked six deep into a
+"budget-appropriate" fight — and every monster has a creature type, which the
+two-types-per-fight rule needs.
+
+**Difficulty is measured.** `EVEN_BUDGET` is the adjusted-XP figure at which a
+standard party wins about half its fights, taken by simulating generated
+encounters against the greedy AI. Levels 1 and 3 are measured directly; the
+rest interpolate on the geometric fit between them, since the wave ramp
+re-tunes the number anyway. `waveDifficulty` opens at 0.55 of an even fight
+and climbs 0.09 a wave, crossing even around wave six and continuing — so a
+run ends where the player runs out, not at a cap. In simulation an L5 party
+goes 92% at wave 1 to single digits by wave 9.
+
+**Two traps the drafting avoids**, both of which a naive budget check walks
+straight into:
+
+- *Raw XP understates a crowd.* Five creatures take five turns to the party's
+  four. Fights are budgeted against 5e's headcount-adjusted XP and paid out at
+  the raw sum — `adjustedXp` and `rawXp` stay separate throughout.
+- *Greedy drafting collapses the fight.* Picking "the biggest that still fits"
+  spends the budget on the first draw and leaves one or two heavyweights, so
+  headcount is rolled **first** and the slots filled to it.
+
+Two further guards came out of measurement rather than design. The per-slot
+draw floor is a share of **the slot's own budget**, never of the dearest
+monster that happens to fit: a pool-relative floor rises as a type gains
+expensive members and silently retires that type's cheap ones (adding the CR
+6–10 dragons pushed the wyrmlings out of high-budget waves exactly this way).
+And a creature type is offered only if its cheapest member fits **under the
+solo cap** — otherwise no headcount is payable, the roll falls back to a
+single body, and the "always leave something affordable" floor waves an
+over-cap monster through.
+
+**Maps** are drafted and then validated, with 24 rerolls and an open-field
+fallback. `validateArenaMap` rejects the failure that doesn't look like one: a
+sealed region means the AI can never reach anyone and the battle never ends.
+It also rejects blocked and hazardous deploy rows. Boards are 8 wide, half
+8×8 and half 8×12.
+
+**Retries rebuild the same fight.** A wave is seeded from the run seed and the
+wave number, not from rolling state, so a wave you lost is a tactical problem
+rather than a slot machine. The score is *first-try clears*: with unlimited
+retries a plain win rate climbs to 100% and stops measuring anything. A full
+rest between waves removes attrition as a difficulty axis, which is what makes
+each wave an independent problem and the win rate a clean number rather than
+one confounded by how much healing was left over from wave three.
+
 ## 8. CLI
 
 `npm start` — flags: `--seed n`, `--map id`, `--level 1|2|3`,
@@ -1150,7 +1242,7 @@ authored SVG icon, and WebAudio-synthesized sound effects.
 
 ## 9. Testing
 
-540+ vitest tests across 38 suites: deterministic replay of full battles,
+710+ vitest tests across 44 suites: deterministic replay of full battles,
 rules-level unit tests (advantage cancellation, crit math, OA triggers,
 condition lifecycles, resistances, multiattack banking), AI completion across
 seeds/maps/encounters plus the arena regression floor, stat-block fidelity
@@ -1158,6 +1250,23 @@ checks against the SRD's printed attack bonuses, campaign state/loot/rest/
 skill-check coverage, module validation and headless full-module playthroughs
 (including the XP-pacing band), and web action-grouping tests against the
 live engine. CI runs the suite before every deploy.
+
+Two classes of test are here because the failures they catch are **silent**,
+which is worth stating since they look like busywork otherwise:
+
+- **Data invariants.** Every monster has an XP value and a creature type;
+  every creature type reaches a top end; every weapon, feature and spell a
+  stat block names exists. A monster missing its XP reads as free to the
+  arena generator, which will happily stack six of them into a fight it
+  believes is within budget. Nothing throws.
+- **Stylesheet coverage** (`web-css.test.ts`). Every class the web code names
+  must have a rule. `.adv-stage` is `flex: 1`, so a typo'd root class gives it
+  no height to claim and the whole screen renders as a blank strip — no throw,
+  no console error, just an empty page. That shipped once.
+
+The same reasoning applies to the readability checker (§7c) and to the
+`endTurn` advance tests: all three guard states that are wrong without being
+loud.
 
 ## 10. History & next candidates
 
@@ -1179,14 +1288,19 @@ every future module composes for free; ids are validated and fall back to
 emoji until generated.
 
 Next candidates, roughly in fun-per-effort order:
-1. **The trilogy's Parts 2–3** ([trilogy-plan.md](trilogy-plan.md)) — The
-   Sunken Barrows (L3→4) and The Wyrmcalling (L4→5); continuation mechanics
-   are shipped, so each is pure authoring against a written XP budget.
+1. **Verify the bestiary against the SRD text.** Roughly sixty of the 132 stat
+   blocks were authored from recall, not from the source. The tests check
+   internal consistency (a young dragon out-hits its wyrmling; every type has
+   a top end) but nothing checks a single number against the SRD. The document
+   is gitignored (`SRD_CC_v5.2.1.txt`), so step one is committing it; step two
+   is a test that reads it and asserts our blocks match on the fields it
+   carries.
 2. **More classes** (Barbarian, Warlock, Bard…) — mostly data now.
 3. **Deployment phase** (players place their four units).
 4. **Cross-unit AI coordination** ("I soften, you finish") — the one
    measured gap left in §7; a large build.
-5. **Bigger/asymmetric maps** — the parser already takes any rectangle.
+5. **Retire the ladder in favour of the arena generator**, or fold the two
+   together — the arena already covers the ladder's job with less authoring.
 6. **Auto-tuning evaluator weights** against arena win rate — open,
    well-tooled follow-up.
 

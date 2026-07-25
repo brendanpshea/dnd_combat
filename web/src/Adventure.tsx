@@ -621,7 +621,7 @@ function FrozenScene({ scene }: { scene: Scene }) {
     : scene.kind === 'challenge' ? scene.intro : [];
   return (
     <div className="adv-scene bottom">
-      <div className="adv-panel frozen">
+      <div className="adv-panel">
         {scene.kind === 'dialogue' && (
           <div className="adv-npc">
             {hasArt(scene.npc.portraitId ?? scene.npc.id)

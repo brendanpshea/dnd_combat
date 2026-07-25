@@ -199,6 +199,48 @@ and manage gear between beats. A tap on any item or spell opens an **ⓘ info
 card** — derived stats plus a plain-English blurb — in camp, the shop, and
 the spell tray.
 
+## Arena mode
+
+An endless run of **procedurally generated fights** against a rising XP
+budget, on **procedurally generated maps** — the ladder without the hand
+authoring. The roster is read from `MONSTERS` directly rather than from a
+curated list, so a monster added to the game turns up in the arena the same
+day; the opt-out is `ARENA_EXCLUDED`, not an opt-in.
+
+Difficulty is **measured, not guessed**. `EVEN_BUDGET` is the adjusted-XP
+figure at which a standard party wins about half its fights, taken by
+simulating generated encounters against the AI. Waves open well under an even
+fight, cross it around wave six, and keep climbing, so a run has a natural end
+found by the player rather than a wave cap.
+
+Two things it does differently from the campaign:
+
+- **A defeat retries the same wave.** Waves are seeded from the run seed and
+  the wave number, so a retry rebuilds the identical fight — a tactical
+  problem to solve, not a slot machine to reroll until something easy turns
+  up.
+- **It scores first-try clears.** With unlimited retries a plain win rate
+  climbs to 100% and stops meaning anything.
+
+Between waves the party takes a **full rest** — the arena is a tactics test,
+not an attrition one, and it keeps each wave an honest measure of the fight
+itself — and can visit a **level-appropriate stall**. Monsters award XP and
+roll treasure exactly as the ladder does, and the run persists to
+localStorage.
+
+Generation is careful about two traps that a naive budget check walks into:
+
+- **Raw XP understates a crowd.** Five creatures get five turns to the party's
+  four, so the same XP across more bodies hits far harder. Fights are budgeted
+  against 5e's headcount-adjusted XP and paid out at the raw sum.
+- **Headcount is chosen before any monster is picked.** Drafting greedily by
+  "biggest that still fits" collapses every fight into one or two
+  heavyweights, because the first draw eats the budget.
+
+> **Naming note:** `npm run arena` is an unrelated *AI benchmarking* tool
+> (seeded mirror matches, see [Working on the AI](#working-on-the-ai)). The
+> game mode lives in `src/arena/`.
+
 ## Project layout
 
 ```
@@ -207,6 +249,7 @@ src/
   engine/    # pure rules engine: grid, dice, turn loop, actions, combat events
   builder/   # class + level + gear -> combatant construction
   ai/        # greedy expected-value player (same Action API as both UIs)
+  arena/     # generated encounters + generated maps + run/wave state
   campaign/  # meta-game: party, stages, shop, loot, skill checks, save parsing
   adventure/ # story modules: pure runtime, scene types, validator, headless runner
   ui/cli/    # terminal renderer, battle loop, campaign loop
