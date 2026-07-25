@@ -13,6 +13,12 @@ export const HAS_ART = new Set<string>([
   'kobold', 'scout', 'orc', 'brown-bear', 'cult-fanatic', 'animated-armor',
   'orc-barbarian', 'dragonborn-paladin', 'gnome-bard', 'halfling-rogue', 'tiefling-warlock',
   'dwarf-berserker', 'elf-archer', 'human-bard', 'bandit-captain',
+  // Species x role portraits (art/prompts.md §6b) — these close the forge's
+  // species x class matrix, which previously filled its holes with the wrong
+  // picture (human rangers in elf ears, dwarf wizards drawn as humans).
+  'ranger', 'paladin', 'dwarf-cleric', 'elf-wizard', 'orc-shaman',
+  'dragonborn-sorcerer', 'tiefling-knight', 'gnome-warden',
+  'halfling-warrior', 'halfling-priest',
   'ranger', 'paladin', 'dwarf-cleric', 'elf-wizard', 'orc-shaman',
   'dragonborn-sorcerer', 'tiefling-knight', 'gnome-warden', 'halfling-warrior', 'halfling-priest',
   'knight', 'minotaur', 'ettin', 'priest', 'ogre-mage',

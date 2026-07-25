@@ -25,6 +25,16 @@ export const PORTRAITS: PortraitOption[] = [
   { id: 'dwarf-berserker', name: 'Dwarf Berserker' },
   { id: 'elf-archer', name: 'Elf Archer' },
   { id: 'human-bard', name: 'Human Bard' },
+  { id: 'ranger', name: 'Ranger' },
+  { id: 'paladin', name: 'Paladin' },
+  { id: 'dwarf-cleric', name: 'Dwarf Cleric' },
+  { id: 'elf-wizard', name: 'Elf Wizard' },
+  { id: 'orc-shaman', name: 'Orc Shaman' },
+  { id: 'dragonborn-sorcerer', name: 'Dragonborn Sorcerer' },
+  { id: 'tiefling-knight', name: 'Tiefling Knight' },
+  { id: 'gnome-warden', name: 'Gnome Warden' },
+  { id: 'halfling-warrior', name: 'Halfling Warrior' },
+  { id: 'halfling-priest', name: 'Halfling Priest' },
 ];
 
 export function portraitName(id: string): string {

@@ -17,11 +17,10 @@ eye-level **location scenes** and **NPC-archetype portraits** — the NPC set
 reuses this doc's style bible verbatim.
 
 **Status legend:** ✅ generated and wired in the engine (`HAS_ART` in
-`web/src/art.ts`) · ⬜ needed (still on the emoji fallback). The four heroes,
-eight species portraits, and all Tier 1–4 monsters are ✅. Outstanding: the ten
-**species × role portraits in §6b**, which is the reason this doc was last
-touched — the forge's species × class matrix currently has holes it fills with
-the wrong picture (human rangers with elf ears, dwarf wizards drawn as humans).
+`web/src/art.ts`) · ⬜ needed (still on the emoji fallback). Everything in this
+doc is now ✅: the four heroes, the eighteen species/role portraits, and all
+Tier 1–4 monsters. The species × class matrix in the forge is fully covered —
+every combination resolves to real art, enforced by a test.
 
 ---
 
@@ -289,13 +288,13 @@ front the level 4–5 ladder; Priest and Ogre Mage are spellcasters.
 
 ---
 
-## 6b. Species × role portraits — ⬜ NEEDED
+## 6b. Species × role portraits — ✅ GENERATED
 
 **Why these exist.** `portraitId` drives *both* the board token and the bust
 (`Board.tsx` reads `c.portraitId ?? c.classId`), and the forge picks a default
-from a species × class matrix (`defaultPortraitFor`, campaign.ts). Each species
-currently has exactly **one** portrait, tagged martial or not, so the matrix has
-holes it fills with the wrong picture:
+from a species × class matrix (`defaultPortraitFor`, campaign.ts). Before these
+landed each species had exactly **one** portrait, tagged martial or not, so the
+matrix had holes it filled with the wrong picture:
 
 - A **human ranger** wears `elf-archer` — pointed ears on a human — and a
   **human paladin** wears `dragonborn-paladin`, a dragon's head. Ranger and
@@ -373,15 +372,24 @@ Not needed to close the matrix; listed so nobody re-derives them later. Each
 would give its species a light/skirmisher look distinct from both siblings:
 `dwarf-scout`, `elf-blade`, `orc-hunter`, `dragonborn-monk`, `gnome-tinker`.
 
-### Wiring after generation
+### Wiring — done
 
-1. Drop `token-<id>.png` and `portrait-<id>.png` in `art/source/`.
-2. Add the ids to `IDS` in `art/process.py` and to `HAS_ART` in `web/src/art.ts`.
-3. Run `python art/process.py`.
-4. Point the matrix at them in `src/campaign/campaign.ts`: `CLASS_PORTRAIT`
-   gains real `ranger` / `paladin` entries (they currently borrow `elf-archer`
-   and `dragonborn-paladin`), and `SPECIES_PORTRAIT` becomes a per-species
-   `{ martial, caster }` pair rather than a single tagged entry.
+All ten are generated, processed and wired. `SPECIES_PORTRAIT` in
+`src/campaign/campaign.ts` is now a per-species `{ martial, caster, skirmisher? }`
+record, `CLASS_PORTRAIT` has real `ranger` / `paladin` entries, and every
+species × class cell is covered by a test in `test/choices.test.ts`.
+
+Only the halfling has all three looks drawn (`halfling-warrior` /
+`halfling-priest` / `halfling-rogue`), which is what `skirmisher` is for — a
+halfling rogue keeps the hooded art instead of being handed the mail shirt. Any
+species that later gains a Tier D skirmisher slots in the same way.
+
+**A note for the next generation run:** three of these ten came back with the
+spec label ("PORTRAIT") rendered into the bottom of the canvas, in both the
+token and the portrait — six files needing a cleanup pass before processing. The
+style preamble already says *no text, no watermark*; it is worth checking the
+bottom strip of every asset before running `process.py`, since the artefact is
+invisible once the image is scaled into a 48px token but obvious on the bust.
 
 ---
 
@@ -428,20 +436,20 @@ Species portrait variants (✅, forge only — token + portrait both present):
 `tiefling-warlock`, `dwarf-berserker`, `elf-archer`, `human-bard` — files
 `token-<id>.png` / `portrait-<id>.png`.
 
-Species × role portraits still needed (⬜, see §6b) — same file convention:
+Species × role portraits (✅, see §6b) — same file convention:
 
-| Asset | Id | Why |
+| Asset | Id | Fills |
 | --- | --- | --- |
-| Ranger | `ranger` | human rangers currently wear `elf-archer` |
-| Paladin | `paladin` | human paladins currently wear `dragonborn-paladin` |
-| Dwarf Cleric | `dwarf-cleric` | dwarf casters fall back to the human wizard |
-| Elf Wizard | `elf-wizard` | elf casters fall back to the human wizard |
-| Orc Shaman | `orc-shaman` | orc casters fall back to the human wizard |
-| Dragonborn Sorcerer | `dragonborn-sorcerer` | dragonborn casters fall back to the human wizard |
-| Tiefling Knight | `tiefling-knight` | tiefling fighters wear the robed warlock |
-| Gnome Warden | `gnome-warden` | gnome fighters wear the bard |
-| Halfling Warrior | `halfling-warrior` | halfling fighters wear the hooded rogue |
-| Halfling Priest | `halfling-priest` | halflings have no caster art |
+| Ranger | `ranger` | any ranger without species art (was `elf-archer`) |
+| Paladin | `paladin` | any paladin without species art (was `dragonborn-paladin`) |
+| Dwarf Cleric | `dwarf-cleric` | dwarf casters |
+| Elf Wizard | `elf-wizard` | elf casters |
+| Orc Shaman | `orc-shaman` | orc casters |
+| Dragonborn Sorcerer | `dragonborn-sorcerer` | dragonborn casters |
+| Tiefling Knight | `tiefling-knight` | tiefling martials |
+| Gnome Warden | `gnome-warden` | gnome martials |
+| Halfling Warrior | `halfling-warrior` | halfling martials |
+| Halfling Priest | `halfling-priest` | halfling casters |
 
 **After generating the ⬜ art:** drop the source PNGs in `art/source/`, add the
 ids to `IDS` in `art/process.py` and `HAS_ART` in `web/src/art.ts`, then run

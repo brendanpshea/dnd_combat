@@ -500,20 +500,24 @@ export { HERO_NAMES as DEFAULT_NAMES, defaultNameFor };
  * orc a barbarian, which read wrong on a robed wizard. `martial` art is skipped
  * for casters, who fall back to their class portrait.
  */
-const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id }>> = {
+const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id; skirmisher?: Id }>> = {
   dwarf: { martial: 'dwarf-berserker', caster: 'dwarf-cleric' },
   elf: { martial: 'elf-archer', caster: 'elf-wizard' },
   orc: { martial: 'orc-barbarian', caster: 'orc-shaman' },
   dragonborn: { martial: 'dragonborn-paladin', caster: 'dragonborn-sorcerer' },
   tiefling: { martial: 'tiefling-knight', caster: 'tiefling-warlock' },
   gnome: { martial: 'gnome-warden', caster: 'gnome-bard' },
-  halfling: { martial: 'halfling-warrior', caster: 'halfling-priest' },
+  // The halfling is the one species with all three looks drawn, so its rogue
+  // keeps the hooded art instead of being handed the mail-shirt warrior.
+  halfling: { martial: 'halfling-warrior', caster: 'halfling-priest', skirmisher: 'halfling-rogue' },
   // Human has no entry on purpose: the class portraits *are* the human art, so
   // a human fighter should look like the Fighter, not like the bard.
 };
 
 /** Classes whose look is robes and spellbooks rather than mail and axes. */
 const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric']);
+/** Light, hooded, knife-in-the-dark classes — the third look, where it's drawn. */
+const SKIRMISHER_CLASSES = new Set<Id>(['rogue']);
 
 /**
  * Class portraits for hero classes — ranger and paladin now have dedicated art.
@@ -529,7 +533,9 @@ export function defaultPortraitFor(speciesId: Id, classId: Id): Id {
   const species = SPECIES_PORTRAIT[speciesId];
   const classPortrait = CLASS_PORTRAIT[classId] ?? classId;
   if (!species) return classPortrait;
-  return CASTER_CLASSES.has(classId) ? species.caster : species.martial;
+  if (CASTER_CLASSES.has(classId)) return species.caster;
+  if (SKIRMISHER_CLASSES.has(classId) && species.skirmisher) return species.skirmisher;
+  return species.martial;
 }
 
 /**
