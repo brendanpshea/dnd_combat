@@ -6,6 +6,7 @@ import { SPELLS } from '../src/data/spells.js';
 import { BREATH_WEAPONS } from '../src/data/features.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
+import { applyDamage } from '../src/engine/rules/attack.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
 
@@ -459,4 +460,120 @@ describe('CR 5-10 monsters', () => {
       expect(c.isOver(), `${id} did not resolve`).toBe(true);
     }
   }, 60000);
+});
+
+/**
+ * Regeneration. The trait is only interesting because the *right* damage type
+ * turns it off — otherwise it's a flat HP bonus. These pin the suppression, not
+ * just the healing.
+ */
+describe('troll regeneration', () => {
+  function trollFight(extra: Combatant[] = [], seed = 1) {
+    const troll = buildMonster('troll', 'team2', { x: 4, y: 7 });
+    const c = new Combat({
+      seed, mapId: 'ruins',
+      combatants: [...buildParty('team1', 0, 3), troll, ...extra],
+    });
+    return { c, id: troll.id };
+  }
+
+  /** HP read fresh — `apply` clones state, so a held combatant goes stale. */
+  const hp = (c: Combat, id: string) => c.state.combatants[id]!.hp;
+
+  /** Run to the *next* start of `id`'s turn. Always ends at least one turn, so
+   *  it can't return on a turn that started before the test set anything up. */
+  function nextTurnOf(c: Combat, id: string) {
+    c.apply({ kind: 'endTurn' });
+    let guard = 0;
+    while (c.activeId !== id && guard++ < 60) c.apply({ kind: 'endTurn' });
+    expect(c.activeId).toBe(id);
+  }
+
+  it('heals at the start of its turn when nothing has burned it', () => {
+    const { c, id } = trollFight();
+    c.state.combatants[id]!.hp = 40;
+    nextTurnOf(c, id);
+    expect(hp(c, id)).toBe(50);
+  });
+
+  it('does not heal past its maximum', () => {
+    const { c, id } = trollFight();
+    const max = c.state.combatants[id]!.maxHp;
+    c.state.combatants[id]!.hp = max - 3;
+    nextTurnOf(c, id);
+    expect(hp(c, id)).toBe(max);
+  });
+
+  it('fire or acid suppresses exactly one turn of healing, then it re-arms', () => {
+    for (const type of ['fire', 'acid'] as const) {
+      const { c, id } = trollFight();
+      c.state.combatants[id]!.hp = 40;
+      applyDamage(c.state, id, id, 5, type);
+      expect(hp(c, id)).toBe(35);
+      nextTurnOf(c, id);
+      expect(hp(c, id), `${type} should have stopped the heal`).toBe(35);
+      // Nothing burns it again, so the next turn regenerates normally.
+      nextTurnOf(c, id);
+      expect(hp(c, id), `${type} suppression should last one turn only`).toBe(45);
+    }
+  });
+
+  it('slashing damage does not suppress it', () => {
+    const { c, id } = trollFight();
+    c.state.combatants[id]!.hp = 40;
+    applyDamage(c.state, id, id, 5, 'slashing');
+    nextTurnOf(c, id);
+    expect(hp(c, id)).toBe(45);
+  });
+
+  it('a fire hit soaked entirely by temp HP still stops it', () => {
+    const { c, id } = trollFight();
+    c.state.combatants[id]!.hp = 40;
+    c.state.combatants[id]!.tempHp = 20;
+    applyDamage(c.state, id, id, 5, 'fire');
+    expect(hp(c, id), 'temp HP should have absorbed it').toBe(40);
+    nextTurnOf(c, id);
+    expect(hp(c, id)).toBe(40);
+  });
+
+  it('two trolls do not share one suppression flag', () => {
+    const b = buildMonster('troll', 'team2', { x: 3, y: 7 }, '2');
+    const { c, id: a } = trollFight([b]);
+    c.state.combatants[a]!.hp = 40;
+    c.state.combatants[b.id]!.hp = 40;
+    applyDamage(c.state, a, a, 5, 'fire');
+    nextTurnOf(c, a);
+    expect(hp(c, a), 'burned troll').toBe(35);
+    // b's turn may come round more than once while we wait; what matters is
+    // that it regenerated at all and a still hasn't.
+    nextTurnOf(c, b.id);
+    expect(hp(c, b.id), 'untouched troll').toBeGreaterThan(40);
+    expect(hp(c, a), 'burned troll, still suppressed on its one turn').toBe(35);
+  });
+
+  it('does not resurrect a dead troll', () => {
+    const { c, id } = trollFight();
+    applyDamage(c.state, id, id, 999, 'slashing');
+    expect(c.state.combatants[id]!.alive).toBe(false);
+    expect(hp(c, id)).toBe(0);
+  });
+
+  // The trait has to change how the fight goes, not just pad the HP bar.
+  // Measured by running the same seeds with the trait on and off rather than
+  // by injecting damage mid-loop, which would end fights out of turn order.
+  it('materially lengthens the fight compared to the same troll without it', () => {
+    const meanRounds = (regenerating: boolean) => {
+      let rounds = 0;
+      const N = 8;
+      for (let seed = 1; seed <= N; seed++) {
+        const { c, id } = trollFight([], seed);
+        if (!regenerating) delete c.state.combatants[id]!.regeneration;
+        let steps = 0;
+        while (!c.isOver() && steps++ < 2000) c.apply(chooseAction(c.state, c.activeId));
+        rounds += c.state.round;
+      }
+      return rounds / N;
+    };
+    expect(meanRounds(true)).toBeGreaterThan(meanRounds(false));
+  });
 });

@@ -31,6 +31,9 @@ export interface MonsterData {
   /** SRD creature type. Beast is the load-bearing one today -- Animal
    *  Friendship needs to tell a wolf from a goblin. */
   creatureType: CreatureType;
+  /** Regeneration (troll): heals at the start of its turn unless it has taken
+   *  one of `stoppedBy` damage types since the last one. */
+  regeneration?: { amount: number; stoppedBy: DamageType[] };
 }
 
 export const MONSTERS: Record<Id, MonsterData> = {
@@ -483,6 +486,18 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['fire'],
   },
+  // The troll is the roster's first "bring the right damage type" monster.
+  // Chip damage alone loses to 10 HP a turn; acid or fire turns the fight
+  // around, which is a decision rather than a bigger number.
+  troll: {
+    id: 'troll', name: 'Troll',
+    ac: 15, cr: 5, hp: 84, speed: 30,
+    creatureType: 'giant',
+    abilities: { str: 18, dex: 13, con: 20, int: 7, wis: 9, cha: 7 },
+    weaponIds: ['troll-claw', 'troll-bite'],
+    attacksPerAction: 3, // bite and two claws
+    regeneration: { amount: 10, stoppedBy: ['acid', 'fire'] },
+  },
   chimera: {
     id: 'chimera', name: 'Chimera',
     ac: 14, cr: 6, hp: 114, speed: 30,
@@ -768,6 +783,11 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     },
     alive: true,
     creatureType: m.creatureType,
+    // Copied, not shared: `suppressed` is per-combatant turn state, and three
+    // trolls from one stat block must not share one flag.
+    ...(m.regeneration
+      ? { regeneration: { amount: m.regeneration.amount, stoppedBy: [...m.regeneration.stoppedBy] } }
+      : {}),
   };
 }
 
@@ -1078,7 +1098,7 @@ export const MONSTER_XP: Record<Id, number> = {
   'black-wyrmling': 450, 'green-wyrmling': 450, 'white-wyrmling': 450,
   'blue-wyrmling': 700, 'red-wyrmling': 1100,
   // CR 5-10. The band above 1,800 was empty before these.
-  'hill-giant': 1800, chimera: 2300, wyvern: 2300, 'young-white': 2300,
+  troll: 1800, 'hill-giant': 1800, chimera: 2300, wyvern: 2300, 'young-white': 2300,
   'stone-giant': 2900, 'young-black': 2900,
   'frost-giant': 3900, hydra: 3900, 'young-green': 3900,
   'fire-giant': 5000, 'young-blue': 5000,

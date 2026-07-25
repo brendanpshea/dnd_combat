@@ -232,6 +232,20 @@ export interface Combatant {
    *  who start their turn near it (held by concentration). */
   spiritualGuardians?: { dc: number; mod: number };
   /**
+   * Regeneration (troll): heal `amount` at the start of each of its turns,
+   * unless it has taken damage of a `stoppedBy` type since its last turn. That
+   * suppression is the whole point of the trait — it turns "hit it harder" into
+   * "hit it with the right thing", which is a decision rather than a damage
+   * race. `suppressed` is set by applyDamage and cleared once it has cost the
+   * creature a turn of healing.
+   *
+   * 5e also says a regenerating creature only dies if it starts its turn at 0
+   * HP without regenerating. There are no monster death saves here — a monster
+   * at 0 is dead — so that clause has nothing to attach to, and regeneration
+   * only ever matters above 0.
+   */
+  regeneration?: { amount: number; stoppedBy: DamageType[]; suppressed?: boolean };
+  /**
    * A smite held ready: the slot is already spent, and the next melee hit
    * discharges it. Every smite works this way (Divine, Searing, Thunderous,
    * Wrathful) so the player picks *which* and *how big* up front, rather than
