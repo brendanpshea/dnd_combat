@@ -8,6 +8,8 @@ import { SPECIES } from '../src/data/species.js';
 import { CLASSES } from '../src/data/classes.js';
 import { randomNameFor } from '../src/builder/names.js';
 import { seedRng } from '../src/engine/rng.js';
+import { HAS_ART } from '../web/src/art.js';
+import { PORTRAITS } from '../web/src/portraits.js';
 
 const SPECIES_IDS = Object.keys(SPECIES);
 
@@ -104,7 +106,9 @@ describe('build-choice points', () => {
     const rogue = c.characters.find((ch) => ch.classId === 'rogue')!;     // halfling
     const cleric = c.characters.find((ch) => ch.classId === 'cleric')!;   // human
     expect(fighter.portraitId).toBe('dwarf-berserker');
-    expect(rogue.portraitId).toBe('halfling-warrior');
+    // The halfling has all three looks drawn, so its rogue gets the hooded art
+    // rather than the mail-shirt warrior.
+    expect(rogue.portraitId).toBe('halfling-rogue');
     expect(cleric.portraitId).toBe('cleric'); // human → class image
   });
 
@@ -243,5 +247,55 @@ describe('random names', () => {
     const seen = new Set([before, c.characters[0]!.name]);
     for (let i = 0; i < 8; i++) { rerollPartyName(c, 0); seen.add(c.characters[0]!.name); }
     expect(seen.size).toBeGreaterThan(1);
+  });
+});
+
+/**
+ * The forge derives a default portrait from species × class. Before the §6b art
+ * landed this matrix had holes it filled with the wrong picture — a human
+ * ranger wore the elf archer, pointed ears and all, and a human paladin wore
+ * the dragonborn. Every cell now resolves to art that actually exists.
+ */
+describe('portrait matrix', () => {
+  const SPECIES_IDS = Object.keys(SPECIES);
+  const CLASS_IDS = Object.keys(CLASSES);
+
+  it('every species × class lands on art that exists', () => {
+    const missing: string[] = [];
+    for (const s of SPECIES_IDS) {
+      for (const cl of CLASS_IDS) {
+        const id = defaultPortraitFor(s, cl);
+        if (!HAS_ART.has(id)) missing.push(`${s}/${cl} → ${id}`);
+      }
+    }
+    expect(missing, `portraits with no art:\n${missing.join('\n')}`).toEqual([]);
+  });
+
+  it('a human ranger is not an elf, and a human paladin is not a dragon', () => {
+    expect(defaultPortraitFor('human', 'ranger')).toBe('ranger');
+    expect(defaultPortraitFor('human', 'paladin')).toBe('paladin');
+  });
+
+  it('casters of the martial species get the caster art, not the human wizard', () => {
+    expect(defaultPortraitFor('dwarf', 'wizard')).toBe('dwarf-cleric');
+    expect(defaultPortraitFor('elf', 'cleric')).toBe('elf-wizard');
+    expect(defaultPortraitFor('orc', 'wizard')).toBe('orc-shaman');
+    expect(defaultPortraitFor('dragonborn', 'wizard')).toBe('dragonborn-sorcerer');
+  });
+
+  it('fighters of the caster species get armour, not robes', () => {
+    expect(defaultPortraitFor('tiefling', 'fighter')).toBe('tiefling-knight');
+    expect(defaultPortraitFor('gnome', 'fighter')).toBe('gnome-warden');
+    expect(defaultPortraitFor('halfling', 'fighter')).toBe('halfling-warrior');
+  });
+
+  it('the halfling rogue keeps its hooded art — the one species with all three looks', () => {
+    expect(defaultPortraitFor('halfling', 'rogue')).toBe('halfling-rogue');
+    // …and no other species is handed a skirmisher it doesn't have art for.
+    expect(defaultPortraitFor('dwarf', 'rogue')).toBe('dwarf-berserker');
+  });
+
+  it('every portrait offered in the forge picker has art behind it', () => {
+    for (const p of PORTRAITS) expect(HAS_ART.has(p.id), `${p.id} has no art`).toBe(true);
   });
 });
