@@ -384,12 +384,38 @@ Only the halfling has all three looks drawn (`halfling-warrior` /
 halfling rogue keeps the hooded art instead of being handed the mail shirt. Any
 species that later gains a Tier D skirmisher slots in the same way.
 
-**A note for the next generation run:** three of these ten came back with the
-spec label ("PORTRAIT") rendered into the bottom of the canvas, in both the
-token and the portrait — six files needing a cleanup pass before processing. The
-style preamble already says *no text, no watermark*; it is worth checking the
-bottom strip of every asset before running `process.py`, since the artefact is
-invisible once the image is scaled into a 48px token but obvious on the bust.
+### What went wrong in this run (check for it next time)
+
+Two artefact classes slipped through, neither visible in the source thumbnails:
+
+1. **Baked-in spec labels.** Three of the ten rendered the word "PORTRAIT" into
+   the bottom of the canvas, in both the token and the portrait — six files. The
+   style preamble already says *no text, no watermark*. Check the bottom strip
+   before processing: the artefact vanishes at 48px token size but is obvious on
+   the bust.
+2. **A zoom shift.** The set came back framed far tighter than the established
+   art — portraits ~50% wider in frame, tokens ~70% wider, several touching the
+   canvas edge. Individually they looked fine; beside the existing heroes they
+   read as bigger, and on the board they broke the size-tier cue that makes an
+   ogre tower over a kobold.
+
+`art/process.py` now defends against the second automatically: every asset in
+its `ROSTER` (the Medium humanoid heroes) is scaled down if its ink exceeds a
+framing **ceiling** measured from the established set. It is a ceiling rather
+than a target on purpose — the old art deliberately varies, with the gnome bard
+filling 36% of its token frame against the fighter's 51%, which is how Small
+species read as smaller. Normalising everything to one number would make
+halflings human-sized.
+
+The pipeline also strips keying residue: scattered dust, and the hairline
+"curtain" some sources carry down one edge. Where that curtain touches the
+figure it becomes part of the same connected shape, so it needs its own pass.
+Note the first implementation removed *every* small detached blob and deleted
+the elf wizard's floating rune — the iconic feature the prompt asked for — so
+the rule is deliberately narrow: border-hugging strokes and true dust only.
+
+Run `python art/process.py --check` to re-measure the committed WebP against the
+ceiling without rewriting anything.
 
 ---
 
