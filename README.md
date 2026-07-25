@@ -89,7 +89,7 @@ npm run campaign                           # campaign (saves to campaign-save.js
 | `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` `village` `bog` | Battle map (random if omitted) |
 | `--level <n>` | `1`–`5` | Party level (both sides in PvP) |
 | `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
-| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `giants` … (40+ rosters — beasts, undead, dragons, elementals; see `ENCOUNTERS` in `src/data/monsters.ts`) | Fight monsters instead of a mirror party |
+| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `giants` … (40+ rosters — beasts, undead, dragons, elementals; see `ENCOUNTERS` in `src/data/encounters.ts`) | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
 | `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |
 
@@ -245,7 +245,8 @@ Generation is careful about two traps that a naive budget check walks into:
 
 ```
 src/
-  data/      # all content: classes, spells, features, weapons, armor, items, monsters, maps
+  data/      # all content: classes, spells, features, weapons, armor, items,
+             #   monsters (the bestiary), encounters (authored fights), maps
   engine/    # pure rules engine: grid, dice, turn loop, actions, combat events
   builder/   # class + level + gear -> combatant construction
   ai/        # greedy expected-value player (same Action API as both UIs)

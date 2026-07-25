@@ -16,11 +16,11 @@ import {
   spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
   scrollLearnable, learnSpellFromScroll, itemCategory,
 } from '../src/campaign/campaign.js';
-import { encounterXP } from '../src/data/monsters.js';
+import { encounterXP } from '../src/data/encounters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../src/campaign/save.js';
 import { Combat } from '../src/engine/combat.js';
-import { buildEncounter } from '../src/data/monsters.js';
+import { buildEncounter } from '../src/data/encounters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { ITEMS } from '../src/data/items.js';
 import { CLASSES } from '../src/data/classes.js';

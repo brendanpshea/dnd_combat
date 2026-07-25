@@ -6,7 +6,7 @@
 import { useRef, useState, ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { TeamId, Id, ItemStack } from '../../src/engine/types.js';
-import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
+import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
 import { MAPS, farRank } from '../../src/data/maps.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';

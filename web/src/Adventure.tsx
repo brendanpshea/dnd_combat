@@ -24,7 +24,8 @@ import { SpellTray } from './SpellTray.js';
 import { InfoDot } from './InfoCard.js';
 import { infoFor, spellSheet } from './gameInfo.js';
 import { SlotPips } from './SlotPips.js';
-import { buildEncounter, ENCOUNTERS, MONSTERS } from '../../src/data/monsters.js';
+import { MONSTERS } from '../../src/data/monsters.js';
+import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
 import { MAPS, farRank } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {

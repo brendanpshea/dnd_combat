@@ -6,7 +6,7 @@ import { ITEMS } from '../src/data/items.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { VALUABLES } from '../src/data/valuables.js';
 import { itemPrice, itemName, itemIcon, rarityOf, treasureFor } from '../src/campaign/campaign.js';
-import { encounterXP, encounterCoinXP } from '../src/data/monsters.js';
+import { encounterXP, encounterCoinXP } from '../src/data/encounters.js';
 import { makeCombatant } from './helpers.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 

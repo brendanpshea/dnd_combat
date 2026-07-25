@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
-import { buildEncounter, buildMonster } from '../src/data/monsters.js';
+import { buildMonster } from '../src/data/monsters.js';
+import { buildEncounter } from '../src/data/encounters.js';
 import { groupActions, buildMultiAction, posKey } from '../web/src/actionGroups.js';
 import { SPELLS } from '../src/data/spells.js';
 import type { Combatant, Position } from '../src/engine/types.js';

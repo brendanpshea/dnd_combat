@@ -8,7 +8,7 @@
  */
 import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
-import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
+import { buildEncounter, ENCOUNTERS } from '../../data/encounters.js';
 import { MAPS, farRank } from '../../data/maps.js';
 import { ITEMS } from '../../data/items.js';
 import { CLASSES } from '../../data/classes.js';

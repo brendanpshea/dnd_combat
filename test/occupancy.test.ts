@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
-import { buildEncounter } from '../src/data/monsters.js';
+import { buildEncounter } from '../src/data/encounters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { makeCombatant } from './helpers.js';
 import { cellAt, Position } from '../src/engine/types.js';

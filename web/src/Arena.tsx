@@ -22,7 +22,8 @@ import {
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering,
 } from '../../src/campaign/campaign.js';
-import { buildMonster, MONSTERS, membersCoinXP } from '../../src/data/monsters.js';
+import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
+import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import {
   buildWave, newArenaRun, recordResult, type ArenaRunState, type ArenaWave,

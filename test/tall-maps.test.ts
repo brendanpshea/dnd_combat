@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { MAPS, parseMap, farRank } from '../src/data/maps.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty } from '../src/builder/character.js';
-import { buildEncounter } from '../src/data/monsters.js';
+import { buildEncounter } from '../src/data/encounters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { parseCell, cellName, renderBoard } from '../src/ui/cli/renderer.js';
 

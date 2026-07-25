@@ -9,7 +9,7 @@
  */
 import type { Id } from '../../engine/types.js';
 import { STAGES } from '../../campaign/campaign.js';
-import { ENCOUNTERS } from '../monsters.js';
+import { ENCOUNTERS } from '../encounters.js';
 import { MAPS } from '../maps.js';
 import type { Module, Scene } from '../../adventure/types.js';
 
