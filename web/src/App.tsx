@@ -25,11 +25,11 @@ import { ArenaScreen } from './Arena.js';
 import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { loadCampaignWeb } from './campaignStorage.js';
-import { loadArenaWeb } from './arenaStorage.js';
+import { loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
 import type { AdventureState } from '../../src/adventure/runtime.js';
-import { hasSceneArt, sceneArtUrl, hasSpellIcon, spellIconUrl } from './art.js';
+import { hasSceneArt, sceneArtUrl, hasSpellIcon, spellIconUrl, boardBgUrl, HAS_BOARD_BG, tokenUrl, hasArt } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
@@ -159,7 +159,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           <span>📱 Plays anywhere</span>
           <span>🆓 Free &amp; open</span>
           <span>⚔️ 6 classes · 8 ancestries</span>
-          <span>🐉 45+ spells · 55+ monsters</span>
+          <span>🐉 45+ spells · 130+ monsters</span>
         </div>
         <p className="landing-legal">
           Built on the <b>Dungeons &amp; Dragons</b> SRD 5.2, released free under Creative Commons —
@@ -167,6 +167,8 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         </p>
       </header>
 
+      <div className="landing-section">
+        <span className="landing-section-label">The story campaign</span>
       <div className="landing-modules">
         {orderedModules.map((m) => {
           const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
@@ -205,6 +207,12 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           );
         })}
       </div>
+      </div>
+
+      <div className="landing-section">
+        <span className="landing-section-label">Endless</span>
+        <ArenaCard onPick={onPick} />
+      </div>
 
       <button className="landing-learn" onClick={() => { initAudio(); onPick({ view: 'training' }); }}>
         🎓 New to this? Learn the basics
@@ -217,10 +225,6 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           <button className="landing-alt" onClick={() => onPick({ view: 'campaign' })}>
             🏰 Classic Campaign{loadCampaignWeb() ? ' · resume' : ''}
             <small>The pure {STAGES.length}-battle tactics ladder.</small>
-          </button>
-          <button className="landing-alt" onClick={() => onPick({ view: 'arena' })}>
-            🏟️ The Arena{loadArenaWeb() ? ' · resume' : ''}
-            <small>Endless generated waves. Rest and shop between fights.</small>
           </button>
           <button className="landing-alt" onClick={() => onPick({ view: 'skirmish-setup' })}>
             ⚔️ Quick Battle
@@ -236,11 +240,92 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           <div className="overlay-box about-box" onClick={(e) => e.stopPropagation()}>
             <h2>The Free Company</h2>
             <p>A little tactics-and-story RPG that runs on the fifth-edition <b>Dungeons &amp; Dragons</b> rules — play it in a browser, on a phone or a laptop. No account, no cost; your progress saves in this browser.</p>
-            <p className="muted">Inside: 6 classes, 8 ancestries, 45+ spells, and 55+ monsters, plus the full skill and grid-combat rules — all drawn from the SRD.</p>
+            <p className="muted">Inside: 6 classes, 8 ancestries, 45+ spells, and 130+ monsters, plus the full skill and grid-combat rules — all drawn from the SRD.</p>
             <p className="muted">Built on the <b>System Reference Document 5.2.1</b>, © Wizards of the Coast LLC, released under <b>CC-BY-4.0</b>. This game uses those rules with house rules where noted, and is not affiliated with or endorsed by Wizards of the Coast.</p>
             <p className="muted">Open source — <a href="https://github.com/brendanpshea/dnd_combat" target="_blank" rel="noreferrer">github.com/brendanpshea/dnd_combat</a>.</p>
             <button className="primary" onClick={() => setAbout(false)}>Close</button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Faces for the arena cover: one per creature type, chosen to read at 64px
+ *  and to look like a line-up rather than a family. */
+const ARENA_FACES = [
+  'wight', 'ogre', 'owlbear', 'red-wyrmling', 'gladiator', 'gorgon', 'fire-elemental',
+];
+
+/**
+ * The Arena, as a peer of the story chapters rather than a line in a
+ * "more ways to play" list.
+ *
+ * It deliberately reuses the module card's markup and classes instead of
+ * getting its own component. Two reasons: the rail then reads as one list of
+ * things you can play, and every behaviour the chapters already have — the
+ * gold resume frame, the hover lift, the start-over confirm — comes along
+ * without being rebuilt. The `endless` modifier is the only new styling, and
+ * it exists to say "this one has no ending", not to make it look like a
+ * different product.
+ *
+ * What replaces the level band is the point of the mode: a chapter says
+ * "Levels 1–3", the arena says it scales to whoever turns up.
+ */
+function ArenaCard({ onPick }: { onPick(s: Screen): void }) {
+  const [confirmWipe, setConfirmWipe] = useState(false);
+  const saved = loadArenaWeb();
+  const run = saved?.run;
+  const enter = (fresh?: boolean) => {
+    initAudio();
+    if (fresh) deleteArenaWeb();
+    onPick({ view: 'arena' });
+  };
+  return (
+    <div className={`module-card endless${run ? ' resuming' : ''}`}>
+      <button className="module-cover" onClick={() => enter()} aria-label="Play The Arena">
+        <div
+          className="module-cover-art arena-cover"
+          style={HAS_BOARD_BG.has('ember')
+            ? { backgroundImage: `url(${boardBgUrl('ember')})` }
+            : undefined}
+        >
+          {/* The cover the mode deserves is not a place — it has no place —
+              but the roster. A row of faces says "every monster in the game"
+              in a way a painted backdrop of anywhere cannot. */}
+          <div className="arena-cover-roster">
+            {ARENA_FACES.filter(hasArt).map((id, i) => (
+              <img key={id} src={tokenUrl(id)} alt="" draggable={false}
+                   style={{ zIndex: i === 3 ? 4 : 3 - Math.abs(3 - i) }} />
+            ))}
+          </div>
+        </div>
+        <div className="module-cover-body">
+          <strong>The Arena</strong>
+          <span className="module-band">Endless · scales to your party</span>
+          <span>
+            Fights built on the spot, on maps drawn on the spot, against every
+            monster in the game. Each wave costs more than the last. Full rest
+            and a stall between them.
+          </span>
+          <span className="module-cta">
+            {run
+              ? `▶ Continue — wave ${run.wave}, ${run.cleared} cleared`
+              : '▶ Enter the arena'}
+          </span>
+        </div>
+      </button>
+      {run && (
+        <div className="module-actions">
+          {confirmWipe ? (
+            <>
+              <span className="muted">Erase this run and start fresh?</span>
+              <button className="mini danger" onClick={() => { setConfirmWipe(false); enter(true); }}>Start over</button>
+              <button className="mini" onClick={() => setConfirmWipe(false)}>Cancel</button>
+            </>
+          ) : (
+            <button className="mini ghost" onClick={() => setConfirmWipe(true)}>↺ Start over</button>
+          )}
         </div>
       )}
     </div>

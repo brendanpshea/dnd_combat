@@ -338,14 +338,27 @@ for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
         im, caption = strip_caption(im)
         if caption:
             captioned.append(f"{kind}-{cid} ({caption}px)")
+        # Curtains run for everything. A keying hairline is invisible against
+        # the old dark board but shows as a vertical seam the moment a token
+        # is composited on anything lighter — the landing page's arena line-up
+        # made three of them obvious. The rule is narrow enough to be safe on
+        # art it was not tuned for: a strip must touch the canvas edge, be
+        # thin, be tall, and be isolated from the figure.
+        im, curtains = strip_edge_curtains(im)
+        specks = 0
         if cid in ROSTER:
-            im, curtains = strip_edge_curtains(im)
+            # Specks stays gated. Across the non-roster assets it would touch
+            # 42 of them, including 137 blobs on the dryad — its leaves. That
+            # needs its own review pass, not a ride-along.
             im, specks = strip_specks(im)
-            if specks or curtains:
-                despeckled.append(f"{kind}-{cid} ({specks}b/{curtains}px)")
+            # So does framing. MAX_AREA was measured against the player-character
+            # portraits; monsters vary their fill on purpose, which is how an
+            # ogre reads as bigger than a kobold on a one-cell board.
             im, scale = normalize_framing(im, kind)
             if scale != 1.0:
                 reframed.append(f"{kind}-{cid} x{scale:.2f}")
+        if specks or curtains:
+            despeckled.append(f"{kind}-{cid} ({specks}b/{curtains}px)")
         if im.size != (SIZE, SIZE):
             im = im.resize((SIZE, SIZE), Image.LANCZOS)
         dst = os.path.join(OUT, f"{kind}-{cid}.webp")
