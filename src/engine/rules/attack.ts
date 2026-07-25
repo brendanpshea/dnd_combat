@@ -677,6 +677,13 @@ export function applyDamage(
   else if (target.resistances.includes(damageType) && !opts.bypassResistance) amount = Math.floor(amount / 2);
   else if (target.vulnerabilities.includes(damageType)) amount *= 2;
 
+  // Regeneration is stopped by the right damage type, and it's the *type* that
+  // matters rather than how much got through — a fire hit soaked by temp HP or
+  // halved by resistance still burns the troll.
+  if (target.regeneration?.stoppedBy.includes(damageType)) {
+    target.regeneration.suppressed = true;
+  }
+
   const absorbed = Math.min(target.tempHp ?? 0, amount);
   if (absorbed > 0) target.tempHp = (target.tempHp ?? 0) - absorbed;
   target.hp = Math.max(0, target.hp - (amount - absorbed));

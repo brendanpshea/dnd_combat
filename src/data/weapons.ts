@@ -476,6 +476,14 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'fire-giant-greatsword', name: 'Greatsword', damage: '6d6', damageType: 'slashing',
     properties: ['two-handed'], melee: true,
   },
+  'troll-bite': {
+    id: 'troll-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'troll-claw': {
+    id: 'troll-claw', name: 'Claw', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
   'chimera-bite': {
     id: 'chimera-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
     properties: [], melee: true,

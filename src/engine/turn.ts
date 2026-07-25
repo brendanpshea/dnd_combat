@@ -12,6 +12,7 @@ import { FEATURES } from '../data/features.js';
 import { activateSummons } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
+import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
 
 /** A hard ceiling on battle length. Real fights end well inside ~15 rounds;
@@ -136,6 +137,18 @@ export function startTurn(state: GameState): GameEvent[] {
     // rule set (win check included) — bail out cleanly if the fight just ended.
     events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
     return events;
+  }
+
+  // Regeneration (troll): heal at the start of the turn, unless acid or fire
+  // has landed since the last one. A suppressed trait costs exactly one turn of
+  // healing and then re-arms, so burning a troll is something the party has to
+  // keep doing rather than do once.
+  if (c.regeneration && c.hp > 0) {
+    if (c.regeneration.suppressed) {
+      c.regeneration.suppressed = false;
+    } else if (c.hp < c.maxHp) {
+      events.push(...applyHealing(state, c.id, c.id, c.regeneration.amount));
+    }
   }
 
   // Recharge abilities (dragon breath): a spent one rolls a d6 and comes back
