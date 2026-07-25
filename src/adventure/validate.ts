@@ -5,7 +5,8 @@
  */
 import type { Id } from '../engine/types.js';
 import { CLASSES, SKILL_ABILITY, type SkillId } from '../data/classes.js';
-import { ENCOUNTERS, MONSTERS } from '../data/monsters.js';
+import { MONSTERS } from '../data/monsters.js';
+import { ENCOUNTERS } from '../data/encounters.js';
 import { MAPS } from '../data/maps.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';

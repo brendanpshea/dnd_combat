@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty, buildCharacter } from '../src/builder/character.js';
-import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS, MONSTER_XP, encounterXP, monsterLevel } from '../src/data/monsters.js';
+import { buildMonster, MONSTERS, MONSTER_XP, monsterLevel } from '../src/data/monsters.js';
+import { buildEncounter, ENCOUNTERS, encounterXP } from '../src/data/encounters.js';
 import { SPELLS } from '../src/data/spells.js';
 import { BREATH_WEAPONS } from '../src/data/features.js';
 import { WEAPONS } from '../src/data/weapons.js';

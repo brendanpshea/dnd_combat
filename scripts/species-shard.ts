@@ -4,7 +4,7 @@
  */
 import { Combat } from '../src/engine/combat.js';
 import { buildParty } from '../src/builder/character.js';
-import { buildEncounter } from '../src/data/monsters.js';
+import { buildEncounter } from '../src/data/encounters.js';
 import { chooseActionSim, SIM_PRESETS } from '../src/ai/simulated.js';
 import { chooseAction as greedy } from '../src/ai/greedy.js';
 

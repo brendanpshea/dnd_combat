@@ -23,7 +23,7 @@ import { isLocationArt, isNpcArt } from '../src/data/adventure-art.js';
 import { CLASSIC_MODULE } from '../src/data/modules/classic.js';
 import { HIDEOUT_MODULE } from '../src/data/modules/demo.js';
 import { MODULES } from '../src/data/modules/index.js';
-import { ENCOUNTERS } from '../src/data/monsters.js';
+import { ENCOUNTERS } from '../src/data/encounters.js';
 import type { Module } from '../src/adventure/types.js';
 
 // --- M0: skills -------------------------------------------------------------

@@ -15,7 +15,7 @@
  * multiplier, and this file keeps the two numbers apart — `adjustedXp` is what
  * we budget against, `rawXp` is what we pay out. The hand-authored ladder
  * already learned this the hard way; see the note atop ENCOUNTERS in
- * data/monsters.ts about early fights landing ~2x deadlier than intended.
+ * data/encounters.ts about early fights landing ~2x deadlier than intended.
  */
 import type { Id } from '../engine/types.js';
 import type { CreatureType } from '../engine/types.js';

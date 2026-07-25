@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
-import { buildMonster, buildEncounter, ENCOUNTERS, MONSTERS } from '../src/data/monsters.js';
+import { buildMonster, MONSTERS } from '../src/data/monsters.js';
+import { buildEncounter, ENCOUNTERS } from '../src/data/encounters.js';
 import { buildParty } from '../src/builder/character.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { applyDamage } from '../src/engine/rules/attack.js';

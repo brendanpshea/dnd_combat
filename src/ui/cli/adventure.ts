@@ -13,7 +13,7 @@ import {
   newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
   type CampaignState,
 } from '../../campaign/campaign.js';
-import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
+import { buildEncounter, ENCOUNTERS } from '../../data/encounters.js';
 import { SKILL_LABEL } from '../../data/classes.js';
 import { CLASSIC_MODULE } from '../../data/modules/classic.js';
 import { HIDEOUT_MODULE } from '../../data/modules/demo.js';

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { buildParty } from '../../src/builder/character.js';
-import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
+import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
 import { MAPS, MAP_IDS, farRank } from '../../src/data/maps.js';
 import { acOf } from '../../src/data/armor.js';
 import { chooseAction } from '../../src/ai/greedy.js';

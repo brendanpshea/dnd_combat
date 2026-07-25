@@ -609,7 +609,7 @@ conditions or kills), none of them can lock a hero out of the fight forever —
 an earlier version of the constrictor/cockatrice restraint could.
 
 The bestiary now spans 132 stat blocks in 62 authored encounters
-(`ENCOUNTERS` in `src/data/monsters.ts` is the authority — the early ones
+(`ENCOUNTERS` in `src/data/encounters.ts` is the authority — the early ones
 above are just the mechanically notable seeds), across twelve creature types
 from CR 1/8 to CR 11. Each encounter carries a `suggestedLevel` and every
 monster an SRD `MONSTER_XP` entry (a test enforces the pairing).

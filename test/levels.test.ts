@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
-import { buildEncounter, buildMonster } from '../src/data/monsters.js';
+import { buildMonster } from '../src/data/monsters.js';
+import { buildEncounter } from '../src/data/encounters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { cantripDice } from '../src/data/spells.js';
 import { sphere5x5 } from '../src/engine/grid.js';

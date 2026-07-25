@@ -10,7 +10,7 @@ import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
 import { MAPS, MAP_IDS, farRank } from '../../data/maps.js';
-import { ENCOUNTERS, buildEncounter } from '../../data/monsters.js';
+import { ENCOUNTERS, buildEncounter } from '../../data/encounters.js';
 import { SPECIES } from '../../data/species.js';
 import { runBattle, argValue, parseSeed, AiLevel } from './battle.js';
 

@@ -24,7 +24,7 @@ import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
-import { encounterXP, encounterCoinXP } from '../data/monsters.js';
+import { encounterXP, encounterCoinXP } from '../data/encounters.js';
 import type { Rarity } from '../data/armor.js';
 import { rollDice } from '../engine/dice.js';
 import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
