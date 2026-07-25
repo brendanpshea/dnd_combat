@@ -1091,11 +1091,20 @@ value — one without would read as *free* and get stacked six deep into a
 "budget-appropriate" fight — and every monster has a creature type, which the
 two-types-per-fight rule needs.
 
-**Difficulty is measured.** `EVEN_BUDGET` is the adjusted-XP figure at which a
-standard party wins about half its fights, taken by simulating generated
-encounters against the greedy AI. Levels 1 and 3 are measured directly; the
-rest interpolate on the geometric fit between them, since the wave ramp
-re-tunes the number anyway. `waveDifficulty` opens at 0.55 of an even fight
+**Difficulty is measured — and the measurement decays.** `EVEN_BUDGET` is the
+adjusted-XP figure at which a standard party wins about half its fights, taken
+by simulating generated encounters against the greedy AI (L1/L3/L5 measured at
+80 fights each, L2/L4 on the geometric curve through them).
+
+It went stale once and nothing noticed: the first calibration was taken
+against a 58-monster roster, and by the time it was next checked the bestiary
+had tripled and the party was winning 78% at the L3 "even" budget. Every wave
+was softer than the ramp claimed, and the wave curve had gone non-monotonic
+(L3 read 75/92/75/83/25 across waves 1–9; after recalibration, 67/58/58/50/17).
+Adding monsters changes what a budget buys. A seeded tripwire in
+`test/arena.test.ts` now fails when the even-fight rate leaves 35–60%, with
+the measured numbers recorded next to the band so nobody widens it instead of
+re-measuring. `waveDifficulty` opens at 0.55 of an even fight
 and climbs 0.09 a wave, crossing even around wave six and continuing — so a
 run ends where the player runs out, not at a cap. In simulation an L5 party
 goes 92% at wave 1 to single digits by wave 9.
