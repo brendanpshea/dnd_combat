@@ -22,8 +22,14 @@ import type { CreatureType } from '../engine/types.js';
 import { MONSTERS, MONSTER_XP } from '../data/monsters.js';
 import { next, type RngState } from '../engine/rng.js';
 
-/** Monsters that exist in the game but shouldn't turn up as arena opposition. */
-export const ARENA_EXCLUDED = new Set<Id>([]);
+/**
+ * Monsters that exist in the game but shouldn't turn up as arena opposition.
+ *
+ * The unicorn is a benign celestial guardian. It was reading as the face of
+ * the late game — a third of high-budget fights had one — which is the same
+ * category of wrongness as a wolf pack carrying a purse.
+ */
+export const ARENA_EXCLUDED = new Set<Id>(['unicorn']);
 
 /**
  * 5e's encounter multiplier by headcount. Applied to get the *difficulty* of a
@@ -214,10 +220,17 @@ function generateOnce(
       : share * 1.35;
     const affordable = pool.filter((m) => m.xp <= Math.max(ceiling, cheapest));
     if (affordable.length === 0) break;
-    // Draw from the upper half of what fits, so a slot spends its share rather
-    // than defaulting to the cheapest thing on the shelf every time.
-    const top = Math.max(...affordable.map((m) => m.xp));
-    const meaty = affordable.filter((m) => m.xp >= top * 0.5);
+    // Draw from what actually spends the slot's share, so a slot doesn't
+    // default to the cheapest thing on the shelf every time.
+    //
+    // The floor is a share of THIS SLOT'S BUDGET, deliberately not a share of
+    // the dearest thing that happens to fit. A relative-to-top floor makes a
+    // pool's cheap members disappear as soon as an expensive one is added to
+    // it: when the dragons gained a 5,900 XP young red, the cut moved from
+    // ~550 to ~2,950 and quietly retired every wyrmling from high-budget
+    // waves. Adding a monster should never remove a different one.
+    const floor = share * 0.5;
+    const meaty = affordable.filter((m) => m.xp >= floor);
     const p = pick(meaty.length > 0 ? meaty : affordable, rng);
     rng = p.state;
     members.push(p.value.id);
@@ -231,9 +244,10 @@ function generateOnce(
     const room = opts.budget / groupMultiplier(members.length + 1) - rawXp(members);
     const fits = pool.filter((m) => m.xp <= room);
     if (fits.length === 0) break;
-    const top = Math.max(...fits.map((m) => m.xp));
-    const best = fits.filter((m) => m.xp >= top * 0.6);
-    const p = pick(best, rng); rng = p.state;
+    // Same rule as the fill loop: measured against the room left, not against
+    // the dearest thing that fits in it.
+    const best = fits.filter((m) => m.xp >= room * 0.6);
+    const p = pick(best.length > 0 ? best : fits, rng); rng = p.state;
     members.push(p.value.id);
   }
 

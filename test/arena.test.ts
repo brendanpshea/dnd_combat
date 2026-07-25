@@ -107,6 +107,47 @@ describe('encounter generation', () => {
     expect(mean(8000)).toBeGreaterThan(mean(500));
   });
 
+  /**
+   * The draw floor is a share of the slot's own budget, not a share of the
+   * dearest monster that happens to fit — a pool-relative floor rises as a
+   * type gains expensive members, which quietly retires that type's cheap
+   * ones (adding the CR 6-10 dragons pushed the wyrmlings out of high-budget
+   * waves this way).
+   *
+   * Honest scope: this asserts cheap-but-fitting monsters get drawn at all. It
+   * does NOT discriminate against the old pool-relative floor, which also
+   * passes here — that difference is a frequency shift, measured by hand at
+   * the top of the budget range and too narrow to pin as an assertion without
+   * making it brittle.
+   */
+  it('fields cheap monsters whose price fits a slot share', () => {
+    let rng = seedRng(41);
+    const seen = new Set<string>();
+    for (let i = 0; i < 400; i++) {
+      const r = generateEncounter({ budget: 4500 }, rng); rng = r.state;
+      for (const m of r.value.members) seen.add(m);
+    }
+    // Every wyrmling costs 450-1,100 against a per-head share of roughly 560
+    // here, so all five belong in the draw.
+    for (const w of ['black-wyrmling', 'green-wyrmling', 'white-wyrmling', 'blue-wyrmling', 'red-wyrmling']) {
+      expect(seen.has(w), `${w} never drawn at a budget it fits`).toBe(true);
+    }
+  });
+
+  it('never fields an excluded monster', () => {
+    expect(ARENA_EXCLUDED.has('unicorn'), 'the unicorn is a benign guardian').toBe(true);
+    expect(arenaRoster().some((m) => m.id === 'unicorn')).toBe(false);
+    let rng = seedRng(43);
+    for (const budget of [500, 4500, 14000, 20000]) {
+      for (let i = 0; i < 150; i++) {
+        const r = generateEncounter({ budget }, rng); rng = r.state;
+        for (const id of r.value.members) {
+          expect(ARENA_EXCLUDED.has(id), `${id} is excluded but was fielded`).toBe(false);
+        }
+      }
+    }
+  });
+
   it('is deterministic on the seed', () => {
     const a = generateEncounter({ budget: 1500 }, seedRng(21)).value;
     const b = generateEncounter({ budget: 1500 }, seedRng(21)).value;
