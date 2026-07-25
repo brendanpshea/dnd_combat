@@ -96,7 +96,16 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .topbar .mapname { color: var(--muted); flex: 1; }
 
 /* ---- board ---- */
-.board-wrap { width: min(96vw, 58vh, 600px); }
+/* Width is bounded three ways: the screen edge, a viewport-height budget
+   divided by the board's aspect, and a hard cap. --board-aspect (height/width)
+   is set inline by Board.tsx. The height budget grows with aspect —
+   44vh + 14vh·aspect — because a tall board is spending the screen's best
+   axis and deserves more of it: at aspect 1 this is exactly the old 58vh (no
+   change for square maps), at 1.5 (8×12) it allows 65vh of board, which keeps
+   cells finger-sized on a phone instead of crushing them to fit 58vh. */
+.board-wrap {
+  width: min(96vw, calc((44vh + 14vh * var(--board-aspect, 1)) / var(--board-aspect, 1)), 600px);
+}
 .board {
   display: grid;
   gap: 0;
@@ -1231,7 +1240,8 @@ button.danger { border-color: var(--red); color: var(--red); }
 }
 
 @media (min-width: 720px) {
-  .board-wrap { width: min(70vh, 600px); }
+  /* Same graduated budget, wider base: 70vh at aspect 1 (unchanged), 77vh at 1.5. */
+  .board-wrap { width: min(calc((56vh + 14vh * var(--board-aspect, 1)) / var(--board-aspect, 1)), 600px); }
   .actionbar button { font-size: 14px; }
 }
 

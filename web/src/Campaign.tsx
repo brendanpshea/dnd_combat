@@ -7,7 +7,7 @@ import { useRef, useState, ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { TeamId, Id, ItemStack } from '../../src/engine/types.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
-import { MAPS } from '../../src/data/maps.js';
+import { MAPS, farRank } from '../../src/data/maps.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
 import { ITEMS } from '../../src/data/items.js';
@@ -126,7 +126,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
     const combat = new Combat({
       seed: (c.rng ^ (c.stage * 7919)) >>> 0,
       mapId: st.mapId,
-      combatants: [...buildCampaignParty(c), ...buildEncounter(st.encounterId, 'team2', 7)],
+      combatants: [...buildCampaignParty(c), ...buildEncounter(st.encounterId, 'team2', farRank(st.mapId))],
     });
     setPhase({ p: 'battle', combat, aiTeams: new Set<TeamId>(['team2']) });
   }

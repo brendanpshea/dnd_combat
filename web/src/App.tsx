@@ -3,7 +3,7 @@ import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { buildParty } from '../../src/builder/character.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/monsters.js';
-import { MAPS, MAP_IDS } from '../../src/data/maps.js';
+import { MAPS, MAP_IDS, farRank } from '../../src/data/maps.js';
 import { acOf } from '../../src/data/armor.js';
 import { chooseAction } from '../../src/ai/greedy.js';
 import { chooseActionSim, SIM_PRESETS } from '../../src/ai/simulated.js';
@@ -361,8 +361,8 @@ function makeCombat(config: SetupConfig): { combat: Combat; aiTeams: Set<TeamId>
   if (config.mode === 'vs-ai' || config.mode === 'spectate' || config.mode === 'encounter') aiTeams.add('team2');
   if (config.mode === 'spectate') aiTeams.add('team1');
   const team2 = config.mode === 'encounter'
-    ? buildEncounter(config.encounterId, 'team2', 7)
-    : buildParty('team2', 7, config.level, undefined, config.speciesIds);
+    ? buildEncounter(config.encounterId, 'team2', farRank(config.mapId))
+    : buildParty('team2', farRank(config.mapId), config.level, undefined, config.speciesIds);
   const combat = new Combat({
     seed: config.seed,
     mapId: config.mapId,

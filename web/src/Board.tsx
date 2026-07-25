@@ -305,7 +305,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
   }
 
   return (
-    <div className="board-wrap">
+    // --board-aspect drives the width cap in styles.css: a tall board (8×12,
+    // aspect 1.5) must be narrower than a square one to fit the same viewport
+    // height. Width is what sets cell size, so this is the whole responsive
+    // story — columns never grow, so taps stay finger-sized on a phone.
+    <div className="board-wrap" style={{ ['--board-aspect' as string]: `${height / width}` }}>
       <div className={`board theme-${boardTheme}`} style={boardStyle}>
         {cells}
         {summonTokens.length > 0 && <div className="token-layer summon-layer">{summonTokens}</div>}

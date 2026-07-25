@@ -9,7 +9,7 @@
 import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import { buildEncounter, ENCOUNTERS } from '../../data/monsters.js';
-import { MAPS } from '../../data/maps.js';
+import { MAPS, farRank } from '../../data/maps.js';
 import { ITEMS } from '../../data/items.js';
 import { CLASSES } from '../../data/classes.js';
 import { SPELLS } from '../../data/spells.js';
@@ -332,7 +332,7 @@ async function main() {
     const combat = new Combat({
       seed: baseSeed + campaign.stage,
       mapId: stage.mapId,
-      combatants: [...buildCampaignParty(campaign), ...buildEncounter(stage.encounterId, 'team2', 7)],
+      combatants: [...buildCampaignParty(campaign), ...buildEncounter(stage.encounterId, 'team2', farRank(stage.mapId))],
     });
     const aiTeams = new Set<string>(['team2']);
     if (auto) aiTeams.add('team1');

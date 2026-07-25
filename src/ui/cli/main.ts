@@ -9,7 +9,7 @@
 import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import { buildParty } from '../../builder/character.js';
-import { MAPS, MAP_IDS } from '../../data/maps.js';
+import { MAPS, MAP_IDS, farRank } from '../../data/maps.js';
 import { ENCOUNTERS, buildEncounter } from '../../data/monsters.js';
 import { SPECIES } from '../../data/species.js';
 import { runBattle, argValue, parseSeed, AiLevel } from './battle.js';
@@ -40,11 +40,11 @@ async function main() {
     process.exit(1);
   }
 
-  let team2 = buildParty('team2', 7, level, undefined, speciesIds);
+  let team2 = buildParty('team2', farRank(mapArg), level, undefined, speciesIds);
   let banner = mode;
   if (encounterArg) {
     const enc = ENCOUNTERS[encounterArg]!;
-    team2 = buildEncounter(encounterArg, 'team2', 7);
+    team2 = buildEncounter(encounterArg, 'team2', farRank(mapArg));
     aiTeams.add('team2');
     banner = `party vs ${enc.name}`;
     if (level !== enc.suggestedLevel) {

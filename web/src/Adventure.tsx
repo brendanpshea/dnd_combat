@@ -25,7 +25,7 @@ import { InfoDot } from './InfoCard.js';
 import { infoFor, spellSheet } from './gameInfo.js';
 import { SlotPips } from './SlotPips.js';
 import { buildEncounter, ENCOUNTERS, MONSTERS } from '../../src/data/monsters.js';
-import { MAPS } from '../../src/data/maps.js';
+import { MAPS, farRank } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
@@ -318,7 +318,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
     const combat = new Combat({
       seed: battleSeed(state, scene.id),
       mapId: scene.mapId,
-      combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', 7)],
+      combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))],
       ...(scene.surprise ? { surprisedTeam: (scene.surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
     });
     return (
