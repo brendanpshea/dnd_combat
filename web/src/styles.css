@@ -2493,6 +2493,66 @@ button.category .count {
 .module-cover-body > span { color: var(--muted); font-size: .92rem; line-height: 1.4; }
 .module-cta { color: var(--blue) !important; font-weight: 800; margin-top: 4px; }
 .module-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-left: 4px; }
+
+/* Sections of the rail. Without a label, an Arena card sitting under three
+   story chapters reads as a fourth chapter. */
+.landing-section { display: flex; flex-direction: column; gap: 10px; }
+.landing-section-label {
+  font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.landing-section-label::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--panel2), transparent);
+}
+
+/* The endless card. Same component as a chapter — same geometry, same resume
+   frame, same hover — with an ember accent instead of the story blue, because
+   it is a different kind of thing to play, not a different-looking product. */
+.module-card.endless .module-cover:hover {
+  border-color: var(--gold);
+  box-shadow: 0 8px 30px rgba(224,176,86,.18);
+}
+/* The arena's cover is a line-up, not a landscape. The board texture is only
+   a ground for it — pushed right back, because a battle-map tile has none of
+   the depth the painted scene covers carry and competes with the faces if you
+   let it read as a picture in its own right. */
+.arena-cover {
+  position: relative; background-position: center; background-size: cover;
+  display: flex; align-items: flex-end; justify-content: center;
+  filter: none;
+}
+.arena-cover::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(226,145,95,.22), transparent 60%),
+    linear-gradient(180deg, rgba(20,16,32,.86), rgba(20,16,32,.62) 45%, rgba(20,16,32,.94));
+}
+.arena-cover-roster {
+  position: relative; display: flex; align-items: flex-end; justify-content: center;
+  width: 100%;
+  /* the body panel is pulled up 18px over the art, so clear it — otherwise
+     the line-up is cropped at the shin and reads as a rendering bug */
+  padding-bottom: 24px;
+}
+.arena-cover-roster img {
+  width: 74px; height: 74px; object-fit: contain;
+  margin: 0 -9px;                      /* overlap, so it reads as a crowd */
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,.55));
+}
+/* Size the line-up toward the middle so it has a focal point instead of
+   reading as a evenly-spaced icon strip. */
+.arena-cover-roster img:nth-child(4) { width: 96px; height: 96px; }
+.arena-cover-roster img:nth-child(3),
+.arena-cover-roster img:nth-child(5) { width: 84px; height: 84px; }
+.arena-cover-roster img:first-child,
+.arena-cover-roster img:last-child { width: 62px; height: 62px; opacity: .82; }
+@media (max-width: 460px) {
+  .arena-cover-roster img:first-child, .arena-cover-roster img:last-child { display: none; }
+}
+.module-card.endless .module-cta { color: var(--gold) !important; }
+.module-card.endless .module-band { color: #e2915f; }
 .module-actions .muted { font-size: .85rem; }
 
 .landing-more { display: flex; flex-direction: column; gap: 10px; }
