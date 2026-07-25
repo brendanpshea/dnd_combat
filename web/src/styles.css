@@ -2563,15 +2563,52 @@ button.category .count {
 .name-row input { flex: 1; min-width: 0; }
 .reroll-name { flex: none; font-size: 15px; line-height: 1; padding: 6px 9px; }
 
-/* Arena wave brief: what's coming, before you commit to the fight. */
-.arena-card {
-  background: #241f38;
-  border: 1px solid #3a3352;
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 10px 0;
+/* Arena gate: the between-waves screen, built on the adventure panel. */
+.arena-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.arena-head h2 { margin: 0; }
+.arena-score { margin-left: auto; color: var(--muted); font-size: .82rem; }
+
+/* Who's coming, as faces. Token art if we have it, a glyph if we don't. */
+.arena-foes { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.arena-foe {
+  position: relative; width: 76px; display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
 }
-.arena-stat { font-size: 17px; margin-bottom: 3px; }
+.arena-foe img {
+  width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #5a2b3a; background: #241f38;
+}
+.arena-foe-glyph {
+  width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 1.8rem; border: 2px solid #5a2b3a; background: #241f38;
+}
+.arena-foe-count {
+  position: absolute; top: -2px; right: 6px; padding: 1px 6px; border-radius: 9px;
+  background: var(--red, #e26); color: #fff; font-size: .72rem; font-weight: 800;
+}
+.arena-foe small { font-size: .72rem; line-height: 1.15; color: var(--muted); text-align: center; }
+
+/* The stall. Pick who it's for, then pick the thing. */
+.arena-shop { display: flex; flex-direction: column; gap: 8px; }
+.arena-shop-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.arena-buyer { display: flex; gap: 6px; margin-left: auto; }
+.arena-buyer-pick {
+  padding: 2px; border-radius: 50%; border: 2px solid transparent;
+  background: none; cursor: pointer; line-height: 0;
+}
+.arena-buyer-pick .portrait { width: 38px; height: 38px; }
+.arena-buyer-pick.on { border-color: var(--gold); }
+.arena-shelf { display: flex; flex-direction: column; gap: 6px; }
+.arena-buy {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 8px 12px; border-radius: 10px; background: var(--panel2);
+  border: 1px solid transparent; color: var(--text); cursor: pointer;
+}
+.arena-buy:hover:not(:disabled) { border-color: var(--blue); }
+.arena-buy:disabled { opacity: .42; cursor: default; }
+.arena-buy-icon { font-size: 1.25rem; }
+.arena-buy-name { font-weight: 600; }
+.arena-buy-price { margin-left: auto; color: var(--gold); font-weight: 700; }
 .shop-list { margin: 10px 0; }
 .shop-row {
   display: flex; align-items: center; gap: 10px;
