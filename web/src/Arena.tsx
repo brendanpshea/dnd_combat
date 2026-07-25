@@ -82,6 +82,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [panel, setPanel] = useState<'none' | 'shop'>('none');
   const [buyFor, setBuyFor] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
+  const [confirmRestart, setConfirmRestart] = useState(false);
   const [, bump] = useState(0);
 
   const level = partyLevelOf(c);
@@ -89,6 +90,29 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
     saveArenaWeb({ campaign: nextC, run: nextRun });
   const refresh = () => { setC({ ...c }); bump((v) => v + 1); };
+
+  /** Wipe the save and go back to the forge — a new party, a new ladder. */
+  function restartRun() {
+    deleteArenaWeb();
+    setC(newCampaign(Date.now() & 0xffff));
+    setRun(newArenaRun(Date.now() & 0xffff));
+    setPanel('none'); setNotice(null); setConfirmRestart(false);
+    setPhase({ p: 'forge' });
+  }
+
+  /**
+   * Restarting throws away the party as well as the run, so it asks first —
+   * one stray tap next to "Fight" shouldn't cost an hour of clears.
+   */
+  const restartButton = confirmRestart ? (
+    <div className="arena-confirm">
+      <span>Start over with a new party? This run is lost.</span>
+      <button className="danger" onClick={restartRun}>Start over</button>
+      <button className="ghost" onClick={() => setConfirmRestart(false)}>Keep going</button>
+    </div>
+  ) : (
+    <button className="ghost" onClick={() => setConfirmRestart(true)}>Start a new run</button>
+  );
 
   function battleDone(winner: TeamId, combat: Combat) {
     const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
@@ -172,7 +196,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
   if (phase.p === 'defeat') {
     return (
-      <div className="adv-root">
+      <div className="adventure">
         <div className="adv-stage">
           {backdrop}
           <div className="adv-content">
@@ -186,7 +210,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <p className="hint">
                   {run.cleared} cleared · attempt {run.attempts + 1} on this wave
                 </p>
-                <button className="primary" onClick={() => setPhase({ p: 'brief' })}>Back to the gate</button>
+                <div className="adv-choices">
+                  <button className="primary" onClick={() => setPhase({ p: 'brief' })}>Back to the gate</button>
+                  {restartButton}
+                </div>
               </div>
             </div>
           </div>
@@ -201,7 +228,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const grid = parseMap(wave.map);
 
   return (
-    <div className="adv-root">
+    <div className="adventure">
       <div className="adv-stage">
         {backdrop}
         <div className="adv-content">
@@ -285,12 +312,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   🛒 {panel === 'shop' ? 'Close the stall' : 'Visit the stall'}
                 </button>
                 <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
-                <button className="ghost" onClick={() => {
-                  deleteArenaWeb();
-                  setC(newCampaign(Date.now() & 0xffff));
-                  setRun(newArenaRun(Date.now() & 0xffff));
-                  setPhase({ p: 'forge' });
-                }}>Start a new run</button>
+                {restartButton}
               </div>
             </div>
           </div>

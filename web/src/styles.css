@@ -2609,6 +2609,15 @@ button.category .count {
 .arena-buy-icon { font-size: 1.25rem; }
 .arena-buy-name { font-weight: 600; }
 .arena-buy-price { margin-left: auto; color: var(--gold); font-weight: 700; }
+
+/* Restarting costs the party too, so it asks before it does it. */
+.arena-confirm {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 12px; border-radius: 10px;
+  background: var(--panel2); border: 1px solid var(--red);
+}
+.arena-confirm span { flex: 1; min-width: 180px; font-size: .88rem; }
+.arena-confirm button { margin: 0; }
 .shop-list { margin: 10px 0; }
 .shop-row {
   display: flex; align-items: center; gap: 10px;
