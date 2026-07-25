@@ -35,7 +35,9 @@ export function cellName(p: Position): string {
 }
 
 export function parseCell(s: string): Position | undefined {
-  const m = /^([a-h])([1-8])$/i.exec(s.trim());
+  // Rows can run past 9 on tall maps (8×12), so two digits are legal. Bounds
+  // against the actual grid are the caller's job — this only parses.
+  const m = /^([a-z])([1-9][0-9]?)$/i.exec(s.trim());
   if (!m) return undefined;
   return { x: m[1]!.toLowerCase().charCodeAt(0) - 97, y: parseInt(m[2]!, 10) - 1 };
 }

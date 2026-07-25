@@ -7,6 +7,7 @@
  * selects another registered module, `--auto` plays it hands-off.
  */
 import * as readline from 'node:readline/promises';
+import { farRank } from '../../data/maps.js';
 import { Combat } from '../../engine/combat.js';
 import {
   newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
@@ -132,7 +133,7 @@ async function main() {
       const combat = new Combat({
         seed: battleSeed(state, scene.id),
         mapId: scene.mapId,
-        combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', 7)],
+        combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))],
       });
       const aiTeams = new Set<string>(['team2']);
       if (auto) aiTeams.add('team1');

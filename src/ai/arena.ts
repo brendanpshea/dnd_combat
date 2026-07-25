@@ -6,7 +6,7 @@
 import type { GameState, Id, TeamId } from '../engine/types.js';
 import { Combat } from '../engine/combat.js';
 import { buildParty } from '../builder/character.js';
-import { MAP_IDS } from '../data/maps.js';
+import { MAP_IDS, farRank } from '../data/maps.js';
 import type { Action } from '../engine/actions.js';
 
 export type Policy = (state: GameState, actorId: Id) => Action;
@@ -36,7 +36,7 @@ export function runArena(a: Policy, b: Policy, seeds: number[], maxSteps = 4000)
       const combat = new Combat({
         seed,
         mapId,
-        combatants: [...buildParty('team1', 0, level), ...buildParty('team2', 7, level)],
+        combatants: [...buildParty('team1', 0, level), ...buildParty('team2', farRank(mapId), level)],
       });
       let steps = 0;
       while (!combat.isOver() && steps++ < maxSteps) {

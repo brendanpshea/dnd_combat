@@ -6,8 +6,11 @@
  *   ~  difficult (costs double movement)
  *   ^  hazard (1d4 fire when entered)
  *
- * Teams deploy on ranks 1 and 8 (y=0 and y=7), so those rows must stay
- * walkable where parties spawn (files b, c, e, g by default).
+ * Teams deploy on the first and last ranks (y=0 and y=height-1 — see
+ * `farRank`), so those rows must stay walkable where parties spawn (files
+ * b, c, e, g by default). Maps may be taller than wide: a portrait phone has
+ * more room down than across, and a tall board is what gives a fight an
+ * approach phase — ranged rounds before the lines meet.
  */
 import type { GridState, Cell, TerrainId } from '../engine/types.js';
 
@@ -167,6 +170,61 @@ export const MAPS: Record<string, MapData> = {
       '........',
     ],
   },
+  // A road ambush at range: open ground funneled by rock. Attackers start far
+  // enough away that ranged rounds happen before contact.
+  pass: {
+    id: 'pass', name: 'The High Pass', theme: 'stone',
+    rows: [
+      '........',
+      '.#....#.',
+      '........',
+      '#..~~..#',
+      '##....##',
+      '#......#',
+      '........',
+      '.#....#.',
+      '..~..~..',
+      '........',
+      '.#....#.',
+      '........',
+    ],
+  },
+  // A defended climb toward a perch: the far quarter is high ground behind a
+  // choke, made for a flyer or archer that wants to be shot at last.
+  cliff: {
+    id: 'cliff', name: 'The Toll-Cliff', theme: 'stone',
+    rows: [
+      '........',
+      '.#....#.',
+      '###..###',
+      '........',
+      '..~..~..',
+      '........',
+      '.~....~.',
+      '........',
+      '........',
+      '..#..#..',
+      '........',
+      '........',
+    ],
+  },
 };
 
+/**
+ * Tall maps (8×12): the same width as every other map — so cells stay
+ * finger-sized on a phone — but half again as deep. 60 ft of board instead of
+ * 40 means two full moves to close, which is what makes bows, spells, and
+ * positioning matter before the lines meet. Reserve these for fights that
+ * want an approach: ambushes at range, boss arenas, a defended climb.
+ */
 export const MAP_IDS = Object.keys(MAPS);
+
+/**
+ * The deployment rank furthest from the player's (y = height-1). Callers used
+ * to hardcode 7, which silently deployed every enemy mid-board on anything
+ * taller than 8 — the far edge is a property of the map, not a constant.
+ */
+export function farRank(mapId?: string): number {
+  const map = mapId ? MAPS[mapId] : undefined;
+  return (map ? map.rows.length : 8) - 1;
+}

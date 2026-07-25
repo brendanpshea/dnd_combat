@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAPS, MAP_IDS, parseMap } from '../src/data/maps.js';
+import { MAPS, MAP_IDS, parseMap, farRank } from '../src/data/maps.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty, buildCharacter } from '../src/builder/character.js';
 import { chooseAction } from '../src/ai/greedy.js';
@@ -8,11 +8,13 @@ import { hasLineOfSight, reachable } from '../src/engine/grid.js';
 import { makeCombatant } from './helpers.js';
 
 describe('map parsing', () => {
-  it('all maps parse to 8x8 with valid terrain', () => {
+  it('all maps are 8 wide; height is 8 or 12', () => {
+    // Width is load-bearing: 8 columns is what keeps cells finger-sized on a
+    // phone, so maps grow *taller* (an approach phase), never wider.
     for (const id of MAP_IDS) {
       const g = parseMap(MAPS[id]!);
-      expect(g.width).toBe(8);
-      expect(g.height).toBe(8);
+      expect(g.width, id).toBe(8);
+      expect([8, 12], `${id} height`).toContain(g.height);
     }
   });
 
@@ -22,12 +24,12 @@ describe('map parsing', () => {
     expect(cellAt(g, { x: 0, y: 0 })!.terrain).toBe('open');
   });
 
-  it('spawn ranks (y=0 and y=7, files 1,2,4,6) are walkable on every map', () => {
+  it('spawn ranks (y=0 and y=farRank, files 1,2,4,6) are walkable on every map', () => {
     for (const id of MAP_IDS) {
       const g = parseMap(MAPS[id]!);
-      for (const y of [0, 7]) {
+      for (const y of [0, farRank(id)]) {
         for (const x of [1, 2, 4, 6]) {
-          expect(cellAt(g, { x, y })!.terrain).not.toBe('wall');
+          expect(cellAt(g, { x, y })!.terrain, `${id} (${x},${y})`).not.toBe('wall');
         }
       }
     }
@@ -115,7 +117,7 @@ describe('terrain in combat', () => {
       const c = new Combat({
         seed: 11,
         mapId,
-        combatants: [...buildParty('team1', 0), ...buildParty('team2', 7)],
+        combatants: [...buildParty('team1', 0), ...buildParty('team2', farRank(mapId))],
       });
       let steps = 0;
       while (!c.isOver() && steps++ < 5000) {

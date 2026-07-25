@@ -217,7 +217,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'tollcliff-fight': {
-    id: 'tollcliff-fight', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'ruins',
+    id: 'tollcliff-fight', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'cliff',
     intro: ['"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Two goblins scramble up from the rocks behind it with spears. They are probably the ones who paid in sheep, working off a debt.'],
     onWin: { to: 'hills', text: ['The manticore drops onto the trail with one last offended word. "Toll." Its goblins run downhill to find a better boss. The pile in the overhang holds ten years of payments, taken from frightened travellers.'],
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'gold', amount: 110 }] },
@@ -240,7 +240,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'boarruns-fight': {
-    id: 'boarruns-fight', kind: 'battle', encounterId: 'boar-stampede', mapId: 'open',
+    id: 'boarruns-fight', kind: 'battle', encounterId: 'boar-stampede', mapId: 'pass',
     intro: ['The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Then you notice that the gully narrows behind you as well.'],
     onWin: { to: 'hills', text: ['The stampede breaks around its fallen leaders and scatters back down the slope. The herd will keep to the low country now. You have just saved the war-camp from a living battering ram.'],
       effects: [{ kind: 'setFlag', flag: 'boarruns-cleared' }, { kind: 'gold', amount: 40 }] },
