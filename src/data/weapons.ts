@@ -476,6 +476,107 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'fire-giant-greatsword', name: 'Greatsword', damage: '6d6', damageType: 'slashing',
     properties: ['two-handed'], melee: true,
   },
+  // ---- undead top end ---------------------------------------------------
+  'ghast-claws': {
+    id: 'ghast-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+    onHitSave: { condition: 'paralyzed', ability: 'con', dc: 12 },
+  },
+  'banshee-touch': {
+    id: 'banshee-touch', name: 'Corrupting Touch', damage: '3d6', damageType: 'necrotic',
+    properties: [], melee: true,
+  },
+  'ghost-touch': {
+    id: 'ghost-touch', name: 'Withering Touch', damage: '4d6', damageType: 'necrotic',
+    properties: [], melee: true,
+  },
+  'wraith-touch': {
+    id: 'wraith-touch', name: 'Life Drain', damage: '4d8', damageType: 'necrotic',
+    properties: [], melee: true,
+  },
+  'spawn-claws': {
+    id: 'spawn-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+  },
+  'spawn-bite': {
+    id: 'spawn-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: ['finesse'], melee: true, extraDamage: { dice: '2d6', type: 'necrotic' },
+  },
+
+  // ---- beast top end ----------------------------------------------------
+  'scorpion-claw': {
+    id: 'scorpion-claw', name: 'Claw', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'restrained',
+  },
+  'scorpion-sting': {
+    id: 'scorpion-sting', name: 'Sting', damage: '1d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '3d10', type: 'poison' },
+  },
+  'elephant-gore': {
+    id: 'elephant-gore', name: 'Gore', damage: '4d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'crocodile-bite': {
+    id: 'crocodile-bite', name: 'Bite', damage: '3d10', damageType: 'piercing',
+    properties: [], melee: true, onHitCondition: 'restrained',
+  },
+  'mammoth-gore': {
+    id: 'mammoth-gore', name: 'Gore', damage: '4d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'mammoth-stomp': {
+    id: 'mammoth-stomp', name: 'Stomp', damage: '4d10', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'ape-fist': {
+    id: 'ape-fist', name: 'Fist', damage: '3d10', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+
+  // ---- construct top end ------------------------------------------------
+  'scarecrow-claw': {
+    id: 'scarecrow-claw', name: 'Claw', damage: '2d4', damageType: 'slashing',
+    properties: [], melee: true,
+    onHitSave: { condition: 'frightened', ability: 'wis', dc: 11 },
+  },
+  'guardian-fist': {
+    id: 'guardian-fist', name: 'Fist', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'stone-golem-slam': {
+    id: 'stone-golem-slam', name: 'Slam', damage: '3d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+
+  // ---- elemental spread -------------------------------------------------
+  'magmin-touch': {
+    id: 'magmin-touch', name: 'Touch', damage: '2d6', damageType: 'fire',
+    properties: [], melee: true,
+  },
+  'azer-hammer': {
+    id: 'azer-hammer', name: 'Warhammer', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },
+  },
+  'salamander-spear': {
+    id: 'salamander-spear', name: 'Spear', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },
+  },
+  'salamander-tail': {
+    id: 'salamander-tail', name: 'Tail', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+    extraDamage: { dice: '2d6', type: 'fire' }, onHitCondition: 'restrained',
+  },
+  'stalker-slam': {
+    id: 'stalker-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+
+  // ---- humanoid top end -------------------------------------------------
+  'gladiator-spear': {
+    id: 'gladiator-spear', name: 'Spear', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+
   // ---- fiends -----------------------------------------------------------
   'imp-sting': {
     id: 'imp-sting', name: 'Sting', damage: '1d4', damageType: 'piercing',

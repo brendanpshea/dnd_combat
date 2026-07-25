@@ -486,6 +486,235 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['fire'],
   },
+  // ---- type ceilings ----------------------------------------------------
+  // Measured problem: at a level-5 even-fight budget, undead/beast/humanoid
+  // appeared in 5-7% of generated fights while dragon/giant/monstrosity ran
+  // 20-27%. Nothing was wrong with the generator -- those types simply had no
+  // member expensive enough to fill a high-budget slot, so the reroll-on-
+  // underfill wrapper kept discarding them. Giving each a top end is the fix.
+
+  // Undead stopped at the wight and the mummy (CR 3).
+  ghast: {
+    id: 'ghast', name: 'Ghast',
+    ac: 13, cr: 2, hp: 36, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 16, dex: 17, con: 10, int: 11, wis: 10, cha: 8 },
+    weaponIds: ['ghast-claws', 'ghoul-bite'],
+    attacksPerAction: 2,
+    resistances: ['necrotic'],
+    immunities: ['poison'],
+  },
+  banshee: {
+    id: 'banshee', name: 'Banshee',
+    ac: 12, cr: 4, hp: 58, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 1, dex: 14, con: 10, int: 12, wis: 11, cha: 17 },
+    savingThrowProfs: ['wis', 'cha'],
+    weaponIds: ['banshee-touch'],
+    resistances: ['cold', 'necrotic', 'bludgeoning', 'piercing', 'slashing'],
+    immunities: ['poison'],
+  },
+  ghost: {
+    id: 'ghost', name: 'Ghost',
+    ac: 11, cr: 4, hp: 45, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 7, dex: 13, con: 10, int: 10, wis: 12, cha: 17 },
+    weaponIds: ['ghost-touch'],
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'bludgeoning', 'piercing', 'slashing'],
+    immunities: ['necrotic', 'poison'],
+  },
+  wraith: {
+    id: 'wraith', name: 'Wraith',
+    ac: 13, cr: 5, hp: 67, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 6, dex: 16, con: 16, int: 12, wis: 14, cha: 15 },
+    weaponIds: ['wraith-touch'],
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'necrotic', 'bludgeoning', 'piercing', 'slashing'],
+    immunities: ['poison'],
+  },
+  'vampire-spawn': {
+    id: 'vampire-spawn', name: 'Vampire Spawn',
+    ac: 15, cr: 5, hp: 82, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 16, dex: 16, con: 16, int: 11, wis: 10, cha: 12 },
+    savingThrowProfs: ['dex', 'wis'],
+    weaponIds: ['spawn-claws', 'spawn-bite'],
+    attacksPerAction: 2,
+    resistances: ['necrotic', 'bludgeoning', 'piercing', 'slashing'],
+  },
+
+  // Beasts stopped at the giant boar (CR 2). A dinosaur is a legitimate arena
+  // opponent in a way a fourth dire wolf is not.
+  'giant-scorpion': {
+    id: 'giant-scorpion', name: 'Giant Scorpion',
+    ac: 15, cr: 3, hp: 52, speed: 40,
+    creatureType: 'beast',
+    abilities: { str: 15, dex: 13, con: 15, int: 1, wis: 9, cha: 3 },
+    weaponIds: ['scorpion-sting', 'scorpion-claw'],
+    attacksPerAction: 3,
+  },
+  elephant: {
+    id: 'elephant', name: 'Elephant',
+    ac: 12, cr: 4, hp: 76, speed: 40,
+    creatureType: 'beast',
+    abilities: { str: 22, dex: 9, con: 17, int: 3, wis: 11, cha: 6 },
+    featureIds: ['trampling-charge'],
+    weaponIds: ['elephant-gore'],
+  },
+  'giant-crocodile': {
+    id: 'giant-crocodile', name: 'Giant Crocodile',
+    ac: 14, cr: 5, hp: 85, speed: 30,
+    creatureType: 'beast',
+    abilities: { str: 21, dex: 9, con: 17, int: 2, wis: 10, cha: 7 },
+    weaponIds: ['crocodile-bite'],
+    attacksPerAction: 2,
+  },
+  mammoth: {
+    id: 'mammoth', name: 'Mammoth',
+    ac: 13, cr: 6, hp: 126, speed: 40,
+    creatureType: 'beast',
+    abilities: { str: 24, dex: 9, con: 21, int: 3, wis: 11, cha: 6 },
+    featureIds: ['trampling-charge'],
+    weaponIds: ['mammoth-gore', 'mammoth-stomp'],
+  },
+  'giant-ape': {
+    id: 'giant-ape', name: 'Giant Ape',
+    ac: 12, cr: 7, hp: 157, speed: 40,
+    creatureType: 'beast',
+    abilities: { str: 23, dex: 14, con: 18, int: 7, wis: 12, cha: 7 },
+    weaponIds: ['ape-fist'],
+    attacksPerAction: 2,
+  },
+
+  // Humanoids stopped at the knight (CR 3), which made every high-budget wave
+  // a monster wave. A gladiator band or a mage with a bodyguard is a different
+  // kind of fight from a pack of oozes.
+  berserker: {
+    id: 'berserker', name: 'Berserker',
+    ac: 13, cr: 2, hp: 67, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 16, dex: 12, con: 17, int: 9, wis: 11, cha: 9 },
+    featureIds: ['relentless-endurance'],
+    weaponIds: ['greataxe'],
+  },
+  veteran: {
+    id: 'veteran', name: 'Veteran',
+    ac: 17, cr: 3, hp: 58, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 16, dex: 13, con: 14, int: 10, wis: 11, cha: 10 },
+    weaponIds: ['longsword', 'shortsword', 'light-crossbow'],
+    metalArmor: true,
+    attacksPerAction: 2,
+  },
+  gladiator: {
+    id: 'gladiator', name: 'Gladiator',
+    ac: 16, cr: 5, hp: 112, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 18, dex: 15, con: 16, int: 10, wis: 12, cha: 15 },
+    savingThrowProfs: ['str', 'dex', 'con'],
+    featureIds: ['brute'],
+    weaponIds: ['gladiator-spear'],
+    metalArmor: true,
+    attacksPerAction: 3,
+  },
+  mage: {
+    id: 'mage', name: 'Mage',
+    ac: 15, cr: 6, hp: 67, speed: 30, // AC 15 assumes Mage Armor precast
+    creatureType: 'humanoid',
+    abilities: { str: 9, dex: 14, con: 11, int: 17, wis: 12, cha: 11 },
+    savingThrowProfs: ['int', 'wis'],
+    weaponIds: ['dagger'],
+    // A control caster: it opens with Web or Fear and blasts from behind it.
+    spellcasting: {
+      ability: 'int', slots: [4, 3, 3, 3],
+      spellIds: ['fire-bolt', 'magic-missile', 'shield', 'misty-step', 'web', 'fireball', 'lightning-bolt', 'fear'],
+    },
+  },
+  assassin: {
+    id: 'assassin', name: 'Assassin',
+    ac: 15, cr: 8, hp: 78, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 11, dex: 16, con: 14, int: 13, wis: 11, cha: 10 },
+    savingThrowProfs: ['dex', 'int'],
+    featureIds: ['sneak-attack', 'assassinate', 'cunning-hide', 'cunning-disengage'],
+    weaponIds: ['shortsword', 'light-crossbow'],
+    attacksPerAction: 2,
+  },
+
+  // Constructs stopped at the flesh golem.
+  scarecrow: {
+    id: 'scarecrow', name: 'Scarecrow',
+    ac: 11, cr: 1, hp: 36, speed: 30,
+    creatureType: 'construct',
+    abilities: { str: 11, dex: 13, con: 11, int: 10, wis: 10, cha: 13 },
+    weaponIds: ['scarecrow-claw'],
+    attacksPerAction: 2,
+    vulnerabilities: ['fire'],
+    immunities: ['poison'],
+  },
+  'shield-guardian': {
+    id: 'shield-guardian', name: 'Shield Guardian',
+    ac: 17, cr: 7, hp: 142, speed: 30,
+    creatureType: 'construct',
+    abilities: { str: 18, dex: 8, con: 18, int: 7, wis: 10, cha: 3 },
+    weaponIds: ['guardian-fist'],
+    attacksPerAction: 2,
+    immunities: ['poison'],
+  },
+  'stone-golem': {
+    id: 'stone-golem', name: 'Stone Golem',
+    ac: 17, cr: 10, hp: 178, speed: 30,
+    creatureType: 'construct',
+    abilities: { str: 22, dex: 9, con: 20, int: 3, wis: 11, cha: 1 },
+    featureIds: ['magic-resistance'],
+    weaponIds: ['stone-golem-slam'],
+    attacksPerAction: 2,
+    immunities: ['poison', 'psychic'],
+  },
+
+  // Elementals were a gargoyle and four identically-priced 1,800s -- no low
+  // end to fill a slot with and no high end to headline one.
+  magmin: {
+    id: 'magmin', name: 'Magmin',
+    ac: 14, hp: 9, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 7, dex: 15, con: 12, int: 8, wis: 11, cha: 10 },
+    weaponIds: ['magmin-touch'],
+    immunities: ['fire'],
+    vulnerabilities: ['cold'],
+  },
+  azer: {
+    id: 'azer', name: 'Azer Sentinel',
+    ac: 17, cr: 2, hp: 39, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 17, dex: 12, con: 15, int: 12, wis: 13, cha: 10 },
+    savingThrowProfs: ['con'],
+    weaponIds: ['azer-hammer'],
+    metalArmor: true,
+    immunities: ['fire', 'poison'],
+  },
+  salamander: {
+    id: 'salamander', name: 'Salamander',
+    ac: 15, cr: 5, hp: 90, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 10, cha: 12 },
+    weaponIds: ['salamander-spear', 'salamander-tail'],
+    attacksPerAction: 2,
+    resistances: ['bludgeoning', 'piercing', 'slashing'],
+    immunities: ['fire'],
+    vulnerabilities: ['cold'],
+  },
+  'invisible-stalker': {
+    id: 'invisible-stalker', name: 'Invisible Stalker',
+    ac: 14, cr: 6, hp: 104, speed: 50,
+    creatureType: 'elemental',
+    abilities: { str: 16, dex: 19, con: 14, int: 10, wis: 15, cha: 11 },
+    featureIds: ['fey-invisibility'],
+    weaponIds: ['stalker-slam'],
+    attacksPerAction: 2,
+    immunities: ['poison'],
+  },
+
   // ---- fiends -----------------------------------------------------------
   // The roster had no fiends at all, which is a conspicuous hole in a game
   // whose paladin and cleric kits are built to answer them. Magic Resistance
@@ -1235,6 +1464,12 @@ export const MONSTER_XP: Record<Id, number> = {
   'black-wyrmling': 450, 'green-wyrmling': 450, 'white-wyrmling': 450,
   'blue-wyrmling': 700, 'red-wyrmling': 1100,
   // CR 5-10. The band above 1,800 was empty before these.
+  // Type ceilings.
+  ghast: 450, banshee: 1100, ghost: 1100, wraith: 1800, 'vampire-spawn': 1800,
+  'giant-scorpion': 700, elephant: 1100, 'giant-crocodile': 1800, mammoth: 2300, 'giant-ape': 2900,
+  berserker: 450, veteran: 700, gladiator: 1800, mage: 2300, assassin: 3900,
+  scarecrow: 200, 'shield-guardian': 2900, 'stone-golem': 5900,
+  magmin: 100, azer: 450, salamander: 1800, 'invisible-stalker': 2300,
   imp: 200, quasit: 200, dretch: 50, 'hell-hound': 700, 'barbed-devil': 1800, vrock: 2300,
   'gray-ooze': 100, 'ochre-jelly': 450, 'gelatinous-cube': 450, 'black-pudding': 1100,
   'flying-sword': 50, 'rug-of-smothering': 450, 'flesh-golem': 1800,
