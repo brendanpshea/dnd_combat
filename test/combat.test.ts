@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { Combat, startCombat } from '../src/engine/combat.js';
-import { step, legalActions, Action } from '../src/engine/actions.js';
+import { step, legalActions, isLegalAction, Action } from '../src/engine/actions.js';
+import { endTurn, currentCombatant } from '../src/engine/turn.js';
 import { makeCombatant } from './helpers.js';
 import { cellAt } from '../src/engine/types.js';
+import { buildCharacter } from '../src/builder/character.js';
+import { buildMonster } from '../src/data/monsters.js';
+import { chooseAction } from '../src/ai/greedy.js';
 
 function duel(seed = 1) {
   return new Combat({
@@ -329,5 +333,51 @@ describe('death and turn order', () => {
     expect(c.isOver()).toBe(true);
     expect(c.winner()).toBe('team1');
     expect(c.state.round).toBeGreaterThan(100);
+  });
+});
+
+/**
+ * A creature can die inside its *own* startTurn: Spiritual Guardians burns it
+ * down before it ever acts. It was then left as the active combatant, dead,
+ * and every action for it was illegal -- including endTurn, which requires a
+ * live actor -- so the fight could not be advanced at all. Nothing threw until
+ * something tried to act, which in the web app is the AI on its next tick.
+ *
+ * Found by a slow monster (a basilisk, speed 20) ending its approach inside
+ * the aura during an arena wave.
+ *
+ * Driven through endTurn directly rather than through the AI: the bug is in
+ * how the turn advances, and a fight built to provoke it via chooseAction
+ * depends on the AI choosing to stand in the aura, which it mostly avoids.
+ */
+describe('a creature that dies during its own turn start', () => {
+  function auraState() {
+    const cleric = buildCharacter({ classId: 'cleric', team: 'team1', position: { x: 3, y: 3 }, level: 5 });
+    const victim = buildMonster('kobold', 'team2', { x: 3, y: 4 });   // adjacent to the aura
+    const bystander = buildMonster('ogre', 'team2', { x: 7, y: 7 });  // well outside it
+    const c = new Combat({ seed: 3, width: 8, height: 8, combatants: [cleric, victim, bystander] });
+    const state = c.state;
+    state.combatants[cleric.id]!.spiritualGuardians = { dc: 30, mod: 5 };  // never saves
+    state.combatants[victim.id]!.hp = 1;                                   // 3d8 radiant kills it
+    // Fix the order so the victim is exactly who endTurn advances to.
+    state.initiativeOrder = [cleric.id, victim.id, bystander.id];
+    state.turnIndex = 0;
+    return { state, victimId: victim.id, bystanderId: bystander.id };
+  }
+
+  it('does not leave the dead creature holding the turn', () => {
+    const { state, victimId, bystanderId } = auraState();
+    endTurn(state, () => []);
+    expect(state.combatants[victimId]!.alive, 'the aura should have killed it').toBe(false);
+    const active = currentCombatant(state);
+    expect(active.alive, `${active.id} holds the turn while dead`).toBe(true);
+    expect(active.id).toBe(bystanderId);
+  });
+
+  it('leaves the fight advanceable', () => {
+    const { state } = auraState();
+    endTurn(state, () => []);
+    const active = currentCombatant(state);
+    expect(isLegalAction(state, active.id, { kind: 'endTurn' })).toBe(true);
   });
 });

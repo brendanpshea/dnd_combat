@@ -476,6 +476,137 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'fire-giant-greatsword', name: 'Greatsword', damage: '6d6', damageType: 'slashing',
     properties: ['two-handed'], melee: true,
   },
+  // ---- mephits ----------------------------------------------------------
+  // Small, and the elemental rider is most of what they do -- a mephit is a
+  // damage type with legs.
+  'mephit-claws-fire': {
+    id: 'mephit-claws-fire', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'fire' },
+  },
+  'mephit-claws-cold': {
+    id: 'mephit-claws-cold', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
+  },
+  'mephit-claws-dust': {
+    id: 'mephit-claws-dust', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'mephit-claws-mud': {
+    id: 'mephit-claws-mud', name: 'Fists', damage: '1d4', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+
+  // ---- fiends, mid and top ----------------------------------------------
+  'shadow-demon-claws': {
+    id: 'shadow-demon-claws', name: 'Claws', damage: '2d6', damageType: 'psychic',
+    properties: ['finesse'], melee: true,
+  },
+  'succubus-claws': {
+    id: 'succubus-claws', name: 'Claws', damage: '1d6', damageType: 'slashing',
+    properties: ['finesse'], melee: true, extraDamage: { dice: '3d6', type: 'psychic' },
+  },
+  'bearded-devil-glaive': {
+    id: 'bearded-devil-glaive', name: 'Glaive', damage: '1d10', damageType: 'slashing',
+    properties: ['two-handed'], melee: true,
+  },
+  'bearded-devil-beard': {
+    id: 'bearded-devil-beard', name: 'Beard', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 12 },
+  },
+  'night-hag-claws': {
+    id: 'night-hag-claws', name: 'Claws', damage: '2d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  // Chains, so it pins. That's the devil's whole gameplan.
+  'chain-devil-chain': {
+    id: 'chain-devil-chain', name: 'Chain', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true, onHitCondition: 'restrained',
+  },
+  'hezrou-bite': {
+    id: 'hezrou-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'hezrou-claws': {
+    id: 'hezrou-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'glabrezu-pincer': {
+    id: 'glabrezu-pincer', name: 'Pincer', damage: '2d10', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'restrained',
+  },
+  'glabrezu-fist': {
+    id: 'glabrezu-fist', name: 'Fist', damage: '2d4', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'horned-devil-fork': {
+    id: 'horned-devil-fork', name: 'Fork', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'horned-devil-tail': {
+    id: 'horned-devil-tail', name: 'Tail', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '3d6', type: 'fire' },
+  },
+
+  // ---- monstrosities, mid and top ---------------------------------------
+  'worg-bite': {
+    id: 'worg-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true, onHitCondition: 'prone',
+  },
+  'rust-monster-antennae': {
+    id: 'rust-monster-antennae', name: 'Antennae', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'griffon-beak': {
+    id: 'griffon-beak', name: 'Beak', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'griffon-claws': {
+    id: 'griffon-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'ettercap-bite': {
+    id: 'ettercap-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 11 },
+  },
+  'ettercap-claws': {
+    id: 'ettercap-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'basilisk-bite': {
+    id: 'basilisk-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'poison' },
+  },
+  'winter-wolf-bite': {
+    id: 'winter-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'roper-tendril': {
+    id: 'roper-tendril', name: 'Tendril', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'restrained',
+  },
+  'roper-bite': {
+    id: 'roper-bite', name: 'Bite', damage: '4d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'bulette-bite': {
+    id: 'bulette-bite', name: 'Bite', damage: '4d12', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'remorhaz-bite': {
+    id: 'remorhaz-bite', name: 'Bite', damage: '6d10', damageType: 'piercing',
+    properties: [], melee: true, extraDamage: { dice: '6d6', type: 'fire' },
+  },
+  'trex-bite': {
+    id: 'trex-bite', name: 'Bite', damage: '4d12', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'trex-tail': {
+    id: 'trex-tail', name: 'Tail', damage: '3d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+
   // ---- undead top end ---------------------------------------------------
   'ghast-claws': {
     id: 'ghast-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',

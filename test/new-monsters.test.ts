@@ -8,6 +8,7 @@ import { WEAPONS } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { applyDamage } from '../src/engine/rules/attack.js';
 import { arenaRoster } from '../src/arena/encounter.js';
+import { FEATURES } from '../src/data/features.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
 
@@ -716,6 +717,69 @@ describe('creature type ceilings', () => {
       const c = new Combat({
         seed: 6, mapId: 'ruins',
         combatants: [...buildParty('team1', 0, 6), buildMonster(id, 'team2', { x: 4, y: 7 })],
+      });
+      let steps = 0;
+      while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));
+      expect(c.isOver(), `${id} did not resolve`).toBe(true);
+    }
+  }, 60000);
+});
+
+/**
+ * Filling the type x price matrix. Elementals started at 100 XP with nothing
+ * to fill a cheap slot; fiends had six members and no top end; monstrosities
+ * had holes at 450 and 1,100. All three are among the SRD's deeper pools, so
+ * the gaps were ours, not the source material's.
+ */
+describe('mephits, fiends and monstrosities', () => {
+  const MEPHITS = ['dust-mephit', 'mud-mephit', 'smoke-mephit', 'ice-mephit', 'magma-mephit', 'steam-mephit'];
+  const FIENDS = ['shadow-demon', 'succubus', 'bearded-devil', 'night-hag', 'chain-devil', 'hezrou', 'glabrezu', 'horned-devil'];
+  const MONSTROSITIES = ['worg', 'rust-monster', 'griffon', 'ettercap', 'basilisk', 'winter-wolf', 'roper', 'bulette', 'remorhaz'];
+  const ALL = [...MEPHITS, ...FIENDS, ...MONSTROSITIES, 'tyrannosaurus'];
+
+  it('all build, are priced, and carry a CR where they need one', () => {
+    for (const id of ALL) {
+      const m = MONSTERS[id];
+      expect(m, id).toBeDefined();
+      expect(MONSTER_XP[id], `${id} has no XP`).toBeGreaterThan(0);
+      if ((MONSTER_XP[id] ?? 0) > 1100) expect(m!.cr, `${id} has no CR`).toBeGreaterThanOrEqual(5);
+      expect(() => buildMonster(id, 'team2', { x: 0, y: 0 }), id).not.toThrow();
+    }
+  });
+
+  it('gives the elementals a floor to fill cheap slots with', () => {
+    const elementals = arenaRoster().filter((m) => m.type === 'elemental');
+    expect(Math.min(...elementals.map((m) => m.xp))).toBeLessThanOrEqual(50);
+  });
+
+  // The point of the batch: the arena can now buy a single 7,200 XP threat at
+  // the top of a run instead of only ever stacking bodies.
+  it('reaches a 7200 XP tier, in more than one type', () => {
+    const top = arenaRoster().filter((m) => m.xp >= 7200);
+    expect(top.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(top.map((m) => m.type)).size).toBeGreaterThanOrEqual(2);
+  });
+
+  // Same rule, two names: a succubus must not tell the player it used
+  // "Fey Charm".
+  it('the succubus charms under its own name, sharing the dryad mechanic', () => {
+    expect(MONSTERS['succubus']!.featureIds).toContain('charm');
+    expect(FEATURES['charm']!.name).toBe('Charm');
+    expect(FEATURES['charm']!.apply).toBe(FEATURES['fey-charm']!.apply);
+  });
+
+  it('mephit breath is scaled to a mephit, not borrowed from a dragon', () => {
+    const mephit = BREATH_WEAPONS['breath-mephit-fire']!;
+    const wyrmling = BREATH_WEAPONS['breath-fire']!;
+    const avg = (d: string) => { const [n, f] = d.split('d').map(Number); return n! * (f! + 1) / 2; };
+    expect(avg(mephit.dice)).toBeLessThan(avg(wyrmling.dice));
+  });
+
+  it('each resolves into a finished fight', () => {
+    for (const id of ALL) {
+      const c = new Combat({
+        seed: 8, mapId: 'ruins',
+        combatants: [...buildParty('team1', 0, 8), buildMonster(id, 'team2', { x: 4, y: 7 })],
       });
       let steps = 0;
       while (!c.isOver() && steps++ < 4000) c.apply(chooseAction(c.state, c.activeId));

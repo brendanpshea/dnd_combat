@@ -107,6 +107,11 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   // The hell hound's is a CR 3 cone — a pack of them is the threat, not any
   // one breath.
   'breath-fire-hound':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '6d6' },
+  // Mephit breath, at CR 1/2 scale. Their SRD versions also blind or slow;
+  // a breath spec carries damage only, so those riders are left off rather
+  // than faked with the wrong condition.
+  'breath-mephit-fire':     { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '2d4' },
+  'breath-mephit-cold':     { shape: 'cone',            save: 'dex', damageType: 'cold',      dice: '2d4' },
 };
 
 /** The cells a breath covers when aimed a given direction. */
@@ -130,6 +135,23 @@ export function bestBreathDirection(state: GameState, me: Combatant, featureId: 
     if (hp > bestHp) { bestHp = hp; best = dir; }
   }
   return best;
+}
+
+/** Charm the nearest enemy within 30 ft out of the fight on a failed Wis save.
+ *  Shared by Fey Charm (dryad) and Charm (succubus) -- same rule, two names. */
+function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
+  const me = state.combatants[actorId]!;
+  const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
+  const foes = Object.values(state.combatants)
+    .filter((c) => c.alive && c.hp > 0 && c.team !== me.team &&
+      distanceFeet(me.position, c.position) <= 30)
+    .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position));
+  const target = foes[0];
+  if (!target) return [];
+  const { success, event } = savingThrow(state, target.id, 'wis', dc);
+  const events: GameEvent[] = [event];
+  if (!success) events.push(...charmAway(state, target.id));
+  return events;
 }
 
 /** The `apply` hook for a breath feature: aim, then save-for-half everyone caught. */
@@ -422,20 +444,13 @@ export const FEATURES: Record<Id, FeatureData> = {
   // charmed out of the fight.
   'fey-charm': {
     id: 'fey-charm', name: 'Fey Charm', trigger: 'action', uses: { count: 1, per: 'encounter' },
-    apply({ state, actorId }) {
-      const me = state.combatants[actorId]!;
-      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
-      const foes = Object.values(state.combatants)
-        .filter((c) => c.alive && c.hp > 0 && c.team !== me.team &&
-          distanceFeet(me.position, c.position) <= 30)
-        .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position));
-      const target = foes[0];
-      if (!target) return [];
-      const { success, event } = savingThrow(state, target.id, 'wis', dc);
-      const events: GameEvent[] = [event];
-      if (!success) events.push(...charmAway(state, target.id));
-      return events;
-    },
+    apply: charmNearestApply,
+  },
+  // The succubus's Charm is the same mechanic under a name that fits a fiend
+  // -- a stat block shouldn't tell the player it used "Fey Charm".
+  charm: {
+    id: 'charm', name: 'Charm', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply: charmNearestApply,
   },
   // Luring Song (Harpy): every enemy within 30 ft that fails a Wisdom save is
   // charmed out of the fight.
@@ -550,6 +565,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   'breath-cold-young':      { id: 'breath-cold-young',      name: 'Cold Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-cold-young') },
   'breath-fire-chimera':    { id: 'breath-fire-chimera',    name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-chimera') },
   'breath-fire-hound':      { id: 'breath-fire-hound',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-hound') },
+  'breath-mephit-fire':     { id: 'breath-mephit-fire',     name: 'Fire Breath',      trigger: 'action', recharge: 6, apply: breathApply('breath-mephit-fire') },
+  'breath-mephit-cold':     { id: 'breath-mephit-cold',     name: 'Frost Breath',     trigger: 'action', recharge: 6, apply: breathApply('breath-mephit-cold') },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.
