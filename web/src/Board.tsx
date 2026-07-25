@@ -23,6 +23,7 @@ const TOKEN: Record<string, string> = {
   sprite: '🧚', satyr: '🐐', dryad: '🌳', 'green-hag': '🧙‍♀️', unicorn: '🦄',
   cockatrice: '🐓', harpy: '🦅', manticore: '🦁', owlbear: '🦉', gorgon: '🐂',
   shadow: '👤', specter: '👻', 'will-o-wisp': '✨', wight: '💀', mummy: '🧟',
+  otyugh: '🦑', aboleth: '🐙',
   'dust-mephit': '🌫️', 'mud-mephit': '🟤', 'smoke-mephit': '💨', 'ice-mephit': '❄️',
   'magma-mephit': '🌋', 'steam-mephit': '♨️',
   'shadow-demon': '🌑', succubus: '💋', 'bearded-devil': '😈', 'night-hag': '🧙‍♀️',

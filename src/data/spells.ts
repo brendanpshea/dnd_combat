@@ -33,7 +33,18 @@ export type SpellTargeting =
   | {
       kind: 'creature'; range: number; who: 'enemy' | 'ally' | 'any'; count: number;
       /** Restrict to one SRD creature type (Animal Friendship: beasts only). */
+      /** Restrict to one creature type (Animal Friendship: beasts). */
       creatureType?: CreatureType;
+      /**
+       * Restrict to a set of creature types. Command and Suggestion talk a
+       * target into doing something, so they need a mind and ears -- but not
+       * specifically a humanoid one. They were gated to `humanoid` as a
+       * shorthand for that, which broke the moment goblinoids became fey in
+       * the 2024 rules and left the game's most common low-level enemy immune
+       * to both spells. Neither is type-restricted in 2024 anyway; this lists
+       * what can actually be talked to.
+       */
+      creatureTypes?: CreatureType[];
     }
   /**
    * Anything you could hit with the weapon in your hand — True Strike.
@@ -354,6 +365,15 @@ function avgDamage(w: { damage: string; damageBonus?: number }): number {
 }
 
 // --- the spells -------------------------------------------------------------
+
+/**
+ * Creature types that can be talked into something -- the target set for
+ * Command and Suggestion. Excludes the mindless (constructs, oozes), the
+ * unhearing dead, and creatures with no language to be commanded in.
+ */
+const PERSUADABLE: CreatureType[] = [
+  'humanoid', 'fey', 'fiend', 'giant', 'dragon', 'monstrosity', 'aberration', 'elemental',
+];
 
 export const SPELLS: Record<Id, SpellData> = {
   'fire-bolt': {
@@ -765,7 +785,7 @@ export const SPELLS: Record<Id, SpellData> = {
    */
   suggestion: {
     id: 'suggestion', name: 'Suggestion', level: 2, castingTime: 'action',
-    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1, creatureType: 'humanoid' },
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1, creatureTypes: PERSUADABLE },
     concentration: false,
     icon: '💭',
     cast({ state, casterId, targetIds }) {
@@ -783,7 +803,7 @@ export const SPELLS: Record<Id, SpellData> = {
    */
   command: {
     id: 'command', name: 'Command', level: 1, castingTime: 'action',
-    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1, creatureType: 'humanoid' },
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1, creatureTypes: PERSUADABLE },
     concentration: false,
     icon: '❗',
     cast({ state, casterId, targetIds }) {
@@ -1660,12 +1680,13 @@ export function validTarget(
     return !!weaponId && canAttackWith(state, caster, weaponId, targetId);
   }
   if (spell.targeting.kind !== 'creature') return false;
-  const { range, who, creatureType } = spell.targeting;
+  const { range, who, creatureType, creatureTypes } = spell.targeting;
   if (who === 'enemy' && t.team === caster.team) return false;
   // A downed creature can't be attacked — but healing it is the whole point.
   if (who === 'enemy' && isDown(t)) return false;
   if (who === 'ally' && t.team !== caster.team) return false;
   if (creatureType && t.creatureType !== creatureType) return false;
+  if (creatureTypes && !(t.creatureType && creatureTypes.includes(t.creatureType))) return false;
   if (range === 0) {
     return targetId === casterId || adjacent(caster.position, t.position);
   }

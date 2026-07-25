@@ -598,6 +598,23 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'remorhaz-bite', name: 'Bite', damage: '6d10', damageType: 'piercing',
     properties: [], melee: true, extraDamage: { dice: '6d6', type: 'fire' },
   },
+  'otyugh-tentacle': {
+    id: 'otyugh-tentacle', name: 'Tentacle', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'restrained',
+    onHitSave: { condition: 'poisoned', ability: 'con', dc: 13 },
+  },
+  'otyugh-bite': {
+    id: 'otyugh-bite', name: 'Bite', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'aboleth-tentacle': {
+    id: 'aboleth-tentacle', name: 'Tentacle', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'psychic' },
+  },
+  'aboleth-tail': {
+    id: 'aboleth-tail', name: 'Tail', damage: '3d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
   'trex-bite': {
     id: 'trex-bite', name: 'Bite', damage: '4d12', damageType: 'piercing',
     properties: [], melee: true,

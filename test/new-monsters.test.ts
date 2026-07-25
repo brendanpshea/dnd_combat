@@ -787,3 +787,48 @@ describe('mephits, fiends and monstrosities', () => {
     }
   }, 60000);
 });
+
+/**
+ * Creature types that changed in the 2024 rules. These are silent if wrong --
+ * nothing breaks, the arena just themes fights oddly and type-gated spells
+ * pick the wrong targets -- so they're asserted rather than trusted.
+ */
+describe('2024 creature types', () => {
+  it('goblinoids and their wolves are fey, not humanoid', () => {
+    for (const id of ['goblin-warrior', 'goblin-boss', 'bugbear', 'worg']) {
+      expect(MONSTERS[id]!.creatureType, id).toBe('fey');
+    }
+  });
+
+  it('gnolls are fiends, not humanoid', () => {
+    expect(MONSTERS['gnoll']!.creatureType).toBe('fiend');
+  });
+
+  it('the roper is an aberration, not a monstrosity', () => {
+    expect(MONSTERS['roper']!.creatureType).toBe('aberration');
+  });
+
+  // A type with one member is a type the generator will never pick, so the
+  // roper's retype had to come with company.
+  it('aberration has enough members for the generator to field it', () => {
+    const ab = arenaRoster().filter((m) => m.type === 'aberration');
+    expect(ab.length).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...ab.map((m) => m.xp))).toBeGreaterThanOrEqual(1800);
+  });
+
+  /**
+   * Command and Suggestion were gated to `humanoid` as shorthand for "has a
+   * mind and ears". Retyping goblinoids to fey would have left the game's most
+   * common low-level enemy immune to both -- a balance change smuggled in by a
+   * bookkeeping fix. Neither spell is type-restricted in 2024 anyway.
+   */
+  it('Command and Suggestion still work on goblins, and still not on oozes', () => {
+    for (const spellId of ['command', 'suggestion']) {
+      const types = SPELLS[spellId]!.targeting.creatureTypes;
+      expect(types, `${spellId} lost its target set`).toBeDefined();
+      expect(types, `${spellId} vs a goblin`).toContain('fey');
+      expect(types, `${spellId} vs an ooze`).not.toContain('ooze');
+      expect(types, `${spellId} vs a construct`).not.toContain('construct');
+    }
+  });
+});

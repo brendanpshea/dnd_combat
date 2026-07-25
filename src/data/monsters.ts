@@ -40,7 +40,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'goblin-warrior': {
     id: 'goblin-warrior', name: 'Goblin Warrior',
     ac: 15, hp: 10, speed: 30,
-    creatureType: 'humanoid',
+    // Fey since the 2024 rules, not humanoid -- goblinoids are folklore
+    // tricksters from the Feywild rather than another mortal people.
+    creatureType: 'fey',
     abilities: { str: 8, dex: 15, con: 10, int: 10, wis: 8, cha: 8 },
     featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
@@ -48,7 +50,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'goblin-boss': {
     id: 'goblin-boss', name: 'Goblin Boss',
     ac: 17, hp: 21, speed: 30,
-    creatureType: 'humanoid',
+    creatureType: 'fey',
     abilities: { str: 10, dex: 15, con: 10, int: 10, wis: 8, cha: 10 },
     featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
@@ -256,7 +258,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
   bugbear: {
     id: 'bugbear', name: 'Bugbear',
     ac: 16, hp: 27, speed: 30,
-    creatureType: 'humanoid',
+    // Fey since 2024, with the rest of the goblinoids.
+    creatureType: 'fey',
     abilities: { str: 15, dex: 14, con: 13, int: 8, wis: 11, cha: 9 },
     featureIds: ['long-limbed', 'brute'],
     weaponIds: ['morningstar', 'javelin'],
@@ -271,7 +274,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
   gnoll: {
     id: 'gnoll', name: 'Gnoll',
     ac: 15, hp: 22, speed: 30,
-    creatureType: 'humanoid',
+    // Fiend since 2024: gnolls are demonic in origin, not a mortal people.
+    creatureType: 'fiend',
     abilities: { str: 14, dex: 12, con: 11, int: 6, wis: 10, cha: 7 },
     featureIds: ['rampage'],
     weaponIds: ['spear', 'bite'],
@@ -648,7 +652,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
   worg: {
     id: 'worg', name: 'Worg',
     ac: 13, hp: 26, speed: 50,
-    creatureType: 'monstrosity',
+    // Fey since 2024, tied to the goblinoids it runs with.
+    creatureType: 'fey',
     abilities: { str: 16, dex: 13, con: 13, int: 7, wis: 11, cha: 8 },
     featureIds: ['pack-tactics'],
     weaponIds: ['worg-bite'],
@@ -699,7 +704,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
   roper: {
     id: 'roper', name: 'Roper',
     ac: 20, cr: 5, hp: 93, speed: 10,
-    creatureType: 'monstrosity',
+    // Aberration since 2024 -- a thing the Far Realm made, not a beast.
+    creatureType: 'aberration',
     abilities: { str: 18, dex: 8, con: 17, int: 7, wis: 16, cha: 6 },
     weaponIds: ['roper-tendril', 'roper-bite'],
     attacksPerAction: 3,
@@ -719,6 +725,34 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 24, dex: 13, con: 21, int: 4, wis: 10, cha: 5 },
     weaponIds: ['remorhaz-bite'],
     immunities: ['cold', 'fire'],
+  },
+
+  // ---- aberrations ------------------------------------------------------
+  // The 2024 roper is an aberration, and a type with one member is a type the
+  // generator can never field -- it needs two before it will pick it. These
+  // are the SRD's other two, which also give the type a top end.
+  otyugh: {
+    id: 'otyugh', name: 'Otyugh',
+    ac: 14, cr: 5, hp: 114, speed: 30,
+    creatureType: 'aberration',
+    abilities: { str: 16, dex: 11, con: 19, int: 6, wis: 13, cha: 6 },
+    savingThrowProfs: ['con'],
+    weaponIds: ['otyugh-tentacle', 'otyugh-bite'],
+    attacksPerAction: 3,
+  },
+  aboleth: {
+    id: 'aboleth', name: 'Aboleth',
+    ac: 17, cr: 10, hp: 135, speed: 10,
+    creatureType: 'aberration',
+    abilities: { str: 21, dex: 9, con: 15, int: 18, wis: 15, cha: 18 },
+    savingThrowProfs: ['con', 'int', 'wis'],
+    featureIds: ['magic-resistance'],
+    weaponIds: ['aboleth-tentacle', 'aboleth-tail'],
+    attacksPerAction: 3,
+    spellcasting: {
+      ability: 'int', slots: [4, 3],
+      spellIds: ['ray-of-sickness', 'hold-person', 'blindness', 'fear'],
+    },
   },
 
   // The one hole left in the beasts.
@@ -1716,7 +1750,7 @@ export const MONSTER_XP: Record<Id, number> = {
   'chain-devil': 3900, hezrou: 3900, glabrezu: 5000, 'horned-devil': 7200,
   worg: 100, 'rust-monster': 100, griffon: 450, ettercap: 450,
   basilisk: 700, 'winter-wolf': 700, roper: 1800, bulette: 1800, remorhaz: 7200,
-  tyrannosaurus: 3900,
+  tyrannosaurus: 3900, otyugh: 1800, aboleth: 5900,
   // Type ceilings.
   ghast: 450, banshee: 1100, ghost: 1100, wraith: 1800, 'vampire-spawn': 1800,
   'giant-scorpion': 700, elephant: 1100, 'giant-crocodile': 1800, mammoth: 2300, 'giant-ape': 2900,
