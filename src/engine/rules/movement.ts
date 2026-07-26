@@ -238,10 +238,11 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       const source = state.combatants[web.sourceId];
       const alreadyStuck = mover.conditions.some((k) => k.id === 'restrained');
       if (source && source.team !== mover.team && !alreadyStuck) {
-        const save = savingThrow(state, moverId, 'dex', web.dc);
+        const ability = web.ability ?? 'dex';
+        const save = savingThrow(state, moverId, ability, web.dc);
         events.push(save.event);
         if (!save.success) {
-          mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability: 'dex', dc: web.dc } });
+          mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc } });
           events.push({ type: 'conditionApplied', combatantId: moverId, condition: 'restrained', sourceId: web.sourceId });
           // Caught: the mover stops here rather than walking on through the web.
           cellAt(state.grid, mover.position)!.occupantId = moverId;

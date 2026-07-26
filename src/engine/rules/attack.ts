@@ -980,6 +980,7 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   const { spellId, targetIds } = c.concentratingOn;
   delete c.concentratingOn;
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
+  if (spellId === 'call-lightning') delete c.stormCloud;      // the storm blows out
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
   // Flaming Sphere is a concentration-held summon: sweep it off the board.
   if (spellId === 'flaming-sphere' && c.summons) {

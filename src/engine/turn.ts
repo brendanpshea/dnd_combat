@@ -3,15 +3,16 @@
  * cloning.
  */
 import type { GameState, Combatant, Id, TeamId } from './types.js';
+import { cellAt } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollDice } from './dice.js';
-import { expireIllusions, distanceFeet, distanceCells, reachable } from './grid.js';
+import { expireIllusions, distanceFeet, distanceCells, reachable, sphere2x2 } from './grid.js';
 import { executeMove, hostileIds } from './rules/movement.js';
 import type { Position } from './types.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
-import { activateSummons } from '../data/spells.js';
+import { activateSummons, strikeLightning } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
@@ -44,6 +45,33 @@ export function rollInitiative(state: GameState): GameEvent[] {
     { type: 'roundStarted', round: 1 },
     ...startTurn(state),
   ];
+}
+
+/**
+ * Where the next bolt from a held storm cloud should land: the 2x2 patch
+ * catching the most enemy hit points, and none of the caster's own side.
+ * Undefined when no patch catches anyone — the storm rumbles and holds.
+ */
+function bestLightningSpot(state: GameState, caster: Combatant): Position | undefined {
+  let best: Position | undefined;
+  let bestHp = 0;
+  for (const other of Object.values(state.combatants)) {
+    if (!other.alive || isDown(other) || other.team === caster.team) continue;
+    if (distanceFeet(caster.position, other.position) > 120) continue;
+    // Anchor the patch on each candidate enemy and see what else it sweeps up.
+    let hp = 0;
+    let friendly = false;
+    for (const pos of sphere2x2(other.position)) {
+      const tid = cellAt(state.grid, pos)?.occupantId;
+      if (!tid) continue;
+      const t = state.combatants[tid]!;
+      if (!t.alive || isDown(t)) continue;
+      if (t.team === caster.team) { friendly = true; break; }
+      hp += t.hp;
+    }
+    if (!friendly && hp > bestHp) { bestHp = hp; best = other.position; }
+  }
+  return best;
 }
 
 export function currentCombatant(state: GameState): Combatant {
@@ -193,6 +221,15 @@ export function startTurn(state: GameState): GameEvent[] {
       state.rng = dmg.state;
       events.push(...applyDamage(state, other.id, c.id, dmg.total, c.holdDamage.type, dmg.rolls));
     }
+  }
+
+  // Call Lightning: the cloud the druid is holding drops another bolt, on
+  // whichever patch of ground catches the most enemies. Aimed automatically for
+  // the same reason a dragon's breath is — the storm has to pick a spot and no
+  // action is being taken to choose one.
+  if (c.stormCloud && c.hp > 0 && !isDown(c)) {
+    const spot = bestLightningSpot(state, c);
+    if (spot) events.push(...strikeLightning(state, c.id, spot));
   }
 
   // Recharge abilities (dragon breath): a spent one rolls a d6 and comes back

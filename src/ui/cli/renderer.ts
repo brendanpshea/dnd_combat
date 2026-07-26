@@ -235,6 +235,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} fills the ground with thick, clinging webs.`;
     case 'webCleared':
       return `  The webs wither and fall away.`;
+    case 'lightningStruck':
+      return `  A bolt cracks down from ${nm(e.casterId)}'s storm cloud.`;
     case 'wildShaped':
       return `${nm(e.combatantId)} shifts into the shape of a ${e.formId.replace(/-/g, ' ')}! (+${e.tempHp} temp HP)`;
     case 'wildShapeEnded':

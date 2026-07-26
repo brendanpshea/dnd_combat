@@ -2,7 +2,7 @@
  * Grid geometry: Chebyshev distance, line of sight, BFS pathing over terrain
  * cost, and AoE templates.
  */
-import { GridState, Position, Cell, TerrainId, Id, cellAt, posEq } from './types.js';
+import { GridState, Position, Cell, TerrainId, Id, Ability, cellAt, posEq } from './types.js';
 
 export const CELL_FEET = 5;
 
@@ -99,11 +99,15 @@ export function expireIllusions(grid: GridState, round: number): Position[] {
   return popped;
 }
 
-/** Stamp a lingering Web onto a cell (open/difficult ground — never a wall). */
-export function webCell(grid: GridState, p: Position, sourceId: Id, dc: number): boolean {
+/** Stamp clinging ground onto a cell (open/difficult — never a wall): a Web's
+ *  strands, or an Entangle's vines. */
+export function webCell(
+  grid: GridState, p: Position, sourceId: Id, dc: number,
+  opts: { ability?: Ability; kind?: 'web' | 'entangle' } = {},
+): boolean {
   const cell = cellAt(grid, p);
   if (!cell || cell.terrain === 'wall') return false;
-  cell.web = { sourceId, dc };
+  cell.web = { sourceId, dc, ...(opts.ability ? { ability: opts.ability } : {}), ...(opts.kind ? { kind: opts.kind } : {}) };
   return true;
 }
 

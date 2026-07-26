@@ -52,7 +52,19 @@ export interface Cell {
    * you can read and route around it. Cleared when the caster drops
    * concentration (see breakConcentration). `sourceId`'s team is friendly to it.
    */
-  web?: { sourceId: Id; dc: number };
+  web?: {
+    sourceId: Id;
+    dc: number;
+    /**
+     * The save a creature entering the cell rolls. Web is Dexterity; Entangle's
+     * vines are Strength — same clinging ground, different way out of it, and
+     * the difference is exactly why a druid would take one over the other.
+     * Absent means Dexterity, so every existing Web is unchanged.
+     */
+    ability?: Ability;
+    /** Which spell laid it, for the log and the board art. */
+    kind?: 'web' | 'entangle';
+  };
 }
 
 export interface GridState {
@@ -296,6 +308,13 @@ export interface Combatant {
    * speed, the physical abilities, what you are holding, and the traits that
    * come with the body.
    */
+  /**
+   * Call Lightning: a storm cloud the caster is holding overhead. Each of their
+   * turns it drops another bolt (startTurn), for as long as concentration
+   * lasts. Stored on the caster rather than the grid because the cloud follows
+   * the druid, not the ground.
+   */
+  stormCloud?: { dice: string; dc: number };
   wildShape?: {
     formId: Id;
     original: {

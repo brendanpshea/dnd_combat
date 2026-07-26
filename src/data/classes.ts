@@ -354,9 +354,10 @@ export const CLASSES: Record<Id, ClassData> = {
       preparedByLevel: [4, 5, 6, 7, 9],
       spellsByLevel: {
         1: ['poison-spray', 'guidance', 'thorn-whip', 'cure-wounds', 'healing-word',
-            'faerie-fire', 'thunderwave', 'animal-friendship', 'protection-from-evil-and-good'],
-        3: ['flaming-sphere', 'hold-person', 'aid', 'lesser-restoration'],
-        5: ['dispel-magic', 'protection-from-energy'], // 3rd-level slots
+            'faerie-fire', 'thunderwave', 'animal-friendship', 'protection-from-evil-and-good',
+            'entangle'],
+        3: ['flaming-sphere', 'hold-person', 'aid', 'lesser-restoration', 'heat-metal'],
+        5: ['dispel-magic', 'protection-from-energy', 'call-lightning'], // 3rd-level slots
       },
     },
     featuresByLevel: {
