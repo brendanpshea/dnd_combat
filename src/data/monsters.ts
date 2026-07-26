@@ -29,6 +29,8 @@ export interface MonsterData {
   metalArmor?: boolean;    // Shocking Grasp rider; AC itself is the flat stat
   attacksPerAction?: number;
   resistances?: DamageType[];
+  /** Resisted only against nonmagical damage (SRD physical resistance). */
+  resistNonmagical?: DamageType[];
   vulnerabilities?: DamageType[];
   immunities?: DamageType[];
   /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
@@ -343,7 +345,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 15, dex: 11, con: 16, int: 6, wis: 11, cha: 7 },
     weaponIds: ['gargoyle-bite', 'gargoyle-claws'],
     attacksPerAction: 2,
-    resistances: ['bludgeoning', 'piercing', 'slashing'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'fire-elemental': {
     id: 'fire-elemental', name: 'Fire Elemental',
@@ -354,7 +356,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['fire-touch'],
     attacksPerAction: 2,
     immunities: ['fire', 'poison'],
-    resistances: ['bludgeoning', 'piercing', 'slashing'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'water-elemental': {
     id: 'water-elemental', name: 'Water Elemental',
@@ -365,7 +367,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['water-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
-    resistances: ['bludgeoning', 'piercing', 'slashing', 'acid'],
+    resistances: ['acid'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'earth-elemental': {
     id: 'earth-elemental', name: 'Earth Elemental',
@@ -376,7 +379,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['earth-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
-    resistances: ['bludgeoning', 'piercing', 'slashing'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'air-elemental': {
     id: 'air-elemental', name: 'Air Elemental',
@@ -387,7 +390,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['air-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
-    resistances: ['bludgeoning', 'piercing', 'slashing', 'lightning'],
+    resistances: ['lightning'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
 
   sprite: {
@@ -563,7 +567,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 1, dex: 17, con: 12, int: 14, wis: 13, cha: 14 },
     savingThrowProfs: ['dex', 'cha'],
     weaponIds: ['shadow-demon-claws'],
-    resistances: ['acid', 'fire', 'necrotic', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['acid', 'fire', 'necrotic', 'thunder'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['cold', 'lightning', 'poison'],
     vulnerabilities: ['radiant'],
   },
@@ -795,7 +800,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 1, dex: 14, con: 10, int: 12, wis: 11, cha: 17 },
     savingThrowProfs: ['wis', 'cha'],
     weaponIds: ['banshee-touch'],
-    resistances: ['cold', 'necrotic', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['cold', 'necrotic'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['poison'],
   },
   ghost: {
@@ -804,7 +810,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'undead',
     abilities: { str: 7, dex: 13, con: 10, int: 10, wis: 12, cha: 17 },
     weaponIds: ['ghost-touch'],
-    resistances: ['acid', 'cold', 'fire', 'lightning', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['acid', 'cold', 'fire', 'lightning'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['necrotic', 'poison'],
   },
   wraith: {
@@ -813,7 +820,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'undead',
     abilities: { str: 6, dex: 16, con: 16, int: 12, wis: 14, cha: 15 },
     weaponIds: ['wraith-touch'],
-    resistances: ['acid', 'cold', 'fire', 'lightning', 'necrotic', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'necrotic'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['poison'],
   },
   'vampire-spawn': {
@@ -824,7 +832,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     savingThrowProfs: ['dex', 'wis'],
     weaponIds: ['spawn-claws', 'spawn-bite'],
     attacksPerAction: 2,
-    resistances: ['necrotic', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['necrotic'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
 
   // Beasts stopped at the giant boar (CR 2). A dinosaur is a legitimate arena
@@ -984,7 +993,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 10, cha: 12 },
     weaponIds: ['salamander-spear', 'salamander-tail'],
     attacksPerAction: 2,
-    resistances: ['bludgeoning', 'piercing', 'slashing'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['fire'],
     vulnerabilities: ['cold'],
   },
@@ -1267,7 +1276,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['shadow-drain'],
     vulnerabilities: ['radiant'],
     immunities: ['necrotic', 'poison'],
-    resistances: ['acid', 'fire', 'lightning', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['acid', 'fire', 'lightning', 'thunder'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   specter: {
     id: 'specter', name: 'Specter',
@@ -1276,7 +1286,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 1, dex: 14, con: 11, int: 10, wis: 10, cha: 11 },
     weaponIds: ['specter-drain'],
     immunities: ['necrotic', 'poison'],
-    resistances: ['acid', 'fire', 'lightning', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['acid', 'fire', 'lightning', 'thunder'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'will-o-wisp': {
     id: 'will-o-wisp', name: "Will-o'-Wisp",
@@ -1286,7 +1297,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['consume-life'],
     weaponIds: ['wisp-shock'],
     immunities: ['lightning', 'poison'],
-    resistances: ['acid', 'fire', 'necrotic', 'thunder', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['acid', 'fire', 'necrotic', 'thunder'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   wight: {
     id: 'wight', name: 'Wight',
@@ -1296,7 +1308,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['wight-longsword', 'wight-drain'],
     attacksPerAction: 2,
     immunities: ['poison'],
-    resistances: ['necrotic', 'bludgeoning', 'piercing', 'slashing'],
+    resistances: ['necrotic'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   mummy: {
     id: 'mummy', name: 'Mummy',
@@ -1308,7 +1321,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     vulnerabilities: ['fire'],
     immunities: ['necrotic', 'poison'],
-    resistances: ['bludgeoning', 'piercing', 'slashing'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
 
   // Chromatic dragon wyrmlings. Bite + a Recharge-5–6 elemental breath (shape,
@@ -1421,6 +1434,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     weaponMasteries: [],
     attacksPerAction: m.attacksPerAction ?? 1,
     resistances: [...(m.resistances ?? [])],
+    ...(m.resistNonmagical ? { resistNonmagical: [...m.resistNonmagical] } : {}),
     vulnerabilities: [...(m.vulnerabilities ?? [])],
     immunities: [...(m.immunities ?? [])],
     conditions: [],

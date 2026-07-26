@@ -171,6 +171,15 @@ export interface Combatant {
   /** Attacks per Attack action (Multiattack / Extra Attack). Default 1. */
   attacksPerAction: number;
   resistances: DamageType[];
+  /**
+   * Resisted only when the damage isn't magical — the SRD's "bludgeoning,
+   * piercing, and slashing from nonmagical attacks", which is what nearly
+   * every physical resistance in the book actually says. Kept apart from
+   * `resistances` because the qualifier is the whole point: it is what makes
+   * a magic weapon worth carrying, and folding the two together silently
+   * turns a wight into a wall that a +1 sword cannot get through.
+   */
+  resistNonmagical?: DamageType[];
   vulnerabilities: DamageType[];
   immunities: DamageType[];
   conditions: ActiveCondition[];
