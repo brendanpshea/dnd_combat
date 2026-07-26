@@ -315,7 +315,7 @@ export const CLASSES: Record<Id, ClassData> = {
       preparedByLevel: [4, 5, 6, 7, 9],
       spellsByLevel: {
         // Strongest first within each level — see spellsByLevel's note.
-        1: ['vicious-mockery', 'minor-illusion', 'true-strike', 'sleep', 'healing-word', 'command',
+        1: ['vicious-mockery', 'starry-wisp', 'minor-illusion', 'true-strike', 'sleep', 'healing-word', 'command',
             'cure-wounds', 'faerie-fire', 'color-spray', 'thunderwave', 'bane', 'animal-friendship'],
         3: ['hold-person', 'invisibility', 'suggestion', 'blindness', 'aid', 'lesser-restoration'],
         5: ['fear', 'mass-healing-word', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
@@ -354,8 +354,13 @@ export const CLASSES: Record<Id, ClassData> = {
   druid: {
     id: 'druid', name: 'Druid', hitDie: 8,
     savingThrows: ['int', 'wis'],
-    armorProfs: ['light', 'shield'],
-    weaponProfs: { simple: true, martial: false },
+    // Primal Order: Warden. The 2024 druid picks Magician or Warden at level 1;
+    // Warden grants Martial weapon proficiency and Medium armour training, and
+    // it is the default here because the alternative (an extra cantrip) leaves a
+    // d8 caster in leather with a quarterstaff, which is not a class anybody
+    // wants to field. Magician is not offered as a choice yet.
+    armorProfs: ['light', 'medium', 'shield'],
+    weaponProfs: { simple: true, martial: true },
     skillProfs: ['nature', 'animal-handling'],
     statPriority: ['wis', 'con', 'dex', 'int', 'cha', 'str'],
     spellcasting: {
@@ -365,9 +370,19 @@ export const CLASSES: Record<Id, ClassData> = {
       preparedByLevel: [4, 5, 6, 7, 9],
       spellsByLevel: {
         // Strongest first within each level — see spellsByLevel's note.
-        1: ['poison-spray', 'guidance', 'thorn-whip', 'entangle', 'cure-wounds', 'healing-word',
-            'faerie-fire', 'thunderwave', 'protection-from-evil-and-good', 'animal-friendship'],
-        3: ['hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
+        // Starry Wisp is on the SRD druid list. The markdown conversion this
+        // was checked against dropped the druid's cantrip table row entirely,
+        // twice, which read as an absence — confirmed present against the real
+        // document.
+        1: ['starry-wisp', 'poison-spray', 'shillelagh', 'guidance', 'thorn-whip', 'entangle',
+            'cure-wounds', 'healing-word', 'faerie-fire', 'thunderwave',
+            'protection-from-evil-and-good', 'animal-friendship'],
+        // Wild Companion (level 2): the 2024 druid spends a Wild Shape use to
+        // conjure a familiar. Modelled as the ritual the wizard gets, arriving
+        // with Wild Shape itself — a ritual is always known and costs no slot,
+        // which is the same "free, once you have it" shape.
+        2: ['find-familiar'],
+        3: ['moonbeam', 'hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
         5: ['call-lightning', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
       },
     },
@@ -381,7 +396,10 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     weaponMasteries: [],
     equipment: {
-      mainHand: 'quarterstaff', offHand: 'shield', armor: 'leather',
+      // Warden's medium armour, and the staff stays in hand — Shillelagh makes
+      // it the best weapon a druid owns (Wisdom to hit, a d10 by level 5), so a
+      // martial weapon in its place would be a downgrade.
+      mainHand: 'quarterstaff', offHand: 'shield', armor: 'scale-mail',
       inventory: [
         { itemId: 'sling', qty: 1 },
         { itemId: 'potion-healing', qty: 1 },

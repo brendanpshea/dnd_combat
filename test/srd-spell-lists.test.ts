@@ -66,11 +66,12 @@ const SRD: Record<string, string[]> = {
     'stinking-cloud', 'tiny-hut', 'tongues', 'vampiric-touch', 'water-breathing',
   ],
   druid: [
-    // Cantrips. The SRD table row for these did not survive the markdown
-    // conversion cleanly, so this is the subset confirmed by two independent
-    // reads rather than the whole row — which is why only these are granted.
-    'druidcraft', 'guidance', 'mending', 'poison-spray', 'produce-flame',
-    'resistance', 'shillelagh', 'thorn-whip',
+    // Cantrips. The markdown conversion this was transcribed from drops the
+    // druid's cantrip table row, so this line was assembled from the SRD itself
+    // rather than from that file — Starry Wisp is on the list, and reading its
+    // absence from the conversion as a real absence was a mistake once already.
+    'druidcraft', 'elementalism', 'guidance', 'mending', 'poison-spray', 'produce-flame',
+    'resistance', 'shillelagh', 'spare-the-dying', 'starry-wisp', 'thorn-whip', 'thunderclap',
     // 1st
     'animal-friendship', 'charm-person', 'create-or-destroy-water', 'cure-wounds', 'detect-magic',
     'detect-poison-and-disease', 'entangle', 'faerie-fire', 'fog-cloud', 'goodberry',
@@ -134,6 +135,16 @@ const SRD: Record<string, string[]> = {
   ],
 };
 
+/**
+ * Spells a class gets from a *class feature* rather than from its spell list,
+ * with the feature named. These are the only legitimate way for a class to hold
+ * a spell that is not on its SRD list, and each one has to be justified here
+ * rather than by widening the list above.
+ */
+const FEATURE_GRANTED: Record<string, Record<string, string>> = {
+  druid: { 'find-familiar': 'Wild Companion (level 2): spend a Wild Shape use to cast it' },
+};
+
 /** Every spell id a class hands out, from any level of its progression. */
 function granted(classId: string): string[] {
   const sc = CLASSES[classId]?.spellcasting;
@@ -147,6 +158,10 @@ describe('class spell lists match the SRD', () => {
   for (const classId of Object.keys(SRD)) {
     it(`${classId} grants nothing off its SRD list`, () => {
       const allowed = new Set(SRD[classId]);
+      for (const [id, why] of Object.entries(FEATURE_GRANTED[classId] ?? {})) {
+        expect(why, `${classId}'s exception for ${id} needs a reason`).toBeTruthy();
+        allowed.add(id);
+      }
       for (const id of granted(classId)) {
         expect(allowed.has(id), `${classId} grants ${id}, which is not on the SRD 5.2 ${classId} list`).toBe(true);
       }

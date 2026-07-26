@@ -14,7 +14,11 @@ import { FEATURES, WILD_SHAPE_FORMS } from '../src/data/features.js';
 import { SPELLS, wearsMetal } from '../src/data/spells.js';
 import { acOf } from '../src/data/armor.js';
 import { legalActions } from '../src/engine/actions.js';
-import { applyDamage, breakConcentration } from '../src/engine/rules/attack.js';
+import {
+  applyDamage, breakConcentration, collectAttackSources, isShillelaghed, shillelaghDamage,
+  resolveAttack,
+} from '../src/engine/rules/attack.js';
+import { WEAPONS } from '../src/data/weapons.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, level: number, position: Position, id: string): Combatant =>
@@ -32,12 +36,12 @@ function board(level: number): Combat {
 }
 
 describe('Druid: the class', () => {
-  it('is a Wisdom full caster in light armour', () => {
+  it('is a Wisdom full caster in Warden kit', () => {
     const d = buildCharacter({ classId: 'druid', team: 'team1', position: { x: 1, y: 1 }, level: 5 });
     expect(d.spellcastingAbility).toBe('wis');
     expect(d.spellSlots.map((s) => s.max)).toEqual([4, 3, 2]);
     expect(CLASSES['druid']!.savingThrows).toEqual(['int', 'wis']);
-    expect(CLASSES['druid']!.armorProfs).toEqual(['light', 'shield']);
+    expect(CLASSES['druid']!.armorProfs).toEqual(['light', 'medium', 'shield']);
   });
 
   it('has no Wild Shape until level 2', () => {
@@ -318,5 +322,158 @@ describe('Call Lightning', () => {
     });
     breakConcentration(c.state, 'dru');
     expect(c.state.combatants['dru']!.stormCloud).toBeUndefined();
+  });
+});
+
+describe('Druid: Wild Companion, Shillelagh, and the storm', () => {
+  it('gets a familiar at level 2, and it is a ritual so it costs no slot', () => {
+    expect(pc('druid', 1, { x: 1, y: 1 }, 'a').spellIds).not.toContain('find-familiar');
+    const d = pc('druid', 2, { x: 1, y: 1 }, 'a');
+    expect(d.spellIds, 'Wild Companion arrives with Wild Shape').toContain('find-familiar');
+    expect(SPELLS['find-familiar']!.ritual, 'a ritual, so it never eats a prepared slot').toBe(true);
+  });
+
+  it('the owl gives the same advantage a wizard familiar does', () => {
+    const c = board(5);
+    SPELLS['find-familiar']!.cast({ state: c.state, casterId: 'dru', slotLevel: 1, targetIds: [], positions: [] });
+    expect(c.state.combatants['dru']!.familiar?.kind).toBe('owl');
+    const { adv } = collectAttackSources(
+      c.state, c.state.combatants['dru']!, c.state.combatants['ogre']!,
+      WEAPONS['quarterstaff']!, false,
+    );
+    expect(adv).toContain('owl familiar');
+  });
+
+  it('Shillelagh swings the staff on Wisdom, at a bigger die', () => {
+    const c = board(5);
+    const d = c.state.combatants['dru']!;
+    expect(d.abilities.wis, 'the whole point is that Wisdom beats Strength here')
+      .toBeGreaterThan(d.abilities.str);
+    const plain = resolveAttack(c.state, 'dru', 'ogre', 'quarterstaff')
+      .find((e) => e.type === 'attackRolled');
+    SPELLS['shillelagh']!.cast({ state: c.state, casterId: 'dru', slotLevel: 0, targetIds: [], positions: [] });
+    const armed = resolveAttack(c.state, 'dru', 'ogre', 'quarterstaff')
+      .find((e) => e.type === 'attackRolled');
+    const mod = (e: typeof plain) => (e?.type === 'attackRolled' ? e.total - e.natural : NaN);
+    expect(mod(armed), 'Wisdom instead of Strength on the attack roll').toBeGreaterThan(mod(plain));
+    // d10 at level 5 rather than the staff's d6.
+    expect(shillelaghDamage(5)).toBe('1d10');
+    expect(shillelaghDamage(1)).toBe('1d8');
+  });
+
+  it('Shillelagh imbues the druid, not every quarterstaff on the board', () => {
+    const c = new Combat({
+      seed: 2, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 3, y: 3 }, 'dru'), foe('scout', { x: 6, y: 3 }, 'sc')],
+    });
+    SPELLS['shillelagh']!.cast({ state: c.state, casterId: 'dru', slotLevel: 0, targetIds: [], positions: [] });
+    // WEAPONS entries are shared data — the staff itself must be untouched.
+    expect(WEAPONS['quarterstaff']!.damage).toBe('1d6');
+    expect(isShillelaghed(c.state.combatants['sc']!, WEAPONS['quarterstaff']!)).toBe(false);
+    expect(isShillelaghed(c.state.combatants['dru']!, WEAPONS['quarterstaff']!)).toBe(true);
+    // …and only a club or staff, not whatever else is in hand.
+    expect(isShillelaghed(c.state.combatants['dru']!, WEAPONS['dagger']!)).toBe(false);
+  });
+
+  it('the storm keeps dropping a bolt every druid turn, not just the first', () => {
+    const c = new Combat({
+      seed: 3, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'),
+        ...[0, 1].map((i) => ({ ...buildMonster('ogre', 'team2', { x: 9, y: 3 + i }), id: `o${i}`, maxHp: 900, hp: 900 }))],
+    });
+    SPELLS['call-lightning']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 3, targetIds: [], positions: [{ x: 9, y: 4 }],
+    });
+    let bolts = 0;
+    for (let round = 0; round < 4; round++) {
+      do {
+        const ev = c.apply({ kind: 'endTurn' });
+        bolts += ev.filter((e) => e.type === 'lightningStruck').length;
+      } while (c.activeId !== 'dru' && !c.winner());
+    }
+    expect(bolts, 'four more druid turns should be four more bolts').toBeGreaterThanOrEqual(4);
+  });
+
+  it('the druid still has Flaming Sphere, and prepares it', () => {
+    expect(CLASSES['druid']!.spellcasting!.spellsByLevel[3]).toContain('flaming-sphere');
+    expect(pc('druid', 5, { x: 1, y: 1 }, 'a').spellIds).toContain('flaming-sphere');
+  });
+});
+
+describe('Druid: area spells and the Warden order', () => {
+  const block = (spellId: string) => {
+    const foes = [[8, 4], [9, 4], [8, 5], [9, 5]].map(([x, y], i) =>
+      ({ ...buildMonster('ogre', 'team2', { x: x!, y: y! }), id: `o${i}`, maxHp: 500, hp: 500 }));
+    const c = new Combat({
+      seed: 5, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 2 }, 'dru'), ...foes],
+    });
+    const before = foes.map((f) => c.state.combatants[f.id]!.hp);
+    SPELLS[spellId]!.cast({
+      state: c.state, casterId: 'dru', slotLevel: SPELLS[spellId]!.level,
+      targetIds: [], positions: [{ x: 8, y: 4 }],
+    });
+    return { c, foes, hurt: foes.filter((f, i) => c.state.combatants[f.id]!.hp < before[i]!).length };
+  };
+
+  it('Moonbeam burns everyone in the patch, not one of them', () => {
+    expect(block('moonbeam').hurt).toBe(4);
+  });
+
+  it('Call Lightning strikes everyone in the patch too', () => {
+    expect(block('call-lightning').hurt).toBe(4);
+  });
+
+  it('Moonbeam keeps burning whoever starts a turn in it', () => {
+    const { c, foes } = block('moonbeam');
+    const hp = foes.map((f) => c.state.combatants[f.id]!.hp);
+    // Round the order back to the druid: every ogre begins a turn in the beam.
+    do { c.apply({ kind: 'endTurn' }); } while (c.activeId !== 'dru' && !c.winner());
+    const burnedAgain = foes.filter((f, i) => c.state.combatants[f.id]!.hp < hp[i]!).length;
+    expect(burnedAgain, 'standing in it should cost them again').toBeGreaterThan(0);
+  });
+
+  it('the beam winks out when concentration drops', () => {
+    const { c } = block('moonbeam');
+    expect(c.state.combatants['dru']!.moonbeam).toBeDefined();
+    breakConcentration(c.state, 'dru');
+    expect(c.state.combatants['dru']!.moonbeam).toBeUndefined();
+  });
+
+  it('Shillelagh is cast once and lasts the fight', () => {
+    const c = board(5);
+    SPELLS['shillelagh']!.cast({ state: c.state, casterId: 'dru', slotLevel: 0, targetIds: [], positions: [] });
+    // Recasting is a no-op rather than a second condition.
+    expect(SPELLS['shillelagh']!.cast({ state: c.state, casterId: 'dru', slotLevel: 0, targetIds: [], positions: [] }))
+      .toEqual([]);
+    for (let i = 0; i < 20; i++) c.apply({ kind: 'endTurn' });
+    expect(c.state.combatants['dru']!.conditions.filter((k) => k.id === 'shillelagh'),
+      'no duration, no concentration — it holds until the staff leaves your hands').toHaveLength(1);
+  });
+
+  it('takes the Warden primal order: medium armour and martial weapons', () => {
+    expect(CLASSES['druid']!.armorProfs).toContain('medium');
+    expect(CLASSES['druid']!.weaponProfs.martial).toBe(true);
+    const d = pc('druid', 1, { x: 1, y: 1 }, 'a');
+    expect(acOf(d), 'scale mail and a shield, not leather').toBeGreaterThanOrEqual(16);
+  });
+
+  it('knows Starry Wisp, and it lights the target up on a hit', () => {
+    expect(pc('druid', 1, { x: 1, y: 1 }, 'a').spellIds).toContain('starry-wisp');
+    for (let seed = 1; seed <= 60; seed++) {
+      const c = new Combat({
+        seed, width: 14, height: 10,
+        combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), foe('ogre', { x: 7, y: 4 }, 'ogre')],
+      });
+      const events = SPELLS['starry-wisp']!.cast({
+        state: c.state, casterId: 'dru', slotLevel: 0, targetIds: ['ogre'], positions: [],
+      });
+      const atk = events.find((e) => e.type === 'attackRolled');
+      if (atk?.type !== 'attackRolled' || !atk.hit) continue;
+      expect(events.some((e) => e.type === 'damageDealt' && e.damageType === 'radiant')).toBe(true);
+      expect(c.state.combatants['ogre']!.conditions.some((k) => k.id === 'outlined')).toBe(true);
+      return;
+    }
+    throw new Error('starry wisp never hit across 60 seeds');
   });
 });

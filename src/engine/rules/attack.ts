@@ -218,7 +218,13 @@ export function resolveAttack(
   state.rng = d20.state;
   consumeFamiliarHelp(state, attacker);
 
-  const ability = ctx.abilityOverride ?? attackAbility(attacker, weapon);
+  // Shillelagh: a club or quarterstaff in a druid's hands swings on the
+  // spellcasting ability and hits with a bigger die. Read off the wielder, not
+  // the weapon — WEAPONS entries are shared data, so imbuing the weapon itself
+  // would arm every enemy holding a quarterstaff.
+  const shillelagh = isShillelaghed(attacker, weapon);
+  const ability = ctx.abilityOverride ??
+    (shillelagh ? attacker.spellcastingAbility ?? 'wis' : attackAbility(attacker, weapon));
   const mod = abilityMod(attacker.abilities[ability]);
   // Proficiency bonus only if trained with the weapon (2024: a wizard can swing
   // a greatsword, they just don't add proficiency). Natural/monster weapons and
@@ -312,7 +318,7 @@ export function resolveAttack(
     return events;
   }
 
-  const dmg = rollDice(state.rng, weapon.damage, crit);
+  const dmg = rollDice(state.rng, shillelagh ? shillelaghDamage(attacker.level) : weapon.damage, crit);
   state.rng = dmg.state;
   let rolls = dmg.rolls;
   // Which named bonuses actually fired — surfaced in the log and as toasts so
@@ -792,6 +798,21 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   return events;
 }
 
+/** Weapons Shillelagh can imbue, per the SRD: a club or a quarterstaff. */
+const SHILLELAGH_WEAPONS = new Set<Id>(['club', 'quarterstaff']);
+
+/** Is this attacker swinging a Shillelagh'd stick right now? */
+export function isShillelaghed(attacker: Combatant, weapon: WeaponData): boolean {
+  return SHILLELAGH_WEAPONS.has(weapon.id) &&
+    attacker.conditions.some((k) => k.id === 'shillelagh');
+}
+
+/** The die a Shillelagh'd weapon rolls: d8, growing to d10 at level 5 (and the
+ *  SRD's d12/2d6 tiers, which this game's level cap never reaches). */
+export function shillelaghDamage(level: number): string {
+  return level >= 17 ? '2d6' : level >= 11 ? '1d12' : level >= 5 ? '1d10' : '1d8';
+}
+
 /** A weapon counts as magical if it is enchanted (+N) or moon-touched. Both
  *  get through the SRD's "nonmagical attacks" clause; only the +N kind also
  *  carries a bonus to hit and damage. */
@@ -981,6 +1002,7 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   delete c.concentratingOn;
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   if (spellId === 'call-lightning') delete c.stormCloud;      // the storm blows out
+  if (spellId === 'moonbeam') delete c.moonbeam;              // the beam winks out
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
   // Flaming Sphere is a concentration-held summon: sweep it off the board.
   if (spellId === 'flaming-sphere' && c.summons) {

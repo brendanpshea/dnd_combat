@@ -338,7 +338,11 @@ export function spellTargetSets(
     // Offer when it would do something: a burst that touches an adjacent enemy,
     // or Spiritual Guardians' aura reaching an enemy within 15 ft.
     const reach = spell.id === 'spiritual-guardians' ? 15 : 5;
-    if (enemies.some((e) => distanceFeet(e.position, actor.position) <= reach)) out.push({ targets: [] });
+    // A self *buff* is cast before there is anyone to hit — see the `anyTime`
+    // note on the targeting type.
+    if (t.anyTime || enemies.some((e) => distanceFeet(e.position, actor.position) <= reach)) {
+      out.push({ targets: [] });
+    }
   } else if (t.kind === 'emptyCell') {
     for (let y = 0; y < state.grid.height; y++) {
       for (let x = 0; x < state.grid.width; x++) out.push({ targets: [{ position: { x, y } }] });

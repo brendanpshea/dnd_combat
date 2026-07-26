@@ -105,7 +105,8 @@ export type ConditionId =
   | 'bonded'       // Warding Bond: +1 AC and saves, resistance to all damage, the caster shares it
   | 'energyWarded' // Protection from Energy: resistance to one damage type
   | 'cursed'       // Bestow Curse: disadvantage on attack rolls and saving throws
-  | 'inspiring';   // Bardic Inspiration: +1d6 on the next attack roll or save, then spent
+  | 'inspiring'    // Bardic Inspiration: +1d6 on the next attack roll or save, then spent
+  | 'shillelagh';  // a club/quarterstaff swings on the caster's spell ability, at a bigger die
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -315,6 +316,15 @@ export interface Combatant {
    * the druid, not the ground.
    */
   stormCloud?: { dice: string; dc: number };
+  /**
+   * Moonbeam: a column of cold light standing on the board while the caster
+   * concentrates. Anything hostile that starts its turn inside it is burned.
+   *
+   * Anchored to a position rather than to the caster (unlike the storm cloud,
+   * which follows the druid overhead) because the beam stays where it was put
+   * until someone spends an action shifting it.
+   */
+  moonbeam?: { position: Position; dice: string; dc: number };
   wildShape?: {
     formId: Id;
     original: {
