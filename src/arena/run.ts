@@ -50,6 +50,20 @@ export function waveDifficulty(wave: number): number {
   return 0.55 + 0.09 * (wave - 1);
 }
 
+/**
+ * The dearest single monster a party of this level should ever meet.
+ *
+ * Roughly one CR band above the party, which is where a hit stops being a
+ * threat and starts being a coin flip on whether a character still exists.
+ * Uncapped from level 5, because by then the squishiest hero has the HP to
+ * survive a big one and the CR 6-10 shelf is the point of the late waves.
+ */
+const MEMBER_CAP = [450, 1100, 2300, 3900];
+
+export function memberCapFor(level: number): number {
+  return MEMBER_CAP[Math.max(1, level) - 1] ?? Infinity;
+}
+
 export function waveBudget(level: number, wave: number): number {
   return Math.round(evenBudgetFor(level) * waveDifficulty(wave));
 }
@@ -77,7 +91,7 @@ export function buildWave(runSeed: number, level: number, wave: number): ArenaWa
   // Mix the two so consecutive waves don't correlate.
   let rng: RngState = (runSeed * 2654435761 + wave * 40503) >>> 0;
   const budget = waveBudget(level, wave);
-  const e = generateEncounter({ budget }, rng); rng = e.state;
+  const e = generateEncounter({ budget, maxMemberXp: memberCapFor(level) }, rng); rng = e.state;
   const m = generateArenaMap({}, rng); rng = m.state;
   return { wave, encounter: e.value, map: m.value.map, budget, purse: wavePurse(level, wave) };
 }
