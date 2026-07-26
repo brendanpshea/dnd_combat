@@ -1803,19 +1803,38 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🔥',
     cast: (ctx) => armSmite(ctx, 'searing-smite'),
   },
-  'thunderous-smite': {
-    id: 'thunderous-smite', name: 'Thunderous Smite', level: 1, castingTime: 'bonus',
+  /**
+   * Shining Smite (2024): 2d6 radiant and the target lights up — attacks
+   * against it have advantage until the spell ends. Replaces Thunderous and
+   * Wrathful Smite, which are 2014 spells absent from the SRD 5.2 paladin list.
+   *
+   * The party-wide advantage is what makes it the interesting smite: the other
+   * two were riders the paladin enjoyed alone.
+   */
+  'shining-smite': {
+    id: 'shining-smite', name: 'Shining Smite', level: 2, castingTime: 'bonus',
     targeting: { kind: 'self' },
     concentration: false,
-    icon: '💥',
-    cast: (ctx) => armSmite(ctx, 'thunderous-smite'),
+    icon: '🌟',
+    cast: (ctx) => armSmite(ctx, 'shining-smite'),
   },
-  'wrathful-smite': {
-    id: 'wrathful-smite', name: 'Wrathful Smite', level: 1, castingTime: 'bonus',
+  /**
+   * Ensnaring Strike: grasping vines on the ranger's next hit — a Strength
+   * save or Restrained, with 1d6 piercing a round while it holds. The strike
+   * itself deals no extra damage, which is why the spec is `damageless`.
+   *
+   * The tick rides on the ranger's `holdDamage`, the same field the gelatinous
+   * cube digests with, so it starts and stops with the restraint. One
+   * difference from the SRD: it lands at the start of the *ranger's* turn
+   * rather than the victim's, because that is where the engine ticks a hold.
+   * Same damage per round, a few seconds earlier.
+   */
+  'ensnaring-strike': {
+    id: 'ensnaring-strike', name: 'Ensnaring Strike', level: 1, castingTime: 'bonus',
     targeting: { kind: 'self' },
     concentration: false,
-    icon: '😱',
-    cast: (ctx) => armSmite(ctx, 'wrathful-smite'),
+    icon: '🌿',
+    cast: (ctx) => armSmite(ctx, 'ensnaring-strike'),
   },
 
   'hunters-mark': {

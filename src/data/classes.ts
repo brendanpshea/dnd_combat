@@ -292,8 +292,13 @@ export const CLASSES: Record<Id, ClassData> = {
       ability: 'wis',
       slotsByLevel: [[2], [2], [3], [3], [4, 2]],
       spellsByLevel: {
-        1: ['hunters-mark', 'cure-wounds', 'animal-friendship'],
-        5: ['misty-step'], // 2nd-level slot arrives here
+        1: ['hunters-mark', 'cure-wounds', 'animal-friendship', 'ensnaring-strike'],
+        // Misty Step used to sit here. It is a wizard spell — it has never been
+        // on the ranger's list, in the SRD or anywhere else — so it is gone,
+        // and Ensnaring Strike (which is on the list, and is the ranger's own
+        // signature opener) takes over as the interesting thing to spend a
+        // slot on.
+        5: ['aid', 'lesser-restoration'], // 2nd-level slot arrives here
       },
     },
     featuresByLevel: {
@@ -334,11 +339,13 @@ export const CLASSES: Record<Id, ClassData> = {
       slotsByLevel: [[2], [2], [3], [3], [4, 2]],
       spellsByLevel: {
         1: ['bless', 'cure-wounds', 'command'],
-        // The smites arrive with Divine Smite itself. They are the paladin's
-        // real decision each turn: which rider is worth a slot here — burn,
-        // knockdown, or fear — against just swinging.
-        2: ['searing-smite', 'thunderous-smite', 'wrathful-smite'],
-        5: ['aid'], // 2nd-level slot arrives here
+        // The smite arrives with Divine Smite itself, alongside the wards that
+        // make a paladin the party's shield rather than a second fighter.
+        // Thunderous and Wrathful Smite used to be here; both are 2014 spells
+        // that the SRD 5.2 paladin list does not carry, so Shining Smite (which
+        // it does) is the second smite instead.
+        2: ['searing-smite', 'shield-of-faith', 'protection-from-evil-and-good'],
+        5: ['aid', 'shining-smite', 'lesser-restoration', 'warding-bond'], // 2nd-level slot arrives here
       },
     },
     featuresByLevel: {

@@ -46,11 +46,13 @@ describe('Ranger: character builder', () => {
     expect(r.featureIds).toContain('colossus-slayer');
   });
 
-  it('L5: Extra Attack, second-level slots, Misty Step known', () => {
+  it('L5: Extra Attack, second-level slots, and an SRD-legal spell list', () => {
     const r = buildCharacter({ classId: 'ranger', team: 'team1', position: { x: 0, y: 0 }, level: 5 });
     expect(r.attacksPerAction).toBe(2);
     expect(r.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
-    expect(r.spellIds).toContain('misty-step');
+    // Misty Step is a wizard spell and has never been on the ranger's list.
+    expect(r.spellIds).not.toContain('misty-step');
+    expect(r.spellIds).toEqual(expect.arrayContaining(['ensnaring-strike', 'aid', 'lesser-restoration']));
   });
 });
 
@@ -195,5 +197,47 @@ describe("Ranger: Colossus Slayer", () => {
     const events = resolveAttack(c.state, atk.id, 'f', 'longbow');
     const dmg = events.find((e) => e.type === 'damageDealt');
     expect((dmg as { tags?: string[] }).tags ?? []).not.toContain('Colossus Slayer');
+  });
+});
+
+describe('Ranger: Ensnaring Strike', () => {
+  it('deals no damage of its own — all of it is the vines', () => {
+    for (let seed = 1; seed < 120; seed++) {
+      const r = { ...place('ranger', 'team1', { x: 3, y: 3 }, {}), id: 'rng' };
+      const foe = target({ x: 3, y: 4 }, 'foe', 1);
+      const c = new Combat({ seed, mapId: 'open', combatants: [r, foe] });
+      until(c, 'rng');
+      c.apply({ kind: 'castSpell', spellId: 'ensnaring-strike', slotLevel: 1, targets: [] });
+      const events = c.apply({ kind: 'attack', weaponId: 'longbow', targetId: 'foe' });
+      const smite = events.find((e) => e.type === 'smited');
+      if (!smite) continue;
+      // Exactly one damage event: the weapon's. The strike adds none.
+      expect(events.filter((e) => e.type === 'damageDealt')).toHaveLength(1);
+      expect(smite.type === 'smited' && smite.amount).toBe(0);
+      return;
+    }
+    throw new Error('ensnaring strike never discharged across 120 seeds');
+  });
+
+  it('restrains on a failed save and keeps hurting while it holds', () => {
+    for (let seed = 1; seed < 200; seed++) {
+      const r = { ...place('ranger', 'team1', { x: 3, y: 3 }, {}), id: 'rng' };
+      const foe = target({ x: 3, y: 4 }, 'foe', 1);
+      const c = new Combat({ seed, mapId: 'open', combatants: [r, foe] });
+      until(c, 'rng');
+      c.apply({ kind: 'castSpell', spellId: 'ensnaring-strike', slotLevel: 1, targets: [] });
+      c.apply({ kind: 'attack', weaponId: 'longbow', targetId: 'foe' });
+      const held = c.state.combatants['foe']!.conditions.some(
+        (k) => k.id === 'restrained' && k.sourceId === 'rng',
+      );
+      if (!held) continue;   // made the save, or the attack missed
+      // The vines tick at the start of the ranger's turn, off holdDamage.
+      const before = c.state.combatants['foe']!.hp;
+      do { c.apply({ kind: 'endTurn' }); } while (c.activeId !== 'rng');
+      if (!c.state.combatants['foe']!.conditions.some((k) => k.id === 'restrained')) return; // tore free
+      expect(c.state.combatants['foe']!.hp, 'the vines should still be biting').toBeLessThan(before);
+      return;
+    }
+    throw new Error('ensnaring strike never restrained anything across 200 seeds');
   });
 });
