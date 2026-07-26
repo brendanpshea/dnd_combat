@@ -39,6 +39,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   outlined:       { icon: '🔆', label: 'Outlined — easier to hit, can’t hide', kind: 'debuff' },
   vexed:          { icon: '❗', label: 'Vexed', kind: 'debuff' },
   blessed:        { icon: '✨', label: 'Blessed', kind: 'buff' },
+  inspiring:      { icon: '🎵', label: 'Bardic Inspiration — +1d6 on the next attack or save', kind: 'buff' },
   sanctuary:      { icon: '⛪', label: 'Sanctuary — attackers must save to target it', kind: 'buff' },
   protected:      { icon: '✝️', label: 'Protected — undead and fiends attack it at disadvantage', kind: 'buff' },
   bonded:         { icon: '🔗', label: 'Warding Bond — +1 AC and saves; the cleric takes half its damage', kind: 'buff' },

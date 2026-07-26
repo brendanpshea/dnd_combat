@@ -8,7 +8,7 @@ import { isDown, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, spellDc } from '../data/spells.js';
+import { SPELLS, spellDc, cantripDice } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
@@ -113,6 +113,16 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'shocking-grasp': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d8'), t) + 1; // reaction denial
+    }
+    case 'vicious-mockery': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      // Priced off the *scaled* dice. The older cantrip cases here still use
+      // their level-1 dice, which quietly undersells every cantrip from level 5
+      // on; fixing those changes long-settled caster behaviour and belongs in
+      // its own change, but a new cantrip should at least start out honest.
+      const fail = saveFailProb(state, t, 'wis', dc);
+      const dmg = avgDice(cantripDice('1d6', actor.level));
+      return damageValue(fail * dmg, t) + fail * 1.5;  // + the disadvantage it leaves
     }
     case 'sacred-flame': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -366,6 +376,24 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const kiteBonus = t.equipped.mainHand && WEAPONS[t.equipped.mainHand]?.melee !== false ? 1 : 0.3;
       return damageValue(p * avgDice('1d8'), t) + p * kiteBonus;
     }
+    // Poison Spray had no case at all, so every caster holding it treated it as
+    // worth nothing — a wizard or druid would sooner swing a staff. It is a
+    // plain spell-attack cantrip, priced like Ray of Frost without the kiting.
+    case 'poison-spray': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const p = hitProb(spellAtkBonus, acOf(t), 'flat');
+      return damageValue(p * avgDice(cantripDice('1d12', actor.level)), t);
+    }
+    // Thorn Whip: modest damage, and a 10 ft drag. The pull is worth most on
+    // something that wants to stay at range — hauling an archer into the party's
+    // reach is the entire point of the spell.
+    case 'thorn-whip': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const p = hitProb(spellAtkBonus, acOf(t), 'flat');
+      const w = t.equipped.mainHand ? WEAPONS[t.equipped.mainHand] : undefined;
+      const dragBonus = w && !w.melee ? 2 : 0.5;
+      return damageValue(p * avgDice(cantripDice('1d6', actor.level)), t) + p * dragBonus;
+    }
     case 'acid-splash': {
       const anchor = (a.targets[0] as { position: Position }).position;
       let v = 0;
@@ -542,7 +570,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
 /** Does this combatant prefer to fight up close? */
 function isMeleeFighter(c: Combatant): boolean {
   if (c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric' || c.classId === 'paladin') return true;
-  if (c.classId === 'wizard' || c.classId === 'ranger') return false;
+  if (c.classId === 'wizard' || c.classId === 'ranger' || c.classId === 'bard') return false;
+  // A shaped druid is a melee creature; an unshaped one is a caster.
+  if (c.classId === 'druid') return c.wildShape !== undefined;
   // Monsters: charge if they carry any pure-melee weapon (no ranged profile).
   return attackableWeapons(c).some((w) => {
     const weapon = WEAPONS[w];
@@ -724,6 +754,35 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
       .sort((x, y) => x.hp - y.hp)[0];
     if (!target) return 0;
     return saveFailProb(state, target, 'dex', dc) * (damageValue(avgDice('3d6') * 2, target) + 3);
+  }
+  // Wild Shape: worth most when there is nothing left to cast. A druid with
+  // slots in hand is a better caster than it is a wolf, so the shape is priced
+  // as what you do when the spells run out — or when something is already on
+  // top of you and casting is the worse option anyway.
+  if (a.featureId === 'wild-shape') {
+    if (actor.wildShape) return 0;          // stepping back out is the player's call
+    const foes = Object.values(state.combatants).filter(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team,
+    );
+    if (foes.length === 0) return 0;
+    const slots = actor.spellSlots.reduce((sum, p) => sum + p.current, 0);
+    const cornered = nearestEnemyDist(state, actor.position, actor.team) <= 1;
+    if (slots > 0 && !cornered) return 0;
+    return actor.level + (cornered ? 2 : 0);
+  }
+  // Bardic Inspiration: a d6 for an ally, worth roughly what a d6 is worth on
+  // a roll that matters — more when there is someone in the fight to spend it.
+  // Priced modestly so it never beats an actual heal on a dying ally.
+  if (a.featureId === 'bardic-inspiration') {
+    const takers = Object.values(state.combatants).filter(
+      (c) => c.alive && !isDown(c) && c.team === actor.team && c.id !== actor.id &&
+        distanceFeet(actor.position, c.position) <= 60 &&
+        !c.conditions.some((k) => k.id === 'inspiring'),
+    );
+    if (takers.length === 0) return 0;
+    // Worth more while there is still a fight left to spend it in.
+    const foes = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
+    return foes.length > 0 ? 3 : 0;
   }
   // Horrifying Visage (banshee): frighten everyone within 60 ft, save-ends.
   // Same soft-lockdown pricing as Dreadful Glare, summed over the whole room.

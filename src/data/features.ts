@@ -6,6 +6,7 @@
 import type { GameState, Id, Ability, DamageType, Combatant } from '../engine/types.js';
 import { proficiencyBonus, cellAt } from '../engine/types.js';
 import type { SkillId } from './classes.js';
+import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing, downCombatant } from '../engine/rules/heal.js';
@@ -25,7 +26,7 @@ export interface FeatureData {
   id: Id;
   name: string;
   trigger: 'action' | 'bonus' | 'free' | 'passive';
-  uses?: { count: number | 'proficiency' | 'fiveTimesLevel'; per: 'encounter' };
+  uses?: { count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod'; per: 'encounter' };
   /**
    * A recharge ability (dragon breath): starts available, is spent on use, and
    * at the start of the owner's turn rolls a d6 — on a result at or above this
@@ -181,6 +182,40 @@ function breathApply(featureId: Id) {
     return events;
   };
 }
+
+/**
+ * The beasts a druid can wear, strongest first. Gated by druid level the way
+ * the SRD gates them by challenge rating: CR 1/4 from level 2. There is no CR
+ * 1/2 beast in this bestiary, so level 4 opens nothing new, and CR 1 forms
+ * (dire wolf, brown bear) are level 8 in the rules — past this game's cap.
+ *
+ * Ordered rather than chosen: a feature has no target picker, so Wild Shape
+ * takes the first form its level allows. Making the form a build decision is a
+ * real improvement and a separate change; the list being data is what makes
+ * that change small.
+ */
+/** Step back out of a beast form, restoring everything it overwrote. */
+function revertWildShape(me: Combatant): GameEvent[] {
+  const shape = me.wildShape;
+  if (!shape) return [];
+  const o = shape.original;
+  if (o.acOverride !== undefined) me.acOverride = o.acOverride; else delete me.acOverride;
+  me.speed = o.speed;
+  me.abilities = { ...o.abilities };
+  me.equipped = { ...o.equipped };
+  me.inventory = o.inventory.map((it) => ({ ...it }));
+  me.featureIds = [...o.featureIds];
+  me.attacksPerAction = o.attacksPerAction;
+  // The beast's temporary hit points go with the beast.
+  delete me.tempHp;
+  delete me.wildShape;
+  return [{ type: 'wildShapeEnded', combatantId: me.id, formId: shape.formId }];
+}
+
+export const WILD_SHAPE_FORMS: Array<{ monsterId: Id; minLevel: number }> = [
+  { monsterId: 'wolf', minLevel: 2 },          // CR 1/4: speed 40, Pack Tactics
+  { monsterId: 'giant-badger', minLevel: 2 },  // CR 1/4: AC 13, two attacks
+];
 
 export const FEATURES: Record<Id, FeatureData> = {
   'heroic-inspiration': {
@@ -592,6 +627,107 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
+
+  /**
+   * Wild Shape (2024): a bonus action to wear a beast's stat block, and a
+   * bonus action to step back out of it. Two uses a fight.
+   *
+   * The 2024 version keeps your hit points, Hit Point Dice and mental
+   * abilities, and hands you temporary hit points equal to your druid level.
+   * That is the whole reason this is tractable: there is one hit point pool,
+   * not two, so nothing has to reconcile them when the shape drops. What the
+   * beast replaces is AC, speed, Strength/Dexterity/Constitution, what you are
+   * holding, and the traits that come with the body.
+   *
+   * You keep your class features and lose the ability to cast (enforced in
+   * actions.ts). Reverting costs a use of nothing -- only assuming a shape
+   * spends one -- which is why this manages its own pool.
+   */
+  'wild-shape': {
+    id: 'wild-shape', name: 'Wild Shape', trigger: 'bonus',
+    uses: { count: 2, per: 'encounter' }, manualUses: true,
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      if (me.wildShape) return revertWildShape(me);
+
+      const pool = me.featureUses['wild-shape'];
+      if (!pool || pool.current <= 0) return [];
+      const choice = WILD_SHAPE_FORMS.find((f) => f.minLevel <= me.level);
+      const beast = choice ? MONSTERS[choice.monsterId] : undefined;
+      if (!beast) return [];
+      pool.current -= 1;
+
+      me.wildShape = {
+        formId: beast.id,
+        original: {
+          ...(me.acOverride !== undefined ? { acOverride: me.acOverride } : {}),
+          speed: me.speed,
+          abilities: { ...me.abilities },
+          equipped: { ...me.equipped },
+          inventory: me.inventory.map((it) => ({ ...it })),
+          featureIds: [...me.featureIds],
+          attacksPerAction: me.attacksPerAction,
+        },
+      };
+      me.acOverride = beast.ac;
+      me.speed = beast.speed;
+      me.abilities = {
+        ...me.abilities,
+        str: beast.abilities.str, dex: beast.abilities.dex, con: beast.abilities.con,
+      };
+      // The body comes with its weapons and whatever it can do with them, laid
+      // out exactly as buildMonster lays a monster out: first weapon in hand,
+      // the rest reachable with the free interaction.
+      me.equipped = { mainHand: beast.weaponIds[0]! };
+      me.inventory = beast.weaponIds.slice(1).map((w) => ({ itemId: w, qty: 1 }));
+      me.attacksPerAction = beast.attacksPerAction ?? 1;
+      me.featureIds = [...me.featureIds, ...(beast.featureIds ?? [])];
+      // Temporary hit points equal to druid level, and they do not stack.
+      me.tempHp = Math.max(me.tempHp ?? 0, me.level);
+
+      return [{ type: 'wildShaped', combatantId: actorId, formId: beast.id, tempHp: me.tempHp }];
+    },
+  },
+  /**
+   * Bardic Inspiration: a bonus action handing one ally a d6 to spend on their
+   * next attack roll or saving throw. The pool is the bard's Charisma modifier
+   * and it is shared with Cutting Words -- the bard's whole resource is "how
+   * many dice do I have left, and do I spend them helping or hindering".
+   *
+   * The SRD die is a d6 usable on any d20 test within the hour. Here it is
+   * attack rolls and saves, because those are the d20 tests a fight contains;
+   * an ability check on the battle grid does not exist.
+   */
+  'bardic-inspiration': {
+    id: 'bardic-inspiration', name: 'Bardic Inspiration', trigger: 'bonus',
+    uses: { count: 'charismaMod', per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      // The ally most likely to use it: whoever is in the fight and has not
+      // already been handed a die.
+      const target = Object.values(state.combatants)
+        .filter((c) => c.alive && c.hp > 0 && c.team === me.team && c.id !== actorId &&
+          distanceFeet(me.position, c.position) <= 60 &&
+          !c.conditions.some((k) => k.id === 'inspiring'))
+        .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
+      if (!target) return [];
+      target.conditions.push({ id: 'inspiring', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: target.id, condition: 'inspiring', sourceId: actorId }];
+    },
+  },
+  /**
+   * Cutting Words (College of Lore): a passive marker. The subtraction itself
+   * happens inside resolveAttack, because it is a reaction to someone else's
+   * roll and there is no turn on which the bard could declare it -- the same
+   * shape as the Shield spell's auto-cast.
+   */
+  'cutting-words': { id: 'cutting-words', name: 'Cutting Words', trigger: 'passive' },
+  /** Jack of All Trades: half proficiency on skills you lack. Read by
+   *  skillBonus; nothing on the battle grid consults it. */
+  'jack-of-all-trades': { id: 'jack-of-all-trades', name: 'Jack of All Trades', trigger: 'passive' },
+  /** Expertise: double proficiency on the bard's two class skills. Also
+   *  skillBonus only. */
+  expertise: { id: 'expertise', name: 'Expertise', trigger: 'passive' },
   // Horrifying Visage (Banshee): the banshee's ruined face, seen by every enemy
   // within 60 ft — a Wisdom save or be frightened (save ends).
   'horrifying-visage': {

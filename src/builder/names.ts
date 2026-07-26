@@ -25,6 +25,8 @@ export const HERO_NAMES: Record<Id, string> = {
   rogue: 'Cedric the Sneaky',
   ranger: 'Sylva Thornwood',
   paladin: 'Ser Roland',
+  bard: 'Lyra Songthread',
+  druid: 'Alder Mosswood',
 };
 
 export const RIVAL_NAMES: Record<Id, string> = {
@@ -34,6 +36,8 @@ export const RIVAL_NAMES: Record<Id, string> = {
   rogue: 'Nessa Quickfingers',
   ranger: 'Kael Grimshaw',
   paladin: 'Dame Vex',
+  bard: 'Corvin Blackquill',
+  druid: 'Nettle Ashbark',
 };
 
 /** A starting name for a class, distinct per side so a mirror match reads. */

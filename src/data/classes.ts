@@ -279,6 +279,103 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  /**
+   * Bard: a Charisma full caster whose real resource is not spell slots but a
+   * handful of d6s. Bardic Inspiration hands one to an ally; Cutting Words
+   * spends one to spoil an enemy's hit. Same pool, opposite directions, and
+   * choosing between them every round is the class.
+   *
+   * Light armour, simple weapons and d8 hit points, so it wants to stand behind
+   * someone — but Vicious Mockery is a 60 ft cantrip and Bardic Inspiration
+   * reaches 60 ft too, which is exactly where it should be standing anyway.
+   */
+  bard: {
+    id: 'bard', name: 'Bard', hitDie: 8,
+    savingThrows: ['dex', 'cha'],
+    armorProfs: ['light'],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['performance', 'persuasion'],
+    statPriority: ['cha', 'dex', 'con', 'wis', 'int', 'str'],
+    spellcasting: {
+      ability: 'cha',
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3],
+      // A bard prepares from the whole list like a cleric rather than keeping a
+      // spellbook, so only the prepared count is capped.
+      preparedByLevel: [4, 5, 6, 7, 9],
+      spellsByLevel: {
+        1: ['vicious-mockery', 'minor-illusion', 'true-strike', 'bane', 'command', 'cure-wounds',
+            'healing-word', 'sleep', 'thunderwave', 'color-spray', 'faerie-fire', 'animal-friendship'],
+        3: ['blindness', 'hold-person', 'invisibility', 'suggestion', 'aid', 'lesser-restoration'],
+        5: ['mass-healing-word', 'dispel-magic', 'fear', 'bestow-curse'], // 3rd-level slots
+      },
+    },
+    featuresByLevel: {
+      1: ['bardic-inspiration'],
+      2: ['expertise', 'jack-of-all-trades'],
+      3: ['cutting-words'], // College of Lore
+      // 4: Ability Score Increase (builder).
+      // 5: Font of Inspiration — regaining uses on a short rest, which this
+      //    engine already does for every per-encounter pool. Left off rather
+      //    than invented into something it isn't.
+    },
+    weaponMasteries: [],
+    equipment: {
+      // Simple weapons only in the 2024 rules — the rapier a bard traditionally
+      // carries is martial, and handing one over would mean a class whose
+      // default weapon it is not trained with.
+      mainHand: 'dagger', armor: 'leather',
+      inventory: [
+        { itemId: 'light-crossbow', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
+  /**
+   * Druid: a Wisdom full caster who can stop being a caster. Wild Shape trades
+   * the whole spell list for a beast's body and its attacks, which is a real
+   * decision rather than a buff — a shaped druid is a second front-liner with
+   * no way to heal anyone.
+   *
+   * The 2024 shape keeps your hit points, so the trade is genuinely "AC, speed
+   * and teeth versus everything I can cast", not a second health bar.
+   */
+  druid: {
+    id: 'druid', name: 'Druid', hitDie: 8,
+    savingThrows: ['int', 'wis'],
+    armorProfs: ['light', 'shield'],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['nature', 'animal-handling'],
+    statPriority: ['wis', 'con', 'dex', 'int', 'cha', 'str'],
+    spellcasting: {
+      ability: 'wis',
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3],
+      preparedByLevel: [4, 5, 6, 7, 9],
+      spellsByLevel: {
+        1: ['poison-spray', 'guidance', 'thorn-whip', 'cure-wounds', 'healing-word',
+            'faerie-fire', 'thunderwave', 'animal-friendship', 'protection-from-evil-and-good'],
+        3: ['flaming-sphere', 'hold-person', 'aid', 'lesser-restoration'],
+        5: ['dispel-magic', 'protection-from-energy'], // 3rd-level slots
+      },
+    },
+    featuresByLevel: {
+      1: [],   // Druidic and Primal Order are flavour and skills, not grid rules
+      2: ['wild-shape'],
+      // 3: Circle of the Land — its feature is extra *prepared spells* by land
+      //    type, which needs a build choice this class does not have yet.
+      // 5: Wild Resurgence — trades a spell slot for a Wild Shape use out of
+      //    combat; nothing on the grid to hang it on.
+    },
+    weaponMasteries: [],
+    equipment: {
+      mainHand: 'quarterstaff', offHand: 'shield', armor: 'leather',
+      inventory: [
+        { itemId: 'sling', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   ranger: {
     id: 'ranger', name: 'Ranger', hitDie: 10,
     savingThrows: ['str', 'dex'],

@@ -236,6 +236,10 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
         canAttackWith(state, actor, action.weaponId, action.targetId);
     case 'castSpell': {
       if (incap) return false;
+      // A beast has no hands and no voice for it: Wild Shape stops spellcasting
+      // outright, though it deliberately does not break concentration on
+      // anything already running.
+      if (actor.wildShape) return false;
       const spell = SPELLS[action.spellId];
       if (!spell || spell.outOfCombat) return false; // Guidance and the like never resolve in a fight
       const costsAction = spell.castingTime === 'action';

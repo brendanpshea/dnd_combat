@@ -242,6 +242,16 @@ export function resolveAttack(
     state.rng = d4.state;
     total -= d4.total;
   }
+  // Bardic Inspiration: one d6, on the first attack roll or save that wants it,
+  // and then it is gone. Unlike Bless it is not an aura the bard sustains — it
+  // is a single gift, which is why it is consumed here rather than merely read.
+  if (attacker.conditions.some((c) => c.id === 'inspiring')) {
+    const d6 = rollDice(state.rng, '1d6');
+    state.rng = d6.state;
+    total += d6.total;
+    attacker.conditions = attacker.conditions.filter((c) => c.id !== 'inspiring');
+    events.push({ type: 'conditionRemoved', combatantId: attackerId, condition: 'inspiring' });
+  }
 
   // Champion widens the crit range to 19-20.
   const critFloor = attacker.featureIds.includes('improved-critical') ? 19 : 20;
@@ -249,7 +259,7 @@ export function resolveAttack(
   // Adamantine armor: any crit against the wearer is downgraded to a normal hit.
   const targetNoCrit = target.equipped.armor !== undefined && (ARMOR[target.equipped.armor]?.noCrit ?? false);
   // Auto-crit on hitting a helpless (unconscious/paralyzed) target from melee.
-  const crit = !targetNoCrit && (natCrit || (isHelpless(target) && isMeleeAttack));
+  let crit = !targetNoCrit && (natCrit || (isHelpless(target) && isMeleeAttack));
   const targetAc = acOf(target);
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
@@ -259,6 +269,23 @@ export function resolveAttack(
   if (hit && d20.natural !== 20 && total < targetAc + 5 && tryAutoShield(state, targetId)) {
     hit = false;
     events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'shielded', sourceId: targetId });
+  }
+
+  // Cutting Words: a bard on the target's side spends a Bardic Inspiration die
+  // to talk the attacker out of a hit that was about to land. Auto-fired here
+  // rather than offered as an action, exactly like the Shield spell above:
+  // it is a reaction to someone else's roll, and there is no turn of the bard's
+  // on which it could be declared.
+  //
+  // Only tried on a hit that a d6 could plausibly undo, so the die is never
+  // burned turning a hit into a slightly smaller hit.
+  if (hit && d20.natural !== 20 && total - targetAc < 6) {
+    const cut = tryCuttingWords(state, target, total - targetAc);
+    if (cut) {
+      total -= cut.amount;
+      events.push(cut.event);
+      if (total < targetAc) { hit = false; crit = false; }
+    }
   }
 
   consumeRollMarkers(attacker, target);
@@ -905,6 +932,36 @@ export function applyDamage(
  * has a slot and its reaction, and isn't already shielded, it spends both and
  * gains +5 AC (and Magic Missile immunity) until the start of its next turn.
  */
+/**
+ * A College of Lore bard within 60 ft of the target spends one Bardic
+ * Inspiration die to cut an attacker's roll down. Returns the amount rolled,
+ * or undefined if nobody could (or would) pay for it.
+ *
+ * The bard will not spend a die on a roll it cannot actually save: `margin` is
+ * how far the attack cleared the AC, and a d6 that cannot reach it is a wasted
+ * resource rather than a flourish.
+ */
+export function tryCuttingWords(
+  state: GameState, target: Combatant, margin: number,
+): { amount: number; event: GameEvent } | undefined {
+  if (margin > 5) return undefined;
+  const bard = Object.values(state.combatants).find(
+    (c) => c.alive && !isDown(c) && c.team === target.team &&
+      c.featureIds.includes('cutting-words') && !c.turn.reactionUsed &&
+      (c.featureUses['bardic-inspiration']?.current ?? 0) > 0 &&
+      distanceFeet(c.position, target.position) <= 60,
+  );
+  if (!bard) return undefined;
+  bard.featureUses['bardic-inspiration']!.current -= 1;
+  bard.turn.reactionUsed = true;
+  const d6 = rollDice(state.rng, '1d6');
+  state.rng = d6.state;
+  return {
+    amount: d6.total,
+    event: { type: 'cuttingWords', bardId: bard.id, targetId: target.id, amount: d6.total },
+  };
+}
+
 export function tryAutoShield(state: GameState, targetId: Id): boolean {
   const t = state.combatants[targetId];
   if (!t || !t.alive || !t.spellIds.includes('shield')) return false;

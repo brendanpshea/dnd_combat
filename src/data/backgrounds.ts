@@ -120,6 +120,8 @@ const DEFAULT_BY_CLASS: Record<Id, Id> = {
   rogue: 'criminal',
   ranger: 'guide',
   paladin: 'noble',
+  bard: 'entertainer',
+  druid: 'hermit',
 };
 
 export function defaultBackgroundFor(classId: Id): Id {

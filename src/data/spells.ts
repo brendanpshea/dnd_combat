@@ -503,6 +503,72 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
+   * Thorn Whip: a melee spell attack at 30 ft that hauls the target 10 ft
+   * closer on a hit. The damage is small; the pull is the spell.
+   *
+   * It reuses pushCreature with the direction inverted, so a druid drags a
+   * ranged attacker off its perch and into the fighter's reach — the one thing
+   * on the cantrip list that changes where a fight is happening rather than how
+   * much it hurts.
+   */
+  'thorn-whip': {
+    id: 'thorn-whip', name: 'Thorn Whip', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🌿',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const me = state.combatants[casterId]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: true });
+      const events: GameEvent[] = [atk.event];
+      if (!atk.hit) return events;
+      const dmg = rollDice(state.rng, cantripDice('1d6', me.level), atk.crit);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'piercing', dmg.rolls));
+      const target = state.combatants[targetId]!;
+      if (!target.alive || isDown(target)) return events;
+      // Toward the caster: the same shove, pointed the other way.
+      const dir = {
+        x: Math.sign(me.position.x - target.position.x),
+        y: Math.sign(me.position.y - target.position.y),
+      };
+      if (dir.x !== 0 || dir.y !== 0) events.push(...pushCreature(state, targetId, dir, 2));
+      return events;
+    },
+  },
+
+  /**
+   * Vicious Mockery: the bard's attack cantrip. A Wisdom save or 1d6 psychic
+   * and disadvantage on the target's next attack roll.
+   *
+   * `sapped` is exactly the rider — the weapon mastery already means
+   * "disadvantage on your next attack roll" and clears itself when spent — so
+   * the insult lands on machinery that already exists rather than a fourth way
+   * of saying the same thing.
+   */
+  'vicious-mockery': {
+    id: 'vicious-mockery', name: 'Vicious Mockery', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🗯️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const target = state.combatants[targetId]!;
+      const { success, event } = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
+      const events: GameEvent[] = [event];
+      if (success) return events;
+      const dmg = rollDice(state.rng, cantripDice('1d6', state.combatants[casterId]!.level));
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'psychic', dmg.rolls));
+      if (target.alive && !target.conditions.some((c) => c.id === 'sapped')) {
+        target.conditions.push({ id: 'sapped', sourceId: casterId });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: casterId });
+      }
+      return events;
+    },
+  },
+
+  /**
    * Ray of Sickness — two-stage, like the real spell: a spell *attack roll*
    * (not a save) does the damage, and only on a hit does the target get a
    * chance to shrug off the `poisoned` rider. `poisoned` already exists as a

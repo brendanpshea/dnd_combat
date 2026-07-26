@@ -92,7 +92,8 @@ export type ConditionId =
   | 'protected'    // Protection from Evil and Good: disadvantage for the six listed types
   | 'bonded'       // Warding Bond: +1 AC and saves, resistance to all damage, the caster shares it
   | 'energyWarded' // Protection from Energy: resistance to one damage type
-  | 'cursed';      // Bestow Curse: disadvantage on attack rolls and saving throws
+  | 'cursed'       // Bestow Curse: disadvantage on attack rolls and saving throws
+  | 'inspiring';   // Bardic Inspiration: +1d6 on the next attack roll or save, then spent
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -284,6 +285,29 @@ export interface Combatant {
    * reasonably decide to ignore it. A clock attached to it cannot be ignored,
    * which is the whole reason a cube is frightening rather than annoying.
    */
+  /**
+   * Wild Shape: the druid is currently wearing a beast's stat block. Holds the
+   * form's monster id and everything the transformation overwrote, so reverting
+   * is a restore rather than a rebuild.
+   *
+   * 2024 rules, which are far kinder to implement than 2014: hit points, Hit
+   * Point Dice and the mental abilities are *kept*, so nothing has to reconcile
+   * two hit point pools when the shape drops. What the beast replaces is AC,
+   * speed, the physical abilities, what you are holding, and the traits that
+   * come with the body.
+   */
+  wildShape?: {
+    formId: Id;
+    original: {
+      acOverride?: number;
+      speed: number;
+      abilities: AbilityScores;
+      equipped: Equipped;
+      inventory: ItemStack[];
+      featureIds: Id[];
+      attacksPerAction: number;
+    };
+  };
   holdDamage?: { dice: string; type: DamageType };
   /**
    * AC lost to a rust monster's antennae — metal armour eaten away, one point
