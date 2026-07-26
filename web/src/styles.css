@@ -86,14 +86,47 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   max-width: 900px;
   margin: 0 auto;
 }
+/* The bar needed 570px of its own and a phone gives it 360-430, so it used to
+   run off the side of the screen: 185px of horizontal overflow on a 390px
+   viewport, with the wave label wrapping to three lines and the whole header
+   eating 152px of vertical space on the way. Wrapping is the fix on both axes —
+   the controls drop to a second row rather than pushing the page wider. */
 .topbar {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
 }
 .topbar .round { font-weight: 700; }
-.topbar .mapname { color: var(--muted); flex: 1; }
+/* min-width:0 because a flex item defaults to min-width:auto and so refuses to
+   shrink below its text — which is what let a long roster ("Wave 1 — Worg,
+   Bugbear Warrior, Satyr") push the row wider than the screen. Truncate on one
+   line instead; the full roster is on the brief screen and in the log. */
+.topbar .mapname {
+  color: var(--muted);
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* One child, so the whole cluster wraps together and never splits mid-row. */
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* Phones: tighten the controls so the cluster fits one row of its own. */
+@media (max-width: 560px) {
+  .topbar-tools button { padding: 8px 8px; }
+  /* The log has its own toggle down in the action bar area on narrow screens;
+     the icon alone carries it here. */
+  .topbar-tools .log-toggle { font-size: 0; }
+  .topbar-tools .log-toggle::before { content: '📜'; font-size: 15px; }
+}
 
 /* ---- board ---- */
 /* Width is bounded three ways: the screen edge, a viewport-height budget
