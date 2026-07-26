@@ -10,6 +10,10 @@ import { SPELLS } from '../src/data/spells.js';
 import { FEATURES } from '../src/data/features.js';
 import { ITEMS } from '../src/data/items.js';
 import { makeCombatant } from './helpers.js';
+import { buildWave } from '../src/arena/run.js';
+import { newCampaign, buildCampaignParty, partyLevelOf } from '../src/campaign/campaign.js';
+import { buildMonster } from '../src/data/monsters.js';
+import { parseMap } from '../src/data/maps.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const FAST = { samples: 2, beam: 3, depth: 2, moveCandidates: 4 };
@@ -138,4 +142,94 @@ describe('simulation AI behavior', () => {
     expect(result.stalls).toBe(0);
     expect(result.aWinRate).toBeGreaterThanOrEqual(0.2);
   }, 300000);
+});
+
+/**
+ * The engagement gradient has to survive being outnumbered.
+ *
+ * V = mine - theirs, and the engagement term was a per-unit sum on both sides:
+ * a mover closing one cell gained 0.9 for itself and handed 0.3 back to *every*
+ * enemy whose nearest foe it now was. Against a party of four that is 1.2
+ * against 0.9, so every step toward the enemy scored worse than standing still
+ * and an outnumbered melee unit correctly refused to approach — the gradient
+ * pointed backwards, all the way home.
+ *
+ * AI-vs-AI play hid this completely: the heroes walked into the monsters, so
+ * contact happened regardless. It only shows against a *passive* party, which
+ * is what a human hanging back at the top of the board looks like.
+ */
+describe('engagement against a passive party', () => {
+  function stalledOptions(monsters: number) {
+    const heroes = buildParty('team1', 0, 3);
+    const foes = Array.from({ length: monsters }, (_, i) =>
+      place('fighter', 'team2', { x: i + 1, y: 11 }, { id: `m${i}` }));
+    return new Combat({ seed: 9, width: 8, height: 12, combatants: [...heroes, ...foes] });
+  }
+
+  it('closing scores better than standing still even when badly outnumbered', () => {
+    const c = stalledOptions(3);
+    const mover = c.state.combatants['m0']!;
+    const stay = evaluate(c.state, 'team2');
+    const closer = {
+      ...c.state,
+      combatants: { ...c.state.combatants, m0: { ...mover, position: { x: 1, y: 8 } } },
+    };
+    expect(evaluate(closer, 'team2')).toBeGreaterThan(stay);
+  });
+
+  it('the gradient does not invert as the party grows', () => {
+    // One monster against four heroes was the case that broke: 4 x 0.3 > 0.9.
+    for (const monsters of [1, 2, 4]) {
+      const c = stalledOptions(monsters);
+      const mover = c.state.combatants['m0']!;
+      const stay = evaluate(c.state, 'team2');
+      const closer = {
+        ...c.state,
+        combatants: { ...c.state.combatants, m0: { ...mover, position: { x: 1, y: 6 } } },
+      };
+      expect(evaluate(closer, 'team2'), `${monsters} monsters vs 4 heroes`).toBeGreaterThan(stay);
+    }
+  });
+
+  /**
+   * The real arena wave that surfaced this, rebuilt exactly as the web app
+   * builds it. Seed 1 wave 1 is four melee constructs on the far rank of a
+   * twelve-row map: with the summed term they shuffled sideways and dodged for
+   * twenty rounds while the party stood at the other end, untouched.
+   *
+   * A synthetic open-grid setup does NOT reproduce it — the stall needs the
+   * mover to be the uniquely-closest foe, which is what a full back rank of
+   * equidistant monsters produces. Built from the shipping code path so it
+   * stays a real fight rather than a hand-tuned one.
+   */
+  it('monsters close on a passive party in a real arena wave', () => {
+    const seed = 1;
+    const campaign = newCampaign(seed);
+    const wave = buildWave(seed, partyLevelOf(campaign), 1);
+    const grid = parseMap(wave.map);
+    const files = [3, 1, 5, 2, 6, 0, 7, 4];
+    const foes = wave.encounter.members.map((mid, i) =>
+      buildMonster(mid, 'team2', { x: files[i % files.length]!, y: grid.height - 1 }, String(i + 1)));
+    const c = new Combat({
+      seed: (seed ^ 7919) >>> 0,
+      map: wave.map,
+      combatants: [...buildCampaignParty(campaign), ...foes],
+    });
+
+    let contact = false;
+    let round = 0;
+    for (let i = 0; i < 2000 && !c.isOver() && !contact && round <= 12; i++) {
+      const id = c.activeId;
+      const me = c.state.combatants[id]!;
+      // The heroes do nothing at all — the human who hangs back and waits.
+      const action = me.team === 'team1'
+        ? ({ kind: 'endTurn' } as const)
+        : chooseActionSim(c.state, id, SIM_PRESETS.easy);
+      for (const e of c.apply(action)) {
+        if (e.type === 'roundStarted') round = e.round;
+        if (e.type === 'attackRolled' && c.state.combatants[e.attackerId]?.team === 'team2') contact = true;
+      }
+    }
+    expect(contact, 'monsters never reached a party that stood still').toBe(true);
+  });
 });
