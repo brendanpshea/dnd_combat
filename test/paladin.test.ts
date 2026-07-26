@@ -252,7 +252,13 @@ describe('Paladin: smite spells', () => {
 
     const p = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 1, y: 1 }, level: 2 });
     expect(p.spellIds).toEqual(expect.arrayContaining(
-      ['divine-smite', 'searing-smite', 'thunderous-smite', 'wrathful-smite']));
+      ['divine-smite', 'searing-smite']));
+    // Shining Smite is a 2nd-level spell, so it arrives with 2nd-level slots.
+    const p5 = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 1, y: 1 }, level: 5 });
+    expect(p5.spellIds).toContain('shining-smite');
+    // The 2014 smites are gone: neither is on the SRD 5.2 paladin list.
+    expect(p5.spellIds).not.toContain('thunderous-smite');
+    expect(p5.spellIds).not.toContain('wrathful-smite');
   });
 
   it('arming spends the slot and the bonus action; the next melee hit discharges it', () => {
@@ -291,10 +297,10 @@ describe('Paladin: smite spells', () => {
     const foe = target({ x: 4, y: 3 }, 'foe', 1); // durable, so the hit can't end it early
     const c = new Combat({ seed: 6, mapId: 'open', combatants: [pal, foe] });
     until(c, 'pal');
-    c.apply({ kind: 'castSpell', spellId: 'wrathful-smite', slotLevel: 1, targets: [] });
+    c.apply({ kind: 'castSpell', spellId: 'searing-smite', slotLevel: 1, targets: [] });
     const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'foe' });
     expect(events.filter((e) => e.type === 'smited')).toHaveLength(1);
-    expect((events.find((e) => e.type === 'smited') as { spellId: string }).spellId).toBe('wrathful-smite');
+    expect((events.find((e) => e.type === 'smited') as { spellId: string }).spellId).toBe('searing-smite');
   });
 
   // These smites last a minute in the rules, discharging on the next hit that
@@ -320,21 +326,21 @@ describe('Paladin: smite spells', () => {
     expect(smiteDice('searing-smite', 2)).toBe('2d6');
   });
 
-  it('Thunderous Smite knocks the target back and prone on a failed save', () => {
+  it('Shining Smite lights the target up: radiant damage and advantage for everyone', () => {
     for (let seed = 1; seed < 120; seed++) {
-      const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 3 }), id: 'pal' };
+      const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 3, y: 3 }, level: 5 }), id: 'pal' };
       const foe = target({ x: 3, y: 4 }, 'foe', 1);
       const c = new Combat({ seed, mapId: 'open', combatants: [pal, foe] });
       until(c, 'pal');
-      c.apply({ kind: 'castSpell', spellId: 'thunderous-smite', slotLevel: 1, targets: [] });
+      c.apply({ kind: 'castSpell', spellId: 'shining-smite', slotLevel: 2, targets: [] });
       const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'foe' });
       if (!events.some((e) => e.type === 'smited')) continue;
       const f = c.state.combatants['foe']!;
-      if (!f.conditions.some((k) => k.id === 'prone')) continue; // made the save
-      expect(f.position.y).toBeGreaterThan(4);  // shoved straight back
+      expect(f.conditions.some((k) => k.id === 'outlined'), 'the target should be glowing').toBe(true);
+      expect(events.some((e) => e.type === 'damageDealt' && e.damageType === 'radiant')).toBe(true);
       return;
     }
-    throw new Error('thunderous smite never landed its rider across 120 seeds');
+    throw new Error('shining smite never landed across 120 seeds');
   });
 
   it('Searing Smite burns on: damage at the end of the victim’s turn until it saves', () => {

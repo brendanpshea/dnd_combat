@@ -137,8 +137,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     }
     case 'divine-smite':
     case 'searing-smite':
-    case 'thunderous-smite':
-    case 'wrathful-smite': {
+    case 'shining-smite':
+    case 'ensnaring-strike': {
       // Only worth arming if there is something to hit this turn — the slot is
       // spent at cast time, so loading up with no enemy in reach throws it away.
       const foe = Object.values(state.combatants)
@@ -153,8 +153,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // long enough to suffer them; on something nearly dead, raw damage wins.
       const durable = foe.hp > avgDice('2d8') * 1.5;
       if (durable && a.spellId === 'searing-smite') v += 3;
-      if (durable && a.spellId === 'thunderous-smite') v += 4;   // prone + push
-      if (durable && a.spellId === 'wrathful-smite') v += 3;
+      if (durable && a.spellId === 'shining-smite') v += 4;      // advantage for the whole party
+      if (durable && a.spellId === 'ensnaring-strike') v += 4;   // restrained, and it ticks
       return v - slotCost;
     }
     case 'sleep': {

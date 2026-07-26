@@ -511,7 +511,13 @@ export function resolveAttack(
   // Smites, in priority order: an armed one always discharges (the slot is
   // already spent, so holding it back would just lose it), otherwise the
   // Divine Smite *feature* may fire on its own.
-  if (target.alive && isMeleeAttack) {
+  // Divine Smite and the paladin smites are melee-only; Ensnaring Strike is
+  // "the next time you hit with a weapon attack", which for a ranger usually
+  // means the bow. The spec says which, so the rule doesn't have to know the
+  // spell by name.
+  const armedSpec = attacker.armedSmite ? SMITE_SPECS[attacker.armedSmite.spellId] : undefined;
+  const smiteReaches = isMeleeAttack || (armedSpec?.anyWeapon ?? false);
+  if (target.alive && smiteReaches) {
     if (attacker.armedSmite) {
       events.push(...dischargeSmite(state, attackerId, targetId, crit));
     } else if (
@@ -654,6 +660,12 @@ export const SMITE_SPECS: Record<string, {
   /** Extra effect on the target after the damage lands. */
   rider?: (state: GameState, attackerId: Id, targetId: Id, dc: number) => GameEvent[];
   riderText?: string;
+  /** The strike itself adds no damage — all of its effect is in the rider
+   *  (Ensnaring Strike). */
+  damageless?: boolean;
+  /** Discharges on any weapon hit, not only a melee one (Ensnaring Strike).
+   *  The paladin's smites are melee-only and leave this unset. */
+  anyWeapon?: boolean;
 }> = {
   'divine-smite': {
     name: 'Divine Smite', dice: '2d8', perLevel: '1d8', damageType: 'radiant',
@@ -668,43 +680,41 @@ export const SMITE_SPECS: Record<string, {
       return [{ type: 'conditionApplied', combatantId: targetId, condition: 'burning', sourceId: attackerId }];
     },
   },
-  'thunderous-smite': {
-    name: 'Thunderous Smite', dice: '2d6', perLevel: '1d6', damageType: 'thunder',
-    riderText: 'and the thunder throws them back',
-    rider(state, attackerId, targetId, dc) {
-      const attacker = state.combatants[attackerId]!;
+  /**
+   * Shining Smite (SRD 5.2, 2nd level): radiant damage, and the target is
+   * outlined in light — attacks against it have advantage and it cannot hide.
+   * `outlined` already means exactly that, so the rider is one push.
+   */
+  'shining-smite': {
+    name: 'Shining Smite', dice: '2d6', perLevel: '1d6', damageType: 'radiant',
+    riderText: 'and leaves them glowing',
+    rider(state, attackerId, targetId) {
       const t = state.combatants[targetId]!;
-      if (!t.alive) return [];
+      if (!t.alive || t.conditions.some((k) => k.id === 'outlined')) return [];
+      t.conditions.push({ id: 'outlined', sourceId: attackerId });
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'outlined', sourceId: attackerId }];
+    },
+  },
+  /**
+   * Ensnaring Strike (SRD 5.2, ranger 1st level): no damage of its own — a
+   * Strength save or Restrained, and 1d6 a round while the vines hold. The
+   * ongoing damage is the ranger's `holdDamage`, which ticks for anyone they
+   * have restrained and stops the moment the restraint does.
+   */
+  'ensnaring-strike': {
+    name: 'Ensnaring Strike', dice: '0d6', perLevel: '1d6', damageType: 'piercing',
+    damageless: true, anyWeapon: true,
+    riderText: 'and vines drag them down',
+    rider(state, attackerId, targetId, dc) {
+      const t = state.combatants[targetId]!;
+      if (!t.alive || t.conditions.some((k) => k.id === 'restrained')) return [];
       const events: GameEvent[] = [];
       const save = savingThrow(state, targetId, 'str', dc);
       events.push(save.event);
       if (save.success) return events;
-      // 10 ft straight back, then flat on their face — which is what makes this
-      // one tactical: it breaks up a melee line and hands the party advantage.
-      const dir = {
-        x: Math.sign(t.position.x - attacker.position.x),
-        y: Math.sign(t.position.y - attacker.position.y),
-      };
-      if (dir.x !== 0 || dir.y !== 0) events.push(...pushCreature(state, targetId, dir, 2));
-      if (t.alive && !t.conditions.some((k) => k.id === 'prone')) {
-        t.conditions.push({ id: 'prone', sourceId: attackerId });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: attackerId });
-      }
-      return events;
-    },
-  },
-  'wrathful-smite': {
-    name: 'Wrathful Smite', dice: '1d6', perLevel: '1d6', damageType: 'psychic',
-    riderText: 'and fills them with dread',
-    rider(state, attackerId, targetId, dc) {
-      const t = state.combatants[targetId]!;
-      if (!t.alive || t.conditions.some((k) => k.id === 'frightened')) return [];
-      const events: GameEvent[] = [];
-      const save = savingThrow(state, targetId, 'wis', dc);
-      events.push(save.event);
-      if (save.success) return events;
-      t.conditions.push({ id: 'frightened', sourceId: attackerId, repeatSave: { ability: 'wis', dc } });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'frightened', sourceId: attackerId });
+      t.conditions.push({ id: 'restrained', sourceId: attackerId, repeatSave: { ability: 'str', dc } });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'restrained', sourceId: attackerId });
+      state.combatants[attackerId]!.holdDamage = { dice: '1d6', type: 'piercing' };
       return events;
     },
   },
@@ -733,7 +743,9 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   const spec = SMITE_SPECS[armed.spellId];
   if (!spec) return [];
 
-  const roll = rollDice(state.rng, smiteDice(armed.spellId, armed.slotLevel), crit);
+  const roll = spec.damageless
+    ? { total: 0, rolls: [] as number[], state: state.rng }
+    : rollDice(state.rng, smiteDice(armed.spellId, armed.slotLevel), crit);
   state.rng = roll.state;
   // Shout first: "X is no longer smiting" ahead of the smite itself reads like
   // the spell fizzled.
@@ -742,8 +754,10 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
     attackerId, targetId, spellId: armed.spellId,
     slotLevel: armed.slotLevel, amount: roll.total, crit,
   }, { type: 'conditionRemoved', combatantId: attackerId, condition: 'smiting' }];
-  events.push(...applyDamage(state, targetId, attackerId, roll.total, spec.damageType, roll.rolls,
-    { crit, tags: [spec.name] }));
+  if (!spec.damageless) {
+    events.push(...applyDamage(state, targetId, attackerId, roll.total, spec.damageType, roll.rolls,
+      { crit, tags: [spec.name] }));
+  }
   if (spec.rider) {
     events.push(...spec.rider(state, attackerId, targetId, 8 + proficiencyBonus(attacker.level) +
       abilityMod(attacker.abilities[attacker.spellcastingAbility ?? 'cha'])));

@@ -333,11 +333,14 @@ describe('the Spells tray shows every spell', () => {
     const g = groupActions(c.state, 'pal', c.legalActions());
     const ids = g.bar.filter((b) => b.group === 'spell').map((b) => b.id);
 
-    for (const id of ['divine-smite', 'searing-smite', 'thunderous-smite', 'wrathful-smite']) {
+    for (const id of ['divine-smite', 'searing-smite']) {
       expect(ids, `${id} missing from the tray`).toContain(`spell:${id}`);
       // A level-5 paladin has 2nd-level slots, so each smite also offers an upcast.
       expect(ids, `${id} upcast missing`).toContain(`spell:${id}@2`);
     }
+    // Shining Smite is 2nd level to begin with, so it has no 1st-level entry to
+    // upcast from — it appears once.
+    expect(ids, 'shining smite missing from the tray').toContain('spell:shining-smite');
     const upcast = g.bar.find((b) => b.id === 'spell:divine-smite@2')!;
     expect(upcast.label).toBe('Divine Smite (L2)');
     expect(upcast.note).toBe('L2 · self');
