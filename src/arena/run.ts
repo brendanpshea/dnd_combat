@@ -49,11 +49,27 @@ export function evenBudgetFor(level: number): number {
  * How hard a wave should be, as a share of the even-fight budget.
  *
  * Wave 1 opens well under an even fight so a run doesn't die on the doorstep,
- * and the ramp crosses "even" around wave 6 and keeps climbing — so a run has
- * a natural end, found by the player rather than imposed by a wave cap.
+ * and the ramp keeps climbing — so a run has a natural end, found by the player
+ * rather than imposed by a wave cap.
+ *
+ * The slope was 0.09, crossing "even" at wave 6, and that made the level cap
+ * unreachable: the XP curve needs about fourteen cleared waves to reach level
+ * 5, and at 0.09 the median run died at wave 7 with one run in twenty getting
+ * there at all. The two curves were racing and the ramp won.
+ *
+ * At 0.03 it crosses even around wave 16 instead, and measured over twenty
+ * playthroughs the median run reaches wave 14 and a quarter reach wave 18 —
+ * which is where a party would cross the level 6 threshold (14,000 XP) once
+ * that level exists. The nice property of this slope is that the cap and the
+ * even point arrive together: you finish levelling right as the fights stop
+ * being winnable on average, so the last stretch of a run is the hard part
+ * rather than the middle being a wall.
+ *
+ * Re-measure with `npx tsx scripts/playtest.ts` after changing the XP curve or
+ * adding a level — the two are coupled, and only the playtest sees it.
  */
 export function waveDifficulty(wave: number): number {
-  return 0.55 + 0.09 * (wave - 1);
+  return 0.55 + 0.03 * (wave - 1);
 }
 
 /**

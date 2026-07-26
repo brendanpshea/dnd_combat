@@ -234,7 +234,9 @@ describe('arena run', () => {
     expect(waveBudget(3, 1)).toBeLessThan(waveBudget(3, 5));
     expect(waveBudget(3, 5)).toBeLessThan(waveBudget(3, 10));
     // …and crosses an even fight partway in, so a run has a natural ceiling.
-    expect(waveBudget(3, 6)).toBeGreaterThan(evenBudgetFor(3) * 0.95);
+    // Which wave it crosses on is a tuning decision (it moved from 6 to 16 to
+    // make the level cap reachable); that it crosses at all is the invariant.
+    expect(waveBudget(3, 20)).toBeGreaterThan(evenBudgetFor(3));
   });
 
   it('a retry regenerates the same fight, not a fresh roll', () => {
