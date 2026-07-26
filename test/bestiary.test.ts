@@ -941,6 +941,53 @@ describe('signature abilities', () => {
     expect(c.state.combatants[away.id]!.hp, 'the far magmin is out of range').toBe(before.get(away.id));
   });
 
+  // A cube that only restrains is a positioning problem the party can choose to
+  // ignore. The tick is what makes it a clock.
+  it('engulf holds an adjacent hero and digests them every cube turn', () => {
+    const cube = buildMonster('gelatinous-cube', 'team2', { x: 4, y: 3 }, 'cube');
+    const pc = makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, abilities: { str: 10, dex: 1, con: 10, int: 10, wis: 10, cha: 10 }, hp: 300, maxHp: 300 });
+    const c = new Combat({ seed: 8, mapId: 'open', combatants: [pc, cube] });
+    // A dex-1 hero fails this most of the time, but "most" is not "always" —
+    // try until one lands rather than fishing for a seed.
+    const held = c.state.combatants['pc']!;
+    for (let i = 0; i < 10 && !held.conditions.some((k) => k.id === 'restrained'); i++) {
+      FEATURES['engulf']!.apply!({ state: c.state, actorId: cube.id });
+    }
+    expect(held.conditions.some((k) => k.id === 'restrained' && k.sourceId === cube.id),
+      'a dex-1 hero should have been swallowed inside ten tries').toBe(true);
+    expect(held.hp, 'engulfing deals acid straight away').toBeLessThan(300);
+  });
+
+  // The tick is read off the condition's source, so it starts and stops with
+  // the hold itself — no separate list of victims to keep in step.
+  it('the cube digests its own victims at the start of its turn, and nobody else\'s', () => {
+    const cube = buildMonster('gelatinous-cube', 'team2', { x: 4, y: 3 }, 'cube');
+    const mine = makeCombatant({ id: 'mine', team: 'team1', position: { x: 3, y: 3 }, hp: 300, maxHp: 300 });
+    const theirs = makeCombatant({ id: 'theirs', team: 'team1', position: { x: 5, y: 3 }, hp: 300, maxHp: 300 });
+    const c = new Combat({ seed: 11, mapId: 'open', combatants: [mine, theirs, cube] });
+    // No repeatSave: this test is about who takes the tick, not about escaping.
+    c.state.combatants['mine']!.conditions.push({ id: 'restrained', sourceId: cube.id });
+    c.state.combatants['theirs']!.conditions.push({ id: 'restrained', sourceId: 'theirs' });
+    // Round the order until the cube takes a fresh turn.
+    do { c.apply({ kind: 'endTurn' }); } while (c.activeId !== cube.id);
+    expect(c.state.combatants['mine']!.hp, 'the cube\'s victim should be dissolving').toBeLessThan(300);
+    expect(c.state.combatants['theirs']!.hp, 'held by someone else — not the cube\'s meal').toBe(300);
+  });
+
+  it('engulf takes one victim at a time and skips the already-held', () => {
+    const cube = buildMonster('gelatinous-cube', 'team2', { x: 4, y: 3 }, 'cube');
+    const a = makeCombatant({ id: 'a', team: 'team1', position: { x: 3, y: 3 }, abilities: { str: 10, dex: 1, con: 10, int: 10, wis: 10, cha: 10 }, hp: 300, maxHp: 300 });
+    const b = makeCombatant({ id: 'b', team: 'team1', position: { x: 5, y: 3 }, abilities: { str: 10, dex: 1, con: 10, int: 10, wis: 10, cha: 10 }, hp: 300, maxHp: 300 });
+    const c = new Combat({ seed: 12, mapId: 'open', combatants: [a, b, cube] });
+    FEATURES['engulf']!.apply!({ state: c.state, actorId: cube.id });
+    const restrained = () => ['a', 'b'].filter((id) => c.state.combatants[id]!.conditions.some((k) => k.id === 'restrained'));
+    expect(restrained().length, 'a cube swallows one creature, not the room').toBe(1);
+    const first = restrained()[0]!;
+    FEATURES['engulf']!.apply!({ state: c.state, actorId: cube.id });
+    expect(restrained().length, 'the second use should take the other one').toBe(2);
+    expect(restrained()).toContain(first);
+  });
+
   // Life Drain is the only effect in the game a cleric cannot undo. With no
   // death saves, a falling ceiling is the wraith's whole reason to be feared.
   it('wraith life drain cuts the hit point maximum, and healing cannot buy it back', () => {

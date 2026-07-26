@@ -635,6 +635,20 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     if (!target) return 0;
     return saveFailProb(state, target, 'wis', dc) * (5 + target.hp / 4);
   }
+  // Engulf (gelatinous cube): swallow one adjacent enemy — 3d6 acid now and
+  // again every turn it holds them. Priced as the immediate damage plus a
+  // turn's worth of digestion on top, which is the honest floor: it holds for
+  // at least one tick unless the very first repeat save gets them out.
+  if (a.featureId === 'engulf') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.str);
+    const target = Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        distanceFeet(actor.position, c.position) <= 5 &&
+        !c.conditions.some((k) => k.id === 'restrained'))
+      .sort((x, y) => x.hp - y.hp)[0];
+    if (!target) return 0;
+    return saveFailProb(state, target, 'dex', dc) * (damageValue(avgDice('3d6') * 2, target) + 3);
+  }
   // Horrifying Visage (banshee): frighten everyone within 60 ft, save-ends.
   // Same soft-lockdown pricing as Dreadful Glare, summed over the whole room.
   if (a.featureId === 'horrifying-visage') {
