@@ -33,7 +33,10 @@ export function savingThrow(
     c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
     (opts.magical === true && c.featureIds.includes('magic-resistance'));
   // 2024: Restrained imposes disadvantage on Dexterity saving throws.
-  const hasDisadvantage = ability === 'dex' && c.conditions.some((k) => k.id === 'restrained');
+  // Bestow Curse: disadvantage on every saving throw the cursed creature makes.
+  const hasDisadvantage =
+    (ability === 'dex' && c.conditions.some((k) => k.id === 'restrained')) ||
+    c.conditions.some((k) => k.id === 'cursed');
   const mode = hasAdvantage === hasDisadvantage ? 'flat' : hasAdvantage ? 'advantage' : 'disadvantage';
   const d20 = applyLucky(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
@@ -41,7 +44,8 @@ export function savingThrow(
     d20.natural +
     abilityMod(c.abilities[ability]) +
     (c.savingThrowProfs.includes(ability) ? proficiencyBonus(c.level) : 0) +
-    (c.featureIds.includes('cloak-protection') ? 1 : 0); // Cloak of Protection
+    (c.featureIds.includes('cloak-protection') ? 1 : 0) + // Cloak of Protection
+    (c.conditions.some((k) => k.id === 'bonded') ? 1 : 0); // Warding Bond
   if (c.conditions.some((k) => k.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;

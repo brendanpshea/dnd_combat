@@ -7,7 +7,7 @@
  * - sphere2x2: pick an anchor cell for the 2x2 template
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
-import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId } from '../engine/types.js';
+import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell } from '../engine/grid.js';
@@ -15,6 +15,7 @@ import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
+import { BREATH_WEAPONS } from './features.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { savingThrow as rawSavingThrow } from '../engine/rules/saves.js';
 
@@ -109,6 +110,42 @@ export interface SpellData {
 function spellMod(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
   return abilityMod(c.abilities[c.spellcastingAbility ?? 'int']);
+}
+
+/**
+ * Which element is actually pointed at this creature right now — the type
+ * Protection from Energy should ward against.
+ *
+ * Breath weapons count double: a wyrmling's cone is the single biggest hit the
+ * spell can halve, and it is the reason anyone casts it. Otherwise the weapon
+ * riders of the living enemies decide. Fire is the fallback, because it is the
+ * commonest element in the bestiary and a wasted 3rd-level slot is a worse
+ * outcome than a slightly wrong guess.
+ */
+const WARDABLE: DamageType[] = ['acid', 'cold', 'fire', 'lightning', 'thunder'];
+
+export function threateningElement(state: GameState, target: Combatant): DamageType {
+  const weight = new Map<DamageType, number>();
+  const add = (t: DamageType | undefined, n: number) => {
+    if (t && WARDABLE.includes(t)) weight.set(t, (weight.get(t) ?? 0) + n);
+  };
+  for (const c of Object.values(state.combatants)) {
+    if (!c.alive || isDown(c) || c.team === target.team) continue;
+    for (const fid of c.featureIds) add(BREATH_WEAPONS[fid]?.damageType, 10);
+    for (const wid of attackableWeapons(c)) {
+      add(WEAPONS[wid]?.damageType, 1);
+      add(WEAPONS[wid]?.extraDamage?.type, 1);
+    }
+    add(c.deathBurst?.type, 2);
+    add(c.holdDamage?.type, 2);
+  }
+  let best: DamageType = 'fire';
+  let bestN = 0;
+  for (const t of WARDABLE) {
+    const n = weight.get(t) ?? 0;
+    if (n > bestN) { bestN = n; best = t; }
+  }
+  return best;
 }
 
 export function spellDc(state: GameState, casterId: Id): number {
@@ -1554,6 +1591,148 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'warded', sourceId: casterId });
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'shield-of-faith', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Sanctuary: the best thing on the cleric's 1st-level list, and the only
+   * spell here that works by changing what the *enemy* may do. An attacker
+   * that fails a Wisdom save cannot bring itself to strike the warded ally at
+   * all — the attack is gone, not merely worse.
+   *
+   * Not concentration (the SRD ends it when the warded creature attacks, which
+   * resolveAttack handles), so a cleric can hold Sanctuary and Bless at once —
+   * exactly the turn the spell is for.
+   */
+  sanctuary: {
+    id: 'sanctuary', name: 'Sanctuary', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 30, who: 'ally', count: 1 },
+    concentration: false,
+    icon: '⛪',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      if (t.conditions.some((c) => c.id === 'sanctuary')) return [];
+      t.conditions.push({ id: 'sanctuary', sourceId: casterId, dc: spellDc(state, casterId) });
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'sanctuary', sourceId: casterId }];
+    },
+  },
+
+  /**
+   * Protection from Evil and Good: attacks against the warded ally have
+   * disadvantage — but only from aberrations, celestials, elementals, fey,
+   * fiends and undead (see PROTECTED_FROM).
+   *
+   * The narrowness is the point. Every other ward in the game is a flat number
+   * against everyone; this one is worth a slot exactly when you know what you
+   * are about to fight, and worth nothing when you guess wrong. Against this
+   * bestiary — wraiths, banshees, ghouls, mephits, dryads, and every goblinoid
+   * now that they are fey — it is live far more often than it reads.
+   */
+  'protection-from-evil-and-good': {
+    id: 'protection-from-evil-and-good', name: 'Protection from Evil and Good', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '✝️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      if (!t.conditions.some((c) => c.id === 'protected')) {
+        t.conditions.push({ id: 'protected', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'protected', sourceId: casterId });
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'protection-from-evil-and-good', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Warding Bond: the ally gains +1 AC, +1 to saves and resistance to all
+   * damage, and the cleric takes the half that the resistance sheds.
+   *
+   * The party's total hit points barely move; what moves is *whose* they are.
+   * That makes it the only spell in the game that plays to this engine's real
+   * constraint — nobody dies, so the resource that decides a fight is how the
+   * party's pooled hit points are distributed across people who can still act.
+   * A cleric standing behind the line can spend their own body to keep the
+   * fighter upright, which is a decision no amount of healing offers.
+   */
+  'warding-bond': {
+    id: 'warding-bond', name: 'Warding Bond', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: false,
+    icon: '🔗',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      if (targetId === casterId) return [];
+      const t = state.combatants[targetId]!;
+      if (t.conditions.some((c) => c.id === 'bonded')) return [];
+      t.conditions.push({ id: 'bonded', sourceId: casterId });
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'bonded', sourceId: casterId }];
+    },
+  },
+
+  /**
+   * Protection from Energy: resistance to one damage type for the duration.
+   *
+   * One departure. The SRD lets the caster name the type; there is no way to
+   * ask for that here (targeting picks creatures and cells, not words), so the
+   * spell reads the room instead — it wards against whichever of the five
+   * elements the enemies present can actually deal, counting breath weapons
+   * first because that is the hit worth halving. Falling back to fire when
+   * nothing obvious threatens keeps it from ever being a dead cast.
+   *
+   * It is the first spell in the game that rewards knowing what you are about
+   * to fight, so the auto-pick is deliberately transparent: the log names the
+   * element it chose.
+   */
+  'protection-from-energy': {
+    id: 'protection-from-energy', name: 'Protection from Energy', level: 3, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '🔥',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const damageType = threateningElement(state, t);
+      const events: GameEvent[] = [];
+      t.conditions = t.conditions.filter((c) => c.id !== 'energyWarded');
+      t.conditions.push({ id: 'energyWarded', sourceId: casterId, concentration: true, damageType });
+      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'energyWarded', sourceId: casterId });
+      state.combatants[casterId]!.concentratingOn = { spellId: 'protection-from-energy', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Bestow Curse: a Wisdom save or the target attacks and saves at
+   * disadvantage for the duration.
+   *
+   * The SRD offers a menu of four effects and the caster picks one. There is
+   * no way to ask, so this takes the one that is always worth casting rather
+   * than the strongest — a target that misses more *and* fails more saves is
+   * softened for the whole party, which is what a 3rd-level slot spent on
+   * control should buy. The others (lose your action on a save, +1d8 necrotic
+   * from the caster) are either a re-skinned Hold Person or a damage rider,
+   * and this list already has both.
+   */
+  'bestow-curse': {
+    id: 'bestow-curse', name: 'Bestow Curse', level: 3, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '☠️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const { success, event } = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
+      const events: GameEvent[] = [event];
+      if (!success && !t.conditions.some((c) => c.id === 'cursed')) {
+        t.conditions.push({ id: 'cursed', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'cursed', sourceId: casterId });
+        state.combatants[casterId]!.concentratingOn = { spellId: 'bestow-curse', targetIds: [targetId] };
+      }
       return events;
     },
   },

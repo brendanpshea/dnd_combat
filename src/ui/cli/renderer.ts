@@ -235,6 +235,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} fills the ground with thick, clinging webs.`;
     case 'webCleared':
       return `  The webs wither and fall away.`;
+    case 'attackWarded':
+      return `  ${nm(e.attackerId)} cannot bring itself to strike ${nm(e.targetId)} — the attack falters.`;
     case 'armorCorroded':
       return `  ${nm(e.combatantId)}'s armour pits and flakes away — AC ${e.ac}.`;
     case 'maxHpDrained':

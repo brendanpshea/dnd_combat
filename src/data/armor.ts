@@ -68,13 +68,13 @@ export function acOf(c: Combatant): number {
   const rust = c.corroded ?? 0;
   const shield = shieldBonus(c.equipped.offHand);
   if (c.mageArmor && c.equipped.armor === undefined) {
-    return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
+    return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
   }
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
   const floor = 10 + abilityMod(c.abilities.dex);
-  const armored = base + defense + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
+  const armored = base + defense + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
   return Math.max(armored - rust, Math.min(armored, floor));
 }
 
@@ -86,6 +86,11 @@ function trinketAc(c: Combatant): number {
 /** Shield spell reaction: +5 AC until the caster's next turn. */
 function shieldedAc(c: Combatant): number {
   return c.conditions.some((k) => k.id === 'shielded') ? 5 : 0;
+}
+
+/** Warding Bond: +1 AC while the bond holds. */
+function bondedAc(c: Combatant): number {
+  return c.conditions.some((k) => k.id === 'bonded') ? 1 : 0;
 }
 
 /** Shield of Faith: +2 AC, held by concentration. */

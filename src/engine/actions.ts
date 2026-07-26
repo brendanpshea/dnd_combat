@@ -559,6 +559,13 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (action.slotLevel >= 1) actor.spellSlots[action.slotLevel - 1]!.current -= 1;
       else if (actor.innateSpells[action.spellId]) actor.innateSpells[action.spellId]!.current -= 1;
       if (spell.concentration) events.push(...breakConcentration(draft, actorId));
+      // Sanctuary ends the moment you do something hostile. A spell aimed at an
+      // enemy counts, or a warded cleric could stand untouchable and cast
+      // Sacred Flame all day.
+      if (spell.targeting.kind !== 'self' &&
+          !(spell.targeting.kind === 'creature' && spell.targeting.who === 'ally')) {
+        actor.conditions = actor.conditions.filter((k) => k.id !== 'sanctuary');
+      }
       events.push(...endHide(actor));
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = action.targets.flatMap((t) => ('position' in t ? [t.position] : []));
