@@ -43,6 +43,7 @@ import { DiceCheck } from './DiceCheck.js';
 import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
 import { hasSceneArt, sceneArtUrl, hasArt, hasTokenArt, tokenUrl } from './art.js';
+import { classLook } from './classLook.js';
 import { artEmoji, nodeEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
 import { renderProse } from './prose.js';
@@ -657,20 +658,26 @@ export function PartyStrip(
       <div className="adv-party-members">
         {party.map((c, i) => {
           const pct = Math.max(0, Math.round((c.hp / c.maxHp) * 100));
+          const look = classLook(c.classId);
           const body = (
             <>
-              {hasArt(campaign.characters[i]?.portraitId ?? c.classId)
-                ? <Portrait id={campaign.characters[i]?.portraitId ?? c.classId} team="team1" />
-                : <span className="adv-party-emoji">🧑</span>}
+              <span className="adv-party-face">
+                {hasArt(campaign.characters[i]?.portraitId ?? c.classId)
+                  ? <Portrait id={campaign.characters[i]?.portraitId ?? c.classId} team="team1" />
+                  : <span className="adv-party-emoji">🧑</span>}
+                {look && <span className="class-pip on-portrait" title={look.name}>{look.glyph}</span>}
+              </span>
               <div className="adv-party-hpbar"><div style={{ width: `${pct}%` }} /></div>
               <span className="adv-party-hp">{c.hp}/{c.maxHp}</span>
             </>
           );
           const cls = `adv-party-member ${c.hp === 0 ? 'down' : ''} ${active === i ? 'active' : ''}`;
+          const style = look ? { ['--pip' as string]: look.color } : undefined;
           return selectable
-            ? <button key={i} className={cls} onClick={() => onSelect!(i)}
-                title={`Focus ${campaign.characters[i]?.name}`}>{body}</button>
-            : <div key={i} className={cls}>{body}</div>;
+            ? <button key={i} className={cls} style={style} onClick={() => onSelect!(i)}
+                title={`${campaign.characters[i]?.name} — ${look?.name ?? ''}`}>{body}</button>
+            : <div key={i} className={cls} style={style}
+                title={`${campaign.characters[i]?.name} — ${look?.name ?? ''}`}>{body}</div>;
         })}
       </div>
       {(onJournal || onCamp) && (

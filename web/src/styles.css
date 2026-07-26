@@ -555,6 +555,43 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   overflow: hidden;
 }
 .hpfill { height: 100%; background: var(--green); }
+/* Class pip: a class-coloured disc carrying the class glyph.
+   Portraits track species, so a dwarf cleric and a dwarf fighter are the same
+   picture — this is what tells them apart. Bottom-left is the one corner of a
+   token nothing else claims (conditions top-left, count and familiar
+   top-right, HP along the bottom). */
+.class-pip {
+  position: absolute;
+  z-index: 4;
+  /* Tucked into the corner clear of the figure: on top of it, it reads as a
+     status badge, which is a different kind of thing entirely. */
+  bottom: 2%;
+  left: 0;
+  width: clamp(12px, 2.7vmin, 17px);
+  height: clamp(12px, 2.7vmin, 17px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(7px, 1.6vmin, 10px);
+  line-height: 1;
+  background: color-mix(in srgb, var(--pip) 82%, #12101c);
+  border: 1.5px solid color-mix(in srgb, var(--pip) 92%, #fff 8%);
+  box-shadow: 0 1px 3px #000a;
+  pointer-events: none;
+}
+/* A downed hero's pip goes quiet with the rest of the token. */
+.token.downed .class-pip { opacity: .5; filter: grayscale(.7); }
+
+/* On a portrait (party strip, shop picker) the pip sits on the corner of the
+   frame rather than under a figure, and can afford to be a touch bigger. */
+.class-pip.on-portrait {
+  bottom: -3px;
+  left: -3px;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+}
+
 .multi-count {
   position: absolute;
   z-index: 3;
@@ -2053,6 +2090,24 @@ button.category .count {
   border-top: 1px solid var(--panel2); background: var(--panel);
 }
 .adv-party-members { display: flex; gap: 8px; flex: 1; min-width: 0; }
+/* In the party strip every portrait is team1, so the blue ring carries no
+   information — spend it on the class instead. A tried rail under the cell
+   was the first attempt and read as a second HP bar. */
+.adv-party-face { position: relative; display: inline-block; line-height: 0; }
+/* The class, in words, on the combat status line. Tinted rather than plain so
+   it ties to the pip and the ring without needing to be read every time. */
+.class-tag {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--pip, var(--muted));
+  padding: 1px 7px; border-radius: 999px;
+  background: color-mix(in srgb, var(--pip, var(--muted)) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pip, var(--muted)) 34%, transparent);
+}
+/* `.portrait.team1` sets the ring too and ties on specificity, so name the
+   team class here rather than relying on which rule comes later in the file. */
+.adv-party-member .portrait.team1 { border-color: var(--pip, var(--blue)); }
+/* The strip's portraits are 34px; the default pip covers a third of one. */
+.adv-party-member .class-pip.on-portrait { width: 15px; height: 15px; font-size: 8px; bottom: -2px; left: -4px; }
 .adv-party-member { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
 
 /* Journal / Party pills — the affordances moved out of the top bar. */
@@ -2081,7 +2136,25 @@ button.category .count {
 .adv-rest-tip { border-color: #f0a53a; }
 .adv-rest-tip .tip-text strong { color: #ffcf8a; }
 /* In the shop the members are tappable hero-focus buttons. */
-.adv-party-strip.selectable .adv-party-member {
+.adv-party-strip.selectable /* In the party strip every portrait is team1, so the blue ring carries no
+   information — spend it on the class instead. A tried rail under the cell
+   was the first attempt and read as a second HP bar. */
+.adv-party-face { position: relative; display: inline-block; line-height: 0; }
+/* The class, in words, on the combat status line. Tinted rather than plain so
+   it ties to the pip and the ring without needing to be read every time. */
+.class-tag {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--pip, var(--muted));
+  padding: 1px 7px; border-radius: 999px;
+  background: color-mix(in srgb, var(--pip, var(--muted)) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pip, var(--muted)) 34%, transparent);
+}
+/* `.portrait.team1` sets the ring too and ties on specificity, so name the
+   team class here rather than relying on which rule comes later in the file. */
+.adv-party-member .portrait.team1 { border-color: var(--pip, var(--blue)); }
+/* The strip's portraits are 34px; the default pip covers a third of one. */
+.adv-party-member .class-pip.on-portrait { width: 15px; height: 15px; font-size: 8px; bottom: -2px; left: -4px; }
+.adv-party-member {
   background: none; border: 1px solid transparent; border-radius: 10px; padding: 3px 2px; cursor: pointer;
 }
 .adv-party-strip.selectable .adv-party-member.active { border-color: var(--blue); background: var(--panel2); }
@@ -2653,6 +2726,7 @@ button.category .count {
 .arena-shop-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .arena-buyer { display: flex; gap: 6px; margin-left: auto; }
 .arena-buyer-pick {
+  position: relative;
   padding: 2px; border-radius: 50%; border: 2px solid transparent;
   background: none; cursor: pointer; line-height: 0;
 }

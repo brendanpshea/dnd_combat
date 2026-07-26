@@ -32,6 +32,7 @@ import { PartySetup } from './PartySetup.js';
 import { PartyStrip } from './Adventure.js';
 import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
+import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
 import type { BattleProps } from './App.js';
 import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
@@ -267,16 +268,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   <div className="arena-shop-head">
                     <b>The armourer's stall</b>
                     <div className="arena-buyer">
-                      {c.characters.map((ch, i) => (
-                        <button
-                          key={i}
-                          className={`arena-buyer-pick ${buyFor === i ? 'on' : ''}`}
-                          onClick={() => setBuyFor(i)}
-                          title={`Buy for ${ch.name}`}
-                        >
-                          <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
-                        </button>
-                      ))}
+                      {c.characters.map((ch, i) => {
+                        const look = classLook(ch.classId);
+                        return (
+                          <button
+                            key={i}
+                            className={`arena-buyer-pick ${buyFor === i ? 'on' : ''}`}
+                            onClick={() => setBuyFor(i)}
+                            title={`Buy for ${ch.name}${look ? ` — ${look.name}` : ''}`}
+                          >
+                            <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
+                            {look && (
+                              <span className="class-pip on-portrait" style={{ ['--pip' as string]: look.color }}>
+                                {look.glyph}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                   <p className="hint">Buying for <b>{c.characters[buyFor]?.name}</b></p>

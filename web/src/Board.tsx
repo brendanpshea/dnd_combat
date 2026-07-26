@@ -7,6 +7,7 @@ import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffe
 import { hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl } from './art.js';
 import { conditionBadges, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
+import { classLook } from './classLook.js';
 import type { MapTheme } from '../../src/data/maps.js';
 
 const TOKEN: Record<string, string> = {
@@ -170,6 +171,9 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       const tx = c.position.x * 100;
       const ty = (height - 1 - c.position.y) * 100;
       const condIds = c.conditions.map((k) => k.id);
+      // Only real classes light up, so monsters (whose classId is their
+      // monster id) get nothing and the pip stays a "this one is yours" mark.
+      const look = classLook(c.classId);
       const badges = conditionBadges(condIds);
       const tint = conditionTint(condIds);
       return (
@@ -226,6 +230,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
                 title={c.familiar.helpedRound === state.round ? 'Owl familiar has helped this round' : 'Owl familiar is ready to help'}
               >
                 🦉
+              </span>
+            )}
+            {look && (
+              <span className="class-pip" style={{ ['--pip' as string]: look.color }} title={look.name}>
+                {look.glyph}
               </span>
             )}
             <div className="hpbar">
