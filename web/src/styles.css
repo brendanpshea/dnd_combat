@@ -929,6 +929,26 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .statusline .team2 { color: var(--red); }
 .statusline .thinking { color: var(--muted); }
 
+/* ---- action economy chips ---- */
+.economy { display: inline-flex; gap: 4px; align-items: center; }
+.econ-chip {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+/* Spent reads as struck-through and dimmed rather than vanishing: a chip that
+   disappeared would make the line reflow mid-turn and hide that you *had* one. */
+.econ-chip.spent {
+  border-color: #4b4460;
+  color: #6d6683;
+  text-decoration: line-through;
+}
+
 /* ---- spell slot pips ---- */
 .slot-pips {
   display: inline-flex;
@@ -1527,7 +1547,18 @@ button.category .count {
 .logline.saved { color: #9be2ff; }
 .logline.failed { color: #ffc39a; }
 .logline.cond  { color: #c9a6ff; }
+/* Not indented like the saves and damage beneath it: the cast is the action
+   those lines are consequences of, so it sits at the same level as an attack. */
+.logline.cast  { color: #b9a6ff; font-weight: 700; }
+.logline.item  { color: #7be0a0; }
+.logline.recharge { color: var(--gold); font-weight: 800; }
+.logline.end   { margin-top: 8px; color: var(--gold); font-weight: 800; }
 .logline.died  { color: #ff7a7a; font-weight: 800; }
+/* Found by the coverage test below the fold: `downed` was tagged and then never
+   styled, so a hero hitting 0 HP — the most consequential line in a fight, and
+   the one a player must not miss — rendered as plain grey body text. Amber
+   rather than the dead red: down is recoverable, and the colour should say so. */
+.logline.downed { padding-left: 9px; color: #ffb04a; font-weight: 800; }
 
 /* --- Victory / loot ------------------------------------------------------
    The screen a player sees eleven times a campaign, so every beat is short and

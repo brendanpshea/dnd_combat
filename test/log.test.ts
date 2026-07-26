@@ -45,4 +45,36 @@ describe('combat log rendering', () => {
     expect(lines[0]!.team).toBe('team1');
     expect(lines[3]!.team).toBe('team2');
   });
+
+  it('names the spell being cast', () => {
+    const cast: GameEvent = {
+      type: 'spellCast', casterId: 'b', spellId: 'fireball',
+      origin: { x: 1, y: 0 }, cells: [],
+    };
+    const [line] = logLinesFor(c.state, [cast]);
+    expect(line!.text).toContain('Fireball');
+    expect(line!.kind).toBe('cast');
+    expect(line!.team).toBe('team2');
+  });
+
+  it('says what a condition is in English, not by its id', () => {
+    const lines = logLinesFor(c.state, [
+      { type: 'conditionApplied', combatantId: 'a', condition: 'sacredWeapon' },
+      { type: 'conditionRemoved', combatantId: 'a', condition: 'noReactions' },
+    ]);
+    expect(lines[0]!.text).toBe('Sir Arthur is wielding a sacred weapon.');
+    expect(lines[1]!.text).toBe('Sir Arthur is no longer unable to react.');
+  });
+});
+
+describe('condition names', () => {
+  it('covers every condition the engine can apply', async () => {
+    const { CONDITION_NAME } = await import('../src/data/conditions.js');
+    // A raw id leaking into a sentence is the bug this file exists to stop, so
+    // every name has to be prose — never the camelCase identifier itself.
+    for (const [id, label] of Object.entries(CONDITION_NAME)) {
+      expect(label.length).toBeGreaterThan(0);
+      if (/[A-Z]/.test(id)) expect(label).not.toBe(id);
+    }
+  });
 });
