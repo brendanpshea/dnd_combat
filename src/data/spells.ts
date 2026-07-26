@@ -503,6 +503,37 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
+   * Vicious Mockery: the bard's attack cantrip. A Wisdom save or 1d6 psychic
+   * and disadvantage on the target's next attack roll.
+   *
+   * `sapped` is exactly the rider — the weapon mastery already means
+   * "disadvantage on your next attack roll" and clears itself when spent — so
+   * the insult lands on machinery that already exists rather than a fourth way
+   * of saying the same thing.
+   */
+  'vicious-mockery': {
+    id: 'vicious-mockery', name: 'Vicious Mockery', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '🗯️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const target = state.combatants[targetId]!;
+      const { success, event } = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
+      const events: GameEvent[] = [event];
+      if (success) return events;
+      const dmg = rollDice(state.rng, cantripDice('1d6', state.combatants[casterId]!.level));
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'psychic', dmg.rolls));
+      if (target.alive && !target.conditions.some((c) => c.id === 'sapped')) {
+        target.conditions.push({ id: 'sapped', sourceId: casterId });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: casterId });
+      }
+      return events;
+    },
+  },
+
+  /**
    * Ray of Sickness — two-stage, like the real spell: a spell *attack roll*
    * (not a save) does the damage, and only on a hit does the target get a
    * chance to shrug off the `poisoned` rider. `poisoned` already exists as a

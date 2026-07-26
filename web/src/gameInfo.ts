@@ -66,6 +66,7 @@ const SPELL_BLURB: Record<string, string> = {
   'suggestion': 'Nudge a creature into a reasonable course of action (concentration).',
   'web': 'Fills an area with sticky webs — creatures are restrained on a failed Dex save (concentration).',
   'invisibility': 'A creature turns invisible until it attacks or casts (concentration).',
+  'vicious-mockery': 'A cutting insult from up to 60 ft. A Wisdom save or 1d6 psychic — and the target swings at disadvantage next.',
   'misty-step': 'A bonus-action blink up to 30 ft to an empty space you can see.',
   'scorching-ray': 'Three rays of fire, 2d6 each, aimed independently (ranged spell attacks).',
   'fireball': 'A roaring 20-ft blast — 8d6 fire, halved on a Dexterity save.',

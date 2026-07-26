@@ -25,7 +25,7 @@ export interface FeatureData {
   id: Id;
   name: string;
   trigger: 'action' | 'bonus' | 'free' | 'passive';
-  uses?: { count: number | 'proficiency' | 'fiveTimesLevel'; per: 'encounter' };
+  uses?: { count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod'; per: 'encounter' };
   /**
    * A recharge ability (dragon breath): starts available, is spent on use, and
    * at the start of the owner's turn rolls a d6 — on a result at or above this
@@ -592,6 +592,46 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
+  /**
+   * Bardic Inspiration: a bonus action handing one ally a d6 to spend on their
+   * next attack roll or saving throw. The pool is the bard's Charisma modifier
+   * and it is shared with Cutting Words -- the bard's whole resource is "how
+   * many dice do I have left, and do I spend them helping or hindering".
+   *
+   * The SRD die is a d6 usable on any d20 test within the hour. Here it is
+   * attack rolls and saves, because those are the d20 tests a fight contains;
+   * an ability check on the battle grid does not exist.
+   */
+  'bardic-inspiration': {
+    id: 'bardic-inspiration', name: 'Bardic Inspiration', trigger: 'bonus',
+    uses: { count: 'charismaMod', per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      // The ally most likely to use it: whoever is in the fight and has not
+      // already been handed a die.
+      const target = Object.values(state.combatants)
+        .filter((c) => c.alive && c.hp > 0 && c.team === me.team && c.id !== actorId &&
+          distanceFeet(me.position, c.position) <= 60 &&
+          !c.conditions.some((k) => k.id === 'inspiring'))
+        .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
+      if (!target) return [];
+      target.conditions.push({ id: 'inspiring', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: target.id, condition: 'inspiring', sourceId: actorId }];
+    },
+  },
+  /**
+   * Cutting Words (College of Lore): a passive marker. The subtraction itself
+   * happens inside resolveAttack, because it is a reaction to someone else's
+   * roll and there is no turn on which the bard could declare it -- the same
+   * shape as the Shield spell's auto-cast.
+   */
+  'cutting-words': { id: 'cutting-words', name: 'Cutting Words', trigger: 'passive' },
+  /** Jack of All Trades: half proficiency on skills you lack. Read by
+   *  skillBonus; nothing on the battle grid consults it. */
+  'jack-of-all-trades': { id: 'jack-of-all-trades', name: 'Jack of All Trades', trigger: 'passive' },
+  /** Expertise: double proficiency on the bard's two class skills. Also
+   *  skillBonus only. */
+  expertise: { id: 'expertise', name: 'Expertise', trigger: 'passive' },
   // Horrifying Visage (Banshee): the banshee's ruined face, seen by every enemy
   // within 60 ft — a Wisdom save or be frightened (save ends).
   'horrifying-visage': {

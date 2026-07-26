@@ -515,7 +515,7 @@ const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id; skirmisher
 };
 
 /** Classes whose look is robes and spellbooks rather than mail and axes. */
-const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric']);
+const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric', 'bard']);
 /** Light, hooded, knife-in-the-dark classes — the third look, where it's drawn. */
 const SKIRMISHER_CLASSES = new Set<Id>(['rogue']);
 
@@ -525,6 +525,9 @@ const SKIRMISHER_CLASSES = new Set<Id>(['rogue']);
 const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
   ranger: 'ranger',
   paladin: 'paladin',
+  // No human-drawn druid yet, so the warden stands in for one. The bard has
+  // its own art already.
+  bard: 'human-bard',
 };
 
 /** Sensible default portrait for a species/class combo: species art if it has
@@ -1616,7 +1619,22 @@ export function skillBonus(
   const backgroundProficiency = backgroundSkills(backgroundId).includes(skill);
   const proficient = cls.skillProfs.includes(skill) || speciesProficiency ||
     featureProficiency || backgroundProficiency;
-  return abilityMod(abilities[SKILL_ABILITY[skill]]) + (proficient ? proficiencyBonus(level) : 0);
+  const classFeatures = Object.entries(cls.featuresByLevel)
+    .filter(([lvl]) => Number(lvl) <= level).flatMap(([, ids]) => ids);
+  const pb = proficiencyBonus(level);
+  // The bard's two skill halves, both of which live entirely here:
+  //  - Expertise doubles proficiency, but only on the skills the class itself
+  //    trained it in (its two class skills), not on everything it picked up.
+  //  - Jack of All Trades adds half proficiency to the skills it lacks, which
+  //    is the whole reason a bard is the party's answer to any odd check.
+  let bonus = 0;
+  if (proficient) {
+    const expert = classFeatures.includes('expertise') && cls.skillProfs.includes(skill);
+    bonus = expert ? pb * 2 : pb;
+  } else if (classFeatures.includes('jack-of-all-trades')) {
+    bonus = Math.floor(pb / 2);
+  }
+  return abilityMod(abilities[SKILL_ABILITY[skill]]) + bonus;
 }
 
 /** Is this member proficient in `skill` (class / species / feature / background)? */

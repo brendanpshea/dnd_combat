@@ -92,7 +92,8 @@ export type ConditionId =
   | 'protected'    // Protection from Evil and Good: disadvantage for the six listed types
   | 'bonded'       // Warding Bond: +1 AC and saves, resistance to all damage, the caster shares it
   | 'energyWarded' // Protection from Energy: resistance to one damage type
-  | 'cursed';      // Bestow Curse: disadvantage on attack rolls and saving throws
+  | 'cursed'       // Bestow Curse: disadvantage on attack rolls and saving throws
+  | 'inspiring';   // Bardic Inspiration: +1d6 on the next attack roll or save, then spent
 
 export interface ActiveCondition {
   id: ConditionId;

@@ -279,6 +279,58 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  /**
+   * Bard: a Charisma full caster whose real resource is not spell slots but a
+   * handful of d6s. Bardic Inspiration hands one to an ally; Cutting Words
+   * spends one to spoil an enemy's hit. Same pool, opposite directions, and
+   * choosing between them every round is the class.
+   *
+   * Light armour, simple weapons and d8 hit points, so it wants to stand behind
+   * someone — but Vicious Mockery is a 60 ft cantrip and Bardic Inspiration
+   * reaches 60 ft too, which is exactly where it should be standing anyway.
+   */
+  bard: {
+    id: 'bard', name: 'Bard', hitDie: 8,
+    savingThrows: ['dex', 'cha'],
+    armorProfs: ['light'],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['performance', 'persuasion'],
+    statPriority: ['cha', 'dex', 'con', 'wis', 'int', 'str'],
+    spellcasting: {
+      ability: 'cha',
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3],
+      // A bard prepares from the whole list like a cleric rather than keeping a
+      // spellbook, so only the prepared count is capped.
+      preparedByLevel: [4, 5, 6, 7, 9],
+      spellsByLevel: {
+        1: ['vicious-mockery', 'minor-illusion', 'true-strike', 'bane', 'command', 'cure-wounds',
+            'healing-word', 'sleep', 'thunderwave', 'color-spray', 'faerie-fire', 'animal-friendship'],
+        3: ['blindness', 'hold-person', 'invisibility', 'suggestion', 'aid', 'lesser-restoration'],
+        5: ['mass-healing-word', 'dispel-magic', 'fear', 'bestow-curse'], // 3rd-level slots
+      },
+    },
+    featuresByLevel: {
+      1: ['bardic-inspiration'],
+      2: ['expertise', 'jack-of-all-trades'],
+      3: ['cutting-words'], // College of Lore
+      // 4: Ability Score Increase (builder).
+      // 5: Font of Inspiration — regaining uses on a short rest, which this
+      //    engine already does for every per-encounter pool. Left off rather
+      //    than invented into something it isn't.
+    },
+    weaponMasteries: [],
+    equipment: {
+      // Simple weapons only in the 2024 rules — the rapier a bard traditionally
+      // carries is martial, and handing one over would mean a class whose
+      // default weapon it is not trained with.
+      mainHand: 'dagger', armor: 'leather',
+      inventory: [
+        { itemId: 'light-crossbow', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   ranger: {
     id: 'ranger', name: 'Ranger', hitDie: 10,
     savingThrows: ['str', 'dex'],

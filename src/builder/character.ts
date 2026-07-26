@@ -190,6 +190,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       const count =
         f.uses.count === 'proficiency' ? proficiencyBonus(level) :
         f.uses.count === 'fiveTimesLevel' ? 5 * level :
+        // Bardic Inspiration: uses equal to the bard's Charisma modifier,
+        // minimum one — a bard with no Charisma is not a bard, but the pool
+        // must never be zero or the feature simply isn't there.
+        f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(abilities.cha)) :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
     } else if (f?.recharge) {

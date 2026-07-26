@@ -33,7 +33,8 @@ function kindOf(e: GameEvent): string {
     case 'downed': return 'downed';
     case 'maxHpDrained': return 'downed';
     case 'armorCorroded': return 'cond';
-    case 'attackWarded': return 'miss';   // a loss healing cannot undo — read it as gravely as a drop
+    case 'attackWarded': return 'miss';
+    case 'cuttingWords': return 'cond';   // a loss healing cannot undo — read it as gravely as a drop
     case 'revived':
     case 'healed': return 'heal';
     case 'damageDealt': return e.tags?.includes('Critical Hit') ? 'dmg crit' : 'dmg';
@@ -72,6 +73,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'maxHpDrained':
     case 'armorCorroded': return e.combatantId;
     case 'attackWarded': return e.attackerId;
+    case 'cuttingWords': return e.bardId;
     case 'attackRolled': return e.attackerId;
     case 'smited': return e.attackerId;
     case 'savingThrow': return e.combatantId;

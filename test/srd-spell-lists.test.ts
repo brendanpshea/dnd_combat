@@ -79,6 +79,26 @@ const SRD: Record<string, string[]> = {
     'protection-from-energy', 'revivify', 'speak-with-plants', 'water-breathing', 'water-walk',
     'wind-wall',
   ],
+  bard: [
+    // Cantrips
+    'dancing-lights', 'light', 'mage-hand', 'mending', 'message', 'minor-illusion',
+    'prestidigitation', 'starry-wisp', 'true-strike', 'vicious-mockery',
+    // 1st
+    'animal-friendship', 'bane', 'charm-person', 'color-spray', 'command', 'comprehend-languages',
+    'cure-wounds', 'detect-magic', 'disguise-self', 'dissonant-whispers', 'faerie-fire',
+    'feather-fall', 'healing-word', 'heroism', 'hideous-laughter', 'identify', 'illusory-script',
+    'longstrider', 'silent-image', 'sleep', 'speak-with-animals', 'thunderwave', 'unseen-servant',
+    // 2nd
+    'aid', 'animal-messenger', 'blindness', 'calm-emotions', 'detect-thoughts', 'enhance-ability',
+    'enlarge-reduce', 'enthrall', 'heat-metal', 'hold-person', 'invisibility', 'knock',
+    'lesser-restoration', 'locate-animals-or-plants', 'locate-object', 'magic-mouth',
+    'mirror-image', 'see-invisibility', 'shatter', 'silence', 'suggestion', 'zone-of-truth',
+    // 3rd
+    'bestow-curse', 'clairvoyance', 'dispel-magic', 'fear', 'glyph-of-warding',
+    'hypnotic-pattern', 'major-image', 'mass-healing-word', 'nondetection', 'plant-growth',
+    'sending', 'slow', 'speak-with-dead', 'speak-with-plants', 'stinking-cloud', 'tiny-hut',
+    'tongues',
+  ],
   paladin: [
     // 1st
     'bless', 'command', 'cure-wounds', 'detect-evil-and-good', 'detect-magic',

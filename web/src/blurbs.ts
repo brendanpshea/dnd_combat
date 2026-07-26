@@ -10,6 +10,7 @@ export const CLASS_BLURB: Record<string, string> = {
   rogue: 'Skirmisher. Sneak Attack, Cunning Action, hides as a bonus action.',
   ranger: "Marksman. Hunter's Mark, Colossus Slayer, a bow and a blade.",
   paladin: 'Holy tank. Lay on Hands, Divine Smite, heavy armor and a shield.',
+  bard: 'Support caster. Hands out Bardic Inspiration dice, and spends them to spoil enemy hits.',
 };
 
 export const SPECIES_BLURB: Record<string, string> = {

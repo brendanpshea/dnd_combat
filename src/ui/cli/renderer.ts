@@ -13,7 +13,7 @@ import { ITEMS } from '../../data/items.js';
 import { acOf } from '../../data/armor.js';
 
 const CLASS_LETTER: Record<string, string> = {
-  fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R',
+  fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R', bard: 'B',
   'goblin-warrior': 'g', 'goblin-boss': 'G', skeleton: 's',
   wolf: 'w', zombie: 'z', ogre: 'O',
   bandit: 'b', 'bandit-captain': 'B', 'dire-wolf': 'D',
@@ -235,6 +235,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} fills the ground with thick, clinging webs.`;
     case 'webCleared':
       return `  The webs wither and fall away.`;
+    case 'cuttingWords':
+      return `  ${nm(e.bardId)} cuts in with a jibe — ${e.amount} off the roll.`;
     case 'attackWarded':
       return `  ${nm(e.attackerId)} cannot bring itself to strike ${nm(e.targetId)} — the attack falters.`;
     case 'armorCorroded':

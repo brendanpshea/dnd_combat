@@ -56,6 +56,13 @@ export function savingThrow(
     state.rng = d4.state;
     total -= d4.total;
   }
+  // Bardic Inspiration, spent on whichever roll reaches for it first.
+  if (c.conditions.some((k) => k.id === 'inspiring')) {
+    const d6 = rollDice(state.rng, '1d6');
+    state.rng = d6.state;
+    total += d6.total;
+    c.conditions = c.conditions.filter((k) => k.id !== 'inspiring');
+  }
   const success = total >= dc;
   return {
     success,

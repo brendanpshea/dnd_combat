@@ -42,6 +42,8 @@ export type GameEvent =
    *  the next long rest, which here means until the fight is over — combatants
    *  are rebuilt from the campaign roster for each one. */
   | { type: 'maxHpDrained'; combatantId: Id; amount: number; maxHp: number }
+  /** Cutting Words: a bard talked an attacker's roll down. */
+  | { type: 'cuttingWords'; bardId: Id; targetId: Id; amount: number }
   /** Sanctuary turned an attack aside before it was ever rolled. */
   | { type: 'attackWarded'; attackerId: Id; targetId: Id }
   /** A rust monster ate a point of AC off someone's metal armour. */

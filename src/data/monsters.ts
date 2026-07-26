@@ -10,7 +10,7 @@
  * coat — and the bestiary is the half that keeps growing.
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType } from '../engine/types.js';
-import { proficiencyBonus } from '../engine/types.js';
+import { proficiencyBonus, abilityMod } from '../engine/types.js';
 import { FEATURES } from './features.js';
 
 export interface MonsterData {
@@ -1424,6 +1424,9 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
       const count =
         f.uses.count === 'proficiency' ? proficiencyBonus(level) :
         f.uses.count === 'fiveTimesLevel' ? 5 * level :
+        // No monster carries Bardic Inspiration; if one ever does, its
+        // Charisma decides the pool the same way a bard's does.
+        f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(m.abilities.cha)) :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
     } else if (f?.recharge) {
