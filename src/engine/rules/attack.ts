@@ -403,7 +403,7 @@ export function resolveAttack(
 
   amount = Math.max(1, amount);
 
-  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags, bypassResistance: !!weapon.magic }));
+  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags, magical: isMagicWeapon(weapon) }));
 
   // Secondary damage of a different type (giant spider poison).
   if (weapon.extraDamage && target.alive) {
@@ -655,6 +655,13 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   return events;
 }
 
+/** A weapon counts as magical if it is enchanted (+N) or moon-touched. Both
+ *  get through the SRD's "nonmagical attacks" clause; only the +N kind also
+ *  carries a bonus to hit and damage. */
+export function isMagicWeapon(w: { magic?: boolean; attackBonus?: number; damageBonus?: number } | undefined): boolean {
+  return !!w && (!!w.magic || !!w.attackBonus || !!w.damageBonus);
+}
+
 export function applyDamage(
   state: GameState,
   targetId: Id,
@@ -662,7 +669,7 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
-  opts: { crit?: boolean; tags?: string[]; bypassResistance?: boolean; via?: string } = {},
+  opts: { crit?: boolean; tags?: string[]; magical?: boolean; via?: string } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -671,10 +678,13 @@ export function applyDamage(
   // at whatever HP it has left.
   const wasDown = isDown(target);
 
-  // Moon-touched (silvered) weapons: no attack/damage bonus, but their hits
-  // bypass resistance — immunity and vulnerability are untouched.
+  // Two kinds of resistance. The unconditional list always halves; the
+  // qualified one halves only nonmagical damage, which is what the SRD's
+  // physical resistances actually say and what makes a magic weapon worth
+  // buying. Immunity and vulnerability are untouched by either.
   if (target.immunities.includes(damageType)) amount = 0;
-  else if (target.resistances.includes(damageType) && !opts.bypassResistance) amount = Math.floor(amount / 2);
+  else if (target.resistances.includes(damageType)) amount = Math.floor(amount / 2);
+  else if (!opts.magical && (target.resistNonmagical ?? []).includes(damageType)) amount = Math.floor(amount / 2);
   else if (target.vulnerabilities.includes(damageType)) amount *= 2;
 
   // Regeneration is stopped by the right damage type, and it's the *type* that
