@@ -257,6 +257,18 @@ export interface Combatant {
    */
   regeneration?: { amount: number; stoppedBy: DamageType[]; suppressed?: boolean };
   /**
+   * Damage dealt at the start of this creature's turn to every enemy it is
+   * currently holding — anyone `restrained` with this creature as the source.
+   * The gelatinous cube's engulfed victims dissolving in acid, and the shape
+   * every grappler-with-a-rider wants (a rug of smothering, a constrictor).
+   *
+   * The ongoing tick is what separates being *held* from being *eaten*: the
+   * restrained condition alone is a positioning problem, and the party can
+   * reasonably decide to ignore it. A clock attached to it cannot be ignored,
+   * which is the whole reason a cube is frightening rather than annoying.
+   */
+  holdDamage?: { dice: string; type: DamageType };
+  /**
    * Death Burst: the thing goes off when it dies. A magmin bursts into fire, a
    * mephit into ice or steam. It is the whole point of those monsters — kill
    * one carelessly in a huddle and you have made your own problem — and

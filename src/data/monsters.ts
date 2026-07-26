@@ -53,6 +53,9 @@ export interface MonsterData {
   /** Regeneration (troll): heals at the start of its turn unless it has taken
    *  one of `stoppedBy` damage types since the last one. */
   regeneration?: { amount: number; stoppedBy: DamageType[] };
+  /** Damage dealt at the start of this creature's turn to everyone it has
+   *  restrained (gelatinous cube: 3d6 acid to whoever it has engulfed). */
+  holdDamage?: { dice: string; type: DamageType };
   /** Death Burst: explodes when killed, save for half (magmin, mephits). */
   deathBurst?: { dice: string; type: DamageType; save: { ability: Ability; dc: number }; radius: number };
 }
@@ -1127,6 +1130,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'ooze',
     abilities: { str: 14, dex: 3, con: 20, int: 1, wis: 6, cha: 1 },
     weaponIds: ['cube-pseudopod'],
+    featureIds: ['engulf'],
+    holdDamage: { dice: '3d6', type: 'acid' },
     immunities: ['poison'],
   },
   'black-pudding': {
@@ -1474,6 +1479,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     ...(m.regeneration
       ? { regeneration: { amount: m.regeneration.amount, stoppedBy: [...m.regeneration.stoppedBy] } }
       : {}),
+    ...(m.holdDamage ? { holdDamage: { ...m.holdDamage } } : {}),
     ...(m.deathBurst ? { deathBurst: { ...m.deathBurst, save: { ...m.deathBurst.save } } } : {}),
   };
 }

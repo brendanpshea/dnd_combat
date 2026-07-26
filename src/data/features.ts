@@ -402,6 +402,43 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
+  // Engulf (Gelatinous Cube): the cube flows over an adjacent creature — a
+  // Dexterity save or be swallowed, taking acid immediately and again at the
+  // start of each of the cube's turns until it squirms free (the tick lives in
+  // startTurn, off the cube's holdDamage).
+  //
+  // Two departures from the SRD, both deliberate. The book's version happens by
+  // moving *through* an occupied square, which this engine has no rule for and
+  // should not grow one for a single monster; here it is simply an action taken
+  // while adjacent. And engulfed is modeled as `restrained` rather than a new
+  // condition — the cube does not carry you around, but it does hold you in
+  // place while it digests you, and that is the part the fight is about.
+  //
+  // No use limit: a cube that engulfs once and then politely stops is not a
+  // cube. The Dex save (repeated, save-ends) is the pressure valve instead.
+  engulf: {
+    id: 'engulf', name: 'Engulf', trigger: 'action',
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.str);
+      const target = Object.values(state.combatants)
+        .filter((c) => c.alive && c.hp > 0 && c.team !== me.team &&
+          distanceFeet(me.position, c.position) <= 5 &&
+          !c.conditions.some((k) => k.id === 'restrained'))
+        .sort((a, b) => a.hp - b.hp)[0];
+      if (!target) return [];
+      const { success, event } = savingThrow(state, target.id, 'dex', dc);
+      const events: GameEvent[] = [event];
+      if (!success) {
+        target.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } });
+        events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'restrained', sourceId: actorId });
+        const dmg = rollDice(state.rng, '3d6');
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, target.id, actorId, dmg.total, 'acid', dmg.rolls));
+      }
+      return events;
+    },
+  },
   // Whirlwind (Air Elemental): each adjacent enemy makes a Strength save,
   // taking 3d8 bludgeoning and a 10-ft shove on a failure (half, no push, on a
   // success).

@@ -181,6 +181,20 @@ export function startTurn(state: GameState): GameEvent[] {
     }
   }
 
+  // Whatever this creature is holding, it is also digesting: everyone it has
+  // restrained takes its hold damage now. Read off the condition's source
+  // rather than a list on the holder, so a victim who wriggles free by making
+  // the repeat save stops taking it with no extra bookkeeping.
+  if (c.holdDamage && c.hp > 0) {
+    for (const other of Object.values(state.combatants)) {
+      if (!other.alive || other.hp <= 0 || other.team === c.team) continue;
+      if (!other.conditions.some((k) => k.id === 'restrained' && k.sourceId === c.id)) continue;
+      const dmg = rollDice(state.rng, c.holdDamage.dice);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, other.id, c.id, dmg.total, c.holdDamage.type, dmg.rolls));
+    }
+  }
+
   // Recharge abilities (dragon breath): a spent one rolls a d6 and comes back
   // on a result at or above its threshold. Only spent features roll, so a
   // creature that never uses its breath consumes no RNG.
