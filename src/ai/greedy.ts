@@ -8,7 +8,7 @@ import { isDown, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, spellDc, cantripDice } from '../data/spells.js';
+import { SPELLS, spellDc, cantripDice, wearsMetal } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
@@ -113,6 +113,51 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'shocking-grasp': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d8'), t) + 1; // reaction denial
+    }
+    // Entangle: value each enemy the patch would catch, weighted by its odds of
+    // failing the Strength save — the same shape as Web, whose vines these are.
+    case 'entangle': {
+      const anchor = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere5x5(anchor)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t)) continue;
+        // Vines do not pick sides once they are down; never plant them on allies.
+        if (t.team === actor.team) return 0;
+        if (t.conditions.some((k) => k.id === 'restrained')) continue;
+        v += saveFailProb(state, t, 'str', dc) * 4;
+      }
+      return v - slotCost;
+    }
+    // Heat Metal: worth nothing at all against anyone without metal on them,
+    // which is the whole character of the spell.
+    case 'heat-metal': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (!wearsMetal(t)) return 0;
+      const dmg = avgDice(`${2 + Math.max(0, a.slotLevel - 2)}d8`);
+      // No attack roll and no save on the damage: all of it lands.
+      return damageValue(dmg, t) + saveFailProb(state, t, 'con', dc) * 2 - slotCost;
+    }
+    // Call Lightning: the first bolt plus a fair expectation of one more, since
+    // the cloud fires again on the caster's next turn if concentration holds.
+    case 'call-lightning': {
+      if (actor.concentratingOn) return 0;
+      const anchor = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(anchor)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t)) continue;
+        if (t.team === actor.team) return 0;
+        const fail = saveFailProb(state, t, 'dex', dc);
+        const dmg = avgDice(`${3 + Math.max(0, a.slotLevel - 3)}d10`) * (fail + (1 - fail) * 0.5);
+        v += damageValue(dmg, t);
+      }
+      return v * 1.5 - slotCost;   // ×1.5 for the bolts still to come
     }
     case 'vicious-mockery': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;

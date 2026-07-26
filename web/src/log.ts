@@ -36,7 +36,8 @@ function kindOf(e: GameEvent): string {
     case 'attackWarded': return 'miss';
     case 'cuttingWords': return 'cond';
     case 'wildShaped':
-    case 'wildShapeEnded': return 'cond';   // a loss healing cannot undo — read it as gravely as a drop
+    case 'wildShapeEnded': return 'cond';
+    case 'lightningStruck': return 'dmg';   // a loss healing cannot undo — read it as gravely as a drop
     case 'revived':
     case 'healed': return 'heal';
     case 'damageDealt': return e.tags?.includes('Critical Hit') ? 'dmg crit' : 'dmg';
@@ -85,6 +86,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'healed': return e.targetId;
     case 'illusionCast':
     case 'webSpun': return e.sourceId;
+    case 'lightningStruck': return e.casterId;
     case 'summonPlaced': return e.casterId;
     default: return undefined;
   }

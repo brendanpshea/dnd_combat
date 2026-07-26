@@ -11,10 +11,10 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster, MONSTERS } from '../src/data/monsters.js';
 import { CLASSES } from '../src/data/classes.js';
 import { FEATURES, WILD_SHAPE_FORMS } from '../src/data/features.js';
-import { SPELLS } from '../src/data/spells.js';
+import { SPELLS, wearsMetal } from '../src/data/spells.js';
 import { acOf } from '../src/data/armor.js';
 import { legalActions } from '../src/engine/actions.js';
-import { applyDamage } from '../src/engine/rules/attack.js';
+import { applyDamage, breakConcentration } from '../src/engine/rules/attack.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, level: number, position: Position, id: string): Combatant =>
@@ -173,5 +173,150 @@ describe('Thorn Whip', () => {
       return;
     }
     throw new Error('thorn whip never missed across 60 seeds');
+  });
+});
+
+describe('Entangle', () => {
+  it('vines catch on a Strength save, not a Dexterity one', () => {
+    // A strong, clumsy target and a nimble, weak one: only the save differs.
+    const brute = { ...pc('fighter', 5, { x: 6, y: 4 }, 'brute'), abilities: { str: 20, dex: 1, con: 10, int: 10, wis: 10, cha: 10 } };
+    const acrobat = { ...pc('fighter', 5, { x: 6, y: 5 }, 'acro'), abilities: { str: 1, dex: 20, con: 10, int: 10, wis: 10, cha: 10 } };
+    brute.team = 'team2'; acrobat.team = 'team2';
+    let brutesCaught = 0, acrobatsCaught = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      const c = new Combat({
+        seed, width: 14, height: 10,
+        combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), { ...brute }, { ...acrobat }],
+      });
+      SPELLS['entangle']!.cast({
+        state: c.state, casterId: 'dru', slotLevel: 1, targetIds: [], positions: [{ x: 6, y: 4 }],
+      });
+      if (c.state.combatants['brute']!.conditions.some((k) => k.id === 'restrained')) brutesCaught++;
+      if (c.state.combatants['acro']!.conditions.some((k) => k.id === 'restrained')) acrobatsCaught++;
+    }
+    expect(acrobatsCaught, 'a Strength save is what gets you out of vines')
+      .toBeGreaterThan(brutesCaught);
+  });
+
+  it('the vines linger and catch whoever walks in afterwards', () => {
+    const c = new Combat({
+      seed: 5, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), foe('ogre', { x: 11, y: 4 }, 'ogre')],
+    });
+    SPELLS['entangle']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 1, targetIds: [], positions: [{ x: 7, y: 4 }],
+    });
+    const cell = c.state.grid.cells[4 * c.state.grid.width + 7]!;
+    expect(cell.web, 'the ground should still be vined').toBeDefined();
+    expect(cell.web!.ability, 'and it should ask for Strength').toBe('str');
+    expect(cell.web!.kind).toBe('entangle');
+  });
+
+  it('a plain Web still asks for Dexterity', () => {
+    const c = new Combat({
+      seed: 5, width: 14, height: 10,
+      combatants: [pc('wizard', 5, { x: 2, y: 4 }, 'wiz'), foe('ogre', { x: 11, y: 4 }, 'ogre')],
+    });
+    SPELLS['web']!.cast({
+      state: c.state, casterId: 'wiz', slotLevel: 2, targetIds: [], positions: [{ x: 7, y: 4 }],
+    });
+    const cell = c.state.grid.cells[4 * c.state.grid.width + 7]!;
+    expect(cell.web!.ability, 'absent means Dexterity — Web is unchanged').toBeUndefined();
+  });
+});
+
+describe('Heat Metal', () => {
+  it('knows what is actually made of metal', () => {
+    const metal = ['orc', 'knight', 'skeleton'];      // greataxe, mail + greatsword, shortsword
+    const notMetal = ['ogre', 'wolf', 'gargoyle'];    // greatclub, and two sets of teeth
+    for (const m of metal) expect(wearsMetal(buildMonster(m, 'team2', { x: 1, y: 1 })), m).toBe(true);
+    for (const m of notMetal) expect(wearsMetal(buildMonster(m, 'team2', { x: 1, y: 1 })), m).toBe(false);
+  });
+
+  it('burns a knight and does nothing at all to a wolf', () => {
+    const c = new Combat({
+      seed: 6, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), foe('knight', { x: 6, y: 4 }, 'k'), foe('wolf', { x: 6, y: 6 }, 'w')],
+    });
+    const kHp = c.state.combatants['k']!.hp;
+    const wHp = c.state.combatants['w']!.hp;
+    const hit = SPELLS['heat-metal']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 2, targetIds: ['k'], positions: [],
+    });
+    expect(hit.some((e) => e.type === 'damageDealt' && e.damageType === 'fire')).toBe(true);
+    expect(c.state.combatants['k']!.hp).toBeLessThan(kHp);
+
+    const miss = SPELLS['heat-metal']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 2, targetIds: ['w'], positions: [],
+    });
+    expect(miss, 'there is nothing on a wolf to heat').toEqual([]);
+    expect(c.state.combatants['w']!.hp).toBe(wHp);
+  });
+
+  it('needs no attack roll and no save to deal its damage', () => {
+    const c = new Combat({
+      seed: 6, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), foe('knight', { x: 6, y: 4 }, 'k')],
+    });
+    const events = SPELLS['heat-metal']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 2, targetIds: ['k'], positions: [],
+    });
+    expect(events.some((e) => e.type === 'attackRolled')).toBe(false);
+    const dmg = events.find((e) => e.type === 'damageDealt');
+    const save = events.find((e) => e.type === 'savingThrow');
+    // The save exists, but it is only for the fumble rider — the fire lands first.
+    expect(events.indexOf(dmg!)).toBeLessThan(events.indexOf(save!));
+  });
+});
+
+describe('Call Lightning', () => {
+  it('strikes on the turn it is cast, and again each turn the storm holds', () => {
+    const c = new Combat({
+      seed: 7, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), foe('ogre', { x: 9, y: 4 }, 'ogre')],
+    });
+    const first = SPELLS['call-lightning']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 3, targetIds: [], positions: [{ x: 9, y: 4 }],
+    });
+    expect(first.some((e) => e.type === 'lightningStruck')).toBe(true);
+    expect(c.state.combatants['dru']!.stormCloud).toBeDefined();
+
+    const hp = c.state.combatants['ogre']!.hp;
+    let struck = false;
+    do {
+      const ev = c.apply({ kind: 'endTurn' });
+      if (ev.some((e) => e.type === 'lightningStruck')) struck = true;
+    } while (c.activeId !== 'dru');
+    expect(struck, 'the cloud should fire again on the druid’s turn').toBe(true);
+    expect(c.state.combatants['ogre']!.hp, 'and it should hurt').toBeLessThan(hp);
+  });
+
+  it('never drops a bolt on the druid’s own side', () => {
+    const c = new Combat({
+      seed: 7, width: 14, height: 10,
+      combatants: [
+        pc('druid', 5, { x: 2, y: 4 }, 'dru'), pc('fighter', 5, { x: 8, y: 4 }, 'fig'),
+        foe('ogre', { x: 9, y: 4 }, 'ogre'),
+      ],
+    });
+    c.state.combatants['dru']!.stormCloud = { dice: '3d10', dc: 15 };
+    const figHp = c.state.combatants['fig']!.hp;
+    for (let i = 0; i < 20; i++) {
+      do { c.apply({ kind: 'endTurn' }); } while (c.activeId !== 'dru' && !c.winner());
+      if (c.winner()) break;
+    }
+    expect(c.state.combatants['fig']!.hp, 'the fighter is standing next to the target').toBe(figHp);
+  });
+
+  it('the storm blows out when concentration breaks', () => {
+    const c = new Combat({
+      seed: 7, width: 14, height: 10,
+      combatants: [pc('druid', 5, { x: 2, y: 4 }, 'dru'), foe('ogre', { x: 9, y: 4 }, 'ogre')],
+    });
+    SPELLS['call-lightning']!.cast({
+      state: c.state, casterId: 'dru', slotLevel: 3, targetIds: [], positions: [{ x: 9, y: 4 }],
+    });
+    breakConcentration(c.state, 'dru');
+    expect(c.state.combatants['dru']!.stormCloud).toBeUndefined();
   });
 });

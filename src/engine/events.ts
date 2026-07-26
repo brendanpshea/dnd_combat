@@ -42,6 +42,8 @@ export type GameEvent =
    *  the next long rest, which here means until the fight is over — combatants
    *  are rebuilt from the campaign roster for each one. */
   | { type: 'maxHpDrained'; combatantId: Id; amount: number; maxHp: number }
+  /** Call Lightning: a bolt comes down on these cells. */
+  | { type: 'lightningStruck'; casterId: Id; cells: Position[] }
   /** A druid takes a beast's shape (and the temporary hit points with it). */
   | { type: 'wildShaped'; combatantId: Id; formId: Id; tempHp: number }
   /** …and steps back out of it. */

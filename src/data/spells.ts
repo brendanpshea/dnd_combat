@@ -27,8 +27,8 @@ function savingThrow(state: GameState, combatantId: Id, ability: Ability, dc: nu
 }
 import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
-import { acOf } from './armor.js';
-import { WEAPONS } from './weapons.js';
+import { acOf, ARMOR, isShield } from './armor.js';
+import { WEAPONS, weaponCategory } from './weapons.js';
 
 export type SpellTargeting =
   | {
@@ -146,6 +146,58 @@ export function threateningElement(state: GameState, target: Combatant): DamageT
     if (n > bestN) { bestN = n; best = t; }
   }
   return best;
+}
+
+/** Is this creature wearing or wielding enough metal for Heat Metal to bite?
+ *  Reads the armour catalogue's own `metal` flag and the monster stat-block
+ *  equivalent, so no spell has to keep its own list of what counts. */
+export function wearsMetal(c: Combatant): boolean {
+  const armor = c.equipped.armor !== undefined ? ARMOR[c.equipped.armor] : undefined;
+  if (armor?.metal) return true;
+  if (isShield(c.equipped.offHand)) return true;
+  // A metal weapon in hand counts too: the SRD lets you heat a sword as
+  // happily as a breastplate.
+  //
+  // "Has a metal edge" is *not* the same as "deals slashing or piercing" — a
+  // wolf's bite and a gargoyle's claws both do, and neither is made of metal.
+  // The real test is whether it is a manufactured weapon at all, which
+  // weaponCategory answers: natural weapons belong to no category. Then the
+  // damage type separates the swords and axes from the clubs and staves.
+  const id = c.equipped.mainHand;
+  const w = id ? WEAPONS[id] : undefined;
+  if (!w || weaponCategory(id!) === undefined) return false;
+  return METAL_WEAPON_TYPES.includes(w.damageType);
+}
+
+/** Among manufactured weapons, the slashing and piercing ones have a metal
+ *  business end; clubs, quarterstaves and slings do not. */
+const METAL_WEAPON_TYPES: DamageType[] = ['slashing', 'piercing'];
+
+/**
+ * One bolt from a held storm cloud: everything in the 2x2 patch makes a
+ * Dexterity save, taking the cloud's dice, half on a success.
+ */
+export function strikeLightning(state: GameState, casterId: Id, anchor: Position): GameEvent[] {
+  const caster = state.combatants[casterId]!;
+  const storm = caster.stormCloud;
+  if (!storm) return [];
+  const events: GameEvent[] = [];
+  const hit = new Set<Id>();
+  for (const pos of sphere2x2(anchor)) {
+    const tid = cellAt(state.grid, pos)?.occupantId;
+    if (!tid || hit.has(tid)) continue;
+    const t = state.combatants[tid]!;
+    if (!t.alive || isDown(t) || t.team === caster.team) continue;
+    hit.add(tid);
+    const save = savingThrow(state, tid, 'dex', storm.dc);
+    events.push(save.event);
+    const dmg = rollDice(state.rng, storm.dice);
+    state.rng = dmg.state;
+    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'lightning', dmg.rolls));
+  }
+  events.unshift({ type: 'lightningStruck', casterId, cells: sphere2x2(anchor) });
+  return events;
 }
 
 export function spellDc(state: GameState, casterId: Id): number {
@@ -964,6 +1016,113 @@ export const SPELLS: Record<Id, SpellData> = {
       // strands and frees the restrained by source, so targetIds needn't be exhaustive.
       caster.concentratingOn = { spellId: 'web', targetIds: caught };
       return events;
+    },
+  },
+
+  /**
+   * Entangle: grasping vines fill a patch of ground. A Strength save or
+   * restrained, and the vines stay put — anyone who walks in afterwards rolls
+   * too, and the whole patch clears when the druid's concentration drops.
+   *
+   * Mechanically this is Web's clinging ground with a different way out: Web
+   * asks Dexterity (squeeze free of the strands), Entangle asks Strength (tear
+   * the vines). That difference is the entire reason a druid would take one
+   * over the other, so the *cell* carries the ability rather than the rule
+   * hardcoding Dexterity.
+   */
+  entangle: {
+    id: 'entangle', name: 'Entangle', level: 1, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 90 },
+    concentration: true,
+    icon: '🌱',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const caught: Id[] = [];
+      const vined: Position[] = [];
+      for (const pos of sphere5x5(positions[0]!)) {
+        if (!webCell(state.grid, pos, casterId, dc, { ability: 'str', kind: 'entangle' })) continue;
+        vined.push(pos);
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team || t.conditions.some((c) => c.id === 'restrained')) continue;
+        const save = savingThrow(state, tid, 'str', dc);
+        events.push(save.event);
+        if (!save.success) {
+          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc } });
+          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
+          caught.push(tid);
+        }
+      }
+      if (vined.length > 0) events.push({ type: 'webSpun', sourceId: casterId, cells: vined });
+      caster.concentratingOn = { spellId: 'entangle', targetIds: caught };
+      return events;
+    },
+  },
+
+  /**
+   * Heat Metal: the druid's answer to armour. 2d8 fire, no attack roll and no
+   * save, to a creature wearing metal or swinging metal — and on a failed
+   * Constitution save it fumbles, taking disadvantage on its attacks until it
+   * shakes the pain off.
+   *
+   * "Metal" is not invented here: every armour entry already declares it (for
+   * Shocking Grasp) and monsters carry `metalArmor` for the same reason. A
+   * spell that only works on the right target is only interesting because the
+   * data can already answer which targets those are.
+   */
+  'heat-metal': {
+    id: 'heat-metal', name: 'Heat Metal', level: 2, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '🔥',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const target = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      if (!wearsMetal(target)) return events;   // nothing to heat
+      const dice = `${2 + Math.max(0, slotLevel - 2)}d8`;
+      const dmg = rollDice(state.rng, dice);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total, 'fire', dmg.rolls));
+      if (target.alive && !isDown(target) && !target.conditions.some((c) => c.id === 'sapped')) {
+        const save = savingThrow(state, targetId, 'con', spellDc(state, casterId));
+        events.push(save.event);
+        if (!save.success) {
+          // The SRD makes them drop the object; there is no dropped-weapon
+          // state here, so the pain shows up where it would anyway — they
+          // cannot grip it properly and swing badly.
+          target.conditions.push({ id: 'sapped', sourceId: casterId });
+          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: casterId });
+        }
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'heat-metal', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Call Lightning: a storm cloud the druid holds overhead, dropping a bolt on
+   * a chosen patch of ground now and again each round it keeps concentrating.
+   *
+   * The repeat is what makes it worth a 3rd-level slot, and it is also the only
+   * part that needed new machinery: `stormCloud` on the caster, fired from
+   * startTurn the same way a summon acts. Held by concentration like everything
+   * else, so breaking it ends the storm.
+   */
+  'call-lightning': {
+    id: 'call-lightning', name: 'Call Lightning', level: 3, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 120 },
+    concentration: true,
+    icon: '⚡',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dice = `${3 + Math.max(0, slotLevel - 3)}d10`;
+      caster.stormCloud = { dice, dc: spellDc(state, casterId) };
+      caster.concentratingOn = { spellId: 'call-lightning', targetIds: [] };
+      return strikeLightning(state, casterId, positions[0]!);
     },
   },
 
