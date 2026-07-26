@@ -44,7 +44,7 @@ const STANDARD = process.argv.includes('--standard');
 /** Experiment: give a full rest after a defeat as well as after a win. */
 const RESTED_RETRY = process.argv.includes('--rested-retry');
 /** Give up on a run after this many consecutive losses at one wave. */
-const PATIENCE = 3;
+const PATIENCE = Number(process.env.PATIENCE ?? 3);
 /** Hard stop so a stalled fight can't hang the sweep. */
 const MAX_DECISIONS = 4000;
 
@@ -71,6 +71,7 @@ interface Tally {
   /** Waves cleared before reaching each level. */
   wavesToLevel: Map<number, number[]>;
   finalLevels: number[];
+  finalWaves: number[];
   /** Level-5 snapshots: AC and max HP per class, to spot outliers. */
   endStats: Array<{ classId: Id; level: number; ac: number; maxHp: number }>;
   partyDowns: number;
@@ -84,7 +85,7 @@ const T: Tally = {
   fights: 0, wins: 0, rounds: [], stalls: [], errors: [],
   byWave: new Map(), byClass: new Map(), spellsCast: new Map(), featuresUsed: new Map(),
   itemsBought: new Map(), monstersMet: new Map(), goldAtEnd: [], goldUnspendable: 0,
-  shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], endStats: [],
+  shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalWaves: [], endStats: [],
   partyDowns: 0, heroTurns: 0,
   firstTry: { fights: 0, wins: 0 }, retry: { fights: 0, wins: 0 },
 };
@@ -161,9 +162,12 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
   const att = attempt === 1 ? T.firstTry : T.retry;
   att.fights += 1;
   if (combat.winner() === 'team1') att.wins += 1;
+  // First attempts only. Counting retries here makes a wave look far harder
+  // than it is: retries are drawn only from the runs that already failed it, so
+  // a wave one party is stuck on contributes a dozen losses and no wins.
   const key = `${level}:${wave}`;
   const bucket = T.byWave.get(key) ?? { fights: 0, wins: 0 };
-  bucket.fights += 1;
+  if (attempt === 1) bucket.fights += 1;
 
   if (!combat.winner()) {
     T.stalls.push({ run: runSeed, level, wave });
@@ -173,7 +177,7 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
 
   const won = combat.winner() === 'team1';
   if (won) {
-    bucket.wins += 1;
+    if (attempt === 1) bucket.wins += 1;
     T.wins += 1;
     const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
     applyArenaVictory(c, survivors, w.encounter.rawXp, combat.state.rng, membersCoinXP(w.encounter.members));
@@ -255,11 +259,12 @@ function playRun(seed: number): void {
       losses += 1;
     }
     // Stop once the party has topped out and pushed a few waves past it.
-    if (partyLevelOf(c) >= MAX_LEVEL && wave > 14) break;
+    if (wave > 40) break;   // the ramp is unwinnable long before this
   }
 
   const finalLevel = partyLevelOf(c);
   T.finalLevels.push(finalLevel);
+  T.finalWaves.push(wave);
   T.goldAtEnd.push(c.gold);
   for (const combatant of buildCampaignParty(c)) {
     T.endStats.push({
@@ -296,8 +301,22 @@ console.log(`party members downed: ${(T.partyDowns / T.fights).toFixed(2)} per f
 console.log(`first attempt at a wave ${pct(T.firstTry.wins, T.firstTry.fights)} (${T.firstTry.fights} fights)` +
   `   retry ${pct(T.retry.wins, T.retry.fights)} (${T.retry.fights} fights, and these are the hard ones by construction)`);
 console.log(`final level: median ${median(T.finalLevels)}, min ${Math.min(...T.finalLevels)}, max ${Math.max(...T.finalLevels)}`);
+console.log(`waves reached: median ${median(T.finalWaves)}, min ${Math.min(...T.finalWaves)}, max ${Math.max(...T.finalWaves)}`);
 
-console.log('\n--- win rate by level and wave ---');
+console.log('\n--- how far a run gets (share of runs still going at wave N) ---');
+{
+  const row: string[] = [];
+  for (let w = 1; w <= 20; w++) {
+    const alive = T.finalWaves.filter((f) => f >= w).length;
+    row.push(pct(alive, T.finalWaves.length));
+  }
+  console.log('     ' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => String(n).padStart(4)).join(''));
+  console.log('w1-10' + row.slice(0, 10).join(''));
+  console.log('     ' + [11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((n) => String(n).padStart(4)).join(''));
+  console.log('w11+ ' + row.slice(10).join(''));
+}
+
+console.log('\n--- first-attempt win rate by level and wave ---');
 const levels = [...new Set([...T.byWave.keys()].map((k) => Number(k.split(':')[0])))].sort((a, b) => a - b);
 for (const lvl of levels) {
   const cells: string[] = [];
