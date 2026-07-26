@@ -56,6 +56,48 @@ describe('web stylesheet coverage', () => {
   });
 
   /**
+   * The combat top bar overflowed a phone: it wants ~570px of controls and a
+   * 390px screen gave it 390, so the page scrolled sideways by 185px and the
+   * wave label wrapped to three lines, making the header 152px tall. Verified
+   * in a browser at 360/390/430/768/1100px; CI has no browser, so what is
+   * pinned here are the three properties that make the overflow impossible.
+   *
+   * A flex item defaults to `min-width: auto` and so refuses to shrink below
+   * its own text — that is the actual mechanism, and it is the one a future
+   * edit is most likely to undo by accident.
+   */
+  it('the combat top bar cannot push the page sideways', () => {
+    const rule = (selector: string): string => {
+      const i = CSS.indexOf(selector + ' {');
+      expect(i, `no rule for ${selector}`).toBeGreaterThan(-1);
+      return CSS.slice(i, CSS.indexOf('}', i));
+    };
+    expect(rule('.topbar'), '.topbar must wrap rather than overflow').toContain('flex-wrap: wrap');
+    const mapname = rule('.topbar .mapname');
+    expect(mapname, 'the wave label must be allowed to shrink').toContain('min-width: 0');
+    expect(mapname, 'the wave label must truncate, not wrap to three lines').toContain('text-overflow: ellipsis');
+    expect(mapname).toContain('white-space: nowrap');
+    // The controls have to be one flex child, or they wrap one button at a
+    // time and the bar grows a ragged extra row per button.
+    expect(CSS).toContain('.topbar-tools');
+  });
+
+  /**
+   * `--topbar-h` positions the floating tip and coach banners. It was declared
+   * only as a 46px fallback and never actually set, which was harmless while
+   * the bar was one row and wrong the moment it wraps to two: the first
+   * learning tip a phone player ever sees landed on top of the controls
+   * (measured: toast at 54px under an 84px bar). App.tsx now publishes the
+   * measured height, so the fallback must never become the real value again.
+   */
+  it('the tip banner positions off a measured top bar height', () => {
+    const app = readFileSync(join(WEB, 'App.tsx'), 'utf8');
+    expect(app, '--topbar-h must be set from a real measurement').toContain("setProperty('--topbar-h'");
+    expect(app).toContain('ResizeObserver');
+    expect(CSS).toContain('var(--topbar-h');
+  });
+
+  /**
    * Log kinds never appear in a `className="..."` literal — they're strings
    * `kindOf` returns and the log interpolates — so the sweep above can't see
    * them. A new kind with no rule doesn't break anything visibly; the line just

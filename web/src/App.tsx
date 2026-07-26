@@ -794,16 +794,39 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // When exactly one side is human-controlled (vs-AI, campaign, adventure, the
   // training yard), the outcome is "yours" — say so instead of a team colour.
   // Symmetric matches (hot-seat, AI-vs-AI spectate) keep Blue/Red.
+  // Publish the top bar's real height as --topbar-h, which the floating tip and
+  // coach banners position themselves under. The variable existed but nothing
+  // ever set it, so everything used the 46px fallback — fine while the bar was
+  // one row, wrong the moment it wraps to two on a phone, which left the first
+  // learning tip sitting on top of the controls.
+  const battleRef = useRef<HTMLDivElement | null>(null);
+  const topbarRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const bar = topbarRef.current;
+    const root = battleRef.current;
+    if (!bar || !root) return;
+    const publish = () => root.style.setProperty('--topbar-h', `${Math.round(bar.getBoundingClientRect().height)}px`);
+    publish();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(publish);
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, []);
+
   const soloHuman = (['team1', 'team2'] as TeamId[]).filter((t) => !aiTeams.has(t));
   const youTeam = soloHuman.length === 1 ? soloHuman[0] : undefined;
 
   return (
-    <div className="battle">
+    <div className="battle" ref={battleRef}>
       {critFlash && <div className="crit-flash" />}
-      <header className="topbar">
+      <header className="topbar" ref={topbarRef}>
         <button className="ghost" onClick={onExit}>✕</button>
         <span className="round">Round {state.round}</span>
         <span className="mapname">{mapLabel}</span>
+        {/* The controls are one flex child, not seven, so on a narrow screen
+            they wrap to their own row together instead of the row overflowing
+            the viewport. */}
+        <div className="topbar-tools">
         <button
           className="ghost"
           title="Enemy turn speed"
@@ -840,6 +863,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           💡
         </button>
         <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>
+        </div>
       </header>
 
       {/* Training Yard: the step-by-step coach banner. Persists per step until
