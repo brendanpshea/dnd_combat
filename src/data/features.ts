@@ -8,9 +8,9 @@ import { proficiencyBonus, cellAt } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
-import { applyHealing } from '../engine/rules/heal.js';
+import { applyHealing, downCombatant } from '../engine/rules/heal.js';
 import { savingThrow } from '../engine/rules/saves.js';
-import { charmAway, applyDamage } from '../engine/rules/attack.js';
+import { charmAway, applyDamage, kill, checkWinner } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
@@ -551,6 +551,66 @@ export const FEATURES: Record<Id, FeatureData> = {
         const condition = bigFail ? 'paralyzed' : 'frightened';
         target.conditions.push({ id: condition, sourceId: actorId, repeatSave: { ability: 'wis', dc } });
         events.push({ type: 'conditionApplied', combatantId: target.id, condition, sourceId: actorId });
+      }
+      return events;
+    },
+  },
+  // Horrifying Visage (Banshee): the banshee's ruined face, seen by every enemy
+  // within 60 ft — a Wisdom save or be frightened (save ends).
+  'horrifying-visage': {
+    id: 'horrifying-visage', name: 'Horrifying Visage', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+        if (distanceFeet(me.position, t.position) > 60) continue;
+        if (t.conditions.some((k) => k.id === 'frightened')) continue;
+        const { success, event } = savingThrow(state, t.id, 'wis', dc);
+        events.push(event);
+        if (!success) {
+          t.conditions.push({ id: 'frightened', sourceId: actorId, repeatSave: { ability: 'wis', dc } });
+          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'frightened', sourceId: actorId });
+        }
+      }
+      return events;
+    },
+  },
+  // Wail (Banshee, once per encounter): a keening scream that stops hearts.
+  // Every living enemy within 30 ft makes a Constitution save or drops to 0 hit
+  // points outright; a success costs 3d6 psychic instead. Constructs and undead
+  // have no life to take and are unaffected.
+  //
+  // The drop is applied directly rather than as damage, because that is what the
+  // ability says — psychic resistance must not halve it, and temporary hit
+  // points must not soak it. Heroes go down (they never die here); a monster
+  // caught in it dies, which needs the win check kill() would normally run.
+  wail: {
+    id: 'wail', name: 'Wail', trigger: 'action', uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.cha);
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+        if (t.creatureType === 'construct' || t.creatureType === 'undead') continue;
+        if (distanceFeet(me.position, t.position) > 30) continue;
+        const { success, event } = savingThrow(state, t.id, 'con', dc);
+        events.push(event);
+        if (success) {
+          const roll = rollDice(state.rng, '3d6');
+          events.push(...applyDamage(state, t.id, actorId, roll.total, 'psychic', roll.rolls));
+        } else if (t.unconsciousAtZero) {
+          events.push(...downCombatant(state, t.id));
+          const winner = checkWinner(state);
+          if (winner && !state.winner) {
+            state.winner = winner;
+            events.push({ type: 'combatEnded', winner });
+          }
+        } else {
+          events.push(...kill(state, t.id));
+        }
       }
       return events;
     },
