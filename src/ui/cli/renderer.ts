@@ -11,6 +11,7 @@ import { SPELLS } from '../../data/spells.js';
 import { FEATURES } from '../../data/features.js';
 import { ITEMS } from '../../data/items.js';
 import { acOf } from '../../data/armor.js';
+import { conditionName } from '../../data/conditions.js';
 
 const CLASS_LETTER: Record<string, string> = {
   fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R', bard: 'B', druid: 'd',
@@ -142,6 +143,14 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return undefined;
     case 'moved':
       return `${nm(e.combatantId)} moves to ${cellName(e.path[e.path.length - 1]!)}.`;
+    case 'spellCast': {
+      // Without this the log never named a single spell: a Fireball arrived as
+      // three saving throws and a pile of fire damage from nowhere, and a spell
+      // attack read "attacks the orc with a spell". The cast line is what makes
+      // everything under it legible.
+      const spell = SPELLS[e.spellId];
+      return `✨ ${nm(e.casterId)} casts ${spell?.name ?? e.spellId}.`;
+    }
     case 'attackRolled': {
       const w = e.weaponId === 'spell' ? 'a spell' : WEAPONS[e.weaponId]?.name ?? e.weaponId;
       const oa = e.opportunity ? ' (opportunity attack)' : '';
@@ -190,9 +199,9 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     case 'hiddenRevealed':
       return `  ${nm(e.observerId)} spots ${nm(e.combatantId)} (${e.passivePerception} beats ${e.hideCheck}).`;
     case 'conditionApplied':
-      return `  ${nm(e.combatantId)} is ${e.condition}.`;
+      return `  ${nm(e.combatantId)} is ${conditionName(e.condition)}.`;
     case 'conditionRemoved':
-      return `  ${nm(e.combatantId)} is no longer ${e.condition}.`;
+      return `  ${nm(e.combatantId)} is no longer ${conditionName(e.condition)}.`;
     case 'concentrationBroken':
       return `${nm(e.combatantId)} loses concentration on ${SPELLS[e.spellId]?.name ?? e.spellId}.`;
     case 'equipped':

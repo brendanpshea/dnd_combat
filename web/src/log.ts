@@ -51,6 +51,19 @@ function kindOf(e: GameEvent): string {
     case 'summonExpired':
     case 'webSpun':
     case 'webCleared': return 'cond';
+    case 'spellCast': return 'cast';
+    // A potion drunk or a scroll burned is a resource gone for good — it read
+    // as grey chatter next to "draws a longsword", which costs nothing.
+    case 'itemUsed': return 'item';
+    // The ogre mage's breath coming back online is a *warning*, and the only
+    // notice a player gets before it lands. Nothing should be quieter about it.
+    case 'recharged': return 'recharge';
+    case 'hiddenRevealed': return 'cond';
+    // "X dodges." was grey while "X is no longer dodging." was purple — the
+    // same state, two colours, and the quieter one was the half that mattered.
+    case 'dodging':
+    case 'disengaged': return 'cond';
+    case 'combatEnded': return 'end';
     case 'moved': return 'move';
     default: return 'misc';
   }
@@ -87,6 +100,10 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'illusionCast':
     case 'webSpun': return e.sourceId;
     case 'lightningStruck': return e.casterId;
+    case 'spellCast': return e.casterId;
+    case 'itemUsed': return e.combatantId;
+    case 'recharged': return e.combatantId;
+    case 'hiddenRevealed': return e.combatantId;
     case 'summonPlaced': return e.casterId;
     default: return undefined;
   }

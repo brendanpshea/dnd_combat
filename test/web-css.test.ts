@@ -54,4 +54,23 @@ describe('web stylesheet coverage', () => {
     }
     expect([...missing], `classes used but never styled: ${[...missing].join(', ')}`).toEqual([]);
   });
+
+  /**
+   * Log kinds never appear in a `className="..."` literal — they're strings
+   * `kindOf` returns and the log interpolates — so the sweep above can't see
+   * them. A new kind with no rule doesn't break anything visibly; the line just
+   * renders as undifferentiated grey, which is the exact failure the styled log
+   * exists to prevent.
+   */
+  it('every log kind has a rule', () => {
+    const src = readFileSync(join(WEB, 'log.ts'), 'utf8');
+    const kindOf = src.slice(src.indexOf('function kindOf'), src.indexOf('function subjectOf'));
+    const kinds = new Set(
+      [...kindOf.matchAll(/return '([a-z ]+)'/g)].flatMap((m) => m[1]!.split(' ')),
+    );
+    const defined = new Set([...CSS.matchAll(/\.logline\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]!));
+    // `misc` is the deliberate default: plain body text, no rule needed.
+    const missing = [...kinds].filter((k) => k !== 'misc' && !defined.has(k));
+    expect(missing, `log kinds with no style: ${missing.join(', ')}`).toEqual([]);
+  });
 });

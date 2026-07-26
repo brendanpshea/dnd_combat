@@ -616,7 +616,12 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       // Contextual coaching: surface the first not-yet-seen tip these events
       // trigger. Skipped when muted; each tip fires once ever (localStorage).
       // The Training Yard suppresses tips — its own coach owns the guidance.
-      if (!tipsMuted && !coach) {
+      // …but not while the "How to play" modal is up. On a first-ever run both
+      // fire at once and the tip lands under the scrim, so the player's one
+      // showing of it is spent on a toast they can't read or dismiss. Detection
+      // is skipped entirely rather than queued, so the tip stays unseen and
+      // fires properly the next time its trigger comes round.
+      if (!tipsMuted && !coach && !showTutorial) {
         const seen = seenTips();
         const fresh = detectTips(events, combat.state, isPlayer).find((t) => !seen.has(t.id));
         if (fresh) { markTipSeen(fresh.id); setTip(fresh); }
@@ -924,7 +929,20 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <span>HP {active.hp}/{active.maxHp}</span>
           <span>AC {acOf(active)}</span>
           <SlotPips spellSlots={active.spellSlots} />
-          <span>{active.turn.actionUsed ? '·' : 'A'}{active.turn.bonusActionUsed ? '·' : 'B'}</span>
+          {/* Was a bare "AB" that decayed to "A·" / "··". Sitting next to "AC 15"
+              it read like a stat with a missing value, and nothing on screen
+              said what it meant — so the one indicator of what you still have
+              left to spend this turn was the least legible thing on the line. */}
+          <span className="economy">
+            <span
+              className={`econ-chip${active.turn.actionUsed ? ' spent' : ''}`}
+              title={active.turn.actionUsed ? 'Action spent' : 'Action available'}
+            >Action</span>
+            <span
+              className={`econ-chip${active.turn.bonusActionUsed ? ' spent' : ''}`}
+              title={active.turn.bonusActionUsed ? 'Bonus action spent' : 'Bonus action available'}
+            >Bonus</span>
+          </span>
           <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
           {!isHumanTurn && !combat.isOver() && <em className="thinking">AI thinking…</em>}
         </div>
