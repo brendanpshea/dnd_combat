@@ -105,6 +105,12 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   'outlined': -0.14, // like guided but it lasts, and can't be hidden from
   // buffs
   blessed: 0.08,
+  // Bane is Bless's mirror — a d4 off every attack roll and save — and it was
+  // priced at nothing, so the AI read casting it as pure slot loss and never
+  // did. Found while giving the goblin hexer Bane as its signature: the sim AI
+  // cast it zero times in twelve fights. Same magnitude as blessed, opposite
+  // sign, because it is literally the same die.
+  baned: -0.08,
   // Dodging only pays off if something actually attacks you, and it costs the
   // action that could have been an attack. Weighted low so a real attack wins.
   dodging: 0.02,

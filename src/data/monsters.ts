@@ -72,6 +72,39 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['nimble-escape', 'nimble-hide'],
     weaponIds: ['goblin-scimitar', 'goblin-shortbow'],
   },
+  /**
+   * EVERY CASTER CARRIES AN ATTACK CANTRIP. A monster whose whole kit is
+   * leveled slots does nothing once they run dry but walk toward the party, and
+   * five casters were in that state — the two variants below plus the dryad,
+   * the night hag and the aboleth, none of which had a single cantrip. The
+   * cantrip is the workhorse and the slot spell is the signature; that split is
+   * what makes a caster read as a caster for the whole fight rather than for
+   * two rounds.
+   */
+  /**
+   * Caster variants are variants OF a specific monster, not new creatures: each
+   * one inherits its base's creature type, so the generator (which picks 1-2
+   * types and fills from them) drops it into its own kin's warbands with no
+   * special casing. A goblin hexer turns up among goblins.
+   *
+   * They exist because the enemy side had almost no magic at the levels where
+   * a player is learning the game: of the 45 monsters a level-1 party can meet,
+   * exactly two cast anything, and 44 of the game's 66 spells were never once
+   * aimed at a player. Every variant below is built around a spell nobody had
+   * ever had thrown at them, and each one has a different verb — the existing
+   * casters all either buff-and-heal or blast.
+   */
+  'goblin-hexer': {
+    id: 'goblin-hexer', name: 'Goblin Hexer',
+    ac: 13, hp: 10, speed: 30,
+    creatureType: 'fey',
+    abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 10, cha: 14 },
+    featureIds: ['nimble-escape'],
+    weaponIds: ['dagger'],
+    // Bane is the point: a concentration debuff on up to three heroes, which
+    // lifts the moment the hexer drops. The lesson is "shoot the little one".
+    spellcasting: { ability: 'cha', slots: [2], spellIds: ['vicious-mockery', 'bane'] },
+  },
   'goblin-boss': {
     id: 'goblin-boss', name: 'Goblin Boss',
     ac: 17, hp: 21, speed: 30,
@@ -99,6 +132,19 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 14, dex: 15, con: 12, int: 3, wis: 12, cha: 6 },
     featureIds: ['pack-tactics'],
     weaponIds: ['wolf-bite'],
+  },
+  'skeleton-bonechanter': {
+    id: 'skeleton-bonechanter', name: 'Skeleton Bonechanter',
+    ac: 13, hp: 13, speed: 30,
+    creatureType: 'undead',
+    abilities: { str: 10, dex: 14, con: 15, int: 6, wis: 14, cha: 8 },
+    weaponIds: ['shortsword'],
+    vulnerabilities: ['bludgeoning'],
+    immunities: ['poison'],
+    // The only caster in the game that WANTS to be adjacent: Inflict Wounds is
+    // a touch attack, so this one closes instead of holding the back rank, and
+    // False Life keeps it standing long enough to land a second.
+    spellcasting: { ability: 'wis', slots: [2], spellIds: ['poison-spray', 'inflict-wounds', 'false-life'] },
   },
   zombie: {
     id: 'zombie', name: 'Zombie',
@@ -171,6 +217,18 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 7, cha: 8 },
     featureIds: ['pack-tactics'],
     weaponIds: ['dagger', 'sling'],
+  },
+  'kobold-emberling': {
+    id: 'kobold-emberling', name: 'Kobold Emberling',
+    ac: 13, hp: 7, speed: 30,
+    creatureType: 'dragon',
+    abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 8, cha: 14 },
+    featureIds: ['pack-tactics'],
+    weaponIds: ['dagger'],
+    // A 15-foot cone for a 50 XP monster: it cannot kill anyone on its own, but
+    // it makes standing shoulder to shoulder cost something. The cheapest
+    // possible teacher of "don't bunch up".
+    spellcasting: { ability: 'cha', slots: [2], spellIds: ['fire-bolt', 'burning-hands'] },
   },
   scout: {
     id: 'scout', name: 'Scout',
@@ -436,7 +494,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['fey-charm'],
     weaponIds: ['dryad-club'],
     // A 2nd-level slot so Web (its control spell) is actually castable.
-    spellcasting: { ability: 'wis', slots: [3, 1], spellIds: ['cure-wounds', 'web'] },
+    spellcasting: { ability: 'wis', slots: [3, 1], spellIds: ['thorn-whip', 'cure-wounds', 'web'] },
   },
   'green-hag': {
     id: 'green-hag', name: 'Green Hag',
@@ -628,7 +686,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['poison'],
     spellcasting: {
       ability: 'int', slots: [4, 3],
-      spellIds: ['ray-of-sickness', 'magic-missile', 'sleep', 'hold-person', 'invisibility'],
+      spellIds: ['poison-spray', 'ray-of-sickness', 'magic-missile', 'sleep', 'hold-person', 'invisibility'],
     },
   },
   'chain-devil': {
@@ -785,7 +843,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 3,
     spellcasting: {
       ability: 'int', slots: [4, 3],
-      spellIds: ['ray-of-sickness', 'hold-person', 'blindness', 'fear'],
+      spellIds: ['acid-splash', 'ray-of-sickness', 'hold-person', 'blindness', 'fear'],
     },
   },
 
@@ -934,6 +992,17 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['gladiator-spear'],
     metalArmor: true,
     attacksPerAction: 3,
+  },
+  'apprentice-mage': {
+    id: 'apprentice-mage', name: 'Apprentice Mage',
+    ac: 12, hp: 18, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 9, dex: 14, con: 12, int: 15, wis: 11, cha: 10 },
+    weaponIds: ['dagger'],
+    // The Mage's low-level counterpart, and the party's first taste of arcane
+    // control: Color Spray blinds a cone outright, with no damage attached, so
+    // it has to be answered rather than out-healed.
+    spellcasting: { ability: 'int', slots: [2], spellIds: ['ray-of-frost', 'color-spray'] },
   },
   mage: {
     id: 'mage', name: 'Mage',
@@ -1491,7 +1560,9 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
 export const MONSTER_XP: Record<Id, number> = {
   'goblin-warrior': 50, 'goblin-boss': 200, skeleton: 50, wolf: 50, zombie: 50, ogre: 450,
   bandit: 25, 'bandit-captain': 450, 'dire-wolf': 200, ghoul: 200, 'giant-spider': 200, acolyte: 50,
-  kobold: 25, scout: 100, orc: 100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
+  kobold: 25, scout: 100, orc: 100,
+  // Caster variants: priced above their base for the magic they add.
+  'goblin-hexer': 100, 'kobold-emberling': 50, 'skeleton-bonechanter': 200, 'apprentice-mage': 200, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
   knight: 700, minotaur: 700, ettin: 1100,
   priest: 450,
   // CR 7 -- 90 HP, AC 15, Fireball. It was priced at 1,100 (the CR 4 value),
