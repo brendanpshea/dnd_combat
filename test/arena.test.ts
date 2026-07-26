@@ -7,7 +7,7 @@ import { generateArenaMap, validateArenaMap } from '../src/arena/map.js';
 import { parseMap } from '../src/data/maps.js';
 import {
   buildWave, newArenaRun, recordResult, winRate, waveBudget, evenBudgetFor, waveDifficulty,
-  memberCapFor,
+  memberCapFor, maxCountFor,
 } from '../src/arena/run.js';
 import { seedRng } from '../src/engine/rng.js';
 import { Combat } from '../src/engine/combat.js';
@@ -431,5 +431,27 @@ describe('level-appropriate members', () => {
   // …and must not cap the top, where the CR 6-10 shelf is the whole point.
   it('does not cap a level-5 party', () => {
     expect(memberCapFor(5)).toBe(Infinity);
+    expect(maxCountFor(5)).toBe(6);
+  });
+
+  /**
+   * Headcount is capped separately from XP because 5e's group multiplier
+   * under-prices a crowd against low-level heroes, and not by a little:
+   * six giant badgers cost 600 adjusted XP and beat a level-1 party 75% of
+   * the time, while five orcs at 1,000 lose 70% of the time. With 7-13 HP
+   * what matters is attacks per round, which the multiplier flattens.
+   */
+  it('caps how many bodies a low-level party faces', () => {
+    expect(maxCountFor(1)).toBeLessThanOrEqual(3);
+    expect(maxCountFor(2)).toBeLessThanOrEqual(4);
+    for (const level of [1, 2, 3]) {
+      for (let seed = 1; seed <= 40; seed++) {
+        for (let wave = 1; wave <= 10; wave++) {
+          const w = buildWave(seed, level, wave);
+          expect(w.encounter.members.length, `L${level} w${wave}: ${w.encounter.members.join('+')}`)
+            .toBeLessThanOrEqual(maxCountFor(level));
+        }
+      }
+    }
   });
 });

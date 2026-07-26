@@ -58,10 +58,38 @@ export function waveDifficulty(wave: number): number {
  * Uncapped from level 5, because by then the squishiest hero has the HP to
  * survive a big one and the CR 6-10 shelf is the point of the late waves.
  */
-const MEMBER_CAP = [450, 1100, 2300, 3900];
+const MEMBER_CAP = [200, 1100, 2300, 3900];
+// Level 1 sits a whole band lower than the pattern would suggest (200, not
+// 450). Measured: at 450 the generator still fields gargoyle pairs and
+// wyrmling pairs, which the party loses 85-100% of the time — the gargoyle
+// resists all three physical damage types and a level-1 party owns nothing
+// else, and a wyrmling's breath covers more hit points than the whole party
+// has. Dropping the band took level-1 fights the party loses more often than
+// it wins from 14 in 48 to 4 in 48.
 
 export function memberCapFor(level: number): number {
   return MEMBER_CAP[Math.max(1, level) - 1] ?? Infinity;
+}
+
+/**
+ * The most bodies a party of this level should ever face.
+ *
+ * 5e's group multiplier (x2 for three to six monsters) badly under-prices a
+ * crowd against low-level heroes, and the measurements are not close:
+ *
+ *   six giant badgers   600 adjusted XP   party wins 25%
+ *   five orcs         1,000 adjusted XP   party wins 70%
+ *
+ * The cheaper fight is three times harder. With 7-13 HP a hero dies to any two
+ * hits, so what matters is how many attacks arrive per round, and the
+ * multiplier flattens exactly that. Capping headcount is a blunter instrument
+ * than repricing the multiplier, but it is the one that acts on the quantity
+ * actually doing the damage.
+ */
+const COUNT_CAP = [3, 4, 5];
+
+export function maxCountFor(level: number): number {
+  return COUNT_CAP[Math.max(1, level) - 1] ?? 6;
 }
 
 export function waveBudget(level: number, wave: number): number {
@@ -91,7 +119,10 @@ export function buildWave(runSeed: number, level: number, wave: number): ArenaWa
   // Mix the two so consecutive waves don't correlate.
   let rng: RngState = (runSeed * 2654435761 + wave * 40503) >>> 0;
   const budget = waveBudget(level, wave);
-  const e = generateEncounter({ budget, maxMemberXp: memberCapFor(level) }, rng); rng = e.state;
+  const e = generateEncounter(
+    { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level) },
+    rng,
+  ); rng = e.state;
   const m = generateArenaMap({}, rng); rng = m.state;
   return { wave, encounter: e.value, map: m.value.map, budget, purse: wavePurse(level, wave) };
 }
