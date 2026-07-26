@@ -15,7 +15,7 @@ import { attackableWeapons } from '../engine/rules/equipment.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
-import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM } from '../engine/rules/attack.js';
+import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
 import { legalActions, Action } from '../engine/actions.js';
 
@@ -196,8 +196,17 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'ensnaring-strike': {
       // Only worth arming if there is something to hit this turn — the slot is
       // spent at cast time, so loading up with no enemy in reach throws it away.
+      //
+      // "In reach" is not the same as "adjacent": Ensnaring Strike discharges on
+      // any weapon hit, and a ranger fires it from sixty feet. Gating it on an
+      // adjacent foe (which the paladin's smites correctly need) meant a bow
+      // ranger never armed it at all — 24 runs holding it, zero casts.
+      const anyWeapon = a.spellId === 'ensnaring-strike';
       const foe = Object.values(state.combatants)
-        .filter((c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(actor.position, c.position))
+        .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+          (anyWeapon
+            ? attackableWeapons(actor).some((w) => canAttackWith(state, actor, w, c.id))
+            : adjacent(actor.position, c.position)))
         .sort((x, y) => x.hp - y.hp)[0];
       // Mirrors isLegalAction's attack gate: an attack must still be possible
       // this turn, or the slot is spent on a swing that never comes.
@@ -211,6 +220,63 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (durable && a.spellId === 'shining-smite') v += 4;      // advantage for the whole party
       if (durable && a.spellId === 'ensnaring-strike') v += 4;   // restrained, and it ticks
       return v - slotCost;
+    }
+    // Faerie Fire: outlines everything in the patch, so every attack the party
+    // makes against them has advantage until the light goes out. Had no case at
+    // all, so a druid or bard holding it never cast it once in 40 runs.
+    case 'faerie-fire': {
+      if (actor.concentratingOn) return 0;
+      const anchor = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(anchor)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t)) continue;
+        if (t.team === actor.team) return 0;          // never light up your own side
+        if (t.conditions.some((k) => k.id === 'outlined')) continue;
+        // Worth roughly what advantage is worth to everyone who will swing at
+        // it: a fifth of a hit per attacker per round, for a while.
+        v += 4 + t.hp / 10;
+      }
+      return v - slotCost;
+    }
+    // Dragonborn Breath Weapon: a cone, aimed the way a dragon's is. This is a
+    // species feature that fired exactly never, because nothing scored it.
+    case 'breath-weapon': {
+      const dir = (a.targets[0] as { position: Position } | undefined)?.position;
+      if (!dir) return 0;
+      let v = 0;
+      for (const pos of cone15(actor.position, directionFromDelta(actor.position, dir))) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t)) continue;
+        if (t.team === actor.team) return 0;
+        const fail = saveFailProb(state, t, 'dex', 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.con));
+        const dmg = avgDice(cantripDice('1d10', actor.level)) * (fail + (1 - fail) * 0.5);
+        v += damageValue(dmg, t);
+      }
+      return v;   // innate, costs no slot
+    }
+    // Animal Friendship: takes a beast out of the fight outright. Only ever
+    // worth anything against a beast, which is why it needs its own case rather
+    // than falling through to the charm pricing.
+    case 'animal-friendship': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.creatureType !== 'beast') return 0;
+      return saveFailProb(state, t, 'wis', dc) * (6 + t.hp / 2) - slotCost;
+    }
+    // True Strike: a weapon attack powered by the caster's spellcasting ability.
+    // Worth it exactly when that modifier beats the one the weapon would use.
+    case 'true-strike': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const w = a.weaponId ? WEAPONS[a.weaponId] : undefined;
+      if (!w) return 0;
+      const normal = abilityMod(actor.abilities[attackAbility(actor, w)]);
+      if (castMod <= normal) return 0;    // the plain swing is as good or better
+      const bonus = castMod + proficiencyBonus(actor.level);
+      return damageValue(hitProb(bonus, acOf(t), 'flat') * (avgDice(w.damage) + castMod), t);
     }
     case 'sleep': {
       const anchor = (a.targets[0] as { position: Position }).position;
