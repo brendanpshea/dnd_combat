@@ -87,7 +87,12 @@ export type ConditionId =
   | 'noReactions'  // Shocking Grasp rider
   | 'outlined'     // outlined: attacks against this creature have advantage, and it can't hide
   | 'marked'       // Hunter's Mark: +1d6 force per hit, from the marking ranger only
-  | 'sacredWeapon'; // Devotion's Channel Divinity: +Cha to the paladin's own attack rolls
+  | 'sacredWeapon' // Devotion's Channel Divinity: +Cha to the paladin's own attack rolls
+  | 'sanctuary'    // Sanctuary: an attacker must make a Wis save or waste the attack
+  | 'protected'    // Protection from Evil and Good: disadvantage for the six listed types
+  | 'bonded'       // Warding Bond: +1 AC and saves, resistance to all damage, the caster shares it
+  | 'energyWarded' // Protection from Energy: resistance to one damage type
+  | 'cursed';      // Bestow Curse: disadvantage on attack rolls and saving throws
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -100,6 +105,18 @@ export interface ActiveCondition {
   repeatSave?: { ability: Ability; dc: number };
   /** The Dexterity (Stealth) result that observers must beat to reveal Hide. */
   hideCheck?: number;
+  /**
+   * A DC carried by the condition itself, for effects that make *other*
+   * creatures roll against it (Sanctuary: an attacker saves or loses the
+   * attack). Distinct from `repeatSave`, which is the bearer's own way out.
+   *
+   * Stored here rather than recomputed from the source because the rules layer
+   * cannot reach the spell layer -- spells import the attack rules, so the
+   * dependency only runs one way.
+   */
+  dc?: number;
+  /** The damage type this condition is about (Protection from Energy). */
+  damageType?: DamageType;
 }
 
 export interface ResourcePool {

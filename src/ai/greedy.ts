@@ -15,7 +15,7 @@ import { attackableWeapons } from '../engine/rules/equipment.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
-import { attackAbility, collectAttackSources, smiteDice } from '../engine/rules/attack.js';
+import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
 import { legalActions, Action } from '../engine/actions.js';
 
@@ -447,6 +447,82 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // Worth more on a target enemies are already reaching for.
       const threatened = nearestEnemyDist(state, t.position, t.team) <= 2;
       return (threatened ? 3.5 : 1.5) - slotCost;
+    }
+    // Sanctuary: worth a slot only on someone actually being swung at, and
+    // worth nothing on a melee ally who is going to break it themselves on
+    // their very next turn.
+    case 'sanctuary': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'sanctuary')) return 0;
+      const threatened = nearestEnemyDist(state, t.position, t.team) <= 2;
+      if (!threatened) return 0;
+      const selfBreaking = isMeleeFighter(t) && t.id !== actor.id;
+      const hurt = t.hp < t.maxHp / 2 ? 3 : 0;
+      return (selfBreaking ? 1 : 5) + hurt - slotCost;
+    }
+    // Protection from Evil and Good: priced off how much of the damage aimed at
+    // this ally actually comes from the six warded types. Against a party of
+    // bandits it is worth nothing and should score nothing.
+    case 'protection-from-evil-and-good': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'protected')) return 0;
+      let warded = 0;
+      let total = 0;
+      for (const c of Object.values(state.combatants)) {
+        if (!c.alive || isDown(c) || c.team === t.team) continue;
+        if (distanceFeet(c.position, t.position) > 60) continue;
+        total += 1;
+        if (c.creatureType !== undefined && PROTECTED_FROM.includes(c.creatureType)) warded += 1;
+      }
+      if (total === 0 || warded === 0) return 0;
+      const threatened = nearestEnemyDist(state, t.position, t.team) <= 2 ? 1.5 : 0.7;
+      return 6 * (warded / total) * threatened - slotCost;
+    }
+    // Warding Bond: the cleric buys the ally's survival with its own hit points,
+    // so it is only a good trade while the cleric has more to spare than the
+    // ally does. Scored as the ally's halved intake, discounted by how much of
+    // the cleric's own cushion it eats.
+    case 'warding-bond': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.id === actor.id || t.conditions.some((c) => c.id === 'bonded')) return 0;
+      if (actor.hp < actor.maxHp / 2) return 0;      // no cushion left to lend
+      if (t.hp > t.maxHp * 0.8 && nearestEnemyDist(state, t.position, t.team) > 2) return 0;
+      const frailer = t.hp / t.maxHp < actor.hp / actor.maxHp;
+      return (frailer ? 6 : 2.5) + (isMeleeFighter(t) ? 2 : 0) - slotCost;
+    }
+    // Protection from Energy: only worth a 3rd-level slot when something on the
+    // board actually deals the element it picks — the spell chooses by reading
+    // the room, so the AI asks the same question the spell does.
+    case 'protection-from-energy': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'energyWarded')) return 0;
+      // Priced off the dice it would actually halve, not a flat guess: one
+      // young dragon's cone is worth more than four mephits' puffs, and the
+      // spell should only beat Bless when that is true.
+      let breath = 0;
+      for (const c of Object.values(state.combatants)) {
+        if (!c.alive || isDown(c) || c.team === t.team) continue;
+        for (const f of c.featureIds) {
+          const spec = BREATH_WEAPONS[f];
+          if (spec) breath += avgDice(spec.dice);
+        }
+      }
+      if (breath === 0) return 0;   // the fallback element is a guess; don't pay 3rd-level for it
+      // Halved, then halved again for the save that already cuts it, and again
+      // for the chance this particular ally is in the cone.
+      return breath * 0.25 - slotCost;
+    }
+    // Bestow Curse: a whole-party debuff on one creature, so it is worth most
+    // on whatever the party is going to spend several rounds fighting anyway.
+    case 'bestow-curse': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (t.conditions.some((c) => c.id === 'cursed')) return 0;
+      const fail = saveFailProb(state, t, 'wis', dc);
+      // Scaled by how long they're likely to be around to suffer it.
+      return fail * (4 + t.hp / 8) - slotCost;
     }
     case 'haste': {
       if (actor.concentratingOn) return 0;

@@ -2,7 +2,7 @@
  * Attack resolution and damage application. All functions mutate the draft
  * state they are given — step() owns cloning, these own the rules.
  */
-import type { GameState, Combatant, Id, DamageType, Ability } from '../types.js';
+import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
@@ -73,6 +73,10 @@ export interface AttackContext {
  * Collect advantage/disadvantage sources for an attack. Phase 3 features add
  * sources here; the cancellation rule in resolveRollMode does the rest.
  */
+/** The creature types Protection from Evil and Good actually wards against. */
+export const PROTECTED_FROM: CreatureType[] =
+  ['aberration', 'celestial', 'elemental', 'fey', 'fiend', 'undead'];
+
 export function collectAttackSources(
   state: GameState,
   attacker: Combatant,
@@ -96,6 +100,13 @@ export function collectAttackSources(
   }
 
   if (target.conditions.some((c) => c.id === 'dodging')) dis.push('target dodging');
+  // Bestow Curse: the cursed creature swings badly at everything.
+  if (attacker.conditions.some((c) => c.id === 'cursed')) dis.push('cursed');
+  // Protection from Evil and Good: only the six listed kinds are put off by it.
+  if (target.conditions.some((c) => c.id === 'protected') &&
+      attacker.creatureType !== undefined && PROTECTED_FROM.includes(attacker.creatureType)) {
+    dis.push('protection from evil and good');
+  }
   if (attacker.conditions.some((c) => c.id === 'sapped')) dis.push('sapped');
   if (attacker.conditions.some((c) => c.id === 'poisoned')) dis.push('poisoned');
   if (attacker.conditions.some((c) => c.id === 'blinded')) dis.push('blinded');
@@ -181,6 +192,25 @@ export function resolveAttack(
   // Long-Limbed (Bugbear): 10-ft reach with melee weapons instead of 5 ft.
   const reachCells = attacker.featureIds.includes('long-limbed') ? 2 : 1;
   const isMeleeAttack = distanceCells(attacker.position, target.position) <= reachCells && weapon.melee;
+
+  // Sanctuary: before anything else, the attacker must steel itself. A failed
+  // Wisdom save means it cannot bring itself to strike this target at all and
+  // the attack is simply gone -- no roll, no damage, no rider. This is the one
+  // effect in the game that takes an action away by changing what the *enemy*
+  // is allowed to do, which is why it is checked ahead of the roll rather than
+  // folded into advantage.
+  const ward = target.conditions.find((c) => c.id === 'sanctuary');
+  if (ward && ward.sourceId !== attackerId) {
+    const save = savingThrow(state, attackerId, 'wis', ward.dc ?? 13, { magical: true });
+    if (!save.success) {
+      return [save.event, { type: 'attackWarded', attackerId, targetId }];
+    }
+    events.push(save.event);
+  }
+  // Attacking is what breaks your own Sanctuary. The SRD ends it on a harmful
+  // spell too; this engine has no other way to be aggressive, so an attack is
+  // the whole of it.
+  attacker.conditions = attacker.conditions.filter((c) => c.id !== 'sanctuary');
 
   const { adv, dis } = collectAttackSources(state, attacker, target, weapon, isMeleeAttack);
   const mode = resolveRollMode(adv, dis);
@@ -735,7 +765,7 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
-  opts: { crit?: boolean; tags?: string[]; magical?: boolean; via?: string } = {},
+  opts: { crit?: boolean; tags?: string[]; magical?: boolean; via?: string; shared?: boolean } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -748,10 +778,39 @@ export function applyDamage(
   // qualified one halves only nonmagical damage, which is what the SRD's
   // physical resistances actually say and what makes a magic weapon worth
   // buying. Immunity and vulnerability are untouched by either.
+  const energyWard = target.conditions.some(
+    (k) => k.id === 'energyWarded' && k.damageType === damageType,
+  );
   if (target.immunities.includes(damageType)) amount = 0;
-  else if (target.resistances.includes(damageType)) amount = Math.floor(amount / 2);
+  else if (target.resistances.includes(damageType) || energyWard) amount = Math.floor(amount / 2);
   else if (!opts.magical && (target.resistNonmagical ?? []).includes(damageType)) amount = Math.floor(amount / 2);
   else if (target.vulnerabilities.includes(damageType)) amount *= 2;
+
+  // Warding Bond: the ward halves what reaches the target, and the other half
+  // goes to the cleric who cast it. The party's total hit points are unchanged
+  // -- they have simply been moved onto the person who chose to carry them,
+  // which is the entire spell.
+  //
+  // `shared` suppresses the bond on the mirrored hit, so a pair of bonded
+  // clerics cannot bounce one blow between them forever.
+  // Checked before the split, not after: a cleric who is dead or down stops
+  // carrying anyone, and the ally should feel the whole blow on that hit rather
+  // than have half of it quietly vanish.
+  let bond = opts.shared ? undefined : target.conditions.find((k) => k.id === 'bonded');
+  if (bond) {
+    const caster = bond.sourceId !== undefined ? state.combatants[bond.sourceId] : undefined;
+    if (!caster || !caster.alive || isDown(caster)) {
+      target.conditions = target.conditions.filter((k) => k !== bond);
+      events.push({ type: 'conditionRemoved', combatantId: targetId, condition: 'bonded' });
+      bond = undefined;
+    }
+  }
+  let mirrored = 0;
+  if (bond) {
+    const half = Math.floor(amount / 2);
+    mirrored = amount - half;
+    amount = half;
+  }
 
   // Regeneration is stopped by the right damage type, and it's the *type* that
   // matters rather than how much got through — a fire hit soaked by temp HP or
@@ -768,6 +827,12 @@ export function applyDamage(
     ...(opts.tags && opts.tags.length > 0 ? { tags: opts.tags } : {}),
     ...(opts.via ? { via: opts.via } : {}),
   });
+
+  if (bond?.sourceId && mirrored > 0) {
+    events.push(...applyDamage(state, bond.sourceId, sourceId, mirrored, damageType, [], {
+      tags: ['Warding Bond'], shared: true,
+    }));
+  }
 
   // Undead Fortitude: unless radiant or a crit, Con save DC 5 + damage to
   // drop to 1 HP instead of 0.

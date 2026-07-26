@@ -174,12 +174,14 @@ export const CLASSES: Record<Id, ClassData> = {
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
       cantripsKnownByLevel: [2, 2, 2, 2, 2], // both cleric cantrips (Sacred Flame, Guidance)
       // Cleric knows its whole leveled list (no spellbook); it prepares a subset.
-      preparedByLevel: [4, 5, 6, 7, 9],
+      // Widened alongside the list: the point of the new spells is a choice, and
+      // preparing 4 of 9 was already most of the 1st-level list.
+      preparedByLevel: [4, 5, 7, 8, 11],
       spellsByLevel: {
-        1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith'],
+        1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good'],
         2: ['guiding-bolt'],
-        3: ['hold-person', 'aid', 'spiritual-weapon', 'blindness', 'lesser-restoration'],
-        5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic'], // 3rd-level slot arrives here
+        3: ['hold-person', 'aid', 'spiritual-weapon', 'blindness', 'lesser-restoration', 'warding-bond'],
+        5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic', 'protection-from-energy', 'bestow-curse'], // 3rd-level slot arrives here
       },
     },
     featuresByLevel: {
