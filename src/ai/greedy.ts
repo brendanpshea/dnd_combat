@@ -8,7 +8,7 @@ import { isDown, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, spellDc, cantripDice, wearsMetal } from '../data/spells.js';
+import { SPELLS, spellDc, cantripDice, wearsMetal, canBePutToSleep } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
@@ -285,7 +285,7 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         const occ = cellAt(state.grid, pos)?.occupantId;
         if (!occ) continue;
         const t = state.combatants[occ]!;
-        if (!t.alive) continue;
+        if (!t.alive || !canBePutToSleep(t)) continue;
         const p = saveFailProb(state, t, 'wis', dc);
         v += t.team === actor.team ? -8 * p : p * (6 + t.maxHp / 3);
       }

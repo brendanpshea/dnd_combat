@@ -19,7 +19,7 @@ import { chooseAction } from '../src/ai/greedy.js';
 import {
   newCampaign, randomizeParty, buildCampaignParty, partyLevelOf, longRest,
   applyArenaVictory, reviveParty, shopOffering, SHOP_STOCK, itemPrice, itemName,
-  buyItem, MAX_LEVEL, applyPartyTemplate, type CampaignState,
+  buyItem, MAX_LEVEL, applyPartyTemplate, setPartyClass, type CampaignState,
 } from '../src/campaign/campaign.js';
 import { membersCoinXP } from '../src/data/encounters.js';
 import { buildWave, newArenaRun, recordResult, type ArenaRunState } from '../src/arena/run.js';
@@ -42,6 +42,15 @@ const VERBOSE = process.argv.includes('--verbose');
  * is the problem; if only the random parties die there, the comps are.
  */
 const STANDARD = process.argv.includes('--standard');
+/**
+ * `--comp=fighter,cleric,rogue,bard` fields exactly that party every run.
+ *
+ * The point is the controlled swap. "Mean waves reached when a class is
+ * present" mixes the class with whatever else was rolled alongside it; holding
+ * three slots fixed and varying the fourth is the only way to read a class's
+ * own contribution.
+ */
+const COMP = (process.argv.find((a) => a.startsWith('--comp='))?.slice(7) ?? '').split(',').filter(Boolean);
 /** Experiment: give a full rest after a defeat as well as after a win. */
 const RESTED_RETRY = process.argv.includes('--rested-retry');
 /** Give up on a run after this many consecutive losses at one wave. */
@@ -60,7 +69,7 @@ interface Tally {
   /** Wins/fights keyed `level:wave`. */
   byWave: Map<string, { fights: number; wins: number }>;
   /** Damage dealt and turns taken, per class, across every run. */
-  byClass: Map<Id, { damage: number; turns: number; downs: number; runs: number; kills: number }>;
+  byClass: Map<Id, { damage: number; turns: number; downs: number; runs: number; kills: number; denied: number; healed: number; idleTurns: number }>;
   spellsCast: Map<Id, number>;
   featuresUsed: Map<Id, number>;
   itemsBought: Map<Id, number>;
@@ -107,7 +116,7 @@ const bump = <K,>(m: Map<K, number>, k: K, n = 1) => m.set(k, (m.get(k) ?? 0) + 
 
 function classTally(id: Id) {
   let t = T.byClass.get(id);
-  if (!t) { t = { damage: 0, turns: 0, downs: 0, runs: 0, kills: 0 }; T.byClass.set(id, t); }
+  if (!t) { t = { damage: 0, turns: 0, downs: 0, runs: 0, kills: 0, denied: 0, healed: 0, idleTurns: 0 }; T.byClass.set(id, t); }
   return t;
 }
 
@@ -142,22 +151,52 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
 
   let decisions = 0;
   let lastActor: Id | undefined;
+  let actedThisTurn = false;
+  let lastHeroClass: Id | undefined;
   while (!combat.winner() && decisions++ < MAX_DECISIONS) {
     const id = combat.activeId!;
     if (id !== lastActor) {
       lastActor = id;
       const cls = classOf.get(id);
-      if (cls) { classTally(cls).turns += 1; T.heroTurns += 1; }
+      if (cls) {
+        classTally(cls).turns += 1;
+        T.heroTurns += 1;
+        // A turn on which a hero attacks nothing, casts nothing, uses nothing.
+        // Moving still counts as idle here: the question is whether the AI ever
+        // finds something for this class to *do*.
+        if (!actedThisTurn && lastHeroClass) classTally(lastHeroClass).idleTurns += 1;
+        actedThisTurn = false;
+        lastHeroClass = cls;
+      }
+      else {
+        // An enemy turn that begins unable to act, or pinned in place, is a turn
+        // somebody took away. Credit it to whoever's effect is holding them —
+        // this is the only way control shows up next to damage, and without it a
+        // wizard reads as one of the weaker classes in the party.
+        const foe = combat.state.combatants[id]!;
+        const holding = foe.conditions.find(
+          (k) => (k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed' ||
+                  k.id === 'restrained' || k.id === 'charmed' || k.id === 'lured') &&
+                 k.sourceId !== undefined && classOf.has(k.sourceId),
+        );
+        if (holding?.sourceId) classTally(classOf.get(holding.sourceId)!).denied += 1;
+      }
     }
     const action = chooseAction(combat.state, id) ?? { kind: 'endTurn' as const };
     if (action.kind === 'castSpell') bump(T.spellsCast, action.spellId);
     if (action.kind === 'useFeature') bump(T.featuresUsed, action.featureId);
     if (action.kind === 'useItem') bump(T.itemsUsed, action.itemId);
+    if (action.kind === 'attack' || action.kind === 'castSpell' ||
+        action.kind === 'useFeature' || action.kind === 'useItem') actedThisTurn = true;
     const events = combat.apply(action);
     for (const e of events) {
       if (e.type === 'damageDealt') {
         const cls = classOf.get(e.sourceId);
         if (cls) classTally(cls).damage += e.amount;
+      }
+      if (e.type === 'healed') {
+        const cls = classOf.get(e.sourceId);
+        if (cls) classTally(cls).healed += e.amount;
       }
       if (e.type === 'died' && !classOf.has(e.combatantId)) {
         // Attribute the kill to whoever was acting.
@@ -255,7 +294,11 @@ function shop(c: CampaignState, level: number, key: string): void {
 
 function playRun(seed: number): void {
   const c = newCampaign(seed);
-  if (STANDARD) applyPartyTemplate(c, 'classic'); else randomizeParty(c, { roles: true });
+  if (COMP.length) {
+    randomizeParty(c, { roles: true });   // names and species
+    COMP.forEach((classId, i) => setPartyClass(c, i, classId));
+  } else if (STANDARD) applyPartyTemplate(c, 'classic');
+  else randomizeParty(c, { roles: true });
   c.partyReady = true;
   const comp = c.characters.map((ch) => `${ch.speciesId} ${ch.classId}`).join(', ');
   for (const ch of c.characters) classTally(ch.classId).runs += 1;
@@ -340,7 +383,7 @@ function median(xs: number[]): number {
 }
 const FLAG = '  ⚠ ';
 
-console.log(`Playing ${RUNS} ${STANDARD ? 'Classic Four' : 'random'} parties through the arena…\n`);
+console.log(`Playing ${RUNS} ${COMP.length ? COMP.join('/') : STANDARD ? 'Classic Four' : 'random'} parties through the arena…\n`);
 for (let seed = 1; seed <= RUNS; seed++) playRun(seed);
 
 console.log(`\n=== ${T.fights} fights across ${RUNS} runs ===`);
@@ -385,7 +428,9 @@ for (const [id, v] of classRows) {
   console.log(
     `${(CLASSES[id]?.name ?? id).padEnd(9)} runs ${String(v.runs).padStart(3)}` +
     `  dmg/turn ${dmgPerTurn.toFixed(1).padStart(5)}` +
-    `  kills/run ${(v.kills / Math.max(1, v.runs)).toFixed(1).padStart(4)}` +
+    `  heal/turn ${(v.healed / Math.max(1, v.turns)).toFixed(1).padStart(5)}` +
+    `  denied/turn ${(v.denied / Math.max(1, v.turns)).toFixed(2).padStart(5)}` +
+    `  idle turns ${pct(v.idleTurns, v.turns)}` +
     `  downs/run ${(v.downs / Math.max(1, v.runs)).toFixed(2)}`,
   );
 }

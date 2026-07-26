@@ -200,6 +200,25 @@ export function strikeLightning(state: GameState, casterId: Id, anchor: Position
   return events;
 }
 
+/**
+ * Can this creature be put to sleep at all?
+ *
+ * 2024: "creatures that don't sleep, such as elves, or that have Immunity to
+ * the Exhaustion condition automatically succeed". There is no condition
+ * immunity list in this engine, so the rule is read off creature type — undead
+ * and constructs are the things that carry Exhaustion immunity, and they are
+ * also the things nobody expects to fall asleep. A skeleton dozing off is the
+ * kind of thing that makes a rule system feel broken.
+ *
+ * Not cosmetic: undead and constructs are 19% of every body the arena fields,
+ * so Sleep was landing on about one enemy in five that should have shrugged it
+ * off, and it is the most-cast spell in the game by a factor of three.
+ */
+export function canBePutToSleep(c: Combatant): boolean {
+  if (c.featureIds.includes('trance')) return false;          // elves
+  return c.creatureType !== 'undead' && c.creatureType !== 'construct';
+}
+
 export function spellDc(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
   return 8 + proficiencyBonus(c.level) + spellMod(state, casterId);
@@ -797,7 +816,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const tid = cell?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;
-        if (!t.alive || t.featureIds.includes('trance')) continue;
+        if (!t.alive || !canBePutToSleep(t)) continue;
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {
