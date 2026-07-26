@@ -29,6 +29,7 @@ import { SPELLS } from '../src/data/spells.js';
 import { FEATURES } from '../src/data/features.js';
 import { MONSTERS } from '../src/data/monsters.js';
 import { CLASSES } from '../src/data/classes.js';
+import { WEAPONS } from '../src/data/weapons.js';
 import { acOf } from '../src/data/armor.js';
 import { isDown } from '../src/engine/types.js';
 import type { Id } from '../src/engine/types.js';
@@ -63,6 +64,16 @@ interface Tally {
   spellsCast: Map<Id, number>;
   featuresUsed: Map<Id, number>;
   itemsBought: Map<Id, number>;
+  /** Consumables actually drunk/thrown/read in a fight, not merely carried. */
+  itemsUsed: Map<Id, number>;
+  /** Runs in which at least one hero *had* this spell, so "never cast" can be
+   *  told apart from "nobody ever held it". */
+  spellAvailableRuns: Map<Id, number>;
+  itemAvailableRuns: Map<Id, number>;
+  /** Per class: how deep runs containing it got. */
+  classDepth: Map<Id, number[]>;
+  /** Each run's roster and how far it got. */
+  comps: Array<{ classes: Id[]; wave: number; level: number }>;
   monstersMet: Map<Id, number>;
   /** Gold in hand when a run ended, and gold at each shop visit. */
   goldAtEnd: number[];
@@ -84,7 +95,9 @@ interface Tally {
 const T: Tally = {
   fights: 0, wins: 0, rounds: [], stalls: [], errors: [],
   byWave: new Map(), byClass: new Map(), spellsCast: new Map(), featuresUsed: new Map(),
-  itemsBought: new Map(), monstersMet: new Map(), goldAtEnd: [], goldUnspendable: 0,
+  itemsBought: new Map(), itemsUsed: new Map(), spellAvailableRuns: new Map(),
+  itemAvailableRuns: new Map(), classDepth: new Map(), comps: [],
+  monstersMet: new Map(), goldAtEnd: [], goldUnspendable: 0,
   shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalWaves: [], endStats: [],
   partyDowns: 0, heroTurns: 0,
   firstTry: { fights: 0, wins: 0 }, retry: { fights: 0, wins: 0 },
@@ -139,6 +152,7 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
     const action = chooseAction(combat.state, id) ?? { kind: 'endTurn' as const };
     if (action.kind === 'castSpell') bump(T.spellsCast, action.spellId);
     if (action.kind === 'useFeature') bump(T.featuresUsed, action.featureId);
+    if (action.kind === 'useItem') bump(T.itemsUsed, action.itemId);
     const events = combat.apply(action);
     for (const e of events) {
       if (e.type === 'damageDealt') {
@@ -245,6 +259,19 @@ function playRun(seed: number): void {
   c.partyReady = true;
   const comp = c.characters.map((ch) => `${ch.speciesId} ${ch.classId}`).join(', ');
   for (const ch of c.characters) classTally(ch.classId).runs += 1;
+  // What this party could possibly have used, so "never cast" separates a
+  // spell the AI ignores from one nobody was carrying.
+  {
+    const party = buildCampaignParty(c);
+    for (const id of new Set(party.flatMap((p) => p.spellIds))) bump(T.spellAvailableRuns, id);
+    // Weapons in the pack are not consumables: they are drawn and swung through
+    // the attack action, never through useItem, so counting them here reported
+    // a stack of javelins as "carried, never used" every single run.
+    for (const id of new Set(party.flatMap((p) => p.inventory.map((it) => it.itemId)))) {
+      if (WEAPONS[id]) continue;
+      bump(T.itemAvailableRuns, id);
+    }
+  }
 
   let run: ArenaRunState = newArenaRun(seed);
   let wave = 1;
@@ -282,6 +309,13 @@ function playRun(seed: number): void {
   const finalLevel = partyLevelOf(c);
   T.finalLevels.push(finalLevel);
   T.finalWaves.push(wave);
+  const classes = c.characters.map((ch) => ch.classId);
+  T.comps.push({ classes: [...classes].sort(), wave, level: finalLevel });
+  for (const id of classes) {
+    const list = T.classDepth.get(id) ?? [];
+    list.push(wave);
+    T.classDepth.set(id, list);
+  }
   T.goldAtEnd.push(c.gold);
   for (const combatant of buildCampaignParty(c)) {
     T.endStats.push({
@@ -356,6 +390,61 @@ for (const [id, v] of classRows) {
   );
 }
 
+// Counted from the *chosen action*, so anything the engine fires on its own
+// never appears: the Shield spell is an auto-reaction inside resolveAttack and
+// Mage Armor is worn before the fight. Absent here means "never chosen", which
+// for these two is not the same as "never happened".
+const AUTOCAST = new Set<Id>(['shield', 'mage-armor']);
+
+function mean(xs: number[]): number {
+  return xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length;
+}
+
+console.log('\n--- spell usage (casts per run in which someone knew it) ---');
+{
+  const rows = [...T.spellAvailableRuns.entries()]
+    .filter(([id]) => !SPELLS[id]?.outOfCombat && !AUTOCAST.has(id))
+    .map(([id, runs]) => ({ id, runs, casts: T.spellsCast.get(id) ?? 0, per: (T.spellsCast.get(id) ?? 0) / runs }))
+    .sort((a, b) => b.per - a.per);
+  const shown = rows.slice(0, 10);
+  console.log('  most used: ' + shown.map((r) => `${r.id} ${r.per.toFixed(1)}`).join(', '));
+  // Held often, cast rarely: the AI is passing it over, or it does not work.
+  const cold = rows.filter((r) => r.runs >= Math.max(3, RUNS * 0.15) && r.per < 0.1);
+  if (cold.length) {
+    console.log(`${FLAG}carried but (almost) never cast — ${cold.length}:`);
+    for (const r of cold) {
+      console.log(`      ${r.id.padEnd(30)} known in ${String(r.runs).padStart(3)} runs, cast ${r.casts}`);
+    }
+  }
+}
+
+console.log('\n--- consumables (used per run in which someone carried it) ---');
+{
+  const rows = [...T.itemAvailableRuns.entries()]
+    .map(([id, runs]) => ({ id, runs, used: T.itemsUsed.get(id) ?? 0, per: (T.itemsUsed.get(id) ?? 0) / runs }))
+    .sort((a, b) => b.per - a.per);
+  for (const r of rows) {
+    const flag = r.runs >= Math.max(3, RUNS * 0.15) && r.per < 0.1 ? FLAG.trim() + ' ' : '   ';
+    console.log(`  ${flag}${itemName(r.id).padEnd(28)} carried in ${String(r.runs).padStart(3)} runs, used ${String(r.used).padStart(4)} (${r.per.toFixed(2)}/run)`);
+  }
+}
+
+console.log('\n--- party composition ---');
+{
+  const rows = [...T.classDepth.entries()]
+    .map(([id, waves]) => ({ id, n: waves.length, depth: mean(waves) }))
+    .filter((r) => r.n >= 3)
+    .sort((a, b) => b.depth - a.depth);
+  console.log('  mean waves reached, by class present in the party:');
+  for (const r of rows) {
+    console.log(`    ${(CLASSES[r.id]?.name ?? r.id).padEnd(9)} ${r.depth.toFixed(1).padStart(5)} waves  (${r.n} runs)`);
+  }
+  const best = [...T.comps].sort((a, b) => b.wave - a.wave).slice(0, 5);
+  const worst = [...T.comps].sort((a, b) => a.wave - b.wave).slice(0, 5);
+  console.log('  deepest runs:  ' + best.map((c) => `w${c.wave} L${c.level} [${c.classes.join('/')}]`).join('\n                 '));
+  console.log('  shallowest:    ' + worst.map((c) => `w${c.wave} L${c.level} [${c.classes.join('/')}]`).join('\n                 '));
+}
+
 console.log('\n--- content never used ---');
 const heroSpells = new Set<Id>();
 for (const cls of Object.values(CLASSES)) {
@@ -365,7 +454,6 @@ for (const cls of Object.values(CLASSES)) {
 // never appears here however often it goes off: the Shield spell is an
 // auto-reaction inside resolveAttack, and Mage Armor is worn before the fight.
 // A name on this list means "the AI never chose it", not "it never happened".
-const AUTOCAST = new Set<Id>(['shield', 'mage-armor']);
 const unusedSpells = [...heroSpells].filter(
   (s) => !T.spellsCast.has(s) && !SPELLS[s]?.outOfCombat && !AUTOCAST.has(s),
 );
