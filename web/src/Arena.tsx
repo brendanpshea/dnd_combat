@@ -18,7 +18,7 @@ import { useState, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
-  type CampaignState, newCampaign, buildCampaignParty, partyLevelOf, longRest,
+  type CampaignState, newCampaign, buildCampaignParty, partyLevelOf, longRest, preparableSpells,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering,
 } from '../../src/campaign/campaign.js';
@@ -29,6 +29,7 @@ import {
   buildWave, newArenaRun, recordResult, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
 import { PartySetup } from './PartySetup.js';
+import { SpellTray } from './SpellTray.js';
 import { PartyStrip } from './Adventure.js';
 import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
@@ -81,7 +82,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [c, setC] = useState<CampaignState>(() => saved?.campaign ?? newCampaign(Date.now() & 0xffff));
   const [run, setRun] = useState<ArenaRunState>(() => saved?.run ?? newArenaRun(Date.now() & 0xffff));
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
-  const [panel, setPanel] = useState<'none' | 'shop'>('none');
+  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare'>('none');
+  /** Which caster's prepared list is open, if any. */
+  const [prepareFor, setPrepareFor] = useState<number | null>(null);
   const [buyFor, setBuyFor] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmRestart, setConfirmRestart] = useState(false);
@@ -235,6 +238,33 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     .filter((id) => itemPrice(id) !== undefined);
   const grid = parseMap(wave.map);
 
+  // Everyone with a prepared list worth opening. A fighter has none, and
+  // offering them a spell tray is a dead button.
+  const casters = c.characters
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ i }) => preparableSpells(c, i).length > 0);
+
+  /**
+   * The prepared-spell tray, on the gate screen.
+   *
+   * The arena long-rests the party after every win, which is exactly when the
+   * rules let you re-prepare — but the only ways to change a prepared list were
+   * the forge and the level-up modal, so between waves at the same level you
+   * were locked into whatever you walked in with. `prepare` mode locks cantrips
+   * and the spellbook and opens only the prepared list, which is what a long
+   * rest actually allows.
+   */
+  const spellPanel = prepareFor !== null && (
+    <SpellTray
+      key={prepareFor}          // fresh drafts per caster — never inherit another's
+      campaign={c}
+      idx={prepareFor}
+      mode="prepare"
+      onClose={() => setPrepareFor(null)}
+      onSaved={(msg) => { setPrepareFor(null); setNotice(msg); refresh(); persist(c, run); }}
+    />
+  );
+
   return (
     <div className="adventure">
       <div className="adv-stage">
@@ -268,6 +298,37 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               </p>
 
               {notice && <div className="notice">{notice}</div>}
+
+              {panel === 'prepare' && (
+                <div className="arena-shop">
+                  <div className="arena-shop-head">
+                    <b>Study your spells</b>
+                    <div className="arena-buyer">
+                      {casters.map(({ ch, i }) => {
+                        const look = classLook(ch.classId);
+                        return (
+                          <button
+                            key={i}
+                            className="arena-buyer-pick"
+                            onClick={() => setPrepareFor(i)}
+                            title={`Prepare spells for ${ch.name}`}
+                          >
+                            <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
+                            {look && (
+                              <span className="class-pip on-portrait" style={{ ['--pip' as string]: look.color }}>
+                                {look.glyph}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <p className="hint">
+                    You rested after the last wave — swap in whatever this one calls for.
+                  </p>
+                </div>
+              )}
 
               {panel === 'shop' && (
                 <div className="arena-shop">
@@ -327,6 +388,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <button onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}>
                   🛒 {panel === 'shop' ? 'Close the stall' : 'Visit the stall'}
                 </button>
+                {casters.length > 0 && (
+                  <button onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}>
+                    📖 {panel === 'prepare' ? 'Close the spellbook' : 'Prepare spells'}
+                  </button>
+                )}
                 <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
                 {restartButton}
               </div>
@@ -335,6 +401,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         </div>
       </div>
       <PartyStrip campaign={c} />
+      {spellPanel}
     </div>
   );
 }
