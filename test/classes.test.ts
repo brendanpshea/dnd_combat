@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
 import { acOf } from '../src/data/armor.js';
 import { CLASSES, SKILL_ABILITY } from '../src/data/classes.js';
+import {
+  newCampaign, randomizeParty, setPartyClass, buildCampaignParty, partyLevelOf, applyArenaVictory,
+} from '../src/campaign/campaign.js';
 
 describe('character builder', () => {
   it('fighter: AC 17, HP 13, str-based stats, sap mastery', () => {
@@ -109,4 +112,42 @@ describe('class skill proficiencies (2024 counts)', () => {
       expect(cls.skillProfs.length, `${cls.id} is proficient in nothing`).toBeGreaterThan(0);
     }
   });
+});
+
+/**
+ * The auto-prepared loadout takes spells in *class-list order* within each
+ * spell level (campaign.ts's defaultKnown), so a strong spell written late on
+ * its line is never prepared and the class simply never casts it.
+ *
+ * That is not hypothetical: the bard shipped with Bane first on its 1st-level
+ * line and Sleep fifth, and across forty playthroughs it cast Bane constantly
+ * and Sleep essentially never — while the wizard, whose list happens to put
+ * Sleep second, cast it eighty times a run. The druid had Entangle last.
+ *
+ * These assertions name the spells each caster must actually walk onto the
+ * board holding. Reordering a class list is now a change with a test attached.
+ */
+describe('auto-prepared loadouts include each class signature', () => {
+  const MUST_PREPARE: Record<string, string[]> = {
+    bard: ['sleep', 'hold-person', 'healing-word'],
+    druid: ['entangle', 'call-lightning', 'cure-wounds'],
+    wizard: ['sleep', 'fireball', 'magic-missile'],
+    cleric: ['spiritual-guardians', 'bless', 'cure-wounds'],
+    ranger: ['hunters-mark', 'ensnaring-strike'],
+    paladin: ['searing-smite', 'bless'],
+  };
+
+  for (const [classId, wanted] of Object.entries(MUST_PREPARE)) {
+    it(`${classId} walks in holding its best spells`, () => {
+      const c = newCampaign(1);
+      randomizeParty(c, { roles: true });
+      setPartyClass(c, 0, classId);
+      c.partyReady = true;
+      while (partyLevelOf(c) < 5) applyArenaVictory(c, buildCampaignParty(c), 3000, 1);
+      const prepared = buildCampaignParty(c)[0]!.spellIds;
+      for (const id of wanted) {
+        expect(prepared, `${classId} never prepares ${id}, so it can never cast it`).toContain(id);
+      }
+    });
+  }
 });
