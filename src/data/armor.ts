@@ -63,6 +63,9 @@ export function armorClass(armorId: Id | undefined, dexMod: number, shieldAc: nu
 /** A combatant's current AC: stat-block override (monsters) or derived from equipment. */
 export function acOf(c: Combatant): number {
   if (c.acOverride !== undefined) return c.acOverride;
+  // Rust never takes armour below no armour at all: the plates are pitted, not
+  // gone, and a corroded knight should not end up worse off than a naked one.
+  const rust = c.corroded ?? 0;
   const shield = shieldBonus(c.equipped.offHand);
   if (c.mageArmor && c.equipped.armor === undefined) {
     return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
@@ -70,7 +73,9 @@ export function acOf(c: Combatant): number {
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
-  return base + defense + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
+  const floor = 10 + abilityMod(c.abilities.dex);
+  const armored = base + defense + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c);
+  return Math.max(armored - rust, Math.min(armored, floor));
 }
 
 /** Cloak of Protection (trinket): +1 AC, granted as a feature the builder folds. */

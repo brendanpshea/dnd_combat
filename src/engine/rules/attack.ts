@@ -428,6 +428,19 @@ export function resolveAttack(
     events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { crit }));
   }
 
+  // Corrosion (rust monster): a hit pits metal armour or a shield, one point of
+  // AC at a time up to the weapon's cap, for the rest of the fight. Nothing to
+  // eat means nothing happens — an unarmoured target is simply immune, which is
+  // the whole point of the monster.
+  if (weapon.corrodes && target.alive && !isDown(target)) {
+    const armor = target.equipped.armor !== undefined ? ARMOR[target.equipped.armor] : undefined;
+    const hasMetal = (armor?.metal ?? false) || isShield(target.equipped.offHand);
+    if (hasMetal && (target.corroded ?? 0) < weapon.corrodes.max) {
+      target.corroded = (target.corroded ?? 0) + 1;
+      events.push({ type: 'armorCorroded', combatantId: targetId, ac: acOf(target) });
+    }
+  }
+
   // Life Drain (wraith): a failed Constitution save cuts the victim's hit point
   // maximum by the damage it just took. Measured off what actually landed, so
   // resistance and immunity blunt the drain exactly as they blunt the damage.

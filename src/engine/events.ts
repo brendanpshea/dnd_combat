@@ -42,6 +42,8 @@ export type GameEvent =
    *  the next long rest, which here means until the fight is over — combatants
    *  are rebuilt from the campaign roster for each one. */
   | { type: 'maxHpDrained'; combatantId: Id; amount: number; maxHp: number }
+  /** A rust monster ate a point of AC off someone's metal armour. */
+  | { type: 'armorCorroded'; combatantId: Id; ac: number }
   /** Healed off 0 HP and back on their feet. */
   | { type: 'revived'; combatantId: Id; hp: number }
   | {

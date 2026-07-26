@@ -269,6 +269,19 @@ export interface Combatant {
    */
   holdDamage?: { dice: string; type: DamageType };
   /**
+   * AC lost to a rust monster's antennae — metal armour eaten away, one point
+   * per hit. Restored between fights for free, since combatants are rebuilt
+   * from the campaign roster each time.
+   *
+   * The SRD destroys the armour outright and permanently. That is a tax rather
+   * than a decision: you meet a CR 1/2 monster, roll badly, and your reward
+   * from three fights ago is gone with nothing you could have done about it.
+   * A capped, fight-scoped penalty keeps the gameplay the monster is actually
+   * for -- the armoured characters back off and the unarmoured ones deal with
+   * it -- without confiscating anything.
+   */
+  corroded?: number;
+  /**
    * Death Burst: the thing goes off when it dies. A magmin bursts into fire, a
    * mephit into ice or steam. It is the whole point of those monsters — kill
    * one carelessly in a huddle and you have made your own problem — and

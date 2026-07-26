@@ -11,6 +11,7 @@ import { chooseAction } from '../src/ai/greedy.js';
 import { applyDamage, resolveAttack } from '../src/engine/rules/attack.js';
 import { applyHealing } from '../src/engine/rules/heal.js';
 import { arenaRoster } from '../src/arena/encounter.js';
+import { acOf } from '../src/data/armor.js';
 import { FEATURES } from '../src/data/features.js';
 import { makeCombatant } from './helpers.js';
 import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
@@ -939,6 +940,38 @@ describe('signature abilities', () => {
       expect(c.state.combatants[id]!.hp, `${id} should have been caught`).toBeLessThan(before.get(id)!);
     }
     expect(c.state.combatants[away.id]!.hp, 'the far magmin is out of range').toBe(before.get(away.id));
+  });
+
+  // The rust monster's gameplay is "who can afford to stand next to it" — which
+  // requires that standing next to it in plate actually cost something.
+  it('rust corrodes metal armour a point at a time, up to its cap', () => {
+    const rust = buildMonster('rust-monster', 'team2', { x: 4, y: 3 });
+    const knight = makeCombatant({ id: 'knight', team: 'team1', position: { x: 3, y: 3 }, hp: 900, maxHp: 900 });
+    knight.equipped = { armor: 'chain-mail' };
+    const c = new Combat({ seed: 13, mapId: 'open', combatants: [knight, rust] });
+    const before = acOf(c.state.combatants['knight']!);
+    for (let i = 0; i < 40; i++) resolveAttack(c.state, rust.id, 'knight', 'rust-monster-antennae');
+    const t = c.state.combatants['knight']!;
+    expect(t.corroded, 'corrosion should cap, not run away').toBe(3);
+    expect(acOf(t)).toBe(before - 3);
+  });
+
+  it('rust has nothing to eat on leather, and never leaves you worse than unarmoured', () => {
+    const rust = buildMonster('rust-monster', 'team2', { x: 4, y: 3 });
+    const scout = makeCombatant({ id: 'scout', team: 'team1', position: { x: 3, y: 3 }, hp: 900, maxHp: 900 });
+    scout.equipped = { armor: 'studded-leather' };
+    // Chain shirt is metal but barely better than bare skin for a high-Dex
+    // wearer, so it is the case where the floor has to bite.
+    const dexy = makeCombatant({ id: 'dexy', team: 'team1', position: { x: 5, y: 3 }, abilities: { str: 10, dex: 20, con: 10, int: 10, wis: 10, cha: 10 }, hp: 900, maxHp: 900 });
+    dexy.equipped = { armor: 'chain-shirt' };
+    const c = new Combat({ seed: 14, mapId: 'open', combatants: [scout, dexy, rust] });
+    for (let i = 0; i < 40; i++) {
+      resolveAttack(c.state, rust.id, 'scout', 'rust-monster-antennae');
+      resolveAttack(c.state, rust.id, 'dexy', 'rust-monster-antennae');
+    }
+    expect(c.state.combatants['scout']!.corroded, 'leather does not rust').toBeUndefined();
+    const d = c.state.combatants['dexy']!;
+    expect(acOf(d), 'rust must never make armour worse than none').toBeGreaterThanOrEqual(10 + abilityMod(d.abilities.dex));
   });
 
   // A cube that only restrains is a positioning problem the party can choose to
