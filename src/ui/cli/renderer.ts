@@ -13,7 +13,7 @@ import { ITEMS } from '../../data/items.js';
 import { acOf } from '../../data/armor.js';
 
 const CLASS_LETTER: Record<string, string> = {
-  fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R', bard: 'B',
+  fighter: 'F', wizard: 'W', cleric: 'C', rogue: 'R', bard: 'B', druid: 'd',
   'goblin-warrior': 'g', 'goblin-boss': 'G', skeleton: 's',
   wolf: 'w', zombie: 'z', ogre: 'O',
   bandit: 'b', 'bandit-captain': 'B', 'dire-wolf': 'D',
@@ -235,6 +235,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} fills the ground with thick, clinging webs.`;
     case 'webCleared':
       return `  The webs wither and fall away.`;
+    case 'wildShaped':
+      return `${nm(e.combatantId)} shifts into the shape of a ${e.formId.replace(/-/g, ' ')}! (+${e.tempHp} temp HP)`;
+    case 'wildShapeEnded':
+      return `${nm(e.combatantId)} sheds the ${e.formId.replace(/-/g, ' ')} shape.`;
     case 'cuttingWords':
       return `  ${nm(e.bardId)} cuts in with a jibe — ${e.amount} off the roll.`;
     case 'attackWarded':

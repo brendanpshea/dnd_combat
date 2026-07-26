@@ -515,7 +515,7 @@ const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id; skirmisher
 };
 
 /** Classes whose look is robes and spellbooks rather than mail and axes. */
-const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric', 'bard']);
+const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric', 'bard', 'druid']);
 /** Light, hooded, knife-in-the-dark classes — the third look, where it's drawn. */
 const SKIRMISHER_CLASSES = new Set<Id>(['rogue']);
 
@@ -528,6 +528,7 @@ const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
   // No human-drawn druid yet, so the warden stands in for one. The bard has
   // its own art already.
   bard: 'human-bard',
+  druid: 'gnome-warden',
 };
 
 /** Sensible default portrait for a species/class combo: species art if it has

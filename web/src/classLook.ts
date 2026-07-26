@@ -38,6 +38,7 @@ const LOOK: Record<string, Omit<ClassLook, 'name'>> = {
   ranger: { glyph: '🏹', color: '#63b478' },
   paladin: { glyph: '🛡️', color: '#cfd8e8' },
   bard: { glyph: '🎵', color: '#d98cc0' },
+  druid: { glyph: '🍃', color: '#7fbf7f' },
 };
 
 export function classLook(classId: string | undefined): ClassLook | undefined {

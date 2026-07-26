@@ -65,6 +65,28 @@ const SRD: Record<string, string[]> = {
     'protection-from-energy', 'remove-curse', 'sending', 'sleet-storm', 'slow', 'speak-with-dead',
     'stinking-cloud', 'tiny-hut', 'tongues', 'vampiric-touch', 'water-breathing',
   ],
+  druid: [
+    // Cantrips. The SRD table row for these did not survive the markdown
+    // conversion cleanly, so this is the subset confirmed by two independent
+    // reads rather than the whole row — which is why only these are granted.
+    'druidcraft', 'guidance', 'mending', 'poison-spray', 'produce-flame',
+    'resistance', 'shillelagh', 'thorn-whip',
+    // 1st
+    'animal-friendship', 'charm-person', 'create-or-destroy-water', 'cure-wounds', 'detect-magic',
+    'detect-poison-and-disease', 'entangle', 'faerie-fire', 'fog-cloud', 'goodberry',
+    'healing-word', 'ice-knife', 'jump', 'longstrider', 'protection-from-evil-and-good',
+    'purify-food-and-drink', 'speak-with-animals', 'thunderwave',
+    // 2nd
+    'aid', 'animal-messenger', 'augury', 'barkskin', 'continual-flame', 'darkvision',
+    'enhance-ability', 'enlarge-reduce', 'find-traps', 'flame-blade', 'flaming-sphere',
+    'gust-of-wind', 'heat-metal', 'hold-person', 'lesser-restoration',
+    'locate-animals-or-plants', 'locate-object', 'moonbeam', 'pass-without-trace',
+    'protection-from-poison', 'spike-growth',
+    // 3rd
+    'call-lightning', 'conjure-animals', 'daylight', 'dispel-magic', 'meld-into-stone',
+    'plant-growth', 'protection-from-energy', 'revivify', 'sleet-storm', 'speak-with-plants',
+    'water-breathing', 'water-walk', 'wind-wall',
+  ],
   ranger: [
     // 1st
     'alarm', 'animal-friendship', 'cure-wounds', 'detect-magic', 'detect-poison-and-disease',

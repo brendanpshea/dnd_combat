@@ -331,6 +331,51 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  /**
+   * Druid: a Wisdom full caster who can stop being a caster. Wild Shape trades
+   * the whole spell list for a beast's body and its attacks, which is a real
+   * decision rather than a buff — a shaped druid is a second front-liner with
+   * no way to heal anyone.
+   *
+   * The 2024 shape keeps your hit points, so the trade is genuinely "AC, speed
+   * and teeth versus everything I can cast", not a second health bar.
+   */
+  druid: {
+    id: 'druid', name: 'Druid', hitDie: 8,
+    savingThrows: ['int', 'wis'],
+    armorProfs: ['light', 'shield'],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['nature', 'animal-handling'],
+    statPriority: ['wis', 'con', 'dex', 'int', 'cha', 'str'],
+    spellcasting: {
+      ability: 'wis',
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3],
+      preparedByLevel: [4, 5, 6, 7, 9],
+      spellsByLevel: {
+        1: ['poison-spray', 'guidance', 'thorn-whip', 'cure-wounds', 'healing-word',
+            'faerie-fire', 'thunderwave', 'animal-friendship', 'protection-from-evil-and-good'],
+        3: ['flaming-sphere', 'hold-person', 'aid', 'lesser-restoration'],
+        5: ['dispel-magic', 'protection-from-energy'], // 3rd-level slots
+      },
+    },
+    featuresByLevel: {
+      1: [],   // Druidic and Primal Order are flavour and skills, not grid rules
+      2: ['wild-shape'],
+      // 3: Circle of the Land — its feature is extra *prepared spells* by land
+      //    type, which needs a build choice this class does not have yet.
+      // 5: Wild Resurgence — trades a spell slot for a Wild Shape use out of
+      //    combat; nothing on the grid to hang it on.
+    },
+    weaponMasteries: [],
+    equipment: {
+      mainHand: 'quarterstaff', offHand: 'shield', armor: 'leather',
+      inventory: [
+        { itemId: 'sling', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   ranger: {
     id: 'ranger', name: 'Ranger', hitDie: 10,
     savingThrows: ['str', 'dex'],
