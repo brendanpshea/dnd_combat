@@ -186,6 +186,9 @@ export function startTurn(state: GameState): GameEvent[] {
         if (cost > speed) continue;
         const [x, y] = k.split(',').map(Number);
         const p = { x: x!, y: y! };
+        // Reachable, but somebody may be standing there — a route may pass
+        // through an ally and this is a destination, not a waypoint.
+        if (cellAt(state.grid, p)?.occupantId !== undefined) continue;
         const d = distanceCells(p, singer.position);
         if (d < bestDist) { bestDist = d; best = p; }
       }

@@ -7,6 +7,12 @@ import { makeCombatant } from './helpers.js';
 import { cellAt, Position } from '../src/engine/types.js';
 import { step } from '../src/engine/actions.js';
 
+function until(c: Combat, id: string) {
+  let guard = 0;
+  while (c.activeId !== id && guard++ < 40) c.apply({ kind: 'endTurn' });
+  expect(c.activeId).toBe(id);
+}
+
 /** No two living combatants ever share a cell, and grid occupancy matches positions. */
 function assertNoOverlap(c: Combat) {
   const seen = new Map<string, string>();
@@ -135,5 +141,70 @@ describe('state is plain serializable data', () => {
     after.grid.cells[0]!.terrain = 'hazard';
     expect(before.combatants[someone]!.hp).not.toBe(-999);
     expect(before.grid.cells[0]!.terrain).not.toBe('hazard');
+  });
+});
+
+/**
+ * A route may pass *through* an ally — only the destination has to be empty.
+ * So when something interrupts a move part-way (an opportunity attack that
+ * drops you, a hazard, a web), the cell you happen to be standing on may be
+ * someone else's.
+ *
+ * Claiming it regardless put two creatures on one square and left the grid
+ * pointing at whichever arrived last, which then desynced everything keyed off
+ * occupancy: pathing round a body that is not there, attacks on a cell holding
+ * the wrong creature. Found by scripts/fuzz.ts, which checks this after every
+ * action of every fight.
+ */
+describe('a move interrupted part-way never lands on top of somebody', () => {
+  it('a hero dropped by a hazard mid-path backs up to a free cell', () => {
+    // A corridor: hero starts at 0,0, an ally sits at 0,1, hazard at 0,2.
+    // One cell wide, so the route cannot detour around the fire or the ally.
+    // The fire is *under* the ally: the mover is dropped on the exact square it
+    // was only passing through, which is the case that used to break.
+    const rows = ['.', '.', '.', '.'];
+    const mover = makeCombatant({ id: 'mover', team: 'team1', position: { x: 0, y: 0 }, hp: 1, maxHp: 10 });
+    mover.unconsciousAtZero = true;
+    const ally = makeCombatant({ id: 'ally', team: 'team1', position: { x: 0, y: 1 } });
+    const c = new Combat({ seed: 1, map: { rows, theme: 'stone' }, combatants: [mover, ally] });
+    // Burn the ground the mover must cross.
+    cellAt(c.state.grid, { x: 0, y: 1 })!.terrain = 'hazard';
+
+    until(c, 'mover');
+    c.apply({ kind: 'move', to: { x: 0, y: 3 } });
+
+    const m = c.state.combatants['mover']!;
+    const a = c.state.combatants['ally']!;
+    expect(m.hp, 'the hazard should have dropped them').toBe(0);
+    expect(`${m.position.x},${m.position.y}`, 'and not on top of the ally')
+      .not.toBe(`${a.position.x},${a.position.y}`);
+    // Whoever is where, the grid must agree with both of them.
+    for (const x of [m, a]) {
+      expect(cellAt(c.state.grid, x.position)?.occupantId, `${x.id}'s cell`).toBe(x.id);
+    }
+  });
+
+  it('nobody ever shares a cell, however the move ended', () => {
+    // Same corridor, every destination past the ally and the fire.
+    for (const target of [{ x: 0, y: 2 }, { x: 0, y: 3 }]) {
+      const mover = makeCombatant({ id: 'mover', team: 'team1', position: { x: 0, y: 0 }, hp: 1, maxHp: 10 });
+      mover.unconsciousAtZero = true;
+      const ally = makeCombatant({ id: 'ally', team: 'team1', position: { x: 0, y: 1 } });
+      const c = new Combat({
+        seed: 2, map: { rows: ['.', '.', '.', '.'], theme: 'stone' },
+        combatants: [mover, ally],
+      });
+      cellAt(c.state.grid, { x: 0, y: 1 })!.terrain = 'hazard';
+      until(c, 'mover');
+      try { c.apply({ kind: 'move', to: target }); } catch { continue; }   // illegal targets are fine
+      const seen = new Map<string, string>();
+      for (const x of Object.values(c.state.combatants)) {
+        if (!x.alive) continue;
+        const key = `${x.position.x},${x.position.y}`;
+        expect(seen.get(key), `${x.id} and ${seen.get(key)} share ${key}`).toBeUndefined();
+        seen.set(key, x.id);
+        expect(cellAt(c.state.grid, x.position)?.occupantId).toBe(x.id);
+      }
+    }
   });
 });
