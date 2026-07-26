@@ -174,6 +174,17 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover));
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
+  // Reachable is not the same as free to stand on: `reachable` deliberately
+  // lets a route pass *through* an ally, and moveDestinations is what filters
+  // the ones you may end on. A caller that skips that filter would land on top
+  // of somebody and silently take their cell — two creatures on one square, and
+  // the grid pointing at whichever arrived last. Forced movement (a harpy's
+  // song) did exactly that, so the check belongs here rather than in every
+  // caller that will ever pull someone about.
+  const destination = cellAt(state.grid, to)!;
+  if (destination.occupantId !== undefined && destination.occupantId !== moverId) {
+    throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}: ${destination.occupantId} is standing there`);
+  }
   const cost = r.costs.get(`${to.x},${to.y}`)!;
 
   // Leave the origin cell now; intermediate cells (which may belong to allies
@@ -182,6 +193,31 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   // once, on arrival.
   const originCell = cellAt(state.grid, mover.position)!;
   if (originCell.occupantId === moverId) delete originCell.occupantId;
+
+  /**
+   * Stop a mover part-way and put it somewhere it can actually stand.
+   *
+   * A route is allowed to pass *through* an ally — only the destination has to
+   * be empty — so the cell a mover happens to be on when something interrupts
+   * it may well be occupied. Claiming it regardless put two creatures on one
+   * square and left the grid pointing at whichever arrived last. Back up along
+   * the path already walked to the last free cell; the origin was vacated at
+   * the top of this function, so there is always one.
+   *
+   * A corpse claims nothing (kill() has already cleared its cell), but it is
+   * still moved somewhere sensible so it does not lie inside a living ally.
+   */
+  const stopShort = (): void => {
+    for (let i = walked.length - 1; i >= 0; i--) {
+      const here = walked[i]!;
+      const occ = cellAt(state.grid, here)?.occupantId;
+      if (occ === undefined || occ === moverId) {
+        mover.position = here;
+        if (mover.alive) cellAt(state.grid, here)!.occupantId = moverId;
+        return;
+      }
+    }
+  };
 
   const walked: Position[] = [path[0]!];
   for (let i = 1; i < path.length; i++) {
@@ -201,7 +237,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
             // Killed or dropped to 0 (unconscious): the mover stops where it
             // fell rather than walking on to claim the destination cell. A
             // kill clears occupancy; a downed body still occupies its cell.
-            if (mover.alive) cellAt(state.grid, mover.position)!.occupantId = moverId;
+            stopShort();
             events.unshift({ type: 'moved', combatantId: moverId, path: walked });
             return events;
           }
@@ -224,7 +260,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       state.rng = dmg.state;
       events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls));
       if (!mover.alive || isDown(mover)) {
-        if (mover.alive) cellAt(state.grid, mover.position)!.occupantId = moverId;
+        stopShort();
         events.unshift({ type: 'moved', combatantId: moverId, path: walked });
         return events;
       }
@@ -244,8 +280,10 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         if (!save.success) {
           mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc } });
           events.push({ type: 'conditionApplied', combatantId: moverId, condition: 'restrained', sourceId: web.sourceId });
-          // Caught: the mover stops here rather than walking on through the web.
-          cellAt(state.grid, mover.position)!.occupantId = moverId;
+          // Caught: the mover stops here rather than walking on through the web
+          // — on the last cell it can actually stand on, which may not be this
+          // one if the strands caught it mid-stride over an ally.
+          stopShort();
           mover.turn.movementUsed += r.costs.get(`${step.x},${step.y}`) ?? cost;
           events.unshift({ type: 'moved', combatantId: moverId, path: walked });
           return events;
