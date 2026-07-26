@@ -1515,6 +1515,34 @@ export function preparedLimit(c: CampaignState, charIdx: number): number {
 }
 
 /** This character's prepared leveled spells: saved choice or auto-default. */
+/**
+ * How full a caster's prepared list is, and how much room is going unused.
+ *
+ * Worth its own helper because the gap is invisible otherwise, and it is a real
+ * trap: `growSpellsForLevel` deliberately does not grow the prepared tier (auto
+ * filling used to override a deliberately lean loadout), so a list that has
+ * ever been saved keeps its old size while the cap climbs. Never touch the
+ * prepare screen and the auto-default recomputes and stays full; press Save
+ * once at level 1 and you carry four spells into a level-5 fight that allows
+ * eleven.
+ *
+ * That is a defensible design — your picks are your picks — but only if the
+ * game says so. `room` is what the UI needs to say it.
+ */
+export function preparedRoom(c: CampaignState, charIdx: number): { used: number; limit: number; room: number } {
+  const limit = preparedLimit(c, charIdx);
+  const used = preparedSpells(c, charIdx).length;
+  return { used, limit, room: Math.max(0, limit - used) };
+}
+
+/** Party members with unused prepared slots, as indices. Empty when everyone is
+ *  full — which is the normal case, so a badge built on this stays quiet. */
+export function partyPreparedRoom(c: CampaignState): number[] {
+  return c.characters
+    .map((_, i) => i)
+    .filter((i) => preparableSpells(c, i).length > 0 && preparedRoom(c, i).room > 0);
+}
+
 export function preparedSpells(c: CampaignState, charIdx: number): Id[] {
   const ch = c.characters[charIdx];
   if (!ch) return [];
