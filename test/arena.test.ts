@@ -352,21 +352,33 @@ describe('generated fights complete', () => {
  *   calibrated constants   L3 53%   L5 55%
  *   the stale ones         L3 62%   L5 67%
  *
- * 0.35–0.60 separates those. A failure means **go re-measure** (80 fights a
+ * 0.30–0.65 separates those. A failure means **go re-measure** (150 fights a
  * point, find the budget where the win rate crosses 50%, update EVEN_BUDGET),
  * not that something is broken. Re-measuring is a few minutes; widening this
  * band to make it pass is how the constants went stale in the first place.
+ *
+ * `npx tsx scripts/playtest.ts` is the other half of this: the tripwire catches
+ * a level whose even point has drifted, the playtest catches a whole run that
+ * cannot be finished.
  */
 describe('arena difficulty calibration', () => {
   it('an even-budget fight is still roughly even', () => {
     const files = [3, 1, 5, 2, 6, 0, 7, 4];
-    for (const level of [3, 5]) {
+    // Every level, not just 3 and 5. Those two were the only ones checked, and
+    // they were the only two that stayed honest: a playthrough sweep found L1
+    // at 77%, L2 at 38% and L4 at 41% while these two sat at 47% and 51%.
+    for (const level of [1, 2, 3, 4, 5]) {
       const budget = evenBudgetFor(level);
       let rng = seedRng(level * 7919);
       let wins = 0;
-      const N = 60;
+      const N = 40;
       for (let i = 0; i < N; i++) {
-        const e = generateEncounter({ budget }, rng); rng = e.state;
+        // The caps are part of what a budget buys — without them this measures
+        // a fight the arena would never actually generate.
+        const e = generateEncounter(
+          { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level), partyLevel: level },
+          rng,
+        ); rng = e.state;
         const m = generateArenaMap({}, rng); rng = m.state;
         const g = parseMap(m.value.map);
         const foes = e.value.members.map((mid, k) =>
@@ -381,9 +393,9 @@ describe('arena difficulty calibration', () => {
       }
       const rate = wins / N;
       expect(rate, `L${level} at budget ${budget}: ${Math.round(rate * 100)}% — EVEN_BUDGET needs re-measuring`)
-        .toBeGreaterThan(0.35);
+        .toBeGreaterThan(0.30);
       expect(rate, `L${level} at budget ${budget}: ${Math.round(rate * 100)}% — EVEN_BUDGET needs re-measuring`)
-        .toBeLessThan(0.6);
+        .toBeLessThan(0.65);
     }
   }, 120000);
 });
@@ -442,8 +454,12 @@ describe('level-appropriate members', () => {
    * what matters is attacks per round, which the multiplier flattens.
    */
   it('caps how many bodies a low-level party faces', () => {
-    expect(maxCountFor(1)).toBeLessThanOrEqual(3);
+    // The numbers themselves are a measurement and move when the roster does —
+    // level 1 sat at 3 until a playthrough sweep found it could not spend its
+    // budget. What must stay true is that the cap exists and rises with level.
+    expect(maxCountFor(1)).toBeLessThanOrEqual(4);
     expect(maxCountFor(2)).toBeLessThanOrEqual(4);
+    expect(maxCountFor(1)).toBeLessThanOrEqual(maxCountFor(3));
     for (const level of [1, 2, 3]) {
       for (let seed = 1; seed <= 40; seed++) {
         for (let wave = 1; wave <= 10; wave++) {

@@ -21,9 +21,15 @@ import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap } from './map.js';
 
 /**
- * Adjusted-XP budget for a roughly even fight, by party level. L1, L3 and L5
- * are simulator-measured 50% win points (80 fights each, so about +/-6 points:
- * 48%, 45%, 49%). L2 and L4 sit on the geometric curve through them.
+ * Adjusted-XP budget for a roughly even fight, by party level. Every entry is
+ * now measured directly at 150 fights (about +/-4 points), rather than three
+ * measured and two interpolated — the interpolation is what hid the last drift.
+ *
+ * Re-measured after a playthrough sweep found that no party of any composition
+ * reached level 5: runs died at wave 4-5, every time. The curve had gone
+ * non-monotonic, level 1 winning 77% of its "even" fights and level 2 winning
+ * 38% of its, so a run breezed the first level and hit a wall on the second.
+ * Levels 3 and 5 were still honest; 1, 2 and 4 were not.
  *
  * RE-MEASURE THIS WHEN THE BESTIARY CHANGES SHAPE. The first calibration was
  * taken against a 58-monster roster and quietly went stale as that grew to
@@ -32,7 +38,7 @@ import { generateArenaMap } from './map.js';
  * Adding monsters changes what a budget buys, and nothing in the test suite
  * notices — the constants are a measurement, not a rule, and they decay.
  */
-export const EVEN_BUDGET = [1500, 2900, 5700, 9400, 15500];
+export const EVEN_BUDGET = [1500, 2600, 5700, 8800, 15500];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;
@@ -86,7 +92,13 @@ export function memberCapFor(level: number): number {
  * than repricing the multiplier, but it is the one that acts on the quantity
  * actually doing the damage.
  */
-const COUNT_CAP = [3, 4, 5];
+// Level 1 held 3 for a while and it made the level a walkover: with a 200 XP
+// member cap, three bodies is the most the generator can field and it tops out
+// around 1,160 adjusted XP — well under the budget, so the wave ramp stopped
+// meaning anything past wave 4 and the party won 77% of "even" fights. A
+// fourth body brings it to 51%. The cap is still doing its job; it was simply
+// one body too tight.
+const COUNT_CAP = [4, 4, 5];
 
 export function maxCountFor(level: number): number {
   return COUNT_CAP[Math.max(1, level) - 1] ?? 6;

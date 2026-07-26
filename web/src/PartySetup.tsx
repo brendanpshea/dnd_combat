@@ -42,6 +42,9 @@ export function PartySetup(
         <button className="adv-template" onClick={() => { randomizeParty(c); setEditing(null); bump(); }}>
           <b>🎲 Surprise me</b><small>Random kin for all four.</small>
         </button>
+        <button className="adv-template" onClick={() => { randomizeParty(c, { roles: true }); setEditing(null); bump(); }}>
+          <b>🎲 Total chaos</b><small>Random classes and kin. No promises.</small>
+        </button>
       </div>
 
       <div className="adv-roster-list">
