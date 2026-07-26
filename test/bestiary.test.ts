@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { distanceFeet } from '../src/engine/grid.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty, buildCharacter } from '../src/builder/character.js';
 import { buildMonster, MONSTERS, MONSTER_XP, monsterLevel } from '../src/data/monsters.js';
@@ -7,7 +8,7 @@ import { SPELLS } from '../src/data/spells.js';
 import { BREATH_WEAPONS } from '../src/data/features.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
-import { applyDamage } from '../src/engine/rules/attack.js';
+import { applyDamage, resolveAttack } from '../src/engine/rules/attack.js';
 import { arenaRoster } from '../src/arena/encounter.js';
 import { FEATURES } from '../src/data/features.js';
 import { makeCombatant } from './helpers.js';
@@ -870,5 +871,72 @@ describe('CR and XP agree', () => {
       .filter((m) => m.cr === undefined && (MONSTER_XP[m.id] ?? 0) > 1100)
       .map((m) => `${m.id} (${MONSTER_XP[m.id]} XP)`);
     expect(bad, `no CR, so they derive PB +2: ${bad.join(', ')}`).toEqual([]);
+  });
+});
+
+/**
+ * Signature abilities: the sweep.
+ *
+ * Two gaps it found, both of the same shape — a stat block whose numbers are
+ * right and whose *rule* is missing, which is invisible to every check that
+ * looks at XP or hit points.
+ */
+describe('signature abilities', () => {
+  // A rider that lands automatically is a different creature from one the
+  // target rolls against, whatever the average says. The scorpion's sting
+  // alone outdamages a level-1 hero's entire hit point total; guaranteed, it
+  // is an execution, and the SRD does not write it that way.
+  it('big poison riders are save-for-half, not automatic', () => {
+    for (const id of ['scorpion-sting', 'imp-sting']) {
+      const w = WEAPONS[id]!;
+      expect(w.extraDamage, id).toBeDefined();
+      expect(w.extraDamage!.save, `${id} rider lands with no save`).toBeDefined();
+    }
+  });
+
+  it('a saved rider is halved and an unsaved one is not', () => {
+    const avg = (dice: string) => { const [n, f] = dice.split('d').map(Number); return n! * (f! + 1) / 2; };
+    const scorp = buildMonster('giant-scorpion', 'team2', { x: 4, y: 3 });
+    // Two targets differing only in Constitution, so only the save differs.
+    const tough = makeCombatant({ id: 'tough', team: 'team1', position: { x: 3, y: 3 }, abilities: { str: 10, dex: 10, con: 20, int: 10, wis: 10, cha: 10 }, hp: 200, maxHp: 200, acOverride: 1 });
+    const frail = makeCombatant({ id: 'frail', team: 'team1', position: { x: 5, y: 3 }, abilities: { str: 10, dex: 10, con: 1, int: 10, wis: 10, cha: 10 }, hp: 200, maxHp: 200, acOverride: 1 });
+    const c = new Combat({ seed: 6, mapId: 'open', combatants: [tough, frail, scorp] });
+    let toughTotal = 0, frailTotal = 0;
+    for (let i = 0; i < 40; i++) {
+      const before = { t: c.state.combatants['tough']!.hp, f: c.state.combatants['frail']!.hp };
+      resolveAttack(c.state, scorp.id, 'tough', 'scorpion-sting');
+      resolveAttack(c.state, scorp.id, 'frail', 'scorpion-sting');
+      toughTotal += before.t - c.state.combatants['tough']!.hp;
+      frailTotal += before.f - c.state.combatants['frail']!.hp;
+      c.state.combatants['tough']!.hp = 200;
+      c.state.combatants['frail']!.hp = 200;
+    }
+    expect(frailTotal, 'the save has to be worth something').toBeGreaterThan(toughTotal);
+    expect(avg(WEAPONS['scorpion-sting']!.extraDamage!.dice)).toBeGreaterThan(10);
+  });
+
+  // Death Burst is the whole point of a mephit: kill one in the huddle and you
+  // have made your own problem. Without it a mephit is a small elemental with
+  // a rider, and the choice of where to kill it does not exist.
+  it('mephits and magmin go off when they die', () => {
+    const bursty = Object.values(MONSTERS).filter((m) => m.deathBurst);
+    expect(bursty.length, 'nothing bursts').toBeGreaterThanOrEqual(6);
+    for (const m of bursty) expect(m.deathBurst!.save, m.id).toBeDefined();
+  });
+
+  it('the burst catches neighbours, spares the distant, and is not a chain reaction', () => {
+    const near = buildMonster('magmin', 'team2', { x: 2, y: 1 }, '1');
+    const away = buildMonster('magmin', 'team2', { x: 7, y: 7 }, '2');
+    const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [...buildParty('team1', 0, 3), near, away] });
+    const adjacent = Object.values(c.state.combatants)
+      .filter((x) => x.team === 'team1' && distanceFeet(x.position, near.position) <= 10)
+      .map((x) => x.id);
+    expect(adjacent.length, 'nobody stood near enough to test').toBeGreaterThan(0);
+    const before = new Map(Object.values(c.state.combatants).map((x) => [x.id, x.hp] as const));
+    applyDamage(c.state, near.id, 'nobody', 500, 'slashing');
+    for (const id of adjacent) {
+      expect(c.state.combatants[id]!.hp, `${id} should have been caught`).toBeLessThan(before.get(id)!);
+    }
+    expect(c.state.combatants[away.id]!.hp, 'the far magmin is out of range').toBe(before.get(away.id));
   });
 });
