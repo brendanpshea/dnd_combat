@@ -91,14 +91,22 @@ export interface GenerateOptions {
    * play, because nothing the player does changes it.
    */
   maxMemberXp?: number;
+  /**
+   * The party's level, for monsters that declare a `minPartyLevel`. Separate
+   * from the XP cap because the thing being guarded against is an ability, not
+   * a damage number: a 200 XP harpy is cheap and still deletes a level-1
+   * party. Omitted means no floor applies.
+   */
+  partyLevel?: number;
 }
 
 const DEFAULTS = { maxCount: 6, soloShare: 0.75 } as const;
 
 /** Every monster the arena may field, with its XP and type. */
-export function arenaRoster(): Array<{ id: Id; xp: number; type: CreatureType }> {
+export function arenaRoster(partyLevel?: number): Array<{ id: Id; xp: number; type: CreatureType }> {
   return Object.values(MONSTERS)
     .filter((m) => !ARENA_EXCLUDED.has(m.id))
+    .filter((m) => partyLevel === undefined || (m.minPartyLevel ?? 1) <= partyLevel)
     .map((m) => ({ id: m.id, xp: MONSTER_XP[m.id] ?? 0, type: m.creatureType ?? 'humanoid' }))
     .filter((m) => m.xp > 0)
     .sort((a, b) => a.id.localeCompare(b.id));   // deterministic order for seeding
@@ -204,7 +212,7 @@ function generateOnce(
   const cap = opts.maxMemberXp ?? Infinity;
   // Filter first, so type choice, headcount and every slot all see the same
   // pool — a type whose cheapest member is over the cap must not be offered.
-  const roster = arenaRoster().filter((m) => m.xp <= cap);
+  const roster = arenaRoster(opts.partyLevel).filter((m) => m.xp <= cap);
   let rng = state;
 
   const types = affordableTypes(roster, opts.budget, soloShare);

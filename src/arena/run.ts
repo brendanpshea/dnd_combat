@@ -120,7 +120,7 @@ export function buildWave(runSeed: number, level: number, wave: number): ArenaWa
   let rng: RngState = (runSeed * 2654435761 + wave * 40503) >>> 0;
   const budget = waveBudget(level, wave);
   const e = generateEncounter(
-    { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level) },
+    { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level), partyLevel: level },
     rng,
   ); rng = e.state;
   const m = generateArenaMap({}, rng); rng = m.state;
