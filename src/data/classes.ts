@@ -88,7 +88,17 @@ export interface ClassData {
     ability: Ability;
     /** slotsByLevel[characterLevel - 1][spellLevel - 1] = slot count. */
     slotsByLevel: number[][];
-    spellsByLevel: Record<number, Id[]>; // spells known at each character level
+    /**
+     * Spells known at each character level.
+     *
+     * ORDER IS PRIORITY. The auto-prepared loadout (campaign.ts's defaultKnown)
+     * walks each spell level in *this* order and takes the first few, so a
+     * strong spell written late in its level simply never gets prepared. The
+     * bard shipped with Sleep fifth on its 1st-level line and Bane first, and
+     * so spent every run casting Bane and never once casting the best spell it
+     * owned. Within each spell level, write strongest first.
+     */
+    spellsByLevel: Record<number, Id[]>;
     /**
      * The 2024 three-tier "spells known" model, per character level (index =
      * level - 1). The class table above is the menu; these are how many you
@@ -304,10 +314,11 @@ export const CLASSES: Record<Id, ClassData> = {
       // spellbook, so only the prepared count is capped.
       preparedByLevel: [4, 5, 6, 7, 9],
       spellsByLevel: {
-        1: ['vicious-mockery', 'minor-illusion', 'true-strike', 'bane', 'command', 'cure-wounds',
-            'healing-word', 'sleep', 'thunderwave', 'color-spray', 'faerie-fire', 'animal-friendship'],
-        3: ['blindness', 'hold-person', 'invisibility', 'suggestion', 'aid', 'lesser-restoration'],
-        5: ['mass-healing-word', 'dispel-magic', 'fear', 'bestow-curse'], // 3rd-level slots
+        // Strongest first within each level — see spellsByLevel's note.
+        1: ['vicious-mockery', 'minor-illusion', 'true-strike', 'sleep', 'healing-word', 'command',
+            'cure-wounds', 'faerie-fire', 'color-spray', 'thunderwave', 'bane', 'animal-friendship'],
+        3: ['hold-person', 'invisibility', 'suggestion', 'blindness', 'aid', 'lesser-restoration'],
+        5: ['fear', 'mass-healing-word', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
       },
     },
     featuresByLevel: {
@@ -353,11 +364,11 @@ export const CLASSES: Record<Id, ClassData> = {
       cantripsKnownByLevel: [2, 2, 2, 3, 3],
       preparedByLevel: [4, 5, 6, 7, 9],
       spellsByLevel: {
-        1: ['poison-spray', 'guidance', 'thorn-whip', 'cure-wounds', 'healing-word',
-            'faerie-fire', 'thunderwave', 'animal-friendship', 'protection-from-evil-and-good',
-            'entangle'],
-        3: ['flaming-sphere', 'hold-person', 'aid', 'lesser-restoration', 'heat-metal'],
-        5: ['dispel-magic', 'protection-from-energy', 'call-lightning'], // 3rd-level slots
+        // Strongest first within each level — see spellsByLevel's note.
+        1: ['poison-spray', 'guidance', 'thorn-whip', 'entangle', 'cure-wounds', 'healing-word',
+            'faerie-fire', 'thunderwave', 'protection-from-evil-and-good', 'animal-friendship'],
+        3: ['hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
+        5: ['call-lightning', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
       },
     },
     featuresByLevel: {
