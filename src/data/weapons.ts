@@ -49,6 +49,13 @@ export interface WeaponData {
    * out-heal, which is exactly the thing a wraith is for.
    */
   drainsMaxHp?: { ability: Ability; dc: number };
+  /**
+   * Corrosion (rust monster): a hit eats a point of AC off metal armour or a
+   * shield, up to `max` points, for the rest of the fight. No effect on a
+   * target wearing neither -- which is exactly the decision the monster is
+   * for: the plate-wearers give ground and the leather-wearers step up.
+   */
+  corrodes?: { max: number };
   /** Store price in gp; absent for natural/monster weapons (not tradable). */
   cost?: number;
   /** Magic weapon bonuses (+1 sword: both are 1). */
@@ -576,7 +583,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'rust-monster-antennae': {
     id: 'rust-monster-antennae', name: 'Antennae', damage: '1d8', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, corrodes: { max: 3 },
   },
   'griffon-beak': {
     id: 'griffon-beak', name: 'Beak', damage: '1d8', damageType: 'piercing',
