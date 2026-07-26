@@ -32,7 +32,9 @@ import { CLASSES } from '../src/data/classes.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { acOf } from '../src/data/armor.js';
 import { isDown } from '../src/engine/types.js';
-import type { Id } from '../src/engine/types.js';
+import type { Id, GameState } from '../src/engine/types.js';
+import { legalActions, type Action } from '../src/engine/actions.js';
+import { distanceCells } from '../src/engine/grid.js';
 
 const RUNS = Number(process.argv[2] ?? 40);
 const VERBOSE = process.argv.includes('--verbose');
@@ -53,6 +55,25 @@ const STANDARD = process.argv.includes('--standard');
 const COMP = (process.argv.find((a) => a.startsWith('--comp='))?.slice(7) ?? '').split(',').filter(Boolean);
 /** Experiment: give a full rest after a defeat as well as after a win. */
 const RESTED_RETRY = process.argv.includes('--rested-retry');
+/**
+ * `--play=<style>` drives the heroes like a particular kind of human instead of
+ * like the AI. This exists because every sweep in this file used to run the AI
+ * on BOTH sides, and an AI party always walks into the monsters — which hid a
+ * bug where outnumbered monsters refused to approach a party that held its
+ * ground, in a quarter of arena waves. Whole classes of bug are invisible to a
+ * harness whose players are all optimal.
+ *
+ * Win rate is not the metric for most of these; they are meant to lose. The
+ * metric is whether the fight still *resolves*: stalls and exceptions.
+ */
+type PlayStyle = 'optimal' | 'passive' | 'turtle' | 'rush' | 'hesitant' | 'hoarder' | 'nospells';
+const PLAY_STYLES: PlayStyle[] = ['optimal', 'passive', 'turtle', 'rush', 'hesitant', 'hoarder', 'nospells'];
+const PLAY = ((process.argv.find((a) => a.startsWith('--play='))?.slice(7) ?? 'optimal') as PlayStyle);
+if (!PLAY_STYLES.includes(PLAY)) {
+  console.error(`unknown --play=${PLAY}; expected one of ${PLAY_STYLES.join(', ')}`);
+  process.exit(1);
+}
+
 /** Give up on a run after this many consecutive losses at one wave. */
 const PATIENCE = Number(process.env.PATIENCE ?? 3);
 /** Hard stop so a stalled fight can't hang the sweep. */
@@ -123,6 +144,60 @@ function classTally(id: Id) {
 // --- one fight ------------------------------------------------------------
 
 /** Resolve a generated wave. Returns whether the party won, or 'stalled'. */
+/**
+ * How a hero decides, per play style. Everything here is deliberately a *worse*
+ * player than the AI — a real playtester hoards potions, forgets they have
+ * spells, refuses to leave the back rank, or charges in and dies.
+ */
+function heroAction(style: PlayStyle, state: GameState, id: Id, round: number): Action {
+  const best = (): Action => chooseAction(state, id) ?? { kind: 'endTurn' };
+  if (style === 'optimal') return best();
+  // The player who deals with the board only every other round.
+  if (style === 'hesitant') return round % 2 === 0 ? best() : { kind: 'endTurn' };
+  // The player who set the party down and walked away. Never moves, never acts.
+  if (style === 'passive') return { kind: 'endTurn' };
+
+  const legal = legalActions(state, id);
+  const me = state.combatants[id]!;
+  const foes = Object.values(state.combatants).filter((f) => f.team !== me.team && f.alive && !isDown(f));
+
+  if (style === 'turtle') {
+    // Fights from where it stands: will shoot, cast and quaff, but never steps.
+    const a = best();
+    if (a.kind !== 'move' && a.kind !== 'dash') return a;
+    const stationary = legal.find((x) => x.kind === 'attack' || x.kind === 'castSpell');
+    return stationary ?? { kind: 'endTurn' };
+  }
+
+  if (style === 'rush') {
+    // Charges the nearest enemy and swings; no kiting, no positioning.
+    const hit = legal.find((x) => x.kind === 'attack');
+    if (hit) return hit;
+    if (foes.length > 0) {
+      const moves = legal.filter((x): x is Extract<Action, { kind: 'move' }> => x.kind === 'move');
+      let pick: Action | undefined;
+      let bestDist = Infinity;
+      for (const m of moves) {
+        const d = Math.min(...foes.map((f) => distanceCells(m.to, f.position)));
+        if (d < bestDist) { bestDist = d; pick = m; }
+      }
+      if (pick && bestDist < Math.min(...foes.map((f) => distanceCells(me.position, f.position)))) return pick;
+      const dash = legal.find((x) => x.kind === 'dash');
+      if (dash && bestDist > 1) return dash;
+    }
+    return best();
+  }
+
+  // The two "forgot they had it" styles: take the AI's choice unless it reaches
+  // for the thing this player never touches, then make it play on without.
+  const veto = style === 'hoarder' ? 'useItem' : 'castSpell';
+  const a = best();
+  if (a.kind !== veto) return a;
+  return legal.find((x) => x.kind === 'attack')
+    ?? legal.find((x) => x.kind === 'move')
+    ?? { kind: 'endTurn' as const };
+}
+
 function fight(c: CampaignState, runSeed: number, level: number, wave: number, attempt = 1): boolean | 'stalled' {
   const w = buildWave(runSeed, level, wave);
   for (const m of w.encounter.members) bump(T.monstersMet, m);
@@ -182,7 +257,9 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
         if (holding?.sourceId) classTally(classOf.get(holding.sourceId)!).denied += 1;
       }
     }
-    const action = chooseAction(combat.state, id) ?? { kind: 'endTurn' as const };
+    const action: Action = classOf.has(id)
+      ? heroAction(PLAY, combat.state, id, combat.state.round)
+      : (chooseAction(combat.state, id) ?? { kind: 'endTurn' });
     if (action.kind === 'castSpell') bump(T.spellsCast, action.spellId);
     if (action.kind === 'useFeature') bump(T.featuresUsed, action.featureId);
     if (action.kind === 'useItem') bump(T.itemsUsed, action.itemId);

@@ -146,6 +146,49 @@ function check(state: GameState, seed: number, action: string): void {
   for (const [key, ids] of byCell) {
     if (ids.length > 1) report('two creatures on one cell', `${key}: ${ids.join(' + ')}`);
   }
+
+  // --- what a caster leaves behind ---------------------------------------
+  //
+  // The grid and resource checks above cannot see any of this, and it is
+  // exactly the class of bug a player notices and the AI never will: a sphere
+  // still burning for a druid who is face-down, an aura around a corpse, a
+  // condition sustained by a concentration that ended. None of it stops the
+  // fight, so a harness that only asks "did this finish" reports all clear.
+  for (const c of Object.values(state.combatants)) {
+    const gone = !c.alive || isDown(c);
+    if (gone && c.concentratingOn) {
+      report('concentrating while down or dead', `${c.id} on ${c.concentratingOn.spellId}`);
+    }
+    if (gone && (c.summons?.length ?? 0) > 0) {
+      report('summons outliving their caster', `${c.id} still has ${c.summons!.map((x) => x.kind).join(', ')}`);
+    }
+    if (gone && c.spiritualGuardians) report('an aura around a body', c.id);
+    if (gone && c.stormCloud) report('a storm cloud with no caster', c.id);
+    if (gone && c.moonbeam) report('a moonbeam with no caster', c.id);
+    for (const sm of c.summons ?? []) {
+      // A summon with neither a clock nor a concentration holding it is
+      // orphaned: nothing will ever clear it.
+      if (sm.expiresAtRound === undefined && !c.concentratingOn) {
+        report('a summon nothing can ever clear', `${c.id} ${sm.kind}`);
+      }
+      if (sm.expiresAtRound !== undefined && sm.expiresAtRound < state.round) {
+        report('a summon past its expiry still on the board', `${c.id} ${sm.kind} expired round ${sm.expiresAtRound}`);
+      }
+    }
+    // A condition held by concentration needs a source still concentrating.
+    for (const k of c.conditions) {
+      if (!k.concentration || k.sourceId === undefined) continue;
+      const src = state.combatants[k.sourceId];
+      if (src && !src.concentratingOn) {
+        report('a concentration condition whose source stopped concentrating', `${c.id} ${k.id} <- ${src.id}`);
+      }
+    }
+  }
+  // Terrain effects keyed to a caster who has left the fight.
+  for (const cell of state.grid.cells) {
+    const src = cell.web?.sourceId ? state.combatants[cell.web.sourceId] : undefined;
+    if (src && !src.alive) report('a web spun by a corpse', src.id);
+  }
   if (!state.combatants[state.initiativeOrder[state.turnIndex] ?? '']) {
     report('turn index points at nobody', `index ${state.turnIndex} of ${state.initiativeOrder.length}`);
   }

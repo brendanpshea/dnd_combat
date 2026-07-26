@@ -1011,10 +1011,18 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
     }
     c.summons = c.summons.filter((x) => x.kind !== 'flaming-sphere');
   }
-  // A lingering Web: clear its strands from the grid, and free everyone its
-  // strands still hold — not only the `targetIds` caught at cast time, but also
-  // any creature that wandered in afterwards (matched by source + concentration).
-  if (spellId === 'web') {
+  // Lingering strands — Web, Entangle, anything else that lays them: clear them
+  // from the grid, and free everyone they still hold. Not only the `targetIds`
+  // caught at cast time, but any creature that wandered in afterwards (matched
+  // by source + concentration).
+  //
+  // This used to test `spellId === 'web'`, which left Entangle out even though
+  // it lays its vines through the very same webCell machinery. Drop the
+  // concentration and the vines stayed on the grid for the rest of the fight,
+  // with anyone who had walked into them restrained permanently — no save, no
+  // source, nothing left to end it. Keyed off the caster rather than the spell
+  // id now, so the next strand spell is covered before it is written.
+  {
     const cleared = clearWebBySource(state.grid, combatantId);
     if (cleared.length > 0) events.push({ type: 'webCleared', sourceId: combatantId, cells: cleared });
     for (const other of Object.values(state.combatants)) {
@@ -1085,7 +1093,19 @@ function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
   return events;
 }
 
-function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
+/**
+ * The full "a hero hits 0 HP" path: hand off Hunter's Mark, go down, drop
+ * whatever they were concentrating on, and check whether that ended the fight.
+ *
+ * Exported because it kept being reimplemented. The banshee's Wail had its own
+ * copy that called downCombatant and checkWinner but not breakConcentration,
+ * so a wizard wailed unconscious kept a Hold Person running off their sleeping
+ * body — the ogre stayed paralysed, the aura stayed up, the sphere kept
+ * burning. Nothing about that stops a fight, so it survived every sweep that
+ * only asked whether fights finish. One path, so the next caller cannot
+ * forget a step.
+ */
+export function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
   const events = [
     ...transferHuntersMark(state, combatantId),
     ...downCombatant(state, combatantId),

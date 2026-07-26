@@ -297,12 +297,18 @@ describe('Spiritual Weapon', () => {
     });
     until(c, 'clr');
     c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 1, y: 1 } }] });
-    // Force the clock forward past the expiry and cycle to the cleric's turn.
+    // Force the clock past the expiry and let the round turn over. The sweep
+    // used to run only at the start of the *caster's* turn, so this test used
+    // to watch that one batch; it now runs at the round boundary for everyone,
+    // because a caster who is down never gets a turn to sweep on (see
+    // test/downed.test.ts). Assert the event and the effect, not which apply()
+    // carried them.
     c.state.combatants['clr']!.summons![0]!.expiresAtRound = 0;
-    c.apply({ kind: 'endTurn' });
-    let startEvents: ReturnType<typeof c.apply> = [];
-    while (c.activeId !== 'clr') startEvents = c.apply({ kind: 'endTurn' });
-    expect(startEvents.some((e) => e.type === 'summonExpired')).toBe(true);
+    const seen: string[] = [];
+    for (let i = 0; i < 20 && (c.state.combatants['clr']!.summons ?? []).length > 0; i++) {
+      for (const e of c.apply({ kind: 'endTurn' })) seen.push(e.type);
+    }
+    expect(seen).toContain('summonExpired');
     expect(c.state.combatants['clr']!.summons ?? []).toHaveLength(0);
   });
 });
