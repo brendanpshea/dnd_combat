@@ -12,7 +12,7 @@ import { executeMove, hostileIds } from './rules/movement.js';
 import type { Position } from './types.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
-import { activateSummons, strikeLightning } from '../data/spells.js';
+import { activateSummons, strikeLightning, burnInMoonbeam } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
@@ -221,6 +221,13 @@ export function startTurn(state: GameState): GameEvent[] {
       state.rng = dmg.state;
       events.push(...applyDamage(state, other.id, c.id, dmg.total, c.holdDamage.type, dmg.rolls));
     }
+  }
+
+  // Moonbeam: anyone starting a turn in someone's beam burns.
+  for (const other of Object.values(state.combatants)) {
+    if (!other.moonbeam || !other.alive || other.team === c.team) continue;
+    events.push(...burnInMoonbeam(state, other.id, c.id));
+    if (!c.alive || isDown(c)) break;
   }
 
   // Call Lightning: the cloud the druid is holding drops another bolt, on

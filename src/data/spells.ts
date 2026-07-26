@@ -62,7 +62,20 @@ export type SpellTargeting =
   | { kind: 'cube15' }                       // Thunderwave (3x3 adjacent square)
   | { kind: 'line15' }                       // Lightning Bolt (line to the edge)
   | { kind: 'emptyCell'; range: number }   // Misty Step
-  | { kind: 'self' };                       // Thunderwave (adjacent burst)
+  | {
+      kind: 'self';
+      /**
+       * Offer this even with nobody nearby.
+       *
+       * `self` covers two different things: a burst centred on the caster
+       * (offered only when it would touch someone) and a buff on the caster
+       * (Shillelagh, Ensnaring Strike), which is cast *before* closing and by a
+       * ranger from sixty feet. Without this the buffs were never offered at
+       * all — legalActions gated every `self` spell on an enemy within 5 ft, so
+       * a druid could hold Shillelagh all run and never be given the option.
+       */
+      anyTime?: boolean;
+    };
 
 export interface CastContext {
   state: GameState;
@@ -217,6 +230,33 @@ export function strikeLightning(state: GameState, casterId: Id, anchor: Position
 export function canBePutToSleep(c: Combatant): boolean {
   if (c.featureIds.includes('trance')) return false;          // elves
   return c.creatureType !== 'undead' && c.creatureType !== 'construct';
+}
+
+/**
+ * Burn everything hostile standing in a caster's moonbeam. Called on the cast
+ * and again from startTurn for whoever begins a turn in it.
+ */
+export function burnInMoonbeam(state: GameState, casterId: Id, onlyId?: Id): GameEvent[] {
+  const caster = state.combatants[casterId]!;
+  const beam = caster.moonbeam;
+  if (!beam) return [];
+  const events: GameEvent[] = [];
+  const hit = new Set<Id>();
+  for (const pos of sphere2x2(beam.position)) {
+    const tid = cellAt(state.grid, pos)?.occupantId;
+    if (!tid || hit.has(tid)) continue;
+    if (onlyId !== undefined && tid !== onlyId) continue;
+    const t = state.combatants[tid]!;
+    if (!t.alive || isDown(t) || t.team === caster.team) continue;
+    hit.add(tid);
+    const save = savingThrow(state, tid, 'con', beam.dc);
+    events.push(save.event);
+    const dmg = rollDice(state.rng, beam.dice);
+    state.rng = dmg.state;
+    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'radiant', dmg.rolls));
+  }
+  return events;
 }
 
 export function spellDc(state: GameState, casterId: Id): number {
@@ -570,6 +610,62 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'poison', dmg.rolls));
       }
       return events;
+    },
+  },
+
+  /**
+   * Starry Wisp: a mote of light, as a ranged spell attack. On a hit it lights
+   * the target up — which is exactly `outlined`, the marker Faerie Fire and
+   * Shining Smite already use: attacks against it have advantage and it cannot
+   * benefit from being unseen.
+   *
+   * The SRD wording is "emits Dim Light ... and can't benefit from the Invisible
+   * condition" until the end of the caster's next turn. There is no light level
+   * in this engine, so the half that has teeth — you cannot hide, and you are
+   * easier to hit — is what lands.
+   */
+  'starry-wisp': {
+    id: 'starry-wisp', name: 'Starry Wisp', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    icon: '✨',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const atk = spellAttack(state, casterId, targetId, { melee: false });
+      const events: GameEvent[] = [atk.event];
+      if (!atk.hit) return events;
+      const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'radiant', dmg.rolls));
+      const t = state.combatants[targetId]!;
+      if (t.alive && !isDown(t) && !t.conditions.some((k) => k.id === 'outlined')) {
+        t.conditions.push({ id: 'outlined', sourceId: casterId, expiresAtRound: state.round + 1 });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'outlined', sourceId: casterId });
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Shillelagh: the druid's staff becomes the druid's best weapon. For the
+   * duration a club or quarterstaff swings on the caster's spellcasting ability
+   * instead of Strength, and its die grows (d8, d10 from level 5).
+   *
+   * Held as a condition rather than a change to the weapon, because the weapon
+   * is shared data — WEAPONS['quarterstaff'] is the same object every
+   * quarterstaff in the fight reads, so editing it would arm every enemy
+   * holding one. resolveAttack asks the wielder, not the stick.
+   */
+  shillelagh: {
+    id: 'shillelagh', name: 'Shillelagh', level: 0, castingTime: 'bonus',
+    targeting: { kind: 'self', anyTime: true },
+    concentration: false,
+    icon: '🌳',
+    cast({ state, casterId }) {
+      const me = state.combatants[casterId]!;
+      if (me.conditions.some((k) => k.id === 'shillelagh')) return [];
+      me.conditions.push({ id: 'shillelagh', sourceId: casterId });
+      return [{ type: 'conditionApplied', combatantId: casterId, condition: 'shillelagh', sourceId: casterId }];
     },
   },
 
@@ -1142,6 +1238,31 @@ export const SPELLS: Record<Id, SpellData> = {
       caster.stormCloud = { dice, dc: spellDc(state, casterId) };
       caster.concentratingOn = { spellId: 'call-lightning', targetIds: [] };
       return strikeLightning(state, casterId, positions[0]!);
+    },
+  },
+
+  /**
+   * Moonbeam: a column of cold light that burns whatever stands in it. Everyone
+   * caught takes 2d10 radiant on a failed Constitution save, half on a success
+   * — on the turn it lands, and again whenever a creature starts its turn in
+   * the beam.
+   *
+   * Like Call Lightning it covers a 2x2 patch, so it is an area effect and not
+   * a single-target one: two ogres shoulder to shoulder both burn. Unlike the
+   * storm cloud it stays where it was put — the beam is anchored to the ground,
+   * the cloud follows the druid.
+   */
+  moonbeam: {
+    id: 'moonbeam', name: 'Moonbeam', level: 2, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 120 },
+    concentration: true,
+    icon: '🌙',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dice = `${2 + Math.max(0, slotLevel - 2)}d10`;
+      caster.moonbeam = { position: { ...positions[0]! }, dice, dc: spellDc(state, casterId) };
+      caster.concentratingOn = { spellId: 'moonbeam', targetIds: [] };
+      return burnInMoonbeam(state, casterId);
     },
   },
 
@@ -2075,7 +2196,7 @@ export const SPELLS: Record<Id, SpellData> = {
    */
   'ensnaring-strike': {
     id: 'ensnaring-strike', name: 'Ensnaring Strike', level: 1, castingTime: 'bonus',
-    targeting: { kind: 'self' },
+    targeting: { kind: 'self', anyTime: true },
     concentration: false,
     icon: '🌿',
     cast: (ctx) => armSmite(ctx, 'ensnaring-strike'),

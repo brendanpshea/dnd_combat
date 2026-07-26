@@ -15,7 +15,7 @@ import { attackableWeapons } from '../engine/rules/equipment.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
-import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith } from '../engine/rules/attack.js';
+import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith, shillelaghDamage } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
 import { legalActions, Action } from '../engine/actions.js';
 
@@ -140,6 +140,24 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const dmg = avgDice(`${2 + Math.max(0, a.slotLevel - 2)}d8`);
       // No attack roll and no save on the damage: all of it lands.
       return damageValue(dmg, t) + saveFailProb(state, t, 'con', dc) * 2 - slotCost;
+    }
+    // Moonbeam: an area that keeps burning, so it is priced like Call Lightning
+    // — everyone it covers now, plus a fair expectation of one more tick.
+    case 'moonbeam': {
+      if (actor.concentratingOn) return 0;
+      const anchor = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(anchor)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t)) continue;
+        if (t.team === actor.team) return 0;
+        const fail = saveFailProb(state, t, 'con', dc);
+        const dmg = avgDice(`${2 + Math.max(0, a.slotLevel - 2)}d10`) * (fail + (1 - fail) * 0.5);
+        v += damageValue(dmg, t);
+      }
+      return v * 1.4 - slotCost;
     }
     // Call Lightning: the first bolt plus a fair expectation of one more, since
     // the cloud fires again on the caster's next turn if concentration holds.
@@ -498,6 +516,37 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     // Thorn Whip: modest damage, and a 10 ft drag. The pull is worth most on
     // something that wants to stay at range — hauling an archer into the party's
     // reach is the entire point of the spell.
+    // Starry Wisp: a spell-attack cantrip that also lights the target up, so
+    // every attack after it lands has advantage.
+    case 'starry-wisp': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const p = hitProb(spellAtkBonus, acOf(t), 'flat');
+      const lit = t.conditions.some((k) => k.id === 'outlined') ? 0 : 2;
+      return damageValue(p * avgDice(cantripDice('1d8', actor.level)), t) + p * lit;
+    }
+    // Shillelagh: worth a bonus action exactly when the spellcasting ability
+    // beats the one the stick would otherwise use — which for a druid (Strength
+    // 8, Wisdom 18) is most of the reason it can fight at all.
+    case 'shillelagh': {
+      if (actor.conditions.some((k) => k.id === 'shillelagh')) return 0;
+      const id = actor.equipped.mainHand;
+      const w = id ? WEAPONS[id] : undefined;
+      if (!w || !(id === 'club' || id === 'quarterstaff')) return 0;
+      const normal = abilityMod(actor.abilities[attackAbility(actor, w)]);
+      if (castMod <= normal) return 0;
+      // Roughly a round's worth of the improvement it buys, so it beats a plain
+      // swing on the turn it is cast but never beats an actual heal.
+      const gain = (castMod - normal) + (avgDice(shillelaghDamage(actor.level)) - avgDice(w.damage));
+      return gain;
+    }
+    // Find Familiar (wizard ritual, and the druid's Wild Companion): the owl's
+    // Help gives advantage on an attack every round it lives. Had no case, so a
+    // wizard never conjured one -- the familiar existed only if a player did it.
+    case 'find-familiar': {
+      if (actor.familiar) return 0;
+      const foes = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
+      return foes.length > 0 ? 3 : 0;
+    }
     case 'thorn-whip': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const p = hitProb(spellAtkBonus, acOf(t), 'flat');
@@ -682,8 +731,14 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
 function isMeleeFighter(c: Combatant): boolean {
   if (c.classId === 'fighter' || c.classId === 'rogue' || c.classId === 'cleric' || c.classId === 'paladin') return true;
   if (c.classId === 'wizard' || c.classId === 'ranger' || c.classId === 'bard') return false;
-  // A shaped druid is a melee creature; an unshaped one is a caster.
-  if (c.classId === 'druid') return c.wildShape !== undefined;
+  // A druid fights up close when it has a body or a stick for it: Wild Shape
+  // puts it in a beast, and Shillelagh turns its staff into the best weapon it
+  // owns (Wisdom to hit, a d10 by level 5). Without one of those it is a caster
+  // and stays back — which is why Shillelagh did nothing at first: the spell
+  // landed and the AI still kept its distance, so the staff was never swung.
+  if (c.classId === 'druid') {
+    return c.wildShape !== undefined || c.conditions.some((k) => k.id === 'shillelagh');
+  }
   // Monsters: charge if they carry any pure-melee weapon (no ranged profile).
   return attackableWeapons(c).some((w) => {
     const weapon = WEAPONS[w];

@@ -40,6 +40,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   vexed:          { icon: '❗', label: 'Vexed', kind: 'debuff' },
   blessed:        { icon: '✨', label: 'Blessed', kind: 'buff' },
   inspiring:      { icon: '🎵', label: 'Bardic Inspiration — +1d6 on the next attack or save', kind: 'buff' },
+  shillelagh:     { icon: '🌳', label: 'Shillelagh — the staff strikes on Wisdom, at a bigger die', kind: 'buff' },
   sanctuary:      { icon: '⛪', label: 'Sanctuary — attackers must save to target it', kind: 'buff' },
   protected:      { icon: '✝️', label: 'Protected — undead and fiends attack it at disadvantage', kind: 'buff' },
   bonded:         { icon: '🔗', label: 'Warding Bond — +1 AC and saves; the cleric takes half its damage', kind: 'buff' },
