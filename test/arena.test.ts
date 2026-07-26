@@ -457,45 +457,55 @@ describe('level-appropriate members', () => {
 });
 
 /**
- * Some monsters are dangerous in a way an XP budget cannot see. The harpy is
- * the case that forced the flag: Luring Song is one Wisdom save against DC 12,
- * and a hero who fails is out of the fight for good — `charmAway` sets
- * `alive = false`, with no repeat save and no shaking it off when damaged
- * (the SRD version repeats the save every turn). Three harpies cost 600 XP,
- * fit a level-1 budget honestly, and delete the party about five times in six.
+ * The level floor: a way to keep a monster out of fights below a given party
+ * level, for danger an XP budget cannot see.
+ *
+ * Nothing declares one today. It was added for the harpy, whose Luring Song
+ * used to delete a hero from the fight outright, and fixing the song to the
+ * rule it should have followed — charmed, incapacitated, drawn toward the
+ * singer, saving every turn — took three harpies against a level-1 party from
+ * about 10% to 92% and made the floor unnecessary. The mechanism stays,
+ * tested, because the next monster whose trick outclasses its price will want
+ * it and because a floor is the honest answer when a stat block is fine and
+ * only the pairing is wrong.
  */
 describe('monsters with a level floor', () => {
-  it('keeps flagged monsters out of fights below their floor', () => {
-    const floored = Object.values(MONSTERS).filter((m) => (m.minPartyLevel ?? 1) > 1);
-    expect(floored.length, 'nothing declares a floor').toBeGreaterThan(0);
-    for (const m of floored) {
-      const floor = m.minPartyLevel!;
-      for (let level = 1; level < floor; level++) {
-        for (let seed = 1; seed <= 40; seed++) {
-          for (let wave = 1; wave <= 8; wave++) {
-            expect(buildWave(seed, level, wave).encounter.members, `${m.id} at L${level}`)
-              .not.toContain(m.id);
-          }
+  const withFloor = (id: string, floor: number, run: () => void) => {
+    const m = MONSTERS[id]!;
+    const before = m.minPartyLevel;
+    (m as { minPartyLevel?: number }).minPartyLevel = floor;
+    try { run(); } finally { (m as { minPartyLevel?: number }).minPartyLevel = before; }
+  };
+
+  it('arenaRoster drops a floored monster below its level, and only below it', () => {
+    withFloor('harpy', 3, () => {
+      expect(arenaRoster(1).some((m) => m.id === 'harpy')).toBe(false);
+      expect(arenaRoster(2).some((m) => m.id === 'harpy')).toBe(false);
+      expect(arenaRoster(3).some((m) => m.id === 'harpy')).toBe(true);
+      // No level asked for, no floor applied — the roster helper is also used
+      // for coverage checks that must see every monster.
+      expect(arenaRoster().some((m) => m.id === 'harpy')).toBe(true);
+    });
+  });
+
+  it('generated waves respect a floor', () => {
+    withFloor('harpy', 3, () => {
+      for (let seed = 1; seed <= 60; seed++) {
+        for (let wave = 1; wave <= 8; wave++) {
+          expect(buildWave(seed, 1, wave).encounter.members).not.toContain('harpy');
+          expect(buildWave(seed, 2, wave).encounter.members).not.toContain('harpy');
         }
       }
-    }
+    });
   });
 
-  it('lets them back in at their floor', () => {
-    const seen = new Set<string>();
-    for (let seed = 1; seed <= 200; seed++) {
-      for (let wave = 1; wave <= 8; wave++) {
-        for (const id of buildWave(seed, 3, wave).encounter.members) seen.add(id);
+  // Vacuous while nothing is floored, and load-bearing the moment one is.
+  it('every declared floor is honoured', () => {
+    for (const m of Object.values(MONSTERS)) {
+      const floor = m.minPartyLevel ?? 1;
+      for (let level = 1; level < floor; level++) {
+        expect(arenaRoster(level).some((r) => r.id === m.id), `${m.id} at L${level}`).toBe(false);
       }
     }
-    expect(seen.has('harpy'), 'harpy never returns at its floor').toBe(true);
-  });
-
-  // The roster helper is what the tests and the generator share, so the filter
-  // has to live there rather than only in the draw.
-  it('arenaRoster honours the floor when given a level', () => {
-    expect(arenaRoster(1).some((m) => m.id === 'harpy')).toBe(false);
-    expect(arenaRoster(3).some((m) => m.id === 'harpy')).toBe(true);
-    expect(arenaRoster().some((m) => m.id === 'harpy'), 'no level = no floor').toBe(true);
   });
 });

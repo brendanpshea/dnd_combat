@@ -6,7 +6,9 @@ import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollDice } from './dice.js';
-import { expireIllusions, distanceFeet } from './grid.js';
+import { expireIllusions, distanceFeet, distanceCells, reachable } from './grid.js';
+import { executeMove, hostileIds } from './rules/movement.js';
+import type { Position } from './types.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
 import { activateSummons } from '../data/spells.js';
@@ -135,6 +137,34 @@ export function startTurn(state: GameState): GameEvent[] {
   if (!c.alive || state.winner) {
     // A summon can't kill its own caster, but its damage events run the full
     // rule set (win check included) — bail out cleanly if the fight just ended.
+    events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
+    return events;
+  }
+
+  // Luring Song: the victim spends its turn walking toward the singer. That is
+  // the whole effect — not "wanders off", which is what removing it from the
+  // fight modelled. It stays on the board, it is drawn into the middle of the
+  // harpies, and its friends can reach it.
+  const lure = c.conditions.find((k) => k.id === 'lured');
+  if (lure?.sourceId) {
+    const singer = state.combatants[lure.sourceId];
+    if (singer?.alive && distanceFeet(c.position, singer.position) > 5) {
+      const reach = reachable(state.grid, c.position, speed, hostileIds(state, c), undefined);
+      // The closest cell to the singer this turn's movement can actually pay
+      // for. Pathing, not a straight line, so walls route it around.
+      let best: Position | undefined;
+      let bestDist = distanceCells(c.position, singer.position);
+      for (const [k, cost] of reach.costs) {
+        if (cost > speed) continue;
+        const [x, y] = k.split(',').map(Number);
+        const p = { x: x!, y: y! };
+        const d = distanceCells(p, singer.position);
+        if (d < bestDist) { bestDist = d; best = p; }
+      }
+      if (best) events.push(...executeMove(state, c.id, best));
+    }
+  }
+  if (!c.alive || state.winner) {
     events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
     return events;
   }

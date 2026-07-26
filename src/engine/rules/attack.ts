@@ -39,6 +39,12 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   if (!w || !t || !t.alive || t.team === actor.team) return false;
   if (isDown(t)) return false;   // already out of the fight; nothing to gain
   if (isHidden(t)) return false;
+  // Charm's actual rule: you cannot attack whoever charmed you. Everyone else
+  // is still fair game — which is what makes it a redirection rather than a
+  // removal, and why it does not need to end the fight to be worth casting.
+  if (actor.conditions.some((k) => (k.id === 'charmed' || k.id === 'lured') && k.sourceId === targetId)) {
+    return false;
+  }
   if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
   const reachCells = actor.featureIds.includes('long-limbed') ? 2 : 1;
@@ -887,7 +893,11 @@ function expireSummonsOf(state: GameState, casterId: Id): GameEvent[] {
 
 export function kill(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
-  const events: GameEvent[] = [...transferHuntersMark(state, combatantId), ...expireSummonsOf(state, combatantId)];
+  const events: GameEvent[] = [
+    ...transferHuntersMark(state, combatantId),
+    ...expireSummonsOf(state, combatantId),
+    ...releaseCharmedBy(state, combatantId),
+  ];
   c.alive = false;
   c.hp = 0;
   c.conditions = [];
@@ -912,9 +922,27 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
  * keyed off `alive` — pathing, targeting, the win check — but it is never a
  * death: no `unconsciousAtZero` down-path, no "dies" in the log.
  */
+/** Free everyone this creature had charmed — the song stops when the singer
+ *  does. Called from kill and charmAway, so a harpy shot out of the air
+ *  releases the party rather than holding them from beyond the grave. */
+export function releaseCharmedBy(state: GameState, sourceId: Id): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const c of Object.values(state.combatants)) {
+    const held = c.conditions.filter((k) => (k.id === 'charmed' || k.id === 'lured') && k.sourceId === sourceId);
+    if (held.length === 0) continue;
+    c.conditions = c.conditions.filter((k) => !held.includes(k));
+    for (const k of held) events.push({ type: 'conditionRemoved', combatantId: c.id, condition: k.id });
+  }
+  return events;
+}
+
 export function charmAway(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
-  const events: GameEvent[] = [...transferHuntersMark(state, combatantId), ...expireSummonsOf(state, combatantId)];
+  const events: GameEvent[] = [
+    ...transferHuntersMark(state, combatantId),
+    ...expireSummonsOf(state, combatantId),
+    ...releaseCharmedBy(state, combatantId),
+  ];
   c.alive = false;
   c.hp = 0;
   c.conditions = [];

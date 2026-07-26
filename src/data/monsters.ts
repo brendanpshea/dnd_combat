@@ -424,7 +424,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   dryad: {
     id: 'dryad', name: 'Dryad',
-    minPartyLevel: 2,
     ac: 16, hp: 22, speed: 30,
     creatureType: 'fey',
     abilities: { str: 10, dex: 12, con: 11, int: 14, wis: 15, cha: 18 },
@@ -461,7 +460,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   harpy: {
     id: 'harpy', name: 'Harpy',
-    minPartyLevel: 3,
     ac: 11, hp: 38, speed: 20,
     creatureType: 'monstrosity',
     abilities: { str: 12, dex: 13, con: 12, int: 7, wis: 10, cha: 13 },
