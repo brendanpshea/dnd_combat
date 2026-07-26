@@ -3,6 +3,8 @@ import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { acOf } from '../src/data/armor.js';
+import { webCell } from '../src/engine/grid.js';
+import { breakConcentration } from '../src/engine/rules/attack.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, level: number, position: Position, id: string, over: Partial<Combatant> = {}): Combatant =>
@@ -260,5 +262,24 @@ describe('Haste', () => {
     // A level-5 fighter already has Extra Attack (attacksPerAction 2, so 1
     // follow-up banked); Haste stacks one more on top of that.
     expect(c.state.combatants['ftr']!.turn.attacksLeft).toBe(2);
+  });
+});
+
+describe('Entangle vines are cleaned up like Web strands', () => {
+  it('dropping concentration clears the vines and frees anyone caught in them', () => {
+    const dru = { ...buildCharacter({ classId: 'druid', team: 'team1', position: { x: 0, y: 0 }, level: 5 }), id: 'dru' };
+    const gob = { ...buildMonster('goblin-warrior', 'team2', { x: 6, y: 6 }), id: 'gob' };
+    const c = new Combat({ seed: 3, mapId: 'open', combatants: [dru, gob] });
+
+    // Vines laid, and a creature that walked into them afterwards — the case
+    // the cast-time `targetIds` list never knows about.
+    for (let x = 5; x <= 6; x++) webCell(c.state.grid, { x, y: 6 }, 'dru', 25, { ability: 'str', kind: 'entangle' });
+    c.state.combatants['dru']!.concentratingOn = { spellId: 'entangle', targetIds: [] };
+    c.state.combatants['gob']!.conditions.push({ id: 'restrained', sourceId: 'dru', concentration: true });
+
+    breakConcentration(c.state, 'dru');
+
+    expect(c.state.grid.cells.some((cell) => cell.web?.sourceId === 'dru')).toBe(false);
+    expect(c.state.combatants['gob']!.conditions.some((k) => k.id === 'restrained')).toBe(false);
   });
 });

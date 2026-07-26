@@ -7,6 +7,7 @@ import { applyHealing } from '../src/engine/rules/heal.js';
 import { legalActions } from '../src/engine/actions.js';
 import { isDown } from '../src/engine/types.js';
 import { chooseAction } from '../src/ai/greedy.js';
+import { FEATURES } from '../src/data/features.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 const pc = (classId: string, team: 'team1' | 'team2', position: Position, id: string): Combatant =>
@@ -161,4 +162,76 @@ describe('winning and losing', () => {
       expect(c.isOver(), `${mapId} never finished`).toBe(true);
     }
   }, 30000);
+});
+
+/**
+ * What a caster leaves behind when it stops being able to hold it.
+ *
+ * All three are invisible to a harness that only asks whether a fight
+ * finishes: a paralysis that outlives its wizard, an aura around a body, a
+ * hovering weapon nothing will ever clear. They were found by fuzzing
+ * invariants over the state after every action instead of watching outcomes.
+ */
+describe('what a downed caster leaves behind', () => {
+  it('a hero wailed unconscious drops what they were concentrating on', () => {
+    const wiz = pc('wizard', 'team1', { x: 0, y: 0 }, 'wiz');
+    const banshee = { ...buildMonster('banshee', 'team2', { x: 1, y: 1 }), id: 'ban' };
+    const ogre = { ...buildMonster('ogre', 'team2', { x: 3, y: 3 }), id: 'ogre' };
+    const c = fight({ ...wiz, hp: 6 }, banshee, ogre);
+
+    c.state.combatants['wiz']!.concentratingOn = { spellId: 'hold-person', targetIds: ['ogre'] };
+    c.state.combatants['ogre']!.conditions.push({ id: 'paralyzed', sourceId: 'wiz', concentration: true });
+
+    // The Wail took its own route to 0 HP — downCombatant plus a win check —
+    // and skipped breaking concentration, so the ogre stayed paralysed by a
+    // wizard asleep on the floor.
+    FEATURES['wail']!.apply!({ state: c.state, actorId: 'ban' } as never);
+
+    const w = c.state.combatants['wiz']!;
+    expect(isDown(w), 'the wail should have dropped the wizard').toBe(true);
+    expect(w.concentratingOn).toBeUndefined();
+    expect(c.state.combatants['ogre']!.conditions.some((k) => k.id === 'paralyzed')).toBe(false);
+  });
+
+  it('a downed cleric loses the aura and the spell it was holding', () => {
+    const cleric = pc('cleric', 'team1', { x: 0, y: 0 }, 'cle');
+    const foe = { ...buildMonster('ogre', 'team2', { x: 7, y: 7 }), id: 'foe' };
+    const c = fight({ ...cleric, hp: 5 }, foe);
+    const cl = c.state.combatants['cle']!;
+    cl.concentratingOn = { spellId: 'spiritual-guardians', targetIds: [] };
+    cl.spiritualGuardians = { dc: 14, mod: 3 };
+
+    applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning');
+
+    expect(isDown(c.state.combatants['cle']!)).toBe(true);
+    expect(c.state.combatants['cle']!.spiritualGuardians).toBeUndefined();
+    expect(c.state.combatants['cle']!.concentratingOn).toBeUndefined();
+  });
+
+  it("a downed caster's Spiritual Weapon still winks out on its own clock", () => {
+    // A Spiritual Weapon is held by duration, not concentration, so breaking
+    // concentration does not touch it — and its only sweep ran at the start of
+    // the caster's turn, which a downed caster never gets (initiative skips
+    // them). It hovered for the rest of the fight.
+    //
+    // No ally: a fighter standing by would shake the cleric awake, and a cleric
+    // back on their feet re-casts the weapon, which hides the thing under test.
+    const cleric = pc('cleric', 'team1', { x: 0, y: 0 }, 'cle');
+    const mate = pc('fighter', 'team1', { x: 1, y: 0 }, 'mate');
+    const foe = { ...buildMonster('ogre', 'team2', { x: 7, y: 7 }), id: 'foe' };
+    const c = fight({ ...cleric, hp: 4 }, mate, foe);
+    c.state.combatants['cle']!.summons = [
+      { kind: 'spiritual-weapon', position: { x: 2, y: 2 }, expiresAtRound: c.state.round },
+    ];
+    applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning');
+    expect(isDown(c.state.combatants['cle']!)).toBe(true);
+
+    // Everyone simply ends their turn, so the only thing that can clear the
+    // weapon is the clock.
+    const startRound = c.state.round;
+    for (let i = 0; i < 400 && c.state.round <= startRound + 2 && !c.isOver(); i++) {
+      c.apply({ kind: 'endTurn' });
+    }
+    expect(c.state.combatants['cle']!.summons ?? []).toEqual([]);
+  });
 });

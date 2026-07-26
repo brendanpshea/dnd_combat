@@ -18,6 +18,27 @@ import { applyDamage } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
 
+/**
+ * Sweep every summon whose duration has run out, whoever owns it. Concentration
+ * -held summons are not touched — breakConcentration owns those.
+ */
+function expireSummonsOnClock(state: GameState): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const c of Object.values(state.combatants)) {
+    if (!c.summons?.length) continue;
+    const live = [];
+    for (const s of c.summons) {
+      if (s.expiresAtRound !== undefined && state.round > s.expiresAtRound) {
+        events.push({ type: 'summonExpired', casterId: c.id, kind: s.kind, position: { ...s.position } });
+      } else {
+        live.push(s);
+      }
+    }
+    c.summons = live;
+  }
+  return events;
+}
+
 /** A hard ceiling on battle length. Real fights end well inside ~15 rounds;
  *  this only ever fires on a pathological stall, to guarantee termination. */
 export const MAX_ROUNDS = 100;
@@ -320,6 +341,18 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
         for (const p of expireIllusions(state.grid, state.round)) {
           events.push({ type: 'illusionPopped', position: p });
         }
+        // Duration-held summons expire on the clock, for everyone, here.
+        //
+        // The sweep used to live only in activateSummons, which runs at the
+        // start of the *caster's* turn — and a caster who is down is skipped in
+        // initiative entirely (see the guard above). So a cleric who went down
+        // holding a Spiritual Weapon left it hovering on the board for the rest
+        // of the fight: its clock had run out, nothing was coming to read it,
+        // and breakConcentration doesn't touch it because a Spiritual Weapon is
+        // held by duration rather than concentration. Even for a caster still
+        // standing, the lazy sweep left an expired weapon on screen for up to a
+        // full round after it should have winked out.
+        events.push(...expireSummonsOnClock(state));
         events.push({ type: 'roundStarted', round: state.round });
         // Termination guard: a real fight ends inside ~15 rounds; anything past
         // MAX_ROUNDS is a pathological stall (two sides that can't finish each

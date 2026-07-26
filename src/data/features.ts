@@ -9,9 +9,9 @@ import type { SkillId } from './classes.js';
 import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
-import { applyHealing, downCombatant } from '../engine/rules/heal.js';
+import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow } from '../engine/rules/saves.js';
-import { charmAway, applyDamage, kill, checkWinner } from '../engine/rules/attack.js';
+import { charmAway, applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
@@ -775,12 +775,7 @@ export const FEATURES: Record<Id, FeatureData> = {
           const roll = rollDice(state.rng, '3d6');
           events.push(...applyDamage(state, t.id, actorId, roll.total, 'psychic', roll.rolls));
         } else if (t.unconsciousAtZero) {
-          events.push(...downCombatant(state, t.id));
-          const winner = checkWinner(state);
-          if (winner && !state.winner) {
-            state.winner = winner;
-            events.push({ type: 'combatEnded', winner });
-          }
+          events.push(...dropToZero(state, t.id));
         } else {
           events.push(...kill(state, t.id));
         }
