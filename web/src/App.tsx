@@ -26,6 +26,7 @@ import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { loadCampaignWeb } from './campaignStorage.js';
 import { loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
+import { classLook } from './classLook.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
 import type { AdventureState } from '../../src/adventure/runtime.js';
@@ -533,6 +534,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const state = combat.state;
   const activeId = combat.isOver() ? undefined : combat.activeId;
   const active = activeId ? state.combatants[activeId] : undefined;
+  const activeLook = classLook(active?.classId);
   const isHumanTurn = !!active && !aiTeams.has(active.team) && !combat.isOver();
 
   function apply(action: Action) {
@@ -898,14 +900,22 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       {active && (
         <div
           className="statusline statusline-tap"
+          style={activeLook ? { ['--pip' as string]: activeLook.color } : undefined}
           title="Tap for full character sheet"
           role="button"
           tabIndex={0}
           onClick={() => setSheetFor(active)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetFor(active); } }}
         >
-          <Portrait id={active.portraitId ?? active.classId} team={active.team} />
+          <span className="adv-party-face">
+            <Portrait id={active.portraitId ?? active.classId} team={active.team} />
+            {activeLook && <span className="class-pip on-portrait" title={activeLook.name}>{activeLook.glyph}</span>}
+          </span>
           <strong>{active.name}</strong>
+          {/* The line named who and how hurt, but never *what* — and portraits
+              follow species, so nothing on screen said "wizard". Words, not a
+              glyph: this is the one place with room for them. */}
+          {activeLook && <span className="class-tag">{activeLook.name}</span>}
           {/* From a solo-human game (campaign/adventure/vs-AI) read the side as
               You / Enemy; a symmetric match keeps the neutral Blue / Red. */}
           <span className={active.team}>
