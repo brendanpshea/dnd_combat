@@ -101,8 +101,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'webSpun': return e.sourceId;
     case 'lightningStruck': return e.casterId;
     case 'spellCast': return e.casterId;
-    case 'itemUsed': return e.combatantId;
-    case 'recharged': return e.combatantId;
+    case 'itemUsed':
     case 'hiddenRevealed': return e.combatantId;
     case 'summonPlaced': return e.casterId;
     default: return undefined;

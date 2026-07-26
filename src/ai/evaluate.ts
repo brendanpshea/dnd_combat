@@ -173,8 +173,19 @@ function threatReach(enemy: Combatant, unit: Combatant): number {
   return 1 / (1 + Math.max(0, dist - reachNow) * (hasRanged ? 0.15 : 0.6));
 }
 
+/** Living, still-standing members of a team — the divisor for averaged terms. */
+function livingOnTeam(state: GameState, team: TeamId): number {
+  let n = 0;
+  for (const c of Object.values(state.combatants)) {
+    if (c.team === team && c.alive && !isDown(c)) n++;
+  }
+  return n;
+}
+
 function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
   let score = 0;
+  // Hoisted: evaluate is the AI's hot path, and this is constant across the loop.
+  const share = isPov ? 1 : Math.max(1, livingOnTeam(state, team));
   for (const c of Object.values(state.combatants)) {
     if (c.team !== team || !c.alive) continue;
     const worth = unitWorth(c);
@@ -244,7 +255,23 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
       // when every enemy is hidden, and so untargetable — a unit closes, because
       // closing is how you find one.
       const preferred = melee || !seesAnyEnemy ? 1 : 4;
-      unit -= (isPov ? 0.9 : 0.3) * Math.abs(nearest - preferred);
+      // The non-POV side is averaged over its living members, not summed.
+      //
+      // The asymmetry is what gives movement a gradient at all, but as a plain
+      // per-unit sum it only survives one-on-one. V = mine - theirs, so a mover
+      // closing one cell gains 0.9 for itself and hands back 0.3 to *every*
+      // enemy whose nearest foe it now is. Against a party of four that is
+      // 4 x 0.3 = 1.2 against 0.9: every step toward the enemy scores worse than
+      // standing still, and an outnumbered melee unit correctly refuses to
+      // approach. Measured on a stalled arena wave, the flying sword's options
+      // were 0.00 for a sideways shuffle and -0.33, -0.66, -1.36 for each step
+      // closer — the gradient pointed backwards, all the way home.
+      //
+      // Averaging makes the term headcount-invariant, so the mover's own 0.9
+      // stays decisive no matter how badly outnumbered it is. Keeping distance
+      // is still argued for, but by the threat term below, which is where
+      // "don't stand where they can hit you" belongs.
+      unit -= (isPov ? 0.9 : 0.3 / share) * Math.abs(nearest - preferred);
     }
 
     // Incoming threat: fragile units should not sit where enemies can reach.
