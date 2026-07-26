@@ -37,6 +37,7 @@ import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
 import type { BattleProps } from './App.js';
 import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
+import { deployFoes } from '../../src/arena/deploy.js';
 
 type Phase =
   | { p: 'forge' }
@@ -52,10 +53,11 @@ interface Props {
 
 function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Combat {
   const grid = parseMap(wave.map);
-  // Same spread buildEncounter uses, so a wide group fans out from the centre.
-  const files = [3, 1, 5, 2, 6, 0, 7, 4];
+  // Where they start is part of the wave, seeded off it, so a retry is the same
+  // fight rather than a reroll of the layout.
+  const spots = deployFoes(grid, wave.encounter.members.length, (run.seed ^ (wave.wave * 2654435761)) >>> 0);
   const foes = wave.encounter.members.map((mid, i) =>
-    buildMonster(mid, 'team2', { x: files[i % files.length]!, y: grid.height - 1 },
+    buildMonster(mid, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
       wave.encounter.members.length > 1 ? String(i + 1) : ''));
   return new Combat({
     seed: (run.seed ^ (wave.wave * 7919)) >>> 0,

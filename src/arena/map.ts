@@ -33,8 +33,9 @@ const THEME_SCATTER: Record<MapTheme, { difficult: number; hazard: number }> = {
 };
 
 export interface ArenaMapOptions {
-  /** Force a size instead of rolling 50/50. */
-  height?: 8 | 12;
+  /** Force a depth instead of rolling 50/50. Any row count the validator
+   *  accepts; the generator itself rolls 12 or 16 (see below). */
+  height?: number;
   theme?: MapTheme;
 }
 
@@ -147,10 +148,23 @@ export function generateArenaMap(
   state: RngState,
 ): { value: GeneratedMap; state: RngState } {
   let rng = state;
-  let height = opts.height;
-  if (height === undefined) {
+  let height: number;
+  if (opts.height !== undefined) {
+    height = opts.height;
+  } else {
     const r = next(rng); rng = r.state;
-    height = r.value < 0.5 ? 8 : 12;   // half tight brawls, half approach fights
+    // Depth is the single biggest lever on whether positioning means anything,
+    // and 8 rows is below the floor. The longest possible shot on an 8x8 board
+    // is 35 ft; a shortbow reaches 80 and a cantrip 60-120, so every shooter can
+    // hit every target from its starting cell and no one ever has a reason to
+    // move. Measured at level 1 over 40 seeds against crossbow bandits, a party
+    // that never took a step BEAT one played properly on 8x8 (48% vs 40%); at 12
+    // rows the same refusal to move costs 22 points, and at 20 rows, 28.
+    //
+    // 12 and 16 rather than something enormous: the win rate is flat across
+    // depths (it is the ranked band that changes, not the difficulty), so this
+    // is chosen for what fits a phone screen, not for what maximises the effect.
+    height = r.value < 0.5 ? 12 : 16;
   }
   let theme = opts.theme;
   if (theme === undefined) {

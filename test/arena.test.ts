@@ -5,6 +5,7 @@ import {
 } from '../src/arena/encounter.js';
 import { generateArenaMap, validateArenaMap } from '../src/arena/map.js';
 import { parseMap } from '../src/data/maps.js';
+import { deployFoes } from '../src/arena/deploy.js';
 import {
   buildWave, newArenaRun, recordResult, winRate, waveBudget, evenBudgetFor, waveDifficulty,
   memberCapFor, maxCountFor,
@@ -73,12 +74,16 @@ describe('encounter generation', () => {
     }
   });
 
-  it('fields at most two creature types, and at most six bodies', () => {
+  it('fields at most three creature types, and at most six bodies', () => {
+    // Two chosen flavours, plus at most one outsider brought in to give the
+    // wave some reach: pick 'construct' and 'ooze' and every slot draws from
+    // creatures that must walk the length of the board, which was a third of
+    // all waves. See ensureRangedPresence in arena/encounter.ts.
     let rng = seedRng(9);
     for (const budget of BUDGETS) {
       for (let i = 0; i < 40; i++) {
         const r = generateEncounter({ budget }, rng); rng = r.state;
-        expect(r.value.types.length, r.value.members.join(',')).toBeLessThanOrEqual(2);
+        expect(r.value.types.length, r.value.members.join(',')).toBeLessThanOrEqual(3);
         expect(r.value.members.length).toBeGreaterThan(0);
         expect(r.value.members.length).toBeLessThanOrEqual(6);
       }
@@ -176,7 +181,7 @@ describe('encounter generation', () => {
 });
 
 describe('map generation', () => {
-  it('produces only 8-wide boards, half 8x8 and half 8x12', () => {
+  it('produces only 8-wide boards, half 12 deep and half 16', () => {
     let rng = seedRng(5);
     const heights: number[] = [];
     for (let i = 0; i < 200; i++) {
@@ -185,8 +190,12 @@ describe('map generation', () => {
       expect(g.width).toBe(8);
       heights.push(g.height);
     }
-    const tall = heights.filter((h) => h === 12).length;
-    expect(heights.every((h) => h === 8 || h === 12)).toBe(true);
+    // 8 rows used to be half of all boards, and it is below the depth at which
+    // position means anything: the longest possible shot on an 8x8 is 35 ft
+    // while a shortbow reaches 80, so nobody ever needs to move. See the note
+    // in arena/map.ts for the measurement.
+    const tall = heights.filter((h) => h === 16).length;
+    expect(heights.every((h) => h === 12 || h === 16)).toBe(true);
     expect(tall, `tall share ${tall}/200`).toBeGreaterThan(60);
     expect(tall).toBeLessThan(140);
   });
@@ -383,8 +392,13 @@ describe('arena difficulty calibration', () => {
         ); rng = e.state;
         const m = generateArenaMap({}, rng); rng = m.state;
         const g = parseMap(m.value.map);
+        // Deploy the way the arena screen does. Hand-placing every foe on the
+        // far rank measured a fight the game no longer generates: it read L5 at
+        // 75% while the shipping deployment put it at 60%, and the gap was the
+        // test's own layout, not the calibration.
+        const spots = deployFoes(g, e.value.members.length, rng); rng = spots.state;
         const foes = e.value.members.map((mid, k) =>
-          buildMonster(mid, 'team2', { x: files[k % 8]!, y: g.height - 1 }, String(k + 1)));
+          buildMonster(mid, 'team2', spots.value.positions[k] ?? { x: 0, y: g.height - 1 }, String(k + 1)));
         const c = new Combat({
           seed: i + 1, map: m.value.map,
           combatants: [...buildParty('team1', 0, level), ...foes],

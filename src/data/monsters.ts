@@ -12,6 +12,7 @@
 import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType } from '../engine/types.js';
 import { proficiencyBonus, abilityMod } from '../engine/types.js';
 import { FEATURES } from './features.js';
+import { WEAPONS } from './weapons.js';
 
 export interface MonsterData {
   id: Id;
@@ -1529,3 +1530,25 @@ export const MONSTER_XP: Record<Id, number> = {
   'fire-giant': 5000, 'young-blue': 5000,
   'young-red': 5900,
 };
+
+/**
+ * Can this creature hurt you without walking to you first?
+ *
+ * Weapons with a range, plus stat-block spellcasting — deliberately NOT
+ * breath weapons and gazes, which are 15-30 ft cones and cannot reach a party
+ * holding the far rank. The question this answers is exactly "can it punish
+ * standing still", so short-range area attacks are correctly excluded.
+ *
+ * Two thirds of the bestiary answers no (69 of 105 at arena CR), and that is
+ * why positioning was close to free: against a wave that must come to you,
+ * holding the back rank is not a tactic, it is the whole game. Measured, at
+ * level 1 across 40 seeds: against melee-only foes a party that never took a
+ * single step won as often as one played properly, while against bandits with
+ * crossbows the same refusal to move cost 20 points of win rate.
+ */
+export function canThreatenAtRange(monsterId: Id): boolean {
+  const m = MONSTERS[monsterId];
+  if (!m) return false;
+  if (m.spellcasting) return true;
+  return (m.weaponIds ?? []).some((w) => WEAPONS[w]?.range !== undefined);
+}

@@ -23,6 +23,7 @@ import {
 } from '../src/campaign/campaign.js';
 import { membersCoinXP } from '../src/data/encounters.js';
 import { buildWave, newArenaRun, recordResult, type ArenaRunState } from '../src/arena/run.js';
+import { deployFoes } from '../src/arena/deploy.js';
 import { parseMap } from '../src/data/maps.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { SPELLS } from '../src/data/spells.js';
@@ -105,6 +106,8 @@ interface Tally {
   /** Each run's roster and how far it got. */
   comps: Array<{ classes: Id[]; wave: number; level: number }>;
   monstersMet: Map<Id, number>;
+  /** How often each enemy deployment shape came up. */
+  deployPatterns: Map<string, number>;
   /** Gold in hand when a run ended, and gold at each shop visit. */
   goldAtEnd: number[];
   goldUnspendable: number;
@@ -123,7 +126,7 @@ interface Tally {
 }
 
 const T: Tally = {
-  fights: 0, wins: 0, rounds: [], stalls: [], errors: [],
+  fights: 0, wins: 0, rounds: [], stalls: [], errors: [], deployPatterns: new Map(),
   byWave: new Map(), byClass: new Map(), spellsCast: new Map(), featuresUsed: new Map(),
   itemsBought: new Map(), itemsUsed: new Map(), spellAvailableRuns: new Map(),
   itemAvailableRuns: new Map(), classDepth: new Map(), comps: [],
@@ -204,10 +207,11 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
 
   const party = buildCampaignParty(c);
   const grid = parseMap(w.map);
-  // The same spread the arena screen uses, so a wide group fans out.
-  const files = [3, 1, 5, 2, 6, 0, 7, 4];
+  // The same deployment the arena screen uses, seeded the same way.
+  const spots = deployFoes(grid, w.encounter.members.length, (runSeed ^ (wave * 2654435761)) >>> 0);
+  bump(T.deployPatterns, spots.value.pattern);
   const foes = w.encounter.members.map((mid, i) =>
-    buildMonster(mid, 'team2', { x: files[i % files.length]!, y: grid.height - 1 },
+    buildMonster(mid, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
       w.encounter.members.length > 1 ? String(i + 1) : ''));
   const combat = new Combat({
     // The *encounter* is deliberately the same every attempt (buildWave seeds
@@ -611,6 +615,13 @@ for (const s of T.endStats) {
 for (const [id, v] of [...byCls.entries()].sort()) {
   console.log(`${(CLASSES[id]?.name ?? id).padEnd(9)} AC ${median(v.ac)} (${Math.min(...v.ac)}–${Math.max(...v.ac)})` +
     `   maxHP ${median(v.hp)} (${Math.min(...v.hp)}–${Math.max(...v.hp)})`);
+}
+
+console.log('\n--- enemy deployment ---');
+{
+  const total = [...T.deployPatterns.values()].reduce((a, b) => a + b, 0) || 1;
+  console.log('  ' + [...T.deployPatterns.entries()].sort((a, b) => b[1] - a[1])
+    .map(([k, n]) => `${k} ${Math.round((100 * n) / total)}%`).join('   '));
 }
 
 console.log('\n--- failures ---');
