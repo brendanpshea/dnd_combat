@@ -38,6 +38,10 @@ export type GameEvent =
   | { type: 'healed'; targetId: Id; sourceId: Id; amount: number }
   /** A hero hit 0 HP: unconscious, still on the board, revivable. Not death. */
   | { type: 'downed'; combatantId: Id }
+  /** A wraith's Life Drain: the victim's hit point *maximum* fell. Lasts until
+   *  the next long rest, which here means until the fight is over — combatants
+   *  are rebuilt from the campaign roster for each one. */
+  | { type: 'maxHpDrained'; combatantId: Id; amount: number; maxHp: number }
   /** Healed off 0 HP and back on their feet. */
   | { type: 'revived'; combatantId: Id; hp: number }
   | {

@@ -428,6 +428,43 @@ export function resolveAttack(
     events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { crit }));
   }
 
+  // Life Drain (wraith): a failed Constitution save cuts the victim's hit point
+  // maximum by the damage it just took. Measured off what actually landed, so
+  // resistance and immunity blunt the drain exactly as they blunt the damage.
+  //
+  // A ceiling of 0 is death in the SRD; here it routes through the same down/
+  // kill split as everything else, so a hero is out of the fight rather than
+  // gone. The kill path checks the winner, the down path does not — hence the
+  // explicit check.
+  // Skip a target the blow just dropped: they are out of the fight already, and
+  // grinding a downed hero's ceiling away is a punishment for being unlucky
+  // rather than a decision anyone gets to make.
+  if (weapon.drainsMaxHp && target.alive && !isDown(target)) {
+    const dealt = events.reduce(
+      (s, e) => s + (e.type === 'damageDealt' && e.targetId === targetId ? e.amount : 0), 0,
+    );
+    if (dealt > 0) {
+      const { ability, dc } = weapon.drainsMaxHp;
+      const save = savingThrow(state, targetId, ability, dc);
+      events.push(save.event);
+      if (!save.success) {
+        const before = target.maxHp;
+        // Floored at 1 rather than 0. The SRD kills a creature whose maximum
+        // reaches 0, but that branch cannot be reached here: the blow that
+        // would drop the ceiling that far always deals at least as much damage
+        // first, so the victim is already down (or dead) before the drain is
+        // even rolled for. A floor keeps the invariant honest instead of
+        // carrying an unreachable death path.
+        target.maxHp = Math.max(1, target.maxHp - dealt);
+        target.hp = Math.min(target.hp, target.maxHp);
+        const lost = before - target.maxHp;
+        if (lost > 0) {
+          events.push({ type: 'maxHpDrained', combatantId: targetId, amount: lost, maxHp: target.maxHp });
+        }
+      }
+    }
+  }
+
   // Smites, in priority order: an armed one always discharges (the slot is
   // already spent, so holding it back would just lose it), otherwise the
   // Divine Smite *feature* may fire on its own.

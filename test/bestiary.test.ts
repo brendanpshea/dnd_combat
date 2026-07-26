@@ -9,6 +9,7 @@ import { BREATH_WEAPONS } from '../src/data/features.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { applyDamage, resolveAttack } from '../src/engine/rules/attack.js';
+import { applyHealing } from '../src/engine/rules/heal.js';
 import { arenaRoster } from '../src/arena/encounter.js';
 import { FEATURES } from '../src/data/features.js';
 import { makeCombatant } from './helpers.js';
@@ -938,6 +939,71 @@ describe('signature abilities', () => {
       expect(c.state.combatants[id]!.hp, `${id} should have been caught`).toBeLessThan(before.get(id)!);
     }
     expect(c.state.combatants[away.id]!.hp, 'the far magmin is out of range').toBe(before.get(away.id));
+  });
+
+  // Life Drain is the only effect in the game a cleric cannot undo. With no
+  // death saves, a falling ceiling is the wraith's whole reason to be feared.
+  it('wraith life drain cuts the hit point maximum, and healing cannot buy it back', () => {
+    const wraith = buildMonster('wraith', 'team2', { x: 4, y: 3 });
+    const pc = makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, abilities: { str: 10, dex: 10, con: 1, int: 10, wis: 10, cha: 10 }, hp: 400, maxHp: 400, acOverride: 1 });
+    pc.unconsciousAtZero = true;
+    const c = new Combat({ seed: 4, mapId: 'open', combatants: [pc, wraith] });
+    let drained = false;
+    for (let i = 0; i < 20 && !drained; i++) {
+      const events = resolveAttack(c.state, wraith.id, 'pc', 'wraith-touch');
+      const drain = events.find((e) => e.type === 'maxHpDrained');
+      if (!drain || drain.type !== 'maxHpDrained') continue;
+      drained = true;
+      const t = c.state.combatants['pc']!;
+      expect(t.maxHp, 'the ceiling has to move').toBeLessThan(400);
+      expect(t.maxHp).toBe(drain.maxHp);
+      // A big heal tops them up to the *new* ceiling and no further.
+      applyHealing(c.state, 'pc', 'pc', 1000);
+      expect(c.state.combatants['pc']!.hp).toBe(t.maxHp);
+    }
+    expect(drained, 'a con-1 hero should fail this save inside 20 hits').toBe(true);
+  });
+
+  it('the drain grinds the ceiling toward 1 but never kills — the blow gets there first', () => {
+    const wraith = buildMonster('wraith', 'team2', { x: 4, y: 3 });
+    const pc = makeCombatant({ id: 'pc', team: 'team1', position: { x: 3, y: 3 }, abilities: { str: 10, dex: 10, con: 1, int: 10, wis: 10, cha: 10 }, hp: 300, maxHp: 300, acOverride: 1 });
+    pc.unconsciousAtZero = true;
+    const c = new Combat({ seed: 7, mapId: 'open', combatants: [pc, wraith] });
+    for (let i = 0; i < 200 && c.state.combatants['pc']!.maxHp > 1; i++) {
+      // Patch them back up between blows — the drain skips a target already
+      // down, so without this the grind stalls the moment one hit drops them.
+      const t = c.state.combatants['pc']!;
+      t.hp = t.maxHp;
+      t.conditions = [];
+      resolveAttack(c.state, wraith.id, 'pc', 'wraith-touch');
+    }
+    const t = c.state.combatants['pc']!;
+    expect(t.maxHp, 'the ceiling should bottom out at 1, not 0').toBe(1);
+    expect(t.alive, 'the drain itself never kills').toBe(true);
+    // And the last blow is what actually takes them out of the fight.
+    resolveAttack(c.state, wraith.id, 'pc', 'wraith-touch');
+    expect(c.state.combatants['pc']!.hp).toBe(0);
+    expect(c.state.combatants['pc']!.conditions.some((k) => k.id === 'unconscious')).toBe(true);
+  });
+
+  it('the drain is measured off damage actually taken, so resistance blunts it', () => {
+    const wraith = buildMonster('wraith', 'team2', { x: 4, y: 3 });
+    const mk = (id: string, x: number, resist: boolean) => {
+      const c = makeCombatant({ id, team: 'team1', position: { x, y: 3 }, abilities: { str: 10, dex: 10, con: 1, int: 10, wis: 10, cha: 10 }, hp: 500, maxHp: 500, acOverride: 1 });
+      c.unconsciousAtZero = true;
+      if (resist) c.resistances = ['necrotic'];
+      return c;
+    };
+    const plain = mk('plain', 3, false);
+    const warded = mk('warded', 5, true);
+    const c = new Combat({ seed: 9, mapId: 'open', combatants: [plain, warded, wraith] });
+    for (let i = 0; i < 30; i++) {
+      resolveAttack(c.state, wraith.id, 'plain', 'wraith-touch');
+      resolveAttack(c.state, wraith.id, 'warded', 'wraith-touch');
+    }
+    const lost = (id: string) => 500 - c.state.combatants[id]!.maxHp;
+    expect(lost('plain'), 'nothing was drained at all').toBeGreaterThan(0);
+    expect(lost('warded'), 'resistance should halve the drain too').toBeLessThan(lost('plain'));
   });
 
   // The banshee's Wail is the creature. Without it a 1,100 XP undead is a
