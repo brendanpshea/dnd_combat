@@ -37,6 +37,18 @@ export interface WeaponData {
    * is a fight rather than an execution.
    */
   extraDamage?: { dice: string; type: DamageType; save?: { ability: Ability; dc: number } };
+  /**
+   * Life Drain (wraith): on a hit the target makes this save or its hit point
+   * *maximum* drops by the damage taken. The SRD says "until the creature
+   * finishes a long rest", and that comes free here — a combatant is rebuilt
+   * from the campaign roster for every fight, so the drain cannot outlive the
+   * one it happened in.
+   *
+   * The point of it is that healing can't undo it. With no death saves in this
+   * engine, a shrinking ceiling is the only pressure a cleric can't simply
+   * out-heal, which is exactly the thing a wraith is for.
+   */
+  drainsMaxHp?: { ability: Ability; dc: number };
   /** Store price in gp; absent for natural/monster weapons (not tradable). */
   cost?: number;
   /** Magic weapon bonuses (+1 sword: both are 1). */
@@ -649,7 +661,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'wraith-touch': {
     id: 'wraith-touch', name: 'Life Drain', damage: '4d8', damageType: 'necrotic',
-    properties: [], melee: true,
+    properties: [], melee: true, drainsMaxHp: { ability: 'con', dc: 14 },
   },
   'spawn-claws': {
     id: 'spawn-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
