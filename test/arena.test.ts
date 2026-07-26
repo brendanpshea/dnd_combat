@@ -7,6 +7,7 @@ import { generateArenaMap, validateArenaMap } from '../src/arena/map.js';
 import { parseMap } from '../src/data/maps.js';
 import {
   buildWave, newArenaRun, recordResult, winRate, waveBudget, evenBudgetFor, waveDifficulty,
+  memberCapFor,
 } from '../src/arena/run.js';
 import { seedRng } from '../src/engine/rng.js';
 import { Combat } from '../src/engine/combat.js';
@@ -385,4 +386,50 @@ describe('arena difficulty calibration', () => {
         .toBeLessThan(0.6);
     }
   }, 120000);
+});
+
+/**
+ * The budget guards the *fight*; this guards the *hit*.
+ *
+ * A share-of-budget cap says nothing about whether one attack deletes a
+ * character. At level 1 the squishiest hero has 7 HP, and 85 of the 132
+ * monsters average that or more on a single hit — a CR 3 giant scorpion
+ * averages 24 across three attacks. Paired with something cheap it fits a
+ * wave-6 level-1 budget honestly, and it is miserable to meet, because
+ * nothing the player does changes the outcome of a sting.
+ */
+describe('level-appropriate members', () => {
+  it('never fields a monster far above the party', () => {
+    for (const level of [1, 2, 3, 4]) {
+      const cap = memberCapFor(level);
+      for (let seed = 1; seed <= 60; seed++) {
+        for (let wave = 1; wave <= 10; wave++) {
+          const w = buildWave(seed, level, wave);
+          for (const m of w.encounter.members) {
+            expect(MONSTER_XP[m] ?? 0, `L${level} w${wave}: ${m} over the cap ${cap}`)
+              .toBeLessThanOrEqual(cap);
+          }
+        }
+      }
+    }
+  });
+
+  // The cap must not starve the generator: a level-1 wave still has to be a
+  // fight, and still has to vary.
+  it('leaves the low levels plenty to draw on', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 120; seed++) {
+      for (let wave = 1; wave <= 8; wave++) {
+        const w = buildWave(seed, 1, wave);
+        expect(w.encounter.members.length).toBeGreaterThan(0);
+        for (const m of w.encounter.members) seen.add(m);
+      }
+    }
+    expect(seen.size, 'level 1 draws from too small a pool').toBeGreaterThan(40);
+  });
+
+  // …and must not cap the top, where the CR 6-10 shelf is the whole point.
+  it('does not cap a level-5 party', () => {
+    expect(memberCapFor(5)).toBe(Infinity);
+  });
 });

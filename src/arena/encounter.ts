@@ -79,6 +79,18 @@ export interface GenerateOptions {
    * into a target they cannot chip down in time.
    */
   soloShare?: number;
+  /**
+   * No member may cost more than this, whatever the budget allows.
+   *
+   * The budget guards the fight; this guards the *hit*. A share-of-budget cap
+   * says nothing about whether one attack deletes a character, and at level 1
+   * the squishiest hero has 7 HP while 85 of the 132 monsters average that or
+   * more on a single hit. A CR 3 giant scorpion averages 24 across three
+   * attacks — it can end a hero a round, and paired with something cheap it
+   * fits a wave-6 budget honestly. Winnable in simulation and miserable to
+   * play, because nothing the player does changes it.
+   */
+  maxMemberXp?: number;
 }
 
 const DEFAULTS = { maxCount: 6, soloShare: 0.75 } as const;
@@ -189,7 +201,10 @@ function generateOnce(
 ): { value: GeneratedEncounter; state: RngState } {
   const maxCount = opts.maxCount ?? DEFAULTS.maxCount;
   const soloShare = opts.soloShare ?? DEFAULTS.soloShare;
-  const roster = arenaRoster();
+  const cap = opts.maxMemberXp ?? Infinity;
+  // Filter first, so type choice, headcount and every slot all see the same
+  // pool — a type whose cheapest member is over the cap must not be offered.
+  const roster = arenaRoster().filter((m) => m.xp <= cap);
   let rng = state;
 
   const types = affordableTypes(roster, opts.budget, soloShare);
