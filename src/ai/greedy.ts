@@ -565,9 +565,14 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
         return s + fail * dmg + (1 - fail) * dmg / 2;
       }, 0);
   }
-  // Charm-away songs (dryad Fey Charm — nearest foe; harpy Luring Song — all in
-  // 30 ft): a removed enemy is worth its full remaining HP, like Turn Undead.
-  if (a.featureId === 'fey-charm' || a.featureId === 'luring-song') {
+  // Charms (dryad Fey Charm — nearest foe; harpy Luring Song — all in 30 ft).
+  // Worth a *share* of the target's remaining hit points, not all of it: these
+  // no longer remove anyone. A charmed hero still fights everyone but the
+  // charmer, and a lured one is walking toward the singer with a fresh save
+  // every turn. Pricing them as kills had the AI spend a once-per-fight action
+  // on an effect the target can shrug off next turn.
+  if (a.featureId === 'fey-charm' || a.featureId === 'luring-song' || a.featureId === 'charm') {
+    const worth = a.featureId === 'luring-song' ? 0.5 : 0.35;
     const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.cha);
     let foes = Object.values(state.combatants).filter(
       (c) => c.alive && !isDown(c) && c.team !== actor.team &&
@@ -576,7 +581,7 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     if (a.featureId === 'fey-charm') {
       foes = foes.sort((x, y) => distanceFeet(actor.position, x.position) - distanceFeet(actor.position, y.position)).slice(0, 1);
     }
-    return foes.reduce((s, c) => s + saveFailProb(state, c, 'wis', dc) * damageValue(c.hp, c), 0);
+    return foes.reduce((s, c) => s + saveFailProb(state, c, 'wis', dc) * damageValue(c.hp, c) * worth, 0);
   }
   // Fey Invisibility (sprite/green hag): turn hidden for the attack bonus.
   if (a.featureId === 'fey-invisibility') {

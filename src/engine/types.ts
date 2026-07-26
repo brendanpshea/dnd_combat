@@ -72,6 +72,8 @@ export type ConditionId =
   | 'slowed'       // Slow mastery: speed cut by 10 ft until this creature's next turn
   | 'restrained'   // Web: speed 0, disadvantage to attack, advantage to be hit
   | 'commanded'    // Command: prone and loses its next action
+  | 'charmed'      // can't attack or harm whoever charmed it
+  | 'lured'        // charmed *and* incapacitated, and drawn toward the charmer
   | 'shielded'     // Shield reaction: +5 AC (and Magic Missile immunity) until next turn
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws

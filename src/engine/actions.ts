@@ -46,9 +46,13 @@ function trueStrikeWeapons(c: Combatant): Id[] {
 }
 
 /** Can't take an *action* — the shared incapacitated set, plus Command (which
- *  costs the turn's actions but, unlike the rest, leaves the reaction). */
+ *  costs the turn's actions but, unlike the rest, leaves the reaction) and
+ *  Luring Song (which takes the actions but spends the movement walking the
+ *  victim toward the singer, so it can't reuse `incapacitated`: that one
+ *  zeroes speed, and being drawn in is the whole effect). */
 function cannotAct(c: Combatant): boolean {
-  return isIncapacitated(c) || c.conditions.some((k) => k.id === 'commanded');
+  return isIncapacitated(c) ||
+    c.conditions.some((k) => k.id === 'commanded' || k.id === 'lured');
 }
 
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {

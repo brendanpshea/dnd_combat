@@ -150,7 +150,10 @@ function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
   if (!target) return [];
   const { success, event } = savingThrow(state, target.id, 'wis', dc);
   const events: GameEvent[] = [event];
-  if (!success) events.push(...charmAway(state, target.id));
+  if (!success && !target.conditions.some((k) => k.id === 'charmed' && k.sourceId === me.id)) {
+    target.conditions.push({ id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
+    events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'charmed', sourceId: me.id });
+  }
   return events;
 }
 
@@ -467,8 +470,10 @@ export const FEATURES: Record<Id, FeatureData> = {
       for (const t of foes) {
         const { success, event } = savingThrow(state, t.id, 'wis', dc);
         events.push(event);
-        if (!success) events.push(...charmAway(state, t.id));
-        if (state.winner) break;
+        if (!success && !t.conditions.some((k) => k.id === 'lured')) {
+          t.conditions.push({ id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
+          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'lured', sourceId: me.id });
+        }
       }
       return events;
     },

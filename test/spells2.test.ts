@@ -1,4 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { buildParty } from '../src/builder/character.js';
+import { FEATURES } from '../src/data/features.js';
+import { distanceCells } from '../src/engine/grid.js';
+import { startTurn } from '../src/engine/turn.js';
+import { legalActions } from '../src/engine/actions.js';
+import { canAttackWith, applyDamage } from '../src/engine/rules/attack.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -433,5 +439,63 @@ describe('no wasteful recasts', () => {
     expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon')).toBe(true);
     c.apply({ kind: 'castSpell', spellId: 'spiritual-weapon', slotLevel: 2, targets: [{ position: { x: 1, y: 1 } }] });
     expect(c.legalActions().some((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-weapon')).toBe(false);
+  });
+});
+
+/**
+ * Luring Song, as the rule actually reads: the victim is charmed *and*
+ * incapacitated, and spends its turn walking toward the singer, saving again
+ * at the end of each of its turns.
+ *
+ * It used to call `charmAway`, which set `alive = false` — the hero left the
+ * fight for good, off the board, unreachable and unrecoverable. That is the
+ * shape of Suggestion ("go away"), not of a song that draws you in, and it
+ * made three 200 XP harpies a party-deleter at level 1.
+ */
+describe('Luring Song', () => {
+  function sung(seed: number) {
+    const harpy = buildMonster('harpy', 'team2', { x: 3, y: 4 }, '1');
+    const c = new Combat({ seed, width: 8, height: 8, combatants: [...buildParty('team1', 0, 3), harpy] });
+    FEATURES['luring-song']!.apply!({ state: c.state, actorId: harpy.id });
+    const victim = Object.values(c.state.combatants).find((x) => x.conditions.some((k) => k.id === 'lured'));
+    return { c, harpy, victim };
+  }
+  const firstHit = () => {
+    for (let seed = 1; seed <= 30; seed++) { const r = sung(seed); if (r.victim) return r; }
+    throw new Error('nobody ever failed the save');
+  };
+
+  it('charms rather than removing — the victim is still in the fight', () => {
+    const { victim } = firstHit();
+    expect(victim!.alive).toBe(true);
+    expect(victim!.hp).toBeGreaterThan(0);
+  });
+
+  it('draws the victim toward the singer on its turn', () => {
+    const { c, harpy, victim } = firstHit();
+    const before = distanceCells(victim!.position, harpy.position);
+    expect(before).toBeGreaterThan(1);
+    c.state.turnIndex = c.state.initiativeOrder.indexOf(victim!.id);
+    startTurn(c.state);
+    const after = distanceCells(c.state.combatants[victim!.id]!.position, harpy.position);
+    expect(after, 'the song should pull it in').toBeLessThan(before);
+  });
+
+  it('leaves it able to do nothing but end its turn', () => {
+    const { c, victim } = firstHit();
+    c.state.turnIndex = c.state.initiativeOrder.indexOf(victim!.id);
+    const kinds = [...new Set(legalActions(c.state, victim!.id).map((a) => a.kind))];
+    expect(kinds, 'incapacitated, so no actions — but never a softlock').toEqual(['endTurn']);
+  });
+
+  it('cannot be made to attack the singer', () => {
+    const { c, harpy, victim } = firstHit();
+    expect(canAttackWith(c.state, victim!, victim!.equipped.mainHand!, harpy.id)).toBe(false);
+  });
+
+  it('ends when the singer dies', () => {
+    const { c, harpy, victim } = firstHit();
+    applyDamage(c.state, harpy.id, victim!.id, 500, 'slashing');
+    expect(c.state.combatants[victim!.id]!.conditions.some((k) => k.id === 'lured')).toBe(false);
   });
 });
