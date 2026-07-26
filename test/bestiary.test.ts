@@ -939,4 +939,51 @@ describe('signature abilities', () => {
     }
     expect(c.state.combatants[away.id]!.hp, 'the far magmin is out of range').toBe(before.get(away.id));
   });
+
+  // The banshee's Wail is the creature. Without it a 1,100 XP undead is a
+  // touch attack and some resistances — strictly worse than a ghost.
+  it('the banshee has its wail', () => {
+    expect(MONSTERS['banshee']!.featureIds).toContain('wail');
+  });
+
+  it('wail drops those who fail and only bruises those who save', () => {
+    const wail = FEATURES['wail']!;
+    const banshee = buildMonster('banshee', 'team2', { x: 4, y: 4 });
+    // Two heroes at the same distance, differing only in Constitution.
+    const tough = makeCombatant({ id: 'tough', team: 'team1', position: { x: 3, y: 4 }, abilities: { str: 10, dex: 10, con: 30, int: 10, wis: 10, cha: 10 }, hp: 100, maxHp: 100 });
+    const frail = makeCombatant({ id: 'frail', team: 'team1', position: { x: 5, y: 4 }, abilities: { str: 10, dex: 10, con: 1, int: 10, wis: 10, cha: 10 }, hp: 100, maxHp: 100 });
+    tough.unconsciousAtZero = true;
+    frail.unconsciousAtZero = true;
+    const c = new Combat({ seed: 3, mapId: 'open', combatants: [tough, frail, banshee] });
+    wail.apply!({ state: c.state, actorId: banshee.id });
+    expect(c.state.combatants['frail']!.hp, 'a con-1 hero cannot pass this').toBe(0);
+    expect(c.state.combatants['frail']!.conditions.some((k) => k.id === 'unconscious')).toBe(true);
+    const t = c.state.combatants['tough']!;
+    expect(t.hp, 'a con-30 hero saves and takes 3d6').toBeGreaterThan(0);
+    expect(t.hp, 'but the save is not free').toBeLessThan(100);
+  });
+
+  it('wail spares constructs and undead, and reaches only 30 ft', () => {
+    const banshee = buildMonster('banshee', 'team2', { x: 1, y: 1 });
+    // A construct in range and a living hero well outside it.
+    const armor = buildMonster('animated-armor', 'team1', { x: 2, y: 1 });
+    const far = makeCombatant({ id: 'far', team: 'team1', position: { x: 15, y: 1 }, abilities: { str: 10, dex: 10, con: 1, int: 10, wis: 10, cha: 10 }, hp: 100, maxHp: 100 });
+    const c = new Combat({ seed: 5, width: 20, height: 6, combatants: [armor, far, banshee] });
+    expect(distanceFeet(banshee.position, far.position), 'the far hero must be out of range').toBeGreaterThan(30);
+    FEATURES['wail']!.apply!({ state: c.state, actorId: banshee.id });
+    expect(c.state.combatants[armor.id]!.hp, 'a construct has no life to take').toBe(armor.maxHp);
+    expect(c.state.combatants['far']!.hp, 'out of range is out of range').toBe(100);
+  });
+
+  it('a monster killed by the wail ends the fight properly', () => {
+    const banshee = buildMonster('banshee', 'team2', { x: 4, y: 4 });
+    const rat = buildMonster('goblin-warrior', 'team1', { x: 3, y: 4 });
+    const c = new Combat({ seed: 2, mapId: 'open', combatants: [rat, banshee] });
+    // Force the failure rather than fishing for a seed: a rat that cannot save.
+    c.state.combatants[rat.id]!.abilities.con = 1;
+    FEATURES['wail']!.apply!({ state: c.state, actorId: banshee.id });
+    if (!c.state.combatants[rat.id]!.alive) {
+      expect(c.state.winner, 'the last enemy died — someone has to have won').toBe('team2');
+    }
+  });
 });

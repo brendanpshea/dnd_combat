@@ -820,6 +820,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 1, dex: 14, con: 10, int: 12, wis: 11, cha: 17 },
     savingThrowProfs: ['wis', 'cha'],
     weaponIds: ['banshee-touch'],
+    featureIds: ['wail', 'horrifying-visage'],
     resistances: ['cold', 'necrotic'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['poison'],

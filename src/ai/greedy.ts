@@ -635,6 +635,31 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     if (!target) return 0;
     return saveFailProb(state, target, 'wis', dc) * (5 + target.hp / 4);
   }
+  // Horrifying Visage (banshee): frighten everyone within 60 ft, save-ends.
+  // Same soft-lockdown pricing as Dreadful Glare, summed over the whole room.
+  if (a.featureId === 'horrifying-visage') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.cha);
+    return Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        distanceFeet(actor.position, c.position) <= 60 &&
+        !c.conditions.some((k) => k.id === 'frightened'))
+      .reduce((s, c) => s + saveFailProb(state, c, 'wis', dc) * (4 + c.hp / 6), 0);
+  }
+  // Wail (banshee): a failed Constitution save inside 30 ft takes that creature
+  // out of the fight entirely, so a failure is worth its whole remaining HP; a
+  // success is just 3d6 psychic. One use, so it should fire when it catches the
+  // most people — which summing over targets in range already encourages.
+  if (a.featureId === 'wail') {
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.cha);
+    return Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        c.creatureType !== 'construct' && c.creatureType !== 'undead' &&
+        distanceFeet(actor.position, c.position) <= 30)
+      .reduce((s, c) => {
+        const fail = saveFailProb(state, c, 'con', dc);
+        return s + fail * c.hp + (1 - fail) * damageValue(avgDice('3d6'), c);
+      }, 0);
+  }
   if (a.featureId === 'lay-on-hands') {
     const pool = actor.featureUses['lay-on-hands']?.current ?? 0;
     if (pool <= 0) return 0;
