@@ -27,6 +27,9 @@ import { CLASSES } from '../src/data/classes.js';
 import { SPELLS } from '../src/data/spells.js';
 import { attackableWeapons } from '../src/engine/rules/equipment.js';
 import { buildParty } from '../src/builder/character.js';
+import {
+  preparedRoom, partyPreparedRoom, setPrepared, preparedSpells, applyArenaVictory, applyPartyTemplate, partyLevelOf, buildCampaignParty, newCampaign,
+} from '../src/campaign/campaign.js';
 
 describe('campaign state', () => {
   it('new campaign: 4 characters with class kits, starting gold, stage 0', () => {
@@ -1172,5 +1175,56 @@ describe('camp buff potions (drink before the fight, lasts until a rest)', () =>
     longRest(c);
     expect(c.characters[i]!.resources?.effects?.giantStrength).toBeUndefined();
     expect(buildCampaignParty(c)[i]!.abilities.str).toBeLessThan(23);
+  });
+});
+
+/**
+ * A prepared list that has ever been saved keeps its size while the cap climbs
+ * (growSpellsForLevel deliberately does not grow that tier). That is a design
+ * choice, but it is only defensible if the game says so — these pin the fact
+ * the UI reads to say it.
+ */
+describe('unused prepared slots are visible', () => {
+  function levelTo(c: ReturnType<typeof newCampaign>, level: number) {
+    while (partyLevelOf(c) < level) applyArenaVictory(c, buildCampaignParty(c), 3000, 1);
+  }
+
+  it('a party on the auto-default stays full, so nothing is flagged', () => {
+    const c = newCampaign(1);
+    applyPartyTemplate(c, 'classic');
+    c.partyReady = true;
+    for (const level of [1, 3, 5]) {
+      levelTo(c, level);
+      const { used, limit, room } = preparedRoom(c, 2);   // the cleric
+      expect(used, `L${level}`).toBe(limit);
+      expect(room).toBe(0);
+    }
+    expect(partyPreparedRoom(c)).toEqual([]);
+  });
+
+  it('a saved list stops growing, and that shows up as room', () => {
+    const c = newCampaign(1);
+    applyPartyTemplate(c, 'classic');
+    c.partyReady = true;
+    // Exactly what pressing Save in the tray does.
+    setPrepared(c, 2, preparedSpells(c, 2));
+    const atOne = preparedRoom(c, 2);
+    expect(atOne.room, 'full at the level it was saved').toBe(0);
+
+    levelTo(c, 5);
+    const atFive = preparedRoom(c, 2);
+    expect(atFive.used, 'the saved list keeps its size').toBe(atOne.used);
+    expect(atFive.limit, 'while the cap climbs').toBeGreaterThan(atOne.limit);
+    expect(atFive.room).toBe(atFive.limit - atFive.used);
+    expect(partyPreparedRoom(c), 'and the party-level check names them').toContain(2);
+  });
+
+  it('never names a character who has no spells to prepare', () => {
+    const c = newCampaign(1);
+    applyPartyTemplate(c, 'classic');
+    c.partyReady = true;
+    levelTo(c, 5);
+    // The fighter is index 0 and has no prepared list at all.
+    expect(partyPreparedRoom(c)).not.toContain(0);
   });
 });

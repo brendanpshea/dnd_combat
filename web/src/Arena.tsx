@@ -18,7 +18,7 @@ import { useState, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
-  type CampaignState, newCampaign, buildCampaignParty, partyLevelOf, longRest, preparableSpells,
+  type CampaignState, newCampaign, buildCampaignParty, partyLevelOf, longRest, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering,
 } from '../../src/campaign/campaign.js';
@@ -243,6 +243,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const casters = c.characters
     .map((ch, i) => ({ ch, i }))
     .filter(({ i }) => preparableSpells(c, i).length > 0);
+  // Anyone carrying fewer spells than they are allowed. A saved prepared list
+  // does not grow when the cap does, so this is easy to end up in and
+  // impossible to notice from the outside — the badge is the whole point.
+  const withRoom = partyPreparedRoom(c);
 
   /**
    * The prepared-spell tray, on the gate screen.
@@ -319,6 +323,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                 {look.glyph}
                               </span>
                             )}
+                            <span className={`prep-count${preparedRoom(c, i).room > 0 ? ' has-room' : ''}`}>
+                              {preparedRoom(c, i).used}/{preparedRoom(c, i).limit}
+                            </span>
                           </button>
                         );
                       })}
@@ -326,6 +333,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   </div>
                   <p className="hint">
                     You rested after the last wave — swap in whatever this one calls for.
+                    {withRoom.length > 0 && ' Anyone showing spare slots is walking in with fewer spells than they could.'}
                   </p>
                 </div>
               )}
@@ -391,6 +399,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 {casters.length > 0 && (
                   <button onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}>
                     📖 {panel === 'prepare' ? 'Close the spellbook' : 'Prepare spells'}
+                    {panel !== 'prepare' && withRoom.length > 0 && (
+                      <span className="prep-badge" title="Spare prepared slots going unused">
+                        {withRoom.length} with room
+                      </span>
+                    )}
                   </button>
                 )}
                 <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
