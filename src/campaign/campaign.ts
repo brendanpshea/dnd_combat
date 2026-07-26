@@ -709,15 +709,42 @@ export function applyPartyTemplate(c: CampaignState, templateId: string): boolea
   return true;
 }
 
-/** Randomize every member's species and name, keeping their roles. */
-export function randomizeParty(c: CampaignState): boolean {
+/**
+ * Randomize the party's species and names — and, with `roles`, their classes
+ * too.
+ *
+ * The species-only form is the old behaviour and stays the default: it rerolls
+ * the look of a party whose roles you have already chosen. `roles: true` is the
+ * "surprise me" button, dealing four *distinct* classes off the full list.
+ *
+ * Distinct, but deliberately unconstrained otherwise: it will happily field a
+ * party with no healer. That is the point of it — both for a player who wants a
+ * real curveball, and for the playtest harness, where a comp nobody would pick
+ * on purpose is exactly the one that finds the holes.
+ */
+export function randomizeParty(c: CampaignState, opts: { roles?: boolean } = {}): boolean {
   if (c.partyReady) return false;
   const speciesIds = Object.keys(SPECIES);
-  c.characters.forEach((ch, i) => {
+  const pool = Object.keys(CLASSES);
+  const pick = <T,>(from: T[]): T => {
     const roll = next(c.rng);
     c.rng = roll.state;
-    const speciesId = speciesIds[Math.floor(roll.value * speciesIds.length)] ?? 'human';
-    fitCharacter(c, ch, { classId: ch.classId, speciesId }, i);
+    return from[Math.floor(roll.value * from.length)]!;
+  };
+  // Deal the classes up front so they can be kept distinct across the party.
+  const roles: Id[] = [];
+  if (opts.roles) {
+    const left = [...pool];
+    for (let i = 0; i < c.characters.length; i++) {
+      if (left.length === 0) left.push(...pool);   // more slots than classes
+      const chosen = pick(left);
+      left.splice(left.indexOf(chosen), 1);
+      roles.push(chosen);
+    }
+  }
+  c.characters.forEach((ch, i) => {
+    const speciesId = pick(speciesIds) ?? 'human';
+    fitCharacter(c, ch, { classId: roles[i] ?? ch.classId, speciesId }, i);
   });
   return true;
 }
