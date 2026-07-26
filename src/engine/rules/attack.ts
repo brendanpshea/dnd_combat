@@ -411,11 +411,21 @@ export function resolveAttack(
 
   events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags, magical: isMagicWeapon(weapon) }));
 
-  // Secondary damage of a different type (giant spider poison).
+  // Secondary damage of a different type (giant spider poison). A rider with a
+  // `save` is halved on a success — the SRD shape for the big poison stings,
+  // and the difference between a fight and an execution when the rider alone
+  // outdamages a low-level hero's whole hit point total.
   if (weapon.extraDamage && target.alive) {
     const extra = rollDice(state.rng, weapon.extraDamage.dice, crit);
     state.rng = extra.state;
-    events.push(...applyDamage(state, targetId, attackerId, extra.total, weapon.extraDamage.type, extra.rolls, { crit }));
+    let amount = extra.total;
+    const rider = weapon.extraDamage.save;
+    if (rider) {
+      const save = savingThrow(state, targetId, rider.ability, rider.dc);
+      events.push(save.event);
+      if (save.success) amount = Math.floor(amount / 2);
+    }
+    events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { crit }));
   }
 
   // Smites, in priority order: an armed one always discharges (the slot is
@@ -897,6 +907,9 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
     ...transferHuntersMark(state, combatantId),
     ...expireSummonsOf(state, combatantId),
     ...releaseCharmedBy(state, combatantId),
+    // Before the body is cleared off the grid, so the blast measures from
+    // where it actually stood.
+    ...deathBurst(state, c),
   ];
   c.alive = false;
   c.hp = 0;
@@ -922,6 +935,36 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
  * keyed off `alive` — pathing, targeting, the win check — but it is never a
  * death: no `unconsciousAtZero` down-path, no "dies" in the log.
  */
+/**
+ * Death Burst: a magmin or mephit goes off when it dies, hurting everyone near
+ * it — friend and foe alike, which is the point. Killing one in the middle of
+ * the huddle is a mistake the player gets to make and to avoid.
+ *
+ * Fired from `kill` rather than from the damage that caused it, so it happens
+ * however the creature died. It cannot chain: a burst that kills a second
+ * mephit resolves that one's death through the same path, and the recursion
+ * is bounded by the number of creatures on the board.
+ */
+export function deathBurst(state: GameState, c: Combatant): GameEvent[] {
+  const burst = c.deathBurst;
+  if (!burst) return [];
+  const events: GameEvent[] = [];
+  const caught = Object.values(state.combatants).filter(
+    (t) => t.alive && !isDown(t) && t.id !== c.id &&
+      distanceFeet(c.position, t.position) <= burst.radius,
+  );
+  if (caught.length === 0) return events;
+  const roll = rollDice(state.rng, burst.dice);
+  state.rng = roll.state;
+  for (const t of caught) {
+    const save = savingThrow(state, t.id, burst.save.ability, burst.save.dc);
+    events.push(save.event);
+    const amount = save.success ? Math.floor(roll.total / 2) : roll.total;
+    if (amount > 0) events.push(...applyDamage(state, t.id, c.id, amount, burst.type, roll.rolls, { tags: ['Death Burst'] }));
+  }
+  return events;
+}
+
 /** Free everyone this creature had charmed — the song stops when the singer
  *  does. Called from kill and charmAway, so a harpy shot out of the air
  *  releases the party rather than holding them from beyond the grave. */

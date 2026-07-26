@@ -257,6 +257,13 @@ export interface Combatant {
    */
   regeneration?: { amount: number; stoppedBy: DamageType[]; suppressed?: boolean };
   /**
+   * Death Burst: the thing goes off when it dies. A magmin bursts into fire, a
+   * mephit into ice or steam. It is the whole point of those monsters — kill
+   * one carelessly in a huddle and you have made your own problem — and
+   * without it a mephit is a very small elemental with a rider.
+   */
+  deathBurst?: { dice: string; type: DamageType; save: { ability: Ability; dc: number }; radius: number };
+  /**
    * A smite held ready: the slot is already spent, and the next melee hit
    * discharges it. Every smite works this way (Divine, Searing, Thunderous,
    * Wrathful) so the player picks *which* and *how big* up front, rather than

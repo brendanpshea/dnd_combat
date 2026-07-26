@@ -26,8 +26,17 @@ export interface WeaponData {
    * (ghoul claws → paralyzed, giant spider bite → poisoned).
    */
   onHitSave?: { condition: ConditionId; ability: Ability; dc: number };
-  /** Extra damage of a second type on every hit (spider bite → poison). */
-  extraDamage?: { dice: string; type: DamageType };
+  /**
+   * Extra damage of a second type on a hit (spider bite → poison).
+   *
+   * `save` makes it half on a successful save, which is how the SRD writes
+   * nearly every big poison rider — and the difference is not the average, it
+   * is whether the player has any say. A giant scorpion's sting landing 16
+   * poison automatically kills a level-1 hero every time; the same sting with
+   * a Constitution save kills them somewhat less than half the time, and that
+   * is a fight rather than an execution.
+   */
+  extraDamage?: { dice: string; type: DamageType; save?: { ability: Ability; dc: number } };
   /** Store price in gp; absent for natural/monster weapons (not tradable). */
   cost?: number;
   /** Magic weapon bonuses (+1 sword: both are 1). */
@@ -658,7 +667,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'scorpion-sting': {
     id: 'scorpion-sting', name: 'Sting', damage: '1d10', damageType: 'piercing',
-    properties: [], melee: true, extraDamage: { dice: '3d10', type: 'poison' },
+    properties: [], melee: true,
+    extraDamage: { dice: '3d10', type: 'poison', save: { ability: 'con', dc: 12 } },
   },
   'elephant-gore': {
     id: 'elephant-gore', name: 'Gore', damage: '4d8', damageType: 'piercing',
@@ -728,7 +738,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // ---- fiends -----------------------------------------------------------
   'imp-sting': {
     id: 'imp-sting', name: 'Sting', damage: '1d4', damageType: 'piercing',
-    properties: ['finesse'], melee: true, extraDamage: { dice: '3d6', type: 'poison' },
+    properties: ['finesse'], melee: true,
+    extraDamage: { dice: '3d6', type: 'poison', save: { ability: 'con', dc: 11 } },
   },
   'quasit-claw': {
     id: 'quasit-claw', name: 'Claw', damage: '1d4', damageType: 'slashing',

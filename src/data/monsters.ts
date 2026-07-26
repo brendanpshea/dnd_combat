@@ -53,6 +53,8 @@ export interface MonsterData {
   /** Regeneration (troll): heals at the start of its turn unless it has taken
    *  one of `stoppedBy` damage types since the last one. */
   regeneration?: { amount: number; stoppedBy: DamageType[] };
+  /** Death Burst: explodes when killed, save for half (magmin, mephits). */
+  deathBurst?: { dice: string; type: DamageType; save: { ability: Ability; dc: number }; radius: number };
 }
 
 export const MONSTERS: Record<Id, MonsterData> = {
@@ -517,6 +519,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // wants.
   'dust-mephit': {
     id: 'dust-mephit', name: 'Dust Mephit',
+    deathBurst: { dice: '2d4', type: 'bludgeoning', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 12, hp: 17, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 5, dex: 14, con: 10, int: 9, wis: 11, cha: 10 },
@@ -525,6 +528,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'mud-mephit': {
     id: 'mud-mephit', name: 'Mud Mephit',
+    deathBurst: { dice: '2d4', type: 'bludgeoning', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 11, hp: 27, speed: 20,
     creatureType: 'elemental',
     abilities: { str: 8, dex: 12, con: 12, int: 9, wis: 11, cha: 7 },
@@ -533,6 +537,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'smoke-mephit': {
     id: 'smoke-mephit', name: 'Smoke Mephit',
+    deathBurst: { dice: '2d4', type: 'necrotic', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 12, hp: 22, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 6, dex: 14, con: 12, int: 10, wis: 10, cha: 11 },
@@ -541,6 +546,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'ice-mephit': {
     id: 'ice-mephit', name: 'Ice Mephit',
+    deathBurst: { dice: '2d4', type: 'cold', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 11, hp: 21, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 7, dex: 13, con: 10, int: 9, wis: 11, cha: 12 },
@@ -551,6 +557,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'magma-mephit': {
     id: 'magma-mephit', name: 'Magma Mephit',
+    deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 11 }, radius: 10 },
     ac: 11, hp: 18, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 8, dex: 12, con: 12, int: 7, wis: 10, cha: 10 },
@@ -561,6 +568,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'steam-mephit': {
     id: 'steam-mephit', name: 'Steam Mephit',
+    deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 10, hp: 17, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 5, dex: 11, con: 10, int: 11, wis: 10, cha: 12 },
@@ -981,6 +989,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // end to fill a slot with and no high end to headline one.
   magmin: {
     id: 'magmin', name: 'Magmin',
+    deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 11 }, radius: 10 },
     ac: 14, hp: 13, speed: 30,
     creatureType: 'elemental',
     abilities: { str: 7, dex: 15, con: 12, int: 8, wis: 11, cha: 10 },
@@ -1464,6 +1473,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     ...(m.regeneration
       ? { regeneration: { amount: m.regeneration.amount, stoppedBy: [...m.regeneration.stoppedBy] } }
       : {}),
+    ...(m.deathBurst ? { deathBurst: { ...m.deathBurst, save: { ...m.deathBurst.save } } } : {}),
   };
 }
 
