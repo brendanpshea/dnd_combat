@@ -31,6 +31,18 @@ export interface MonsterData {
   resistances?: DamageType[];
   /** Resisted only against nonmagical damage (SRD physical resistance). */
   resistNonmagical?: DamageType[];
+  /**
+   * Keep this monster out of generated fights below the given party level.
+   *
+   * For creatures whose danger is an *ability*, not a damage number, which is
+   * the one thing an XP budget cannot see. The harpy is the case that forced
+   * it: Luring Song is one save against a DC of 12, and a hero who fails is
+   * removed from the fight for good (charmAway, no repeat save, no shaking it
+   * off when damaged — a simplification of the SRD version, which repeats the
+   * save every turn). Three harpies against level-1 Wisdom saves delete the
+   * party about five times in six, and no play changes that.
+   */
+  minPartyLevel?: number;
   vulnerabilities?: DamageType[];
   immunities?: DamageType[];
   /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
@@ -412,6 +424,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   dryad: {
     id: 'dryad', name: 'Dryad',
+    minPartyLevel: 2,
     ac: 16, hp: 22, speed: 30,
     creatureType: 'fey',
     abilities: { str: 10, dex: 12, con: 11, int: 14, wis: 15, cha: 18 },
@@ -448,6 +461,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   harpy: {
     id: 'harpy', name: 'Harpy',
+    minPartyLevel: 3,
     ac: 11, hp: 38, speed: 20,
     creatureType: 'monstrosity',
     abilities: { str: 12, dex: 13, con: 12, int: 7, wis: 10, cha: 13 },

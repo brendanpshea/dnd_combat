@@ -455,3 +455,47 @@ describe('level-appropriate members', () => {
     }
   });
 });
+
+/**
+ * Some monsters are dangerous in a way an XP budget cannot see. The harpy is
+ * the case that forced the flag: Luring Song is one Wisdom save against DC 12,
+ * and a hero who fails is out of the fight for good — `charmAway` sets
+ * `alive = false`, with no repeat save and no shaking it off when damaged
+ * (the SRD version repeats the save every turn). Three harpies cost 600 XP,
+ * fit a level-1 budget honestly, and delete the party about five times in six.
+ */
+describe('monsters with a level floor', () => {
+  it('keeps flagged monsters out of fights below their floor', () => {
+    const floored = Object.values(MONSTERS).filter((m) => (m.minPartyLevel ?? 1) > 1);
+    expect(floored.length, 'nothing declares a floor').toBeGreaterThan(0);
+    for (const m of floored) {
+      const floor = m.minPartyLevel!;
+      for (let level = 1; level < floor; level++) {
+        for (let seed = 1; seed <= 40; seed++) {
+          for (let wave = 1; wave <= 8; wave++) {
+            expect(buildWave(seed, level, wave).encounter.members, `${m.id} at L${level}`)
+              .not.toContain(m.id);
+          }
+        }
+      }
+    }
+  });
+
+  it('lets them back in at their floor', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      for (let wave = 1; wave <= 8; wave++) {
+        for (const id of buildWave(seed, 3, wave).encounter.members) seen.add(id);
+      }
+    }
+    expect(seen.has('harpy'), 'harpy never returns at its floor').toBe(true);
+  });
+
+  // The roster helper is what the tests and the generator share, so the filter
+  // has to live there rather than only in the draw.
+  it('arenaRoster honours the floor when given a level', () => {
+    expect(arenaRoster(1).some((m) => m.id === 'harpy')).toBe(false);
+    expect(arenaRoster(3).some((m) => m.id === 'harpy')).toBe(true);
+    expect(arenaRoster().some((m) => m.id === 'harpy'), 'no level = no floor').toBe(true);
+  });
+});
