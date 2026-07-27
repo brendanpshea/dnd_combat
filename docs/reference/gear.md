@@ -100,7 +100,7 @@
 | Greataxe | `greataxe` | 1d12 | slashing | — | yes | cleave | two-handed | — |
 | Greataxe | `minotaur-greataxe` | 2d12 | slashing | — | yes | — | two-handed | — |
 | Greataxe | `frost-giant-greataxe` | 3d12 | slashing | — | yes | — | two-handed | — |
-| Greatclub | `greatclub` | 2d8 | bludgeoning | — | yes | push | two-handed | — |
+| Greatclub | `ogre-greatclub` | 2d8 | bludgeoning | — | yes | push | two-handed | — |
 | Greatclub | `giant-greatclub` | 3d8 | bludgeoning | — | yes | — | — | — |
 | Greatsword | `greatsword` | 2d6 | slashing | — | yes | graze | two-handed | — |
 | Greatsword | `fire-giant-greatsword` | 6d6 | slashing | — | yes | — | two-handed | — |

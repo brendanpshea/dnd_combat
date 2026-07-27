@@ -94,7 +94,7 @@ describe('Cutting Words', () => {
       const fighter = pc('fighter', 5, { x: 2, y: 2 }, 'fig');
       const c = new Combat({ seed, mapId: 'open', combatants: [bard, fighter, foe('ogre', { x: 3, y: 2 }, 'ogre')] });
       const before = c.state.combatants['bard']!.featureUses['bardic-inspiration']!.current;
-      const events = resolveAttack(c.state, 'ogre', 'fig', 'greatclub');
+      const events = resolveAttack(c.state, 'ogre', 'fig', 'ogre-greatclub');
       const words = events.find((e) => e.type === 'cuttingWords');
       if (!words) continue;
       cut = true;
@@ -122,7 +122,7 @@ describe('Cutting Words', () => {
     const before = c.state.combatants['bard']!.featureUses['bardic-inspiration']!.current;
     for (let i = 0; i < 10; i++) {
       c.state.combatants['bard']!.turn.reactionUsed = false;
-      resolveAttack(c.state, 'ogre', 'fig', 'greatclub');
+      resolveAttack(c.state, 'ogre', 'fig', 'ogre-greatclub');
     }
     expect(c.state.combatants['bard']!.featureUses['bardic-inspiration']!.current,
       'a die spent on a hopeless roll is a wasted die').toBe(before);
@@ -136,7 +136,7 @@ describe('Cutting Words', () => {
     const before = c.state.combatants['bard']!.featureUses['bardic-inspiration']!.current;
     for (let i = 0; i < 20; i++) {
       c.state.combatants['bard']!.turn.reactionUsed = false;
-      resolveAttack(c.state, 'ogre', 'fig', 'greatclub');
+      resolveAttack(c.state, 'ogre', 'fig', 'ogre-greatclub');
     }
     expect(c.state.combatants['bard']!.featureUses['bardic-inspiration']!.current).toBe(before);
   });

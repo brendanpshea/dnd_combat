@@ -12,13 +12,13 @@
 | Bandit | `bandit` | humanoid | 25 | ≤4 | 12 | 11 | 30 ft | 1 | yes | — |
 | Guard | `guard` | humanoid | 25 | ≤4 | 16 | 11 | 30 ft | 1 | yes | — |
 | Kobold Warrior | `kobold` | dragon | 25 | ≤4 | 14 | 7 | 30 ft | 1 | yes | — |
-| Acolyte | `acolyte` | humanoid | 50 | ≤4 | 10 | 9 | 30 ft | 1 | yes | — |
 | Animated Flying Sword | `flying-sword` | construct | 50 | ≤4 | 17 | 14 | 30 ft | 1 | — | — |
 | Dretch | `dretch` | fiend | 50 | ≤4 | 11 | 18 | 20 ft | 2 | — | — |
 | Giant Badger | `giant-badger` | beast | 50 | ≤4 | 13 | 15 | 30 ft | 2 | — | — |
 | Goblin Warrior | `goblin-warrior` | fey | 50 | ≤4 | 15 | 10 | 30 ft | 1 | yes | — |
 | Kobold Emberling | `kobold-emberling` | dragon | 50 | ≤4 | 13 | 7 | 30 ft | 1 | yes | — |
 | Mud Mephit | `mud-mephit` | elemental | 50 | ≤4 | 11 | 27 | 20 ft | 1 | — | — |
+| Priest Acolyte | `acolyte` | humanoid | 50 | ≤4 | 13 | 11 | 30 ft | 1 | yes | — |
 | Skeleton | `skeleton` | undead | 50 | ≤4 | 14 | 13 | 30 ft | 1 | yes | — |
 | Smoke Mephit | `smoke-mephit` | elemental | 50 | ≤4 | 12 | 22 | 30 ft | 1 | — | — |
 | Sprite | `sprite` | fey | 50 | ≤4 | 15 | 10 | 10 ft | 1 | yes | — |
@@ -31,10 +31,10 @@
 | Goblin Hexer | `goblin-hexer` | fey | 100 | ≤4 | 13 | 10 | 30 ft | 1 | yes | — |
 | Gray Ooze | `gray-ooze` | ooze | 100 | ≤4 | 9 | 22 | 10 ft | 1 | — | — |
 | Ice Mephit | `ice-mephit` | elemental | 100 | ≤4 | 11 | 21 | 30 ft | 1 | — | — |
-| Lizardfolk | `lizardfolk` | humanoid | 100 | ≤4 | 15 | 22 | 30 ft | 1 | — | — |
+| Lizardfolk Skirmisher | `lizardfolk` | humanoid | 100 | ≤4 | 15 | 22 | 30 ft | 1 | — | — |
 | Magma Mephit | `magma-mephit` | elemental | 100 | ≤4 | 11 | 18 | 30 ft | 1 | — | — |
 | Magmin | `magmin` | elemental | 100 | ≤4 | 14 | 13 | 30 ft | 1 | — | — |
-| Orc | `orc` | humanoid | 100 | ≤4 | 13 | 15 | 30 ft | 1 | yes | — |
+| Orc Raider | `orc` | humanoid | 100 | ≤4 | 13 | 15 | 30 ft | 1 | yes | — |
 | Rust Monster | `rust-monster` | monstrosity | 100 | ≤4 | 14 | 33 | 40 ft | 1 | — | — |
 | Satyr | `satyr` | fey | 100 | ≤4 | 13 | 31 | 40 ft | 1 | — | — |
 | Scout | `scout` | humanoid | 100 | ≤4 | 13 | 16 | 30 ft | 2 | yes | — |
@@ -178,16 +178,6 @@ STR 7 (-2), DEX 15 (+2), CON 9 (-1), INT 8 (-1), WIS 7 (-2), CHA 8 (-1)
 - **Attacks:** Dagger 1d4 piercing, 20/60 ft; Sling 1d4 bludgeoning, 30/120 ft
 - **Features:** Pack Tactics
 
-### Acolyte
-
-`acolyte` · humanoid · 50 XP · AC 10 · 9 HP · 30 ft · PB +2
-
-STR 10 (+0), DEX 10 (+0), CON 10 (+0), INT 10 (+0), WIS 14 (+2), CHA 11 (+0)
-
-- **Attacks:** Mace 1d6 bludgeoning
-- **Spellcasting:** WIS, slots 3×L1
-- **Spells:** Sacred Flame, Cure Wounds, Bless, Healing Word, Command
-
 ### Animated Flying Sword
 
 `flying-sword` · construct · 50 XP · AC 17 · 14 HP · 30 ft · PB +2
@@ -246,6 +236,16 @@ STR 8 (-1), DEX 12 (+1), CON 12 (+1), INT 9 (-1), WIS 11 (+0), CHA 7 (-2)
 - **Attacks:** Fists 1d4 bludgeoning
 - **Immunities:** poison
 - **Death burst:** 2d4 bludgeoning, DEX DC 10, 10 ft
+
+### Priest Acolyte
+
+`acolyte` · humanoid · 50 XP · AC 13 · 11 HP · 30 ft · PB +2
+
+STR 14 (+2), DEX 10 (+0), CON 12 (+1), INT 10 (+0), WIS 14 (+2), CHA 11 (+0)
+
+- **Attacks:** Mace 1d6 bludgeoning
+- **Spellcasting:** WIS, slots 3×L1
+- **Spells:** Sacred Flame, Cure Wounds, Bless, Healing Word, Command
 
 ### Skeleton
 
@@ -366,7 +366,7 @@ STR 7 (-2), DEX 13 (+1), CON 10 (+0), INT 9 (-1), WIS 11 (+0), CHA 12 (+1)
 - **Vulnerabilities:** fire, bludgeoning
 - **Death burst:** 2d4 cold, DEX DC 10, 10 ft
 
-### Lizardfolk
+### Lizardfolk Skirmisher
 
 `lizardfolk` · humanoid · 100 XP · AC 15 · 22 HP · 30 ft · PB +2
 
@@ -397,7 +397,7 @@ STR 7 (-2), DEX 15 (+2), CON 12 (+1), INT 8 (-1), WIS 11 (+0), CHA 10 (+0)
 - **Vulnerabilities:** cold
 - **Death burst:** 2d6 fire, DEX DC 11, 10 ft
 
-### Orc
+### Orc Raider
 
 `orc` · humanoid · 100 XP · AC 13 · 15 HP · 30 ft · PB +2
 

@@ -160,7 +160,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     ac: 11, hp: 68, speed: 40,
     creatureType: 'giant',
     abilities: { str: 19, dex: 8, con: 16, int: 5, wis: 7, cha: 7 },
-    weaponIds: ['greatclub', 'ogre-javelin'],
+    weaponIds: ['ogre-greatclub', 'ogre-javelin'],
   },
   bandit: {
     id: 'bandit', name: 'Bandit',
@@ -203,10 +203,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['spider-bite'],
   },
   acolyte: {
-    id: 'acolyte', name: 'Acolyte',
-    ac: 10, hp: 9, speed: 30,
+    id: 'acolyte', name: 'Priest Acolyte',
+    ac: 13, hp: 11, speed: 30, // chain shirt
     creatureType: 'humanoid',
-    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 14, cha: 11 },
+    abilities: { str: 14, dex: 10, con: 12, int: 10, wis: 14, cha: 11 },
     weaponIds: ['mace'],
     spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'] },
   },
@@ -239,7 +239,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
   },
   orc: {
-    id: 'orc', name: 'Orc',
+    id: 'orc', name: 'Orc Raider',
     ac: 13, hp: 15, speed: 30,
     creatureType: 'humanoid',
     abilities: { str: 16, dex: 12, con: 16, int: 7, wis: 11, cha: 10 },
@@ -322,7 +322,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'fiend',
     abilities: { str: 19, dex: 11, con: 16, int: 14, wis: 12, cha: 15 },
     savingThrowProfs: ['con', 'int'],
-    weaponIds: ['greatclub'],
+    weaponIds: ['ogre-greatclub'],
     // An arcane brute: it blasts and controls, and can wade in with the club.
     spellcasting: {
       ability: 'int', slots: [4, 3, 2],
@@ -348,7 +348,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['morningstar', 'javelin'],
   },
   lizardfolk: {
-    id: 'lizardfolk', name: 'Lizardfolk',
+    id: 'lizardfolk', name: 'Lizardfolk Skirmisher',
     ac: 15, hp: 22, speed: 30,
     creatureType: 'humanoid',
     abilities: { str: 15, dex: 10, con: 13, int: 7, wis: 12, cha: 7 },

@@ -23,7 +23,7 @@ see `src/data/spells.ts`.
 | 🌫️ Minor Illusion | `minor-illusion` | action | an empty cell within 30 ft | — | — | — | Wizard 1, Bard 1, Gnome |
 | ☠️ Poison Spray | `poison-spray` | action | 1 enemy within 30 ft | — | — | — | Wizard 1, Druid 1, Abyssal Tiefling, Skeleton Bonechanter, Night Hag, Ettercap Snarecaller |
 | ❄️ Ray of Frost | `ray-of-frost` | action | 1 enemy within 60 ft | — | — | — | Wizard 1, Apprentice Mage |
-| 🔆 Sacred Flame | `sacred-flame` | action | 1 enemy within 60 ft | — | — | — | Cleric 1, Acolyte, Cult Fanatic, Priest |
+| 🔆 Sacred Flame | `sacred-flame` | action | 1 enemy within 60 ft | — | — | — | Cleric 1, Priest Acolyte, Cult Fanatic, Priest |
 | 🌳 Shillelagh | `shillelagh` | bonus | self (castable any time) | — | — | — | Druid 1 |
 | ⚡ Shocking Grasp | `shocking-grasp` | action | 1 enemy you can touch | — | — | — | Wizard 1 |
 | ✨ Starry Wisp | `starry-wisp` | action | 1 enemy within 60 ft | — | — | — | Bard 1, Druid 1, Gnoll Packcaller |
@@ -37,12 +37,12 @@ see `src/data/spells.ts`.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 🐾 Animal Friendship | `animal-friendship` | action | 1 enemy within 30 ft (beast only) | — | — | — | Bard 1, Druid 1, Ranger 1, Gnome |
 | 💀 Bane | `bane` | action | 3 enemys within 30 ft | yes | — | — | Cleric 1, Bard 1, Goblin Hexer |
-| 🙏 Bless | `bless` | action | 3 allys within 30 ft | yes | — | — | Cleric 1, Paladin 1, Acolyte, Cult Fanatic, Priest |
+| 🙏 Bless | `bless` | action | 3 allys within 30 ft | yes | — | — | Cleric 1, Paladin 1, Priest Acolyte, Cult Fanatic, Priest |
 | 🐲 Breath Weapon | `breath-weapon` | action | 15 ft cone | — | — | — | Dragonborn |
 | 🖐️ Burning Hands | `burning-hands` | action | 15 ft cone | — | yes | — | Wizard 1, Kobold Emberling |
 | 🌈 Color Spray | `color-spray` | action | 15 ft cone | — | — | — | Wizard 1, Bard 1, Apprentice Mage |
-| ❗ Command | `command` | action | 1 enemy within 60 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | — | — | — | Cleric 1, Bard 1, Paladin 1, Acolyte, Cult Fanatic, Priest |
-| 💚 Cure Wounds | `cure-wounds` | action | 1 ally you can touch | — | yes | — | Cleric 1, Bard 1, Druid 1, Ranger 1, Paladin 1, Acolyte, Priest, Dryad |
+| ❗ Command | `command` | action | 1 enemy within 60 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | — | — | — | Cleric 1, Bard 1, Paladin 1, Priest Acolyte, Cult Fanatic, Priest |
+| 💚 Cure Wounds | `cure-wounds` | action | 1 ally you can touch | — | yes | — | Cleric 1, Bard 1, Druid 1, Ranger 1, Paladin 1, Priest Acolyte, Priest, Dryad |
 | ⚡ Divine Smite | `divine-smite` | bonus | self (offered when it would reach someone) | — | — | — | — |
 | 🌿 Ensnaring Strike | `ensnaring-strike` | bonus | self (castable any time) | yes | — | — | Ranger 1 |
 | 🌱 Entangle | `entangle` | action | 5×5 burst within 90 ft | yes | — | — | Druid 1, Ettercap Snarecaller |
@@ -50,7 +50,7 @@ see `src/data/spells.ts`.
 | 💀 False Life | `false-life` | action | self (castable any time) | — | yes | — | Wizard 1, Skeleton Bonechanter |
 | 🦉 Find Familiar | `find-familiar` | action | self (offered when it would reach someone) | — | — | ritual, out of combat | Wizard 1, Druid 2 |
 | 🌟 Guiding Bolt | `guiding-bolt` | action | 1 enemy within 120 ft | — | yes | — | Cleric 2, Priest |
-| 🩹 Healing Word | `healing-word` | bonus | 1 ally within 60 ft | — | yes | — | Cleric 1, Bard 1, Druid 1, Acolyte, Priest |
+| 🩹 Healing Word | `healing-word` | bonus | 1 ally within 60 ft | — | yes | — | Cleric 1, Bard 1, Druid 1, Priest Acolyte, Priest |
 | 🎯 Hunter's Mark | `hunters-mark` | bonus | 1 enemy within 90 ft | yes | — | — | Ranger 1 |
 | 👻 Inflict Wounds | `inflict-wounds` | action | 1 enemy you can touch | — | yes | — | Cleric 1, Skeleton Bonechanter |
 | 🛡️ Mage Armor | `mage-armor` | action | self (offered when it would reach someone) | — | — | — | Wizard 1 |
