@@ -15,6 +15,7 @@ import {
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
   spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
   scrollLearnable, learnSpellFromScroll, itemCategory,
+  preparedRoom, partyPreparedRoom, applyArenaVictory, applyPartyTemplate,
 } from '../src/campaign/campaign.js';
 import { encounterXP } from '../src/data/encounters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
@@ -27,9 +28,6 @@ import { CLASSES } from '../src/data/classes.js';
 import { SPELLS } from '../src/data/spells.js';
 import { attackableWeapons } from '../src/engine/rules/equipment.js';
 import { buildParty } from '../src/builder/character.js';
-import {
-  preparedRoom, partyPreparedRoom, setPrepared, preparedSpells, applyArenaVictory, applyPartyTemplate, partyLevelOf, buildCampaignParty, newCampaign,
-} from '../src/campaign/campaign.js';
 
 describe('campaign state', () => {
   it('new campaign: 4 characters with class kits, starting gold, stage 0', () => {

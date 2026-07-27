@@ -166,7 +166,7 @@ describe('a move interrupted part-way never lands on top of somebody', () => {
     const mover = makeCombatant({ id: 'mover', team: 'team1', position: { x: 0, y: 0 }, hp: 1, maxHp: 10 });
     mover.unconsciousAtZero = true;
     const ally = makeCombatant({ id: 'ally', team: 'team1', position: { x: 0, y: 1 } });
-    const c = new Combat({ seed: 1, map: { rows, theme: 'stone' }, combatants: [mover, ally] });
+    const c = new Combat({ seed: 1, map: { id: 'occ', name: 'occupancy', rows, theme: 'stone' }, combatants: [mover, ally] });
     // Burn the ground the mover must cross.
     cellAt(c.state.grid, { x: 0, y: 1 })!.terrain = 'hazard';
 
@@ -191,7 +191,7 @@ describe('a move interrupted part-way never lands on top of somebody', () => {
       mover.unconsciousAtZero = true;
       const ally = makeCombatant({ id: 'ally', team: 'team1', position: { x: 0, y: 1 } });
       const c = new Combat({
-        seed: 2, map: { rows: ['.', '.', '.', '.'], theme: 'stone' },
+        seed: 2, map: { id: 'occ', name: 'occupancy', rows: ['.', '.', '.', '.'], theme: 'stone' },
         combatants: [mover, ally],
       });
       cellAt(c.state.grid, { x: 0, y: 1 })!.terrain = 'hazard';

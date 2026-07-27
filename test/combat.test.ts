@@ -162,7 +162,7 @@ describe('attacks', () => {
     const c = new Combat({
       seed: 3,
       combatants: [
-        makeCombatant({ id: 'a', team: 'team1', position: { x: 0, y: 0 }, weaponIds: ['javelin'] }),
+        makeCombatant({ id: 'a', team: 'team1', position: { x: 0, y: 0 } }),
         makeCombatant({ id: 'b', team: 'team2', position: { x: 7, y: 0 } }),
       ],
     });

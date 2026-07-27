@@ -29,7 +29,7 @@ describe('learning tips', () => {
     const s = stateWith({ hero: 'team1', foe: 'team2' });
     const oa: GameEvent[] = [{
       type: 'attackRolled', attackerId: 'foe', targetId: 'hero', weaponId: 'w',
-      natural: 10, total: 15, targetAc: 14, mode: 'normal', advSources: [], disSources: [],
+      natural: 10, total: 15, targetAc: 14, mode: 'flat', advSources: [], disSources: [],
       hit: true, crit: false, opportunity: true,
     }];
     expect(detectTips(oa, s, isPlayer(s)).some((t) => t.id === 'opportunity')).toBe(true);
@@ -53,7 +53,7 @@ describe('learning tips', () => {
   it('orders the most-urgent tip first when several fire together', () => {
     const s = stateWith({ hero: 'team1', foe: 'team2' });
     const both: GameEvent[] = [
-      { type: 'attackRolled', attackerId: 'hero', targetId: 'foe', weaponId: 'w', natural: 20, total: 30, targetAc: 14, mode: 'normal', advSources: [], disSources: [], hit: true, crit: true, opportunity: false },
+      { type: 'attackRolled', attackerId: 'hero', targetId: 'foe', weaponId: 'w', natural: 20, total: 30, targetAc: 14, mode: 'flat', advSources: [], disSources: [], hit: true, crit: true, opportunity: false },
       { type: 'downed', combatantId: 'hero' },
     ];
     // downed-ally outranks crit in the priority order.

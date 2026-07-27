@@ -45,7 +45,8 @@ function rng(seed: number) {
     return s / 0x100000000;
   };
 }
-const pick = <T,>(r: () => number, xs: T[]): T => xs[Math.floor(r() * xs.length)]!;
+// `readonly` so an `as const` table can be picked from without being copied.
+const pick = <T,>(r: () => number, xs: readonly T[]): T => xs[Math.floor(r() * xs.length)]!;
 
 // --- the strange things we do to a party ----------------------------------
 
@@ -82,7 +83,14 @@ function mutate(c: Combatant, m: Mutation, r: () => number): void {
       c.spellIds = c.spellIds.filter((s) => SPELLS[s]?.level === 0);
       c.spellSlots = c.spellSlots.map((s) => ({ ...s, current: 0 }));
       break;
-    case 'unarmed': c.equipped = { ...c.equipped, mainHand: undefined, offHand: undefined }; break;
+    // Strip the gear by removing the keys. Assigning `undefined` leaves them
+    // present, which is a different thing to the type system and reads as
+    // "wielding nothing" rather than "wielding no weapon".
+    case 'unarmed': {
+      const { mainHand: _w, offHand: _o, ...rest } = c.equipped;
+      c.equipped = rest as typeof c.equipped;
+      break;
+    }
     case 'untrained-weapon': c.equipped = { ...c.equipped, mainHand: pick(r, Object.keys(WEAPONS)) }; break;
     case 'wrong-armour': c.equipped = { ...c.equipped, armor: pick(r, Object.keys(ARMOR)) }; break;
     case 'two-handed-and-shield':
@@ -91,7 +99,11 @@ function mutate(c: Combatant, m: Mutation, r: () => number): void {
     case 'every-spell':
       c.spellIds = Object.keys(SPELLS).filter((s) => !SPELLS[s]?.outOfCombat);
       break;
-    case 'no-armour': c.equipped = { ...c.equipped, armor: undefined, offHand: undefined }; break;
+    case 'no-armour': {
+      const { armor: _a, offHand: _s, ...rest } = c.equipped;
+      c.equipped = rest as typeof c.equipped;
+      break;
+    }
     case 'none': break;
   }
 }

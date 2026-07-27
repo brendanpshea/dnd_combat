@@ -20,7 +20,7 @@ describe('derived AC', () => {
   it('reflects equipment changes', () => {
     const f = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 } });
     expect(acOf(f)).toBe(17);
-    f.equipped.offHand = undefined; // drop the shield
+    delete f.equipped.offHand; // drop the shield
     expect(acOf(f)).toBe(15);
     delete f.equipped.armor;
     expect(acOf(f)).toBe(11); // 10 + dex +1

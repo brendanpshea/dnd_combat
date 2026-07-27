@@ -42,7 +42,7 @@ describe('skills (M0)', () => {
     const wizIdx = c.characters.findIndex((ch) => ch.classId === 'wizard');
     c.characters[wizIdx]!.backgroundId = 'sage';
     const withBg = characterSkillBonus(c, wizIdx, 'history');
-    c.characters[wizIdx]!.backgroundId = undefined;
+    delete c.characters[wizIdx]!.backgroundId;
     const withoutBg = characterSkillBonus(c, wizIdx, 'history');
     expect(withBg).toBeGreaterThan(withoutBg);
     expect(withBg - withoutBg).toBe(2); // proficiency bonus at level 1
@@ -787,7 +787,7 @@ describe('exploration (M2)', () => {
     const mod: Module = {
       id: 'w', title: 'W', blurb: '', start: 'map',
       scenes: {
-        map: { id: 'map', kind: 'explore', map: { title: 'M', nodes: [
+        map: { id: 'map', kind: 'explore', map: { art: { emoji: '🗺️' }, title: 'M', nodes: [
           { id: 'n', x: 50, y: 50, label: 'Path', icon: '🌿', scene: 'safe',
             wandering: { chance: 1, battleScene: 'fight' } },
         ] } },

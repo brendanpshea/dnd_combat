@@ -8,7 +8,10 @@ import { SPECIES } from '../src/data/species.js';
 import { CLASSES } from '../src/data/classes.js';
 import { randomNameFor } from '../src/builder/names.js';
 import { seedRng } from '../src/engine/rng.js';
-import { HAS_ART } from '../web/src/art.js';
+// From the registry, not from `art.js`. The latter only re-exports this set,
+// and reaching it through that module drags in `import.meta.env` — a Vite-only
+// global that does not exist under the node typecheck.
+import { HAS_ART } from '../web/src/art-registry.js';
 import { PORTRAITS } from '../web/src/portraits.js';
 
 const SPECIES_IDS = Object.keys(SPECIES);

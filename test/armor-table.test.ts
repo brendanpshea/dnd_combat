@@ -154,7 +154,7 @@ describe('Stealth disadvantage', () => {
     // A blinded foe so `canHide` allows the attempt at all — the check is what
     // this test is about, not the line-of-sight rules around it.
     const foe = buildMonster('goblin-warrior', 'team2', { x: 0, y: 5 });
-    const combat = new Combat({ seed, map: undefined, combatants: [rogue, foe] });
+    const combat = new Combat({ seed, combatants: [rogue, foe] });
     let guard = 0;
     while (combat.activeId !== rogue.id && guard++ < 20) combat.apply({ kind: 'endTurn' });
     // Blind it on the *live* state, not the builder's: blindness wears off at
