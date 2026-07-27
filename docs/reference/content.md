@@ -81,10 +81,10 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | --- | --- | --- | --- | --- | --- | --- |
 | Bramble Thicket | `thicket` | forest | 8×8 | 16 | 0 | 0 |
 | Fire Pit Arena | `firepit` | ember | 8×8 | 4 | 0 | 12 |
-| Market Square | `village` | village | 8×8 | 12 | 0 | 0 |
+| Market Square | `village` | village | 8×8 | 4 | 0 | 0 |
 | Misty Marsh | `marsh` | forest | 8×8 | 2 | 20 | 0 |
 | Open Field | `open` | forest | 8×8 | 0 | 0 | 0 |
-| Sunlit Grove | `grove` | forest | 8×8 | 8 | 0 | 0 |
+| Sunlit Grove | `grove` | forest | 8×8 | 4 | 0 | 0 |
 | The Black Ford | `bog` | bog | 8×8 | 0 | 16 | 0 |
 | The Corridor | `corridor` | graveyard | 8×8 | 16 | 4 | 0 |
 | The High Pass | `pass` | stone | 8×12 | 14 | 4 | 0 |

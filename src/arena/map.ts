@@ -16,6 +16,7 @@
 import type { MapData, MapTheme } from '../data/maps.js';
 import { parseMap } from '../data/maps.js';
 import { next, type RngState } from '../engine/rng.js';
+import { blocksMovement } from '../engine/grid.js';
 
 const WIDTH = 8;
 /** Files a party and an encounter deploy on (see buildParty / buildEncounter). */
@@ -47,7 +48,7 @@ export type MapFault =
   | 'deploy-blocked'      // a spawn file is a wall
   | 'disconnected'        // some open cell can't be reached from the party's rank
   | 'spawn-hazard'        // a spawn sits on or beside fire
-  | 'too-walled';         // so much cover the fight becomes a maze
+  | 'too-walled';         // so much blocking terrain the fight becomes a maze
 
 export function validateArenaMap(map: MapData): MapFault[] {
   const grid = parseMap(map);
@@ -58,7 +59,7 @@ export function validateArenaMap(map: MapData): MapFault[] {
 
   for (const y of ranks) {
     for (const x of DEPLOY_FILES) {
-      if (at(x, y).terrain === 'wall') { faults.push('deploy-blocked'); break; }
+      if (blocksMovement(at(x, y).terrain)) { faults.push('deploy-blocked'); break; }
     }
   }
   for (const y of ranks) {
@@ -72,8 +73,10 @@ export function validateArenaMap(map: MapData): MapFault[] {
     }
   }
 
-  const walls = cells.filter((c) => c.terrain === 'wall').length;
-  if (walls > cells.length * 0.22) faults.push('too-walled');
+  // Barricades count: they are as impassable as a wall, and a board packed
+  // with them is the same maze even though you can see across it.
+  const blocked = cells.filter((c) => blocksMovement(c.terrain)).length;
+  if (blocked > cells.length * 0.26) faults.push('too-walled');
 
   // Flood fill from a party spawn: every non-wall cell must be reachable, or
   // some part of the board is a pocket the fight can never use — and, worse,
@@ -84,18 +87,119 @@ export function validateArenaMap(map: MapData): MapFault[] {
     const i = stack.pop()!;
     if (seen.has(i)) continue;
     const x = i % width, y = Math.floor(i / width);
-    if (at(x, y).terrain === 'wall') continue;
+    if (blocksMovement(at(x, y).terrain)) continue;
     seen.add(i);
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
       const nx = x + dx, ny = y + dy;
       if (nx >= 0 && nx < width && ny >= 0 && ny < height) stack.push(ny * width + nx);
     }
   }
-  const openCells = cells.filter((c) => c.terrain !== 'wall').length;
+  const openCells = cells.filter((c) => !blocksMovement(c.terrain)).length;
   if (seen.size < openCells) faults.push('disconnected');
 
   return [...new Set(faults)];
 }
+
+/**
+ * A board layout, stamped rather than sprinkled.
+ *
+ * Scattered single cells were what this used to do, and they buy nothing: a
+ * lone hazard is one step to walk round, and wall noise is porous enough that
+ * no sightline stays broken for long. What creates a decision is *contiguous
+ * shape* — a band you have to find the gap in, a massif that splits the board
+ * into two lanes, a barricade you have to flank rather than walk through.
+ *
+ * `#` wall (blocks sight and movement), `+` barricade (blocks movement only,
+ * and gives half cover to whoever is behind it), `~` difficult, `^` hazard.
+ *
+ * Every layout is written for the middle of the board; `draft` mirrors it
+ * horizontally at random and keeps it clear of the deploy ranks.
+ */
+type Stamp = (put: (x: number, y: number, ch: string) => void, mid: number, roll: () => number, height: number) => void;
+
+const LAYOUTS: Array<{ name: string; weight: number; stamp: Stamp }> = [
+  {
+    // A wall across the board with one or two ways through. The melee line has
+    // somewhere worth standing, and the shooters behind it have a lane to hold.
+    name: 'chokepoint', weight: 20,
+    stamp: (put, mid, roll) => {
+      const gapA = 1 + Math.floor(roll() * 3);
+      const gapB = 5 + Math.floor(roll() * 2);
+      // Part of the band is barricade rather than wall — a stretch you can see
+      // and shoot over but not walk through. That is the sniping step: behind
+      // it a rogue has cover from everything on the far side, which is both
+      // +2 AC and (canHide) somewhere to disappear, while still having a shot.
+      // A band of pure wall gives none of that; it is only an obstacle.
+      const lowFrom = 2 + Math.floor(roll() * 3);
+      for (let x = 0; x < WIDTH; x++) {
+        if (x === gapA || x === gapB) continue;
+        put(x, mid, x >= lowFrom && x < lowFrom + 2 ? '+' : '#');
+      }
+      // And a barricade beside each gap: holding a doorway should be worth
+      // something to whoever gets there first.
+      put(gapA, mid - 1, '+');
+      put(gapB, mid + 1, '+');
+    },
+  },
+  {
+    // Pillars. Nothing is blocked for long, but no sightline is safe either:
+    // one step either way changes who can see whom.
+    name: 'pillars', weight: 18,
+    stamp: (put, mid, roll, height) => {
+      const step = 3;
+      for (let y = 2; y <= height - 3; y += step) {
+        const off = (y / step) % 2 === 0 ? 1 : 3;
+        for (let x = off; x < WIDTH; x += 3) put(x, y, roll() < 0.3 ? '+' : '#');
+      }
+    },
+  },
+  {
+    // A ring of barricades in the middle: strong from the front, open from
+    // behind. Worth taking, and worth going round.
+    name: 'redoubt', weight: 16,
+    stamp: (put, mid) => {
+      for (let x = 2; x <= 5; x++) put(x, mid - 1, '+');
+      put(2, mid, '+');
+      put(5, mid, '+');
+    },
+  },
+  {
+    // Barricades down both flanks, an open lane between. Shooters want the
+    // edges; anything that has to close wants the middle, and gets shot doing
+    // it. This is the one that most rewards a rogue: two long walls to work.
+    name: 'crossfire', weight: 16,
+    stamp: (put, mid, roll, height) => {
+      const span = Math.min(5, Math.max(3, height - 6));
+      for (let k = 0; k < span; k++) {
+        put(1, mid - 1 + k, '+');
+        put(WIDTH - 2, mid - 1 + k, '+');
+      }
+    },
+  },
+  {
+    // A solid block off to one side with rubble around it: two unequal lanes,
+    // and a hard corner to break line of sight behind.
+    name: 'ruin', weight: 16,
+    stamp: (put, mid, roll) => {
+      const x0 = roll() < 0.5 ? 1 : 4;
+      for (let x = x0; x < x0 + 3; x++) {
+        for (let y = mid - 1; y <= mid + 1; y++) put(x, y, '#');
+      }
+      put(x0 - 1 < 0 ? x0 + 3 : x0 - 1, mid, '+');
+      put(x0 + 1, mid + 2, '+');
+    },
+  },
+  {
+    // Nearly bare, with a couple of barricades to duck behind. Kept so the set
+    // still produces an honest open field — some fights should have no cover
+    // to argue about.
+    name: 'open', weight: 14,
+    stamp: (put, mid, roll) => {
+      put(2 + Math.floor(roll() * 2), mid, '+');
+      put(4 + Math.floor(roll() * 2), mid + 1 + Math.floor(roll() * 2), '+');
+    },
+  },
+];
 
 /** One candidate board — not yet validated. */
 function draft(theme: MapTheme, height: number, state: RngState): { rows: string[]; state: RngState } {
@@ -103,31 +207,51 @@ function draft(theme: MapTheme, height: number, state: RngState): { rows: string
   const roll = () => { const r = next(rng); rng = r.state; return r.value; };
   const grid: string[][] = Array.from({ length: height }, () => Array<string>(WIDTH).fill('.'));
 
-  const scatter = THEME_SCATTER[theme];
-  // Cover clumps rather than confetti: a lone wall cell is noise, a two- or
-  // three-cell block is something to fight around.
-  const clumps = 2 + Math.floor(roll() * 3);
-  for (let c = 0; c < clumps; c++) {
-    // Keep cover out of the deploy ranks entirely — that is what makes the
-    // spawn checks pass reliably instead of by luck.
-    const cy = 2 + Math.floor(roll() * Math.max(1, height - 4));
-    const cx = Math.floor(roll() * WIDTH);
-    const size = 1 + Math.floor(roll() * 3);
-    for (let k = 0; k < size; k++) {
-      const x = Math.min(WIDTH - 1, Math.max(0, cx + Math.floor(roll() * 3) - 1));
-      const y = Math.min(height - 3, Math.max(2, cy + Math.floor(roll() * 3) - 1));
-      grid[y]![x] = '#';
-    }
-  }
+  // Blocking terrain stays out of the two ranks at each end: that is what makes
+  // deployment reliably legal instead of lucky.
+  const lo = 2, hi = height - 3;
+  const mirror = roll() < 0.5;
+  const put = (x: number, y: number, ch: string) => {
+    if (y < lo || y > hi) return;
+    const px = mirror ? WIDTH - 1 - x : x;
+    if (px < 0 || px >= WIDTH) return;
+    grid[y]![px] = ch;
+  };
 
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 0; x < WIDTH; x++) {
-      if (grid[y]![x] !== '.') continue;
-      const r = roll();
-      if (r < scatter.hazard && y > 1 && y < height - 2) grid[y]![x] = '^';
-      else if (r < scatter.hazard + scatter.difficult) grid[y]![x] = '~';
+  const total = LAYOUTS.reduce((a, l) => a + l.weight, 0);
+  let pick = roll() * total;
+  const layout = LAYOUTS.find((l) => (pick -= l.weight) < 0) ?? LAYOUTS[0]!;
+  // Where the shape sits: centred, nudged a rank or two so two boards from the
+  // same layout do not read as the same board.
+  const mid = Math.max(lo + 1, Math.min(hi - 1, Math.floor(height / 2) + (Math.floor(roll() * 3) - 1)));
+  layout.stamp(put, mid, roll, height);
+
+  // Hazards and mud as POOLS, not confetti. A single fire tile is one step to
+  // walk round and so is never a decision; a four-cell pool across a lane is a
+  // real question — go through and take 2d6, or go round and lose the turn.
+  const scatter = THEME_SCATTER[theme];
+  const pools = (chance: number, ch: string) => {
+    if (chance <= 0) return;
+    // Roughly the old per-cell budget, spent in one or two blobs instead.
+    const budget = Math.round(chance * WIDTH * height);
+    let placed = 0;
+    for (let attempt = 0; attempt < 6 && placed < budget; attempt++) {
+      let x = Math.floor(roll() * WIDTH);
+      let y = lo + Math.floor(roll() * Math.max(1, hi - lo + 1));
+      const size = 2 + Math.floor(roll() * 4);
+      for (let k = 0; k < size && placed < budget; k++) {
+        if (y >= lo && y <= hi && x >= 0 && x < WIDTH && grid[y]![x] === '.') {
+          grid[y]![x] = ch;
+          placed++;
+        }
+        // Random walk: a blob with a ragged edge, not a rectangle.
+        if (roll() < 0.5) x += roll() < 0.5 ? 1 : -1;
+        else y += roll() < 0.5 ? 1 : -1;
+      }
     }
-  }
+  };
+  pools(scatter.hazard, '^');
+  pools(scatter.difficult, '~');
 
   return { rows: grid.map((r) => r.join('')), state: rng };
 }

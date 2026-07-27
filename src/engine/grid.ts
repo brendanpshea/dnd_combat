@@ -50,8 +50,35 @@ function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number): n
     case 'open': return iced && !ignoreDifficult ? CELL_FEET * 2 : CELL_FEET;
     case 'difficult': return ignoreDifficult ? CELL_FEET : CELL_FEET * 2;
     case 'hazard': return iced && !ignoreDifficult ? CELL_FEET * 2 : CELL_FEET;
+    // A barricade is chest-high: you can see over it, not walk through it.
+    case 'cover': return Infinity;
     case 'wall': return Infinity;
   }
+}
+
+/** Terrain you cannot enter. Sight is a separate question — see coverBetween. */
+export function blocksMovement(t: TerrainId): boolean {
+  return t === 'wall' || t === 'cover';
+}
+
+/**
+ * Does anything between these two give the target half cover?
+ *
+ * Walls are not included: a wall on the line means there is no line at all
+ * (hasLineOfSight already said so), and a target you cannot see is not a
+ * target you are shooting at. This is only the barricades — the things you
+ * *can* shoot over, at a price.
+ *
+ * Endpoints are excluded, so standing *on* the line's start or end never
+ * counts; a creature gets cover from what is between it and the shooter, which
+ * is what makes moving round the flank worth doing.
+ */
+export function coverBetween(grid: GridState, from: Position, to: Position): boolean {
+  for (const p of lineTrace(from, to)) {
+    if (posEq(p, from) || posEq(p, to)) continue;
+    if (cellAt(grid, p)?.terrain === 'cover') return true;
+  }
+  return false;
 }
 
 /** Ice that has outlasted its round, swept the way illusions are. */
@@ -123,7 +150,7 @@ export function webCell(
   opts: { ability?: Ability; kind?: 'web' | 'entangle' } = {},
 ): boolean {
   const cell = cellAt(grid, p);
-  if (!cell || cell.terrain === 'wall') return false;
+  if (!cell || blocksMovement(cell.terrain)) return false;
   cell.web = { sourceId, dc, ...(opts.ability ? { ability: opts.ability } : {}), ...(opts.kind ? { kind: opts.kind } : {}) };
   return true;
 }

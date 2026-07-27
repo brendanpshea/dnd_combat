@@ -8,7 +8,7 @@ import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
-import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource } from '../grid.js';
+import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, coverBetween } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -272,7 +272,12 @@ export function resolveAttack(
   const targetNoCrit = target.equipped.armor !== undefined && (ARMOR[target.equipped.armor]?.noCrit ?? false);
   // Auto-crit on hitting a helpless (unconscious/paralyzed) target from melee.
   let crit = !targetNoCrit && (natCrit || (isHelpless(target) && isMeleeAttack));
-  const targetAc = acOf(target);
+  // Half cover: +2 AC when a barricade sits on the line of the shot. The
+  // barricade does not block sight, so this is the whole of its effect on an
+  // attack — and it is why *where* you shoot from is now a question. Melee
+  // reaches over it, so only a ranged attack is affected.
+  const behindCover = !isMeleeAttack && coverBetween(state.grid, attacker.position, target.position);
+  const targetAc = acOf(target) + (behindCover ? 2 : 0);
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
 
@@ -309,6 +314,7 @@ export function resolveAttack(
     mode, advSources: adv, disSources: dis,
     hit, crit: hit && crit,
     opportunity: ctx.opportunity ?? false,
+    ...(behindCover ? { cover: true } : {}),
   });
   events.push(...endHide(attacker));
 

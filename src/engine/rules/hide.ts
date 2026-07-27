@@ -2,7 +2,7 @@
 import type { Combatant, GameState, Id } from '../types.js';
 import { abilityMod, proficiencyBonus, isDown } from '../types.js';
 import { rollD20 } from '../dice.js';
-import { hasLineOfSight } from '../grid.js';
+import { hasLineOfSight, coverBetween } from '../grid.js';
 import { CLASSES } from '../../data/classes.js';
 import { FEATURES } from '../../data/features.js';
 import { applyLucky } from './luck.js';
@@ -21,10 +21,22 @@ export function isHidden(c: Combatant): boolean {
 export function canHide(state: GameState, actor: Combatant): boolean {
   if (isHidden(actor)) return false;
   if (actor.conditions.some((c) => c.id === 'outlined')) return false;   // outlined; can't slip away
+  // Out of sight, or behind something.
+  //
+  // This used to demand that NO enemy had line of sight at all — total
+  // concealment, which on an eight-wide board with a few scattered walls is
+  // almost never true. The rogue's whole loop is Hide -> advantage -> Sneak
+  // Attack, and it was effectively unreachable: there was nowhere to do it.
+  //
+  // The SRD lets you hide with half cover, and that is what barricades are
+  // for. An enemy that can see you but is looking across a barricade cannot
+  // pin you down, so a low wall is a hiding place — which is the difference
+  // between a rogue that has a game and one that swings a dagger.
   return !Object.values(state.combatants).some(
     (other) => other.alive && !isDown(other) && other.team !== actor.team &&
       !other.conditions.some((c) => c.id === 'blinded' || c.id === 'unconscious') &&
-      hasLineOfSight(state.grid, other.position, actor.position),
+      hasLineOfSight(state.grid, other.position, actor.position) &&
+      !coverBetween(state.grid, other.position, actor.position),
   );
 }
 

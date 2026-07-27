@@ -18,6 +18,9 @@ export type GameEvent =
       mode: RollMode; advSources: string[]; disSources: string[];
       hit: boolean; crit: boolean;
       opportunity: boolean;
+      /** A barricade on the line of the shot: `targetAc` already includes the
+       *  +2, and this is what lets the log say why. */
+      cover?: boolean;
       /** A conjuration swung this, not the caster's own arm — the summon's kind
        *  ('spiritual-weapon'). Everything mechanical still hangs off
        *  `attackerId` (it is the caster's spell attack); this only re-labels who

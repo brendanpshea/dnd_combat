@@ -12,7 +12,7 @@ import { WEAPONS, type WeaponData } from '../data/weapons.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { parseDice } from '../engine/dice.js';
-import { distanceCells, hasLineOfSight } from '../engine/grid.js';
+import { distanceCells, hasLineOfSight, coverBetween } from '../engine/grid.js';
 import { cellAt } from '../engine/types.js';
 import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -373,6 +373,26 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
       // so being far away is a delay rather than a loss.
       unit += 2.5 + (near <= 1 ? 2.5 : near <= 4 ? 1 : 0);
     }
+
+    // Cover. A barricade between this unit and a shooter is +2 AC against it,
+    // and — for anything that can hide — a place to do it from. Both are worth
+    // more to a unit that is being shot at than to one that is not, so it is
+    // counted per enemy that actually has a line to it rather than as a flat
+    // bonus for standing near a wall.
+    //
+    // Priced deliberately: without a term here the AI would walk past every
+    // barricade in the game, and cover would join the list of mechanics that
+    // are implemented, correct, and never once used.
+    let coveredFrom = 0;
+    for (const e of Object.values(state.combatants)) {
+      if (!e.alive || isDown(e) || e.team === team) continue;
+      if (prefersMelee(e)) continue;   // a sword reaches over a barricade
+      if (!hasLineOfSight(state.grid, e.position, c.position)) continue;
+      if (coverBetween(state.grid, e.position, c.position)) coveredFrom++;
+    }
+    // +2 AC is worth about a tenth of a hit; the hiding is worth more to a kit
+    // that gets something for it (a rogue's Sneak Attack rides on advantage).
+    unit += coveredFrom * (0.8 + 0.12 * advantageUpside(c));
 
     // Incoming threat: fragile units should not sit where enemies can reach.
     let threat = 0;

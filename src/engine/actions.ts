@@ -15,7 +15,7 @@ import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
-import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
+import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
@@ -158,7 +158,7 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
     const tg = targets[0];
     if (targets.length !== 1 || !tg || !('position' in tg)) return false;
     const cell = cellAt(state.grid, tg.position);
-    return !!cell && cell.terrain !== 'wall' && cell.occupantId === undefined &&
+    return !!cell && !blocksMovement(cell.terrain) && cell.occupantId === undefined &&
       distanceFeet(actor.position, tg.position) <= t.range &&
       hasLineOfSight(state.grid, actor.position, tg.position);
   }

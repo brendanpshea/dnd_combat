@@ -64,7 +64,10 @@ export function renderBoard(state: GameState): string {
         cell.illusion ? '%%%' :   // a false wall — distinct from a real one (###)
         cell.terrain === 'wall' ? '###' :
         cell.terrain === 'difficult' ? '~~~' :
-        cell.terrain === 'hazard' ? '^^^' : '   ';
+        cell.terrain === 'hazard' ? '^^^' :
+        // A barricade: solid underfoot, see-through overhead. Deliberately not
+        // '###' — the whole point is that it is not a wall.
+        cell.terrain === 'cover' ? '+++' : '   ';
       row += occ ? ` ${token(occ)}|` : `${ground}|`;
     }
     lines.push(row);
