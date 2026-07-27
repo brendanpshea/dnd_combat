@@ -216,9 +216,10 @@ export const CLASSES: Record<Id, ClassData> = {
     featuresByLevel: {
       6: ['blessed-healer'],
       7: ['potent-spellcasting'],   // Blessed Strikes, taken as Potent Spellcasting
-      1: ['disciple-of-life'],
       2: ['turn-undead'], // Channel Divinity every cleric gets
-      3: ['preserve-life'], // Life Domain: Channel Divinity
+      // Both Life Domain, and the SRD gives both at 3 — Disciple of Life was
+      // being handed out at 1, two levels before a cleric picks a domain.
+      3: ['preserve-life', 'disciple-of-life'],
       // 4: Ability Score Increase (builder).
     },
     weaponMasteries: [],
@@ -298,7 +299,11 @@ export const CLASSES: Record<Id, ClassData> = {
       7: ['evasion'],
       1: ['sneak-attack'],
       2: ['cunning-dash', 'cunning-disengage', 'cunning-hide'],
-      3: ['assassinate'], // Assassin
+      // Thief, not Assassin. Assassinate is in neither the 2014 nor the 2024
+      // SRD — the SRD's only rogue subclass is the Thief, whose level-3
+      // features are Fast Hands and Second-Story Work. The second is a climb
+      // speed and a jump rule, neither of which exists on this grid.
+      3: ['fast-hands'],
       // 4: Ability Score Increase (builder). Sneak Attack scales to 3d6 at L5
       // automatically via its advantageDice(level) formula.
       5: ['uncanny-dodge'],

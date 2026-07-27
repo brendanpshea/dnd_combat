@@ -64,31 +64,64 @@ describe('subclass features', () => {
     expect(saw19).toBe(true);
   });
 
-  it('assassin has advantage against targets that have not acted', () => {
+  /**
+   * Assassinate belongs to the Assassin *monster* now. It is in neither SRD as
+   * a rogue subclass feature — the SRD's only rogue subclass is the Thief — so
+   * the player rogue gets Fast Hands at 3 instead. The stat block keeps it.
+   */
+  it('the assassin has advantage against targets that have not acted', () => {
     let checked = false;
     for (let seed = 1; seed <= 60 && !checked; seed++) {
       const c = new Combat({
         seed,
         combatants: [
-          place('rogue', 'team1', { x: 3, y: 3 }, 3, { id: 'rog' }),
+          { ...buildMonster('assassin', 'team1', { x: 3, y: 3 }), id: 'ass' },
           makeCombatant({ id: 'pc', team: 'team2', position: { x: 3, y: 4 }, hp: 1000, maxHp: 1000 }),
         ],
       });
-      if (c.activeId !== 'rog') continue; // need the rogue to win initiative
-      const events = c.apply({ kind: 'attack', weaponId: 'shortsword', targetId: 'pc' });
+      if (c.activeId !== 'ass') continue; // need the assassin to win initiative
+      const weaponId = c.state.combatants['ass']!.equipped.mainHand!;
+      const events = c.apply({ kind: 'attack', weaponId, targetId: 'pc' });
       const roll = events.find((e) => e.type === 'attackRolled')!;
       if (roll.type !== 'attackRolled') throw new Error();
       expect(roll.advSources).toContain('assassinate');
       // After the target's first turn, no more assassinate.
       c.apply({ kind: 'endTurn' });
-      until(c, 'rog');
-      const later = c.apply({ kind: 'attack', weaponId: 'shortsword', targetId: 'pc' });
+      until(c, 'ass');
+      const later = c.apply({ kind: 'attack', weaponId, targetId: 'pc' });
       const roll2 = later.find((e) => e.type === 'attackRolled')!;
       if (roll2.type !== 'attackRolled') throw new Error();
       expect(roll2.advSources).not.toContain('assassinate');
       checked = true;
     }
-    expect(checked).toBe(true);
+    expect(checked, 'the assassin never won initiative in 60 seeds').toBe(true);
+  });
+
+  /**
+   * Fast Hands (Thief, level 3): "use an object" as a Bonus Action. On a battle
+   * grid that means drinking the potion without giving up the attack, which is
+   * the whole of the feature that this engine can express.
+   */
+  it('a level-3 rogue drinks a potion as a bonus action, and can still attack', () => {
+    const c = new Combat({
+      seed: 5,
+      combatants: [
+        place('rogue', 'team1', { x: 3, y: 3 }, 3, { id: 'rog' }),
+        makeCombatant({ id: 'pc', team: 'team2', position: { x: 3, y: 4 }, hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    until(c, 'rog');
+    const rogue = c.state.combatants['rog']!;
+    rogue.hp = 5;
+    rogue.inventory = [{ itemId: 'potion-healing', qty: 1 }];
+    expect(rogue.turn.actionUsed).toBe(false);
+    c.apply({ kind: 'useItem', itemId: 'potion-healing' });
+    const after = c.state.combatants['rog']!;
+    expect(after.hp, 'the potion did nothing').toBeGreaterThan(5);
+    expect(after.turn.bonusActionUsed, 'Fast Hands must spend the bonus action').toBe(true);
+    expect(after.turn.actionUsed, 'Fast Hands must NOT spend the action').toBe(false);
+    // And the attack is still there.
+    expect(c.legalActions('rog').some((a) => a.kind === 'attack')).toBe(true);
   });
 
   it('sculpt spells: burning hands spares allies in the cone', () => {

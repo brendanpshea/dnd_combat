@@ -397,7 +397,20 @@ export const FEATURES: Record<Id, FeatureData> = {
   'potent-spellcasting': { id: 'potent-spellcasting', name: 'Potent Spellcasting', trigger: 'passive' },
   countercharm: { id: 'countercharm', name: 'Countercharm', trigger: 'passive' },
   'sculpt-spells': { id: 'sculpt-spells', name: 'Sculpt Spells (Evoker)', trigger: 'passive' },
-  'enhanced-cantrip': { id: 'enhanced-cantrip', name: 'Enhanced Cantrip (Evoker)', trigger: 'passive' },
+  'enhanced-cantrip': { id: 'enhanced-cantrip', name: 'Potent Cantrip (Evoker)', trigger: 'passive' },
+  /**
+   * Fast Hands (Thief, level 3). The SRD's version is three things: pick a
+   * lock, pick a pocket, or use an object — and only the last one exists on a
+   * battle grid, where "use an object" is drinking a potion or throwing a
+   * flask. So the feature is a flag the action economy reads: `useItem` costs
+   * a Bonus Action instead of an Action.
+   *
+   * `bonusVerb` cannot express it — that switch names the three movement-ish
+   * verbs Cunning Action covers, and item use is not one of them.
+   */
+  'fast-hands': {
+    id: 'fast-hands', name: 'Fast Hands', trigger: 'passive',
+  },
   'cunning-dash': {
     id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {

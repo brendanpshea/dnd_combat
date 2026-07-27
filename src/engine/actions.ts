@@ -255,8 +255,11 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (!item) return false;
       const stack = actor.inventory.find((s) => s.itemId === action.itemId && s.qty > 0);
       if (!stack) return false;
-      if (item.useTime === 'action' && actor.turn.actionUsed) return false;
-      if (item.useTime === 'bonus' && actor.turn.bonusActionUsed) return false;
+      // Fast Hands (Thief): "use an object" as a Bonus Action, which on a
+      // battle grid means drinking the potion without giving up the attack.
+      const asBonus = item.useTime === 'bonus' || actor.featureIds.includes('fast-hands');
+      if (!asBonus && actor.turn.actionUsed) return false;
+      if (asBonus && actor.turn.bonusActionUsed) return false;
       // A spell scroll only works for a class that has the spell on its list.
       if (item.targeting.kind === 'spell' && !classScrollPool(actor.classId).has(item.targeting.spellId)) return false;
       return itemTargetsValid(state, actor, action.itemId, action.targets ?? []);
@@ -623,7 +626,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
     }
     case 'useItem': {
       const item = ITEMS[action.itemId]!;
-      if (item.useTime === 'action') actor.turn.actionUsed = true;
+      if (item.useTime === 'action' && !actor.featureIds.includes('fast-hands')) actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
       const stack = actor.inventory.find((s) => s.itemId === action.itemId)!;
       stack.qty -= 1;
