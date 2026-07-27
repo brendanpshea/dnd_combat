@@ -382,7 +382,12 @@ describe('arena difficulty calibration', () => {
       const budget = evenBudgetFor(level);
       let rng = seedRng(level * 7919);
       let wins = 0;
-      const N = 40;
+      // N=40 carries about +-8 points, and this reads a quantity that sits
+      // near 45%: it flaked at exactly 0.65 on a change that moved the true
+      // rate by nothing (re-measured at N=150: 42.0%, where N=40 said 65%).
+      // 120 fights per level is ~3s for all seven and halves the error bar,
+      // which is the difference between a tripwire and a coin toss.
+      const N = 120;
       for (let i = 0; i < N; i++) {
         // The caps are part of what a budget buys — without them this measures
         // a fight the arena would never actually generate.

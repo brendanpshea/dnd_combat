@@ -161,7 +161,7 @@ export function startTurn(state: GameState): GameEvent[] {
   // movement — it just stands there until its end-of-turn save. Without this it
   // kept full speed and the AI would walk it around before rolling to wake.
   if (c.conditions.some((k) => k.id === 'incapacitated')) speed = 0;
-  // Spiritual Guardians halves the Speed of anyone else standing in it — half
+  // Spirit Guardians halves the Speed of anyone else standing in it — half
   // of what the spell does, and it was missing entirely. Applied here rather
   // than as a condition because the aura is a place, not a status: walking out
   // of it should not need anything to remember to take a condition off, and
@@ -295,7 +295,7 @@ export function startTurn(state: GameState): GameEvent[] {
     }
   }
 
-  // Spiritual Guardians: an enemy that starts its turn within 15 ft of an active
+  // Spirit Guardians: an enemy that starts its turn within 15 ft of an active
   // aura takes 3d8 radiant (+1d8 per slot level above 3), halved on a Wisdom
   // save. The SRD makes the save happen on entering the Emanation and on ending
   // a turn there as well, but only once per turn — start-of-turn is the one
@@ -344,7 +344,7 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
 
   const n = state.initiativeOrder.length;
   // Advancing can need more than one hop. A creature can die *inside* its own
-  // startTurn -- Spiritual Guardians burns it down before it ever acts -- and
+  // startTurn -- Spirit Guardians burns it down before it ever acts -- and
   // it would then sit there as the active combatant, dead, with no legal
   // action able to move the fight on: not even endTurn, which requires a live
   // actor. That is a softlock, and it only shows up when a slow monster ends

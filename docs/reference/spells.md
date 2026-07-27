@@ -19,7 +19,7 @@ see `src/data/spells.ts`.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 🧪 Acid Splash | `acid-splash` | action | 2×2 burst within 60 ft | — | — | — | Wizard 1, Aboleth |
 | 🔥 Fire Bolt | `fire-bolt` | action | 1 enemy within 120 ft | — | — | — | Wizard 1, Kobold Emberling, Oni, Mage, Azer Forgecaller |
-| 🔮 Guidance | `guidance` | action | self (offered when it would reach someone) | — | — | out of combat | Cleric 1, Druid 1 |
+| 🔮 Guidance | `guidance` | action | self (offered when it would reach someone) | yes | — | out of combat | Cleric 1, Druid 1 |
 | 🌫️ Minor Illusion | `minor-illusion` | action | an empty cell within 30 ft | — | — | — | Wizard 1, Bard 1, Gnome |
 | ☠️ Poison Spray | `poison-spray` | action | 1 enemy within 30 ft | — | — | — | Wizard 1, Druid 1, Abyssal Tiefling, Skeleton Bonechanter, Night Hag, Ettercap Snarecaller |
 | ❄️ Ray of Frost | `ray-of-frost` | action | 1 enemy within 60 ft | — | — | — | Wizard 1, Apprentice Mage |
@@ -35,7 +35,7 @@ see `src/data/spells.ts`.
 
 | Spell | ID | Cast | Aimed at | Conc. | Upcast | Notes | Known by |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 🐾 Animal Friendship | `animal-friendship` | action | 1 enemy you can touch (beast only) | — | — | — | Bard 1, Druid 1, Ranger 1, Gnome |
+| 🐾 Animal Friendship | `animal-friendship` | action | 1 enemy within 30 ft (beast only) | — | — | — | Bard 1, Druid 1, Ranger 1, Gnome |
 | 💀 Bane | `bane` | action | 3 enemys within 30 ft | yes | — | — | Cleric 1, Bard 1, Goblin Hexer |
 | 🙏 Bless | `bless` | action | 3 allys within 30 ft | yes | — | — | Cleric 1, Paladin 1, Acolyte, Cult Fanatic, Priest |
 | 🐲 Breath Weapon | `breath-weapon` | action | 15 ft cone | — | — | — | Dragonborn |
@@ -44,7 +44,7 @@ see `src/data/spells.ts`.
 | ❗ Command | `command` | action | 1 enemy within 60 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | — | — | — | Cleric 1, Bard 1, Paladin 1, Acolyte, Cult Fanatic, Priest |
 | 💚 Cure Wounds | `cure-wounds` | action | 1 ally you can touch | — | yes | — | Cleric 1, Bard 1, Druid 1, Ranger 1, Paladin 1, Acolyte, Priest, Dryad |
 | ⚡ Divine Smite | `divine-smite` | bonus | self (offered when it would reach someone) | — | — | — | — |
-| 🌿 Ensnaring Strike | `ensnaring-strike` | bonus | self (castable any time) | — | — | — | Ranger 1 |
+| 🌿 Ensnaring Strike | `ensnaring-strike` | bonus | self (castable any time) | yes | — | — | Ranger 1 |
 | 🌱 Entangle | `entangle` | action | 5×5 burst within 90 ft | yes | — | — | Druid 1, Ettercap Snarecaller |
 | 🧚 Faerie Fire | `faerie-fire` | action | 2×2 burst within 60 ft | yes | — | — | Bard 1, Druid 1, Wood Elf, Gnoll Packcaller |
 | 💀 False Life | `false-life` | action | self (castable any time) | — | yes | — | Wizard 1, Skeleton Bonechanter |
@@ -61,7 +61,7 @@ see `src/data/spells.ts`.
 | 🔥 Searing Smite | `searing-smite` | bonus | self (offered when it would reach someone) | — | — | — | Paladin 2 |
 | 🛡️ Shield | `shield` | reaction | self (offered when it would reach someone) | — | — | — | Wizard 1, Mage |
 | 🛡️ Shield of Faith | `shield-of-faith` | bonus | 1 ally within 60 ft | yes | — | — | Cleric 1, Paladin 2 |
-| 😴 Sleep | `sleep` | action | 2×2 burst within 60 ft | — | — | — | Wizard 1, Bard 1, Night Hag |
+| 😴 Sleep | `sleep` | action | 2×2 burst within 60 ft | yes | — | — | Wizard 1, Bard 1, Night Hag |
 | 💥 Thunderwave | `thunderwave` | action | 15 ft cube (adjacent) | — | yes | — | Wizard 2, Bard 1, Druid 1, Gnoll Packcaller |
 
 ## Level 2
@@ -74,13 +74,13 @@ see `src/data/spells.ts`.
 | 🔥 Heat Metal | `heat-metal` | action | 1 enemy within 60 ft | yes | yes | — | Druid 3, Azer Forgecaller |
 | ⛓️ Hold Person | `hold-person` | action | 1 enemy within 60 ft | yes | — | — | Cleric 3, Bard 3, Druid 3, Cult Fanatic, Night Hag, Aboleth |
 | 👤 Invisibility | `invisibility` | action | 1 ally you can touch | yes | — | — | Wizard 3, Bard 3, Night Hag |
-| 💫 Lesser Restoration | `lesser-restoration` | action | 1 ally you can touch | — | — | — | Cleric 3, Bard 3, Druid 3, Ranger 5, Paladin 5 |
+| 💫 Lesser Restoration | `lesser-restoration` | bonus | 1 ally you can touch | — | — | — | Cleric 3, Bard 3, Druid 3, Ranger 5, Paladin 5 |
 | 👣 Misty Step | `misty-step` | bonus | an empty cell within 30 ft | — | — | — | Wizard 3, Mage |
 | 🌙 Moonbeam | `moonbeam` | action | 2×2 burst within 120 ft | yes | yes | — | Druid 3, Druid |
 | ☄️ Scorching Ray | `scorching-ray` | action | 3 enemys within 120 ft | — | — | — | Wizard 3 |
-| 🌟 Shining Smite | `shining-smite` | bonus | self (offered when it would reach someone) | — | — | — | Paladin 5 |
-| 🔨 Spiritual Weapon | `spiritual-weapon` | bonus | an empty cell within 60 ft | — | — | — | Cleric 3, Cult Fanatic, Priest |
-| 💭 Suggestion | `suggestion` | action | 1 enemy within 30 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | — | — | — | Wizard 3, Bard 3, Cult Fanatic |
+| 🌟 Shining Smite | `shining-smite` | bonus | self (offered when it would reach someone) | yes | — | — | Paladin 5 |
+| 🔨 Spiritual Weapon | `spiritual-weapon` | bonus | an empty cell within 60 ft | yes | — | — | Cleric 3, Cult Fanatic, Priest |
+| 💭 Suggestion | `suggestion` | action | 1 enemy within 30 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | yes | — | — | Wizard 3, Bard 3, Cult Fanatic |
 | 🔗 Warding Bond | `warding-bond` | action | 1 ally you can touch | — | — | — | Cleric 3, Paladin 5 |
 | 🕸️ Web | `web` | action | 5×5 burst within 60 ft | yes | — | — | Wizard 3, Oni, Dryad, Ettercap Snarecaller, Mage |
 
@@ -97,13 +97,13 @@ see `src/data/spells.ts`.
 | ⚡ Lightning Bolt | `lightning-bolt` | action | line to the board edge | — | yes | — | Wizard 5, Mage |
 | 💞 Mass Healing Word | `mass-healing-word` | bonus | 6 allys within 60 ft | — | — | — | Cleric 5, Bard 5 |
 | 🔥 Protection from Energy | `protection-from-energy` | action | 1 ally you can touch | yes | — | — | Cleric 5, Druid 5 |
-| 👼 Spiritual Guardians | `spiritual-guardians` | action | self (offered when it would reach someone) | yes | yes | — | Cleric 5, Priest |
+| 👼 Spirit Guardians | `spiritual-guardians` | action | self (offered when it would reach someone) | yes | yes | — | Cleric 5, Priest |
 
 ## Level 4
 
 | Spell | ID | Cast | Aimed at | Conc. | Upcast | Notes | Known by |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 🌀 Banishment | `banishment` | action | 1 enemy within 60 ft | yes | — | — | Cleric 7, Wizard 7 |
+| 🌀 Banishment | `banishment` | action | 1 enemy within 30 ft | yes | — | — | Cleric 7, Wizard 7 |
 | 🥀 Blight | `blight` | action | 1 enemy within 30 ft | — | yes | — | Wizard 7, Druid 7 |
 | 🧊 Ice Storm | `ice-storm` | action | 5×5 burst within 300 ft | — | yes | — | Wizard 7, Druid 7 |
 | 👁️ Phantasmal Killer | `phantasmal-killer` | action | 1 enemy within 120 ft | yes | — | — | Wizard 7, Bard 7 |

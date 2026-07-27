@@ -88,7 +88,7 @@ Spellcasting ability: **WIS**.
 | 1 | Sacred Flame, Guidance, Cure Wounds, Bless, Healing Word, Command, Inflict Wounds, Bane, Shield of Faith, Sanctuary, Protection from Evil and Good |
 | 2 | Guiding Bolt |
 | 3 | Hold Person, Aid, Spiritual Weapon, Blindness, Lesser Restoration, Warding Bond |
-| 5 | Mass Healing Word, Spiritual Guardians, Dispel Magic, Protection from Energy, Bestow Curse |
+| 5 | Mass Healing Word, Spirit Guardians, Dispel Magic, Protection from Energy, Bestow Curse |
 | 7 | Banishment |
 
 ## Druid

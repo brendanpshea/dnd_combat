@@ -52,8 +52,23 @@ import { generateArenaMap } from './map.js';
  * These will want re-measuring again the moment the class features for 6th and
  * 7th land, since half the party currently gains only hit points across those
  * two levels.
+ *
+ * 4th, 5th, 6th and 7th moved again when six spells were corrected against the
+ * SRD to require Concentration — Sleep, Suggestion, Spiritual Weapon, Shining
+ * Smite, Ensnaring Strike and Banishment. The party holds nearly every
+ * concentration spell in the game and the monsters hold almost none, so a rule
+ * that applies to both sides is in practice a party nerf, and only at the tiers
+ * where the party has the spells: measured at N=150, 1st through 3rd did not
+ * move at all (42.7 -> 42.0, 56.7 -> 58.7, 40.7 -> 41.3) while 5th fell 45.3 ->
+ * 36.7 and 4th and 7th fell about six points each.
+ *
+ * 8,800 -> 8,000, 15,500 -> 14,000, 21,000 -> 20,000, 24,000 -> 23,000, which
+ * puts all seven back in a 42-59% band. Note how lumpy the high end is: at 6th,
+ * 21,000 reads 32.7% and 19,000 reads 56.0%, because 2,000 XP up there is one
+ * more monster. The number between them is not a fine adjustment, it is the
+ * only place to stand.
  */
-export const EVEN_BUDGET = [1500, 2600, 6200, 8800, 15500, 21000, 24000];
+export const EVEN_BUDGET = [1500, 2600, 6200, 8000, 14000, 20000, 23000];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;

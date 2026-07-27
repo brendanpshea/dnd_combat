@@ -286,6 +286,10 @@ export function spellDc(state: GameState, casterId: Id): number {
 function armSmite({ state, casterId, slotLevel }: CastContext, spellId: Id): GameEvent[] {
   const c = state.combatants[casterId]!;
   c.armedSmite = { spellId, slotLevel };
+  // Shining Smite and Ensnaring Strike hold their effect with Concentration
+  // (Divine Smite and Searing Smite do not). Taking it when the smite is armed
+  // is what makes arming one a real choice rather than a free rider.
+  if (SPELLS[spellId]?.concentration) c.concentratingOn = { spellId, targetIds: [] };
   if (c.conditions.some((k) => k.id === 'smiting')) return [];
   c.conditions.push({ id: 'smiting', sourceId: casterId });
   return [{ type: 'conditionApplied', combatantId: casterId, condition: 'smiting', sourceId: casterId }];
@@ -826,7 +830,7 @@ export const SPELLS: Record<Id, SpellData> = {
   guidance: {
     id: 'guidance', name: 'Guidance', level: 0, castingTime: 'action',
     targeting: { kind: 'self' },
-    concentration: false,
+    concentration: true,
     icon: '🔮',
     outOfCombat: true,
     cast() { return []; },
@@ -927,7 +931,7 @@ export const SPELLS: Record<Id, SpellData> = {
   sleep: {
     id: 'sleep', name: 'Sleep', level: 1, castingTime: 'action',
     targeting: { kind: 'sphere2x2', range: 60 },
-    concentration: false,
+    concentration: true,
     icon: '😴',
     cast({ state, casterId, positions }) {
       const events: GameEvent[] = [];
@@ -949,6 +953,10 @@ export const SPELLS: Record<Id, SpellData> = {
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'incapacitated', sourceId: casterId });
         }
       }
+      // Concentration is the *cost* half of the rule and the half that matters
+      // here: holding this means not holding anything else. Sleep ends when concentration
+      // does; the sleepers already get their own end-of-turn saves.
+      state.combatants[casterId]!.concentratingOn = { spellId: 'sleep', targetIds: [] };
       return events;
     },
   },
@@ -1085,13 +1093,18 @@ export const SPELLS: Record<Id, SpellData> = {
   suggestion: {
     id: 'suggestion', name: 'Suggestion', level: 2, castingTime: 'action',
     targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1, creatureTypes: PERSUADABLE },
-    concentration: false,
+    concentration: true,
     icon: '💭',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const save = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
       const events: GameEvent[] = [save.event];
       if (!save.success) events.push(...charmAway(state, targetId));
+      // Concentration is the *cost* half of the rule and the half that matters
+      // here: holding this means not holding anything else. charmAway takes the victim out
+      // for good rather than returning it — a fight is shorter than the
+      // spell's duration — so this is the price, not a leash.
+      state.combatants[casterId]!.concentratingOn = { spellId: 'suggestion', targetIds: [targetId] };
       return events;
     },
   },
@@ -1309,9 +1322,13 @@ export const SPELLS: Record<Id, SpellData> = {
   'spiritual-weapon': {
     id: 'spiritual-weapon', name: 'Spiritual Weapon', level: 2, castingTime: 'bonus',
     targeting: { kind: 'emptyCell', range: 60 },
-    concentration: false,
+    concentration: true,
     icon: '🔨',
     cast({ state, casterId, positions }) {
+      // Concentration in the 2024 rules, which is what stops a cleric holding
+      // this and Spirit Guardians at once. breakConcentration sweeps any summon
+      // whose kind matches the spell being dropped, so the weapon goes with it.
+      state.combatants[casterId]!.concentratingOn = { spellId: 'spiritual-weapon', targetIds: [] };
       return placeSummon(state, casterId, {
         kind: 'spiritual-weapon',
         position: { ...positions[0]! },
@@ -1343,12 +1360,12 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
-   * Spiritual Guardians: a radiant aura around the caster. Any enemy that starts
+   * Spirit Guardians: a radiant aura around the caster. Any enemy that starts
    * its turn within 15 ft takes 3d8 radiant (Wisdom save halves) — resolved in
    * startTurn. Held by concentration; dropping it dispels the aura.
    */
   'spiritual-guardians': {
-    id: 'spiritual-guardians', name: 'Spiritual Guardians', level: 3, castingTime: 'action',
+    id: 'spiritual-guardians', name: 'Spirit Guardians', level: 3, castingTime: 'action',
     targeting: { kind: 'self' },
     concentration: true,
     upcast: true,
@@ -1655,7 +1672,7 @@ export const SPELLS: Record<Id, SpellData> = {
    */
   'animal-friendship': {
     id: 'animal-friendship', name: 'Animal Friendship', level: 1, castingTime: 'action',
-    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1, creatureType: 'beast' },
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1, creatureType: 'beast' },
     concentration: false,
     icon: '🐾',
     cast({ state, casterId, targetIds }) {
@@ -1817,7 +1834,7 @@ export const SPELLS: Record<Id, SpellData> = {
     // enemy already within 5 ft, which is the one moment it is least worth a
     // whole action — and it is why the skeleton bonechanter cast it three times
     // in sixty fights. The gate is right for a smite (which arms a melee swing)
-    // and for Spiritual Guardians (an aura that needs someone standing in it);
+    // and for Spirit Guardians (an aura that needs someone standing in it);
     // it was never right for a ward.
     targeting: { kind: 'self', anyTime: true },
     concentration: false,
@@ -1913,7 +1930,7 @@ export const SPELLS: Record<Id, SpellData> = {
    * answer to a save-ends lockdown that hasn't broken on its own.
    */
   'lesser-restoration': {
-    id: 'lesser-restoration', name: 'Lesser Restoration', level: 2, castingTime: 'action',
+    id: 'lesser-restoration', name: 'Lesser Restoration', level: 2, castingTime: 'bonus',
     targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
     concentration: false,
     icon: '💫',
@@ -2230,7 +2247,7 @@ export const SPELLS: Record<Id, SpellData> = {
   'shining-smite': {
     id: 'shining-smite', name: 'Shining Smite', level: 2, castingTime: 'bonus',
     targeting: { kind: 'self' },
-    concentration: false,
+    concentration: true,
     icon: '🌟',
     cast: (ctx) => armSmite(ctx, 'shining-smite'),
   },
@@ -2248,7 +2265,7 @@ export const SPELLS: Record<Id, SpellData> = {
   'ensnaring-strike': {
     id: 'ensnaring-strike', name: 'Ensnaring Strike', level: 1, castingTime: 'bonus',
     targeting: { kind: 'self', anyTime: true },
-    concentration: false,
+    concentration: true,
     icon: '🌿',
     cast: (ctx) => armSmite(ctx, 'ensnaring-strike'),
   },
@@ -2331,7 +2348,7 @@ export const SPELLS: Record<Id, SpellData> = {
   },
   banishment: {
     id: 'banishment', name: 'Banishment', level: 4, castingTime: 'action',
-    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1 },
     concentration: true,
     icon: '🌀',
     cast({ state, casterId, targetIds }) {
@@ -2344,6 +2361,11 @@ export const SPELLS: Record<Id, SpellData> = {
       // departing creature leaves behind (its summons, whatever it charmed).
       // The SRD returns the victim when concentration ends; a fight here is
       // shorter than the spell's minute, so it does not come back.
+      // Concentration: the SRD holds the banishment with it. Taking it is the
+      // cost side of the rule, and was missing — the spell was flagged
+      // `concentration: true` while never actually taking any, so the flag did
+      // nothing and Banishment was strictly better than the book.
+      state.combatants[casterId]!.concentratingOn = { spellId: 'banishment', targetIds: [targetId] };
       return [save.event, ...charmAway(state, targetId)];
     },
   },

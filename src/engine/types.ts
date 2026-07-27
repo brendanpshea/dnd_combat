@@ -280,7 +280,7 @@ export interface Combatant {
     position: Position;
     expiresAtRound?: number;
   }>;
-  /** Spiritual Guardians: a radiant aura around the caster that hurts enemies
+  /** Spirit Guardians: a radiant aura around the caster that hurts enemies
    *  who start their turn near it, and halves their Speed while they are in it
    *  (held by concentration). `dice` carries the slot level it was cast at —
    *  SRD scales it by 1d8 per level above 3. */

@@ -339,7 +339,7 @@ describe('death and turn order', () => {
 });
 
 /**
- * A creature can die inside its *own* startTurn: Spiritual Guardians burns it
+ * A creature can die inside its *own* startTurn: Spirit Guardians burns it
  * down before it ever acts. It was then left as the active combatant, dead,
  * and every action for it was illegal -- including endTurn, which requires a
  * live actor -- so the fight could not be advanced at all. Nothing threw until

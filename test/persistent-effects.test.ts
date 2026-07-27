@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
  *
  * Measured over thirty fights before this was priced:
  *
- *   Spiritual Guardians   55 offers,   0 casts
+ *   Spirit Guardians   55 offers,   0 casts
  *   Flaming Sphere      6962 offers,   0 casts
  *   Ice Storm            843 offers,   0 casts
  *
@@ -70,7 +70,7 @@ function bestDelta(combat: Combat, id: string, spellId: string): number {
 
 describe('effects that pay out later are visible to the AI', () => {
   it('an aura is offered as the line closes, not only once it has arrived', () => {
-    // Gating Spiritual Guardians on an enemy already inside the 15 ft aura made
+    // Gating Spirit Guardians on an enemy already inside the 15 ft aura made
     // it nearly unofferable: evaluate()'s engagement band parks a caster at
     // 20 ft, so the Priest stat block — which carries it — was offered the
     // spell ten times in thirty fights. An aura lasts; raising it as the enemy
@@ -78,7 +78,7 @@ describe('effects that pay out later are visible to the AI', () => {
     const c = rig(2);              // ogres at y=5, cleric at y=1 → 20 ft away
     turnOf(c, 'team1-cleric');
     expect(offers(c, 'team1-cleric', 'spiritual-guardians').length,
-      'Spiritual Guardians must be offered at approach range').toBeGreaterThan(0);
+      'Spirit Guardians must be offered at approach range').toBeGreaterThan(0);
   });
 
   it('each one scores strictly better than doing nothing', () => {
@@ -89,7 +89,7 @@ describe('effects that pay out later are visible to the AI', () => {
     const c = rig(3);
     turnOf(c, 'team1-cleric');
     expect(bestDelta(c, 'team1-cleric', 'spiritual-guardians'),
-      'Spiritual Guardians reads as a wasted slot').toBeGreaterThan(1);
+      'Spirit Guardians reads as a wasted slot').toBeGreaterThan(1);
 
     const w = rig(3);
     turnOf(w, 'team1-wizard');
@@ -112,7 +112,7 @@ describe('effects that pay out later are visible to the AI', () => {
     expect(ice).toBeGreaterThan(fire * 0.5);
   });
 
-  it('Spiritual Guardians actually damages an enemy that starts its turn in it', () => {
+  it('Spirit Guardians actually damages an enemy that starts its turn in it', () => {
     // The thing the review was asked to check. It is silent on cast — no
     // events at all — so nothing downstream of the cast proves it works.
     const c = rig(1);
@@ -222,7 +222,7 @@ describe('against the SRD text', () => {
     expect(body).toContain("'4d6'");
   });
 
-  it('Spiritual Guardians scales with the slot and halves Speed in the aura', () => {
+  it('Spirit Guardians scales with the slot and halves Speed in the aura', () => {
     // SRD: "+1d8 for each spell slot level above 3", and "Any other creature's
     // Speed is halved in the Emanation". The second was missing outright.
     expect(SPELLS['spiritual-guardians']!.upcast, 'must be offered at higher slots').toBe(true);
@@ -242,6 +242,6 @@ describe('against the SRD text', () => {
     for (let i = 0; i < 30 && c.activeId !== 'f0'; i++) c.apply({ kind: 'endTurn' });
     expect(c.activeId, 'never reached the ogre').toBe('f0');
     expect(c.state.combatants['f0']!.turn.movementMax,
-      'Spiritual Guardians must halve Speed inside the aura').toBe(Math.floor(full / 2));
+      'Spirit Guardians must halve Speed inside the aura').toBe(Math.floor(full / 2));
   });
 });

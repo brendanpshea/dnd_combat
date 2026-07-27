@@ -337,12 +337,12 @@ export function spellTargetSets(
     }
   } else if (t.kind === 'self') {
     // Offer when it would do something: a burst that touches an adjacent enemy,
-    // or Spiritual Guardians' aura reaching an enemy within 15 ft.
+    // or Spirit Guardians' aura reaching an enemy within 15 ft.
     // A burst wants an enemy in it *now*. An aura is different: it lasts, and
     // the normal way to use one is to raise it as the line closes, so gating it
     // on an enemy already standing in the 15 ft aura made it nearly unofferable
     // — the AI's own engagement band parks a caster at 20 ft, so the priest
-    // stat block was offered Spiritual Guardians ten times in thirty fights.
+    // stat block was offered Spirit Guardians ten times in thirty fights.
     // One move of a 30 ft walker is the window that matters; evaluate() prices
     // the enemies who are actually in the aura, so a wider gate costs nothing
     // but a candidate.
