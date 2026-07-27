@@ -55,6 +55,26 @@ export interface ConsumableData {
    */
   charges?: number;
   /**
+   * When the charges come back. Defaults to every long rest.
+   *
+   * `'never'` means once per run, and it is what the conjuration items use.
+   * The SRD's clocks for those are days — a Marble Elephant is once per seven,
+   * a brazier once per dawn — and the arena long-rests between every wave, so
+   * "once per rest" would have meant a CR 5 ally in every single fight. That is
+   * not a translation of the SRD's intent, it is the opposite of it.
+   *
+   * The measurement is what settled it. Party win rate at level 5, N=100, with
+   * one conjuration item added and nothing else changed:
+   *
+   *   bare 60%   Golden Lion 62%   Bronze Griffon 67%
+   *              Marble Elephant 72%   Fire Elemental 80%
+   *
+   * A clean ladder by challenge rating, and +20 points for the elemental — the
+   * largest single item effect in the game by a wide margin. Once a run, that
+   * is a card you hold for the wave that needs it. Once a wave, it is the game.
+   */
+  refills?: 'rest' | 'never';
+  /**
    * Who may use it. Wands that the SRD requires a spellcaster to attune to are
    * gated here; the ones that need no attunement at all (Wand of Magic
    * Missiles) are left open, which is what makes them worth a fighter's slot.
@@ -76,6 +96,23 @@ export interface ConsumableData {
 /** A wand/staff rather than a one-shot: spends charges, is never consumed. */
 export function isCharged(item: ConsumableData): boolean {
   return item.charges !== undefined;
+}
+
+/**
+ * Charges left in a carried wand.
+ *
+ * Falls back to FULL when the pool is missing, which matters more than it
+ * looks: `itemUses` is built by `buildCharacter` from the inventory it is
+ * handed, so a wand pushed onto a combatant's inventory *after* it was built
+ * has no pool — and the strict reading made that wand permanently unusable
+ * with nothing to say why. The campaign never hits it (a fight rebuilds
+ * everyone from the roster), which is exactly what makes it the kind of bug
+ * that survives: it only bites hand-built combatants, which is to say tests and
+ * measurement scripts. It cost me a measurement that read +0.0% for four items
+ * before I noticed they had never been used at all.
+ */
+export function chargesLeft(c: { itemUses?: Record<Id, { current: number; max: number }> }, item: ConsumableData): number {
+  return c.itemUses?.[item.id]?.current ?? item.charges ?? 0;
 }
 
 function healPotion(dice: string) {
@@ -426,6 +463,109 @@ export const ITEMS: Record<Id, ConsumableData> = {
         events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'restrained', sourceId: userId });
       }
       return events;
+    },
+  },
+
+  // --- conjurations ----------------------------------------------------------
+  //
+  // Everything here is the Staff of the Python's shape with a different stat
+  // block, which is the point of having built `summonCombatant` as a general
+  // thing: these five are data and an apply, and the engine did not move.
+  //
+  // ONE CHARGE EACH, refilled on a long rest. The SRD's real clocks are days —
+  // a Marble Elephant is once per seven, a brazier once per dawn — and days do
+  // not exist in this game. One per rest is the honest translation of "not
+  // again today", and in the arena, which rests between waves, that is one
+  // conjuration per fight: already the largest single thing an action can buy.
+  'figurine-marble-elephant': {
+    id: 'figurine-marble-elephant', name: 'Marble Elephant', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1400, rarity: 'rare', charges: 1, refills: 'never', summons: 'elephant',
+    // The only one of the SRD's eight figurines this bestiary can field. The
+    // rest want a griffon, a lion, a mastiff, an owl or a raven, and adding
+    // those would enrol them in the arena roster as opposition as well —
+    // a monster added here shows up in waves the same day.
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'elephant', summonerId: userId, near: user.position, idHint: 'figurine-marble-elephant',
+      });
+    },
+  },
+  'figurine-bronze-griffon': {
+    id: 'figurine-bronze-griffon', name: 'Bronze Griffon', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1400, rarity: 'rare', charges: 1, refills: 'never', summons: 'griffon',
+    // CR 2, two Rend attacks. The griffon already existed as opposition; this
+    // is the same stat block pointed the other way, which is exactly what a
+    // figurine is.
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'griffon', summonerId: userId, near: user.position, idHint: 'figurine-bronze-griffon',
+      });
+    },
+  },
+  'figurine-golden-lion': {
+    id: 'figurine-golden-lion', name: 'Golden Lion', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1100, rarity: 'rare', charges: 1, refills: 'never', summons: 'lion',
+    // CR 1, and cheap for it: 22 hit points does not last, but Pack Tactics
+    // means it hands advantage to whoever is already in melee. The SRD makes
+    // these in pairs; one is enough here, where a second body is worth more
+    // than in a game with a party of six.
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'lion', summonerId: userId, near: user.position, idHint: 'figurine-golden-lion',
+      });
+    },
+  },
+  'brazier-fire-elemental': {
+    id: 'brazier-fire-elemental', name: 'Brazier of Commanding Fire Elementals', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'fire-elemental',
+    // The four elemental items are all CR 5 and all Rare, which is the SRD's
+    // own pricing and a great deal of ally for one action. The level gate on
+    // rare items is what keeps that honest.
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'fire-elemental', summonerId: userId, near: user.position, idHint: 'brazier-fire-elemental',
+      });
+    },
+  },
+  'bowl-water-elemental': {
+    id: 'bowl-water-elemental', name: 'Bowl of Commanding Water Elementals', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'water-elemental',
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'water-elemental', summonerId: userId, near: user.position, idHint: 'bowl-water-elemental',
+      });
+    },
+  },
+  'censer-air-elemental': {
+    id: 'censer-air-elemental', name: 'Censer of Controlling Air Elementals', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'air-elemental',
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'air-elemental', summonerId: userId, near: user.position, idHint: 'censer-air-elemental',
+      });
+    },
+  },
+  'stone-earth-elemental': {
+    id: 'stone-earth-elemental', name: 'Stone of Controlling Earth Elementals', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'earth-elemental',
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'earth-elemental', summonerId: userId, near: user.position, idHint: 'stone-earth-elemental',
+      });
     },
   },
 };

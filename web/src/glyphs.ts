@@ -15,7 +15,7 @@ const GLYPH: Record<string, string> = {
   bard: '🪕',
   'goblin-warrior': '👺', 'goblin-boss': '👹', skeleton: '💀',
   bandit: '🥷', 'bandit-captain': '🏴‍☠️', 'dire-wolf': '🐺', ghoul: '🧛', 'giant-spider': '🕷️', acolyte: '🧎',
-  kobold: '🦎', scout: '🏹', orc: '🧌', 'brown-bear': '🐻', 'cult-fanatic': '🕯️', 'animated-armor': '🛡️',
+  kobold: '🦎', scout: '🏹', orc: '🧌', 'brown-bear': '🐻', lion: '🦁', 'cult-fanatic': '🕯️', 'animated-armor': '🛡️',
   wolf: '🐺', zombie: '🧟', ogre: '🦣',
   knight: '🤺', minotaur: '🐂', ettin: '🗿',
   priest: '🙏', 'ogre-mage': '🧞',

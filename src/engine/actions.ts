@@ -12,7 +12,7 @@ import { posEq, cellAt, isDown, isIncapacitated } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
-import { ITEMS, isCharged } from '../data/items.js';
+import { ITEMS, isCharged, chargesLeft } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
@@ -257,7 +257,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       const stack = actor.inventory.find((s) => s.itemId === action.itemId && s.qty > 0);
       if (!stack) return false;
       // A wand is drained, not spent: what runs out is charges, not the item.
-      if (isCharged(item) && (actor.itemUses?.[action.itemId]?.current ?? 0) <= 0) return false;
+      if (isCharged(item) && chargesLeft(actor, item) <= 0) return false;
       // Wands the SRD gates behind attunement by a spellcaster. Wand of Magic
       // Missiles needs no attunement at all and so carries no requirement,
       // which is exactly what makes it worth a fighter's pack slot.
@@ -640,8 +640,11 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (item.useTime === 'action' && !actor.featureIds.includes('fast-hands')) actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
       if (isCharged(item)) {
-        const pool = actor.itemUses?.[action.itemId];
-        if (pool) pool.current -= 1;
+        // Create the pool if it is missing (see chargesLeft) so a wand added to
+        // an already-built combatant still drains rather than firing forever.
+        actor.itemUses ??= {};
+        actor.itemUses[action.itemId] ??= { current: item.charges!, max: item.charges! };
+        actor.itemUses[action.itemId]!.current -= 1;
       } else {
         const stack = actor.inventory.find((s) => s.itemId === action.itemId)!;
         stack.qty -= 1;

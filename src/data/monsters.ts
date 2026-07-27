@@ -284,6 +284,21 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['bear-claws', 'bear-bite'],
     attacksPerAction: 2, // bite + claws
   },
+  /**
+   * SRD CR 1. Fragile (22 HP) and fast (50 ft), with Pack Tactics — which is
+   * the whole creature: one lion is a nuisance and three are a problem, and
+   * the generator's headcount roll decides which you get.
+   */
+  lion: {
+    id: 'lion', name: 'Lion',
+    ac: 12, hp: 22, speed: 50,
+    creatureType: 'beast',
+    size: 'large',
+    abilities: { str: 17, dex: 15, con: 11, int: 3, wis: 12, cha: 8 },
+    weaponIds: ['lion-rend'],
+    attacksPerAction: 2,
+    featureIds: ['pack-tactics'],
+  },
   'cult-fanatic': {
     id: 'cult-fanatic', name: 'Cult Fanatic',
     ac: 13, hp: 33, speed: 30,
@@ -1774,6 +1789,7 @@ export const MONSTER_XP: Record<Id, number> = {
   'ogre-mage': 2900,
   guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
   'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
+  lion: 200,
   gargoyle: 450, 'fire-elemental': 1800, 'water-elemental': 1800, 'earth-elemental': 1800, 'air-elemental': 1800,
   sprite: 50, satyr: 100, dryad: 200, 'green-hag': 700, unicorn: 1800,
   cockatrice: 100, harpy: 200, manticore: 700, owlbear: 700, gorgon: 1800,
