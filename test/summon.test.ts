@@ -7,7 +7,7 @@ import { chooseAction } from '../src/ai/greedy.js';
 import { checkWinner } from '../src/engine/rules/attack.js';
 import { actsOnItsOwn, livingParty, summonCombatant } from '../src/engine/rules/summon.js';
 import {
-  newCampaign, buildCampaignParty, readBackSurvivors, rarityOf, SHOP_STOCK, TREASURE_POOL_FOR,
+  newCampaign, buildCampaignParty, readBackSurvivors, rarityOf, isObtainable, TREASURE_POOL_FOR,
 } from '../src/campaign/campaign.js';
 import type { MapData } from '../src/data/maps.js';
 import type { Id } from '../src/engine/types.js';
@@ -195,7 +195,7 @@ describe('placement', () => {
 
 describe('the staff reaches a player', () => {
   it('is stocked and rated', () => {
-    expect(SHOP_STOCK).toContain('staff-python' as Id);
+    expect(isObtainable('staff-python' as Id)).toBe(true);
     expect(rarityOf('staff-python')).toBe('uncommon');
   });
 

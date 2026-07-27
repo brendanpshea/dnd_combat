@@ -47,6 +47,13 @@ export interface LootProps {
    * adventure mode, which has no quasit in its rafters.
    */
   chorus?: ReactNode;
+  /**
+   * Bounty awards still to be chosen from. Continue is withheld while any
+   * remain: an award you can walk past by mistake is worse than no award.
+   */
+  spoils?: ReactNode;
+  /** True while an award is unresolved, so Continue stays out of reach. */
+  spoilsPending?: boolean;
   onContinue(): void;
 }
 
@@ -69,7 +76,7 @@ function useCountUp(from: number, to: number, ms = 700): number {
   return n;
 }
 
-export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, chorus, onContinue }: LootProps) {
+export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, chorus, spoils, spoilsPending, onContinue }: LootProps) {
   // On a level-up, open the gains modal straight away — the gains are the point.
   const [showLevel, setShowLevel] = useState<boolean>(!!leveledTo);
   const level = partyLevelOf(campaign);
@@ -185,9 +192,13 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
         </div>
       )}
 
+      {spoils}
+
       {chorus}
 
-      <button className="primary" onClick={onContinue}>Continue</button>
+      {spoilsPending
+        ? <p className="hint">Choose your reward to go on.</p>
+        : <button className="primary" onClick={onContinue}>Continue</button>}
     </div>
   );
 }

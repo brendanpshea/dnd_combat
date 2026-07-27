@@ -19,7 +19,7 @@ import { chooseAction } from '../src/ai/greedy.js';
 import {
   newCampaign, randomizeParty, buildCampaignParty, partyLevelOf, longRest,
   applyArenaVictory, reviveParty, shopOffering, SHOP_STOCK, itemPrice, itemName,
-  buyItem, equipItem, equipBlocked, MAX_LEVEL, applyPartyTemplate, setPartyClass,
+  buyItem, equipItem, equipBlocked, addItem, MAX_LEVEL, applyPartyTemplate, setPartyClass,
   type CampaignState,
 } from '../src/campaign/campaign.js';
 import {
@@ -32,6 +32,8 @@ import {
 import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../src/arena/day.js';
 import { revivalCost, payRevival, isFirstDefeat } from '../src/arena/revival.js';
 import { runComplete, summarise, type MedalTier } from '../src/arena/medal.js';
+import { bountiesFor, claimedBounties, spellsCastBy } from '../src/arena/bounties.js';
+import { spoilOffer, spoilTierFor } from '../src/arena/spoils.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { parseMap } from '../src/data/maps.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -151,6 +153,11 @@ interface Tally {
   /** Win rate on the first crack at a wave, versus every retry after it. */
   /** Armor actually put on after a shop visit (see equipUpgrades). */
   armorEquipped: Map<Id, number>;
+  /** Bounties earned, awards taken, and any award that came up empty. */
+  bountiesClaimed: Map<Id, number>;
+  spoilsTaken: Map<Id, number>;
+  spoilTiers: Map<string, number>;
+  spoilsEmpty: number;
   firstTry: { fights: number; wins: number };
   retry: { fights: number; wins: number };
   /** `--days` only: how the two-fight day actually plays out. */
@@ -198,6 +205,7 @@ const T: Tally = {
   shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalXp: [], finalWaves: [], endStats: [],
   partyDowns: 0, heroTurns: 0,
   armorEquipped: new Map(),
+  bountiesClaimed: new Map(), spoilsTaken: new Map(), spoilTiers: new Map(), spoilsEmpty: 0,
   firstTry: { fights: 0, wins: 0 }, retry: { fights: 0, wins: 0 },
   day: {
     morning: { fights: 0, wins: 0 }, afternoon: { fights: 0, wins: 0 },
@@ -284,7 +292,7 @@ function heroAction(style: PlayStyle, state: GameState, id: Id, round: number): 
  */
 function fight(
   c: CampaignState, runSeed: number, level: number, wave: number, attempt = 1,
-  day?: { half: DayHalf },
+  day?: { half: DayHalf; dayNumber: number },
 ): boolean | 'stalled' {
   const half = day?.half ?? 'morning';
   const w = buildWave(runSeed, level, wave, undefined, 0, half);
@@ -298,6 +306,10 @@ function fight(
   const foes = w.encounter.members.map((mid, i) =>
     buildMonster(mid, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
       w.encounter.members.length > 1 ? String(i + 1) : ''));
+  // The optional objectives for this wave, named the way the arena screen names
+  // them. The harness never modelled these, which meant the entire bounty
+  // system — and now the entire supply of permanent magic — was invisible to
+  // every measurement ever taken.
   const combat = new Combat({
     // The *encounter* is deliberately the same every attempt (buildWave seeds
     // off the run and the wave, so a wave you failed is a problem to solve
@@ -309,6 +321,8 @@ function fight(
     map: w.map,
     combatants: [...party, ...foes],
   });
+
+  const offered = bountiesFor(runSeed, wave, party, combat.state);
 
   // Who is who, so damage can be attributed to a class rather than an id.
   const classOf = new Map<Id, Id>();
@@ -402,6 +416,26 @@ function fight(
     const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
     applyArenaVictory(c, survivors, w.encounter.rawXp, combat.state.rng,
       membersCoinXP(w.encounter.members), day ? { downedAtZero: true } : {});
+    // Bounties, and the awards they carry. Permanent magic has no other source,
+    // so if this never fires the whole item economy is dead and the sweep would
+    // report a perfectly healthy-looking run with an empty pack.
+    const claimed = claimedBounties(offered, {
+      events: combat.log, state: combat.state, party: survivors,
+      spellsUsedBefore: new Set<Id>(), rounds: combat.state.round,
+      foes: w.encounter.members.length,
+    });
+    for (const [i, b] of claimed.entries()) {
+      bump(T.bountiesClaimed, b.id);
+      const offer = spoilOffer(runSeed, day?.dayNumber ?? wave, half, i, level);
+      if (offer.length === 0) { T.spoilsEmpty += 1; continue; }
+      // A player takes the shiniest thing on the table. Not always right, but
+      // it is the choice that needs no knowledge of the party, and it keeps the
+      // measurement about supply rather than about how clever the picker is.
+      const take = [...offer].sort((a, b2) => (itemPrice(b2) ?? 0) - (itemPrice(a) ?? 0))[0]!;
+      addItem(c.characters[T.fights % c.characters.length]!.inventory, take);
+      bump(T.spoilsTaken, take);
+      bump(T.spoilTiers, spoilTierFor(level));
+    }
     // A day is one payday: the morning is the toll you pay to reach the
     // afternoon, not a second purse. Paying both would double a day's income
     // against the old loop's and make every shop comparison meaningless.
@@ -536,7 +570,7 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
 
     let outcome: boolean | 'stalled';
     try {
-      outcome = fight(c, seed, dayLevel, run.wave, retries + 1, { half: 'morning' });
+      outcome = fight(c, seed, dayLevel, run.wave, retries + 1, { half: 'morning', dayNumber: dayOf(run) });
     } catch (err) {
       T.errors.push({ run: seed, where: `day ${dayOf(run)} morning`, message: String(err) });
       break;
@@ -554,7 +588,7 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
       if ((meal.hitDiceSpent ?? 0) === 0) T.day.lunchBroke += 1;
 
       try {
-        outcome = fight(c, seed, dayLevel, run.wave, retries + 1, { half: 'afternoon' });
+        outcome = fight(c, seed, dayLevel, run.wave, retries + 1, { half: 'afternoon', dayNumber: dayOf(run) });
       } catch (err) {
         T.errors.push({ run: seed, where: `day ${dayOf(run)} afternoon`, message: String(err) });
         break;
@@ -883,6 +917,24 @@ if (DAYS) {
     (d.brokeOnDay.length ? ` — on day ${median(d.brokeOnDay)} typically, earliest ${Math.min(...d.brokeOnDay)}` : ''));
   if (d.insolvent === 0) {
     console.log(`${FLAG}nobody ever went under — the defeat tax is not a loss condition, only a fee`);
+  }
+}
+
+{
+  const claimed = [...T.bountiesClaimed.entries()].sort((a, b) => b[1] - a[1]);
+  const taken = [...T.spoilsTaken.entries()].sort((a, b) => b[1] - a[1]);
+  const total = [...T.spoilsTaken.values()].reduce((a, b) => a + b, 0);
+  console.log('\n--- bounties and awards ---');
+  console.log(`  bounties claimed ${[...T.bountiesClaimed.values()].reduce((a, b) => a + b, 0)}` +
+    `   awards taken ${total}   (${[...T.spoilTiers.entries()].map(([k, n]) => `${k} ${n}`).join(', ') || 'none'})`);
+  console.log(`  most claimed: ${claimed.slice(0, 5).map(([id, n]) => `${id}×${n}`).join(', ') || 'none'}`);
+  console.log(`  most taken: ${taken.slice(0, 6).map(([id, n]) => `${itemName(id)}×${n}`).join(', ') || 'none'}`);
+  console.log(`  distinct items awarded: ${T.spoilsTaken.size}`);
+  if (total === 0) {
+    console.log(`${FLAG}no award ever reached a player — permanent magic has no other source`);
+  }
+  if (T.spoilsEmpty > 0) {
+    console.log(`${FLAG}${T.spoilsEmpty} bounties paid an EMPTY award — the pool was exhausted`);
   }
 }
 

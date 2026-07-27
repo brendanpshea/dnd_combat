@@ -6,7 +6,7 @@ import { ITEMS, isCharged } from '../src/data/items.js';
 import { WEAPONS, VICIOUS_WEAPONS, weaponCategory, baseWeaponId } from '../src/data/weapons.js';
 import { TRINKETS } from '../src/data/trinkets.js';
 import {
-  newCampaign, buildCampaignParty, longRest, readBackSurvivors, rarityOf, SHOP_STOCK,
+  newCampaign, buildCampaignParty, longRest, readBackSurvivors, rarityOf, isObtainable,
 } from '../src/campaign/campaign.js';
 import { parseMap, type MapData } from '../src/data/maps.js';
 import type { Combatant, Id } from '../src/engine/types.js';
@@ -256,7 +256,7 @@ describe('everything new reaches a player', () => {
     const wands = Object.values(ITEMS).filter(isCharged).map((i) => i.id);
     expect(wands.length).toBeGreaterThanOrEqual(4);
     for (const id of [...wands, ...VICIOUS_WEAPONS, 'wand-war-mage-1', 'wand-war-mage-2']) {
-      expect(SHOP_STOCK, `${id} is not stocked`).toContain(id);
+      expect(isObtainable(id), `${id} cannot be obtained by any route`).toBe(true);
       expect(['uncommon', 'rare']).toContain(rarityOf(id));
     }
   });

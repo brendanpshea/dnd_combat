@@ -6,7 +6,7 @@ import { legalActions } from '../src/engine/actions.js';
 import { resolveAttack } from '../src/engine/rules/attack.js';
 import { savingThrow } from '../src/engine/rules/saves.js';
 import { SHIELDS, isShield, shieldBonus, shieldRangedBonus, acOf } from '../src/data/armor.js';
-import { rarityOf, SHOP_STOCK, itemName, itemPrice, equipBlocked, newCampaign } from '../src/campaign/campaign.js';
+import { rarityOf, isObtainable, itemName, itemPrice, equipBlocked, newCampaign } from '../src/campaign/campaign.js';
 import { BOUNTIES } from '../src/arena/bounties.js';
 import { parseMap, type MapData } from '../src/data/maps.js';
 import type { Combatant, Id } from '../src/engine/types.js';
@@ -251,7 +251,7 @@ describe('all of it reaches a player', () => {
       'ring-of-the-ram', 'ring-free-action', 'ring-evasion',
       'wand-paralysis', 'staff-healing', 'shield-arrow-catching',
     ] as Id[]) {
-      expect(SHOP_STOCK, `${id} is not stocked`).toContain(id);
+      expect(isObtainable(id), `${id} cannot be obtained by any route`).toBe(true);
       expect(rarityOf(id), id).toBe('rare');
       expect(itemPrice(id), id).toBeGreaterThan(0);
     }
