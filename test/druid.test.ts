@@ -1,5 +1,5 @@
 /**
- * Druid: Wild Shape and Thorn Whip.
+ * Druid: Wild Shape.
  *
  * Wild Shape is the 2024 version, which keeps the druid's hit points and hands
  * it temporary ones — so these tests are mostly about the swap being complete
@@ -141,44 +141,6 @@ describe('Wild Shape', () => {
   });
 });
 
-describe('Thorn Whip', () => {
-  it('drags the target toward the druid on a hit', () => {
-    for (let seed = 1; seed <= 60; seed++) {
-      const c = new Combat({
-        seed, width: 14, height: 10,
-        combatants: [pc('druid', 5, { x: 3, y: 3 }, 'dru'), foe('scout', { x: 8, y: 3 }, 'sc')],
-      });
-      const before = c.state.combatants['sc']!.position.x;
-      const events = SPELLS['thorn-whip']!.cast({
-        state: c.state, casterId: 'dru', slotLevel: 0, targetIds: ['sc'], positions: [],
-      });
-      const atk = events.find((e) => e.type === 'attackRolled');
-      if (atk?.type !== 'attackRolled' || !atk.hit) continue;
-      expect(events.some((e) => e.type === 'damageDealt' && e.damageType === 'piercing')).toBe(true);
-      expect(c.state.combatants['sc']!.position.x, 'hauled toward the caster').toBeLessThan(before);
-      return;
-    }
-    throw new Error('thorn whip never hit across 60 seeds');
-  });
-
-  it('a miss moves nobody', () => {
-    for (let seed = 1; seed <= 60; seed++) {
-      const c = new Combat({
-        seed, width: 14, height: 10,
-        combatants: [pc('druid', 5, { x: 3, y: 3 }, 'dru'), foe('scout', { x: 8, y: 3 }, 'sc')],
-      });
-      const before = { ...c.state.combatants['sc']!.position };
-      const events = SPELLS['thorn-whip']!.cast({
-        state: c.state, casterId: 'dru', slotLevel: 0, targetIds: ['sc'], positions: [],
-      });
-      const atk = events.find((e) => e.type === 'attackRolled');
-      if (atk?.type !== 'attackRolled' || atk.hit) continue;
-      expect(c.state.combatants['sc']!.position).toEqual(before);
-      return;
-    }
-    throw new Error('thorn whip never missed across 60 seeds');
-  });
-});
 
 describe('Entangle', () => {
   it('vines catch on a Strength save, not a Dexterity one', () => {

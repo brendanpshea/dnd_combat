@@ -529,10 +529,6 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
 
   // ---- fiends, mid and top ----------------------------------------------
-  'shadow-demon-claws': {
-    id: 'shadow-demon-claws', name: 'Claws', damage: '2d6', damageType: 'psychic',
-    properties: ['finesse'], melee: true,
-  },
   'succubus-claws': {
     id: 'succubus-claws', name: 'Claws', damage: '1d6', damageType: 'slashing',
     properties: ['finesse'], melee: true, extraDamage: { dice: '3d6', type: 'psychic' },

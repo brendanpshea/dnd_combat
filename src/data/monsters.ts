@@ -517,7 +517,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['fey-charm'],
     weaponIds: ['dryad-club'],
     // A 2nd-level slot so Web (its control spell) is actually castable.
-    spellcasting: { ability: 'wis', slots: [3, 1], spellIds: ['thorn-whip', 'cure-wounds', 'web'] },
+    spellcasting: { ability: 'wis', slots: [3, 1], spellIds: ['starry-wisp', 'cure-wounds', 'web'] },
   },
   'green-hag': {
     id: 'green-hag', name: 'Green Hag',
@@ -611,24 +611,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['mephit-claws-dust'],
     immunities: ['poison'],
   },
-  'mud-mephit': {
-    id: 'mud-mephit', name: 'Mud Mephit',
-    deathBurst: { dice: '2d4', type: 'bludgeoning', save: { ability: 'dex', dc: 10 }, radius: 10 },
-    ac: 11, hp: 27, speed: 20,
-    creatureType: 'elemental',
-    abilities: { str: 8, dex: 12, con: 12, int: 9, wis: 11, cha: 7 },
-    weaponIds: ['mephit-claws-mud'],
-    immunities: ['poison'],
-  },
-  'smoke-mephit': {
-    id: 'smoke-mephit', name: 'Smoke Mephit',
-    deathBurst: { dice: '2d4', type: 'necrotic', save: { ability: 'dex', dc: 10 }, radius: 10 },
-    ac: 12, hp: 22, speed: 30,
-    creatureType: 'elemental',
-    abilities: { str: 6, dex: 14, con: 12, int: 10, wis: 10, cha: 11 },
-    weaponIds: ['mephit-claws-dust'],
-    immunities: ['fire', 'poison'],
-  },
   'ice-mephit': {
     id: 'ice-mephit', name: 'Ice Mephit',
     deathBurst: { dice: '2d4', type: 'cold', save: { ability: 'dex', dc: 10 }, radius: 10 },
@@ -665,18 +647,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // ---- fiends, mid and top ----------------------------------------------
   // The type had six members, holes at 450 and 1,100, and nothing above
   // 2,300 -- the shallowest well-supported type in the SRD.
-  'shadow-demon': {
-    id: 'shadow-demon', name: 'Shadow Demon',
-    ac: 13, cr: 4, hp: 66, speed: 30,
-    creatureType: 'fiend',
-    abilities: { str: 1, dex: 17, con: 12, int: 14, wis: 13, cha: 14 },
-    savingThrowProfs: ['dex', 'cha'],
-    weaponIds: ['shadow-demon-claws'],
-    resistances: ['acid', 'fire', 'necrotic', 'thunder'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
-    immunities: ['cold', 'lightning', 'poison'],
-    vulnerabilities: ['radiant'],
-  },
   succubus: {
     id: 'succubus', name: 'Succubus',
     ac: 15, cr: 4, hp: 71, speed: 30,
@@ -1055,12 +1025,12 @@ export const MONSTERS: Record<Id, MonsterData> = {
     // Six slots, not nine. At [4,3,2] the druid could cast a leveled spell every
     // round of a fight that lasts six and never once reach for its cantrip,
     // which made Starry Wisp dead data. A caster should run dry and fall back.
-    // Thorn Whip rather than Starry Wisp: a druid holding Moonbeam and Call
-    // Lightning has two spells that re-fire for free every round, so a plain
-    // damage cantrip never wins its action. Thorn Whip does something the
-    // leveled spells cannot — it drags a hero back INTO the beam it is already
-    // standing in.
-    spellcasting: { ability: 'wis', slots: [3, 2, 1], spellIds: ['thorn-whip', 'moonbeam', 'call-lightning'] },
+    // Poison Spray rather than Starry Wisp: a druid holding Moonbeam and Call
+    // Lightning has two spells that re-fire for free every round, so a weak
+    // damage cantrip never wins its action. Poison Spray is the hardest-hitting
+    // cantrip on the SRD druid list (1d12, Constitution save) and lands often
+    // enough to be worth the turn.
+    spellcasting: { ability: 'wis', slots: [3, 2, 1], spellIds: ['poison-spray', 'moonbeam', 'call-lightning'] },
   },
   'apprentice-mage': {
     id: 'apprentice-mage', name: 'Apprentice Mage',
@@ -1668,8 +1638,8 @@ export const MONSTER_XP: Record<Id, number> = {
   // Steam were the wrong way round. Mud and Smoke are not in SRD 5.2.1 at all,
   // and keep their 2014 CR 1/4.
   'dust-mephit': 100, 'ice-mephit': 100, 'magma-mephit': 100,
-  'steam-mephit': 50, 'mud-mephit': 50, 'smoke-mephit': 50,
-  'shadow-demon': 1100, succubus: 1100, 'bearded-devil': 700, 'night-hag': 1800,
+  'steam-mephit': 50,
+  succubus: 1100, 'bearded-devil': 700, 'night-hag': 1800,
   'chain-devil': 3900, hezrou: 3900, glabrezu: 5000, 'horned-devil': 7200,
   worg: 100, 'rust-monster': 100, griffon: 450, ettercap: 450,
   basilisk: 700, 'winter-wolf': 700, roper: 1800, bulette: 1800, remorhaz: 7200,

@@ -736,8 +736,8 @@ describe('creature type ceilings', () => {
  * the gaps were ours, not the source material's.
  */
 describe('mephits, fiends and monstrosities', () => {
-  const MEPHITS = ['dust-mephit', 'mud-mephit', 'smoke-mephit', 'ice-mephit', 'magma-mephit', 'steam-mephit'];
-  const FIENDS = ['shadow-demon', 'succubus', 'bearded-devil', 'night-hag', 'chain-devil', 'hezrou', 'glabrezu', 'horned-devil'];
+  const MEPHITS = ['dust-mephit', 'ice-mephit', 'magma-mephit', 'steam-mephit'];
+  const FIENDS = ['succubus', 'bearded-devil', 'night-hag', 'chain-devil', 'hezrou', 'glabrezu', 'horned-devil'];
   const MONSTROSITIES = ['worg', 'rust-monster', 'griffon', 'ettercap', 'basilisk', 'winter-wolf', 'roper', 'bulette', 'remorhaz'];
   const ALL = [...MEPHITS, ...FIENDS, ...MONSTROSITIES, 'tyrannosaurus'];
 
@@ -922,7 +922,9 @@ describe('signature abilities', () => {
   // a rider, and the choice of where to kill it does not exist.
   it('mephits and magmin go off when they die', () => {
     const bursty = Object.values(MONSTERS).filter((m) => m.deathBurst);
-    expect(bursty.length, 'nothing bursts').toBeGreaterThanOrEqual(6);
+    // Five: four mephits and the magmin. Was six, until Mud and Smoke Mephit
+    // were dropped for being in neither SRD.
+    expect(bursty.length, 'nothing bursts').toBeGreaterThanOrEqual(5);
     for (const m of bursty) expect(m.deathBurst!.save, m.id).toBeDefined();
   });
 

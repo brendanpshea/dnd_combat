@@ -92,7 +92,6 @@ const DELIBERATE: Record<string, string> = {
  * misspelling cannot hide among them.
  */
 const NOT_IN_SRD: Record<string, string> = {
-  'thorn-whip': 'A 2014 druid cantrip that SRD 5.2.1 does not carry at all.',
   'blindness': 'SRD calls it "Blindness/Deafness". There is no deafened condition in this engine, so the implementation is the blindness half and the name says so rather than over-claiming.',
   'breath-weapon': 'Not an SRD spell — the dragonborn species trait, implemented through the spell system so it can reuse cone targeting and saves.',
 };
