@@ -21,8 +21,9 @@ import {
   type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
-  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE,
+  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck,
 } from '../../src/campaign/campaign.js';
+import { SKILL_LABEL } from '../../src/data/classes.js';
 import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
@@ -51,6 +52,10 @@ import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
+import { SkillGambit } from './SkillGambit.js';
+import {
+  loreSkillsFor, loreTargets, loreDc, dossierFor, loreKey, studyFor,
+} from '../../src/arena/lore.js';
 import {
   stallVisitOf, stallPrice, stallResale, type StallVisit,
 } from '../../src/arena/stall.js';
@@ -185,6 +190,19 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // Reading the visit is what creates it, so nothing has to remember to reset
   // the stall at dawn. See arena/stall.ts.
   const visit = stallVisitOf(run.stall, dayOf(run));
+
+  /**
+   * Every creature behind any of the three doors — the study looks at all of
+   * them, because the point is to inform which door you take, and a check that
+   * only saw behind the door you had already chosen would arrive too late.
+   */
+  const allFoes = gates.flatMap((g) => g.wave.encounter.members);
+  const study = studyFor(run.lore, dayOf(run), half);
+  const lensesOffered = loreSkillsFor(allFoes);
+  /** Creatures this run has successfully placed, by id. */
+  const known = new Set<Id>(
+    study?.success ? loreTargets(allFoes, study.skill) : [],
+  );
 
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
   const setVisit = (next: StallVisit) => {
@@ -718,8 +736,72 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     <span className="gate-count">
                       {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
                     </span>
+                    {/* What the study turned up about what is behind THIS door.
+                        Left on the card rather than shown in a modal: the whole
+                        point is the choice you make after reading it. */}
+                    {known.size > 0 && (() => {
+                      const seen = [...new Set(g.wave.encounter.members)]
+                        .filter((id) => known.has(id))
+                        .map(dossierFor)
+                        .filter((d): d is NonNullable<typeof d> => d !== undefined);
+                      if (seen.length === 0) return null;
+                      return (
+                        <span className="dossier">
+                          {seen.map((d) => (
+                            <span key={d.monsterId} className="dossier-row">
+                              <b>{d.name}</b> AC {d.ac} · {d.hp} HP
+                              {d.notes.map((n) => (
+                                <span key={n} className={n.startsWith('VULNERABLE') ? 'vuln' : ''}> · {n}</span>
+                              ))}
+                            </span>
+                          ))}
+                        </span>
+                      );
+                    })()}
                   </button>
                 ))}
+              </div>
+
+              {/* One study, before you choose. Which lens is the question when a
+                  wave is mixed; the numbers are on the buttons so the choice is
+                  made with them in view. */}
+              <div className="lore-row">
+                {study ? (
+                  <span className={study.success ? 'lore-known' : 'lore-blind'}>
+                    {study.success
+                      ? `🎓 ${c.characters[study.by]?.name} placed them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}`
+                      : `🎓 ${c.characters[study.by]?.name} could not place them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}. You go in blind.`}
+                  </span>
+                ) : lensesOffered.length === 0 ? (
+                  <span className="lore-blind">Nothing out there resembles anything anyone knows.</span>
+                ) : (
+                  lensesOffered.map((skill) => {
+                    const targets = loreTargets(allFoes, skill);
+                    const dc = loreDc(allFoes, skill);
+                    return (
+                      <SkillGambit
+                        key={skill}
+                        campaign={c}
+                        skill={skill}
+                        dc={dc}
+                        note={`${targets.length} of them`}
+                        onRoll={() => {
+                          const roll = partySkillCheck(c, skill, dc);
+                          const nextRun = {
+                            ...run,
+                            lore: {
+                              key: loreKey(dayOf(run), half),
+                              skill, by: roll.by, natural: roll.natural,
+                              total: roll.total, dc: roll.dc, success: roll.success,
+                            },
+                          };
+                          setRun(nextRun); persist(c, nextRun);
+                          return roll;
+                        }}
+                      />
+                    );
+                  })
+                )}
               </div>
 
               {/* Who the selected door actually puts in front of you, named —
@@ -879,53 +961,58 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   {/* Gambits, once a morning each. A party with a bard or a
                       rogue had nothing to spend either on at the one screen
                       where a social skill plausibly matters. */}
+                  {/* The same presentation the study uses: who rolls, with
+                      what, against what — printed before you commit. These
+                      shipped first as a plain text notice, which told a player
+                      nothing about their own party and looked like a different
+                      game from the adventure shop. */}
                   <div className="stall-gambits">
                     {(Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>).map((skill) => {
                       const cfg = HAGGLE[skill];
-                      const face = skill === 'persuasion' ? '🤝 Persuade'
-                        : skill === 'deception' ? '🎭 Deceive' : '😠 Intimidate';
+                      const face = skill === 'persuasion' ? 'Persuade'
+                        : skill === 'deception' ? 'Deceive' : 'Intimidate';
                       return (
-                        <button
+                        <SkillGambit
                           key={skill}
-                          className="stall-gambit"
+                          campaign={c}
+                          skill={skill}
+                          dc={cfg.dc}
+                          label={face}
+                          note={cfg.penalty
+                            ? `${Math.round(cfg.discount * 100)}% off / ${Math.round(cfg.penalty * 100)}% up`
+                            : `${Math.round(cfg.discount * 100)}% off, no risk`}
                           disabled={visit.haggleUsed}
-                          title={visit.haggleUsed
-                            ? 'You have had your say this morning'
-                            : `DC ${cfg.dc} — ${Math.round(cfg.discount * 100)}% off, ` +
-                              `${cfg.penalty ? `${Math.round(cfg.penalty * 100)}% up if it lands badly` : 'no downside'}`}
-                          onClick={() => {
+                          disabledReason="You have had your say this morning"
+                          onRoll={() => {
                             const { roll, priceMultiplier } = attemptHaggle(c, skill);
                             setVisit({ ...visit, haggleUsed: true, priceMult: priceMultiplier });
-                            setNotice(
-                              `${c.characters[roll.by]?.name ?? 'Someone'} rolled ${roll.total} vs DC ${cfg.dc} — ` +
-                              (roll.success ? 'the price comes down.' : 'that went badly.'),
-                            );
                             refresh();
+                            return roll;
                           }}
-                        >
-                          {face}
-                          <i>{Math.round(cfg.discount * 100)}% off</i>
-                        </button>
+                        />
                       );
                     })}
-                    <button
-                      className="stall-gambit risky"
+                    <SkillGambit
+                      campaign={c}
+                      skill="sleight-of-hand"
+                      dc={STEAL_DC}
+                      label="Pocket something"
+                      note={`and Stealth · ${STEAL_FINE}g fine`}
                       disabled={visit.stealUsed}
-                      title={visit.stealUsed
-                        ? 'Once a morning is quite enough'
-                        : `Stealth AND Sleight of Hand, both DC ${STEAL_DC} — a ${STEAL_FINE}g fine if either fails`}
-                      onClick={() => {
+                      disabledReason="Once a morning is quite enough"
+                      onRoll={() => {
                         const r = attemptSteal(c, shelf);
                         setVisit({ ...visit, stealUsed: true });
                         setNotice(r.success
                           ? `Pocketed ${itemName(r.itemId!)}. Nobody saw a thing.`
                           : `Caught. ${r.fine}g gone in fines.`);
                         refresh(); persist(c, run);
+                        // Two rolls are made (Stealth AND Sleight of Hand); show
+                        // the one that decided it — the first failure, or the
+                        // sleight roll that actually lifted the goods.
+                        return r.rolls.find((x) => !x.success) ?? r.rolls[r.rolls.length - 1]!;
                       }}
-                    >
-                      🖐️ Pocket something
-                      <i>risky</i>
-                    </button>
+                    />
                   </div>
 
                   <div className="stall-tabs">

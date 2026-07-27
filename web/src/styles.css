@@ -3154,3 +3154,52 @@ button.category .count {
 .stall-tabs button.on { border-color: var(--gold); color: var(--gold); font-weight: 700; }
 .haggle-good { color: var(--green); }
 .haggle-bad { color: var(--red); }
+
+/* A visible skill check, before it is rolled: who, with what, against what.
+   The numbers go on the button because the decision is made before the dice,
+   not after them — and because nothing else in the arena tells a player what
+   their party is actually good at. */
+.skill-gambit {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  border: 1px solid #453d63;
+  background: var(--panel);
+  cursor: pointer;
+  text-align: left;
+  min-width: 148px;
+}
+.skill-gambit:hover:not(:disabled) { border-color: #6b5f95; }
+.skill-gambit.spent { opacity: 0.42; cursor: default; }
+.sg-head { display: flex; align-items: center; gap: 6px; }
+.sg-head .portrait, .sg-head img { width: 22px; height: 22px; border-radius: 50%; }
+.sg-title { font-weight: 700; font-size: 13px; }
+.sg-math { font-size: 12px; color: var(--text); }
+.sg-math b { color: var(--gold); }
+.sg-sub { display: flex; flex-wrap: wrap; gap: 5px; font-size: 10px; color: var(--muted); }
+.sg-sub i { font-style: normal; }
+.sg-prof { color: #8fe3a0; }
+.sg-sure { color: #8fe3a0; }
+.sg-hopeless { color: var(--red); }
+.odds-impossible .sg-math b { color: var(--red); }
+
+/* What the study turned up, left on the gate card — a result you dismiss is no
+   use to a choice you make afterwards. */
+.dossier {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed #453d63;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: left;
+}
+.dossier b { color: var(--text); }
+/* One creature per line, so three known monsters do not run together into a
+   paragraph the player has to parse. */
+.dossier-row { display: block; line-height: 1.35; }
+.dossier .vuln { color: #ffd76e; }
+.lore-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+.lore-known { font-size: 11px; color: #8fe3a0; }
+.lore-blind { font-size: 11px; color: var(--muted); }
