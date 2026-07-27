@@ -35,6 +35,7 @@ import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
+import { ArtImage } from './ArtImage.js';
 import type { BattleProps } from './App.js';
 import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
 import { deployFoes } from '../../src/arena/deploy.js';
@@ -289,9 +290,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               <div className="arena-foes">
                 {foeCounts(wave.encounter.members).map(({ id, n }) => (
                   <div key={id} className="arena-foe" title={MONSTERS[id]?.name ?? id}>
-                    {hasArt(id)
-                      ? <img src={tokenUrl(id)} alt="" draggable={false} />
-                      : <span className="arena-foe-glyph">👹</span>}
+                    <ArtImage
+                      id={id}
+                      {...(hasArt(id) ? { src: tokenUrl(id) } : {})}
+                      glyphClassName="arena-foe-glyph"
+                      alt=""
+                    />
                     {n > 1 && <span className="arena-foe-count">×{n}</span>}
                     <small>{MONSTERS[id]?.name ?? id}</small>
                   </div>
