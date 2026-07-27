@@ -161,10 +161,13 @@ export function generateArenaMap(
     // that never took a step BEAT one played properly on 8x8 (48% vs 40%); at 12
     // rows the same refusal to move costs 22 points, and at 20 rows, 28.
     //
-    // 12 and 16 rather than something enormous: the win rate is flat across
-    // depths (it is the ranked band that changes, not the difficulty), so this
-    // is chosen for what fits a phone screen, not for what maximises the effect.
-    height = r.value < 0.5 ? 12 : 16;
+    // 10 and 12, not 12 and 16. The win rate is flat across depths — it is the
+    // ranged band that changes, not the difficulty — so depth should be chosen
+    // for what fits a phone, and 16 does not: the board is 8 wide, so 8x16 is
+    // aspect 2.0, and the width formula in styles.css then spends about 607px
+    // of an 844px screen on the board alone, squeezing the top bar and the
+    // action bar. 12 keeps the whole effect and fits.
+    height = r.value < 0.5 ? 10 : 12;
   }
   let theme = opts.theme;
   if (theme === undefined) {

@@ -181,7 +181,7 @@ describe('encounter generation', () => {
 });
 
 describe('map generation', () => {
-  it('produces only 8-wide boards, half 12 deep and half 16', () => {
+  it('produces only 8-wide boards, half 10 deep and half 12', () => {
     let rng = seedRng(5);
     const heights: number[] = [];
     for (let i = 0; i < 200; i++) {
@@ -194,8 +194,16 @@ describe('map generation', () => {
     // position means anything: the longest possible shot on an 8x8 is 35 ft
     // while a shortbow reaches 80, so nobody ever needs to move. See the note
     // in arena/map.ts for the measurement.
-    const tall = heights.filter((h) => h === 16).length;
-    expect(heights.every((h) => h === 12 || h === 16)).toBe(true);
+    //
+    // The ceiling is a phone, not a preference. The board is 8 wide, so an
+    // aspect over ~1.5 makes the width formula in styles.css spend most of the
+    // screen height on the board and squeeze the bars around it: 8x16 is
+    // aspect 2.0 and took ~607px of an 844px phone. Depth above 12 buys
+    // nothing anyway — win rate is flat across depths, it is the ranged band
+    // that changes — so 12 is both the useful maximum and the safe one.
+    const tall = heights.filter((h) => h === 12).length;
+    expect(heights.every((h) => h === 10 || h === 12)).toBe(true);
+    expect(heights.every((h) => h / 8 <= 1.5), 'aspect over 1.5 does not fit a phone').toBe(true);
     expect(tall, `tall share ${tall}/200`).toBeGreaterThan(60);
     expect(tall).toBeLessThan(140);
   });
