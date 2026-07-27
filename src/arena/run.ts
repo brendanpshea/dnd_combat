@@ -18,6 +18,7 @@
 import type { MapData } from '../data/maps.js';
 import type { Id } from '../engine/types.js';
 import type { StallVisit } from './stall.js';
+import type { LoreStudy } from './lore.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap, type LayoutName } from './map.js';
@@ -304,6 +305,11 @@ export interface ArenaRunState {
    * haggle. Absent = nobody has been to market yet.
    */
   stall?: StallVisit;
+  /**
+   * The one study made before this fight (see lore.ts). Keyed by day and half,
+   * so switching doors neither rerolls it nor loses it.
+   */
+  lore?: LoreStudy;
   /**
    * Which of the wave's three doors is selected (see gates.ts). Optional so a
    * save written before gates existed loads and simply starts on door 0.
