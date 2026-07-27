@@ -122,7 +122,7 @@ more items from higher rarity tiers (the finale guarantees a rare drop).
 The loot pool spans gemstones and jewelry (pure sell-value, ten of each,
 sized/valued from tiny quartz to a huge diamond), a wider mundane weapon
 selection, adamantine armor (immune to critical hits), a full line of +1
-weapons/armor/shields, a couple of moon-touched (silvered) weapons that
+weapons/armor/shields, a couple of silvered weapons that
 bypass resistance without a combat bonus, seven wearable **trinkets** (a
 fourth equipment slot — Gauntlets of Ogre Power, Headband of Intellect,
 Cloak of Protection, and more), resistance and giant-strength potions, and

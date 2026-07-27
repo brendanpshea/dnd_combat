@@ -5,8 +5,8 @@ import { resolveAttack } from '../src/engine/rules/attack.js';
 import { savingThrow } from '../src/engine/rules/saves.js';
 import { moveDestinations } from '../src/engine/rules/movement.js';
 import { acOf } from '../src/data/armor.js';
-import { WEAPONS, weaponCategory, isWeaponProficient } from '../src/data/weapons.js';
-import { classScrollPool } from '../src/data/classes.js';
+import { WEAPONS, PLUS_ONE_WEAPONS, weaponCategory, isWeaponProficient } from '../src/data/weapons.js';
+import { classScrollPool, CLASSES } from '../src/data/classes.js';
 import { TRINKETS } from '../src/data/trinkets.js';
 import {
   newCampaign, itemPrice, itemName, rarityOf, equipBlocked, equipItem, bestAtSkill,
@@ -34,14 +34,50 @@ describe('Adamantine armor', () => {
 });
 
 describe('+1 weapons, armor, and shields', () => {
-  it('carry the expected attack/damage/AC bonus and price into the rare tier', () => {
+  it('carry the expected attack/damage bonus, and sit at the rarity the SRD gives them', () => {
     expect(WEAPONS['greatsword-plus1']).toMatchObject({ attackBonus: 1, damageBonus: 1 });
     expect(WEAPONS['warhammer-plus1']).toMatchObject({ attackBonus: 1, damageBonus: 1 });
-    expect(rarityOf('greatsword-plus1')).toBe('rare');
-    expect(rarityOf('scale-mail-plus1')).toBe('rare');
-    expect(rarityOf('shield-plus1')).toBe('rare');
+    // The SRD splits these three, and the game used to file all of them as
+    // rare: "Weapon, +1 ... Uncommon (+1)", "Shield, +1 ... Uncommon (+1)",
+    // but "Armor, +1 ... Rare (+1)". Armour is the odd one out because +1 AC is
+    // worth more than +1 to hit.
+    expect(rarityOf('greatsword-plus1'), '+1 weapon').toBe('uncommon');
+    expect(rarityOf('shield-plus1'), '+1 shield').toBe('uncommon');
+    expect(rarityOf('scale-mail-plus1'), '+1 armor').toBe('rare');
     expect(itemPrice('shield-plus1')).toBeGreaterThan(itemPrice('shield')!);
     expect(itemName('shield-plus1')).toBe('Shield +1');
+  });
+
+  /**
+   * The +1 weapons are derived from their bases rather than hand-copied, which
+   * is what stops the expensive sword quietly becoming the worse one when a
+   * base weapon is retuned.
+   */
+  it('are identical to their base weapon but for the bonus', () => {
+    for (const id of PLUS_ONE_WEAPONS) {
+      const plus = WEAPONS[id]!;
+      const base = WEAPONS[id.replace('-plus1', '')]!;
+      expect(base, `${id} has no base`).toBeDefined();
+      for (const k of ['damage', 'damageType', 'melee', 'mastery'] as const) {
+        expect(plus[k], `${id}.${k} drifted from ${base.id}`).toEqual(base[k]);
+      }
+      expect(plus.properties).toEqual(base.properties);
+      expect(plus.range).toEqual(base.range);
+      expect(plus.cost!, `${id} costs no more than the plain one`).toBeGreaterThan(base.cost ?? 0);
+    }
+  });
+
+  /**
+   * Cleric, wizard and bard are simple-only, and every +1 weapon in the game
+   * used to be martial — so three of the eight classes had no enchanted weapon
+   * available at any price or level.
+   */
+  it('give every class something it is proficient with', () => {
+    for (const classId of Object.keys(CLASSES)) {
+      const c = buildCharacter({ classId, team: 'team1', position: { x: 0, y: 0 }, level: 5 });
+      const usable = PLUS_ONE_WEAPONS.filter((id) => isWeaponProficient(c.weaponProfs, id));
+      expect(usable.length, `${classId} can use no +1 weapon`).toBeGreaterThan(0);
+    }
   });
 
   it('a +1 shield grants +3 AC (vs +2 for a plain shield)', () => {
@@ -158,7 +194,7 @@ describe('weapon proficiency (2024: no bonus, not a hard block)', () => {
     expect(weaponCategory('quarterstaff')).toBe('simple');
     expect(weaponCategory('greatsword')).toBe('martial');
     expect(weaponCategory('longsword-plus1')).toBe('martial'); // magic variant → base
-    expect(weaponCategory('moontouched-warhammer')).toBe('martial');
+    expect(weaponCategory('silvered-warhammer')).toBe('martial');
     expect(weaponCategory('wolf-bite')).toBeUndefined();       // natural
   });
 

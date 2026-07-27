@@ -77,7 +77,7 @@ describe('campaign state', () => {
       }
     }
     // A 1st-level party is offered NO enchanted gear (no +1, adamantine, trinkets).
-    const enchanted = (id: string) => id.endsWith('plus1') || id.includes('adamantine') || id.includes('moontouched')
+    const enchanted = (id: string) => id.endsWith('plus1') || id.includes('adamantine') || id.includes('silvered')
       || ['gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding', 'bracers-archery', 'boots-winterlands', 'gloves-thievery'].includes(id);
     expect(l1.some(enchanted)).toBe(false);
     // Magical rotation grows with level, and never carries the whole catalogue.

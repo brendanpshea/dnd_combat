@@ -903,7 +903,7 @@ offered as a useItem action), a wider mundane weapon selection, adamantine
 armor (`ArmorData.noCrit`, checked in `resolveAttack` alongside the crit-range
 calc — any crit against the wearer downgrades to a normal hit), a fuller line
 of +1 weapons/armor/`shield-plus1` (rare tier, the higher-level reward), a
-couple of moon-touched (silvered) weapons that carry no attack/damage bonus
+couple of silvered weapons that carry no attack/damage bonus
 but bypass resistance to their damage type (`WeaponData.magic` →
 `applyDamage`'s `bypassResistance` option — dormant today since no monster yet
 resists a physical type, but ready for were-creatures/elementals), resistance

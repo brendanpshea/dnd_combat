@@ -16,7 +16,7 @@ import {
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
-import { WEAPONS } from '../data/weapons.js';
+import { WEAPONS, PLUS_ONE_WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS } from '../data/trinkets.js';
@@ -120,8 +120,32 @@ export function shopVisitFor(c: CampaignState): NonNullable<CampaignState['shopV
 }
 
 /** Parse + minimally validate a serialized campaign. */
-/** Item ids retired from the game, remapped to their replacement on load. */
-const RETIRED_ITEMS: Record<Id, Id> = { 'scroll-cure-wounds': 'potion-healing' };
+/**
+ * Item ids retired from the game, remapped to their replacement on load.
+ *
+ * The moon-touched blades are a *rename*, not a retirement: "Moon-Touched
+ * Sword" is a 2024 Player's Handbook name and appears nowhere in SRD 5.2.1, so
+ * the pair became plain silvered weapons. Same weapon, same stats, safer name —
+ * but a save written before the rename holds the old id, and an item id the
+ * game no longer knows is an item that silently vanishes from a party's hands.
+ */
+const RETIRED_ITEMS: Record<Id, Id> = {
+  'scroll-cure-wounds': 'potion-healing',
+  'moontouched-shortsword': 'silvered-shortsword',
+  'moontouched-warhammer': 'silvered-warhammer',
+};
+
+/** Remap retired ids in the worn/held slots (see the note on RETIRED_ITEMS). */
+function migrateEquipped<T extends Record<string, Id | undefined>>(eq: T): T {
+  const out = { ...eq };
+  for (const slot of Object.keys(out) as Array<keyof T & string>) {
+    const id = out[slot];
+    if (typeof id === 'string' && RETIRED_ITEMS[id]) {
+      (out as Record<string, Id | undefined>)[slot] = RETIRED_ITEMS[id];
+    }
+  }
+  return out;
+}
 
 /** Replace any retired item ids in a stack list, merging quantities. */
 function migrateRetiredItems(inv: ItemStack[] | undefined): ItemStack[] {
@@ -142,6 +166,11 @@ export function parseCampaign(json: string): CampaignState | undefined {
       // save still holding one would carry a dead, unusable item, so trade each
       // for the potion it doubled.
       character.inventory = migrateRetiredItems(character.inventory);
+      // Equipped slots too. `migrateRetiredItems` only walks stacks, so a
+      // renamed weapon a character was *holding* would survive the migration
+      // as a dead id — which is the one place it would be most visible, and
+      // the case the original migration quietly missed.
+      character.equipped = migrateEquipped(character.equipped);
       // Saves from before characters had names carry the class as the name, so
       // the game announces "Wizard is down" instead of "Morgana Le Fey is down".
       // A name that is exactly the class name was never chosen, it was the old
@@ -266,6 +295,12 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'jewelry-wooden-bracer', 'jewelry-brass-ring', 'jewelry-bronze-figurine', 'jewelry-obsidian-necklace',
   ],
   uncommon: [
+    // +1 weapons and +1 shields are UNCOMMON in the SRD; only +1 *armor* is
+    // Rare. They sat in the rare pool, which gated every enchanted weapon in
+    // the game behind level 5 — and the median arena run ends at level 3, so
+    // most parties never saw one at all.
+    ...PLUS_ONE_WEAPONS, 'shield-plus1',
+    'silvered-shortsword', 'silvered-warhammer',
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
     'scroll-ray-of-sickness', 'scroll-blindness', 'scroll-invisibility',
@@ -278,12 +313,10 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'jewelry-iron-bracer', 'jewelry-steel-ring', 'jewelry-silver-necklace',
   ],
   rare: [
-    'half-plate', 'splint', 'longsword-plus1', 'shortsword-plus1',
-    'greatsword-plus1', 'longbow-plus1', 'warhammer-plus1', 'rapier-plus1',
-    'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1',
+    'half-plate', 'splint',
+    'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1',
     'scroll-fireball', 'scroll-lightning-bolt', 'scroll-dispel-magic', 'scroll-haste',
     'potion-giant-strength-frost',
-    'moontouched-shortsword', 'moontouched-warhammer',
     'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
@@ -300,7 +333,7 @@ export function rarityOf(itemId: Id): Rarity {
     if (TREASURE_POOL[r].includes(itemId)) return r;
   }
   return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? VALUABLES[itemId]?.rarity ?? TRINKETS[itemId]?.rarity ??
-    (itemId === 'shield-plus1' ? 'rare' : 'common');
+    (itemId === 'shield-plus1' ? 'uncommon' : 'common');
 }
 
 function pick<T>(arr: T[], r: number): T {
@@ -368,9 +401,9 @@ export const SHOP_STOCK: Id[] = [
   'potion-giant-strength-hill',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
-  'greatsword', 'longbow', 'longsword-plus1', 'shortsword-plus1',
-  'greatsword-plus1', 'longbow-plus1', 'warhammer-plus1', 'rapier-plus1',
-  'moontouched-shortsword', 'moontouched-warhammer',
+  'greatsword', 'longbow',
+  ...PLUS_ONE_WEAPONS,
+  'silvered-shortsword', 'silvered-warhammer',
   'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
   // armor
   'leather', 'chain-shirt', 'half-plate', 'splint',
@@ -386,7 +419,7 @@ export const SHOP_STOCK: Id[] = [
 const RARITY_MIN_LEVEL: Record<Rarity, number> = { common: 1, uncommon: 3, rare: 5 };
 
 /** A magical / enchanted ware — the stuff a shop shouldn't always carry: any
- *  trinket, an enchanted weapon or armor (+1, adamantine, moontouched), or a
+ *  trinket, an enchanted weapon or armor (+1, adamantine, silvered), or a
  *  potion/scroll above the common tier (healing potions and basic common
  *  scrolls stay staples). Mundane weapons and armor are never magical, even the
  *  ones the loot tables rate "uncommon" (a plain rapier), so they always stock. */
@@ -395,7 +428,7 @@ function isMagicalWare(itemId: Id): boolean {
   if (itemId === 'shield') return false;
   if (TRINKETS[itemId]) return true;
   const w = WEAPONS[itemId];
-  if (w) return !!w.magic || itemId.endsWith('plus1') || itemId.includes('moontouched');
+  if (w) return !!w.magic || itemId.endsWith('plus1') || itemId.includes('silvered');
   if (ARMOR[itemId]) return itemId.endsWith('plus1') || itemId.includes('adamantine');
   if (ITEMS[itemId]) {
     if (itemId.includes('potion-healing') || itemId.includes('greater-healing')) return false;
@@ -463,7 +496,7 @@ export function itemIcon(itemId: Id): string {
   const w = WEAPONS[itemId];
   if (w) {
     // Bane weapons before the generic magic check: they set `magic` too, and
-    // the moon belongs to the moon-touched blades. A Dragon Slayer showing a
+    // the moon belongs to the silvered blades. A Dragon Slayer showing a
     // silvering glyph would be telling the player the wrong thing about the one
     // stat that decides whether to buy it.
     if (w.slays) return '🗡️';
