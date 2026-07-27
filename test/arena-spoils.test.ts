@@ -13,7 +13,7 @@ import {
   shopOffering, rarityOf, itemName,
 } from '../src/campaign/campaign.js';
 import {
-  spoilOffer, spoilPool, spoilTierFor, SPOIL_CHOICES, PERMANENT_FROM_LEVEL,
+  spoilOffer, spoilPool, spoilTierFor, spoilTierLabel, SPOIL_CHOICES, PERMANENT_FROM_LEVEL,
 } from '../src/arena/spoils.js';
 import { ITEMS } from '../src/data/items.js';
 import { WEAPONS } from '../src/data/weapons.js';
@@ -153,6 +153,47 @@ describe('the offer itself', () => {
     for (const id of offer) {
       expect(isMagicalWare(id), `${itemName(id)} is a mundane consolation prize`).toBe(true);
       expect(ITEMS[id], `${itemName(id)} is not a consumable`).toBeDefined();
+    }
+  });
+});
+
+describe('a level-1 party is actually paid', () => {
+  /**
+   * The report that prompted this: "bounties at level 1 aren't showing items".
+   * The award machinery was correct at every level — what was missing is that
+   * the pre-fight card advertised coin and nothing else, so the pick-one-of-
+   * three screen arrived unannounced and a player with no reason to expect it
+   * concluded low levels paid no items at all.
+   *
+   * These pin down both halves: that the offer is real at the lowest level, and
+   * that there is a phrase to put on the card saying so.
+   */
+  it('has a real, non-empty offer on the very first day', () => {
+    for (let seed = 1; seed <= 25; seed++) {
+      const offer = spoilOffer(seed, 1, 'morning', 0, 1);
+      expect(offer.length, `seed ${seed}`).toBe(SPOIL_CHOICES);
+    }
+  });
+
+  it('pays both bounties of a first fight, with different things on each table', () => {
+    const first = spoilOffer(5, 1, 'morning', 0, 1);
+    const second = spoilOffer(5, 1, 'morning', 1, 1);
+    expect(second.length).toBe(SPOIL_CHOICES);
+    expect(second, 'two bounties, two different tables').not.toEqual(first);
+  });
+
+  it('says what it pays, in words the card can print', () => {
+    expect(spoilTierLabel(1)).toBe('a scroll or potion');
+    expect(spoilTierLabel(3)).toBe('a scroll or potion');
+    expect(spoilTierLabel(PERMANENT_FROM_LEVEL)).toBe('a magic item');
+    expect(spoilTierLabel(7)).toBe('a magic item');
+    // Whatever it says, it has to match what the player will actually be shown.
+    for (const level of [1, 3, 4, 7]) {
+      const tier = spoilTierFor(level);
+      const offer = spoilOffer(1, 1, 'morning', 0, level);
+      for (const id of offer) {
+        expect(isPermanentMagic(id), `${id} at level ${level}`).toBe(tier === 'permanent');
+      }
     }
   });
 });

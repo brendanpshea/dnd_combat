@@ -117,6 +117,18 @@ export function spoilOffer(
   return picked;
 }
 
+/**
+ * What a bounty at this level pays, in words, for the pre-fight card.
+ *
+ * The card promised gold and only gold, so a player had no reason to expect an
+ * item at all — the award screen appeared unannounced, if it appeared. A reward
+ * nobody knows about cannot be played for, and playing for it is the entire
+ * point of naming bounties *before* the fight.
+ */
+export function spoilTierLabel(level: number): string {
+  return spoilTierFor(level) === 'permanent' ? 'a magic item' : 'a scroll or potion';
+}
+
 /** A short line for why this item is on the table, shown under its name. */
 export function spoilBlurb(itemId: Id): string {
   const item = ITEMS[itemId];
