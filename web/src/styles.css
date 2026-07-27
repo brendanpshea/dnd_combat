@@ -1732,6 +1732,9 @@ button.category .count {
 .bounty-blurb { color: var(--muted); font-size: 12px; flex: 1 1 60%; }
 .bounty-gold { margin-left: auto; color: var(--gold); font-weight: 700; font-size: 13px; }
 
+/* What the break gave back — lunch, or a night's sleep. */
+.rest-panel { margin-top: 8px; }
+
 /* Claimed bounties, itemised under the gold line they are already part of. */
 .claimed { margin-top: 6px; border-top: 1px dashed #453d63; padding-top: 6px; }
 .claimed-row { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }

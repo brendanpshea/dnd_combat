@@ -22,7 +22,10 @@ import {
   buyItem, MAX_LEVEL, applyPartyTemplate, setPartyClass, type CampaignState,
 } from '../src/campaign/campaign.js';
 import { membersCoinXP } from '../src/data/encounters.js';
-import { buildWave, newArenaRun, recordResult, type ArenaRunState } from '../src/arena/run.js';
+import {
+  buildWave, newArenaRun, recordResult, advanceDay, type ArenaRunState, type DayHalf,
+} from '../src/arena/run.js';
+import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../src/arena/day.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { parseMap } from '../src/data/maps.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -77,6 +80,24 @@ if (!PLAY_STYLES.includes(PLAY)) {
 
 /** Give up on a run after this many consecutive losses at one wave. */
 const PATIENCE = Number(process.env.PATIENCE ?? 3);
+/**
+ * `--days` plays the arena the way the web game now does: two fights a day at
+ * the SAME wave budget, a lunch break between them, a night after, and a defeat
+ * that ends the day and sends you back to the morning fight tomorrow.
+ *
+ * The point of measuring it separately is that the old loop rests fully between
+ * every fight, so it cannot see the only thing this mode adds — what a party
+ * that has already spent a morning does in the afternoon.
+ */
+const DAYS = process.argv.includes('--days');
+/**
+ * How many times a player retries a day before walking away. Deliberately not
+ * 0: a real player who loses the afternoon comes back tomorrow and tries the
+ * same two fights again, sometimes after a level-up, and the whole freeze-the-
+ * day design is a bet on what happens on those retries. Setting this to 0 would
+ * measure a player the design does not have.
+ */
+const DAY_RETRIES = Number(process.env.DAY_RETRIES ?? 2);
 /** Hard stop so a stalled fight can't hang the sweep. */
 const MAX_DECISIONS = 4000;
 
@@ -123,6 +144,27 @@ interface Tally {
   /** Win rate on the first crack at a wave, versus every retry after it. */
   firstTry: { fights: number; wins: number };
   retry: { fights: number; wins: number };
+  /** `--days` only: how the two-fight day actually plays out. */
+  day: {
+    morning: { fights: number; wins: number };
+    afternoon: { fights: number; wins: number };
+    /** Days entered, days cleared, and how many were cleared on a retry. */
+    entered: number;
+    cleared: number;
+    clearedOnRetry: number;
+    /** Where a lost day was lost, which is the whole question this mode asks. */
+    lostInMorning: number;
+    lostInAfternoon: number;
+    /** Retries burned per abandoned day, and whether a level-up rescued it. */
+    abandoned: number;
+    rescuedByLevel: number;
+    /** Lunch: dice spent, heroes raised, and how often nobody had a die left. */
+    lunchDice: number[];
+    lunchRevived: number;
+    lunchBroke: number;
+    /** Party level at the last day a run cleared. */
+    daysPerRun: number[];
+  };
 }
 
 const T: Tally = {
@@ -134,6 +176,12 @@ const T: Tally = {
   shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalWaves: [], endStats: [],
   partyDowns: 0, heroTurns: 0,
   firstTry: { fights: 0, wins: 0 }, retry: { fights: 0, wins: 0 },
+  day: {
+    morning: { fights: 0, wins: 0 }, afternoon: { fights: 0, wins: 0 },
+    entered: 0, cleared: 0, clearedOnRetry: 0,
+    lostInMorning: 0, lostInAfternoon: 0, abandoned: 0, rescuedByLevel: 0,
+    lunchDice: [], lunchRevived: 0, lunchBroke: 0, daysPerRun: [],
+  },
 };
 
 const bump = <K,>(m: Map<K, number>, k: K, n = 1) => m.set(k, (m.get(k) ?? 0) + n);
@@ -201,8 +249,20 @@ function heroAction(style: PlayStyle, state: GameState, id: Id, round: number): 
     ?? { kind: 'endTurn' as const };
 }
 
-function fight(c: CampaignState, runSeed: number, level: number, wave: number, attempt = 1): boolean | 'stalled' {
-  const w = buildWave(runSeed, level, wave);
+/**
+ * Run one fight to a conclusion.
+ *
+ * `day` puts it inside the two-fight day: the wave is drawn for that half, the
+ * purse is paid only after the afternoon (a day is one payday), heroes dropped
+ * in the morning stay at 0 until lunch buys them back up, and the resting is
+ * the caller's business rather than an automatic long rest.
+ */
+function fight(
+  c: CampaignState, runSeed: number, level: number, wave: number, attempt = 1,
+  day?: { half: DayHalf },
+): boolean | 'stalled' {
+  const half = day?.half ?? 'morning';
+  const w = buildWave(runSeed, level, wave, undefined, 0, half);
   for (const m of w.encounter.members) bump(T.monstersMet, m);
 
   const party = buildCampaignParty(c);
@@ -219,7 +279,8 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
     // rather than a slot machine). The dice must not be: without `attempt` in
     // here the AI replays a bit-identical fight and loses 100% of retries,
     // which looks exactly like a death spiral and is really just determinism.
-    seed: (runSeed * 7919 + wave * 104729 + attempt * 2654435761) >>> 0,
+    seed: (runSeed * 7919 + wave * 104729 + attempt * 2654435761 +
+      (half === 'afternoon' ? 1013904223 : 0)) >>> 0,
     map: w.map,
     combatants: [...party, ...foes],
   });
@@ -314,10 +375,14 @@ function fight(c: CampaignState, runSeed: number, level: number, wave: number, a
     if (attempt === 1) bucket.wins += 1;
     T.wins += 1;
     const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
-    applyArenaVictory(c, survivors, w.encounter.rawXp, combat.state.rng, membersCoinXP(w.encounter.members));
-    c.gold += w.purse;
-    longRest(c);
-  } else {
+    applyArenaVictory(c, survivors, w.encounter.rawXp, combat.state.rng,
+      membersCoinXP(w.encounter.members), day ? { downedAtZero: true } : {});
+    // A day is one payday: the morning is the toll you pay to reach the
+    // afternoon, not a second purse. Paying both would double a day's income
+    // against the old loop's and make every shop comparison meaningless.
+    if (!day || half === 'afternoon') c.gold += w.purse;
+    if (!day) longRest(c);
+  } else if (!day) {
     reviveParty(c);
     if (RESTED_RETRY) longRest(c);
   }
@@ -373,6 +438,89 @@ function shop(c: CampaignState, level: number, key: string): void {
 
 // --- one run --------------------------------------------------------------
 
+/**
+ * The two-fight day, played the way the web game plays it.
+ *
+ * Morning and afternoon are the same wave budget drawn twice; the difference
+ * between them is entirely what the party has left. A lost day rolls the
+ * calendar forward and drops the party back on the morning fight — the same
+ * morning fight, because the day's difficulty is frozen at the level it was
+ * first met, so the only thing that changes on a retry is the party.
+ */
+function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): number {
+  let run: ArenaRunState = newArenaRun(seed);
+  let retries = 0;                          // burned on the day now in progress
+  let levelAtFirstTry = partyLevelOf(c);
+  while (dayOf(run) <= 60) {
+    const live = partyLevelOf(c);
+    if (!seenLevels.has(live)) {
+      seenLevels.add(live);
+      const list = T.wavesToLevel.get(live) ?? [];
+      list.push(run.wave);
+      T.wavesToLevel.set(live, list);
+    }
+    // Freeze this day's difficulty the first time it is entered, exactly as the
+    // arena screen does. Everything after this reads `dayLevel`, not `live`.
+    if (run.dayLevel === undefined) run = { ...run, dayLevel: live };
+    const dayLevel = dayLevelOf(run, live);
+    if (retries === 0) { T.day.entered += 1; levelAtFirstTry = live; }
+
+    let outcome: boolean | 'stalled';
+    try {
+      outcome = fight(c, seed, dayLevel, run.wave, retries + 1, { half: 'morning' });
+    } catch (err) {
+      T.errors.push({ run: seed, where: `day ${dayOf(run)} morning`, message: String(err) });
+      break;
+    }
+    if (outcome === 'stalled') break;
+    T.day.morning.fights += 1;
+
+    let won = false;
+    if (outcome) {
+      T.day.morning.wins += 1;
+      run = advanceDay(run, true, 0);       // morning cleared → afternoon
+      const meal = lunch(c);
+      T.day.lunchDice.push(meal.hitDiceSpent ?? 0);
+      T.day.lunchRevived += meal.revived ?? 0;
+      if ((meal.hitDiceSpent ?? 0) === 0) T.day.lunchBroke += 1;
+
+      try {
+        outcome = fight(c, seed, dayLevel, run.wave, retries + 1, { half: 'afternoon' });
+      } catch (err) {
+        T.errors.push({ run: seed, where: `day ${dayOf(run)} afternoon`, message: String(err) });
+        break;
+      }
+      if (outcome === 'stalled') break;
+      T.day.afternoon.fights += 1;
+      if (outcome) { T.day.afternoon.wins += 1; won = true; }
+      else T.day.lostInAfternoon += 1;
+    } else T.day.lostInMorning += 1;
+
+    if (!won) reviveParty(c);
+    run = advanceDay(run, won, 0);
+    noteSpentItems(c, run.cleared);
+    night(c, run.cleared);
+
+    if (won) {
+      T.day.cleared += 1;
+      if (retries > 0) {
+        T.day.clearedOnRetry += 1;
+        if (partyLevelOf(c) > levelAtFirstTry) T.day.rescuedByLevel += 1;
+      }
+      retries = 0;
+      shop(c, partyLevelOf(c), `${seed}:${run.wave}`);
+    } else {
+      retries += 1;
+      // A player who has lost the same day three times has learned what the
+      // day is going to do. Walking away here is the honest model.
+      if (retries > DAY_RETRIES) { T.day.abandoned += 1; break; }
+    }
+    if (run.wave > 40) break;
+  }
+  T.day.daysPerRun.push(dayOf(run) - 1);
+  return run.wave;
+}
+
 function playRun(seed: number): void {
   const c = newCampaign(seed);
   if (COMP.length) {
@@ -402,7 +550,8 @@ function playRun(seed: number): void {
   let losses = 0;
   const seenLevels = new Set<number>([1]);
 
-  while (losses < PATIENCE) {
+  if (DAYS) wave = playDays(c, seed, seenLevels);
+  else while (losses < PATIENCE) {
     const level = partyLevelOf(c);
     if (!seenLevels.has(level)) {
       seenLevels.add(level);
@@ -596,6 +745,32 @@ if (unusedSpells.length) console.log(`${FLAG}spells never cast (${unusedSpells.l
 if (unusedFeatures.length) console.log(`${FLAG}active features never used (${unusedFeatures.length}): ${unusedFeatures.join(', ')}`);
 console.log(`  monsters never met: ${unmetMonsters.length} of ${Object.keys(MONSTERS).length}` +
   (unmetMonsters.length ? ` — ${unmetMonsters.slice(0, 14).join(', ')}${unmetMonsters.length > 14 ? '…' : ''}` : ''));
+
+if (DAYS) {
+  const d = T.day;
+  console.log('\n--- the arena day (two fights, one lunch) ---');
+  console.log(`  days entered ${d.entered}, cleared ${d.cleared} (${pct(d.cleared, d.entered)}), abandoned ${d.abandoned}`);
+  console.log(`  morning   ${pct(d.morning.wins, d.morning.fights)} of ${d.morning.fights}`);
+  console.log(`  afternoon ${pct(d.afternoon.wins, d.afternoon.fights)} of ${d.afternoon.fights}` +
+    '   (same wave budget — the gap is depletion)');
+  const gap = (d.morning.fights && d.afternoon.fights)
+    ? Math.round((d.morning.wins / d.morning.fights - d.afternoon.wins / d.afternoon.fights) * 100)
+    : 0;
+  console.log(`  afternoon costs ${gap} points of win rate`);
+  if (gap <= 0) {
+    console.log(`${FLAG}the afternoon is no harder than the morning — depletion is not biting`);
+  }
+  const lost = d.lostInMorning + d.lostInAfternoon;
+  console.log(`  lost days: ${d.lostInMorning} in the morning, ${d.lostInAfternoon} in the afternoon` +
+    (lost ? ` (${pct(d.lostInAfternoon, lost)} of losses come after a win)` : ''));
+  console.log(`  retried days cleared ${d.clearedOnRetry}, of which ${d.rescuedByLevel} only after a level-up`);
+  if (d.clearedOnRetry === 0 && lost > 0) {
+    console.log(`${FLAG}no day was ever cleared on a retry — a lost day is a wall, not a puzzle`);
+  }
+  console.log(`  lunch: median ${median(d.lunchDice)} hit dice spent, ${d.lunchRevived} heroes raised, ` +
+    `${pct(d.lunchBroke, d.lunchDice.length)} of lunches spent none`);
+  console.log(`  days per run: median ${median(d.daysPerRun)}, max ${Math.max(0, ...d.daysPerRun)}`);
+}
 
 console.log('\n--- economy ---');
 console.log(`  shop visits ${T.shopVisits}, distinct items bought ${T.itemsBought.size}`);

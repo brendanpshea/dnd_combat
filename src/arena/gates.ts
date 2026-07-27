@@ -58,7 +58,7 @@
  * and it is supposed to be. That is priced in `waveDifficulty`, not here.
  */
 import type { LayoutName } from './map.js';
-import { type ArenaWave, buildWave } from './run.js';
+import { type ArenaWave, type DayHalf, buildWave } from './run.js';
 import { next, type RngState } from '../engine/rng.js';
 
 /** What the ground looks like, for the door's card. */
@@ -87,13 +87,17 @@ export const GATE_COUNT = 3;
 /**
  * The doors for a wave.
  *
- * Seeded off the run and the wave exactly the way the wave itself is, so a
- * retry offers the same three: a wave you lost is a tactical problem, not a
+ * Seeded off the run, the wave and the half — so the afternoon is three
+ * different doors from the morning's, at the same budget, and a retry offers
+ * the same three: a wave you lost is a tactical problem, not a
  * slot machine to reroll until an easy door turns up. The grounds are drawn
  * without replacement, because three doors onto the same board is one door.
  */
-export function gatesFor(runSeed: number, level: number, wave: number): Gate[] {
-  let rng: RngState = (runSeed * 40503 + wave * 2654435761) >>> 0;
+export function gatesFor(
+  runSeed: number, level: number, wave: number, half: DayHalf = 'morning',
+): Gate[] {
+  let rng: RngState =
+    (runSeed * 40503 + wave * 2654435761 + (half === 'afternoon' ? 2166136261 : 0)) >>> 0;
   const roll = () => { const r = next(rng); rng = r.state; return r.value; };
 
   const layouts = [...LAYOUT_NAMES];
@@ -105,7 +109,7 @@ export function gatesFor(runSeed: number, level: number, wave: number): Gate[] {
       name: GROUND[layout].name,
       blurb: GROUND[layout].blurb,
       layout,
-      wave: buildWave(runSeed, level, wave, layout, door),
+      wave: buildWave(runSeed, level, wave, layout, door, half),
     });
   }
   return gates;

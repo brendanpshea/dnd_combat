@@ -18,7 +18,7 @@ import { useState, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
-  type CampaignState, newCampaign, buildCampaignParty, partyLevelOf, longRest, preparableSpells, preparedRoom, partyPreparedRoom,
+  type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering,
 } from '../../src/campaign/campaign.js';
@@ -26,8 +26,9 @@ import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import {
-  newArenaRun, recordResult, type ArenaRunState, type ArenaWave,
+  newArenaRun, advanceDay, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
+import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../../src/arena/day.js';
 import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
@@ -52,6 +53,8 @@ type Phase =
   | {
       p: 'loot'; gold: number; items: ItemStack[]; xpGained: number;
       leveledTo?: number; leveledFrom?: number;
+      /** What the break after this fight gave back — lunch or a night. */
+      rested: RestResult;
       /** Bounties claimed in the fight just won, named on the loot screen. */
       claimed: Array<{ name: string; gold: number }>;
     }
@@ -118,9 +121,14 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [, bump] = useState(0);
 
   const level = partyLevelOf(c);
+  const half = halfOf(run);
+  // The day's fights are pinned to the level the party was when they first
+  // walked into it, so a retry is the same puzzle and levelling up is a real
+  // way through one. See `dayLevel` in arena/run.ts.
+  const dayLevel = dayLevelOf(run, level);
   // The three doors, and the one currently selected. Both derive from the run
   // rather than from component state, so a refresh mid-choice restores it.
-  const gates = gatesFor(run.seed, level, run.wave);
+  const gates = gatesFor(run.seed, dayLevel, run.wave, half);
   const gate = gateFor(gates, run.gate);
   const wave = gate.wave;
   const bounties = offeredBounties(c, run, wave);
@@ -129,6 +137,19 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
     saveArenaWeb({ campaign: nextC, run: nextRun });
   const refresh = () => { setC({ ...c }); bump((v) => v + 1); };
+
+  /**
+   * Pin the day's difficulty the first time the player looks at it.
+   *
+   * Done here rather than at the end of the previous fight because a level-up
+   * lands in the loot screen, between the two — freezing any earlier would pin
+   * a level the party no longer has, and freezing any later would let the
+   * afternoon regenerate at a level the morning was not built for.
+   */
+  if (run.dayLevel === undefined && phase.p === 'brief') {
+    const pinned = { ...run, dayLevel: level };
+    setRun(pinned); persist(c, pinned);
+  }
 
   /** Take a door. Free until the first attempt; after that the wave is fixed. */
   function chooseGate(door: number) {
@@ -166,16 +187,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     const survivors = Object.values(combat.state.combatants)
       .filter((x) => x.team === 'team1' && !actsOnItsOwn(x));
     if (winner !== 'team1') {
+      // A defeat ends the DAY, not the run. Everyone is picked up, the night
+      // passes, and tomorrow holds the same two fights — frozen at the level
+      // they were met at, so what was learned still applies and what was bought
+      // still helps. Nothing is kept from today's attempt except that.
       reviveParty(c);
-      // Rest after a defeat as well as after a win. The arena's whole premise is
-      // that each wave is an independent tactical problem; retrying one at half
-      // hit points with the spell slots you already spent is a strictly harder
-      // fight than the one you just lost, which is the opposite of that. Worth
-      // about four points of win rate on a retry, measured over 20 playthroughs.
-      longRest(c);
-      const nextRun = recordResult(run, false, wave.purse, {
+      const nextRun = advanceDay(run, false, 0, {
         spellsUsed: spellsCastBy(combat.log, combat.state),
       });
+      night(c, nextRun.cleared);
       setRun(nextRun); setC({ ...c }); persist(c, nextRun);
       setPhase({ p: 'defeat' });
       return;
@@ -185,6 +205,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     const result = applyArenaVictory(
       c, survivors, wave.encounter.rawXp, combat.state.rng,
       membersCoinXP(wave.encounter.members),
+      // Somebody who went down stays down until lunch pays a hit die for them.
+      { downedAtZero: half === 'morning' },
     );
     // What the fight earned beyond winning it. Read off the event log, which
     // Combat has kept the whole way through, so nothing had to be tracked as
@@ -197,20 +219,26 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       rounds: combat.state.round,
       foes: wave.encounter.members.length,
     });
-    const bonus = claimed.reduce((g, b) => g + bountyGold(b, wave.purse), 0);
-    c.gold += wave.purse + bonus;
-    // Full rest between waves: the arena is a tactics test, not an attrition
-    // one, and it keeps each wave an honest measure of the fight itself.
-    longRest(c);
-    const nextRun = recordResult(run, true, wave.purse, {
+    // The purse is the day's pay, handed over when the day is done — winning
+    // the morning buys you the afternoon, not a wage.
+    const paid = half === 'afternoon' ? wave.purse : 0;
+    const bonus = claimed.reduce((g, b) => g + bountyGold(b, paid || wave.purse), 0);
+    c.gold += paid + bonus;
+    const nextRun = advanceDay(run, true, wave.purse, {
       spellsUsed: spellsCastBy(combat.log, combat.state),
       bounties: claimed.length,
     });
+    // Lunch after the morning; a night's rest after the afternoon. The
+    // difference between them is the whole feature: hit points, slots and
+    // charges all cross the lunch break, and none of them cross the night.
+    noteSpentItems(c, nextRun.cleared);
+    const rested = half === 'morning' ? lunch(c) : night(c, nextRun.cleared);
     setRun(nextRun); setC({ ...c }); persist(c, nextRun);
     setPhase({
       p: 'loot',
-      gold: result.gold + wave.purse + bonus, items: result.items, xpGained: result.xpGained,
-      claimed: claimed.map((b) => ({ name: b.name, gold: bountyGold(b, wave.purse) })),
+      gold: result.gold + paid + bonus, items: result.items, xpGained: result.xpGained,
+      claimed: claimed.map((b) => ({ name: b.name, gold: bountyGold(b, paid || wave.purse) })),
+      rested,
       ...(result.leveledTo !== undefined ? { leveledTo: result.leveledTo } : {}),
       ...(result.leveledFrom !== undefined ? { leveledFrom: result.leveledFrom } : {}),
     });
@@ -258,6 +286,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         leveledTo={phase.leveledTo}
         leveledFrom={phase.leveledFrom}
         claimed={phase.claimed}
+        rested={phase.rested}
         onLevelChange={() => { refresh(); persist(c, run); }}
         onContinue={() => setPhase({ p: 'brief' })}
       />
@@ -278,11 +307,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               <div className="adv-panel">
                 <h2>The crowd roars. You are dragged out.</h2>
                 <p className="adv-text">
-                  Wave {run.wave} still stands. The healers do their work, and the
-                  same challengers are waiting — go again.
+                  The healers do their work and the day is written off. Come back
+                  tomorrow: the same two fights will be waiting, exactly as they
+                  are now — and everything you have learned, earned and bought
+                  comes with you.
                 </p>
                 <p className="hint">
-                  {run.cleared} cleared · attempt {run.attempts + 1} on this wave
+                  Day {dayOf(run)} · wave {run.wave} · attempt {run.attempts + 1}
+                  {run.dayLevel !== undefined && run.dayLevel < level &&
+                    ` · this day is still set for level ${run.dayLevel}, and you are level ${level}`}
                 </p>
                 <div className="adv-choices">
                   <button className="primary" onClick={() => setPhase({ p: 'brief' })}>Back to the gate</button>
@@ -340,9 +373,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
           <div className="adv-scene bottom">
             <div className="adv-panel">
               <div className="arena-head">
-                <h2>Wave {run.wave}</h2>
+                <h2>
+                  Day {dayOf(run)} · {half === 'morning' ? 'Morning' : 'Afternoon'}
+                </h2>
                 <span className="arena-score">
-                  {run.cleared} cleared · {run.clearedFirstTry} first try · {c.gold}g
+                  wave {run.wave} · {run.cleared} cleared · {c.gold}g
                 </span>
               </div>
 
@@ -401,6 +436,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               <p className="hint">
                 {grid.width}×{grid.height} {wave.map.theme}
                 {locked && ` · attempt ${run.attempts + 1}, this door is committed`}
+              </p>
+              {/* The afternoon is the same wave as the morning, fought by a
+                  party that has already spent one. Saying so is the only way a
+                  player learns to keep something back. */}
+              <p className="hint">
+                {half === 'morning'
+                  ? 'Two fights today. Whatever you spend this morning is gone until tonight.'
+                  : 'The second fight of the day — no rest after this one until the day is done.'}
+                {run.dayLevel !== undefined && run.dayLevel < level &&
+                  ` You have outgrown this day: it is still set for level ${run.dayLevel}.`}
               </p>
 
               {/* The planning half of the screen: what this wave will pay extra
@@ -511,9 +556,19 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
                   ⚔️ Fight — {gate.name}
                 </button>
-                <button onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}>
-                  🛒 {panel === 'shop' ? 'Close the stall' : 'Visit the stall'}
-                </button>
+                {/* The market keeps daylight hours. Two breaks with different
+                    characters: the night is where you re-equip and re-prepare,
+                    lunch is only a rest — which is what makes what you carry
+                    into the morning a decision rather than a shopping list. */}
+                {half === 'morning' ? (
+                  <button onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}>
+                    🛒 {panel === 'shop' ? 'Close the stall' : 'Visit the stall'}
+                  </button>
+                ) : (
+                  <button disabled title="The stalls shut at noon — you buy in the morning">
+                    🛒 The stalls are shut
+                  </button>
+                )}
                 {casters.length > 0 && (
                   <button onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}>
                     📖 {panel === 'prepare' ? 'Close the spellbook' : 'Prepare spells'}
