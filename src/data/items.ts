@@ -57,7 +57,9 @@ export interface ConsumableData {
   /**
    * When the charges come back. Defaults to every long rest.
    *
-   * `'never'` means once per run, and it is what the conjuration items use.
+   * `{ days: N }` is a cooldown counted in days CLEARED (see arena/day.ts) —
+   * what the conjurations use, because a straight nightly refill would put a
+   * CR 5 elemental in every fight. `'never'` is once per run.
    * The SRD's clocks for those are days — a Marble Elephant is once per seven,
    * a brazier once per dawn — and the arena long-rests between every wave, so
    * "once per rest" would have meant a CR 5 ally in every single fight. That is
@@ -73,7 +75,7 @@ export interface ConsumableData {
    * largest single item effect in the game by a wide margin. Once a run, that
    * is a card you hold for the wave that needs it. Once a wave, it is the game.
    */
-  refills?: 'rest' | 'never';
+  refills?: 'rest' | 'never' | { days: number };
   /**
    * Who may use it. Wands that the SRD requires a spellcaster to attune to are
    * gated here; the ones that need no attunement at all (Wand of Magic
@@ -480,7 +482,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'figurine-marble-elephant': {
     id: 'figurine-marble-elephant', name: 'Marble Elephant', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1400, rarity: 'rare', charges: 1, refills: 'never', summons: 'elephant',
+    cost: 1400, rarity: 'rare', charges: 1, refills: { days: 3 }, summons: 'elephant',
     // The only one of the SRD's eight figurines this bestiary can field. The
     // rest want a griffon, a lion, a mastiff, an owl or a raven, and adding
     // those would enrol them in the arena roster as opposition as well —
@@ -495,7 +497,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'figurine-bronze-griffon': {
     id: 'figurine-bronze-griffon', name: 'Bronze Griffon', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1400, rarity: 'rare', charges: 1, refills: 'never', summons: 'griffon',
+    cost: 1400, rarity: 'rare', charges: 1, refills: { days: 2 }, summons: 'griffon',
     // CR 2, two Rend attacks. The griffon already existed as opposition; this
     // is the same stat block pointed the other way, which is exactly what a
     // figurine is.
@@ -509,7 +511,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'figurine-golden-lion': {
     id: 'figurine-golden-lion', name: 'Golden Lion', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1100, rarity: 'rare', charges: 1, refills: 'never', summons: 'lion',
+    cost: 1100, rarity: 'rare', charges: 1, refills: { days: 1 }, summons: 'lion',
     // CR 1, and cheap for it: 22 hit points does not last, but Pack Tactics
     // means it hands advantage to whoever is already in melee. The SRD makes
     // these in pairs; one is enough here, where a second body is worth more
@@ -524,7 +526,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'brazier-fire-elemental': {
     id: 'brazier-fire-elemental', name: 'Brazier of Commanding Fire Elementals', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'fire-elemental',
+    cost: 1800, rarity: 'rare', charges: 1, refills: { days: 4 }, summons: 'fire-elemental',
     // The four elemental items are all CR 5 and all Rare, which is the SRD's
     // own pricing and a great deal of ally for one action. The level gate on
     // rare items is what keeps that honest.
@@ -538,7 +540,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'bowl-water-elemental': {
     id: 'bowl-water-elemental', name: 'Bowl of Commanding Water Elementals', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'water-elemental',
+    cost: 1800, rarity: 'rare', charges: 1, refills: { days: 4 }, summons: 'water-elemental',
     apply({ state, userId }) {
       const user = state.combatants[userId]!;
       return summonCombatant(state, {
@@ -549,7 +551,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'censer-air-elemental': {
     id: 'censer-air-elemental', name: 'Censer of Controlling Air Elementals', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'air-elemental',
+    cost: 1800, rarity: 'rare', charges: 1, refills: { days: 4 }, summons: 'air-elemental',
     apply({ state, userId }) {
       const user = state.combatants[userId]!;
       return summonCombatant(state, {
@@ -560,7 +562,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
   'stone-earth-elemental': {
     id: 'stone-earth-elemental', name: 'Stone of Controlling Earth Elementals', useTime: 'action',
     targeting: { kind: 'self' },
-    cost: 1800, rarity: 'rare', charges: 1, refills: 'never', summons: 'earth-elemental',
+    cost: 1800, rarity: 'rare', charges: 1, refills: { days: 4 }, summons: 'earth-elemental',
     apply({ state, userId }) {
       const user = state.combatants[userId]!;
       return summonCombatant(state, {

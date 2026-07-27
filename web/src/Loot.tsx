@@ -34,6 +34,13 @@ export interface LootProps {
    * the only thing that teaches a player to go after the next one.
    */
   claimed?: Array<{ name: string; gold: number }> | undefined;
+  /**
+   * What the break after this fight restored. The arena's day has two very
+   * different breaks — a lunch that spends hit dice and a night that gives
+   * everything back — and a player who cannot tell them apart cannot learn to
+   * hold anything in reserve.
+   */
+  rested?: { totalHealed: number; hitDiceSpent?: number; revived?: number } | undefined;
   onContinue(): void;
 }
 
@@ -56,7 +63,7 @@ function useCountUp(from: number, to: number, ms = 700): number {
   return n;
 }
 
-export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, onContinue }: LootProps) {
+export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, onContinue }: LootProps) {
   // On a level-up, open the gains modal straight away — the gains are the point.
   const [showLevel, setShowLevel] = useState<boolean>(!!leveledTo);
   const level = partyLevelOf(campaign);
@@ -130,6 +137,22 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
           </div>
         )}
       </div>
+
+      {rested && (rested.totalHealed > 0 || rested.hitDiceSpent || rested.revived) && (
+        <div className="loot-panel rest-panel">
+          <div className="loot-line">
+            <span>{rested.hitDiceSpent ? '🍞 Lunch' : '🌙 Night'}</span>
+            <b className="gain">+{rested.totalHealed} HP</b>
+          </div>
+          <div className="loot-sub">
+            {rested.revived
+              ? `${rested.revived} back on their feet · ${rested.hitDiceSpent ?? 0} hit dice spent`
+              : rested.hitDiceSpent
+                ? `${rested.hitDiceSpent} hit dice spent`
+                : 'Everything back — hit points, slots, hit dice.'}
+          </div>
+        </div>
+      )}
 
       {items.length > 0 && (
         <div className="loot-items">

@@ -221,6 +221,15 @@ export function wavePurse(level: number, wave: number): number {
   return Math.round(28 + waveBudget(level, wave) * 0.0142);
 }
 
+/**
+ * Two fights to a day, and they share a wave number.
+ *
+ * The afternoon is NOT a harder wave — it is the same budget against a party
+ * that has already spent a morning. Depletion is the ramp; making the wave
+ * number climb as well would ramp it twice and stop "wave" meaning one thing.
+ */
+export type DayHalf = 'morning' | 'afternoon';
+
 export interface ArenaWave {
   wave: number;
   encounter: GeneratedEncounter;
@@ -237,11 +246,14 @@ export interface ArenaWave {
  */
 export function buildWave(
   runSeed: number, level: number, wave: number,
-  layout?: LayoutName, door = 0,
+  layout?: LayoutName, door = 0, half: DayHalf = 'morning',
 ): ArenaWave {
-  // Mix all three so consecutive waves don't correlate and the doors of one
-  // wave are three different fights rather than three drafts of the same one.
-  let rng: RngState = (runSeed * 2654435761 + wave * 40503 + door * 2246822519) >>> 0;
+  // Mix all of them so consecutive waves don't correlate, the doors of one
+  // half are three different fights rather than three drafts of the same one,
+  // and the afternoon is a different fight from the morning at the same budget.
+  let rng: RngState =
+    (runSeed * 2654435761 + wave * 40503 + door * 2246822519 +
+      (half === 'afternoon' ? 1013904223 : 0)) >>> 0;
   const budget = waveBudget(level, wave);
   const e = generateEncounter(
     { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level), partyLevel: level },
@@ -280,13 +292,80 @@ export interface ArenaRunState {
    * save written before gates existed loads and simply starts on door 0.
    */
   gate?: number;
+  /** Which half of the day is next. Absent = morning (and pre-day saves). */
+  half?: DayHalf;
+  /**
+   * Days that have passed, failures included — the narrative clock. A defeat
+   * ends the day and this advances: "come back tomorrow".
+   *
+   * Deliberately NOT what item cooldowns count. See `cleared`.
+   */
+  day?: number;
+  /**
+   * The party level this day's fights were generated at, frozen on arrival.
+   *
+   * Two things depend on it and both are load-bearing.
+   *
+   * A RETRY IS THE SAME PUZZLE. `buildWave` keys the encounter off the party's
+   * level, so without this a party that gained a level while stuck would come
+   * back to a *different* fight — the thing they had been learning would be
+   * gone. Freezing the level is what makes "solve it" a coherent instruction.
+   *
+   * AND LEVELLING IS A REAL WAY OUT. `EVEN_BUDGET` is calibrated so each level
+   * wins about half its fights at its own budget, which makes levelling exactly
+   * neutral against a live-scaled wave — grinding could never help. Against a
+   * frozen one it helps a great deal, which is the difficulty valve: lose
+   * enough, win enough mornings, come back stronger to an unchanged problem.
+   *
+   * Cleared on a win, so the next day generates at the level you have now and
+   * the valve closes behind you.
+   */
+  dayLevel?: number;
 }
 
 export function newArenaRun(seed: number): ArenaRunState {
   return {
     seed, wave: 1, cleared: 0, clearedFirstTry: 0, attempts: 0, fights: 0, wins: 0,
     gold: 0, spellsUsed: [], bounties: 0,
+    half: 'morning', day: 1,
   };
+}
+
+/**
+ * Advance the run past a finished fight.
+ *
+ * Four outcomes, and only two of them move the wave:
+ *
+ *   won the morning    -> afternoon, same wave, same frozen level, no rest
+ *   won the afternoon  -> the day is cleared: next wave, tomorrow, level thaws
+ *   lost either        -> back to the morning of the same wave, tomorrow
+ *
+ * A defeat costs the day, not the run: XP, gold and anything bought are kept,
+ * and the two fights waiting tomorrow are byte-identical to the ones that just
+ * beat you, because `dayLevel` pins them. That is what makes a hard day a
+ * puzzle rather than a wall — and what makes grinding mornings for XP a real
+ * way through it, since the problem does not grow with you.
+ */
+export function advanceDay(run: ArenaRunState, won: boolean, purse: number,
+  learned: { spellsUsed?: Id[]; bounties?: number } = {},
+): ArenaRunState {
+  const half = run.half ?? 'morning';
+  if (won && half === 'morning') {
+    // Mid-day: nothing clears, nothing rests, the level stays frozen.
+    const next = recordResult({ ...run, half: 'morning' }, false, 0, learned);
+    return { ...next, attempts: run.attempts, half: 'afternoon', gate: 0 };
+  }
+  if (won) {
+    const next = recordResult(run, true, purse, learned);
+    // The frozen level is *dropped*, not zeroed: tomorrow's fights generate at
+    // whatever level the party is now, which is how the valve closes behind a
+    // party that ground its way through.
+    const { dayLevel: _thawed, ...cleared } = next;
+    return { ...cleared, half: 'morning', day: (run.day ?? 1) + 1 };
+  }
+  // Lost. The day ends; tomorrow is the same day over again.
+  const next = recordResult(run, false, 0, learned);
+  return { ...next, half: 'morning', day: (run.day ?? 1) + 1, gate: 0 };
 }
 
 /** Record an attempt at the current wave. A win advances; a loss stays put. */

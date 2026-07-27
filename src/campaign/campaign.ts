@@ -51,6 +51,13 @@ export interface PartyCharacter {
      * wand comes back charged without anything having to remember to refill it.
      */
     itemCharges?: Record<Id, number>;
+    /**
+     * For items that recharge on a multi-day clock rather than nightly: the
+     * cleared-day count at which each spent item is due back. Absent = nothing
+     * pending. Counted in days *cleared*, not days elapsed, so a cooldown
+     * cannot be farmed by losing on purpose — see `src/arena/day.ts`.
+     */
+    itemCooldowns?: Record<Id, number>;
     effects?: {
       familiar?: { kind: 'owl' };
       mageArmor?: true;
@@ -1119,6 +1126,8 @@ export interface RestResult {
   totalHealed: number;
   /** How many hit dice the party spent (short rest only). */
   hitDiceSpent?: number;
+  /** Heroes who were at 0 HP and were raised by the rest (arena lunch only). */
+  revived?: number;
 }
 
 /** A hero's pool of hit dice equals their level (the shared party level). */
@@ -1215,21 +1224,30 @@ export function longRest(c: CampaignState): RestResult {
   for (const [index, combatant] of party.entries()) {
     totalHealed += combatant.maxHp - combatant.hp;
     const character = c.characters[index]!;
-    // 5e: a long rest restores half your total hit dice (minimum 1) on top of
-    // whatever's left. Leave the field absent when the pool is full — absent
-    // means full, the same fresh-save signal used for HP and slots.
-    const restored = Math.min(max, hitDiceLeft(c, index) + Math.max(1, Math.floor(max / 2)));
-    // Charges in once-per-run items do NOT come back. A long rest rebuilds
-    // `resources` from scratch, and "absent means full" is what refills a wand —
-    // so anything that must stay spent has to be carried across by hand.
+    // SRD 5.2.1: a long rest restores ALL spent hit dice — the 2024 rule, not
+    // the 2014 half-your-total one. That is what keeps hit dice a *within-day*
+    // currency (the arena's lunch break) instead of a slow bleed across a run
+    // that a player cannot see coming. `restored` stays a name rather than a
+    // literal because the field below is only written when the pool is short.
+    const restored = max;
+    // Charges on anything slower than a nightly clock do NOT come back here. A
+    // long rest rebuilds `resources` from scratch, and "absent means full" is
+    // what refills a wand — so anything that must stay spent has to be carried
+    // across by hand. `refills: 'never'` never returns; `{ days: n }` returns
+    // when `itemRecharge` says so, which is why its pending record rides along.
     const keptCharges = Object.fromEntries(
       Object.entries(character.resources?.itemCharges ?? {})
-        .filter(([itemId]) => ITEMS[itemId]?.refills === 'never'),
+        .filter(([itemId]) => {
+          const refills = ITEMS[itemId]?.refills;
+          return refills !== undefined && refills !== 'rest';
+        }),
     );
+    const keptCooldowns = character.resources?.itemCooldowns;
     character.resources = {
       hp: combatant.maxHp,
       ...(restored < max ? { hitDice: restored } : {}),
       ...(Object.keys(keptCharges).length > 0 ? { itemCharges: keptCharges } : {}),
+      ...(keptCooldowns && Object.keys(keptCooldowns).length > 0 ? { itemCooldowns: keptCooldowns } : {}),
       ...(character.resources?.effects?.familiar ? { effects: { familiar: { kind: 'owl' } } } : {}),
     };
   }
@@ -2081,8 +2099,14 @@ export interface VictoryResult {
 /** Read surviving gear/resources back onto the party after a won fight. Shared
  *  by the campaign ladder and adventure mode: consumables spent in battle stay
  *  spent, weapon swaps and slots persist, and a hero downed to 0 in a won fight
- *  revives at 1 HP rather than starting the next fight unconscious. */
-export function readBackSurvivors(c: CampaignState, finalTeam: Combatant[]): void {
+ *  revives at 1 HP rather than starting the next fight unconscious.
+ *
+ *  `downedAtZero` suppresses that free revive. The arena's day uses it: a hero
+ *  dropped in the morning stays at 0 until lunch pays a hit die to raise them,
+ *  which is what makes going down in the first fight cost anything. */
+export function readBackSurvivors(
+  c: CampaignState, finalTeam: Combatant[], opts: { downedAtZero?: boolean } = {},
+): void {
   // A conjured ally is not a party member and must never become one. Matching
   // is by classId, which a summoned beast does not have — so this is belt and
   // braces rather than a live bug, and it is the kind of belt worth wearing:
@@ -2095,7 +2119,7 @@ export function readBackSurvivors(c: CampaignState, finalTeam: Combatant[]): voi
     ch.inventory = fought.inventory.map((s) => ({ ...s }));
     ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
     ch.resources = {
-      hp: Math.max(1, fought.hp),
+      hp: opts.downedAtZero ? Math.max(0, fought.hp) : Math.max(1, fought.hp),
       ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
       // Wand charges carry out of the fight the same way slots do. Written only
       // when something has actually been spent, so a full wand leaves no field
@@ -2160,8 +2184,9 @@ export function applyAdventureVictory(
 export function applyArenaVictory(
   c: CampaignState, finalTeam: Combatant[], encounterRawXp: number, rng: RngState = 1,
   coinXp: number = encounterRawXp,
+  opts: { downedAtZero?: boolean } = {},
 ): AdventureVictory {
-  readBackSurvivors(c, finalTeam);
+  readBackSurvivors(c, finalTeam, opts);
   const xpGained = Math.round(encounterRawXp / Math.max(1, c.characters.length));
   const beforeLevel = levelForXp(c.xp);
   c.xp += xpGained;
