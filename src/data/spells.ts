@@ -109,6 +109,19 @@ export interface SpellData {
    */
   outOfCombat?: boolean;
   /**
+   * This spell gets stronger in a bigger slot, so it is worth offering at every
+   * slot the caster can afford rather than only at its own level.
+   *
+   * Declared rather than inferred, because the scaling lives inside `cast` where
+   * nothing else can see it — and because the flag is exactly the judgement
+   * call: a menu entry only earns its place if picking it changes something.
+   * Smites had this behaviour hard-coded in legalActions from the start; the
+   * fourteen spells below were written with slot scaling that had never once
+   * been reachable, because nothing ever offered them a higher slot. A 7th-level
+   * caster's 4th-level slot is unspendable without this.
+   */
+  upcast?: boolean;
+  /**
    * A ritual: always available to a caster whose class grants it, without
    * occupying one of their "known spells" slots — Find Familiar. The builder
    * folds known rituals onto the combatant like cantrips, and they're excluded
@@ -749,6 +762,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'ray-of-sickness', name: 'Ray of Sickness', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
     concentration: false,
+    upcast: true,
     icon: '🤢',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
@@ -811,6 +825,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'cure-wounds', name: 'Cure Wounds', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
     concentration: false,
+    upcast: true,
     icon: '💚',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
@@ -931,6 +946,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'burning-hands', name: 'Burning Hands', level: 1, castingTime: 'action',
     targeting: { kind: 'cone15' },
     concentration: false,
+    upcast: true,
     icon: '🖐️',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
@@ -968,6 +984,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'fireball', name: 'Fireball', level: 3, castingTime: 'action',
     targeting: { kind: 'sphere5x5', range: 150 },
     concentration: false,
+    upcast: true,
     icon: '💥',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
@@ -1039,6 +1056,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'healing-word', name: 'Healing Word', level: 1, castingTime: 'bonus',
     targeting: { kind: 'creature', range: 60, who: 'ally', count: 1 },
     concentration: false,
+    upcast: true,
     icon: '🩹',
     cast({ state, casterId, slotLevel, targetIds }) {
       const mod = spellMod(state, casterId);
@@ -1192,6 +1210,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'heat-metal', name: 'Heat Metal', level: 2, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
     concentration: true,
+    upcast: true,
     icon: '🔥',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
@@ -1231,6 +1250,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'call-lightning', name: 'Call Lightning', level: 3, castingTime: 'action',
     targeting: { kind: 'sphere2x2', range: 120 },
     concentration: true,
+    upcast: true,
     icon: '⚡',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
@@ -1256,6 +1276,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'moonbeam', name: 'Moonbeam', level: 2, castingTime: 'action',
     targeting: { kind: 'sphere2x2', range: 120 },
     concentration: true,
+    upcast: true,
     icon: '🌙',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
@@ -1338,6 +1359,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'lightning-bolt', name: 'Lightning Bolt', level: 3, castingTime: 'action',
     targeting: { kind: 'line15' },
     concentration: false,
+    upcast: true,
     icon: '⚡',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
@@ -1441,6 +1463,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'guiding-bolt', name: 'Guiding Bolt', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
     concentration: false,
+    upcast: true,
     icon: '🌟',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
@@ -1464,6 +1487,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'thunderwave', name: 'Thunderwave', level: 1, castingTime: 'action',
     targeting: { kind: 'cube15' }, // a 3x3 square placed adjacent to the caster
     concentration: false,
+    upcast: true,
     icon: '💥',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
@@ -1654,6 +1678,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'aid', name: 'Aid', level: 2, castingTime: 'action',
     targeting: { kind: 'creature', range: 30, who: 'ally', count: 3 },
     concentration: false,
+    upcast: true,
     icon: '💗',
     cast({ state, casterId, slotLevel, targetIds }) {
       const amount = 5 * (slotLevel - 1); // +5 at slot 2, +10 at slot 3...
@@ -1772,6 +1797,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'false-life', name: 'False Life', level: 1, castingTime: 'action',
     targeting: { kind: 'self' },
     concentration: false,
+    upcast: true,
     icon: '💀',
     cast({ state, casterId, slotLevel }) {
       const c = state.combatants[casterId]!;
@@ -1792,6 +1818,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'inflict-wounds', name: 'Inflict Wounds', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
     concentration: false,
+    upcast: true,
     icon: '👻',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;

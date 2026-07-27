@@ -38,7 +38,22 @@ import { generateArenaMap } from './map.js';
  * Adding monsters changes what a budget buys, and nothing in the test suite
  * notices — the constants are a measurement, not a rule, and they decay.
  */
-export const EVEN_BUDGET = [1500, 2600, 5700, 8800, 15500];
+/**
+ * 6th and 7th were measured the same way the tripwire measures — greedy on both
+ * sides, N=40, the seeds the test uses — so all seven numbers mean the same
+ * thing. 21,000 and 24,000, a 35% and 55% step over 5th.
+ *
+ * 3rd moved from 5,700 to 6,200 in the same pass. Exposing upcasting (see
+ * legalActions) handed every caster a use for spare high slots, which was worth
+ * about eight points of win rate at 3rd and pushed the old number onto the
+ * failing side of the tripwire. That is the mechanism this whole comment is
+ * about: a change nowhere near this file moved what a budget buys.
+ *
+ * These will want re-measuring again the moment the class features for 6th and
+ * 7th land, since half the party currently gains only hit points across those
+ * two levels.
+ */
+export const EVEN_BUDGET = [1500, 2600, 6200, 8800, 15500, 21000, 24000];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;
