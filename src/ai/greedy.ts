@@ -60,8 +60,27 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
   const { adv, dis } = collectAttackSources(state, actor, target, weapon, isMelee);
   const mode = resolveRollMode(adv, dis);
   const ability = attackAbility(actor, weapon);
-  const bonus = abilityMod(actor.abilities[ability]) + proficiencyBonus(actor.level);
-  let dmg = avgDice(weapon.damage) + (a.offhand ? 0 : abilityMod(actor.abilities[ability]));
+  // A magic weapon's bonuses were not priced here at all, which meant the AI
+  // could not tell a +1 longsword from a longsword — and, once bane weapons
+  // existed, could not tell that the Dragon Slayer in its off hand was the one
+  // to swing at the dragon. All four terms below are read generically off the
+  // weapon data, so no policy names a weapon (which `src/ai` may not do).
+  const bonus = abilityMod(actor.abilities[ability]) + proficiencyBonus(actor.level) +
+    (weapon.attackBonus ?? 0);
+  let dmg = avgDice(weapon.damage) + (a.offhand ? 0 : abilityMod(actor.abilities[ability])) +
+    (weapon.damageBonus ?? 0);
+  if (weapon.extraDamage) {
+    // A save halves it, so price the average of both outcomes rather than the
+    // best case.
+    dmg += avgDice(weapon.extraDamage.dice) * (weapon.extraDamage.save ? 0.75 : 1);
+  }
+  // The bane rider: only against the types it was made for, which is the whole
+  // reason it is worth carrying and the whole reason it must be conditional
+  // here too. Pricing it unconditionally would make a Dragon Slayer look like
+  // the best weapon against everything.
+  if (weapon.slays?.types.includes(target.creatureType ?? 'humanoid')) {
+    dmg += avgDice(weapon.slays.dice);
+  }
   if (actor.featureIds.includes('dueling') && isMelee && !weapon.properties.includes('two-handed')) dmg += 2;
   if (
     actor.featureIds.includes('sneak-attack') && !actor.turn.sneakAttackUsed &&

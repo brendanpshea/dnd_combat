@@ -284,6 +284,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'scroll-fireball', 'scroll-lightning-bolt', 'scroll-dispel-magic', 'scroll-haste',
     'potion-giant-strength-frost',
     'moontouched-shortsword', 'moontouched-warhammer',
+    'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
   ],
@@ -370,6 +371,7 @@ export const SHOP_STOCK: Id[] = [
   'greatsword', 'longbow', 'longsword-plus1', 'shortsword-plus1',
   'greatsword-plus1', 'longbow-plus1', 'warhammer-plus1', 'rapier-plus1',
   'moontouched-shortsword', 'moontouched-warhammer',
+  'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
   // armor
   'leather', 'chain-shirt', 'half-plate', 'splint',
   'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-splint',
@@ -460,6 +462,11 @@ export function itemIcon(itemId: Id): string {
   }
   const w = WEAPONS[itemId];
   if (w) {
+    // Bane weapons before the generic magic check: they set `magic` too, and
+    // the moon belongs to the moon-touched blades. A Dragon Slayer showing a
+    // silvering glyph would be telling the player the wrong thing about the one
+    // stat that decides whether to buy it.
+    if (w.slays) return '🗡️';
     if (w.magic) return '🌙';
     if (itemId.endsWith('plus1')) return '🌟';
     if (w.range && !w.melee) return '🏹';

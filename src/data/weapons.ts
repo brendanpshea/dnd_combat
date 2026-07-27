@@ -1,7 +1,7 @@
 /**
  * Weapon data. Adding a weapon is an entry here — never an engine edit.
  */
-import type { Id, DamageType, Ability, ConditionId, WeaponProfs } from '../engine/types.js';
+import type { Id, DamageType, Ability, ConditionId, WeaponProfs, CreatureType } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
 export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze' | 'nick' | 'cleave';
@@ -37,6 +37,26 @@ export interface WeaponData {
    * is a fight rather than an execution.
    */
   extraDamage?: { dice: string; type: DamageType; save?: { ability: Ability; dc: number } };
+  /**
+   * A bane weapon: extra damage, but only against particular creature types.
+   *
+   * Separate from `extraDamage` because the point is the condition, not the
+   * dice. A Dragon Slayer is not "a longsword that does more" — it is a
+   * longsword you carry *because you looked at what is coming*, and that only
+   * works if the game shows you the roster first, which the arena's gates now
+   * do.
+   *
+   * It is also the player's answer to the widest variance in the game. Forcing
+   * one creature type per fight and measuring the party's win rate spreads from
+   * 4% against fey to 79% against undead (the table is in arena/gates.ts), and
+   * that is currently something the game does *to* a player. A slayer weapon is
+   * the lever that turns a bad matchup into a reason to have prepared.
+   *
+   * `damageType` omitted means the extra dice land as the weapon's own type,
+   * which is how the SRD writes the two Slayers ("extra 3d6 damage of the
+   * weapon's type"). The Sun Blade names radiant instead.
+   */
+  slays?: { types: CreatureType[]; dice: string; damageType?: DamageType };
   /**
    * Life Drain (wraith): on a hit the target makes this save or its hit point
    * *maximum* drops by the damage taken. The SRD says "until the creature
@@ -80,9 +100,32 @@ const MARTIAL_WEAPONS = new Set<Id>([
   'battleaxe', 'morningstar', 'rapier', 'hand-crossbow',
 ]);
 
+/**
+ * Named magic weapons, and the mundane weapon each one *is*.
+ *
+ * `-plus1` and `moontouched-` carry their base in the id and can be stripped;
+ * a Sun Blade cannot. Without an entry here `weaponCategory` returns undefined,
+ * which the proficiency check reads as "natural weapon, always proficient" —
+ * so a wizard would pick up a Dragon Slayer and swing it at full proficiency.
+ * A named weapon added without a line here fails silently and generously,
+ * which is the worst way to fail; `test/slayers.test.ts` holds every magic
+ * weapon to having a category.
+ */
+const NAMED_BASE: Record<Id, Id> = {
+  'dragon-slayer': 'longsword',
+  'giant-slayer': 'longsword',
+  // The SRD lets Shortsword proficiency cover it too; longsword is the stricter
+  // reading and the one the martial/finesse split already expresses.
+  'sun-blade': 'longsword',
+  'mace-of-disruption': 'mace',
+  'mace-of-smiting': 'mace',
+};
+
 /** A weapon's base id, stripping magic/moontouched flavor (a +1 longsword is a
  *  martial weapon like any longsword). */
 export function baseWeaponId(id: Id): Id {
+  const named = NAMED_BASE[id];
+  if (named) return named;
   return id.replace(/-plus1$/, '').replace(/^moontouched-/, '') as Id;
 }
 
@@ -172,6 +215,77 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'rapier-plus1': {
     id: 'rapier-plus1', name: 'Rapier +1', damage: '1d8', damageType: 'piercing',
     properties: ['finesse'], melee: true, mastery: 'vex', cost: 800, attackBonus: 1, damageBonus: 1,
+  },
+
+  // --- bane weapons (rare) ---------------------------------------------------
+  //
+  // Each is the SRD entry, unaltered. They exist as a set rather than as one
+  // showpiece because the point is coverage: between them they answer dragons,
+  // giants, undead, fiends and constructs, which is most of what an arena wave
+  // can put in front of you. One slayer would be a lucky drop; five is a reason
+  // to read the gate cards before you pick a door.
+  //
+  // Note what they are NOT: none of them is better than a +1 weapon of the same
+  // kind against the wrong target. A Dragon Slayer swung at a goblin is a
+  // longsword +1, and that is the whole design — the power is conditional, so
+  // carrying one is a decision rather than an upgrade.
+  //
+  // MEASURED, because an item that changes nothing is dead data with a price
+  // tag. Level 5, N=100 per cell, greedy on both sides, the fight forced to one
+  // creature type (see forceTypes in arena/encounter.ts), the party's fighter
+  // armed with the weapon and nothing else changed:
+  //
+  //   vs dragon     bare 32%   Dragon Slayer        43%   +11
+  //   vs giant      bare 46%   Giant Slayer         60%   +14
+  //   vs fiend      bare 38%   Mace of Disruption   53%   +15
+  //   vs construct  bare 62%   Mace of Smiting      68%    +6
+  //   vs undead     bare 86%   Sun Blade            90%    +4
+  //
+  // The Sun Blade reads small because the party already beats undead 86% of the
+  // time — there are only 14 points left to win. It is the dearest of the five
+  // on its +2/+2 alone.
+  //
+  // And the control, which is the number that says these are conditional rather
+  // than strictly better: a Dragon Slayer carried against BEASTS measured 37%
+  // against the bare party's 40%. Swapping off the fighter's greatsword for a
+  // 1d8 sword costs more than a +1 pays back. That is the intended shape.
+  'dragon-slayer': {
+    id: 'dragon-slayer', name: 'Dragon Slayer', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'sap', cost: 1400,
+    attackBonus: 1, damageBonus: 1, magic: true,
+    slays: { types: ['dragon'], dice: '3d6' },
+  },
+  'giant-slayer': {
+    id: 'giant-slayer', name: 'Giant Slayer', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'topple', cost: 1400,
+    attackBonus: 1, damageBonus: 1, magic: true,
+    slays: { types: ['giant'], dice: '3d6' },
+  },
+  'sun-blade': {
+    // A longsword that gains Finesse, deals radiant instead of slashing, and
+    // hits undead harder. +2/+2 rather than +1/+1, which is what makes it the
+    // dearest of the five.
+    id: 'sun-blade', name: 'Sun Blade', damage: '1d8', damageType: 'radiant',
+    properties: ['finesse', 'versatile'], melee: true, mastery: 'sap', cost: 2000,
+    attackBonus: 2, damageBonus: 2, magic: true,
+    slays: { types: ['undead'], dice: '1d8', damageType: 'radiant' },
+  },
+  'mace-of-disruption': {
+    id: 'mace-of-disruption', name: 'Mace of Disruption', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], melee: true, mastery: 'sap', cost: 1400,
+    attackBonus: 1, damageBonus: 1, magic: true,
+    slays: { types: ['undead', 'fiend'], dice: '2d6', damageType: 'radiant' },
+  },
+  'mace-of-smiting': {
+    // The odd one out, and deliberately kept: constructs are the second-
+    // narrowest target in the bestiary (8 of 137, ahead of only oozes,
+    // aberrations and the lone celestial), so this is the cheapest of the five.
+    // It earns its place because a construct resists most of what a party owns,
+    // which makes the narrow answer the valuable one.
+    id: 'mace-of-smiting', name: 'Mace of Smiting', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], melee: true, mastery: 'sap', cost: 1100,
+    attackBonus: 1, damageBonus: 1, magic: true,
+    slays: { types: ['construct'], dice: '2d6' },
   },
 
   // --- greater weapon variety (mundane, tradable) ---------------------------

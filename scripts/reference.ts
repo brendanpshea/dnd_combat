@@ -98,6 +98,7 @@ function monsterAttacks(m: MonsterData): string {
       if (w.onHitCondition) bits.push(`on hit: ${w.onHitCondition}`);
       if (w.onHitSave) bits.push(`${w.onHitSave.ability.toUpperCase()} DC ${w.onHitSave.dc} or ${w.onHitSave.condition}`);
       if (w.extraDamage) bits.push(`+${w.extraDamage.dice} ${w.extraDamage.type}`);
+      if (w.slays) bits.push(`+${w.slays.dice} vs ${w.slays.types.join('/')}`);
       return bits.join(', ');
     })
     .join('; ');
@@ -290,6 +291,8 @@ function gearDoc(): string {
           w.onHitCondition ? `on hit: ${w.onHitCondition}` : '',
           w.onHitSave ? `${w.onHitSave.ability.toUpperCase()} DC ${w.onHitSave.dc} or ${w.onHitSave.condition}` : '',
           w.extraDamage ? `+${w.extraDamage.dice} ${w.extraDamage.type}${w.extraDamage.save ? ` (${w.extraDamage.save.ability.toUpperCase()} DC ${w.extraDamage.save.dc} halves)` : ''}` : '',
+          w.slays ? `+${w.slays.dice} ${w.slays.damageType ?? w.damageType} vs ${w.slays.types.join('/')}` : '',
+          w.attackBonus || w.damageBonus ? `+${w.attackBonus ?? 0}/+${w.damageBonus ?? 0}` : '',
         ].filter(Boolean).join('; '),
       ]),
     ),
