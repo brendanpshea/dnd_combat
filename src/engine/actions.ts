@@ -338,7 +338,15 @@ export function spellTargetSets(
   } else if (t.kind === 'self') {
     // Offer when it would do something: a burst that touches an adjacent enemy,
     // or Spiritual Guardians' aura reaching an enemy within 15 ft.
-    const reach = spell.id === 'spiritual-guardians' ? 15 : 5;
+    // A burst wants an enemy in it *now*. An aura is different: it lasts, and
+    // the normal way to use one is to raise it as the line closes, so gating it
+    // on an enemy already standing in the 15 ft aura made it nearly unofferable
+    // — the AI's own engagement band parks a caster at 20 ft, so the priest
+    // stat block was offered Spiritual Guardians ten times in thirty fights.
+    // One move of a 30 ft walker is the window that matters; evaluate() prices
+    // the enemies who are actually in the aura, so a wider gate costs nothing
+    // but a candidate.
+    const reach = spell.id === 'spiritual-guardians' ? 35 : 5;
     // A self *buff* is cast before there is anyone to hit — see the `anyTime`
     // note on the targeting type.
     if (t.anyTime || enemies.some((e) => distanceFeet(e.position, actor.position) <= reach)) {
