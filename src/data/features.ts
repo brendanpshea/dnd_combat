@@ -10,7 +10,7 @@ import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
-import { savingThrow, saveForHalf } from '../engine/rules/saves.js';
+import { savingThrow, saveForHalf, charmWarded } from '../engine/rules/saves.js';
 import { charmAway, applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
@@ -151,7 +151,10 @@ function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
   if (!target) return [];
   const { success, event } = savingThrow(state, target.id, 'wis', dc);
   const events: GameEvent[] = [event];
-  if (!success && !target.conditions.some((k) => k.id === 'charmed' && k.sourceId === me.id)) {
+  // Aura of Devotion: charm does not land inside a devoted paladin's aura at
+  // all, so the ward is checked before the condition rather than after.
+  if (!success && !charmWarded(state, target) &&
+      !target.conditions.some((k) => k.id === 'charmed' && k.sourceId === me.id)) {
     target.conditions.push({ id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
     events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'charmed', sourceId: me.id });
   }
@@ -376,6 +379,15 @@ export const FEATURES: Record<Id, FeatureData> = {
    * on its own turn.
    */
   'remarkable-athlete': { id: 'remarkable-athlete', name: 'Remarkable Athlete', trigger: 'passive' },
+  'aura-of-devotion': { id: 'aura-of-devotion', name: 'Aura of Devotion', trigger: 'passive' },
+  /** Escape the Horde: opportunity attacks against you have disadvantage. Read
+   *  in resolveAttack, which is where whether an attack IS an opportunity attack
+   *  is known — collectAttackSources is never told. */
+  'escape-the-horde': { id: 'escape-the-horde', name: 'Escape the Horde', trigger: 'passive' },
+  /** Blessed Healer: healing someone else with a slot heals you for 2 + the
+   *  slot's level. Read in the castSpell path, the only place that knows a slot
+   *  was spent AND who the healing actually reached. */
+  'blessed-healer': { id: 'blessed-healer', name: 'Blessed Healer', trigger: 'passive' },
   'aura-of-protection': { id: 'aura-of-protection', name: 'Aura of Protection', trigger: 'passive' },
   evasion: { id: 'evasion', name: 'Evasion', trigger: 'passive' },
   roving: { id: 'roving', name: 'Roving', trigger: 'passive' },
@@ -629,7 +641,8 @@ export const FEATURES: Record<Id, FeatureData> = {
       for (const t of foes) {
         const { success, event } = savingThrow(state, t.id, 'wis', dc);
         events.push(event);
-        if (!success && !t.conditions.some((k) => k.id === 'lured')) {
+        // The harpy's song is this game's other charm; the same ward stops it.
+        if (!success && !charmWarded(state, t) && !t.conditions.some((k) => k.id === 'lured')) {
           t.conditions.push({ id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
           events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'lured', sourceId: me.id });
         }

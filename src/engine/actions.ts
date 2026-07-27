@@ -18,6 +18,7 @@ import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.
 import { distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS } from './rules/attack.js';
+import { applyHealing } from './rules/heal.js';
 import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
@@ -595,7 +596,21 @@ export function step(state: GameState, action: Action): { state: GameState; even
         type: 'spellCast', casterId: actorId, spellId: action.spellId,
         origin: actor.position, cells: spellFootprint(draft, actor, spell, action.targets),
       });
-      events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) }));
+      const castEvents = spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) });
+      events.push(...castEvents);
+      // Blessed Healer (Life Domain, Cleric 6): a healing spell cast on someone
+      // else heals you too, for 2 plus the slot's level.
+      //
+      // Here rather than in applyHealing because this is the only place that
+      // knows all three things the rule needs: that a SLOT was spent (not a
+      // potion, not Lay on Hands), that the healing reached someone OTHER than
+      // the caster, and which slot it was. Reads the events the cast actually
+      // produced, so a spell that healed nobody — everyone already full — pays
+      // nothing back.
+      if (action.slotLevel >= 1 && actor.featureIds.includes('blessed-healer') &&
+          castEvents.some((e) => e.type === 'healed' && e.targetId !== actorId && e.amount > 0)) {
+        events.push(...applyHealing(draft, actorId, actorId, 2 + action.slotLevel));
+      }
       break;
     }
     case 'useItem': {

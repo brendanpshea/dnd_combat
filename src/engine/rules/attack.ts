@@ -213,6 +213,12 @@ export function resolveAttack(
   attacker.conditions = attacker.conditions.filter((c) => c.id !== 'sanctuary');
 
   const { adv, dis } = collectAttackSources(state, attacker, target, weapon, isMeleeAttack);
+  // Escape the Horde (Hunter, Ranger 7). Read here rather than inside
+  // collectAttackSources, which is not told whether this is an opportunity
+  // attack — that fact only exists at this level.
+  if (ctx.opportunity && target.featureIds.includes('escape-the-horde')) {
+    dis.push('escape the horde');
+  }
   const mode = resolveRollMode(adv, dis);
   const d20 = applyLucky(state, attackerId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;

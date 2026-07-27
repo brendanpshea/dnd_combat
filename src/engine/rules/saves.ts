@@ -34,6 +34,25 @@ function countercharmed(state: GameState, c: Combatant, ability: Ability): boole
 }
 
 /**
+ * Aura of Devotion (Oath of Devotion, Paladin 7): nobody inside the paladin's
+ * Aura of Protection can be charmed.
+ *
+ * Checked where the charm is applied rather than modelled as a resistance,
+ * because immunity means the condition never lands at all — and because, like
+ * the aura it rides on, it is a position: step outside the ten feet and the
+ * protection stops.
+ */
+export function charmWarded(state: GameState, c: Combatant): boolean {
+  for (const other of Object.values(state.combatants)) {
+    if (other.team !== c.team || !other.alive || isDown(other)) continue;
+    if (!other.featureIds.includes('aura-of-devotion')) continue;
+    if (other.conditions.some((k) => k.id === 'incapacitated')) continue;
+    if (distanceFeet(other.position, c.position) <= 10) return true;
+  }
+  return false;
+}
+
+/**
  * A save-for-half damage total, after the target's own defences against exactly
  * that shape of attack.
  *
