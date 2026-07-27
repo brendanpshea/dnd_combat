@@ -1730,7 +1730,29 @@ button.category .count {
 .bounty + .bounty { border-top: 1px dashed #3a3358; }
 .bounty-name { font-weight: 700; font-size: 13px; }
 .bounty-blurb { color: var(--muted); font-size: 12px; flex: 1 1 60%; }
-.bounty-gold { margin-left: auto; color: var(--gold); font-weight: 700; font-size: 13px; }
+.bounty-gold {
+  margin-left: auto;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+/* A bounty pays coin AND an award. The award used to go unmentioned until it
+   turned up on the loot screen, which is too late to have played for it. */
+.bounty-award {
+  display: block;
+  color: #c79ae0;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 11px;
+}
+.bounties-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin: -2px 0 6px;
+}
 
 /* What the break gave back — lunch, or a night's sleep. */
 .rest-panel { margin-top: 8px; }

@@ -35,7 +35,7 @@ import {
 import {
   runComplete, summarise, RUN_TARGET_XP, MEDAL_LABEL, MEDAL_ICON, type RunSummary,
 } from '../../src/arena/medal.js';
-import { spoilOffer, spoilTierFor } from '../../src/arena/spoils.js';
+import { spoilOffer, spoilTierLabel } from '../../src/arena/spoils.js';
 import { SpoilPicker } from './Spoils.js';
 import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
@@ -758,11 +758,21 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               {bounties.length > 0 && (
                 <div className="bounties">
                   <b className="bounties-head">Bounties</b>
+                  {/* What they pay, said once. Each bounty carries an award as
+                      well as coin, and the card used to mention only the coin —
+                      so the pick-one-of-three screen arrived unannounced, and a
+                      reward nobody knows about cannot be played for. */}
+                  <span className="bounties-sub">
+                    Each one claimed pays coin and {spoilTierLabel(level)} — three offered, you keep one.
+                  </span>
                   {bounties.map((b) => (
                     <div key={b.id} className="bounty">
                       <span className="bounty-name">{b.name}</span>
                       <span className="bounty-blurb">{b.blurb}</span>
-                      <span className="bounty-gold">+{bountyGold(b, wave.purse)}g</span>
+                      <span className="bounty-gold">
+                        +{bountyGold(b, wave.purse)}g
+                        <i className="bounty-award">+ {spoilTierLabel(level)}</i>
+                      </span>
                     </div>
                   ))}
                 </div>
