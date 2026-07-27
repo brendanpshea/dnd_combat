@@ -10,8 +10,9 @@
  * The lists below are transcribed from the SRD 5.2 class entries, not recalled.
  * They are deliberately the *whole* list rather than only what is implemented,
  * so adding a spell to a class is checked against the real thing rather than
- * against a subset someone previously chose. Levels 1-3 only: no class in this
- * game reaches a 4th-level slot.
+ * against a subset someone previously chose. Levels 1-4: a full caster reaches a
+ * 4th-level slot at 7th, so that tier is pinned too. The 4th-level lists were
+ * fetched from the SRD class entries the same way the rest were.
  *
  * If a future SRD revision moves a spell, fix the list here — do not delete the
  * assertion.
@@ -38,6 +39,9 @@ const SRD: Record<string, string[]> = {
     'daylight', 'dispel-magic', 'glyph-of-warding', 'magic-circle', 'mass-healing-word',
     'meld-into-stone', 'protection-from-energy', 'remove-curse', 'revivify', 'sending',
     'speak-with-dead', 'spiritual-guardians', 'tongues', 'water-walk',
+    // 4th
+    'aura-of-life', 'banishment', 'control-water', 'death-ward', 'divination',
+    'freedom-of-movement', 'guardian-of-faith', 'locate-creature', 'stone-shape',
   ],
   wizard: [
     // Cantrips
@@ -64,6 +68,12 @@ const SRD: Record<string, string[]> = {
     'lightning-bolt', 'magic-circle', 'major-image', 'nondetection', 'phantom-steed',
     'protection-from-energy', 'remove-curse', 'sending', 'sleet-storm', 'slow', 'speak-with-dead',
     'stinking-cloud', 'tiny-hut', 'tongues', 'vampiric-touch', 'water-breathing',
+    // 4th
+    'arcane-eye', 'banishment', 'black-tentacles', 'blight', 'charm-monster', 'confusion',
+    'conjure-minor-elementals', 'control-water', 'dimension-door', 'divination', 'fabricate',
+    'faithful-hound', 'fire-shield', 'greater-invisibility', 'hallucinatory-terrain', 'ice-storm',
+    'locate-creature', 'phantasmal-killer', 'polymorph', 'private-sanctum', 'resilient-sphere',
+    'secret-chest', 'stone-shape', 'stoneskin', 'vitriolic-sphere', 'wall-of-fire',
   ],
   druid: [
     // Cantrips. The markdown conversion this was transcribed from drops the
@@ -87,6 +97,11 @@ const SRD: Record<string, string[]> = {
     'call-lightning', 'conjure-animals', 'daylight', 'dispel-magic', 'meld-into-stone',
     'plant-growth', 'protection-from-energy', 'revivify', 'sleet-storm', 'speak-with-plants',
     'water-breathing', 'water-walk', 'wind-wall',
+    // 4th
+    'blight', 'charm-monster', 'confusion', 'conjure-minor-elementals', 'conjure-woodland-beings',
+    'control-water', 'divination', 'dominate-beast', 'fire-shield', 'freedom-of-movement',
+    'giant-insect', 'hallucinatory-terrain', 'ice-storm', 'locate-creature', 'polymorph',
+    'stone-shape', 'stoneskin', 'wall-of-fire',
   ],
   ranger: [
     // 1st
@@ -121,6 +136,10 @@ const SRD: Record<string, string[]> = {
     'hypnotic-pattern', 'major-image', 'mass-healing-word', 'nondetection', 'plant-growth',
     'sending', 'slow', 'speak-with-dead', 'speak-with-plants', 'stinking-cloud', 'tiny-hut',
     'tongues',
+    // 4th
+    'charm-monster', 'compulsion', 'confusion', 'dimension-door', 'freedom-of-movement',
+    'greater-invisibility', 'hallucinatory-terrain', 'locate-creature', 'phantasmal-killer',
+    'polymorph',
   ],
   paladin: [
     // 1st

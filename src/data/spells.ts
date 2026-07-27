@@ -2253,6 +2253,108 @@ export const SPELLS: Record<Id, SpellData> = {
       return [{ type: 'conditionApplied', combatantId: targetId, condition: 'marked', sourceId: casterId }];
     },
   },
+
+  // --- 4th level ------------------------------------------------------------
+  // A 4th-level slot arrives at 7th level. Until these, the only thing to spend
+  // it on was upcasting a 3rd-level spell, which works but gives the tier no
+  // identity of its own. Four spells, one reachable by each full caster, chosen
+  // for effects the evaluator can actually see — damage, a condition, or a
+  // creature leaving the fight. A 4th-level spell the AI cannot read would be
+  // the most expensive dead data in the game.
+  blight: {
+    id: 'blight', name: 'Blight', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1 },
+    concentration: false,
+    upcast: true,
+    icon: '🥀',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'con', dc);
+      const dice = `${8 + Math.max(0, slotLevel - 4)}d8`;
+      const dmg = rollDice(state.rng, dice);
+      state.rng = dmg.state;
+      const amount = saveForHalf(state.combatants[targetId]!, 'con', dmg.total, save.success);
+      return [save.event, ...applyDamage(state, targetId, casterId, amount, 'necrotic', dmg.rolls)];
+    },
+  },
+  'ice-storm': {
+    id: 'ice-storm', name: 'Ice Storm', level: 4, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 300 },
+    concentration: false,
+    upcast: true,
+    icon: '🧊',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const hail = `${2 + Math.max(0, slotLevel - 4)}d8`;
+      for (const pos of sphere5x5(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (tid) {
+          const t = state.combatants[tid]!;
+          if (t.alive && !(sculpt && t.team === caster.team)) {
+            const save = savingThrow(state, tid, 'dex', dc);
+            events.push(save.event);
+            const bludgeon = rollDice(state.rng, hail); state.rng = bludgeon.state;
+            const cold = rollDice(state.rng, '4d6'); state.rng = cold.state;
+            const total = bludgeon.total + cold.total;
+            const amount = saveForHalf(t, 'dex', total, save.success);
+            events.push(...applyDamage(state, tid, casterId, amount, 'cold', [...bludgeon.rolls, ...cold.rolls]));
+          }
+        }
+        // The storm leaves the ground it fell on difficult to cross. Walls are
+        // left alone; a hazard is not downgraded into a puddle either.
+        const cell = cellAt(state.grid, pos);
+        if (cell && cell.terrain === 'open') cell.terrain = 'difficult';
+      }
+      return events;
+    },
+  },
+  banishment: {
+    id: 'banishment', name: 'Banishment', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '🌀',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'cha', dc);
+      if (save.success) return [save.event];
+      // Out of the fight rather than dead, which is what charmAway already
+      // models for Suggestion — and it takes the same care over what a
+      // departing creature leaves behind (its summons, whatever it charmed).
+      // The SRD returns the victim when concentration ends; a fight here is
+      // shorter than the spell's minute, so it does not come back.
+      return [save.event, ...charmAway(state, targetId)];
+    },
+  },
+  'phantasmal-killer': {
+    id: 'phantasmal-killer', name: 'Phantasmal Killer', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '👁️',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const target = state.combatants[targetId]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'wis', dc);
+      const events: GameEvent[] = [save.event];
+      const dmg = rollDice(state.rng, `${4 + Math.max(0, slotLevel - 4)}d10`);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, casterId, dmg.total, 'psychic', dmg.rolls));
+      if (!save.success && target.alive) {
+        target.conditions.push({
+          id: 'frightened', sourceId: casterId, concentration: true,
+          repeatSave: { ability: 'wis', dc },
+        });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'frightened', sourceId: casterId });
+        state.combatants[casterId]!.concentratingOn = { spellId: 'phantasmal-killer', targetIds: [targetId] };
+      }
+      return events;
+    },
+  },
 };
 
 export function directionFromDelta(from: Position, to: Position): Direction8 {
