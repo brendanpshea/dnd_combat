@@ -378,7 +378,7 @@ describe('arena difficulty calibration', () => {
     // Every level, not just 3 and 5. Those two were the only ones checked, and
     // they were the only two that stayed honest: a playthrough sweep found L1
     // at 77%, L2 at 38% and L4 at 41% while these two sat at 47% and 51%.
-    for (const level of [1, 2, 3, 4, 5]) {
+    for (const level of [1, 2, 3, 4, 5, 6, 7]) {
       const budget = evenBudgetFor(level);
       let rng = seedRng(level * 7919);
       let wins = 0;

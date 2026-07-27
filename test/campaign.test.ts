@@ -308,7 +308,7 @@ describe('campaign state', () => {
 });
 
 describe('XP, leveling, and treasure', () => {
-  it('levelForXp follows the thresholds and caps at 5', () => {
+  it('levelForXp follows the thresholds and caps at 7', () => {
     expect(levelForXp(0)).toBe(1);
     expect(levelForXp(299)).toBe(1);
     expect(levelForXp(300)).toBe(2);
@@ -317,8 +317,24 @@ describe('XP, leveling, and treasure', () => {
     expect(levelForXp(2699)).toBe(3);
     expect(levelForXp(2700)).toBe(4);
     expect(levelForXp(6500)).toBe(5);
-    expect(levelForXp(99999)).toBe(5);
-    expect(LEVEL_XP.length).toBe(5);
+    expect(levelForXp(13999)).toBe(5);
+    expect(levelForXp(14000)).toBe(6);
+    expect(levelForXp(23000)).toBe(7);
+    expect(levelForXp(99999)).toBe(7);
+    expect(LEVEL_XP.length).toBe(7);
+  });
+
+  /**
+   * Levels 6 and 7 are an ARENA reward, not a campaign one. The ladder awards
+   * about 7,500 XP a character across all 34 stages and 6th needs 14,000, so a
+   * campaign run tops out at 5th however it is played — reaching 7th on the
+   * ladder's pace would take roughly 105 stages. The arena has no such ceiling:
+   * it reaches 6th around wave 11 and 7th around wave 16.
+   */
+  it('the campaign ladder still tops out at 5, by XP rather than by a cap', () => {
+    const total = STAGES.reduce((sum, st) => sum + xpAward(st.encounterId, 4), 0);
+    expect(levelForXp(total)).toBe(5);
+    expect(total).toBeLessThan(LEVEL_XP[5]!);
   });
 
   it('the ladder is ordered easy -> hard by encounter XP', () => {

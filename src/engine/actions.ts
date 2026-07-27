@@ -452,13 +452,25 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
     const baseLevel = actor.innateSpells[sid] ? 0 : spell.level;
-    // Smites are the one place upcasting is a real decision rather than a menu
-    // full of near-duplicates: the whole point of a paladin's turn is choosing
-    // how much of the tank to spend on this swing. Every other spell is offered
-    // at its base level only, as before.
-    const levels = SMITE_SPECS[sid]
-      ? actor.spellSlots.map((_, i) => i + 1).filter((lvl) => spellAvailable(actor, spell, lvl))
-      : spellAvailable(actor, spell, baseLevel) ? [baseLevel] : [];
+    // Upcasting is offered where it is a real decision and nowhere else. For a
+    // smite that is the whole point of a paladin's turn — how much of the tank
+    // to spend on this swing. For the spells flagged `upcast` it is a bigger
+    // Fireball or a bigger Cure Wounds. For everything else a higher slot buys
+    // literally nothing, so offering it would be a menu full of near-duplicates.
+    //
+    // This also has to exist for 7th level to mean anything: a 4th-level slot
+    // arrives there and the game has no 4th-level spells, so without upcasting
+    // the slot cannot be spent at all.
+    const upcastable = SMITE_SPECS[sid] !== undefined || spell.upcast === true;
+    // `baseLevel` stays in the candidate list even when upcasting: for an innate
+    // spell it is 0, meaning "cast from the species pool, spend no slot", and
+    // enumerating slot levels alone silently took that away. A tiefling's Ray
+    // of Sickness is innate AND upcastable, and flagging it stopped a fighter
+    // casting it at all.
+    const levels = (upcastable
+      ? [...new Set([baseLevel, ...actor.spellSlots.map((_, i) => i + 1)])]
+      : [baseLevel]
+    ).filter((lvl) => spellAvailable(actor, spell, lvl));
     for (const slotLevel of levels) {
       for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
         const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };
