@@ -262,15 +262,30 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Standing in a hazard is bad; more so with low HP.
     const cell = cellAt(state.grid, c.position);
     if (cell?.terrain === 'hazard') unit -= 2 + 4 * (1 - c.hp / c.maxHp);
+    // Standing on ground that costs double is half your movement gone, so it
+    // is priced just above `slowed` (-0.03, which is only -10 ft of 30). This
+    // is the whole point of the spells that *make* ground difficult: Ice Storm
+    // is 2d8+4d6 where a same-level Fireball is 8d6, so by damage alone it is
+    // strictly dominated, and it was offered 843 times in thirty fights and
+    // cast none. Terrain, not damage, is what it is for.
+    if (cell && (cell.terrain === 'difficult' || cell.chilled !== undefined)) unit -= worth * 0.05;
 
     // Engagement: a unit contributes nothing from across the board. Melee
     // kits want to be adjacent; ranged kits want a comfortable middle band.
     const melee = prefersMelee(c);
     let nearest = Infinity;
     let seesAnyEnemy = false;
+    // Enemies inside a 15 ft aura, counted here so the aura term below costs no
+    // second sweep of the roster. Only meaningful when this unit has one.
+    let enemiesInAura = 0;
     for (const e of Object.values(state.combatants)) {
       if (!e.alive || isDown(e) || e.team === team) continue;
-      nearest = Math.min(nearest, distanceCells(e.position, c.position));
+      const d = distanceCells(e.position, c.position);
+      nearest = Math.min(nearest, d);
+      // In the aura now, or one move from walking into it. The approaching
+      // half is what makes raising the aura *before* contact worth anything.
+      if (d <= 3) enemiesInAura += 1;
+      else if (d <= 7) enemiesInAura += 0.35;
       // "See" means *can act on*, not merely a clear geometric line: a hidden
       // enemy can't be targeted, so a unit whose foes are all hidden is blind
       // and should go looking. Counting a hidden enemy as seen let two hidden
@@ -317,6 +332,34 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
       // is still argued for, but by the threat term below, which is where
       // "don't stand where they can hit you" belongs.
       unit -= (isPov ? 0.9 : 0.3 / share) * Math.abs(nearest - preferred);
+    }
+
+    // Persistent effects that pay out on *later* turns and produce nothing at
+    // all on the turn they are created. The simulation AI scores an action by
+    // the state one step ahead, so an aura or a summon is indistinguishable
+    // from a burnt slot unless its future income is visible on the board.
+    // Measured before this term, over thirty level-6 fights: Spiritual
+    // Guardians cast 0 times from 55 offers, Flaming Sphere 0 from 6962.
+    // Spiritual Weapon escaped only because it happens to strike as it lands.
+    //
+    // Keyed off the generic state fields, not spell ids: a future aura that
+    // sets `spiritualGuardians`, or a summon of a new `kind`, is priced here
+    // with no edit. The weights are per *turn of income*, discounted for the
+    // fight ending first. The scale is one turn of income, conservatively: an
+    // aura is 3d8 on a Wisdom save for half, so ~9 expected damage per enemy
+    // standing in it, and a summon's ram is 2d6 for ~5. An aura with nobody in
+    // it is worth nothing, which is what keeps it from being raised early.
+    if (c.spiritualGuardians) unit += 9 * enemiesInAura;
+    for (const s of c.summons ?? []) {
+      let near = Infinity;
+      for (const e of Object.values(state.combatants)) {
+        if (!e.alive || isDown(e) || e.team === team) continue;
+        near = Math.min(near, distanceCells(e.position, s.position));
+      }
+      // Flat worth for having one at all, plus the strike it makes when it is
+      // actually next to something. Both sphere and weapon move on their own,
+      // so being far away is a delay rather than a loss.
+      unit += 2.5 + (near <= 1 ? 2.5 : near <= 4 ? 1 : 0);
     }
 
     // Incoming threat: fragile units should not sit where enemies can reach.
