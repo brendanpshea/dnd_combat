@@ -104,4 +104,6 @@ export type GameEvent =
   | { type: 'webSpun'; sourceId: Id; cells: Position[] }
   /** The strands clear when the caster's concentration drops. */
   | { type: 'webCleared'; sourceId: Id; cells: Position[] }
+  /** A conjured ally arrived on the board and in the initiative order. */
+  | { type: 'summoned'; combatantId: Id; summonerId: Id; position: Position }
   | { type: 'combatEnded'; winner: TeamId };

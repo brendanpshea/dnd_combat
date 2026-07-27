@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
+import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { buildParty } from '../../src/builder/character.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
 import { MAPS, MAP_IDS, farRank } from '../../src/data/maps.js';
@@ -535,7 +536,12 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const activeId = combat.isOver() ? undefined : combat.activeId;
   const active = activeId ? state.combatants[activeId] : undefined;
   const activeLook = classLook(active?.classId);
-  const isHumanTurn = !!active && !aiTeams.has(active.team) && !combat.isOver();
+  // A conjured ally runs itself even on the player's side: the SRD lets you
+  // command it, but a fifth character sheet on a phone for a creature whose
+  // whole job is "bite the nearest thing" is a worse game than letting it act.
+  const runsItself = (c: Combatant | undefined): boolean =>
+    !!c && (aiTeams.has(c.team) || actsOnItsOwn(c));
+  const isHumanTurn = !!active && !runsItself(active) && !combat.isOver();
 
   function apply(action: Action) {
     initAudio();
@@ -611,7 +617,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         }), 450);
       }
 
-      const isPlayer = (id: Id) => { const t = combat.state.combatants[id]?.team; return !!t && !aiTeams.has(t); };
+      const isPlayer = (id: Id) => !runsItself(combat.state.combatants[id]);
 
       // Contextual coaching: surface the first not-yet-seen tip these events
       // trigger. Skipped when muted; each tip fires once ever (localStorage).
@@ -697,7 +703,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // way to pace anything. `version` bumps once per applied action, which is
   // exactly when the AI should reconsider.
   useEffect(() => {
-    if (combat.isOver() || !active || !aiTeams.has(active.team)) return;
+    if (combat.isOver() || !active || !runsItself(active)) return;
     const wait = Math.max(0, dwellUntil.current - performance.now());
     const t = setTimeout(() => {
       apply(aiPolicy(aiLevel)(combat.state, combat.activeId));

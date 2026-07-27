@@ -4,6 +4,7 @@
  * is forms and routing.
  */
 import { useRef, useState, ComponentType } from 'react';
+import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { Combat } from '../../src/engine/combat.js';
 import type { TeamId, Id, ItemStack } from '../../src/engine/types.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
@@ -143,7 +144,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       setPhase({ p: 'over' });
       return;
     }
-    const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
+    const survivors = Object.values(combat.state.combatants)
+              .filter((x) => x.team === 'team1' && !actsOnItsOwn(x));
     const result = applyVictory(c, survivors, combat.state.rng);
     if (isComplete(c)) deleteCampaignWeb();
     else saveCampaignWeb(c);
