@@ -17,6 +17,7 @@
  */
 import type { MapData } from '../data/maps.js';
 import type { Id } from '../engine/types.js';
+import type { StallVisit } from './stall.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap, type LayoutName } from './map.js';
@@ -296,6 +297,13 @@ export interface ArenaRunState {
    * that accumulates forever.
    */
   heard?: string[];
+  /**
+   * This morning's trip to the stall — the haggle already made, the theft
+   * already attempted, and the prices they left behind. Keyed to the day, so a
+   * new day is a new merchant mood and closing the panel cannot reroll a failed
+   * haggle. Absent = nobody has been to market yet.
+   */
+  stall?: StallVisit;
   /**
    * Which of the wave's three doors is selected (see gates.ts). Optional so a
    * save written before gates existed loads and simply starts on door 0.
