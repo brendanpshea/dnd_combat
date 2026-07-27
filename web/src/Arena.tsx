@@ -26,8 +26,9 @@ import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import {
-  buildWave, newArenaRun, recordResult, type ArenaRunState, type ArenaWave,
+  newArenaRun, recordResult, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
+import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
 } from '../../src/arena/bounties.js';
@@ -116,11 +117,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [, bump] = useState(0);
 
   const level = partyLevelOf(c);
-  const wave = buildWave(run.seed, level, run.wave);
+  // The three doors, and the one currently selected. Both derive from the run
+  // rather than from component state, so a refresh mid-choice restores it.
+  const gates = gatesFor(run.seed, level, run.wave);
+  const gate = gateFor(gates, run.gate);
+  const wave = gate.wave;
   const bounties = offeredBounties(c, run, wave);
+  const locked = gateLocked(run.attempts);
+
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
     saveArenaWeb({ campaign: nextC, run: nextRun });
   const refresh = () => { setC({ ...c }); bump((v) => v + 1); };
+
+  /** Take a door. Free until the first attempt; after that the wave is fixed. */
+  function chooseGate(door: number) {
+    if (locked || door === (run.gate ?? 0)) return;
+    const nextRun = { ...run, gate: door };
+    setRun(nextRun); persist(c, nextRun); setNotice(null);
+  }
 
   /** Wipe the save and go back to the forge — a new party, a new ladder. */
   function restartRun() {
@@ -328,7 +342,43 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 </span>
               </div>
 
-              {/* Who you're facing, as faces — a list of names doesn't land. */}
+              {/* Three doors. The choice is the planning half of the screen:
+                  same purse behind each, so what you are picking is which fight
+                  your party is actually good at. Free to change until you have
+                  fought one — after that the wave is the wave you failed. */}
+              <div className="gates">
+                {gates.map((g) => (
+                  <button
+                    key={g.door}
+                    className={`gate${g.door === (run.gate ?? 0) ? ' on' : ''}${locked ? ' locked' : ''}`}
+                    onClick={() => chooseGate(g.door)}
+                    disabled={locked && g.door !== (run.gate ?? 0)}
+                    aria-pressed={g.door === (run.gate ?? 0)}
+                  >
+                    <b className="gate-name">{g.name}</b>
+                    <span className="gate-blurb">{g.blurb}</span>
+                    <span className="gate-foes">
+                      {foeCounts(g.wave.encounter.members).map(({ id, n }) => (
+                        <span key={id} className="gate-foe" title={MONSTERS[id]?.name ?? id}>
+                          <ArtImage
+                            id={id}
+                            {...(hasArt(id) ? { src: tokenUrl(id) } : {})}
+                            glyphClassName="gate-foe-glyph"
+                            alt=""
+                          />
+                          {n > 1 && <i className="gate-foe-count">×{n}</i>}
+                        </span>
+                      ))}
+                    </span>
+                    <span className="gate-count">
+                      {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Who the selected door actually puts in front of you, named —
+                  the tokens on a card are too small to identify a monster from. */}
               <div className="arena-foes">
                 {foeCounts(wave.encounter.members).map(({ id, n }) => (
                   <div key={id} className="arena-foe" title={MONSTERS[id]?.name ?? id}>
@@ -346,7 +396,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
               <p className="hint">
                 {grid.width}×{grid.height} {wave.map.theme}
-                {run.attempts > 0 && ` · attempt ${run.attempts + 1}`}
+                {locked && ` · attempt ${run.attempts + 1}, this door is committed`}
               </p>
 
               {/* The planning half of the screen: what this wave will pay extra
@@ -455,7 +505,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
               <div className="adv-choices">
                 <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
-                  ⚔️ Fight wave {run.wave}
+                  ⚔️ Fight — {gate.name}
                 </button>
                 <button onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}>
                   🛒 {panel === 'shop' ? 'Close the stall' : 'Visit the stall'}

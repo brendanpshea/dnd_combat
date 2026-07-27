@@ -19,7 +19,7 @@ import type { MapData } from '../data/maps.js';
 import type { Id } from '../engine/types.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
-import { generateArenaMap } from './map.js';
+import { generateArenaMap, type LayoutName } from './map.js';
 
 /**
  * Adjusted-XP budget for a roughly even fight, by party level. Every entry is
@@ -77,6 +77,42 @@ export function evenBudgetFor(level: number): number {
 }
 
 /**
+ * What choosing between three doors is worth, and what it costs.
+ *
+ * Gates (see gates.ts) offer three independent waves and let the player take
+ * one. Even with the doors built on the one axis that is difficulty-flat, a
+ * pick is worth a great deal. Measured at level 3, wave 16 (where the ramp
+ * crosses even), 100 waves x 3 runs per door, greedy on both sides, the two
+ * columns run on identical seeds so they are paired:
+ *
+ *                            no tax     at 1.03
+ *   one door, no choice       46.3%       37.0%   <- what the arena used to be
+ *   mean of the three         45.4%       41.7%
+ *   fewest bodies             56.0%       49.3%   <- the obvious card heuristic
+ *   best of three             75.0%       72.7%   <- always picks right
+ *   worst of three            17.3%       11.7%   <- always picks wrong
+ *
+ * So a player applying the most obvious visible rule gains about ten points
+ * over the old arena, and a perfect one nearly thirty. Left alone that is the
+ * documented failure mode of this whole file arriving by a new route: every
+ * wave quietly softer than EVEN_BUDGET claims, with nothing in the suite
+ * noticing.
+ *
+ * 1.03 is a PARTIAL correction, on purpose. Budget is worth about 2.2 points of
+ * win rate per 0.01 here, so this takes back roughly two thirds of what the
+ * obvious heuristic gains and leaves the sensible chooser about three points
+ * ahead of the old arena — while the careless one is a good deal worse off.
+ * That gap is what the choice is *for*; pricing it away entirely would leave
+ * three doors that are decoration.
+ *
+ * Re-measure alongside EVEN_BUDGET, and re-derive properly once the playtest
+ * script models a door-choice policy. This is calibrated against a heuristic
+ * chooser, which is a proxy for a player and not a player — which is also why
+ * it is deliberately not tuned to the last decimal against that proxy.
+ */
+export const GATE_TAX = 1.03;
+
+/**
  * How hard a wave should be, as a share of the even-fight budget.
  *
  * Wave 1 opens well under an even fight so a run doesn't die on the doorstep,
@@ -88,19 +124,32 @@ export function evenBudgetFor(level: number): number {
  * 5, and at 0.09 the median run died at wave 7 with one run in twenty getting
  * there at all. The two curves were racing and the ramp won.
  *
- * At 0.03 it crosses even around wave 16 instead, and measured over twenty
- * playthroughs the median run reaches wave 14 and a quarter reach wave 18 —
- * which is where a party would cross the level 6 threshold (14,000 XP) once
- * that level exists. The nice property of this slope is that the cap and the
- * even point arrive together: you finish levelling right as the fights stop
- * being winnable on average, so the last stretch of a run is the hard part
- * rather than the middle being a wall.
+ * At 0.03 it crosses even around wave 16 instead. The nice property of this
+ * slope is that the cap and the even point arrive together: you finish
+ * levelling right as the fights stop being winnable on average, so the last
+ * stretch of a run is the hard part rather than the middle being a wall.
+ *
+ * THAT SAID, THIS COMMENT WAS OUT OF DATE. It claimed the median run reached
+ * wave 14 with a quarter reaching 18, measured over twenty playthroughs. Re-
+ * measured at forty: the median run reaches wave 9. The drift is not from the
+ * slope — it is everything else that has moved since (a bigger bestiary, six
+ * spells corrected to require Concentration, a smaller wave purse when bounties
+ * arrived), which is the same decay EVEN_BUDGET's comment warns about, landing
+ * on a different constant. Recorded here rather than quietly corrected, because
+ * "the playtest number is stale" is the useful thing to know.
+ *
+ * Gates did not move it: 40 playthroughs before and after both read a median of
+ * 9, because the playtest drives waves directly and so pays GATE_TAX without
+ * ever getting to choose a door. The tax and the chokepoint fix in map.ts —
+ * which put a whole missing layout back into circulation — roughly cancel.
  *
  * Re-measure with `npx tsx scripts/playtest.ts` after changing the XP curve or
- * adding a level — the two are coupled, and only the playtest sees it.
+ * adding a level — the two are coupled, and only the playtest sees it. Forty
+ * runs, not twenty: at twenty the median read 8 and 10 on the two branches that
+ * both read 9 at forty.
  */
 export function waveDifficulty(wave: number): number {
-  return 0.55 + 0.03 * (wave - 1);
+  return (0.55 + 0.03 * (wave - 1)) * GATE_TAX;
 }
 
 /**
@@ -186,15 +235,19 @@ export interface ArenaWave {
  * rolling state, so a retry regenerates *the same fight* — a wave you failed is
  * a tactical problem to solve, not a slot machine to reroll until it's easy.
  */
-export function buildWave(runSeed: number, level: number, wave: number): ArenaWave {
-  // Mix the two so consecutive waves don't correlate.
-  let rng: RngState = (runSeed * 2654435761 + wave * 40503) >>> 0;
+export function buildWave(
+  runSeed: number, level: number, wave: number,
+  layout?: LayoutName, door = 0,
+): ArenaWave {
+  // Mix all three so consecutive waves don't correlate and the doors of one
+  // wave are three different fights rather than three drafts of the same one.
+  let rng: RngState = (runSeed * 2654435761 + wave * 40503 + door * 2246822519) >>> 0;
   const budget = waveBudget(level, wave);
   const e = generateEncounter(
     { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level), partyLevel: level },
     rng,
   ); rng = e.state;
-  const m = generateArenaMap({}, rng); rng = m.state;
+  const m = generateArenaMap(layout ? { layout } : {}, rng); rng = m.state;
   return { wave, encounter: e.value, map: m.value.map, budget, purse: wavePurse(level, wave) };
 }
 
@@ -222,6 +275,11 @@ export interface ArenaRunState {
   spellsUsed: Id[];
   /** Bounties claimed, for the run summary. */
   bounties: number;
+  /**
+   * Which of the wave's three doors is selected (see gates.ts). Optional so a
+   * save written before gates existed loads and simply starts on door 0.
+   */
+  gate?: number;
 }
 
 export function newArenaRun(seed: number): ArenaRunState {
@@ -255,6 +313,9 @@ export function recordResult(
     clearedFirstTry: run.clearedFirstTry + (run.attempts === 0 ? 1 : 0),
     wave: run.wave + 1,
     attempts: 0,
+    // A cleared wave releases the door: the next wave's three are a fresh
+    // choice, and leaving the old index set would pre-select door 2 of 3.
+    gate: 0,
     gold: run.gold + purse,
   };
 }

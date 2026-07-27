@@ -38,7 +38,18 @@ export interface ArenaMapOptions {
    *  accepts; the generator itself rolls 12 or 16 (see below). */
   height?: number;
   theme?: MapTheme;
+  /**
+   * Force a named layout instead of drawing one by weight. The arena's gates
+   * use this: a door that promises barricades has to deliver them, or the
+   * promise on the card is a lie. An unknown name falls back to the weighted
+   * draw rather than throwing, so a stale id degrades to "some board".
+   */
+  layout?: LayoutName;
 }
+
+/** The stamps `layout` may name. */
+export type LayoutName =
+  'chokepoint' | 'pillars' | 'redoubt' | 'crossfire' | 'ruin' | 'open';
 
 /**
  * Why a candidate board was rejected. Surfaced (rather than swallowed) so the
@@ -117,7 +128,7 @@ export function validateArenaMap(map: MapData): MapFault[] {
  */
 type Stamp = (put: (x: number, y: number, ch: string) => void, mid: number, roll: () => number, height: number) => void;
 
-const LAYOUTS: Array<{ name: string; weight: number; stamp: Stamp }> = [
+const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
   {
     // A wall across the board with one or two ways through. The melee line has
     // somewhere worth standing, and the shooters behind it have a lane to hold.
@@ -137,8 +148,17 @@ const LAYOUTS: Array<{ name: string; weight: number; stamp: Stamp }> = [
       }
       // And a barricade beside each gap: holding a doorway should be worth
       // something to whoever gets there first.
-      put(gapA, mid - 1, '+');
-      put(gapB, mid + 1, '+');
+      //
+      // BESIDE, not in front of. These used to sit at (gap, mid-1) and
+      // (gap, mid+1) — directly in the doorway's approach — and because the
+      // band blocks left and right, that left the gap with no orthogonal way in
+      // at all. Every chokepoint board failed the connectivity check, and since
+      // an unforced reroll draws a fresh layout the failure was invisible: this
+      // is the heaviest-weighted layout in the table (20 of 100) and it had
+      // never once shipped. Offsetting by a column keeps the cover and leaves
+      // the doorway open.
+      put(gapA - 1, mid - 1, '+');
+      put(gapB + 1, mid + 1, '+');
     },
   },
   {
@@ -202,7 +222,9 @@ const LAYOUTS: Array<{ name: string; weight: number; stamp: Stamp }> = [
 ];
 
 /** One candidate board — not yet validated. */
-function draft(theme: MapTheme, height: number, state: RngState): { rows: string[]; state: RngState } {
+function draft(
+  theme: MapTheme, height: number, state: RngState, forced?: LayoutName,
+): { rows: string[]; state: RngState } {
   let rng = state;
   const roll = () => { const r = next(rng); rng = r.state; return r.value; };
   const grid: string[][] = Array.from({ length: height }, () => Array<string>(WIDTH).fill('.'));
@@ -218,9 +240,12 @@ function draft(theme: MapTheme, height: number, state: RngState): { rows: string
     grid[y]![px] = ch;
   };
 
+  // Roll regardless of whether a layout was forced, so forcing one does not
+  // shift the rest of the RNG stream and change the hazards and mud too.
   const total = LAYOUTS.reduce((a, l) => a + l.weight, 0);
   let pick = roll() * total;
-  const layout = LAYOUTS.find((l) => (pick -= l.weight) < 0) ?? LAYOUTS[0]!;
+  const drawn = LAYOUTS.find((l) => (pick -= l.weight) < 0) ?? LAYOUTS[0]!;
+  const layout = (forced && LAYOUTS.find((l) => l.name === forced)) || drawn;
   // Where the shape sits: centred, nudged a rank or two so two boards from the
   // same layout do not read as the same board.
   const mid = Math.max(lo + 1, Math.min(hi - 1, Math.floor(height / 2) + (Math.floor(roll() * 3) - 1)));
@@ -300,7 +325,7 @@ export function generateArenaMap(
   }
 
   for (let attempt = 0; attempt < 24; attempt++) {
-    const d = draft(theme, height, rng); rng = d.state;
+    const d = draft(theme, height, rng, opts.layout); rng = d.state;
     const map: MapData = { id: `arena-${theme}-${height}`, name: 'Arena', theme, rows: d.rows };
     if (validateArenaMap(map).length === 0) {
       return { value: { map, rerolls: attempt }, state: rng };

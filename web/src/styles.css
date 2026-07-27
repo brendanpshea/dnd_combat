@@ -2868,6 +2868,56 @@ button.category .count {
 .arena-score { margin-left: auto; color: var(--muted); font-size: .82rem; }
 
 /* Who's coming, as faces. Token art if we have it, a glyph if we don't. */
+/* The three doors. Side by side on anything wide enough to compare them in one
+   look, stacked on a narrow phone — comparing is the whole interaction, so a
+   horizontal scroll would be the wrong answer. */
+.gates {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+@media (max-width: 420px) {
+  .gates { grid-template-columns: 1fr; }
+}
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  border: 1px solid #453d63;
+  background: var(--panel);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.gate.on {
+  border-color: var(--gold);
+  background: #332a4d;
+  box-shadow: 0 0 0 1px var(--gold) inset;
+}
+.gate:disabled { opacity: 0.4; cursor: default; }
+.gate-name { font-family: var(--display); font-size: 13px; }
+.gate.on .gate-name { color: var(--gold); }
+.gate-blurb { color: var(--muted); font-size: 11px; line-height: 1.25; }
+.gate-foes { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+.gate-foe { position: relative; line-height: 0; }
+.gate-foe img, .gate-foe-glyph {
+  width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
+  border: 1px solid #5a2b3a; background: #241f38;
+}
+.gate-foe-glyph { display: grid; place-items: center; font-size: .9rem; }
+.gate-foe-count {
+  position: absolute; bottom: -3px; right: -3px; padding: 0 3px; border-radius: 7px;
+  background: var(--red, #e26); color: #fff; font-size: .6rem; font-weight: 800;
+  font-style: normal; line-height: 1.4;
+}
+.gate-count { color: var(--muted); font-size: 11px; margin-top: auto; padding-top: 2px; }
+
 .arena-foes { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .arena-foe {
   position: relative; width: 76px; display: flex; flex-direction: column;
