@@ -331,6 +331,9 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
     'ring-of-the-ram', 'staff-healing', 'shield-arrow-catching',
     'wand-fear', 'wand-binding', 'necklace-prayer-beads',
+    'figurine-marble-elephant', 'figurine-bronze-griffon', 'figurine-golden-lion',
+    'brazier-fire-elemental', 'bowl-water-elemental',
+    'censer-air-elemental', 'stone-earth-elemental',
     'sword-of-wounding', 'sword-of-life-stealing', 'berserker-axe', 'mace-of-terror',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
@@ -421,6 +424,9 @@ export const SHOP_STOCK: Id[] = [
   // wands — charged, not consumed (see ConsumableData.charges)
   'wand-magic-missiles', 'wand-web', 'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
   'ring-of-the-ram', 'staff-healing', 'staff-python', 'wand-fear', 'wand-binding',
+  'figurine-marble-elephant', 'figurine-bronze-griffon', 'figurine-golden-lion',
+  'brazier-fire-elemental', 'bowl-water-elemental',
+  'censer-air-elemental', 'stone-earth-elemental',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow',
@@ -1213,9 +1219,17 @@ export function longRest(c: CampaignState): RestResult {
     // whatever's left. Leave the field absent when the pool is full — absent
     // means full, the same fresh-save signal used for HP and slots.
     const restored = Math.min(max, hitDiceLeft(c, index) + Math.max(1, Math.floor(max / 2)));
+    // Charges in once-per-run items do NOT come back. A long rest rebuilds
+    // `resources` from scratch, and "absent means full" is what refills a wand —
+    // so anything that must stay spent has to be carried across by hand.
+    const keptCharges = Object.fromEntries(
+      Object.entries(character.resources?.itemCharges ?? {})
+        .filter(([itemId]) => ITEMS[itemId]?.refills === 'never'),
+    );
     character.resources = {
       hp: combatant.maxHp,
       ...(restored < max ? { hitDice: restored } : {}),
+      ...(Object.keys(keptCharges).length > 0 ? { itemCharges: keptCharges } : {}),
       ...(character.resources?.effects?.familiar ? { effects: { familiar: { kind: 'owl' } } } : {}),
     };
   }

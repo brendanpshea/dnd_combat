@@ -82,6 +82,59 @@ describe('charges', () => {
       'and the wand comes back charged').toBe(7);
   });
 
+  /**
+   * A conjuration is once per RUN, not once per rest. The arena rests between
+   * every wave, so "once per rest" would have put a CR 5 elemental in every
+   * fight — measured at +20 points of win rate, the largest single item effect
+   * in the game.
+   */
+  it('does not refill a once-per-run item on a long rest', () => {
+    const camp = newCampaign(4);
+    camp.characters[0]!.inventory.push({ itemId: 'brazier-fire-elemental', qty: 1 });
+    const party = buildCampaignParty(camp);
+    expect(party[0]!.itemUses!['brazier-fire-elemental']!.current).toBe(1);
+
+    party[0]!.itemUses!['brazier-fire-elemental']!.current = 0;
+    readBackSurvivors(camp, party);
+    longRest(camp);
+    expect(camp.characters[0]!.resources?.itemCharges?.['brazier-fire-elemental'],
+      'the brazier recharged over a night\'s sleep').toBe(0);
+    expect(buildCampaignParty(camp)[0]!.itemUses!['brazier-fire-elemental']!.current).toBe(0);
+  });
+
+  it('still refills an ordinary wand alongside it', () => {
+    // The kept-charges filter must not become "keep everything".
+    const camp = newCampaign(4);
+    camp.characters[0]!.inventory.push({ itemId: 'wand-fireballs', qty: 1 });
+    camp.characters[0]!.inventory.push({ itemId: 'brazier-fire-elemental', qty: 1 });
+    const party = buildCampaignParty(camp);
+    party[0]!.itemUses!['wand-fireballs']!.current = 2;
+    party[0]!.itemUses!['brazier-fire-elemental']!.current = 0;
+    readBackSurvivors(camp, party);
+    longRest(camp);
+    const after = buildCampaignParty(camp)[0]!;
+    expect(after.itemUses!['wand-fireballs']!.current, 'the wand should come back').toBe(7);
+    expect(after.itemUses!['brazier-fire-elemental']!.current, 'the brazier should not').toBe(0);
+  });
+
+  /**
+   * `itemUses` is built from the inventory `buildCharacter` is handed, so a wand
+   * pushed onto an already-built combatant has no pool. The strict reading made
+   * that wand permanently unusable with nothing to say why — and because the
+   * campaign always rebuilds from the roster, it only ever bit hand-built
+   * combatants, which is to say tests and measurement scripts. It cost a
+   * measurement that read +0.0% for four items that had never fired once.
+   */
+  it('treats a missing charge pool as full rather than as empty', () => {
+    const { c, hero } = wielder('wizard', 'wand-fireballs');
+    delete c.state.combatants[hero.id]!.itemUses;
+    const shot = wandActions(c, hero.id, 'wand-fireballs')[0];
+    expect(shot, 'a wand with no pool was unusable').toBeDefined();
+    c.apply(shot!);
+    expect(c.state.combatants[hero.id]!.itemUses!['wand-fireballs']!.current,
+      'and firing it must create the pool, or it fires forever').toBe(6);
+  });
+
   it('records nothing for a wand that was never fired', () => {
     // "Absent means full" is the same signal HP and slots use; writing a full
     // pool into the save would quietly break that convention for everything.

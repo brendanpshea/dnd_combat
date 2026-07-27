@@ -310,6 +310,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true, mastery: 'sap', cost: 15,
   },
 
+  'lion-rend': {
+    id: 'lion-rend', name: 'Rend', damage: '1d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+
   // --- named rare weapons ----------------------------------------------------
   'sword-of-wounding': {
     // A wound that will not close. The extra 2d6 is the small half; the half
