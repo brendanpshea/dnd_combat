@@ -30,6 +30,7 @@ import {
   buildWave, newArenaRun, recordResult, advanceDay, type ArenaRunState, type DayHalf,
 } from '../src/arena/run.js';
 import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../src/arena/day.js';
+import { revivalCost, payRevival, isFirstDefeat } from '../src/arena/revival.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { parseMap } from '../src/data/maps.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -168,6 +169,13 @@ interface Tally {
     lunchDice: number[];
     lunchRevived: number;
     lunchBroke: number;
+    /** The defeat tax: what was billed, what had to be sold, who went under. */
+    billed: number[];
+    soldToPay: number;
+    daysWithSale: number;
+    insolvent: number;
+    /** The day each broke run went under — early is a bad first impression. */
+    brokeOnDay: number[];
     /** Party level at the last day a run cleared. */
     daysPerRun: number[];
   };
@@ -188,6 +196,7 @@ const T: Tally = {
     entered: 0, cleared: 0, clearedOnRetry: 0,
     lostInMorning: 0, lostInAfternoon: 0, abandoned: 0, rescuedByLevel: 0,
     lunchDice: [], lunchRevived: 0, lunchBroke: 0, daysPerRun: [],
+    billed: [], soldToPay: 0, daysWithSale: 0, insolvent: 0, brokeOnDay: [],
   },
 };
 
@@ -547,10 +556,23 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
       else T.day.lostInAfternoon += 1;
     } else T.day.lostInMorning += 1;
 
-    if (!won) reviveParty(c);
+    let broke = false;
+    if (!won) {
+      // The powers that be put the party back on its feet, and take their cut.
+      const bill = isFirstDefeat(run) ? 0 : revivalCost(dayLevel, run.wave);
+      T.day.billed.push(bill);
+      const paid = payRevival(c, bill);
+      if (paid.insolvent) { T.day.insolvent += 1; T.day.brokeOnDay.push(dayOf(run)); broke = true; }
+      else {
+        T.day.soldToPay += paid.sold.length;
+        if (paid.sold.length > 0) T.day.daysWithSale += 1;
+      }
+      reviveParty(c);
+    }
     run = advanceDay(run, won, 0);
     noteSpentItems(c, run.cleared);
     night(c, run.cleared);
+    if (broke) break;
 
     if (won) {
       T.day.cleared += 1;
@@ -821,6 +843,13 @@ if (DAYS) {
   console.log(`  lunch: median ${median(d.lunchDice)} hit dice spent, ${d.lunchRevived} heroes raised, ` +
     `${pct(d.lunchBroke, d.lunchDice.length)} of lunches spent none`);
   console.log(`  days per run: median ${median(d.daysPerRun)}, max ${Math.max(0, ...d.daysPerRun)}`);
+  console.log(`  defeat tax: median ${median(d.billed)}g billed over ${d.billed.length} lost days, ` +
+    `${d.soldToPay} items sold across ${d.daysWithSale} of them`);
+  console.log(`  runs ended broke: ${d.insolvent} of ${RUNS} (the rest gave up or stalled)` +
+    (d.brokeOnDay.length ? ` — on day ${median(d.brokeOnDay)} typically, earliest ${Math.min(...d.brokeOnDay)}` : ''));
+  if (d.insolvent === 0) {
+    console.log(`${FLAG}nobody ever went under — the defeat tax is not a loss condition, only a fee`);
+  }
 }
 
 console.log('\n--- economy ---');

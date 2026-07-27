@@ -29,6 +29,9 @@ import {
   newArenaRun, advanceDay, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
 import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../../src/arena/day.js';
+import {
+  revivalCost, payRevival, isFirstDefeat, type RevivalBill,
+} from '../../src/arena/revival.js';
 import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
@@ -58,7 +61,9 @@ type Phase =
       /** Bounties claimed in the fight just won, named on the loot screen. */
       claimed: Array<{ name: string; gold: number }>;
     }
-  | { p: 'defeat' };
+  | { p: 'defeat'; bill: RevivalBill }
+  /** The run is over: the party could not pay to be put back on its feet. */
+  | { p: 'over'; bill: RevivalBill };
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -191,13 +196,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       // passes, and tomorrow holds the same two fights — frozen at the level
       // they were met at, so what was learned still applies and what was bought
       // still helps. Nothing is kept from today's attempt except that.
+      // The powers that be will put you back together, and they take their cut
+      // for it. The first defeat of a run is on the house — at level 1 the bill
+      // is most of a starting purse, and a party that loses its opening day
+      // should not be nearly broke before it has learned what the arena is.
+      const bill = payRevival(c, isFirstDefeat(run) ? 0 : revivalCost(dayLevel, run.wave));
+      if (bill.insolvent) {
+        // Nothing was sold and nothing was taken: the run simply ends here.
+        setC({ ...c }); persist(c, run);
+        setPhase({ p: 'over', bill });
+        return;
+      }
       reviveParty(c);
       const nextRun = advanceDay(run, false, 0, {
         spellsUsed: spellsCastBy(combat.log, combat.state),
       });
       night(c, nextRun.cleared);
       setRun(nextRun); setC({ ...c }); persist(c, nextRun);
-      setPhase({ p: 'defeat' });
+      setPhase({ p: 'defeat', bill });
       return;
     }
     // Coin scales only with what actually carries a purse — a wolf pack hoards
@@ -297,6 +313,45 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     ? <div className="adv-backdrop" style={{ backgroundImage: `url(${boardBgUrl(wave.map.theme)})` }} />
     : <div className="adv-backdrop glyph"><span>🏟️</span></div>;
 
+  if (phase.p === 'over') {
+    return (
+      <div className="adventure">
+        <div className="adv-stage">
+          {backdrop}
+          <div className="adv-content">
+            <div className="adv-scene centered">
+              <div className="adv-panel">
+                <h2>The healers look at your purse, and turn away.</h2>
+                <p className="adv-text">
+                  There is a price for being put back together, and you cannot
+                  meet it. Whatever you were proving, you will not get to finish
+                  proving it — not with this company.
+                </p>
+                <div className="revival-bill">
+                  <div className="loot-line">
+                    <span>⚕️ Owed</span>
+                    <b className="loss">{phase.bill.cost}g</b>
+                  </div>
+                  <div className="loot-sub">
+                    {c.gold}g in hand, and nothing left worth selling.
+                  </div>
+                </div>
+                <p className="hint">
+                  Lasted {dayOf(run)} days · {run.cleared} cleared ·
+                  {' '}{run.wins} of {run.fights} fights won
+                </p>
+                <div className="adv-choices">
+                  {restartButton}
+                  <button onClick={onExit}>Leave the arena</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (phase.p === 'defeat') {
     return (
       <div className="adventure">
@@ -312,6 +367,33 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   are now — and everything you have learned, earned and bought
                   comes with you.
                 </p>
+                <div className="revival-bill">
+                  {phase.bill.cost === 0 ? (
+                    <p className="adv-text quiet">
+                      &ldquo;The first one is on us,&rdquo; says the healer, not looking up.
+                      &ldquo;It will not be next time.&rdquo;
+                    </p>
+                  ) : (
+                    <>
+                      <div className="loot-line">
+                        <span>⚕️ The healers&rsquo; cut</span>
+                        <b className="loss">−{phase.bill.cost}g</b>
+                      </div>
+                      {phase.bill.sold.length > 0 && (
+                        <div className="claimed">
+                          {phase.bill.sold.map((sale, i) => (
+                            <div className="claimed-row" key={`${sale.itemId}-${i}`}>
+                              <span className="claimed-tick">↦</span>
+                              <span className="claimed-name">sold {itemName(sale.itemId)}</span>
+                              <span className="gain">+{sale.gold}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="loot-sub">{c.gold}g left</div>
+                    </>
+                  )}
+                </div>
                 <p className="hint">
                   Day {dayOf(run)} · wave {run.wave} · attempt {run.attempts + 1}
                   {run.dayLevel !== undefined && run.dayLevel < level &&
