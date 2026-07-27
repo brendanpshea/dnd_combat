@@ -247,6 +247,18 @@ export interface Combatant {
   immunities: DamageType[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
+  /**
+   * A conjured ally: a real combatant on the board with its own turn, brought
+   * in mid-fight (Staff of the Python).
+   *
+   * It fights, it can be killed, and it is NOT counted when deciding who has
+   * won. That exclusion is the whole reason the field exists: a party face-down
+   * on the floor has lost even if its snake is still up, and a wave is cleared
+   * when the last monster falls even if a summoned thing of theirs lingers.
+   * `checkWinner` reads it, and so does everything that reads a survivor list
+   * back into a campaign roster — a snake must never end up in the party.
+   */
+  summonedBy?: Id;
   /** A summoned familiar follows its caster without occupying a grid cell. */
   familiar?: {
     kind: 'owl';

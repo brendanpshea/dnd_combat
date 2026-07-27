@@ -1310,7 +1310,11 @@ export function checkWinner(state: GameState): 'team1' | 'team2' | null {
   // fight, so a party that is all down has lost. Deliberately *not* "conscious"
   // — a slept party is above 0 and still counts, or Sleep would win the game
   // outright.
-  const standing = Object.values(state.combatants).filter((c) => c.alive && c.hp > 0);
+  // Summons are excluded: they fight, but they do not decide the fight. A party
+  // face-down on the floor has lost even if its snake is still standing, and
+  // leaving one in would hang exactly the way the both-sides-down case used to.
+  const standing = Object.values(state.combatants)
+    .filter((c) => c.alive && c.hp > 0 && c.summonedBy === undefined);
   const t1 = standing.some((c) => c.team === 'team1');
   const t2 = standing.some((c) => c.team === 'team2');
   if (t1 && !t2) return 'team1';

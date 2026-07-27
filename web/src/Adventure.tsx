@@ -5,6 +5,7 @@
  * ritual (<DiceCheck>) reveals every visible check.
  */
 import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { Combat } from '../../src/engine/combat.js';
 import {
   newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
@@ -339,7 +340,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           const levelBefore = levelForXp(campaign.xp);
           let victory: AdventureVictory | undefined;
           if (won) {
-            const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
+            const survivors = Object.values(combat.state.combatants)
+              .filter((x) => x.team === 'team1' && !actsOnItsOwn(x));
             if (battleScene.loot === false) {
               readBackSurvivors(campaign, survivors); // gear persists; no rewards
             } else {

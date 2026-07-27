@@ -235,6 +235,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.sourceId)} conjures a shimmering illusion at ${cellName(e.position)}.`;
     case 'illusionPopped':
       return `  The illusion at ${cellName(e.position)} fades away.`;
+    case 'summoned':
+      return `${nm(e.summonerId)} calls up ${nm(e.combatantId)} at ${cellName(e.position)}.`;
     case 'summonPlaced':
       return e.kind === 'flaming-sphere'
         ? `${nm(e.casterId)} conjures a rolling sphere of fire at ${cellName(e.position)}.`

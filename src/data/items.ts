@@ -12,6 +12,7 @@ import { applyLucky } from '../engine/rules/luck.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import { pushCreature } from '../engine/rules/movement.js';
+import { summonCombatant } from '../engine/rules/summon.js';
 import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
 import type { GameEvent } from '../engine/events.js';
@@ -58,6 +59,16 @@ export interface ConsumableData {
    * Missiles) are left open, which is what makes them worth a fighter's slot.
    */
   requires?: 'spellcaster';
+  /**
+   * The monster this item conjures, declared rather than only performed.
+   *
+   * `apply` does the summoning; this field exists so a *policy* can see what
+   * the item is worth without knowing the item. Greedy's item scoring treats
+   * every self-targeting item as a healing potion, so the Staff of the Python
+   * scored zero and was never used in twelve measured fights — invisible to
+   * exactly the policy every measurement in this repo runs on.
+   */
+  summons?: Id;
   apply(ctx: UseContext): GameEvent[];
 }
 
@@ -344,6 +355,35 @@ export const ITEMS: Record<Id, ConsumableData> = {
     // than topping people up. That is the point of it: it does not add healing
     // so much as free the slots that were doing the healing.
     apply: scrollApply('cure-wounds'),
+  },
+
+  'staff-python': {
+    id: 'staff-python', name: 'Staff of the Python', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 900, rarity: 'uncommon', charges: 1, summons: 'giant-constrictor-snake',
+    /**
+     * Throw the staff down and it becomes a Giant Constrictor Snake, which
+     * fights beside you and takes its turn immediately after yours.
+     *
+     * This is the first item in the game that puts a real creature on the
+     * board — not a Spiritual Weapon's floating marker but a combatant with a
+     * stat block, an initiative slot and hit points to lose. See engine/rules/
+     * summon.ts for the three things that keep that from breaking the fight.
+     *
+     * One charge, refilled on a long rest, which is the SRD's "can't use the
+     * property again for 1 hour" read through this game's clock: one snake per
+     * wave. The SRD's dismiss-and-recall is left out — recalling a hurt snake
+     * to heal it is a bookkeeping loop, not a decision.
+     */
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      return summonCombatant(state, {
+        monsterId: 'giant-constrictor-snake',
+        summonerId: userId,
+        near: user.position,
+        idHint: 'python',
+      });
+    },
   },
 };
 

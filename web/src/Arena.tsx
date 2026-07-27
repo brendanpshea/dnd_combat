@@ -43,6 +43,7 @@ import { ArtImage } from './ArtImage.js';
 import type { BattleProps } from './App.js';
 import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
 import { deployFoes } from '../../src/arena/deploy.js';
+import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 
 type Phase =
   | { p: 'forge' }
@@ -160,7 +161,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   );
 
   function battleDone(winner: TeamId, combat: Combat) {
-    const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
+    // The party, not the menagerie: a summoned snake is on team1 and is not a
+    // survivor to read back, revive or pay.
+    const survivors = Object.values(combat.state.combatants)
+      .filter((x) => x.team === 'team1' && !actsOnItsOwn(x));
     if (winner !== 'team1') {
       reviveParty(c);
       // Rest after a defeat as well as after a win. The arena's whole premise is

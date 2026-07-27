@@ -21,6 +21,7 @@ import { ARMOR, SHIELDS, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
+import { actsOnItsOwn } from '../engine/rules/summon.js';
 import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
@@ -307,7 +308,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     // the game behind level 5 — and the median arena run ends at level 3, so
     // most parties never saw one at all.
     ...PLUS_ONE_WEAPONS, 'shield-plus1',
-    'wand-magic-missiles', 'wand-web', 'wand-war-mage-1',
+    'wand-magic-missiles', 'wand-web', 'wand-war-mage-1', 'staff-python',
     'silvered-shortsword', 'silvered-warhammer',
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
@@ -333,6 +334,11 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
   ],
 };
+
+/** The loot pool for a tier, exported so tests can read what was written. */
+export function TREASURE_POOL_FOR(r: Rarity): Id[] {
+  return TREASURE_POOL[r];
+}
 
 /**
  * How rare a loot item is. The pools are the authority — a longsword+1 is rare
@@ -412,7 +418,7 @@ export const SHOP_STOCK: Id[] = [
   'potion-giant-strength-hill',
   // wands — charged, not consumed (see ConsumableData.charges)
   'wand-magic-missiles', 'wand-web', 'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
-  'ring-of-the-ram', 'staff-healing',
+  'ring-of-the-ram', 'staff-healing', 'staff-python',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow',
@@ -2057,6 +2063,12 @@ export interface VictoryResult {
  *  spent, weapon swaps and slots persist, and a hero downed to 0 in a won fight
  *  revives at 1 HP rather than starting the next fight unconscious. */
 export function readBackSurvivors(c: CampaignState, finalTeam: Combatant[]): void {
+  // A conjured ally is not a party member and must never become one. Matching
+  // is by classId, which a summoned beast does not have — so this is belt and
+  // braces rather than a live bug, and it is the kind of belt worth wearing:
+  // the failure would be a snake quietly joining the roster and persisting into
+  // every later wave.
+  finalTeam = finalTeam.filter((x) => !actsOnItsOwn(x));
   for (const ch of c.characters) {
     const fought = finalTeam.find((x) => x.classId === ch.classId);
     if (!fought) continue;

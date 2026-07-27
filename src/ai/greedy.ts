@@ -9,6 +9,7 @@ import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, spellDc, cantripDice, wearsMetal, canBePutToSleep } from '../data/spells.js';
+import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
@@ -1004,6 +1005,18 @@ function scoreItem(state: GameState, actor: Combatant, a: Action & { kind: 'useI
   const item = ITEMS[a.itemId];
   if (!item) return 0;
   const targets = a.targets ?? [];
+  // A conjuration is worth roughly the body it puts on the board: hit points
+  // that soak, and a turn's damage every round. Read off the summoned
+  // creature's own stats rather than the item's name, so the next summoning
+  // item is priced without touching this.
+  if (item.summons) {
+    const beast = MONSTERS[item.summons];
+    if (!beast) return 0;
+    // Discounted hard: an ally that arrives mid-fight has fewer rounds left to
+    // spend than one that started, and it cannot be healed or repositioned by
+    // anything the policy plans.
+    return (beast.hp + 4 * monsterLevel(beast.cr)) * 0.35;
+  }
   switch (item.targeting.kind) {
     case 'ally':
     case 'self': {
