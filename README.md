@@ -256,7 +256,8 @@ src/
   ui/cli/    # terminal renderer, battle loop, campaign loop
 web/         # React app: board, battle screen, campaign screens, effects, sound
 test/        # vitest suites, including full AI-vs-AI battle completion tests
-docs/SPEC.md # design document
+docs/SPEC.md      # design document
+docs/reference/   # generated content reference (npm run reference)
 .github/     # CI: test + build + deploy to GitHub Pages on push to main
 ```
 
@@ -264,6 +265,20 @@ The engine is fully headless and deterministic: a `(seed, actions[])` pair
 replays a battle exactly. Both frontends and the AI drive it through the same
 `legalActions`/`step` contract. See [docs/SPEC.md](docs/SPEC.md) for the
 architecture and rules scope.
+
+## Content reference
+
+[docs/reference/](docs/reference/README.md) lists everything the game actually
+implements — every monster, spell, class, feature, weapon and map — printed
+straight from `src/data/`, never written by hand.
+
+```bash
+npm run reference             # rewrite docs/reference/*.md
+npm run reference -- --check  # fail if they are stale (the test suite does this)
+```
+
+Adding content and forgetting to regenerate is a test failure, so the reference
+cannot drift from the data the way a hand-kept list does.
 
 ## Development
 
@@ -276,7 +291,8 @@ npm run web:build      # production bundle
 ```
 
 Content is data-driven: adding a monster, spell, weapon, item, or map is a
-data-file edit (`src/data/`), never an engine change.
+data-file edit (`src/data/`), never an engine change — followed by
+`npm run reference` to refresh [docs/reference/](docs/reference/README.md).
 
 ### Working on the AI
 
