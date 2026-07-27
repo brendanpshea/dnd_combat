@@ -28,6 +28,9 @@ import { parseMap } from '../../src/data/maps.js';
 import {
   buildWave, newArenaRun, recordResult, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
+import {
+  bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
+} from '../../src/arena/bounties.js';
 import { PartySetup } from './PartySetup.js';
 import { SpellTray } from './SpellTray.js';
 import { PartyStrip } from './Adventure.js';
@@ -44,7 +47,12 @@ type Phase =
   | { p: 'forge' }
   | { p: 'brief' }
   | { p: 'battle'; combat: Combat }
-  | { p: 'loot'; gold: number; items: ItemStack[]; xpGained: number; leveledTo?: number; leveledFrom?: number }
+  | {
+      p: 'loot'; gold: number; items: ItemStack[]; xpGained: number;
+      leveledTo?: number; leveledFrom?: number;
+      /** Bounties claimed in the fight just won, named on the loot screen. */
+      claimed: Array<{ name: string; gold: number }>;
+    }
   | { p: 'defeat' };
 
 interface Props {
@@ -65,6 +73,20 @@ function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Comb
     map: wave.map,
     combatants: [...buildCampaignParty(c), ...foes],
   });
+}
+
+/**
+ * The two bounties on offer for a wave.
+ *
+ * Built from a throwaway Combat because eligibility asks about the board (is
+ * there a barricade? any fire?) and the roster (anything undead to smite?), and
+ * both only exist once the wave is assembled. Cheap, deterministic, and it
+ * means the pre-wave screen shows exactly what the post-battle check will use.
+ */
+function offeredBounties(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Bounty[] {
+  const preview = makeCombat(c, run, wave);
+  const party = Object.values(preview.state.combatants).filter((x) => x.team === 'team1');
+  return bountiesFor(run.seed, wave.wave, party, preview.state);
 }
 
 /** The roster, grouped — "3 Cockatrices, an Ogre" reads; a list of ids doesn't. */
@@ -95,6 +117,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
   const level = partyLevelOf(c);
   const wave = buildWave(run.seed, level, run.wave);
+  const bounties = offeredBounties(c, run, wave);
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
     saveArenaWeb({ campaign: nextC, run: nextRun });
   const refresh = () => { setC({ ...c }); bump((v) => v + 1); };
@@ -132,7 +155,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       // fight than the one you just lost, which is the opposite of that. Worth
       // about four points of win rate on a retry, measured over 20 playthroughs.
       longRest(c);
-      const nextRun = recordResult(run, false, wave.purse);
+      const nextRun = recordResult(run, false, wave.purse, {
+        spellsUsed: spellsCastBy(combat.log, combat.state),
+      });
       setRun(nextRun); setC({ ...c }); persist(c, nextRun);
       setPhase({ p: 'defeat' });
       return;
@@ -143,15 +168,31 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       c, survivors, wave.encounter.rawXp, combat.state.rng,
       membersCoinXP(wave.encounter.members),
     );
-    c.gold += wave.purse;
+    // What the fight earned beyond winning it. Read off the event log, which
+    // Combat has kept the whole way through, so nothing had to be tracked as
+    // the battle ran.
+    const claimed = claimedBounties(bounties, {
+      events: combat.log,
+      state: combat.state,
+      party: survivors,
+      spellsUsedBefore: new Set(run.spellsUsed),
+      rounds: combat.state.round,
+      foes: wave.encounter.members.length,
+    });
+    const bonus = claimed.reduce((g, b) => g + bountyGold(b, wave.purse), 0);
+    c.gold += wave.purse + bonus;
     // Full rest between waves: the arena is a tactics test, not an attrition
     // one, and it keeps each wave an honest measure of the fight itself.
     longRest(c);
-    const nextRun = recordResult(run, true, wave.purse);
+    const nextRun = recordResult(run, true, wave.purse, {
+      spellsUsed: spellsCastBy(combat.log, combat.state),
+      bounties: claimed.length,
+    });
     setRun(nextRun); setC({ ...c }); persist(c, nextRun);
     setPhase({
       p: 'loot',
-      gold: result.gold + wave.purse, items: result.items, xpGained: result.xpGained,
+      gold: result.gold + wave.purse + bonus, items: result.items, xpGained: result.xpGained,
+      claimed: claimed.map((b) => ({ name: b.name, gold: bountyGold(b, wave.purse) })),
       ...(result.leveledTo !== undefined ? { leveledTo: result.leveledTo } : {}),
       ...(result.leveledFrom !== undefined ? { leveledFrom: result.leveledFrom } : {}),
     });
@@ -198,6 +239,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         xpGained={phase.xpGained}
         leveledTo={phase.leveledTo}
         leveledFrom={phase.leveledFrom}
+        claimed={phase.claimed}
         onLevelChange={() => { refresh(); persist(c, run); }}
         onContinue={() => setPhase({ p: 'brief' })}
       />
@@ -306,6 +348,22 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 {grid.width}×{grid.height} {wave.map.theme}
                 {run.attempts > 0 && ` · attempt ${run.attempts + 1}`}
               </p>
+
+              {/* The planning half of the screen: what this wave will pay extra
+                  for. Named before the fight, or they are not something to play
+                  toward — they are a surprise at the end. */}
+              {bounties.length > 0 && (
+                <div className="bounties">
+                  <b className="bounties-head">Bounties</b>
+                  {bounties.map((b) => (
+                    <div key={b.id} className="bounty">
+                      <span className="bounty-name">{b.name}</span>
+                      <span className="bounty-blurb">{b.blurb}</span>
+                      <span className="bounty-gold">+{bountyGold(b, wave.purse)}g</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {notice && <div className="notice">{notice}</div>}
 
