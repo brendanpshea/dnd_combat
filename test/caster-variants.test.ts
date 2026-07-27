@@ -103,11 +103,49 @@ describe('caster variants', () => {
       // the real failure: Bestow Curse on the snarecaller was cast zero times
       // in thirty fights, because a 3rd-level debuff loses to a 1st-level
       // lockdown in the same kit every time.
+      // Leveled spells AIMED AT SOMEONE ELSE. A self-buff is a different animal:
+      // False Life competes with the bonechanter's own attack every single turn
+      // and wins about one time in twenty, so a sixteen-fight sweep catches it
+      // only sometimes — it has flaked here twice, each time because an
+      // unrelated change made the party slightly stronger and the fights
+      // slightly shorter. Measured at 3 casts in 60 fights: rare, not dead.
+      // Self-buffs get the deterministic test below instead.
       const given = new Set(cast.flatMap((v) => MONSTERS[v]!.spellcasting!.spellIds));
-      const never = [...given].filter((id) => SPELLS[id]!.level >= 1 && !seen.has(id));
+      const never = [...given].filter((id) => {
+        const spell = SPELLS[id]!;
+        return spell.level >= 1 && spell.targeting.kind !== 'self' && !seen.has(id);
+      });
       expect(never, `leveled spells given but never cast: ${never.join(', ')}`).toEqual([]);
     }, 40000);
   }
+
+  /**
+   * The self-buffs, which the sweep above cannot pin. Asserts the thing that
+   * would actually be broken — that the spell is offered and does something —
+   * rather than that the AI happened to want it during a random sixteen fights.
+   */
+  it('a caster can actually cast the self-buffs it was given', () => {
+    for (const v of VARIANTS) {
+      const selfBuffs = MONSTERS[v]!.spellcasting!.spellIds
+        .filter((id) => SPELLS[id]!.level >= 1 && SPELLS[id]!.targeting.kind === 'self');
+      for (const id of selfBuffs) {
+        const caster = { ...buildMonster(v, 'team2', { x: 4, y: 4 }), id: 'c' };
+        caster.hp = Math.max(1, Math.floor(caster.maxHp / 2));
+        const c = new Combat({
+          seed: 1, width: 8, height: 8,
+          combatants: [{ ...buildMonster('orc', 'team1', { x: 1, y: 1 }), id: 'foe' }, caster],
+        });
+        while (c.activeId !== 'c') c.apply({ kind: 'endTurn' });
+        const offered = c.legalActions('c').filter((a) => a.kind === 'castSpell' && a.spellId === id);
+        expect(offered.length, `${v} is never offered ${id}`).toBeGreaterThan(0);
+        const before = c.state.combatants['c']!;
+        const snapshot = { hp: before.hp, temp: before.tempHp ?? 0 };
+        c.apply(offered[0]!);
+        const after = c.state.combatants['c']!;
+        expect((after.tempHp ?? 0) + after.hp, `${id} did nothing`).toBeGreaterThan(snapshot.temp + snapshot.hp);
+      }
+    }
+  });
 
   /**
    * Shocking Grasp is an attack cantrip with range 0 — a touch. Handed to the

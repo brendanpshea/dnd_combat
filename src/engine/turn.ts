@@ -6,6 +6,7 @@ import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { cellAt } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
+import { rollD20 } from './dice.js';
 import { rollDice } from './dice.js';
 import { expireIllusions, distanceFeet, distanceCells, reachable, sphere2x2 } from './grid.js';
 import { executeMove, hostileIds } from './rules/movement.js';
@@ -46,12 +47,14 @@ export const MAX_ROUNDS = 100;
 export function rollInitiative(state: GameState): GameEvent[] {
   const entries: Array<{ id: Id; initiative: number; dex: number; tiebreak: number }> = [];
   for (const c of Object.values(state.combatants)) {
-    const d = rollDie(state.rng, 20);
+    // Remarkable Athlete (Champion 3): advantage on Initiative.
+    const athlete = c.featureIds.includes('remarkable-athlete');
+    const d = athlete ? rollD20(state.rng, 'advantage') : rollDie(state.rng, 20);
     state.rng = d.state;
     // Seeded tiebreak so equal-init, equal-dex ordering stays deterministic.
     const t = coinFlip(state.rng);
     state.rng = t.state;
-    const initiative = d.value + abilityMod(c.abilities.dex);
+    const initiative = ('natural' in d ? d.natural : d.value) + abilityMod(c.abilities.dex);
     c.initiative = initiative;
     entries.push({ id: c.id, initiative, dex: c.abilities.dex, tiebreak: t.value ? 1 : 0 });
   }

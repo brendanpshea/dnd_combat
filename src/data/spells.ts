@@ -1806,7 +1806,14 @@ export const SPELLS: Record<Id, SpellData> = {
    */
   'false-life': {
     id: 'false-life', name: 'False Life', level: 1, castingTime: 'action',
-    targeting: { kind: 'self' },
+    // `anyTime`, because temporary hit points are what you put up BEFORE anyone
+    // reaches you. Without it the self-targeting gate only offered this with an
+    // enemy already within 5 ft, which is the one moment it is least worth a
+    // whole action — and it is why the skeleton bonechanter cast it three times
+    // in sixty fights. The gate is right for a smite (which arms a melee swing)
+    // and for Spiritual Guardians (an aura that needs someone standing in it);
+    // it was never right for a ward.
+    targeting: { kind: 'self', anyTime: true },
     concentration: false,
     upcast: true,
     icon: '💀',
