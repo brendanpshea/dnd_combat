@@ -30,7 +30,7 @@ import { MONSTERS, MONSTER_XP } from '../src/data/monsters.js';
 const SRD = fileURLToPath(new URL('../SRD_CC_v5.2.1.txt', import.meta.url));
 
 interface Block {
-  name: string; type: string;
+  name: string; type: string; size: string;
   ac: number; hp: number; speed: number; speedFull: string;
   abilities: Record<string, number>;
   cr?: number; xp?: number;
@@ -90,7 +90,11 @@ function parseSrd(): Map<string, Block> {
     }
     const key = name.toLowerCase();
     if (out.has(key)) continue;   // first block wins
-    out.set(key, { name, type: kindLine.match(kind)![2]!.toLowerCase(), ...stat, abilities, cr, xp });
+    out.set(key, {
+      name, type: kindLine.match(kind)![2]!.toLowerCase(),
+      size: kindLine.match(kind)![1]!.toLowerCase(),
+      ...stat, abilities, cr, xp,
+    });
   }
   return out;
 }
@@ -139,7 +143,7 @@ describe('monster stat blocks against the SRD', () => {
   it('parses the stat blocks out of the vendored SRD', () => {
     // A layout change would make every assertion below pass vacuously.
     expect(srd.size, 'the parser found almost nothing — has the file changed shape?').toBeGreaterThan(300);
-    expect(srd.get('ogre')).toMatchObject({ ac: 11, hp: 68, speed: 40, cr: 2, xp: 450, type: 'giant' });
+    expect(srd.get('ogre')).toMatchObject({ ac: 11, hp: 68, speed: 40, cr: 2, xp: 450, type: 'giant', size: 'large' });
     expect(srd.get('skeleton')).toMatchObject({ ac: 14, hp: 13, speed: 30 });
   });
 
@@ -168,6 +172,9 @@ describe('monster stat blocks against the SRD', () => {
       if (r.hp !== m.hp) say(`HP ${m.hp}, SRD ${r.hp}`);
       if (r.speed !== m.speed) say(`speed ${m.speed}, SRD "${r.speedFull}"`);
       if (r.type !== m.creatureType) say(`type ${m.creatureType}, SRD ${r.type}`);
+      // Size gates cover, so a wrong one is a silent rules change: an ogre
+      // typed Medium would start ducking behind barricades.
+      if (r.size !== m.size) say(`size ${m.size}, SRD ${r.size}`);
       for (const a of ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const) {
         if (r.abilities[a] !== undefined && r.abilities[a] !== m.abilities[a]) {
           say(`${a.toUpperCase()} ${m.abilities[a]}, SRD ${r.abilities[a]}`);

@@ -7,7 +7,7 @@
  * generalizes to content that didn't exist when this file was written.
  */
 import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
-import { abilityMod, isDown } from '../engine/types.js';
+import { abilityMod, isDown, ignoresHalfCover } from '../engine/types.js';
 import { WEAPONS, type WeaponData } from '../data/weapons.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
@@ -384,7 +384,11 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // barricade in the game, and cover would join the list of mechanics that
     // are implemented, correct, and never once used.
     let coveredFrom = 0;
+    // A Large creature gets nothing from a chest-high barricade, so it should
+    // not walk across the board to stand behind one.
+    const canUseCover = !ignoresHalfCover(c.size ?? 'medium');
     for (const e of Object.values(state.combatants)) {
+      if (!canUseCover) break;
       if (!e.alive || isDown(e) || e.team === team) continue;
       if (prefersMelee(e)) continue;   // a sword reaches over a barricade
       if (!hasLineOfSight(state.grid, e.position, c.position)) continue;

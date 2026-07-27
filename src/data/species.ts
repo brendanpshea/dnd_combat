@@ -3,13 +3,15 @@
  * are represented as data; vision and exploration-only traits stay out of
  * the headless combat engine until those systems exist.
  */
-import type { DamageType, Id } from '../engine/types.js';
+import type { DamageType, Id , CreatureSize } from '../engine/types.js';
 import type { SkillId, ChoicePoint } from './classes.js';
 
 export interface SpeciesData {
   id: Id;
   name: string;
   speed: number;
+  /** SRD size. Omit for Medium, which is all but the gnome and the halfling. */
+  size?: CreatureSize;
   /** Added to maximum HP once for every character level. */
   hpPerLevel?: number;
   resistances?: DamageType[];
@@ -78,7 +80,7 @@ export const SPECIES: Record<Id, SpeciesData> = {
     innateSpells: [{ spellId: 'ray-of-sickness', atLevel: 3, uses: 1 }],
   },
   gnome: {
-    id: 'gnome', name: 'Gnome', speed: 30,
+    id: 'gnome', name: 'Gnome', speed: 30, size: 'small',
     // Gnomish Cunning: advantage on Int/Wis/Cha saves — the reliable backbone,
     // the same shape as the elf's Keen Senses. Minor Illusion is free from 1st
     // (battlefield LoS control, not a damage cantrip — the tray's the only
@@ -92,7 +94,7 @@ export const SPECIES: Record<Id, SpeciesData> = {
     innateSpells: [{ spellId: 'animal-friendship', atLevel: 1, uses: 2 }],
   },
   halfling: {
-    id: 'halfling', name: 'Halfling', speed: 30,
+    id: 'halfling', name: 'Halfling', speed: 30, size: 'small',
     // Two survival traits, deliberately not a damage-dealer: a halfling reads
     // as hard to pin down and hard to hit, not another offensive niche.
     // Lucky (a natural 1 rerolls, unconditionally, on every attack roll,

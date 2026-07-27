@@ -263,6 +263,9 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     name: opts.name ?? cls.name,
     unconsciousAtZero: true,   // heroes drop; monsters die
     creatureType: 'humanoid',  // every playable species is a humanoid
+    // Gnomes and halflings are Small; everyone else is Medium. It matters for
+    // cover: a barricade is chest-high to a person, and more of one to them.
+    size: species.size ?? 'medium',
     ...(opts.portraitId !== undefined ? { portraitId: opts.portraitId } : {}),
     team: opts.team,
     classId: cls.id,

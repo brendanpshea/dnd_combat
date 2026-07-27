@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
-import { buildMonster } from '../src/data/monsters.js';
+import { buildMonster, MONSTERS } from '../src/data/monsters.js';
+import { SPECIES } from '../src/data/species.js';
 import { coverBetween, blocksMovement, hasLineOfSight } from '../src/engine/grid.js';
 import { canHide } from '../src/engine/rules/hide.js';
 import { generateArenaMap } from '../src/arena/map.js';
@@ -153,5 +154,74 @@ describe('generated boards have shape', () => {
     }
     expect(total, 'the ember theme produced no hazards at all').toBeGreaterThan(50);
     expect(lonely / total, `${lonely}/${total} hazard cells stand alone`).toBeLessThan(0.35);
+  });
+});
+
+/**
+ * A barricade is chest-high to a person. A kobold ducks behind it; an ogre
+ * stands there being shot at. The same board therefore plays differently
+ * against a goblin warband and against a pair of giants, which is most of the
+ * point of having terrain — and it costs nothing but a size on the stat block.
+ *
+ * 58 of the 137 monsters are Large or bigger, so this is not a corner case; it
+ * is nearly half the bestiary. Difficulty is unmoved (mean win rate 43.0%
+ * before and after, every tier within a point, paired seeds), because a big
+ * creature was only catching cover on a handful of shots a fight. This is
+ * differentiation, not balance.
+ */
+describe('size gates cover', () => {
+  const rows = ['........', '........', '...+....', '........', '........'];
+
+  /** One ranged attack across the barricade, at whatever is standing behind it. */
+  function shootAcross(monsterId: string): { targetAc: number; cover?: boolean } {
+    const shooter = { ...buildMonster('scout', 'team1', { x: 3, y: 0 }), id: 'sh' };
+    const target = { ...buildMonster(monsterId, 'team2', { x: 3, y: 4 }), id: 'tg' };
+    const c = new Combat({ seed: 3, map: board(rows), combatants: [shooter, target] });
+    for (let i = 0; i < 20 && c.activeId !== 'sh'; i++) c.apply({ kind: 'endTurn' });
+    const bow = c.state.combatants['sh']!.equipped.mainHand!;
+    const roll = c.apply({ kind: 'attack', weaponId: bow, targetId: 'tg' })
+      .find((e) => e.type === 'attackRolled');
+    if (roll?.type !== 'attackRolled') throw new Error(`${monsterId}: no shot`);
+    return { targetAc: roll.targetAc, ...(roll.cover ? { cover: true } : {}) };
+  }
+
+  it('covers a Small or Medium creature and not a Large one', () => {
+    expect(MONSTERS['kobold']!.size).toBe('small');
+    expect(MONSTERS['ogre']!.size).toBe('large');
+    expect(shootAcross('kobold').cover, 'a kobold is behind the barricade').toBe(true);
+    expect(shootAcross('ogre').cover, 'an ogre is standing over it').toBeUndefined();
+  });
+
+  it('is the AC, not just the flag', () => {
+    const withCover = shootAcross('kobold').targetAc;
+    // Same creature, no barricade in the way.
+    const shooter = { ...buildMonster('scout', 'team1', { x: 3, y: 0 }), id: 'sh' };
+    const kobold = { ...buildMonster('kobold', 'team2', { x: 3, y: 4 }), id: 'tg' };
+    const bare = new Combat({ seed: 3, map: board(['........', '........', '........', '........', '........']), combatants: [shooter, kobold] });
+    for (let i = 0; i < 20 && bare.activeId !== 'sh'; i++) bare.apply({ kind: 'endTurn' });
+    const bow = bare.state.combatants['sh']!.equipped.mainHand!;
+    const roll = bare.apply({ kind: 'attack', weaponId: bow, targetId: 'tg' }).find((e) => e.type === 'attackRolled');
+    if (roll?.type !== 'attackRolled') throw new Error();
+    expect(withCover - roll.targetAc).toBe(2);
+  });
+
+  it('stops a big creature hiding behind one too', () => {
+    const hider = (monsterId: string) => {
+      const m = { ...buildMonster(monsterId, 'team1', { x: 3, y: 1 }), id: 'h' };
+      const foes = [0, 1].map((i) => ({ ...buildMonster('scout', 'team2', { x: 2 + i, y: 4 }), id: `f${i}` }));
+      const c = new Combat({ seed: 1, map: board(['........', '........', '++++++++', '........', '........']), combatants: [m, ...foes] });
+      return canHide(c.state, c.state.combatants['h']!);
+    };
+    expect(hider('kobold'), 'small enough to duck').toBe(true);
+    expect(hider('ogre'), 'an ogre behind a low wall is an ogre, in plain view').toBe(false);
+  });
+
+  it('gives every monster and species a size', () => {
+    const missing = Object.values(MONSTERS).filter((m) => !m.size).map((m) => m.id);
+    expect(missing, `no size: ${missing.join(', ')}`).toEqual([]);
+    // Gnomes and halflings are Small; the rest of the roster is Medium.
+    expect(SPECIES['gnome']!.size).toBe('small');
+    expect(SPECIES['halfling']!.size).toBe('small');
+    expect(SPECIES['human']!.size ?? 'medium').toBe('medium');
   });
 });

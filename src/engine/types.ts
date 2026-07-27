@@ -398,6 +398,20 @@ export interface Combatant {
    * same faithfulness reason.
    */
   creatureType?: CreatureType;
+  /** SRD size. Absent means medium — see CreatureSize. */
+  size?: CreatureSize;
+}
+
+/**
+ * SRD size. Used for cover: half cover comes from a chest-high barricade, and
+ * a Large creature is not hiding behind one. Nothing else reads it — every
+ * creature still occupies exactly one cell.
+ */
+export type CreatureSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
+
+/** Too big to take cover behind a barricade. */
+export function ignoresHalfCover(size: CreatureSize): boolean {
+  return size === 'large' || size === 'huge' || size === 'gargantuan';
 }
 
 export type CreatureType =
