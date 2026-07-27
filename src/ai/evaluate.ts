@@ -265,7 +265,7 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Standing on ground that costs double is half your movement gone, so it
     // is priced just above `slowed` (-0.03, which is only -10 ft of 30). This
     // is the whole point of the spells that *make* ground difficult: Ice Storm
-    // is 2d8+4d6 where a same-level Fireball is 8d6, so by damage alone it is
+    // is 2d10+4d6 where a same-level Fireball is 8d6, so by damage alone it is
     // strictly dominated, and it was offered 843 times in thirty fights and
     // cast none. Terrain, not damage, is what it is for.
     if (cell && (cell.terrain === 'difficult' || cell.chilled !== undefined)) unit -= worth * 0.05;

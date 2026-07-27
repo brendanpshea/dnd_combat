@@ -1351,10 +1351,16 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'spiritual-guardians', name: 'Spiritual Guardians', level: 3, castingTime: 'action',
     targeting: { kind: 'self' },
     concentration: true,
+    upcast: true,
     icon: '👼',
-    cast({ state, casterId }) {
+    cast({ state, casterId, slotLevel }) {
       const caster = state.combatants[casterId]!;
-      caster.spiritualGuardians = { dc: spellDc(state, casterId), mod: spellMod(state, casterId) };
+      caster.spiritualGuardians = {
+        dc: spellDc(state, casterId),
+        mod: spellMod(state, casterId),
+        // SRD: 3d8, +1d8 per slot level above 3.
+        dice: `${3 + Math.max(0, slotLevel - 3)}d8`,
+      };
       caster.concentratingOn = { spellId: 'spiritual-guardians', targetIds: [] };
       return []; // silent until an enemy starts its turn in the aura
     },
@@ -2296,7 +2302,8 @@ export const SPELLS: Record<Id, SpellData> = {
       const sculpt = caster.featureIds.includes('sculpt-spells');
       const dc = spellDc(state, casterId);
       const events: GameEvent[] = [];
-      const hail = `${2 + Math.max(0, slotLevel - 4)}d8`;
+      // SRD: 2d10 Bludgeoning + 4d6 Cold, +1d10 per slot level above 4.
+      const hail = `${2 + Math.max(0, slotLevel - 4)}d10`;
       for (const pos of sphere5x5(positions[0]!)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (tid) {

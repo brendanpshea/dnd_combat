@@ -199,7 +199,7 @@ describe('what a downed caster leaves behind', () => {
     const c = fight({ ...cleric, hp: 5 }, foe);
     const cl = c.state.combatants['cle']!;
     cl.concentratingOn = { spellId: 'spiritual-guardians', targetIds: [] };
-    cl.spiritualGuardians = { dc: 14, mod: 3 };
+    cl.spiritualGuardians = { dc: 14, mod: 3, dice: '3d8' };
 
     applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning');
 
