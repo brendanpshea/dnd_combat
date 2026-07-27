@@ -1,101 +1,28 @@
 /**
  * Character/monster art lookup. Processed WebP assets live in web/public/art
  * (see art/process.py); anything without art falls back to the emoji glyph.
+ *
+ * WHICH ids have art is not written here — it is derived from the directory by
+ * `npm run art-registry` into `art-registry.ts`, and re-exported below so every
+ * caller keeps importing it from this module. A hand-kept list beside a
+ * directory of files is one edit away from a broken <img> or from art that ships
+ * in the bundle and is never displayed; neither failure is visible.
  */
+
+import {
+  HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG,
+} from './art-registry.js';
+
+export { HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG };
 
 const BASE = import.meta.env.BASE_URL;
 
-/** Engine ids that have generated token + portrait art. */
-export const HAS_ART = new Set<string>([
-  'fighter', 'wizard', 'cleric', 'rogue',
-  'goblin-warrior', 'goblin-boss', 'skeleton', 'wolf', 'zombie', 'ogre',
-  'bandit', 'dire-wolf', 'ghoul', 'giant-spider', 'acolyte',
-  'kobold', 'scout', 'orc', 'brown-bear', 'cult-fanatic', 'animated-armor',
-  'orc-barbarian', 'dragonborn-paladin', 'gnome-bard', 'halfling-rogue', 'tiefling-warlock',
-  'dwarf-berserker', 'elf-archer', 'human-bard', 'bandit-captain',
-  // Species x role portraits (art/prompts.md §6b) — these close the forge's
-  // species x class matrix, which previously filled its holes with the wrong
-  // picture (human rangers in elf ears, dwarf wizards drawn as humans).
-  'ranger', 'paladin', 'dwarf-cleric', 'elf-wizard', 'orc-shaman',
-  'dragonborn-sorcerer', 'tiefling-knight', 'gnome-warden',
-  'halfling-warrior', 'halfling-priest',
-  'knight', 'minotaur', 'ettin', 'priest', 'ogre-mage',
-  'guard', 'bugbear', 'lizardfolk', 'gnoll', 'spy',
-  'giant-badger', 'giant-toad', 'giant-hyena', 'giant-boar', 'giant-constrictor-snake',
-  'gargoyle', 'fire-elemental', 'water-elemental', 'earth-elemental', 'air-elemental',
-  'sprite', 'satyr', 'dryad', 'green-hag', 'unicorn',
-  'cockatrice', 'harpy', 'manticore', 'owlbear', 'gorgon',
-  'shadow', 'specter', 'will-o-wisp', 'wight', 'mummy',
-  'red-wyrmling', 'white-wyrmling', 'green-wyrmling', 'blue-wyrmling', 'black-wyrmling',
-  'berserker', 'veteran', 'gladiator', 'mage', 'assassin',
-  'tyrannosaurus', 'giant-scorpion', 'elephant', 'giant-crocodile',
-  'mammoth', 'giant-ape', 'worg',
-  'ghast', 'banshee',
-  'ghost', 'wraith',
-  'vampire-spawn', 'shadow-demon', 'succubus',
-  'bearded-devil', 'night-hag', 'chain-devil',
-]);
-
-/**
- * Adventure NPC-archetype portraits with generated art (`portrait-<id>.webp`),
- * e.g. 'npc-innkeeper'. Empty until generated — see art/adventure-prompts.md
- * and src/data/adventure-art.ts. Kept separate so the vocabulary (all
- * archetypes) and the "actually generated" set stay independent.
- */
-export const HAS_NPC_ART = new Set<string>([
-  'npc-innkeeper',
-  'npc-elder',
-  'npc-merchant',
-  'npc-guard',
-  'npc-scout',
-  'npc-commoner',
-  'npc-child',
-  'npc-noble',
-  'npc-priest',
-  'npc-sage',
-  'npc-stranger',
-  'npc-wounded',
-  'npc-bandit',
-  'npc-captain',
-  'npc-cultist',
-  'npc-barbarian',
-]);
-
+/** Anything the board or a portrait frame can draw: a combatant or an NPC. */
 export function hasArt(id: string): boolean {
   return HAS_ART.has(id) || HAS_NPC_ART.has(id);
 }
 
-/**
- * Adventure location-scene backdrops with generated art (`scene-<id>.webp`),
- * e.g. 'loc-tavern'. Empty until generated.
- */
-export const HAS_SCENE_ART = new Set<string>([
-  'loc-village',
-  'loc-town',
-  'loc-tavern',
-  'loc-market',
-  'loc-road',
-  'loc-crossroads',
-  'loc-field',
-  'loc-forest',
-  'loc-marsh',
-  'loc-river',
-  'loc-hills',
-  'loc-mountain',
-  'loc-coast',
-  'loc-cave',
-  'loc-dungeon',
-  'loc-ruins',
-  'loc-crypt',
-  'loc-camp',
-  'loc-keep',
-  'loc-temple',
-  'loc-throne',
-  'loc-throne-elf',
-  'loc-throne-dwarf',
-  'loc-throne-evil',
-]);
-
+/** Location backdrops for adventure scenes; falls back to a themed glyph card. */
 export function hasSceneArt(id: string | undefined): boolean {
   return !!id && HAS_SCENE_ART.has(id);
 }
@@ -104,33 +31,7 @@ export function sceneArtUrl(id: string): string {
   return `${BASE}art/scene-${id}.webp`;
 }
 
-/** Map-node tokens (`tok-*`) with generated circular art (`token-tok-*.webp`).
- *  Empty until generated — see art/adventure-prompts.md; nodes fall back to the
- *  token's emoji until then. */
-export const HAS_TOKEN_ART = new Set<string>([
-  'tok-tavern',
-  'tok-market',
-  'tok-notice',
-  'tok-gate',
-  'tok-well',
-  'tok-house',
-  'tok-temple',
-  'tok-camp',
-  'tok-cave',
-  'tok-ruin',
-  'tok-crossing',
-  'tok-tracks',
-  'tok-tree',
-  'tok-person',
-  'tok-figure',
-  'tok-danger',
-  'tok-treasure',
-  'tok-fire',
-  'tok-boss',
-  'tok-mystery',
-  'tok-bridge',
-  'tok-lookout',
-]);
+/** Map-node tokens; a node without one falls back to the token's emoji. */
 export function hasTokenArt(id: string | undefined): boolean {
   return !!id && HAS_TOKEN_ART.has(id);
 }
@@ -143,34 +44,13 @@ export function portraitUrl(id: string): string {
   return `${BASE}art/portrait-${id}.webp`;
 }
 
-/**
- * Spell ids with a generated icon (`icon-<spellId>.webp`, see
- * art/process_icons.py). Used in the action bar / spell tray / prepare lists,
- * and on the board for summons and the web overlay. Anything not here falls
- * back to the spell's emoji glyph.
- */
-export const HAS_SPELL_ICON = new Set<string>([
-  'acid-splash', 'fire-bolt', 'guidance', 'minor-illusion', 'poison-spray',
-  'ray-of-frost', 'sacred-flame', 'shocking-grasp', 'true-strike',
-  'animal-friendship', 'bane', 'bless', 'burning-hands', 'color-spray',
-  'command', 'cure-wounds', 'faerie-fire', 'false-life', 'guiding-bolt',
-  'healing-word', 'hunters-mark', 'inflict-wounds', 'mage-armor',
-  'magic-missile', 'ray-of-sickness', 'shield', 'shield-of-faith', 'sleep',
-  'aid', 'blindness', 'hold-person', 'invisibility', 'lesser-restoration',
-  'misty-step', 'scorching-ray', 'spiritual-weapon', 'suggestion', 'web',
-  'dispel-magic', 'fear', 'fireball', 'haste', 'lightning-bolt',
-  'mass-healing-word', 'spiritual-guardians', 'find-familiar', 'thunderwave',
-  'breath-weapon',
-]);
+/** Action bar / spell tray / prepare lists; falls back to the spell's emoji. */
 export function hasSpellIcon(spellId: string | undefined): boolean {
   return !!spellId && HAS_SPELL_ICON.has(spellId);
 }
 export function spellIconUrl(spellId: string): string {
   return `${BASE}art/icon-${spellId}.webp`;
 }
-
-/** Themes with a generated arena backdrop (see art/arena-prompts.md). */
-export const HAS_BOARD_BG = new Set<string>(['stone', 'forest', 'graveyard', 'ember', 'village', 'bog']);
 
 export function boardBgUrl(theme: string): string {
   return `${BASE}art/bg-${theme}.webp`;
