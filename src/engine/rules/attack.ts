@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield } from '../../data/armor.js';
@@ -276,7 +276,13 @@ export function resolveAttack(
   // barricade does not block sight, so this is the whole of its effect on an
   // attack — and it is why *where* you shoot from is now a question. Melee
   // reaches over it, so only a ranged attack is affected.
-  const behindCover = !isMeleeAttack && coverBetween(state.grid, attacker.position, target.position);
+  // Size gates it: a barricade is chest-high to a person, so a kobold ducks
+  // behind it and an ogre just stands there. Same terrain, different board,
+  // depending on what is standing on it — which is most of the point of having
+  // terrain at all.
+  const behindCover = !isMeleeAttack &&
+    !ignoresHalfCover(target.size ?? 'medium') &&
+    coverBetween(state.grid, attacker.position, target.position);
   const targetAc = acOf(target) + (behindCover ? 2 : 0);
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
