@@ -7,7 +7,7 @@ import { resolveAttack, collectAttackSources } from '../src/engine/rules/attack.
 import { applyHealing } from '../src/engine/rules/heal.js';
 import { WEAPONS, weaponCategory } from '../src/data/weapons.js';
 import { TRINKETS } from '../src/data/trinkets.js';
-import { newCampaign, equipBlocked, rarityOf, SHOP_STOCK } from '../src/campaign/campaign.js';
+import { newCampaign, equipBlocked, rarityOf, isObtainable } from '../src/campaign/campaign.js';
 import { makeCombatant } from './helpers.js';
 import type { MapData } from '../src/data/maps.js';
 import type { Combatant, Id } from '../src/engine/types.js';
@@ -285,7 +285,7 @@ describe('all of it reaches a player', () => {
 
   it('is stocked, rare, and resolves to a base weapon where it is one', () => {
     for (const id of NEW) {
-      expect(SHOP_STOCK, `${id} is not stocked`).toContain(id);
+      expect(isObtainable(id), `${id} cannot be obtained by any route`).toBe(true);
       expect(rarityOf(id), id).toBe('rare');
       if (WEAPONS[id]) {
         expect(weaponCategory(id), `${id} has no category — proficiency would pass for anyone`)

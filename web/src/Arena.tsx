@@ -20,7 +20,7 @@ import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
   type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
-  SHOP_STOCK, shopOffering,
+  SHOP_STOCK, shopOffering, addItem,
 } from '../../src/campaign/campaign.js';
 import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
@@ -35,6 +35,8 @@ import {
 import {
   runComplete, summarise, RUN_TARGET_XP, MEDAL_LABEL, MEDAL_ICON, type RunSummary,
 } from '../../src/arena/medal.js';
+import { spoilOffer, spoilTierFor } from '../../src/arena/spoils.js';
+import { SpoilPicker } from './Spoils.js';
 import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
@@ -65,6 +67,12 @@ type Phase =
       rested: RestResult;
       /** Bounties claimed in the fight just won, named on the loot screen. */
       claimed: Array<{ name: string; gold: number }>;
+      /**
+       * One three-item offer per bounty claimed, still to be chosen from. The
+       * loot screen holds Continue until they are all resolved: an award you
+       * can walk past by mistake is worse than no award at all.
+       */
+      offers: Array<{ bounty: string; items: Id[] }>;
     }
   /** The premise, once, before a new party's first gate. */
   | { p: 'intro' }
@@ -308,6 +316,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       p: 'loot',
       gold: result.gold + paid + bonus, items: result.items, xpGained: result.xpGained,
       claimed: claimed.map((b) => ({ name: b.name, gold: bountyGold(b, paid || wave.purse) })),
+      // Seeded off the day and half, never the attempt: a retried day has to
+      // put the same three things on the table, or losing on purpose becomes a
+      // way to reroll the prize. See arena/spoils.ts.
+      offers: claimed.map((b, i) => ({
+        bounty: b.name,
+        items: spoilOffer(run.seed, dayOf(run), half, i, level),
+      })),
       rested,
       ...(result.leveledTo !== undefined ? { leveledTo: result.leveledTo } : {}),
       ...(result.leveledFrom !== undefined ? { leveledFrom: result.leveledFrom } : {}),
@@ -357,6 +372,22 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         leveledFrom={phase.leveledFrom}
         claimed={phase.claimed}
         rested={phase.rested}
+        spoilsPending={phase.offers.length > 0}
+        spoils={phase.offers.length > 0 && (
+          <SpoilPicker
+            bounty={phase.offers[0]!.bounty}
+            items={phase.offers[0]!.items}
+            onTake={(itemId) => {
+              // Straight into the pack of whoever has room; equipping is the
+              // player's own business on the party screen, the same as anything
+              // they bought. Awarding it *equipped* would silently replace gear
+              // somebody had chosen.
+              addItem(c.characters[0]!.inventory, itemId);
+              persist(c, run); refresh();
+              setPhase({ ...phase, offers: phase.offers.slice(1) });
+            }}
+          />
+        )}
         chorus={<Say cue={say(
           // Which break this was cannot be read off `half`: the run has already
           // advanced by the time this screen paints, so after a won morning

@@ -4,7 +4,7 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster, MONSTERS } from '../src/data/monsters.js';
 import { WEAPONS, weaponCategory, isWeaponProficient, baseWeaponId } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
-import { rarityOf, SHOP_STOCK } from '../src/campaign/campaign.js';
+import { rarityOf, isObtainable } from '../src/campaign/campaign.js';
 import { parseMap, type MapData } from '../src/data/maps.js';
 import type { Combatant, CreatureType, Id } from '../src/engine/types.js';
 
@@ -97,7 +97,7 @@ describe('the weapons themselves', () => {
   it('are all rare, stocked, and priced above the +1 they beat', () => {
     for (const id of SLAYERS) {
       expect(rarityOf(id), id).toBe('rare');
-      expect(SHOP_STOCK, `${id} is not stocked`).toContain(id);
+      expect(isObtainable(id), `${id} cannot be obtained by any route`).toBe(true);
       expect(WEAPONS[id]!.cost!, id).toBeGreaterThan(WEAPONS['longsword-plus1']!.cost!);
     }
   });

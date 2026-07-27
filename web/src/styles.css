@@ -3062,3 +3062,41 @@ button.category .count {
   opacity: 0.75;
 }
 .chorus-toggle:hover { opacity: 1; }
+
+/* Three on the table, take one. The passing-over is the point, so all three
+   are shown at once and equally — a list you scroll would make the first the
+   default answer. */
+.spoils { margin: 12px 0; }
+.spoil-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.spoil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  background: var(--panel-2, #2a2440);
+  border: 1px solid #453d63;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s, border-color 0.12s;
+}
+.spoil:hover { transform: translateY(-2px); }
+.spoil.on { border-color: var(--accent, #c79ae0); box-shadow: 0 0 0 1px var(--accent, #c79ae0); }
+.spoil-ico { font-size: 26px; line-height: 1; }
+.spoil-name { font-weight: 600; font-size: 13px; line-height: 1.2; }
+.spoil-tags { display: flex; gap: 6px; font-size: 11px; color: var(--muted); }
+.spoil.r-rare .spoil-name { color: #ffd76e; }
+.spoil.r-uncommon .spoil-name { color: #8fe3a0; }
+.spoil-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #453d63;
+  text-align: center;
+}
+.spoil-detail p { margin: 0 0 8px; color: var(--text); font-size: 14px; }

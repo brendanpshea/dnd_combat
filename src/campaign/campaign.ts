@@ -419,8 +419,17 @@ export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity, coinX
 
 export const STARTING_GOLD = 100;
 
-/** What the shop sells between battles. */
-export const SHOP_STOCK: Id[] = [
+/**
+ * Everything a merchant will sell you, and everything the arena might award —
+ * one list, partitioned by `isPermanentMagic` rather than by hand.
+ *
+ * Two lists would drift the moment somebody added an item to one of them, and
+ * the failure would be silent in both directions: an item in neither list can
+ * never be obtained at all, and one in both is buyable treasure. Keeping a
+ * single roster and deriving the split means adding an item to this array is
+ * the whole job.
+ */
+const ALL_WARES: Id[] = [
   // consumables
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
   'scroll-magic-missile', 'scroll-burning-hands', 'scroll-command', 'scroll-guiding-bolt',
@@ -448,7 +457,10 @@ export const SHOP_STOCK: Id[] = [
   // sink: rare-tier, so it only reaches a shelf at level 5, by which point a
   // party that has been saving can finally afford the armor class ceiling.
   'plate',
-  'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-splint',
+  // Adamantine Chain Mail was in the treasure pool and on no ware list at all,
+  // so nothing in the arena could ever hand it over — dead data, caught by the
+  // reachability guard the moment one existed.
+  'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-chain-mail', 'adamantine-splint',
   'scale-mail-plus1', 'breastplate-plus1', 'half-plate-plus1', 'splint-plus1', 'plate-plus1',
   'adamantine-plate', 'shield-plus1', 'shield-arrow-catching',
   // trinkets
@@ -456,6 +468,31 @@ export const SHOP_STOCK: Id[] = [
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
   ...RARE_WONDROUS, 'wand-war-mage-1',
 ];
+
+/** What a merchant stocks: staples and single-use magic. Never treasure. */
+export const SHOP_STOCK: Id[] = ALL_WARES.filter((id) => !isPermanentMagic(id));
+
+/**
+ * What the arena awards for a claimed bounty: everything you keep.
+ *
+ * This is the only source of permanent magic in the game. If an item is here
+ * and nowhere else, a player can still get it; if it is in neither list, it
+ * exists in the data and can never be held, which is the exact shape of the
+ * dead-data bug this repository keeps rediscovering.
+ */
+export const MAGIC_SPOILS: Id[] = ALL_WARES.filter(isPermanentMagic);
+
+/**
+ * Can a player get hold of this at all, by any route?
+ *
+ * The question every "does this new item actually reach anybody" test wants to
+ * ask. It used to be answerable with `SHOP_STOCK.includes`, because buying was
+ * the only route; now there are two, and asking the old question of a wand
+ * would report a perfectly obtainable item as unreachable.
+ */
+export function isObtainable(itemId: Id): boolean {
+  return ALL_WARES.includes(itemId);
+}
 
 /** The party level at which each rarity tier first appears on a shelf, so a
  *  1st-level party isn't offered +1 plate they could never afford or use. */
@@ -466,7 +503,7 @@ const RARITY_MIN_LEVEL: Record<Rarity, number> = { common: 1, uncommon: 3, rare:
  *  potion/scroll above the common tier (healing potions and basic common
  *  scrolls stay staples). Mundane weapons and armor are never magical, even the
  *  ones the loot tables rate "uncommon" (a plain rapier), so they always stock. */
-function isMagicalWare(itemId: Id): boolean {
+export function isMagicalWare(itemId: Id): boolean {
   if (SHIELDS[itemId]) return SHIELDS[itemId]!.rarity !== 'common';
   if (TRINKETS[itemId]) return true;
   const w = WEAPONS[itemId];
@@ -477,6 +514,30 @@ function isMagicalWare(itemId: Id): boolean {
     return rarityOf(itemId) !== 'common'; // resistance/strength potions, stronger scrolls
   }
   return false;
+}
+
+/**
+ * A magical ware you keep: a weapon, a suit of armor, a shield, a worn trinket,
+ * or anything with a charge pool that recovers (a wand, a figurine, a brazier).
+ *
+ * This is the line between what a merchant sells and what the arena awards. A
+ * shop that stocks enchanted swords makes magic a purchase, and a purchase is
+ * the least interesting way to acquire anything — you decided you wanted it,
+ * you saved up, you clicked. A shop that stocks only potions and scrolls makes
+ * every permanent item in the game something you were *given*, for doing
+ * something, which is the only version of it that can feel earned.
+ *
+ * Single-use magic — a scroll, a resistance potion — stays purchasable. It is
+ * ammunition, not treasure, and running out of it mid-run should be a supply
+ * problem you can solve with money.
+ */
+export function isPermanentMagic(itemId: Id): boolean {
+  if (!isMagicalWare(itemId)) return false;
+  const item = ITEMS[itemId];
+  // A charge pool that refills is the tell: a wand you keep versus a scroll
+  // you burn. `refills: 'never'` is a one-shot wonder and counts as ammunition.
+  if (item) return item.charges !== undefined && item.refills !== 'never';
+  return true;   // weapons, armor, shields and trinkets are all kept
 }
 
 /** Staples a merchant always keeps: everything that isn't a magical ware. */
@@ -504,7 +565,10 @@ function hashKey(s: string): number {
  * the party levels up. Staple order in the source list is preserved.
  */
 export function shopOffering(stock: Id[], level: number, seedKey: string): Id[] {
-  const magical = stock.filter((id) => !isShopStaple(id) && level >= RARITY_MIN_LEVEL[rarityOf(id)]);
+  // Permanent magic is not for sale at any price — it is what the arena pays
+  // you for doing something worth paying for. See `isPermanentMagic`.
+  const magical = stock.filter((id) =>
+    !isShopStaple(id) && !isPermanentMagic(id) && level >= RARITY_MIN_LEVEL[rarityOf(id)]);
   const slots = Math.min(magical.length, 3 + Math.floor(level / 2)); // L1→3, L3→4, L5→5, …
   // Seeded Fisher–Yates over the eligible magical wares, then keep the first N.
   let rng = seedRng(hashKey(`${seedKey}:${level}`));
@@ -515,7 +579,7 @@ export function shopOffering(stock: Id[], level: number, seedKey: string): Id[] 
     [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
   const chosen = new Set(shuffled.slice(0, slots));
-  return stock.filter((id) => isShopStaple(id) || chosen.has(id));
+  return stock.filter((id) => (isShopStaple(id) && !isPermanentMagic(id)) || chosen.has(id));
 }
 
 export function itemName(itemId: Id): string {

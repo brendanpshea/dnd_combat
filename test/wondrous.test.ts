@@ -7,7 +7,7 @@ import { resolveAttack, collectAttackSources, applyDamage } from '../src/engine/
 import { WEAPONS } from '../src/data/weapons.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../src/data/trinkets.js';
 import {
-  newCampaign, rarityOf, equipBlocked, SHOP_STOCK, EQUIP_SLOTS, itemPrice,
+  newCampaign, rarityOf, equipBlocked, isObtainable, EQUIP_SLOTS, itemPrice,
 } from '../src/campaign/campaign.js';
 import { makeCombatant } from './helpers.js';
 import type { Combatant, Position } from '../src/engine/types.js';
@@ -215,11 +215,11 @@ describe('rings', () => {
 });
 
 describe('the new items reach a player', () => {
-  it('every rare wondrous item drops and is stocked', () => {
+  it('every rare wondrous item drops and can be obtained', () => {
     // A trinket that exists but never appears is dead data with a data file.
     for (const id of RARE_WONDROUS) {
       expect(rarityOf(id), id).toBe('rare');
-      expect(SHOP_STOCK, `${id} is not stocked`).toContain(id);
+      expect(isObtainable(id), `${id} cannot be obtained by any route`).toBe(true);
       expect(itemPrice(id), `${id} has no price`).toBeGreaterThan(0);
     }
     expect(RARE_WONDROUS.length).toBeGreaterThanOrEqual(15);
