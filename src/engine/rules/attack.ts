@@ -1256,5 +1256,24 @@ export function checkWinner(state: GameState): 'team1' | 'team2' | null {
   const t2 = standing.some((c) => c.team === 'team2');
   if (t1 && !t2) return 'team1';
   if (t2 && !t1) return 'team2';
-  return null;
+  if (t1 || t2) return null;   // both sides still have someone up: fight on
+
+  // NEITHER side is standing. Returning null here hung the game outright: the
+  // last hero dropping in the same exchange that killed the last monster left
+  // nobody able to take a turn, and the turn scan skips anyone who is down — so
+  // the round counter froze and even the MAX_ROUNDS backstop could never fire.
+  // The fuzzer found it twice in 3,000 fights, and the fights did not end after
+  // twenty thousand decisions.
+  //
+  // Standing beats down beats dead. A party unconscious among corpses has won:
+  // heroes drop rather than die here, every enemy is gone, and there is nothing
+  // left to stop them coming round. Only a board with no living creature at all
+  // falls through to team2, matching what the round-limit backstop does with a
+  // tie — a campaign party retries rather than takes an unearned pass.
+  const living = Object.values(state.combatants).filter((c) => c.alive);
+  const a1 = living.some((c) => c.team === 'team1');
+  const a2 = living.some((c) => c.team === 'team2');
+  if (a1 && !a2) return 'team1';
+  if (a2 && !a1) return 'team2';
+  return 'team2';
 }

@@ -27,7 +27,7 @@ To ensure the icons feel cohesive with the rest of the game's modern JRPG / YA g
 
 ---
 
-## 2. Implemented Spells (48 Spells)
+## 2. Implemented Spells
 
 ### Cantrips (Level 0)
 

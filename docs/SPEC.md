@@ -4,14 +4,21 @@ A grid-based tactical combat game using a simplified subset of the SRD 5.2.1
 rules. The engine is headless, deterministic, and data-driven; the terminal
 CLI, the web app, and both AIs drive it through the same action API.
 
-**Status: all planned phases shipped.** Six classes at levels 1–5 (one
-subclass each), eight species, 48 spells, 132 SRD monsters in 62 authored
-encounters, seven themed battle maps plus a map generator, inventory/
-equipment/trinkets, a persistent 34-stage campaign (shop, loot, skill gambits,
-hit-dice rests), a data-driven **adventure mode** with a flagship story
-trilogy, an **arena mode** of generated fights on generated maps, and a
-deployed web frontend (https://brendanpshea.github.io/dnd_combat/). See §10
-for history and next candidates.
+**Status: all planned phases shipped.** Eight classes at levels 1–7 (one
+subclass each), eight species, 70 spells (cantrips through 4th level), 140 SRD
+monsters — 16 of them spellcasters — in 63 authored encounters, eleven themed
+battle maps plus a map generator, inventory/equipment/trinkets, a persistent
+34-stage campaign (shop, loot, skill gambits, hit-dice rests), a data-driven
+**adventure mode** with a flagship story trilogy, an **arena mode** of
+generated fights on generated maps, and a deployed web frontend
+(https://brendanpshea.github.io/dnd_combat/). See §10 for history and next
+candidates.
+
+Levels 6 and 7 are an **arena** reward: the campaign ladder awards about 7,500
+XP a character across all 34 stages and 6th needs 14,000, so a campaign run
+tops out at 5th however it is played. The arena has no such ceiling — it
+reaches 6th around wave 18 and 7th around wave 21, against a median run of
+9–11 waves. Both are for a run that goes deep.
 
 **How to read this document.** §1–§6 are the combat rules model and its
 architecture; §7 is the AI (including its measured tuning history — the
@@ -37,7 +44,7 @@ fix the file.
 | Visibility | Full — both players see all HP, AC, slots, conditions |
 | Death | Monsters: 0 HP = dead and removed. **Player characters: 0 HP = unconscious**, still on the board, revived by any healing. No death saves |
 | Win | Last team still *standing* wins — a party whose members are all down has lost (they are alive, but out) |
-| Board | 8×8, fixed starting positions on opposite ranks (player deployment is future work) |
+| Board | 8 wide; 8×8 for the fixed maps, 12 or 16 deep in the arena. Parties deploy on rank 0; enemies use one of four seeded patterns (see §7d) |
 | Concentration | Implemented, including the Con save (DC max(10, ⌊damage/2⌋)) when the concentrator takes damage |
 
 ## 2. Architecture
@@ -388,9 +395,9 @@ thrown weapons are not consumed (abstract recovery). Default kits: everyone
 carries a healing potion; the wizard/cleric get a scroll, the fighter
 alchemist's fire and two javelins.
 
-## 4. Classes (levels 1–5, one subclass each)
+## 4. Classes (levels 1–7, one subclass each)
 
-Six classes ship. All: standard array by priority, standard gear, weapon
+Eight classes ship. All: standard array by priority, standard gear, weapon
 masteries per the 5.5e list. Level 1 details (AC/HP/features) are
 authoritative in `src/data/classes.ts`. The founding four are summarized
 below; **Ranger (Hunter)** and **Paladin (Devotion)** follow in prose later
@@ -632,6 +639,27 @@ goblins immune to both) and with company for the aberration, since the
 generator never picks a type with fewer than two members. Monsters are always AI-run; pick one in
 skirmish via `--encounter <id>` or the web setup.
 
+### Upcasting
+
+A spell cast with a bigger slot than it needs, where that buys something.
+`legalActions` offers a spell at every slot the caster can afford when it is a
+smite or carries `upcast: true` in its data, and at its own level otherwise —
+because for every other spell a bigger slot buys literally nothing and the extra
+menu entry would be a near-duplicate.
+
+Fourteen spells carry the flag: Fireball, Lightning Bolt, Burning Hands,
+Thunderwave, Ice Storm, Blight, Guiding Bolt, Inflict Wounds, Ray of Sickness,
+Heat Metal, Call Lightning, Moonbeam, Cure Wounds, Healing Word, False Life and
+Aid. All of them had slot-scaling code written from the start and none of it was
+reachable: nothing ever offered them a higher slot, so `slotLevel` was always
+their own level. A 7th-level caster's 4th-level slot is unspendable without
+this, since the game has no 4th-level spell every class can reach.
+
+`baseLevel` stays in the candidate list even when upcasting: for an innate
+spell it is 0, meaning "cast from the species pool, spend no slot". Enumerating
+slot levels alone silently took that away — a tiefling's Ray of Sickness is
+both innate AND upcastable, and flagging it stopped a fighter casting it at all.
+
 ### Regeneration
 
 The one trait added to the engine rather than expressed as data: a
@@ -862,7 +890,7 @@ share the same art identity. The ladder is data (`STAGES`) —
 just `{ encounterId, mapId }`, ordered easy → hard over 34 stages (a tour of
 the bestiary from kobolds to the giant finale); everything else is *derived*.
 **Party level comes from accumulated XP** (`levelForXp`, the SRD thresholds
-`[0, 300, 900, 2700, 6500]`, capped at content level 5), not from the stage,
+`[0, 300, 900, 2700, 6500, 14000, 23000]`, the SRD table through 7th), not from the stage,
 so the party levels up gradually mid-run — L2 by stage ~5, L5 just before the
 finale — and can be under-level for a hard fight (the UI warns). Each monster carries an SRD **XP value** (`MONSTER_XP`); a victory
 awards `encounterXP / partySize` (per-character pacing). **Treasure is
@@ -1132,8 +1160,32 @@ over-cap monster through.
 **Maps** are drafted and then validated, with 24 rerolls and an open-field
 fallback. `validateArenaMap` rejects the failure that doesn't look like one: a
 sealed region means the AI can never reach anyone and the battle never ends.
-It also rejects blocked and hazardous deploy rows. Boards are 8 wide, half
-8×8 and half 8×12.
+It also rejects blocked and hazardous deploy rows. Boards are 8 wide and either
+12 or 16 deep.
+
+**Why not 8×8 any more.** Depth is the single biggest lever on whether
+positioning means anything, and 8 rows is below the floor. The longest possible
+shot on an 8×8 board is 35 ft while a shortbow reaches 80 and a cantrip 60–120,
+so every shooter can hit every target from its starting cell and nobody ever
+has a reason to move. Measured at level 1 over 40 seeds against crossbow
+bandits, a party that never took a step BEAT one played properly on 8×8 (48% vs
+40%); at 12 rows the same refusal to move costs 22 points of win rate, and at
+20 rows, 28. The ceiling is what fits a phone screen, not what maximises the
+effect — win rate is flat across depths, it is the tactical band that changes.
+
+**Enemies do not always start on the far rank.** `arena/deploy.ts` picks one of
+four seeded patterns — far rank (45%), advanced (25%), pincer (18%), scattered
+(12%) — weighted so the classic layout still reads as normal and the rest as
+variations. Nothing there is a new rule: no cover, no flanking, no elevation,
+purely where the fight begins. Seeded off the wave, so a retry is the same
+fight rather than a reroll of the layout.
+
+**Every wave contains something with reach.** Two thirds of the bestiary is
+melee-only, and creature-type choice used to let a whole wave come from that
+two thirds: 33% of generated waves had nobody who could reach the party at all.
+`ensureRangedPresence` swaps the cheapest member for an affordable shooter —
+budget and headcount untouched, so it changes what a fight asks of you rather
+than how hard it is.
 
 **Retries rebuild the same fight.** A wave is seeded from the run seed and the
 wave number, not from rolling state, so a wave you lost is a tactical problem
@@ -1251,7 +1303,7 @@ authored SVG icon, and WebAudio-synthesized sound effects.
 
 ## 9. Testing
 
-710+ vitest tests across 44 suites: deterministic replay of full battles,
+890+ vitest tests across 55 suites: deterministic replay of full battles,
 rules-level unit tests (advantage cancellation, crit math, OA triggers,
 condition lifecycles, resistances, multiattack banking), AI completion across
 seeds/maps/encounters plus the arena regression floor, stat-block fidelity
@@ -1313,12 +1365,43 @@ Next candidates, roughly in fun-per-effort order:
 6. **Auto-tuning evaluator weights** against arena win rate — open,
    well-tooled follow-up.
 
+### Recent work (levels 6–7, casters, positioning)
+
+Grouped by what each was actually chasing, since the measurements are the
+point:
+
+- **Levels 6 and 7.** XP table, slot progression (4/3/3 then 4/3/3/1 for full
+  casters; 4/2 then 4/3 for half), and class features for every class at one of
+  the two levels — Aura of Protection, Evasion, Countercharm, Potent
+  Spellcasting, Roving, Sculpt Spells, a second Fighting Style, a second ASI.
+  `EVEN_BUDGET` gained measured entries for both.
+- **Four 4th-level spells** — Blight, Ice Storm, Banishment, Phantasmal Killer,
+  one reachable by each full caster — because a 4th-level slot with nothing to
+  spend it on gives the tier no identity.
+- **Sixteen monster spellcasters, up from eight.** Of the 45 monsters a
+  level-1 party could meet, exactly two cast anything, and 44 of the game's
+  spells had never once been aimed at a player. Eight variants of specific base
+  monsters (Goblin Hexer, Kobold Emberling, Apprentice Mage, …) took waves
+  containing a caster from 17% to 39% at levels 1–3.
+- **Positioning.** Deeper arena boards, four deployment patterns, and a
+  guaranteed ranged presence per wave. Measured honestly: at the whole-run
+  level a party that never moves still matches one played properly, because
+  most fights are not close enough for position to decide them. Cover as real
+  AC is the outstanding candidate.
+- **What the AI could not see.** `restrained` was priced at zero while five
+  things applied it, so Web, Entangle and Ensnaring Strike were cast 0 times in
+  60 fights; weighted, 37/63/104. `baned` likewise. `sanctuary`, `protected`,
+  `bonded` and `energyWarded` remain deliberately unpriced — each depends on
+  what the attacker happens to be or be doing, so a flat weight would misstate
+  them in both directions, and they lock out Warding Bond, Protection from
+  Energy, Sanctuary and Protection from Evil and Good until the threat term
+  understands them.
+
 ## 11. Deliberately out of scope
 
 Cover, reactions beyond opportunity attacks (and the Shield spell's autocast),
-readied actions, death saves, spell components, multiclassing, feats (the L4
-ASI is a fixed +2), exhaustion, mounts, elevation, lighting/vision, creature
-size (each combatant occupies one cell), and upcasting by the AI (players can
-upcast; the AI never does). Formerly on this list but since implemented:
-hiding/stealth (§3), rituals (Find Familiar), and rests (hit dice, §7b) —
-scope is a decision, not a fence.
+readied actions, death saves, spell components, multiclassing, feats (the ASIs
+are a fixed +2), exhaustion, mounts, elevation, lighting/vision, and creature
+size (each combatant occupies one cell). Formerly on this list but since
+implemented: hiding/stealth (§3), rituals (Find Familiar), rests (hit dice,
+§7b), and upcasting (§3) — scope is a decision, not a fence.

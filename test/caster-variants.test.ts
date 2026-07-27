@@ -96,14 +96,16 @@ describe('caster variants', () => {
           c.apply(a);
         }
       }
-      // LEVELED spells only. A cantrip is the fallback for when the slots run
-      // dry, so on a caster with three ranks of them it can legitimately go a
-      // whole sweep uncast — asserting otherwise measures fight length, not
-      // whether the kit works. The leveled spells ARE the kit, and this catches
-      // the real failure: Bestow Curse on the snarecaller was cast zero times
-      // in thirty fights, because a 3rd-level debuff loses to a 1st-level
-      // lockdown in the same kit every time.
-      // Leveled spells AIMED AT SOMEONE ELSE. A self-buff is a different animal:
+      // Leveled spells AIMED AT SOMEONE ELSE.
+      //
+      // Leveled, because a cantrip is the fallback for when the slots run dry:
+      // on a caster with three ranks of them it can legitimately go a whole
+      // sweep uncast, and asserting otherwise measures fight length rather than
+      // whether the kit works. This is what caught Bestow Curse on the
+      // snarecaller — cast zero times in thirty fights, because a 3rd-level
+      // debuff loses to a 1st-level lockdown in the same kit every time.
+      //
+      // Aimed at someone else, because a self-buff is a different animal:
       // False Life competes with the bonechanter's own attack every single turn
       // and wins about one time in twenty, so a sixteen-fight sweep catches it
       // only sometimes — it has flaked here twice, each time because an
