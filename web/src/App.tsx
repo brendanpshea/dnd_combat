@@ -801,17 +801,81 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // learning tip sitting on top of the controls.
   const battleRef = useRef<HTMLDivElement | null>(null);
   const topbarRef = useRef<HTMLElement | null>(null);
+  const publishRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     const bar = topbarRef.current;
     const root = battleRef.current;
     if (!bar || !root) return;
-    const publish = () => root.style.setProperty('--topbar-h', `${Math.round(bar.getBoundingClientRect().height)}px`);
+    const publish = () => {
+      root.style.setProperty('--topbar-h', `${Math.round(bar.getBoundingClientRect().height)}px`);
+
+      // How much height is left for the board once everything else has taken
+      // what it needs.
+      //
+      // The board used to claim a guessed share of the viewport — 44vh plus
+      // 14vh per unit of aspect, so 65vh for an 8x12 — and everything below it
+      // took whatever remained. On a phone that ran out: the second row of the
+      // action bar was clipped by the navigation bar. The guess cannot be made
+      // right, because what sits under the board changes with the turn (a
+      // character card, one or two rows of buttons, sometimes a banner).
+      //
+      // So measure instead. `scrollHeight - board` is the height of everything
+      // that is NOT the board, whatever that happens to be right now; the
+      // budget is what is left of the visible box after that. The board is the
+      // only thing here that can shrink, so it is the thing that gives way.
+      const wrap = root.querySelector('.board-wrap') as HTMLElement | null;
+      if (!wrap) return;
+      // Sum the siblings directly rather than using scrollHeight. With
+      // `overflow-y: auto` on this column, scrollHeight equals clientHeight
+      // whenever the content fits, so `scrollHeight - board` collapsed to
+      // "clientHeight - board" and the budget ratcheted down to whatever the
+      // board already was — it shrank a little on every render.
+      const style = getComputedStyle(root);
+      const gap = Number.parseFloat(style.rowGap) || 0;
+      const pad = (Number.parseFloat(style.paddingTop) || 0) + (Number.parseFloat(style.paddingBottom) || 0);
+      let others = pad + gap * Math.max(0, root.children.length - 1);
+      for (const child of Array.from(root.children) as HTMLElement[]) {
+        // Only things that actually take space in the column. A floating toast,
+        // the slide-over log and anything hidden are out of flow, and counting
+        // them left the board a few hundred pixels smaller than the screen
+        // could afford.
+        const cs = getComputedStyle(child);
+        if (cs.position === 'absolute' || cs.position === 'fixed' || cs.display === 'none') {
+          others -= gap;
+          continue;
+        }
+        // The column that holds the board contributes only whatever else is
+        // inside it; the board itself is the thing being budgeted for.
+        others += child.contains(wrap) ? child.offsetHeight - wrap.offsetHeight : child.offsetHeight;
+      }
+      // A floor, in case something below the board is unusually tall: better a
+      // slightly cramped board than cells too small to tap. If the floor bites,
+      // `.battle` scrolls rather than clipping — a button you cannot reach is
+      // worse than a board you have to scroll to.
+      const budget = Math.max(root.clientHeight * 0.38, root.clientHeight - others);
+      const prev = Number.parseFloat(root.style.getPropertyValue('--board-budget')) || 0;
+      // Only on a real change: writing it back re-runs the observer, and a
+      // sub-pixel wobble would loop forever.
+      if (Math.abs(budget - prev) > 2) root.style.setProperty('--board-budget', `${Math.round(budget)}px`);
+    };
+    publishRef.current = publish;
     publish();
     if (typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(publish);
     ro.observe(bar);
+    ro.observe(root);
     return () => ro.disconnect();
   }, []);
+
+  // ...and again after every render.
+  //
+  // The ResizeObserver alone is not enough: `.battle` is height:100%, so its
+  // own box never changes when a child appears or leaves, and the budget went
+  // stale. Measured with the tutorial panel up and never recomputed once it
+  // was dismissed, the board stayed at 250px on an 844px screen with 600
+  // available — the fix for the overflow had quietly become a different bug.
+  // What changes the content is a render, so that is when to re-measure.
+  useEffect(() => { publishRef.current?.(); });
 
   const soloHuman = (['team1', 'team2'] as TeamId[]).filter((t) => !aiTeams.has(t));
   const youTeam = soloHuman.length === 1 ? soloHuman[0] : undefined;

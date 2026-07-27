@@ -115,4 +115,52 @@ describe('web stylesheet coverage', () => {
     const missing = [...kinds].filter((k) => k !== 'misc' && !defined.has(k));
     expect(missing, `log kinds with no style: ${missing.join(', ')}`).toEqual([]);
   });
+
+  /**
+   * The board's height budget is MEASURED, not guessed.
+   *
+   * It used to be `44vh + 14vh·aspect` — 65vh for an 8×12 — and everything
+   * below it took what was left. On a phone that ran out: the second row of the
+   * action bar was clipped by the navigation bar, reported from a live Chrome
+   * on Android. No fixed fraction can be right, because what sits under the
+   * board changes with the turn (a character card, one or two rows of buttons,
+   * a banner), so the board takes the remainder instead.
+   *
+   * Three things went wrong while building it, and all three were silent:
+   *
+   *   - a ResizeObserver on `.battle` never fires, because the column is
+   *     height:100% and its own box does not change when a child comes or
+   *     goes. The budget was measured once with the tutorial panel up and kept
+   *     forever: a 250px board on an 844px screen with 600 available.
+   *   - `scrollHeight - board` collapses to `clientHeight - board` once the
+   *     column can scroll, so the budget ratcheted down to whatever the board
+   *     already was, a little smaller on every render.
+   *   - counting out-of-flow children (the floating log, a toast) charged the
+   *     board for space they never occupied.
+   */
+  it('sizes the board off a measured remainder, not a fraction of the viewport', () => {
+    const app = readFileSync(join(WEB, 'App.tsx'), 'utf8');
+    expect(app, '--board-budget must be published from a measurement').toContain("setProperty('--board-budget'");
+    expect(CSS, 'and consumed by the board width').toContain('var(--board-budget');
+    // The old guess must not come back.
+    expect(CSS, 'the viewport-fraction guess is what clipped the action bar')
+      .not.toMatch(/14vh \* var\(--board-aspect/);
+
+    // Re-measured on every render, not only when a box resizes.
+    expect(app, 'a ResizeObserver alone goes stale on a height:100% column')
+      .toMatch(/useEffect\(\(\) => \{ publishRef\.current\?\.\(\); \}\)/);
+    // Siblings summed directly; scrollHeight is self-referential here.
+    expect(app, 'must not derive the budget from scrollHeight').not.toContain('root.scrollHeight');
+    // Out-of-flow children do not take space in the column.
+    expect(app).toContain("cs.position === 'absolute'");
+  });
+
+  it('lets the battle column scroll rather than clip', () => {
+    const i = CSS.indexOf('.battle {');
+    expect(i, 'no .battle rule').toBeGreaterThan(-1);
+    const rule = CSS.slice(i, CSS.indexOf('}', i));
+    // The board shrinks to fit, so this should never engage — but a button you
+    // cannot reach is worse than a board you have to scroll to.
+    expect(rule, 'the action bar must stay reachable').toContain('overflow-y: auto');
+  });
 });
