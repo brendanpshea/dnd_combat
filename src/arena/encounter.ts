@@ -98,6 +98,17 @@ export interface GenerateOptions {
    * party. Omitted means no floor applies.
    */
   partyLevel?: number;
+  /**
+   * Field only these creature types, ignoring any that cannot afford a member
+   * at this budget.
+   *
+   * Not used by the shipping generator — a wave picks its own types. It exists
+   * because creature type is the widest difficulty variable in the game and the
+   * only way to measure that is to hold it fixed: the 4%-to-79% table in
+   * arena/gates.ts and the bane-weapon measurements in data/weapons.ts were
+   * both taken through this option, and neither is reproducible without it.
+   */
+  forceTypes?: CreatureType[];
 }
 
 const DEFAULTS = { maxCount: 6, soloShare: 0.75 } as const;
@@ -264,7 +275,9 @@ function generateOnce(
   const roster = arenaRoster(opts.partyLevel).filter((m) => m.xp <= cap);
   let rng = state;
 
-  const types = affordableTypes(roster, opts.budget, soloShare);
+  const all = affordableTypes(roster, opts.budget, soloShare);
+  const forced = opts.forceTypes?.filter((t) => all.includes(t)) ?? [];
+  const types = forced.length > 0 ? forced : all;
   const primaryPick = pick(types, rng); rng = primaryPick.state;
   const chosen: CreatureType[] = [primaryPick.value];
 

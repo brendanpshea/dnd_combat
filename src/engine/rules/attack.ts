@@ -517,6 +517,20 @@ export function resolveAttack(
     events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { crit }));
   }
 
+  // A bane weapon (Dragon Slayer, Sun Blade): extra dice, but only against the
+  // creature types it was made for. Tagged with the weapon's own name so the
+  // log says *why* the number was suddenly large — the whole value of carrying
+  // one is knowing it paid off, and an untagged 3d6 just reads as a good roll.
+  if (weapon.slays && target.alive && weapon.slays.types.includes(target.creatureType ?? 'humanoid')) {
+    const bane = rollDice(state.rng, weapon.slays.dice, crit);
+    state.rng = bane.state;
+    events.push(...applyDamage(
+      state, targetId, attackerId, bane.total,
+      weapon.slays.damageType ?? weapon.damageType, bane.rolls,
+      { crit, tags: [weapon.name], magical: isMagicWeapon(weapon) },
+    ));
+  }
+
   // Corrosion (rust monster): a hit pits metal armour or a shield, one point of
   // AC at a time up to the weapon's cap, for the rest of the fight. Nothing to
   // eat means nothing happens — an unarmoured target is simply immune, which is
