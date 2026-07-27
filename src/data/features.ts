@@ -517,6 +517,10 @@ export const FEATURES: Record<Id, FeatureData> = {
   // Mantle of Spell Resistance: advantage on saves against spells. savingThrow
   // already knows whether a save is magical, so this reads that flag.
   'mantle-spell-resistance': { id: 'mantle-spell-resistance', name: 'Mantle of Spell Resistance', trigger: 'passive' },
+  // Wand of the War Mage: a bonus to spell attack rolls, and spells that ignore
+  // half cover. Read in spells.ts's single spellAttack chokepoint.
+  'war-mage-1': { id: 'war-mage-1', name: 'Wand of the War Mage +1', trigger: 'passive' },
+  'war-mage-2': { id: 'war-mage-2', name: 'Wand of the War Mage +2', trigger: 'passive' },
   'brooch-shielding': { id: 'brooch-shielding', name: 'Brooch of Shielding', trigger: 'passive' },
   'bracers-archery': { id: 'bracers-archery', name: 'Bracers of Archery', trigger: 'passive' },
   'boots-winterlands': { id: 'boots-winterlands', name: 'Boots of the Winterlands', trigger: 'passive' },

@@ -126,7 +126,7 @@ const NAMED_BASE: Record<Id, Id> = {
 export function baseWeaponId(id: Id): Id {
   const named = NAMED_BASE[id];
   if (named) return named;
-  return id.replace(/-plus1$/, '').replace(/^silvered-/, '') as Id;
+  return id.replace(/-plus1$/, '').replace(/^vicious-/, '').replace(/^silvered-/, '') as Id;
 }
 
 /** simple / martial for tradable weapons; undefined for natural/monster ones. */
@@ -980,6 +980,34 @@ export const WEAPONS: Record<Id, WeaponData> = {
 };
 
 /**
+ * Vicious weapons: "an extra 2d6 damage to any creature it hits", and no
+ * attack or damage bonus at all.
+ *
+ * The interesting contrast is with a bane weapon. A Dragon Slayer is +1 always
+ * and +3d6 sometimes; a Vicious Weapon is +0 always and +2d6 always. So the
+ * slayer is the pick when you know what is coming — which the gate cards tell
+ * you — and the vicious one is the pick when you do not. That is a real choice
+ * between two rare weapons rather than a strictly-better ladder, which is the
+ * whole reason to have both.
+ *
+ * Derived like the +1s, and for the same reason.
+ */
+const VICIOUS_COST: Record<Id, number> = {
+  greatsword: 1600, greataxe: 1600, longsword: 1300,
+  rapier: 1300, warhammer: 1300, longbow: 1600, dagger: 1100, mace: 1200,
+};
+
+/** The vicious variant of a base weapon: no bonus, an extra 2d6 on every hit. */
+function vicious(baseId: Id, cost: number): WeaponData {
+  const base = WEAPONS[baseId];
+  if (!base) throw new Error(`VICIOUS_COST names a weapon that does not exist: ${baseId}`);
+  return {
+    ...base, id: `vicious-${baseId}`, name: `Vicious ${base.name}`, cost, magic: true,
+    extraDamage: { dice: '2d6', type: base.damageType },
+  };
+}
+
+/**
  * Every weapon that comes in a +1 flavour, and what the enchanted one costs.
  *
  * DERIVED, NOT DUPLICATED. The six +1 weapons that used to live in the table
@@ -1019,5 +1047,12 @@ for (const [baseId, cost] of Object.entries(PLUS_ONE_COST)) {
   WEAPONS[`${baseId}-plus1`] = plusOne(baseId, cost);
 }
 
+for (const [baseId, cost] of Object.entries(VICIOUS_COST)) {
+  WEAPONS[`vicious-${baseId}`] = vicious(baseId, cost);
+}
+
 /** Base weapons that have a +1 version, for the loot tables and the shop. */
 export const PLUS_ONE_WEAPONS: Id[] = Object.keys(PLUS_ONE_COST).map((id) => `${id}-plus1`);
+
+/** The vicious weapons, for the loot tables and the shop. */
+export const VICIOUS_WEAPONS: Id[] = Object.keys(VICIOUS_COST).map((id) => `vicious-${id}`);

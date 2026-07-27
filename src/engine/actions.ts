@@ -12,7 +12,7 @@ import { posEq, cellAt, isDown, isIncapacitated } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
-import { ITEMS } from '../data/items.js';
+import { ITEMS, isCharged } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
@@ -256,13 +256,22 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (!item) return false;
       const stack = actor.inventory.find((s) => s.itemId === action.itemId && s.qty > 0);
       if (!stack) return false;
+      // A wand is drained, not spent: what runs out is charges, not the item.
+      if (isCharged(item) && (actor.itemUses?.[action.itemId]?.current ?? 0) <= 0) return false;
+      // Wands the SRD gates behind attunement by a spellcaster. Wand of Magic
+      // Missiles needs no attunement at all and so carries no requirement,
+      // which is exactly what makes it worth a fighter's pack slot.
+      if (item.requires === 'spellcaster' && actor.spellcastingAbility === undefined) return false;
       // Fast Hands (Thief): "use an object" as a Bonus Action, which on a
       // battle grid means drinking the potion without giving up the attack.
       const asBonus = item.useTime === 'bonus' || actor.featureIds.includes('fast-hands');
       if (!asBonus && actor.turn.actionUsed) return false;
       if (asBonus && actor.turn.bonusActionUsed) return false;
       // A spell scroll only works for a class that has the spell on its list.
-      if (item.targeting.kind === 'spell' && !classScrollPool(actor.classId).has(item.targeting.spellId)) return false;
+      // A wand does not care: the magic is in the wand, which is the point of
+      // owning one — a cleric's Wand of Fireballs casts Fireball.
+      if (!isCharged(item) && item.targeting.kind === 'spell' &&
+          !classScrollPool(actor.classId).has(item.targeting.spellId)) return false;
       return itemTargetsValid(state, actor, action.itemId, action.targets ?? []);
     }
     case 'useFeature': {
@@ -448,8 +457,9 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     } else {
       // Scroll: usable only if the spell is on the actor's class list (2024) —
       // a fighter can't read a wizard's scroll. Then it plays exactly like
-      // casting X (multi-dart, area cells, and all).
-      if (!classScrollPool(actor.classId).has(item.targeting.spellId)) continue;
+      // casting X (multi-dart, area cells, and all). A wand skips that gate:
+      // the magic is in the wand, not in the reader.
+      if (!isCharged(item) && !classScrollPool(actor.classId).has(item.targeting.spellId)) continue;
       const spell = SPELLS[item.targeting.spellId]!;
       for (const { targets } of spellTargetSets(state, actor, spell)) candidates.push(targets);
     }
@@ -629,9 +639,14 @@ export function step(state: GameState, action: Action): { state: GameState; even
       const item = ITEMS[action.itemId]!;
       if (item.useTime === 'action' && !actor.featureIds.includes('fast-hands')) actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
-      const stack = actor.inventory.find((s) => s.itemId === action.itemId)!;
-      stack.qty -= 1;
-      if (stack.qty === 0) actor.inventory = actor.inventory.filter((s) => s !== stack);
+      if (isCharged(item)) {
+        const pool = actor.itemUses?.[action.itemId];
+        if (pool) pool.current -= 1;
+      } else {
+        const stack = actor.inventory.find((s) => s.itemId === action.itemId)!;
+        stack.qty -= 1;
+        if (stack.qty === 0) actor.inventory = actor.inventory.filter((s) => s !== stack);
+      }
       const targets = action.targets ?? [];
       const targetIds = targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
       const positions = targets.flatMap((t) => ('position' in t ? [t.position] : []));

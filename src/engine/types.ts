@@ -212,6 +212,14 @@ export interface Combatant {
   featureIds: Id[];                 // class/species features
   featureUses: Record<Id, ResourcePool>;
   /**
+   * Charges left in wands and staves the character is carrying, keyed by item
+   * id. The mirror of `featureUses`, and deliberately not the same thing as an
+   * inventory quantity: a wand is not spent when it is used, it is *drained*,
+   * and it comes back at dawn. Optional so a combatant built without any
+   * charged item carries no empty record.
+   */
+  itemUses?: Record<Id, ResourcePool>;
+  /**
    * Innate spells — a species' own magic, cast with no spell slot and a limited
    * number of times per encounter (a wood elf's Faerie Fire). Keyed by spell id;
    * the pool is the mirror of featureUses. This is what lets a *fighter* cast a

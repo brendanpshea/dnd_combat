@@ -16,7 +16,7 @@ import {
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
-import { WEAPONS, PLUS_ONE_WEAPONS } from '../data/weapons.js';
+import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
@@ -43,6 +43,13 @@ export interface PartyCharacter {
     /** Hit dice left to spend on a short rest. Absent = a full pool (= level).
      *  A long rest restores half; a short rest spends them to heal. */
     hitDice?: number;
+    /**
+     * Charges left in carried wands, by item id. Absent = full, the same
+     * fresh-save signal HP and slots use — which is also how a long rest
+     * refills them: `longRest` rebuilds `resources` without this field, so the
+     * wand comes back charged without anything having to remember to refill it.
+     */
+    itemCharges?: Record<Id, number>;
     effects?: {
       familiar?: { kind: 'owl' };
       mageArmor?: true;
@@ -300,6 +307,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     // the game behind level 5 — and the median arena run ends at level 3, so
     // most parties never saw one at all.
     ...PLUS_ONE_WEAPONS, 'shield-plus1',
+    'wand-magic-missiles', 'wand-web', 'wand-war-mage-1',
     'silvered-shortsword', 'silvered-warhammer',
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
@@ -318,7 +326,8 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'scroll-fireball', 'scroll-lightning-bolt', 'scroll-dispel-magic', 'scroll-haste',
     'potion-giant-strength-frost',
     'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
-    ...RARE_WONDROUS,
+    ...RARE_WONDROUS, ...VICIOUS_WEAPONS,
+    'wand-fireballs', 'wand-lightning-bolts',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
   ],
@@ -400,10 +409,12 @@ export const SHOP_STOCK: Id[] = [
   'scroll-blindness', 'scroll-invisibility', 'scroll-dispel-magic', 'scroll-haste',
   'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
   'potion-giant-strength-hill',
+  // wands — charged, not consumed (see ConsumableData.charges)
+  'wand-magic-missiles', 'wand-web', 'wand-fireballs', 'wand-lightning-bolts',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow',
-  ...PLUS_ONE_WEAPONS,
+  ...PLUS_ONE_WEAPONS, ...VICIOUS_WEAPONS,
   'silvered-shortsword', 'silvered-warhammer',
   'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
   // armor
@@ -413,7 +424,7 @@ export const SHOP_STOCK: Id[] = [
   // trinkets
   'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
-  ...RARE_WONDROUS,
+  ...RARE_WONDROUS, 'wand-war-mage-1',
 ];
 
 /** The party level at which each rarity tier first appears on a shelf, so a
@@ -1046,6 +1057,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
+      ...(ch.resources?.itemCharges ? { itemChargesOverride: ch.resources.itemCharges } : {}),
       // Hand the builder the effective prepared + cantrip sets (hand-picked or
       // auto-default), so a campaign caster casts exactly what the panel shows.
       // Scribed off-list scrolls widen the builder's pool so those prepared
@@ -2054,6 +2066,16 @@ export function readBackSurvivors(c: CampaignState, finalTeam: Combatant[]): voi
     ch.resources = {
       hp: Math.max(1, fought.hp),
       ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
+      // Wand charges carry out of the fight the same way slots do. Written only
+      // when something has actually been spent, so a full wand leaves no field
+      // and "absent means full" keeps meaning that.
+      ...(() => {
+        const spent = Object.entries(fought.itemUses ?? {})
+          .filter(([, pool]) => pool.current < pool.max);
+        return spent.length > 0
+          ? { itemCharges: Object.fromEntries(spent.map(([id, pool]) => [id, pool.current])) }
+          : {};
+      })(),
       ...(fought.familiar || fought.mageArmor || ch.resources?.effects
         ? {
             effects: {
