@@ -794,7 +794,7 @@ STR 10 (+0), DEX 10 (+0), CON 12 (+1), INT 13 (+1), WIS 16 (+3), CHA 13 (+1)
 - **Saving throws:** WIS
 - **Attacks:** Mace 1d6 bludgeoning
 - **Spellcasting:** WIS, slots 4×L1 3×L2 2×L3
-- **Spells:** Sacred Flame, Cure Wounds, Guiding Bolt, Healing Word, Command, Spiritual Weapon, Spiritual Guardians, Bless
+- **Spells:** Sacred Flame, Cure Wounds, Guiding Bolt, Healing Word, Command, Spiritual Weapon, Spirit Guardians, Bless
 - **Metal armor:** yes (Shocking Grasp rider)
 
 ### White Dragon Wyrmling

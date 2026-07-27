@@ -360,7 +360,7 @@ describe('Flaming Sphere', () => {
   });
 });
 
-describe('Spiritual Guardians', () => {
+describe('Spirit Guardians', () => {
   it('damages an enemy that starts its turn in the aura, and the aura ends with concentration', () => {
     const c = new Combat({
       seed: 2,

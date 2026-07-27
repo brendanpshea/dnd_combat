@@ -1018,12 +1018,17 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   if (spellId === 'call-lightning') delete c.stormCloud;      // the storm blows out
   if (spellId === 'moonbeam') delete c.moonbeam;              // the beam winks out
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
-  // Flaming Sphere is a concentration-held summon: sweep it off the board.
-  if (spellId === 'flaming-sphere' && c.summons) {
-    for (const s of c.summons.filter((x) => x.kind === 'flaming-sphere')) {
+  // A concentration-held summon: sweep it off the board. A summon's `kind` is
+  // the id of the spell that made it (see Combatant.summons), so this is the
+  // general rule rather than a list — which is what it used to be, naming only
+  // Flaming Sphere. Spiritual Weapon is concentration in the 2024 rules too,
+  // and would otherwise have outlived the concentration that held it.
+  if (c.summons) {
+    const held = c.summons.filter((x) => x.kind === spellId);
+    for (const s of held) {
       events.push({ type: 'summonExpired', casterId: combatantId, kind: s.kind, position: { ...s.position } });
     }
-    c.summons = c.summons.filter((x) => x.kind !== 'flaming-sphere');
+    if (held.length > 0) c.summons = c.summons.filter((x) => x.kind !== spellId);
   }
   // Lingering strands — Web, Entangle, anything else that lays them: clear them
   // from the grid, and free everyone they still hold. Not only the `targetIds`
