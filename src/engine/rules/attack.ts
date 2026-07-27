@@ -853,7 +853,7 @@ export function shillelaghDamage(level: number): string {
   return level >= 17 ? '2d6' : level >= 11 ? '1d12' : level >= 5 ? '1d10' : '1d8';
 }
 
-/** A weapon counts as magical if it is enchanted (+N) or moon-touched. Both
+/** A weapon counts as magical if it is enchanted (+N) or silvered. Both
  *  get through the SRD's "nonmagical attacks" clause; only the +N kind also
  *  carries a bonus to hit and damage. */
 export function isMagicWeapon(w: { magic?: boolean; attackBonus?: number; damageBonus?: number } | undefined): boolean {

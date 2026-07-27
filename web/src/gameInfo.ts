@@ -127,11 +127,23 @@ function weaponSheet(id: string): InfoSheet | null {
     { label: 'Properties', value: props },
   ];
   if (w.attackBonus) stats.push({ label: 'To hit', value: `+${w.attackBonus} bonus` });
+  // The bane rider, stated plainly. A Dragon Slayer's +1 is the least of what a
+  // shopper is buying, and without this line the card reads exactly like a
+  // longsword +1 that happens to cost three times as much.
+  if (w.slays) {
+    stats.push({
+      label: 'Bane',
+      value: `+${w.slays.dice} ${w.slays.damageType ?? w.damageType} vs ${w.slays.types.join(' and ')}`,
+    });
+  }
   if (w.mastery) stats.push({ label: 'Mastery', value: MASTERY_BLURB[w.mastery]?.name ?? w.mastery });
   // Magic first (the thing a shopper is paying for), then the mastery trick.
+  const bane = w.slays
+    ? `Made for hunting ${w.slays.types.join(' and ')}: an extra ${w.slays.dice} against them, and nothing against anything else. `
+    : '';
   const magic = w.attackBonus
-    ? `Enchanted: +${w.attackBonus} to attack rolls and +${w.damageBonus ?? 0} damage. `
-    : w.magic ? 'Moon-touched: counts as magical, cutting through resistance to its damage. ' : '';
+    ? `Enchanted: +${w.attackBonus} to attack rolls and +${w.damageBonus ?? 0} damage. ${bane}`
+    : w.magic ? 'Silvered: counts as magical, cutting through resistance to its damage. ' : bane;
   return {
     name: w.name, icon: w.melee ? '⚔️' : '🏹',
     kind: w.attackBonus || w.magic ? 'Magic weapon' : 'Weapon',

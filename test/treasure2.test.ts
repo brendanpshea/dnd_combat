@@ -49,17 +49,17 @@ describe('magical damage and the two kinds of resistance', () => {
     expect(c.state.combatants['r3']!.hp).toBe(8);
   });
 
-  it('the moon-touched shortsword resolves a real attack that bypasses resistance', () => {
-    const attacker = pc('rogue', 3, { x: 3, y: 3 }, 'rog', { equipped: { mainHand: 'moontouched-shortsword' } });
+  it('the silvered shortsword resolves a real attack that bypasses resistance', () => {
+    const attacker = pc('rogue', 3, { x: 3, y: 3 }, 'rog', { equipped: { mainHand: 'silvered-shortsword' } });
     const target = makeCombatant({ id: 'tgt', team: 'team2', position: { x: 4, y: 3 }, resistNonmagical: ['piercing'], acOverride: 1, hp: 100, maxHp: 100 });
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [attacker, target] });
-    const evs = resolveAttack(c.state, 'rog', 'tgt', 'moontouched-shortsword');
+    const evs = resolveAttack(c.state, 'rog', 'tgt', 'silvered-shortsword');
     const dmg = evs.find((e) => e.type === 'damageDealt');
     expect(dmg).toBeDefined();
     if (dmg?.type !== 'damageDealt') throw new Error();
     // Full roll applied (no halving) — amount equals the raw dice+mod, not floor(/2).
     expect(dmg.amount).toBeGreaterThan(0);
-    expect(WEAPONS['moontouched-shortsword']!.attackBonus).toBeUndefined(); // no bonus, per spec
+    expect(WEAPONS['silvered-shortsword']!.attackBonus).toBeUndefined(); // no bonus, per spec
   });
 });
 
@@ -155,7 +155,7 @@ describe('Treasure pool integrity', () => {
 /**
  * A +1 weapon is magical, and the SRD's physical resistances all read "from
  * nonmagical attacks" — so the rare sword you saved for is precisely the
- * answer to a wight. It wasn't: `magic` was set only on the moon-touched
+ * answer to a wight. It wasn't: `magic` was set only on the silvered
  * pair, so a +1 longsword was halved by all sixteen monsters that resist
  * physical damage, which is the opposite of what the item is for.
  */

@@ -82,7 +82,7 @@ export interface WeaponData {
   attackBonus?: number;
   damageBonus?: number;
   /**
-   * Moon-touched/silvered: no attack or damage bonus, but its damage bypasses
+   * Silvered: no attack or damage bonus, but its damage bypasses
    * resistance (were-creatures, certain elementals) — see the bypassResistance
    * option on applyDamage.
    */
@@ -91,7 +91,7 @@ export interface WeaponData {
 
 /** Simple/martial split (5e). A new tradable weapon adds its base id to one of
  *  these sets; monster/natural weapons stay out (they have no category and are
- *  always proficient). Magic/moontouched variants resolve to their base. */
+ *  always proficient). Magic/silvered variants resolve to their base. */
 const SIMPLE_WEAPONS = new Set<Id>([
   'dagger', 'mace', 'quarterstaff', 'javelin', 'handaxe', 'spear', 'sling', 'light-crossbow', 'shortbow',
 ]);
@@ -103,7 +103,7 @@ const MARTIAL_WEAPONS = new Set<Id>([
 /**
  * Named magic weapons, and the mundane weapon each one *is*.
  *
- * `-plus1` and `moontouched-` carry their base in the id and can be stripped;
+ * `-plus1` and `silvered-` carry their base in the id and can be stripped;
  * a Sun Blade cannot. Without an entry here `weaponCategory` returns undefined,
  * which the proficiency check reads as "natural weapon, always proficient" —
  * so a wizard would pick up a Dragon Slayer and swing it at full proficiency.
@@ -121,12 +121,12 @@ const NAMED_BASE: Record<Id, Id> = {
   'mace-of-smiting': 'mace',
 };
 
-/** A weapon's base id, stripping magic/moontouched flavor (a +1 longsword is a
+/** A weapon's base id, stripping magic/silvered flavor (a +1 longsword is a
  *  martial weapon like any longsword). */
 export function baseWeaponId(id: Id): Id {
   const named = NAMED_BASE[id];
   if (named) return named;
-  return id.replace(/-plus1$/, '').replace(/^moontouched-/, '') as Id;
+  return id.replace(/-plus1$/, '').replace(/^silvered-/, '') as Id;
 }
 
 /** simple / martial for tradable weapons; undefined for natural/monster ones. */
@@ -188,34 +188,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'longbow', name: 'Longbow', damage: '1d8', damageType: 'piercing',
     properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, mastery: 'slow', cost: 50,
   },
-  'longsword-plus1': {
-    id: 'longsword-plus1', name: 'Longsword +1', damage: '1d8', damageType: 'slashing',
-    properties: ['versatile'], melee: true, mastery: 'sap', cost: 500,
-    attackBonus: 1, damageBonus: 1,
-  },
-  'shortsword-plus1': {
-    id: 'shortsword-plus1', name: 'Shortsword +1', damage: '1d6', damageType: 'piercing',
-    properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 500,
-    attackBonus: 1, damageBonus: 1,
-  },
 
-  // --- +1 weapons (rare tier, higher-level rewards) -------------------------
-  'greatsword-plus1': {
-    id: 'greatsword-plus1', name: 'Greatsword +1', damage: '2d6', damageType: 'slashing',
-    properties: ['two-handed'], melee: true, mastery: 'graze', cost: 1000, attackBonus: 1, damageBonus: 1,
-  },
-  'longbow-plus1': {
-    id: 'longbow-plus1', name: 'Longbow +1', damage: '1d8', damageType: 'piercing',
-    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, mastery: 'slow', cost: 1000, attackBonus: 1, damageBonus: 1,
-  },
-  'warhammer-plus1': {
-    id: 'warhammer-plus1', name: 'Warhammer +1', damage: '1d8', damageType: 'bludgeoning',
-    properties: ['versatile'], melee: true, mastery: 'push', cost: 800, attackBonus: 1, damageBonus: 1,
-  },
-  'rapier-plus1': {
-    id: 'rapier-plus1', name: 'Rapier +1', damage: '1d8', damageType: 'piercing',
-    properties: ['finesse'], melee: true, mastery: 'vex', cost: 800, attackBonus: 1, damageBonus: 1,
-  },
 
   // --- bane weapons (rare) ---------------------------------------------------
   //
@@ -314,13 +287,13 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true, mastery: 'sap', cost: 15,
   },
 
-  // --- moon-touched (silvered) — no bonus, bypasses resistance -------------
-  'moontouched-shortsword': {
-    id: 'moontouched-shortsword', name: 'Moon-Touched Shortsword', damage: '1d6', damageType: 'piercing',
+  // --- silvered — no bonus, bypasses resistance -------------
+  'silvered-shortsword': {
+    id: 'silvered-shortsword', name: 'Silvered Shortsword', damage: '1d6', damageType: 'piercing',
     properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 150, magic: true,
   },
-  'moontouched-warhammer': {
-    id: 'moontouched-warhammer', name: 'Moon-Touched Warhammer', damage: '1d8', damageType: 'bludgeoning',
+  'silvered-warhammer': {
+    id: 'silvered-warhammer', name: 'Silvered Warhammer', damage: '1d8', damageType: 'bludgeoning',
     properties: ['versatile'], melee: true, mastery: 'push', cost: 150, magic: true,
   },
 
@@ -1005,3 +978,46 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
   },
 };
+
+/**
+ * Every weapon that comes in a +1 flavour, and what the enchanted one costs.
+ *
+ * DERIVED, NOT DUPLICATED. The six +1 weapons that used to live in the table
+ * above were hand-copied from their bases — same dice, same properties, same
+ * mastery, written out twice. They happened to be in sync, but nothing held
+ * them there: retune a longsword's mastery and the +1 longsword keeps the old
+ * one, and the only symptom is that the expensive sword is quietly the worse
+ * weapon. Building them from the base makes that impossible.
+ *
+ * The list is also the fix for a real gap. All six were MARTIAL, and cleric,
+ * wizard and bard are simple-only — so three of the eight classes had no
+ * enchanted weapon available to them at any price, at any level. Seven of the
+ * eleven added here are simple.
+ *
+ * Prices preserve what the original six charged (500/500/800/800/1000/1000) and
+ * extend the same shape: roughly by damage die, with reach and versatility
+ * costing a little more.
+ */
+const PLUS_ONE_COST: Record<Id, number> = {
+  // simple — the classes that could not buy magic before
+  dagger: 400, quarterstaff: 400, javelin: 400,
+  mace: 450, spear: 450, handaxe: 450, shortbow: 600,
+  // martial
+  shortsword: 500, longsword: 500,
+  rapier: 800, warhammer: 800, battleaxe: 800, morningstar: 800, 'hand-crossbow': 800,
+  greatsword: 1000, longbow: 1000, greataxe: 1000,
+};
+
+/** The +1 variant of a base weapon: identical but for the bonus, name and price. */
+function plusOne(baseId: Id, cost: number): WeaponData {
+  const base = WEAPONS[baseId];
+  if (!base) throw new Error(`PLUS_ONE_COST names a weapon that does not exist: ${baseId}`);
+  return { ...base, id: `${baseId}-plus1`, name: `${base.name} +1`, cost, attackBonus: 1, damageBonus: 1 };
+}
+
+for (const [baseId, cost] of Object.entries(PLUS_ONE_COST)) {
+  WEAPONS[`${baseId}-plus1`] = plusOne(baseId, cost);
+}
+
+/** Base weapons that have a +1 version, for the loot tables and the shop. */
+export const PLUS_ONE_WEAPONS: Id[] = Object.keys(PLUS_ONE_COST).map((id) => `${id}-plus1`);
