@@ -288,6 +288,15 @@ export interface ArenaRunState {
   /** Bounties claimed, for the run summary. */
   bounties: number;
   /**
+   * Which of the quasit's lines this run has already heard (see chorus.ts).
+   *
+   * Kept in the run rather than in memory so "the first time you lose a day"
+   * survives closing the tab — and so a fresh run gets the whole thing back,
+   * which is right: the commentary is part of a run, not part of a save file
+   * that accumulates forever.
+   */
+  heard?: string[];
+  /**
    * Which of the wave's three doors is selected (see gates.ts). Optional so a
    * save written before gates existed loads and simply starts on door 0.
    */

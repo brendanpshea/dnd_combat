@@ -11,7 +11,7 @@
  * first frame and the whole sequence is under a second, so the tenth victory
  * costs nothing.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { CampaignState } from '../../src/campaign/campaign.js';
 import type { ItemStack } from '../../src/engine/types.js';
 import {
@@ -41,6 +41,12 @@ export interface LootProps {
    * hold anything in reserve.
    */
   rested?: { totalHealed: number; hitDiceSpent?: number; revived?: number } | undefined;
+  /**
+   * The arena's commentary, if it has anything to say about this break. Passed
+   * in as a node rather than looked up here: the loot screen is shared with
+   * adventure mode, which has no quasit in its rafters.
+   */
+  chorus?: ReactNode;
   onContinue(): void;
 }
 
@@ -63,7 +69,7 @@ function useCountUp(from: number, to: number, ms = 700): number {
   return n;
 }
 
-export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, onContinue }: LootProps) {
+export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, chorus, onContinue }: LootProps) {
   // On a level-up, open the gains modal straight away — the gains are the point.
   const [showLevel, setShowLevel] = useState<boolean>(!!leveledTo);
   const level = partyLevelOf(campaign);
@@ -178,6 +184,8 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
           })}
         </div>
       )}
+
+      {chorus}
 
       <button className="primary" onClick={onContinue}>Continue</button>
     </div>
