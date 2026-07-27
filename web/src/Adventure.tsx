@@ -14,7 +14,7 @@ import {
   storeSpellActions, useStoreSpell, useStoreHealing, isStoreHealingSource,
   isCampBuffPotion, drinkCampBuffPotion, partyNeedsRest,
   cantripLimit, preparedLimit, preparedSpells, levelForXp,
-  hitDiceLeft, hitDiceMax, characterSkills, fullRest,
+  hitDiceLeft, hitDiceMax, characterSkills, fullRest, EQUIP_SLOTS,
 } from '../../src/campaign/campaign.js';
 import { CharacterSheet } from './CharacterSheet.js';
 import { seenTips, markTipSeen } from './tips.js';
@@ -702,7 +702,7 @@ export function PartyStrip(
   );
 }
 
-const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
+
 
 type CampPick =
   | { kind: 'pack'; charIdx: number; itemId: string }

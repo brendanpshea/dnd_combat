@@ -120,7 +120,10 @@ export function savingThrow(
   // Magic Resistance (Satyr/Unicorn): advantage on saves against spells.
   const hasAdvantage =
     c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
-    (opts.magical === true && c.featureIds.includes('magic-resistance')) ||
+    // Magic Resistance is a monster trait; the Mantle of Spell Resistance is
+    // the party's version of the same thing, so it reads the same flag.
+    (opts.magical === true &&
+      (c.featureIds.includes('magic-resistance') || c.featureIds.includes('mantle-spell-resistance'))) ||
     countercharmed(state, c, ability);
   // 2024: Restrained imposes disadvantage on Dexterity saving throws.
   // Bestow Curse: disadvantage on every saving throw the cursed creature makes.

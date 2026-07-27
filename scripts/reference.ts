@@ -34,7 +34,7 @@ import { FEATURES, BREATH_WEAPONS } from '../src/data/features.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
 import { MAPS, parseMap } from '../src/data/maps.js';
-import { TRINKETS } from '../src/data/trinkets.js';
+import { TRINKETS, trinketSlot } from '../src/data/trinkets.js';
 import { VALUABLES } from '../src/data/valuables.js';
 import { CONDITION_NAME } from '../src/data/conditions.js';
 import { MODULES, playableModules } from '../src/data/modules/index.js';
@@ -314,9 +314,9 @@ function gearDoc(): string {
     '## Trinkets',
     '',
     table(
-      ['Name', 'ID', 'Cost (gp)', 'Rarity', 'Grants', 'Blurb'],
+      ['Name', 'ID', 'Slot', 'Cost (gp)', 'Rarity', 'Grants', 'Blurb'],
       trinkets.map((t) => [
-        t.name, `\`${t.id}\``, t.cost, t.rarity,
+        t.name, `\`${t.id}\``, trinketSlot(t), t.cost, t.rarity,
         [
           ...(t.grants.featureIds ?? []).map((f) => FEATURES[f]?.name ?? f),
           ...(t.grants.resistances ?? []).map((r) => `resist ${r}`),

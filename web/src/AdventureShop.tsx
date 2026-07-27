@@ -14,7 +14,7 @@ import { useState } from 'react';
 import {
   buyItem, sellItem, itemName, itemIcon, itemPrice, itemCategory,
   partyStash, claimFromStash, scrollLearnable, learnSpellFromScroll, equipBlocked, partyLevelOf,
-  type CampaignState, type ItemCategory, type EquipSlot,
+  type CampaignState, type ItemCategory, type EquipSlot, EQUIP_SLOTS,
 } from '../../src/campaign/campaign.js';
 import {
   shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, type HaggleSkill,
@@ -44,7 +44,7 @@ const CAT_META: Record<ItemCategory, { icon: string; label: string }> = {
   other: { icon: '📦', label: 'Other' },
 };
 const CAT_ORDER: ItemCategory[] = ['weapon', 'armor', 'potion', 'scroll', 'trinket', 'other'];
-const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
+
 
 /** For a focused hero, how an equippable item suits them — drives the buy-row
  *  hint. `fits` = wear/wield with full benefit; `noprof` = can wield but adds no

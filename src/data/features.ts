@@ -506,6 +506,17 @@ export const FEATURES: Record<Id, FeatureData> = {
   'uncanny-dodge': { id: 'uncanny-dodge', name: 'Uncanny Dodge', trigger: 'passive' },
   // Trinket-granted passives; their effects live in the rules that read them.
   'cloak-protection': { id: 'cloak-protection', name: 'Cloak of Protection', trigger: 'passive' },
+  // Bracers of Defense: +2 AC, but only with no armour and no shield — read in
+  // acOf, which is where every other AC grant is read.
+  'bracers-defense': { id: 'bracers-defense', name: 'Bracers of Defense', trigger: 'passive' },
+  // Cloak of Displacement: attacks against the wearer have disadvantage, and
+  // the property switches off until the start of its next turn once something
+  // lands. Read in collectAttackSources; the "something landed" half is a
+  // condition the damage path applies.
+  'cloak-displacement': { id: 'cloak-displacement', name: 'Cloak of Displacement', trigger: 'passive' },
+  // Mantle of Spell Resistance: advantage on saves against spells. savingThrow
+  // already knows whether a save is magical, so this reads that flag.
+  'mantle-spell-resistance': { id: 'mantle-spell-resistance', name: 'Mantle of Spell Resistance', trigger: 'passive' },
   'brooch-shielding': { id: 'brooch-shielding', name: 'Brooch of Shielding', trigger: 'passive' },
   'bracers-archery': { id: 'bracers-archery', name: 'Bracers of Archery', trigger: 'passive' },
   'boots-winterlands': { id: 'boots-winterlands', name: 'Boots of the Winterlands', trigger: 'passive' },
