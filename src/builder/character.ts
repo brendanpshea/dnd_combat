@@ -10,6 +10,7 @@ import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
+import { WEAPONS } from '../data/weapons.js';
 
 /** Every spell a class's table grants at or below a character level, matching
  *  a predicate on the spell's own level. */
@@ -171,7 +172,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   // same way, so a grant added to one is available to the other for free.
   const worn = [opts.equipped?.trinket, opts.equipped?.ring]
     .map((id) => (id ? TRINKETS[id] : undefined))
-    .filter((t): t is NonNullable<typeof t> => t !== undefined);
+    .filter((t): t is NonNullable<typeof t> => t !== undefined)
+    // A class-gated item grants nothing to a class that cannot attune to it.
+    // `equipBlocked` already refuses to put one on, but the builder is what the
+    // arena and the campaign actually call — a save hand-edited, or an older
+    // one written before the gate existed, must not quietly hand a wizard a
+    // cleric's beads.
+    .filter((t) => !t.classes || t.classes.includes(opts.classId));
   for (const t of worn) {
     for (const [ab, floor] of Object.entries(t.grants.abilityFloor ?? {})) {
       abilities[ab as Ability] = Math.max(abilities[ab as Ability], floor);
@@ -179,7 +186,12 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   }
 
   const conMod = abilityMod(abilities.con);
-  const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level;
+  // A held weapon can grant things too (Berserker Axe: hit points per level).
+  const heldGrants = [opts.equipped?.mainHand, opts.equipped?.offHand]
+    .map((id) => (id && id !== 'shield' ? WEAPONS[id]?.grants : undefined))
+    .filter((g): g is NonNullable<typeof g> => g !== undefined);
+  const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level +
+    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0);
 
   const grants = resolveChoiceGrants(cls.choices, level, opts.choices);
   const speciesGrants = resolveChoiceGrants(species.choices, level, opts.choices);
@@ -187,6 +199,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   grants.spellIds.push(...speciesGrants.spellIds);
   grants.weaponMasteries.push(...speciesGrants.weaponMasteries);
   grants.resistances.push(...speciesGrants.resistances);
+  for (const g of heldGrants) grants.featureIds.push(...(g.featureIds ?? []));
   // A worn item's feature ids and resistances fold in the same way.
   for (const t of worn) {
     grants.featureIds.push(...(t.grants.featureIds ?? []));

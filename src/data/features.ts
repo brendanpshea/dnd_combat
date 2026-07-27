@@ -524,6 +524,61 @@ export const FEATURES: Record<Id, FeatureData> = {
   // or Paralyze the wearer. Read in movement (terrain cost) and wherever those
   // two conditions are applied.
   'free-action': { id: 'free-action', name: 'Ring of Free Action', trigger: 'passive' },
+  /**
+   * Berserker Axe's curse: everything else you swing is worse. Read in
+   * collectAttackSources, which is where every other source of disadvantage
+   * lives — so this competes with advantage the ordinary way rather than being
+   * a special case in the attack maths.
+   */
+  'berserker-curse': { id: 'berserker-curse', name: "Berserker's Grip", trigger: 'passive' },
+  /** Necklace of Prayer Beads: Bless, as a bonus action, once before a rest. */
+  'prayer-bead-bless': {
+    id: 'prayer-bead-bless', name: 'Prayer Bead: Bless', trigger: 'bonus',
+    uses: { count: 1, per: 'encounter' },
+    apply({ state, actorId }) {
+      const actor = state.combatants[actorId]!;
+      const events: GameEvent[] = [];
+      // The three nearest allies, self included — Bless's own three targets.
+      const allies = Object.values(state.combatants)
+        .filter((c) => c.alive && !isDown(c) && c.team === actor.team)
+        .sort((a, b) => distanceFeet(actor.position, a.position) - distanceFeet(actor.position, b.position))
+        .slice(0, 3);
+      for (const a of allies) {
+        if (a.conditions.some((k) => k.id === 'blessed')) continue;
+        a.conditions.push({ id: 'blessed', sourceId: actorId });
+        events.push({ type: 'conditionApplied', combatantId: a.id, condition: 'blessed', sourceId: actorId });
+      }
+      return events;
+    },
+  },
+  /**
+   * Mace of Terror: a 30-foot wave of fear, three times before a rest.
+   *
+   * Applied as `fleeing` — the condition Turn Undead uses — because the SRD's
+   * frightened-in-this-way IS a rout: "must spend its turns trying to move as
+   * far away from you as it can". A save at the end of each turn ends it, which
+   * is the difference between this and a Turn: a turned skeleton runs off the
+   * board, and a terrified ogre may well come back.
+   */
+  'wave-of-terror': {
+    id: 'wave-of-terror', name: 'Wave of Terror', trigger: 'action',
+    uses: { count: 3, per: 'encounter' },
+    apply({ state, actorId }) {
+      const actor = state.combatants[actorId]!;
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || isDown(t) || t.team === actor.team) continue;
+        if (distanceFeet(actor.position, t.position) > 30) continue;
+        if (t.conditions.some((k) => k.id === 'fleeing')) continue;
+        const save = savingThrow(state, t.id, 'wis', 15, { magical: true });
+        events.push(save.event);
+        if (save.success) continue;
+        t.conditions.push({ id: 'fleeing', sourceId: actorId, repeatSave: { ability: 'wis', dc: 15 } });
+        events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: actorId });
+      }
+      return events;
+    },
+  },
   // Ring of Evasion: a reaction that turns a failed Dexterity save into a
   // success, three times before a rest. Fired automatically in saves.ts, the
   // way the Shield spell fires in the attack path — a prompt on every failed

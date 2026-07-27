@@ -34,6 +34,7 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   dodging: 'dodging',
   blessed: 'blessed',
   baned: 'baned',
+  wounded: 'wounded — cannot heal',
   warded: 'warded',
   smiting: 'ready to smite',
   burning: 'burning',

@@ -110,6 +110,12 @@ export function collectAttackSources(
   }
   // Bestow Curse: the cursed creature swings badly at everything.
   if (attacker.conditions.some((c) => c.id === 'cursed')) dis.push('cursed');
+  // Berserker Axe: everything except the axe itself swings badly. This is what
+  // the axe costs — the bow on your back, and any bane weapon you were carrying
+  // for the wave ahead.
+  if (attacker.featureIds.includes('berserker-curse') && weapon.id !== 'berserker-axe') {
+    dis.push("berserker's grip");
+  }
   // Protection from Evil and Good: only the six listed kinds are put off by it.
   if (target.conditions.some((c) => c.id === 'protected') &&
       attacker.creatureType !== undefined && PROTECTED_FROM.includes(attacker.creatureType)) {
@@ -524,6 +530,23 @@ export function resolveAttack(
       if (save.success) amount = Math.floor(amount / 2);
     }
     events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { crit }));
+  }
+
+  // Sword of Life Stealing: a natural 20 tears something loose. Flat 15 per the
+  // SRD rather than dice, nothing to take from a construct or the undead, and
+  // what it takes the wielder keeps as temporary hit points.
+  if (weapon.lifeSteal && crit && target.alive &&
+      !weapon.lifeSteal.exempt.includes(target.creatureType ?? 'humanoid')) {
+    const before = target.hp;
+    events.push(...applyDamage(
+      state, targetId, attackerId, weapon.lifeSteal.amount, 'necrotic', [],
+      { tags: [weapon.name], magical: true },
+    ));
+    const stolen = Math.max(0, before - target.hp);
+    if (stolen > 0) {
+      // Temporary hit points do not stack; the larger pool wins, as everywhere.
+      attacker.tempHp = Math.max(attacker.tempHp ?? 0, stolen);
+    }
   }
 
   // A bane weapon (Dragon Slayer, Sun Blade): extra dice, but only against the
