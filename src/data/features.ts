@@ -520,6 +520,18 @@ export const FEATURES: Record<Id, FeatureData> = {
   // Wand of the War Mage: a bonus to spell attack rolls, and spells that ignore
   // half cover. Read in spells.ts's single spellAttack chokepoint.
   'war-mage-1': { id: 'war-mage-1', name: 'Wand of the War Mage +1', trigger: 'passive' },
+  // Ring of Free Action: difficult terrain is free, and magic cannot Restrain
+  // or Paralyze the wearer. Read in movement (terrain cost) and wherever those
+  // two conditions are applied.
+  'free-action': { id: 'free-action', name: 'Ring of Free Action', trigger: 'passive' },
+  // Ring of Evasion: a reaction that turns a failed Dexterity save into a
+  // success, three times before a rest. Fired automatically in saves.ts, the
+  // way the Shield spell fires in the attack path — a prompt on every failed
+  // Dex save would be four taps a round for something nobody declines.
+  'ring-evasion': {
+    id: 'ring-evasion', name: 'Ring of Evasion', trigger: 'free',
+    uses: { count: 3, per: 'encounter' },
+  },
   'war-mage-2': { id: 'war-mage-2', name: 'Wand of the War Mage +2', trigger: 'passive' },
   'brooch-shielding': { id: 'brooch-shielding', name: 'Brooch of Shielding', trigger: 'passive' },
   'bracers-archery': { id: 'bracers-archery', name: 'Bracers of Archery', trigger: 'passive' },

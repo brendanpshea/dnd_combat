@@ -8,7 +8,7 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -1168,6 +1168,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
         if (!save.success) {
+          if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
           t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc } });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
           caught.push(tid);
@@ -1214,6 +1215,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'str', dc);
         events.push(save.event);
         if (!save.success) {
+          if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
           t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc } });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
           caught.push(tid);
@@ -1701,7 +1703,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const save = savingThrow(state, targetId, 'wis', dc);
       const events: GameEvent[] = [save.event];
-      if (!save.success) {
+      if (!save.success && !wardedAgainstMagicalBinding(state.combatants[targetId]!, 'paralyzed')) {
         const t = state.combatants[targetId]!;
         t.conditions.push({
           id: 'paralyzed', sourceId: casterId, concentration: true,

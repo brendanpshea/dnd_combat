@@ -17,7 +17,7 @@ import {
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS } from '../data/weapons.js';
-import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.js';
+import { ARMOR, SHIELDS, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
@@ -327,7 +327,8 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'potion-giant-strength-frost',
     'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
     ...RARE_WONDROUS, ...VICIOUS_WEAPONS,
-    'wand-fireballs', 'wand-lightning-bolts',
+    'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
+    'ring-of-the-ram', 'staff-healing', 'shield-arrow-catching',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
   ],
@@ -343,7 +344,7 @@ export function rarityOf(itemId: Id): Rarity {
     if (TREASURE_POOL[r].includes(itemId)) return r;
   }
   return ITEMS[itemId]?.rarity ?? ARMOR[itemId]?.rarity ?? VALUABLES[itemId]?.rarity ?? TRINKETS[itemId]?.rarity ??
-    (itemId === 'shield-plus1' ? 'uncommon' : 'common');
+    SHIELDS[itemId]?.rarity ?? 'common';
 }
 
 function pick<T>(arr: T[], r: number): T {
@@ -410,7 +411,8 @@ export const SHOP_STOCK: Id[] = [
   'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
   'potion-giant-strength-hill',
   // wands — charged, not consumed (see ConsumableData.charges)
-  'wand-magic-missiles', 'wand-web', 'wand-fireballs', 'wand-lightning-bolts',
+  'wand-magic-missiles', 'wand-web', 'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
+  'ring-of-the-ram', 'staff-healing',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow',
@@ -420,7 +422,7 @@ export const SHOP_STOCK: Id[] = [
   // armor
   'leather', 'chain-shirt', 'half-plate', 'splint',
   'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-splint',
-  'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1',
+  'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1', 'shield-arrow-catching',
   // trinkets
   'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
@@ -437,8 +439,7 @@ const RARITY_MIN_LEVEL: Record<Rarity, number> = { common: 1, uncommon: 3, rare:
  *  scrolls stay staples). Mundane weapons and armor are never magical, even the
  *  ones the loot tables rate "uncommon" (a plain rapier), so they always stock. */
 function isMagicalWare(itemId: Id): boolean {
-  if (itemId === 'shield-plus1') return true;
-  if (itemId === 'shield') return false;
+  if (SHIELDS[itemId]) return SHIELDS[itemId]!.rarity !== 'common';
   if (TRINKETS[itemId]) return true;
   const w = WEAPONS[itemId];
   if (w) return !!w.magic || itemId.endsWith('plus1') || itemId.includes('silvered');
@@ -492,13 +493,12 @@ export function shopOffering(stock: Id[], level: number, seedKey: string): Id[] 
 export function itemName(itemId: Id): string {
   return ITEMS[itemId]?.name ?? WEAPONS[itemId]?.name ?? ARMOR[itemId]?.name ?? VALUABLES[itemId]?.name ??
     TRINKETS[itemId]?.name ??
-    (itemId === 'shield' ? 'Shield' : itemId === 'shield-plus1' ? 'Shield +1' : itemId);
+    SHIELDS[itemId]?.name ?? itemId;
 }
 
 /** A small emoji icon for an item, so the shop/inventory read visually. */
 export function itemIcon(itemId: Id): string {
-  if (itemId === 'shield') return '🛡️';
-  if (itemId === 'shield-plus1') return '🛡️';
+  if (SHIELDS[itemId]) return '🛡️';
   if (TRINKETS[itemId]) return TRINKETS[itemId]!.icon;
   if (ITEMS[itemId]) {
     if (itemId.includes('potion')) return '🧪';
@@ -529,7 +529,7 @@ export type ItemCategory = 'weapon' | 'armor' | 'potion' | 'scroll' | 'trinket' 
  *  by kind (weapons / armor / potions / scrolls / trinkets). Consumables that
  *  aren't scrolls land in 'potion' (the flasks-and-vials shelf). */
 export function itemCategory(itemId: Id): ItemCategory {
-  if (itemId === 'shield' || itemId === 'shield-plus1') return 'armor';
+  if (SHIELDS[itemId]) return 'armor';
   if (TRINKETS[itemId]) return 'trinket';
   if (ITEMS[itemId]) return itemId.includes('scroll') ? 'scroll' : 'potion';
   if (WEAPONS[itemId]) return 'weapon';
@@ -1009,8 +1009,7 @@ export function isComplete(c: CampaignState): boolean {
 }
 
 export function itemPrice(itemId: Id): number | undefined {
-  if (itemId === 'shield') return SHIELD_COST;
-  if (itemId === 'shield-plus1') return SHIELD_PLUS1_COST;
+  if (SHIELDS[itemId]) return SHIELDS[itemId]!.cost;
   return ITEMS[itemId]?.cost ?? WEAPONS[itemId]?.cost ?? ARMOR[itemId]?.cost ?? VALUABLES[itemId]?.cost ?? TRINKETS[itemId]?.cost;
 }
 

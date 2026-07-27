@@ -219,6 +219,24 @@ export const TRINKETS: Record<Id, TrinketData> = {
     grants: { featureIds: ['war-mage-2'] },
   },
 
+  'ring-free-action': {
+    id: 'ring-free-action', name: 'Ring of Free Action', cost: 1300, rarity: 'rare', icon: '💍',
+    slot: 'ring',
+    blurb: 'Difficult terrain costs you nothing, and magic cannot Restrain or Paralyze you.',
+    // The direct answer to the game's strongest control. Web, Entangle and
+    // Ensnaring Strike all Restrain, Hold Person Paralyzes, and between them
+    // they are most of what turns a fight from difficult into unwinnable. An
+    // item that says "not to me" is worth its slot precisely because those
+    // spells are good.
+    grants: { featureIds: ['free-action'] },
+  },
+  'ring-evasion': {
+    id: 'ring-evasion', name: 'Ring of Evasion', cost: 1300, rarity: 'rare', icon: '💍',
+    slot: 'ring',
+    blurb: 'Three times a fight, turn a failed Dexterity save into a success.',
+    grants: { featureIds: ['ring-evasion'] },
+  },
+
 };
 
 /**

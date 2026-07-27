@@ -39,17 +39,55 @@ export const ARMOR: Record<Id, ArmorData> = {
   'splint-plus1':     { id: 'splint-plus1',     name: 'Splint +1',     base: 18, dexCap: 'none', category: 'heavy',  metal: true, cost: 1200, rarity: 'rare' },
 };
 
-export const SHIELD_COST = 10;
-export const SHIELD_PLUS1_COST = 500;
+/**
+ * Shields, as a table rather than as string comparisons scattered about.
+ *
+ * There were two of them and they were special-cased in eight places — name,
+ * price, icon, category, rarity, the AC maths, the stock list, the loot pool.
+ * A third would have meant finding all eight, and the failure mode is quiet:
+ * a shield with no price is free, and one with no name shows its id.
+ */
+export interface ShieldData {
+  id: Id;
+  name: string;
+  cost: number;
+  rarity: Rarity;
+  /** AC while held. */
+  ac: number;
+  /** Extra AC against ranged attacks only (Arrow-Catching Shield). */
+  rangedAc?: number;
+}
+
+export const SHIELDS: Record<Id, ShieldData> = {
+  shield: { id: 'shield', name: 'Shield', cost: 10, rarity: 'common', ac: 2 },
+  'shield-plus1': { id: 'shield-plus1', name: 'Shield +1', cost: 500, rarity: 'uncommon', ac: 3 },
+  'shield-arrow-catching': {
+    id: 'shield-arrow-catching', name: 'Arrow-Catching Shield', cost: 1200, rarity: 'rare',
+    // A plain shield's AC, plus two more against anything shot at you. The
+    // condition is what keeps it from simply being a better shield: against a
+    // warband that closes to melee it is an ordinary shield, and against
+    // archers it is the best one in the game — and which of those a wave is,
+    // the gate card tells you before you choose.
+    ac: 2, rangedAc: 2,
+  },
+};
+
+export const SHIELD_COST = SHIELDS['shield']!.cost;
+export const SHIELD_PLUS1_COST = SHIELDS['shield-plus1']!.cost;
 
 /** Is an off-hand entry a shield (plain or magic)? */
 export function isShield(offHand: Id | undefined): boolean {
-  return offHand === 'shield' || offHand === 'shield-plus1';
+  return offHand !== undefined && SHIELDS[offHand] !== undefined;
 }
 
 /** The AC an off-hand shield contributes (0 if none). */
 export function shieldBonus(offHand: Id | undefined): number {
-  return offHand === 'shield-plus1' ? 3 : offHand === 'shield' ? 2 : 0;
+  return offHand !== undefined ? SHIELDS[offHand]?.ac ?? 0 : 0;
+}
+
+/** Extra AC a shield gives against ranged attacks only (see SHIELDS). */
+export function shieldRangedBonus(offHand: Id | undefined): number {
+  return offHand !== undefined ? SHIELDS[offHand]?.rangedAc ?? 0 : 0;
 }
 
 export function armorClass(armorId: Id | undefined, dexMod: number, shieldAc: number): number {

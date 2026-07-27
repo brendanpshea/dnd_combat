@@ -157,7 +157,24 @@ export function savingThrow(
     total += d6.total;
     c.conditions = c.conditions.filter((k) => k.id !== 'inspiring');
   }
-  const success = total >= dc;
+  /**
+   * Ring of Evasion: a reaction that turns a failed Dexterity save into a
+   * success, three times before a rest.
+   *
+   * Fired automatically, the way the Shield spell fires in the attack path. A
+   * prompt on every failed Dex save would be four taps a round for a decision
+   * nobody declines — and the charge count is small enough that spending it is
+   * always right when it comes up.
+   */
+  let success = total >= dc;
+  if (!success && ability === 'dex' && !c.turn.reactionUsed) {
+    const pool = c.featureUses['ring-evasion'];
+    if (pool && pool.current > 0) {
+      pool.current -= 1;
+      c.turn.reactionUsed = true;
+      success = true;
+    }
+  }
   return {
     success,
     event: {
