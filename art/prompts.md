@@ -20,7 +20,7 @@ reuses this doc's style bible verbatim.
 `web/src/art.ts`) · ⬜ needed (still on the emoji fallback). **§5 has the
 full status by category and the per-monster list.** In short: every hero,
 species, and species×role portrait is ✅ and the forge matrix is fully
-covered; **67 of the 132 monsters are ✅, and the remaining 65 have prompts
+covered; **80 of the 132 monsters are ✅, and the remaining 52 have prompts
 ready to generate in §8.**
 
 ---
@@ -170,10 +170,10 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Creature type | Have art | Still needed |
 | --- | --- | --- |
 | Humanoid | 16/16 | — |
-| Beast | 13/15 | Giant Ape, Mammoth |
-| Fey | 7/8 | Worg |
-| Undead | 8/13 | Banshee, Ghast, Ghost, Vampire Spawn, Wraith |
-| Fiend | 2/16 | Barbed Devil, Bearded Devil, Chain Devil, Dretch, Glabrezu, Hell Hound, Hezrou, Horned Devil, Imp, Night Hag, Quasit, Shadow Demon, Succubus, Vrock |
+| Beast | 15/15 | — |
+| Fey | 8/8 | — |
+| Undead | 13/13 | — |
+| Fiend | 7/16 | Barbed Devil, Dretch, Glabrezu, Hell Hound, Hezrou, Horned Devil, Imp, Quasit, Vrock |
 | Elemental | 5/15 | Azer Sentinel, Dust Mephit, Ice Mephit, Invisible Stalker, Magma Mephit, Magmin, Mud Mephit, Salamander, Smoke Mephit, Steam Mephit |
 | Giant | 2/7 | Fire Giant, Frost Giant, Hill Giant, Stone Giant, Troll |
 | Dragon | 6/12 | Wyvern, Young Black Dragon, Young Blue Dragon, Young Green Dragon, Young Red Dragon, Young White Dragon |
@@ -182,7 +182,7 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Construct | 2/8 | Animated Flying Sword, Animated Rug of Smothering, Flesh Golem, Scarecrow, Shield Guardian, Stone Golem |
 | Ooze | 0/4 | Black Pudding, Gelatinous Cube, Gray Ooze, Ochre Jelly |
 | Celestial | 1/1 | — |
-| **Total** | **67/132** | **65 needed** |
+| **Total** | **80/132** | **52 needed** |
 
 **Every monster, with status** (✅ = art present and wired · ⬜ = prompt ready in §8, emoji fallback until generated):
 
@@ -251,14 +251,14 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Animated Rug of Smothering | `rug-of-smothering` | construct | ⬜ |
 | Assassin | `assassin` | humanoid | ✅ |
 | Azer Sentinel | `azer` | elemental | ⬜ |
-| Banshee | `banshee` | undead | ⬜ |
+| Banshee | `banshee` | undead | ✅ |
 | Barbed Devil | `barbed-devil` | fiend | ⬜ |
 | Basilisk | `basilisk` | monstrosity | ⬜ |
-| Bearded Devil | `bearded-devil` | fiend | ⬜ |
+| Bearded Devil | `bearded-devil` | fiend | ✅ |
 | Berserker | `berserker` | humanoid | ✅ |
 | Black Pudding | `black-pudding` | ooze | ⬜ |
 | Bulette | `bulette` | monstrosity | ⬜ |
-| Chain Devil | `chain-devil` | fiend | ⬜ |
+| Chain Devil | `chain-devil` | fiend | ✅ |
 | Chimera | `chimera` | monstrosity | ⬜ |
 | Dretch | `dretch` | fiend | ⬜ |
 | Dust Mephit | `dust-mephit` | elemental | ⬜ |
@@ -268,9 +268,9 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Flesh Golem | `flesh-golem` | construct | ⬜ |
 | Frost Giant | `frost-giant` | giant | ⬜ |
 | Gelatinous Cube | `gelatinous-cube` | ooze | ⬜ |
-| Ghast | `ghast` | undead | ⬜ |
-| Ghost | `ghost` | undead | ⬜ |
-| Giant Ape | `giant-ape` | beast | ⬜ |
+| Ghast | `ghast` | undead | ✅ |
+| Ghost | `ghost` | undead | ✅ |
+| Giant Ape | `giant-ape` | beast | ✅ |
 | Giant Crocodile | `giant-crocodile` | beast | ✅ |
 | Giant Scorpion | `giant-scorpion` | beast | ✅ |
 | Glabrezu | `glabrezu` | fiend | ⬜ |
@@ -288,9 +288,9 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Mage | `mage` | humanoid | ✅ |
 | Magma Mephit | `magma-mephit` | elemental | ⬜ |
 | Magmin | `magmin` | elemental | ⬜ |
-| Mammoth | `mammoth` | beast | ⬜ |
+| Mammoth | `mammoth` | beast | ✅ |
 | Mud Mephit | `mud-mephit` | elemental | ⬜ |
-| Night Hag | `night-hag` | fiend | ⬜ |
+| Night Hag | `night-hag` | fiend | ✅ |
 | Ochre Jelly | `ochre-jelly` | ooze | ⬜ |
 | Otyugh | `otyugh` | aberration | ⬜ |
 | Quasit | `quasit` | fiend | ⬜ |
@@ -299,21 +299,21 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Rust Monster | `rust-monster` | monstrosity | ⬜ |
 | Salamander | `salamander` | elemental | ⬜ |
 | Scarecrow | `scarecrow` | construct | ⬜ |
-| Shadow Demon | `shadow-demon` | fiend | ⬜ |
+| Shadow Demon | `shadow-demon` | fiend | ✅ |
 | Shield Guardian | `shield-guardian` | construct | ⬜ |
 | Smoke Mephit | `smoke-mephit` | elemental | ⬜ |
 | Steam Mephit | `steam-mephit` | elemental | ⬜ |
 | Stone Giant | `stone-giant` | giant | ⬜ |
 | Stone Golem | `stone-golem` | construct | ⬜ |
-| Succubus | `succubus` | fiend | ⬜ |
+| Succubus | `succubus` | fiend | ✅ |
 | Troll | `troll` | giant | ⬜ |
 | Tyrannosaurus Rex | `tyrannosaurus` | beast | ✅ |
-| Vampire Spawn | `vampire-spawn` | undead | ⬜ |
+| Vampire Spawn | `vampire-spawn` | undead | ✅ |
 | Vrock | `vrock` | fiend | ⬜ |
 | Warrior Veteran | `veteran` | humanoid | ✅ |
 | Winter Wolf | `winter-wolf` | monstrosity | ⬜ |
-| Worg | `worg` | fey | ⬜ |
-| Wraith | `wraith` | undead | ⬜ |
+| Worg | `worg` | fey | ✅ |
+| Wraith | `wraith` | undead | ✅ |
 | Wyvern | `wyvern` | dragon | ⬜ |
 | Young Black Dragon | `young-black` | dragon | ⬜ |
 | Young Blue Dragon | `young-blue` | dragon | ⬜ |
