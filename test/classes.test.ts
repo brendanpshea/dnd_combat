@@ -23,7 +23,7 @@ describe('character builder', () => {
     expect(f2.featureUses['action-surge']).toEqual({ current: 1, max: 1 });
   });
 
-  it('cleric: AC 18, HP 11, wis caster with 2 slots and life domain', () => {
+  it('cleric: AC 18, HP 11, wis caster with 2 slots, and no domain yet', () => {
     const c = buildCharacter({ classId: 'cleric', team: 'team1', position: { x: 0, y: 0 } });
     // Mace + shield (AC 18); the crossbow rides in the pack, and True Strike
     // guides it from there without giving up the shield.
@@ -33,7 +33,11 @@ describe('character builder', () => {
     expect(c.spellcastingAbility).toBe('wis');
     expect(c.spellSlots).toEqual([{ current: 2, max: 2 }]);
     expect(c.spellIds).toEqual(expect.arrayContaining(['sacred-flame', 'cure-wounds', 'bless']));
-    expect(c.featureIds).toContain('disciple-of-life');
+    // Life Domain arrives at 3, not 1 — the SRD gives Disciple of Life with
+    // the domain, and a level-1 cleric has not chosen one yet.
+    expect(c.featureIds).not.toContain('disciple-of-life');
+    expect(buildCharacter({ classId: 'cleric', team: 'team1', level: 3, position: { x: 0, y: 0 } }).featureIds)
+      .toContain('disciple-of-life');
   });
 
   it('wizard: AC 13, HP 7, int caster', () => {

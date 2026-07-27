@@ -61,9 +61,8 @@ Spellcasting ability: **CHA**.
 
 | Level | Features |
 | --- | --- |
-| 1 | Disciple of Life |
 | 2 | Channel Divinity: Turn Undead |
-| 3 | Channel Divinity: Preserve Life |
+| 3 | Channel Divinity: Preserve Life, Disciple of Life |
 | 6 | Blessed Healer |
 | 7 | Potent Spellcasting |
 
@@ -290,7 +289,7 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Sneak Attack |
 | 2 | Cunning Action: Dash, Cunning Action: Disengage, Cunning Action: Hide |
-| 3 | Assassinate |
+| 3 | Fast Hands |
 | 5 | Uncanny Dodge |
 | 7 | Evasion |
 
@@ -309,7 +308,7 @@ Spellcasting ability: **WIS**.
 | Level | Features |
 | --- | --- |
 | 1 | — |
-| 3 | Enhanced Cantrip (Evoker) |
+| 3 | Potent Cantrip (Evoker) |
 | 6 | Sculpt Spells (Evoker) |
 
 ### Spell slots

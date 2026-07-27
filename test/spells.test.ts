@@ -5,7 +5,9 @@ import type { Combatant, Position } from '../src/engine/types.js';
 import type { Action } from '../src/engine/actions.js';
 
 function place(classId: string, team: 'team1' | 'team2', position: Position, over: Partial<Combatant> = {}): Combatant {
-  const c = buildCharacter({ classId, team, position });
+  // `over.level` builds the character at that level rather than patching the
+  // number on afterwards, so its features and slots come with it.
+  const c = buildCharacter({ classId, team, position, level: over.level ?? 1 });
   return { ...c, ...over, id: over.id ?? c.id };
 }
 
@@ -111,18 +113,23 @@ describe('leveled spells', () => {
     const c = new Combat({
       seed: 12,
       combatants: [
-        place('cleric', 'team1', { x: 0, y: 0 }, { id: 'clr' }),
+        // Level 3: Disciple of Life comes with the Life Domain, which the SRD
+        // hands out at 3 rather than at 1.
+        place('cleric', 'team1', { x: 0, y: 0 }, { id: 'clr', level: 3 }),
         place('fighter', 'team1', { x: 1, y: 0 }, { id: 'ftr', hp: 1 }),
         place('rogue', 'team2', { x: 7, y: 7 }, { id: 'rog' }),
       ],
     });
     until(c, 'clr');
+    const before = c.state.combatants['clr']!.spellSlots[0]!.current;
     const events = c.apply({ kind: 'castSpell', spellId: 'cure-wounds', slotLevel: 1, targets: [{ combatantId: 'ftr' }] });
     const healed = events.find((e) => e.type === 'healed')!;
     if (healed.type !== 'healed') throw new Error();
     // 2d8 (2..16) + wis 3 + life domain 3 = 8..22, capped at maxHp-1=12
     expect(healed.amount).toBeGreaterThanOrEqual(8);
-    expect(c.state.combatants['clr']!.spellSlots[0]!.current).toBe(1);
+    // One slot, whatever the pool started at — that is the claim, and hard-
+    // coding the count tied it to the cleric's level.
+    expect(c.state.combatants['clr']!.spellSlots[0]!.current).toBe(before - 1);
     expect(c.state.combatants['ftr']!.hp).toBeGreaterThan(1);
   });
 
