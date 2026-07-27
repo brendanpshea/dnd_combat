@@ -303,8 +303,12 @@ function gearDoc(): string {
     '## Armor',
     '',
     table(
-      ['Name', 'ID', 'Base AC', 'Dex cap', 'Category', 'Metal', 'Cost (gp)', 'Rarity', 'Notes'],
-      armor.map((a) => [a.name, `\`${a.id}\``, a.base, a.dexCap, a.category, a.metal, a.cost, a.rarity, a.noCrit ? 'crits become normal hits' : '']),
+      ['Name', 'ID', 'Base AC', 'Dex cap', 'Category', 'Str', 'Stealth', 'Metal', 'Cost (gp)', 'Rarity', 'Notes'],
+      armor.map((a) => [
+        a.name, `\`${a.id}\``, a.base, a.dexCap, a.category,
+        a.strMin ?? '', a.stealthDisadvantage ? 'disadvantage' : '',
+        a.metal, a.cost, a.rarity, a.noCrit ? 'crits become normal hits' : '',
+      ]),
     ),
     '',
     '## Consumables',

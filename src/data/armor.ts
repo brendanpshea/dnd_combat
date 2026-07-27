@@ -16,28 +16,87 @@ export interface ArmorData {
   rarity: Rarity;
   /** Adamantine: any critical hit against the wearer becomes a normal hit. */
   noCrit?: boolean;
+  /**
+   * Strength score the armor expects. Below it you are not barred from wearing
+   * it — SRD 5.2.1 costs you 10 feet of speed instead, which is the right
+   * shape: a wizard *can* put on plate, and will regret it.
+   */
+  strMin?: number;
+  /** Disadvantage on Dexterity (Stealth) checks while worn. */
+  stealthDisadvantage?: true;
 }
 
+/**
+ * The SRD armor table, in full.
+ *
+ * Two columns beyond AC do the real work here. Stealth disadvantage is why
+ * Breastplate exists at all — it is Scale Mail's armor class for eight times
+ * the price, and the only thing you are buying is the ability to Hide in it,
+ * which for a party with a rogue's bounties on the line is worth every copper.
+ * The Strength minimum is why Plate is not simply the answer: a hero who cannot
+ * carry it loses 10 feet of speed, and on an eight-wide board that is a turn.
+ *
+ * Padded, Hide and Ring Mail are here for completeness rather than for play —
+ * each is dominated by something a few gold pieces away, and a party that
+ * starts with 100gp will never seriously want one. They are cheap to carry in
+ * the table and their absence is the kind of hole that makes a reference doc
+ * untrustworthy.
+ */
 export const ARMOR: Record<Id, ArmorData> = {
+  // Light — Dex applies in full.
+  padded:            { id: 'padded',           name: 'Padded',           base: 11, dexCap: 'full', category: 'light',  metal: false, cost: 5,   rarity: 'common', stealthDisadvantage: true },
   leather:           { id: 'leather',           name: 'Leather',          base: 11, dexCap: 'full', category: 'light',  metal: false, cost: 10,  rarity: 'common' },
   'studded-leather': { id: 'studded-leather',  name: 'Studded Leather',  base: 12, dexCap: 'full', category: 'light',  metal: false, cost: 45,  rarity: 'common' },
+
+  // Medium — Dex up to +2.
+  hide:              { id: 'hide',              name: 'Hide',             base: 12, dexCap: 2,      category: 'medium', metal: false, cost: 10,  rarity: 'common' },
   'chain-shirt':     { id: 'chain-shirt',      name: 'Chain Shirt',      base: 13, dexCap: 2,      category: 'medium', metal: true,  cost: 50,  rarity: 'common' },
-  'scale-mail':      { id: 'scale-mail',       name: 'Scale Mail',       base: 14, dexCap: 2,      category: 'medium', metal: true,  cost: 50,  rarity: 'common' },
-  'half-plate':      { id: 'half-plate',       name: 'Half Plate',       base: 15, dexCap: 2,      category: 'medium', metal: true,  cost: 750, rarity: 'uncommon' },
-  'chain-mail':      { id: 'chain-mail',       name: 'Chain Mail',       base: 16, dexCap: 'none', category: 'heavy',  metal: true,  cost: 75,  rarity: 'common' },
-  splint:            { id: 'splint',           name: 'Splint',           base: 17, dexCap: 'none', category: 'heavy',  metal: true,  cost: 200, rarity: 'uncommon' },
+  'scale-mail':      { id: 'scale-mail',       name: 'Scale Mail',       base: 14, dexCap: 2,      category: 'medium', metal: true,  cost: 50,  rarity: 'common', stealthDisadvantage: true },
+  breastplate:       { id: 'breastplate',       name: 'Breastplate',      base: 14, dexCap: 2,      category: 'medium', metal: true,  cost: 400, rarity: 'uncommon' },
+  'half-plate':      { id: 'half-plate',       name: 'Half Plate',       base: 15, dexCap: 2,      category: 'medium', metal: true,  cost: 750, rarity: 'uncommon', stealthDisadvantage: true },
+
+  // Heavy — no Dex at all, and the two heaviest want Strength.
+  'ring-mail':       { id: 'ring-mail',         name: 'Ring Mail',        base: 14, dexCap: 'none', category: 'heavy',  metal: true,  cost: 30,  rarity: 'common', stealthDisadvantage: true },
+  'chain-mail':      { id: 'chain-mail',       name: 'Chain Mail',       base: 16, dexCap: 'none', category: 'heavy',  metal: true,  cost: 75,  rarity: 'common', strMin: 13, stealthDisadvantage: true },
+  splint:            { id: 'splint',           name: 'Splint',           base: 17, dexCap: 'none', category: 'heavy',  metal: true,  cost: 200, rarity: 'uncommon', strMin: 15, stealthDisadvantage: true },
+  // The top of the mundane table, and deliberately the most expensive thing
+  // money can buy: 1,500gp is roughly two full runs of savings, which is what
+  // an aspirational purchase is supposed to feel like.
+  plate:             { id: 'plate',             name: 'Plate',            base: 18, dexCap: 'none', category: 'heavy',  metal: true,  cost: 1500, rarity: 'rare', strMin: 15, stealthDisadvantage: true },
 
   // Adamantine: same protection, but you can't be critically hit. Metal only.
-  'adamantine-scale-mail': { id: 'adamantine-scale-mail', name: 'Adamantine Scale Mail', base: 14, dexCap: 2,      category: 'medium', metal: true, cost: 550,  rarity: 'uncommon', noCrit: true },
-  'adamantine-half-plate': { id: 'adamantine-half-plate', name: 'Adamantine Half Plate', base: 15, dexCap: 2,      category: 'medium', metal: true, cost: 900,  rarity: 'uncommon', noCrit: true },
-  'adamantine-chain-mail': { id: 'adamantine-chain-mail', name: 'Adamantine Chain Mail', base: 16, dexCap: 'none', category: 'heavy',  metal: true, cost: 575,  rarity: 'uncommon', noCrit: true },
-  'adamantine-splint':     { id: 'adamantine-splint',     name: 'Adamantine Splint',     base: 17, dexCap: 'none', category: 'heavy',  metal: true, cost: 700,  rarity: 'uncommon', noCrit: true },
+  'adamantine-scale-mail': { id: 'adamantine-scale-mail', name: 'Adamantine Scale Mail', base: 14, dexCap: 2,      category: 'medium', metal: true, cost: 550,  rarity: 'uncommon', noCrit: true, stealthDisadvantage: true },
+  'adamantine-half-plate': { id: 'adamantine-half-plate', name: 'Adamantine Half Plate', base: 15, dexCap: 2,      category: 'medium', metal: true, cost: 900,  rarity: 'uncommon', noCrit: true, stealthDisadvantage: true },
+  'adamantine-chain-mail': { id: 'adamantine-chain-mail', name: 'Adamantine Chain Mail', base: 16, dexCap: 'none', category: 'heavy',  metal: true, cost: 575,  rarity: 'uncommon', noCrit: true, strMin: 13, stealthDisadvantage: true },
+  'adamantine-splint':     { id: 'adamantine-splint',     name: 'Adamantine Splint',     base: 17, dexCap: 'none', category: 'heavy',  metal: true, cost: 700,  rarity: 'uncommon', noCrit: true, strMin: 15, stealthDisadvantage: true },
+  'adamantine-plate':      { id: 'adamantine-plate',      name: 'Adamantine Plate',      base: 18, dexCap: 'none', category: 'heavy',  metal: true, cost: 2000, rarity: 'rare',     noCrit: true, strMin: 15, stealthDisadvantage: true },
 
   // +1 armor: +1 AC baked into the base. Rare tier, higher-level reward.
-  'scale-mail-plus1': { id: 'scale-mail-plus1', name: 'Scale Mail +1', base: 15, dexCap: 2,      category: 'medium', metal: true, cost: 1000, rarity: 'rare' },
-  'half-plate-plus1': { id: 'half-plate-plus1', name: 'Half Plate +1', base: 16, dexCap: 2,      category: 'medium', metal: true, cost: 1400, rarity: 'rare' },
-  'splint-plus1':     { id: 'splint-plus1',     name: 'Splint +1',     base: 18, dexCap: 'none', category: 'heavy',  metal: true, cost: 1200, rarity: 'rare' },
+  'scale-mail-plus1': { id: 'scale-mail-plus1', name: 'Scale Mail +1', base: 15, dexCap: 2,      category: 'medium', metal: true, cost: 1000, rarity: 'rare', stealthDisadvantage: true },
+  'breastplate-plus1': { id: 'breastplate-plus1', name: 'Breastplate +1', base: 15, dexCap: 2,   category: 'medium', metal: true, cost: 1300, rarity: 'rare' },
+  'half-plate-plus1': { id: 'half-plate-plus1', name: 'Half Plate +1', base: 16, dexCap: 2,      category: 'medium', metal: true, cost: 1400, rarity: 'rare', stealthDisadvantage: true },
+  // Splint +1 costs more than Plate for the same armor class. That is not a
+  // slip: Plate is common stock you can plan to buy, while +1 armor is rare and
+  // may simply never be offered — and once magic gear moves out of shops
+  // entirely, the enchanted one stops being purchasable at all.
+  'splint-plus1':     { id: 'splint-plus1',     name: 'Splint +1',     base: 18, dexCap: 'none', category: 'heavy',  metal: true, cost: 1600, rarity: 'rare', strMin: 15, stealthDisadvantage: true },
+  'plate-plus1':      { id: 'plate-plus1',      name: 'Plate +1',      base: 19, dexCap: 'none', category: 'heavy',  metal: true, cost: 2500, rarity: 'rare', strMin: 15, stealthDisadvantage: true },
 };
+
+/** Does wearing this armor give disadvantage on Dexterity (Stealth) checks? */
+export function armorStealthDisadvantage(armorId: Id | undefined): boolean {
+  return armorId !== undefined && (ARMOR[armorId]?.stealthDisadvantage ?? false);
+}
+
+/**
+ * Feet of speed lost to armor too heavy for the wearer (SRD 5.2.1: 10 feet
+ * below the listed Strength). Returns 0 for anything they can carry.
+ */
+export function armorSpeedPenalty(armorId: Id | undefined, strScore: number): number {
+  const min = armorId !== undefined ? ARMOR[armorId]?.strMin : undefined;
+  return min !== undefined && strScore < min ? 10 : 0;
+}
+
 
 /**
  * Shields, as a table rather than as string comparisons scattered about.

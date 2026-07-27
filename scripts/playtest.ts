@@ -19,8 +19,12 @@ import { chooseAction } from '../src/ai/greedy.js';
 import {
   newCampaign, randomizeParty, buildCampaignParty, partyLevelOf, longRest,
   applyArenaVictory, reviveParty, shopOffering, SHOP_STOCK, itemPrice, itemName,
-  buyItem, MAX_LEVEL, applyPartyTemplate, setPartyClass, type CampaignState,
+  buyItem, equipItem, equipBlocked, MAX_LEVEL, applyPartyTemplate, setPartyClass,
+  type CampaignState,
 } from '../src/campaign/campaign.js';
+import {
+  ARMOR, armorClass, armorStealthDisadvantage, armorSpeedPenalty,
+} from '../src/data/armor.js';
 import { membersCoinXP } from '../src/data/encounters.js';
 import {
   buildWave, newArenaRun, recordResult, advanceDay, type ArenaRunState, type DayHalf,
@@ -142,6 +146,8 @@ interface Tally {
   partyDowns: number;
   heroTurns: number;
   /** Win rate on the first crack at a wave, versus every retry after it. */
+  /** Armor actually put on after a shop visit (see equipUpgrades). */
+  armorEquipped: Map<Id, number>;
   firstTry: { fights: number; wins: number };
   retry: { fights: number; wins: number };
   /** `--days` only: how the two-fight day actually plays out. */
@@ -175,6 +181,7 @@ const T: Tally = {
   monstersMet: new Map(), goldAtEnd: [], goldUnspendable: 0,
   shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalWaves: [], endStats: [],
   partyDowns: 0, heroTurns: 0,
+  armorEquipped: new Map(),
   firstTry: { fights: 0, wins: 0 }, retry: { fights: 0, wins: 0 },
   day: {
     morning: { fights: 0, wins: 0 }, afternoon: { fights: 0, wins: 0 },
@@ -404,6 +411,49 @@ function fight(
  */
 const RESTOCK = ['potion-healing', 'potion-greater-healing'];
 
+/**
+ * Wear what you bought.
+ *
+ * `buyItem` only fills a pack — equipping is a separate call the web player
+ * makes by hand, and the harness never made it. Every armor purchase in every
+ * sweep before this one therefore sat in a rucksack: parties were spending real
+ * gold on Splint and fighting in their starting kit, which made armor
+ * completely invisible to measurement and quietly understated the value of
+ * every gold sink we have ever added.
+ *
+ * The choice is by resulting armor class, with two deductions that keep the
+ * heaviest option from being automatic:
+ *
+ *   - a point off if it would cost this hero 10 feet of speed, and
+ *   - a point off for Stealth disadvantage, but only for a hero who is
+ *     actually proficient in Stealth — plate does not bother a cleric, and
+ *     it ends a rogue's entire game plan.
+ */
+function equipUpgrades(c: CampaignState): void {
+  for (let i = 0; i < c.characters.length; i++) {
+    const ch = c.characters[i]!;
+    const party = buildCampaignParty(c);
+    const me = party[i]!;
+    const dexMod = Math.floor((me.abilities.dex - 10) / 2);
+    const shieldAc = me.equipped.offHand ? 2 : 0;
+    const sneaks = (CLASSES[ch.classId]?.skillProfs ?? []).includes('stealth');
+    const score = (id: Id | undefined): number => {
+      if (id === undefined) return armorClass(undefined, dexMod, shieldAc);
+      return armorClass(id, dexMod, shieldAc)
+        - (armorSpeedPenalty(id, me.abilities.str) > 0 ? 1 : 0)
+        - (sneaks && armorStealthDisadvantage(id) ? 1 : 0);
+    };
+    const candidates = ch.inventory
+      .filter((s) => s.qty > 0 && ARMOR[s.itemId] && equipBlocked(c, i, s.itemId, 'armor') === undefined)
+      .map((s) => s.itemId)
+      .sort((a, b) => score(b) - score(a));
+    const best = candidates[0];
+    if (best !== undefined && score(best) > score(ch.equipped.armor)) {
+      if (equipItem(c, i, best, 'armor')) bump(T.armorEquipped, best);
+    }
+  }
+}
+
 function shop(c: CampaignState, level: number, key: string): void {
   T.shopVisits += 1;
   const shelf = shopOffering(SHOP_STOCK, level, key);
@@ -432,6 +482,7 @@ function shop(c: CampaignState, level: number, key: string): void {
     if (!buyItem(c, buyer, pick.id)) break;
     bump(T.itemsBought, pick.id);
   }
+  equipUpgrades(c);
   const cheapest = Math.min(...shelf.map(priced));
   if (c.gold >= cheapest && Number.isFinite(cheapest)) T.goldUnspendable += 1;
 }
@@ -780,6 +831,11 @@ if (T.goldUnspendable > 0) {
 }
 const topBuys = [...T.itemsBought.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 console.log(`  most bought: ${topBuys.map(([id, n]) => `${itemName(id)}×${n}`).join(', ')}`);
+
+{
+  const worn = [...T.armorEquipped.entries()].sort((a, b) => b[1] - a[1]);
+  console.log(`  armor actually worn: ${worn.length ? worn.map(([id, n]) => `${itemName(id)}×${n}`).join(', ') : 'none'}`);
+}
 
 console.log('\n--- end-of-run stats ---');
 const byCls = new Map<Id, { ac: number[]; hp: number[] }>();

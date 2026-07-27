@@ -11,6 +11,7 @@ import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
+import { armorSpeedPenalty } from '../data/armor.js';
 
 /** Every spell a class's table grants at or below a character level, matching
  *  a predicate on the spell's own level. */
@@ -310,8 +311,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     maxHp,
     hp: maxHp,
     tempHp: 0,
-    // Roving (Ranger 6): +10 ft of walking speed.
-    speed: species.speed + (featureIds.includes('roving') ? 10 : 0),
+    // Roving (Ranger 6): +10 ft of walking speed. Armor heavier than you can
+    // carry takes 10 back (SRD 5.2.1) — a wizard may wear plate, and will spend
+    // the whole fight arriving.
+    speed: species.speed + (featureIds.includes('roving') ? 10 : 0) -
+      armorSpeedPenalty(opts.equipped?.armor ?? cls.equipment.armor, abilities.str),
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],

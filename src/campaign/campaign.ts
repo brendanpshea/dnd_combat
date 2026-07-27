@@ -323,6 +323,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
     'potion-giant-strength-hill',
     'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-chain-mail', 'adamantine-splint',
+    'breastplate',
     'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
     'bracers-archery', 'boots-winterlands', 'gloves-thievery',
     'gem-amber', 'gem-garnet', 'gem-amethyst',
@@ -442,9 +443,14 @@ export const SHOP_STOCK: Id[] = [
   'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
   'sword-of-wounding', 'sword-of-life-stealing', 'berserker-axe', 'mace-of-terror',
   // armor
-  'leather', 'chain-shirt', 'half-plate', 'splint',
+  'leather', 'chain-shirt', 'breastplate', 'half-plate', 'splint',
+  // Plate is the most expensive thing money can buy and the arena's main gold
+  // sink: rare-tier, so it only reaches a shelf at level 5, by which point a
+  // party that has been saving can finally afford the armor class ceiling.
+  'plate',
   'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-splint',
-  'scale-mail-plus1', 'half-plate-plus1', 'splint-plus1', 'shield-plus1', 'shield-arrow-catching',
+  'scale-mail-plus1', 'breastplate-plus1', 'half-plate-plus1', 'splint-plus1', 'plate-plus1',
+  'adamantine-plate', 'shield-plus1', 'shield-arrow-catching',
   // trinkets
   'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
