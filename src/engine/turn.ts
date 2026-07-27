@@ -161,6 +161,20 @@ export function startTurn(state: GameState): GameEvent[] {
   // movement — it just stands there until its end-of-turn save. Without this it
   // kept full speed and the AI would walk it around before rolling to wake.
   if (c.conditions.some((k) => k.id === 'incapacitated')) speed = 0;
+  // Spiritual Guardians halves the Speed of anyone else standing in it — half
+  // of what the spell does, and it was missing entirely. Applied here rather
+  // than as a condition because the aura is a place, not a status: walking out
+  // of it should not need anything to remember to take a condition off, and
+  // walking into it mid-turn does not get you a refund on movement you already
+  // spent. Measured from where the creature stands as its turn begins.
+  if (!helpless && speed > 0) {
+    for (const other of Object.values(state.combatants)) {
+      if (!other.spiritualGuardians || !other.alive || other.team === c.team) continue;
+      if (distanceFeet(c.position, other.position) > 15) continue;
+      speed = Math.floor(speed / 2);
+      break; // two overlapping auras do not quarter you
+    }
+  }
   // Slow mastery: -10 ft this turn, then it clears (lasts to the start of the
   // slowed creature's next turn).
   if (c.conditions.some((k) => k.id === 'slowed')) {
@@ -282,13 +296,16 @@ export function startTurn(state: GameState): GameEvent[] {
   }
 
   // Spiritual Guardians: an enemy that starts its turn within 15 ft of an active
-  // aura takes 3d8 radiant, halved on a Wisdom save.
+  // aura takes 3d8 radiant (+1d8 per slot level above 3), halved on a Wisdom
+  // save. The SRD makes the save happen on entering the Emanation and on ending
+  // a turn there as well, but only once per turn — start-of-turn is the one
+  // moment this engine has a hook for, and taking it once is the same budget.
   for (const other of Object.values(state.combatants)) {
     if (!other.spiritualGuardians || !other.alive || other.team === c.team) continue;
     if (distanceFeet(c.position, other.position) > 15) continue;
     const save = savingThrow(state, c.id, 'wis', other.spiritualGuardians.dc);
     events.push(save.event);
-    const dmg = rollDice(state.rng, '3d8');
+    const dmg = rollDice(state.rng, other.spiritualGuardians.dice);
     state.rng = dmg.state;
     const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
     if (amount > 0) events.push(...applyDamage(state, c.id, other.id, amount, 'radiant', dmg.rolls));

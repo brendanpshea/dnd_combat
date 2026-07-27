@@ -359,7 +359,7 @@ describe('a creature that dies during its own turn start', () => {
     const bystander = buildMonster('ogre', 'team2', { x: 7, y: 7 });  // well outside it
     const c = new Combat({ seed: 3, width: 8, height: 8, combatants: [cleric, victim, bystander] });
     const state = c.state;
-    state.combatants[cleric.id]!.spiritualGuardians = { dc: 30, mod: 5 };  // never saves
+    state.combatants[cleric.id]!.spiritualGuardians = { dc: 30, mod: 5, dice: '3d8' };  // never saves
     state.combatants[victim.id]!.hp = 1;                                   // 3d8 radiant kills it
     // Fix the order so the victim is exactly who endTurn advances to.
     state.initiativeOrder = [cleric.id, victim.id, bystander.id];

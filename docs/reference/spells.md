@@ -97,7 +97,7 @@ see `src/data/spells.ts`.
 | ⚡ Lightning Bolt | `lightning-bolt` | action | line to the board edge | — | yes | — | Wizard 5, Mage |
 | 💞 Mass Healing Word | `mass-healing-word` | bonus | 6 allys within 60 ft | — | — | — | Cleric 5, Bard 5 |
 | 🔥 Protection from Energy | `protection-from-energy` | action | 1 ally you can touch | yes | — | — | Cleric 5, Druid 5 |
-| 👼 Spiritual Guardians | `spiritual-guardians` | action | self (offered when it would reach someone) | yes | — | — | Cleric 5, Priest |
+| 👼 Spiritual Guardians | `spiritual-guardians` | action | self (offered when it would reach someone) | yes | yes | — | Cleric 5, Priest |
 
 ## Level 4
 

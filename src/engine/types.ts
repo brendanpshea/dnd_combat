@@ -281,8 +281,10 @@ export interface Combatant {
     expiresAtRound?: number;
   }>;
   /** Spiritual Guardians: a radiant aura around the caster that hurts enemies
-   *  who start their turn near it (held by concentration). */
-  spiritualGuardians?: { dc: number; mod: number };
+   *  who start their turn near it, and halves their Speed while they are in it
+   *  (held by concentration). `dice` carries the slot level it was cast at —
+   *  SRD scales it by 1d8 per level above 3. */
+  spiritualGuardians?: { dc: number; mod: number; dice: string };
   /**
    * Regeneration (troll): heal `amount` at the start of each of its turns,
    * unless it has taken damage of a `stoppedBy` type since its last turn. That

@@ -984,3 +984,83 @@ lands incrementally.
 > glow. Landscape 16:9. Leave clear space in the upper third for a title.
 
 ---
+
+---
+
+## 12. Backlog: monsters still on the emoji fallback
+
+60 of 140 monsters have no generated art. This is not a bug — the emoji reads
+fine at token size, and `art.ts` deliberately falls back rather than shipping a
+broken image. It is a worklist, ordered by XP, so the ones a player meets as a
+set-piece get drawn first.
+
+Generate these with the §3 portrait prompt and the §4 token prompt, add the id
+to `HAS_ART` in `web/src/art.ts`, and run `test/art.test.ts` — it fails if a
+declared id has no file, or if a file ships that nothing displays.
+
+The **Fallback** column is what the board shows today. A monster with no art and
+no emoji renders as a literal `?`; the test now makes that impossible, so every
+row here has something.
+
+| Monster | ID | Type | XP | Fallback | First met |
+| --- | --- | --- | --- | --- | --- |
+| Horned Devil | `horned-devil` | fiend | 7200 | 👹 | arena / adventure |
+| Remorhaz | `remorhaz` | monstrosity | 7200 | 🐛 | arena / adventure |
+| Aboleth | `aboleth` | aberration | 5900 | 🐙 | arena / adventure |
+| Stone Golem | `stone-golem` | construct | 5900 | 🗿 | arena / adventure |
+| Young Red Dragon | `young-red` | dragon | 5900 | 🐉 | arena / adventure |
+| Fire Giant | `fire-giant` | giant | 5000 | 🌋 | arena / adventure |
+| Glabrezu | `glabrezu` | fiend | 5000 | 🦀 | arena / adventure |
+| Young Blue Dragon | `young-blue` | dragon | 5000 | 🐉 | arena / adventure |
+| Frost Giant | `frost-giant` | giant | 3900 | 🥶 | arena / adventure |
+| Hezrou | `hezrou` | fiend | 3900 | 🐸 | arena / adventure |
+| Hydra | `hydra` | monstrosity | 3900 | 🐉 | arena / adventure |
+| Young Green Dragon | `young-green` | dragon | 3900 | 🐉 | arena / adventure |
+| Stone Giant | `stone-giant` | giant | 2900 | 🗿 | arena / adventure |
+| Shield Guardian | `shield-guardian` | construct | 2900 | 🗿 | arena / adventure |
+| Young Black Dragon | `young-black` | dragon | 2900 | 🐉 | arena / adventure |
+| Invisible Stalker | `invisible-stalker` | elemental | 2300 | 💨 | arena / adventure |
+| Vrock | `vrock` | fiend | 2300 | 🦅 | arena / adventure |
+| Chimera | `chimera` | monstrosity | 2300 | 🦁 | arena / adventure |
+| Wyvern | `wyvern` | dragon | 2300 | 🐲 | arena / adventure |
+| Young White Dragon | `young-white` | dragon | 2300 | 🐉 | arena / adventure |
+| Hill Giant | `hill-giant` | giant | 1800 | 🧌 | arena / adventure |
+| Roper | `roper` | aberration | 1800 | 🪱 | arena / adventure |
+| Bulette | `bulette` | monstrosity | 1800 | 🦈 | arena / adventure |
+| Otyugh | `otyugh` | aberration | 1800 | 🦑 | arena / adventure |
+| Salamander | `salamander` | elemental | 1800 | 🦎 | arena / adventure |
+| Barbed Devil | `barbed-devil` | fiend | 1800 | 😈 | arena / adventure |
+| Flesh Golem | `flesh-golem` | construct | 1800 | 🧟 | arena / adventure |
+| Troll | `troll` | giant | 1800 | 👹 | arena / adventure |
+| Druid | `druid` | humanoid | 1100 | 🌿 | arena / adventure |
+| Azer Forgecaller | `azer-forgecaller` | elemental | 1100 | 🔨 | arena / adventure |
+| Black Pudding | `black-pudding` | ooze | 1100 | ⬛ | arena / adventure |
+| Ettercap Snarecaller | `ettercap-snarecaller` | monstrosity | 700 | 🪤 | arena / adventure |
+| Basilisk | `basilisk` | monstrosity | 700 | 🦎 | arena / adventure |
+| Winter Wolf | `winter-wolf` | monstrosity | 700 | 🐺 | arena / adventure |
+| Hell Hound | `hell-hound` | fiend | 700 | 🐕‍🦺 | arena / adventure |
+| Gnoll Packcaller | `gnoll-packcaller` | fiend | 450 | 🐕 | arena / adventure |
+| Griffon | `griffon` | monstrosity | 450 | 🦅 | arena / adventure |
+| Ettercap | `ettercap` | monstrosity | 450 | 🕸️ | arena / adventure |
+| Azer Sentinel | `azer` | elemental | 450 | ⚒️ | arena / adventure |
+| Ochre Jelly | `ochre-jelly` | ooze | 450 | 🟡 | arena / adventure |
+| Gelatinous Cube | `gelatinous-cube` | ooze | 450 | 🧊 | arena / adventure |
+| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | arena / adventure |
+| Skeleton Bonechanter | `skeleton-bonechanter` | undead | 200 | 🦴 | arena / adventure |
+| Apprentice Mage | `apprentice-mage` | humanoid | 200 | 📖 | arena / adventure |
+| Scarecrow | `scarecrow` | construct | 200 | 🎃 | arena / adventure |
+| Imp | `imp` | fiend | 200 | 😈 | arena / adventure |
+| Quasit | `quasit` | fiend | 200 | 👿 | arena / adventure |
+| Goblin Hexer | `goblin-hexer` | fey | 100 | 🪬 | arena / adventure |
+| Ice Mephit | `ice-mephit` | elemental | 100 | ❄️ | arena / adventure |
+| Magma Mephit | `magma-mephit` | elemental | 100 | 🌋 | arena / adventure |
+| Steam Mephit | `steam-mephit` | elemental | 100 | ♨️ | arena / adventure |
+| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | arena / adventure |
+| Magmin | `magmin` | elemental | 100 | 🔥 | arena / adventure |
+| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | arena / adventure |
+| Kobold Emberling | `kobold-emberling` | dragon | 50 | 🎇 | arena / adventure |
+| Dust Mephit | `dust-mephit` | elemental | 50 | 🌫️ | arena / adventure |
+| Mud Mephit | `mud-mephit` | elemental | 50 | 🟤 | arena / adventure |
+| Smoke Mephit | `smoke-mephit` | elemental | 50 | 💨 | arena / adventure |
+| Dretch | `dretch` | fiend | 50 | 👾 | arena / adventure |
+| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | arena / adventure |

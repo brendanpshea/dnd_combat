@@ -266,6 +266,20 @@ replays a battle exactly. Both frontends and the AI drive it through the same
 `legalActions`/`step` contract. See [docs/SPEC.md](docs/SPEC.md) for the
 architecture and rules scope.
 
+## Rules source
+
+The full SRD text is vendored at [`SRD_CC_v5.2.1.txt`](SRD_CC_v5.2.1.txt) (1.4 MB,
+plain text) — the authority for every rule, spell and stat block implemented
+here. Check against it rather than from memory: two spells were wrong in ways
+that read as balance choices (Ice Storm hailed 2d8 where the book says 2d10;
+Spiritual Guardians neither scaled with its slot nor halved Speed in the aura).
+
+> This work includes material from the System Reference Document 5.2.1
+> ("SRD 5.2.1") by Wizards of the Coast LLC, available at
+> <https://www.dndbeyond.com/srd>. The SRD 5.2.1 is licensed under the Creative
+> Commons Attribution 4.0 International License, available at
+> <https://creativecommons.org/licenses/by/4.0/legalcode>.
+
 ## Content reference
 
 [docs/reference/](docs/reference/README.md) lists everything the game actually

@@ -7,6 +7,7 @@ import { evaluate } from '../src/ai/evaluate.js';
 import { step } from '../src/engine/actions.js';
 import type { Action } from '../src/engine/actions.js';
 import { cellAt } from '../src/engine/types.js';
+import { readFileSync } from 'node:fs';
 
 /**
  * The simulation AI scores an action by the state one step ahead. That makes a
@@ -99,10 +100,10 @@ describe('effects that pay out later are visible to the AI', () => {
   });
 
   it('Ice Storm is second to Fireball on damage, and is bought for its ground', () => {
-    // SRD Ice Storm is 2d8 + 4d6 where a same-level Fireball is 8d6, so by
-    // damage alone it is strictly dominated and the AI is right to prefer
-    // Fireball. It is not right to price the difference at zero: the chilled
-    // ground is what the extra slot level buys.
+    // SRD Ice Storm is 2d10 + 4d6 (25 avg) where a same-level Fireball is 8d6
+    // (28) in the same area for a slot less, so by damage alone it is dominated
+    // and the AI is right to prefer Fireball. It is not right to price the
+    // difference at zero: the chilled ground is what the extra level buys.
     const c = rig(3);
     turnOf(c, 'team1-wizard');
     const ice = bestDelta(c, 'team1-wizard', 'ice-storm');
@@ -203,5 +204,44 @@ describe('Ice Storm leaves ground behind, and takes it back', () => {
       for (let x = 0; x < c.state.grid.width; x++) if (cellAt(c.state.grid, { x, y })?.chilled) still++;
     }
     expect(still, 'the ice never melted').toBe(0);
+  });
+});
+
+/**
+ * Checked line by line against `SRD_CC_v5.2.1.txt`, which is now vendored in
+ * the repo. Both of these were wrong, and both were wrong in the direction that
+ * makes the spell quietly weaker than the book — the kind of thing that reads
+ * as a balance opinion rather than a bug.
+ */
+describe('against the SRD text', () => {
+  it('Ice Storm hails 2d10, not 2d8', () => {
+    // SRD: "2d10 Bludgeoning damage and 4d6 Cold damage", +1d10 per level above 4.
+    const src = readFileSync(new URL('../src/data/spells.ts', import.meta.url), 'utf8');
+    const body = src.slice(src.indexOf("'ice-storm': {"), src.indexOf("'ice-storm': {") + 1200);
+    expect(body).toContain('d10`');
+    expect(body).toContain("'4d6'");
+  });
+
+  it('Spiritual Guardians scales with the slot and halves Speed in the aura', () => {
+    // SRD: "+1d8 for each spell slot level above 3", and "Any other creature's
+    // Speed is halved in the Emanation". The second was missing outright.
+    expect(SPELLS['spiritual-guardians']!.upcast, 'must be offered at higher slots').toBe(true);
+
+    const c = rig(1);
+    turnOf(c, 'team1-cleric');
+    const cast = offers(c, 'team1-cleric', 'spiritual-guardians')
+      .find((a) => (a as { slotLevel: number }).slotLevel === 4);
+    expect(cast, 'no 4th-level cast offered').toBeDefined();
+    c.apply(cast!);
+    expect(c.state.combatants['team1-cleric']!.spiritualGuardians!.dice).toBe('4d8');
+
+    // Speed: the ogre walks at 40 ft, and at 20 ft once it is inside the aura.
+    const ogre = c.state.combatants['f0']!;
+    const full = ogre.speed;
+    ogre.position = { x: 5, y: 2 }; // adjacent to the cleric
+    for (let i = 0; i < 30 && c.activeId !== 'f0'; i++) c.apply({ kind: 'endTurn' });
+    expect(c.activeId, 'never reached the ogre').toBe('f0');
+    expect(c.state.combatants['f0']!.turn.movementMax,
+      'Spiritual Guardians must halve Speed inside the aura').toBe(Math.floor(full / 2));
   });
 });
