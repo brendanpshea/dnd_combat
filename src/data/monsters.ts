@@ -363,6 +363,29 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['rampage'],
     weaponIds: ['spear', 'bite'],
   },
+  /**
+   * Fiends, monstrosities and elementals had no spellcaster at all between
+   * them, and the generator picks by creature type — so a party that drew a
+   * gnoll warband or an elemental pack met no magic, ever. These three fill
+   * those types; the Druid below fills the mid band, where the ladder ran from
+   * a 450 XP priest straight to an 1,800 XP hag with nothing between.
+   */
+  'gnoll-packcaller': {
+    id: 'gnoll-packcaller', name: 'Gnoll Packcaller',
+    ac: 14, hp: 27, speed: 30,
+    creatureType: 'fiend',
+    abilities: { str: 12, dex: 13, con: 11, int: 8, wis: 10, cha: 15 },
+    featureIds: ['rampage'],
+    weaponIds: ['spear'],
+    // Faerie Fire is the point: it hands the whole pack advantage, so the
+    // packcaller is worth killing before the things it is helping.
+    // Not Shocking Grasp, which is a melee touch cantrip on a back-line caster
+    // that never closes: zero casts in thirty fights. Starry Wisp instead —
+    // 60 ft, and it outlines what it hits, which is the same favour Faerie Fire
+    // does the pack. A caster with one rank of slots leans on its cantrip, so
+    // this is where a cantrip actually gets played.
+    spellcasting: { ability: 'cha', slots: [3], spellIds: ['starry-wisp', 'faerie-fire', 'thunderwave'] },
+  },
   spy: {
     id: 'spy', name: 'Spy',
     ac: 12, hp: 27, speed: 30,
@@ -773,6 +796,23 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['ettercap-bite', 'ettercap-claws'],
     attacksPerAction: 2,
   },
+  'ettercap-snarecaller': {
+    id: 'ettercap-snarecaller', name: 'Ettercap Snarecaller',
+    // CR follows the XP, and the XP follows what it plays like rather than what
+    // the base ettercap is worth: three ranks of slots on top of a CR 2 body is
+    // a harder fight than a CR 2. (Still PB +2, so no to-hit or DC change.)
+    ac: 13, cr: 3, hp: 44, speed: 30,
+    creatureType: 'monstrosity',
+    abilities: { str: 12, dex: 15, con: 13, int: 9, wis: 16, cha: 10 },
+    weaponIds: ['ettercap-bite'],
+    // Entangle restrains, which the AI could not see the point of until the
+    // condition was priced — see test/ai-conditions.test.ts. Web alongside it
+    // rather than the Bestow Curse this originally carried: the curse was cast
+    // zero times in thirty fights because a 3rd-level debuff loses to a
+    // 1st-level lockdown in the same kit every time. Two ways to pin someone is
+    // also simply what an ettercap is.
+    spellcasting: { ability: 'wis', slots: [4, 3, 2], spellIds: ['poison-spray', 'entangle', 'web'] },
+  },
   // Reuses Petrifying Breath for the gaze: the feature is "save or be locked
   // in place near me", which is the same thing the gaze does, and the engine
   // models petrification as restrained either way.
@@ -993,6 +1033,35 @@ export const MONSTERS: Record<Id, MonsterData> = {
     metalArmor: true,
     attacksPerAction: 3,
   },
+  /**
+   * The SRD's Druid as an NPC — the one caster whose kit persists between turns.
+   * Call Lightning re-strikes each round and Moonbeam burns whatever stands in
+   * it, so it is the first enemy that makes standing still actively wrong
+   * rather than merely suboptimal.
+   *
+   * Priced by what it plays like rather than by its CR: 3rd-level slots on a
+   * spell that fires again every round is a great deal more than a CR 2 body.
+   *
+   * `druid` is also a player class id. They live in separate tables (MONSTERS
+   * vs CLASSES) and every CLASSES lookup runs over campaign characters rather
+   * than combatants, so the two never meet — but it is worth knowing.
+   */
+  druid: {
+    id: 'druid', name: 'Druid',
+    ac: 13, cr: 4, hp: 27, speed: 30,
+    creatureType: 'humanoid',
+    abilities: { str: 10, dex: 12, con: 13, int: 12, wis: 16, cha: 11 },
+    weaponIds: ['quarterstaff'],
+    // Six slots, not nine. At [4,3,2] the druid could cast a leveled spell every
+    // round of a fight that lasts six and never once reach for its cantrip,
+    // which made Starry Wisp dead data. A caster should run dry and fall back.
+    // Thorn Whip rather than Starry Wisp: a druid holding Moonbeam and Call
+    // Lightning has two spells that re-fire for free every round, so a plain
+    // damage cantrip never wins its action. Thorn Whip does something the
+    // leveled spells cannot — it drags a hero back INTO the beam it is already
+    // standing in.
+    spellcasting: { ability: 'wis', slots: [3, 2, 1], spellIds: ['thorn-whip', 'moonbeam', 'call-lightning'] },
+  },
   'apprentice-mage': {
     id: 'apprentice-mage', name: 'Apprentice Mage',
     ac: 12, hp: 18, speed: 30,
@@ -1080,6 +1149,20 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['azer-hammer'],
     metalArmor: true,
     immunities: ['fire', 'poison'],
+  },
+  'azer-forgecaller': {
+    id: 'azer-forgecaller', name: 'Azer Forgecaller',
+    ac: 16, cr: 4, hp: 39, speed: 30,
+    creatureType: 'elemental',
+    abilities: { str: 14, dex: 12, con: 15, int: 14, wis: 13, cha: 12 },
+    savingThrowProfs: ['con'],
+    weaponIds: ['azer-hammer'],
+    metalArmor: true,
+    immunities: ['fire', 'poison'],
+    // The first enemy that targets a hero for their *gear*: Heat Metal punishes
+    // plate and a metal weapon specifically, which asks the fighter and the
+    // paladin a question nothing else in the game asks them.
+    spellcasting: { ability: 'int', slots: [4, 3], spellIds: ['fire-bolt', 'heat-metal', 'flaming-sphere'] },
   },
   salamander: {
     id: 'salamander', name: 'Salamander',
@@ -1562,7 +1645,8 @@ export const MONSTER_XP: Record<Id, number> = {
   bandit: 25, 'bandit-captain': 450, 'dire-wolf': 200, ghoul: 200, 'giant-spider': 200, acolyte: 50,
   kobold: 25, scout: 100, orc: 100,
   // Caster variants: priced above their base for the magic they add.
-  'goblin-hexer': 100, 'kobold-emberling': 50, 'skeleton-bonechanter': 200, 'apprentice-mage': 200, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
+  'goblin-hexer': 100, 'kobold-emberling': 50, 'skeleton-bonechanter': 200, 'apprentice-mage': 200,
+  'gnoll-packcaller': 450, 'ettercap-snarecaller': 700, 'azer-forgecaller': 1100, druid: 1100, 'brown-bear': 200, 'cult-fanatic': 450, 'animated-armor': 200,
   knight: 700, minotaur: 700, ettin: 1100,
   priest: 450,
   // CR 7 -- 90 HP, AC 15, Fireball. It was priced at 1,100 (the CR 4 value),
