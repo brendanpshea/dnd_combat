@@ -22,11 +22,11 @@ export const HAS_ART = new Set<string>([
   'human-bard', 'knight', 'kobold', 'lizardfolk', 'mage', 'mammoth',
   'manticore', 'minotaur', 'mummy', 'night-hag', 'ogre', 'ogre-mage', 'orc',
   'orc-barbarian', 'orc-shaman', 'owlbear', 'paladin', 'priest', 'ranger',
-  'red-wyrmling', 'rogue', 'satyr', 'scout', 'shadow', 'shadow-demon',
-  'skeleton', 'specter', 'sprite', 'spy', 'succubus', 'tiefling-knight',
-  'tiefling-warlock', 'tyrannosaurus', 'unicorn', 'vampire-spawn', 'veteran',
-  'water-elemental', 'white-wyrmling', 'wight', 'will-o-wisp', 'wizard',
-  'wolf', 'worg', 'wraith', 'zombie'
+  'red-wyrmling', 'rogue', 'satyr', 'scout', 'shadow', 'skeleton', 'specter',
+  'sprite', 'spy', 'succubus', 'tiefling-knight', 'tiefling-warlock',
+  'tyrannosaurus', 'unicorn', 'vampire-spawn', 'veteran', 'water-elemental',
+  'white-wyrmling', 'wight', 'will-o-wisp', 'wizard', 'wolf', 'worg',
+  'wraith', 'zombie'
 ]);
 
 /** Adventure NPC archetypes (`portrait-npc-<id>.webp`) — portrait only. */

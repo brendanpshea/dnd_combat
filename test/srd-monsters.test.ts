@@ -109,13 +109,12 @@ const NOT_IN_SRD: Record<string, string> = {
   'azer-forgecaller': "This game's own caster variant of the azer.",
   'apprentice-mage': 'A junior Mage — this game\'s own, so a level-1 party has a caster it can survive.',
   'orc': 'SRD 5.2.1 carries Orc only as a player species. Presented here as an Orc Raider — a soldier who happens to be an orc, the way the 2024 books name their stat blocks.',
-  'cult-fanatic': 'A 2014 stat block that SRD 5.2.1 does not carry.',
-  'lizardfolk': 'A 2014 stat block that SRD 5.2.1 does not carry. Presented as a Lizardfolk Skirmisher, after the SRD\'s own Merfolk Skirmisher.',
-  'banshee': 'A 2014 stat block that SRD 5.2.1 does not carry.',
-  'mud-mephit': 'A 2014 stat block that SRD 5.2.1 does not carry.',
-  'smoke-mephit': 'A 2014 stat block that SRD 5.2.1 does not carry.',
-  'shadow-demon': 'A 2014 stat block that SRD 5.2.1 does not carry.',
-  'scarecrow': 'A 2014 stat block that SRD 5.2.1 does not carry.',
+  // Confirmed present in the 2014 SRD, so these stay: the game targets 5.5e
+  // but does not have to shed everything the 2024 revision dropped.
+  'cult-fanatic': 'In the 2014 SRD but not in SRD 5.2.1, which is a revision dropping stat blocks rather than a statement that it never existed.',
+  'banshee': 'In the 2014 SRD but not in SRD 5.2.1.',
+  'scarecrow': 'In the 2014 SRD but not in SRD 5.2.1.',
+  'lizardfolk': 'In the 2014 SRD but not in SRD 5.2.1. Presented as a Lizardfolk Skirmisher, after the SRD\'s own Merfolk Skirmisher.',
 };
 
 /**

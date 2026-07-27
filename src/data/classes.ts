@@ -399,7 +399,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // was checked against dropped the druid's cantrip table row entirely,
         // twice, which read as an absence — confirmed present against the real
         // document.
-        1: ['starry-wisp', 'poison-spray', 'shillelagh', 'guidance', 'thorn-whip', 'entangle',
+        1: ['starry-wisp', 'poison-spray', 'shillelagh', 'guidance', 'entangle',
             'cure-wounds', 'healing-word', 'faerie-fire', 'thunderwave',
             'protection-from-evil-and-good', 'animal-friendship'],
         // Wild Companion (level 2): the 2024 druid spends a Wild Shape use to

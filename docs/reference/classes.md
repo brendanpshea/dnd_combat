@@ -128,7 +128,7 @@ Spellcasting ability: **WIS**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Thorn Whip, Entangle, Cure Wounds, Healing Word, Faerie Fire, Thunderwave, Protection from Evil and Good, Animal Friendship |
+| 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Healing Word, Faerie Fire, Thunderwave, Protection from Evil and Good, Animal Friendship |
 | 2 | Find Familiar |
 | 3 | Moonbeam, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
 | 5 | Call Lightning, Protection from Energy, Dispel Magic |

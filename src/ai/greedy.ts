@@ -513,9 +513,6 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const p = hitProb(spellAtkBonus, acOf(t), 'flat');
       return damageValue(p * avgDice(cantripDice('1d12', actor.level)), t);
     }
-    // Thorn Whip: modest damage, and a 10 ft drag. The pull is worth most on
-    // something that wants to stay at range — hauling an archer into the party's
-    // reach is the entire point of the spell.
     // Starry Wisp: a spell-attack cantrip that also lights the target up, so
     // every attack after it lands has advantage.
     case 'starry-wisp': {
@@ -546,13 +543,6 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (actor.familiar) return 0;
       const foes = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
       return foes.length > 0 ? 3 : 0;
-    }
-    case 'thorn-whip': {
-      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      const p = hitProb(spellAtkBonus, acOf(t), 'flat');
-      const w = t.equipped.mainHand ? WEAPONS[t.equipped.mainHand] : undefined;
-      const dragBonus = w && !w.melee ? 2 : 0.5;
-      return damageValue(p * avgDice(cantripDice('1d6', actor.level)), t) + p * dragBonus;
     }
     case 'acid-splash': {
       const anchor = (a.targets[0] as { position: Position }).position;

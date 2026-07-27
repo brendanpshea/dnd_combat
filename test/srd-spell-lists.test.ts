@@ -81,7 +81,7 @@ const SRD: Record<string, string[]> = {
     // rather than from that file — Starry Wisp is on the list, and reading its
     // absence from the conversion as a real absence was a mistake once already.
     'druidcraft', 'elementalism', 'guidance', 'mending', 'poison-spray', 'produce-flame',
-    'resistance', 'shillelagh', 'spare-the-dying', 'starry-wisp', 'thorn-whip', 'thunderclap',
+    'resistance', 'shillelagh', 'spare-the-dying', 'starry-wisp',
     // 1st
     'animal-friendship', 'charm-person', 'create-or-destroy-water', 'cure-wounds', 'detect-magic',
     'detect-poison-and-disease', 'entangle', 'faerie-fire', 'fog-cloud', 'goodberry',
