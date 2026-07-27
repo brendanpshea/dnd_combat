@@ -120,6 +120,18 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // impairments — a touch under it because each lasts only one turn.
   commanded: -0.35,
   lured: -0.35,
+  // Fleeing is not an impairment, it is a slow exit: the creature takes no
+  // actions from now on and leaves the board when it reaches the edge. Priced
+  // heavier than paralysis because it does not wear off — but short of the -1.0
+  // that removing it outright would be worth, since it is still on the board,
+  // still killable for the XP, and (for Suggestion) still recoverable if the
+  // caster's concentration breaks.
+  //
+  // This has to be priced or the spells that cause it become invisible. Turn
+  // Undead and Suggestion used to delete their target, which evaluate() read as
+  // a kill; now they apply a condition, and an unpriced condition is worth
+  // nothing at all — the same trap that had Spirit Guardians uncast.
+  fleeing: -0.75,
   // Charmed is narrower than it looks: it only stops the victim attacking
   // whoever charmed it, not everyone.
   charmed: -0.15,

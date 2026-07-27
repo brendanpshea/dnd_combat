@@ -28,6 +28,7 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   restrained: 'restrained',
   commanded: 'commanded',
   charmed: 'charmed',
+  fleeing: 'fleeing',
   lured: 'spellbound',
   shielded: 'shielded',
   dodging: 'dodging',

@@ -43,16 +43,59 @@ describe('Healing Word', () => {
 });
 
 describe('Suggestion', () => {
-  it('removes a humanoid from the fight on a failed Wisdom save', () => {
+  it('talks a humanoid into running, and it leaves when it reaches the edge', () => {
+    // No longer a puff of smoke at cast time: the target turns and runs, and is
+    // out of the fight only once it is off the board. Everything in between is
+    // a creature the party can still see, still kill, and still lose the
+    // suggestion over.
     for (let seed = 1; seed <= 40; seed++) {
+      // 20x20, and both of them in the middle: on the default board the
+      // bandit is two cells from an edge and is gone before anything can be
+      // observed about the running.
       const c = new Combat({
-        seed,
-        combatants: [pc('wizard', 3, { x: 2, y: 2 }, 'wiz'), foe('bandit', { x: 4, y: 2 }, 'b')],
+        seed, width: 20, height: 20,
+        combatants: [pc('wizard', 3, { x: 10, y: 10 }, 'wiz'), foe('bandit', { x: 10, y: 11 }, 'b')],
       });
       until(c, 'wiz');
       const events = c.apply({ kind: 'castSpell', spellId: 'suggestion', slotLevel: 2, targets: [{ combatantId: 'b' }] });
-      if (!events.some((e) => e.type === 'charmedAway')) continue;
-      expect(c.state.combatants['b']!.alive).toBe(false); // out of the fight, not dead
+      if (!events.some((e) => e.type === 'conditionApplied' && e.condition === 'fleeing')) continue;
+      const bandit = c.state.combatants['b']!;
+      expect(bandit.alive, 'still on the board — it has to run there').toBe(true);
+      expect(bandit.conditions.some((k) => k.id === 'fleeing')).toBe(true);
+      // It takes no actions while running: no attacking on the way out.
+      until(c, 'b');
+      expect(c.state.combatants['b']!.alive, 'should still be running, not gone').toBe(true);
+      expect(c.legalActions('b').some((a) => a.kind === 'attack'), 'a fleeing creature must not attack').toBe(false);
+      // And it is gone within a few turns of a small board.
+      let fled = false;
+      for (let i = 0; i < 30 && !fled; i++) {
+        fled = c.apply({ kind: 'endTurn' }).some((e) => e.type === 'fled');
+      }
+      expect(fled, 'never reached the edge').toBe(true);
+      expect(c.state.combatants['b']!.alive).toBe(false);
+      return;
+    }
+    throw new Error('bandit never failed the save across 40 seeds');
+  });
+
+  it('lapses if the caster loses concentration before the target gets away', () => {
+    // The point of making it a journey rather than a removal: reach the caster
+    // and the suggestion breaks, and whatever was walking away turns round.
+    for (let seed = 1; seed <= 40; seed++) {
+      const c = new Combat({
+        seed, width: 20, height: 20,
+        combatants: [pc('wizard', 3, { x: 10, y: 10 }, 'wiz'), foe('bandit', { x: 10, y: 11 }, 'b')],
+      });
+      until(c, 'wiz');
+      const events = c.apply({ kind: 'castSpell', spellId: 'suggestion', slotLevel: 2, targets: [{ combatantId: 'b' }] });
+      if (!events.some((e) => e.type === 'conditionApplied' && e.condition === 'fleeing')) continue;
+      expect(c.state.combatants['wiz']!.concentratingOn?.spellId).toBe('suggestion');
+      breakConcentration(c.state, 'wiz');
+      const bandit = c.state.combatants['b']!;
+      expect(bandit.alive, 'breaking concentration must not kill it').toBe(true);
+      expect(bandit.conditions.some((k) => k.id === 'fleeing'), 'the suggestion must lapse').toBe(false);
+      until(c, 'b');
+      expect(c.legalActions('b').some((a) => a.kind === 'attack'), 'back in the fight').toBe(true);
       return;
     }
     throw new Error('bandit never failed the save across 40 seeds');

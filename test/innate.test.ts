@@ -571,7 +571,7 @@ describe('Turn Undead', () => {
     expect(FEATURES['turn-undead']!.trigger).toBe('action');
   });
 
-  it('removes only undead that fail the save, leaves living enemies untouched, and spends the use', () => {
+  it('puts only undead to flight, leaves living enemies untouched, and spends the use', () => {
     // Loop seeds so we land on a run where at least one skeleton fails.
     for (let seed = 1; seed <= 40; seed++) {
       const cl = cleric({ x: 3, y: 3 }, 'cl');
@@ -586,13 +586,29 @@ describe('Turn Undead', () => {
       );
       expect(use).toBeDefined();
       const events = c.apply(use!);
-      const turned = events.filter((e) => e.type === 'charmedAway').map((e) => e.combatantId);
+      // Turned means *put to flight*, not deleted: the skeleton is still on
+      // the board and still killable, and it leaves when it reaches an edge.
+      const turned = events
+        .filter((e) => e.type === 'conditionApplied' && e.condition === 'fleeing')
+        .map((e) => (e as { combatantId: string }).combatantId);
       if (turned.length === 0) continue; // both saved this seed; try another
 
-      // Only skeletons ever get charmed away; the goblin is a living humanoid.
+      // Only skeletons ever get turned; the goblin is a living humanoid.
       expect(turned.every((id) => id === 's1' || id === 's2')).toBe(true);
       expect(c.state.combatants['gob']!.alive).toBe(true);
-      for (const id of turned) expect(c.state.combatants[id]!.alive).toBe(false);
+      expect(c.state.combatants['gob']!.conditions.some((k) => k.id === 'fleeing')).toBe(false);
+      for (const id of turned) {
+        expect(c.state.combatants[id]!.alive, 'turned, not destroyed').toBe(true);
+        expect(c.state.combatants[id]!.conditions.some((k) => k.id === 'fleeing')).toBe(true);
+      }
+      // Run the fight on and they are gone, having walked off under their own
+      // legs — and not because the cleric is still holding anything: Turn
+      // Undead is not concentration.
+      let left = 0;
+      for (let i = 0; i < 40 && left < turned.length; i++) {
+        left += c.apply({ kind: 'endTurn' }).filter((e) => e.type === 'fled').length;
+      }
+      expect(left, 'the turned undead never left the board').toBe(turned.length);
       // The Channel Divinity use is spent.
       expect(c.state.combatants['cl']!.featureUses['turn-undead']!.current).toBe(0);
       return;

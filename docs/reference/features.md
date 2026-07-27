@@ -121,6 +121,7 @@ What the engine can put on a combatant, and what the log calls it.
 | `cursed` | cursed |
 | `dodging` | dodging |
 | `energyWarded` | warded against an element |
+| `fleeing` | fleeing |
 | `frightened` | frightened |
 | `guided` | marked by light |
 | `hasted` | hasted |

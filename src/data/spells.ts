@@ -1052,9 +1052,16 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
   /**
-   * Suggestion: a Wisdom save or the target ambles out of the fight — the same
-   * charmAway removal Animal Friendship uses, scoped to humanoids instead of
-   * beasts. A hard single-target answer to one dangerous enemy.
+   * Suggestion: a Wisdom save or the target is talked into leaving — it turns
+   * and runs for the nearest edge, and is gone from the fight when it gets
+   * there.
+   *
+   * Held by concentration, and that is the interesting part: break the
+   * caster's concentration before the target reaches the edge and the
+   * suggestion lapses, the creature stops where it stands and rejoins the
+   * fight. So it is a removal you have to *protect*, which is a different
+   * decision from one that simply happens — and it is why the flight is
+   * movement across the board rather than a puff of smoke at cast time.
    */
   suggestion: {
     id: 'suggestion', name: 'Suggestion', level: 2, castingTime: 'action',
@@ -1065,11 +1072,13 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const save = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
       const events: GameEvent[] = [save.event];
-      if (!save.success) events.push(...charmAway(state, targetId));
-      // Concentration is the *cost* half of the rule and the half that matters
-      // here: holding this means not holding anything else. charmAway takes the victim out
-      // for good rather than returning it — a fight is shorter than the
-      // spell's duration — so this is the price, not a leash.
+      if (!save.success) {
+        // `concentration: true` on the condition is what makes it droppable:
+        // breakConcentration sweeps every condition it is sustaining, so the
+        // flight ends the moment the caster is hit hard enough.
+        state.combatants[targetId]!.conditions.push({ id: 'fleeing', sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'fleeing', sourceId: casterId });
+      }
       state.combatants[casterId]!.concentratingOn = { spellId: 'suggestion', targetIds: [targetId] };
       return events;
     },
