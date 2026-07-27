@@ -16,6 +16,7 @@
  * number confounded by how much healing was left over from wave three.
  */
 import type { MapData } from '../data/maps.js';
+import type { Id } from '../engine/types.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap } from './map.js';
@@ -154,9 +155,21 @@ export function waveBudget(level: number, wave: number): number {
   return Math.round(evenBudgetFor(level) * waveDifficulty(wave));
 }
 
-/** Gold paid for clearing a wave — the shop between fights is the point of it. */
+/**
+ * Gold paid for clearing a wave — the shop between fights is the point of it.
+ *
+ * Came down from `40 + budget * 0.02` when bounties arrived. Bounties are not
+ * new income, they are the same income made conditional: a wave offers two, each
+ * paying a share of this purse, and the shares average 0.41. Dividing the old
+ * formula by 1.41 therefore puts a player who claims about one of the two right
+ * where the old purse left them. Ignore both and you are a little poorer; take
+ * both and you are a little richer, which is the whole point.
+ *
+ * Scaled rather than shifted so the *shape* of the curve is unchanged — the
+ * stall still gets dearer as the waves do, and bounties scale with it.
+ */
 export function wavePurse(level: number, wave: number): number {
-  return Math.round(40 + waveBudget(level, wave) * 0.02);
+  return Math.round(28 + waveBudget(level, wave) * 0.0142);
 }
 
 export interface ArenaWave {
@@ -201,16 +214,36 @@ export interface ArenaRunState {
   /** Total fights won. */
   wins: number;
   gold: number;
+  /**
+   * Leveled spells the party has cast at any point this run — what the
+   * "Something New" bounty is measured against. A list rather than a Set so
+   * the run state stays plain JSON for the save file.
+   */
+  spellsUsed: Id[];
+  /** Bounties claimed, for the run summary. */
+  bounties: number;
 }
 
 export function newArenaRun(seed: number): ArenaRunState {
-  return { seed, wave: 1, cleared: 0, clearedFirstTry: 0, attempts: 0, fights: 0, wins: 0, gold: 0 };
+  return {
+    seed, wave: 1, cleared: 0, clearedFirstTry: 0, attempts: 0, fights: 0, wins: 0,
+    gold: 0, spellsUsed: [], bounties: 0,
+  };
 }
 
 /** Record an attempt at the current wave. A win advances; a loss stays put. */
-export function recordResult(run: ArenaRunState, won: boolean, purse: number): ArenaRunState {
+export function recordResult(
+  run: ArenaRunState, won: boolean, purse: number,
+  learned: { spellsUsed?: Id[]; bounties?: number } = {},
+): ArenaRunState {
   const fights = run.fights + 1;
   const wins = run.wins + (won ? 1 : 0);
+  // A spell tried in a fight you lost is still a spell you have tried, so this
+  // accumulates either way — otherwise a retry could re-claim Something New
+  // with the spell that failed the first time.
+  const spellsUsed = [...new Set([...run.spellsUsed, ...(learned.spellsUsed ?? [])])];
+  const bounties = run.bounties + (learned.bounties ?? 0);
+  run = { ...run, spellsUsed, bounties };
   if (!won) {
     return { ...run, fights, wins, attempts: run.attempts + 1 };
   }

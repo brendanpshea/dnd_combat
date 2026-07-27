@@ -1703,6 +1703,42 @@ button.category .count {
 .loot-line .gain { margin-left: 0; color: var(--green); font-weight: 700; }
 .loot-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
 
+/* Pre-wave bounties: the planning half of the brief screen. */
+.bounties {
+  width: 100%;
+  margin-top: 10px;
+  background: var(--panel);
+  border: 1px solid #453d63;
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.bounties-head {
+  display: block;
+  font-family: var(--display);
+  color: var(--gold);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.bounty {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 3px 0;
+}
+.bounty + .bounty { border-top: 1px dashed #3a3358; }
+.bounty-name { font-weight: 700; font-size: 13px; }
+.bounty-blurb { color: var(--muted); font-size: 12px; flex: 1 1 60%; }
+.bounty-gold { margin-left: auto; color: var(--gold); font-weight: 700; font-size: 13px; }
+
+/* Claimed bounties, itemised under the gold line they are already part of. */
+.claimed { margin-top: 6px; border-top: 1px dashed #453d63; padding-top: 6px; }
+.claimed-row { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+.claimed-tick { color: var(--green); }
+.claimed-name { color: var(--text); }
+.claimed-row .gain { margin-left: auto; color: var(--green); font-weight: 700; }
+
 .xpbar {
   height: 10px;
   margin-top: 6px;

@@ -28,6 +28,12 @@ export interface LootProps {
   leveledFrom?: number | undefined;
   /** Persist after a level-up choice/spell edit (the caller owns the save). */
   onLevelChange?: (() => void) | undefined;
+  /**
+   * Arena bounties the party claimed, itemised. `gold` above already includes
+   * them — this is the receipt that says *why* the purse was bigger, which is
+   * the only thing that teaches a player to go after the next one.
+   */
+  claimed?: Array<{ name: string; gold: number }> | undefined;
   onContinue(): void;
 }
 
@@ -50,7 +56,7 @@ function useCountUp(from: number, to: number, ms = 700): number {
   return n;
 }
 
-export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, onContinue }: LootProps) {
+export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, onContinue }: LootProps) {
   // On a level-up, open the gains modal straight away — the gains are the point.
   const [showLevel, setShowLevel] = useState<boolean>(!!leveledTo);
   const level = partyLevelOf(campaign);
@@ -111,6 +117,18 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
           <b>{goldShown}</b>
           <span className="gain">+{gold}</span>
         </div>
+
+        {claimed && claimed.length > 0 && (
+          <div className="claimed">
+            {claimed.map((b) => (
+              <div className="claimed-row" key={b.name}>
+                <span className="claimed-tick">✔</span>
+                <span className="claimed-name">{b.name}</span>
+                <span className="gain">+{b.gold}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {items.length > 0 && (

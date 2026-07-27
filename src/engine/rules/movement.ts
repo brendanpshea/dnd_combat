@@ -258,7 +258,10 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     if (cellAt(state.grid, step)!.terrain === 'hazard') {
       const dmg = rollDice(state.rng, HAZARD_DAMAGE);
       state.rng = dmg.state;
-      events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls));
+      // Tagged so the log can name it and an arena bounty can see it: driving
+      // something into the fire is a play, and nothing could tell it apart
+      // from any other fire damage.
+      events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls, { tags: ['Hazard'] }));
       if (!mover.alive || isDown(mover)) {
         stopShort();
         events.unshift({ type: 'moved', combatantId: moverId, path: walked });
