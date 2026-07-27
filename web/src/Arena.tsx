@@ -20,7 +20,8 @@ import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
   type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
-  SHOP_STOCK, shopOffering, addItem,
+  SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
+  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE,
 } from '../../src/campaign/campaign.js';
 import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
@@ -49,6 +50,10 @@ import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
 import { ChorusBubble } from './Chorus.js';
+import { PartyScreen } from './PartyScreen.js';
+import {
+  stallVisitOf, stallPrice, stallResale, type StallVisit,
+} from '../../src/arena/stall.js';
 import { chorusLine, firstUnheard, type ChorusCue } from '../../src/arena/chorus.js';
 import { ArtImage } from './ArtImage.js';
 import type { BattleProps } from './App.js';
@@ -138,6 +143,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [run, setRun] = useState<ArenaRunState>(() => saved?.run ?? newArenaRun(Date.now() & 0xffff));
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
   const [panel, setPanel] = useState<'none' | 'shop' | 'prepare'>('none');
+  /**
+   * The party screen — packs, worn gear, camp buffs, camp spellcasting.
+   *
+   * The arena had none of this: you could buy a Mace +1 and never wield it,
+   * because nothing here could equip anything. It is the same screen the
+   * adventures use, with `camp` null — the arena's rests are lunch and the
+   * night, which happen to you rather than being chosen.
+   */
+  const [showParty, setShowParty] = useState(false);
+  const [shopTab, setShopTab] = useState<'buy' | 'sell'>('buy');
   /** Which caster's prepared list is open, if any. */
   const [prepareFor, setPrepareFor] = useState<number | null>(null);
   const [buyFor, setBuyFor] = useState(0);
@@ -167,6 +182,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const gate = gateFor(gates, run.gate);
   const wave = gate.wave;
   const bounties = offeredBounties(c, run, wave);
+  // Reading the visit is what creates it, so nothing has to remember to reset
+  // the stall at dawn. See arena/stall.ts.
+  const visit = stallVisitOf(run.stall, dayOf(run));
+
+  /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
+  const setVisit = (next: StallVisit) => {
+    const nextRun = { ...run, stall: next };
+    setRun(nextRun); persist(c, nextRun);
+  };
   const locked = gateLocked(run.attempts);
 
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
@@ -840,29 +864,153 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       })}
                     </div>
                   </div>
-                  <p className="hint">Buying for <b>{c.characters[buyFor]?.name}</b></p>
-                  <div className="arena-shelf">
-                    {shelf.map((id) => {
-                      const price = itemPrice(id) ?? 0;
+                  <p className="hint">
+                    {shopTab === 'buy'
+                      ? <>Buying for <b>{c.characters[buyFor]?.name}</b></>
+                      : <>Selling from <b>{c.characters[buyFor]?.name}</b>&rsquo;s pack and the party loot</>}
+                    {visit.priceMult !== 1 && (
+                      <span className={visit.priceMult < 1 ? 'haggle-good' : 'haggle-bad'}>
+                        {' · '}prices {visit.priceMult < 1 ? 'down' : 'up'}{' '}
+                        {Math.round(Math.abs(1 - visit.priceMult) * 100)}%
+                      </span>
+                    )}
+                  </p>
+
+                  {/* Gambits, once a morning each. A party with a bard or a
+                      rogue had nothing to spend either on at the one screen
+                      where a social skill plausibly matters. */}
+                  <div className="stall-gambits">
+                    {(Object.keys(HAGGLE) as Array<keyof typeof HAGGLE>).map((skill) => {
+                      const cfg = HAGGLE[skill];
+                      const face = skill === 'persuasion' ? '🤝 Persuade'
+                        : skill === 'deception' ? '🎭 Deceive' : '😠 Intimidate';
                       return (
                         <button
-                          key={id}
-                          className="arena-buy"
-                          disabled={c.gold < price}
+                          key={skill}
+                          className="stall-gambit"
+                          disabled={visit.haggleUsed}
+                          title={visit.haggleUsed
+                            ? 'You have had your say this morning'
+                            : `DC ${cfg.dc} — ${Math.round(cfg.discount * 100)}% off, ` +
+                              `${cfg.penalty ? `${Math.round(cfg.penalty * 100)}% up if it lands badly` : 'no downside'}`}
                           onClick={() => {
-                            if (buyItem(c, buyFor, id)) {
-                              setNotice(`${itemName(id)} → ${c.characters[buyFor]?.name}`);
-                              refresh(); persist(c, run);
-                            }
+                            const { roll, priceMultiplier } = attemptHaggle(c, skill);
+                            setVisit({ ...visit, haggleUsed: true, priceMult: priceMultiplier });
+                            setNotice(
+                              `${c.characters[roll.by]?.name ?? 'Someone'} rolled ${roll.total} vs DC ${cfg.dc} — ` +
+                              (roll.success ? 'the price comes down.' : 'that went badly.'),
+                            );
+                            refresh();
                           }}
                         >
-                          <span className="arena-buy-icon">{itemIcon(id)}</span>
-                          <span className="arena-buy-name">{itemName(id)}</span>
-                          <span className="arena-buy-price">{price}g</span>
+                          {face}
+                          <i>{Math.round(cfg.discount * 100)}% off</i>
                         </button>
                       );
                     })}
+                    <button
+                      className="stall-gambit risky"
+                      disabled={visit.stealUsed}
+                      title={visit.stealUsed
+                        ? 'Once a morning is quite enough'
+                        : `Stealth AND Sleight of Hand, both DC ${STEAL_DC} — a ${STEAL_FINE}g fine if either fails`}
+                      onClick={() => {
+                        const r = attemptSteal(c, shelf);
+                        setVisit({ ...visit, stealUsed: true });
+                        setNotice(r.success
+                          ? `Pocketed ${itemName(r.itemId!)}. Nobody saw a thing.`
+                          : `Caught. ${r.fine}g gone in fines.`);
+                        refresh(); persist(c, run);
+                      }}
+                    >
+                      🖐️ Pocket something
+                      <i>risky</i>
+                    </button>
                   </div>
+
+                  <div className="stall-tabs">
+                    <button className={shopTab === 'buy' ? 'on' : ''} onClick={() => setShopTab('buy')}>Buy</button>
+                    <button className={shopTab === 'sell' ? 'on' : ''} onClick={() => setShopTab('sell')}>Sell</button>
+                  </div>
+
+                  {shopTab === 'buy' ? (
+                    <div className="arena-shelf">
+                      {shelf.map((id) => {
+                        const price = stallPrice(id, visit);
+                        return (
+                          <button
+                            key={id}
+                            className="arena-buy"
+                            disabled={c.gold < price}
+                            onClick={() => {
+                              // The haggled price, not the list price — pass it
+                              // explicitly, because `buyItem` charges list by
+                              // default and a silent list charge would make a
+                              // good roll look like it did nothing.
+                              if (buyItem(c, buyFor, id, price)) {
+                                setNotice(`${itemName(id)} → ${c.characters[buyFor]?.name}`);
+                                refresh(); persist(c, run);
+                              }
+                            }}
+                          >
+                            <span className="arena-buy-icon">{itemIcon(id)}</span>
+                            <span className="arena-buy-name">{itemName(id)}</span>
+                            <span className="arena-buy-price">{price}g</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="arena-shelf">
+                      {(() => {
+                        const pack = (c.characters[buyFor]?.inventory ?? []).filter((st) => st.qty > 0);
+                        const loot = partyStash(c).filter((st) => st.qty > 0);
+                        if (pack.length === 0 && loot.length === 0) {
+                          return <span className="hint">Nothing to sell — this pack is empty.</span>;
+                        }
+                        return (
+                          <>
+                            {pack.map((st) => (
+                              <button
+                                key={`p-${st.itemId}`}
+                                className="arena-buy"
+                                onClick={() => {
+                                  if (sellItem(c, buyFor, st.itemId)) {
+                                    setNotice(`Sold ${itemName(st.itemId)} (+${stallResale(st.itemId)}g).`);
+                                    refresh(); persist(c, run);
+                                  }
+                                }}
+                              >
+                                <span className="arena-buy-icon">{itemIcon(st.itemId)}</span>
+                                <span className="arena-buy-name">
+                                  {itemName(st.itemId)}{st.qty > 1 ? ` ×${st.qty}` : ''}
+                                </span>
+                                <span className="arena-buy-price">+{stallResale(st.itemId)}g</span>
+                              </button>
+                            ))}
+                            {loot.map((st) => (
+                              <button
+                                key={`s-${st.itemId}`}
+                                className="arena-buy"
+                                onClick={() => {
+                                  if (sellFromStash(c, st.itemId)) {
+                                    setNotice(`Sold ${itemName(st.itemId)} from the party loot (+${stallResale(st.itemId)}g).`);
+                                    refresh(); persist(c, run);
+                                  }
+                                }}
+                              >
+                                <span className="arena-buy-icon">🎁</span>
+                                <span className="arena-buy-name">
+                                  {itemName(st.itemId)}{st.qty > 1 ? ` ×${st.qty}` : ''}
+                                </span>
+                                <span className="arena-buy-price">+{stallResale(st.itemId)}g</span>
+                              </button>
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -893,6 +1041,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     )}
                   </button>
                 )}
+                <button onClick={() => { setShowParty(true); setNotice(null); }}>
+                  🎒 Party &amp; gear
+                </button>
                 <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
                 {restartButton}
               </div>
@@ -901,6 +1052,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         </div>
       </div>
       <PartyStrip campaign={c} />
+      {showParty && (
+        <PartyScreen
+          campaign={c}
+          camp={null}
+          onRest={() => { /* the arena rests on its own clock */ }}
+          onChange={() => { persist(c, run); refresh(); }}
+          onClose={() => setShowParty(false)}
+        />
+      )}
       {spellPanel}
     </div>
   );

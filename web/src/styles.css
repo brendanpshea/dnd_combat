@@ -3122,3 +3122,35 @@ button.category .count {
   text-align: center;
 }
 .spoil-detail p { margin: 0 0 8px; color: var(--text); font-size: 14px; }
+
+/* The stall's gambits and its sell tab. The arena shop was a vending machine;
+   these are the two things the adventure shop has always had. */
+.stall-gambits { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.stall-gambit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 5px 9px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid #453d63;
+  background: var(--panel);
+  cursor: pointer;
+}
+.stall-gambit i { font-style: normal; font-size: 10px; color: var(--muted); }
+.stall-gambit.risky { border-color: #6b3a4a; }
+.stall-gambit:disabled { opacity: 0.4; cursor: default; }
+.stall-tabs { display: flex; gap: 6px; margin: 8px 0 4px; }
+.stall-tabs button {
+  flex: 1;
+  padding: 5px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #453d63;
+  background: var(--panel);
+  cursor: pointer;
+}
+.stall-tabs button.on { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+.haggle-good { color: var(--green); }
+.haggle-bad { color: var(--red); }
