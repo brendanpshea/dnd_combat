@@ -56,7 +56,7 @@ describe('Sanctuary', () => {
       });
       cast(c, 'sanctuary', 'cle', ['fig']);
       const before = c.state.combatants['fig']!.hp;
-      const events = resolveAttack(c.state, 'ogre', 'fig', 'greatclub');
+      const events = resolveAttack(c.state, 'ogre', 'fig', 'ogre-greatclub');
       if (events.some((e) => e.type === 'attackWarded')) {
         warded += 1;
         expect(events.some((e) => e.type === 'attackRolled'), 'a warded attack is never rolled').toBe(false);
@@ -121,7 +121,7 @@ describe('Protection from Evil and Good', () => {
     };
     // Ghoul is undead; ogre is a giant.
     expect(roll('ghoul', 'ghoul-claws')).toContain('protection from evil and good');
-    expect(roll('ogre', 'greatclub')).not.toContain('protection from evil and good');
+    expect(roll('ogre', 'ogre-greatclub')).not.toContain('protection from evil and good');
   });
 });
 
@@ -230,7 +230,7 @@ describe('Bestow Curse', () => {
     }
     expect(landed, 'a wis-1 ogre should fail this inside twenty casts').toBe(true);
 
-    const events = resolveAttack(c.state, 'ogre', 'fig', 'greatclub');
+    const events = resolveAttack(c.state, 'ogre', 'fig', 'ogre-greatclub');
     const atk = events.find((e) => e.type === 'attackRolled');
     expect(atk?.type === 'attackRolled' && atk.disSources).toContain('cursed');
 

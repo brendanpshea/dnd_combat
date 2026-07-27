@@ -108,10 +108,9 @@ const NOT_IN_SRD: Record<string, string> = {
   'ettercap-snarecaller': "This game's own caster variant of the ettercap.",
   'azer-forgecaller': "This game's own caster variant of the azer.",
   'apprentice-mage': 'A junior Mage — this game\'s own, so a level-1 party has a caster it can survive.',
-  'acolyte': 'A 2014 stat block. SRD 5.2.1 has "Priest Acolyte"; only the background keeps the bare name.',
-  'orc': 'SRD 5.2.1 carries Orc only as a player species, not as a stat block.',
+  'orc': 'SRD 5.2.1 carries Orc only as a player species. Presented here as an Orc Raider — a soldier who happens to be an orc, the way the 2024 books name their stat blocks.',
   'cult-fanatic': 'A 2014 stat block that SRD 5.2.1 does not carry.',
-  'lizardfolk': 'A 2014 stat block that SRD 5.2.1 does not carry.',
+  'lizardfolk': 'A 2014 stat block that SRD 5.2.1 does not carry. Presented as a Lizardfolk Skirmisher, after the SRD\'s own Merfolk Skirmisher.',
   'banshee': 'A 2014 stat block that SRD 5.2.1 does not carry.',
   'mud-mephit': 'A 2014 stat block that SRD 5.2.1 does not carry.',
   'smoke-mephit': 'A 2014 stat block that SRD 5.2.1 does not carry.',
@@ -259,5 +258,76 @@ describe('damage breaks concentration', () => {
     }
     expect(damaged, 'the ogre never landed a hit — the test proves nothing').toBeGreaterThan(3);
     expect(saves, 'every damaging hit on a concentrating creature must call for a save').toBe(damaged);
+  });
+});
+
+/**
+ * The equipment tables. Both were clean apart from one entry, and that one is
+ * the interesting kind: `greatclub` was 2d8 — the *ogre's* club (SRD Ogre hits
+ * for 2d8 + 4) sitting on the bare id, beside a correctly-named `ogre-javelin`.
+ * Nothing bought it and nothing was wrong in play; it just meant the id that
+ * looks like the equipment-table Greatclub was twice its size.
+ *
+ * Only base ids are compared. A dozen monster weapons are *named* after a
+ * player weapon while being scaled up, which is fine — an ettin's battleaxe
+ * should hit harder than one off the rack.
+ */
+describe('weapons and armor against the SRD', () => {
+  const lines = readFileSync(SRD, 'utf8').split('\n');
+
+  it('matches the SRD weapon table on damage and damage type', async () => {
+    const { WEAPONS } = await import('../src/data/weapons.js');
+    const region = lines.slice(9120, 9345).map((l) => l.trim()).filter(Boolean);
+    const dmg = /^(\d+d\d+|\d+) (Bludgeoning|Piercing|Slashing)$/;
+    const srd = new Map<string, { dice: string; type: string }>();
+    for (let i = 0; i < region.length; i++) {
+      // Rows land on one line ("Light Hammer 1d4 Bludgeoning") or two.
+      const one = region[i]!.match(/^(.+?) (\d+d\d+|\d+) (Bludgeoning|Piercing|Slashing)$/);
+      if (one) { srd.set(one[1]!.toLowerCase(), { dice: one[2]!, type: one[3]!.toLowerCase() }); continue; }
+      const d = region[i]!.match(dmg);
+      if (d && i > 0 && /^[A-Z][A-Za-z ]+$/.test(region[i - 1]!)) {
+        srd.set(region[i - 1]!.toLowerCase(), { dice: d[1]!, type: d[2]!.toLowerCase() });
+      }
+    }
+    expect(srd.size, 'the weapon table did not parse').toBeGreaterThan(30);
+    expect(srd.get('longbow')).toEqual({ dice: '1d8', type: 'piercing' });
+
+    const wrong: string[] = [];
+    for (const w of Object.values(WEAPONS)) {
+      const r = srd.get(w.id.replace(/-/g, ' '));
+      if (!r) continue;   // natural attacks, magic variants, monster-scaled gear
+      if (r.dice !== w.damage) wrong.push(`${w.id}: damage ${w.damage}, SRD ${r.dice}`);
+      if (r.type !== w.damageType) wrong.push(`${w.id}: type ${w.damageType}, SRD ${r.type}`);
+    }
+    expect(wrong, `weapons that disagree with the SRD:\n${wrong.join('\n')}`).toEqual([]);
+  });
+
+  it('matches the SRD armor table on base AC and Dex cap', async () => {
+    const { ARMOR } = await import('../src/data/armor.js');
+    const region = lines.slice(9335, 9410).map((l) => l.trim()).filter(Boolean);
+    const srd = new Map<string, { base: number; cap: 'full' | 'none' | number }>();
+    const read = (name: string, ac: string, max: string | undefined, dex: boolean) => {
+      if (!/^[A-Z][A-Za-z ]+$/.test(name)) return;
+      srd.set(name.toLowerCase(), { base: Number(ac), cap: dex ? (max ? Number(max) : 'full') : 'none' });
+    };
+    for (let i = 0; i < region.length; i++) {
+      const dex = /Dex modifier/.test(region[i]!);
+      const alone = region[i]!.match(/^(\d+)(?: \+ Dex modifier(?: \(max (\d+)\))?)?$/);
+      if (alone) { if (i > 0) read(region[i - 1]!, alone[1]!, alone[2], dex); continue; }
+      const one = region[i]!.match(/^(.+?) (\d+)(?: \+ Dex modifier(?: \(max (\d+)\))?)?$/);
+      if (one) read(one[1]!, one[2]!, one[3], dex);
+    }
+    expect(srd.size, 'the armor table did not parse').toBeGreaterThan(10);
+    expect(srd.get('plate armor')).toEqual({ base: 18, cap: 'none' });
+
+    const wrong: string[] = [];
+    for (const a of Object.values(ARMOR)) {
+      // "Leather" here, "Leather Armor" in the table.
+      const r = srd.get(a.name.toLowerCase()) ?? srd.get(`${a.name.toLowerCase()} armor`);
+      if (!r) continue;   // +1 and adamantine variants
+      if (r.base !== a.base) wrong.push(`${a.id}: base ${a.base}, SRD ${r.base}`);
+      if (String(r.cap) !== String(a.dexCap)) wrong.push(`${a.id}: dexCap ${a.dexCap}, SRD ${r.cap}`);
+    }
+    expect(wrong, `armor that disagrees with the SRD:\n${wrong.join('\n')}`).toEqual([]);
   });
 });

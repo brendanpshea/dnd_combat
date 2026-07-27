@@ -11,7 +11,7 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 
 | Name | ID | Suggested level | Total XP | Roster |
 | --- | --- | --- | --- | --- |
-| Ashfang Outriders | `raiders-forward` | 1 | 225 | 1× Orc, 1× Scout, 1× Bandit |
+| Ashfang Outriders | `raiders-forward` | 1 | 225 | 1× Orc Raider, 1× Scout, 1× Bandit |
 | Ashfang Outriders | `goblin-outriders` | 1 | 350 | 1× Goblin Boss, 3× Goblin Warrior |
 | Badger Den | `badger-den` | 1 | 150 | 3× Giant Badger |
 | Cockatrice Flock | `cockatrice-flock` | 1 | 200 | 2× Cockatrice |
@@ -31,21 +31,21 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | Green Wyrmling's Thicket | `green-dragon-den` | 2 | 500 | 1× Green Dragon Wyrmling, 2× Kobold Warrior |
 | Harpy Roost | `harpy-roost` | 2 | 400 | 2× Harpy |
 | Hyena Pack | `hyena-pack` | 2 | 500 | 2× Giant Hyena, 1× Gnoll Warrior |
-| Lizardfolk Tribe | `swamp` | 2 | 300 | 3× Lizardfolk |
-| Orc Raiders | `raiders` | 2 | 425 | 2× Orc, 2× Scout, 1× Bandit |
+| Lizardfolk Tribe | `swamp` | 2 | 300 | 3× Lizardfolk Skirmisher |
+| Orc Raiders | `raiders` | 2 | 425 | 2× Orc Raider, 2× Scout, 1× Bandit |
 | Restless Dead | `undead` | 2 | 250 | 2× Skeleton, 3× Zombie |
 | Satyr Revelry | `satyr-revelry` | 2 | 200 | 2× Satyr |
 | Specter Haunt | `specter-haunt` | 2 | 400 | 2× Specter |
 | Spider Nest | `spiders` | 2 | 800 | 4× Giant Spider |
-| The Hag's Thralls | `hag-thralls` | 2 | 500 | 3× Lizardfolk, 1× Giant Toad |
+| The Hag's Thralls | `hag-thralls` | 2 | 500 | 3× Lizardfolk Skirmisher, 1× Giant Toad |
 | The Marsh Dead | `marsh-dead` | 2 | 400 | 2× Ghoul |
 | White Wyrmling's Cave | `white-dragon-den` | 2 | 500 | 1× White Dragon Wyrmling, 2× Kobold Warrior |
 | Wild Hunt | `wilds` | 2 | 500 | 1× Brown Bear, 1× Dire Wolf, 2× Wolf |
 | Blue Wyrmling's Mesa | `blue-dragon-den` | 3 | 775 | 1× Blue Dragon Wyrmling, 3× Kobold Warrior |
 | Boar Stampede | `boar-stampede` | 3 | 900 | 2× Giant Boar |
-| Corrupt Temple | `temple` | 3 | 650 | 1× Priest, 2× Acolyte, 2× Skeleton |
-| Crypt Crawlers | `crypt` | 3 | 550 | 1× Acolyte, 2× Ghoul, 2× Skeleton |
-| Cult of the Worm | `cult` | 3 | 1100 | 1× Cult Fanatic, 1× Acolyte, 2× Ghoul, 1× Animated Armor |
+| Corrupt Temple | `temple` | 3 | 650 | 1× Priest, 2× Priest Acolyte, 2× Skeleton |
+| Crypt Crawlers | `crypt` | 3 | 550 | 1× Priest Acolyte, 2× Ghoul, 2× Skeleton |
+| Cult of the Worm | `cult` | 3 | 1100 | 1× Cult Fanatic, 1× Priest Acolyte, 2× Ghoul, 1× Animated Armor |
 | Gargoyle Perch | `gargoyle-perch` | 3 | 900 | 2× Gargoyle |
 | Gate Enforcers | `den-gate` | 3 | 400 | 1× Bugbear Warrior, 2× Gnoll Warrior |
 | Manticore Cliff | `manticore-cliff` | 3 | 800 | 1× Manticore, 2× Goblin Warrior |
@@ -56,7 +56,7 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | The Ashfang Warlord | `ashfang-warlord` | 3 | 1175 | 1× Bandit Captain, 1× Green Hag, 1× Bandit |
 | The Ashfang Warlord, Unguarded | `ashfang-warlord-alone` | 3 | 1150 | 1× Bandit Captain, 1× Green Hag |
 | The Kennels | `kennel-hyenas` | 3 | 400 | 2× Giant Hyena |
-| The Pit-Brute | `den-muster` | 3 | 650 | 1× Ogre, 2× Orc |
+| The Pit-Brute | `den-muster` | 3 | 650 | 1× Ogre, 2× Orc Raider |
 | Viper Pit | `snake-pit` | 3 | 900 | 2× Giant Constrictor Snake |
 | Wight Tomb | `wight-tomb` | 3 | 800 | 1× Wight, 2× Skeleton |
 | Chromatic Clutch | `chromatic-clutch` | 4 | 1350 | 1× Black Dragon Wyrmling, 1× Green Dragon Wyrmling, 1× White Dragon Wyrmling |
@@ -67,9 +67,9 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | Wisp Bog | `wisp-bog` | 4 | 1100 | 2× Will-o'-Wisp, 1× Specter |
 | Earth Tremor | `earth-tremor` | 5 | 1800 | 1× Earth Elemental |
 | Fire Nexus | `fire-nexus` | 5 | 2250 | 1× Fire Elemental, 1× Cult Fanatic |
-| Giant's Stronghold | `giants` | 5 | 1650 | 1× Ettin, 1× Ogre, 1× Orc |
+| Giant's Stronghold | `giants` | 5 | 1650 | 1× Ettin, 1× Ogre, 1× Orc Raider |
 | Gorgon Lair | `gorgon-maze` | 5 | 1800 | 1× Gorgon |
-| Oni's Warband | `oni` | 5 | 3450 | 1× Oni, 1× Ogre, 1× Orc |
+| Oni's Warband | `oni` | 5 | 3450 | 1× Oni, 1× Ogre, 1× Orc Raider |
 | Tempest Eye | `tempest-eye` | 5 | 1800 | 1× Air Elemental |
 | Unicorn Sanctuary | `unicorn-sanctuary` | 5 | 1800 | 1× Unicorn |
 | Water Vortex | `water-vortex` | 5 | 1800 | 1× Water Elemental |

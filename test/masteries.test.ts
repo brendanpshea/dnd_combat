@@ -27,10 +27,10 @@ describe('Weapon mastery: Slow', () => {
 
 describe('Weapon mastery: Push', () => {
   it('shoves the target 10 ft straight away from the attacker on a hit', () => {
-    const atk = wielder({ x: 3, y: 3 }, 'a', 'greatclub');
+    const atk = wielder({ x: 3, y: 3 }, 'a', 'ogre-greatclub');
     const t = target({ x: 4, y: 3 }, 't', 1);
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [atk, t] });
-    resolveAttack(c.state, 'a', 't', 'greatclub');
+    resolveAttack(c.state, 'a', 't', 'ogre-greatclub');
     // Pushed +x by 2 cells: 4 → 6.
     expect(c.state.combatants['t']!.position).toEqual({ x: 6, y: 3 });
   });

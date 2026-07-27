@@ -230,8 +230,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'wolf-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
     properties: [], melee: true, onHitCondition: 'prone',
   },
-  greatclub: {
-    id: 'greatclub', name: 'Greatclub', damage: '2d8', damageType: 'bludgeoning',
+  // The ogre's club, not the SRD's 1d8 player Greatclub — SRD Ogre hits for
+  // 2d8 + 4. Named for its owner the way `ogre-javelin` below is, so the bare
+  // id cannot be mistaken for the equipment-table weapon it is twice the size
+  // of. Nothing buys it; the ogre and the oni swing it.
+  'ogre-greatclub': {
+    id: 'ogre-greatclub', name: 'Greatclub', damage: '2d8', damageType: 'bludgeoning',
     properties: ['two-handed'], melee: true, mastery: 'push',
   },
   'ogre-javelin': {
