@@ -14,7 +14,7 @@
  *  - It reports first-try clears as the score. With unlimited retries a plain
  *    win rate climbs to 100% and stops meaning anything.
  */
-import { useState, type ComponentType } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
@@ -46,6 +46,8 @@ import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
+import { ChorusBubble } from './Chorus.js';
+import { chorusLine, firstUnheard, type ChorusCue } from '../../src/arena/chorus.js';
 import { ArtImage } from './ArtImage.js';
 import type { BattleProps } from './App.js';
 import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
@@ -64,6 +66,8 @@ type Phase =
       /** Bounties claimed in the fight just won, named on the loot screen. */
       claimed: Array<{ name: string; gold: number }>;
     }
+  /** The premise, once, before a new party's first gate. */
+  | { p: 'intro' }
   | { p: 'defeat'; bill: RevivalBill }
   /**
    * The run is over, one way or the other — the finish line reached, or the
@@ -131,6 +135,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [buyFor, setBuyFor] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmRestart, setConfirmRestart] = useState(false);
+  /**
+   * The commentary, on by default and switchable off for good.
+   *
+   * Stored outside the run because it is a preference about the game, not a
+   * fact about this attempt at it — someone who has heard the quasit's routine
+   * should not have to turn him off again every time they start over.
+   */
+  const [chorusOn, setChorusOn] = useState<boolean>(
+    () => localStorage.getItem('arena-chorus') !== 'off',
+  );
   const [, bump] = useState(0);
 
   const level = partyLevelOf(c);
@@ -162,6 +176,34 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   if (run.dayLevel === undefined && phase.p === 'brief') {
     const pinned = { ...run, dayLevel: level };
     setRun(pinned); persist(c, pinned);
+  }
+
+  /**
+   * What the quasit has to say right now, if anything.
+   *
+   * Marking a line heard is a side effect of *showing* it, done in an effect
+   * rather than during render so React is not asked to persist a save file
+   * mid-paint. `heard` lives in the run, so closing the tab does not reset the
+   * commentary and a new run gets all of it back.
+   */
+  function say(...cues: ChorusCue[]): ChorusCue | undefined {
+    return chorusOn ? firstUnheard(cues, run.heard ?? []) : undefined;
+  }
+
+  function markHeard(cue: ChorusCue) {
+    if (!chorusOn || (run.heard ?? []).includes(cue)) return;
+    const nextRun = { ...run, heard: [...(run.heard ?? []), cue] };
+    setRun(nextRun); persist(c, nextRun);
+  }
+
+  /** Render a cue if there is one, and remember it was said. */
+  function Say({ cue }: { cue: ChorusCue | undefined }) {
+    const text = cue === undefined ? undefined : chorusLine(cue, run.heard ?? []);
+    useEffect(() => {
+      if (cue !== undefined && text !== undefined) markHeard(cue);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cue]);
+    return text === undefined ? null : <ChorusBubble text={text} />;
   }
 
   /** Take a door. Free until the first attempt; after that the wave is fixed. */
@@ -281,7 +323,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         onBegin={() => {
           c.partyReady = true;
           persist(c, run);
-          setPhase({ p: 'brief' });
+          setPhase({ p: 'intro' });
         }}
       />
     );
@@ -315,6 +357,20 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         leveledFrom={phase.leveledFrom}
         claimed={phase.claimed}
         rested={phase.rested}
+        chorus={<Say cue={say(
+          // Which break this was cannot be read off `half`: the run has already
+          // advanced by the time this screen paints, so after a won morning
+          // `half` says 'afternoon'. `hitDiceSpent` is the honest signal — only
+          // a lunch reports it — and it is what the panel itself keys on.
+          //
+          // Lunch teaches the day model better than a cleared day does, so the
+          // hit-dice lines get first refusal.
+          ...(phase.rested.hitDiceSpent === 0 ? ['noHitDice' as const] : []),
+          ...((phase.rested.revived ?? 0) > 0 ? ['firstHitDice' as const] : []),
+          ...(phase.rested.hitDiceSpent !== undefined
+            ? ['firstLunch' as const]
+            : ['firstClear' as const]),
+        )} />}
         onLevelChange={() => { refresh(); persist(c, run); }}
         onContinue={() => setPhase(
           // Crossing the finish line ends the run here rather than sending the
@@ -330,6 +386,45 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const backdrop = HAS_BOARD_BG.has(wave.map.theme)
     ? <div className="adv-backdrop" style={{ backgroundImage: `url(${boardBgUrl(wave.map.theme)})` }} />
     : <div className="adv-backdrop glyph"><span>🏟️</span></div>;
+
+  if (phase.p === 'intro') {
+    return (
+      <div className="adventure">
+        <div className="adv-stage">
+          {backdrop}
+          <div className="adv-content">
+            <div className="adv-scene centered">
+              <div className="adv-panel">
+                <h2>You do not remember dying.</h2>
+                <p className="adv-text">
+                  That is normal. Almost nobody does. What matters is where it
+                  put you: a ring of packed sand under a sky nobody built, with
+                  something enormous and unhurried watching from the seats.
+                </p>
+                <p className="adv-text">
+                  They are deciding what you were worth. Not by asking — by
+                  making you show them. Two fights a day, every day, until they
+                  have seen enough of you or you have nothing left to pay the
+                  healers with.
+                </p>
+                <p className="hint">
+                  Lose, and the day is written off: you come back tomorrow to
+                  the same two fights, exactly as they were, keeping everything
+                  you learned and everything you bought. Nothing here is
+                  permanent except the record.
+                </p>
+                <div className="adv-choices">
+                  <button className="primary" onClick={() => setPhase({ p: 'brief' })}>
+                    Step out onto the sand
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (phase.p === 'summary') {
     const { summary } = phase;
@@ -399,6 +494,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   )}
                 </div>
 
+                <Say cue={say(summary.completed ? 'finished' : 'brokeOff')} />
+
                 {summary.completed && summary.medal !== 'gold' && (
                   <p className="hint">
                     A higher win rate takes a better medal. Days you solve outright
@@ -460,6 +557,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     </>
                   )}
                 </div>
+                <Say cue={say(
+                  ...(phase.bill.sold.length > 0 ? ['soldToPay' as const] : []),
+                  ...(c.gold < phase.bill.cost ? ['nearlyBroke' as const] : []),
+                  ...(phase.bill.cost > 0 ? ['firstBill' as const] : []),
+                  'firstDefeat',
+                )} />
                 <p className="hint">
                   Day {dayOf(run)} · wave {run.wave} · attempt {run.attempts + 1}
                   {run.dayLevel !== undefined && run.dayLevel < level &&
@@ -582,6 +685,17 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               </div>
 
               <p className="hint">
+                <button
+                  className="chorus-toggle"
+                  onClick={() => {
+                    const next = !chorusOn;
+                    setChorusOn(next);
+                    localStorage.setItem('arena-chorus', next ? 'on' : 'off');
+                  }}
+                  title={chorusOn ? 'Silence the quasit' : 'Let the quasit talk'}
+                >
+                  {chorusOn ? '🗣️' : '🔇'}
+                </button>
                 {grid.width}×{grid.height} {wave.map.theme}
                 {locked && ` · attempt ${run.attempts + 1}, this door is committed`}
               </p>
@@ -595,6 +709,17 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 {run.dayLevel !== undefined && run.dayLevel < level &&
                   ` You have outgrown this day: it is still set for level ${run.dayLevel}.`}
               </p>
+
+              {/* The quasit, on the way in. Ordered most-interesting-first:
+                  several of these can be true at once and he gets one. */}
+              <Say cue={say(
+                ...(dayOf(run) === 1 && run.fights === 0 ? ['arrival' as const] : []),
+                ...(run.attempts >= 2 ? ['grinding' as const] : []),
+                ...(half === 'afternoon' ? ['firstAfternoon' as const] : []),
+                ...(c.xp >= RUN_TARGET_XP * 0.7 ? ['homeStretch' as const] : []),
+                ...(run.dayLevel !== undefined && run.dayLevel < level ? ['levelled' as const] : []),
+                'firstGate',
+              )} />
 
               {/* The planning half of the screen: what this wave will pay extra
                   for. Named before the fight, or they are not something to play

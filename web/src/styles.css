@@ -3015,3 +3015,50 @@ button.category .count {
 .medal.m-silver .medal-tier { color: #d8dde8; }
 .medal.m-bronze .medal-tier { color: #e0a06a; }
 .medal.m-iron .medal-tier { color: var(--muted); }
+
+/* The quasit in the rafters. Deliberately a block in the flow rather than a
+   popup: it says its piece where the player is already looking and never has
+   to be dismissed, because anything you dismiss is a tax on the tenth run. */
+.chorus {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--panel) 80%, #2a1330);
+  border: 1px solid #5c3a6b;
+  border-left: 3px solid #a06ec0;
+  border-radius: 12px;
+  text-align: left;
+}
+.chorus-face {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #5c3a6b;
+  background: #2a1330;
+}
+.chorus-face img { width: 100%; height: 100%; object-fit: cover; }
+.chorus-glyph { font-size: 26px; line-height: 44px; text-align: center; display: block; }
+.chorus-say { min-width: 0; }
+.chorus-who {
+  display: block;
+  font-family: var(--display);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c79ae0;
+}
+.chorus-say p { margin: 2px 0 0; font-style: italic; color: var(--text); }
+.chorus-toggle {
+  background: none;
+  border: none;
+  padding: 0 6px 0 0;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+.chorus-toggle:hover { opacity: 1; }
