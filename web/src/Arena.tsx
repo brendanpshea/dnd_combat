@@ -32,6 +32,9 @@ import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../../s
 import {
   revivalCost, payRevival, isFirstDefeat, type RevivalBill,
 } from '../../src/arena/revival.js';
+import {
+  runComplete, summarise, RUN_TARGET_XP, MEDAL_LABEL, MEDAL_ICON, type RunSummary,
+} from '../../src/arena/medal.js';
 import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
@@ -62,8 +65,13 @@ type Phase =
       claimed: Array<{ name: string; gold: number }>;
     }
   | { p: 'defeat'; bill: RevivalBill }
-  /** The run is over: the party could not pay to be put back on its feet. */
-  | { p: 'over'; bill: RevivalBill };
+  /**
+   * The run is over, one way or the other — the finish line reached, or the
+   * healers' bill unpayable. Every run ends here: a record you can be graded
+   * on is the only thing that makes the difference between solving a day and
+   * out-levelling it mean anything.
+   */
+  | { p: 'summary'; summary: RunSummary; bill?: RevivalBill };
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -204,7 +212,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       if (bill.insolvent) {
         // Nothing was sold and nothing was taken: the run simply ends here.
         setC({ ...c }); persist(c, run);
-        setPhase({ p: 'over', bill });
+        setPhase({ p: 'summary', summary: summarise(run, c.xp), bill });
         return;
       }
       reviveParty(c);
@@ -213,7 +221,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       });
       night(c, nextRun.cleared);
       setRun(nextRun); setC({ ...c }); persist(c, nextRun);
-      setPhase({ p: 'defeat', bill });
+      // The experience is earned whether or not the day was won, so a party
+      // that crosses the line on a losing day has still crossed it.
+      setPhase(runComplete(c.xp)
+        ? { p: 'summary', summary: summarise(nextRun, c.xp), bill }
+        : { p: 'defeat', bill });
       return;
     }
     // Coin scales only with what actually carries a purse — a wolf pack hoards
@@ -304,7 +316,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         claimed={phase.claimed}
         rested={phase.rested}
         onLevelChange={() => { refresh(); persist(c, run); }}
-        onContinue={() => setPhase({ p: 'brief' })}
+        onContinue={() => setPhase(
+          // Crossing the finish line ends the run here rather than sending the
+          // party back to a gate they no longer have any reason to walk through.
+          runComplete(c.xp)
+            ? { p: 'summary', summary: summarise(run, c.xp) }
+            : { p: 'brief' },
+        )}
       />
     );
   }
@@ -313,33 +331,81 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     ? <div className="adv-backdrop" style={{ backgroundImage: `url(${boardBgUrl(wave.map.theme)})` }} />
     : <div className="adv-backdrop glyph"><span>🏟️</span></div>;
 
-  if (phase.p === 'over') {
+  if (phase.p === 'summary') {
+    const { summary } = phase;
     return (
       <div className="adventure">
         <div className="adv-stage">
           {backdrop}
           <div className="adv-content">
             <div className="adv-scene centered">
-              <div className="adv-panel">
-                <h2>The healers look at your purse, and turn away.</h2>
-                <p className="adv-text">
-                  There is a price for being put back together, and you cannot
-                  meet it. Whatever you were proving, you will not get to finish
-                  proving it — not with this company.
-                </p>
-                <div className="revival-bill">
+              <div className="adv-panel run-summary">
+                {summary.completed ? (
+                  <>
+                    <div className={`medal m-${summary.medal}`}>
+                      <span className="medal-ico">{MEDAL_ICON[summary.medal!]}</span>
+                      <span className="medal-tier">{MEDAL_LABEL[summary.medal!]}</span>
+                    </div>
+                    <h2>They have seen enough.</h2>
+                    <p className="adv-text">
+                      Whatever it was you came here to prove, you have proved it.
+                      The gates stand open and nobody moves to stop you.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2>The healers look at your purse, and turn away.</h2>
+                    <p className="adv-text">
+                      There is a price for being put back together, and you
+                      cannot meet it. Whatever you were proving, you will not
+                      get to finish proving it — not with this company.
+                    </p>
+                    {phase.bill && (
+                      <div className="revival-bill">
+                        <div className="loot-line">
+                          <span>⚕️ Owed</span>
+                          <b className="loss">{phase.bill.cost}g</b>
+                        </div>
+                        <div className="loot-sub">
+                          {c.gold}g in hand, and nothing left worth selling.
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div className="loot-panel">
                   <div className="loot-line">
-                    <span>⚕️ Owed</span>
-                    <b className="loss">{phase.bill.cost}g</b>
+                    <span>⚔️ Win rate</span>
+                    <b className={summary.completed ? 'gain' : ''}>{summary.winRate}%</b>
                   </div>
                   <div className="loot-sub">
-                    {c.gold}g in hand, and nothing left worth selling.
+                    {summary.wins} of {summary.fights} fights won ·
+                    {' '}{summary.clearedFirstTry} days cleared at the first attempt
                   </div>
+                  <div className="loot-line">
+                    <span>📅 Days</span>
+                    <b>{summary.days}</b>
+                  </div>
+                  <div className="loot-line">
+                    <span>✨ Experience</span>
+                    <b>{summary.xp}</b>
+                  </div>
+                  {!summary.completed && (
+                    <div className="loot-sub">
+                      {Math.round((summary.xp / RUN_TARGET_XP) * 100)}% of the way
+                      to the {RUN_TARGET_XP} needed to walk out.
+                    </div>
+                  )}
                 </div>
-                <p className="hint">
-                  Lasted {dayOf(run)} days · {run.cleared} cleared ·
-                  {' '}{run.wins} of {run.fights} fights won
-                </p>
+
+                {summary.completed && summary.medal !== 'gold' && (
+                  <p className="hint">
+                    A higher win rate takes a better medal. Days you solve outright
+                    count for more than days you out-level.
+                  </p>
+                )}
+
                 <div className="adv-choices">
                   {restartButton}
                   <button onClick={onExit}>Leave the arena</button>

@@ -351,9 +351,22 @@ export function advanceDay(run: ArenaRunState, won: boolean, purse: number,
 ): ArenaRunState {
   const half = run.half ?? 'morning';
   if (won && half === 'morning') {
-    // Mid-day: nothing clears, nothing rests, the level stays frozen.
-    const next = recordResult({ ...run, half: 'morning' }, false, 0, learned);
-    return { ...next, attempts: run.attempts, half: 'afternoon', gate: 0 };
+    // Mid-day: nothing clears, nothing rests, the level stays frozen — but it
+    // IS a fight, and it IS won.
+    //
+    // This first shipped by routing the won morning through `recordResult`'s
+    // *loss* path, because that is the branch that leaves the wave alone. The
+    // side effect was that every won morning was tallied as a defeat, and since
+    // roughly half of all fights are mornings, the run reported a win rate near
+    // a fifth of its real value. Nothing depended on the number at the time; a
+    // medal graded on win rate does.
+    return {
+      ...noteLearned(run, learned),
+      fights: run.fights + 1,
+      wins: run.wins + 1,
+      half: 'afternoon',
+      gate: 0,
+    };
   }
   if (won) {
     const next = recordResult(run, true, purse, learned);
@@ -368,6 +381,23 @@ export function advanceDay(run: ArenaRunState, won: boolean, purse: number,
   return { ...next, half: 'morning', day: (run.day ?? 1) + 1, gate: 0 };
 }
 
+/**
+ * Fold in what a fight taught the run, win or lose.
+ *
+ * A spell tried in a fight you lost is still a spell you have tried, so this
+ * accumulates either way — otherwise a retry could re-claim Something New with
+ * the spell that failed the first time.
+ */
+function noteLearned(
+  run: ArenaRunState, learned: { spellsUsed?: Id[]; bounties?: number },
+): ArenaRunState {
+  return {
+    ...run,
+    spellsUsed: [...new Set([...run.spellsUsed, ...(learned.spellsUsed ?? [])])],
+    bounties: run.bounties + (learned.bounties ?? 0),
+  };
+}
+
 /** Record an attempt at the current wave. A win advances; a loss stays put. */
 export function recordResult(
   run: ArenaRunState, won: boolean, purse: number,
@@ -375,12 +405,7 @@ export function recordResult(
 ): ArenaRunState {
   const fights = run.fights + 1;
   const wins = run.wins + (won ? 1 : 0);
-  // A spell tried in a fight you lost is still a spell you have tried, so this
-  // accumulates either way — otherwise a retry could re-claim Something New
-  // with the spell that failed the first time.
-  const spellsUsed = [...new Set([...run.spellsUsed, ...(learned.spellsUsed ?? [])])];
-  const bounties = run.bounties + (learned.bounties ?? 0);
-  run = { ...run, spellsUsed, bounties };
+  run = noteLearned(run, learned);
   if (!won) {
     return { ...run, fights, wins, attempts: run.attempts + 1 };
   }
