@@ -28,7 +28,11 @@ describe('Fighting Style: Defense', () => {
     const plain = fighter({ x: 2, y: 2 }, 'b', []);
     expect(acOf(armored)).toBe(acOf(plain) + 1);
 
-    const bare = { ...plain, equipped: { ...plain.equipped, armor: undefined } };
+    // Strip the armour by removing the key. Setting it to `undefined` leaves a
+    // present-but-empty field, which is a different thing to the type system
+    // and to anything that tests with `in`.
+    const { armor: _worn, ...bareGear } = plain.equipped;
+    const bare = { ...plain, equipped: bareGear };
     const bareDefense = { ...bare, featureIds: [...bare.featureIds, 'defense'] };
     expect(acOf(bareDefense)).toBe(acOf(bare)); // no armor, no bonus
   });

@@ -48,7 +48,7 @@ describe('the Training Yard', () => {
     const s = { combatants: { hero: { id: 'hero', team: 'team1' }, foe: { id: 'foe', team: 'team2' } } } as never;
     const isPlayer = (id: string) => id === 'hero';
     const moved: GameEvent[] = [{ type: 'moved', combatantId: 'hero', path: [{ x: 0, y: 0 }, { x: 0, y: 1 }] }];
-    const melee: GameEvent[] = [{ type: 'attackRolled', attackerId: 'hero', targetId: 'foe', weaponId: 'longsword', natural: 12, total: 16, targetAc: 12, mode: 'normal', advSources: [], disSources: [], hit: true, crit: false, opportunity: false }];
+    const melee: GameEvent[] = [{ type: 'attackRolled', attackerId: 'hero', targetId: 'foe', weaponId: 'longsword', natural: 12, total: 16, targetAc: 12, mode: 'flat', advSources: [], disSources: [], hit: true, crit: false, opportunity: false }];
     const ended: GameEvent[] = [{ type: 'turnEnded', combatantId: 'hero' }];
     const cantrip: GameEvent[] = [{ type: 'spellCast', casterId: 'hero', spellId: 'fire-bolt', origin: { x: 0, y: 0 }, cells: [] }];
     const leveled: GameEvent[] = [{ type: 'spellCast', casterId: 'hero', spellId: 'magic-missile', origin: { x: 0, y: 0 }, cells: [] }];

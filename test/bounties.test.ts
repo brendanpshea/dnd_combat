@@ -202,9 +202,9 @@ describe('what counts as earning one', () => {
     const s = scene(COVERED, party, ['scout']);
     const shot = (targetId: string, cover: boolean): GameEvent => ({
       type: 'attackRolled', attackerId: 'f0', targetId, weaponId: 'shortbow',
-      natural: 10, total: 14, targetAc: 16, mode: 'normal', advSources: [], disSources: [],
+      natural: 10, total: 14, targetAc: 16, mode: 'flat', advSources: [], disSources: [],
       hit: false, crit: false, opportunity: false, ...(cover ? { cover: true } : {}),
-    } as GameEvent);
+    });
     expect(byId('dug-in').earned(ctx([shot(party[0]!.id, true)], s))).toBe(true);
     expect(byId('dug-in').earned(ctx([shot(party[0]!.id, false)], s)), 'no barricade on the line').toBe(false);
     expect(byId('dug-in').earned(ctx([shot('f0', true)], s)), 'us shooting them').toBe(false);

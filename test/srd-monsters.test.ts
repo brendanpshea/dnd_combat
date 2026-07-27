@@ -42,7 +42,7 @@ interface Block {
  * n ft." — so match the three fields independently rather than assuming an
  * order or a single space.
  */
-function statLine(l: string): Omit<Block, 'name' | 'type' | 'abilities'> | null {
+function statLine(l: string): Omit<Block, 'name' | 'type' | 'size' | 'abilities' | 'cr' | 'xp'> | null {
   if (!l.startsWith('AC ')) return null;
   const ac = l.match(/\bAC (\d+)/), hp = l.match(/\bHP (\d+)/), sp = l.match(/\bSpeed (\d+) ft/);
   if (!ac || !hp || !sp) return null;
@@ -93,7 +93,12 @@ function parseSrd(): Map<string, Block> {
     out.set(key, {
       name, type: kindLine.match(kind)![2]!.toLowerCase(),
       size: kindLine.match(kind)![1]!.toLowerCase(),
-      ...stat, abilities, cr, xp,
+      ...stat, abilities,
+      // Optional in `Block`, so write them only when the SRD actually gave one.
+      // Assigning `undefined` would leave the keys present, which reads as "the
+      // SRD says this monster has no CR" rather than "we could not find one".
+      ...(cr !== undefined ? { cr } : {}),
+      ...(xp !== undefined ? { xp } : {}),
     });
   }
   return out;

@@ -828,7 +828,12 @@ describe('2024 creature types', () => {
    */
   it('Command and Suggestion still work on goblins, and still not on oozes', () => {
     for (const spellId of ['command', 'suggestion']) {
-      const types = SPELLS[spellId]!.targeting.creatureTypes;
+      const targeting = SPELLS[spellId]!.targeting;
+      // `targeting` is a union; only the creature arm carries a type filter, so
+      // narrow before reading it. Reaching through the union compiled to
+      // `undefined` for any other arm, which the assertion below would then
+      // have reported as "lost its target set" for the wrong reason.
+      const types = targeting.kind === 'creature' ? targeting.creatureTypes : undefined;
       expect(types, `${spellId} lost its target set`).toBeDefined();
       expect(types, `${spellId} vs a goblin`).toContain('fey');
       expect(types, `${spellId} vs an ooze`).not.toContain('ooze');

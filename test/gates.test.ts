@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { gatesFor, gateFor, gateLocked, GATE_COUNT } from '../src/arena/gates.js';
-import { buildWave, waveDifficulty, GATE_TAX, newArenaRun, recordResult } from '../src/arena/run.js';
+import {
+  buildWave, waveDifficulty, GATE_TAX, newArenaRun, recordResult, type ArenaRunState,
+} from '../src/arena/run.js';
 import { generateArenaMap } from '../src/arena/map.js';
 import { seedRng } from '../src/engine/rng.js';
 import { parseMap } from '../src/data/maps.js';
@@ -95,7 +97,10 @@ describe('gates', () => {
   });
 
   it('releases the door on a clear, so the next wave is a fresh choice', () => {
-    let run = { ...newArenaRun(1), gate: 2 };
+    // Typed as ArenaRunState rather than inferred: the inferred literal type
+    // pins `gate` to a required number, and the run helpers return a state
+    // where it is optional, so the reassignments below would not typecheck.
+    let run: ArenaRunState = { ...newArenaRun(1), gate: 2 };
     run = recordResult(run, false, 0);
     expect(run.gate, 'a loss keeps you on the door you took').toBe(2);
     run = recordResult(run, true, 50);

@@ -19,7 +19,7 @@ describe('map parsing', () => {
   });
 
   it('row order: first row is the top rank', () => {
-    const g = parseMap({ id: 't', name: 't', rows: ['#.', '..'] });
+    const g = parseMap({ id: 't', name: 't', theme: 'stone', rows: ['#.', '..'] });
     expect(cellAt(g, { x: 0, y: 1 })!.terrain).toBe('wall'); // top-left
     expect(cellAt(g, { x: 0, y: 0 })!.terrain).toBe('open');
   });
@@ -36,8 +36,8 @@ describe('map parsing', () => {
   });
 
   it('rejects bad maps', () => {
-    expect(() => parseMap({ id: 'bad', name: 'bad', rows: ['..', '.'] })).toThrow(/ragged/);
-    expect(() => parseMap({ id: 'bad', name: 'bad', rows: ['.X'] })).toThrow(/unknown terrain/);
+    expect(() => parseMap({ id: 'bad', name: 'bad', theme: 'stone', rows: ['..', '.'] })).toThrow(/ragged/);
+    expect(() => parseMap({ id: 'bad', name: 'bad', theme: 'stone', rows: ['.X'] })).toThrow(/unknown terrain/);
   });
 });
 

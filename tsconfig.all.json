@@ -1,16 +1,12 @@
 {
   // Typechecks the WHOLE repository, not just what ships.
   //
-  // `tsconfig.json` includes only `src`, so `npx tsc --noEmit` has never looked
-  // at `scripts/` or `test/` — and vitest transpiles without typechecking, so
-  // nothing looked at them at all. A typo in a measurement script therefore
-  // produced `undefined` in silence, which is exactly how `day?.dayNumber` came
-  // to be read off a type that had no such property.
-  //
-  // This config is NOT wired into the test suite yet: it currently reports 42
-  // pre-existing errors, nearly all `exactOptionalPropertyTypes` noise in
-  // tests. Clearing them is its own job. Until then this is the one command
-  // that will tell you whether a script you just wrote actually typechecks:
+  // `tsconfig.json` includes only `src`, so for a long time `npx tsc --noEmit`
+  // had never looked at `scripts/` or `test/` — and vitest transpiles without
+  // typechecking, so nothing looked at them at all. A typo in a measurement
+  // script produced `undefined` in silence, and a test could assert on a field
+  // that did not exist and pass forever. See test/typecheck.test.ts, which runs
+  // this config as part of the suite.
   //
   //     npx tsc -p tsconfig.all.json --noEmit
   "extends": "./tsconfig.json",

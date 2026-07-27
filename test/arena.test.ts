@@ -326,7 +326,11 @@ describe('arena plumbing', () => {
   it('a full rest between waves puts the party back to full', () => {
     const camp = newCampaign(4);
     camp.partyReady = true;
-    for (const ch of camp.characters) ch.hp = 1;
+    // A character's hit points live in `resources.hp`, not on the character.
+    // This used to write a stray `hp` field that nothing anywhere reads, so the
+    // party walked into `longRest` at FULL health and the assertion below held
+    // for the wrong reason — a test that could never have failed.
+    for (const ch of camp.characters) ch.resources = { ...ch.resources, hp: 1 };
     longRest(camp);
     const party = buildCampaignParty(camp);
     for (const p of party) expect(p.hp, p.name).toBe(p.maxHp);
@@ -518,8 +522,15 @@ describe('monsters with a level floor', () => {
   const withFloor = (id: string, floor: number, run: () => void) => {
     const m = MONSTERS[id]!;
     const before = m.minPartyLevel;
-    (m as { minPartyLevel?: number }).minPartyLevel = floor;
-    try { run(); } finally { (m as { minPartyLevel?: number }).minPartyLevel = before; }
+    const slot = m as { minPartyLevel?: number };
+    slot.minPartyLevel = floor;
+    // Restore by *deleting* when there was no floor to begin with: assigning
+    // `undefined` would leave the key present, which is a different thing under
+    // `exactOptionalPropertyTypes` and a different thing to `in` checks too.
+    try { run(); } finally {
+      if (before === undefined) delete slot.minPartyLevel;
+      else slot.minPartyLevel = before;
+    }
   };
 
   it('arenaRoster drops a floored monster below its level, and only below it', () => {
