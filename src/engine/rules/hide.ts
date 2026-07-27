@@ -3,6 +3,7 @@ import type { Combatant, GameState, Id } from '../types.js';
 import { abilityMod, proficiencyBonus, isDown, ignoresHalfCover } from '../types.js';
 import { rollD20 } from '../dice.js';
 import { hasLineOfSight, coverBetween } from '../grid.js';
+import { armorStealthDisadvantage } from '../../data/armor.js';
 import { CLASSES } from '../../data/classes.js';
 import { FEATURES } from '../../data/features.js';
 import { applyLucky } from './luck.js';
@@ -54,10 +55,15 @@ function stealthBonus(c: Combatant): number {
   return abilityMod(c.abilities.dex) + (proficient ? proficiencyBonus(c.level) : 0);
 }
 
-/** Spend Hide's action or bonus action and make its flat DC 15 Stealth check. */
+/** Spend Hide's action or bonus action and make its DC 15 Stealth check.
+ *
+ *  Heavy and banded armor gives disadvantage on it — which is the whole reason
+ *  a Breastplate costs eight times a Scale Mail for the same armor class, and
+ *  the reason a rogue in Splint is not a rogue. */
 export function attemptHide(state: GameState, actorId: Id): GameEvent[] {
   const actor = state.combatants[actorId]!;
-  const d20 = applyLucky(state, actorId, rollD20(state.rng, 'flat'), 'flat');
+  const mode = armorStealthDisadvantage(actor.equipped.armor) ? 'disadvantage' : 'flat';
+  const d20 = applyLucky(state, actorId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   const total = d20.natural + stealthBonus(actor);
   const success = total >= 15;
