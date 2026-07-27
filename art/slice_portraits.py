@@ -82,10 +82,10 @@ def remove_greenscreen(img: Image.Image) -> Image.Image:
                     new_g = int((r + b) / 2)
                     pixels[x, y] = (r, new_g, b, alpha)
             else:
-                # Character interior pixel: preserve completely, only suppress minor green fringe spill if any
+                # Character interior pixel: preserve completely, suppress green spill halo if any
                 r, g, b, a = pixels[x, y]
-                if g > 150 and g > r * 1.3 and g > b * 1.3:
-                    # Minor edge fringe spill
+                if g > 70 and g > r * 1.08 and g > b * 1.08:
+                    # Spill desaturation for green tinted edges/steam
                     new_g = int((r + b) / 2)
                     pixels[x, y] = (r, new_g, b, a)
 
