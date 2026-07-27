@@ -155,9 +155,9 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     const primary = cls.statPriority[0];
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
-  // The Fighter alone gets a second Ability Score Increase at 6th, and it is the
-  // only thing that class gains at 6 or 7 that this game models — without it a
-  // fighter walks out of two whole levels with nothing but hit points.
+  // The Fighter alone gets a second Ability Score Increase at 6th. (Its 7th is
+  // the Champion's Additional Fighting Style, a choice point rather than a stat
+  // bump — see classes.ts.)
   if (level >= 6 && opts.classId === 'fighter') {
     const primary = cls.statPriority[0];
     abilities[primary] = Math.min(20, abilities[primary] + 2);
@@ -182,13 +182,19 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   grants.featureIds.push(...(trinket?.grants.featureIds ?? []));
   grants.resistances.push(...(trinket?.grants.resistances ?? []));
 
-  const featureIds = [
+  // Deduped, because the same feature can now arrive twice: a 7th-level fighter
+  // has two Fighting Style choices and nothing stops picking Dueling for both.
+  // Most readers ask `featureIds.includes(...)` and would not notice, but
+  // `advantageDice` SUMS across the list — a duplicated Sneak Attack would
+  // quietly roll twice — so the list is made unique once, here, rather than
+  // every reader having to be careful.
+  const featureIds = [...new Set([
     ...Object.entries(cls.featuresByLevel)
     .filter(([lvl]) => Number(lvl) <= level)
     .flatMap(([, ids]) => ids),
     ...(species.featureIds ?? []),
     ...grants.featureIds,
-  ];
+  ])];
 
   const featureUses: Record<Id, ResourcePool> = {};
   for (const fid of featureIds) {

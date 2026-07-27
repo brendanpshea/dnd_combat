@@ -161,6 +161,21 @@ export const CLASSES: Record<Id, ClassData> = {
         { id: 'great-weapon-fighting', name: 'Great Weapon Fighting', blurb: 'Reroll 1s and 2s on two-handed weapon damage.', grants: { featureIds: ['great-weapon-fighting'] } },
         { id: 'two-weapon-fighting', name: 'Two-Weapon Fighting', blurb: 'Add your ability modifier to off-hand damage.', grants: { featureIds: ['two-weapon-fighting'] } },
       ],
+    }, {
+      // A SECOND Fighting Style at 7th — the Champion's, and the only thing a
+      // fighter gains at that level. Its own choice-point id, because picks
+      // are keyed by that id and a shared one would mean choosing once for
+      // both. A different default too, so a fighter who never opens the panel
+      // ends up with two styles rather than one applied twice.
+      id: 'fighting-style-2', label: 'Additional Fighting Style', atLevel: 7,
+      default: 'great-weapon-fighting',
+      options: [
+        { id: 'dueling', name: 'Dueling', blurb: '+2 damage with a one-handed weapon (shield ok).', grants: { featureIds: ['dueling'] } },
+        { id: 'defense', name: 'Defense', blurb: '+1 AC while wearing armor.', grants: { featureIds: ['defense'] } },
+        { id: 'archery', name: 'Archery', blurb: '+2 to attack rolls with ranged weapons.', grants: { featureIds: ['archery'] } },
+        { id: 'great-weapon-fighting', name: 'Great Weapon Fighting', blurb: 'Reroll 1s and 2s on two-handed weapon damage.', grants: { featureIds: ['great-weapon-fighting'] } },
+        { id: 'two-weapon-fighting', name: 'Two-Weapon Fighting', blurb: 'Add your ability modifier to off-hand damage.', grants: { featureIds: ['two-weapon-fighting'] } },
+      ],
     }],
     weaponMasteries: ['longsword', 'longsword-plus1', 'javelin'],
     equipment: {
@@ -199,6 +214,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      6: ['blessed-healer'],
       7: ['potent-spellcasting'],   // Blessed Strikes, taken as Potent Spellcasting
       1: ['disciple-of-life'],
       2: ['turn-undead'], // Channel Divinity every cleric gets
@@ -441,6 +457,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      7: ['escape-the-horde'],
       6: ['roving'],
       1: [], // Hunter's Mark (the spell) is the level-1 identity, not a feature
       3: ['colossus-slayer'], // Hunter's Prey
@@ -489,6 +506,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      7: ['aura-of-devotion'],
       6: ['aura-of-protection'],
       1: ['lay-on-hands'],
       2: ['divine-smite'],
