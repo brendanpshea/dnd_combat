@@ -155,6 +155,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     const primary = cls.statPriority[0];
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
+  // The Fighter alone gets a second Ability Score Increase at 6th, and it is the
+  // only thing that class gains at 6 or 7 that this game models — without it a
+  // fighter walks out of two whole levels with nothing but hit points.
+  if (level >= 6 && opts.classId === 'fighter') {
+    const primary = cls.statPriority[0];
+    abilities[primary] = Math.min(20, abilities[primary] + 2);
+  }
   // A worn trinket (Gauntlets of Ogre Power, …) can raise an ability score, so
   // apply its floor before HP/AC-relevant mods are computed off the abilities.
   const trinket = opts.equipped?.trinket ? TRINKETS[opts.equipped.trinket] : undefined;
@@ -259,7 +266,8 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     maxHp,
     hp: maxHp,
     tempHp: 0,
-    speed: species.speed,
+    // Roving (Ranger 6): +10 ft of walking speed.
+    speed: species.speed + (featureIds.includes('roving') ? 10 : 0),
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],

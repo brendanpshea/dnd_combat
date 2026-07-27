@@ -198,6 +198,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      7: ['potent-spellcasting'],   // Blessed Strikes, taken as Potent Spellcasting
       1: ['disciple-of-life'],
       2: ['turn-undead'], // Channel Divinity every cleric gets
       3: ['preserve-life'], // Life Domain: Channel Divinity
@@ -276,6 +277,7 @@ export const CLASSES: Record<Id, ClassData> = {
     skillProfs: ['stealth', 'sleight-of-hand', 'deception', 'perception'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
+      7: ['evasion'],
       1: ['sneak-attack'],
       2: ['cunning-dash', 'cunning-disengage', 'cunning-hide'],
       3: ['assassinate'], // Assassin
@@ -325,6 +327,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      7: ['countercharm'],
       1: ['bardic-inspiration'],
       2: ['expertise', 'jack-of-all-trades'],
       3: ['cutting-words'], // College of Lore
@@ -390,6 +393,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      7: ['potent-spellcasting'],   // Elemental Fury, taken as Potent Spellcasting
       1: [],   // Druidic and Primal Order are flavour and skills, not grid rules
       2: ['wild-shape'],
       // 3: Circle of the Land — its feature is extra *prepared spells* by land
@@ -432,6 +436,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      6: ['roving'],
       1: [], // Hunter's Mark (the spell) is the level-1 identity, not a feature
       3: ['colossus-slayer'], // Hunter's Prey
       // 4: Ability Score Increase (builder).
@@ -479,6 +484,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      6: ['aura-of-protection'],
       1: ['lay-on-hands'],
       2: ['divine-smite'],
       3: ['sacred-weapon'], // Devotion: Channel Divinity

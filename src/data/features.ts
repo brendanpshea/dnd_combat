@@ -10,7 +10,7 @@ import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
-import { savingThrow } from '../engine/rules/saves.js';
+import { savingThrow, saveForHalf } from '../engine/rules/saves.js';
 import { charmAway, applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, DIRECTIONS, type Direction8 } from '../engine/grid.js';
@@ -176,7 +176,7 @@ function breathApply(featureId: Id) {
       events.push(event);
       const roll = rollDice(state.rng, spec.dice);
       state.rng = roll.state;
-      const amount = success ? Math.floor(roll.total / 2) : roll.total;
+      const amount = saveForHalf(t, spec.save, roll.total, success);
       if (amount > 0) events.push(...applyDamage(state, t.id, actorId, amount, spec.damageType, roll.rolls));
     }
     return events;
@@ -297,6 +297,18 @@ export const FEATURES: Record<Id, FeatureData> = {
   'pack-tactics': { id: 'pack-tactics', name: 'Pack Tactics', trigger: 'passive' },
   'improved-critical': { id: 'improved-critical', name: 'Improved Critical (Champion)', trigger: 'passive' },
   assassinate: { id: 'assassinate', name: 'Assassinate', trigger: 'passive' },
+  // --- levels 6 and 7 -------------------------------------------------------
+  // Read where they apply rather than doing anything themselves, because each
+  // one changes a roll somebody else is making: a save (saves.ts), a cantrip's
+  // damage (spells.ts), or the halving of a Dex save (saveForHalf).
+  'aura-of-protection': { id: 'aura-of-protection', name: 'Aura of Protection', trigger: 'passive' },
+  evasion: { id: 'evasion', name: 'Evasion', trigger: 'passive' },
+  roving: { id: 'roving', name: 'Roving', trigger: 'passive' },
+  /** Blessed Strikes / Elemental Fury, taken as the caster half of each: the
+   *  class's spellcasting modifier is added to its damaging cantrips. Shares
+   *  the Evoker's machinery, which already does exactly this. */
+  'potent-spellcasting': { id: 'potent-spellcasting', name: 'Potent Spellcasting', trigger: 'passive' },
+  countercharm: { id: 'countercharm', name: 'Countercharm', trigger: 'passive' },
   'sculpt-spells': { id: 'sculpt-spells', name: 'Sculpt Spells (Evoker)', trigger: 'passive' },
   'enhanced-cantrip': { id: 'enhanced-cantrip', name: 'Enhanced Cantrip (Evoker)', trigger: 'passive' },
   'cunning-dash': {
@@ -490,7 +502,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         events.push(event);
         const dmg = rollDice(state.rng, '3d8');
         state.rng = dmg.state;
-        const amount = success ? Math.floor(dmg.total / 2) : dmg.total;
+        const amount = saveForHalf(t, 'str', dmg.total, success);
         events.push(...applyDamage(state, t.id, actorId, amount, 'bludgeoning', dmg.rolls));
         if (!success && state.combatants[t.id]!.alive) {
           const dir = {
@@ -592,7 +604,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       const events: GameEvent[] = [event];
       const roll = rollDice(state.rng, '3d8');
       state.rng = roll.state;
-      const dealt = success ? Math.floor(roll.total / 2) : roll.total;
+      const dealt = saveForHalf(target, 'con', roll.total, success);
       events.push(...applyDamage(state, target.id, actorId, dealt, 'necrotic', roll.rolls));
       // Drain what it dealt back into itself (capped by the target's real loss
       // and the wisp's own maximum, both handled by applyHealing).

@@ -17,7 +17,7 @@ import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { BREATH_WEAPONS } from './features.js';
 import { pushCreature } from '../engine/rules/movement.js';
-import { savingThrow as rawSavingThrow } from '../engine/rules/saves.js';
+import { savingThrow as rawSavingThrow, saveForHalf } from '../engine/rules/saves.js';
 
 // Every saving throw a spell forces is a save against magic, so Magic
 // Resistance (Satyr, Unicorn) grants advantage here without each spell needing
@@ -219,7 +219,7 @@ export function strikeLightning(state: GameState, casterId: Id, anchor: Position
     events.push(save.event);
     const dmg = rollDice(state.rng, storm.dice);
     state.rng = dmg.state;
-    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
     if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'lightning', dmg.rolls));
   }
   events.unshift({ type: 'lightningStruck', casterId, cells: sphere2x2(anchor) });
@@ -266,7 +266,7 @@ export function burnInMoonbeam(state: GameState, casterId: Id, onlyId?: Id): Gam
     events.push(save.event);
     const dmg = rollDice(state.rng, beam.dice);
     state.rng = dmg.state;
-    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    const amount = saveForHalf(state.combatants[tid]!, 'con', dmg.total, save.success);
     if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'radiant', dmg.rolls));
   }
   return events;
@@ -310,6 +310,13 @@ export function cantripDice(base: string, level: number): string {
  */
 function enhancedCantripBonus(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
+  // Potent Spellcasting (Cleric 7 Blessed Strikes, Druid 7 Elemental Fury) is
+  // the same rule off a different ability, so it rides the same helper — and
+  // rides it wherever the evoker's bonus is already read, which is every
+  // damaging cantrip rather than a list somebody has to remember to extend.
+  if (c.featureIds.includes('potent-spellcasting')) {
+    return Math.max(0, abilityMod(c.abilities[c.spellcastingAbility ?? 'wis']));
+  }
   if (!c.featureIds.includes('enhanced-cantrip')) return 0;
   return Math.max(0, abilityMod(c.abilities.int));
 }
@@ -434,7 +441,7 @@ function summonStrike(state: GameState, casterId: Id, s: Summon): GameEvent[] {
     events.push(save.event);
     const dmg = rollDice(state.rng, '2d6');
     state.rng = dmg.state;
-    const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+    const amount = saveForHalf(state.combatants[prey.id]!, 'dex', dmg.total, save.success);
     if (amount > 0) events.push(...applyDamage(state, prey.id, casterId, amount, 'fire', dmg.rolls, { via: s.kind }));
   }
   return events;
@@ -799,7 +806,11 @@ export const SPELLS: Record<Id, SpellData> = {
       if (!save.success) {
         const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level));
         state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'radiant', dmg.rolls));
+        // The one damaging cantrip that was not reading the caster bonus, and the
+        // cleric's only one — so Potent Spellcasting would have been wholly inert
+        // for the class it was added for. Save-based rather than an attack roll,
+        // which is why it was missed; the 2024 feature does not care which it is.
+        events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'radiant', dmg.rolls));
       }
       return events;
     },
@@ -966,7 +977,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         const dmg = rollDice(state.rng, dice);
         state.rng = dmg.state;
-        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) {
           events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
         }
@@ -1004,7 +1015,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         const dmg = rollDice(state.rng, dice);
         state.rng = dmg.state;
-        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
       }
       return events;
@@ -1378,7 +1389,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         const dmg = rollDice(state.rng, dice);
         state.rng = dmg.state;
-        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'lightning', dmg.rolls));
       }
       return events;
@@ -1453,7 +1464,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         const dmg = rollDice(state.rng, dice);
         state.rng = dmg.state;
-        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
       }
       return events;
@@ -1505,7 +1516,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         const dmg = rollDice(state.rng, `${1 + slotLevel}d8`); // 2d8 at slot 1
         state.rng = dmg.state;
-        const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+        const amount = saveForHalf(state.combatants[t.id]!, 'con', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, t.id, casterId, amount, 'thunder', dmg.rolls));
         if (!save.success && t.alive) {
           const push = {
