@@ -174,15 +174,15 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Fey | 8/8 | — |
 | Undead | 13/13 | — |
 | Fiend | 16/16 | — |
-| Elemental | 9/15 | Azer Sentinel, Invisible Stalker, Magma Mephit, Magmin, Salamander, Steam Mephit |
-| Giant | 2/7 | Fire Giant, Frost Giant, Hill Giant, Stone Giant, Troll |
-| Dragon | 6/12 | Wyvern, Young Black Dragon, Young Blue Dragon, Young Green Dragon, Young Red Dragon, Young White Dragon |
+| Elemental | 15/15 | — |
+| Giant | 7/7 | — |
+| Dragon | 8/12 | Young Black Dragon, Young Blue Dragon, Young Green Dragon, Young Red Dragon |
 | Monstrosity | 5/14 | Basilisk, Bulette, Chimera, Ettercap, Griffon, Hydra, Remorhaz, Rust Monster, Winter Wolf |
 | Aberration | 0/3 | Aboleth, Otyugh, Roper |
 | Construct | 2/8 | Animated Flying Sword, Animated Rug of Smothering, Flesh Golem, Scarecrow, Shield Guardian, Stone Golem |
 | Ooze | 0/4 | Black Pudding, Gelatinous Cube, Gray Ooze, Ochre Jelly |
 | Celestial | 1/1 | — |
-| **Total** | **93/132** | **39 needed** |
+| **Total** | **106/132** | **26 needed** |
 
 **Every monster, with status** (✅ = art present and wired · ⬜ = prompt ready in §8, emoji fallback until generated):
 
@@ -250,7 +250,7 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Animated Flying Sword | `flying-sword` | construct | ⬜ |
 | Animated Rug of Smothering | `rug-of-smothering` | construct | ⬜ |
 | Assassin | `assassin` | humanoid | ✅ |
-| Azer Sentinel | `azer` | elemental | ⬜ |
+| Azer Sentinel | `azer` | elemental | ✅ |
 | Banshee | `banshee` | undead | ✅ |
 | Barbed Devil | `barbed-devil` | fiend | ✅ |
 | Basilisk | `basilisk` | monstrosity | ⬜ |
@@ -279,15 +279,15 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Griffon | `griffon` | monstrosity | ⬜ |
 | Hell Hound | `hell-hound` | fiend | ✅ |
 | Hezrou | `hezrou` | fiend | ✅ |
-| Hill Giant | `hill-giant` | giant | ⬜ |
+| Hill Giant | `hill-giant` | giant | ✅ |
 | Horned Devil | `horned-devil` | fiend | ✅ |
 | Hydra | `hydra` | monstrosity | ⬜ |
 | Ice Mephit | `ice-mephit` | elemental | ✅ |
 | Imp | `imp` | fiend | ✅ |
-| Invisible Stalker | `invisible-stalker` | elemental | ⬜ |
+| Invisible Stalker | `invisible-stalker` | elemental | ✅ |
 | Mage | `mage` | humanoid | ✅ |
-| Magma Mephit | `magma-mephit` | elemental | ⬜ |
-| Magmin | `magmin` | elemental | ⬜ |
+| Magma Mephit | `magma-mephit` | elemental | ✅ |
+| Magmin | `magmin` | elemental | ✅ |
 | Mammoth | `mammoth` | beast | ✅ |
 | Mud Mephit | `mud-mephit` | elemental | ✅ |
 | Night Hag | `night-hag` | fiend | ✅ |
@@ -297,16 +297,16 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Remorhaz | `remorhaz` | monstrosity | ⬜ |
 | Roper | `roper` | aberration | ⬜ |
 | Rust Monster | `rust-monster` | monstrosity | ⬜ |
-| Salamander | `salamander` | elemental | ⬜ |
+| Salamander | `salamander` | elemental | ✅ |
 | Scarecrow | `scarecrow` | construct | ⬜ |
 | Shadow Demon | `shadow-demon` | fiend | ✅ |
 | Shield Guardian | `shield-guardian` | construct | ⬜ |
 | Smoke Mephit | `smoke-mephit` | elemental | ✅ |
-| Steam Mephit | `steam-mephit` | elemental | ⬜ |
-| Stone Giant | `stone-giant` | giant | ⬜ |
+| Steam Mephit | `steam-mephit` | elemental | ✅ |
+| Stone Giant | `stone-giant` | giant | ✅ |
 | Stone Golem | `stone-golem` | construct | ⬜ |
 | Succubus | `succubus` | fiend | ✅ |
-| Troll | `troll` | giant | ⬜ |
+| Troll | `troll` | giant | ✅ |
 | Tyrannosaurus Rex | `tyrannosaurus` | beast | ✅ |
 | Vampire Spawn | `vampire-spawn` | undead | ✅ |
 | Vrock | `vrock` | fiend | ✅ |
@@ -314,12 +314,12 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Winter Wolf | `winter-wolf` | monstrosity | ⬜ |
 | Worg | `worg` | fey | ✅ |
 | Wraith | `wraith` | undead | ✅ |
-| Wyvern | `wyvern` | dragon | ⬜ |
+| Wyvern | `wyvern` | dragon | ✅ |
 | Young Black Dragon | `young-black` | dragon | ⬜ |
 | Young Blue Dragon | `young-blue` | dragon | ⬜ |
 | Young Green Dragon | `young-green` | dragon | ⬜ |
 | Young Red Dragon | `young-red` | dragon | ⬜ |
-| Young White Dragon | `young-white` | dragon | ⬜ |
+| Young White Dragon | `young-white` | dragon | ✅ |
 
 ---
 
