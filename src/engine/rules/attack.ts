@@ -325,6 +325,14 @@ export function resolveAttack(
   // players can see (and debug) that Sneak Attack, Dueling, etc. are working.
   const tags: string[] = [];
   if (crit) tags.push('Critical Hit');
+  // Remarkable Athlete (Champion 3): a critical hit buys half your Speed of
+  // movement that nobody gets to swing at. Granted as movement plus the same
+  // disengage flag a Disengage action sets, because "does not provoke" is
+  // exactly what that flag already means to executeMove.
+  if (crit && attacker.featureIds.includes('remarkable-athlete') && attacker.alive) {
+    attacker.turn.movementMax += Math.floor(attacker.speed / 2);
+    attacker.turn.disengaged = true;
+  }
 
   // Fighting Style: Great Weapon Fighting — reroll each 1 or 2 on a two-handed
   // melee weapon's damage dice once, keeping the new roll.

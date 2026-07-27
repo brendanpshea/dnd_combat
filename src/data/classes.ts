@@ -148,7 +148,7 @@ export const CLASSES: Record<Id, ClassData> = {
     featuresByLevel: {
       1: ['second-wind'],
       2: ['action-surge'], // 2024: Action Surge is a level-2 feature.
-      3: ['improved-critical'], // Champion
+      3: ['improved-critical', 'remarkable-athlete'],   // Champion, both at 3rd in the SRD // Champion
       // 4: Ability Score Increase (applied in the builder, not a feature).
       5: ['extra-attack'],
     },
@@ -393,6 +393,7 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
+      3: ['lands-aid'],            // Circle of the Land
       7: ['potent-spellcasting'],   // Elemental Fury, taken as Potent Spellcasting
       1: [],   // Druidic and Primal Order are flavour and skills, not grid rules
       2: ['wild-shape'],

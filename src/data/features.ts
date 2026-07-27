@@ -3,8 +3,8 @@
  * consulted by the rules (Dueling, Sneak Attack, Disciple of Life) via their
  * presence in combatant.featureIds.
  */
-import type { GameState, Id, Ability, DamageType, Combatant } from '../engine/types.js';
-import { proficiencyBonus, cellAt } from '../engine/types.js';
+import type { GameState, Id, Ability, DamageType, Combatant, Position } from '../engine/types.js';
+import { proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
@@ -13,7 +13,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow, saveForHalf } from '../engine/rules/saves.js';
 import { charmAway, applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
-import { distanceFeet, cone15, line15, DIRECTIONS, type Direction8 } from '../engine/grid.js';
+import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
 
@@ -301,6 +301,81 @@ export const FEATURES: Record<Id, FeatureData> = {
   // Read where they apply rather than doing anything themselves, because each
   // one changes a roll somebody else is making: a save (saves.ts), a cantrip's
   // damage (spells.ts), or the halving of a Dex save (saveForHalf).
+  /**
+   * Land's Aid (Circle of the Land, Druid 3). The druid was the ONLY class with
+   * no subclass feature at all — every other one gets something at 3rd and the
+   * druid got nothing, which is a hole every single playthrough walks into
+   * rather than the few that reach the deep waves.
+   *
+   * Spends a Wild Shape use rather than a pool of its own, exactly as the SRD
+   * says, which makes it a real decision: a druid has two uses and this competes
+   * with turning into a bear.
+   *
+   * Picks its own spot the way Call Lightning does, because features choose
+   * their own targets here — nothing in the action layer aims one at a cell.
+   * Enemies only take the damage ("each creature of your choice"), so an ally
+   * standing in the flowers is safe and can be the one healed.
+   */
+  'lands-aid': {
+    id: 'lands-aid', name: "Land's Aid", trigger: 'action',
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const pool = me.featureUses['wild-shape'];
+      if (!pool || pool.current <= 0) return [];
+
+      // The 10-ft sphere catching the most enemy hit points.
+      let best: Position | undefined;
+      let bestHp = -1;
+      for (const other of Object.values(state.combatants)) {
+        if (!other.alive || isDown(other) || other.team === me.team) continue;
+        if (distanceFeet(me.position, other.position) > 60) continue;
+        let hp = 0;
+        for (const pos of sphere2x2(other.position)) {
+          const tid = cellAt(state.grid, pos)?.occupantId;
+          if (!tid) continue;
+          const t = state.combatants[tid]!;
+          if (t.alive && !isDown(t) && t.team !== me.team) hp += t.hp;
+        }
+        if (hp > bestHp) { bestHp = hp; best = other.position; }
+      }
+      if (!best) return [];
+      pool.current -= 1;
+
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.wis);
+      const events: GameEvent[] = [];
+      const inSphere = sphere2x2(best)
+        .map((pos) => cellAt(state.grid, pos)?.occupantId)
+        .filter((id): id is Id => id !== undefined)
+        .map((id) => state.combatants[id]!)
+        .filter((t) => t.alive && !isDown(t));
+
+      for (const t of inSphere) {
+        if (t.team === me.team) continue;
+        const { success, event } = savingThrow(state, t.id, 'con', dc);
+        events.push(event);
+        const roll = rollDice(state.rng, '2d6');
+        state.rng = roll.state;
+        events.push(...applyDamage(state, t.id, actorId, saveForHalf(t, 'con', roll.total, success), 'necrotic', roll.rolls));
+      }
+      // …and the life-giving half, on whichever ally in the sphere needs it most.
+      const hurt = inSphere
+        .filter((t) => t.team === me.team && t.hp < t.maxHp)
+        .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
+      if (hurt) {
+        const heal = rollDice(state.rng, '2d6');
+        state.rng = heal.state;
+        events.push(...applyHealing(state, hurt.id, actorId, heal.total));
+      }
+      return events;
+    },
+  },
+  /**
+   * Remarkable Athlete (Champion, Fighter 3). Advantage on initiative is read in
+   * rollInitiative; the half-speed move after a critical hit is granted in
+   * resolveAttack. Both live where the roll happens, since neither does anything
+   * on its own turn.
+   */
+  'remarkable-athlete': { id: 'remarkable-athlete', name: 'Remarkable Athlete', trigger: 'passive' },
   'aura-of-protection': { id: 'aura-of-protection', name: 'Aura of Protection', trigger: 'passive' },
   evasion: { id: 'evasion', name: 'Evasion', trigger: 'passive' },
   roving: { id: 'roving', name: 'Roving', trigger: 'passive' },
