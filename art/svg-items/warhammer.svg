@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+
+    <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <linearGradient id="blade-light" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="65%" stop-color="#d1dbe5"/>
+      <stop offset="100%" stop-color="#99aec4"/>
+    </linearGradient>
+
+    <linearGradient id="blade-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8ba0b8"/>
+      <stop offset="100%" stop-color="#4e6278"/>
+    </linearGradient>
+
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="50%" stop-color="#f5b324"/>
+      <stop offset="100%" stop-color="#945f21"/>
+    </linearGradient>
+
+    <linearGradient id="brass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe875"/>
+      <stop offset="100%" stop-color="#b8780e"/>
+    </linearGradient>
+
+    <linearGradient id="wood-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a06037"/>
+      <stop offset="50%" stop-color="#734020"/>
+      <stop offset="100%" stop-color="#42220f"/>
+    </linearGradient>
+
+    <linearGradient id="leather-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5c3422"/>
+      <stop offset="50%" stop-color="#3d2013"/>
+      <stop offset="100%" stop-color="#241108"/>
+    </linearGradient>
+
+    <linearGradient id="poison-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#76ff03"/>
+      <stop offset="100%" stop-color="#33691e"/>
+    </linearGradient>
+
+    <linearGradient id="ribbon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d4d"/>
+      <stop offset="70%" stop-color="#cc1133"/>
+      <stop offset="100%" stop-color="#7a001e"/>
+    </linearGradient>
+
+    <!-- Liquid Gradients -->
+    <radialGradient id="liquid-red" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ff6b8b"/>
+      <stop offset="50%" stop-color="#ff1a40"/>
+      <stop offset="90%" stop-color="#b30024"/>
+      <stop offset="100%" stop-color="#660012"/>
+    </radialGradient>
+
+    <radialGradient id="liquid-ruby" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#ff758c"/>
+      <stop offset="60%" stop-color="#ff1244"/>
+      <stop offset="90%" stop-color="#990022"/>
+      <stop offset="100%" stop-color="#4a000f"/>
+    </radialGradient>
+
+    <radialGradient id="fire-liquid" cx="50%" cy="60%" r="55%">
+      <stop offset="0%" stop-color="#fff59d"/>
+      <stop offset="35%" stop-color="#ffb74d"/>
+      <stop offset="70%" stop-color="#ff5722"/>
+      <stop offset="100%" stop-color="#b71c1c"/>
+    </radialGradient>
+
+    <linearGradient id="glass-shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="30%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+    </linearGradient>
+
+    <linearGradient id="cork-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c9915c"/>
+      <stop offset="100%" stop-color="#7a4e28"/>
+    </linearGradient>
+
+    <linearGradient id="parchment" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff9d9"/>
+      <stop offset="60%" stop-color="#ebd89b"/>
+      <stop offset="100%" stop-color="#c4af6e"/>
+    </linearGradient>
+
+    <linearGradient id="parchment-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b8a15c"/>
+      <stop offset="100%" stop-color="#786328"/>
+    </linearGradient>
+
+    <linearGradient id="steel-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eaeff5"/>
+      <stop offset="50%" stop-color="#b0c2d4"/>
+      <stop offset="100%" stop-color="#5a6e85"/>
+    </linearGradient>
+
+    <linearGradient id="shield-field-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a52be"/>
+      <stop offset="100%" stop-color="#142866"/>
+    </linearGradient>
+
+    <linearGradient id="shield-field-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d93838"/>
+      <stop offset="100%" stop-color="#731414"/>
+    </linearGradient>
+
+    <linearGradient id="horn-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5e6d3"/>
+      <stop offset="100%" stop-color="#8a735c"/>
+    </linearGradient>
+
+    <linearGradient id="feather-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff5252"/>
+      <stop offset="100%" stop-color="#880e4f"/>
+    </linearGradient>
+  </defs>
+  <!-- WARHAMMER (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
+    <rect x="247" y="120" width="18" height="310" rx="3" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5"/>
+    <polygon points="247,120 160,145 247,170" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="265,120 355,120 355,170 265,170" fill="url(#blade-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="240" y="115" width="32" height="60" rx="3" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4"/>
+  </g>
+</svg>

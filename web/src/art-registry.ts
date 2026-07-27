@@ -8,25 +8,26 @@
 /** Combatants with both a `portrait-<id>.webp` and a `token-<id>.webp`. */
 export const HAS_ART = new Set<string>([
   'acolyte', 'air-elemental', 'animated-armor', 'assassin', 'bandit',
-  'bandit-captain', 'banshee', 'bearded-devil', 'berserker',
+  'bandit-captain', 'banshee', 'barbed-devil', 'bearded-devil', 'berserker',
   'black-wyrmling', 'blue-wyrmling', 'brown-bear', 'bugbear', 'chain-devil',
   'cleric', 'cockatrice', 'cult-fanatic', 'dire-wolf', 'dragonborn-paladin',
-  'dragonborn-sorcerer', 'dryad', 'dwarf-berserker', 'dwarf-cleric',
-  'earth-elemental', 'elephant', 'elf-archer', 'elf-wizard', 'ettin',
-  'fighter', 'fire-elemental', 'gargoyle', 'ghast', 'ghost', 'ghoul',
-  'giant-ape', 'giant-badger', 'giant-boar', 'giant-constrictor-snake',
-  'giant-crocodile', 'giant-hyena', 'giant-scorpion', 'giant-spider',
-  'giant-toad', 'gladiator', 'gnoll', 'gnome-bard', 'gnome-warden',
-  'goblin-boss', 'goblin-warrior', 'gorgon', 'green-hag', 'green-wyrmling',
-  'guard', 'halfling-priest', 'halfling-rogue', 'halfling-warrior', 'harpy',
-  'human-bard', 'knight', 'kobold', 'lizardfolk', 'mage', 'mammoth',
-  'manticore', 'minotaur', 'mummy', 'night-hag', 'ogre', 'ogre-mage', 'orc',
-  'orc-barbarian', 'orc-shaman', 'owlbear', 'paladin', 'priest', 'ranger',
-  'red-wyrmling', 'rogue', 'satyr', 'scout', 'shadow', 'skeleton', 'specter',
-  'sprite', 'spy', 'succubus', 'tiefling-knight', 'tiefling-warlock',
-  'tyrannosaurus', 'unicorn', 'vampire-spawn', 'veteran', 'water-elemental',
-  'white-wyrmling', 'wight', 'will-o-wisp', 'wizard', 'wolf', 'worg',
-  'wraith', 'zombie'
+  'dragonborn-sorcerer', 'dretch', 'dryad', 'dwarf-berserker',
+  'dwarf-cleric', 'earth-elemental', 'elephant', 'elf-archer', 'elf-wizard',
+  'ettin', 'fighter', 'fire-elemental', 'gargoyle', 'ghast', 'ghost',
+  'ghoul', 'giant-ape', 'giant-badger', 'giant-boar',
+  'giant-constrictor-snake', 'giant-crocodile', 'giant-hyena',
+  'giant-scorpion', 'giant-spider', 'giant-toad', 'glabrezu', 'gladiator',
+  'gnoll', 'gnome-bard', 'gnome-warden', 'goblin-boss', 'goblin-warrior',
+  'gorgon', 'green-hag', 'green-wyrmling', 'guard', 'halfling-priest',
+  'halfling-rogue', 'halfling-warrior', 'harpy', 'hell-hound', 'hezrou',
+  'horned-devil', 'human-bard', 'imp', 'knight', 'kobold', 'lizardfolk',
+  'mage', 'mammoth', 'manticore', 'minotaur', 'mummy', 'night-hag', 'ogre',
+  'ogre-mage', 'orc', 'orc-barbarian', 'orc-shaman', 'owlbear', 'paladin',
+  'priest', 'quasit', 'ranger', 'red-wyrmling', 'rogue', 'satyr', 'scout',
+  'shadow', 'skeleton', 'specter', 'sprite', 'spy', 'succubus',
+  'tiefling-knight', 'tiefling-warlock', 'tyrannosaurus', 'unicorn',
+  'vampire-spawn', 'veteran', 'vrock', 'water-elemental', 'white-wyrmling',
+  'wight', 'will-o-wisp', 'wizard', 'wolf', 'worg', 'wraith', 'zombie'
 ]);
 
 /** Adventure NPC archetypes (`portrait-npc-<id>.webp`) — portrait only. */
