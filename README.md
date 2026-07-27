@@ -294,6 +294,20 @@ npm run reference -- --check  # fail if they are stale (the test suite does this
 Adding content and forgetting to regenerate is a test failure, so the reference
 cannot drift from the data the way a hand-kept list does.
 
+The same applies to art. Which ids have generated art is a fact about
+`web/public/art`, so `web/src/art-registry.ts` is derived from that directory
+rather than hand-kept — a list beside a directory of files drifts silently in
+both directions (a declared id with no file draws a broken image; a file nobody
+declares ships in the bundle and is never shown).
+
+```bash
+npm run art-registry             # rewrite web/src/art-registry.ts
+npm run art-registry -- --check  # fail if it is stale
+```
+
+Drop a `portrait-<id>.webp` and a `token-<id>.webp` into `web/public/art`,
+regenerate, and the id is live — nothing else to edit.
+
 ## Development
 
 ```bash

@@ -994,9 +994,11 @@ fine at token size, and `art.ts` deliberately falls back rather than shipping a
 broken image. It is a worklist, ordered by XP, so the ones a player meets as a
 set-piece get drawn first.
 
-Generate these with the §3 portrait prompt and the §4 token prompt, add the id
-to `HAS_ART` in `web/src/art.ts`, and run `test/art.test.ts` — it fails if a
-declared id has no file, or if a file ships that nothing displays.
+Generate these with the §3 portrait prompt and the §4 token prompt, drop both
+files into `web/public/art`, and run `npm run art-registry`. The registry is
+derived from the directory, so there is no list to edit — but both halves of the
+pair must land, or the generator refuses (one without the other means one of the
+two views draws a broken image).
 
 The **Fallback** column is what the board shows today. A monster with no art and
 no emoji renders as a literal `?`; the test now makes that impossible, so every
