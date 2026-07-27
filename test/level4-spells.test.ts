@@ -83,12 +83,15 @@ describe('4th-level spells', () => {
     expect(cast, 'Ice Storm was not offered at the orcs').toBeDefined();
     const events = c.apply(cast!);
     expect(events.filter((e) => e.type === 'damageDealt').length, 'caught nobody').toBeGreaterThan(1);
-    expect(cellAt(c.state.grid, { x: 5, y: 5 })!.terrain).toBe('difficult');
+    // An OVERLAY, not a rewrite of the terrain: the first version overwrote it,
+    // which made the ice permanent and ate whatever was underneath.
+    expect(cellAt(c.state.grid, { x: 5, y: 5 })!.chilled).toBeDefined();
+    expect(cellAt(c.state.grid, { x: 5, y: 5 })!.terrain).toBe('open');
   });
 
-  it('Ice Storm never turns a wall into a puddle', () => {
-    // Only open ground freezes: downgrading a wall would carve a hole through
-    // the map, and downgrading a hazard would quietly make it safe.
+  it('Ice Storm leaves the ground underneath it intact', () => {
+    // Walls are not frozen at all, and a hazard stays a hazard with ice on top
+    // — the overlay never destroys what the map put there.
     const c = ready('wizard', [['orc', { x: 5, y: 5 }]]);
     cellAt(c.state.grid, { x: 6, y: 5 })!.terrain = 'wall';
     cellAt(c.state.grid, { x: 5, y: 6 })!.terrain = 'hazard';
@@ -100,6 +103,7 @@ describe('4th-level spells', () => {
     if (!cast) return;
     c.apply(cast);
     expect(cellAt(c.state.grid, { x: 6, y: 5 })!.terrain).toBe('wall');
+    expect(cellAt(c.state.grid, { x: 6, y: 5 })!.chilled, 'a wall should not ice over').toBeUndefined();
     expect(cellAt(c.state.grid, { x: 5, y: 6 })!.terrain).toBe('hazard');
   });
 
@@ -162,5 +166,30 @@ describe('4th-level spells', () => {
       return;
     }
     throw new Error('the orc never failed a Phantasmal Killer save across 40 seeds');
+  });
+});
+
+describe('Ice Storm thaws', () => {
+  it('the ice is gone a round later, and the map is unchanged', () => {
+    const wiz = { ...buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 1, y: 1 }, level: 7 }), id: 'me' };
+    const c = new Combat({
+      seed: 4, width: 10, height: 10,
+      combatants: [wiz,
+        { ...buildMonster('troll', 'team2', { x: 5, y: 5 }), id: 'f0' },
+        { ...buildMonster('troll', 'team2', { x: 6, y: 5 }), id: 'f1' }],
+    });
+    let guard = 0;
+    while (c.activeId !== 'me' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    c.state.combatants['me']!.spellIds = [...c.state.combatants['me']!.spellIds, 'ice-storm'];
+    const cast = c.legalActions('me').find((a) => a.kind === 'castSpell' && a.spellId === 'ice-storm' &&
+      a.targets.some((t) => 'position' in t && t.position.x === 5 && t.position.y === 5));
+    expect(cast).toBeDefined();
+    c.apply(cast!);
+    const at = () => cellAt(c.state.grid, { x: 5, y: 5 })!;
+    expect(at().chilled).toBeDefined();
+    const start = c.state.round;
+    for (let i = 0; i < 600 && c.state.round <= start + 3 && !c.isOver(); i++) c.apply({ kind: 'endTurn' });
+    expect(at().chilled, 'the ice never melted').toBeUndefined();
+    expect(at().terrain, 'the ground under it was destroyed').toBe('open');
   });
 });

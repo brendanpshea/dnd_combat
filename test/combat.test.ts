@@ -4,6 +4,8 @@ import { step, legalActions, isLegalAction, Action } from '../src/engine/actions
 import { endTurn, currentCombatant } from '../src/engine/turn.js';
 import { makeCombatant } from './helpers.js';
 import { cellAt } from '../src/engine/types.js';
+import type { Combatant } from '../src/engine/types.js';
+import { checkWinner } from '../src/engine/rules/attack.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { chooseAction } from '../src/ai/greedy.js';
@@ -379,5 +381,53 @@ describe('a creature that dies during its own turn start', () => {
     endTurn(state, () => []);
     const active = currentCombatant(state);
     expect(isLegalAction(state, active.id, { kind: 'endTurn' })).toBe(true);
+  });
+});
+
+/**
+ * A fight in which NOBODY is left standing.
+ *
+ * checkWinner only ever compared standing creatures, so when the last hero
+ * dropped in the same exchange that killed the last monster it returned null —
+ * and null means "fight on". Nobody could take a turn (the turn scan skips
+ * anyone who is down), so the round counter froze, and because the MAX_ROUNDS
+ * backstop only fires when a round *advances*, it could never fire either. The
+ * fight hung forever. The fuzzer found it twice in 3,000 fights, and neither
+ * ended after twenty thousand decisions.
+ */
+describe('when neither side is left standing', () => {
+  const build = (t1: Array<Partial<Combatant>>, t2: Array<Partial<Combatant>>) => {
+    const c = new Combat({
+      seed: 1, width: 8, height: 8,
+      combatants: [
+        ...t1.map((o, i) => ({ ...buildCharacter({ classId: 'fighter', team: 'team1' as const, position: { x: i, y: 0 } }), id: `h${i}`, ...o })),
+        ...t2.map((o, i) => ({ ...buildMonster('orc', 'team2', { x: i, y: 5 }), id: `m${i}`, ...o })),
+      ],
+    });
+    return c;
+  };
+
+  it('a party unconscious among corpses has won', () => {
+    // Heroes drop rather than die here, and every enemy is gone: there is
+    // nothing left to stop them coming round.
+    const c = build([{ hp: 0, alive: true, conditions: [{ id: 'unconscious' }, { id: 'prone' }] }], [{ hp: 0, alive: false }]);
+    expect(checkWinner(c.state)).toBe('team1');
+  });
+
+  it('a board with nothing living on it still resolves', () => {
+    // No draw exists in the return type, and a hung fight is far worse than an
+    // arbitrary answer. Ties go the way the round-limit backstop sends them.
+    const c = build([{ hp: 0, alive: false }], [{ hp: 0, alive: false }]);
+    expect(checkWinner(c.state)).not.toBeNull();
+  });
+
+  it('still says nobody has won while both sides have someone up', () => {
+    const c = build([{ hp: 10 }], [{ hp: 10 }]);
+    expect(checkWinner(c.state)).toBeNull();
+  });
+
+  it('a standing enemy still beats a downed party', () => {
+    const c = build([{ hp: 0, alive: true, conditions: [{ id: 'unconscious' }] }], [{ hp: 10 }]);
+    expect(checkWinner(c.state)).toBe('team2');
   });
 });

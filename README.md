@@ -7,9 +7,9 @@ frontends: a terminal CLI and a mobile-friendly web app.
 **▶ Play it now: https://brendanpshea.github.io/dnd_combat/** (installable as a
 phone app — Add to Home Screen; works offline).
 
-Two teams fight on an 8×8 board: the classic party of four (Fighter, Wizard,
-Cleric, Rogue — levels 1–5, one subclass each) against a mirror party or an
-SRD monster encounter (goblins, wolves, undead, or an ogre). Real d20 rules:
+Two teams fight on a grid: the classic party of four (Fighter, Wizard, Cleric,
+Rogue — one of eight classes, levels 1–7, one subclass each) against a mirror
+party or an SRD monster encounter (goblins, wolves, undead, or an ogre). Real d20 rules:
 advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
 masteries, spell slots, terrain, forced movement, and inventory (equipment
 slots, weapon swapping, healing potions, scrolls, alchemist's fire). A

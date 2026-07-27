@@ -45,6 +45,16 @@ export interface Cell {
    */
   illusion?: { sourceId: Id; expiresAtRound: number };
   /**
+   * Ice Storm's hail: the ground is difficult to cross until this round.
+   *
+   * An overlay for the same reason the illusion above is one — it sits ON TOP
+   * of whatever the cell really is rather than replacing it, so nothing has to
+   * remember what to revert to. The first version of Ice Storm did overwrite
+   * `terrain`, which made the ice permanent AND destroyed whatever was there:
+   * cast it three times and a third of the map was difficult ground forever.
+   */
+  chilled?: { expiresAtRound: number };
+  /**
    * A lingering Web: strands of webbing filling the cell while the caster
    * concentrates. Unlike the old fire-and-forget Web (which only caught who
    * stood in the blast at cast time), this persists — a creature that *enters*

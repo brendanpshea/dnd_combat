@@ -43,13 +43,30 @@ export function neighbors(grid: GridState, p: Position): Position[] {
   return out;
 }
 
-function terrainMoveCost(t: TerrainId, ignoreDifficult = false): number {
-  switch (t) {
-    case 'open': return CELL_FEET;
+function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number): number {
+  // Ice underfoot costs what difficult ground costs, without being it.
+  const iced = cell.chilled !== undefined && (round === undefined || round <= cell.chilled.expiresAtRound);
+  switch (cell.terrain) {
+    case 'open': return iced && !ignoreDifficult ? CELL_FEET * 2 : CELL_FEET;
     case 'difficult': return ignoreDifficult ? CELL_FEET : CELL_FEET * 2;
-    case 'hazard': return CELL_FEET;
+    case 'hazard': return iced && !ignoreDifficult ? CELL_FEET * 2 : CELL_FEET;
     case 'wall': return Infinity;
   }
+}
+
+/** Ice that has outlasted its round, swept the way illusions are. */
+export function expireChill(grid: GridState, round: number): Position[] {
+  const thawed: Position[] = [];
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const cell = cellAt(grid, { x, y })!;
+      if (cell.chilled && round > cell.chilled.expiresAtRound) {
+        delete cell.chilled;
+        thawed.push({ x, y });
+      }
+    }
+  }
+  return thawed;
 }
 
 /**
@@ -217,7 +234,7 @@ export function reachable(
     for (const n of neighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
-      const stepCost = terrainMoveCost(cell.terrain, ignoreDifficult);
+      const stepCost = terrainMoveCost(cell, ignoreDifficult);
       const total = curCost + stepCost;
       if (total > budgetFeet) continue;
       const totalRisk = curRisk + (danger ? danger(cur, n) : 0);

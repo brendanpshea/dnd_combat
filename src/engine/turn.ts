@@ -8,7 +8,7 @@ import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollD20 } from './dice.js';
 import { rollDice } from './dice.js';
-import { expireIllusions, distanceFeet, distanceCells, reachable, sphere2x2 } from './grid.js';
+import { expireIllusions, expireChill, distanceFeet, distanceCells, reachable, sphere2x2 } from './grid.js';
 import { executeMove, hostileIds } from './rules/movement.js';
 import type { Position } from './types.js';
 import { discoverHidden } from './rules/hide.js';
@@ -344,6 +344,7 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
         for (const p of expireIllusions(state.grid, state.round)) {
           events.push({ type: 'illusionPopped', position: p });
         }
+        expireChill(state.grid, state.round);
         // Duration-held summons expire on the clock, for everyone, here.
         //
         // The sweep used to live only in activateSummons, which runs at the

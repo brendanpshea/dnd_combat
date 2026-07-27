@@ -2311,10 +2311,13 @@ export const SPELLS: Record<Id, SpellData> = {
             events.push(...applyDamage(state, tid, casterId, amount, 'cold', [...bludgeon.rolls, ...cold.rolls]));
           }
         }
-        // The storm leaves the ground it fell on difficult to cross. Walls are
-        // left alone; a hazard is not downgraded into a puddle either.
+        // The storm leaves the ground it fell on difficult to cross — as an
+        // OVERLAY, not by rewriting the terrain. Overwriting made the ice
+        // permanent and ate whatever was underneath it: three casts and a third
+        // of the map was difficult ground for the rest of the fight, with no
+        // way back. Walls are left alone; a hazard stays a hazard.
         const cell = cellAt(state.grid, pos);
-        if (cell && cell.terrain === 'open') cell.terrain = 'difficult';
+        if (cell && cell.terrain !== 'wall') cell.chilled = { expiresAtRound: state.round + 1 };
       }
       return events;
     },
