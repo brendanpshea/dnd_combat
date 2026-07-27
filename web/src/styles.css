@@ -2977,3 +2977,18 @@ button.category .count {
   padding: 6px 8px; border-bottom: 1px solid #2f2947;
 }
 .shop-row span:first-child { flex: 1; }
+
+/* The healers' cut, on the defeat and run-over screens. A defeat now costs
+   money as well as a day, and the bill has to read as a loss at a glance —
+   same shape as the loot panel, opposite colour. */
+.revival-bill {
+  width: 100%;
+  margin: 10px 0;
+  background: var(--panel);
+  border: 1px solid #453d63;
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: left;
+}
+.revival-bill .loss { color: var(--red); font-weight: 700; }
+.revival-bill .adv-text.quiet { margin: 0; color: var(--muted); font-style: italic; }
