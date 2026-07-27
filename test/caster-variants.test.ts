@@ -73,8 +73,12 @@ describe('caster variants', () => {
    * AI read casting it as pure slot loss and the hexer never used its signature.
    */
   it('the AI actually casts what these monsters were given', () => {
+    // 30 seeds, not 12. A situational self-buff like False Life fires in about
+    // one fight in eight, so a 12-fight sweep found it only sometimes and the
+    // test flaked when unrelated weight changes made it slightly rarer. Sized
+    // off the measured rate (6 casts in 50 fights) with room to spare.
     const seen = new Set<string>();
-    for (let seed = 1; seed <= 12; seed++) {
+    for (let seed = 1; seed <= 30; seed++) {
       const m = generateArenaMap({}, (seed * 2654435761) >>> 0);
       const grid = parseMap(m.value.map);
       const spots = deployFoes(grid, VARIANTS.length, seed);
@@ -91,7 +95,7 @@ describe('caster variants', () => {
     const given = new Set(VARIANTS.flatMap((v) => MONSTERS[v]!.spellcasting!.spellIds));
     const never = [...given].filter((s) => !seen.has(s));
     expect(never, `given but never cast: ${never.join(', ')}`).toEqual([]);
-  });
+  }, 30000);
 
   it('counts as ranged, so a wave built around one can punish standing still', () => {
     for (const v of VARIANTS) expect(canThreatenAtRange(v), v).toBe(true);

@@ -103,8 +103,42 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   sapped: -0.06,
   guided: -0.08,       // the *bearer* is easier to hit
   'outlined': -0.14, // like guided but it lasts, and can't be hidden from
+  // Restrained is the heaviest of the impaired set and was priced at nothing:
+  // attacks against it get advantage, its own attacks get disadvantage, AND
+  // turn.ts zeroes its speed outright. That is blinded's adv/dis pair plus
+  // total immobility, so it sits above blinded. It went unpriced while five
+  // separate things applied it — Web, Entangle, Ensnaring Strike, the giant
+  // spider and the roper — so the AI could not see the point of any of them.
+  restrained: -0.25,
+  // Bestow Curse: disadvantage on every attack it makes, and it fails saves
+  // more often (saves.ts). The same shape as blinded from the attacker's side.
+  cursed: -0.2,
+  // The two "your turn is simply gone" effects. `commanded` zeroes speed,
+  // forces prone and blocks every action for the turn; `lured` blocks actions
+  // outright and walks the victim toward the lurer. Both cost a whole turn, so
+  // they are priced near incapacitated (-0.4) rather than among the
+  // impairments — a touch under it because each lasts only one turn.
+  commanded: -0.35,
+  lured: -0.35,
+  // Charmed is narrower than it looks: it only stops the victim attacking
+  // whoever charmed it, not everyone.
+  charmed: -0.15,
+  marked: -0.06,       // Hunter's Mark: the bearer takes extra damage
+  burning: -0.04,      // Searing Smite: 1d6 a turn until a Con save ends it
+  slowed: -0.03,       // -10 ft of speed for one turn
+  noReactions: -0.03,  // no opportunity attacks
   // buffs
   blessed: 0.08,
+  // Haste is the biggest buff in the game as implemented: double speed, +2 AC
+  // and a whole extra attack (actions.ts hasteBonus) — roughly half again as
+  // much output for as long as it holds.
+  hasted: 0.25,
+  sacredWeapon: 0.1,   // a bonus to hit and to damage on every swing
+  shielded: 0.08,      // Shield: +5 AC until the start of its next turn
+  smiting: 0.06,       // a smite armed and waiting on the next melee hit
+  inspired: 0.05,      // advantage on the next attack roll
+  warded: 0.05,        // Shield of Faith: +2 AC
+  vexed: 0.04,         // advantage against one specific target
   // Bane is Bless's mirror — a d4 off every attack roll and save — and it was
   // priced at nothing, so the AI read casting it as pure slot loss and never
   // did. Found while giving the goblin hexer Bane as its signature: the sim AI
@@ -114,6 +148,11 @@ const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // Dodging only pays off if something actually attacks you, and it costs the
   // action that could have been an attack. Weighted low so a real attack wins.
   dodging: 0.02,
+  // DELIBERATELY UNPRICED. `sanctuary`, `protected`, `energyWarded` and
+  // `bonded` all depend on what the *attacker* happens to be or to be doing —
+  // a creature type, a damage type, whether anyone attacks at all — so a flat
+  // share of the bearer's worth would misstate them in both directions. Those
+  // want the threat term to understand them, not a constant here.
 };
 
 /**
