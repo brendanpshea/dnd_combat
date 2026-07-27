@@ -78,6 +78,11 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 /* ---- battle layout ---- */
 .battle {
   height: 100%;
+  /* The board sizes itself to the space left over, so this should never
+     engage — but if something below it is tall enough to hit the budget floor,
+     scrolling is how the action bar stays reachable instead of being clipped
+     by the phone's navigation bar. */
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -129,15 +134,22 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 }
 
 /* ---- board ---- */
-/* Width is bounded three ways: the screen edge, a viewport-height budget
-   divided by the board's aspect, and a hard cap. --board-aspect (height/width)
-   is set inline by Board.tsx. The height budget grows with aspect —
-   44vh + 14vh·aspect — because a tall board is spending the screen's best
-   axis and deserves more of it: at aspect 1 this is exactly the old 58vh (no
-   change for square maps), at 1.5 (8×12) it allows 65vh of board, which keeps
-   cells finger-sized on a phone instead of crushing them to fit 58vh. */
+/* Width is bounded three ways: the screen edge, the height actually available
+   divided by the board's aspect, and a hard cap.
+
+   --board-aspect (height/width) is set inline by Board.tsx. --board-budget is
+   MEASURED and published by App.tsx: the visible height of the battle column
+   minus everything in it that is not the board. It used to be a guess —
+   44vh + 14vh·aspect, so 65vh for an 8×12 — and the guess was too generous on
+   a phone: the second row of the action bar got clipped by the navigation bar.
+   No fixed fraction can be right, because what sits under the board changes
+   with the turn (a character card, one or two rows of buttons, a banner), so
+   the board takes what is left rather than what it hoped for.
+
+   The 58vh fallback is only for the first paint, before the measurement lands,
+   and for anything rendering without JS layout. */
 .board-wrap {
-  width: min(96vw, calc((44vh + 14vh * var(--board-aspect, 1)) / var(--board-aspect, 1)), 600px);
+  width: min(96vw, calc(var(--board-budget, 58vh) / var(--board-aspect, 1)), 600px);
 }
 .board {
   display: grid;
@@ -1385,7 +1397,7 @@ button.danger { border-color: var(--red); color: var(--red); }
 
 @media (min-width: 720px) {
   /* Same graduated budget, wider base: 70vh at aspect 1 (unchanged), 77vh at 1.5. */
-  .board-wrap { width: min(calc((56vh + 14vh * var(--board-aspect, 1)) / var(--board-aspect, 1)), 600px); }
+  .board-wrap { width: min(calc(var(--board-budget, 62vh) / var(--board-aspect, 1)), 600px); }
   .actionbar button { font-size: 14px; }
 }
 
