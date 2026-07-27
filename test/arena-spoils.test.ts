@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   SHOP_STOCK, MAGIC_SPOILS, isObtainable, isPermanentMagic, isMagicalWare,
-  shopOffering, rarityOf, itemName,
+  shopOffering, rarityOf, itemName, itemPrice, treasureFor,
 } from '../src/campaign/campaign.js';
 import {
   spoilOffer, spoilPool, spoilTierFor, spoilTierLabel, SPOIL_CHOICES, PERMANENT_FROM_LEVEL,
@@ -193,6 +193,67 @@ describe('a level-1 party is actually paid', () => {
       const offer = spoilOffer(1, 1, 'morning', 0, level);
       for (const id of offer) {
         expect(isPermanentMagic(id), `${id} at level ${level}`).toBe(tier === 'permanent');
+      }
+    }
+  });
+});
+
+describe('the routine drop is not a second magic shop', () => {
+  /**
+   * The bug a player found on their very first fight: a Mace +1 and a Cloak of
+   * Protection at level 1.
+   *
+   * Emptying the shops was only two thirds of the job. Treasure tiers unlocked
+   * on the ENCOUNTER's experience alone, and a level-1 arena wave is worth
+   * exactly 400 — the uncommon threshold, and 35 of that pool's 60 entries are
+   * permanent magic. So the routine post-fight roll quietly went on handing out
+   * enchanted gear, which both broke the level-1 power curve and made the
+   * bounty award meaningless. Nothing tested it, so nothing said so.
+   */
+  it('never drops permanent magic in the arena, at any level', () => {
+    for (const partyLevel of [1, 3, 5, 7]) {
+      for (let seed = 1; seed <= 120; seed++) {
+        const t = treasureFor(900, seed, undefined, 900, { partyLevel, noPermanentMagic: true });
+        for (const stack of t.items) {
+          expect(isPermanentMagic(stack.itemId),
+            `${itemName(stack.itemId)} dropped at level ${partyLevel}`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('caps the tier by the party as well as by the fight', () => {
+    // 900 XP unlocks every tier on difficulty alone. A level-1 party still
+    // cannot be handed an uncommon, let alone a rare.
+    for (let seed = 1; seed <= 120; seed++) {
+      for (const stack of treasureFor(900, seed, undefined, 900, { partyLevel: 1 }).items) {
+        expect(rarityOf(stack.itemId), itemName(stack.itemId)).toBe('common');
+      }
+    }
+    // By level 5 the good stuff is reachable again, or the gate is a wall.
+    const rich = Array.from({ length: 200 }, (_, i) =>
+      treasureFor(900, i + 1, undefined, 900, { partyLevel: 5 }).items).flat();
+    expect(rich.some((s) => rarityOf(s.itemId) !== 'common'), 'level 5 never gets anything good').toBe(true);
+  });
+
+  it('reproduces the exact reported case: a level-1 wave pays no enchanted gear', () => {
+    // 400 XP is what `buildWave` gives a level-1 wave-1 arena fight.
+    for (let seed = 1; seed <= 200; seed++) {
+      for (const stack of treasureFor(400, seed, undefined, 400,
+        { partyLevel: 1, noPermanentMagic: true }).items) {
+        expect(isMagicalWare(stack.itemId), itemName(stack.itemId)).toBe(false);
+      }
+    }
+  });
+
+  it('never hands over an empty stack when a pool is filtered away', () => {
+    // `pick` off an empty array is `undefined`, which enters an inventory as a
+    // stack of nothing and paints a blank row on the loot screen.
+    for (let seed = 1; seed <= 100; seed++) {
+      const t = treasureFor(900, seed, 'rare', 900, { partyLevel: 7, noPermanentMagic: true });
+      for (const stack of t.items) {
+        expect(stack.itemId, 'an undefined item id reached the pack').toBeTruthy();
+        expect(itemPrice(stack.itemId) !== undefined || rarityOf(stack.itemId)).toBeTruthy();
       }
     }
   });

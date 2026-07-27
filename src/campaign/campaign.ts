@@ -385,7 +385,33 @@ export interface Treasure {
  * rises with the total `xp` (how dangerous the fight was). `bonusTier` forces
  * one guaranteed drop of that tier (used for the finale). Deterministic.
  */
-export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity, coinXp: number = xp): Treasure {
+export interface TreasureOptions {
+  /**
+   * The party's level, which caps how good a drop can be.
+   *
+   * Tier unlocks used to be a pure function of the ENCOUNTER's experience, and
+   * a level-1 arena wave is worth exactly 400 — the threshold that unlocks the
+   * uncommon tier, 35 items of which are permanent magic. So a first fight
+   * could and did hand out a Mace +1 and a Cloak of Protection. Difficulty is
+   * not the only question; who is receiving it matters too.
+   */
+  partyLevel?: number;
+  /**
+   * Drop no permanent magic at all.
+   *
+   * The arena's rule: a wand or an enchanted blade is something you were given
+   * for doing something, from a bounty's pick-one-of-three. Letting the routine
+   * post-fight roll hand one over as well makes the award meaningless and
+   * silently reinstates the pre-bounty economy — which is exactly what happened
+   * when the shops were emptied and this roll was left alone.
+   */
+  noPermanentMagic?: boolean;
+}
+
+export function treasureFor(
+  xp: number, rng: RngState, bonusTier?: Rarity, coinXp: number = xp,
+  opts: TreasureOptions = {},
+): Treasure {
   let state = rng;
   const roll = () => { const r = next(state); state = r.state; return r.value; };
 
@@ -396,8 +422,28 @@ export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity, coinX
 
   const baseRolls = xp >= 700 ? 3 : xp >= 300 ? 2 : 1;
   const rolls = Math.round(baseRolls * lootFraction);
-  const tiers: Rarity[] = xp >= 800 ? ['common', 'uncommon', 'rare']
+  // Hard enough to be worth it, AND high enough level to receive it. Either
+  // gate alone is wrong: XP alone hands a Mace +1 to a level-1 party off its
+  // very first wave, and level alone would pay the same for a fight against
+  // three rats as for a young dragon.
+  const byXp: Rarity[] = xp >= 800 ? ['common', 'uncommon', 'rare']
     : xp >= 400 ? ['common', 'uncommon'] : ['common'];
+  const level = opts.partyLevel;
+  const tiers: Rarity[] = level === undefined
+    ? byXp
+    : byXp.filter((r) => level >= RARITY_MIN_LEVEL[r]);
+
+  /** The tier's pool, minus anything this caller must not hand out. */
+  const poolFor = (r: Rarity): Id[] => {
+    const pool = TREASURE_POOL[r];
+    if (!opts.noPermanentMagic) return pool;
+    const kept = pool.filter((id) => !isPermanentMagic(id));
+    // Never return an empty pool: `pick` off nothing yields undefined, which
+    // would enter an inventory as a stack of `undefined` and read as a blank
+    // row on the loot screen. Falling back to common is a worse prize, not a
+    // broken one.
+    return kept.length > 0 ? kept : TREASURE_POOL.common.filter((id) => !isPermanentMagic(id));
+  };
 
   const items: ItemStack[] = [];
   const add = (itemId: Id) => {
@@ -410,9 +456,9 @@ export function treasureFor(xp: number, rng: RngState, bonusTier?: Rarity, coinX
     const t = roll();
     const tierIdx = tiers.length === 1 ? 0
       : t < 0.6 ? 0 : t < 0.9 ? Math.min(1, tiers.length - 1) : tiers.length - 1;
-    add(pick(TREASURE_POOL[tiers[tierIdx]!], roll()));
+    add(pick(poolFor(tiers[tierIdx]!), roll()));
   }
-  if (bonusTier) add(pick(TREASURE_POOL[bonusTier], roll()));
+  if (bonusTier) add(pick(poolFor(bonusTier), roll()));
 
   return { gold, items, rng: state };
 }
@@ -2236,7 +2282,10 @@ export function applyAdventureVictory(
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
   if (afterLevel > beforeLevel) growSpellsForLevel(c);
-  const treasure = treasureFor(encounterXP(encounterId), rng, bonusTier, encounterCoinXP(encounterId));
+  const treasure = treasureFor(
+    encounterXP(encounterId), rng, bonusTier, encounterCoinXP(encounterId),
+    { partyLevel: partyLevelOf(c) },
+  );
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);
@@ -2262,7 +2311,12 @@ export function applyArenaVictory(
   c.xp += xpGained;
   const afterLevel = levelForXp(c.xp);
   if (afterLevel > beforeLevel) growSpellsForLevel(c);
-  const treasure = treasureFor(encounterRawXp, rng, undefined, coinXp);
+  // The arena's magic comes from bounties, three at a time with a choice —
+  // never from the routine drop. And the drop is capped by the party's level,
+  // not just by how hard the fight was.
+  const treasure = treasureFor(encounterRawXp, rng, undefined, coinXp, {
+    partyLevel: partyLevelOf(c), noPermanentMagic: true,
+  });
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) addItem(c.stash, item.itemId, item.qty);
@@ -2304,7 +2358,10 @@ export function applyVictory(
 
   // The final stage guarantees a rare drop as a trophy for finishing.
   const isFinale = c.stage === STAGES.length - 1;
-  const treasure = treasureFor(encounterXP(stage.encounterId), rng, isFinale ? 'rare' : undefined, encounterCoinXP(stage.encounterId));
+  const treasure = treasureFor(
+    encounterXP(stage.encounterId), rng, isFinale ? 'rare' : undefined,
+    encounterCoinXP(stage.encounterId), { partyLevel: partyLevelOf(c) },
+  );
   c.gold += treasure.gold;
   if (!c.stash) c.stash = [];
   for (const item of treasure.items) {
