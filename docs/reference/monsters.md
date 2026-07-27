@@ -15,7 +15,6 @@
 | Acolyte | `acolyte` | humanoid | 50 | ≤4 | 10 | 9 | 30 ft | 1 | yes | — |
 | Animated Flying Sword | `flying-sword` | construct | 50 | ≤4 | 17 | 14 | 30 ft | 1 | — | — |
 | Dretch | `dretch` | fiend | 50 | ≤4 | 11 | 18 | 20 ft | 2 | — | — |
-| Dust Mephit | `dust-mephit` | elemental | 50 | ≤4 | 12 | 17 | 30 ft | 1 | — | — |
 | Giant Badger | `giant-badger` | beast | 50 | ≤4 | 13 | 15 | 30 ft | 2 | — | — |
 | Goblin Warrior | `goblin-warrior` | fey | 50 | ≤4 | 15 | 10 | 30 ft | 1 | yes | — |
 | Kobold Emberling | `kobold-emberling` | dragon | 50 | ≤4 | 13 | 7 | 30 ft | 1 | yes | — |
@@ -23,9 +22,11 @@
 | Skeleton | `skeleton` | undead | 50 | ≤4 | 14 | 13 | 30 ft | 1 | yes | — |
 | Smoke Mephit | `smoke-mephit` | elemental | 50 | ≤4 | 12 | 22 | 30 ft | 1 | — | — |
 | Sprite | `sprite` | fey | 50 | ≤4 | 15 | 10 | 10 ft | 1 | yes | — |
+| Steam Mephit | `steam-mephit` | elemental | 50 | ≤4 | 10 | 17 | 30 ft | 1 | — | — |
 | Wolf | `wolf` | beast | 50 | ≤4 | 12 | 11 | 40 ft | 1 | — | — |
 | Zombie | `zombie` | undead | 50 | ≤4 | 8 | 15 | 20 ft | 1 | — | — |
 | Cockatrice | `cockatrice` | monstrosity | 100 | ≤4 | 11 | 22 | 20 ft | 1 | — | — |
+| Dust Mephit | `dust-mephit` | elemental | 100 | ≤4 | 12 | 17 | 30 ft | 1 | — | — |
 | Gnoll Warrior | `gnoll` | fiend | 100 | ≤4 | 15 | 27 | 30 ft | 1 | yes | — |
 | Goblin Hexer | `goblin-hexer` | fey | 100 | ≤4 | 13 | 10 | 30 ft | 1 | yes | — |
 | Gray Ooze | `gray-ooze` | ooze | 100 | ≤4 | 9 | 22 | 10 ft | 1 | — | — |
@@ -38,7 +39,6 @@
 | Satyr | `satyr` | fey | 100 | ≤4 | 13 | 31 | 40 ft | 1 | — | — |
 | Scout | `scout` | humanoid | 100 | ≤4 | 13 | 16 | 30 ft | 2 | yes | — |
 | Shadow | `shadow` | undead | 100 | ≤4 | 12 | 27 | 40 ft | 1 | — | — |
-| Steam Mephit | `steam-mephit` | elemental | 100 | ≤4 | 10 | 17 | 30 ft | 1 | — | — |
 | Worg | `worg` | fey | 100 | ≤4 | 13 | 26 | 50 ft | 1 | — | — |
 | Animated Armor | `animated-armor` | construct | 200 | ≤4 | 18 | 33 | 25 ft | 2 | — | — |
 | Apprentice Mage | `apprentice-mage` | humanoid | 200 | ≤4 | 12 | 18 | 30 ft | 1 | yes | — |
@@ -73,7 +73,7 @@
 | Gnoll Packcaller | `gnoll-packcaller` | fiend | 450 | ≤4 | 14 | 27 | 30 ft | 1 | yes | — |
 | Green Dragon Wyrmling | `green-wyrmling` | dragon | 450 | 2 | 17 | 38 | 30 ft | 1 | — | — |
 | Griffon | `griffon` | monstrosity | 450 | 2 | 12 | 59 | 30 ft | 2 | — | — |
-| Ochre Jelly | `ochre-jelly` | ooze | 450 | 2 | 8 | 52 | 10 ft | 1 | — | — |
+| Ochre Jelly | `ochre-jelly` | ooze | 450 | 2 | 8 | 52 | 20 ft | 1 | — | — |
 | Ogre | `ogre` | giant | 450 | ≤4 | 11 | 68 | 40 ft | 1 | yes | — |
 | Priest | `priest` | humanoid | 450 | ≤4 | 13 | 38 | 30 ft | 1 | yes | — |
 | White Dragon Wyrmling | `white-wyrmling` | dragon | 450 | 2 | 16 | 32 | 30 ft | 1 | — | — |
@@ -96,7 +96,7 @@
 | Azer Forgecaller | `azer-forgecaller` | elemental | 1100 | 4 | 16 | 39 | 30 ft | 1 | yes | — |
 | Banshee | `banshee` | undead | 1100 | 4 | 12 | 58 | 30 ft | 1 | — | — |
 | Black Pudding | `black-pudding` | ooze | 1100 | 4 | 7 | 68 | 20 ft | 1 | — | — |
-| Druid | `druid` | humanoid | 1100 | 4 | 13 | 27 | 30 ft | 1 | yes | — |
+| Druid | `druid` | humanoid | 1100 | 4 | 13 | 44 | 30 ft | 1 | yes | — |
 | Elephant | `elephant` | beast | 1100 | 4 | 12 | 76 | 40 ft | 1 | — | — |
 | Ettin | `ettin` | giant | 1100 | ≤4 | 12 | 85 | 40 ft | 2 | — | — |
 | Ghost | `ghost` | undead | 1100 | 4 | 11 | 45 | 30 ft | 1 | — | — |
@@ -125,30 +125,30 @@
 | Chimera | `chimera` | monstrosity | 2300 | 6 | 14 | 114 | 30 ft | 3 | — | — |
 | Invisible Stalker | `invisible-stalker` | elemental | 2300 | 6 | 14 | 97 | 50 ft | 2 | — | — |
 | Mage | `mage` | humanoid | 2300 | 6 | 15 | 81 | 30 ft | 1 | yes | — |
-| Mammoth | `mammoth` | beast | 2300 | 6 | 13 | 126 | 40 ft | 1 | — | — |
+| Mammoth | `mammoth` | beast | 2300 | 6 | 13 | 126 | 50 ft | 1 | — | — |
 | Vrock | `vrock` | fiend | 2300 | 6 | 15 | 152 | 40 ft | 2 | — | — |
 | Wyvern | `wyvern` | dragon | 2300 | 6 | 14 | 127 | 30 ft | 2 | — | — |
-| Young White Dragon | `young-white` | dragon | 2300 | 6 | 17 | 123 | 30 ft | 3 | — | — |
+| Young White Dragon | `young-white` | dragon | 2300 | 6 | 17 | 123 | 40 ft | 3 | — | — |
 | Giant Ape | `giant-ape` | beast | 2900 | 7 | 12 | 168 | 40 ft | 2 | — | — |
 | Oni | `ogre-mage` | fiend | 2900 | 7 | 17 | 119 | 30 ft | 1 | yes | — |
 | Shield Guardian | `shield-guardian` | construct | 2900 | 7 | 17 | 142 | 30 ft | 2 | — | — |
 | Stone Giant | `stone-giant` | giant | 2900 | 7 | 17 | 126 | 40 ft | 2 | yes | — |
-| Young Black Dragon | `young-black` | dragon | 2900 | 7 | 18 | 127 | 30 ft | 3 | — | — |
+| Young Black Dragon | `young-black` | dragon | 2900 | 7 | 18 | 127 | 40 ft | 3 | — | — |
 | Assassin | `assassin` | humanoid | 3900 | 8 | 16 | 97 | 30 ft | 2 | yes | — |
 | Chain Devil | `chain-devil` | fiend | 3900 | 8 | 15 | 85 | 30 ft | 2 | — | — |
 | Frost Giant | `frost-giant` | giant | 3900 | 8 | 15 | 149 | 40 ft | 2 | yes | — |
 | Hezrou | `hezrou` | fiend | 3900 | 8 | 18 | 157 | 30 ft | 3 | — | — |
-| Hydra | `hydra` | monstrosity | 3900 | 8 | 15 | 184 | 30 ft | 5 | — | — |
+| Hydra | `hydra` | monstrosity | 3900 | 8 | 15 | 184 | 40 ft | 5 | — | — |
 | Tyrannosaurus Rex | `tyrannosaurus` | beast | 3900 | 8 | 13 | 136 | 50 ft | 2 | — | — |
-| Young Green Dragon | `young-green` | dragon | 3900 | 8 | 18 | 136 | 30 ft | 3 | — | — |
+| Young Green Dragon | `young-green` | dragon | 3900 | 8 | 18 | 136 | 40 ft | 3 | — | — |
 | Fire Giant | `fire-giant` | giant | 5000 | 9 | 18 | 162 | 30 ft | 2 | yes | — |
 | Glabrezu | `glabrezu` | fiend | 5000 | 9 | 17 | 189 | 40 ft | 4 | — | — |
-| Young Blue Dragon | `young-blue` | dragon | 5000 | 9 | 18 | 152 | 30 ft | 3 | — | — |
+| Young Blue Dragon | `young-blue` | dragon | 5000 | 9 | 18 | 152 | 40 ft | 3 | — | — |
 | Aboleth | `aboleth` | aberration | 5900 | 10 | 17 | 150 | 10 ft | 3 | yes | — |
 | Stone Golem | `stone-golem` | construct | 5900 | 10 | 18 | 220 | 30 ft | 2 | — | — |
-| Young Red Dragon | `young-red` | dragon | 5900 | 10 | 18 | 178 | 30 ft | 3 | — | — |
+| Young Red Dragon | `young-red` | dragon | 5900 | 10 | 18 | 178 | 40 ft | 3 | — | — |
 | Horned Devil | `horned-devil` | fiend | 7200 | 11 | 18 | 199 | 30 ft | 3 | — | — |
-| Remorhaz | `remorhaz` | monstrosity | 7200 | 11 | 17 | 195 | 30 ft | 1 | — | — |
+| Remorhaz | `remorhaz` | monstrosity | 7200 | 11 | 17 | 195 | 40 ft | 1 | — | — |
 
 ## Stat blocks
 
@@ -202,27 +202,17 @@ STR 12 (+1), DEX 15 (+2), CON 11 (+0), INT 1 (-5), WIS 5 (-3), CHA 1 (-5)
 
 `dretch` · fiend · 50 XP · AC 11 · 18 HP · 20 ft · PB +2
 
-STR 11 (+0), DEX 11 (+0), CON 12 (+1), INT 5 (-3), WIS 8 (-1), CHA 3 (-4)
+STR 12 (+1), DEX 11 (+0), CON 12 (+1), INT 5 (-3), WIS 8 (-1), CHA 3 (-4)
 
 - **Attacks:** Claws 2d4 slashing; Bite 1d6 piercing
 - **Resistances:** cold, fire, lightning
 - **Immunities:** poison
 
-### Dust Mephit
-
-`dust-mephit` · elemental · 50 XP · AC 12 · 17 HP · 30 ft · PB +2
-
-STR 5 (-3), DEX 14 (+2), CON 10 (+0), INT 9 (-1), WIS 11 (+0), CHA 10 (+0)
-
-- **Attacks:** Claws 1d4 slashing
-- **Immunities:** poison
-- **Death burst:** 2d4 bludgeoning, DEX DC 10, 10 ft
-
 ### Giant Badger
 
 `giant-badger` · beast · 50 XP · AC 13 · 15 HP · 30 ft · PB +2
 
-STR 13 (+1), DEX 10 (+0), CON 15 (+2), INT 2 (-4), WIS 12 (+1), CHA 5 (-3)
+STR 13 (+1), DEX 10 (+0), CON 17 (+3), INT 2 (-4), WIS 12 (+1), CHA 5 (-3)
 
 - **Attacks:** Bite 1d6 piercing; Claws 2d4 slashing
 - **Features:** Burrow
@@ -286,6 +276,17 @@ STR 3 (-4), DEX 18 (+4), CON 10 (+0), INT 14 (+2), WIS 13 (+1), CHA 11 (+0)
 - **Attacks:** Shortbow 1d4 piercing, 40/160 ft, CON DC 10 or poisoned
 - **Features:** Fey Invisibility
 
+### Steam Mephit
+
+`steam-mephit` · elemental · 50 XP · AC 10 · 17 HP · 30 ft · PB +2
+
+STR 5 (-3), DEX 11 (+0), CON 10 (+0), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
+
+- **Attacks:** Claws 1d4 slashing, +1d4 fire
+- **Features:** Fire Breath
+- **Immunities:** fire, poison
+- **Death burst:** 2d6 fire, DEX DC 10, 10 ft
+
 ### Wolf
 
 `wolf` · beast · 50 XP · AC 12 · 11 HP · 40 ft · PB +2
@@ -312,6 +313,16 @@ STR 13 (+1), DEX 6 (-2), CON 16 (+3), INT 3 (-4), WIS 6 (-2), CHA 5 (-3)
 STR 6 (-2), DEX 12 (+1), CON 12 (+1), INT 2 (-4), WIS 13 (+1), CHA 5 (-3)
 
 - **Attacks:** Bite 1d4 piercing, CON DC 11 or restrained
+
+### Dust Mephit
+
+`dust-mephit` · elemental · 100 XP · AC 12 · 17 HP · 30 ft · PB +2
+
+STR 5 (-3), DEX 14 (+2), CON 10 (+0), INT 9 (-1), WIS 11 (+0), CHA 10 (+0)
+
+- **Attacks:** Claws 1d4 slashing
+- **Immunities:** poison
+- **Death burst:** 2d4 bludgeoning, DEX DC 10, 10 ft
 
 ### Gnoll Warrior
 
@@ -432,17 +443,6 @@ STR 6 (-2), DEX 14 (+2), CON 13 (+1), INT 6 (-2), WIS 10 (+0), CHA 8 (-1)
 - **Immunities:** necrotic, poison
 - **Vulnerabilities:** radiant
 
-### Steam Mephit
-
-`steam-mephit` · elemental · 100 XP · AC 10 · 17 HP · 30 ft · PB +2
-
-STR 5 (-3), DEX 11 (+0), CON 10 (+0), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
-
-- **Attacks:** Claws 1d4 slashing, +1d4 fire
-- **Features:** Fire Breath
-- **Immunities:** fire, poison
-- **Death burst:** 2d6 fire, DEX DC 10, 10 ft
-
 ### Worg
 
 `worg` · fey · 100 XP · AC 13 · 26 HP · 50 ft · PB +2
@@ -475,7 +475,7 @@ STR 9 (-1), DEX 14 (+2), CON 12 (+1), INT 15 (+2), WIS 11 (+0), CHA 10 (+0)
 
 `brown-bear` · beast · 200 XP · AC 11 · 22 HP · 40 ft · PB +2
 
-STR 19 (+4), DEX 10 (+0), CON 16 (+3), INT 2 (-4), WIS 13 (+1), CHA 7 (-2)
+STR 17 (+3), DEX 12 (+1), CON 15 (+2), INT 2 (-4), WIS 13 (+1), CHA 7 (-2)
 
 - **Attacks:** Claws 2d6 slashing; Bite 1d8 piercing
 
@@ -769,7 +769,7 @@ STR 18 (+4), DEX 15 (+2), CON 16 (+3), INT 2 (-4), WIS 13 (+1), CHA 8 (-1)
 
 ### Ochre Jelly
 
-`ochre-jelly` · ooze · 450 XP · AC 8 · 52 HP · 10 ft · PB +2
+`ochre-jelly` · ooze · 450 XP · AC 8 · 52 HP · 20 ft · PB +2
 
 STR 15 (+2), DEX 6 (-2), CON 14 (+2), INT 2 (-4), WIS 6 (-2), CHA 1 (-5)
 
@@ -789,7 +789,7 @@ STR 19 (+4), DEX 8 (-1), CON 16 (+3), INT 5 (-3), WIS 7 (-2), CHA 7 (-2)
 
 `priest` · humanoid · 450 XP · AC 13 · 38 HP · 30 ft · PB +2
 
-STR 10 (+0), DEX 10 (+0), CON 12 (+1), INT 13 (+1), WIS 16 (+3), CHA 13 (+1)
+STR 16 (+3), DEX 10 (+0), CON 12 (+1), INT 13 (+1), WIS 16 (+3), CHA 13 (+1)
 
 - **Saving throws:** WIS
 - **Attacks:** Mace 1d6 bludgeoning
@@ -801,7 +801,7 @@ STR 10 (+0), DEX 10 (+0), CON 12 (+1), INT 13 (+1), WIS 16 (+3), CHA 13 (+1)
 
 `white-wyrmling` · dragon · 450 XP · AC 16 · 32 HP · 30 ft · PB +2
 
-STR 14 (+2), DEX 10 (+0), CON 14 (+2), INT 8 (-1), WIS 11 (+0), CHA 12 (+1)
+STR 14 (+2), DEX 10 (+0), CON 14 (+2), INT 5 (-3), WIS 10 (+0), CHA 11 (+0)
 
 - **Attacks:** Bite 1d8 piercing, +1d4 cold
 - **Features:** Cold Breath
@@ -832,7 +832,7 @@ STR 16 (+3), DEX 8 (-1), CON 15 (+2), INT 2 (-4), WIS 8 (-1), CHA 7 (-2)
 
 `bearded-devil` · fiend · 700 XP · AC 13 · 58 HP · 30 ft · PB +2
 
-STR 16 (+3), DEX 15 (+2), CON 15 (+2), INT 9 (-1), WIS 11 (+0), CHA 11 (+0)
+STR 16 (+3), DEX 15 (+2), CON 15 (+2), INT 9 (-1), WIS 11 (+0), CHA 14 (+2)
 
 - **Saving throws:** STR, CON, WIS
 - **Attacks:** Glaive 1d10 slashing; Beard 1d8 piercing, CON DC 12 or poisoned
@@ -864,7 +864,7 @@ STR 12 (+1), DEX 15 (+2), CON 13 (+1), INT 9 (-1), WIS 16 (+3), CHA 10 (+0)
 
 `giant-scorpion` · beast · 700 XP · AC 15 · 52 HP · 40 ft · PB +2
 
-STR 15 (+2), DEX 13 (+1), CON 15 (+2), INT 1 (-5), WIS 9 (-1), CHA 3 (-4)
+STR 16 (+3), DEX 13 (+1), CON 15 (+2), INT 1 (-5), WIS 9 (-1), CHA 3 (-4)
 
 - **Attacks:** Sting 1d10 piercing, +3d10 poison; Claw 1d8 bludgeoning, on hit: restrained
 
@@ -917,7 +917,7 @@ STR 18 (+4), DEX 11 (+0), CON 16 (+3), INT 6 (-2), WIS 16 (+3), CHA 9 (-1)
 
 `mummy` · undead · 700 XP · AC 11 · 58 HP · 20 ft · PB +2
 
-STR 16 (+3), DEX 8 (-1), CON 15 (+2), INT 6 (-2), WIS 10 (+0), CHA 12 (+1)
+STR 16 (+3), DEX 8 (-1), CON 15 (+2), INT 6 (-2), WIS 12 (+1), CHA 12 (+1)
 
 - **Attacks:** Rotting Fist 2d6 bludgeoning, +3d6 necrotic
 - **Features:** Dreadful Glare
@@ -1000,7 +1000,7 @@ STR 16 (+3), DEX 5 (-3), CON 16 (+3), INT 1 (-5), WIS 6 (-2), CHA 1 (-5)
 
 ### Druid
 
-`druid` · humanoid · 1100 XP · AC 13 · 27 HP · 30 ft · PB +2
+`druid` · humanoid · 1100 XP · AC 13 · 44 HP · 30 ft · PB +2
 
 STR 10 (+0), DEX 12 (+1), CON 13 (+1), INT 12 (+1), WIS 16 (+3), CHA 11 (+0)
 
@@ -1294,7 +1294,7 @@ STR 9 (-1), DEX 14 (+2), CON 11 (+0), INT 17 (+3), WIS 12 (+1), CHA 11 (+0)
 
 ### Mammoth
 
-`mammoth` · beast · 2300 XP · AC 13 · 126 HP · 40 ft · PB +3
+`mammoth` · beast · 2300 XP · AC 13 · 126 HP · 50 ft · PB +3
 
 STR 24 (+7), DEX 9 (-1), CON 21 (+5), INT 3 (-4), WIS 11 (+0), CHA 6 (-2)
 
@@ -1323,7 +1323,7 @@ STR 19 (+4), DEX 10 (+0), CON 16 (+3), INT 5 (-3), WIS 12 (+1), CHA 6 (-2)
 
 ### Young White Dragon
 
-`young-white` · dragon · 2300 XP · AC 17 · 123 HP · 30 ft · PB +3
+`young-white` · dragon · 2300 XP · AC 17 · 123 HP · 40 ft · PB +3
 
 STR 18 (+4), DEX 10 (+0), CON 18 (+4), INT 6 (-2), WIS 11 (+0), CHA 12 (+1)
 
@@ -1336,7 +1336,7 @@ STR 18 (+4), DEX 10 (+0), CON 18 (+4), INT 6 (-2), WIS 11 (+0), CHA 12 (+1)
 
 `giant-ape` · beast · 2900 XP · AC 12 · 168 HP · 40 ft · PB +3
 
-STR 23 (+6), DEX 14 (+2), CON 18 (+4), INT 7 (-2), WIS 12 (+1), CHA 7 (-2)
+STR 23 (+6), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 12 (+1), CHA 7 (-2)
 
 - **Attacks:** Fist 3d10 bludgeoning
 
@@ -1344,7 +1344,7 @@ STR 23 (+6), DEX 14 (+2), CON 18 (+4), INT 7 (-2), WIS 12 (+1), CHA 7 (-2)
 
 `ogre-mage` · fiend · 2900 XP · AC 17 · 119 HP · 30 ft · PB +3
 
-STR 19 (+4), DEX 14 (+2), CON 17 (+3), INT 14 (+2), WIS 12 (+1), CHA 15 (+2)
+STR 19 (+4), DEX 11 (+0), CON 16 (+3), INT 14 (+2), WIS 12 (+1), CHA 15 (+2)
 
 - **Saving throws:** CON, INT
 - **Attacks:** Greatclub 2d8 bludgeoning
@@ -1371,7 +1371,7 @@ STR 23 (+6), DEX 15 (+2), CON 20 (+5), INT 10 (+0), WIS 12 (+1), CHA 9 (-1)
 
 ### Young Black Dragon
 
-`young-black` · dragon · 2900 XP · AC 18 · 127 HP · 30 ft · PB +3
+`young-black` · dragon · 2900 XP · AC 18 · 127 HP · 40 ft · PB +3
 
 STR 19 (+4), DEX 14 (+2), CON 17 (+3), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 
@@ -1384,7 +1384,7 @@ STR 19 (+4), DEX 14 (+2), CON 17 (+3), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 
 `assassin` · humanoid · 3900 XP · AC 16 · 97 HP · 30 ft · PB +3
 
-STR 11 (+0), DEX 16 (+3), CON 14 (+2), INT 13 (+1), WIS 11 (+0), CHA 10 (+0)
+STR 11 (+0), DEX 18 (+4), CON 14 (+2), INT 16 (+3), WIS 11 (+0), CHA 10 (+0)
 
 - **Saving throws:** DEX, INT
 - **Attacks:** Shortsword 1d6 piercing; Light Crossbow 1d8 piercing, 80/320 ft
@@ -1427,7 +1427,7 @@ STR 19 (+4), DEX 17 (+3), CON 20 (+5), INT 5 (-3), WIS 12 (+1), CHA 13 (+1)
 
 ### Hydra
 
-`hydra` · monstrosity · 3900 XP · AC 15 · 184 HP · 30 ft · PB +3
+`hydra` · monstrosity · 3900 XP · AC 15 · 184 HP · 40 ft · PB +3
 
 STR 20 (+5), DEX 12 (+1), CON 20 (+5), INT 2 (-4), WIS 10 (+0), CHA 7 (-2)
 
@@ -1444,7 +1444,7 @@ STR 25 (+7), DEX 10 (+0), CON 19 (+4), INT 2 (-4), WIS 12 (+1), CHA 9 (-1)
 
 ### Young Green Dragon
 
-`young-green` · dragon · 3900 XP · AC 18 · 136 HP · 30 ft · PB +3
+`young-green` · dragon · 3900 XP · AC 18 · 136 HP · 40 ft · PB +3
 
 STR 19 (+4), DEX 12 (+1), CON 17 (+3), INT 16 (+3), WIS 13 (+1), CHA 15 (+2)
 
@@ -1478,7 +1478,7 @@ STR 20 (+5), DEX 15 (+2), CON 21 (+5), INT 19 (+4), WIS 17 (+3), CHA 16 (+3)
 
 ### Young Blue Dragon
 
-`young-blue` · dragon · 5000 XP · AC 18 · 152 HP · 30 ft · PB +4
+`young-blue` · dragon · 5000 XP · AC 18 · 152 HP · 40 ft · PB +4
 
 STR 21 (+5), DEX 10 (+0), CON 19 (+4), INT 14 (+2), WIS 13 (+1), CHA 17 (+3)
 
@@ -1511,7 +1511,7 @@ STR 22 (+6), DEX 9 (-1), CON 20 (+5), INT 3 (-4), WIS 11 (+0), CHA 1 (-5)
 
 ### Young Red Dragon
 
-`young-red` · dragon · 5900 XP · AC 18 · 178 HP · 30 ft · PB +4
+`young-red` · dragon · 5900 XP · AC 18 · 178 HP · 40 ft · PB +4
 
 STR 23 (+6), DEX 10 (+0), CON 21 (+5), INT 14 (+2), WIS 11 (+0), CHA 19 (+4)
 
@@ -1524,7 +1524,7 @@ STR 23 (+6), DEX 10 (+0), CON 21 (+5), INT 14 (+2), WIS 11 (+0), CHA 19 (+4)
 
 `horned-devil` · fiend · 7200 XP · AC 18 · 199 HP · 30 ft · PB +4
 
-STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 17 (+3)
+STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 18 (+4)
 
 - **Saving throws:** STR, DEX, WIS, CHA
 - **Attacks:** Fork 2d8 piercing; Tail 1d8 piercing, +3d6 fire
@@ -1534,7 +1534,7 @@ STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 17 (+3)
 
 ### Remorhaz
 
-`remorhaz` · monstrosity · 7200 XP · AC 17 · 195 HP · 30 ft · PB +4
+`remorhaz` · monstrosity · 7200 XP · AC 17 · 195 HP · 40 ft · PB +4
 
 STR 24 (+7), DEX 13 (+1), CON 21 (+5), INT 4 (-3), WIS 10 (+0), CHA 5 (-3)
 
