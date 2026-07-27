@@ -2992,3 +2992,26 @@ button.category .count {
 }
 .revival-bill .loss { color: var(--red); font-weight: 700; }
 .revival-bill .adv-text.quiet { margin: 0; color: var(--muted); font-style: italic; }
+
+/* The run summary: every arena run ends here, finished or not. The medal is
+   the only thing that separates a run solved from a run ground out, so it gets
+   to be the biggest thing on the screen. */
+.run-summary .loot-panel { margin: 12px 0; }
+.medal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+.medal-ico { font-size: 56px; line-height: 1; }
+.medal-tier {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.medal.m-gold .medal-tier { color: #ffd76e; }
+.medal.m-silver .medal-tier { color: #d8dde8; }
+.medal.m-bronze .medal-tier { color: #e0a06a; }
+.medal.m-iron .medal-tier { color: var(--muted); }

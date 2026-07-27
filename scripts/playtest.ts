@@ -31,6 +31,7 @@ import {
 } from '../src/arena/run.js';
 import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../src/arena/day.js';
 import { revivalCost, payRevival, isFirstDefeat } from '../src/arena/revival.js';
+import { runComplete, summarise, type MedalTier } from '../src/arena/medal.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { parseMap } from '../src/data/maps.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -141,6 +142,7 @@ interface Tally {
   /** Waves cleared before reaching each level. */
   wavesToLevel: Map<number, number[]>;
   finalLevels: number[];
+  finalXp: number[];
   finalWaves: number[];
   /** Level-5 snapshots: AC and max HP per class, to spot outliers. */
   endStats: Array<{ classId: Id; level: number; ac: number; maxHp: number }>;
@@ -176,6 +178,12 @@ interface Tally {
     insolvent: number;
     /** The day each broke run went under — early is a bad first impression. */
     brokeOnDay: number[];
+    /** Runs that reached the finish line, and the medals they took. */
+    completed: number;
+    medals: Map<MedalTier, number>;
+    completedOnDay: number[];
+    completerWinRates: number[];
+    allWinRates: number[];
     /** Party level at the last day a run cleared. */
     daysPerRun: number[];
   };
@@ -187,7 +195,7 @@ const T: Tally = {
   itemsBought: new Map(), itemsUsed: new Map(), spellAvailableRuns: new Map(),
   itemAvailableRuns: new Map(), classDepth: new Map(), comps: [],
   monstersMet: new Map(), goldAtEnd: [], goldUnspendable: 0,
-  shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalWaves: [], endStats: [],
+  shopVisits: 0, wavesToLevel: new Map(), finalLevels: [], finalXp: [], finalWaves: [], endStats: [],
   partyDowns: 0, heroTurns: 0,
   armorEquipped: new Map(),
   firstTry: { fights: 0, wins: 0 }, retry: { fights: 0, wins: 0 },
@@ -197,6 +205,7 @@ const T: Tally = {
     lostInMorning: 0, lostInAfternoon: 0, abandoned: 0, rescuedByLevel: 0,
     lunchDice: [], lunchRevived: 0, lunchBroke: 0, daysPerRun: [],
     billed: [], soldToPay: 0, daysWithSale: 0, insolvent: 0, brokeOnDay: [],
+    completed: 0, medals: new Map(), completedOnDay: [], completerWinRates: [], allWinRates: [],
   },
 };
 
@@ -572,6 +581,11 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
     run = advanceDay(run, won, 0);
     noteSpentItems(c, run.cleared);
     night(c, run.cleared);
+    // The finish line: the experience for level 8, one rung past the top of
+    // the implemented classes. Checked at the end of every day rather than only
+    // after a won one — the experience is earned either way, and a party
+    // holding enough of it should not have to keep fighting to be told so.
+    if (runComplete(c.xp)) break;
     if (broke) break;
 
     if (won) {
@@ -591,6 +605,14 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
     if (run.wave > 40) break;
   }
   T.day.daysPerRun.push(dayOf(run) - 1);
+  const summary = summarise(run, c.xp);
+  T.day.allWinRates.push(summary.winRate);
+  if (summary.completed) {
+    T.day.completed += 1;
+    bump(T.day.medals, summary.medal!);
+    T.day.completedOnDay.push(summary.days);
+    T.day.completerWinRates.push(summary.winRate);
+  }
   return run.wave;
 }
 
@@ -654,6 +676,7 @@ function playRun(seed: number): void {
 
   const finalLevel = partyLevelOf(c);
   T.finalLevels.push(finalLevel);
+  T.finalXp.push(c.xp);
   T.finalWaves.push(wave);
   const classes = c.characters.map((ch) => ch.classId);
   T.comps.push({ classes: [...classes].sort(), wave, level: finalLevel });
@@ -843,6 +866,17 @@ if (DAYS) {
   console.log(`  lunch: median ${median(d.lunchDice)} hit dice spent, ${d.lunchRevived} heroes raised, ` +
     `${pct(d.lunchBroke, d.lunchDice.length)} of lunches spent none`);
   console.log(`  days per run: median ${median(d.daysPerRun)}, max ${Math.max(0, ...d.daysPerRun)}`);
+  console.log(`  XP at end: median ${median(T.finalXp)}, max ${Math.max(0, ...T.finalXp)} (level 8 is 34000)`);
+  console.log(`  runs completed: ${d.completed} of ${RUNS}` +
+    (d.completedOnDay.length ? ` — on day ${median(d.completedOnDay)} typically` : '') +
+    `   medals ${[...d.medals.entries()].map(([m, n]) => `${m} ${n}`).join(', ') || 'none'}`);
+  console.log(`  win rate — all runs: median ${median(d.allWinRates)}%` +
+    (d.completerWinRates.length
+      ? `, completers: median ${median(d.completerWinRates)}%, range ${Math.min(...d.completerWinRates)}-${Math.max(...d.completerWinRates)}%`
+      : ''));
+  if (d.completed === 0) {
+    console.log(`${FLAG}nobody finished — the finish line is out of reach at this retry budget`);
+  }
   console.log(`  defeat tax: median ${median(d.billed)}g billed over ${d.billed.length} lost days, ` +
     `${d.soldToPay} items sold across ${d.daysWithSale} of them`);
   console.log(`  runs ended broke: ${d.insolvent} of ${RUNS} (the rest gave up or stalled)` +
