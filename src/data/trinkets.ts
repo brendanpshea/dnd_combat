@@ -41,6 +41,13 @@ export interface TrinketData {
    * a decision made for the implementation's convenience rather than the game's.
    */
   slot?: 'trinket' | 'ring';
+  /**
+   * Classes that may attune to it, per the SRD. The first item here that anyone
+   * is *barred* from using — and the reason it is worth having: an item only
+   * one of your four can wear is a reason to have built that character, which
+   * is the same lever the class-gated bounties pull.
+   */
+  classes?: Id[];
 }
 
 /** Where a wondrous item is worn (see TrinketData.slot). */
@@ -235,6 +242,17 @@ export const TRINKETS: Record<Id, TrinketData> = {
     slot: 'ring',
     blurb: 'Three times a fight, turn a failed Dexterity save into a success.',
     grants: { featureIds: ['ring-evasion'] },
+  },
+
+  'necklace-prayer-beads': {
+    id: 'necklace-prayer-beads', name: 'Necklace of Prayer Beads', cost: 1200, rarity: 'rare', icon: '📿',
+    blurb: 'Cleric, druid or paladin only. Bless, as a bonus action, once per rest.',
+    classes: ['cleric', 'druid', 'paladin'],
+    // The SRD's necklace carries 1d4+2 beads drawn from six kinds. Rolling a
+    // random spell list at drop time makes an item you cannot shop for, so this
+    // is the Bless bead — the one that is good in every fight rather than the
+    // one that is excellent in a twentieth of them.
+    grants: { featureIds: ['prayer-bead-bless'] },
   },
 
 };

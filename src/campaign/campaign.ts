@@ -330,6 +330,8 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     ...RARE_WONDROUS, ...VICIOUS_WEAPONS,
     'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
     'ring-of-the-ram', 'staff-healing', 'shield-arrow-catching',
+    'wand-fear', 'wand-binding', 'necklace-prayer-beads',
+    'sword-of-wounding', 'sword-of-life-stealing', 'berserker-axe', 'mace-of-terror',
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
   ],
@@ -418,13 +420,14 @@ export const SHOP_STOCK: Id[] = [
   'potion-giant-strength-hill',
   // wands — charged, not consumed (see ConsumableData.charges)
   'wand-magic-missiles', 'wand-web', 'wand-fireballs', 'wand-lightning-bolts', 'wand-paralysis',
-  'ring-of-the-ram', 'staff-healing', 'staff-python',
+  'ring-of-the-ram', 'staff-healing', 'staff-python', 'wand-fear', 'wand-binding',
   // weapons
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow',
   ...PLUS_ONE_WEAPONS, ...VICIOUS_WEAPONS,
   'silvered-shortsword', 'silvered-warhammer',
   'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
+  'sword-of-wounding', 'sword-of-life-stealing', 'berserker-axe', 'mace-of-terror',
   // armor
   'leather', 'chain-shirt', 'half-plate', 'splint',
   'adamantine-scale-mail', 'adamantine-half-plate', 'adamantine-splint',
@@ -1987,6 +1990,9 @@ export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot
     const t = TRINKETS[itemId];
     if (!t) return slot === 'ring' ? 'not a ring' : 'not a trinket';
     if (trinketSlot(t) !== slot) return `${t.name} goes in the ${trinketSlot(t)} slot`;
+    if (t.classes && !t.classes.includes(ch.classId)) {
+      return `only a ${t.classes.map((c) => CLASSES[c]?.name ?? c).join(', ')} can attune to it`;
+    }
     return undefined;
   }
   if (slot === 'armor') {

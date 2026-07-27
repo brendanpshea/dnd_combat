@@ -58,6 +58,12 @@ export interface WeaponData {
    */
   slays?: { types: CreatureType[]; dice: string; damageType?: DamageType };
   /**
+   * Sword of Life Stealing: on a natural 20, extra necrotic damage that the
+   * wielder gains as temporary hit points. Flat rather than dice, per the SRD,
+   * and nothing to steal from a construct or the undead.
+   */
+  lifeSteal?: { amount: number; exempt: CreatureType[] };
+  /**
    * Life Drain (wraith): on a hit the target makes this save or its hit point
    * *maximum* drops by the damage taken. The SRD says "until the creature
    * finishes a long rest", and that comes free here — a combatant is rebuilt
@@ -78,6 +84,19 @@ export interface WeaponData {
   corrodes?: { max: number };
   /** Store price in gp; absent for natural/monster weapons (not tradable). */
   cost?: number;
+  /**
+   * What holding this weapon gives you, beyond swinging it.
+   *
+   * The same shape a trinket's grant uses, folded by the same builder, because
+   * a Berserker Axe that raises your hit point maximum is doing exactly what a
+   * worn item does — it just happens to be held. Declaring it as data keeps the
+   * builder the only place that knows how a grant becomes a combatant.
+   */
+  grants?: {
+    featureIds?: Id[];
+    /** Extra maximum hit points per character level (Berserker Axe). */
+    hpPerLevel?: number;
+  };
   /** Magic weapon bonuses (+1 sword: both are 1). */
   attackBonus?: number;
   damageBonus?: number;
@@ -112,6 +131,10 @@ const MARTIAL_WEAPONS = new Set<Id>([
  * weapon to having a category.
  */
 const NAMED_BASE: Record<Id, Id> = {
+  'sword-of-wounding': 'longsword',
+  'sword-of-life-stealing': 'longsword',
+  'berserker-axe': 'battleaxe',
+  'mace-of-terror': 'mace',
   'dragon-slayer': 'longsword',
   'giant-slayer': 'longsword',
   // The SRD lets Shortsword proficiency cover it too; longsword is the stricter
@@ -285,6 +308,48 @@ export const WEAPONS: Record<Id, WeaponData> = {
   morningstar: {
     id: 'morningstar', name: 'Morningstar', damage: '1d8', damageType: 'piercing',
     properties: [], melee: true, mastery: 'sap', cost: 15,
+  },
+
+  // --- named rare weapons ----------------------------------------------------
+  'sword-of-wounding': {
+    // A wound that will not close. The extra 2d6 is the small half; the half
+    // that matters is the Con save, because a cleric who cannot heal a hero is
+    // a cleric with nothing to do — which is the same pressure a wraith's Life
+    // Drain applies, and the only kind this engine has that out-healing cannot
+    // simply answer.
+    id: 'sword-of-wounding', name: 'Sword of Wounding', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'sap', cost: 1500, magic: true,
+    extraDamage: { dice: '2d6', type: 'necrotic' },
+    onHitSave: { condition: 'wounded', ability: 'con', dc: 15 },
+  },
+  'sword-of-life-stealing': {
+    // Only on a natural 20, and the SRD's flat 15 rather than dice: this is a
+    // spike, not a rider, and it comes back to the wielder as temporary hit
+    // points. Constructs and the undead have nothing to steal.
+    id: 'sword-of-life-stealing', name: 'Sword of Life Stealing', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'sap', cost: 1500, magic: true,
+    lifeSteal: { amount: 15, exempt: ['construct', 'undead'] },
+  },
+  'berserker-axe': {
+    // +1, and hit points equal to your level — a real defensive gain, which is
+    // what pays for the curse. The curse kept here is "Disadvantage on attack
+    // rolls with weapons other than this one": it costs you the bow on your
+    // back and, more sharply, any bane weapon you were carrying for the wave
+    // ahead. The berserk-rage half of the SRD curse is left out; taking control
+    // of a player's character away for a round is a different kind of thing and
+    // wants its own design pass, not a line in an item table.
+    id: 'berserker-axe', name: 'Berserker Axe', damage: '1d8', damageType: 'slashing',
+    properties: ['versatile'], melee: true, mastery: 'topple', cost: 1500,
+    attackBonus: 1, damageBonus: 1, magic: true,
+    grants: { featureIds: ['berserker-curse'], hpPerLevel: 1 },
+  },
+  'mace-of-terror': {
+    // The wave of terror is a granted feature with its own uses, not a weapon
+    // rider: it is an action you take while holding the mace, which is exactly
+    // what `useFeature` already models.
+    id: 'mace-of-terror', name: 'Mace of Terror', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], melee: true, mastery: 'sap', cost: 1600, magic: true,
+    grants: { featureIds: ['wave-of-terror'] },
   },
 
   // --- silvered — no bonus, bypasses resistance -------------

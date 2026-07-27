@@ -13,6 +13,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow } from '../engine/rules/saves.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { summonCombatant } from '../engine/rules/summon.js';
+import { distanceFeet } from '../engine/grid.js';
 import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
 import type { GameEvent } from '../engine/events.js';
@@ -383,6 +384,48 @@ export const ITEMS: Record<Id, ConsumableData> = {
         near: user.position,
         idHint: 'python',
       });
+    },
+  },
+
+  'wand-fear': {
+    id: 'wand-fear', name: 'Wand of Fear', useTime: 'action',
+    targeting: { kind: 'self' },
+    cost: 1400, rarity: 'rare', charges: 7,
+    // A 60-foot rout, DC 15. No attunement requirement in the SRD, so no
+    // `requires` — a fighter can carry this one, like the Wand of Magic
+    // Missiles, and it is the only crowd control most martials will ever hold.
+    apply({ state, userId }) {
+      const user = state.combatants[userId]!;
+      const events: GameEvent[] = [];
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || t.team === user.team) continue;
+        if (distanceFeet(user.position, t.position) > 60) continue;
+        if (t.conditions.some((k) => k.id === 'fleeing')) continue;
+        const save = savingThrow(state, t.id, 'wis', 15, { magical: true });
+        events.push(save.event);
+        if (save.success) continue;
+        t.conditions.push({ id: 'fleeing', sourceId: userId, repeatSave: { ability: 'wis', dc: 15 } });
+        events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: userId });
+      }
+      return events;
+    },
+  },
+  'wand-binding': {
+    id: 'wand-binding', name: 'Wand of Binding', useTime: 'action',
+    targeting: { kind: 'thrown', range: { normal: 60, long: 60 } },
+    cost: 1700, rarity: 'rare', charges: 7,
+    // DC 17 — the highest save in the game, and what makes this worth more than
+    // a Wand of Web. Free Action is still the answer to it.
+    apply({ state, userId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const save = savingThrow(state, targetId, 'str', 17, { magical: true });
+      const events: GameEvent[] = [save.event];
+      const t = state.combatants[targetId]!;
+      if (!save.success && !wardedAgainstMagicalBinding(t, 'restrained')) {
+        t.conditions.push({ id: 'restrained', sourceId: userId, repeatSave: { ability: 'str', dc: 17 } });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'restrained', sourceId: userId });
+      }
+      return events;
     },
   },
 };

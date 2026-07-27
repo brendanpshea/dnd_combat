@@ -111,6 +111,7 @@ export type ConditionId =
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws
   | 'baned'        // Bane: -1d4 to attack rolls and saving throws
+  | 'wounded'      // Sword of Wounding: cannot regain hit points (save ends)
   | 'warded'       // Shield of Faith: +2 AC
   | 'smiting'      // a smite is armed; the next melee hit discharges it
   | 'burning'      // Searing Smite: 1d6 fire at end of turn until a Con save

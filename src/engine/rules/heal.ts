@@ -24,6 +24,14 @@ export function applyHealing(state: GameState, targetId: Id, sourceId: Id, amoun
   const t = state.combatants[targetId];
   if (!t || !t.alive) return [];
 
+  // Sword of Wounding: the wound refuses to close. Nothing heals it — not a
+  // potion, not Cure Wounds, not a cleric's Preserve Life — which is the whole
+  // point of the sword and the reason it is checked here, at the one door every
+  // heal in the game comes through, rather than at each caller.
+  if (t.conditions.some((k) => k.id === 'wounded')) {
+    return [{ type: 'healed', targetId, sourceId, amount: 0 }];
+  }
+
   const wasDowned = t.hp === 0;
   const healed = Math.max(0, Math.min(amount, t.maxHp - t.hp));
   t.hp += healed;

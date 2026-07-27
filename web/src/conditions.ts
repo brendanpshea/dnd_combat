@@ -48,6 +48,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   energyWarded:   { icon: '🔥', label: 'Warded against one element — resistance to that damage', kind: 'buff' },
   cursed:         { icon: '☠️', label: 'Cursed — disadvantage on attacks and saves', kind: 'debuff' },
   baned:          { icon: '💀', label: 'Baned — -1d4 to attacks and saves', kind: 'debuff' },
+  wounded:        { icon: '🩸', label: 'Wounded — cannot regain hit points', kind: 'debuff' },
   warded:         { icon: '🔰', label: 'Warded — +2 AC', kind: 'buff' },
   smiting:        { icon: '⚡', label: 'Smite ready — the next melee hit unleashes it', kind: 'buff' },
   burning:        { icon: '🔥', label: 'Burning — 1d6 fire each turn until it saves', kind: 'debuff' },
