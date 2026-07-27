@@ -6,7 +6,7 @@ import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from
 import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
-import { acOf, ARMOR, isShield } from '../../data/armor.js';
+import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, coverBetween } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
@@ -291,7 +291,8 @@ export function resolveAttack(
   const behindCover = !isMeleeAttack &&
     !ignoresHalfCover(target.size ?? 'medium') &&
     coverBetween(state.grid, attacker.position, target.position);
-  const targetAc = acOf(target) + (behindCover ? 2 : 0);
+  const targetAc = acOf(target) + (behindCover ? 2 : 0) +
+    (isMeleeAttack ? 0 : shieldRangedBonus(target.equipped.offHand));
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
 

@@ -426,6 +426,21 @@ export interface Combatant {
 export type CreatureSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
 
 /** Too big to take cover behind a barricade. */
+/**
+ * Ring of Free Action: "magic can neither reduce any of your Speeds nor cause
+ * you to have the Paralyzed or Restrained condition".
+ *
+ * MAGIC is the operative word, and the reason this is a helper rather than a
+ * blanket immunity. Web, Entangle, Ensnaring Strike and Hold Person are all
+ * magic and all blocked; a giant spider's bite and a roper's tendril are not,
+ * and still bind you. Reading it as a flat immunity would quietly turn the ring
+ * into an answer to half the bestiary's melee as well.
+ */
+export function wardedAgainstMagicalBinding(c: Combatant, condition: ConditionId): boolean {
+  return (condition === 'restrained' || condition === 'paralyzed') &&
+    c.featureIds.includes('free-action');
+}
+
 export function ignoresHalfCover(size: CreatureSize): boolean {
   return size === 'large' || size === 'huge' || size === 'gargantuan';
 }

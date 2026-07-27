@@ -4,11 +4,14 @@
  * a data concern later.
  */
 import type { GameState, Id, DamageType } from '../engine/types.js';
+import { wardedAgainstMagicalBinding } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { rollDice, rollD20, resolveRollMode } from '../engine/dice.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { applyHealing } from '../engine/rules/heal.js';
+import { savingThrow } from '../engine/rules/saves.js';
+import { pushCreature } from '../engine/rules/movement.js';
 import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
 import type { GameEvent } from '../engine/events.js';
@@ -260,6 +263,87 @@ export const ITEMS: Record<Id, ConsumableData> = {
     targeting: { kind: 'spell', spellId: 'lightning-bolt' },
     cost: 1600, rarity: 'rare', charges: 7, requires: 'spellcaster',
     apply: scrollApply('lightning-bolt'),
+  },
+
+  'ring-of-the-ram': {
+    id: 'ring-of-the-ram', name: 'Ring of the Ram', useTime: 'action',
+    targeting: { kind: 'thrown', range: { normal: 60, long: 60 } },
+    cost: 1300, rarity: 'rare', charges: 3,
+    /**
+     * A spectral ram's head: 2d10 force at 60 feet, and the target is shoved
+     * five feet back.
+     *
+     * This is the item that most changes what a turn can be, because the game
+     * has almost no way to move an enemy. Thunderwave and Command are the whole
+     * list, which is why the Into the Fire bounty measured one claim in
+     * twenty-three wins: enemies path around hazards, so something has to push
+     * them in. Now something can.
+     *
+     * Attacks at a flat +7 per the SRD, not off the user's stats — the ring
+     * does the aiming, which is what makes it worth a slot for a character with
+     * a poor attack bonus.
+     *
+     * Modelled at one charge per use rather than the SRD's "spend 1 to 3 for
+     * 2d10 and 5 feet each": three charges is already a small budget, and a
+     * variable spend on an item this simple is a slider rather than a decision.
+     */
+    apply({ state, userId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const user = state.combatants[userId]!;
+      const target = state.combatants[targetId]!;
+      const d20 = applyLucky(state, userId, rollD20(state.rng, 'flat'), 'flat');
+      state.rng = d20.state;
+      const total = d20.natural + 7;
+      const ac = acOf(target);
+      const hit = d20.natural !== 1 && (d20.natural === 20 || total >= ac);
+      const events: GameEvent[] = [{
+        type: 'attackRolled', attackerId: userId, targetId, weaponId: 'ring-of-the-ram',
+        natural: d20.natural, total, targetAc: ac, mode: 'flat', advSources: [], disSources: [],
+        hit, crit: false, opportunity: false,
+      }];
+      if (!hit) return events;
+      const dmg = rollDice(state.rng, d20.natural === 20 ? '4d10' : '2d10');
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, targetId, userId, dmg.total, 'force', dmg.rolls,
+        { tags: ['Ring of the Ram'], magical: true }));
+      // Shoved directly away from the ring's bearer. A creature already dead or
+      // pinned against a wall simply doesn't move; pushCreature handles both,
+      // and burns it if the square it lands in is on fire.
+      if (state.combatants[targetId]?.alive) {
+        const dx = Math.sign(target.position.x - user.position.x);
+        const dy = Math.sign(target.position.y - user.position.y);
+        if (dx !== 0 || dy !== 0) events.push(...pushCreature(state, targetId, { x: dx, y: dy }, 1));
+      }
+      return events;
+    },
+  },
+  'wand-paralysis': {
+    id: 'wand-paralysis', name: 'Wand of Paralysis', useTime: 'action',
+    targeting: { kind: 'thrown', range: { normal: 60, long: 60 } },
+    cost: 1700, rarity: 'rare', charges: 7, requires: 'spellcaster',
+    apply({ state, userId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const save = savingThrow(state, targetId, 'con', 15, { magical: true });
+      const events: GameEvent[] = [save.event];
+      const t = state.combatants[targetId]!;
+      // Free Action is the counter, exactly as it is for Hold Person: this is
+      // magic causing the Paralyzed condition, which is what the ring refuses.
+      if (!save.success && !wardedAgainstMagicalBinding(t, 'paralyzed')) {
+        t.conditions.push({ id: 'paralyzed', sourceId: userId, repeatSave: { ability: 'con', dc: 15 } });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: userId });
+      }
+      return events;
+    },
+  },
+  'staff-healing': {
+    id: 'staff-healing', name: 'Staff of Healing', useTime: 'action',
+    targeting: { kind: 'ally' },
+    cost: 1500, rarity: 'rare', charges: 10, requires: 'spellcaster',
+    // Cure Wounds at will, near enough — ten charges is more than a fight, so
+    // this is the item that lets a cleric spend its slots on something other
+    // than topping people up. That is the point of it: it does not add healing
+    // so much as free the slots that were doing the healing.
+    apply: scrollApply('cure-wounds'),
   },
 };
 

@@ -2,7 +2,7 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
-import { cellAt, abilityMod, isDown, isIncapacitated } from '../types.js';
+import { cellAt, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBinding } from '../types.js';
 import { blocksMovement, reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
@@ -15,11 +15,13 @@ export const HAZARD_DAMAGE = '1d4';
 
 /**
  * Creatures that ignore the movement cost of difficult terrain: Boots of the
- * Winterlands (trinket), and burrowers/earth-gliders that move through it.
+ * Winterlands and the Ring of Free Action, and burrowers/earth-gliders that
+ * move through it.
  */
 function ignoresDifficult(mover: Combatant): boolean {
   return (
     mover.featureIds.includes('boots-winterlands') ||
+    mover.featureIds.includes('free-action') ||
     mover.featureIds.includes('burrow') ||
     mover.featureIds.includes('earth-glide')
   );
@@ -281,7 +283,9 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         const save = savingThrow(state, moverId, ability, web.dc);
         events.push(save.event);
         if (!save.success) {
-          mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc } });
+          if (!wardedAgainstMagicalBinding(mover, 'restrained')) {
+            mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc } });
+          }
           events.push({ type: 'conditionApplied', combatantId: moverId, condition: 'restrained', sourceId: web.sourceId });
           // Caught: the mover stops here rather than walking on through the web
           // — on the last cell it can actually stand on, which may not be this
@@ -331,7 +335,12 @@ export function pushCreature(
     if (cell.terrain === 'hazard') {
       const dmg = rollDice(state.rng, HAZARD_DAMAGE);
       state.rng = dmg.state;
-      events.push(...applyDamage(state, targetId, targetId, dmg.total, 'fire', dmg.rolls));
+      // Tagged, like the walking path is. Forced movement into a hazard is the
+      // *intended* way to claim the Into the Fire bounty — enemies path around
+      // fire on their own, so a push or a Thunderwave is most of how anything
+      // ever ends up standing in it — and an untagged burn here meant the one
+      // route the bounty was written for did not count.
+      events.push(...applyDamage(state, targetId, targetId, dmg.total, 'fire', dmg.rolls, { tags: ['Hazard'] }));
       if (!t.alive) break;
     }
   }
