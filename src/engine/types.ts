@@ -169,6 +169,7 @@ export interface Equipped {
   offHand?: Id;           // weapon id or 'shield'
   armor?: Id;             // armor id; undefined = unarmored
   trinket?: Id;           // wondrous item (one accessory slot); undefined = none
+  ring?: Id;              // a ring — its own slot, so a ring and a cloak can be worn together
 }
 
 /** Which weapons a class can wield proficiently. `finesseLight` grants the
@@ -276,6 +277,13 @@ export interface Combatant {
   unconsciousAtZero?: boolean;
   /** Round the combatant last spent Uncanny Dodge (once per round). */
   uncannyDodgeRound?: number;
+  /**
+   * Cloak of Displacement: set when the wearer takes damage, cleared at the
+   * start of its next turn. While set, the cloak's disadvantage is suppressed —
+   * "if you take damage, the property ceases to function until the start of
+   * your next turn".
+   */
+  displacementBroken?: boolean;
   /**
    * Conjured battlefield effects this caster owns — a Spiritual Weapon hammer,
    * a Flaming Sphere — that live on the board with a position of their own.

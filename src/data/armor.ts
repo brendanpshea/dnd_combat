@@ -78,9 +78,18 @@ export function acOf(c: Combatant): number {
   return Math.max(armored - rust, Math.min(armored, floor));
 }
 
-/** Cloak of Protection (trinket): +1 AC, granted as a feature the builder folds. */
+/**
+ * Worn wondrous items that change AC, granted as features the builder folds.
+ *
+ * Bracers of Defense are conditional on wearing neither armour nor a shield,
+ * which is what stops them being a flat +2 for the whole party — they are the
+ * wizard's item, and useless to the fighter in splint.
+ */
 function trinketAc(c: Combatant): number {
-  return c.featureIds.includes('cloak-protection') ? 1 : 0;
+  const cloak = c.featureIds.includes('cloak-protection') ? 1 : 0;
+  const bracers = c.featureIds.includes('bracers-defense') &&
+    c.equipped.armor === undefined && !isShield(c.equipped.offHand) ? 2 : 0;
+  return cloak + bracers;
 }
 
 /** Shield spell reaction: +5 AC until the caster's next turn. */

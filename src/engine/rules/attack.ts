@@ -100,6 +100,14 @@ export function collectAttackSources(
   }
 
   if (target.conditions.some((c) => c.id === 'dodging')) dis.push('target dodging');
+  // Cloak of Displacement: the wearer never seems to be quite where it is —
+  // until something connects, which switches the illusion off until its next
+  // turn. Suppressed at Speed 0 per the SRD: an illusion of being a step to the
+  // left is no use to something that cannot take the step.
+  if (target.featureIds.includes('cloak-displacement') && !target.displacementBroken &&
+      target.speed > 0) {
+    dis.push('displacement');
+  }
   // Bestow Curse: the cursed creature swings badly at everything.
   if (attacker.conditions.some((c) => c.id === 'cursed')) dis.push('cursed');
   // Protection from Evil and Good: only the six listed kinds are put off by it.
@@ -912,6 +920,14 @@ export function applyDamage(
     const half = Math.floor(amount / 2);
     mirrored = amount - half;
     amount = half;
+  }
+
+  // Cloak of Displacement goes down the moment something lands, and stays down
+  // until the wearer's next turn comes round. Set before the hit point maths so
+  // it fires even on a blow that is entirely soaked by temporary hit points —
+  // the SRD's trigger is taking damage, not losing hit points.
+  if (amount > 0 && target.featureIds.includes('cloak-displacement')) {
+    target.displacementBroken = true;
   }
 
   // Regeneration is stopped by the right damage type, and it's the *type* that

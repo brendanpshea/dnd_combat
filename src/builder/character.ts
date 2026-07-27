@@ -115,7 +115,7 @@ export interface BuildOptions {
   speciesId?: Id;
   /** Campaign overrides: persisted gear instead of the class defaults. */
   inventory?: Array<{ itemId: Id; qty: number }>;
-  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
+  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
   /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
   choices?: Record<Id, Id>;
   /**
@@ -164,9 +164,15 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   }
   // A worn trinket (Gauntlets of Ogre Power, …) can raise an ability score, so
   // apply its floor before HP/AC-relevant mods are computed off the abilities.
-  const trinket = opts.equipped?.trinket ? TRINKETS[opts.equipped.trinket] : undefined;
-  for (const [ab, floor] of Object.entries(trinket?.grants.abilityFloor ?? {})) {
-    abilities[ab as Ability] = Math.max(abilities[ab as Ability], floor);
+  // Worn wondrous items — the trinket slot and the ring slot both fold in the
+  // same way, so a grant added to one is available to the other for free.
+  const worn = [opts.equipped?.trinket, opts.equipped?.ring]
+    .map((id) => (id ? TRINKETS[id] : undefined))
+    .filter((t): t is NonNullable<typeof t> => t !== undefined);
+  for (const t of worn) {
+    for (const [ab, floor] of Object.entries(t.grants.abilityFloor ?? {})) {
+      abilities[ab as Ability] = Math.max(abilities[ab as Ability], floor);
+    }
   }
 
   const conMod = abilityMod(abilities.con);
@@ -178,9 +184,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   grants.spellIds.push(...speciesGrants.spellIds);
   grants.weaponMasteries.push(...speciesGrants.weaponMasteries);
   grants.resistances.push(...speciesGrants.resistances);
-  // A trinket's feature ids and resistances fold in the same way.
-  grants.featureIds.push(...(trinket?.grants.featureIds ?? []));
-  grants.resistances.push(...(trinket?.grants.resistances ?? []));
+  // A worn item's feature ids and resistances fold in the same way.
+  for (const t of worn) {
+    grants.featureIds.push(...(t.grants.featureIds ?? []));
+    grants.resistances.push(...(t.grants.resistances ?? []));
+  }
 
   // Deduped, because the same feature can now arrive twice: a 7th-level fighter
   // has two Fighting Style choices and nothing stops picking Dueling for both.

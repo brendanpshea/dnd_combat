@@ -26,7 +26,7 @@ import {
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
   spellbookPool, spellbookLimit, chosenSpellbook,
   knownRitualSpells, setPrepared, setCantrips, setSpellbook, resetPrepared,
-  scrollLearnable, learnSpellFromScroll,
+  scrollLearnable, learnSpellFromScroll, EQUIP_SLOTS,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
 import type { BattleProps } from './App.js';
@@ -414,8 +414,8 @@ export function CampaignScreen({ Battle, onExit }: Props) {
         const stack = itemId ? owner.inventory.find((s) => s.itemId === itemId) : undefined;
         const qty = slot ? 1 : itemId ? stack?.qty ?? 0 : undefined;
         const resale = itemId ? Math.floor((itemPrice(itemId) ?? 0) / 2) : 0;
-        const slots: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket'];
-        const slotName = (sl: EquipSlot) => (sl === 'mainHand' ? 'main hand' : sl === 'offHand' ? 'off-hand' : sl === 'trinket' ? 'trinket' : 'armor');
+        const slots: EquipSlot[] = EQUIP_SLOTS;
+        const slotName = (sl: EquipSlot) => (sl === 'mainHand' ? 'main hand' : sl === 'offHand' ? 'off-hand' : sl === 'trinket' ? 'trinket' : sl === 'ring' ? 'ring' : 'armor');
         const close = () => setPicked(null);
         return (
           <div className="tray-backdrop" onClick={close}>
@@ -603,9 +603,10 @@ export function CampaignScreen({ Battle, onExit }: Props) {
             {/* Gear and pack are the same thing to the player: a tap on any of
                 them asks "what do you want to do with this?" */}
             <div className="gear-row">
-              {(['mainHand', 'offHand', 'armor', 'trinket'] as EquipSlot[]).map((slot) => {
+              {EQUIP_SLOTS.map((slot) => {
                 const held = ch.equipped[slot];
-                if (slot === 'trinket' && !held) return null; // no clutter when no trinket is worn
+                // No clutter from empty accessory slots — they are optional by nature.
+                if ((slot === 'trinket' || slot === 'ring') && !held) return null;
                 const empty = slot === 'mainHand' ? 'Unarmed' : slot === 'offHand' ? 'No off-hand' : 'Unarmored';
                 return held ? (
                   <button

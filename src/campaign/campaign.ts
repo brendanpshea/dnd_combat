@@ -19,7 +19,7 @@ import { ITEMS } from '../data/items.js';
 import { WEAPONS, PLUS_ONE_WEAPONS } from '../data/weapons.js';
 import { ARMOR, SHIELD_COST, SHIELD_PLUS1_COST, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
-import { TRINKETS } from '../data/trinkets.js';
+import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
@@ -72,7 +72,7 @@ export interface PartyCharacter {
    *  Sickness). Absent = none scribed. */
   scribedSpells?: Id[];
   inventory: ItemStack[];
-  equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id };
+  equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
   choices?: Record<Id, Id>;
   /** Background id — grants two skill proficiencies (see data/backgrounds.ts).
@@ -318,6 +318,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'scroll-fireball', 'scroll-lightning-bolt', 'scroll-dispel-magic', 'scroll-haste',
     'potion-giant-strength-frost',
     'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
+    ...RARE_WONDROUS,
     'gem-topaz', 'gem-sapphire', 'gem-diamond',
     'jewelry-gold-figurine', 'jewelry-gold-necklace', 'jewelry-dwarven-ring',
   ],
@@ -412,6 +413,7 @@ export const SHOP_STOCK: Id[] = [
   // trinkets
   'gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding',
   'bracers-archery', 'boots-winterlands', 'gloves-thievery',
+  ...RARE_WONDROUS,
 ];
 
 /** The party level at which each rarity tier first appears on a shelf, so a
@@ -1944,7 +1946,16 @@ export function sellFromStash(c: CampaignState, itemId: Id): boolean {
   return true;
 }
 
-export type EquipSlot = 'mainHand' | 'offHand' | 'armor' | 'trinket';
+export type EquipSlot = 'mainHand' | 'offHand' | 'armor' | 'trinket' | 'ring';
+
+/**
+ * Every slot, in the order a character sheet shows them.
+ *
+ * Exported because four separate screens had their own copy of this array, and
+ * a fifth slot meant finding all four. One of them is the shop's equip picker,
+ * where a missing slot does not look broken — the item simply cannot be worn.
+ */
+export const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket', 'ring'];
 
 /** Why an equip is disallowed, or undefined if fine. */
 export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot: EquipSlot): string | undefined {
@@ -1952,9 +1963,14 @@ export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot
   if (!ch) return 'no such character';
   if (!ch.inventory.some((s) => s.itemId === itemId && s.qty > 0)) return 'not in inventory';
   const profs = CLASSES[ch.classId]!.armorProfs;
-  if (slot === 'trinket') {
-    // Anyone can wear a trinket; it just has to be one.
-    return TRINKETS[itemId] ? undefined : 'not a trinket';
+  if (slot === 'trinket' || slot === 'ring') {
+    // Anyone can wear either; it just has to be the right kind of thing. The
+    // slot a wondrous item wants is a property of the item, so a ring cannot be
+    // worn as a cloak and a cloak cannot be worn as a ring.
+    const t = TRINKETS[itemId];
+    if (!t) return slot === 'ring' ? 'not a ring' : 'not a trinket';
+    if (trinketSlot(t) !== slot) return `${t.name} goes in the ${trinketSlot(t)} slot`;
+    return undefined;
   }
   if (slot === 'armor') {
     const a = ARMOR[itemId];

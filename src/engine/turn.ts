@@ -145,6 +145,9 @@ function fleeDestination(state: GameState, c: Combatant, speed: number): Positio
 /** Reset economy, expire own-turn conditions, run repeat saves at turn END (handled in endTurn). */
 export function startTurn(state: GameState): GameEvent[] {
   const c = currentCombatant(state);
+  // The Cloak of Displacement settles again at the start of its wearer's turn
+  // (see Combatant.displacementBroken).
+  c.displacementBroken = false;
   const events: GameEvent[] = [...discoverHidden(state, c.id)];
 
   // Dodging, noReactions and Shield last until the start of the owner's next
