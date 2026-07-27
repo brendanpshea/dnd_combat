@@ -17,6 +17,29 @@ from slice_portraits import remove_greenscreen
 SRC_DIR = os.path.join(os.path.dirname(__file__), "source")
 os.makedirs(SRC_DIR, exist_ok=True)
 
+def strip_border_lines(img: Image.Image) -> Image.Image:
+    """Clear thin border stroke artifacts (0-4px from edges) that touch the canvas border."""
+    img = img.copy()
+    pix = img.load()
+    w, h = img.size
+
+    # Clear vertical hairline borders on left (x=0..3) and right (x=w-4..w-1)
+    for x in range(4):
+        # count opaque pixels in column x
+        opaque = sum(1 for y in range(h) if pix[x, y][3] > 0)
+        # if column is mostly a border line (or thin strip unconnected to a wide body)
+        if opaque > h * 0.4 and sum(1 for y in range(h) if pix[x+5, y][3] > 0) < opaque * 0.5:
+            for y in range(h):
+                pix[x, y] = (0, 0, 0, 0)
+
+    for x in range(w - 4, w):
+        opaque = sum(1 for y in range(h) if pix[x, y][3] > 0)
+        if opaque > h * 0.4 and sum(1 for y in range(h) if pix[x-5, y][3] > 0) < opaque * 0.5:
+            for y in range(h):
+                pix[x, y] = (0, 0, 0, 0)
+
+    return img
+
 def slice_side_by_side(sheet_path: str, item_id: str):
     if not os.path.exists(sheet_path):
         print(f"Error: file not found: {sheet_path}")
@@ -26,12 +49,13 @@ def slice_side_by_side(sheet_path: str, item_id: str):
     width, height = im.size
     w_half = width // 2
 
-    # Crop left (portrait) and right (token)
-    p_crop = im.crop((0, 0, w_half, height)).resize((512, 512), Image.LANCZOS)
-    t_crop = im.crop((w_half, 0, width, height)).resize((512, 512), Image.LANCZOS)
+    # Crop left (portrait) with 12px margin from center seam to avoid dividing line
+    # Crop right (token) with 12px margin from center seam
+    p_crop = im.crop((0, 0, max(0, w_half - 12), height)).resize((512, 512), Image.LANCZOS)
+    t_crop = im.crop((min(width, w_half + 12), 0, width, height)).resize((512, 512), Image.LANCZOS)
 
-    p_rgba = remove_greenscreen(p_crop)
-    t_rgba = remove_greenscreen(t_crop)
+    p_rgba = strip_border_lines(remove_greenscreen(p_crop))
+    t_rgba = strip_border_lines(remove_greenscreen(t_crop))
 
     p_out = os.path.join(SRC_DIR, f"portrait-{item_id}.png")
     t_out = os.path.join(SRC_DIR, f"token-{item_id}.png")
