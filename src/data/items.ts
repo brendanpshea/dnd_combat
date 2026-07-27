@@ -36,7 +36,31 @@ export interface ConsumableData {
     | { kind: 'spell'; spellId: Id };
   cost: number; // gp
   rarity: Rarity;
+  /**
+   * A wand or staff rather than a consumable: using it spends a charge instead
+   * of the item, and the charges come back on a long rest.
+   *
+   * The SRD says "regains 1d6 + 1 expended charges daily at dawn", with a 1-in-
+   * 20 chance of crumbling to ash on the last charge. Both are modelled as a
+   * clean refill on a long rest, because the arena long-rests between every
+   * wave: a partial recharge would make a wand's usefulness depend on how many
+   * waves ago you last fired it, which is bookkeeping rather than a decision,
+   * and destroying the player's rare item on a 5% roll is a punishment for
+   * using the thing they bought.
+   */
+  charges?: number;
+  /**
+   * Who may use it. Wands that the SRD requires a spellcaster to attune to are
+   * gated here; the ones that need no attunement at all (Wand of Magic
+   * Missiles) are left open, which is what makes them worth a fighter's slot.
+   */
+  requires?: 'spellcaster';
   apply(ctx: UseContext): GameEvent[];
+}
+
+/** A wand/staff rather than a one-shot: spends charges, is never consumed. */
+export function isCharged(item: ConsumableData): boolean {
+  return item.charges !== undefined;
 }
 
 function healPotion(dice: string) {
@@ -199,6 +223,43 @@ export const ITEMS: Record<Id, ConsumableData> = {
     id: 'potion-giant-strength-frost', name: 'Potion of Frost Giant Strength', useTime: 'bonus',
     targeting: { kind: 'ally' }, cost: 400, rarity: 'rare',
     apply: giantStrengthPotion(23),
+  },
+  // --- wands ----------------------------------------------------------------
+  //
+  // A wand is a scroll you get to keep. The difference matters more than it
+  // sounds: a scroll is a decision made once, at the moment you spend it, and
+  // a wand is a decision made every turn of every fight until it runs dry.
+  //
+  // Charges refill on a long rest, and the arena rests between every wave, so a
+  // wand is a per-wave resource. That is the intended shape — it gives a caster
+  // something to spend when the slots are gone, and gives the classes with no
+  // slots at all something to cast.
+  'wand-magic-missiles': {
+    id: 'wand-magic-missiles', name: 'Wand of Magic Missiles', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'magic-missile' },
+    cost: 700, rarity: 'uncommon', charges: 7,
+    // No attunement in the SRD, and so no `requires` here — this is the one
+    // wand a fighter can carry, and the only levelled spell most martials will
+    // ever cast. Worth its slot for that alone.
+    apply: scrollApply('magic-missile'),
+  },
+  'wand-web': {
+    id: 'wand-web', name: 'Wand of Web', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'web' },
+    cost: 800, rarity: 'uncommon', charges: 7, requires: 'spellcaster',
+    apply: scrollApply('web'),
+  },
+  'wand-fireballs': {
+    id: 'wand-fireballs', name: 'Wand of Fireballs', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'fireball' },
+    cost: 1600, rarity: 'rare', charges: 7, requires: 'spellcaster',
+    apply: scrollApply('fireball'),
+  },
+  'wand-lightning-bolts': {
+    id: 'wand-lightning-bolts', name: 'Wand of Lightning Bolts', useTime: 'action',
+    targeting: { kind: 'spell', spellId: 'lightning-bolt' },
+    cost: 1600, rarity: 'rare', charges: 7, requires: 'spellcaster',
+    apply: scrollApply('lightning-bolt'),
   },
 };
 

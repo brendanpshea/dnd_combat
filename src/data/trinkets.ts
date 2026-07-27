@@ -198,6 +198,27 @@ export const TRINKETS: Record<Id, TrinketData> = {
     slot: 'ring',
     grants: { resistances: ['thunder'] },
   },
+  // --- arcane focuses --------------------------------------------------------
+  //
+  // Wand of the War Mage, +1 to +3. It occupies the trinket slot rather than a
+  // hand, which is a simplification: this engine has no free-hand model, so
+  // there is nowhere else for a held-but-not-wielded item to go. Competing with
+  // an Amulet of Health is a fair price and a real decision.
+  //
+  // The SRD's +3 is Very Rare, a tier this game has no rarity for and no levels
+  // to reach, so only +1 (uncommon) and +2 (rare) are here. Adding the third
+  // would be adding an item nothing could ever offer.
+  'wand-war-mage-1': {
+    id: 'wand-war-mage-1', name: 'Wand of the War Mage +1', cost: 500, rarity: 'uncommon', icon: '🪄',
+    blurb: '+1 to spell attack rolls, and your spells ignore half cover.',
+    grants: { featureIds: ['war-mage-1'] },
+  },
+  'wand-war-mage-2': {
+    id: 'wand-war-mage-2', name: 'Wand of the War Mage +2', cost: 1400, rarity: 'rare', icon: '🪄',
+    blurb: '+2 to spell attack rolls, and your spells ignore half cover.',
+    grants: { featureIds: ['war-mage-2'] },
+  },
+
 };
 
 /**

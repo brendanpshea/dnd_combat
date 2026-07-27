@@ -8,9 +8,9 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -272,6 +272,17 @@ export function burnInMoonbeam(state: GameState, casterId: Id, onlyId?: Id): Gam
   return events;
 }
 
+/**
+ * Wand of the War Mage: +1 or +2 to spell attack rolls. Deliberately NOT added
+ * to the save DC — the SRD gives the wand attack rolls only, and a caster
+ * throwing Fireballs should get nothing from it.
+ */
+function warMageBonus(c: Combatant): number {
+  if (c.featureIds.includes('war-mage-2')) return 2;
+  if (c.featureIds.includes('war-mage-1')) return 1;
+  return 0;
+}
+
 export function spellDc(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
   return 8 + proficiencyBonus(c.level) + spellMod(state, casterId);
@@ -337,12 +348,13 @@ function spellAttack(
   // Reuse the weapon source collector with a synthetic profile.
   const fake = { melee: opts.melee, range: opts.melee ? undefined : { normal: 9999, long: 9999 }, properties: [] };
   const { adv, dis } = collectAttackSources(state, caster, target, fake as never, opts.melee);
+  const warMage = warMageBonus(caster);
   adv.push(...(opts.extraAdv ?? []));
   const mode = resolveRollMode(adv, dis);
   const d20 = applyLucky(state, casterId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   consumeFamiliarHelp(state, caster);
-  let total = d20.natural + spellMod(state, casterId) + proficiencyBonus(caster.level);
+  let total = d20.natural + spellMod(state, casterId) + proficiencyBonus(caster.level) + warMage;
   if (caster.conditions.some((c) => c.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;
@@ -356,7 +368,23 @@ function spellAttack(
   const unconsciousAdjacent =
     target.conditions.some((c) => c.id === 'unconscious') && opts.melee;
   const crit = d20.natural === 20 || unconsciousAdjacent;
-  const targetAc = acOf(target);
+  /**
+   * Half cover applies to a ranged spell attack exactly as it does to an arrow.
+   * It did not, until now: a Fire Bolt across a barricade was unpenalised while
+   * a shortbow shot at the same target took +2 AC, so the one piece of terrain
+   * built to shape ranged fire was shaping only half of it.
+   *
+   * The size gate is the same one weapon attacks use — a barricade is chest
+   * high, so it covers a kobold and not an ogre.
+   *
+   * Wand of the War Mage is the exception the SRD writes into the item: "you
+   * ignore Half Cover when making a spell attack roll".
+   */
+  const behindCover = !opts.melee &&
+    warMage === 0 &&
+    !ignoresHalfCover(target.size ?? 'medium') &&
+    coverBetween(state.grid, caster.position, target.position);
+  const targetAc = acOf(target) + (behindCover ? 2 : 0);
   const hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
   return {
     hit,
@@ -367,6 +395,9 @@ function spellAttack(
       natural: d20.natural, total, targetAc,
       mode, advSources: adv, disSources: dis,
       hit, crit: hit && crit, opportunity: false,
+      // Same flag a weapon attack sets, so the log can say why the AC was two
+      // points higher rather than leaving the player to guess.
+      ...(behindCover ? { cover: true } : {}),
       ...(opts.via ? { via: opts.via } : {}),
     },
   };

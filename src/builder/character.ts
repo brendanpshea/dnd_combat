@@ -9,6 +9,7 @@ import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
+import { ITEMS } from '../data/items.js';
 
 /** Every spell a class's table grants at or below a character level, matching
  *  a predicate on the spell's own level. */
@@ -138,6 +139,8 @@ export interface BuildOptions {
   cantripsOverride?: Id[];
   /** Wizard only: spells copied into the spellbook beyond the class default. */
   spellbookExtra?: Id[];
+  /** Campaign override: charges left in carried wands, from before a long rest. */
+  itemChargesOverride?: Record<Id, number>;
 }
 
 export function buildCharacter(opts: BuildOptions): Combatant {
@@ -222,6 +225,17 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     }
   }
 
+  // Charges in carried wands and staves. Built from the inventory rather than
+  // stored on the stack, so a wand picked up mid-campaign arrives full and a
+  // wand that has been fired keeps its count through the campaign override.
+  const itemUses: Record<Id, ResourcePool> = {};
+  for (const stack of opts.inventory ?? []) {
+    const charges = ITEMS[stack.itemId]?.charges;
+    if (charges === undefined) continue;
+    const left = opts.itemChargesOverride?.[stack.itemId];
+    itemUses[stack.itemId] = { current: Math.min(left ?? charges, charges), max: charges };
+  }
+
   const slots = cls.spellcasting?.slotsByLevel[level - 1] ?? [];
   const known = (byLevel: Record<number, Id[]> | undefined): Id[] =>
     Object.entries(byLevel ?? {})
@@ -296,6 +310,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     spellIds,
     featureIds,
     featureUses,
+    ...(Object.keys(itemUses).length > 0 ? { itemUses } : {}),
     innateSpells,
     inventory: (opts.inventory ?? cls.equipment.inventory).map((s) => ({ ...s })),
     equipped: opts.equipped
