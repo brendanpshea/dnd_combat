@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -412,7 +412,7 @@ function summonStep(state: GameState, s: Summon, toward: Position): Position | n
     if (p.x === s.position.x && p.y === s.position.y) continue;
     const cell = cellAt(state.grid, p);
     if (!cell) continue;
-    if (!spectral && (cell.terrain === 'wall' || cell.occupantId)) continue;
+    if (!spectral && (blocksMovement(cell.terrain) || cell.occupantId)) continue;
     if (spectral && cell.occupantId) continue; // may pass walls, but not stand on someone
     return p;
   }
@@ -2316,7 +2316,7 @@ export const SPELLS: Record<Id, SpellData> = {
         // of the map was difficult ground for the rest of the fight, with no
         // way back. Walls are left alone; a hazard stays a hazard.
         const cell = cellAt(state.grid, pos);
-        if (cell && cell.terrain !== 'wall') cell.chilled = { expiresAtRound: state.round + 1 };
+        if (cell && !blocksMovement(cell.terrain)) cell.chilled = { expiresAtRound: state.round + 1 };
       }
       return events;
     },

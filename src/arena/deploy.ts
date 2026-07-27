@@ -23,6 +23,7 @@ import type { GridState, Position } from '../engine/types.js';
 import { cellAt } from '../engine/types.js';
 import type { RngState } from '../engine/rng.js';
 import { next } from '../engine/rng.js';
+import { blocksMovement } from '../engine/grid.js';
 
 export type DeployPattern = 'far-rank' | 'advanced' | 'pincer' | 'scattered';
 
@@ -53,7 +54,7 @@ export function pickPattern(state: RngState): { value: DeployPattern; state: Rng
 function open(grid: GridState, p: Position): boolean {
   if (p.x < 0 || p.y < 0 || p.x >= grid.width || p.y >= grid.height) return false;
   const cell = cellAt(grid, p);
-  return !!cell && cell.terrain !== 'wall' && cell.occupantId === undefined;
+  return !!cell && !blocksMovement(cell.terrain) && cell.occupantId === undefined;
 }
 
 /**

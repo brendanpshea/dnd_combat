@@ -26,6 +26,9 @@ export interface MapData {
 
 const CHAR_TERRAIN: Record<string, TerrainId> = {
   '.': 'open', '#': 'wall', '~': 'difficult', '^': 'hazard',
+  // A barricade: chest-high, so you cannot walk through it but you can see and
+  // shoot over it, at +2 AC to whoever is behind it.
+  '+': 'cover',
 };
 
 export function parseMap(map: MapData): GridState {
@@ -110,33 +113,39 @@ export const MAPS: Record<string, MapData> = {
       '........',
     ],
   },
-  // A town square: market stalls (walls) frame an open plaza. Cover to duck
-  // behind, lanes to flank down — a street brawl, not a field battle.
+  // A town square. The stall *fronts* are barricades (`+`): you cannot walk
+  // through a market stall, but you can shoot over the counter, and whoever is
+  // behind one has half cover and somewhere to duck out of sight. The corner
+  // buildings stay solid walls. This map's comment always claimed cover to
+  // duck behind and lanes to flank down; until barricades existed it had only
+  // the lanes.
   village: {
     id: 'village', name: 'Market Square', theme: 'village',
     rows: [
       '........',
       '.#....#.',
-      '..####..',
+      '..++++..',
       '........',
       '........',
-      '..####..',
+      '..++++..',
       '.#....#.',
       '........',
     ],
   },
-  // A grassy clearing dotted with trees and shrubs (walls): scattered cover to
-  // break line of sight and flank around, without walling off any lane.
+  // A grassy clearing: trees (`#`, solid, and they break line of sight) among
+  // shrubs (`+`, which you can see over and shoot through but not walk through).
+  // Mixing the two is what gives an archer somewhere to stand that is neither
+  // fully exposed nor fully blind.
   grove: {
     id: 'grove', name: 'Sunlit Grove', theme: 'forest',
     rows: [
       '........',
-      '..#...#.',
+      '..#...+.',
       '......#.',
-      '...#....',
+      '...+....',
       '....#...',
-      '.#......',
-      '.#...#..',
+      '.+......',
+      '.#...+..',
       '........',
     ],
   },

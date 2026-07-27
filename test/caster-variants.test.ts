@@ -79,10 +79,17 @@ describe('caster variants', () => {
    */
   // Run per tier rather than all eight at once: four casters in one fight get
   // four times the turns each, so the same coverage costs a third of the time.
+  //
+  // Thirty-two seeds, not sixteen. The rarest thing in either kit is Burning
+  // Hands — a 15 ft cone, so it needs two enemies adjacent and lined up — and
+  // it lands about once in ten fights. Sixteen seeds was a coin toss on it, and
+  // duly failed the moment barricades changed how tightly a party bunches up.
+  // Measured over 48 seeds: 5 casts. Rare, not dead, and the sweep has to be
+  // long enough to tell the difference.
   for (const [tier, cast] of [['tier 1', TIER1], ['tier 2', TIER2]] as const) {
     it(`the AI actually casts what ${tier} was given`, () => {
       const seen = new Set<string>();
-      for (let seed = 1; seed <= 16; seed++) {
+      for (let seed = 1; seed <= 32; seed++) {
         const m = generateArenaMap({}, (seed * 2654435761) >>> 0);
         const grid = parseMap(m.value.map);
         const spots = deployFoes(grid, cast.length, seed);
@@ -118,7 +125,7 @@ describe('caster variants', () => {
         return spell.level >= 1 && spell.targeting.kind !== 'self' && !seen.has(id);
       });
       expect(never, `leveled spells given but never cast: ${never.join(', ')}`).toEqual([]);
-    }, 40000);
+    }, 90000);
   }
 
   /**

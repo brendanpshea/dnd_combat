@@ -29,7 +29,17 @@ export interface Position {
   y: number; // rank, 0-based
 }
 
-export type TerrainId = 'open' | 'difficult' | 'wall' | 'hazard';
+/**
+ * `cover` is a barricade: a low wall, a cart, a fallen pillar. It stops
+ * movement the way a wall does but does NOT stop sight, and anything shooting
+ * across it is shooting at a target with half cover (+2 AC).
+ *
+ * That combination is the whole point. Full walls shape a battlefield by
+ * removing squares, which mostly means everyone walks around them; a barricade
+ * shapes it by making the *angle* of a shot matter, which is a decision rather
+ * than a detour. It is also where a rogue can hide — see canHide.
+ */
+export type TerrainId = 'open' | 'difficult' | 'wall' | 'hazard' | 'cover';
 
 export interface Cell {
   terrain: TerrainId;

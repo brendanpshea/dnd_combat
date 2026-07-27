@@ -3,7 +3,7 @@
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
 import { cellAt, abilityMod, isDown, isIncapacitated } from '../types.js';
-import { reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
+import { blocksMovement, reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
 import { savingThrow } from './saves.js';
@@ -316,7 +316,7 @@ export function pushCreature(
   for (let i = 0; i < cells; i++) {
     const next = { x: t.position.x + dir.x, y: t.position.y + dir.y };
     const cell = cellAt(state.grid, next);
-    if (!cell || cell.terrain === 'wall' || cell.occupantId !== undefined) break;
+    if (!cell || blocksMovement(cell.terrain) || cell.occupantId !== undefined) break;
     const fromCell = cellAt(state.grid, t.position)!;
     if (fromCell.occupantId === targetId) delete fromCell.occupantId;
     t.position = next;

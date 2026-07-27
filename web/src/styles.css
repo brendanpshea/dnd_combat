@@ -438,6 +438,18 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   font-size: clamp(9px, 2.4vmin, 13px); line-height: 1; pointer-events: none;
   filter: drop-shadow(0 1px 1px #000a);
 }
+/* A barricade. It has to read as *solid but low* — you cannot walk through it,
+   you can shoot over it — so it is deliberately not the flat block a wall is:
+   a chest-high slab with a lit top edge and the floor still visible around it.
+   The distinction is the whole mechanic, so it must not rely on colour alone;
+   the corner badge carries it too. */
+.board .cell.terrain-cover {
+  background:
+    linear-gradient(#0000 0 28%, #6b5a45 28% 76%, #0000 76%),
+    linear-gradient(150deg, #33304a, #2a2740);
+  box-shadow: inset 0 3px 0 -1px #a68d68, inset 0 -8px 8px -8px #000a;
+}
+.cell.terrain-cover.needs-badge::after { content: '🧱'; }
 .cell.terrain-difficult.needs-badge::after { content: '💧'; }
 .cell.terrain-hazard.needs-badge::after { content: '🔥'; }
 

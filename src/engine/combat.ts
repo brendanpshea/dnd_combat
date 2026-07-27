@@ -3,7 +3,7 @@
  */
 import type { GameState, Combatant, Id, TeamId } from './types.js';
 import { cellAt } from './types.js';
-import { makeGrid } from './grid.js';
+import { blocksMovement, makeGrid } from './grid.js';
 import { MAPS, parseMap } from '../data/maps.js';
 import type { MapData } from '../data/maps.js';
 import { seedRng } from './rng.js';
@@ -43,7 +43,7 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
     combatants[c.id] = c;
     const cell = cellAt(grid, c.position);
     if (!cell) throw new Error(`${c.id} placed out of bounds`);
-    if (cell.terrain === 'wall') throw new Error(`${c.id} placed inside a wall`);
+    if (blocksMovement(cell.terrain)) throw new Error(`${c.id} placed inside ${cell.terrain === 'cover' ? 'a barricade' : 'a wall'}`);
     if (cell.occupantId) throw new Error(`${c.id} placed on occupied cell`);
     cell.occupantId = c.id;
   }

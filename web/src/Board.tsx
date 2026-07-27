@@ -74,7 +74,7 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       // whose terrain differs from any orthogonal neighbour, or sits on the
       // grid edge. Keeps a large lava pool or marsh from being stamped on
       // every interior tile while still flagging what the terrain is.
-      if (cell.terrain === 'difficult' || cell.terrain === 'hazard') {
+      if (cell.terrain === 'difficult' || cell.terrain === 'hazard' || cell.terrain === 'cover') {
         const edge = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const).some(([dx, dy]) => {
           const n = cellAt(state.grid, { x: x + dx, y: y + dy });
           return !n || n.terrain !== cell.terrain;
