@@ -50,10 +50,11 @@ function trueStrikeWeapons(c: Combatant): Id[] {
  *  costs the turn's actions but, unlike the rest, leaves the reaction) and
  *  Luring Song (which takes the actions but spends the movement walking the
  *  victim toward the singer, so it can't reuse `incapacitated`: that one
- *  zeroes speed, and being drawn in is the whole effect). */
+ *  zeroes speed, and being drawn in is the whole effect), and Fleeing (which
+ *  spends the turn running for the edge — same reason). */
 function cannotAct(c: Combatant): boolean {
   return isIncapacitated(c) ||
-    c.conditions.some((k) => k.id === 'commanded' || k.id === 'lured');
+    c.conditions.some((k) => k.id === 'commanded' || k.id === 'lured' || k.id === 'fleeing');
 }
 
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {

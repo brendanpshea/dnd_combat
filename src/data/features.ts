@@ -11,7 +11,7 @@ import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow, saveForHalf, charmWarded } from '../engine/rules/saves.js';
-import { charmAway, applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
+import { applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
@@ -462,10 +462,12 @@ export const FEATURES: Record<Id, FeatureData> = {
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       // Base Channel Divinity every cleric gets, not the Life Domain's
-      // Preserve Life. RAW turns (forces to flee) every undead within 30 ft
-      // that fails a Wisdom save; this game has no "must flee" AI, so a turned
-      // undead is removed from the fight via charmAway — the same not-a-death
-      // exit Animal Friendship uses, scoped here to creatureType 'undead'.
+      // Preserve Life. RAW turns every undead within 30 ft that fails a Wisdom
+      // save, and turned means *flees*: it spends its turns running for the
+      // nearest edge and is gone when it gets there. Not concentration, so
+      // nothing the party does calls it back — but the skeleton is on the board
+      // and killable the whole way out, which is the difference between turning
+      // a horde and deleting it.
       const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.wis);
       const targets = Object.values(state.combatants).filter(
         (c) => c.alive && c.hp > 0 && c.team !== me.team &&
@@ -476,7 +478,10 @@ export const FEATURES: Record<Id, FeatureData> = {
       for (const t of targets) {
         const { success, event } = savingThrow(state, t.id, 'wis', dc);
         events.push(event);
-        if (!success) events.push(...charmAway(state, t.id));
+        if (!success) {
+          t.conditions.push({ id: 'fleeing', sourceId: actorId });
+          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: actorId });
+        }
         if (state.winner) break;
       }
       return events;

@@ -29,6 +29,7 @@ function kindOf(e: GameEvent): string {
     case 'turnStarted': return 'turn';
     case 'died': return 'died';
     case 'charmedAway': return 'downed';   // a removal, not a kill — same visual weight as downed
+    case 'fled': return 'downed';          // likewise: it left on its own legs
     case 'turnedUndead': return 'cond';
     case 'downed': return 'downed';
     case 'maxHpDrained': return 'downed';
@@ -76,6 +77,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'moved':
     case 'died':
     case 'charmedAway':
+    case 'fled':
     case 'downed':
     case 'revived':
     case 'dashed':

@@ -2,7 +2,7 @@
  * Initiative, turn start/end, round advance. Mutates draft state; step() owns
  * cloning.
  */
-import type { GameState, Combatant, Id, TeamId } from './types.js';
+import type { GameState, Combatant, Id, TeamId, GridState } from './types.js';
 import { cellAt } from './types.js';
 import { abilityMod, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
@@ -15,7 +15,7 @@ import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
 import { activateSummons, strikeLightning, burnInMoonbeam } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
-import { applyDamage } from './rules/attack.js';
+import { applyDamage, charmAway } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
 
@@ -100,6 +100,46 @@ function bestLightningSpot(state: GameState, caster: Combatant): Position | unde
 
 export function currentCombatant(state: GameState): Combatant {
   return state.combatants[state.initiativeOrder[state.turnIndex]!]!;
+}
+
+/** On the outermost ring of cells — one step from walking off the board. */
+function atBoardEdge(grid: GridState, p: Position): boolean {
+  return p.x === 0 || p.y === 0 || p.x === grid.width - 1 || p.y === grid.height - 1;
+}
+
+/**
+ * The reachable cell that gets a fleeing creature closest to leaving.
+ *
+ * "Closest to the edge" rather than "furthest from the party": a creature
+ * pinned in a corner by four heroes has nowhere to run *from* them, but it
+ * always has an edge to run *to*, and the edge is what ends the effect. Ties
+ * break toward whichever cell is further from the nearest enemy, so it does not
+ * squeeze past the fighter when it could go round.
+ */
+function fleeDestination(state: GameState, c: Combatant, speed: number): Position | undefined {
+  const grid = state.grid;
+  const edgeDist = (p: Position): number =>
+    Math.min(p.x, p.y, grid.width - 1 - p.x, grid.height - 1 - p.y);
+  const foes = Object.values(state.combatants).filter((o) => o.alive && !isDown(o) && o.team !== c.team);
+  const fromFoes = (p: Position): number =>
+    foes.length === 0 ? 0 : Math.min(...foes.map((f) => distanceCells(p, f.position)));
+
+  const reach = reachable(grid, c.position, speed, hostileIds(state, c), undefined);
+  let best: Position | undefined;
+  let bestEdge = edgeDist(c.position);
+  let bestAway = fromFoes(c.position);
+  for (const [k, cost] of reach.costs) {
+    if (cost > speed) continue;
+    const [x, y] = k.split(',').map(Number);
+    const p = { x: x!, y: y! };
+    if (cellAt(grid, p)?.occupantId !== undefined) continue;
+    const e = edgeDist(p);
+    const a = fromFoes(p);
+    if (e < bestEdge || (e === bestEdge && a > bestAway)) {
+      bestEdge = e; bestAway = a; best = p;
+    }
+  }
+  return best;
 }
 
 /** Reset economy, expire own-turn conditions, run repeat saves at turn END (handled in endTurn). */
@@ -231,6 +271,47 @@ export function startTurn(state: GameState): GameEvent[] {
         if (d < bestDist) { bestDist = d; best = p; }
       }
       if (best) events.push(...executeMove(state, c.id, best));
+    }
+  }
+  // Fleeing: Turn Undead and Suggestion used to delete the creature from the
+  // board the instant the save failed, which reads as a kill with better
+  // manners — the thing you spent your Channel Divinity on simply vanishes.
+  // Now it runs. It spends its whole turn heading for the nearest edge, takes
+  // no actions on the way (see cannotAct), and leaves the fight when it gets
+  // there. That makes the effect legible: you watch it go, the party can chase
+  // it down or let it run, and an ally standing in the doorway matters.
+  //
+  // Fleeing is written as movement rather than as a removal so that everything
+  // movement already means still applies — walls route it, opportunity attacks
+  // fire as it disengages from whoever it was fighting.
+  const flee = c.conditions.find((k) => k.id === 'fleeing');
+  if (flee) {
+    if (atBoardEdge(state.grid, c.position)) {
+      // Off the board. Not a death — the same not-a-kill exit Banishment uses,
+      // told as a flight.
+      events.push(...charmAway(state, c.id, 'fled', flee.sourceId));
+    } else {
+      const dest = fleeDestination(state, c, speed);
+      if (dest) {
+        events.push(...executeMove(state, c.id, dest));
+      } else {
+        // Nowhere to run: walled in, or somebody is standing in the only gap.
+        // A cornered creature turns and fights rather than shuffling on the
+        // spot for the rest of the battle — which is what it did while this
+        // was being written: a skeleton sealed in an inner room stood still
+        // through all 100 rounds until the round cap ended the fight.
+        //
+        // It also makes blocking the exit a real thing to do. Turn Undead buys
+        // you the horde walking away; standing in the doorway is how the party
+        // chooses to keep one and kill it instead.
+        c.conditions = c.conditions.filter((k) => k !== flee);
+        events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'fleeing' });
+      }
+      // Reaching the edge mid-move ends the flight now rather than costing it
+      // another full round standing in the open.
+      if (c.alive && atBoardEdge(state.grid, c.position)) {
+        events.push(...charmAway(state, c.id, 'fled', flee.sourceId));
+      }
     }
   }
   if (!c.alive || state.winner) {

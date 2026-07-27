@@ -96,6 +96,7 @@ export type ConditionId =
   | 'commanded'    // Command: prone and loses its next action
   | 'charmed'      // can't attack or harm whoever charmed it
   | 'lured'        // charmed *and* incapacitated, and drawn toward the charmer
+  | 'fleeing'      // Turn Undead / Suggestion: runs for the nearest board edge and leaves
   | 'shielded'     // Shield reaction: +5 AC (and Magic Missile immunity) until next turn
   | 'dodging'      // attacks against this creature have disadvantage
   | 'blessed'      // +1d4 to attack rolls and saving throws

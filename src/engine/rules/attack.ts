@@ -1227,7 +1227,16 @@ export function releaseCharmedBy(state: GameState, sourceId: Id): GameEvent[] {
   return events;
 }
 
-export function charmAway(state: GameState, combatantId: Id): GameEvent[] {
+/**
+ * Take a creature out of the fight without killing it: Banishment, Animal
+ * Friendship, or reaching the edge of the board while fleeing.
+ *
+ * `exit` chooses which event says so, because the log should name the reason —
+ * "wanders off" and "flees the field" are different things to watch, and
+ * emitting both (a `fled` followed by a `charmedAway`) narrated one departure
+ * twice.
+ */
+export function charmAway(state: GameState, combatantId: Id, exit: 'charmed' | 'fled' = 'charmed', sourceId?: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
   const events: GameEvent[] = [
     ...transferHuntersMark(state, combatantId),
@@ -1240,7 +1249,9 @@ export function charmAway(state: GameState, combatantId: Id): GameEvent[] {
   const cell = cellAt(state.grid, c.position);
   if (cell && cell.occupantId === combatantId) delete cell.occupantId;
   events.push(
-    { type: 'charmedAway', combatantId },
+    exit === 'fled'
+      ? { type: 'fled', combatantId, ...(sourceId ? { sourceId } : {}) }
+      : { type: 'charmedAway', combatantId },
     ...breakConcentration(state, combatantId),
   );
   const winner = checkWinner(state);

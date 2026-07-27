@@ -76,6 +76,9 @@ export type GameEvent =
   /** Removed from the fight without dying — Animal Friendship charms a beast
    *  off the board. Shares kill()'s bookkeeping but is never a death. */
   | { type: 'charmedAway'; combatantId: Id }
+  /** Turned or talked into running: left the board under its own legs, at the
+   *  edge it was running for. `sourceId` is whoever put it to flight. */
+  | { type: 'fled'; combatantId: Id; sourceId?: Id }
   | { type: 'turnedUndead'; combatantId: Id; dc: number }
   /** A spell goes off: its caster, id, origin, and the cells its effect covers
    *  — purely so a frontend can telegraph the cast and detonate the area before
