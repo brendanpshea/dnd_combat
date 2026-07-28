@@ -3203,3 +3203,48 @@ button.category .count {
 .lore-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 .lore-known { font-size: 11px; color: #8fe3a0; }
 .lore-blind { font-size: 11px; color: var(--muted); }
+
+/* ---- drawn blocking props ------------------------------------------------
+   Where a theme has a full set of drawn walls and barricades (HAS_TERRAIN_ART),
+   the cell carries `--prop` and this takes over from the CSS gradients above.
+
+   The gradients are NOT deleted: they remain the fallback for any theme whose
+   art has not landed, and the board must never render a blank cell where a wall
+   should be. `art-prop` is what switches between the two, so adding a theme's
+   art is a data change rather than a stylesheet edit.
+
+   THE PROP IS DRAWN IN `::after`, NOT `::before`, AND THAT IS DELIBERATE.
+
+   Every theme restyles the wall through `.board.theme-x .cell.terrain-wall::before`,
+   which is four class selectors deep and beats anything reasonable written with
+   two. A first attempt drew the prop in `::before` and the themed gradients
+   simply won the cascade — barricades picked up their art (no theme rule
+   targets them) while every wall on the board carried on rendering as the blob
+   it was supposed to replace. Rather than escalate specificity theme by theme,
+   `::before` is switched off outright: none of the themed rules set `content`,
+   so killing it here removes the box they were painting, whatever they say
+   about its background. `::after` is free on these cells because a drawn prop
+   suppresses the emoji badge that would otherwise use it.
+
+   Walls are drawn slightly past their cell (the 1.12 scale is baked into the
+   SVG) so a run of them abuts instead of reading as separate blocks — hence
+   `overflow: visible` and the raised z-index, or neighbours would clip them. */
+.cell.art-prop { overflow: visible; z-index: 2; }
+.cell.art-prop::before { content: none; }
+.cell.art-prop::after {
+  content: '';
+  position: absolute;
+  /* Bleed past the cell edges: the prop's own margin is inside the SVG. */
+  inset: -6%;
+  background: var(--prop) center/contain no-repeat;
+  /* No filter, no glow, no bevel — the drawing carries all of that itself, and
+     re-adding a rim here is exactly what made the CSS version read as UI. */
+  filter: none;
+  box-shadow: none;
+  border-radius: 0;
+  font-size: 0;          /* the badge rule sizes ::after as text; this is art */
+  z-index: 0;
+}
+/* The flat fills these terrains used are the prop's job now. */
+.board .cell.art-prop.terrain-cover { background: var(--floor, var(--cell)); box-shadow: inset 0 0 0 1px #14101f; }
+.board .cell.art-prop.terrain-cover.dark { background: var(--floor-dark, var(--cell-dark)); }

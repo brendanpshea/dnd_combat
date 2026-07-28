@@ -78,3 +78,14 @@ export const HAS_SPELL_ICON = new Set<string>([
 export const HAS_BOARD_BG = new Set<string>([
   'bog', 'ember', 'forest', 'graveyard', 'stone', 'village'
 ]);
+
+/**
+ * Map themes with a full set of drawn blocking props
+ * (`terrain/terrain-{wall,cover}-<theme>-{a,b}.svg`).
+ *
+ * All four or none: a theme with drawn walls and CSS barricades would
+ * read worse than either treatment on its own.
+ */
+export const HAS_TERRAIN_ART = new Set<string>([
+  'bog', 'ember', 'forest', 'graveyard', 'stone', 'village'
+]);

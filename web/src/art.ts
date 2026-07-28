@@ -11,9 +11,13 @@
 
 import {
   HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG,
+  HAS_TERRAIN_ART,
 } from './art-registry.js';
 
-export { HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG };
+export {
+  HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG,
+  HAS_TERRAIN_ART,
+};
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -42,6 +46,17 @@ export function tokenUrl(id: string): string {
 
 export function portraitUrl(id: string): string {
   return `${BASE}art/portrait-${id}.webp`;
+}
+
+/**
+ * A drawn blocking prop: `terrain-wall-stone-a`, `terrain-cover-bog-b`, …
+ *
+ * SVG rather than webp, because these are vector-drawn rather than generated
+ * and so need no raster pipeline — which also means they stay crisp at every
+ * cell size the board can be, from a 34px phone tile upward.
+ */
+export function terrainUrl(kind: 'wall' | 'cover', theme: string, variant: 'a' | 'b'): string {
+  return `${BASE}art/terrain/terrain-${kind}-${theme}-${variant}.svg`;
 }
 
 /** Action bar / spell tray / prepare lists; falls back to the spell's emoji. */

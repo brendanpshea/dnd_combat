@@ -23,6 +23,7 @@
  *   scene-<id>.webp         -> HAS_SCENE_ART   (location backdrop)
  *   icon-<id>.webp          -> HAS_SPELL_ICON  (spell / feature icon)
  *   bg-<theme>.webp         -> HAS_BOARD_BG    (arena backdrop)
+ *   terrain/terrain-<kind>-<theme>-<variant>.svg -> HAS_TERRAIN_ART
  *   portrait-<id> AND token-<id> -> HAS_ART    (needs both: the board shows the
  *                                               token, the sheet the portrait)
  *
@@ -32,6 +33,7 @@
  */
 import { writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 const ART = fileURLToPath(new URL('../web/public/art/', import.meta.url));
 const OUT = fileURLToPath(new URL('../web/src/art-registry.ts', import.meta.url));
@@ -43,6 +45,8 @@ interface Registry {
   token: string[];
   icon: string[];
   bg: string[];
+  /** Themes with a full set of drawn blocking props. */
+  terrain: string[];
 }
 
 function scan(): Registry {
@@ -65,6 +69,22 @@ function scan(): Registry {
     if (m) bgs.add(m[1]!);
   }
 
+  // Blocking props live in their own subfolder and are SVG, not webp: they are
+  // drawn vector rather than generated raster, so they skip the sheet-slicing
+  // pipeline entirely. A theme registers only when ALL FOUR of its props exist
+  // — a half-set would leave the board mixing drawn walls with CSS ones, which
+  // looks worse than either alone.
+  const terrainDir = join(ART, 'terrain');
+  const terrainFiles = existsSync(terrainDir) ? readdirSync(terrainDir) : [];
+  const seen = new Set(terrainFiles.filter((f) => f.endsWith('.svg')).map((f) => f.slice(0, -4)));
+  const themes = new Set<string>();
+  for (const f of seen) {
+    const m = f.match(/^terrain-(?:wall|cover)-(.+)-[ab]$/);
+    if (m) themes.add(m[1]!);
+  }
+  const terrain = [...themes].filter((t) => (['wall', 'cover'] as const)
+    .every((kind) => (['a', 'b'] as const).every((v) => seen.has(`terrain-${kind}-${t}-${v}`))));
+
   const npc = [...portraits].filter((id) => id.startsWith('npc-'));
   const token = [...tokens].filter((id) => id.startsWith('tok-'));
   const paired = [...portraits].filter((id) => !id.startsWith('npc-') && tokens.has(id));
@@ -85,7 +105,7 @@ function scan(): Registry {
   const sort = (a: string[]) => a.sort((x, y) => x.localeCompare(y));
   return {
     art: sort(paired), npc: sort(npc), scene: sort([...scenes]), token: sort(token),
-    icon: sort([...icons]), bg: sort([...bgs]),
+    icon: sort([...icons]), bg: sort([...bgs]), terrain: sort(terrain),
   };
 }
 
@@ -139,6 +159,19 @@ function render(r: Registry): string {
       'HAS_BOARD_BG',
       ['/** Map themes with a generated arena backdrop (`bg-<theme>.webp`). */'].join('\n'),
       r.bg,
+    ),
+    block(
+      'HAS_TERRAIN_ART',
+      [
+        '/**',
+        ' * Map themes with a full set of drawn blocking props',
+        ' * (`terrain/terrain-{wall,cover}-<theme>-{a,b}.svg`).',
+        ' *',
+        ' * All four or none: a theme with drawn walls and CSS barricades would',
+        ' * read worse than either treatment on its own.',
+        ' */',
+      ].join('\n'),
+      r.terrain,
     ),
   ].join('\n');
 }
