@@ -11,3 +11,4 @@ __pycache__/
 # not commit: the PNG is megabytes and the HTML inlines the whole stylesheet.
 docs/terrain-sheet.html
 docs/terrain-sheet.png
+art/token-sheet.html
