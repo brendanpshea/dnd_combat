@@ -423,6 +423,8 @@ function fight(
       events: combat.log, state: combat.state, party: survivors,
       spellsUsedBefore: new Set<Id>(), rounds: combat.state.round,
       foes: w.encounter.members.length,
+      // The sweep never studies — it plays the fight, not the gate screen.
+      studied: false,
     });
     for (const [i, b] of claimed.entries()) {
       bump(T.bountiesClaimed, b.id);
