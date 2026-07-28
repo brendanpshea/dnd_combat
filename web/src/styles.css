@@ -580,26 +580,42 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   to   { transform: translate(-50%, -35%); }
 }
 
-/* Emoji fallback: the old circular chip. */
-.token.emoji .base {
+/* Silhouette fallback: what a token shows while its art is in flight, and
+   permanently for the creatures that have none.
+
+   It replaced an emoji, and the emoji's problem was size. The old rule sized
+   the mark with `clamp(14px, 4.2vmin, 26px)` — off the VIEWPORT, not off the
+   cell — so on a 430px phone a 49px cell held a 16px speck. A silhouette has no
+   font-size to get wrong: it is an SVG stretched to its box, so it fills the
+   cell at every board size by construction.
+
+   `currentColor` is why the path is inlined rather than fetched as an <img>:
+   an <img> could not be tinted, and the team colour is most of what a token
+   says before you can see what it is. */
+.token .sil {
+  position: absolute;
+  inset: 7%;
+  z-index: 1;
+  display: block;
+  /* The creature's size tier is applied here, about the middle of the cell, so
+     a Huge shape overflows evenly instead of growing out of the bottom. */
+  transform-origin: center;
+}
+.token .sil svg { width: 100%; height: 100%; display: block; }
+.token.team1 .sil { color: #8ec2ff; }
+.token.team2 .sil { color: #ff9a9a; }
+
+/* The chip a silhouette sits on, so a half-loaded board reads as one thing
+   rather than two. */
+.token.noart .base {
   inset: 9%;
   border-radius: 50%;
   background: #1d1830;
   border: 2.5px solid transparent;
 }
-.token.emoji.team1 .base { border-color: var(--blue); }
-.token.emoji.team2 .base { border-color: var(--red); }
-.token.emoji.active .base { box-shadow: 0 0 10px 2px var(--gold); }
-.token.emoji .glyph {
-  position: absolute;
-  inset: 9%;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(14px, 4.2vmin, 26px);
-  line-height: 1;
-}
+.token.noart.team1 .base { border-color: var(--blue); }
+.token.noart.team2 .base { border-color: var(--red); }
+.token.noart.active .base { box-shadow: 0 0 10px 2px var(--gold); }
 .hpbar {
   position: absolute;
   z-index: 2;
@@ -739,13 +755,13 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 /* Whole-token washes for the heaviest, longest-lasting conditions, so a glance
    at the board reads status without hunting for a corner badge. */
 .token.tint-poison .art,
-.token.tint-poison .glyph { filter: hue-rotate(55deg) saturate(1.35) brightness(0.92); }
+.token.tint-poison .sil { filter: hue-rotate(55deg) saturate(1.35) brightness(0.92); }
 .token.tint-frozen .art,
-.token.tint-frozen .glyph { filter: saturate(0.5) brightness(1.12) hue-rotate(160deg); }
+.token.tint-frozen .sil { filter: saturate(0.5) brightness(1.12) hue-rotate(160deg); }
 .token.tint-fear .art,
-.token.tint-fear .glyph   { filter: saturate(0.8) brightness(0.85) hue-rotate(240deg); }
+.token.tint-fear .sil   { filter: saturate(0.8) brightness(0.85) hue-rotate(240deg); }
 .token.tint-bound .art,
-.token.tint-bound .glyph  { filter: saturate(0.55) brightness(0.9); }
+.token.tint-bound .sil  { filter: saturate(0.55) brightness(0.9); }
 .familiar {
   position: absolute;
   z-index: 4;
@@ -921,7 +937,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 
 /* ---- spell wind-up (caster pulse) ---- */
 .token.casting .art,
-.token.casting .glyph { animation: castPulse 0.42s ease-out; }
+.token.casting .sil { animation: castPulse 0.42s ease-out; }
 @keyframes castPulse {
   0%   { filter: brightness(1); }
   45%  { filter: brightness(1.65) drop-shadow(0 0 7px #c084fc); }
@@ -1050,15 +1066,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .portrait.team1 { border-color: var(--blue); }
 .portrait.team2 { border-color: var(--red); }
 .portrait.big { width: 64px; height: 64px; }
-/* The emoji standing in for a portrait: same ring, same size, centred glyph.
-   Sized off the frame so `.big` scales it too. */
-.portrait-glyph {
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-  line-height: 1;
-}
-.portrait-glyph.big { font-size: 32px; }
+/* The silhouette standing in for a portrait: same ring, shape inset from it.
+   No chip — the ring is already the frame. */
+.portrait-sil { display: grid; place-items: center; color: #cbbdf0; }
+.portrait-sil svg { width: 76%; height: 76%; display: block; }
 .chooser-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .chooser-head h3 { margin: 0; }
 
@@ -1889,7 +1900,7 @@ button.category .count {
 
 /* A downed hero: face-down, drained of colour, unmistakably out — but still on
    the board, because someone can still go and get them up. */
-.token.downed .art, .token.downed .glyph {
+.token.downed .art, .token.downed .sil {
   filter: grayscale(1) brightness(0.62);
   transform: rotate(-72deg) scale(0.82) !important;
   transition: transform 0.35s ease-out, filter 0.35s ease-out;
@@ -1898,7 +1909,7 @@ button.category .count {
 .token.downed .hpbar { display: none; }
 /* Knocked prone but still conscious: the same toppled posture as a downed body,
    but in full colour with its HP bar intact — it's flat on its back, not out. */
-.token.prone .art, .token.prone .glyph {
+.token.prone .art, .token.prone .sil {
   transform: rotate(-72deg) scale(0.85) !important;
   transition: transform 0.35s ease-out;
 }
@@ -2938,7 +2949,8 @@ button.category .count {
   width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
   border: 1px solid #5a2b3a; background: #241f38;
 }
-.gate-foe-glyph { display: grid; place-items: center; font-size: .9rem; }
+.gate-foe-glyph { display: grid; place-items: center; color: #e0a8b6; }
+.gate-foe-glyph svg { width: 80%; height: 80%; display: block; }
 .gate-foe-count {
   position: absolute; bottom: -3px; right: -3px; padding: 0 3px; border-radius: 7px;
   background: var(--red, #e26); color: #fff; font-size: .6rem; font-weight: 800;
@@ -2957,8 +2969,9 @@ button.category .count {
 }
 .arena-foe-glyph {
   width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 1.8rem; border: 2px solid #5a2b3a; background: #241f38;
+  border: 2px solid #5a2b3a; background: #241f38; color: #e0a8b6;
 }
+.arena-foe-glyph svg { width: 78%; height: 78%; display: block; }
 .arena-foe-count {
   position: absolute; top: -2px; right: 6px; padding: 1px 6px; border-radius: 9px;
   background: var(--red, #e26); color: #fff; font-size: .72rem; font-weight: 800;
@@ -3067,7 +3080,8 @@ button.category .count {
   background: #2a1330;
 }
 .chorus-face img { width: 100%; height: 100%; object-fit: cover; }
-.chorus-glyph { font-size: 26px; line-height: 44px; text-align: center; display: block; }
+.chorus-glyph { display: grid; place-items: center; height: 100%; color: #d7c2ee; }
+.chorus-glyph svg { width: 74%; height: 74%; display: block; }
 .chorus-say { min-width: 0; }
 .chorus-who {
   display: block;

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { glyphFor } from './glyphs.js';
+import { Silhouette } from './Silhouette.js';
 
 /**
  * A creature image that always renders *something*, from the first frame.
@@ -21,8 +21,16 @@ import { glyphFor } from './glyphs.js';
  *   ok        the image, faded in over one frame
  *   failed    glyph, permanently — the old onError behaviour
  *
- * The glyph is the same emoji the board has always degraded to, so a slow
- * connection now looks like the game's own no-art mode rather than like damage.
+ * The stand-in is a silhouette — an abstract shape chosen from the creature's
+ * body plan, class or type. It used to be an emoji, and the emoji was measurably
+ * too small: `.token.emoji .glyph` sized it from the viewport rather than the
+ * cell, so a 49px board cell on a 430px phone held a 20px speck and the board
+ * read as empty tiles with dirt on them. A silhouette is an SVG stretched to
+ * its box, so it fills whatever it is given.
+ *
+ * Emoji have not gone away — the combat log, the class pips and the corpse
+ * markers still use them, and at 16px inline that is the right mark. What
+ * changed is the picture-shaped holes, which wanted a picture-shaped stand-in.
  *
  * WHY BOTH ELEMENTS ARE IN THE TREE WHILE LOADING
  *
@@ -52,7 +60,12 @@ export function ArtImage({
   glyphClassName?: string;
   alt?: string;
   title?: string;
-  /** Extra style for the image only — the board scales tokens per creature. */
+  /**
+   * Extra style for whichever element renders — the board scales tokens per
+   * creature, and the silhouette has to take that scale too. It was
+   * image-only, which meant a Huge monster's stand-in was the same size as a
+   * Tiny one's until its picture landed.
+   */
   style?: React.CSSProperties;
 }) {
   const [state, setState] = useState<'loading' | 'ok' | 'failed'>('loading');
@@ -64,8 +77,14 @@ export function ArtImage({
 
   if (!src || state === 'failed') {
     return (
-      <span className={glyphClassName ?? className} title={title} role="img" aria-label={alt || undefined}>
-        {glyphFor(id)}
+      <span
+        className={glyphClassName ?? className}
+        style={style}
+        title={title}
+        role="img"
+        aria-label={alt || undefined}
+      >
+        <Silhouette id={id} />
       </span>
     );
   }
@@ -75,11 +94,12 @@ export function ArtImage({
       {state === 'loading' && (
         <span
           className={`${glyphClassName ?? className ?? ''} art-waiting`}
+          style={style}
           title={title}
           role="img"
           aria-label={alt || undefined}
         >
-          {glyphFor(id)}
+          <Silhouette id={id} />
         </span>
       )}
       <img

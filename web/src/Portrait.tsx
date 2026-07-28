@@ -18,7 +18,7 @@ export function Portrait({ id, team, big, label }: { id: string; team: TeamId; b
       id={id}
       {...(hasArt(id) ? { src: portraitUrl(id) } : {})}
       className={cls}
-      glyphClassName={`${cls} portrait-glyph`}
+      glyphClassName={`${cls} portrait-sil`}
       alt={label ?? ''}
     />
   );

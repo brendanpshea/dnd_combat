@@ -111,7 +111,7 @@ describe('board tokens', () => {
   it('every creature image falls back when the art fails to load', () => {
     const artImage = readFileSync(join(WEB, 'ArtImage.tsx'), 'utf8');
     expect(artImage, 'the shared image must react to a load failure').toContain('onError');
-    expect(artImage, 'and fall back to the glyph').toContain('glyphFor');
+    expect(artImage, 'and fall back to a silhouette').toContain('Silhouette');
 
     // The three places a creature is drawn. Each either routes through
     // ArtImage or handles onError itself.
@@ -133,13 +133,15 @@ describe('board tokens', () => {
       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
     expect(src, 'must not bail out and render nothing').not.toMatch(/return null/);
     const css = readFileSync(join(WEB, 'styles.css'), 'utf8');
-    expect(css, 'the fallback glyph needs a rule or it is an unstyled character')
-      .toContain('.portrait-glyph');
+    expect(css, 'the fallback silhouette needs a rule or it is an unsized SVG')
+      .toContain('.portrait-sil');
   });
 
   it('every monster has generated art or an emoji, never a question mark', () => {
-    // The glyph map moved out of Board.tsx so the portrait frame and the
-    // arena's wave preview could fall back to the same emoji.
+    // The emoji no longer ships in the UI — silhouettes replaced it there — but
+    // the map still drives the art backlog's table, where the glyph is the only
+    // hint of what an undrawn monster looks like. A '?' in that column is a row
+    // an artist cannot act on.
     const src = readFileSync(join(WEB, 'glyphs.ts'), 'utf8');
     const i = src.indexOf('const GLYPH');
     // Comments stripped first, then key-followed-by-a-quoted-glyph. Anchoring

@@ -5,7 +5,6 @@ import { acOf } from '../../src/data/armor.js';
 import type { CoverRead } from '../../src/engine/rules/cover.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
-import { glyphFor } from './glyphs.js';
 import { ArtImage } from './ArtImage.js';
 import {
   hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl,
@@ -211,7 +210,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
             className={[
               'token',
               c.team,
-              hasArt(artId) ? 'art' : 'emoji',
+              hasArt(artId) ? 'art' : 'noart',
               c.id === activeId ? 'active' : '',
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
@@ -231,14 +230,17 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
             {c.id === activeId && <div className="turn-arrow" />}
             <div className="base" />
             {/* The board rolled its own image-with-fallback, and its error path
-                hid the img and left the cell empty — worse than the glyph it
-                already had to hand. ArtImage holds the glyph while the token is
-                in flight and returns to it if the token never comes. */}
+                hid the img and left the cell empty — worse than the stand-in it
+                already had to hand. ArtImage holds a silhouette while the token
+                is in flight and keeps it if the token never comes. The size
+                scale goes to both: a Huge shape has to read as Huge whether or
+                not its picture has arrived, which is the signal the old emoji
+                fallback threw away. */}
             <ArtImage
               id={c.classId}
               {...(hasArt(artId) ? { src: tokenUrl(artId) } : {})}
               className="art"
-              glyphClassName="glyph"
+              glyphClassName="sil"
               style={{ transform: `scale(${tokenScale(artId)})` }}
             />
             {c.familiar?.kind === 'owl' && (

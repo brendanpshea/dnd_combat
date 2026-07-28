@@ -4,22 +4,22 @@
  * The same argument the terrain sheet settled, about a different asset: whether
  * an abstract shape "reads" cannot be decided by describing it. So this renders
  * the real `.token` markup with the real `styles.css`, at the three sizes that
- * matter, next to real generated art for comparison.
+ * matter, next to the emoji it replaces and real art for comparison.
  *
  * Measured first, because the sheet is answering a measurement: a board cell is
- * 49px on a 430px phone and the emoji standing in for missing art is 20x19 —
- * about a sixth of the cell, where real art fills it. The bottom row of this
- * sheet is that emoji, at the same sizes, so the comparison is in the picture
- * rather than in a claim about it.
+ * 49px on a 430px phone and the emoji standing in for missing art was 20x19 —
+ * about a sixth of the cell, where real art fills it.
  *
  *   npx tsx scripts/token-sheet.ts
+ *   node_modules/playwright-core/.../chrome --headless --screenshot=... \
+ *     --window-size=1200,2600 art/token-sheet.html
  */
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { glyphFor } from '../web/src/glyphs.js';
+import { SILHOUETTE_PATH, SILHOUETTE_BOX } from '../web/src/silhouettes.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const TOKENS = `${ROOT}web/public/art/tokens/`;
 const OUT = `${ROOT}art/token-sheet.html`;
 
 /** Cell sizes: a small phone, a normal phone, and a desktop board. */
@@ -28,22 +28,26 @@ const SIZES = [34, 49, 96];
 /** One example creature per type, for the emoji row and the art comparison. */
 const EXAMPLE: Record<string, string> = {
   aberration: 'aboleth', beast: 'wolf', celestial: 'unicorn', construct: 'animated-armor',
-  dragon: 'red-wyrmling', elemental: 'fire-elemental', fey: 'sprite', fiend: 'imp',
+  dragon: 'young-red', elemental: 'fire-elemental', fey: 'sprite', fiend: 'imp',
   giant: 'hill-giant', humanoid: 'bandit', monstrosity: 'owlbear', ooze: 'gray-ooze',
   undead: 'skeleton',
+  // Body plans: the monster each one was drawn for.
+  winged: 'griffon', serpent: 'giant-constrictor-snake', manylegs: 'giant-spider',
+  drifting: 'specter',
 };
 
 const css = readFileSync(`${ROOT}web/src/styles.css`, 'utf8');
-const svgs = new Map<string, string>();
-for (const f of readdirSync(TOKENS)) {
-  svgs.set(f.replace(/\.svg$/, ''), readFileSync(TOKENS + f, 'utf8'));
+
+function svg(key: string): string {
+  return `<svg viewBox="0 0 ${SILHOUETTE_BOX} ${SILHOUETTE_BOX}" aria-hidden="true">`
+    + `<path d="${SILHOUETTE_PATH[key] ?? ''}" fill="currentColor"/></svg>`;
 }
 
 /** A token as the board builds one, with a silhouette inside it. */
 function silhouetteToken(key: string, size: number, team: 'team1' | 'team2'): string {
-  return `<div class="token ${team} sheet" style="--cell:${size}px">
+  return `<div class="token noart ${team} sheet" style="--cell:${size}px">
     <div class="base"></div>
-    <span class="sil">${svgs.get(key) ?? ''}</span>
+    <span class="sil">${svg(key)}</span>
   </div>`;
 }
 
@@ -61,40 +65,35 @@ function artToken(monsterId: string, size: number, team: 'team1' | 'team2'): str
   </div>`;
 }
 
-const types = [...svgs.keys()].filter((k) => k.startsWith('type-')).sort();
-const classes = [...svgs.keys()].filter((k) => k.startsWith('class-')).sort();
-
-function row(label: string, cells: string): string {
-  return `<tr><th>${label}</th>${cells}</tr>`;
+const keys = Object.keys(SILHOUETTE_PATH);
+function group(prefix: string): string[] {
+  return keys.filter((k) => k.startsWith(prefix));
 }
 
-const typeRows = types.map((key) => {
-  const type = key.slice('type-'.length);
-  const example = EXAMPLE[type];
-  const cells = SIZES.map((s) => `<td>${silhouetteToken(key, s, 'team2')}</td>`).join('')
-    + `<td class="gap">${example ? emojiToken(example, 49, 'team2') : ''}</td>`
-    + `<td>${example ? artToken(example, 49, 'team2') : ''}</td>`;
-  return row(type, cells);
-}).join('\n');
+function rows(prefix: string, team: 'team1' | 'team2'): string {
+  return group(prefix).map((key) => {
+    const name = key.slice(prefix.length);
+    const example = EXAMPLE[name] ?? name;
+    const cells = SIZES.map((s) => `<td>${silhouetteToken(key, s, team)}</td>`).join('')
+      + `<td class="gap">${emojiToken(example, 49, team)}</td>`
+      + `<td>${artToken(example, 49, team)}</td>`;
+    return `<tr><th>${name}</th>${cells}</tr>`;
+  }).join('\n');
+}
 
-const classRows = classes.map((key) => {
-  const cls = key.slice('class-'.length);
-  const cells = SIZES.map((s) => `<td>${silhouetteToken(key, s, 'team1')}</td>`).join('')
-    + `<td class="gap">${emojiToken(cls, 49, 'team1')}</td>`
-    + `<td>${artToken(cls, 49, 'team1')}</td>`;
-  return row(cls, cells);
-}).join('\n');
-
-// Size tiers, since throwing the size signal away is half of what is wrong with
-// the emoji: a Huge remorhaz and a Tiny sprite are both 20px today.
+// Size tiers, since throwing the size signal away is half of what was wrong
+// with the emoji: a Huge remorhaz and a Tiny sprite were both 20px.
 const TIERS: Array<[string, number]> = [
   ['tiny', 0.6], ['small', 0.82], ['medium', 1], ['large', 1.25], ['huge', 1.5],
 ];
 const tierRow = TIERS.map(([name, scale]) =>
   `<td><div class="token team2 sheet" style="--cell:49px">
      <div class="base"></div>
-     <span class="sil" style="transform:scale(${scale})">${svgs.get('type-monstrosity')}</span>
+     <span class="sil" style="transform:scale(${scale})">${svg('type-monstrosity')}</span>
    </div><small>${name}</small></td>`).join('');
+
+const head = '<thead><tr><td></td><td>34</td><td>49</td><td>96</td>'
+  + '<td class="gap">emoji</td><td>art</td></tr></thead>';
 
 writeFileSync(OUT, `<!doctype html>
 <meta charset="utf-8">
@@ -111,26 +110,38 @@ thead td { font-size: .68rem; color: #6f6790; text-align: center; }
 small { display: block; text-align: center; font-size: .62rem; color: #6f6790; }
 /* The sheet drives cell size directly; the board gets it from the grid. */
 .token.sheet { position: relative; width: var(--cell); height: var(--cell); }
-.token.sheet .sil { position: absolute; inset: 6%; display: block; z-index: 1; }
-.token.sheet .sil svg { width: 100%; height: 100%; display: block; }
-.token.team1 .sil { color: #7fb3ff; }
-.token.team2 .sil { color: #ff8f8f; }
+/* The emoji column is history now — the app no longer has a rule for it, so
+   the sheet keeps the one it used to have, to compare against. */
+.token.emoji .base {
+  inset: 9%; border-radius: 50%; background: #1d1830; border: 2.5px solid transparent;
+}
+.token.emoji.team1 .base { border-color: var(--blue); }
+.token.emoji.team2 .base { border-color: var(--red); }
+.token.emoji .glyph {
+  position: absolute; inset: 9%; z-index: 1; display: flex;
+  align-items: center; justify-content: center;
+  font-size: clamp(14px, 4.2vmin, 26px); line-height: 1;
+}
 </style>
-<h1>Token silhouettes — 21 files, 6.4 KB total</h1>
-<p style="color:#8d84a6;font-size:.8rem;max-width:60ch">
+<h1>Token silhouettes — ${keys.length} shapes, ${Object.values(SILHOUETTE_PATH).join('').length} bytes of path data</h1>
+<p style="color:#8d84a6;font-size:.8rem;max-width:64ch">
 Columns: the silhouette at 34px (small phone), 49px (the measured cell on a
-430px phone) and 96px (desktop) — then, past the rule, today's emoji and the
-real art at 49px for comparison.</p>
+430px phone) and 96px (desktop) — then, past the rule, the emoji it replaces
+and the real art at 49px for comparison.</p>
 
-<h2>By creature type — 13 files, one per type</h2>
-<table><thead><tr><td></td><td>34</td><td>49</td><td>96</td><td class="gap">emoji</td><td>art</td></tr></thead>
-${typeRows}</table>
+<h2>By creature type</h2>
+<table>${head}
+${rows('type-', 'team2')}</table>
 
-<h2>By class — 8 files, for the party's own tokens</h2>
-<table><thead><tr><td></td><td>34</td><td>49</td><td>96</td><td class="gap">emoji</td><td>art</td></tr></thead>
-${classRows}</table>
+<h2>By body plan — chosen per monster where the type is too coarse</h2>
+<table>${head}
+${rows('plan-', 'team2')}</table>
 
-<h2>Size tiers — the signal the emoji path throws away</h2>
+<h2>By class — the party's own tokens</h2>
+<table>${head}
+${rows('class-', 'team1')}</table>
+
+<h2>Size tiers — the signal the emoji path threw away</h2>
 <table><tr><th>monstrosity</th>${tierRow}</tr></table>
 `);
 console.log(`wrote ${OUT}`);
