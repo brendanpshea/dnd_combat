@@ -19,6 +19,13 @@ export interface WeaponData {
   mastery?: MasteryId;
   /** Extra damage dice when the attack roll had advantage (goblin scimitar). */
   bonusDiceOnAdvantage?: string;
+  /**
+   * Extra damage dice against a creature that changes shape — what silvering
+   * is for. A bonus rather than a gate: the 2014 lycanthropes could not be hurt
+   * at all without silver, and a monster you simply cannot damage is a wall
+   * rather than a fight.
+   */
+  bonusDiceVsShapechanger?: string;
   /** Condition applied automatically on a hit (wolf bite → prone, snake constrict → restrained). */
   onHitCondition?: ConditionId;
   /**
@@ -1190,9 +1197,11 @@ for (const baseId of silverable()) {
     id: `silvered-${baseId}`,
     name: `Silvered ${base.name}`,
     cost: (base.cost ?? 0) + SILVERING_FEE,
-    // No attack or damage bonus: `isMagicWeapon` keys off `magic`, which is the
-    // whole and only effect — it gets through "nonmagical" resistance.
+    // Common magic — an alchemical treatment of the metal, not a plating. Two
+    // effects, and no third: it counts as magical, and it bites a shapechanger
+    // harder. Nothing about it is tracked separately from `magic`.
     magic: true,
+    bonusDiceVsShapechanger: '1d6',
   };
 }
 

@@ -149,11 +149,36 @@ describe('the offer itself', () => {
   });
 
   it('offers a level-1 party something worth having', () => {
+    // "Worth having" used to mean "a consumable", which was a proxy for the
+    // real rule and has stopped being one: silvered weapons and adamantine
+    // armour are permanent, and are meant to arrive early. What must stay true
+    // is that the prize is magical rather than a mundane consolation dagger.
     const offer = spoilOffer(1, 1, 'morning', 0, 1);
     expect(offer.length).toBe(SPOIL_CHOICES);
     for (const id of offer) {
       expect(isMagicalWare(id), `${itemName(id)} is a mundane consolation prize`).toBe(true);
-      expect(ITEMS[id], `${itemName(id)} is not a consumable`).toBeDefined();
+    }
+  });
+
+  it('never puts a flat bonus in a level-1 party\'s hands', () => {
+    // THE guardrail, and the one the tier rule was standing in for. The report
+    // was "my first fight gave a Mace +1 and a Cloak of Protection" — and what
+    // made that wrong was the +1: a permanent, stacking bump to hit and damage
+    // arriving before the fights are built to expect it.
+    //
+    // Silver and adamantine are exempt from the tier gate precisely because
+    // neither has one. This says so directly, so the exception cannot widen
+    // into the thing it was carved out of.
+    for (let seed = 1; seed <= 60; seed++) {
+      for (const level of [1, 2, 3]) {
+        for (const id of spoilOffer(seed, 1, 'morning', 0, level)) {
+          const w = WEAPONS[id];
+          expect(w?.attackBonus, `${id} at level ${level}`).toBeUndefined();
+          expect(w?.damageBonus, `${id} at level ${level}`).toBeUndefined();
+          expect(TRINKETS[id], `${id} is a worn permanent bonus at level ${level}`).toBeUndefined();
+          expect(id.endsWith('plus1'), `${id} at level ${level}`).toBe(false);
+        }
+      }
     }
   });
 });
@@ -188,11 +213,16 @@ describe('a level-1 party is actually paid', () => {
     expect(spoilTierLabel(3)).toBe('a scroll or potion');
     expect(spoilTierLabel(PERMANENT_FROM_LEVEL)).toBe('a magic item');
     expect(spoilTierLabel(7)).toBe('a magic item');
-    // Whatever it says, it has to match what the player will actually be shown.
+    // Whatever it says, it has to match what the player will actually be shown
+    // — allowing for the early martial kit, which is deliberately permanent and
+    // deliberately early, and which the label glosses as "a scroll or potion"
+    // because that is what the overwhelming majority of low-level draws are.
+    const earlyKit = (id: string) => id.includes('adamantine') || id.startsWith('silvered-');
     for (const level of [1, 3, 4, 7]) {
       const tier = spoilTierFor(level);
       const offer = spoilOffer(1, 1, 'morning', 0, level);
       for (const id of offer) {
+        if (tier === 'consumable' && earlyKit(id)) continue;
         expect(isPermanentMagic(id), `${id} at level ${level}`).toBe(tier === 'permanent');
       }
     }
