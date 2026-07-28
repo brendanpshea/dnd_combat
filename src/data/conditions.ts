@@ -55,6 +55,9 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   raging: 'raging',
   reckless: 'attacking recklessly',
   stunned: 'stunned',
+  veiled: 'invisible',
+  deathWarded: 'warded against death',
+  unbound: 'moving freely',
 };
 
 export function conditionName(id: ConditionId): string {

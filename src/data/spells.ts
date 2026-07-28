@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, coverBetween } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -2403,9 +2403,222 @@ export const SPELLS: Record<Id, SpellData> = {
       return events;
     },
   },
+  /**
+   * Greater Invisibility: the veil that survives the swing.
+   *
+   * Invisibility at 2nd level is a way to leave; this is a way to fight. The
+   * whole difference is one condition — `veiled` tells `endHide` not to lift the
+   * hide when its bearer does something loud — so every piece of machinery that
+   * already makes a hidden creature untargetable and its attacks advantaged
+   * applies unchanged.
+   */
+  'greater-invisibility': {
+    id: 'greater-invisibility', name: 'Greater Invisibility', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '🫥',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      for (const id of ['hidden', 'veiled'] as const) {
+        if (t.conditions.some((c) => c.id === id)) continue;
+        t.conditions.push({ id, sourceId: casterId, concentration: true });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: id, sourceId: casterId });
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'greater-invisibility', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Dimension Door: Misty Step's grown-up cousin — further, and it takes
+   * somebody with you.
+   *
+   * The passenger is the point. A teleport for one is a way to save yourself; a
+   * teleport for two is a way to get the wizard out of the middle, which is the
+   * situation anyone actually casts this in.
+   */
+  'dimension-door': {
+    id: 'dimension-door', name: 'Dimension Door', level: 4, castingTime: 'action',
+    // The SRD's 500 feet, kept honest even though an 8x8 board is 40 feet
+    // across: the range is bounded by the grid in practice, and writing a
+    // smaller number would be inventing a restriction the spell does not have.
+    targeting: { kind: 'emptyCell', range: 500 },
+    concentration: false,
+    icon: '🚪',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const to = positions[0]!;
+      const events: GameEvent[] = [];
+      // An adjacent ally comes along, landing where the caster was standing —
+      // which is always legal, because the caster is about to leave it.
+      const from = { ...caster.position };
+      const rider = Object.values(state.combatants).find(
+        (c) => c.alive && !isDown(c) && c.team === caster.team && c.id !== casterId &&
+               distanceFeet(c.position, caster.position) <= 5,
+      );
+      const fromCell = cellAt(state.grid, caster.position)!;
+      if (fromCell.occupantId === casterId) delete fromCell.occupantId;
+      caster.position = to;
+      cellAt(state.grid, to)!.occupantId = casterId;
+      events.push({ type: 'moved', combatantId: casterId, path: [from, to] });
+      if (rider) {
+        const riderFrom = { ...rider.position };
+        const riderCell = cellAt(state.grid, rider.position)!;
+        if (riderCell.occupantId === rider.id) delete riderCell.occupantId;
+        rider.position = from;
+        cellAt(state.grid, from)!.occupantId = rider.id;
+        events.push({ type: 'moved', combatantId: rider.id, path: [riderFrom, from] });
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Wall of Fire: ground you cannot cross for free.
+   *
+   * Laid as a burning overlay on the cells, exactly as Web lays strands, so it
+   * persists, it is visible, and it goes out when concentration does. It burns
+   * EVERYONE who walks it, the caster's own party included — a wall that only
+   * hurts the enemy is a damage aura, and where you put it has to be a decision.
+   */
+  'wall-of-fire': {
+    id: 'wall-of-fire', name: 'Wall of Fire', level: 4, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 120 },
+    concentration: true,
+    upcast: true,
+    icon: '🔥',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dice = `${5 + Math.max(0, slotLevel - 4)}d8`;
+      const events: GameEvent[] = [];
+      const lit: Position[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        if (fireCell(state.grid, pos, casterId, dice)) lit.push(pos);
+      }
+      // Whoever is already standing in it feels it immediately, on the same
+      // terms as walking in.
+      for (const pos of lit) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive) continue;
+        const save = savingThrow(state, tid, 'dex', spellDc(state, casterId));
+        events.push(save.event);
+        const roll = rollDice(state.rng, dice); state.rng = roll.state;
+        const amount = saveForHalf(t, 'dex', roll.total, save.success);
+        events.push(...applyDamage(state, tid, casterId, amount, 'fire', roll.rolls, { tags: ['Wall of Fire'] }));
+      }
+      caster.concentratingOn = { spellId: 'wall-of-fire', targetIds: [] };
+      return events;
+    },
+  },
+
+  /**
+   * Confusion: a crowd that stops being a crowd.
+   *
+   * RAW rolls a d10 each turn for what each victim does — wander, babble, lash
+   * out at whoever is nearest. This engine has no "act randomly" behaviour to
+   * hand and inventing one would be a large amount of machinery for an outcome
+   * that reads, from the other side of the table, as "they lost their turn". So
+   * it applies `incapacitated` with a repeating Wisdom save, which is that
+   * outcome exactly, on the SRD's own escape clause.
+   */
+  confusion: {
+    id: 'confusion', name: 'Confusion', level: 4, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 90 },
+    concentration: true,
+    icon: '😵‍💫',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const caught: Id[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || t.team === caster.team) continue;
+        if (t.conditions.some((k) => k.id === 'incapacitated')) continue;
+        const save = savingThrow(state, tid, 'wis', dc);
+        events.push(save.event);
+        if (save.success) continue;
+        t.conditions.push({
+          id: 'incapacitated', sourceId: casterId, concentration: true,
+          repeatSave: { ability: 'wis', dc },
+        });
+        events.push({ type: 'conditionApplied', combatantId: tid, condition: 'incapacitated', sourceId: casterId });
+        caught.push(tid);
+      }
+      caster.concentratingOn = { spellId: 'confusion', targetIds: caught };
+      return events;
+    },
+  },
+
+  /**
+   * Freedom of Movement: nothing magical holds you.
+   *
+   * Reads the same `wardedAgainstMagicalBinding` hook a Ring of Free Action
+   * already used, so Web, Entangle and Hold Person all respect it without any
+   * of them being told about the spell. The hook existed; this gives it a
+   * second way in.
+   *
+   * A one-hour buff with no concentration, which in this game means the whole
+   * fight and the one after — cast it on the front line before the doors open.
+   */
+  'freedom-of-movement': {
+    id: 'freedom-of-movement', name: 'Freedom of Movement', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: false,
+    icon: '🌀',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const events: GameEvent[] = [];
+      if (!t.conditions.some((k) => k.id === 'unbound')) {
+        t.conditions.push({ id: 'unbound', sourceId: casterId });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'unbound', sourceId: casterId });
+      }
+      // And it frees whatever already has hold of them, which is most of why
+      // anyone casts it mid-fight.
+      for (const id of ['restrained', 'paralyzed'] as const) {
+        if (!t.conditions.some((k) => k.id === id)) continue;
+        t.conditions = t.conditions.filter((k) => k.id !== id);
+        events.push({ type: 'conditionRemoved', combatantId: targetId, condition: id });
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Death Ward: one blow that does not land.
+   *
+   * Read in `dropToZero`, which is the single place every route to nothing
+   * passes through — a sword, a failed save, a hazard. A ward that only caught
+   * weapons would be a ward nobody could plan around, and planning around it is
+   * what a cleric spends a 4th-level slot for.
+   *
+   * No concentration, so it can be cast in the morning and forgotten about,
+   * which is the other half of what makes it a slot worth spending.
+   */
+  'death-ward': {
+    id: 'death-ward', name: 'Death Ward', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'ally', count: 1 },
+    concentration: false,
+    icon: '🕯️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      if (t.conditions.some((k) => k.id === 'deathWarded')) return [];
+      t.conditions.push({ id: 'deathWarded', sourceId: casterId });
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'deathWarded', sourceId: casterId }];
+    },
+  },
 };
 
 export function directionFromDelta(from: Position, to: Position): Direction8 {
+
   const dx = Math.sign(to.x - from.x);
   const dy = Math.sign(to.y - from.y);
   for (const [name, d] of Object.entries(DIRECTIONS) as Array<[Direction8, Position]>) {

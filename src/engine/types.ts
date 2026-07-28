@@ -65,6 +65,16 @@ export interface Cell {
    */
   chilled?: { expiresAtRound: number };
   /**
+   * Wall of Fire: this cell burns until the caster stops concentrating.
+   *
+   * An overlay for the same reason the web and the hail are — it sits on top of
+   * whatever the ground already is, so nothing has to remember what to put back.
+   * `sourceId`'s side is not spared: a wall you can walk your own party through
+   * is a wall that costs nothing to place badly, and placing it badly is the
+   * decision the spell is made of.
+   */
+  fire?: { sourceId: Id; dice: string };
+  /**
    * A lingering Web: strands of webbing filling the cell while the caster
    * concentrates. Unlike the old fire-and-forget Web (which only caught who
    * stood in the blast at cast time), this persists — a creature that *enters*
@@ -131,7 +141,10 @@ export type ConditionId =
   | 'shillelagh'   // a club/quarterstaff swings on the caster's spell ability, at a bigger die
   | 'raging'       // Rage: bonus melee damage, physical resistance, Str advantage
   | 'reckless'     // Reckless Attack: advantage on your melee attacks and on everyone else's against you
-  | 'stunned';     // Stunning Strike: incapacitated, speed 0, and attacks against it have advantage
+  | 'stunned'      // Stunning Strike: incapacitated, speed 0, and attacks against it have advantage
+  | 'veiled'       // Greater Invisibility: hidden, and attacking does not reveal you
+  | 'deathWarded'  // Death Ward: the next drop to 0 leaves you standing at 1 instead
+  | 'unbound';     // Freedom of Movement: nothing magical holds you
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -465,7 +478,10 @@ export type CreatureSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gar
  */
 export function wardedAgainstMagicalBinding(c: Combatant, condition: ConditionId): boolean {
   return (condition === 'restrained' || condition === 'paralyzed') &&
-    c.featureIds.includes('free-action');
+    // A worn Ring of Free Action, or the spell of the same name. The hook was
+    // already here for the ring; Freedom of Movement is the same guarantee with
+    // a duration, so it reads the same flag rather than a parallel one.
+    (c.featureIds.includes('free-action') || c.conditions.some((k) => k.id === 'unbound'));
 }
 
 export function ignoresHalfCover(size: CreatureSize): boolean {

@@ -210,7 +210,8 @@ export const CLASSES: Record<Id, ClassData> = {
         2: ['guiding-bolt'],
         3: ['hold-person', 'aid', 'spiritual-weapon', 'blindness', 'lesser-restoration', 'warding-bond'],
         5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic', 'protection-from-energy', 'bestow-curse'], // 3rd-level slot arrives here
-        7: ['banishment'],
+        // 4th-level slot arrives here, and used to hold exactly one spell.
+        7: ['banishment', 'death-ward', 'freedom-of-movement'],
       },
     },
     featuresByLevel: {
@@ -260,7 +261,8 @@ export const CLASSES: Record<Id, ClassData> = {
         2: ['thunderwave'],
         3: ['scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness', 'flaming-sphere'],
         5: ['fireball', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
-        7: ['blight', 'ice-storm', 'banishment', 'phantasmal-killer'],   // 4th-level slot arrives here
+        7: ['greater-invisibility', 'wall-of-fire', 'confusion', 'dimension-door',
+            'blight', 'ice-storm', 'banishment', 'phantasmal-killer'],   // 4th-level slot arrives here
       },
       learnableExtra: ['ray-of-sickness'],
     },
@@ -351,7 +353,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // Written here rather than through new machinery because this table is
         // already "what this class can have, and when".
         6: ['fireball', 'spiritual-weapon'],
-        7: ['phantasmal-killer'],
+        7: ['greater-invisibility', 'confusion', 'dimension-door', 'freedom-of-movement', 'phantasmal-killer'],
       },
     },
     featuresByLevel: {
@@ -419,7 +421,7 @@ export const CLASSES: Record<Id, ClassData> = {
         2: ['find-familiar'],
         3: ['moonbeam', 'hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
         5: ['call-lightning', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
-        7: ['blight', 'ice-storm'],
+        7: ['wall-of-fire', 'confusion', 'freedom-of-movement', 'blight', 'ice-storm'],
       },
     },
     featuresByLevel: {
