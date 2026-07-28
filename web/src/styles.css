@@ -3438,3 +3438,42 @@ button.category .count {
 .gc-row.ok .gc-mark   { color: #6ee7a0; }
 .gc-row.fail .gc-mark { color: #ff7a7a; }
 .gc-tally { font-size: .82rem; color: #cfc4ea; margin: 6px 0 2px; text-align: center; }
+
+/* The crash screen. Deliberately plain and self-contained: whatever broke, this
+   has to render, so it leans on nothing the app sets up. */
+.crash {
+  position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center;
+  padding: 20px; background: #181327; overflow: auto;
+}
+.crash-box {
+  max-width: 30rem; background: #241f38; border: 1px solid #3d3459; border-radius: 14px;
+  padding: 22px; color: #d8cfe8; font-family: system-ui, sans-serif;
+}
+.crash-box h2 { margin: 0 0 10px; font-size: 1.15rem; }
+.crash-safe { color: #6ee7a0; font-weight: 600; margin: 0 0 10px; }
+.crash-box p { margin: 0 0 12px; line-height: 1.5; font-size: .92rem; }
+.crash-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.crash-actions button {
+  padding: 9px 16px; border-radius: 9px; border: 1px solid #4a3f6b;
+  background: #2f2848; color: #e6dcff; font: inherit; font-size: .9rem; cursor: pointer;
+}
+.crash-actions button.primary { background: #4a9eff; border-color: #4a9eff; color: #08121f; font-weight: 700; }
+.crash-reset {
+  display: block; width: 100%; margin-bottom: 12px; padding: 7px;
+  background: none; border: none; color: #8d84a6; font: inherit; font-size: .78rem;
+  text-decoration: underline; cursor: pointer;
+}
+.crash-detail summary { cursor: pointer; color: #8d84a6; font-size: .78rem; }
+.crash-detail pre {
+  margin: 8px 0 0; padding: 9px; border-radius: 8px; background: #1b1729;
+  color: #b9aede; font-size: .74rem; white-space: pre-wrap; word-break: break-word;
+}
+
+/* A save that could not be opened. Loud enough to be read, quiet enough not to
+   look like the game is broken — because it usually is not: the save is intact,
+   this build just cannot read it. */
+.save-warning {
+  margin: 0 0 14px; padding: 10px 13px; border-radius: 10px;
+  background: #33291a; border: 1px solid #6b5726; color: #f0d9a8;
+  font-size: .84rem; line-height: 1.45;
+}
