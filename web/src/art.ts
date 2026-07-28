@@ -14,6 +14,8 @@ import {
   HAS_TERRAIN_ART,
 } from './art-registry.js';
 import { LQIP } from './art-lqip.js';
+// Why every URL below is absolute, and what broke when they were not: assetUrl.ts.
+import { assetUrl as asset } from './assetUrl.js';
 
 export {
   HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG,
@@ -33,7 +35,7 @@ export function hasSceneArt(id: string | undefined): boolean {
 }
 
 export function sceneArtUrl(id: string): string {
-  return `${BASE}art/scene-${id}.webp`;
+  return asset(`${BASE}art/scene-${id}.webp`);
 }
 
 /** Map-node tokens; a node without one falls back to the token's emoji. */
@@ -42,11 +44,11 @@ export function hasTokenArt(id: string | undefined): boolean {
 }
 
 export function tokenUrl(id: string): string {
-  return `${BASE}art/token-${id}.webp`;
+  return asset(`${BASE}art/token-${id}.webp`);
 }
 
 export function portraitUrl(id: string): string {
-  return `${BASE}art/portrait-${id}.webp`;
+  return asset(`${BASE}art/portrait-${id}.webp`);
 }
 
 /**
@@ -57,7 +59,7 @@ export function portraitUrl(id: string): string {
  * cell size the board can be, from a 34px phone tile upward.
  */
 export function terrainUrl(kind: 'wall' | 'cover', theme: string, variant: 'a' | 'b'): string {
-  return `${BASE}art/terrain/terrain-${kind}-${theme}-${variant}.svg`;
+  return asset(`${BASE}art/terrain/terrain-${kind}-${theme}-${variant}.svg`);
 }
 
 /** Action bar / spell tray / prepare lists; falls back to the spell's emoji. */
@@ -65,11 +67,11 @@ export function hasSpellIcon(spellId: string | undefined): boolean {
   return !!spellId && HAS_SPELL_ICON.has(spellId);
 }
 export function spellIconUrl(spellId: string): string {
-  return `${BASE}art/icon-${spellId}.webp`;
+  return asset(`${BASE}art/icon-${spellId}.webp`);
 }
 
 export function boardBgUrl(theme: string): string {
-  return `${BASE}art/bg-${theme}.webp`;
+  return asset(`${BASE}art/bg-${theme}.webp`);
 }
 
 /**
@@ -87,7 +89,7 @@ export function boardBgUrl(theme: string): string {
  * shadows, and `make_thumbs.py --check` is what keeps that true.
  */
 export function thumbUrl(fullUrl: string): string {
-  return `${BASE}art/thumb/thumb-${fileOf(fullUrl)}`;
+  return asset(`${BASE}art/thumb/thumb-${fileOf(fullUrl)}`);
 }
 
 function fileOf(fullUrl: string): string {

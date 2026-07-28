@@ -1119,7 +1119,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .tip-text p { margin: 2px 0 0; font-size: .85rem; line-height: 1.4; color: var(--text); }
 .tip-close {
   flex: 0 0 auto; background: none; border: none; color: var(--muted);
-  cursor: pointer; font-size: 1rem; padding: 2px 4px; line-height: 1;
+  cursor: pointer; font-size: 1rem; line-height: 1;
+  /* 24px is the smallest a thumb can reliably hit. Padding rather than a
+     width, so the glyph stays where it was and only the target grows. */
+  min-width: 24px; min-height: 24px; padding: 2px 6px;
 }
 .tip-close:hover { color: var(--text); }
 @media (prefers-reduced-motion: reduce) { .tip-toast, .coach-banner { animation: none; } }
@@ -3078,7 +3081,10 @@ button.category .count {
 .chorus-toggle {
   background: none;
   border: none;
-  padding: 0 6px 0 0;
+  /* Was 22px wide: under the 24px a thumb can reliably hit, and this is the
+     control that silences a character who talks at you every fight. */
+  min-width: 24px;
+  padding: 0 6px;
   font-size: 13px;
   cursor: pointer;
   opacity: 0.75;
