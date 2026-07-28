@@ -80,6 +80,28 @@ export interface PartyCharacter {
       resistances?: DamageType[];
       /** Pass without Trace: +10 Stealth to this hero until the next rest. */
       passWithoutTrace?: true;
+      /** False Life cast in camp: temporary hit points waiting for the fight. */
+      falseLife?: number;
+      /** Aid cast in camp: hit point maximum raised until the next long rest. */
+      aid?: number;
+      /**
+       * A CONCENTRATION buff cast in camp, waiting to take hold when the doors
+       * open — Haste, Protection from Evil and Good.
+       *
+       * WHY IT CARRIES THE CASTER
+       *
+       * These are the two camp spells that do not simply persist. Haste lasts a
+       * minute, which is about ten rounds, which is about a fight — so casting
+       * it as the party walks in is honest. What is NOT honest is letting it
+       * persist for free: concentration means the caster cannot also hold
+       * Spirit Guardians, and means a hit on the caster can end it.
+       *
+       * So the caster is recorded here, and `buildCampaignParty` starts them in
+       * the fight already concentrating. The buff is then exactly as fragile as
+       * it would have been cast on round one, which is the point — a camp-cast
+       * Haste must not be better than a Haste.
+       */
+      campConcentration?: { spellId: Id; casterIdx: number };
     };
   };
   /**
@@ -1259,7 +1281,7 @@ export function sellItem(c: CampaignState, charIdx: number, itemId: Id): boolean
 export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Combatant[] {
   const level = partyLevelOf(c);
   const files = [1, 2, 4, 6];
-  return c.characters.map((ch, i) => {
+  const party = c.characters.map((ch, i) => {
     const combatant = buildCharacter({
       classId: ch.classId, team, level,
       speciesId: ch.speciesId,
@@ -1291,8 +1313,33 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
     for (const dt of ch.resources?.effects?.resistances ?? []) {
       if (!combatant.resistances.includes(dt)) combatant.resistances.push(dt);
     }
+    // Aid raises the hit point maximum, and the hit points with it — the same
+    // shape the in-combat spell has, where the extra points arrive as healing.
+    const aid = ch.resources?.effects?.aid;
+    if (typeof aid === 'number' && aid > 0) {
+      combatant.maxHp += aid;
+      combatant.hp = Math.min(combatant.maxHp, combatant.hp + aid);
+    }
+    const temp = ch.resources?.effects?.falseLife;
+    if (typeof temp === 'number' && temp > 0) combatant.tempHp = Math.max(combatant.tempHp ?? 0, temp);
     return combatant;
   });
+  // Second pass: the camp concentration buffs, which need every combatant to
+  // exist first because they link a target to a caster.
+  party.forEach((combatant, i) => {
+    const held = c.characters[i]?.resources?.effects?.campConcentration;
+    if (!held) return;
+    const caster = party[held.casterIdx];
+    // The caster may have died, been swapped out, or already be concentrating
+    // on somebody else's camp buff — one mind, one spell.
+    if (!caster || !caster.alive || caster.concentratingOn) return;
+    const condition = held.spellId === 'haste' ? 'hasted' : 'protected';
+    if (!combatant.conditions.some((k) => k.id === condition)) {
+      combatant.conditions.push({ id: condition, sourceId: caster.id, concentration: true });
+    }
+    caster.concentratingOn = { spellId: held.spellId, targetIds: [combatant.id] };
+  });
+  return party;
 }
 
 function setCampaignHp(ch: PartyCharacter, hp: number): void {
@@ -1493,8 +1540,13 @@ export function shortRest(c: CampaignState): RestResult {
 function clearCampBuffs(ch: PartyCharacter): void {
   const eff = ch.resources?.effects;
   if (!eff || (eff.giantStrength === undefined && eff.resistances === undefined &&
-      eff.passWithoutTrace === undefined)) return;
-  const { giantStrength: _s, resistances: _r, passWithoutTrace: _p, ...rest } = eff;
+      eff.passWithoutTrace === undefined && eff.falseLife === undefined &&
+      eff.aid === undefined && eff.campConcentration === undefined)) return;
+  // False Life is an hour, Haste is a minute, Aid is eight — all of them are
+  // over by the time the party has rested, and a buff that survived a rest
+  // would be a buff you cast once and never again.
+  const { giantStrength: _s, resistances: _r, passWithoutTrace: _p,
+    falseLife: _f, aid: _a, campConcentration: _cc, ...rest } = eff;
   if (Object.keys(rest).length) ch.resources = { ...ch.resources!, effects: rest };
   else { const { effects: _e, ...noEffects } = ch.resources!; ch.resources = noEffects; }
 }
@@ -1654,6 +1706,38 @@ const STORE_SPELL_ACTIONS: Record<Id, StoreSpellAction> = {
     spellId: 'mage-armor', name: 'Mage Armor', icon: '🛡️', targeting: 'self',
     castLabel: 'Ward self', castNotice: 'is protected by Mage Armor',
   },
+  /**
+   * The buffs worth putting up before the doors open.
+   *
+   * The arena runs two fights a day and the party walks in cold; every one of
+   * these was castable only once a fight had already started, which is the
+   * moment they are worth least. False Life in particular is temporary hit
+   * points, and temporary hit points are what you raise BEFORE anyone reaches
+   * you.
+   *
+   * Aid and False Life simply persist — neither takes concentration, and both
+   * outlast a fight by an hour or more, so a camp cast is exactly a cast.
+   *
+   * Haste and Protection from Evil and Good DO take concentration, and are
+   * handled differently: see `campConcentration`. They are not free here.
+   */
+  'false-life': {
+    spellId: 'false-life', name: 'False Life', icon: '💀', targeting: 'self',
+    castLabel: 'Ward self', castNotice: 'is wrapped in a necrotic shell',
+  },
+  aid: {
+    spellId: 'aid', name: 'Aid', icon: '💗', targeting: 'party',
+    castLabel: 'Bolster the party', castNotice: 'raises the whole party\'s vigour',
+  },
+  haste: {
+    spellId: 'haste', name: 'Haste', icon: '🐇', targeting: 'party',
+    castLabel: 'Hasten an ally', castNotice: 'quickens an ally for the coming fight',
+  },
+  'protection-from-evil-and-good': {
+    spellId: 'protection-from-evil-and-good', name: 'Protection from Evil and Good',
+    icon: '✝️', targeting: 'party',
+    castLabel: 'Ward an ally', castNotice: 'wards an ally against fiends and undead',
+  },
   // Cast before the doors open, which is the only moment it could matter: the
   // one Stealth roll this game makes is the group check at the arena's gate.
   'pass-without-trace': {
@@ -1680,7 +1764,8 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
   // 'self', which was fine while every spell on this path was. Pass without
   // Trace hushes the whole party, so the check moved into the branches that
   // actually care — a party-targeting spell handled below is not a bug.
-  if (action.targeting !== 'self' && spellId !== 'pass-without-trace') return false;
+  const PARTY_SPELLS = new Set(['pass-without-trace', 'aid', 'haste', 'protection-from-evil-and-good']);
+  if (action.targeting !== 'self' && !PARTY_SPELLS.has(spellId)) return false;
   if (spellId === 'find-familiar') {
     // A ritual in 5e: a wizard can cast it without spending a slot.
     user.resources = {
@@ -1693,6 +1778,54 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     const slotLevelIdx = SPELLS[spellId]!.level - 1;
     if (!spendSlot(user, caster, slotLevelIdx)) return false;
     user.resources = { ...user.resources, hp: user.resources?.hp ?? caster.hp, effects: { ...user.resources?.effects, mageArmor: true } };
+    return true;
+  }
+  if (spellId === 'false-life') {
+    const slotLevelIdx = SPELLS[spellId]!.level - 1;
+    if (!spendSlot(user, caster, slotLevelIdx)) return false;
+    // The average of 2d4+4 rather than a roll: this is a shop button, and a
+    // button whose value silently varies invites re-clicking it. (It cannot be
+    // re-clicked for a better number here — the slot is already gone — but the
+    // next person to add a camp spell should not learn the wrong lesson.)
+    user.resources = {
+      ...user.resources, hp: user.resources?.hp ?? caster.hp,
+      effects: { ...user.resources?.effects, falseLife: 9 },
+    };
+    return true;
+  }
+  if (spellId === 'aid') {
+    const slotLevelIdx = SPELLS[spellId]!.level - 1;
+    if (!spendSlot(user, caster, slotLevelIdx)) return false;
+    // SRD Aid reaches three creatures; this party is four. Three of four is a
+    // choice the shop screen has no way to ask about, so it goes to everyone
+    // ELSE and not the caster — the one split that needs no question asked.
+    const built = buildCampaignParty(c);
+    c.characters.forEach((ch, i) => {
+      if (i === userIdx) return;
+      ch.resources = {
+        ...ch.resources, hp: ch.resources?.hp ?? built[i]!.hp,
+        effects: { ...ch.resources?.effects, aid: (ch.resources?.effects?.aid ?? 0) + 5 },
+      };
+    });
+    return true;
+  }
+  if (spellId === 'haste' || spellId === 'protection-from-evil-and-good') {
+    const slotLevelIdx = SPELLS[spellId]!.level - 1;
+    // One mind, one spell: a caster already holding a camp buff cannot take a
+    // second, and neither can they buff themselves — concentrating on your own
+    // Haste while swinging is legal in the SRD but this path has no way to show
+    // the player the concentration is at risk, and a silently-dropped buff is
+    // worse than a button that says no.
+    if (c.characters.some((ch) => ch.resources?.effects?.campConcentration?.casterIdx === userIdx)) return false;
+    const target = c.characters.findIndex((ch, i) => i !== userIdx && !ch.resources?.effects?.campConcentration);
+    if (target < 0) return false;
+    if (!spendSlot(user, caster, slotLevelIdx)) return false;
+    const built = buildCampaignParty(c);
+    const ch = c.characters[target]!;
+    ch.resources = {
+      ...ch.resources, hp: ch.resources?.hp ?? built[target]!.hp,
+      effects: { ...ch.resources?.effects, campConcentration: { spellId, casterIdx: userIdx } },
+    };
     return true;
   }
   if (spellId === 'pass-without-trace') {
