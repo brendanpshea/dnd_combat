@@ -30,9 +30,28 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "web", "public", "art")
 SIZE = 256
 QUALITY = 82
 
-# --- framing normalization (hero/species roster only) ------------------------
-# Every id here is a Medium humanoid hero, so they share one framing target.
-# Monsters are deliberately absent: their framing carries their size tier.
+# --- framing normalization (all assets: roster, monsters, NPCs, tokens) -----
+import re
+
+MONSTERS_TS = os.path.join(os.path.dirname(__file__), "..", "src", "data", "monsters.ts")
+
+def load_monster_sizes():
+    sizes = {}
+    if not os.path.exists(MONSTERS_TS):
+        return sizes
+    try:
+        with open(MONSTERS_TS, "r", encoding="utf-8") as f:
+            text = f.read()
+        pattern = r"['\"]([a-z0-9-]+)['\"]\s*:\s*\{[^}]*?size:\s*['\"]([a-z]+)['\"]"
+        matches = re.findall(pattern, text, re.DOTALL)
+        for m_id, m_size in matches:
+            sizes[m_id] = m_size
+    except Exception:
+        pass
+    return sizes
+
+MONSTER_SIZES = load_monster_sizes()
+
 ROSTER = {
     "fighter", "wizard", "cleric", "rogue", "ranger", "paladin",
     "orc-barbarian", "dragonborn-paladin", "gnome-bard", "halfling-rogue",
@@ -41,24 +60,20 @@ ROSTER = {
     "tiefling-knight", "gnome-warden", "halfling-warrior", "halfling-priest",
 }
 
-# A *ceiling* on "ink area" — the alpha bounding box as a fraction of the
-# canvas — not a target. Two reasons it must be a ceiling:
-#
-#  - The established set deliberately varies: the gnome bard's token fills 36%
-#    and the fighter's 51%, which is how Small species read as smaller than
-#    Medium ones on the board. Normalising everything to one value would flatten
-#    that distinction and make halflings human-sized.
-#  - What actually went wrong is a shifted distribution, not a few outliers: the
-#    ten new assets average 71% ink where the old set averages 58% (portraits)
-#    and 49% (tokens). Capping pulls the overscaled ones down without touching
-#    anything already framed like the rest of the game.
-#
-# Set near the established set's 75th percentile, so the existing art is almost
-# entirely untouched and only genuine frame-fillers move.
-MAX_AREA = {"portrait": 0.62, "token": 0.55}
-# Nothing may touch the canvas edge — the style bible asks for padding all
-# round, and a bust cropped at the frame reads as bursting out of it.
-MIN_PAD = 0.03
+SIZE_CEILINGS = {
+    "tiny":       {"token": 0.38, "portrait": 0.45},
+    "small":      {"token": 0.45, "portrait": 0.52},
+    "medium":     {"token": 0.55, "portrait": 0.62},
+    "large":      {"token": 0.68, "portrait": 0.72},
+    "huge":       {"token": 0.76, "portrait": 0.80},
+    "gargantuan": {"token": 0.78, "portrait": 0.82},
+}
+
+DEFAULT_CEILING = {"token": 0.55, "portrait": 0.62}
+
+# Nothing may touch the canvas edge — 5% padding on all sides
+MIN_PAD = 0.05
+
 
 
 # What counts as a leftover rather than art. Measured from the sources: the
@@ -247,10 +262,9 @@ def strip_caption(im):
     return out, last - run_top + 1
 
 
-def normalize_framing(im, kind):
-    """Scale a roster asset down if it fills more of its frame than the house
-    ceiling allows. Never scales up — an asset drawn small is drawn small on
-    purpose (see MAX_AREA). Returns (image, scale); 1.0 means untouched.
+def normalize_framing(im, kind, cid):
+    """Scale an asset down if it fills more of its frame than its size-tier ceiling
+    or edge padding (MIN_PAD) allows. Never scales up. Returns (image, scale).
     """
     bbox = ink_bbox(im)
     if not bbox:
@@ -259,17 +273,41 @@ def normalize_framing(im, kind):
     x0, y0, x1, y1 = bbox
     bw, bh = x1 - x0, y1 - y0
     area = (bw / w) * (bh / h)
-    ceiling = MAX_AREA[kind]
-    if area <= ceiling:
-        return im, 1.0
-    scale = (ceiling / area) ** 0.5
-    # Never let the result touch the edge, whatever the area maths says.
+    
+    size = MONSTER_SIZES.get(cid, "medium")
+    ceiling = SIZE_CEILINGS.get(size, DEFAULT_CEILING)[kind]
+    
+    scale = 1.0
+    if area > ceiling:
+        scale = (ceiling / area) ** 0.5
+    
+    # Never let any asset touch or get closer than MIN_PAD to the canvas edge
     cap = min((1 - 2 * MIN_PAD) * w / bw, (1 - 2 * MIN_PAD) * h / bh)
     scale = min(scale, cap)
-    subject = im.crop(bbox).resize((max(1, round(bw * scale)), max(1, round(bh * scale))), Image.LANCZOS)
+    
+    # If untouched and no edge clip, return original
+    if scale >= 0.99 and x0 >= w * MIN_PAD and y0 >= h * MIN_PAD and (w - x1) >= w * MIN_PAD and (h - y1) >= h * MIN_PAD:
+        return im, 1.0
+
+    target_w = max(1, round(bw * scale))
+    target_h = max(1, round(bh * scale))
+    subject = im.crop(bbox).resize((target_w, target_h), Image.LANCZOS)
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    out.paste(subject, ((w - subject.width) // 2, (h - subject.height) // 2), subject)
+
+    # Horizontal centering for all
+    pos_x = (w - target_w) // 2
+
+    # Vertical positioning:
+    # If portrait and the original figure reached the bottom of the canvas (y1 >= h - 20),
+    # anchor it to the bottom with MIN_PAD so busts don't float in mid-air.
+    if kind == "portrait" and y1 >= h - 20:
+        pos_y = h - target_h - round(h * MIN_PAD)
+    else:
+        pos_y = (h - target_h) // 2
+
+    out.paste(subject, (pos_x, pos_y), subject)
     return out, scale
+
 
 
 # Engine ids that have a token/portrait slot (classIds + monster ids).
@@ -347,16 +385,14 @@ for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
         im, curtains = strip_edge_curtains(im)
         specks = 0
         if cid in ROSTER:
-            # Specks stays gated. Across the non-roster assets it would touch
-            # 42 of them, including 137 blobs on the dryad — its leaves. That
-            # needs its own review pass, not a ride-along.
+            # Specks stays gated to roster.
             im, specks = strip_specks(im)
-            # So does framing. MAX_AREA was measured against the player-character
-            # portraits; monsters vary their fill on purpose, which is how an
-            # ogre reads as bigger than a kobold on a one-cell board.
-            im, scale = normalize_framing(im, kind)
-            if scale != 1.0:
-                reframed.append(f"{kind}-{cid} x{scale:.2f}")
+        
+        # Framing runs for ALL assets, using size-tier ceilings and edge padding.
+        im, scale = normalize_framing(im, kind, cid)
+        if scale != 1.0:
+            reframed.append(f"{kind}-{cid} x{scale:.2f}")
+
         if specks or curtains:
             despeckled.append(f"{kind}-{cid} ({specks}b/{curtains}px)")
         if im.size != (SIZE, SIZE):
