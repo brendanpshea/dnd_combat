@@ -21,7 +21,7 @@ import {
   type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
-  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck,
+  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck, bestAtSkill,
   itemFitFor,
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
@@ -55,7 +55,7 @@ import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
 import {
-  loreSkillsFor, loreTargets, loreDc, dossierFor, loreKey, studyFor,
+  loreTargets, dossierFor, loreKey, studyFor, bestLens,
 } from '../../src/arena/lore.js';
 import {
   ambushDc, canCreepIn, creepKey, creepFor, surprisedTeam,
@@ -287,7 +287,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // eyes, and shopping for the easiest DC would be the whole exploit.
   const creep = creepFor(run.creep, dayOf(run), half);
   const surprised = surprisedTeam(creep, run.gate ?? 0);
-  const lensesOffered = loreSkillsFor(allFoes);
+  // One lens, not four. Which knowledge skill to use was never a real choice —
+  // you cannot swap a wizard for a cleric between fights, so the answer is
+  // always "whichever of ours is best". The decision worth keeping is whether
+  // to study at all, and that survives being one button.
+  const lens = bestLens(allFoes, (skill) => bestAtSkill(c, skill).bonus);
   /** Creatures this run has successfully placed, by id. */
   const known = new Set<Id>(
     study?.success ? loreTargets(allFoes, study.skill) : [],
@@ -869,35 +873,28 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       ? `🎓 ${c.characters[study.by]?.name} placed them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}`
                       : `🎓 ${c.characters[study.by]?.name} could not place them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}. You go in blind.`}
                   </span>
-                ) : lensesOffered.length === 0 ? (
+                ) : !lens ? (
                   <span className="lore-blind">Nothing out there resembles anything anyone knows.</span>
                 ) : (
-                  lensesOffered.map((skill) => {
-                    const targets = loreTargets(allFoes, skill);
-                    const dc = loreDc(allFoes, skill);
-                    return (
-                      <SkillGambit
-                        key={skill}
-                        campaign={c}
-                        skill={skill}
-                        dc={dc}
-                        note={`${targets.length} of them`}
-                        onRoll={() => {
-                          const roll = partySkillCheck(c, skill, dc);
-                          const nextRun = {
-                            ...run,
-                            lore: {
-                              key: loreKey(dayOf(run), half),
-                              skill, by: roll.by, natural: roll.natural,
-                              total: roll.total, dc: roll.dc, success: roll.success,
-                            },
-                          };
-                          setRun(nextRun); persist(c, nextRun);
-                          return roll;
-                        }}
-                      />
-                    );
-                  })
+                  <SkillGambit
+                    campaign={c}
+                    skill={lens.skill}
+                    dc={lens.dc}
+                    note={`${lens.targets.length} of them`}
+                    onRoll={() => {
+                      const roll = partySkillCheck(c, lens.skill, lens.dc);
+                      const nextRun = {
+                        ...run,
+                        lore: {
+                          key: loreKey(dayOf(run), half),
+                          skill: lens.skill, by: roll.by, natural: roll.natural,
+                          total: roll.total, dc: roll.dc, success: roll.success,
+                        },
+                      };
+                      setRun(nextRun); persist(c, nextRun);
+                      return roll;
+                    }}
+                  />
                 )}
                 {/* Creeping in. Offered only where there is something to creep
                     behind — you cannot sneak across open ground — and only
