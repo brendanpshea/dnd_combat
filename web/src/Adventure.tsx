@@ -47,6 +47,7 @@ import { PartySetup } from './PartySetup.js';
 import { LootScreen } from './Loot.js';
 import { LevelUpModal } from './LevelUp.js';
 import { saveAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
+import { markModuleCompleted } from './adventureProgress.js';
 import { moduleById } from '../../src/data/modules/index.js';
 
 interface Props {
@@ -189,6 +190,10 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   useEffect(() => {
     if (scene.kind === 'ending') {
       sfx(scene.outcome === 'victory' ? 'victory' : 'death');
+      // Winning a chapter is the only thing that unlocks the next one, and the
+      // save slot cannot remember it: the slot holds one run and is emptied
+      // when the campaign ends. Recorded before anything else touches storage.
+      if (scene.outcome === 'victory') markModuleCompleted(module.id);
       const next = endingDisposition(module, scene.outcome, moduleById);
       if (next.kind === 'carry') {
         const onward = carryCompanyInto(campaign, next.sequel);
