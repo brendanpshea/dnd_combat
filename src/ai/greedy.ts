@@ -955,6 +955,42 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // finishing a fight that is nearly won.
       return 6 + hurt * 10 - slotCost;
     }
+    /**
+     * Conjure Animals: the pack lands where you put it, then hunts by itself.
+     *
+     * Priced like Call Lightning and Moonbeam — everything it catches now, plus
+     * a fair expectation of the rounds still to come — because that is what it
+     * is: a thing that keeps happening while concentration holds. The multiplier
+     * is higher than either of theirs because the pack CHASES; a beam or a
+     * cloud only hits what walks back into it, while the animals go and find
+     * somebody, so a placement that catches nothing this turn is still worth
+     * something next turn.
+     *
+     * The save avoids the damage entirely rather than halving it, so the whole
+     * expectation is `pFail * dice` with no floor under it. That is what makes
+     * it worth less against nimble things than the raw dice suggest.
+     */
+    case 'conjure-animals': {
+      if (actor.concentratingOn) return 0;
+      const anchor = (a.targets[0] as { position: Position }).position;
+      const dice = avgDice(`${3 + Math.max(0, a.slotLevel - 3)}d10`);
+      let v = 0;
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || isDown(t)) continue;
+        if (distanceFeet(anchor, t.position) > 10) continue;
+        // Real animals, and they do not pick sides once they are loose — but
+        // the pack only ever mauls the caster's enemies, so an ally standing
+        // in the landing zone costs nothing and is not counted either way.
+        if (t.team === actor.team) continue;
+        v += damageValue(saveFailProb(state, t, 'dex', dc) * dice, t);
+      }
+      // Even a pack that lands on nobody will run somebody down next turn, so
+      // it is never worth zero while there is anything left to hunt.
+      const anyPrey = Object.values(state.combatants).some(
+        (t) => t.alive && !isDown(t) && t.team !== actor.team);
+      if (!anyPrey) return 0;
+      return Math.max(v * 1.6, dice * 0.4) - slotCost;
+    }
     // Dimension Door is deliberately unscored. Valuing a teleport means valuing
     // a POSITION, and every cheap proxy ("get away from things") makes a caster
     // that runs from fights it was winning. A player can see the board; this

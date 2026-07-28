@@ -170,6 +170,14 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     const primary = cls.statPriority[0];
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
+  // Every class gets one at 8th — the whole of what level 8 is in the SRD for
+  // most of them, and the reason the level was cheap to add. It goes to the
+  // same primary stat, capped at 20, so a class already at 20 gains nothing
+  // rather than overflowing.
+  if (level >= 8) {
+    const primary = cls.statPriority[0];
+    abilities[primary] = Math.min(20, abilities[primary] + 2);
+  }
   // The Fighter alone gets a second Ability Score Increase at 6th. (Its 7th is
   // the Champion's Additional Fighting Style, a choice point rather than a stat
   // bump — see classes.ts.)

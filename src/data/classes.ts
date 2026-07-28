@@ -196,15 +196,15 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['wis', 'con', 'str', 'dex', 'cha', 'int'],
     spellcasting: {
       ability: 'wis',
-      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1]],
-      cantripsKnownByLevel: [2, 2, 2, 2, 2, 2, 2], // both cleric cantrips (Sacred Flame, Guidance)
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 2, 2, 2, 2, 2], // both cleric cantrips (Sacred Flame, Guidance)
       // Cleric knows its whole leveled list (no spellbook); it prepares a subset.
       // Widened alongside the list: the point of the new spells is a choice, and
       // preparing 4 of 9 was already most of the 1st-level list.
       // 12 and 13 continue this class's own slope; its column already runs
       // ahead of the SRD's (11 at 5th where the table has 9) because the list is
       // wider here. The SRD's own increment over 6 and 7 is +1 a level either way.
-      preparedByLevel: [4, 5, 7, 8, 11, 12, 13],
+      preparedByLevel: [4, 5, 7, 8, 11, 12, 13, 14],
       spellsByLevel: {
         1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good'],
         2: ['guiding-bolt'],
@@ -245,10 +245,10 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['int', 'dex', 'con', 'wis', 'cha', 'str'],
     spellcasting: {
       ability: 'int',
-      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1]],
-      cantripsKnownByLevel: [3, 3, 3, 4, 4, 4, 4],   // SRD: no new cantrip at 6 or 7
-      spellbookByLevel: [6, 8, 10, 12, 14, 16, 18], // known leveled spells (grows via scribed scrolls too)
-      preparedByLevel: [4, 5, 6, 7, 9, 10, 11],     // the 2024 Wizard "Prepared Spells" column
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2]],
+      cantripsKnownByLevel: [3, 3, 3, 4, 4, 4, 4, 4],   // SRD: no new cantrip at 6, 7 or 8
+      spellbookByLevel: [6, 8, 10, 12, 14, 16, 18, 20], // known leveled spells (grows via scribed scrolls too)
+      preparedByLevel: [4, 5, 6, 7, 9, 10, 11, 12],     // the 2024 Wizard "Prepared Spells" column
       spellsByLevel: {
         1: [
           // cantrips (choose 3 of these 6) then leveled (spellbook order sets
@@ -338,11 +338,11 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['cha', 'dex', 'con', 'wis', 'int', 'str'],
     spellcasting: {
       ability: 'cha',
-      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1]],
-      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3],
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3, 3],
       // A bard prepares from the whole list like a cleric rather than keeping a
       // spellbook, so only the prepared count is capped.
-      preparedByLevel: [4, 5, 6, 7, 9, 10, 11],
+      preparedByLevel: [4, 5, 6, 7, 9, 10, 11, 12],
       spellsByLevel: {
         // Strongest first within each level — see spellsByLevel's note.
         1: ['vicious-mockery', 'starry-wisp', 'minor-illusion', 'true-strike', 'sleep', 'healing-word', 'command',
@@ -402,9 +402,9 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['wis', 'con', 'dex', 'int', 'cha', 'str'],
     spellcasting: {
       ability: 'wis',
-      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1]],
-      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3],
-      preparedByLevel: [4, 5, 6, 7, 9, 10, 11],
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3, 3],
+      preparedByLevel: [4, 5, 6, 7, 9, 10, 11, 12],
       spellsByLevel: {
         // Strongest first within each level — see spellsByLevel's note.
         // Starry Wisp is on the SRD druid list. The markdown conversion this
@@ -420,7 +420,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // which is the same "free, once you have it" shape.
         2: ['find-familiar'],
         3: ['moonbeam', 'pass-without-trace', 'hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
-        5: ['call-lightning', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
+        5: ['call-lightning', 'conjure-animals', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
         7: ['wall-of-fire', 'confusion', 'freedom-of-movement', 'blight', 'ice-storm', 'polymorph'],
       },
     },
@@ -458,7 +458,7 @@ export const CLASSES: Record<Id, ClassData> = {
     // arrive at 5th alongside Extra Attack.
     spellcasting: {
       ability: 'wis',
-      slotsByLevel: [[2], [2], [3], [3], [4, 2], [4, 2], [4, 3]],
+      slotsByLevel: [[2], [2], [3], [3], [4, 2], [4, 2], [4, 3], [4, 3]],
       spellsByLevel: {
         1: ['hunters-mark', 'cure-wounds', 'animal-friendship', 'ensnaring-strike'],
         // Misty Step used to sit here. It is a wizard spell — it has never been
@@ -586,7 +586,7 @@ export const CLASSES: Record<Id, ClassData> = {
     // and control, since Divine Smite is the class's real damage engine.
     spellcasting: {
       ability: 'cha',
-      slotsByLevel: [[2], [2], [3], [3], [4, 2], [4, 2], [4, 3]],
+      slotsByLevel: [[2], [2], [3], [3], [4, 2], [4, 2], [4, 3], [4, 3]],
       spellsByLevel: {
         1: ['bless', 'cure-wounds', 'command'],
         // The smite arrives with Divine Smite itself, alongside the wards that

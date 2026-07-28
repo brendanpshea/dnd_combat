@@ -311,7 +311,7 @@ describe('campaign state', () => {
 });
 
 describe('XP, leveling, and treasure', () => {
-  it('levelForXp follows the thresholds and caps at 7', () => {
+  it('levelForXp follows the thresholds and caps at 8', () => {
     expect(levelForXp(0)).toBe(1);
     expect(levelForXp(299)).toBe(1);
     expect(levelForXp(300)).toBe(2);
@@ -323,8 +323,10 @@ describe('XP, leveling, and treasure', () => {
     expect(levelForXp(13999)).toBe(5);
     expect(levelForXp(14000)).toBe(6);
     expect(levelForXp(23000)).toBe(7);
-    expect(levelForXp(99999)).toBe(7);
-    expect(LEVEL_XP.length).toBe(7);
+    expect(levelForXp(33999)).toBe(7);
+    expect(levelForXp(34000)).toBe(8);
+    expect(levelForXp(99999)).toBe(8);
+    expect(LEVEL_XP.length).toBe(8);
   });
 
   /**

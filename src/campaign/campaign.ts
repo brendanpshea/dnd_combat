@@ -311,7 +311,17 @@ export const STAGES: StageData[] = [
  *  content's L5. The ladder is sized against the /party-size award so a full
  *  run reaches L4 in the late Act II fights and L5 just before the giants
  *  finale (fighting the boss at full L5 power). */
-export const LEVEL_XP = [0, 300, 900, 2700, 6500, 14000, 23000] as const;
+/**
+ * 5e's XP thresholds, through level 8.
+ *
+ * Level 8 was added because it is nearly free — the SRD gives every class an
+ * Ability Score Increase there and no new spell tier — and because the arena's
+ * finish line already SAT at 34,000, the level-8 threshold. A party could hit
+ * the finish line and never once be level 8, which made the last rung of the
+ * ladder a number rather than a level. It also buys several more fights with
+ * 4th-level slots in hand, which is where the interesting spells are.
+ */
+export const LEVEL_XP = [0, 300, 900, 2700, 6500, 14000, 23000, 34000] as const;
 export const MAX_LEVEL = LEVEL_XP.length;
 
 export function levelForXp(xp: number): number {

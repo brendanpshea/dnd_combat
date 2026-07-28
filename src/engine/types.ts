@@ -355,9 +355,18 @@ export interface Combatant {
    * swept by breakConcentration instead.
    */
   summons?: Array<{
-    kind: 'spiritual-weapon' | 'flaming-sphere';
+    kind: 'spiritual-weapon' | 'flaming-sphere' | 'conjure-animals';
     position: Position;
     expiresAtRound?: number;
+    /**
+     * The damage the summon deals, when it scales with the slot it was cast
+     * from. Conjure Animals is 3d10 at 3rd level and +1d10 per level above,
+     * and unlike Spirit Guardians (which keeps its dice on the caster) a pack
+     * roams away from whoever called it, so the dice ride with the pack.
+     *
+     * Absent for the two older summons, whose damage is fixed by the spell.
+     */
+    dice?: string;
   }>;
   /** Spirit Guardians: a radiant aura around the caster that hurts enemies
    *  who start their turn near it, and halves their Speed while they are in it

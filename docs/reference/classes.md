@@ -57,6 +57,7 @@
 | 5 | 4 | 3 | 2 | — | 3 | 9 |
 | 6 | 4 | 3 | 3 | — | 3 | 10 |
 | 7 | 4 | 3 | 3 | 1 | 3 | 11 |
+| 8 | 4 | 3 | 3 | 2 | 3 | 12 |
 
 Spellcasting ability: **CHA**.
 
@@ -100,6 +101,7 @@ Spellcasting ability: **CHA**.
 | 5 | 4 | 3 | 2 | — | 2 | 11 |
 | 6 | 4 | 3 | 3 | — | 2 | 12 |
 | 7 | 4 | 3 | 3 | 1 | 2 | 13 |
+| 8 | 4 | 3 | 3 | 2 | 2 | 14 |
 
 Spellcasting ability: **WIS**.
 
@@ -144,6 +146,7 @@ Spellcasting ability: **WIS**.
 | 5 | 4 | 3 | 2 | — | 3 | 9 |
 | 6 | 4 | 3 | 3 | — | 3 | 10 |
 | 7 | 4 | 3 | 3 | 1 | 3 | 11 |
+| 8 | 4 | 3 | 3 | 2 | 3 | 12 |
 
 Spellcasting ability: **WIS**.
 
@@ -154,7 +157,7 @@ Spellcasting ability: **WIS**.
 | 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Healing Word, Faerie Fire, Thunderwave, Protection from Evil and Good, Animal Friendship |
 | 2 | Find Familiar |
 | 3 | Moonbeam, Pass without Trace, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
-| 5 | Call Lightning, Protection from Energy, Dispel Magic |
+| 5 | Call Lightning, Conjure Animals, Protection from Energy, Dispel Magic |
 | 7 | Wall of Fire, Confusion, Freedom of Movement, Blight, Ice Storm, Polymorph |
 
 ## Fighter
@@ -249,6 +252,7 @@ Spellcasting ability: **WIS**.
 | 5 | 4 | 2 |
 | 6 | 4 | 2 |
 | 7 | 4 | 3 |
+| 8 | 4 | 3 |
 
 Spellcasting ability: **CHA**.
 
@@ -299,6 +303,7 @@ Spellcasting ability: **CHA**.
 | 5 | 4 | 2 |
 | 6 | 4 | 2 |
 | 7 | 4 | 3 |
+| 8 | 4 | 3 |
 
 Spellcasting ability: **WIS**.
 
@@ -367,6 +372,7 @@ Spellcasting ability: **WIS**.
 | 5 | 4 | 3 | 2 | — | 4 | 14 | 9 |
 | 6 | 4 | 3 | 3 | — | 4 | 16 | 10 |
 | 7 | 4 | 3 | 3 | 1 | 4 | 18 | 11 |
+| 8 | 4 | 3 | 3 | 2 | 4 | 20 | 12 |
 
 Spellcasting ability: **INT**.
 

@@ -418,6 +418,8 @@ const SUMMON_SPECS: Record<Summon['kind'], { moveCells: number; spectral: boolea
   'spiritual-weapon': { moveCells: 4, spectral: true },
   // 30-ft roll; a physical ball of fire — walls stop it.
   'flaming-sphere': { moveCells: 6, spectral: false },
+  // 40-ft lope; real animals, so walls and bodies stop them.
+  'conjure-animals': { moveCells: 8, spectral: false },
 };
 
 /** The caster's nearest living enemy, measured from the summon (id tiebreak). */
@@ -455,6 +457,31 @@ function summonStep(state: GameState, s: Summon, toward: Position): Position | n
  *  the start-of-turn activation. Attacks/damage are attributed to the caster. */
 function summonStrike(state: GameState, casterId: Id, s: Summon): GameEvent[] {
   const caster = state.combatants[casterId]!;
+  /**
+   * Conjure Animals is a PACK, not a single striker: everything within ten feet
+   * of where the animals are standing takes the hit, and the save avoids it
+   * outright rather than halving it. That shape is why it does not go through
+   * the adjacency check below — a pack that could only maul one creature at a
+   * time would be a Spiritual Weapon that bites.
+   */
+  if (s.kind === 'conjure-animals') {
+    const events: GameEvent[] = [];
+    const dc = spellDc(state, casterId);
+    for (const t of Object.values(state.combatants)) {
+      if (!t.alive || isDown(t) || t.team === caster.team) continue;
+      if (distanceFeet(s.position, t.position) > 10) continue;
+      const save = savingThrow(state, t.id, 'dex', dc);
+      events.push(save.event);
+      // Save for NOTHING, not for half — the 2024 spell's own wording, and the
+      // reason it is worth a 3rd-level slot against a pack of low-Dex brutes
+      // and much less against a room full of goblins.
+      if (save.success) continue;
+      const dmg = rollDice(state.rng, s.dice ?? '3d10');
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, t.id, casterId, dmg.total, 'slashing', dmg.rolls, { via: s.kind }));
+    }
+    return events;
+  }
   const prey = summonPrey(state, caster.team, s.position);
   if (!prey || !adjacent(s.position, prey.position)) return [];
   const events: GameEvent[] = [];
@@ -1353,6 +1380,42 @@ export const SPELLS: Record<Id, SpellData> = {
    * physical, so walls stop it — and rams (2d6 fire, Dexterity save for
    * half). It burns until concentration drops (breakConcentration sweeps it).
    */
+  /**
+   * Conjure Animals: a pack of spirit beasts that runs down whatever is nearest.
+   *
+   * WHY IT IS A SUMMON AND NOT AN AURA
+   *
+   * The 2024 spell is a ten-foot emanation, and the obvious implementation here
+   * is `spiritualGuardians` — an aura hanging off the caster, which this engine
+   * already has. That would be the wrong spell. The pack MOVES: it lopes across
+   * the board after whatever is closest, which is the whole difference between
+   * a wizard standing in a cloud of blades and a druid setting animals on
+   * somebody. So it rides the Spiritual Weapon and Flaming Sphere machinery
+   * instead — a thing with its own position that chases and strikes.
+   *
+   * What it does not share with those two is the strike: they pick one adjacent
+   * victim, and a pack mauls everything within ten feet of where it is standing.
+   * And the save avoids the damage entirely rather than halving it, which is
+   * what makes it a gamble against nimble things and brutal against brutes.
+   */
+  'conjure-animals': {
+    id: 'conjure-animals', name: 'Conjure Animals', level: 3, castingTime: 'action',
+    targeting: { kind: 'emptyCell', range: 60 },
+    concentration: true,
+    upcast: true,
+    icon: '🐺',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      caster.concentratingOn = { spellId: 'conjure-animals', targetIds: [] };
+      return placeSummon(state, casterId, {
+        kind: 'conjure-animals',
+        position: { ...positions[0]! },
+        // 3d10 at 3rd, +1d10 per level above. Carried on the pack rather than
+        // on the caster because the pack roams away from whoever called it.
+        dice: `${3 + Math.max(0, slotLevel - 3)}d10`,
+      });
+    },
+  },
   'flaming-sphere': {
     id: 'flaming-sphere', name: 'Flaming Sphere', level: 2, castingTime: 'action',
     targeting: { kind: 'emptyCell', range: 60 },
