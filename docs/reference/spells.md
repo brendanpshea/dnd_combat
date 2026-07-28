@@ -78,7 +78,7 @@ see `src/data/spells.ts`.
 | 🌙 Moonbeam | `moonbeam` | action | 2×2 burst within 120 ft | yes | yes | — | Druid 3, Druid |
 | ☄️ Scorching Ray | `scorching-ray` | action | 3 enemys within 120 ft | — | — | — | Wizard 3 |
 | 🌟 Shining Smite | `shining-smite` | bonus | self (offered when it would reach someone) | yes | — | — | Paladin 5 |
-| 🔨 Spiritual Weapon | `spiritual-weapon` | bonus | an empty cell within 60 ft | yes | — | — | Cleric 3, Cult Fanatic, Priest |
+| 🔨 Spiritual Weapon | `spiritual-weapon` | bonus | an empty cell within 60 ft | yes | — | — | Cleric 3, Bard 6, Cult Fanatic, Priest |
 | 💭 Suggestion | `suggestion` | action | 1 enemy within 30 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | yes | — | — | Wizard 3, Bard 3, Cult Fanatic |
 | 🔗 Warding Bond | `warding-bond` | action | 1 ally you can touch | — | — | — | Cleric 3, Paladin 5 |
 | 🕸️ Web | `web` | action | 5×5 burst within 60 ft | yes | — | — | Wizard 3, Oni, Dryad, Ettercap Snarecaller, Mage |
@@ -91,7 +91,7 @@ see `src/data/spells.ts`.
 | ⚡ Call Lightning | `call-lightning` | action | 2×2 burst within 120 ft | yes | yes | — | Druid 5, Druid |
 | 🚫 Dispel Magic | `dispel-magic` | action | 1 creature within 120 ft | — | — | — | Cleric 5, Wizard 5, Bard 5, Druid 5 |
 | 😱 Fear | `fear` | action | 15 ft cone | yes | — | — | Wizard 5, Bard 5, Aboleth, Mage |
-| 💥 Fireball | `fireball` | action | 5×5 burst within 150 ft | — | yes | — | Wizard 5, Oni, Mage |
+| 💥 Fireball | `fireball` | action | 5×5 burst within 150 ft | — | yes | — | Wizard 5, Bard 6, Oni, Mage |
 | 🐇 Haste | `haste` | action | 1 ally within 30 ft | yes | — | — | Wizard 5 |
 | ⚡ Lightning Bolt | `lightning-bolt` | action | line to the board edge | — | yes | — | Wizard 5, Mage |
 | 💞 Mass Healing Word | `mass-healing-word` | bonus | 6 allys within 60 ft | — | — | — | Cleric 5, Bard 5 |

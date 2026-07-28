@@ -21,6 +21,7 @@ import { ARMOR, SHIELDS, isShield, armorStealthDisadvantage } from '../data/armo
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
+import { missingRoles } from './roles.js';
 import { actsOnItsOwn } from '../engine/rules/summon.js';
 import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
@@ -781,6 +782,21 @@ export function freshPortraitFor(c: CampaignState, charIdx: number, speciesId: I
   return taken.has(classPortrait) ? preferred : classPortrait;
 }
 
+/**
+ * The four kin a fresh party wears, one each.
+ *
+ * All four used to be human, which is a party that shows a new player nothing:
+ * every species trait in the game is invisible on the screen they meet first,
+ * and the roster reads as one person drawn four times. A dwarf, an elf and a
+ * halfling in the line-up is the difference between "pick a class" and "look
+ * what else is in here" — and it is free, because the species art already
+ * exists and the traits already work.
+ *
+ * Ordered against `newCampaign`'s classes: the dwarf takes the wizard slot on
+ * purpose, so the party is not four species in their most predictable homes.
+ */
+const STARTING_KIN: Id[] = ['human', 'dwarf', 'elf', 'halfling'];
+
 export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
   const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
   return {
@@ -794,7 +810,7 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
     rng: seedRng(seed),
     characters: order.map((classId, index) => {
       const eq = CLASSES[classId]!.equipment;
-      const speciesId = speciesIds[index] ?? 'human';
+      const speciesId = speciesIds[index] ?? STARTING_KIN[index] ?? 'human';
       return {
         classId,
         speciesId,
@@ -944,8 +960,28 @@ export function applyPartyTemplate(c: CampaignState, templateId: string): boolea
  * real curveball, and for the playtest harness, where a comp nobody would pick
  * on purpose is exactly the one that finds the holes.
  */
+/**
+ * Roll a whole party: random kin for everyone, random classes that still work
+ * together.
+ *
+ * There were two of these — "Surprise me" (kin only) and "Total chaos" (classes
+ * too, "no promises") — and the promise-free one was the problem. It could deal
+ * four wizards, and the arena will cheerfully build a fight that needs somebody
+ * to stand in front of them. A random party a player cannot win with is not a
+ * fun surprise, it is a wasted run they have no way to diagnose.
+ *
+ * So one button, and it guarantees the party covers melee, ranged, magic and
+ * healing between them — see `roles.ts`, which derives those from the class
+ * data rather than listing them, so the warlock and the sorcerer are covered
+ * the day they land without anyone editing this.
+ *
+ * Rerolls the whole hand rather than patching a bad one. Patching would mean
+ * choosing which member to overwrite, and every rule for that ("replace the
+ * last one") makes the last slot systematically less random than the others.
+ */
 export function randomizeParty(c: CampaignState, opts: { roles?: boolean } = {}): boolean {
   if (c.partyReady) return false;
+  void opts;   // kept so the older two-button callers still compile
   const speciesIds = Object.keys(SPECIES);
   const pool = Object.keys(CLASSES);
   const pick = <T,>(from: T[]): T => {
@@ -953,17 +989,24 @@ export function randomizeParty(c: CampaignState, opts: { roles?: boolean } = {})
     c.rng = roll.state;
     return from[Math.floor(roll.value * from.length)]!;
   };
-  // Deal the classes up front so they can be kept distinct across the party.
-  const roles: Id[] = [];
-  if (opts.roles) {
+  const deal = (): Id[] => {
     const left = [...pool];
+    const out: Id[] = [];
     for (let i = 0; i < c.characters.length; i++) {
       if (left.length === 0) left.push(...pool);   // more slots than classes
       const chosen = pick(left);
       left.splice(left.indexOf(chosen), 1);
-      roles.push(chosen);
+      out.push(chosen);
     }
-  }
+    return out;
+  };
+  // Deal until the hand covers every required role. Bounded because a pool that
+  // cannot cover them however it is dealt must not hang the button — it takes
+  // the last hand and the party is merely unbalanced, which is survivable where
+  // a frozen screen is not.
+  let roles = deal();
+  for (let tries = 0; tries < 40 && missingRoles(roles).length > 0; tries++) roles = deal();
+
   c.characters.forEach((ch, i) => {
     const speciesId = pick(speciesIds) ?? 'human';
     fitCharacter(c, ch, { classId: roles[i] ?? ch.classId, speciesId }, i);

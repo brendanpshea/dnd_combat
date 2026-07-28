@@ -43,6 +43,7 @@
 | 1 | Bardic Inspiration |
 | 2 | Expertise, Jack of All Trades |
 | 3 | Cutting Words |
+| 6 | Magical Discoveries |
 | 7 | Countercharm |
 
 ### Spell slots
@@ -66,6 +67,7 @@ Spellcasting ability: **CHA**.
 | 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Healing Word, Command, Cure Wounds, Faerie Fire, Color Spray, Thunderwave, Bane, Animal Friendship |
 | 3 | Hold Person, Invisibility, Suggestion, Blindness, Aid, Lesser Restoration |
 | 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
+| 6 | Fireball, Spiritual Weapon |
 | 7 | Phantasmal Killer |
 
 ## Cleric

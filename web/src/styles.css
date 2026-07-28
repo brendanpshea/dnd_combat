@@ -3477,3 +3477,12 @@ button.category .count {
   background: #33291a; border: 1px solid #6b5726; color: #f0d9a8;
   font-size: .84rem; line-height: 1.45;
 }
+/* The party screen leads with one roll button; the named bands sit behind a
+   disclosure. Six of them ahead of the roster made choosing feel mandatory
+   before a player had seen the party they already had. */
+.adv-templates.one-roll { grid-template-columns: 1fr; }
+.adv-template-more { margin: 0 0 14px; }
+.adv-template-more > summary {
+  cursor: pointer; padding: 8px 2px; color: #8d84a6; font-size: .84rem; list-style: revert;
+}
+.adv-template-more[open] > summary { margin-bottom: 8px; }

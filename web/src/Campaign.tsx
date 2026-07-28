@@ -253,7 +253,7 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               onClick={() => mutate(() => { randomizeParty(c); setEditingMember(null); })}
             >
               <b>🎲 Surprise me</b>
-              <small>Random species for all four.</small>
+              <small>Random kin and classes — always a party that works.</small>
             </button>
           </div>
         </div>

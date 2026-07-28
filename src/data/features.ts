@@ -1361,5 +1361,26 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'open-hand-technique': {
     id: 'open-hand-technique', name: 'Open Hand Technique', trigger: 'passive',
+  },
+  /**
+   * Magical Discoveries (Bard 6): two spells from outside the bard's list.
+   *
+   * The College of Lore's level-6 feature, and the bard had nothing at 6 at
+   * all — which in a game that stops at 7 is a whole tier of the class missing.
+   * Playtesting found it as "the bard falls off", and it did.
+   *
+   * Passive with no `apply`, because the mechanism already existed:
+   * `spellsByLevel` is a table of "what this class can have at what level", and
+   * two off-list spells written at level 6 are exactly that. Spiritual Weapon
+   * and Fireball — a bonus-action damage engine that does not need
+   * concentration, and the one spell everybody knows — chosen because between
+   * them they answer the two things a level-6 bard cannot otherwise do:
+   * contribute damage every round, and clear a crowd.
+   *
+   * They land in the preparable pool, so the existing spell tray offers them
+   * like any other. No new selection interface, because there is already one.
+   */
+  'magical-discoveries': {
+    id: 'magical-discoveries', name: 'Magical Discoveries', trigger: 'passive',
   }
 };

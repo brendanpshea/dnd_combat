@@ -162,6 +162,10 @@ const SRD: Record<string, string[]> = {
  */
 const FEATURE_GRANTED: Record<string, Record<string, string>> = {
   druid: { 'find-familiar': 'Wild Companion (level 2): spend a Wild Shape use to cast it' },
+  bard: {
+    fireball: 'Magical Discoveries (level 6): two spells from the cleric, druid or wizard list. Being off the bard list IS the feature.',
+    'spiritual-weapon': 'Magical Discoveries (level 6): as Fireball.',
+  },
 };
 
 /** Every spell id a class hands out, from any level of its progression. */
