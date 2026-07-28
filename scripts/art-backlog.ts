@@ -225,7 +225,13 @@ function rewrite(text: string): string {
   // §12: heading, prose and table are all a function of the data.
   out = out.replace(/^## 12\..*$[\s\S]*?(?=^\| Monster \| ID \|)/m,
     [`## 12. The queue at a glance (${missing.length})`, ...S12_BLURB(missing.length, all.length)].join('\n') + '\n');
-  out = out.replace(/^\| Monster \| ID \|.*(?:\n\|.*)*/m, backlogTable());
+  // Every such table, not the first. A `/m` replace left a stale second copy
+  // behind once already: the §12 prose replacement above runs up to the first
+  // table header, so a doc that had somehow acquired two tables kept one of
+  // them, silently, listing monsters that had since been drawn.
+  let tables = 0;
+  out = out.replace(/^\| Monster \| ID \|.*(?:\n\|.*)*/gm, () => (tables++ ? '' : backlogTable()));
+  if (tables > 1) console.warn(`removed ${tables - 1} duplicate backlog table(s)`);
 
   // Collapse runs of horizontal rules. The doc separates sections with `---`,
   // and rebuilding §8 emits one of its own, so without this every run stacks

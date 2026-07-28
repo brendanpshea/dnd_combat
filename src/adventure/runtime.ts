@@ -19,7 +19,7 @@ import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, LEVEL_XP, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
-  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf,
+  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest,
 } from '../campaign/campaign.js';
 import {
   HUB_REF,
@@ -95,6 +95,53 @@ export function startAdventure(campaign: CampaignState, module: Module): Adventu
     journal: [], guidanceSpent: [], consumedChoices: [], spentApproaches: [], shopVisits: {},
   };
   return state;
+}
+
+/**
+ * The company walks out of one chapter and into the next, intact.
+ *
+ * The same `CampaignState` — party, levels, XP, gold, gear, journal-earned
+ * everything — becomes the next module's. Only the run-scoped state is left
+ * behind: flags, visited scenes, explored nodes, all of which belong to the
+ * chapter that is over.
+ *
+ * They arrive rested, because chapters are separated by days on the road. That
+ * is `fullRest`, which clears spent resources; it is not a heal, so a party
+ * that limped over the line still starts the next chapter needing to camp.
+ */
+export function carryCompanyInto(campaign: CampaignState, sequel: Module): AdventureState {
+  fullRest(campaign);
+  const next = startAdventure(campaign, sequel);
+  enterScene(next, sequel, sequel.start);
+  return next;
+}
+
+/**
+ * What should become of the saved run when an ending is reached.
+ *
+ * The UI used to answer this inline, and answered it wrong: it deleted the save
+ * the moment ANY ending scene appeared, on the reasoning that "a finished run
+ * shouldn't offer Resume". True of a run that is over — and the end of chapter
+ * one is not that. It is the middle of a campaign, and the party only existed
+ * in React state from that point on. "Return to menu" threw the company away;
+ * picking the next chapter off the landing page silently rolled a fresh level-1
+ * party into a module written for level 3.
+ *
+ * So the decision is a function of the module and the outcome, it lives beside
+ * the runtime that produced the ending, and it is tested. `carry` means write
+ * the sequel to the save slot; `clear` means the run really is over.
+ */
+export function endingDisposition(
+  module: Module, outcome: 'victory' | 'defeat',
+  lookup: (id: Id) => Module | undefined,
+): { kind: 'carry'; sequel: Module } | { kind: 'clear' } {
+  // A defeat ends the run whatever comes after it, and a victory with nothing
+  // after it is the end of the story.
+  if (outcome !== 'victory' || !module.sequel) return { kind: 'clear' };
+  const sequel = lookup(module.sequel);
+  // A sequel that is declared but missing is a content bug, not a reason to
+  // discard somebody's party — but there is nowhere to carry them to.
+  return sequel ? { kind: 'carry', sequel } : { kind: 'clear' };
 }
 
 export function currentScene(state: AdventureState, module: Module): Scene {

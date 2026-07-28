@@ -29,7 +29,7 @@ import {
   legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
   hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
-  travelDestinations, fastTravel,
+  travelDestinations, fastTravel, carryCompanyInto, endingDisposition,
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
@@ -125,6 +125,13 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const rerender = () => setVersion((v) => v + 1);
   const [dice, setDice] = useState<DiceContext | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
+  // The next chapter, already built and saved the moment this one was won.
+  //
+  // State rather than a ref, and that distinction is load-bearing: it is filled
+  // in by the effect below, which runs after the render that shows the victory
+  // screen. A ref would be null on that render and mutating it would not cause
+  // another, so the button offering the next chapter would never appear at all.
+  const [carried, setCarried] = useState<{ module: Module; state: AdventureState } | null>(null);
   const [journalOpen, setJournalOpen] = useState(false);
   const [journalUnread, setJournalUnread] = useState(false);
   const [campOpen, setCampOpen] = useState(false);
@@ -170,12 +177,27 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const restTip = needsRest && !restTipDismissed && !campOpen &&
     (scene.kind === 'explore' || scene.kind === 'story' || scene.kind === 'dialogue');
 
-  // Persist the run on every scene change; clear it once the adventure ends
-  // (a finished run shouldn't offer Resume).
+  // Persist the run on every scene change. At an ending the save slot becomes
+  // whatever comes next: the sequel, carrying the company, or nothing.
+  //
+  // It used to be unconditionally deleted here, which is right for a run that
+  // is over and wrong for the end of chapter one — from that moment the party
+  // existed only in this component's state, so leaving the victory screen threw
+  // it away and picking chapter two off the menu started a fresh level-1 party
+  // in a module written for level 3. Carrying onward is no longer a button you
+  // can decline; the button only decides whether you go now or later.
   useEffect(() => {
     if (scene.kind === 'ending') {
       sfx(scene.outcome === 'victory' ? 'victory' : 'death');
-      deleteAdventureWeb();
+      const next = endingDisposition(module, scene.outcome, moduleById);
+      if (next.kind === 'carry') {
+        const onward = carryCompanyInto(campaign, next.sequel);
+        setCarried({ module: next.sequel, state: onward });
+        saveAdventureWeb(onward);
+      } else {
+        setCarried(null);
+        deleteAdventureWeb();
+      }
     } else {
       saveAdventureWeb(state);
     }
@@ -453,6 +475,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
               onAdvanceBeat={() => setBeat((b) => b + 1)}
               onExit={onExit}
               onContinue={onContinue}
+              carried={carried}
             />
 
           )}
@@ -736,9 +759,12 @@ interface BodyProps {
   onAdvanceBeat: () => void;
   onExit(): void;
   onContinue?: ((module: Module, state: AdventureState) => void) | undefined;
+  /** The next chapter, already built and saved. Present only at a victory
+   *  ending that has one — the ending screen offers to walk into it now. */
+  carried?: { module: Module; state: AdventureState } | null;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue, carried }: BodyProps) {
   const campaign = state.campaign;
   // Overworld walk: the node the party pawn is mid-stride toward. Tapping a
   // marker sends the pawn walking there first; the scene opens when it arrives
@@ -748,27 +774,25 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
   if (scene.kind === 'ending') {
     // A victory in a module with a sequel offers to carry the company onward —
     // the same CampaignState (party, XP, gold, gear) walks into the next part.
-    const sequel = scene.outcome === 'victory' && module.sequel ? moduleById(module.sequel) : undefined;
+    // Built and written to the save slot when this scene was entered, so it is
+    // already yours whichever button you press. This one only says "now".
+    const sequel = carried?.module;
     return (
       <div className="adv-scene centered">
         <div className="adv-panel">
           <h1>{scene.outcome === 'victory' ? '🏆 Victory' : '☠️ Defeat'}</h1>
           {scene.text.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
-          {sequel && onContinue && (
-            <button
-              className="primary"
-              onClick={() => {
-                // Days on the road between chapters: the company arrives fresh.
-                fullRest(campaign);
-                const next = startAdventure(campaign, sequel);
-                enterScene(next, sequel, sequel.start);
-                saveAdventureWeb(next);
-                onContinue(sequel, next);
-              }}
-            >
-              ⚔️ Continue the company → {sequel.title}
+          {sequel && carried && onContinue && (
+            <button className="primary" onClick={() => onContinue(sequel, carried.state)}>
+              ⚔️ Onward → {sequel.title}
               {sequel.levelBand ? ` (levels ${sequel.levelBand.from}–${sequel.levelBand.to})` : ''}
             </button>
+          )}
+          {sequel && (
+            <p className="muted adv-carry-note">
+              Your company is saved and waiting at {sequel.title} — you can stop here and
+              pick them up from the menu.
+            </p>
           )}
           <button className={sequel && onContinue ? 'ghost' : 'primary'} onClick={onExit}>Return to menu</button>
         </div>

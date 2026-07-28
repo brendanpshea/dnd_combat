@@ -757,8 +757,6 @@ reads on the board.
 
 ---
 
----
-
 ## 9. Integration — filenames & wiring
 
 Save each asset as `token-<id>.png` + `portrait-<id>.png` in `art/source/`
@@ -846,42 +844,6 @@ broken image.
 | Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | medium |
 | Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
 | Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
-| --- | --- | --- | --- | --- | --- |
-| Remorhaz | `remorhaz` | monstrosity | 7200 | 🐛 | huge |
-| Aboleth | `aboleth` | aberration | 5900 | 🐙 | large |
-| Stone Golem | `stone-golem` | construct | 5900 | 🗿 | large |
-| Young Red Dragon | `young-red` | dragon | 5900 | 🐉 | large |
-| Young Blue Dragon | `young-blue` | dragon | 5000 | 🐉 | large |
-| Hydra | `hydra` | monstrosity | 3900 | 🐉 | huge |
-| Young Green Dragon | `young-green` | dragon | 3900 | 🐉 | large |
-| Shield Guardian | `shield-guardian` | construct | 2900 | 🗿 | large |
-| Young Black Dragon | `young-black` | dragon | 2900 | 🐉 | large |
-| Chimera | `chimera` | monstrosity | 2300 | 🦁 | large |
-| Bulette | `bulette` | monstrosity | 1800 | 🦈 | large |
-| Flesh Golem | `flesh-golem` | construct | 1800 | 🧟 | medium |
-| Otyugh | `otyugh` | aberration | 1800 | 🦑 | large |
-| Roper | `roper` | aberration | 1800 | 🪱 | large |
-| Azer Forgecaller | `azer-forgecaller` | elemental | 1100 | 🔨 | medium |
-| Black Pudding | `black-pudding` | ooze | 1100 | ⬛ | large |
-| Druid | `druid` | humanoid | 1100 | 🌿 | medium |
-| Basilisk | `basilisk` | monstrosity | 700 | 🦎 | medium |
-| Ettercap Snarecaller | `ettercap-snarecaller` | monstrosity | 700 | 🪤 | medium |
-| Winter Wolf | `winter-wolf` | monstrosity | 700 | 🐺 | large |
-| Ettercap | `ettercap` | monstrosity | 450 | 🕸️ | medium |
-| Gelatinous Cube | `gelatinous-cube` | ooze | 450 | 🧊 | large |
-| Gnoll Packcaller | `gnoll-packcaller` | fiend | 450 | 🐕 | medium |
-| Griffon | `griffon` | monstrosity | 450 | 🦅 | large |
-| Ochre Jelly | `ochre-jelly` | ooze | 450 | 🟡 | large |
-| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | large |
-| Apprentice Mage | `apprentice-mage` | humanoid | 200 | 📖 | medium |
-| Lion | `lion` | beast | 200 | 🦁 | large |
-| Scarecrow | `scarecrow` | construct | 200 | 🎃 | medium |
-| Skeleton Bonechanter | `skeleton-bonechanter` | undead | 200 | 🦴 | medium |
-| Goblin Hexer | `goblin-hexer` | fey | 100 | 🪬 | small |
-| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | medium |
-| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
-| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
-| Kobold Emberling | `kobold-emberling` | dragon | 50 | 🎇 | small |
 
 ## 13. Already drawn — the prompts that produced the shipped art (58)
 
