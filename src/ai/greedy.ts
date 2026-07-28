@@ -932,6 +932,29 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (actor.mageArmor || actor.equipped.armor !== undefined) return 0;
       return 4 - slotCost;
     }
+    /**
+     * Polymorph: priced as what it actually is — a large temporary hit point
+     * pool on somebody who is about to lose theirs.
+     *
+     * The ape's hit points are its own, and when they run out the ally comes
+     * back with what they had. So the spell is worth roughly "the ally does not
+     * die this fight", and it is worth that most on whoever is closest to
+     * dying. On a healthy fighter it is a 4th-level slot to swap a good
+     * statblock for a different good statblock.
+     */
+    case 'polymorph': {
+      if (actor.concentratingOn) return 0;
+      const tid = (a.targets[0] as { combatantId: Id }).combatantId;
+      const t = state.combatants[tid]!;
+      // Never on somebody already wearing a body (a druid mid-Wild Shape), and
+      // never on a creature that is already down — it is a rescue, not a raise.
+      if (!t.alive || isDown(t) || t.wildShape) return 0;
+      const hurt = 1 - t.hp / Math.max(1, t.maxHp);
+      if (hurt < 0.4) return 0;                 // still healthy: not worth the slot
+      // Scaled by how badly they need it, and capped so it never outbids
+      // finishing a fight that is nearly won.
+      return 6 + hurt * 10 - slotCost;
+    }
     // Dimension Door is deliberately unscored. Valuing a teleport means valuing
     // a POSITION, and every cheap proxy ("get away from things") makes a caster
     // that runs from fights it was winning. A player can see the board; this

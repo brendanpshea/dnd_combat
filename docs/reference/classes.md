@@ -155,7 +155,7 @@ Spellcasting ability: **WIS**.
 | 2 | Find Familiar |
 | 3 | Moonbeam, Pass without Trace, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
 | 5 | Call Lightning, Protection from Energy, Dispel Magic |
-| 7 | Wall of Fire, Confusion, Freedom of Movement, Blight, Ice Storm |
+| 7 | Wall of Fire, Confusion, Freedom of Movement, Blight, Ice Storm, Polymorph |
 
 ## Fighter
 
@@ -378,6 +378,6 @@ Spellcasting ability: **INT**.
 | 2 | Thunderwave |
 | 3 | Shatter, Mirror Image, Scorching Ray, Misty Step, Suggestion, Web, Invisibility, Blindness, Flaming Sphere |
 | 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
-| 7 | Greater Invisibility, Wall of Fire, Confusion, Dimension Door, Blight, Ice Storm, Banishment, Phantasmal Killer |
+| 7 | Greater Invisibility, Wall of Fire, Confusion, Dimension Door, Blight, Ice Storm, Banishment, Phantasmal Killer, Polymorph |
 
 Learnable from scrolls found in play: Ray of Sickness.

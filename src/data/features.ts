@@ -225,6 +225,18 @@ function breathApply(featureId: Id) {
  * that change small.
  */
 /** Step back out of a beast form, restoring everything it overwrote. */
+/**
+ * Put a shape-changed creature back in its own body.
+ *
+ * Exported because Polymorph needs the same operation from three other places:
+ * the beast's hit points running out, the caster losing concentration, and the
+ * caster dying. Duplicating the restore in each would be four chances to forget
+ * one of the seven fields.
+ */
+export function revertShape(me: Combatant): GameEvent[] {
+  return revertWildShape(me);
+}
+
 function revertWildShape(me: Combatant): GameEvent[] {
   const shape = me.wildShape;
   if (!shape) return [];
@@ -236,6 +248,12 @@ function revertWildShape(me: Combatant): GameEvent[] {
   me.inventory = o.inventory.map((it) => ({ ...it }));
   me.featureIds = [...o.featureIds];
   me.attacksPerAction = o.attacksPerAction;
+  // Polymorph: the original creature comes back with the hit points it had.
+  // Wild Shape has no `hp` snapshot — the druid kept its own throughout — and
+  // only sheds the beast's temporary ones.
+  if (o.spellIds !== undefined) me.spellIds = [...o.spellIds];
+  if (o.maxHp !== undefined) me.maxHp = o.maxHp;
+  if (o.hp !== undefined) me.hp = Math.max(1, Math.min(o.hp, me.maxHp));
   // The beast's temporary hit points go with the beast.
   delete me.tempHp;
   delete me.wildShape;

@@ -26,6 +26,7 @@ import {
   itemFitFor,
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
+import { SPELLS } from '../../src/data/spells.js';
 import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
@@ -886,7 +887,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       onClick={() => {
                         const done = o.kind === 'potion'
                           ? drinkCampBuffPotion(c, o.who, o.id)
-                          : (useStoreSpell(c, o.who, o.id) ? `${o.name} casts Mage Armor.` : null);
+                          // Was hard-coded to "casts Mage Armor", which was
+                          // true while Mage Armor was the only gate spell and
+                          // became a lie the moment it was not.
+                          : (useStoreSpell(c, o.who, o.id)
+                            ? `${o.name} casts ${SPELLS[o.id]?.name ?? o.id}.` : null);
                         if (done) { setNotice(done); refresh(); persist(c, run); }
                       }}
                     >
