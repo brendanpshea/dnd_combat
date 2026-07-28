@@ -22,15 +22,15 @@ export const HAS_ART = new Set<string>([
   'halfling-rogue', 'halfling-warrior', 'harpy', 'hell-hound', 'hezrou',
   'hill-giant', 'horned-devil', 'human-bard', 'ice-mephit', 'imp',
   'invisible-stalker', 'knight', 'kobold', 'lizardfolk', 'mage',
-  'magma-mephit', 'magmin', 'mammoth', 'manticore', 'minotaur', 'mud-mephit',
-  'mummy', 'night-hag', 'ogre', 'ogre-mage', 'orc', 'orc-barbarian',
-  'orc-shaman', 'owlbear', 'paladin', 'priest', 'quasit', 'ranger',
-  'red-wyrmling', 'rogue', 'salamander', 'satyr', 'scout', 'shadow',
-  'skeleton', 'smoke-mephit', 'specter', 'sprite', 'spy', 'steam-mephit',
-  'stone-giant', 'succubus', 'tiefling-knight', 'tiefling-warlock', 'troll',
-  'tyrannosaurus', 'unicorn', 'vampire-spawn', 'veteran', 'vrock',
-  'water-elemental', 'white-wyrmling', 'wight', 'will-o-wisp', 'wizard',
-  'wolf', 'worg', 'wraith', 'wyvern', 'young-white', 'zombie'
+  'magma-mephit', 'magmin', 'mammoth', 'manticore', 'minotaur', 'mummy',
+  'night-hag', 'ogre', 'ogre-mage', 'orc', 'orc-barbarian', 'orc-shaman',
+  'owlbear', 'paladin', 'priest', 'quasit', 'ranger', 'red-wyrmling',
+  'rogue', 'salamander', 'satyr', 'scout', 'shadow', 'skeleton', 'specter',
+  'sprite', 'spy', 'steam-mephit', 'stone-giant', 'succubus',
+  'tiefling-knight', 'tiefling-warlock', 'troll', 'tyrannosaurus', 'unicorn',
+  'vampire-spawn', 'veteran', 'vrock', 'water-elemental', 'white-wyrmling',
+  'wight', 'will-o-wisp', 'wizard', 'wolf', 'worg', 'wraith', 'wyvern',
+  'young-white', 'zombie'
 ]);
 
 /** Adventure NPC archetypes (`portrait-npc-<id>.webp`) — portrait only. */
