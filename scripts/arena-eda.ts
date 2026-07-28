@@ -49,9 +49,47 @@ import { CLASSES } from '../src/data/classes.js';
 import type { Id } from '../src/engine/types.js';
 
 const RUNS = Number(process.argv[2] ?? 40);
-const MAX_DAYS = Number(process.argv[process.argv.indexOf('--max-days') + 1] || 120);
+/**
+ * `argv.indexOf(flag) + 1` is 0 when the flag is absent, and argv[0] is the node
+ * binary — a truthy string that `Number()` turns into NaN. The `|| default`
+ * never fires, and the run silently uses NaN. Look the flag up properly.
+ */
+function flag(name: string, fallback: number): number {
+  const i = process.argv.indexOf(name);
+  if (i < 0) return fallback;
+  const v = Number(process.argv[i + 1]);
+  return Number.isFinite(v) ? v : fallback;
+}
+
+const MAX_DAYS = flag('--max-days', 120);
 const DO_ITEMS = process.argv.includes('--items');
-const ITEM_FIGHTS = Number(process.argv[process.argv.indexOf('--item-fights') + 1] || 40);
+/**
+ * Control: play the DEFAULT party instead of a random one.
+ *
+ * Without this the script has no reference point. A 12% win rate over random
+ * parties could be a finding about random parties or a bug in how this script
+ * assembles one, and those look identical from the output. Running the same
+ * loop against fighter/cleric/rogue/bard — the party `arena-run.ts` plays, with
+ * a published win rate — tells the two apart.
+ */
+const FIXED = process.argv.includes('--fixed');
+/**
+ * Stop a run after this many losses in a row.
+ *
+ * THIS IS NOT A TUNING KNOB, IT IS A CORRECTNESS FIX.
+ *
+ * A run that hits a wave it cannot beat retries it forever, because the wave is
+ * rebuilt from the same seed and the party cannot level without winning. The
+ * first version of this script had no cap: 7252 fights across 60 runs, of which
+ * the overwhelming majority were the same handful of parties re-losing the same
+ * handful of fights a hundred times each. Every per-class average was really an
+ * average over "how deep the stall was", not over play.
+ *
+ * Ten is what a player would do — a wave lost ten times running is a wall, and
+ * the run is over whether or not the game says so.
+ */
+const GIVE_UP = flag('--give-up', 10);
+const ITEM_FIGHTS = flag('--item-fights', 40);
 
 // --- tallies ----------------------------------------------------------------
 
@@ -77,20 +115,24 @@ const speciesRuns = new Map<Id, { runs: number; finished: number }>();
 
 // --- one run ----------------------------------------------------------------
 
-interface Outcome { finished: boolean; days: number; fights: number; wins: number; xp: number; classes: Id[] }
+interface Outcome {
+  finished: boolean; stalled: boolean; days: number; fights: number; wins: number;
+  xp: number; level: number; classes: Id[];
+}
 
 function playOne(seed: number, collect: boolean): Outcome {
   const c = newCampaign(seed);
   // The whole point: species AND classes rerolled per run, with the role guard
   // the real button uses, so a run is never handed an unplayable party.
-  randomizeParty(c);
+  if (!FIXED) randomizeParty(c);
   c.partyReady = true;
   const classes = c.characters.map((ch) => ch.classId);
   const species = c.characters.map((ch) => ch.speciesId);
 
   let run: ArenaRunState = newArenaRun(seed);
   let guard = 0;
-  while (c.xp < RUN_TARGET_XP && dayOf(run) <= MAX_DAYS && guard++ < 4000) {
+  let lossStreak = 0;
+  while (c.xp < RUN_TARGET_XP && dayOf(run) <= MAX_DAYS && lossStreak < GIVE_UP && guard++ < 4000) {
     const half = halfOf(run);
     const level = dayLevelOf(run, partyLevelOf(c));
     const wave = buildWave(run.seed, level, run.wave, undefined, run.gate ?? 0, half);
@@ -164,6 +206,7 @@ function playOne(seed: number, collect: boolean): Outcome {
       applyArenaVictory(c, survivors, wave.encounter.rawXp, combat.state.rng, 0,
         { downedAtZero: half === 'morning' });
     }
+    lossStreak = won ? 0 : lossStreak + 1;
     run = advanceDay(run, won, wave.purse);
     if (won && half === 'morning') { lunch(c); continue; }
     if (!won) reviveParty(c);
@@ -182,7 +225,10 @@ function playOne(seed: number, collect: boolean): Outcome {
       speciesRuns.set(id, s);
     }
   }
-  return { finished, days: dayOf(run) - 1, fights: run.fights, wins: run.wins, xp: c.xp, classes };
+  return {
+    finished, stalled: lossStreak >= GIVE_UP, days: dayOf(run) - 1,
+    fights: run.fights, wins: run.wins, xp: c.xp, level: partyLevelOf(c), classes,
+  };
 }
 
 // --- item A/B ---------------------------------------------------------------
@@ -196,21 +242,27 @@ function playOne(seed: number, collect: boolean): Outcome {
  * Four members wearing four Cloaks of Protection is not a shopping trip anyone
  * would make. It is a sensitivity test: it asks how much this effect is worth
  * at all, loudly enough to show over the noise of forty fights.
+ *
+ * THE FIGHT HAS TO BE CONTESTABLE. The first version fixed on wave 8 at level 4
+ * and the baseline won 4 of 60 — a fight that lost 93% of the time cannot get
+ * measurably less lost, and every single trinket scored +0. A test with no
+ * resolution reports "nothing matters", which is indistinguishable from a real
+ * finding and is much easier to believe. So the wave is CALIBRATED first: the
+ * one whose no-item win rate sits nearest a coin flip, where a real effect has
+ * room to move the number in either direction.
  */
-function itemAB(itemId: Id | undefined, fights: number): number {
+function itemAB(itemId: Id | undefined, fights: number, waveNo: number, level: number): number {
   let won = 0;
   for (let s = 1; s <= fights; s++) {
     const c = newCampaign(s);
-    randomizeParty(c);
+    if (!FIXED) randomizeParty(c);
     c.partyReady = true;
     if (itemId) {
       const slot = trinketSlot(TRINKETS[itemId]!);
       for (const ch of c.characters) ch.equipped = { ...ch.equipped, [slot]: itemId };
     }
     const run = newArenaRun(s);
-    // A mid-run wave rather than wave 1: the first fights are won by everyone,
-    // and an item cannot show a difference in a fight that was never in doubt.
-    const wave = buildWave(run.seed, 4, 8, undefined, 0, 'afternoon');
+    const wave = buildWave(run.seed, level, waveNo, undefined, 0, 'afternoon');
     const party = buildCampaignParty(c);
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: 6 }, String(i + 1)));
@@ -232,11 +284,24 @@ const out: Outcome[] = [];
 for (let s = 1; s <= RUNS; s++) out.push(playOne(s, true));
 
 const finished = out.filter((o) => o.finished).length;
-console.log(`\n=== ${RUNS} arena runs, party randomized every run (species + class, role-guarded)`);
+console.log(`\n=== ${RUNS} arena runs, ${FIXED ? 'DEFAULT party (control)' : 'party randomized every run (species + class, role-guarded)'}`);
 console.log(`finished within ${MAX_DAYS} days: ${finished}/${RUNS} (${pct(finished, RUNS)})`);
+const stalled = out.filter((o) => o.stalled).length;
 const allFights = out.reduce((a, o) => a + o.fights, 0);
 const allWins = out.reduce((a, o) => a + o.wins, 0);
+console.log(`stalled (${GIVE_UP} losses in a row): ${stalled}/${RUNS} (${pct(stalled, RUNS)})`);
 console.log(`fights ${allFights} · wins ${allWins} (${pct(allWins, allFights)})`);
+// The pooled rate above is NOT the win rate a player experiences. A stalled run
+// contributes a long tail of losses at the wall it died on and a finished run
+// contributes a whole campaign of wins, so pooling them weights the answer by
+// how badly each run went. The per-run median is the honest headline.
+const medianOf = (xs: number[]) => xs.length ? xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : 0;
+const rate = (o: Outcome) => o.wins / Math.max(1, o.fights);
+console.log(`per-run win rate: median ${pct(medianOf(out.map(rate)) * 100, 100)}` +
+  ` (finished runs ${pct(medianOf(out.filter((o) => o.finished).map(rate)) * 100, 100)},` +
+  ` stalled runs ${pct(medianOf(out.filter((o) => o.stalled).map(rate)) * 100, 100)})`);
+console.log(`level reached: median ${medianOf(out.map((o) => o.level))}` +
+  ` (stalled runs ${medianOf(out.filter((o) => o.stalled).map((o) => o.level))})`);
 
 console.log(`\n--- classes (per fight the class was in)`);
 console.log(pad('class', 12) + ['   dmg', ' taken', '  heal', ' downs', ' casts', '  runs', '  fin%'].join(''));
@@ -285,15 +350,26 @@ for (const [id, s] of [...speciesRuns.entries()].sort((a, b) => b[1].finished / 
 }
 
 if (DO_ITEMS) {
-  console.log(`\n=== magic items: same ${ITEM_FIGHTS} fights, item on all four vs nothing`);
-  const base = itemAB(undefined, ITEM_FIGHTS);
+  console.log(`\n=== magic items: same fights, item on all four vs nothing`);
+  // Calibrate: find the wave nearest a coin flip on a cheap sample, so the A/B
+  // has somewhere to move. A fight everyone loses and a fight everyone wins are
+  // both worth exactly zero bits.
+  const probe = 20;
+  let best = { wave: 4, level: 3, rate: 1 };
+  for (const [level, waveNo] of [[2, 2], [2, 4], [3, 4], [3, 6], [4, 6], [4, 8], [5, 10]] as Array<[number, number]>) {
+    const rate = itemAB(undefined, probe, waveNo, level) / probe;
+    if (Math.abs(rate - 0.5) < Math.abs(best.rate - 0.5)) best = { wave: waveNo, level, rate };
+  }
+  console.log(`calibrated on wave ${best.wave} at party level ${best.level}` +
+    ` (baseline near ${pct(Math.round(best.rate * 100), 100)} on a ${probe}-fight probe)`);
+  const base = itemAB(undefined, ITEM_FIGHTS, best.wave, best.level);
   console.log(`baseline (no trinket): ${base}/${ITEM_FIGHTS} won (${pct(base, ITEM_FIGHTS)})`);
   const deltas: Array<[Id, number]> = [];
-  for (const id of Object.keys(TRINKETS)) deltas.push([id, itemAB(id, ITEM_FIGHTS) - base]);
+  for (const id of Object.keys(TRINKETS)) deltas.push([id, itemAB(id, ITEM_FIGHTS, best.wave, best.level) - base]);
   for (const [id, d] of deltas.sort((a, b) => b[1] - a[1])) {
     console.log(`  ${pad(TRINKETS[id]?.name ?? id, 28)} ${(d >= 0 ? '+' : '') + d} fights`);
   }
-  // Honesty about the resolution: at n fights, a swing of about ±sqrt(n)/2 is
+  // Honesty about the resolution: at n fights, a swing of about +/-sqrt(n)/2 is
   // noise. Quote it rather than letting a reader treat +2 as a finding.
-  console.log(`  a swing under ±${Math.round(Math.sqrt(ITEM_FIGHTS) / 2)} fights is inside the noise at n=${ITEM_FIGHTS}.`);
+  console.log(`  a swing under +/-${Math.round(Math.sqrt(ITEM_FIGHTS) / 2)} fights is inside the noise at n=${ITEM_FIGHTS}.`);
 }
