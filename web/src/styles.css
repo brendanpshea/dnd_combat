@@ -3410,3 +3410,21 @@ button.category .count {
    the same kind of decision: spend something now against what is behind it. */
 .prep-row .skill-gambit { border-color: #5a6b4a; }
 .prep-row .skill-gambit:hover:not(:disabled) { border-color: #7d9668; }
+
+/* A group check's four rolls, in place of one big d20. Named columns rather
+   than a die per hero: the tally is the result, and four tumbling dice is four
+   times the wait on a screen shown before every fight. */
+.groupcheck .gc-rolls { display: grid; gap: 4px; margin: 10px 0 4px; min-width: 232px; }
+.gc-row {
+  display: grid; grid-template-columns: 1fr 2.2rem 2.4rem 1.1rem; align-items: center;
+  gap: 8px; padding: 5px 9px; border-radius: 8px;
+  background: #241f38; border: 1px solid #322b47; font-size: .82rem;
+}
+.gc-row.ok   { border-color: #3d7a52; background: #1e2c25; }
+.gc-row.fail { border-color: #6d3040; background: #2b1d24; }
+.gc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-die { font-variant-numeric: tabular-nums; text-align: right; color: #cfc4ea; font-weight: 700; }
+.gc-total { font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+.gc-row.ok .gc-mark   { color: #6ee7a0; }
+.gc-row.fail .gc-mark { color: #ff7a7a; }
+.gc-tally { font-size: .82rem; color: #cfc4ea; margin: 6px 0 2px; text-align: center; }

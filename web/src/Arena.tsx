@@ -933,9 +933,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     know you are coming. */}
                 {creep ? (
                   <span className={creep.success ? 'lore-known' : 'lore-blind'}>
+                    {/* The tally, not a name. A group check succeeds or fails on
+                        how many got through; crediting or blaming one hero told
+                        the player the wrong thing about what to change. */}
                     {creep.success
-                      ? `🤫 ${c.characters[creep.by]?.name} got the party in unseen — they lose the first round.`
-                      : `🤫 ${c.characters[creep.by]?.name} put a boot wrong — ${creep.total} vs DC ${creep.dc}. They are waiting for you.`}
+                      ? `🤫 ${creep.passed ?? '—'} of ${creep.of ?? '—'} got in unseen — they lose the first round.`
+                      : `🤫 Only ${creep.passed ?? 0} of ${creep.of ?? '—'} got past, against DC ${creep.dc}. They are waiting for you.`}
                     {creep.door !== (run.gate ?? 0) && ' You crept at another gate; this one you walk into.'}
                   </span>
                 ) : locked || !canCreepIn(grid) ? null : (() => {
@@ -946,13 +949,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       skill="stealth"
                       dc={dc}
                       label="Creep in"
-                      note="half the party must pass · failure surprises YOU"
-                      onRoll={() => {
+                      group
+                      note="failure surprises YOU"
+                      onRollGroup={() => {
                         const group = groupSkillCheck(c, 'stealth', dc);
-                        // On a success the best roll got you in; on a failure
-                        // the worst gave you away. Either way it is the roll the
-                        // story is about, and the one worth showing.
-                        const roll = group.success
+                        // `by`/`total` are kept for older saves that stored one
+                        // roll; the tally is what the card now reads from.
+                        const shown = group.success
                           ? group.rolls.reduce((a, b) => (b.total > a.total ? b : a))
                           : group.rolls.reduce((a, b) => (b.total < a.total ? b : a));
                         const nextRun = {
@@ -961,11 +964,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                             key: creepKey(dayOf(run), half),
                             door: run.gate ?? 0,
                             success: group.success,
-                            by: roll.by, total: roll.total, dc,
+                            by: shown.by, total: shown.total, dc,
+                            passed: group.rolls.filter((r) => r.success).length,
+                            of: group.rolls.length,
                           },
                         };
                         setRun(nextRun); persist(c, nextRun);
-                        return roll;
+                        return group;
                       }}
                     />
                   );
