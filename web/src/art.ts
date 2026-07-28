@@ -72,6 +72,25 @@ export function boardBgUrl(theme: string): string {
 }
 
 /**
+ * The small derivative of a cover image, for the launch screen's mode cards.
+ *
+ * The cards paint a backdrop in a band 150px tall. Serving the full-size art
+ * there cost 364 KB on the very first screen of the app — more than the tokens
+ * and portraits of an entire fight — and on a slow connection it was ahead of
+ * them in the queue. `art/make_thumbs.py` writes a 480x270 crop of every scene
+ * and board backdrop; this addresses it.
+ *
+ * Takes a full art URL rather than an id because the two cover families are
+ * named differently (`scene-<id>`, `bg-<theme>`) and the caller already has the
+ * URL it would otherwise have used. Every thumb is generated from the file it
+ * shadows, and `make_thumbs.py --check` is what keeps that true.
+ */
+export function thumbUrl(fullUrl: string): string {
+  const file = fullUrl.slice(fullUrl.lastIndexOf('/') + 1);
+  return `${BASE}art/thumb/thumb-${file}`;
+}
+
+/**
  * Board render scale, amplifying the size tiers the source framing only hints
  * at (so an ogre visibly towers over a kobold). 1 = default cell fit.
  */

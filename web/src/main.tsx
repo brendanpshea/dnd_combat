@@ -22,6 +22,11 @@ createRoot(document.getElementById('root')!).render(
   </React.StrictMode>,
 );
 
+// The boot shell from index.html has done its job the moment React has painted
+// anything. Removed on the next frame rather than immediately so the two never
+// swap mid-paint and flash the background between them.
+requestAnimationFrame(() => document.getElementById('boot')?.remove());
+
 // PWA: offline cache + installability (production only; dev server stays live).
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
