@@ -213,6 +213,86 @@ def strip_specks(im):
     return out, len(doomed)
 
 
+def crop_stacked_portrait(im):
+    """If a portrait source image contains two vertically stacked heads
+    separated by a clear horizontal gap in the middle, crop to the top single head.
+    """
+    w, h = im.size
+    a = im.split()[3].load()
+    row_counts = [sum(1 for x in range(w) if a[x, y] > 40) for y in range(h)]
+    
+    # Find local minimum gap in y=160..320
+    min_y = None
+    min_count = w
+    for y in range(160, 320):
+        if row_counts[y] < min_count:
+            min_count = row_counts[y]
+            min_y = y
+            
+    # Check if this minimum is a clear waist/gap between two heads
+    if min_y and min_count < w * 0.35:
+        ink_above = sum(1 for yy in range(40, min_y) if row_counts[yy] > 20)
+        ink_below = sum(1 for yy in range(min_y + 10, h - 30) if row_counts[yy] > 20)
+        if ink_above > 60 and ink_below > 60:
+            # Crop to top figure
+            top_crop = im.crop((0, 0, w, min_y))
+            tb = ink_bbox(top_crop)
+            if tb:
+                # If top crop contains "PORTRAIT:" label in top 50px, crop below label
+                if tb[1] < 50 and (tb[3] - tb[1]) > 100:
+                    top_rows = [sum(1 for x in range(w) if a[x, y] > 40) for y in range(min_y)]
+                    label_gap = None
+                    for y in range(20, 60):
+                        if top_rows[y] < w * 0.10:
+                            label_gap = y
+                            break
+                    if label_gap:
+                        top_crop = top_crop.crop((0, label_gap, w, min_y))
+            
+            tb_final = ink_bbox(top_crop)
+            if tb_final:
+                cropped_head = top_crop.crop(tb_final)
+                out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+                cw, ch = cropped_head.size
+                out.paste(cropped_head, ((w - cw) // 2, (h - ch) // 2), cropped_head)
+                return out, True
+    return im, False
+
+
+
+def strip_top_caption(im):
+    """Remove a baked-in top caption row ("PORTRAIT:" / "TOKEN:") at the top of the canvas."""
+    w, h = im.size
+    a = im.split()[3].load()
+    noise = max(2, int(w * CAPTION_NOISE_ROW))
+    rows = [sum(1 for x in range(w) if a[x, y] > 40) > noise for y in range(h)]
+    if not any(rows[:int(h * 0.20)]):
+        return im, 0
+    try:
+        first = min(y for y in range(int(h * 0.20)) if rows[y])
+    except ValueError:
+        return im, 0
+    y = first
+    while y < int(h * 0.20) and rows[y]:
+        y += 1
+    run_bot = y - 1
+    band_h = run_bot - first + 1
+    if band_h > h * CAPTION_MAX_HEIGHT or band_h < h * CAPTION_MIN_HEIGHT:
+        return im, 0
+    gap = 0
+    while y < int(h * 0.5) and not rows[y]:
+        gap += 1
+        y += 1
+    if gap < CAPTION_MIN_GAP:
+        return im, 0
+    out = im.copy()
+    px = out.load()
+    for yy in range(first, run_bot + 1):
+        for xx in range(w):
+            px[xx, yy] = (0, 0, 0, 0)
+    return out, run_bot - first + 1
+
+
 def strip_caption(im):
     """Remove a baked-in caption row ("TOKEN" / "PORTRAIT") left by slicing.
 
@@ -367,15 +447,22 @@ reframed = []
 despeckled = []
 captioned = []
 
+unstacked = []
+
 for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
     for cid in IDS:
         src = os.path.join(SRC, f"{kind}-{cid}.png")
         if not os.path.exists(src):
             continue
         im = Image.open(src).convert("RGBA")
+        if kind == "portrait":
+            im, was_stacked = crop_stacked_portrait(im)
+            if was_stacked:
+                unstacked.append(f"{kind}-{cid}")
+        im, top_cap = strip_top_caption(im)
         im, caption = strip_caption(im)
-        if caption:
-            captioned.append(f"{kind}-{cid} ({caption}px)")
+        if caption or top_cap:
+            captioned.append(f"{kind}-{cid} ({caption or top_cap}px)")
         # Curtains run for everything. A keying hairline is invisible against
         # the old dark board but shows as a vertical seam the moment a token
         # is composited on anything lighter — the landing page's arena line-up
