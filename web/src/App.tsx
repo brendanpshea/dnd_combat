@@ -26,6 +26,8 @@ import { CampaignScreen } from './Campaign.js';
 import { ArenaScreen } from './Arena.js';
 import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
+import { completedModules } from './adventureProgress.js';
+import { moduleChains, chapterStates, currentChapter } from '../../src/adventure/chain.js';
 import { loadCampaignWeb } from './campaignStorage.js';
 import { loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
 import { classLook } from './classLook.js';
@@ -143,15 +145,19 @@ export function App() {
 function Menu({ onPick }: { onPick(s: Screen): void }) {
   const [about, setAbout] = useState(false);
   const [confirmWipe, setConfirmWipe] = useState<string | null>(null); // module id
+  const [chaptersOpen, setChaptersOpen] = useState(false);
   const dev = typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev');
   const modules = playableModules(dev);
   const savedId = savedAdventureModule();
-  // Float a module with an in-progress save to the top, so "Continue" is the
-  // first thing you see — otherwise a saved Chapter 2 hides below a fresh
-  // Chapter 1 you've already finished.
-  const orderedModules = savedId
-    ? [...modules].sort((a, b) => Number(b.id === savedId) - Number(a.id === savedId))
-    : modules;
+  const completed = completedModules();
+  // One card per campaign, not per chapter. The story is a chain of three that
+  // share a party, so three peer cards misdescribed it — and the page grew by
+  // 318px every time a chapter was written. Chapters live inside the card.
+  const chains = moduleChains(modules);
+  const storyChain = chains.find((c) => c.length > 1) ?? chains[0] ?? [];
+  const loose = chains.filter((c) => c !== storyChain).flat();
+  const states = chapterStates(storyChain, completed, savedId);
+  const at = currentChapter(storyChain, completed, savedId);
 
   return (
     <div className="setup landing">
@@ -170,24 +176,30 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         </p>
       </header>
 
+      {/* The tutorial, first. It sat fifth, 1,769px down — you reached
+          "New to this?" only after scrolling past three chapters and the
+          arena, which is to say after you had already answered it. */}
+      <button className="landing-learn" onClick={() => { initAudio(); onPick({ view: 'training' }); }}>
+        🎓 New to this? Learn the basics
+        <small>A quick guided battle — move, attack, win. Two minutes, no setup.</small>
+      </button>
+
       <div className="landing-section">
         <span className="landing-section-label">The story campaign</span>
-      <div className="landing-modules">
-        {orderedModules.map((m) => {
+        {storyChain.length > 0 && (() => {
+          const m = storyChain[at]!;
           const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
+          const cover = m.cover;
           const play = (fresh?: boolean) => {
             initAudio();
             onPick({ view: 'adventure', module: m, ...(resume && !fresh ? { resume } : {}) });
           };
-          // Starting this chapter cold would overwrite the one save slot — and
-          // the company in it, which may have walked two chapters to get there.
-          // The old "Start over" confirm only guarded the card holding the save;
-          // every OTHER card destroyed it silently on a single tap.
+          // Starting fresh would overwrite the one save slot, and the company
+          // in it may have walked two chapters to get there.
           const wouldOverwrite = !!savedId && savedId !== m.id;
-          const savedTitle = savedId ? modules.find((x) => x.id === savedId)?.title : undefined;
-          const cover = m.cover;
+          const done = completed.size;
           return (
-            <div key={m.id} className={`module-card${resume ? ' resuming' : ''}`}>
+            <div className={`module-card${resume ? ' resuming' : ''}`}>
               <button
                 className="module-cover"
                 onClick={() => (wouldOverwrite ? setConfirmWipe(m.id) : play())}
@@ -197,19 +209,25 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
                   ? <div className="module-cover-art" style={{ backgroundImage: `url(${thumbUrl(sceneArtUrl(cover))})` }} />
                   : <div className="module-cover-art glyph"><span>{(cover && artEmoji(cover)) ?? '📜'}</span></div>}
                 <div className="module-cover-body">
-                  <strong>{m.title}{dev && !['hollow-road'].includes(m.id) ? ' · dev' : ''}</strong>
-                  {m.levelBand && <span className="module-band">Levels {m.levelBand.from}–{m.levelBand.to}</span>}
+                  <span className="module-band">
+                    Chapter {at + 1} of {storyChain.length}
+                    {m.levelBand ? ` · Levels ${m.levelBand.from}–${m.levelBand.to}` : ''}
+                  </span>
+                  <strong>{m.title}</strong>
                   <span>{m.blurb}</span>
-                  <span className="module-cta">{resume ? '▶ Continue your run' : '▶ Play'}</span>
+                  <span className="module-cta">
+                    {resume ? '▶ Continue your run' : done ? '▶ Play this chapter' : '▶ Begin the story'}
+                  </span>
                 </div>
               </button>
+
               {(resume || confirmWipe === m.id) && (
                 <div className="module-actions">
                   {confirmWipe === m.id ? (
                     <>
                       <span className="muted">
                         {wouldOverwrite
-                          ? `Your company is saved at ${savedTitle}. Starting here abandons them and rolls a new level-1 party.`
+                          ? `Your company is saved at ${storyChain.find((x) => x.id === savedId)?.title}. Starting here abandons them and rolls a new level-1 party.`
                           : 'Erase your saved run and start fresh?'}
                       </span>
                       <button className="mini danger" onClick={() => { deleteAdventureWeb(); setConfirmWipe(null); play(true); }}>
@@ -222,10 +240,48 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
                   )}
                 </div>
               )}
+
+              {/* The other chapters, folded away. A locked one is shown rather
+                  than hidden: knowing the story continues is the point, and a
+                  chapter that simply appears one day reads as a bug. */}
+              {storyChain.length > 1 && (
+                <div className="chapter-list">
+                  <button className="chapter-toggle" onClick={() => setChaptersOpen((v) => !v)}>
+                    {chaptersOpen ? '⌃' : '⌄'} Chapters ({completed.size}/{storyChain.length} finished)
+                  </button>
+                  {chaptersOpen && storyChain.map((ch, i) => {
+                    const state = states[i]!;
+                    const here = i === at;
+                    return (
+                      <button
+                        key={ch.id}
+                        className={`chapter-row ${state}${here ? ' here' : ''}`}
+                        disabled={state === 'locked'}
+                        onClick={() => {
+                          if (state === 'locked') return;
+                          if (savedId && savedId !== ch.id) { setConfirmWipe(ch.id); return; }
+                          initAudio();
+                          const r = savedId === ch.id ? loadAdventureWeb(ch) : undefined;
+                          onPick({ view: 'adventure', module: ch, ...(r ? { resume: r } : {}) });
+                        }}
+                      >
+                        <span className="chapter-mark">
+                          {state === 'done' ? '✓' : state === 'locked' ? '🔒' : here ? '▸' : '·'}
+                        </span>
+                        <span className="chapter-name">{i + 1}. {ch.title}</span>
+                        <span className="chapter-note">
+                          {state === 'locked'
+                            ? 'Finish the chapter before it'
+                            : ch.levelBand ? `Levels ${ch.levelBand.from}–${ch.levelBand.to}` : ''}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
-        })}
-      </div>
+        })()}
       </div>
 
       <div className="landing-section">
@@ -233,24 +289,34 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         <ArenaCard onPick={onPick} />
       </div>
 
-      <button className="landing-learn" onClick={() => { initAudio(); onPick({ view: 'training' }); }}>
-        🎓 New to this? Learn the basics
-        <small>A quick guided battle — move, attack, win. Two minutes, no setup.</small>
-      </button>
-
-      <div className="landing-more">
-        <span className="landing-more-label">More ways to play</span>
-        <div className="landing-more-row">
-          <button className="landing-alt" onClick={() => onPick({ view: 'campaign' })}>
-            🏰 Classic Campaign{loadCampaignWeb() ? ' · resume' : ''}
-            <small>The pure {STAGES.length}-battle tactics ladder.</small>
-          </button>
-          <button className="landing-alt" onClick={() => onPick({ view: 'skirmish-setup' })}>
-            ⚔️ Quick Battle
-            <small>One custom fight, your party vs. anything.</small>
-          </button>
+      {/* The two modes that are not shipping. `import.meta.env.DEV` rather
+          than the `?dev` URL flag, because a flag is something you can be sent
+          a link to: these are gone from a production build entirely, and the
+          branch is dead code the bundler drops. `?dev` still reveals the test
+          MODULES, which do want to be reachable on a deployed build. */}
+      {(import.meta.env.DEV || loose.length > 0) && (
+        <div className="landing-more">
+          <span className="landing-more-label">{import.meta.env.DEV ? 'Dev builds only' : 'Test modules'}</span>
+          <div className="landing-more-row">
+            {import.meta.env.DEV && (<>
+            <button className="landing-alt" onClick={() => onPick({ view: 'campaign' })}>
+              🏰 Classic Campaign{loadCampaignWeb() ? ' · resume' : ''}
+              <small>The pure {STAGES.length}-battle tactics ladder.</small>
+            </button>
+            <button className="landing-alt" onClick={() => onPick({ view: 'skirmish-setup' })}>
+              ⚔️ Quick Battle
+              <small>One custom fight, your party vs. anything.</small>
+            </button>
+            </>)}
+            {loose.map((m) => (
+              <button key={m.id} className="landing-alt" onClick={() => { initAudio(); onPick({ view: 'adventure', module: m }); }}>
+                🧪 {m.title}
+                <small>Test module.</small>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <button className="ghost landing-about-link" onClick={() => setAbout(true)}>About &amp; credits</button>
 
