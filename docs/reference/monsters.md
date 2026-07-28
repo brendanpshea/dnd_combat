@@ -796,7 +796,6 @@ STR 16 (+3), DEX 10 (+0), CON 12 (+1), INT 13 (+1), WIS 16 (+3), CHA 13 (+1)
 STR 10 (+0), DEX 16 (+3), CON 12 (+1), INT 11 (+0), WIS 10 (+0), CHA 8 (-1)
 
 - **Attacks:** Bite 2d4 piercing; Hand Crossbow 1d6 piercing, 30/120 ft
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 
 ### White Dragon Wyrmling
 
@@ -951,7 +950,6 @@ STR 16 (+3), DEX 14 (+2), CON 14 (+2), INT 10 (+0), WIS 11 (+0), CHA 10 (+0)
 
 - **Attacks:** Bite 2d8 piercing; Scratch 2d6 slashing
 - **Features:** Pack Tactics
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 
 ### Wight
 
@@ -1074,7 +1072,6 @@ STR 8 (-1), DEX 17 (+3), CON 13 (+1), INT 15 (+2), WIS 12 (+1), CHA 20 (+5)
 STR 17 (+3), DEX 10 (+0), CON 15 (+2), INT 10 (+0), WIS 11 (+0), CHA 8 (-1)
 
 - **Attacks:** Gore 2d8 piercing; Javelin 1d6 piercing, 30/120 ft
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 
 ### Weretiger
 
@@ -1083,7 +1080,6 @@ STR 17 (+3), DEX 10 (+0), CON 15 (+2), INT 10 (+0), WIS 11 (+0), CHA 8 (-1)
 STR 17 (+3), DEX 15 (+2), CON 16 (+3), INT 10 (+0), WIS 13 (+1), CHA 11 (+0)
 
 - **Attacks:** Bite 2d8 piercing; Longbow 1d8 piercing, 150/600 ft
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 
 ### Air Elemental
 
@@ -1274,7 +1270,6 @@ STR 18 (+4), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 10 (+0), CHA 8 (-1)
 STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 11 (+0), WIS 12 (+1), CHA 12 (+1)
 
 - **Attacks:** Bite 2d12 piercing; Rend 2d10 slashing
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 
 ### Wraith
 

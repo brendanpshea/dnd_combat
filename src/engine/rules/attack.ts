@@ -494,6 +494,17 @@ export function resolveAttack(
     tags.push('Colossus Slayer');
   }
 
+  // Silver, against something that changes shape. This is the whole of what
+  // silvering does beyond counting as magical — and it is a bonus, not a gate:
+  // nothing in the game is immune to ordinary steel for want of it.
+  if (weapon.bonusDiceVsShapechanger && target.shapechanger) {
+    const extra = rollDice(state.rng, weapon.bonusDiceVsShapechanger, crit);
+    state.rng = extra.state;
+    amount += extra.total;
+    rolls = [...rolls, ...extra.rolls];
+    tags.push('Silvered');
+  }
+
   // Goblin-style rider: extra dice when the roll had advantage.
   if (weapon.bonusDiceOnAdvantage && mode === 'advantage') {
     const extra = rollDice(state.rng, weapon.bonusDiceOnAdvantage, crit);

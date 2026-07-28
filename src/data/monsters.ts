@@ -32,6 +32,8 @@ export interface MonsterData {
   resistances?: DamageType[];
   /** Resisted only against nonmagical damage (SRD physical resistance). */
   resistNonmagical?: DamageType[];
+  /** Changes shape (a lycanthrope). Silvered weapons hurt these extra. */
+  shapechanger?: boolean;
   /**
    * Keep this monster out of generated fights below the given party level.
    *
@@ -410,24 +412,23 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['mace', 'bite'],
   },
   /**
-   * Lycanthropes: SRD 5.2.1 stat blocks, with one deliberate house rule.
+   * Lycanthropes: SRD 5.2.1 stat blocks, straight.
    *
-   * The 2024 SRD dropped silver entirely. The word does not appear in it once,
-   * and these five blocks carry no damage immunity or resistance of any kind —
-   * the 2014 "nonmagical attacks that aren't silvered" clause is gone. Their
-   * numbers below are the 5.2.1 ones; `resistNonmagical` is not.
+   * They resist NOTHING, which is worth saying because the 2014 versions were
+   * famous for the opposite — "bludgeoning, piercing, and slashing from
+   * nonmagical attacks that aren't silvered" — and the 2024 revision dropped
+   * that clause along with silver itself. An ordinary sword hurts a werewolf
+   * exactly as much as a silvered one does.
    *
-   * It is added on purpose. `resistNonmagical` is this game's own field and
-   * fifteen monsters already carry it — every elemental and most of the undead
-   * — but they cluster at CR 4-5, so nothing below that level ever asks a
-   * martial character to solve anything with equipment. A wererat at CR 2 is
-   * the earliest the question can be posed, and silver is the answer players
-   * already expect to be right. Bludgeoning, piercing and slashing only:
-   * a fireball hurts a werewolf exactly as much as it hurts anyone.
+   * What silver is for here is `shapechanger`: a silvered weapon deals extra
+   * damage to one, which is a bonus rather than a gate. That is the difference
+   * between "you cannot hurt this without the right item" and "the right item
+   * helps", and only the second is a good thing to hand a level-2 party.
    *
-   * Shape-shifting is not modelled. The SRD says the statistics are identical
-   * in every form but size, so the hybrid is the only form worth fielding, and
-   * a bonus action that changes nothing but a word would be dead data.
+   * Shape-shifting itself is not modelled. The SRD says the statistics are
+   * identical in every form but size, so the hybrid is the only form worth
+   * fielding and a bonus action that changed nothing but a word would be dead
+   * data. `shapechanger` is the flag that matters mechanically.
    */
   wererat: {
     id: 'wererat', name: 'Wererat',
@@ -435,7 +436,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 10, dex: 16, con: 12, int: 11, wis: 10, cha: 8 },
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    shapechanger: true,
     weaponIds: ['were-bite-rat', 'hand-crossbow'],
     attacksPerAction: 2,
   },
@@ -445,7 +446,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 16, dex: 14, con: 14, int: 10, wis: 11, cha: 10 },
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    shapechanger: true,
     // Pack Tactics is on the block, and it is the trait that makes a werewolf
     // read differently from a bag of hit points: it wants a friend adjacent.
     featureIds: ['pack-tactics'],
@@ -458,7 +459,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 17, dex: 10, con: 15, int: 10, wis: 11, cha: 8 },
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    shapechanger: true,
     weaponIds: ['were-bite-boar', 'javelin'],
     attacksPerAction: 2,
   },
@@ -468,7 +469,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 17, dex: 15, con: 16, int: 10, wis: 13, cha: 11 },
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    shapechanger: true,
     weaponIds: ['were-bite-tiger', 'longbow'],
     attacksPerAction: 2,
   },
@@ -478,7 +479,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 19, dex: 10, con: 17, int: 11, wis: 12, cha: 12 },
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    shapechanger: true,
     weaponIds: ['were-bite-bear', 'were-rend'],
     attacksPerAction: 2,
   },
@@ -1824,6 +1825,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     attacksPerAction: m.attacksPerAction ?? 1,
     resistances: [...(m.resistances ?? [])],
     ...(m.resistNonmagical ? { resistNonmagical: [...m.resistNonmagical] } : {}),
+    ...(m.shapechanger ? { shapechanger: true as const } : {}),
     vulnerabilities: [...(m.vulnerabilities ?? [])],
     immunities: [...(m.immunities ?? [])],
     conditions: [],

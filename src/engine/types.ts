@@ -244,6 +244,17 @@ export interface Combatant {
    * turns a wight into a wall that a +1 sword cannot get through.
    */
   resistNonmagical?: DamageType[];
+  /**
+   * A creature that changes shape — a lycanthrope, and anything else that
+   * grows one later.
+   *
+   * Silvered weapons deal extra damage to these, which is the whole of what
+   * silver does. Deliberately a bonus and not a gate: the 2014 lycanthropes
+   * could not be hurt at all without silver, and a monster the party simply
+   * cannot damage is a wall rather than a fight — especially at CR 2, where a
+   * wererat is the first one you meet.
+   */
+  shapechanger?: boolean;
   vulnerabilities: DamageType[];
   immunities: DamageType[];
   conditions: ActiveCondition[];

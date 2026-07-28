@@ -36,6 +36,7 @@
 import type { Id } from '../engine/types.js';
 import { ITEMS } from '../data/items.js';
 import { rarityOf, isMagicalWare, isPermanentMagic, SHOP_STOCK, MAGIC_SPOILS } from '../campaign/campaign.js';
+import { SILVERED_WEAPONS } from '../data/weapons.js';
 import { next, type RngState } from '../engine/rng.js';
 
 /**
@@ -78,24 +79,31 @@ const AWARD_MIN_LEVEL: Record<SpoilTier, Record<string, number>> = {
 };
 
 /**
- * Armour a martial can be handed early without breaking anything.
+ * Gear a martial can be handed early without starting an arms race.
  *
- * Reclassifying the adamantine armours would have done nothing on its own:
- * rarity is not what gates them, `spoilTierFor` is. Below level 4 the arena
- * awards no permanent magic at all, at any rarity — which was the right answer
- * to "my first fight gave me a Mace +1", and the wrong one for a fighter, who
- * then has nothing to win for three levels but potions somebody else drinks.
+ * Rarity is not what gates permanent magic — `spoilTierFor` is. Below level 4
+ * the arena awards none of it at any rarity, which was the right answer to "my
+ * first fight gave me a Mace +1" and the wrong one for a fighter, who then has
+ * nothing to win for three levels but potions somebody else drinks.
  *
- * So the exception is shaped like the problem. Adamantine armour adds nothing
- * to hit and nothing to damage; all it does is take the crits off, which is
- * defence a fighter feels and an arms race nobody joins. Full plate is left
- * out — AC 18 at level 1 is a different conversation, and it is the one piece
- * here a party could not otherwise reach for years.
+ * So the exception is shaped like the reason for the rule. What made the Mace
+ * +1 wrong at level 1 was the +1: a permanent, stacking bump to hit and damage,
+ * arriving before the fights are built to expect it. Nothing here has one.
+ *
+ *   silvered weapons   no bonus at all — the blade merely counts as magical,
+ *                      so what shrugs off ordinary steel does not shrug off it
+ *   adamantine armour  no bonus at all — it takes the critical hits off
+ *
+ * Both are answers to a specific problem rather than a general upgrade, which
+ * is what a low-level reward should be. Full plate is left out: AC 18 at level
+ * 1 is a different conversation, and it is the one piece here a party could not
+ * otherwise reach for years.
  */
-const EARLY_MARTIAL_KIT = new Set<Id>([
+const EARLY_ADAMANTINE: Id[] = [
   'adamantine-scale-mail', 'adamantine-chain-mail',
   'adamantine-half-plate', 'adamantine-splint',
-]);
+];
+const EARLY_MARTIAL_KIT = new Set<Id>([...EARLY_ADAMANTINE, ...SILVERED_WEAPONS]);
 
 /** Everything the arena might hand over, by tier. Derived, never hand-kept. */
 export function spoilPool(tier: SpoilTier, level: number): Id[] {

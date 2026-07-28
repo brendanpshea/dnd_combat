@@ -306,6 +306,11 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     'scroll-command', 'scroll-guiding-bolt', 'scroll-color-spray', 'scroll-bane', 'scroll-shield-of-faith',
     'chain-shirt',
     'handaxe', 'spear', 'morningstar',
+    // Silvered weapons are COMMON magic: no bonus to hit, no bonus to damage,
+    // and one effect — the blade counts as magical, so what resists ordinary
+    // steel does not resist it. That is the cheapest thing that can honestly be
+    // called magical, and it is meant to arrive early.
+    ...SILVERED_WEAPONS,
     'gem-quartz', 'gem-moss-agate', 'gem-onyx', 'gem-carnelian',
     'jewelry-wooden-bracer', 'jewelry-brass-ring', 'jewelry-bronze-figurine', 'jewelry-obsidian-necklace',
   ],
@@ -316,7 +321,6 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     // most parties never saw one at all.
     ...PLUS_ONE_WEAPONS, 'shield-plus1',
     'wand-magic-missiles', 'wand-web', 'wand-war-mage-1', 'staff-python',
-    ...SILVERED_WEAPONS,
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
     'scroll-ray-of-sickness', 'scroll-blindness', 'scroll-invisibility',
@@ -557,16 +561,13 @@ export function isMagicalWare(itemId: Id): boolean {
   if (SHIELDS[itemId]) return SHIELDS[itemId]!.rarity !== 'common';
   if (TRINKETS[itemId]) return true;
   const w = WEAPONS[itemId];
-  // Silvering is a craft, not an enchantment. A smith coats the edge and the
-  // weapon gains nothing to hit or damage — the only effect is getting through
-  // "nonmagical" resistance. So it is a staple a shop always stocks, not
-  // treasure: it is the ANSWER to a problem the game has just shown you, and
-  // being able to walk up and buy the fix for the wraith behind door two is
-  // the entire loop. Treasure-only silver would arrive by luck instead.
-  //
-  // It also keeps it out of the consumable award pool, where a silvered
-  // greatsword would have been a very strange thing to call a consumable.
-  if (w) return (!!w.magic && !itemId.startsWith('silvered-')) || itemId.endsWith('plus1');
+  // Silvered weapons are magical wares like any other. There is deliberately no
+  // separate notion of "silver" anywhere in the rules here: `magic: true` is
+  // the whole of it, `isMagicWeapon` is the only question asked, and
+  // `resistNonmagical` is the only field that answers. A second axis — silver
+  // as distinct from magic — would double every resistance check to buy a
+  // distinction no monster in the game makes.
+  if (w) return !!w.magic || itemId.endsWith('plus1');
   if (ARMOR[itemId]) return itemId.endsWith('plus1') || itemId.includes('adamantine');
   if (ITEMS[itemId]) {
     if (itemId.includes('potion-healing') || itemId.includes('greater-healing')) return false;

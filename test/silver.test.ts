@@ -1,24 +1,29 @@
 /**
  * Silver, and the monsters that make you want it.
  *
- * TWO HOUSE RULES, BOTH DELIBERATE
+ * Silvering is an alchemical treatment of the metal, and the weapon it produces
+ * is COMMON magic. It does two things and no third: it counts as magical, and
+ * it deals extra damage to a creature that changes shape.
  *
- * SRD 5.2.1 dropped silver entirely: the word appears in it zero times, and its
- * five lycanthrope stat blocks carry no damage immunity or resistance of any
- * kind — the 2014 "nonmagical attacks that aren't silvered" clause is gone.
- * `resistNonmagical` is this game's own field and always was.
+ * The thing it deliberately does NOT do is gate. The 2014 lycanthropes could
+ * not be hurt at all by an unsilvered blade, and SRD 5.2.1 dropped that clause
+ * along with silver itself — its five lycanthrope blocks resist nothing. A
+ * monster a party simply cannot damage is a wall rather than a fight, and at
+ * CR 2, where a wererat is the first one you meet, that would be a wall you hit
+ * before you could possibly have bought the key. So silver is a bonus: it
+ * helps, and going without it costs damage rather than the whole fight.
  *
- * It is kept because fifteen monsters already use it — every elemental and most
- * of the undead — and they cluster at CR 4-5, so nothing below that ever asks a
- * martial character to solve a problem with equipment. A wererat at CR 2 is the
- * earliest the question can be posed, and silver is the answer players already
- * reach for.
+ * There is also no separate notion of silver anywhere in the rules code.
+ * `magic: true` is what makes it magical, `bonusDiceVsShapechanger` is what
+ * makes it silver, and neither needs a resistance axis of its own.
  */
 import { describe, it, expect } from 'vitest';
 import { WEAPONS, SILVERED_WEAPONS, baseWeaponId } from '../src/data/weapons.js';
 import { MONSTERS, buildMonster } from '../src/data/monsters.js';
+import { buildCharacter } from '../src/builder/character.js';
+import { Combat } from '../src/engine/combat.js';
 import { isMagicWeapon, applyDamage } from '../src/engine/rules/attack.js';
-import { SHOP_STOCK, MAGIC_SPOILS, isObtainable, isMagicalWare, itemPrice } from '../src/campaign/campaign.js';
+import { SHOP_STOCK, MAGIC_SPOILS, isObtainable, isMagicalWare, itemPrice, rarityOf } from '../src/campaign/campaign.js';
 import { spoilPool } from '../src/arena/spoils.js';
 
 const LYCANTHROPES = ['wererat', 'werewolf', 'wereboar', 'weretiger', 'werebear'];
@@ -33,15 +38,16 @@ describe('the silvered weapons', () => {
     for (const id of melee) expect(WEAPONS[`silvered-${id}`], id).toBeDefined();
   });
 
-  it('adds nothing but the ability to hurt the thing', () => {
-    // The point of silver is that it is NOT an upgrade. If it ever carries a
-    // bonus it becomes the weapon you always want, and the interesting version
-    // of the decision — carry a second weapon for one kind of enemy — is gone.
+  it('carries no flat bonus — it is situational, not an upgrade', () => {
+    // If silver ever carried +1 it would become the weapon you always want, and
+    // the interesting version of the decision — carry a second one for a
+    // specific enemy — would be gone.
     for (const id of SILVERED_WEAPONS) {
       const w = WEAPONS[id]!;
       expect(w.attackBonus, id).toBeUndefined();
       expect(w.damageBonus, id).toBeUndefined();
-      expect(isMagicWeapon(w), `${id} must get through nonmagical resistance`).toBe(true);
+      expect(isMagicWeapon(w), `${id} counts as magical`).toBe(true);
+      expect(w.bonusDiceVsShapechanger, id).toBe('1d6');
     }
   });
 
@@ -55,22 +61,33 @@ describe('the silvered weapons', () => {
     }
   });
 
-  it('is a staple on the shelf, not treasure', () => {
-    // Silvering is a craft, so you can go and buy the answer to the wraith
-    // behind door two. Treasure-only silver would arrive by luck instead,
-    // which is the opposite of the decision it exists to offer.
+  it('is common magic, and is treasure', () => {
+    // The moon-touched tier: magical, but the cheapest thing that can honestly
+    // be called so. No bonus to hit, no bonus to damage, one effect.
     for (const id of SILVERED_WEAPONS) {
       expect(isObtainable(id), id).toBe(true);
-      expect(SHOP_STOCK, id).toContain(id);
-      expect(MAGIC_SPOILS, id).not.toContain(id);
-      expect(isMagicalWare(id), `${id} is a coating, not an enchantment`).toBe(false);
+      expect(isMagicalWare(id), id).toBe(true);
+      expect(rarityOf(id), id).toBe('common');
+      expect(MAGIC_SPOILS, id).toContain(id);
+      expect(SHOP_STOCK, `${id} is won, not bought`).not.toContain(id);
     }
   });
 
-  it('never turns up as a "consumable" award', () => {
-    for (const level of [1, 3, 5]) {
-      expect(spoilPool('consumable', level).filter((i) => i.startsWith('silvered-'))).toEqual([]);
+  it('is not tracked separately from magic', () => {
+    // `magic: true` is what makes it magical; there is no silver axis in the
+    // resistance rules, and no monster carries a silver-specific field.
+    for (const id of SILVERED_WEAPONS) expect(WEAPONS[id]!.magic, id).toBe(true);
+    for (const m of Object.values(MONSTERS)) {
+      expect(Object.keys(m), `${m.id} has a silver-specific field`).not.toContain('resistSilver');
     }
+  });
+
+  it('arrives early, because that is what it is for', () => {
+    // Permanent magic is gated to level 4 by `spoilTierFor`, and rightly — a
+    // Mace +1 at level 1 was the complaint that put the gate there. Silver is
+    // the exception because it has no bonus to be early with.
+    expect(spoilPool('consumable', 1).filter((i) => i.startsWith('silvered-')).length)
+      .toBeGreaterThan(0);
   });
 });
 
@@ -79,21 +96,23 @@ describe('the lycanthropes', () => {
     for (const id of LYCANTHROPES) expect(MONSTERS[id], id).toBeDefined();
   });
 
-  it('shrug off ordinary steel, and only ordinary steel', () => {
-    // The house rule, stated exactly: physical damage from a plain weapon is
-    // halved, and everything else lands in full. A fireball hurts a werewolf
-    // as much as it hurts anyone.
+  it('resist nothing at all, which is the 5.2.1 stat block', () => {
+    // The 2014 versions were famous for the opposite. The 2024 revision dropped
+    // "nonmagical attacks that aren't silvered" along with silver itself, and
+    // an ordinary sword now hurts a werewolf exactly as much as a silvered one.
     for (const id of LYCANTHROPES) {
       const m = MONSTERS[id]!;
-      expect(m.resistNonmagical, id).toEqual(['bludgeoning', 'piercing', 'slashing']);
-      expect(m.resistances ?? [], `${id} must not resist elemental damage too`).toEqual([]);
+      expect(m.resistNonmagical, `${id} must not gate damage behind an item`).toBeUndefined();
+      expect(m.resistances ?? [], id).toEqual([]);
       expect(m.immunities ?? [], id).toEqual([]);
     }
   });
 
-  it('put the question below CR 4, which is the whole reason for them', () => {
-    // Everything else carrying resistNonmagical is CR 4 or 5, so before this
-    // there was no level at which a martial could be asked to buy an answer.
+  it('are what silver is for', () => {
+    for (const id of LYCANTHROPES) expect(MONSTERS[id]!.shapechanger, id).toBe(true);
+  });
+
+  it('start below CR 4, so the reward has somewhere early to land', () => {
     const crs = LYCANTHROPES.map((id) => MONSTERS[id]!.cr ?? 99);
     expect(Math.min(...crs)).toBeLessThan(4);
   });
@@ -124,37 +143,71 @@ describe('early martial kit', () => {
     expect(spoilPool('consumable', 3)).not.toContain('adamantine-plate');
   });
 
-  it('carries no bonus to hit or damage — it is defence, not an arms race', () => {
-    for (const id of spoilPool('consumable', 1).filter((i) => i.includes('adamantine'))) {
-      expect(WEAPONS[id], `${id} should be armour, not a weapon`).toBeUndefined();
+  it('carries no bonus to hit or damage — that is what makes it safe early', () => {
+    // The Mace +1 at level 1 was wrong because of the +1. Everything in the
+    // early pool has to be an answer to a problem rather than a general
+    // upgrade, and this is the assertion that keeps it that way.
+    for (const id of spoilPool('consumable', 1)) {
+      const w = WEAPONS[id];
+      if (!w) continue;
+      expect(w.attackBonus, `${id} is in the early pool with a to-hit bonus`).toBeUndefined();
+      expect(w.damageBonus, `${id} is in the early pool with a damage bonus`).toBeUndefined();
     }
   });
 });
 
 describe('silver in an actual fight', () => {
-  it('halves a plain blade and lands a silvered one in full', () => {
-    // The claim the whole feature rests on, checked through applyDamage rather
-    // than by reading the resistance table.
-    const wolf = buildMonster('werewolf', 'team2', { x: 0, y: 0 }, 'w');
-    const state = { combatants: { w: wolf } } as unknown as Parameters<typeof applyDamage>[0];
+  /** Swing `weaponId` at `monsterId` until it connects; return the damage. */
+  function hitFor(weaponId: string, monsterId: string): number {
+    for (let seed = 1; seed <= 200; seed++) {
+      const hero = buildCharacter({
+        classId: 'fighter', team: 'team1', position: { x: 1, y: 1 },
+        speciesId: 'human', name: 'H', level: 5,
+      });
+      hero.equipped = { ...hero.equipped, mainHand: weaponId };
+      // `buildMonster`'s last argument is a suffix, not the id — take the id
+      // the thing actually got rather than the one we asked for.
+      const foe = { ...buildMonster(monsterId, 'team2', { x: 2, y: 1 }), hp: 500, maxHp: 500 };
+      const c = new Combat({ seed, combatants: [hero, foe] });
+      let guard = 0;
+      while (c.activeId !== hero.id && guard++ < 40) c.apply({ kind: 'endTurn' });
+      if (c.activeId !== hero.id) continue;
+      const before = c.state.combatants[foe.id]!.hp;
+      const events = c.apply({ kind: 'attack', weaponId, targetId: foe.id });
+      const roll = events.find((e) => e.type === 'attackRolled');
+      if (roll?.type === 'attackRolled' && roll.hit && !roll.crit) {
+        return before - c.state.combatants[foe.id]!.hp;
+      }
+    }
+    throw new Error(`never landed a clean ${weaponId} on ${monsterId}`);
+  }
 
-    const before = wolf.hp;
-    applyDamage(state, 'w', 'w', 10, 'slashing', [], { magical: false });
-    const plain = before - wolf.hp;
-
-    wolf.hp = before;
-    applyDamage(state, 'w', 'w', 10, 'slashing', [], { magical: true });
-    const silvered = before - wolf.hp;
-
-    expect(plain, 'a plain sword is halved').toBe(5);
-    expect(silvered, 'silver lands in full').toBe(10);
+  it('hurts a shapechanger more than a plain blade does', () => {
+    // Averaged over many landed hits, because both weapons roll 1d8 and only
+    // the extra 1d6 separates them. Same base weapon, same level, same target.
+    const sample = (weaponId: string) => {
+      let total = 0;
+      for (let i = 0; i < 12; i++) total += hitFor(weaponId, 'werewolf');
+      return total / 12;
+    };
+    expect(sample('silvered-longsword')).toBeGreaterThan(sample('longsword'));
   });
 
-  it('does not protect it from fire', () => {
-    const wolf = buildMonster('werewolf', 'team2', { x: 0, y: 0 }, 'w');
-    const state = { combatants: { w: wolf } } as unknown as Parameters<typeof applyDamage>[0];
+  it('does nothing extra to something that does not change shape', () => {
+    const plainOnOrc = hitFor('longsword', 'orc');
+    const silverOnOrc = hitFor('silvered-longsword', 'orc');
+    // Identical dice: 1d8 + Str either way, no rider, no resistance.
+    expect(Math.abs(plainOnOrc - silverOnOrc)).toBeLessThanOrEqual(7);
+    expect(MONSTERS['orc']!.shapechanger).toBeUndefined();
+  });
+
+  it('an ordinary sword still hurts a werewolf in full', () => {
+    // The gate that is deliberately absent. If a lycanthrope ever regains
+    // `resistNonmagical`, this is what says so.
+    const wolf = buildMonster('werewolf', 'team2', { x: 0, y: 0 });
+    const state = { combatants: { [wolf.id]: wolf } } as unknown as Parameters<typeof applyDamage>[0];
     const before = wolf.hp;
-    applyDamage(state, 'w', 'w', 10, 'fire', [], { magical: false });
+    applyDamage(state, wolf.id, wolf.id, 10, 'slashing', [], { magical: false });
     expect(before - wolf.hp).toBe(10);
   });
 });
