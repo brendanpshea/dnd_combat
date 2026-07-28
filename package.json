@@ -22,7 +22,9 @@
     "art-registry": "tsx scripts/art-registry.ts",
     "art-backlog": "tsx scripts/art-backlog.ts",
     "token-silhouettes": "python3 art/generate_svg_tokens.py",
-    "token-sheet": "tsx scripts/token-sheet.ts"
+    "token-sheet": "tsx scripts/token-sheet.ts",
+    "arena-run": "tsx scripts/arena-run.ts",
+    "arena-even": "tsx scripts/arena-even.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
