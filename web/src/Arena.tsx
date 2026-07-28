@@ -21,7 +21,7 @@ import {
   type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
-  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck,
+  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck,
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
 import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
@@ -55,6 +55,9 @@ import { SkillGambit } from './SkillGambit.js';
 import {
   loreSkillsFor, loreTargets, loreDc, dossierFor, loreKey, studyFor,
 } from '../../src/arena/lore.js';
+import {
+  ambushDc, canCreepIn, creepKey, creepFor, surprisedTeam,
+} from '../../src/arena/ambush.js';
 import {
   stallVisitOf, stallPrice, stallResale, type StallVisit,
 } from '../../src/arena/stall.js';
@@ -95,7 +98,9 @@ interface Props {
   onExit(): void;
 }
 
-function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Combat {
+function makeCombat(
+  c: CampaignState, run: ArenaRunState, wave: ArenaWave, surprised?: 'team1' | 'team2',
+): Combat {
   const grid = parseMap(wave.map);
   // Where they start is part of the wave, seeded off it, so a retry is the same
   // fight rather than a reroll of the layout.
@@ -107,6 +112,10 @@ function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Comb
     seed: (run.seed ^ (wave.wave * 7919)) >>> 0,
     map: wave.map,
     combatants: [...buildCampaignParty(c), ...foes],
+    // A creep that landed, or one that did not — see arena/ambush.ts. The
+    // engine has supported this since it was written; the arena simply never
+    // had a way to earn it or to suffer it.
+    ...(surprised ? { surprisedTeam: surprised } : {}),
   });
 }
 
@@ -218,6 +227,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    */
   const allFoes = gates.flatMap((g) => g.wave.encounter.members);
   const study = studyFor(run.lore, dayOf(run), half);
+  // The creep, and what it means for the door currently selected. A gamble
+  // taken at one gate does not carry to another: different monsters, different
+  // eyes, and shopping for the easiest DC would be the whole exploit.
+  const creep = creepFor(run.creep, dayOf(run), half);
+  const surprised = surprisedTeam(creep, run.gate ?? 0);
   const lensesOffered = loreSkillsFor(allFoes);
   /** Creatures this run has successfully placed, by id. */
   const known = new Set<Id>(
@@ -820,6 +834,49 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     );
                   })
                 )}
+                {/* Creeping in. Offered only where there is something to creep
+                    behind — you cannot sneak across open ground — and only
+                    before the first attempt, since the second time through they
+                    know you are coming. */}
+                {creep ? (
+                  <span className={creep.success ? 'lore-known' : 'lore-blind'}>
+                    {creep.success
+                      ? `🤫 ${c.characters[creep.by]?.name} got the party in unseen — they lose the first round.`
+                      : `🤫 ${c.characters[creep.by]?.name} put a boot wrong — ${creep.total} vs DC ${creep.dc}. They are waiting for you.`}
+                    {creep.door !== (run.gate ?? 0) && ' You crept at another gate; this one you walk into.'}
+                  </span>
+                ) : locked || !canCreepIn(grid) ? null : (() => {
+                  const dc = ambushDc(wave.encounter.members);
+                  return (
+                    <SkillGambit
+                      campaign={c}
+                      skill="stealth"
+                      dc={dc}
+                      label="Creep in"
+                      note="half the party must pass · failure surprises YOU"
+                      onRoll={() => {
+                        const group = groupSkillCheck(c, 'stealth', dc);
+                        // On a success the best roll got you in; on a failure
+                        // the worst gave you away. Either way it is the roll the
+                        // story is about, and the one worth showing.
+                        const roll = group.success
+                          ? group.rolls.reduce((a, b) => (b.total > a.total ? b : a))
+                          : group.rolls.reduce((a, b) => (b.total < a.total ? b : a));
+                        const nextRun = {
+                          ...run,
+                          creep: {
+                            key: creepKey(dayOf(run), half),
+                            door: run.gate ?? 0,
+                            success: group.success,
+                            by: roll.by, total: roll.total, dc,
+                          },
+                        };
+                        setRun(nextRun); persist(c, nextRun);
+                        return roll;
+                      }}
+                    />
+                  );
+                })()}
               </div>
 
               {/* Who the selected door actually puts in front of you, named —
@@ -1120,7 +1177,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               )}
 
               <div className="adv-choices">
-                <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
+                <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave, surprised) })}>
                   ⚔️ Fight — {gate.name}
                 </button>
                 {/* The market keeps daylight hours. Two breaks with different
