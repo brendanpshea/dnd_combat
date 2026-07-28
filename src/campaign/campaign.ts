@@ -52,6 +52,16 @@ export interface PartyCharacter {
      */
     itemCharges?: Record<Id, number>;
     /**
+     * Uses left in rest-scoped feature pools (Lay on Hands, Action Surge,
+     * Channel Divinity), by feature id. Absent = full, the same fresh-save
+     * signal HP, slots and wand charges use — and the same thing that refills
+     * them, since `longRest` rebuilds `resources` without this field.
+     *
+     * Encounter-scoped pools are never written here: they refill every fight,
+     * so persisting one would be a bug that looks like a balance decision.
+     */
+    featureUses?: Record<Id, number>;
+    /**
      * For items that recharge on a multi-day clock rather than nightly: the
      * cleared-day count at which each spent item is due back. Absent = nothing
      * pending. Counted in days *cleared*, not days elapsed, so a cooldown
@@ -1208,6 +1218,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
+      ...(ch.resources?.featureUses ? { featureUsesOverride: ch.resources.featureUses } : {}),
       ...(ch.resources?.itemCharges ? { itemChargesOverride: ch.resources.itemCharges } : {}),
       // Hand the builder the effective prepared + cantrip sets (hand-picked or
       // auto-default), so a campaign caster casts exactly what the panel shows.
@@ -1301,6 +1312,33 @@ export function healParty(c: CampaignState, amount: number | 'full'): RestResult
  * couple of points. Spell slots are untouched (only a long rest restores
  * those). Hit dice themselves are refreshed by a long rest.
  */
+/**
+ * Does this feature's pool outlive a single fight?
+ *
+ * The one place that question is answered, because two callers must agree on
+ * it: `readBackSurvivors` decides what to carry out of a fight, and `shortRest`
+ * decides what to hand back. A feature with no `uses` at all (a recharge
+ * ability, a passive) is not rest-scoped — its pool is the fight's business.
+ */
+function restScoped(featureId: Id): boolean {
+  const per = FEATURES[featureId]?.uses?.per;
+  return per === 'shortRest' || per === 'longRest';
+}
+
+/** A short rest refills the short-rest pools and leaves the daily ones spent. */
+function refillShortRestFeatures(ch: PartyCharacter): void {
+  const left = ch.resources?.featureUses;
+  if (!left) return;
+  const kept = Object.fromEntries(
+    Object.entries(left).filter(([id]) => FEATURES[id]?.uses?.per === 'longRest'),
+  );
+  if (Object.keys(kept).length > 0) ch.resources = { ...ch.resources!, featureUses: kept };
+  else {
+    const { featureUses: _f, ...rest } = ch.resources!;
+    ch.resources = rest;
+  }
+}
+
 export function shortRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   let hitDiceSpent = 0;
@@ -1323,6 +1361,9 @@ export function shortRest(c: CampaignState): RestResult {
     }
     totalHealed += hp - combatant.hp;
     ch.resources = { ...ch.resources, hp, hitDice: left };
+    // Second Wind, Action Surge, Channel Divinity and Wild Shape come back
+    // here; Lay on Hands and Bardic Inspiration are the day's budget and do not.
+    refillShortRestFeatures(ch);
     // A short rest ends the 1-hour camp buff potions (giant strength,
     // resistances); familiar/mageArmor keep their own longer clocks.
     clearCampBuffs(ch);
@@ -1431,8 +1472,23 @@ export function partyNeedsRest(c: CampaignState): boolean {
     if (m.hp <= m.maxHp / 2) return true;
     const max = m.spellSlots.reduce((n, s) => n + s.max, 0);
     const cur = m.spellSlots.reduce((n, s) => n + s.current, 0);
-    return max > 0 && cur <= max / 2;
+    if (max > 0 && cur <= max / 2) return true;
+    // Feature pools now deplete across a day, so a fighter out of Action Surge
+    // or a paladin out of Lay on Hands is as good a reason to rest as an empty
+    // spellbook. Without this the prompt would keep answering a question about
+    // casters only, and the martials' new resource would be invisible to it.
+    return restPoolLow(m);
   });
+}
+
+/** Half or less of any rest-scoped pool left — the same bar the slot rule uses. */
+function restPoolLow(m: Combatant): boolean {
+  for (const [id, pool] of Object.entries(m.featureUses)) {
+    const per = FEATURES[id]?.uses?.per;
+    if (per !== 'shortRest' && per !== 'longRest') continue;
+    if (pool.max > 0 && pool.current <= pool.max / 2) return true;
+  }
+  return false;
 }
 
 /** Drink a duration buff potion in camp: consume it from the hero's pack and
@@ -2303,6 +2359,17 @@ export function readBackSurvivors(
           .filter(([, pool]) => pool.current < pool.max);
         return spent.length > 0
           ? { itemCharges: Object.fromEntries(spent.map(([id, pool]) => [id, pool.current])) }
+          : {};
+      })(),
+      // Rest-scoped feature pools carry out the same way. Encounter pools are
+      // filtered out rather than merely ignored on the way back in: writing one
+      // here would persist a thing whose whole definition is that it doesn't.
+      ...(() => {
+        const spent = Object.entries(fought.featureUses ?? {}).filter(
+          ([id, pool]) => pool.current < pool.max && restScoped(id),
+        );
+        return spent.length > 0
+          ? { featureUses: Object.fromEntries(spent.map(([id, pool]) => [id, pool.current])) }
           : {};
       })(),
       ...(fought.familiar || fought.mageArmor || ch.resources?.effects

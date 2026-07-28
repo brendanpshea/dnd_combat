@@ -13,12 +13,12 @@ something else) or `passive` (always on).
 | --- | --- | --- | --- | --- | --- |
 | Acid Breath | `breath-acid` | action | recharge 5–6 | — | 15 ft line, 5d8 acid, DEX save |
 | Acid Breath | `breath-acid-young` | action | recharge 5–6 | — | 30 ft line, 11d8 acid, DEX save |
-| Action Surge | `action-surge` | free | 1/encounter | — | — |
-| Adrenaline Rush | `adrenaline-rush` | bonus | proficiency/encounter | — | — |
+| Action Surge | `action-surge` | free | 1/short rest | — | — |
+| Adrenaline Rush | `adrenaline-rush` | bonus | proficiency/fight | — | — |
 | Assassinate | `assassinate` | passive | — | — | read by the rules, no action of its own |
 | Aura of Devotion | `aura-of-devotion` | passive | — | — | read by the rules, no action of its own |
 | Aura of Protection | `aura-of-protection` | passive | — | — | read by the rules, no action of its own |
-| Bardic Inspiration | `bardic-inspiration` | bonus | charismaMod/encounter | — | — |
+| Bardic Inspiration | `bardic-inspiration` | bonus | charismaMod/long rest | — | — |
 | Berserker's Grip | `berserker-curse` | passive | — | — | read by the rules, no action of its own |
 | Blessed Healer | `blessed-healer` | passive | — | — | read by the rules, no action of its own |
 | Boots of the Winterlands | `boots-winterlands` | passive | — | — | read by the rules, no action of its own |
@@ -27,16 +27,16 @@ something else) or `passive` (always on).
 | Brooch of Shielding | `brooch-shielding` | passive | — | — | read by the rules, no action of its own |
 | Brute | `brute` | passive | — | — | read by the rules, no action of its own |
 | Burrow | `burrow` | passive | — | — | read by the rules, no action of its own |
-| Channel Divinity: Preserve Life | `preserve-life` | action | 1/encounter | — | — |
-| Channel Divinity: Sacred Weapon | `sacred-weapon` | bonus | 1/encounter | — | — |
-| Channel Divinity: Turn Undead | `turn-undead` | action | 1/encounter | — | — |
+| Channel Divinity: Preserve Life | `preserve-life` | action | 1/short rest | — | — |
+| Channel Divinity: Sacred Weapon | `sacred-weapon` | bonus | 1/short rest | — | — |
+| Channel Divinity: Turn Undead | `turn-undead` | action | 1/short rest | — | — |
 | Charge | `charge` | passive | — | — | read by the rules, no action of its own |
-| Charm | `charm` | action | 1/encounter | — | — |
+| Charm | `charm` | action | 1/fight | — | — |
 | Cloak of Displacement | `cloak-displacement` | passive | — | — | read by the rules, no action of its own |
 | Cloak of Protection | `cloak-protection` | passive | — | — | read by the rules, no action of its own |
 | Cold Breath | `breath-cold` | action | recharge 5–6 | — | 15 ft cone, 5d8 cold, CON save |
 | Cold Breath | `breath-cold-young` | action | recharge 5–6 | — | 15 ft cone, 8d8 cold, CON save |
-| Consume Life | `consume-life` | bonus | 1/encounter | — | — |
+| Consume Life | `consume-life` | bonus | 1/fight | — | — |
 | Countercharm | `countercharm` | passive | — | — | read by the rules, no action of its own |
 | Cunning Action: Dash | `cunning-dash` | bonus | — | — | — |
 | Cunning Action: Disengage | `cunning-disengage` | bonus | — | — | — |
@@ -44,7 +44,7 @@ something else) or `passive` (always on).
 | Cutting Words | `cutting-words` | passive | — | — | read by the rules, no action of its own |
 | Disciple of Life | `disciple-of-life` | passive | — | — | read by the rules, no action of its own |
 | Divine Smite | `divine-smite` | passive | — | — | read by the rules, no action of its own |
-| Dreadful Glare | `dreadful-glare` | action | 1/encounter | — | — |
+| Dreadful Glare | `dreadful-glare` | action | 1/fight | — | — |
 | Earth Glide | `earth-glide` | passive | — | — | read by the rules, no action of its own |
 | Engulf | `engulf` | action | — | — | — |
 | Escape the Horde | `escape-the-horde` | passive | — | — | read by the rules, no action of its own |
@@ -52,8 +52,8 @@ something else) or `passive` (always on).
 | Expertise | `expertise` | passive | — | — | read by the rules, no action of its own |
 | Extra Attack | `extra-attack` | passive | — | — | read by the rules, no action of its own |
 | Fast Hands | `fast-hands` | passive | — | — | read by the rules, no action of its own |
-| Fey Charm | `fey-charm` | action | 1/encounter | — | — |
-| Fey Invisibility | `fey-invisibility` | action | 1/encounter | — | — |
+| Fey Charm | `fey-charm` | action | 1/fight | — | — |
+| Fey Invisibility | `fey-invisibility` | action | 1/fight | — | — |
 | Fighting Style: Archery | `archery` | passive | — | — | read by the rules, no action of its own |
 | Fighting Style: Defense | `defense` | passive | — | — | read by the rules, no action of its own |
 | Fighting Style: Dueling | `dueling` | passive | — | — | read by the rules, no action of its own |
@@ -68,52 +68,52 @@ something else) or `passive` (always on).
 | Frost Breath | `breath-mephit-cold` | action | recharge 6 | — | 15 ft cone, 2d4 cold, DEX save |
 | Gloves of Thievery | `gloves-thievery` | passive | — | — | read by the rules, no action of its own |
 | Gnomish Cunning | `gnomish-cunning` | passive | — | — | read by the rules, no action of its own |
-| Heroic Inspiration | `heroic-inspiration` | free | 1/encounter | — | — |
+| Heroic Inspiration | `heroic-inspiration` | free | 1/fight | — | — |
 | Horn Charge | `unicorn-charge` | passive | — | — | read by the rules, no action of its own |
-| Horrifying Visage | `horrifying-visage` | action | 1/encounter | — | — |
+| Horrifying Visage | `horrifying-visage` | action | 1/fight | — | — |
 | Hunter's Prey: Colossus Slayer | `colossus-slayer` | passive | — | — | read by the rules, no action of its own |
 | Improved Critical (Champion) | `improved-critical` | passive | — | — | read by the rules, no action of its own |
 | Jack of All Trades | `jack-of-all-trades` | passive | — | — | read by the rules, no action of its own |
 | Keen Senses | `keen-senses` | passive | — | — | read by the rules, no action of its own |
 | Land's Aid | `lands-aid` | action | — | — | — |
-| Lay on Hands | `lay-on-hands` | action | fiveTimesLevel/encounter | — | spends its own pool |
+| Lay on Hands | `lay-on-hands` | action | fiveTimesLevel/long rest | — | spends its own pool |
 | Lightning Breath | `breath-lightning` | action | recharge 5–6 | — | 30 ft line, 6d6 lightning, DEX save |
 | Lightning Breath | `breath-lightning-young` | action | recharge 5–6 | — | 60 ft line, 10d10 lightning, DEX save |
 | Long-Limbed | `long-limbed` | passive | — | — | read by the rules, no action of its own |
 | Lucky | `lucky` | passive | — | — | read by the rules, no action of its own |
-| Luring Song | `luring-song` | action | 1/encounter | — | — |
+| Luring Song | `luring-song` | action | 1/fight | — | — |
 | Magic Resistance | `magic-resistance` | passive | — | — | read by the rules, no action of its own |
 | Mantle of Spell Resistance | `mantle-spell-resistance` | passive | — | — | read by the rules, no action of its own |
 | Naturally Stealthy | `naturally-stealthy` | passive | — | — | read by the rules, no action of its own |
 | Nimble Escape | `nimble-escape` | bonus | — | — | — |
 | Nimble Escape: Hide | `nimble-hide` | bonus | — | — | — |
 | Pack Tactics | `pack-tactics` | passive | — | — | read by the rules, no action of its own |
-| Petrifying Breath | `petrifying-breath` | action | 1/encounter | — | — |
+| Petrifying Breath | `petrifying-breath` | action | 1/fight | — | — |
 | Poison Breath | `breath-poison` | action | recharge 5–6 | — | 15 ft cone, 6d6 poison, CON save |
 | Poison Breath | `breath-poison-young` | action | recharge 5–6 | — | 15 ft cone, 12d6 poison, CON save |
 | Potent Cantrip (Evoker) | `enhanced-cantrip` | passive | — | — | read by the rules, no action of its own |
 | Potent Spellcasting | `potent-spellcasting` | passive | — | — | read by the rules, no action of its own |
-| Prayer Bead: Bless | `prayer-bead-bless` | bonus | 1/encounter | — | — |
+| Prayer Bead: Bless | `prayer-bead-bless` | bonus | 1/fight | — | — |
 | Rampage | `rampage` | passive | — | — | read by the rules, no action of its own |
-| Relentless Endurance | `relentless-endurance` | passive | 1/encounter | — | read by the rules, no action of its own |
+| Relentless Endurance | `relentless-endurance` | passive | 1/fight | — | read by the rules, no action of its own |
 | Remarkable Athlete | `remarkable-athlete` | passive | — | — | read by the rules, no action of its own |
-| Ring of Evasion | `ring-evasion` | free | 3/encounter | — | read by the rules, no action of its own |
+| Ring of Evasion | `ring-evasion` | free | 3/fight | — | read by the rules, no action of its own |
 | Ring of Free Action | `free-action` | passive | — | — | read by the rules, no action of its own |
 | Roving | `roving` | passive | — | — | read by the rules, no action of its own |
 | Sculpt Spells (Evoker) | `sculpt-spells` | passive | — | — | read by the rules, no action of its own |
-| Second Wind | `second-wind` | bonus | 2/encounter | — | — |
+| Second Wind | `second-wind` | bonus | 2/short rest | — | — |
 | Sneak Attack | `sneak-attack` | passive | — | 3d6 (at level 5) | read by the rules, no action of its own |
 | Trampling Charge | `trampling-charge` | passive | — | — | read by the rules, no action of its own |
 | Trance | `trance` | passive | — | — | read by the rules, no action of its own |
 | Uncanny Dodge | `uncanny-dodge` | passive | — | — | read by the rules, no action of its own |
 | Undead Fortitude | `undead-fortitude` | passive | — | — | read by the rules, no action of its own |
-| Wail | `wail` | action | 1/encounter | — | — |
+| Wail | `wail` | action | 1/fight | — | — |
 | Wand of the War Mage +1 | `war-mage-1` | passive | — | — | read by the rules, no action of its own |
 | Wand of the War Mage +2 | `war-mage-2` | passive | — | — | read by the rules, no action of its own |
-| Wave of Terror | `wave-of-terror` | action | 3/encounter | — | — |
-| Whelm | `whelm` | action | 1/encounter | — | — |
-| Whirlwind | `whirlwind` | action | 1/encounter | — | — |
-| Wild Shape | `wild-shape` | bonus | 2/encounter | — | spends its own pool |
+| Wave of Terror | `wave-of-terror` | action | 3/fight | — | — |
+| Whelm | `whelm` | action | 1/fight | — | — |
+| Whirlwind | `whirlwind` | action | 1/fight | — | — |
+| Wild Shape | `wild-shape` | bonus | 2/short rest | — | spends its own pool |
 
 ## Conditions
 

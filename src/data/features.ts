@@ -26,7 +26,33 @@ export interface FeatureData {
   id: Id;
   name: string;
   trigger: 'action' | 'bonus' | 'free' | 'passive';
-  uses?: { count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod'; per: 'encounter' };
+  /**
+   * A limited pool, and the clock it refills on.
+   *
+   * `per` used to be the single-member union `'encounter'`, which meant every
+   * limited feature in the game recharged at the start of every fight. That is
+   * right for a monster — few survive to a second one — and wrong for the eight
+   * features a player class owns. Lay on Hands was the loudest: a level-5
+   * paladin's 25 HP healing pool is meant to be the whole day's budget, and it
+   * came back in full for each wave.
+   *
+   * The consequence was systemic rather than cosmetic. Spell slots persist
+   * across an arena day, so the wizard was the only character in the party
+   * doing resource management, and the martial and Channel Divinity classes
+   * were quietly stronger than their class tables assume.
+   *
+   *   encounter   refills every fight. Monsters, species traits, item powers.
+   *   shortRest   survives a fight, refills at the arena's lunch break.
+   *   longRest    survives the day, refills overnight.
+   *
+   * Only non-encounter pools are carried out of a fight and persisted
+   * (`readBackSurvivors`), so an encounter pool cannot leak into the next wave
+   * even from an old save.
+   */
+  uses?: {
+    count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod';
+    per: 'encounter' | 'shortRest' | 'longRest';
+  };
   /**
    * A recharge ability (dragon breath): starts available, is spent on use, and
    * at the start of the owner's turn rolls a d6 — on a result at or above this
@@ -266,7 +292,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   'naturally-stealthy': { id: 'naturally-stealthy', name: 'Naturally Stealthy', trigger: 'passive', grantsSkill: 'stealth' },
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
-    uses: { count: 2, per: 'encounter' },
+    uses: { count: 2, per: 'shortRest' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       const roll = rollDice(state.rng, `1d10+${c.level}`);
@@ -276,7 +302,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   },
   'action-surge': {
     id: 'action-surge', name: 'Action Surge', trigger: 'free',
-    uses: { count: 1, per: 'encounter' },
+    uses: { count: 1, per: 'shortRest' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       c.turn.actionUsed = false;
@@ -435,7 +461,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   },
   'preserve-life': {
     id: 'preserve-life', name: 'Channel Divinity: Preserve Life', trigger: 'action',
-    uses: { count: 1, per: 'encounter' },
+    uses: { count: 1, per: 'shortRest' },
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       const events: GameEvent[] = [];
@@ -458,7 +484,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   },
   'turn-undead': {
     id: 'turn-undead', name: 'Channel Divinity: Turn Undead', trigger: 'action',
-    uses: { count: 1, per: 'encounter' },
+    uses: { count: 1, per: 'shortRest' },
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       // Base Channel Divinity every cleric gets, not the Life Domain's
@@ -845,7 +871,7 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'wild-shape': {
     id: 'wild-shape', name: 'Wild Shape', trigger: 'bonus',
-    uses: { count: 2, per: 'encounter' }, manualUses: true,
+    uses: { count: 2, per: 'shortRest' }, manualUses: true,
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       if (me.wildShape) return revertWildShape(me);
@@ -900,7 +926,7 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'bardic-inspiration': {
     id: 'bardic-inspiration', name: 'Bardic Inspiration', trigger: 'bonus',
-    uses: { count: 'charismaMod', per: 'encounter' },
+    uses: { count: 'charismaMod', per: 'longRest' },
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       // The ally most likely to use it: whoever is in the fight and has not
@@ -1006,7 +1032,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   'colossus-slayer': { id: 'colossus-slayer', name: "Hunter's Prey: Colossus Slayer", trigger: 'passive' },
   'lay-on-hands': {
     id: 'lay-on-hands', name: 'Lay on Hands', trigger: 'action',
-    uses: { count: 'fiveTimesLevel', per: 'encounter' },
+    uses: { count: 'fiveTimesLevel', per: 'longRest' },
     manualUses: true,
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
@@ -1035,7 +1061,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   // it just marks the `sacredWeapon` condition; resolveAttack reads it.
   'sacred-weapon': {
     id: 'sacred-weapon', name: 'Channel Divinity: Sacred Weapon', trigger: 'bonus',
-    uses: { count: 1, per: 'encounter' },
+    uses: { count: 1, per: 'shortRest' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       c.conditions.push({ id: 'sacredWeapon', sourceId: actorId });

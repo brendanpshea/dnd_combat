@@ -38,6 +38,7 @@ import { hasSceneArt, sceneArtUrl, hasSpellIcon, spellIconUrl, boardBgUrl, HAS_B
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
+import { FeaturePips } from './FeaturePips.js';
 import { CharacterSheet } from './CharacterSheet.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
@@ -1143,6 +1144,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <span>HP {active.hp}/{active.maxHp}</span>
           <span>AC {acOf(active)}</span>
           <SlotPips spellSlots={active.spellSlots} />
+          <FeaturePips featureUses={active.featureUses} />
           {/* Was a bare "AB" that decayed to "A·" / "··". Sitting next to "AC 15"
               it read like a stat with a missing value, and nothing on screen
               said what it meant — so the one indicator of what you still have

@@ -27,6 +27,7 @@ import { acOf } from '../../src/data/armor.js';
 import { Portrait } from './Portrait.js';
 import { CharacterSheet } from './CharacterSheet.js';
 import { SlotPips } from './SlotPips.js';
+import { FeaturePips } from './FeaturePips.js';
 import { InfoDot } from './InfoCard.js';
 import { infoFor, spellSheet } from './gameInfo.js';
 import { hasArt } from './art.js';
@@ -170,7 +171,13 @@ export function PartyScreen(
                 {/* Spell slots remaining, per level (renders nothing for a
                     non-caster) — so a wizard down to 1 of 2 first-level slots
                     reads at a glance, and "rest to recover" has a visible meter. */}
-                <div className="adv-camp-slots"><SlotPips spellSlots={party[idx]!.spellSlots} /></div>
+                <div className="adv-camp-slots">
+                  <SlotPips spellSlots={party[idx]!.spellSlots} />
+                  {/* And the pools that now outlive a fight — a paladin who has
+                      spent Lay on Hands has to be able to see that here rather
+                      than discover it when the button is missing mid-wave. */}
+                  <FeaturePips featureUses={party[idx]!.featureUses} />
+                </div>
               </div>
             </div>
 

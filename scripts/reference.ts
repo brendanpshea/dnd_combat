@@ -460,7 +460,11 @@ function featuresDoc(): string {
     // "Recharge 5–6" and "Recharge 6" — a range of one is written as one.
     if (f.recharge) return f.recharge >= 6 ? 'recharge 6' : `recharge ${f.recharge}–6`;
     if (!f.uses) return '—';
-    return `${f.uses.count}/${f.uses.per}`;
+    // The clock in prose, not in the enum's spelling: this table is read by a
+    // person deciding whether a feature is a per-fight trick or the day's
+    // budget, and `1/shortRest` makes them stop and parse an identifier.
+    const clock = { encounter: 'fight', shortRest: 'short rest', longRest: 'long rest' }[f.uses.per];
+    return `${f.uses.count}/${clock}`;
   };
   return [
     preamble('Features', [

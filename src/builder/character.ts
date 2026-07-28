@@ -143,6 +143,16 @@ export interface BuildOptions {
   spellbookExtra?: Id[];
   /** Campaign override: charges left in carried wands, from before a long rest. */
   itemChargesOverride?: Record<Id, number>;
+  /**
+   * Campaign override: uses left in rest-scoped feature pools (Lay on Hands,
+   * Action Surge), carried out of the last fight.
+   *
+   * Encounter-scoped pools are deliberately ignored even if one appears here —
+   * they refill every fight by definition, and an old save written before the
+   * pools were rest-scoped would otherwise start a paladin's Channel Divinity
+   * spent forever.
+   */
+  featureUsesOverride?: Record<Id, number>;
 }
 
 export function buildCharacter(opts: BuildOptions): Combatant {
@@ -233,7 +243,9 @@ export function buildCharacter(opts: BuildOptions): Combatant {
         // must never be zero or the feature simply isn't there.
         f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(abilities.cha)) :
         f.uses.count;
-      featureUses[fid] = { current: count, max: count };
+      // Absent means full, the same convention HP, slots and wand charges use.
+      const left = f.uses.per === 'encounter' ? undefined : opts.featureUsesOverride?.[fid];
+      featureUses[fid] = { current: Math.max(0, Math.min(left ?? count, count)), max: count };
     } else if (f?.recharge) {
       featureUses[fid] = { current: 1, max: 1 }; // starts charged; recharge roll in startTurn
     }
