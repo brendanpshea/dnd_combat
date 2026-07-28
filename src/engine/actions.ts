@@ -334,6 +334,12 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (f.trigger === 'bonus' && actor.turn.bonusActionUsed) return false;
       if (f.trigger === 'action' && actor.turn.actionUsed) return false;
       if ((action.featureId === 'cunning-hide' || action.featureId === 'nimble-hide') && !canHide(state, actor)) return false;
+      // Steady Aim is bought with mobility: you cannot take it after moving,
+      // and taking it ends your movement (see the feature's `apply`). Without
+      // this gate it is a free advantage every single turn, which is a
+      // different and much better feature than the one the SRD prints.
+      if (action.featureId === 'steady-aim' &&
+          (actor.turn.movementUsed > 0 || actor.conditions.some((c) => c.id === 'aiming'))) return false;
       // 'free' features with an action-restoring effect only make sense after
       // the action is spent; harmless either way.
       if (action.featureId === 'action-surge' && !actor.turn.actionUsed) return false;

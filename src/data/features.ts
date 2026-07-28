@@ -464,6 +464,33 @@ export const FEATURES: Record<Id, FeatureData> = {
   'fast-hands': {
     id: 'fast-hands', name: 'Fast Hands', trigger: 'passive',
   },
+  /**
+   * Steady Aim (Rogue 3): stand still, and the next attack has advantage.
+   *
+   * The rogue's whole damage output is Sneak Attack, and Sneak Attack needs
+   * either advantage or an ally in reach. A rogue that has neither — the common
+   * case for the archer, who is deliberately standing away from the melee —
+   * deals shortbow damage and nothing else. That showed up as the worst class
+   * in the arena by a distance: bottom-third damage, the most downs, the worst
+   * finish rate. This is the SRD's own answer to it.
+   *
+   * The cost is real and is enforced in `isLegalAction`, not here: it cannot be
+   * used after moving, and it drops the rogue's remaining movement to zero. So
+   * it is bought with mobility, which is exactly the trade that makes it a
+   * decision rather than a free +advantage every turn.
+   */
+  'steady-aim': {
+    id: 'steady-aim', name: 'Steady Aim', trigger: 'bonus',
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      // Speed 0 for the rest of the turn. Setting the cap to what is already
+      // spent (rather than to zero) keeps `movementUsed <= movementMax` true,
+      // which the movement rules rely on.
+      c.turn.movementMax = c.turn.movementUsed;
+      c.conditions.push({ id: 'aiming', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'aiming', sourceId: actorId }];
+    },
+  },
   'cunning-dash': {
     id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {

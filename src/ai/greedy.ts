@@ -13,6 +13,8 @@ import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
+import { isHidden } from '../engine/rules/hide.js';
+import { FEATURES } from '../data/features.js';
 import { distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
@@ -771,11 +773,21 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         if (!occ) continue;
         const t = state.combatants[occ]!;
         if (!t.alive || t.team === actor.team) continue;
-        if (t.conditions.some((k) => k.id === 'incapacitated')) continue;
-        // A turn taken off an enemy is worth a slice of what killing it is —
-        // the same shape Turn Undead uses, and for the same reason: removing a
-        // creature from the fight for a round is not free but is not a kill.
-        v += saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) * 0.35;
+        if (t.conditions.some((k) => k.id === 'confused')) continue;
+        // Confusion is worth more than a turn taken off an enemy, because a
+        // confused creature is not merely absent: on 6 of 10 it does nothing,
+        // on 2 of 10 it swings at whatever is next to it — and what is next to
+        // a creature in a 2x2 patch is usually one of ITS OWN. The 0.35 here
+        // was priced against the old implementation, which only ever
+        // incapacitated; the extra term is the friendly fire.
+        const fail = saveFailProb(state, t, 'wis', dc);
+        const friends = Object.values(state.combatants).filter(
+          (o) => o.id !== t.id && o.alive && !isDown(o) && o.team === t.team &&
+            distanceCells(o.position, t.position) <= 1,
+        ).length;
+        // 0.2 is the 7-8 slice of the d10, and it is only worth anything when
+        // there is somebody in reach to hit — a lone straggler just stands there.
+        v += fail * damageValue(t.hp, t) * (0.35 + (friends > 0 ? 0.2 : 0));
       }
       return v - slotCost;
     }
@@ -1059,6 +1071,51 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   }
   if (a.featureId === 'cunning-dash') {
     return nearestEnemyDist(state, actor.position, actor.team) > 7 ? 0.8 : 0;
+  }
+  /**
+   * Steady Aim: worth taking exactly when it turns Sneak Attack on.
+   *
+   * It is not a generic "+advantage is nice" buff — it costs the rogue its
+   * movement, so a rogue that still needs to close is worse off for taking it.
+   * The value is the Sneak Attack dice it unlocks, and it unlocks nothing when
+   * an ally is already adjacent to the target (that qualifies on its own) or
+   * when the rogue has already sneak-attacked this turn.
+   */
+  if (a.featureId === 'steady-aim') {
+    if (actor.turn.sneakAttackUsed || actor.turn.movementUsed > 0) return 0;
+    // Something has to be shootable from where the rogue already stands, or the
+    // bonus action is spent standing still for nothing.
+    const shootable = attackableWeapons(actor).some((w) =>
+      Object.values(state.combatants).some(
+        (t) => t.alive && !isDown(t) && t.team !== actor.team && canAttackWith(state, actor, w, t.id),
+      ));
+    if (!shootable) return 0;
+    // Already advantaged from somewhere else (hidden, a prone target, Faerie
+    // Fire) — Steady Aim would buy nothing and cost the movement anyway.
+    const alreadyAdvantaged = isHidden(actor) ||
+      actor.conditions.some((k) => k.id === 'inspired' || k.id === 'aiming');
+    if (alreadyAdvantaged) return 0;
+    // Priced as an ORDERING, not as an alternative.
+    //
+    // `chooseAction` picks one best action at a time and re-evaluates, so it
+    // weighs this bonus action against the attack — but they are not rivals:
+    // Steady Aim costs a bonus action and the attack costs the action, and
+    // taking the two in that order is strictly better than the attack alone.
+    // Priced as the bare gain, the AI shot first every time and then found
+    // Steady Aim worthless (Sneak Attack already spent), so the feature fired
+    // literally never. So the score is "the best attack available, plus what
+    // aiming adds to it" — which is what the pair is actually worth, and beats
+    // the attack on its own by exactly the margin aiming provides.
+    const gain = avgDice(FEATURES['sneak-attack']!.advantageDice!(actor.level)) * 0.5;
+    let bestAttack = 0;
+    for (const w of attackableWeapons(actor)) {
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || isDown(t) || t.team === actor.team) continue;
+        if (!canAttackWith(state, actor, w, t.id)) continue;
+        bestAttack = Math.max(bestAttack, scoreAttack(state, actor, { kind: 'attack', weaponId: w, targetId: t.id }));
+      }
+    }
+    return bestAttack + gain;
   }
   if (a.featureId === 'cunning-hide' || a.featureId === 'nimble-hide') {
     return actor.turn.actionUsed ? 1.2 : 0.8;

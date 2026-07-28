@@ -2540,15 +2540,20 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!tid) continue;
         const t = state.combatants[tid]!;
         if (!t.alive || t.team === caster.team) continue;
-        if (t.conditions.some((k) => k.id === 'incapacitated')) continue;
+        if (t.conditions.some((k) => k.id === 'confused')) continue;
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (save.success) continue;
+        // `confused`, not `incapacitated`. The first version applied the latter,
+        // which made this a 4th-level Hold Person on a 2x2 — it removed the
+        // creature from the fight and never once turned it on its friends,
+        // which is the entire reason to cast Confusion. `startTurn` rolls the
+        // d10 that decides what a confused creature does with its turn.
         t.conditions.push({
-          id: 'incapacitated', sourceId: casterId, concentration: true,
+          id: 'confused', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc },
         });
-        events.push({ type: 'conditionApplied', combatantId: tid, condition: 'incapacitated', sourceId: casterId });
+        events.push({ type: 'conditionApplied', combatantId: tid, condition: 'confused', sourceId: casterId });
         caught.push(tid);
       }
       caster.concentratingOn = { spellId: 'confusion', targetIds: caught };

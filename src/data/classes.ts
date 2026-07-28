@@ -305,7 +305,7 @@ export const CLASSES: Record<Id, ClassData> = {
       // SRD — the SRD's only rogue subclass is the Thief, whose level-3
       // features are Fast Hands and Second-Story Work. The second is a climb
       // speed and a jump rule, neither of which exists on this grid.
-      3: ['fast-hands'],
+      3: ['fast-hands', 'steady-aim'],
       // 4: Ability Score Increase (builder). Sneak Attack scales to 3d6 at L5
       // automatically via its advantageDice(level) formula.
       5: ['uncanny-dodge'],

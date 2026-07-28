@@ -136,6 +136,8 @@ export type ConditionId =
   | 'burning'      // Searing Smite: 1d6 fire at end of turn until a Con save
   | 'hasted'       // Haste: double speed, +2 AC, one extra attack
   | 'inspired'     // Human Heroic Inspiration: advantage on the next attack roll
+  | 'aiming'       // Rogue Steady Aim: advantage on the next attack roll, having stood still
+  | 'confused'     // Confusion: each turn it may do nothing, or lash out at whoever is nearest
   | 'hidden'       // unseen: cannot be directly targeted; next attack has advantage
   | 'noReactions'  // Shocking Grasp rider
   | 'outlined'     // outlined: attacks against this creature have advantage, and it can't hide

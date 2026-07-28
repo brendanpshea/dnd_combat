@@ -125,6 +125,7 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'poisoned')) dis.push('poisoned');
   if (attacker.conditions.some((c) => c.id === 'blinded')) dis.push('blinded');
   if (attacker.conditions.some((c) => c.id === 'inspired')) adv.push('heroic inspiration');
+  if (attacker.conditions.some((c) => c.id === 'aiming')) adv.push('steady aim');
   if (isHidden(attacker)) adv.push('hidden');
   if (attacker.familiar?.kind === 'owl' && attacker.familiar.helpedRound !== state.round) {
     adv.push('owl familiar');
@@ -203,7 +204,8 @@ export function consumeFamiliarHelp(state: GameState, attacker: Combatant): void
 /** Remove one-shot roll markers after an attack roll is made. */
 function consumeRollMarkers(attacker: Combatant, target: Combatant): void {
   attacker.conditions = attacker.conditions.filter(
-    (c) => c.id !== 'sapped' && c.id !== 'inspired' && !(c.id === 'vexed' && c.sourceId === target.id),
+    (c) => c.id !== 'sapped' && c.id !== 'inspired' && c.id !== 'aiming' &&
+      !(c.id === 'vexed' && c.sourceId === target.id),
   );
   // Guiding Bolt's advantage is spent by whoever attacks the target next.
   target.conditions = target.conditions.filter((c) => c.id !== 'guided');

@@ -40,6 +40,8 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   burning: 'burning',
   hasted: 'hasted',
   inspired: 'inspired',
+  aiming: 'taking steady aim',
+  confused: 'confused',
   hidden: 'hidden',
   noReactions: 'unable to react',
   outlined: 'outlined in light',

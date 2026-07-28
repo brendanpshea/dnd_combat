@@ -149,7 +149,18 @@ function playOne(seed: number, collect: boolean): Outcome {
     const party = buildCampaignParty(c);
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: 6 }, String(i + 1)));
-    const combat = new Combat({ combatants: [...party, ...foes], seed: seed * 31 + run.wave });
+    // The retry has to be a DIFFERENT fight.
+    //
+    // A lost wave leaves `run.wave` alone (that is what "try again" means) and
+    // the night's long rest puts the party back exactly as it was, so keying
+    // the combat seed on the wave alone made every retry a bit-identical replay
+    // of the fight that was just lost. A stall was not a hard wave — it was a
+    // guaranteed infinite loop, and the 88% stall rate was measuring this line.
+    // `run.attempts` counts retries, so the dice differ while the matchup does
+    // not, which is what a player actually gets when they take the wave again.
+    const combat = new Combat({
+      combatants: [...party, ...foes], seed: seed * 31 + run.wave * 101 + run.attempts,
+    });
 
     // Who is who, so an event carrying only an id can be attributed to a class.
     const classOf = new Map<Id, Id>();

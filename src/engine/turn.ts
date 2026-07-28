@@ -15,7 +15,9 @@ import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
 import { activateSummons, strikeLightning, burnInMoonbeam } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
-import { applyDamage, charmAway } from './rules/attack.js';
+import { applyDamage, charmAway, resolveAttack } from './rules/attack.js';
+import { attackableWeapons } from './rules/equipment.js';
+import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
 
@@ -328,6 +330,69 @@ export function startTurn(state: GameState): GameEvent[] {
     events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
     return events;
   }
+
+  // Confusion: the spell's whole character, which was missing.
+  //
+  // What shipped applied `incapacitated` — a creature that stands there doing
+  // nothing, i.e. a worse Hold Person on a 2x2. The reason anyone casts
+  // Confusion is the chance the ogre turns round and hits the ogre next to it,
+  // and none of that existed.
+  //
+  // The SRD rolls a d10 on a table each turn. This keeps the roll and the three
+  // outcomes that matter on a grid, and drops the two that are about wandering
+  // in a random direction — this board is eight squares wide and "moves
+  // randomly" reads as a bug rather than as madness.
+  //
+  //   1-6   does nothing at all
+  //   7-8   attacks whoever is in reach, WHICHEVER SIDE THEY ARE ON
+  //   9-10  acts normally
+  //
+  // Resolved here rather than in the AI on purpose: friendly fire must happen
+  // to monsters and heroes alike, and the AI is only one of the things that
+  // drives a turn. A confused creature with nobody in reach simply loses the
+  // turn, which is the honest reading of "attacks a creature within 5 feet".
+  // Nothing to decide for a creature whose turn is already spoken for: Luring
+  // Song walks it toward the singer and Fleeing runs it off the board, and both
+  // take the whole turn.
+  //
+  // THIS BLOCK RUNS LAST FOR A REASON. It zeroes `turn.movementMax`, while the
+  // planners above route against the local `speed` and `executeMove` validates
+  // the result against `turn.movementMax`. Zeroing one before the other plans
+  // its route throws "Illegal move" and kills the run — which it did, on a
+  // fleeing skeleton that had been caught by Confusion. Sitting after every
+  // planner means there is no ordering left to get wrong, rather than a guard
+  // per planner that the next one to be added will not know to add itself to.
+  const busyTurn = c.conditions.some((k) => k.id === 'fleeing' || k.id === 'lured');
+  if (c.conditions.some((k) => k.id === 'confused') && !isDown(c) && !busyTurn) {
+    const d10 = rollDice(state.rng, '1d10');
+    state.rng = d10.state;
+    if (d10.total <= 6) {
+      c.turn.actionUsed = true;
+      c.turn.bonusActionUsed = true;
+      c.turn.movementMax = c.turn.movementUsed;
+      events.push({ type: 'confusedTurn', combatantId: c.id, roll: d10.total, effect: 'nothing' });
+    } else if (d10.total <= 8) {
+      // Everyone in reach, allies included — that is the point of the spell.
+      const inReach = Object.values(state.combatants).filter(
+        (o) => o.id !== c.id && o.alive && !isDown(o) && distanceCells(c.position, o.position) <= 1,
+      );
+      const weaponId = attackableWeapons(c).find((w) => WEAPONS[w]?.melee);
+      if (inReach.length > 0 && weaponId) {
+        const pick = rollDie(state.rng, inReach.length);
+        state.rng = pick.state;
+        const victim = inReach[pick.value - 1]!;
+        events.push({ type: 'confusedTurn', combatantId: c.id, roll: d10.total, effect: 'lashesOut', targetId: victim.id });
+        events.push(...resolveAttack(state, c.id, victim.id, weaponId));
+      } else {
+        events.push({ type: 'confusedTurn', combatantId: c.id, roll: d10.total, effect: 'nothing' });
+      }
+      c.turn.actionUsed = true;
+      c.turn.movementMax = c.turn.movementUsed;
+    } else {
+      events.push({ type: 'confusedTurn', combatantId: c.id, roll: d10.total, effect: 'normal' });
+    }
+  }
+
 
   // Regeneration (troll): heal at the start of the turn, unless acid or fire
   // has landed since the last one. A suppressed trait costs exactly one turn of
