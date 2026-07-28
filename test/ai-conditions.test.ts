@@ -63,5 +63,11 @@ describe('the AI can see what conditions do', () => {
     const restrainers = ['entangle', 'ensnaring-strike'].filter((s) => cast.has(s));
     expect(restrainers.length, `no restraining spell was ever cast; saw ${[...cast].join(', ')}`)
       .toBeGreaterThan(0);
-  }, 30000);
+    // 60s, not 30s. This drives ten whole fights through the *simulated* AI
+    // (beam search, three samples per candidate) and sat at ~21s — 70% of a
+    // 30s budget — before spell variety was added. Variety costs it about 8%
+    // more, which is enough to tip it over under full-suite parallel load while
+    // passing comfortably on its own. The honest fix is a budget with headroom,
+    // not pretending the 8% is free.
+  }, 60000);
 });

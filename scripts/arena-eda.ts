@@ -36,16 +36,21 @@
  */
 import {
   newCampaign, applyArenaVictory, buildCampaignParty, partyLevelOf, reviveParty, randomizeParty,
+  LEVEL_XP, growSpellsForLevel,
 } from '../src/campaign/campaign.js';
 import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/arena/run.js';
 import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
 import { RUN_TARGET_XP } from '../src/arena/medal.js';
 import { Combat } from '../src/engine/combat.js';
-import { chooseAction } from '../src/ai/greedy.js';
+import { chooseAction, setSpellVariety, spellVariety } from '../src/ai/greedy.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { TRINKETS, trinketSlot } from '../src/data/trinkets.js';
 import { SPELLS } from '../src/data/spells.js';
 import { CLASSES } from '../src/data/classes.js';
+import { ARMOR } from '../src/data/armor.js';
+import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS } from '../src/data/weapons.js';
+import { ITEMS } from '../src/data/items.js';
+import type { CampaignState } from '../src/campaign/campaign.js';
 import type { Id } from '../src/engine/types.js';
 
 const RUNS = Number(process.argv[2] ?? 40);
@@ -89,7 +94,22 @@ const FIXED = process.argv.includes('--fixed');
  * the run is over whether or not the game says so.
  */
 const GIVE_UP = flag('--give-up', 10);
+// Spell variety is the one AI knob worth sweeping from here: it changes what
+// every caster does, so it has to be shown NOT to cost win rate before it can
+// be a default. -1 leaves the module default alone.
+const VARIETY = flag('--variety', -1);
+if (VARIETY >= 0) setSpellVariety(VARIETY);
 const ITEM_FIGHTS = flag('--item-fights', 40);
+// Skip calibration and pin the fight. The calibrated wave lands low (a level-2
+// party is where the win rate sits nearest a coin flip), and an item whose
+// effect SCALES WITH THE GAP — a conjured elemental, say — is worth far more
+// there than it would be at the level cap. Pinning lets the same A/B be re-run
+// higher up to tell "this item is strong" from "this item is strong at level 2".
+const ITEM_WAVE = flag('--item-wave', -1);
+const ITEM_LEVEL = flag('--item-level', -1);
+// Restrict the sweep to one family, so a follow-up check is minutes not hours.
+const ITEM_ONLY = process.argv.includes('--item-only')
+  ? process.argv[process.argv.indexOf('--item-only') + 1] : undefined;
 
 // --- tallies ----------------------------------------------------------------
 
@@ -276,16 +296,100 @@ function playOne(seed: number, collect: boolean): Outcome {
  * one whose no-item win rate sits nearest a coin flip, where a real effect has
  * room to move the number in either direction.
  */
-function itemAB(itemId: Id | undefined, fights: number, waveNo: number, level: number): number {
+/**
+ * Put an item on a party, by whatever route that item is actually worn.
+ *
+ * Returns HOW MANY members ended up with it, which the report prints. That
+ * number is the difference between "this item does nothing" and "nobody in this
+ * party could use it" — two findings that look identical as `+0 fights`. The
+ * first sweep reported Bracers of Archery at +0 and I nearly wrote it up as a
+ * dud; a random party often contains one archer, and an item one person wears
+ * cannot move a win rate the way one four people wear can.
+ *
+ * The rules are the game's own, not a shortcut: a wizard cannot be put in plate
+ * here any more than a player could put it on them.
+ */
+function equipOnParty(c: CampaignState, itemId: Id): number {
+  let worn = 0;
+  let carrier = false;
+  for (const ch of c.characters) {
+    const trinket = TRINKETS[itemId];
+    if (trinket) {
+      // Some wondrous items are attuned by one class only.
+      if (trinket.classes && !trinket.classes.includes(ch.classId)) continue;
+      ch.equipped = { ...ch.equipped, [trinketSlot(trinket)]: itemId };
+      worn++;
+      continue;
+    }
+    const armor = ARMOR[itemId];
+    if (armor) {
+      // Proficiency is the whole reason plate is not simply the best armour.
+      if (!CLASSES[ch.classId]!.armorProfs.includes(armor.category)) continue;
+      ch.equipped = { ...ch.equipped, armor: itemId };
+      worn++;
+      continue;
+    }
+    const weapon = WEAPONS[itemId];
+    if (weapon) {
+      // Like for like, and an UPGRADE IN PLACE where the item is a variant of
+      // something the character already carries.
+      //
+      // Handing a greatsword to the whole party measures "what if everyone were
+      // a fighter", not "what is this weapon worth". The +1/vicious/silvered
+      // families are the interesting ones anyway, and for those the honest test
+      // is the one a player actually performs: upgrade the weapon you already
+      // swing. So `longsword-plus1` goes to whoever wields a longsword and
+      // nobody else.
+      const base = itemId.replace(/^(vicious|silvered)-/, '').replace(/-plus1$/, '');
+      const held = ch.equipped.mainHand;
+      if (base !== itemId) {
+        if (held !== base) continue;              // not their weapon to upgrade
+      } else if (!!WEAPONS[held]?.melee !== !!weapon.melee) {
+        continue;                                 // don't hand a bow to a barbarian
+      }
+      ch.equipped = { ...ch.equipped, mainHand: itemId };
+      worn++;
+      continue;
+    }
+    if (ITEMS[itemId]) {
+      // ONE copy, not four.
+      //
+      // Wands and figurines are single items a party owns, not a set everyone
+      // wears — and handing four elemental summons to a level-2 party won 60
+      // fights out of 60, which is not a measurement of the item, it is a
+      // measurement of outnumbering the enemy four to one. Given to a single
+      // carrier, the number means what the column header says it means.
+      if (carrier) continue;
+      ch.inventory = [...ch.inventory, { itemId, qty: 1 }];
+      carrier = true;
+      worn++;
+    }
+  }
+  return worn;
+}
+
+function itemAB(itemId: Id | undefined, fights: number, waveNo: number, level: number): { won: number; worn: number } {
   let won = 0;
+  let wornTotal = 0;
   for (let s = 1; s <= fights; s++) {
     const c = newCampaign(s);
     if (!FIXED) randomizeParty(c);
     c.partyReady = true;
-    if (itemId) {
-      const slot = trinketSlot(TRINKETS[itemId]!);
-      for (const ch of c.characters) ch.equipped = { ...ch.equipped, [slot]: itemId };
-    }
+    // LEVEL THE PARTY TO MATCH THE WAVE.
+    //
+    // This was missing, and it quietly narrowed every item number to one
+    // scenario. `buildWave`'s `level` argument shapes the ENEMIES; the party
+    // comes from `newCampaign`, which starts at level 1. So the A/B was always
+    // a level-1 party — which is also why calibration kept choosing wave 2, and
+    // why pinning a higher wave produced a baseline of 0 wins out of 40.
+    //
+    // It matters most for exactly the items that looked strongest: a conjured
+    // elemental is worth far more beside four level-1 heroes than beside four
+    // level-7 ones, so "+20 fights" was a fact about level 1 wearing the label
+    // of a fact about the item.
+    c.xp = LEVEL_XP[Math.min(LEVEL_XP.length, Math.max(1, level)) - 1]!;
+    growSpellsForLevel(c);
+    if (itemId) wornTotal += equipOnParty(c, itemId);
     const run = newArenaRun(s);
     const wave = buildWave(run.seed, level, waveNo, undefined, 0, 'afternoon');
     const party = buildCampaignParty(c);
@@ -296,7 +400,7 @@ function itemAB(itemId: Id | undefined, fights: number, waveNo: number, level: n
     while (!combat.state.winner && steps++ < 600) combat.apply(chooseAction(combat.state, combat.activeId!));
     if (combat.state.winner === 'team1') won++;
   }
-  return won;
+  return { won, worn: wornTotal / Math.max(1, fights) };
 }
 
 // --- report -----------------------------------------------------------------
@@ -314,6 +418,7 @@ console.log(`finished within ${MAX_DAYS} days: ${finished}/${RUNS} (${pct(finish
 const stalled = out.filter((o) => o.stalled).length;
 const allFights = out.reduce((a, o) => a + o.fights, 0);
 const allWins = out.reduce((a, o) => a + o.wins, 0);
+console.log(`spell variety margin: ${spellVariety()}`);
 console.log(`stalled (${GIVE_UP} losses in a row): ${stalled}/${RUNS} (${pct(stalled, RUNS)})`);
 console.log(`fights ${allFights} · wins ${allWins} (${pct(allWins, allFights)})`);
 // The pooled rate above is NOT the win rate a player experiences. A stalled run
@@ -382,27 +487,63 @@ for (const [id, s] of [...speciesRuns.entries()].sort((a, b) => b[1].finished / 
   console.log(`  ${pad(id, 14)} ${String(s.runs).padStart(3)} runs  ${pct(s.finished, s.runs).padStart(5)}`);
 }
 
+/**
+ * Everything worth A/B-ing, grouped so the report reads as families rather than
+ * as one long undifferentiated list.
+ *
+ * Charged items (wands, staves) are included because the AI scores them through
+ * `scoreItem` and they are bought with the same gold as everything else — but
+ * they are the one family whose value is bounded by charges rather than by the
+ * effect, so a small delta there means something different than a small delta
+ * on a cloak.
+ */
+const ITEM_FAMILIES: Array<{ name: string; ids: Id[] }> = [
+  { name: 'wondrous & rings', ids: Object.keys(TRINKETS) },
+  { name: 'armour', ids: Object.keys(ARMOR) },
+  { name: 'weapon upgrades', ids: [...PLUS_ONE_WEAPONS, ...VICIOUS_WEAPONS] },
+  { name: 'wands, staves & charged', ids: Object.keys(ITEMS).filter((id) => ITEMS[id]?.charges !== undefined) },
+];
+
 if (DO_ITEMS) {
-  console.log(`\n=== magic items: same fights, item on all four vs nothing`);
+  console.log(`\n=== magic items: same fights, item fitted to the party vs nothing`);
   // Calibrate: find the wave nearest a coin flip on a cheap sample, so the A/B
   // has somewhere to move. A fight everyone loses and a fight everyone wins are
   // both worth exactly zero bits.
   const probe = 20;
   let best = { wave: 4, level: 3, rate: 1 };
-  for (const [level, waveNo] of [[2, 2], [2, 4], [3, 4], [3, 6], [4, 6], [4, 8], [5, 10]] as Array<[number, number]>) {
-    const rate = itemAB(undefined, probe, waveNo, level) / probe;
-    if (Math.abs(rate - 0.5) < Math.abs(best.rate - 0.5)) best = { wave: waveNo, level, rate };
+  if (ITEM_WAVE > 0 && ITEM_LEVEL > 0) {
+    best = { wave: ITEM_WAVE, level: ITEM_LEVEL, rate: 0 };
+  } else {
+    for (const [level, waveNo] of [[2, 2], [2, 4], [3, 4], [3, 6], [4, 6], [4, 8], [5, 10]] as Array<[number, number]>) {
+      const rate = itemAB(undefined, probe, waveNo, level).won / probe;
+      if (Math.abs(rate - 0.5) < Math.abs(best.rate - 0.5)) best = { wave: waveNo, level, rate };
+    }
   }
-  console.log(`calibrated on wave ${best.wave} at party level ${best.level}` +
-    ` (baseline near ${pct(Math.round(best.rate * 100), 100)} on a ${probe}-fight probe)`);
-  const base = itemAB(undefined, ITEM_FIGHTS, best.wave, best.level);
-  console.log(`baseline (no trinket): ${base}/${ITEM_FIGHTS} won (${pct(base, ITEM_FIGHTS)})`);
-  const deltas: Array<[Id, number]> = [];
-  for (const id of Object.keys(TRINKETS)) deltas.push([id, itemAB(id, ITEM_FIGHTS, best.wave, best.level) - base]);
-  for (const [id, d] of deltas.sort((a, b) => b[1] - a[1])) {
-    console.log(`  ${pad(TRINKETS[id]?.name ?? id, 28)} ${(d >= 0 ? '+' : '') + d} fights`);
+  console.log(`calibrated on wave ${best.wave} at party level ${best.level}`);
+  const base = itemAB(undefined, ITEM_FIGHTS, best.wave, best.level).won;
+  console.log(`baseline (nothing added): ${base}/${ITEM_FIGHTS} won (${pct(base, ITEM_FIGHTS)})`);
+  const noise = Math.round(Math.sqrt(ITEM_FIGHTS) / 2);
+  console.log(`a swing under +/-${noise} fights is inside the noise at n=${ITEM_FIGHTS}.`);
+  console.log(`"worn" is how many of the four could actually use it — a +0 nobody`);
+  console.log(`could equip is a different finding from a +0 everybody wore.\n`);
+
+  for (const family of ITEM_FAMILIES.filter((f) => !ITEM_ONLY || f.name.includes(ITEM_ONLY))) {
+    const rows: Array<[Id, number, number]> = [];
+    for (const id of family.ids) {
+      const r = itemAB(id, ITEM_FIGHTS, best.wave, best.level);
+      // Nobody could use it in any party: reporting a delta would be reporting
+      // pure noise under an item's name.
+      if (r.worn === 0) continue;
+      rows.push([id, r.won - base, r.worn]);
+    }
+    if (rows.length === 0) continue;
+    console.log(`--- ${family.name}`);
+    for (const [id, d, worn] of rows.sort((a, b) => b[1] - a[1])) {
+      const label = TRINKETS[id]?.name ?? ARMOR[id]?.name ?? WEAPONS[id]?.name ?? ITEMS[id]?.name ?? id;
+      const mark = Math.abs(d) > noise ? ' *' : '';
+      console.log(`  ${pad(label, 30)} ${((d >= 0 ? '+' : '') + d).padStart(4)}   worn ${worn.toFixed(1)}${mark}`);
+    }
+    console.log('');
   }
-  // Honesty about the resolution: at n fights, a swing of about +/-sqrt(n)/2 is
-  // noise. Quote it rather than letting a reader treat +2 as a finding.
-  console.log(`  a swing under +/-${Math.round(Math.sqrt(ITEM_FIGHTS) / 2)} fights is inside the noise at n=${ITEM_FIGHTS}.`);
+  console.log('  * = outside the noise band.');
 }

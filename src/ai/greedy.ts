@@ -7,6 +7,7 @@ import type { GameState, Id, Combatant, Position } from '../engine/types.js';
 import { isDown, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
+import { next } from '../engine/rng.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, spellDc, cantripDice, wearsMetal, canBePutToSleep } from '../data/spells.js';
 import { MONSTERS, monsterLevel } from '../data/monsters.js';
@@ -1365,6 +1366,62 @@ function scoreItem(state: GameState, actor: Combatant, a: Action & { kind: 'useI
 
 const END_TURN_THRESHOLD = 0.5;
 
+/**
+ * How much worse than the best spell another spell may be and still get picked.
+ *
+ * THE PROBLEM THIS SOLVES
+ *
+ * `chooseAction` is a hard argmax, so a caster in a given situation casts the
+ * same spell every single time. Over 40,000 casts the histogram is a very short
+ * head and a very long thin tail: five spells account for most of it, and a
+ * dozen playable ones are never chosen at all — not because they are bad, but
+ * because something else out-scores them by a fraction in every situation the
+ * arena generates.
+ *
+ * WHY A BAND AND NOT A TEMPERATURE
+ *
+ * A softmax over all scores would sometimes pick a spell the scorer thinks is
+ * genuinely bad, and this codebase already has evidence that costs win rate:
+ * the sim AI's common-random-numbers variant "measurably weakened play in the
+ * arena" and was reverted. Randomness is only free where the scores are CLOSE.
+ * So: gather the spells within a margin of the best and choose among them
+ * uniformly. A spell scoring half as much is never chosen, however many times
+ * the dice are rolled.
+ *
+ * The margin is FRACTIONAL, not absolute. Scores here range from about 3 for a
+ * cantrip to over 100 for a Fireball on a packed room, so "within 2 points"
+ * means "anything at all" at the top and "nothing" at the bottom.
+ *
+ * Applies to spells only. That is what varies interestingly; a random *move* is
+ * just a worse move.
+ */
+let spellVarietyMargin = 0.15;
+
+/** For measurement: set 0 to restore the old hard argmax. */
+export function setSpellVariety(fraction: number): void {
+  spellVarietyMargin = Math.max(0, fraction);
+}
+export function spellVariety(): number {
+  return spellVarietyMargin;
+}
+
+/**
+ * A deterministic roll that does NOT consume the game's RNG stream.
+ *
+ * `chooseAction` is a pure chooser — the caller applies the action afterwards —
+ * and it can legitimately be called twice on the same state (a UI preview, a
+ * re-render). Advancing `state.rng` here would make the second call differ from
+ * the first and would desynchronise replays. Deriving a value from the current
+ * state instead means the same board always produces the same choice, which is
+ * what a seeded game requires, while still differing between boards.
+ */
+function stableRoll(state: GameState, actorId: Id, salt: number): number {
+  let h = (state.rng ^ 0x9e3779b9) >>> 0;
+  for (let i = 0; i < actorId.length; i++) h = (Math.imul(h, 33) ^ actorId.charCodeAt(i)) >>> 0;
+  h = (Math.imul(h ^ state.round, 2654435761) ^ salt) >>> 0;
+  return next(h).value;
+}
+
 /** Pick the best action for the current combatant. Returns endTurn when done. */
 export function chooseAction(state: GameState, actorId: Id): Action {
   const actor = state.combatants[actorId]!;
@@ -1380,12 +1437,17 @@ export function chooseAction(state: GameState, actorId: Id): Action {
   // anything — cleared the normal bar either.
   let fallbackMove: Action | undefined;
   let fallbackMoveScore = 0;
+  // Kept so a near-best spell can be chosen instead of the single best one.
+  const spellScores: Array<{ action: Action; score: number }> = [];
 
   for (const a of actions) {
     let s = 0;
     switch (a.kind) {
       case 'attack': s = scoreAttack(state, actor, a); break;
-      case 'castSpell': s = scoreSpell(state, actor, a); break;
+      case 'castSpell':
+        s = scoreSpell(state, actor, a);
+        if (s > END_TURN_THRESHOLD) spellScores.push({ action: a, score: s });
+        break;
       case 'move':
         s = scoreMove(state, actor, a.to);
         if (s > fallbackMoveScore) { fallbackMoveScore = s; fallbackMove = a; }
@@ -1415,6 +1477,18 @@ export function chooseAction(state: GameState, actorId: Id): Action {
     if (s > bestScore) {
       bestScore = s;
       best = a;
+    }
+  }
+  // Spell variety: when the chosen action is a spell, pick uniformly among the
+  // spells that scored within the margin of it rather than always the maximum.
+  // Only ever swaps one spell for another spell — never for a move, an attack
+  // or ending the turn — so the shape of the turn is unchanged.
+  if (best.kind === 'castSpell' && spellVarietyMargin > 0 && spellScores.length > 1) {
+    const cutoff = bestScore - Math.abs(bestScore) * spellVarietyMargin;
+    const near = spellScores.filter((x) => x.score >= cutoff);
+    if (near.length > 1) {
+      const r = stableRoll(state, actorId, near.length);
+      return near[Math.min(near.length - 1, Math.floor(r * near.length))]!.action;
     }
   }
   if (best.kind === 'endTurn' && fallbackMove) return fallbackMove;
