@@ -20,8 +20,8 @@ reuses this doc's style bible verbatim.
 `web/src/art.ts`) · ⬜ needed (still on the emoji fallback). **§5 has the
 full status by category and the per-monster list.** In short: every hero,
 species, and species×role portrait is ✅ and the forge matrix is fully
-covered; **80 of the 132 monsters are ✅, and the remaining 52 have prompts
-ready to generate in §8.**
+covered; **103 of the 138 monsters are ✅, and the remaining 35 have
+prompts ready to generate in §8.**
 
 ---
 
@@ -682,7 +682,7 @@ Prompts for the 5 Chromatic Dragon Wyrmlings (various dragon archetypes):
 
 ---
 
-## 8. Monsters — ⬜ still needed (74), by creature type
+## 8. Monsters — the generation queue (35 still needed), by creature type
 
 These have no art yet. Each prompt is a **side-by-side design sheet** (portrait
 left, token right, on a #00FF00 chroma key) in the current format the pipeline
@@ -706,6 +706,14 @@ on the board.
 **Assassin** (`assassin`) — SIZE M, CR 8
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a cold chibi assassin, an East-Asian person with pale skin, narrow calculating eyes, and a face half-hidden by a dark cloth mask. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in fitted dark-grey leathers, a poisoned dagger in a reverse grip and a light crossbow, low and silent. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. charcoal grey, muted green, and steel palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
+**Apprentice Mage** (`apprentice-mage`) — SIZE M, CR 1/2
+*The party's first arcane controller — Color Spray blinds a cone with no damage attached. Read as the Mage's junior: same silhouette family, none of the confidence.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a nervy chibi apprentice mage, a young South-Asian person with brown skin, ink-stained fingers raised to a cheek, an over-large hood slipping back off untidy black hair, and wide over-eager eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in a patched grey-blue robe two sizes too big, cinched with a rope belt, holding an open spellbook in one arm while the other hand throws a spray of rainbow light, a plain dagger at the hip. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. faded grey-blue, parchment cream, and prism rainbow palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Druid** (`druid`) — SIZE M, CR 4
+*Moonbeam and Call Lightning both re-fire for free every round, so the druid is a battlefield the party has to move around rather than a target that trades hits.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a weathered chibi druid, an older Indigenous woman with brown skin, deep laugh-lines, grey-streaked hair bound with leather cord, a crown of living twigs, and calm green eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in layered undyed wool and hide with a moss-green cloak, one hand on a gnarled quarterstaff wound with ivy, the other palm up cradling a small hovering moonbeam. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. moss green, undyed wool, and pale moonlight silver palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 ### Beasts
 
 **Tyrannosaurus Rex** (`tyrannosaurus`) — SIZE XL, CR 8
@@ -726,10 +734,18 @@ on the board.
 **Giant Ape** (`giant-ape`) — SIZE XL, CR 7
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a giant ape with a huge shaggy dark-brown gorilla head, a heavy brow, deep-set eyes, and a bellowing open mouth. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a massive muscular ape standing and beating its chest with one fist, long arms and broad shoulders. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. dark brown, charcoal, and warm grey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
+**Lion** (`lion`) — SIZE L, CR 1
+*Pack Tactics and two attacks: it is the beast that teaches you not to stand alone. Maned or not is a design call — a lioness reads better at token size than a mane does.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi lioness with a broad tawny muzzle, heavy jaw, small rounded ears, and narrowed amber hunting eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a big-headed lion low to the ground mid-stalk, shoulders high, tail lashing, one forepaw lifted, claws just showing. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. tawny gold, sand, and warm shadow brown palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 ### Fey
 
 **Worg** (`worg`) — SIZE M
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a worg, a big evil wolf with coarse blackish-grey fur, a broad cruel muzzle, jagged fangs, pointed ears, and malicious glowing orange eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a hefty four-legged wolf in a low aggressive snarl with hackles raised, reads clearly as a wolf. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. blackish grey, charcoal, and burnt orange palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Goblin Hexer** (`goblin-hexer`) — SIZE S, CR 1/2
+*Bane on three heroes at once, and it lifts the moment the hexer drops — the whole lesson is 'shoot the little one', so it must read as a caster at a glance, not as another goblin warrior.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a sly chibi goblin hexer with mottled green skin, enormous pointed ears strung with bone charms, a hooked nose, and a knowing sidelong grin. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in a ragged patchwork shawl hung with teeth and feathers, jabbing a bone wand that trails a sickly violet hex-sigil, a crude dagger tucked in the belt. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. mottled green, bone ivory, and sickly hex violet palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ### Undead
 
@@ -747,6 +763,10 @@ on the board.
 
 **Vampire Spawn** (`vampire-spawn`) — SIZE M, CR 5
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a vampire spawn, a pale gaunt aristocrat with slicked dark hair, red eyes, and bared fangs in a hungry snarl. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in torn dark finery with clawed hands raised, poised to spring. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. corpse pale, blood red, and black palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Skeleton Bonechanter** (`skeleton-bonechanter`) — SIZE M, CR 1/2
+*The only caster in the game that WANTS to be adjacent — Inflict Wounds is a touch attack, so it closes. The reaching hand is the read.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi skeletal chanter, a fleshless skull with a jaw hinged open mid-incantation and cold green witch-light burning in both eye sockets. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a big-skulled skeleton in rotted grave-wrappings, one bony hand outstretched to touch, sickly green necrotic light gathering in the palm, a shortsword hanging forgotten at the hip. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. bone ivory, grave-wrap grey, and necrotic green palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ### Fiends
 
@@ -792,6 +812,10 @@ on the board.
 **Vrock** (`vrock`) — SIZE L, CR 6
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a vulture-demon vrock with a long fanged beak, beady red eyes, a mangy feathered ruff, and grey-green mottled skin. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character great ragged vulture wings spread, taloned bird feet, clawed hands, hunched forward. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. grey-green, dirty white, and dull red palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
+**Gnoll Packcaller** (`gnoll-packcaller`) — SIZE M, CR 2
+*Faerie Fire hands the whole pack advantage, so the packcaller is worth killing before the things it is helping. The howl and the thrown motes are what say 'kill this one first'.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi gnoll packcaller with a hyena head thrown back mid-howl, matted russet fur, a bone-and-feather headdress, and pale hungry eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character hunched forward on digitigrade legs in scavenged hide and bone fetishes, a spear planted in one hand while the other flings a scatter of glittering faerie-fire motes. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. russet fur, bone white, and cold faerie-fire blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 ### Elementals
 
 **Dust Mephit** (`dust-mephit`) — SIZE S
@@ -823,6 +847,10 @@ on the board.
 
 **Invisible Stalker** (`invisible-stalker`) — SIZE L, CR 6
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, an invisible stalker air elemental shown as a barely-there translucent humanoid outline of rippling distortion with two faint glowing eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a see-through wavering humanoid of moving air, dust and leaves caught spiraling around its outline. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. near-transparent pale blue-grey and faint white palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Azer Forgecaller** (`azer-forgecaller`) — SIZE M, CR 4
+*The first enemy that targets a hero for their *gear* — Heat Metal punishes plate and a metal weapon specifically. The apron and hammer say smith; the orbiting sphere says caster.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi azer forgecaller, a stocky dwarf-like elemental with brass-bright skin, a beard and eyebrows of living flame, and molten-orange eyes under a heavy brow. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in a soot-blackened leather smith's apron over brass scale, a glowing forge-hammer in one hand, the other open and pouring heat-shimmer, a small sphere of fire orbiting one shoulder. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. brass, soot black, and molten orange palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ### Giants
 
@@ -861,6 +889,10 @@ on the board.
 **Young Red Dragon** (`young-red`) — SIZE XL, CR 10
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a young red dragon with blazing crimson scales, a fan of back-swept horns, a fanged sneer, glowing ember eyes, and smoke curling from its nostrils. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a big powerful four-legged winged dragon, wings raised, a molten glow in its throat and a long tail. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. crimson red, molten orange, and charcoal palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
+**Kobold Emberling** (`kobold-emberling`) — SIZE S, CR 1/8
+*A 15-foot cone on a 50 XP monster: the cheapest possible teacher of 'don't bunch up'. It must look like it is about to breathe, not about to stab.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi kobold emberling with rusty-red scales, a short blunt snout, stubby horns, and bright eager orange eyes, a wisp of smoke curling from one nostril. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a small bipedal kobold in scraps of leather and a too-big scaled hood, cheeks puffed and both clawed hands cupped around a growing gout of flame, a chipped dagger at the belt. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. rust red, ember orange, and scorched black palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 ### Monstrosities
 
 **Rust Monster** (`rust-monster`) — SIZE S
@@ -889,6 +921,10 @@ on the board.
 
 **Hydra** (`hydra`) — SIZE XL, CR 8
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a hydra with five serpentine reptilian heads on long green-scaled necks, each with snapping fanged jaws and yellow eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a squat four-legged green-scaled body with five long necks and snapping heads fanning out. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. swamp green, olive, and pale yellow palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Ettercap Snarecaller** (`ettercap-snarecaller`) — SIZE M, CR 3
+*Entangle and Web: it does not kill you, it holds you still while the rest of the wave arrives. The looped silk in its hands is the whole idea.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi ettercap snarecaller with a gaunt spider-like face, four small black eyes above a pair of dripping mandibles, and a fringe of coarse dark bristles. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a hunched humanoid spider-thing on long clawed limbs, strands of web trailing from its spinnerets and looped between its hands like a garrotte, dragging a snare of silk. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. chitin black, bruise purple, and pale web grey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ### Aberrations
 
@@ -989,7 +1025,7 @@ lands incrementally.
 
 ## 12. Backlog: monsters still on the emoji fallback
 
-60 of 140 monsters have no generated art. This is not a bug — the emoji reads
+35 of 138 monsters have no generated art. This is not a bug — the emoji reads
 fine at token size, and `art.ts` deliberately falls back rather than shipping a
 broken image. It is a worklist, ordered by XP, so the ones a player meets as a
 set-piece get drawn first.
@@ -1004,65 +1040,40 @@ The **Fallback** column is what the board shows today. A monster with no art and
 no emoji renders as a literal `?`; the test now makes that impossible, so every
 row here has something.
 
-| Monster | ID | Type | XP | Fallback | First met |
+| Monster | ID | Type | XP | Fallback | Size |
 | --- | --- | --- | --- | --- | --- |
-| Horned Devil | `horned-devil` | fiend | 7200 | 👹 | arena / adventure |
-| Remorhaz | `remorhaz` | monstrosity | 7200 | 🐛 | arena / adventure |
-| Aboleth | `aboleth` | aberration | 5900 | 🐙 | arena / adventure |
-| Stone Golem | `stone-golem` | construct | 5900 | 🗿 | arena / adventure |
-| Young Red Dragon | `young-red` | dragon | 5900 | 🐉 | arena / adventure |
-| Fire Giant | `fire-giant` | giant | 5000 | 🌋 | arena / adventure |
-| Glabrezu | `glabrezu` | fiend | 5000 | 🦀 | arena / adventure |
-| Young Blue Dragon | `young-blue` | dragon | 5000 | 🐉 | arena / adventure |
-| Frost Giant | `frost-giant` | giant | 3900 | 🥶 | arena / adventure |
-| Hezrou | `hezrou` | fiend | 3900 | 🐸 | arena / adventure |
-| Hydra | `hydra` | monstrosity | 3900 | 🐉 | arena / adventure |
-| Young Green Dragon | `young-green` | dragon | 3900 | 🐉 | arena / adventure |
-| Stone Giant | `stone-giant` | giant | 2900 | 🗿 | arena / adventure |
-| Shield Guardian | `shield-guardian` | construct | 2900 | 🗿 | arena / adventure |
-| Young Black Dragon | `young-black` | dragon | 2900 | 🐉 | arena / adventure |
-| Invisible Stalker | `invisible-stalker` | elemental | 2300 | 💨 | arena / adventure |
-| Vrock | `vrock` | fiend | 2300 | 🦅 | arena / adventure |
-| Chimera | `chimera` | monstrosity | 2300 | 🦁 | arena / adventure |
-| Wyvern | `wyvern` | dragon | 2300 | 🐲 | arena / adventure |
-| Young White Dragon | `young-white` | dragon | 2300 | 🐉 | arena / adventure |
-| Hill Giant | `hill-giant` | giant | 1800 | 🧌 | arena / adventure |
-| Roper | `roper` | aberration | 1800 | 🪱 | arena / adventure |
-| Bulette | `bulette` | monstrosity | 1800 | 🦈 | arena / adventure |
-| Otyugh | `otyugh` | aberration | 1800 | 🦑 | arena / adventure |
-| Salamander | `salamander` | elemental | 1800 | 🦎 | arena / adventure |
-| Barbed Devil | `barbed-devil` | fiend | 1800 | 😈 | arena / adventure |
-| Flesh Golem | `flesh-golem` | construct | 1800 | 🧟 | arena / adventure |
-| Troll | `troll` | giant | 1800 | 👹 | arena / adventure |
-| Druid | `druid` | humanoid | 1100 | 🌿 | arena / adventure |
-| Azer Forgecaller | `azer-forgecaller` | elemental | 1100 | 🔨 | arena / adventure |
-| Black Pudding | `black-pudding` | ooze | 1100 | ⬛ | arena / adventure |
-| Ettercap Snarecaller | `ettercap-snarecaller` | monstrosity | 700 | 🪤 | arena / adventure |
-| Basilisk | `basilisk` | monstrosity | 700 | 🦎 | arena / adventure |
-| Winter Wolf | `winter-wolf` | monstrosity | 700 | 🐺 | arena / adventure |
-| Hell Hound | `hell-hound` | fiend | 700 | 🐕‍🦺 | arena / adventure |
-| Gnoll Packcaller | `gnoll-packcaller` | fiend | 450 | 🐕 | arena / adventure |
-| Griffon | `griffon` | monstrosity | 450 | 🦅 | arena / adventure |
-| Ettercap | `ettercap` | monstrosity | 450 | 🕸️ | arena / adventure |
-| Azer Sentinel | `azer` | elemental | 450 | ⚒️ | arena / adventure |
-| Ochre Jelly | `ochre-jelly` | ooze | 450 | 🟡 | arena / adventure |
-| Gelatinous Cube | `gelatinous-cube` | ooze | 450 | 🧊 | arena / adventure |
-| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | arena / adventure |
-| Skeleton Bonechanter | `skeleton-bonechanter` | undead | 200 | 🦴 | arena / adventure |
-| Apprentice Mage | `apprentice-mage` | humanoid | 200 | 📖 | arena / adventure |
-| Scarecrow | `scarecrow` | construct | 200 | 🎃 | arena / adventure |
-| Imp | `imp` | fiend | 200 | 😈 | arena / adventure |
-| Quasit | `quasit` | fiend | 200 | 👿 | arena / adventure |
-| Goblin Hexer | `goblin-hexer` | fey | 100 | 🪬 | arena / adventure |
-| Ice Mephit | `ice-mephit` | elemental | 100 | ❄️ | arena / adventure |
-| Magma Mephit | `magma-mephit` | elemental | 100 | 🌋 | arena / adventure |
-| Steam Mephit | `steam-mephit` | elemental | 100 | ♨️ | arena / adventure |
-| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | arena / adventure |
-| Magmin | `magmin` | elemental | 100 | 🔥 | arena / adventure |
-| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | arena / adventure |
-| Kobold Emberling | `kobold-emberling` | dragon | 50 | 🎇 | arena / adventure |
-| Dust Mephit | `dust-mephit` | elemental | 50 | 🌫️ | arena / adventure |
-| Mud Mephit | `mud-mephit` | elemental | 50 | 🟤 | arena / adventure |
-| Smoke Mephit | `smoke-mephit` | elemental | 50 | 💨 | arena / adventure |
-| Dretch | `dretch` | fiend | 50 | 👾 | arena / adventure |
-| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | arena / adventure |
+| Remorhaz | `remorhaz` | monstrosity | 7200 | 🐛 | huge |
+| Aboleth | `aboleth` | aberration | 5900 | 🐙 | large |
+| Stone Golem | `stone-golem` | construct | 5900 | 🗿 | large |
+| Young Red Dragon | `young-red` | dragon | 5900 | 🐉 | large |
+| Young Blue Dragon | `young-blue` | dragon | 5000 | 🐉 | large |
+| Hydra | `hydra` | monstrosity | 3900 | 🐉 | huge |
+| Young Green Dragon | `young-green` | dragon | 3900 | 🐉 | large |
+| Shield Guardian | `shield-guardian` | construct | 2900 | 🗿 | large |
+| Young Black Dragon | `young-black` | dragon | 2900 | 🐉 | large |
+| Chimera | `chimera` | monstrosity | 2300 | 🦁 | large |
+| Bulette | `bulette` | monstrosity | 1800 | 🦈 | large |
+| Flesh Golem | `flesh-golem` | construct | 1800 | 🧟 | medium |
+| Otyugh | `otyugh` | aberration | 1800 | 🦑 | large |
+| Roper | `roper` | aberration | 1800 | 🪱 | large |
+| Azer Forgecaller | `azer-forgecaller` | elemental | 1100 | 🔨 | medium |
+| Black Pudding | `black-pudding` | ooze | 1100 | ⬛ | large |
+| Druid | `druid` | humanoid | 1100 | 🌿 | medium |
+| Basilisk | `basilisk` | monstrosity | 700 | 🦎 | medium |
+| Ettercap Snarecaller | `ettercap-snarecaller` | monstrosity | 700 | 🪤 | medium |
+| Winter Wolf | `winter-wolf` | monstrosity | 700 | 🐺 | large |
+| Ettercap | `ettercap` | monstrosity | 450 | 🕸️ | medium |
+| Gelatinous Cube | `gelatinous-cube` | ooze | 450 | 🧊 | large |
+| Gnoll Packcaller | `gnoll-packcaller` | fiend | 450 | 🐕 | medium |
+| Griffon | `griffon` | monstrosity | 450 | 🦅 | large |
+| Ochre Jelly | `ochre-jelly` | ooze | 450 | 🟡 | large |
+| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | large |
+| Apprentice Mage | `apprentice-mage` | humanoid | 200 | 📖 | medium |
+| Lion | `lion` | beast | 200 | 🦁 | large |
+| Scarecrow | `scarecrow` | construct | 200 | 🎃 | medium |
+| Skeleton Bonechanter | `skeleton-bonechanter` | undead | 200 | 🦴 | medium |
+| Goblin Hexer | `goblin-hexer` | fey | 100 | 🪬 | small |
+| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | medium |
+| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
+| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
+| Kobold Emberling | `kobold-emberling` | dragon | 50 | 🎇 | small |
