@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { GameState, Position, Combatant, Id } from '../../src/engine/types.js';
 import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
+import type { CoverRead } from '../../src/engine/rules/cover.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { glyphFor } from './glyphs.js';
@@ -21,6 +22,13 @@ export interface BoardProps {
   state: GameState;
   activeId: Id;
   highlights: Map<string, CellHighlight>;
+  /**
+   * Cover at each cell the active hero could move to, and on each combatant
+   * already standing in some. Only the covered ones are present — an absent
+   * entry means no cover, which keeps the board from having to reason about it.
+   */
+  coverCells?: Map<string, CoverRead> | undefined;
+  coverUnits?: Map<Id, CoverRead> | undefined;
   selectedId?: Id | undefined;
   multiCounts?: Map<Id, number> | undefined;
   floats?: FloatEffect[];
@@ -47,7 +55,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
+export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
 
@@ -77,6 +85,10 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
       const cell = cellAt(state.grid, pos)!;
       const key = posKey(pos);
       const hl = highlights.get(key);
+      // XCOM's shield, on the cell you are about to step onto. Only where the
+      // move is actually offered — a badge on ground you cannot reach would be
+      // information about a decision you are not making.
+      const coverHere = hl === 'move' ? coverCells?.get(key) : undefined;
       const classes = ['cell', `terrain-${cell.terrain}`];
       // Badge only the perimeter of an effect field (or a lone tile): a cell
       // whose terrain differs from any orthogonal neighbour, or sits on the
@@ -131,6 +143,15 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
           }}
           onClick={() => onCellTap(pos, cell.occupantId ? state.combatants[cell.occupantId] : undefined)}
         >
+          {coverHere && (
+            <span
+              className="cover-badge"
+              title={`+${coverHere.ac} AC against ranged attacks from here`}
+              aria-label={`cover, +${coverHere.ac} armour class`}
+            >
+              <b>+{coverHere.ac}</b>
+            </span>
+          )}
           {cellAreas.map((a) => (
             <span
               key={a.id}
@@ -232,6 +253,17 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
               <span className="class-pip" style={{ ['--pip' as string]: look.color }} title={look.name}>
                 {look.glyph}
               </span>
+            )}
+            {/* Standing behind something right now. On the token rather than
+                the cell, because a figure's own defensive state is a fact about
+                the figure — and it lets the whole board's shape be read at a
+                glance instead of one hover at a time. */}
+            {coverUnits?.get(c.id) && (
+              <span
+                className="cover-pip"
+                title={`Behind cover: +${coverUnits.get(c.id)!.ac} AC against ranged attacks`}
+                aria-label="behind cover"
+              >🛡</span>
             )}
             <div className="hpbar">
               <div className="hpfill" style={{ width: `${Math.round((c.hp / c.maxHp) * 100)}%` }} />
