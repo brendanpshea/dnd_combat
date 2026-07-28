@@ -16,6 +16,7 @@ import { summonCombatant } from '../engine/rules/summon.js';
 import { distanceFeet } from '../engine/grid.js';
 import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
+import { CLASSES, classScrollPool } from './classes.js';
 import type { GameEvent } from '../engine/events.js';
 
 export interface UseContext {
@@ -233,7 +234,11 @@ export const ITEMS: Record<Id, ConsumableData> = {
     apply: scrollApply('bane'),
   },
   'scroll-shield-of-faith': {
-    id: 'scroll-shield-of-faith', name: 'Scroll of Shield of Faith', useTime: 'action',
+    // Bonus action, because the spell is: a scroll casts what is written on it
+    // and takes as long as casting it takes. Hand-written as an action, which
+    // quietly made the scroll worse than the spell; found when generation gave
+    // every other scroll the rule and this one disagreed.
+    id: 'scroll-shield-of-faith', name: 'Scroll of Shield of Faith', useTime: 'bonus',
     targeting: { kind: 'spell', spellId: 'shield-of-faith' }, cost: 50, rarity: 'common',
     apply: scrollApply('shield-of-faith'),
   },
@@ -603,3 +608,75 @@ function scrollApply(spellId: Id) {
   };
 }
 
+
+// ---------------------------------------------------------------------------
+// Scrolls, derived from the spell list
+// ---------------------------------------------------------------------------
+
+/**
+ * Every spell somebody could read gets a scroll, without anyone writing one.
+ *
+ * Scrolls used to be hand-authored one at a time, and the arithmetic of that
+ * showed: 8 of 28 first-level spells had one, 5 of 15 at second, and nothing at
+ * all at fourth. A ranger or paladin party could win a second-level scroll and
+ * find that no one in the company could read it, because every scroll that
+ * existed happened to be off their list. None of that was a decision — it was
+ * the set of scrolls somebody had got round to typing.
+ *
+ * So the roster is a function of the spell list. Add a spell and its scroll
+ * exists; the price, the rarity and the action it costs all follow from the
+ * spell rather than being chosen again by hand.
+ *
+ * WHAT DOES NOT GET ONE
+ *
+ * A spell nobody has on their list. `useItem` checks `classScrollPool` before
+ * it will let a scroll be read, so a scroll of a spell on no class list is an
+ * item that can be bought, carried, and never used — the exact dead-data shape
+ * this codebase keeps finding. Two spells fall out here, and both are class
+ * features wearing a spell's clothes: Divine Smite and Breath Weapon.
+ *
+ * A reaction spell. Shield is cast when something hits you, and a scroll is
+ * read on your own turn; a Scroll of Shield would be legal, purchasable and
+ * pointless.
+ *
+ * A hand-written scroll keeps its own entry. Command is 40g and Ray of Sickness
+ * is uncommon — tuned exceptions, and generation must not quietly flatten them.
+ */
+const SCROLL_COST: Record<number, number> = { 1: 50, 2: 120, 3: 250, 4: 500 };
+const SCROLL_RARITY: Record<number, Rarity> = {
+  1: 'common', 2: 'uncommon', 3: 'rare', 4: 'rare',
+};
+
+/** Spell ids at least one class could read from a scroll. */
+function readableSpells(): Id[] {
+  const pools = Object.keys(CLASSES)
+    .filter((id) => CLASSES[id]?.spellcasting)
+    .map((id) => classScrollPool(id));
+  return Object.keys(SPELLS).filter((id) => {
+    const s = SPELLS[id]!;
+    if ((s.level ?? 0) < 1) return false;              // cantrips are not scrolls
+    if (s.castingTime === 'reaction') return false;     // see above
+    return pools.some((p) => p.has(id));
+  });
+}
+
+for (const spellId of readableSpells()) {
+  const id = `scroll-${spellId}`;
+  if (ITEMS[id]) continue;                              // hand-tuned entry wins
+  const spell = SPELLS[spellId]!;
+  const level = Math.min(4, Math.max(1, spell.level));
+  ITEMS[id] = {
+    id, name: `Scroll of ${spell.name}`,
+    // A scroll costs what the spell costs: a bonus-action spell read from a
+    // scroll is still a bonus action, which is most of why Misty Step or
+    // Healing Word on a scroll is worth carrying.
+    useTime: spell.castingTime === 'bonus' ? 'bonus' : 'action',
+    targeting: { kind: 'spell', spellId },
+    cost: SCROLL_COST[level]!,
+    rarity: SCROLL_RARITY[level]!,
+    apply: scrollApply(spellId),
+  };
+}
+
+/** Every scroll in the game, generated and hand-written alike. */
+export const SCROLL_IDS: Id[] = Object.keys(ITEMS).filter((id) => id.startsWith('scroll-')).sort();

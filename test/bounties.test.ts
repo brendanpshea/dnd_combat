@@ -54,6 +54,7 @@ function ctx(events: GameEvent[], state: GameState, over: Partial<BountyContext>
     spellsUsedBefore: new Set(),
     rounds: 99,
     foes: 3,
+    studied: false,
     ...over,
   };
 }
@@ -251,10 +252,23 @@ describe('what counts as earning one', () => {
   });
 
   it('is offered to any party at all, so nobody sees an empty board', () => {
+    // The worst case the arena can build: one hero, one enemy, bare ground —
+    // no barricade, no hazard, no rogue, no paladin, no area spell. Something
+    // still has to be claimable, or the door reads as a tax.
+    //
+    // Asserted as a floor rather than an exact list. It used to name the two
+    // that qualified, which made every new always-eligible bounty look like a
+    // regression when it was the point.
     const lone = [buildCharacter({ classId: 'fighter', team: 'team1', level: 1, name: 'X', position: { x: 1, y: 1 }, speciesId: 'human' })];
     const s = scene(OPEN, lone, ['goblin-warrior']);
     const always = BOUNTIES.filter((b) => b.eligible(lone, s)).map((b) => b.id);
-    expect(always.sort()).toEqual(['quick-work', 'unbroken']);
+    expect(always.length, 'a bare board must still offer something').toBeGreaterThanOrEqual(2);
+    expect(always, 'the two that need nothing at all').toEqual(
+      expect.arrayContaining(['quick-work', 'unbroken']));
+    // And nothing that needs terrain or a class the party does not have.
+    for (const id of ['dug-in', 'into-the-fire', 'from-the-shadows', 'wrath-held', 'loophole']) {
+      expect(always, id).not.toContain(id);
+    }
   });
 
   it('claimedBounties only pays what was offered', () => {
@@ -364,5 +378,82 @@ describe('every bounty is well-formed', () => {
     for (const b of BOUNTIES) {
       expect(/crit|save|miss|luck/i.test(b.blurb), `${b.id}: "${b.blurb}"`).toBe(false);
     }
+  });
+});
+
+/**
+ * The bounties added to fix a measured shortage.
+ *
+ * Over 1,080 low-level doors the board offered six objectives in rotation, not
+ * eight: Wrath Held needs `divine-smite` and the starting four are cleric,
+ * fighter, rogue and wizard, so it came up 0% of the time; Into the Fire needs
+ * hazard terrain and came up 4–6%. Four of the five below need nothing at all,
+ * which is the point — a low-level door should have something to play for
+ * whatever the party is and whatever ground it is standing on.
+ */
+describe('the always-available bounties', () => {
+  const party = buildParty('team1', 1, 3);
+  const hero = party[0]!.id;
+
+  it('Opening Act wants a consumable actually used', () => {
+    const s = scene(OPEN, party, ['goblin-warrior']);
+    const used = (combatantId: string, itemId: string): GameEvent =>
+      ({ type: 'itemUsed', combatantId, itemId } as GameEvent);
+    expect(byId('opening-act').earned(ctx([used(hero, 'potion-healing')], s))).toBe(true);
+    expect(byId('opening-act').earned(ctx([], s)), 'carried, not drunk').toBe(false);
+    expect(byId('opening-act').earned(ctx([used('f0', 'potion-healing')], s)),
+      'a goblin drinking is not your achievement').toBe(false);
+  });
+
+  it('Read the Room pays only when the study landed for this fight', () => {
+    const s = scene(OPEN, party, ['goblin-warrior']);
+    expect(byId('read-the-room').earned(ctx([], s, { studied: true }))).toBe(true);
+    expect(byId('read-the-room').earned(ctx([], s, { studied: false }))).toBe(false);
+  });
+
+  it('Two Birds wants them inside one round, not merely two dead', () => {
+    const s = scene(OPEN, party, ['goblin-warrior', 'goblin-warrior', 'goblin-warrior']);
+    const round = (n: number): GameEvent => ({ type: 'roundStarted', round: n } as GameEvent);
+    const died = (combatantId: string): GameEvent => ({ type: 'died', combatantId } as GameEvent);
+    expect(byId('two-birds').earned(ctx([round(1), died('f0'), died('f1')], s))).toBe(true);
+    expect(byId('two-birds').earned(ctx([round(1), died('f0'), round(2), died('f1')], s)),
+      'one each round is the thing this exists to distinguish from').toBe(false);
+    expect(byId('two-birds').earned(ctx([round(1), died(hero), died('f0')], s)),
+      'your own dead do not count').toBe(false);
+  });
+
+  it('Two Birds is not offered against a single enemy', () => {
+    const solo = scene(OPEN, party, ['goblin-warrior']);
+    const members = Object.values(solo.combatants).filter((c) => c.team === 'team1');
+    expect(byId('two-birds').eligible(members, solo)).toBe(false);
+  });
+
+  it('On Your Feet wants the pick-up, not the fall', () => {
+    const s = scene(OPEN, party, ['goblin-warrior']);
+    const down = (combatantId: string): GameEvent => ({ type: 'downed', combatantId } as GameEvent);
+    const heal = (targetId: string, amount: number): GameEvent =>
+      ({ type: 'healed', targetId, sourceId: hero, amount } as GameEvent);
+    expect(byId('on-your-feet').earned(ctx([down(hero), heal(hero, 4)], s))).toBe(true);
+    expect(byId('on-your-feet').earned(ctx([down(hero)], s)), 'left on the floor').toBe(false);
+    expect(byId('on-your-feet').earned(ctx([heal(hero, 4)], s)), 'topped up, never down').toBe(false);
+    expect(byId('on-your-feet').earned(ctx([down('f0'), heal('f0', 4)], s)),
+      'a goblin getting up is not your doing').toBe(false);
+  });
+
+  it('Loophole wants a hit that beat an enemy\'s cover', () => {
+    const s = scene(COVERED, party, ['goblin-warrior']);
+    const shot = (attackerId: string, targetId: string, cover: boolean, hit: boolean): GameEvent =>
+      ({ type: 'attackRolled', attackerId, targetId, cover, hit } as unknown as GameEvent);
+    expect(byId('loophole').earned(ctx([shot(hero, 'f0', true, true)], s))).toBe(true);
+    expect(byId('loophole').earned(ctx([shot(hero, 'f0', true, false)], s)), 'missed').toBe(false);
+    expect(byId('loophole').earned(ctx([shot(hero, 'f0', false, true)], s)), 'no cover to beat').toBe(false);
+    expect(byId('loophole').earned(ctx([shot('f0', hero, true, true)], s)),
+      'that is Dug In, from the other side').toBe(false);
+  });
+
+  it('Loophole needs a board with something to hide behind', () => {
+    const bare = scene(OPEN, party, ['goblin-warrior']);
+    expect(byId('loophole').eligible(party, bare)).toBe(false);
+    expect(byId('loophole').eligible(party, scene(COVERED, party, ['goblin-warrior']))).toBe(true);
   });
 });

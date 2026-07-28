@@ -15,14 +15,14 @@ import {
   availableLeveledSpells, classCantrips, classRituals, cantripsKnownCount, spellbookSize, preparedCount,
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
-import { ITEMS } from '../data/items.js';
+import { ITEMS, SCROLL_IDS } from '../data/items.js';
 import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS, isWeaponProficient } from '../data/weapons.js';
 import { ARMOR, SHIELDS, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { actsOnItsOwn } from '../engine/rules/summon.js';
-import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL } from '../data/classes.js';
+import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/encounters.js';
@@ -478,10 +478,11 @@ export const STARTING_GOLD = 100;
 const ALL_WARES: Id[] = [
   // consumables
   'potion-healing', 'potion-greater-healing', 'alchemists-fire',
-  'scroll-magic-missile', 'scroll-burning-hands', 'scroll-command', 'scroll-guiding-bolt',
-  'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person', 'scroll-fireball', 'scroll-lightning-bolt',
-  'scroll-ray-of-sickness', 'scroll-color-spray', 'scroll-bane', 'scroll-shield-of-faith',
-  'scroll-blindness', 'scroll-invisibility', 'scroll-dispel-magic', 'scroll-haste',
+  // Every scroll there is, rather than the seventeen somebody had typed. The
+  // roster is generated from the spell list (see items.ts), so a new spell is
+  // buyable and awardable the moment it exists — and a class can no longer end
+  // up with nothing it is allowed to read.
+  ...SCROLL_IDS,
   'potion-fire-resistance', 'potion-poison-resistance', 'potion-cold-resistance', 'potion-acid-resistance',
   'potion-giant-strength-hill',
   // wands — charged, not consumed (see ConsumableData.charges)
@@ -1825,16 +1826,27 @@ function scribingFee(spellId: Id): number {
 
 /**
  * Whether a scroll in this wizard's pack can be copied into their spellbook:
- * a wizard-list spell (classes.ts's `learnableExtra`) they haven't already
- * learned. Returns the spell and its fee for the shop UI to show, regardless
- * of whether the party can currently afford it — the caller checks gold.
+ * any spell a wizard could read that is not already in the book.
+ *
+ * It used to be `learnableExtra`, which is a list of exactly one spell — Ray of
+ * Sickness. A wizard could scribe that, once, and nothing else ever, which made
+ * the spellbook the one thing in the game that could not grow. Meanwhile a
+ * wizard's book holds 6 spells at level 1 against a class list several times
+ * that, so there was always something to copy and never a way to copy it.
+ *
+ * `classScrollPool` is the same set `useItem` consults before it will let a
+ * scroll be read at all, so what you can scribe is exactly what you could have
+ * cast — one rule, asked twice, rather than two lists to keep in step.
+ *
+ * Returns the spell and its fee for the shop UI to show, regardless of whether
+ * the party can currently afford it — the caller checks gold.
  */
 export function scrollLearnable(c: CampaignState, charIdx: number, itemId: Id): { spellId: Id; fee: number } | undefined {
   const ch = c.characters[charIdx];
   if (!ch || ch.classId !== 'wizard') return undefined;
   const spellId = scrollSpellId(itemId);
   if (!spellId) return undefined;
-  if (!CLASSES.wizard?.spellcasting?.learnableExtra?.includes(spellId)) return undefined;
+  if (!classScrollPool('wizard').has(spellId)) return undefined;
   if (knownLeveledSpells(c, charIdx).includes(spellId)) return undefined; // already in the spellbook
   return { spellId, fee: scribingFee(spellId) };
 }

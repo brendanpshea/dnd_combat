@@ -14,9 +14,10 @@ import {
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, setPrepared, resetPrepared,
   cantripPool, cantripLimit, setCantrips, knownRitualSpells,
   spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
-  scrollLearnable, learnSpellFromScroll, itemCategory,
+  scrollLearnable, learnSpellFromScroll, itemCategory, knownLeveledSpells,
   preparedRoom, partyPreparedRoom, applyArenaVictory, applyPartyTemplate,
 } from '../src/campaign/campaign.js';
+import { classScrollPool } from '../src/data/classes.js';
 import { encounterXP } from '../src/data/encounters.js';
 import * as campaignModule from '../src/campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../src/campaign/save.js';
@@ -1085,9 +1086,32 @@ describe('wizard spellbook: learning spells from scrolls', () => {
   it('a scroll of a spell already known outright is not learnable', () => {
     const c = newCampaign();
     const wizardIdx = 1;
-    c.characters[wizardIdx]!.inventory.push({ itemId: 'scroll-fireball', qty: 1 });
-    // Fireball is already on the wizard's default table — nothing to learn.
-    expect(scrollLearnable(c, wizardIdx, 'scroll-fireball')).toBeUndefined();
+    // Named from the spellbook rather than guessed at. This test used to use
+    // Fireball, on a comment that said it was "already on the wizard's default
+    // table" — it is not, and cannot be: a level-1 wizard knows six 1st-level
+    // spells and Fireball is 3rd. It passed because the scribable pool was
+    // `learnableExtra`, a list of exactly one spell, so Fireball was refused
+    // for having nothing to do with the wizard list at all. Green, and for the
+    // wrong reason. Widening the pool to the whole wizard list is what exposed
+    // it.
+    const known = knownLeveledSpells(c, wizardIdx)[0]!;
+    c.characters[wizardIdx]!.inventory.push({ itemId: `scroll-${known}`, qty: 1 });
+    expect(scrollLearnable(c, wizardIdx, `scroll-${known}`)).toBeUndefined();
+  });
+
+  it('a scroll of a wizard-list spell NOT in the book is learnable', () => {
+    // The other half, and the point of the change: a wizard's book holds six
+    // spells at level 1 against a class list several times that, so there is
+    // always something to copy.
+    const c = newCampaign();
+    const wizardIdx = 1;
+    const known = new Set(knownLeveledSpells(c, wizardIdx));
+    // Leveled and actually sold as a scroll: the pool includes cantrips, which
+    // have no scroll to copy from.
+    const fresh = [...classScrollPool('wizard')]
+      .find((id) => !known.has(id) && (SPELLS[id]?.level ?? 0) >= 1 && ITEMS[`scroll-${id}`])!;
+    c.characters[wizardIdx]!.inventory.push({ itemId: `scroll-${fresh}`, qty: 1 });
+    expect(scrollLearnable(c, wizardIdx, `scroll-${fresh}`)?.spellId).toBe(fresh);
   });
 });
 

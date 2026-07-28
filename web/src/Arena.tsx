@@ -22,6 +22,7 @@ import {
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
   partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck, bestAtSkill,
+  scrollLearnable, learnSpellFromScroll,
   itemFitFor,
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
@@ -431,6 +432,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       spellsUsedBefore: new Set(run.spellsUsed),
       rounds: combat.state.round,
       foes: wave.encounter.members.length,
+      // Whether the study landed for THIS fight. `studyFor` is keyed to the day
+      // and half, so yesterday's success cannot pay for today's bounty.
+      studied: studyFor(run.lore, dayOf(run), half)?.success === true,
     });
     // The purse is the day's pay, handed over when the day is done — winning
     // the morning buys you the afternoon, not a wage.
@@ -1255,6 +1259,33 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                   >
                                     Sell for {paid}g
                                   </button>
+                                  {/* A wizard's other option. Scribing has been
+                                      in the engine and in both other shops
+                                      since it was written; the arena — where a
+                                      scroll is the prize you win most — never
+                                      offered it. */}
+                                  {(() => {
+                                    if (from !== 'pack') return null;
+                                    const learn = scrollLearnable(c, buyFor, stack.itemId);
+                                    if (!learn) return null;
+                                    const broke = c.gold < learn.fee;
+                                    return (
+                                      <button
+                                        className="mini"
+                                        disabled={broke}
+                                        title={broke ? `Scribing costs ${learn.fee}g` : 'Copy it into the spellbook — the scroll is used up'}
+                                        onClick={() => {
+                                          if (learnSpellFromScroll(c, buyFor, stack.itemId)) {
+                                            setNotice(`${c.characters[buyFor]?.name} scribes ${itemName(stack.itemId)} into their spellbook (−${learn.fee}g).`);
+                                            refresh(); persist(c, run);
+                                          }
+                                          setPendingSell(null);
+                                        }}
+                                      >
+                                        ✍️ Scribe −{learn.fee}g
+                                      </button>
+                                    );
+                                  })()}
                                   <button className="ghost" onClick={() => setPendingSell(null)}>Cancel</button>
                                 </div>
                               )}

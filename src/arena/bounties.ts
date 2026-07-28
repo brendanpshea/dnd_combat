@@ -39,6 +39,7 @@
  * of them. Worth stating because the thin column was the misleading number and
  * the reachability count was the honest one.
  */
+import { ITEMS } from '../data/items.js';
 import type { Combatant, GameState, Id } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
 import { SPELLS } from '../data/spells.js';
@@ -58,6 +59,9 @@ export interface BountyContext {
   rounds: number;
   /** Enemies the wave started with. */
   foes: number;
+  /** Did the pre-fight study land? The one fact a bounty needs that the fight
+   *  itself cannot report — it happened at the gate, before any event. */
+  studied: boolean;
 }
 
 export interface Bounty {
@@ -252,6 +256,120 @@ export const BOUNTIES: Bounty[] = [
     eligible: (_party, state) => hasTerrain(state, 'hazard'),
     earned: (ctx) => ctx.events.some((e) =>
       e.type === 'damageDealt' && e.tags?.includes('Hazard') === true && !isOurs(ctx, e.targetId)),
+  },
+  {
+    /**
+     * The arena's answer to hoarding. It hands out potions and scrolls as the
+     * prize for nearly every bounty, and a consumable saved for a rainy day is
+     * a consumable that finishes the run in the pack it arrived in — which is
+     * the same silent waste as armour nobody equips.
+     *
+     * Any consumable counts, including one bought this morning. Requiring a
+     * *won* one would make the bounty unclaimable on the day you had nothing
+     * left, which is exactly the day you most want to be told to spend.
+     */
+    id: 'opening-act',
+    name: 'Opening Act',
+    blurb: 'Use a potion, scroll or flask.',
+    share: 0.3,
+    eligible: (party) => party.some((c) => c.inventory.some((s) => s.qty > 0 && ITEMS[s.itemId])),
+    earned: (ctx) => ctx.events.some((e) =>
+      e.type === 'itemUsed' && isOurs(ctx, e.combatantId) && ITEMS[e.itemId] !== undefined),
+  },
+  {
+    /**
+     * Pays off the study. The knowledge check tells you armour class, hit
+     * points and what a thing shrugs off — and then nothing ever asked whether
+     * you used it. This does: land the study, then win the fight it was about.
+     *
+     * Always eligible, because the study is always offered; the cost is the tap
+     * and the risk of failing the roll, which is the decision it exists to
+     * sharpen.
+     */
+    id: 'read-the-room',
+    name: 'Read the Room',
+    blurb: 'Study them before the fight, then win it.',
+    share: 0.3,
+    eligible: () => true,
+    earned: (ctx) => ctx.studied,
+  },
+  {
+    /**
+     * Focus fire, stated as a result. Spreading damage across a wave is the
+     * beginner's mistake — four enemies on one hit point each still get four
+     * full turns — and killing two in a round is what concentrating looks like
+     * from the outside.
+     *
+     * Needs two things to kill, so a wave of one cannot offer it.
+     */
+    id: 'two-birds',
+    name: 'Two Birds',
+    blurb: 'Drop two enemies in the same round.',
+    share: 0.4,
+    eligible: (_party, state) =>
+      Object.values(state.combatants).filter((c) => c.team === 'team2').length >= 2,
+    earned: (ctx) => {
+      let round = 0;
+      let killed = 0;
+      for (const e of ctx.events) {
+        if (e.type === 'roundStarted') { round = e.round; killed = 0; continue; }
+        if (e.type !== 'died' || isOurs(ctx, e.combatantId)) continue;
+        killed += 1;
+        if (killed >= 2) return true;
+      }
+      return round >= 0 && killed >= 2;
+    },
+  },
+  {
+    /**
+     * The opposite of Unbroken, deliberately. Unbroken pays for nobody going
+     * down; this pays for picking somebody up — and the two are never offered
+     * on the same door, so a wave asks for one discipline or the other rather
+     * than both at once.
+     *
+     * Healing Word exists precisely for this and is otherwise the least
+     * exciting spell a cleric owns. Being downed is not something you choose,
+     * so the bounty is claimed by the response, not the mishap.
+     */
+    id: 'on-your-feet',
+    name: 'On Your Feet',
+    blurb: 'Get a fallen hero back up, and still win.',
+    share: 0.4,
+    eligible: (party) => party.length >= 2,
+    earned: (ctx) => {
+      const down = new Set<Id>();
+      for (const e of ctx.events) {
+        if (e.type === 'downed' && isOurs(ctx, e.combatantId)) down.add(e.combatantId);
+        // Healing is what raises them; the event fires with the amount that
+        // took them off the floor.
+        if (e.type === 'healed' && down.has(e.targetId) && e.amount > 0) return true;
+      }
+      return false;
+    },
+  },
+  {
+    /**
+     * Beating a barricade rather than hiding behind one.
+     *
+     * Worth being exact about what the engine models: cover in these rules
+     * protects the TARGET — `coverBetween` adds +2 to the defender's armour
+     * class and there is no attacker-side benefit at all. So "attack from
+     * cover" is not a thing the rules have an opinion about; what they do have
+     * is the moment on the other side of it, where an enemy has put a wall
+     * between you and them and you hit anyway.
+     *
+     * That is the more interesting decision in any case. Dug In already pays
+     * for standing behind a barricade; this pays for solving one — moving for
+     * the angle, or spending something that does not care about walls.
+     */
+    id: 'loophole',
+    name: 'Loophole',
+    blurb: 'Hit an enemy who is behind cover.',
+    share: 0.35,
+    eligible: (_party, state) => hasTerrain(state, 'cover'),
+    earned: (ctx) => ctx.events.some((e) =>
+      e.type === 'attackRolled' && e.cover === true && e.hit &&
+      isOurs(ctx, e.attackerId) && !isOurs(ctx, e.targetId)),
   },
 ];
 
