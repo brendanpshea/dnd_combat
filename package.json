@@ -24,7 +24,8 @@
     "token-silhouettes": "python3 art/generate_svg_tokens.py",
     "token-sheet": "tsx scripts/token-sheet.ts",
     "arena-run": "tsx scripts/arena-run.ts",
-    "arena-even": "tsx scripts/arena-even.ts"
+    "arena-even": "tsx scripts/arena-even.ts",
+    "arena-eda": "tsx scripts/arena-eda.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
