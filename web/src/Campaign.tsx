@@ -561,9 +561,17 @@ export function CampaignScreen({ Battle, onExit }: Props) {
           <div className="rest-actions">
             <button className="mini" onClick={() => mutate(() => {
               const result = shortRest(c);
-              setNotice(result.totalHealed > 0
+              // Slots recovered are named explicitly. The healing line already
+              // told you what the rest cost; this is what it bought, and a
+              // caster who does not know the slots came back will keep playing
+              // as though they had not.
+              const back = (result.recovered ?? [])
+                .map((r) => `${r.name} recovers ${describeSlots(r.slots)}`)
+                .join('; ');
+              const heal = result.totalHealed > 0
                 ? `Short rest: the party spends ${result.hitDiceSpent} hit ${result.hitDiceSpent === 1 ? 'die' : 'dice'} and recovers ${result.totalHealed} HP.`
-                : 'Short rest: no one needed to spend a hit die.');
+                : 'Short rest: no one needed to spend a hit die.';
+              setNotice(back ? `${heal} ${back}.` : heal);
             })}>Short rest</button>
             <button className="mini" onClick={() => mutate(() => {
               const result = longRest(c);
@@ -809,4 +817,22 @@ export function CampaignScreen({ Battle, onExit }: Props) {
       </button>
     </div>
   );
+}
+
+/**
+ * "a 3rd-level slot" / "two 1st-level slots and a 2nd".
+ *
+ * Spelled out rather than shown as "+3 slot levels", because the number a
+ * player acts on is which spells they can now cast, and a budget total does not
+ * answer that.
+ */
+function describeSlots(levels: number[]): string {
+  const ord = ['', '1st', '2nd', '3rd', '4th', '5th'];
+  const counts = new Map<number, number>();
+  for (const l of levels) counts.set(l, (counts.get(l) ?? 0) + 1);
+  const parts = [...counts.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([level, n]) => `${n === 1 ? 'a' : n} ${ord[level] ?? `${level}th`}-level slot${n === 1 ? '' : 's'}`);
+  return parts.length <= 1 ? parts[0] ?? 'nothing'
+    : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }

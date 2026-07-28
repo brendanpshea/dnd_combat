@@ -128,6 +128,7 @@ Spellcasting ability: **WIS**.
 | 1 | — |
 | 2 | Wild Shape |
 | 3 | Land's Aid |
+| 6 | Natural Recovery |
 | 7 | Potent Spellcasting |
 
 ### Spell slots
@@ -328,7 +329,7 @@ Spellcasting ability: **WIS**.
 
 | Level | Features |
 | --- | --- |
-| 1 | — |
+| 1 | Arcane Recovery |
 | 3 | Potent Cantrip (Evoker) |
 | 6 | Sculpt Spells (Evoker) |
 

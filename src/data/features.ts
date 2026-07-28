@@ -1160,5 +1160,30 @@ export const FEATURES: Record<Id, FeatureData> = {
   /** Feral Instinct: advantage on initiative rolls. */
   'feral-instinct': {
     id: 'feral-instinct', name: 'Feral Instinct', trigger: 'passive',
+  },
+  /**
+   * Arcane Recovery, and the druid's Natural Recovery, which are the same rule.
+   *
+   * On a short rest, recover spell slots totalling half your level rounded up,
+   * nothing above 5th level. Once between long rests.
+   *
+   * Both are `passive` and neither has an `apply`: this happens in camp, on a
+   * rest, not on a turn — `shortRest` in campaign.ts reads them. What they DO
+   * carry is a `longRest` pool of one, which is exactly the "once per long
+   * rest" clause and needed no new mechanism at all now that pools have clocks.
+   * Before the rest-scoping, a once-per-day feature had nowhere to live.
+   *
+   * Why the wizard needed this and the fighter did not: every other class's
+   * short-rest resource came back at the arena's lunch break, and the caster's
+   * did not. A wizard who spent their slots in the morning fight was a
+   * crossbow with a book for the rest of the day.
+   */
+  'arcane-recovery': {
+    id: 'arcane-recovery', name: 'Arcane Recovery', trigger: 'passive',
+    uses: { count: 1, per: 'longRest' },
+  },
+  'natural-recovery': {
+    id: 'natural-recovery', name: 'Natural Recovery', trigger: 'passive',
+    uses: { count: 1, per: 'longRest' },
   }
 };
