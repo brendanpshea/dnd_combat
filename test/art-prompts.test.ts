@@ -61,6 +61,22 @@ describe('the art worklist', () => {
     expect(orphans, 'add these to art/prompts.md §8').toEqual([]);
   });
 
+  /**
+   * The other half, and the one that had rotted. §8 called itself the queue
+   * while 48 of its 83 prompts were for monsters drawn long ago, so working out
+   * what was actually left meant checking every entry against the art directory
+   * by hand — which is why nine monsters sat there unwritten unnoticed.
+   *
+   * A queue you have to audit is not a queue. Both directions are checked so it
+   * cannot drift back into being a description of one.
+   */
+  it('holds nothing else — the queue is exactly what is left', () => {
+    const surplus = [...withPrompt]
+      .filter((id) => !noArt.includes(id))
+      .map((id) => (MONSTERS[id] ? `${id}: already drawn` : `${id}: not a monster`));
+    expect(surplus, 'run: npm run art-backlog (moves these to §13)').toEqual([]);
+  });
+
   it('names them in a form the pipeline can act on', () => {
     // The filename convention in §9 is `portrait-<id>` / `token-<id>`, so the
     // backtick id in the header is what ties a prompt to the file it produces.
