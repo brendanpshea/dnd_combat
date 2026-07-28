@@ -31,6 +31,10 @@ export function attackableWeapons(c: Combatant): Id[] {
   if (!c.turn.interacted) {
     for (const w of stowedWeapons(c)) ids.add(w);
   }
+  // A monk's fists are always available and never need drawing. Everyone else
+  // is left alone: an unarmed option on every character's bar would be nine
+  // classes of noise for the one that wants it.
+  if (c.featureIds.includes('martial-arts')) ids.add('unarmed-strike');
   return [...ids];
 }
 

@@ -530,6 +530,44 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  /**
+   * The monk.
+   *
+   * Could not have been built before feature pools got clocks. Focus Points are
+   * a per-level pool that comes back on a SHORT rest, and every technique the
+   * class has spends from it — a pool that refilled every fight would have made
+   * Flurry of Blows a free bonus action forever, which is the whole class.
+   *
+   * NO ARMOUR AND NO SHIELD, deliberately, the same way the barbarian carries
+   * none: Unarmored Defense is 10 + Dex + Wis and a shield switches it off
+   * outright. The quarterstaff is in hand for reach and for the bigger die when
+   * a fist will not do, but the fist is the class.
+   */
+  monk: {
+    id: 'monk', name: 'Monk', hitDie: 8,
+    savingThrows: ['str', 'dex'],
+    armorProfs: [],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['acrobatics', 'stealth'],
+    statPriority: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
+    featuresByLevel: {
+      1: ['martial-arts', 'monk-defense'],
+      2: ['monks-focus', 'flurry-of-blows', 'patient-defense', 'step-of-the-wind'],
+      3: ['deflect-attacks', 'open-hand-technique'],   // Warrior of the Open Hand
+      // 4: Ability Score Increase (builder). Slow Fall has no cliff to fall off.
+      5: ['extra-attack', 'stunning-strike'],
+      6: ['empowered-strikes'],
+      7: ['evasion'],
+    },
+    weaponMasteries: ['quarterstaff'],
+    equipment: {
+      mainHand: 'quarterstaff',
+      inventory: [
+        { itemId: 'dagger', qty: 2 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   paladin: {
     id: 'paladin', name: 'Paladin', hitDie: 10,
     savingThrows: ['wis', 'cha'],

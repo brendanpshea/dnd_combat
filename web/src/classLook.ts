@@ -38,6 +38,7 @@ const LOOK: Record<string, Omit<ClassLook, 'name'>> = {
   ranger: { glyph: '🏹', color: '#63b478' },
   paladin: { glyph: '🛡️', color: '#cfd8e8' },
   barbarian: { glyph: '🪓', color: '#d9825e' },
+  monk: { glyph: '👊', color: '#e8d9a8' },
   bard: { glyph: '🎵', color: '#d98cc0' },
   druid: { glyph: '🍃', color: '#7fbf7f' },
 };

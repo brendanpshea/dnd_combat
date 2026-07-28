@@ -1787,6 +1787,10 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
         // No monster carries Bardic Inspiration; if one ever does, its
         // Charisma decides the pool the same way a bard's does.
         f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(m.abilities.cha)) :
+        // Nor does any monster carry Focus Points, but the same rule applies:
+        // one per level, so the two builders cannot disagree about a feature
+        // that ends up on both.
+        f.uses.count === 'level' ? level :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
     } else if (f?.recharge) {

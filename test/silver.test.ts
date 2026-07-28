@@ -18,7 +18,7 @@
  * makes it silver, and neither needs a resistance axis of its own.
  */
 import { describe, it, expect } from 'vitest';
-import { WEAPONS, SILVERED_WEAPONS, baseWeaponId } from '../src/data/weapons.js';
+import { WEAPONS, SILVERED_WEAPONS, baseWeaponId , silverableWeapons } from '../src/data/weapons.js';
 import { MONSTERS, buildMonster } from '../src/data/monsters.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { Combat } from '../src/engine/combat.js';
@@ -30,10 +30,11 @@ const LYCANTHROPES = ['wererat', 'werewolf', 'wereboar', 'weretiger', 'werebear'
 
 describe('the silvered weapons', () => {
   it('covers every melee weapon a player can buy', () => {
-    const melee = Object.values(WEAPONS)
-      .filter((w) => w.melee && w.cost !== undefined && !w.magic
-        && !/-plus1$|^vicious-|^silvered-/.test(w.id))
-      .map((w) => w.id);
+    // Asks the module which weapons are silverable rather than restating the
+    // rule. The restatement is what broke: the monk's unarmed strike is melee
+    // and costs nothing, and the two copies disagreed about whether a Silvered
+    // Unarmed Strike should exist.
+    const melee = silverableWeapons();
     expect(melee.length, 'the base list has emptied out').toBeGreaterThan(10);
     for (const id of melee) expect(WEAPONS[`silvered-${id}`], id).toBeDefined();
   });

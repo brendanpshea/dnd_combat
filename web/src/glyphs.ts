@@ -13,7 +13,7 @@
  * read, the emoji is the fastest available answer to "what even is this".
  */
 const GLYPH: Record<string, string> = {
-  fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️', barbarian: '🪓',
+  fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️', barbarian: '🪓', monk: '👊',
   // Ranger, paladin and druid have class art; bard only has species x class
   // portraits, so a bard built without a portraitId — skirmish and arena never
   // set one — reached the '?' fallback.

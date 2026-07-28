@@ -464,6 +464,22 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'sling', name: 'Sling', damage: '1d4', damageType: 'bludgeoning',
     properties: [], range: { normal: 30, long: 120 }, melee: false,
   },
+  /**
+   * The monk's fist.
+   *
+   * `finesse` rather than a new "use Dexterity" flag: Martial Arts says a monk
+   * may swing on Dexterity, `attackAbility` already picks the better of the two
+   * for a finesse weapon, and a monk's Dexterity is always the better one. One
+   * existing property does the whole job.
+   *
+   * 1d6 is the level 1-4 Martial Arts die; the level-5 upgrade to 1d8 happens
+   * in `resolveAttack`, the same way Shillelagh's does, because a die that
+   * grows with the wielder cannot live on the weapon.
+   */
+  'unarmed-strike': {
+    id: 'unarmed-strike', name: 'Unarmed Strike', damage: '1d6', damageType: 'bludgeoning',
+    properties: ['finesse', 'light'], melee: true, cost: 0,
+  },
   greataxe: {
     id: 'greataxe', name: 'Greataxe', damage: '1d12', damageType: 'slashing',
     properties: ['two-handed'], melee: true, mastery: 'cleave', cost: 30,
@@ -1183,11 +1199,26 @@ export const VICIOUS_WEAPONS: Id[] = Object.keys(VICIOUS_COST).map((id) => `vici
 const SILVERING_FEE = 100;
 
 /** Melee weapons a player can buy, which is what there is any point silvering. */
-function silverable(): Id[] {
+/**
+ * Every melee weapon a player can actually buy — the set silvering applies to.
+ *
+ * Exported because the test for it used to restate the rule, and a restated
+ * rule drifts: when the monk's unarmed strike arrived (melee, cost 0) the
+ * generator and the test disagreed about whether a Silvered Unarmed Strike
+ * should exist, and both were confident.
+ *
+ * `cost > 0`, not `cost !== undefined`. A fist is a real melee weapon that
+ * costs nothing, and you cannot silver it.
+ */
+export function silverableWeapons(): Id[] {
   return Object.values(WEAPONS)
-    .filter((w) => w.melee && w.cost !== undefined && !w.magic
+    .filter((w) => w.melee && (w.cost ?? 0) > 0 && !w.magic
       && !/-plus1$|^vicious-|^silvered-/.test(w.id))
     .map((w) => w.id);
+}
+
+function silverable(): Id[] {
+  return silverableWeapons();
 }
 
 for (const baseId of silverable()) {

@@ -199,6 +199,9 @@ CLASSES = {
     # every other burden hangs at the side, and at 34px the barbarian has to be
     # tellable from the fighter, whose sword is a thin diagonal at the hip.
     "barbarian": BODY + "M50 3h5v37h-5z M40 1c10-3 19-1 24 6-8 4-17 4-24 0z",
+    # Two raised fists and nothing else carried. The one class shape with no
+    # object at all, which is exactly what a monk is.
+    "monk":     BODY + "M14 22a5 5 0 1 1 0 10 5 5 0 0 1 0-10z M50 22a5 5 0 1 1 0 10 5 5 0 0 1 0-10z",
 }
 
 

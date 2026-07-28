@@ -121,6 +121,7 @@ const DEFAULT_BY_CLASS: Record<Id, Id> = {
   ranger: 'guide',
   paladin: 'noble',
   barbarian: 'guide',
+  monk: 'hermit',
   bard: 'entertainer',
   druid: 'hermit',
 };

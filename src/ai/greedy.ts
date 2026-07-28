@@ -824,6 +824,43 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     const floor = actor.conditions.some((c) => c.id === 'raging') ? 0.3 : 0.5;
     return actor.hp > actor.maxHp * floor ? 3 : 0;
   }
+  // The monk's three techniques, all drawing on one pool — so the scores are
+  // relative to each other, not just to zero. Without these an auto-played monk
+  // never spends a focus point, and the pool IS the class.
+  if (a.featureId === 'flurry-of-blows') {
+    // Two unarmed strikes: worth roughly what the bonus-action attack it
+    // replaces is worth, twice, and only if something is in reach to hit.
+    const foe = Object.values(state.combatants).find(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(c.position, actor.position),
+    );
+    if (!foe) return 0;
+    return 2 * (avgDice(actor.level >= 5 ? '1d8' : '1d6') + abilityMod(actor.abilities.dex));
+  }
+  if (a.featureId === 'stunning-strike') {
+    // Taking a turn off a live enemy is worth more than damage, and worth most
+    // against the biggest thing still standing — but only when it might fail,
+    // which is what stops it being spent on a kobold with two hit points.
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.wis);
+    const best = Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
+        adjacent(c.position, actor.position) && !c.conditions.some((k) => k.id === 'stunned'))
+      .sort((x, y) => y.hp - x.hp)[0];
+    if (!best || best.hp < 8) return 0;
+    return saveFailProb(state, best, 'con', dc) * damageValue(best.hp, best) * 0.5;
+  }
+  if (a.featureId === 'patient-defense') {
+    // Defensive, so only when it is buying something: hurt, and in reach of
+    // something that will swing back.
+    if (actor.hp > actor.maxHp * 0.5) return 0;
+    const threatened = Object.values(state.combatants).some(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(c.position, actor.position),
+    );
+    return threatened ? 3 : 0;
+  }
+  if (a.featureId === 'step-of-the-wind') {
+    // Closing ground, and only when there is ground to close.
+    return nearestEnemyDist(state, actor.position, actor.team) > 3 ? 1.5 : 0;
+  }
   if (a.featureId === 'cunning-disengage') {
     // Escape melee before repositioning; mirrors the disengage-action logic.
     return nearestEnemyDist(state, actor.position, actor.team) === 1 && actor.hp < actor.maxHp / 2 ? 1.5 : 0;

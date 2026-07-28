@@ -101,6 +101,20 @@ function canFrenzy(actor: Combatant, weaponId: Id): boolean {
   return !!w && w.melee && actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed;
 }
 
+/**
+ * Martial Arts: the monk's free bonus-action unarmed strike.
+ *
+ * Rides the `frenzy` flag rather than getting a third one, because the two are
+ * the same shape — a bonus-action melee swing that keeps its ability modifier —
+ * and the only difference is which weapon and what it costs. What a monk swings
+ * is always its fist, so the weapon is fixed rather than read off the hand.
+ */
+function canMartialArts(actor: Combatant, weaponId: Id): boolean {
+  return actor.featureIds.includes('martial-arts') &&
+    weaponId === 'unarmed-strike' &&
+    actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed;
+}
+
 function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, targets: Target[]): boolean {
   const item = ITEMS[itemId];
   if (!item) return false;
@@ -261,7 +275,8 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'attack':
       if (incap) return false;
       if (action.frenzy) {
-        return canFrenzy(actor, action.weaponId) && canAttackWith(state, actor, action.weaponId, action.targetId);
+        return (canFrenzy(actor, action.weaponId) || canMartialArts(actor, action.weaponId)) &&
+          canAttackWith(state, actor, action.weaponId, action.targetId);
       }
       if (action.offhand) {
         return canUseOffhand(actor, action.weaponId) && canAttackWith(state, actor, action.weaponId, action.targetId);
@@ -475,10 +490,11 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   // Frenzy's bonus swing, with the main hand. Offered separately from the
   // Attack action above so it survives `actionUsed` — it is the bonus action,
   // not part of the action, and the two are spent independently.
-  const mainWeapon = actor.equipped.mainHand;
-  if (mainWeapon) {
+  // …and the monk's, which is always a fist rather than whatever is in hand.
+  for (const wid of new Set([actor.equipped.mainHand, 'unarmed-strike'])) {
+    if (!wid) continue;
     for (const t of enemies) {
-      const fz: Action = { kind: 'attack', weaponId: mainWeapon, targetId: t.id, frenzy: true };
+      const fz: Action = { kind: 'attack', weaponId: wid, targetId: t.id, frenzy: true };
       if (isLegalAction(state, actorId, fz)) actions.push(fz);
     }
   }
@@ -618,7 +634,8 @@ export function step(state: GameState, action: Action): { state: GameState; even
       break;
     case 'attack':
       // Attacking with a stowed weapon draws it via the free interaction.
-      if (!equippedWeapons(actor).includes(action.weaponId)) {
+      // A fist is never stowed and never drawn.
+      if (action.weaponId !== 'unarmed-strike' && !equippedWeapons(actor).includes(action.weaponId)) {
         events.push(...autoSwap(draft, actorId, action.weaponId));
       }
       if (action.offhand || action.frenzy) {
