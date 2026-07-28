@@ -111,6 +111,16 @@ const tally = (id: Id): ClassTally => {
 /** casts[spellId] = { total, byClass } */
 const spellCasts = new Map<Id, { total: number; byClass: Map<Id, number> }>();
 const itemUses = new Map<Id, number>();
+/**
+ * Reactions never produce a `spellCast` event — they fire from inside the
+ * attack rules, not from the action list — so they would sit in the "never
+ * cast" list forever no matter how often they went off. Counted from their own
+ * events instead.
+ *
+ * Shield has no event of its own (it pushes the same `shielded` condition Mirror
+ * Image does), so it cannot be separated here and is simply not claimed.
+ */
+let counterspells = 0;
 const speciesRuns = new Map<Id, { runs: number; finished: number }>();
 
 // --- one run ----------------------------------------------------------------
@@ -189,6 +199,10 @@ function playOne(seed: number, collect: boolean): Outcome {
               s.byClass.set(src, (s.byClass.get(src) ?? 0) + 1);
               tally(src).casts++;
             }
+            break;
+          }
+          case 'counterspelled': {
+            if (classOf.has(e.byId)) counterspells++;
             break;
           }
           case 'itemUsed': {
@@ -335,9 +349,17 @@ for (const cls of Object.values(CLASSES)) {
   if (!sc) continue;
   for (const id of Object.values(sc.spellsByLevel).flat()) if (!SPELLS[id]?.outOfCombat) everPlayable.add(id);
 }
-const never = [...everPlayable].filter((id) => !spellCasts.has(id)).sort();
+// Reactions are excluded: they have no `spellCast` event to be counted by, so
+// listing them as "never cast" would be a bug in this script reported as a bug
+// in the game.
+const never = [...everPlayable]
+  .filter((id) => !spellCasts.has(id) && SPELLS[id]?.castingTime !== 'reaction').sort();
 console.log(`\n--- never cast (${never.length} of ${everPlayable.size} playable combat spells)`);
 for (const id of never) console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level}`);
+
+console.log(`\n--- reactions (no spellCast event; counted from their own)`);
+console.log(`  Counterspell fired ${counterspells} times`);
+console.log('  Shield is not separable here — it shares Mirror Image\'s condition event.');
 
 if (itemUses.size) {
   console.log(`\n--- consumables used`);
