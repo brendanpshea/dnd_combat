@@ -1,29 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
-    </filter>
     <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
       <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
     </filter>
   </defs>
-
-  <g id="terrain-prop">
+  <g id="terrain-prop" transform="translate(256 256) scale(1.12) translate(-256 -256)">
 
     <!-- Base Shadow -->
     <ellipse cx="256" cy="455" rx="185" ry="24" fill="#140a08" opacity="0.7"/>
 
     <!-- Cooled Lava Chunk with Basalt Facets & Glow Base -->
-    <path d="M 90,450 L 80,160 L 150,80 L 360,80 L 430,160 L 420,450 Z" fill="#29252a" stroke="#121014" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M 90,450 L 80,160 L 150,80 L 360,80 L 430,160 L 420,450 Z" fill="#29252a" stroke="#121014" stroke-width="14" stroke-linejoin="round"/>
 
-    <!-- Ash Crusted Top Surface -->
-    <polygon points="150,80 360,80 430,160 80,160" fill="#9c959c" stroke="#121014" stroke-width="8" stroke-linejoin="round"/>
-    <polygon points="160,88 350,88 410,152 95,152" fill="#c7c1c7"/>
+    <!-- Ash-crusted top surface.
+         Was #9c959c over #c7c1c7 — near-white, and since you look down onto the
+         top face it is the largest thing on the tile at 34px. The chunk read as
+         marble or ice sitting on a lava field, next to a wall-a that is properly
+         dark basalt. Same job, much darker: still the LIGHTEST plane on the
+         prop, so it still reads as the lit face, but warm grey rather than
+         white, and unmistakably the same rock as its sibling. -->
+    <polygon points="150,80 360,80 430,160 80,160" fill="#4a4247" stroke="#121014" stroke-width="13" stroke-linejoin="round"/>
+    <polygon points="160,88 350,88 410,152 95,152" fill="#645a5c"/>
+    <!-- Embers caught in the ash, tying it to the theme. -->
+    <circle cx="210" cy="120" r="7" fill="#c9541f"/>
+    <circle cx="300" cy="132" r="6" fill="#b0481a"/>
 
     <!-- Rock Facet Shading Lines -->
-    <line x1="160" y1="160" x2="190" y2="450" stroke="#19171a" stroke-width="6"/>
-    <line x1="310" y1="160" x2="330" y2="450" stroke="#19171a" stroke-width="6"/>
+    <line x1="160" y1="160" x2="190" y2="450" stroke="#19171a" stroke-width="10"/>
+    <line x1="310" y1="160" x2="330" y2="450" stroke="#19171a" stroke-width="10"/>
 
     <!-- Glowing Base Seam -->
     <g filter="url(#lava-glow)">

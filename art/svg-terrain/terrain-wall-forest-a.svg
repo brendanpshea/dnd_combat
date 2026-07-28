@@ -1,31 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <defs>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
-    </filter>
-    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
-    </filter>
-  </defs>
-
-  <g id="terrain-prop">
+  <g id="terrain-prop" transform="translate(256 256) scale(1.12) translate(-256 -256)">
 
     <!-- Base Shadow -->
     <ellipse cx="256" cy="450" rx="170" ry="25" fill="#101c0c" opacity="0.6"/>
 
     <!-- Trunk Base -->
-    <rect x="220" y="380" width="72" height="70" rx="10" fill="#3d2616" stroke="#1c1109" stroke-width="8"/>
+    <rect x="220" y="380" width="72" height="70" rx="10" fill="#3d2616" stroke="#1c1109" stroke-width="13"/>
 
     <!-- Organic Scalloped Shrub Foliage -->
     <!-- Base Shadow Canopy -->
-    <path d="M 120,380 C 40,320 40,180 110,120 C 180,50 330,50 400,120 C 470,180 470,320 390,380 C 310,430 180,430 120,380 Z" fill="#203310" stroke="#101b08" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M 120,380 C 40,320 40,180 110,120 C 180,50 330,50 400,120 C 470,180 470,320 390,380 C 310,430 180,430 120,380 Z" fill="#203310" stroke="#101b08" stroke-width="14" stroke-linejoin="round"/>
 
     <!-- Mid Canopy Leaf Mass -->
-    <path d="M 100,320 Q 70,250 110,190 Q 150,130 220,110 Q 300,90 370,130 Q 430,180 420,260 Q 410,340 330,370 Q 230,390 150,360 Z" fill="#36541b" stroke="#101b08" stroke-width="7"/>
+    <path d="M 100,320 Q 70,250 110,190 Q 150,130 220,110 Q 300,90 370,130 Q 430,180 420,260 Q 410,340 330,370 Q 230,390 150,360 Z" fill="#36541b" stroke="#101b08" stroke-width="11"/>
 
     <!-- Lit Upper Leaf Clusters -->
-    <path d="M 140,210 C 130,150 190,100 250,110 C 310,120 370,140 350,210 C 310,240 200,250 140,210 Z" fill="#588527" stroke="#101b08" stroke-width="6"/>
+    <path d="M 140,210 C 130,150 190,100 250,110 C 310,120 370,140 350,210 C 310,240 200,250 140,210 Z" fill="#588527" stroke="#101b08" stroke-width="10"/>
     <path d="M 180,160 C 170,110 240,80 290,110 C 320,130 300,180 250,180 Z" fill="#75ab32"/>
 
   </g>

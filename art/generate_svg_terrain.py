@@ -7,24 +7,100 @@ PREVIEW_DIR = os.path.abspath("art/svg-terrain/preview")
 os.makedirs(SVG_DIR, exist_ok=True)
 os.makedirs(PREVIEW_DIR, exist_ok=True)
 
-# Edge binary location for rendering PNG previews
-EDGE_PATH = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+# Browser used to render the PNG previews.
+#
+# Was a hardcoded Windows Edge path, which meant the generator could produce
+# SVGs anywhere but could only refresh the gallery on one machine. Any
+# Chromium-family binary will do, so take the first one that exists and let
+# the environment override.
+BROWSER_CANDIDATES = [
+    os.environ.get("TERRAIN_BROWSER", ""),
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/google-chrome",
+]
+BROWSER = next((p for p in BROWSER_CANDIDATES if p and os.path.exists(p)), None)
+BACKSLASH = chr(92)
 
-COMMON_DEFS = """  <defs>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+# Filter definitions, by id. Emitted per asset, and only when referenced —
+# see `_defs_for`. SVG filters are not free: a board can show sixty-four cells
+# at once, so anything that can be baked as geometry should be.
+FILTERS = {
+    "shadow": """    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
-    </filter>
-    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
+    </filter>""",
+    "lava-glow": """    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
       <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
-    </filter>
-  </defs>
-"""
+    </filter>""",
+}
 
-def wrap_svg(content: str) -> str:
+# How much of its cell each prop should occupy, as a scale about the centre.
+#
+# Two different problems, one lever:
+#
+#   WALLS ABUT.  A run of wall tiles has to read as one barrier. Drawn to fit
+#   inside 512 they end up as islands with floor between them, which under-sells
+#   "you cannot get through here" — so walls are pushed slightly past their cell
+#   and neighbours meet. Cover is deliberately NOT scaled up: floor visible above
+#   a barricade is the cue that says it is low enough to shoot over.
+#
+#   SOME PROPS SIT TOO SMALL.  A sparse tangle of driftwood at 34px reads as
+#   debris lying on the floor rather than as something in the way. These get
+#   their own larger number.
+DEFAULT_WALL_FILL = 1.12
+FILL = {
+    "terrain-cover-bog-b": 1.20,     # driftwood: sparse, read as litter
+    "terrain-cover-ember-a": 1.12,   # lava ridge: a thin dark strip
+    "terrain-wall-bog-b": 1.10,      # stump: small against a wide cell
+}
+
+
+def _strokes_up(content: str) -> str:
+    """
+    Thicken every stroke by 60%.
+
+    The contour is the single thing that makes these read as objects rather than
+    as UI, and it was being drawn far too fine to survive the only size that
+    matters. A stroke of 8 in a 512 viewBox is 0.53 CSS pixels in a 34px cell —
+    it held together in a 2x capture and would have gone to mush on an ordinary
+    display. Scaling rather than clamping keeps the hierarchy the artist drew:
+    outer silhouettes stay heavier than interior detail.
+    """
+    import re
+    return re.sub(
+        r'stroke-width="(\d+(?:\.\d+)?)"',
+        lambda m: f'stroke-width="{round(float(m.group(1)) * 1.6)}"',
+        content,
+    )
+
+
+def _defs_for(content: str) -> str:
+    """Emit only the filter definitions this prop actually references.
+
+    Twenty of the twenty-four assets carried a lava-glow filter they never used.
+    Harmless, but it is dead weight in every file and it invites the next person
+    to assume the filter is doing something.
+    """
+    used = [f for f in FILTERS if f'url(#{f})' in content]
+    if not used:
+        return ""
+    body = "\n".join(FILTERS[f] for f in used)
+    return f"  <defs>\n{body}\n  </defs>\n"
+
+
+def wrap_svg(content: str, name: str = "") -> str:
+    content = _strokes_up(content)
+    fill = FILL.get(name, DEFAULT_WALL_FILL if name.startswith("terrain-wall-") else 1.0)
+    # Scale about the cell centre, so a prop grows into its corners rather than
+    # drifting off one edge.
+    open_g = (
+        f'  <g id="terrain-prop" transform="translate(256 256) scale({fill}) translate(-256 -256)">'
+        if fill != 1.0 else '  <g id="terrain-prop">'
+    )
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-{COMMON_DEFS}
-  <g id="terrain-prop">
+{_defs_for(content)}{open_g}
 {content}
   </g>
 </svg>"""
@@ -71,7 +147,7 @@ TERRAIN_SVGS["terrain-wall-stone-a"] = wrap_svg("""
 
     <!-- Crumbled Corner Detail (Top Left) -->
     <polygon points="80,140 130,140 100,180 80,165" fill="#322b40" stroke="#1f1a29" stroke-width="5"/>
-""")
+""", "terrain-wall-stone-a")
 
 TERRAIN_SVGS["terrain-wall-stone-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -103,55 +179,63 @@ TERRAIN_SVGS["terrain-wall-stone-b"] = wrap_svg("""
     <polygon points="360,410 410,410 420,400 370,400" fill="#9e95ba" stroke="#1f1a29" stroke-width="5"/>
     <polygon points="415,450 415,425 455,425 455,450" fill="#544d66" stroke="#1f1a29" stroke-width="5"/>
     <polygon points="415,425 455,425 462,418 422,418" fill="#847a9e" stroke="#1f1a29" stroke-width="5"/>
-""")
+""", "terrain-wall-stone-b")
 
+# Stone's barricades are timber and sandbags, NOT more masonry.
+#
+# The contact sheet made the reason obvious: where a theme's wall and its
+# barricade are the same material, the only thing separating them at 34px is
+# height, and height alone is a weak signal on a small tile. Every other theme
+# reads instantly because the subjects differ — a round bush against a fallen
+# log, a standing tombstone against an iron railing. Stone was the one place
+# both props were grey brick, so it was the one place a player had to squint.
 TERRAIN_SVGS["terrain-cover-stone-a"] = wrap_svg("""
     <!-- Base Shadow -->
     <ellipse cx="256" cy="455" rx="210" ry="22" fill="#171324" opacity="0.6"/>
 
-    <!-- Low Stone Barricade (Chest High: y=230 to 450) -->
-    <!-- Top Face (Broad & Lit) -->
-    <polygon points="40,290 90,230 420,230 470,290" fill="#9e95ba" stroke="#1f1a29" stroke-width="8" stroke-linejoin="round"/>
-    <polygon points="98,238 412,238 456,282 54,282" fill="#beb6d9"/>
+    <!-- A timber palisade: warm wood against cold grey walls, so the two read
+         apart by COLOUR before height even comes into it. -->
+    <!-- Top rail (broad, lit, you could rest a crossbow on it) -->
+    <polygon points="34,300 78,244 434,244 478,300" fill="#a9793f" stroke="#241a12" stroke-width="9" stroke-linejoin="round"/>
+    <polygon points="88,252 424,252 460,292 52,292" fill="#c99a58"/>
 
-    <!-- Front Face -->
-    <rect x="40" y="290" width="430" height="160" rx="4" fill="#69617d" stroke="#1f1a29" stroke-width="8"/>
+    <!-- Front face: upright staves, each with its own dark seam -->
+    <rect x="34" y="300" width="444" height="150" rx="5" fill="#7a5530" stroke="#241a12" stroke-width="9"/>
+    <rect x="52" y="300" width="66" height="150" fill="#8a613a" stroke="#3a2a1c" stroke-width="5"/>
+    <rect x="140" y="300" width="66" height="150" fill="#6d4b2b" stroke="#3a2a1c" stroke-width="5"/>
+    <rect x="228" y="300" width="66" height="150" fill="#8a613a" stroke="#3a2a1c" stroke-width="5"/>
+    <rect x="316" y="300" width="66" height="150" fill="#6d4b2b" stroke="#3a2a1c" stroke-width="5"/>
+    <rect x="404" y="300" width="60" height="150" fill="#8a613a" stroke="#3a2a1c" stroke-width="5"/>
 
-    <!-- Alternating Bricks -->
-    <rect x="40" y="290" width="130" height="80" fill="#756c8c" stroke="#2a2338" stroke-width="5"/>
-    <rect x="170" y="290" width="150" height="80" fill="#5e5670" stroke="#2a2338" stroke-width="5"/>
-    <rect x="320" y="290" width="150" height="80" fill="#756c8c" stroke="#2a2338" stroke-width="5"/>
-
-    <rect x="40" y="370" width="190" height="80" fill="#5e5670" stroke="#2a2338" stroke-width="5"/>
-    <rect x="230" y="370" width="140" height="80" fill="#756c8c" stroke="#2a2338" stroke-width="5"/>
-    <rect x="370" y="370" width="100" height="80" fill="#5e5670" stroke="#2a2338" stroke-width="5"/>
-
-    <!-- Rubble Foot -->
-    <path d="M 60,450 Q 80,425 100,450 Z" fill="#474059" stroke="#1f1a29" stroke-width="4"/>
-    <path d="M 390,450 Q 415,420 440,450 Z" fill="#474059" stroke="#1f1a29" stroke-width="4"/>
-""")
+    <!-- Iron binding strap across the middle -->
+    <rect x="34" y="356" width="444" height="26" fill="#4a4458" stroke="#241a12" stroke-width="6"/>
+""", "terrain-cover-stone-a")
 
 TERRAIN_SVGS["terrain-cover-stone-b"] = wrap_svg("""
     <!-- Base Shadow -->
-    <ellipse cx="256" cy="455" rx="210" ry="22" fill="#171324" opacity="0.6"/>
+    <ellipse cx="256" cy="455" rx="205" ry="22" fill="#171324" opacity="0.6"/>
 
-    <!-- Low Tumbled Barricade -->
-    <!-- Top Face -->
-    <polygon points="40,290 90,230 250,230 280,290" fill="#9e95ba" stroke="#1f1a29" stroke-width="8" stroke-linejoin="round"/>
-    <polygon points="280,290 250,230 330,330 360,370" fill="#847a9e" stroke="#1f1a29" stroke-width="8" stroke-linejoin="round"/>
-    <polygon points="360,370 330,330 420,330 460,370" fill="#9e95ba" stroke="#1f1a29" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Stacked sandbags: a soft, lumpy silhouette, which is about as far from
+         a masonry wall's hard rectangle as a barricade can get. -->
+    <!-- Back row (lit tops, seen from slightly above) -->
+    <ellipse cx="120" cy="268" rx="82" ry="42" fill="#b39b6a" stroke="#2d2417" stroke-width="9"/>
+    <ellipse cx="256" cy="258" rx="82" ry="42" fill="#c2a97a" stroke="#2d2417" stroke-width="9"/>
+    <ellipse cx="392" cy="268" rx="82" ry="42" fill="#b39b6a" stroke="#2d2417" stroke-width="9"/>
 
-    <!-- Front Face -->
-    <path d="M 40,290 L 280,290 L 360,370 L 460,370 L 460,450 L 40,450 Z" fill="#69617d" stroke="#1f1a29" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Front row, overlapping the seams behind it -->
+    <ellipse cx="112" cy="360" rx="88" ry="46" fill="#9c8455" stroke="#2d2417" stroke-width="9"/>
+    <ellipse cx="256" cy="372" rx="88" ry="46" fill="#8d7749" stroke="#2d2417" stroke-width="9"/>
+    <ellipse cx="400" cy="360" rx="88" ry="46" fill="#9c8455" stroke="#2d2417" stroke-width="9"/>
 
-    <line x1="40" y1="370" x2="360" y2="370" stroke="#2a2338" stroke-width="6"/>
-    <line x1="140" y1="290" x2="140" y2="370" stroke="#2a2338" stroke-width="5"/>
-    <line x1="250" y1="370" x2="250" y2="450" stroke="#2a2338" stroke-width="5"/>
+    <!-- Base row, half-buried -->
+    <ellipse cx="180" cy="434" rx="92" ry="40" fill="#7d6a41" stroke="#2d2417" stroke-width="9"/>
+    <ellipse cx="336" cy="434" rx="92" ry="40" fill="#8d7749" stroke="#2d2417" stroke-width="9"/>
 
-    <!-- Fallen Rubble Blocks -->
-    <polygon points="290,450 310,410 340,450" fill="#544d66" stroke="#1f1a29" stroke-width="5"/>
-    <polygon points="340,450 360,425 390,450" fill="#69617d" stroke="#1f1a29" stroke-width="5"/>
-""")
+    <!-- Tied seams, so they read as bags rather than boulders -->
+    <line x1="112" y1="322" x2="112" y2="346" stroke="#5f5133" stroke-width="7"/>
+    <line x1="256" y1="334" x2="256" y2="358" stroke="#5f5133" stroke-width="7"/>
+    <line x1="400" y1="322" x2="400" y2="346" stroke="#5f5133" stroke-width="7"/>
+""", "terrain-cover-stone-b")
 
 # ==============================================================================
 # SHEET 2: FOREST (Undergrowth)
@@ -174,7 +258,7 @@ TERRAIN_SVGS["terrain-wall-forest-a"] = wrap_svg("""
     <!-- Lit Upper Leaf Clusters -->
     <path d="M 140,210 C 130,150 190,100 250,110 C 310,120 370,140 350,210 C 310,240 200,250 140,210 Z" fill="#588527" stroke="#101b08" stroke-width="6"/>
     <path d="M 180,160 C 170,110 240,80 290,110 C 320,130 300,180 250,180 Z" fill="#75ab32"/>
-""")
+""", "terrain-wall-forest-a")
 
 TERRAIN_SVGS["terrain-wall-forest-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -194,7 +278,7 @@ TERRAIN_SVGS["terrain-wall-forest-b"] = wrap_svg("""
     <!-- Lighter Yellow-Green Cluster on Left -->
     <circle cx="150" cy="170" r="65" fill="#85b82e" stroke="#101b08" stroke-width="6"/>
     <circle cx="230" cy="140" r="55" fill="#699e26" stroke="#101b08" stroke-width="6"/>
-""")
+""", "terrain-wall-forest-b")
 
 TERRAIN_SVGS["terrain-cover-forest-a"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -216,7 +300,7 @@ TERRAIN_SVGS["terrain-cover-forest-a"] = wrap_svg("""
     <ellipse cx="430" cy="355" rx="30" ry="70" fill="#8c633a" stroke="#1c1109" stroke-width="7"/>
     <ellipse cx="430" cy="355" rx="20" ry="48" fill="none" stroke="#5c3f21" stroke-width="4"/>
     <ellipse cx="430" cy="355" rx="10" ry="24" fill="none" stroke="#5c3f21" stroke-width="4"/>
-""")
+""", "terrain-cover-forest-a")
 
 TERRAIN_SVGS["terrain-cover-forest-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -232,7 +316,7 @@ TERRAIN_SVGS["terrain-cover-forest-b"] = wrap_svg("""
     <!-- Mossy Top Edges -->
     <circle cx="150" cy="270" r="30" fill="#577827" stroke="#1c1109" stroke-width="5"/>
     <circle cx="310" cy="265" r="35" fill="#688c30" stroke="#1c1109" stroke-width="5"/>
-""")
+""", "terrain-cover-forest-b")
 
 # ==============================================================================
 # SHEET 3: GRAVEYARD (Memorial Stone)
@@ -261,7 +345,7 @@ TERRAIN_SVGS["terrain-wall-graveyard-a"] = wrap_svg("""
       <path d="M 140,410 Q 180,380 220,450 Z" fill="#475e3e"/>
       <path d="M 280,450 Q 310,400 340,430 Z" fill="#475e3e"/>
     </g>
-""")
+""", "terrain-wall-graveyard-a")
 
 TERRAIN_SVGS["terrain-wall-graveyard-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -279,7 +363,7 @@ TERRAIN_SVGS["terrain-wall-graveyard-b"] = wrap_svg("""
 
     <!-- Missing Shoulder Chunk -->
     <polygon points="340,140 310,180 345,210" fill="#2a2c33" stroke="#1b1c21" stroke-width="5"/>
-""")
+""", "terrain-wall-graveyard-b")
 
 TERRAIN_SVGS["terrain-cover-graveyard-a"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -296,7 +380,7 @@ TERRAIN_SVGS["terrain-cover-graveyard-a"] = wrap_svg("""
 
     <!-- Dark Interior Gap -->
     <rect x="70" y="290" width="370" height="15" fill="#121317"/>
-""")
+""", "terrain-cover-graveyard-a")
 
 TERRAIN_SVGS["terrain-cover-graveyard-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -318,7 +402,7 @@ TERRAIN_SVGS["terrain-cover-graveyard-b"] = wrap_svg("""
     <path d="M 240,350 L 240,220 L 245,200 L 250,220 L 250,350 Z" fill="#24262c" stroke="#121317" stroke-width="3"/>
     <path d="M 300,350 L 300,220 L 305,200 L 310,220 L 310,350 Z" fill="#24262c" stroke="#121317" stroke-width="3"/>
     <path d="M 360,350 L 360,220 L 365,200 L 370,220 L 370,350 Z" fill="#24262c" stroke="#121317" stroke-width="3"/>
-""")
+""", "terrain-cover-graveyard-b")
 
 # ==============================================================================
 # SHEET 4: EMBER (Volcanic Rock)
@@ -339,7 +423,7 @@ TERRAIN_SVGS["terrain-wall-ember-a"] = wrap_svg("""
       <path d="M 256,80 L 230,170 L 270,260 L 240,360 L 260,450" stroke="#ff4500" stroke-width="12" fill="none" stroke-linecap="round"/>
       <path d="M 256,80 L 230,170 L 270,260 L 240,360 L 260,450" stroke="#ffeb3b" stroke-width="5" fill="none" stroke-linecap="round"/>
     </g>
-""")
+""", "terrain-wall-ember-a")
 
 TERRAIN_SVGS["terrain-wall-ember-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -348,9 +432,18 @@ TERRAIN_SVGS["terrain-wall-ember-b"] = wrap_svg("""
     <!-- Cooled Lava Chunk with Basalt Facets & Glow Base -->
     <path d="M 90,450 L 80,160 L 150,80 L 360,80 L 430,160 L 420,450 Z" fill="#29252a" stroke="#121014" stroke-width="9" stroke-linejoin="round"/>
 
-    <!-- Ash Crusted Top Surface -->
-    <polygon points="150,80 360,80 430,160 80,160" fill="#9c959c" stroke="#121014" stroke-width="8" stroke-linejoin="round"/>
-    <polygon points="160,88 350,88 410,152 95,152" fill="#c7c1c7"/>
+    <!-- Ash-crusted top surface.
+         Was #9c959c over #c7c1c7 — near-white, and since you look down onto the
+         top face it is the largest thing on the tile at 34px. The chunk read as
+         marble or ice sitting on a lava field, next to a wall-a that is properly
+         dark basalt. Same job, much darker: still the LIGHTEST plane on the
+         prop, so it still reads as the lit face, but warm grey rather than
+         white, and unmistakably the same rock as its sibling. -->
+    <polygon points="150,80 360,80 430,160 80,160" fill="#4a4247" stroke="#121014" stroke-width="8" stroke-linejoin="round"/>
+    <polygon points="160,88 350,88 410,152 95,152" fill="#645a5c"/>
+    <!-- Embers caught in the ash, tying it to the theme. -->
+    <circle cx="210" cy="120" r="7" fill="#c9541f"/>
+    <circle cx="300" cy="132" r="6" fill="#b0481a"/>
 
     <!-- Rock Facet Shading Lines -->
     <line x1="160" y1="160" x2="190" y2="450" stroke="#19171a" stroke-width="6"/>
@@ -360,7 +453,7 @@ TERRAIN_SVGS["terrain-wall-ember-b"] = wrap_svg("""
     <g filter="url(#lava-glow)">
       <path d="M 90,450 Q 256,410 420,450 Z" fill="#ff4500"/>
     </g>
-""")
+""", "terrain-wall-ember-b")
 
 TERRAIN_SVGS["terrain-cover-ember-a"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -383,7 +476,7 @@ TERRAIN_SVGS["terrain-cover-ember-a"] = wrap_svg("""
     <g filter="url(#lava-glow)">
       <line x1="40" y1="445" x2="470" y2="445" stroke="#ff4500" stroke-width="10"/>
     </g>
-""")
+""", "terrain-cover-ember-a")
 
 TERRAIN_SVGS["terrain-cover-ember-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -403,7 +496,7 @@ TERRAIN_SVGS["terrain-cover-ember-b"] = wrap_svg("""
     <g filter="url(#lava-glow)">
       <rect x="50" y="440" width="410" height="10" fill="#ffeb3b"/>
     </g>
-""")
+""", "terrain-cover-ember-b")
 
 # ==============================================================================
 # SHEET 5: VILLAGE (Market Square)
@@ -430,7 +523,7 @@ TERRAIN_SVGS["terrain-wall-village-a"] = wrap_svg("""
     <polygon points="256,50 256,240 330,240 256,110" fill="#e3d8c3" stroke="#211308" stroke-width="6"/>
     <polygon points="256,50 330,240 400,240 256,110" fill="#ab3c2e" stroke="#211308" stroke-width="6"/>
     <polygon points="256,50 400,240 472,170 256,110" fill="#e3d8c3" stroke="#211308" stroke-width="6"/>
-""")
+""", "terrain-wall-village-a")
 
 TERRAIN_SVGS["terrain-wall-village-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -454,7 +547,7 @@ TERRAIN_SVGS["terrain-wall-village-b"] = wrap_svg("""
 
     <!-- Rope Tied Around Stack -->
     <path d="M 60,360 Q 250,340 450,360" fill="none" stroke="#c7a76d" stroke-width="7"/>
-""")
+""", "terrain-wall-village-b")
 
 TERRAIN_SVGS["terrain-cover-village-a"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -474,7 +567,7 @@ TERRAIN_SVGS["terrain-cover-village-a"] = wrap_svg("""
     <circle cx="100" cy="380" r="15" fill="#8a5e38" stroke="#211308" stroke-width="5"/>
     <line x1="100" y1="325" x2="100" y2="435" stroke="#211308" stroke-width="5"/>
     <line x1="45" y1="380" x2="155" y2="380" stroke="#211308" stroke-width="5"/>
-""")
+""", "terrain-cover-village-a")
 
 TERRAIN_SVGS["terrain-cover-village-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -491,7 +584,7 @@ TERRAIN_SVGS["terrain-cover-village-b"] = wrap_svg("""
     <polygon points="280,330 310,290 440,290 470,330" fill="#757a85" stroke="#1d1e24" stroke-width="7" stroke-linejoin="round"/>
     <rect x="280" y="330" width="190" height="120" fill="#4d5159" stroke="#1d1e24" stroke-width="7"/>
     <polygon points="310,295 440,295 450,325 300,325" fill="#3b82a6"/>
-""")
+""", "terrain-cover-village-b")
 
 # ==============================================================================
 # SHEET 6: BOG (Wet Ground)
@@ -510,7 +603,7 @@ TERRAIN_SVGS["terrain-wall-bog-a"] = wrap_svg("""
 
     <!-- Reeds -->
     <path d="M 220,100 L 200,20 M 240,90 L 240,10 M 260,90 L 280,25 M 280,100 L 310,35" stroke="#8fa843" stroke-width="6" stroke-linecap="round"/>
-""")
+""", "terrain-wall-bog-a")
 
 TERRAIN_SVGS["terrain-wall-bog-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -528,7 +621,7 @@ TERRAIN_SVGS["terrain-wall-bog-b"] = wrap_svg("""
     <!-- Shelf Mushrooms -->
     <path d="M 360,260 C 420,250 430,280 360,290 Z" fill="#d9c49c" stroke="#0a0a09" stroke-width="5"/>
     <path d="M 355,310 C 410,300 420,330 355,340 Z" fill="#d9c49c" stroke="#0a0a09" stroke-width="5"/>
-""")
+""", "terrain-wall-bog-b")
 
 TERRAIN_SVGS["terrain-cover-bog-a"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -545,7 +638,7 @@ TERRAIN_SVGS["terrain-cover-bog-a"] = wrap_svg("""
 
     <!-- Water Pool -->
     <ellipse cx="256" cy="445" rx="200" ry="12" fill="#182e2b" opacity="0.8"/>
-""")
+""", "terrain-cover-bog-a")
 
 TERRAIN_SVGS["terrain-cover-bog-b"] = wrap_svg("""
     <!-- Base Shadow -->
@@ -560,7 +653,7 @@ TERRAIN_SVGS["terrain-cover-bog-b"] = wrap_svg("""
 
     <path d="M 40,380 L 460,280 L 450,295 L 45,395 Z" fill="#c2bba8"/>
     <rect x="220" y="320" width="40" height="50" rx="5" fill="#3b5226" stroke="#1f1d1a" stroke-width="4"/>
-""")
+""", "terrain-cover-bog-b")
 
 def write_svg_files():
     print(f"Writing 24 terrain SVGs to {SVG_DIR}...")
@@ -571,14 +664,14 @@ def write_svg_files():
         print(f"  Saved {name}.svg")
 
 def render_previews():
-    if not os.path.exists(EDGE_PATH):
-        print("Edge binary not found, skipping screenshots.")
-        return
-
-    print("\nRendering 512x512 PNG previews with Edge...")
+    print("\nRendering 512x512 PNG previews...")
     for name in TERRAIN_SVGS.keys():
         svg_path = os.path.join(SVG_DIR, f"{name}.svg")
         png_path = os.path.join(PREVIEW_DIR, f"{name}.png")
+        # Hoisted out of the f-string below: a backslash inside an f-string
+        # expression is a syntax error before Python 3.12, so the generator
+        # would not even parse on 3.11.
+        svg_url = svg_path.replace(BACKSLASH, "/")
 
         html_content = f"""<!DOCTYPE html>
 <html>
@@ -601,7 +694,7 @@ def render_previews():
   </style>
 </head>
 <body>
-  <img src="file:///{svg_path.replace('\\', '/')}" />
+  <img src="file:///{svg_url}" />
 </body>
 </html>"""
         temp_html = os.path.join(PREVIEW_DIR, f"temp_{name}.html")
@@ -609,13 +702,13 @@ def render_previews():
             f.write(html_content)
 
         cmd = [
-            EDGE_PATH,
+            BROWSER,
             "--headless",
             "--disable-gpu",
             "--hide-scrollbars",
             "--window-size=512,512",
             f"--screenshot={png_path}",
-            f"file:///{temp_html.replace('\\', '/')}"
+            f"file:///{temp_html.replace(BACKSLASH, '/')}"
         ]
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
