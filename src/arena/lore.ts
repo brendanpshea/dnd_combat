@@ -151,3 +151,44 @@ export function studyFor(
 ): LoreStudy | undefined {
   return stored && stored.key === loreKey(day, half) ? stored : undefined;
 }
+
+/**
+ * The one lens worth offering, of the ones that see anything.
+ *
+ * Four buttons for four lenses was four decisions the player had no basis for
+ * making. The lens is not the interesting choice — you cannot swap your wizard
+ * for a cleric between fights, so "which of my party's four knowledge skills"
+ * is answered the same way every time, by whichever is best. What is
+ * interesting is whether to spend the study at all, and that survives being one
+ * button.
+ *
+ * "Best" is expected coverage: the chance the party's sharpest head clears the
+ * DC, times how many of the enemy that lens would place. A lens that sees five
+ * creatures at a DC you will miss is worth less than one that sees two at a DC
+ * you will make, and a straight "sees the most" rule cannot tell them apart.
+ *
+ * Ties break toward coverage, then alphabetically, so the same wave always
+ * offers the same lens — a suggestion that flickers between renders is worse
+ * than a wrong one.
+ */
+export function bestLens(
+  members: readonly Id[],
+  bonusFor: (skill: SkillId) => number,
+): { skill: SkillId; dc: number; targets: Id[] } | undefined {
+  let best: { skill: SkillId; dc: number; targets: Id[]; value: number } | undefined;
+  for (const skill of loreSkillsFor(members)) {
+    const targets = loreTargets(members, skill);
+    if (targets.length === 0) continue;
+    const dc = loreDc(members, skill);
+    // A d20 needs `dc - bonus` or better; 1 always fails and 20 always makes it,
+    // so the odds live between 5% and 95% however lopsided the numbers get.
+    const need = dc - bonusFor(skill);
+    const p = Math.max(0.05, Math.min(0.95, (21 - need) / 20));
+    const value = p * targets.length;
+    if (!best || value > best.value
+      || (value === best.value && targets.length > best.targets.length)) {
+      best = { skill, dc, targets, value };
+    }
+  }
+  return best ? { skill: best.skill, dc: best.dc, targets: best.targets } : undefined;
+}
