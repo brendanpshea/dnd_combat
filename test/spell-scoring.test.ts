@@ -114,9 +114,9 @@ function board(
   const enemies = foes.map((p, i) => ({
     ...buildMonster(opts.monster ?? 'orc', 'team2', p), id: `e${i}`, hp: 40, maxHp: 40,
   }));
-  const allies = (opts.allies ?? []).map((p, i) => (
-    buildCharacter({ classId: 'fighter', team: 'team1', position: p, level: 5, id: `a${i}` })
-  ));
+  const allies = (opts.allies ?? []).map((p, i) => ({
+    ...buildCharacter({ classId: 'fighter', team: 'team1', position: p, level: 5 }), id: `a${i}`,
+  }));
   const c = new Combat({ combatants: [me, ...enemies, ...allies], seed: 4 });
   // chooseAction only ever offers actions to whoever's turn it is.
   let guard = 0;
