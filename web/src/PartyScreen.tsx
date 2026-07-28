@@ -47,16 +47,23 @@ type Pick =
  *  Tap an item, then choose what to do with it — the same verb-after-noun flow
  *  as the campaign's between-battle screen, reusing the same state helpers. */
 export function PartyScreen(
-  { campaign, camp, onRest, onChange, onClose }: {
+  { campaign, camp, onRest, onChange, onClose, notice: opening }: {
     campaign: CampaignState;
     camp: CampRule | null;
     onRest: (variant: 'short' | 'long') => void;
     onChange: () => void;
     onClose: () => void;
+    /**
+     * Why the screen opened, when it opened itself. The arena's morning review
+     * uses it to say what it found — "a breastplate is in their pack" — which
+     * is the entire reason for opening: a panel that appears with no
+     * explanation reads as a misfire.
+     */
+    notice?: string;
   },
 ) {
   const [picked, setPicked] = useState<Pick>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(opening ?? null);
   const [sheetIdx, setSheetIdx] = useState<number | null>(null);
   const party = buildCampaignParty(campaign);
   const stash = partyStash(campaign).filter((s) => s.qty > 0);
