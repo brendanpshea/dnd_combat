@@ -39,6 +39,7 @@ function kindOf(e: GameEvent): string {
     // Loud on purpose: a reaction that fires on its own has to be visible, or
     // a player learns nothing from the spell they are paying a slot for.
     case 'counterspelled': return 'cond';
+    case 'confusedTurn': return 'cond';
     case 'cuttingWords': return 'cond';
     case 'wildShaped':
     case 'wildShapeEnded': return 'cond';
@@ -98,6 +99,7 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'attackWarded': return e.attackerId;
     case 'mirrorImageStruck': return e.combatantId;
     case 'counterspelled': return e.byId;
+    case 'confusedTurn': return e.combatantId;
     case 'cuttingWords': return e.bardId;
     case 'wildShaped':
     case 'wildShapeEnded': return e.combatantId;

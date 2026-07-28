@@ -334,7 +334,7 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Sneak Attack |
 | 2 | Cunning Action: Dash, Cunning Action: Disengage, Cunning Action: Hide |
-| 3 | Fast Hands |
+| 3 | Fast Hands, Steady Aim |
 | 5 | Uncanny Dodge |
 | 7 | Evasion |
 

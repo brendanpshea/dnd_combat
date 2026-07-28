@@ -261,6 +261,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `  A duplicate of ${nm(e.combatantId)} shatters — ${e.left} left.`;
     case 'counterspelled':
       return `  ${nm(e.byId)} counters ${nm(e.casterId)}'s ${e.spellId.replace(/-/g, ' ')}!`;
+    case 'confusedTurn':
+      if (e.effect === 'nothing') return `  ${nm(e.combatantId)} reels, and does nothing at all.`;
+      if (e.effect === 'lashesOut') return `  ${nm(e.combatantId)} lashes out wildly at ${nm(e.targetId!)}!`;
+      return `  ${nm(e.combatantId)} shakes off the haze for a moment.`;
     case 'cuttingWords':
       return `  ${nm(e.bardId)} cuts in with a jibe — ${e.amount} off the roll.`;
     case 'attackWarded':

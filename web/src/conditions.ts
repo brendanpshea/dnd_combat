@@ -65,6 +65,8 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   silenced:       { icon: '🔇', label: 'Silenced — can’t cast anything with a spoken word', kind: 'debuff' },
   marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
   inspired:       { icon: '⭐', label: 'Inspired — advantage on next attack', kind: 'buff' },
+  aiming:         { icon: '🎯', label: 'Steady Aim — advantage on next attack, speed 0', kind: 'buff' },
+  confused:       { icon: '😵‍💫', label: 'Confused — may waste its turn, or strike whoever is nearest', kind: 'control', tint: 'fear' },
   shielded:       { icon: '🛡️', label: 'Shielded — +5 AC', kind: 'buff' },
   dodging:        { icon: '💨', label: 'Dodging — attacks against it have disadvantage', kind: 'buff' },
   sacredWeapon:   { icon: '⚔️', label: 'Sacred Weapon — +Cha to attack rolls', kind: 'buff' },
