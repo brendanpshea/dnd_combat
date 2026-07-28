@@ -10,7 +10,7 @@ import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
-import { savingThrow, saveForHalf, charmWarded } from '../engine/rules/saves.js';
+import { savingThrow, saveForHalf, charmWarded, immuneToCharmAndFear } from '../engine/rules/saves.js';
 import { applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
@@ -181,6 +181,7 @@ function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
   // all, so the ward is checked before the condition rather than after.
   if (!success && !charmWarded(state, target) &&
       !target.conditions.some((k) => k.id === 'charmed' && k.sourceId === me.id)) {
+    if (immuneToCharmAndFear(target)) return [];
     target.conditions.push({ id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
     events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'charmed', sourceId: me.id });
   }
@@ -769,6 +770,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         events.push(event);
         // The harpy's song is this game's other charm; the same ward stops it.
         if (!success && !charmWarded(state, t) && !t.conditions.some((k) => k.id === 'lured')) {
+          if (immuneToCharmAndFear(t)) continue;
           t.conditions.push({ id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
           events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'lured', sourceId: me.id });
         }
@@ -969,6 +971,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const { success, event } = savingThrow(state, t.id, 'wis', dc);
         events.push(event);
         if (!success) {
+          if (immuneToCharmAndFear(t)) continue;
           t.conditions.push({ id: 'frightened', sourceId: actorId, repeatSave: { ability: 'wis', dc } });
           events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'frightened', sourceId: actorId });
         }
@@ -1068,4 +1071,94 @@ export const FEATURES: Record<Id, FeatureData> = {
       return [{ type: 'conditionApplied', combatantId: actorId, condition: 'sacredWeapon', sourceId: actorId }];
     },
   },
+  // --- barbarian -----------------------------------------------------------
+  /**
+   * Rage: the class, in one bonus action.
+   *
+   * Three riders, all read elsewhere off the `raging` condition rather than
+   * applied here — bonus melee damage (attack.ts), half damage from blades,
+   * arrows and clubs (attack.ts), and advantage on Strength saves (saves.ts).
+   * The condition is the whole state, so nothing has to be unwound.
+   *
+   * NO DURATION. RAW a rage ends after ten minutes, or early if the barbarian
+   * neither attacks nor takes damage on their turn. Ten minutes is every fight
+   * this game has ever run, and the lapse clause fires when a barbarian spends
+   * a round doing nothing — which, given the class has no other use for its
+   * action, does not happen. Building turn-tracking for a rule that cannot
+   * trigger would be machinery pretending to be fidelity.
+   *
+   * `longRest` is what makes the count mean anything: rage lasts the whole
+   * fight, so a per-encounter pool would refill before it was ever empty and
+   * the number would be decoration. It is the day that rations this.
+   */
+  rage: {
+    id: 'rage', name: 'Rage', trigger: 'bonus',
+    uses: { count: 'proficiency', per: 'longRest' },
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      if (c.conditions.some((k) => k.id === 'raging')) return [];
+      c.conditions.push({ id: 'raging', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'raging', sourceId: actorId }];
+    },
+  },
+  /**
+   * Unarmored Defense — read by `acOf`, not applied here.
+   *
+   * Passive rather than a grant on the class, because it is conditional on
+   * wearing no armour and the AC function is the only place that can know.
+   */
+  'unarmored-defense': {
+    id: 'unarmored-defense', name: 'Unarmored Defense', trigger: 'passive',
+  },
+  /**
+   * Reckless Attack: swing wide open.
+   *
+   * Free rather than an action — it costs nothing but the risk, which is the
+   * decision. Its own condition rather than reusing `outlined`: outlined is
+   * set by Faerie Fire and by the ranger's mark, it does not grant the bearer
+   * anything, and the attack log names its reasons, so conflating them would
+   * make the log say "faerie fire" about a barbarian nobody has lit up.
+   *
+   * Lasts until the start of the barbarian's next turn (`turn.ts` sweeps it),
+   * which is what makes it a real gamble rather than a free upgrade: the
+   * advantage is spent this turn, and the whole enemy team swings back at it.
+   */
+  'reckless-attack': {
+    id: 'reckless-attack', name: 'Reckless Attack', trigger: 'free',
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      if (c.conditions.some((k) => k.id === 'reckless')) return [];
+      c.conditions.push({ id: 'reckless', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'reckless', sourceId: actorId }];
+    },
+  },
+  /** Danger Sense: advantage on Dexterity saves — read by `savingThrow`. */
+  'danger-sense': {
+    id: 'danger-sense', name: 'Danger Sense', trigger: 'passive',
+    saveAdvantage: ['dex'],
+  },
+  /** Fast Movement: +10 ft of speed, folded in by the builder. */
+  'fast-movement': {
+    id: 'fast-movement', name: 'Fast Movement', trigger: 'passive',
+  },
+  /**
+   * Berserker's Frenzy: one extra melee attack while raging, as a bonus action.
+   *
+   * The SRD version costs a level of exhaustion, which this game does not
+   * model — so the cost here is the bonus action itself, which is the same
+   * thing a barbarian would otherwise spend on Rage. Read by the attack rules
+   * as an extra-attack grant rather than applied, so it composes with the
+   * level-5 Extra Attack instead of racing it.
+   */
+  frenzy: {
+    id: 'frenzy', name: 'Frenzy', trigger: 'passive',
+  },
+  /** Mindless Rage: can't be charmed or frightened while raging. */
+  'mindless-rage': {
+    id: 'mindless-rage', name: 'Mindless Rage', trigger: 'passive',
+  },
+  /** Feral Instinct: advantage on initiative rolls. */
+  'feral-instinct': {
+    id: 'feral-instinct', name: 'Feral Instinct', trigger: 'passive',
+  }
 };

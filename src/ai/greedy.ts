@@ -795,6 +795,35 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
       (c) => c.alive && !isDown(c) && c.team !== actor.team && adjacent(c.position, actor.position),
     ) ? 5 : 0;
   }
+  if (a.featureId === 'rage') {
+    // Rage is worth a bonus action the moment a fight is actually happening,
+    // and worth nothing at all otherwise: it lasts the whole encounter, so
+    // entering it a round early costs a turn of nothing and entering it late
+    // costs every swing in between. "An enemy is within a turn's reach" is the
+    // line — and the pool is the day's, so an AI that rages at shadows spends
+    // its whole day in the first fight.
+    if (actor.conditions.some((c) => c.id === 'raging')) return 0;
+    const reach = actor.speed / 5 + 1;
+    const near = Object.values(state.combatants).some(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team &&
+             distanceCells(actor.position, c.position) <= reach,
+    );
+    return near ? 6 : 0;
+  }
+  if (a.featureId === 'reckless-attack') {
+    // Free, and pure upside on the turns you are going to swing anyway — the
+    // cost is landing on the enemy team's turn, which is worth paying while
+    // healthy and not worth it while nearly down. Rage's damage resistance
+    // moves that line, which is why the threshold reads off `raging`.
+    if (actor.conditions.some((c) => c.id === 'reckless')) return 0;
+    const adjacent = Object.values(state.combatants).some(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team &&
+             distanceCells(actor.position, c.position) <= 1,
+    );
+    if (!adjacent) return 0;
+    const floor = actor.conditions.some((c) => c.id === 'raging') ? 0.3 : 0.5;
+    return actor.hp > actor.maxHp * floor ? 3 : 0;
+  }
   if (a.featureId === 'cunning-disengage') {
     // Escape melee before repositioning; mirrors the disengage-action logic.
     return nearestEnemyDist(state, actor.position, actor.team) === 1 && actor.hp < actor.maxHp / 2 ? 1.5 : 0;

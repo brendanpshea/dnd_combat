@@ -326,7 +326,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     // Roving (Ranger 6): +10 ft of walking speed. Armor heavier than you can
     // carry takes 10 back (SRD 5.2.1) — a wizard may wear plate, and will spend
     // the whole fight arriving.
-    speed: species.speed + (featureIds.includes('roving') ? 10 : 0) -
+    speed: species.speed + (featureIds.includes('roving') ? 10 : 0)
+      // Fast Movement (Barbarian 5): +10 ft, on the same terms as Roving — the
+      // heavy-armour penalty below applies to both.
+      + (featureIds.includes('fast-movement') ? 10 : 0) -
       armorSpeedPenalty(opts.equipped?.armor ?? cls.equipment.armor, abilities.str),
     position: opts.position,
     initiative: 0,

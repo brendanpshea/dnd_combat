@@ -17,7 +17,7 @@ import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { BREATH_WEAPONS } from './features.js';
 import { pushCreature } from '../engine/rules/movement.js';
-import { savingThrow as rawSavingThrow, saveForHalf } from '../engine/rules/saves.js';
+import { savingThrow as rawSavingThrow, saveForHalf, immuneToCharmAndFear } from '../engine/rules/saves.js';
 
 // Every saving throw a spell forces is a save against magic, so Magic
 // Resistance (Satyr, Unicorn) grants advantage here without each spell needing
@@ -1448,6 +1448,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!tid) continue;
         const t = state.combatants[tid]!;
         if (!t.alive || t.team === caster.team || t.conditions.some((c) => c.id === 'frightened')) continue;
+        if (immuneToCharmAndFear(t)) continue;
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {
@@ -2391,7 +2392,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dmg = rollDice(state.rng, `${4 + Math.max(0, slotLevel - 4)}d10`);
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'psychic', dmg.rolls));
-      if (!save.success && target.alive) {
+      if (!save.success && target.alive && !immuneToCharmAndFear(target)) {
         target.conditions.push({
           id: 'frightened', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc },

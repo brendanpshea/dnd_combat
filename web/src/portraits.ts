@@ -35,6 +35,7 @@ export const PORTRAITS: PortraitOption[] = [
   { id: 'gnome-warden', name: 'Gnome Warden' },
   { id: 'halfling-warrior', name: 'Halfling Warrior' },
   { id: 'halfling-priest', name: 'Halfling Priest' },
+  { id: 'berserker', name: 'Berserker' },
 ];
 
 export function portraitName(id: string): string {

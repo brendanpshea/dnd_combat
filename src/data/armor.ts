@@ -167,6 +167,14 @@ export function acOf(c: Combatant): number {
   if (c.mageArmor && c.equipped.armor === undefined) {
     return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
   }
+  // Unarmored Defense: 10 + Dex + Con, with a shield still allowed. This is
+  // the barbarian's armour, so it has to beat what it replaces or the class
+  // simply wears half plate instead — and the whole point of the feature is
+  // that a barbarian does not.
+  if (c.featureIds.includes('unarmored-defense') && c.equipped.armor === undefined) {
+    return 10 + abilityMod(c.abilities.dex) + abilityMod(c.abilities.con)
+      + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+  }
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;

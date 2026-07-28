@@ -38,6 +38,10 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   sapped:         { icon: '😩', label: 'Sapped — disadvantage on next attack', kind: 'debuff' },
   guided:         { icon: '🎯', label: 'Marked — next attack against it has advantage', kind: 'debuff' },
   outlined:       { icon: '🔆', label: 'Outlined — easier to hit, can’t hide', kind: 'debuff' },
+  // Reckless is a debuff badge on purpose even though the barbarian chose it:
+  // what the board needs to show is that this creature is easier to hit, and
+  // that is true whichever side of it you are on.
+  reckless:       { icon: '💢', label: 'Reckless — hits harder, and is easier to hit', kind: 'debuff' },
   vexed:          { icon: '❗', label: 'Vexed', kind: 'debuff' },
   blessed:        { icon: '✨', label: 'Blessed', kind: 'buff' },
   inspiring:      { icon: '🎵', label: 'Bardic Inspiration — +1d6 on the next attack or save', kind: 'buff' },
@@ -53,6 +57,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   smiting:        { icon: '⚡', label: 'Smite ready — the next melee hit unleashes it', kind: 'buff' },
   burning:        { icon: '🔥', label: 'Burning — 1d6 fire each turn until it saves', kind: 'debuff' },
   hasted:         { icon: '🐇', label: 'Hasted — double speed, +2 AC, an extra attack', kind: 'buff' },
+  raging:         { icon: '😤', label: 'Raging — bonus melee damage, and half damage from blades, arrows and clubs', kind: 'buff' },
   marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
   inspired:       { icon: '⭐', label: 'Inspired — advantage on next attack', kind: 'buff' },
   shielded:       { icon: '🛡️', label: 'Shielded — +5 AC', kind: 'buff' },

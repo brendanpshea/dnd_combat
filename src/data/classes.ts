@@ -487,6 +487,48 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  /**
+   * The barbarian.
+   *
+   * Cheapest class left to add, and not by accident: it casts nothing, so the
+   * whole spell-preparation apparatus is untouched, and its art already ships
+   * (`orc-barbarian`, `dwarf-berserker`). What it needed was a resource clock
+   * that survives a fight, which is why the rest-scoping landed first — rage
+   * lasts the whole fight, so a per-encounter pool would refill before it was
+   * ever empty and the count that paces the class would be decoration.
+   *
+   * NO ARMOUR IN THE STARTING KIT, deliberately. Unarmored Defense is 10 + Dex
+   * + Con, which beats hide and matches chain mail for a barbarian's stat
+   * spread — hand it armour at level 1 and the feature is dead data the player
+   * never meets. The shield is left off for the same reason a greataxe is the
+   * main hand: two-handed damage is what rage multiplies.
+   */
+  barbarian: {
+    id: 'barbarian', name: 'Barbarian', hitDie: 12,
+    savingThrows: ['str', 'con'],
+    // Light and medium only — and the class is built never to wear either.
+    armorProfs: ['light', 'medium', 'shield'],
+    weaponProfs: { simple: true, martial: true },
+    skillProfs: ['athletics', 'survival'],
+    statPriority: ['str', 'con', 'dex', 'wis', 'cha', 'int'],
+    featuresByLevel: {
+      1: ['rage', 'unarmored-defense'],
+      2: ['reckless-attack', 'danger-sense'],
+      3: ['frenzy'],            // Berserker, the SRD's barbarian subclass
+      // 4: Ability Score Increase (applied in the builder, not a feature).
+      5: ['extra-attack', 'fast-movement'],
+      6: ['mindless-rage'],     // Berserker
+      7: ['feral-instinct'],
+    },
+    weaponMasteries: ['greataxe', 'handaxe', 'javelin'],
+    equipment: {
+      mainHand: 'greataxe',
+      inventory: [
+        { itemId: 'handaxe', qty: 2 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   paladin: {
     id: 'paladin', name: 'Paladin', hitDie: 10,
     savingThrows: ['wis', 'cha'],

@@ -744,6 +744,10 @@ const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
   // its own art already.
   bard: 'human-bard',
   druid: 'gnome-warden',
+  // The berserker art is a bare-armed axe-carrier — which is exactly what a
+  // barbarian with no armour is, so no new picture was needed. An orc or dwarf
+  // barbarian still gets its own species art through SPECIES_PORTRAIT above.
+  barbarian: 'berserker',
 };
 
 /** Sensible default portrait for a species/class combo: species art if it has
