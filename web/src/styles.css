@@ -3302,3 +3302,8 @@ button.category .count {
 @media (prefers-reduced-motion: reduce) {
   .art-waiting { animation: none; opacity: .6; }
 }
+
+/* The reassurance on a chapter's victory screen. The company is already saved
+   into the next chapter by the time this renders, and saying so is the point —
+   the old screen made carrying onward look like a choice you could decline. */
+.adv-carry-note { font-size: .86rem; margin: 6px 0 2px; line-height: 1.45; }

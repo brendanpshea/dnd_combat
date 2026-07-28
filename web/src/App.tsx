@@ -179,10 +179,20 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
             initAudio();
             onPick({ view: 'adventure', module: m, ...(resume && !fresh ? { resume } : {}) });
           };
+          // Starting this chapter cold would overwrite the one save slot — and
+          // the company in it, which may have walked two chapters to get there.
+          // The old "Start over" confirm only guarded the card holding the save;
+          // every OTHER card destroyed it silently on a single tap.
+          const wouldOverwrite = !!savedId && savedId !== m.id;
+          const savedTitle = savedId ? modules.find((x) => x.id === savedId)?.title : undefined;
           const cover = m.cover;
           return (
             <div key={m.id} className={`module-card${resume ? ' resuming' : ''}`}>
-              <button className="module-cover" onClick={() => play()} aria-label={`Play ${m.title}`}>
+              <button
+                className="module-cover"
+                onClick={() => (wouldOverwrite ? setConfirmWipe(m.id) : play())}
+                aria-label={`Play ${m.title}`}
+              >
                 {cover && hasSceneArt(cover)
                   ? <div className="module-cover-art" style={{ backgroundImage: `url(${thumbUrl(sceneArtUrl(cover))})` }} />
                   : <div className="module-cover-art glyph"><span>{(cover && artEmoji(cover)) ?? '📜'}</span></div>}
@@ -193,12 +203,18 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
                   <span className="module-cta">{resume ? '▶ Continue your run' : '▶ Play'}</span>
                 </div>
               </button>
-              {resume && (
+              {(resume || confirmWipe === m.id) && (
                 <div className="module-actions">
                   {confirmWipe === m.id ? (
                     <>
-                      <span className="muted">Erase your saved run and start fresh?</span>
-                      <button className="mini danger" onClick={() => { deleteAdventureWeb(); setConfirmWipe(null); play(true); }}>Start over</button>
+                      <span className="muted">
+                        {wouldOverwrite
+                          ? `Your company is saved at ${savedTitle}. Starting here abandons them and rolls a new level-1 party.`
+                          : 'Erase your saved run and start fresh?'}
+                      </span>
+                      <button className="mini danger" onClick={() => { deleteAdventureWeb(); setConfirmWipe(null); play(true); }}>
+                        {wouldOverwrite ? 'Abandon them' : 'Start over'}
+                      </button>
                       <button className="mini" onClick={() => setConfirmWipe(null)}>Cancel</button>
                     </>
                   ) : (
