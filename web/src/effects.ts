@@ -182,6 +182,32 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         stagger += 220;
         break;
       }
+      case 'counterspelled': {
+        // Counterspell fires by itself, out of turn, and costs a 3rd-level slot.
+        // If the only trace is a log line, a player watching the board sees a
+        // spell simply not happen and learns nothing about what they paid for.
+        const cell = cellOf(e.casterId);
+        if (cell) {
+          areas.push({ id: nextId++, cellKeys: [cell], centerKey: cell, kind: 'force', delayMs: stagger });
+          floats.push({
+            id: nextId++, cellKey: cell,
+            text: 'COUNTERSPELLED!', cls: 'tag counterspell', delayMs: stagger,
+          });
+        }
+        sound('force', stagger);
+        stagger += 220;
+        break;
+      }
+      case 'mirrorImageStruck': {
+        // The attack was a hit until an illusion ate it. Without a float the
+        // board shows a swing landing on nothing.
+        const cell = cellOf(e.combatantId);
+        if (cell) {
+          floats.push({ id: nextId++, cellKey: cell, text: 'image!', cls: 'cond', delayMs: stagger });
+        }
+        stagger += 120;
+        break;
+      }
       case 'damageDealt': {
         const cell = cellOf(e.targetId);
         const crit = pendingCrit;
