@@ -25,6 +25,7 @@ import {
 } from '../src/campaign/campaign.js';
 import { SPELLS } from '../src/data/spells.js';
 import { CLASSES } from '../src/data/classes.js';
+import { spellOptions } from '../src/arena/prep.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
 
 /** A level-7 party, so every tier under test is actually castable. */
@@ -167,5 +168,47 @@ describe('camp buffs end at a rest', () => {
       expect(eff?.aid).toBeUndefined();
       expect(eff?.campConcentration).toBeUndefined();
     }
+  });
+});
+
+describe('the gate offers them, not just the party screen', () => {
+  it('offers every camp spell at the arena gate', () => {
+    // `spellOptions` used to be one hard-coded `if (spellId !== 'mage-armor')`,
+    // so every camp spell added after it was castable on the party screen and
+    // invisible at the gate — the one moment a buff is worth most, because the
+    // wave is on screen and the fight is the next click.
+    for (const spellId of ['false-life', 'aid', 'haste', 'protection-from-evil-and-good']) {
+      const c = party();
+      const idx = casterOf(c, spellId);
+      const offered = spellOptions(c).filter((o) => o.who === idx).map((o) => o.id);
+      expect(offered, `${spellId} is missing from the gate`).toContain(spellId);
+    }
+  });
+
+  it('stops offering one that is already up', () => {
+    // A button that spends a slot to change nothing is worse than no button.
+    const c = party();
+    const idx = casterOf(c, 'false-life');
+    expect(spellOptions(c).some((o) => o.who === idx && o.id === 'false-life')).toBe(true);
+    useStoreSpell(c, idx, 'false-life');
+    expect(spellOptions(c).some((o) => o.who === idx && o.id === 'false-life')).toBe(false);
+  });
+
+  it('stops offering a concentration buff to a caster already holding one', () => {
+    const c = party();
+    const idx = casterOf(c, 'haste');
+    useStoreSpell(c, idx, 'haste');
+    expect(spellOptions(c).some((o) => o.who === idx && o.id === 'haste')).toBe(false);
+  });
+
+  it('never offers a spell there is no slot for', () => {
+    const c = party();
+    const idx = casterOf(c, 'aid');
+    const level = SPELLS.aid!.level;
+    c.characters[idx]!.resources = {
+      ...c.characters[idx]!.resources,
+      slots: buildCampaignParty(c)[idx]!.spellSlots.map((s, i) => (i === level - 1 ? 0 : s.current)),
+    };
+    expect(spellOptions(c).some((o) => o.who === idx && o.id === 'aid')).toBe(false);
   });
 });
