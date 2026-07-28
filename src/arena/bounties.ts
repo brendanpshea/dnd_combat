@@ -272,20 +272,36 @@ export function roundsAllowed(foes: number): number {
 }
 
 /**
- * The two bounties offered for a wave.
+ * The one bounty offered behind a given door.
  *
- * Seeded off the run and wave the same way the wave itself is, so a retry
- * offers the same two — a wave you failed is a tactical problem to solve, not
- * a slot machine to reroll until the bounties are easy.
+ * ONE, NOT TWO. Two meant a player saw all eight within a few fights, so none
+ * of them ever felt like an occasion, and it doubled the item flow at a time
+ * when bounties are the only source of permanent magic there is.
+ *
+ * AND IT IS PER DOOR, WHICH IS THE WHOLE POINT.
+ *
+ * The three gates already differ by ground and by what is waiting behind them.
+ * Now they differ by what you are playing FOR: each door carries its own
+ * objective and its own named prize, so choosing a door is choosing a prize.
+ * That is the choice — not a picker after the fight, which arrives too late to
+ * be planned around and takes the headline off the card where it belongs.
+ *
+ * Seeded off the run, the wave AND the door, the same way the wave itself is,
+ * so a retry offers the same three — a day you failed is a problem to solve,
+ * not a slot machine to reroll until the bounties are easy.
+ *
+ * Still returns a list: the callers iterate, and a door with no eligible bounty
+ * at all (a party with none of the gated classes, on ground with none of the
+ * terrain) has to be able to say so.
  */
 export function bountiesFor(
-  runSeed: number, wave: number, party: Combatant[], state: GameState,
+  runSeed: number, wave: number, party: Combatant[], state: GameState, door = 0,
 ): Bounty[] {
   const pool = BOUNTIES.filter((b) => b.eligible(party, state));
-  let rng: RngState = (runSeed * 2654435761 + wave * 2246822519) >>> 0;
+  let rng: RngState = (runSeed * 2654435761 + wave * 2246822519 + door * 40503) >>> 0;
   const picked: Bounty[] = [];
   const rest = [...pool];
-  while (picked.length < 2 && rest.length > 0) {
+  while (picked.length < 1 && rest.length > 0) {
     const r = next(rng); rng = r.state;
     picked.push(...rest.splice(Math.floor(r.value * rest.length), 1));
   }

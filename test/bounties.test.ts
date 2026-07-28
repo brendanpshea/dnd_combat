@@ -100,14 +100,17 @@ describe('bounty eligibility', () => {
     expect(byId('into-the-fire').eligible(party, scene(OPEN, party, ['goblin-warrior']))).toBe(false);
   });
 
-  it('always has at least two to offer, whatever the party', () => {
-    // A wave that offers one bounty (or none) is a screen with a hole in it.
+  it('always has one to offer behind every door, whatever the party', () => {
+    // A door that offers no bounty is a door with nothing to play for, and the
+    // prize on the card is the reason to take one door over another.
     const runSeed = 7;
     for (let wave = 1; wave <= 25; wave++) {
       for (const p of [party, [buildCharacter({ classId: 'fighter', team: 'team1', level: 1, name: 'X', position: { x: 1, y: 1 }, speciesId: 'human' })]]) {
         const s = scene(OPEN, p, ['goblin-warrior']);
         const members = Object.values(s.combatants).filter((c) => c.team === 'team1');
-        expect(bountiesFor(runSeed, wave, members, s).length, `wave ${wave}`).toBe(2);
+        for (const door of [0, 1, 2]) {
+          expect(bountiesFor(runSeed, wave, members, s, door).length, `wave ${wave} door ${door}`).toBe(1);
+        }
       }
     }
   });
@@ -132,13 +135,20 @@ describe('bounty selection', () => {
     expect(seen.size, 'every wave offered the same pair').toBeGreaterThan(3);
   });
 
-  it('never offers the same bounty twice in one wave', () => {
+  it('gives the three doors different things to play for', () => {
+    // Choosing a door is choosing a prize — that is the arena's central choice.
+    // If every door offered the same objective it would collapse back into
+    // "which ground do I prefer", which is a much smaller question.
     const s = scene(COVERED, party, ['skeleton']);
     const members = Object.values(s.combatants).filter((c) => c.team === 'team1');
+    let differed = 0;
     for (let w = 1; w <= 40; w++) {
-      const [a, b] = bountiesFor(w, w, members, s);
-      expect(a!.id).not.toBe(b!.id);
+      const ids = [0, 1, 2].map((door) => bountiesFor(w, w, members, s, door)[0]!.id);
+      if (new Set(ids).size > 1) differed += 1;
     }
+    // Not every wave, every time — the pool is small enough that two doors can
+    // legitimately land on the same objective — but overwhelmingly.
+    expect(differed, `only ${differed} of 40 waves offered a choice`).toBeGreaterThan(32);
   });
 });
 

@@ -23,7 +23,6 @@ import type { SkillRoll, CampaignState } from '../../src/campaign/campaign.js';
 import { characterSkillBonus, characterSkillProficient, bestAtSkill } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL, SKILL_ABILITY, type SkillId } from '../../src/data/classes.js';
 import { DiceCheck } from './DiceCheck.js';
-import { Portrait } from './Portrait.js';
 import { checkOdds } from './odds.js';
 
 const ABILITY_LABEL: Record<string, string> = {
@@ -57,33 +56,33 @@ export function SkillGambit({
   const proficient = characterSkillProficient(campaign, idx, skill);
   const odds = checkOdds(bonus, dc);
 
+  // Everything that is not a number goes in the tooltip. The check has to be
+  // legible without being loud: a rules-literate player wants the odds, and
+  // everyone else wants the screen back. An earlier cut gave each one a
+  // portrait, a title, a maths line and a row of chips — four lines of
+  // furniture for one d20, repeated up to four times across the gate screen.
+  const why = [
+    SKILL_LABEL[skill],
+    ABILITY_LABEL[SKILL_ABILITY[skill]],
+    proficient ? 'proficient' : null,
+    odds === 'certain' ? 'cannot fail' : odds === 'impossible' ? 'cannot succeed' : null,
+    note,
+  ].filter(Boolean).join(' · ');
+
   return (
     <>
       <button
         className={`skill-gambit${disabled ? ' spent' : ''} odds-${odds}`}
         disabled={disabled}
-        title={disabled ? disabledReason : `${SKILL_LABEL[skill]} · ${ABILITY_LABEL[SKILL_ABILITY[skill]]}`}
-        onClick={() => {
+        title={disabled ? disabledReason : why}
+      onClick={() => {
           const roll = onRoll();
           setShowing(roll);
         }}
       >
-        <span className="sg-head">
-          {hero && <Portrait id={hero.portraitId ?? hero.classId} team="team1" />}
-          <span className="sg-title">{label ?? SKILL_LABEL[skill]}</span>
-        </span>
+        <span className="sg-title">{label ?? SKILL_LABEL[skill]}</span>
         <span className="sg-math">
-          {hero?.name ?? '—'}
-          {' '}<b>{bonus >= 0 ? '+' : ''}{bonus}</b>
-          {' vs DC '}{dc}
-        </span>
-        <span className="sg-sub">
-          {proficient && <i className="sg-prof">proficient</i>}
-          <i>{ABILITY_LABEL[SKILL_ABILITY[skill]]}</i>
-          {/* The honest bit: when the dice cannot change the answer, say so. */}
-          {odds === 'certain' && <i className="sg-sure">cannot fail</i>}
-          {odds === 'impossible' && <i className="sg-hopeless">cannot succeed</i>}
-          {note && <i>{note}</i>}
+          {hero?.name ?? '—'} <b>{bonus >= 0 ? '+' : ''}{bonus}</b> vs {dc}
         </span>
       </button>
 

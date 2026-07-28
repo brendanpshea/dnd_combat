@@ -14,7 +14,7 @@
  *  - It reports first-try clears as the score. With unlimited retries a plain
  *    win rate climbs to 100% and stops meaning anything.
  */
-import { useState, useEffect, type ComponentType } from 'react';
+import { useState, useEffect, useMemo, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
@@ -37,8 +37,7 @@ import {
 import {
   runComplete, summarise, RUN_TARGET_XP, MEDAL_LABEL, MEDAL_ICON, type RunSummary,
 } from '../../src/arena/medal.js';
-import { spoilOffer, spoilTierLabel } from '../../src/arena/spoils.js';
-import { SpoilPicker } from './Spoils.js';
+import { spoilPrize } from '../../src/arena/spoils.js';
 import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
@@ -77,12 +76,8 @@ type Phase =
       rested: RestResult;
       /** Bounties claimed in the fight just won, named on the loot screen. */
       claimed: Array<{ name: string; gold: number }>;
-      /**
-       * One three-item offer per bounty claimed, still to be chosen from. The
-       * loot screen holds Continue until they are all resolved: an award you
-       * can walk past by mistake is worse than no award at all.
-       */
-      offers: Array<{ bounty: string; items: Id[] }>;
+      /** Items a claimed bounty paid — named on the card before the fight. */
+      won: Id[];
     }
   /** The premise, once, before a new party's first gate. */
   | { p: 'intro' }
@@ -123,10 +118,19 @@ function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Comb
  * both only exist once the wave is assembled. Cheap, deterministic, and it
  * means the pre-wave screen shows exactly what the post-battle check will use.
  */
-function offeredBounties(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Bounty[] {
+/**
+ * The bounty waiting behind one door.
+ *
+ * Eligibility depends on the ground as well as the party — "Dug In" wants
+ * cover to hide behind — so each door has to be previewed on its own board
+ * rather than sharing the selected one's.
+ */
+function offeredBounties(
+  c: CampaignState, run: ArenaRunState, wave: ArenaWave, door: number,
+): Bounty[] {
   const preview = makeCombat(c, run, wave);
   const party = Object.values(preview.state.combatants).filter((x) => x.team === 'team1');
-  return bountiesFor(run.seed, wave.wave, party, preview.state);
+  return bountiesFor(run.seed, wave.wave, party, preview.state, door);
 }
 
 /** The roster, grouped — "3 Cockatrices, an Ogre" reads; a list of ids doesn't. */
@@ -186,7 +190,23 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const gates = gatesFor(run.seed, dayLevel, run.wave, half);
   const gate = gateFor(gates, run.gate);
   const wave = gate.wave;
-  const bounties = offeredBounties(c, run, wave);
+  /**
+   * What each door is offering: its objective and the item it pays.
+   *
+   * Choosing a door is choosing a prize — that is the choice the arena is built
+   * around, and it is why this is computed for all three rather than only for
+   * the one currently selected. Memoised because each door needs its own
+   * preview board built to test bounty eligibility against its ground.
+   */
+  const gateOffers = useMemo(
+    () => gates.map((g, door) => ({
+      bounty: offeredBounties(c, run, g.wave, door)[0],
+      prize: spoilPrize(run.seed, dayOf(run), half, door, level),
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gates, run.seed, run.gate, run.wave, dayOf(run), half, level],
+  );
+  const bounties = gateOffers[run.gate ?? 0]?.bounty ? [gateOffers[run.gate ?? 0]!.bounty!] : [];
   // Reading the visit is what creates it, so nothing has to remember to reset
   // the stall at dawn. See arena/stall.ts.
   const visit = stallVisitOf(run.stall, dayOf(run));
@@ -344,6 +364,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     const paid = half === 'afternoon' ? wave.purse : 0;
     const bonus = claimed.reduce((g, b) => g + bountyGold(b, paid || wave.purse), 0);
     c.gold += paid + bonus;
+    // The prize was named on the card before the fight, so there is nothing to
+    // choose now — it simply goes in the pack. Seeded off the day and half and
+    // never the attempt, so a retried day pays the same thing it promised.
+    const prizes = claimed
+      .map(() => spoilPrize(run.seed, dayOf(run), half, run.gate ?? 0, level))
+      .filter((id): id is Id => id !== undefined);
+    for (const id of prizes) addItem(c.characters[0]!.inventory, id);
     const nextRun = advanceDay(run, true, wave.purse, {
       spellsUsed: spellsCastBy(combat.log, combat.state),
       bounties: claimed.length,
@@ -358,13 +385,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       p: 'loot',
       gold: result.gold + paid + bonus, items: result.items, xpGained: result.xpGained,
       claimed: claimed.map((b) => ({ name: b.name, gold: bountyGold(b, paid || wave.purse) })),
-      // Seeded off the day and half, never the attempt: a retried day has to
-      // put the same three things on the table, or losing on purpose becomes a
-      // way to reroll the prize. See arena/spoils.ts.
-      offers: claimed.map((b, i) => ({
-        bounty: b.name,
-        items: spoilOffer(run.seed, dayOf(run), half, i, level),
-      })),
+      won: prizes,
       rested,
       ...(result.leveledTo !== undefined ? { leveledTo: result.leveledTo } : {}),
       ...(result.leveledFrom !== undefined ? { leveledFrom: result.leveledFrom } : {}),
@@ -408,28 +429,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       <LootScreen
         campaign={c}
         gold={phase.gold}
-        items={phase.items}
+        items={[...phase.items, ...phase.won.map((itemId) => ({ itemId, qty: 1 }))]}
         xpGained={phase.xpGained}
         leveledTo={phase.leveledTo}
         leveledFrom={phase.leveledFrom}
         claimed={phase.claimed}
         rested={phase.rested}
-        spoilsPending={phase.offers.length > 0}
-        spoils={phase.offers.length > 0 && (
-          <SpoilPicker
-            bounty={phase.offers[0]!.bounty}
-            items={phase.offers[0]!.items}
-            onTake={(itemId) => {
-              // Straight into the pack of whoever has room; equipping is the
-              // player's own business on the party screen, the same as anything
-              // they bought. Awarding it *equipped* would silently replace gear
-              // somebody had chosen.
-              addItem(c.characters[0]!.inventory, itemId);
-              persist(c, run); refresh();
-              setPhase({ ...phase, offers: phase.offers.slice(1) });
-            }}
-          />
-        )}
         chorus={<Say cue={say(
           // Which break this was cannot be read off `half`: the run has already
           // advanced by the time this screen paints, so after a won morning
@@ -736,6 +741,19 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     <span className="gate-count">
                       {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
                     </span>
+                    {/* What this door is paying, and for what. The prize is the
+                        reason to take one door over another, so it belongs on
+                        the card and not on a screen after the fight. */}
+                    {gateOffers[g.door]?.bounty && (
+                      <span className="gate-bounty">
+                        <b>{gateOffers[g.door]!.bounty!.name}</b>
+                        {gateOffers[g.door]!.prize && (
+                          <span className="gate-prize">
+                            {itemIcon(gateOffers[g.door]!.prize!)} {itemName(gateOffers[g.door]!.prize!)}
+                          </span>
+                        )}
+                      </span>
+                    )}
                     {/* What the study turned up about what is behind THIS door.
                         Left on the card rather than shown in a modal: the whole
                         point is the choice you make after reading it. */}
@@ -863,24 +881,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   toward — they are a surprise at the end. */}
               {bounties.length > 0 && (
                 <div className="bounties">
-                  <b className="bounties-head">Bounties</b>
-                  {/* What they pay, said once. Each bounty carries an award as
-                      well as coin, and the card used to mention only the coin —
-                      so the pick-one-of-three screen arrived unannounced, and a
-                      reward nobody knows about cannot be played for. */}
-                  <span className="bounties-sub">
-                    Each one claimed pays coin and {spoilTierLabel(level)} — three offered, you keep one.
-                  </span>
-                  {bounties.map((b) => (
-                    <div key={b.id} className="bounty">
-                      <span className="bounty-name">{b.name}</span>
-                      <span className="bounty-blurb">{b.blurb}</span>
-                      <span className="bounty-gold">
-                        +{bountyGold(b, wave.purse)}g
-                        <i className="bounty-award">+ {spoilTierLabel(level)}</i>
-                      </span>
-                    </div>
-                  ))}
+                  <b className="bounties-head">This door pays</b>
+                  {bounties.map((b, i) => {
+                    const prize = spoilPrize(run.seed, dayOf(run), half, run.gate ?? 0, level);
+                    return (
+                      <div key={b.id} className="bounty">
+                        <span className="bounty-name">{b.name}</span>
+                        <span className="bounty-blurb">{b.blurb}</span>
+                        <span className="bounty-gold">
+                          +{bountyGold(b, wave.purse)}g
+                          {prize && (
+                            <i className="bounty-award">
+                              {itemIcon(prize)} {itemName(prize)}
+                            </i>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

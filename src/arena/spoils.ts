@@ -38,8 +38,17 @@ import { ITEMS } from '../data/items.js';
 import { rarityOf, isMagicalWare, isPermanentMagic, SHOP_STOCK, MAGIC_SPOILS } from '../campaign/campaign.js';
 import { next, type RngState } from '../engine/rng.js';
 
-/** How many items an award puts on the table. */
-export const SPOIL_CHOICES = 3;
+/**
+ * How many items an award puts on the table.
+ *
+ * One. It was three-and-choose, which is a good shape for a reward you meet by
+ * surprise — but the bounty is named BEFORE the fight, and a prize you can see
+ * in advance beats a choice you get afterwards: "end it in four rounds and the
+ * Wand of Web is yours" is a thing to play for, where "…and you may pick from
+ * three" is a thing to find out about later. The choice cost the card its
+ * headline, so the choice went.
+ */
+export const SPOIL_CHOICES = 1;
 
 /** The level at which awards stop being supplies and start being treasure. */
 export const PERMANENT_FROM_LEVEL = 4;
@@ -85,18 +94,20 @@ export function spoilPool(tier: SpoilTier, level: number): Id[] {
 }
 
 /**
- * The three items on offer for one claimed bounty.
+ * The items the bounty behind a given door pays. One, today — see SPOIL_CHOICES.
  *
- * `bountyIndex` separates two bounties claimed in the same fight, so a party
- * that earns both is not offered the same three things twice.
+ * `door` is what makes the gate screen a real choice: each of the three doors
+ * offers its own objective and its own prize, so picking a door is picking what
+ * you are playing for. Absent from the seed, all three would pay the same thing
+ * and the decision would collapse back to "which ground do I prefer".
  *
- * Returns fewer than three only if the pool itself is smaller, which a test
- * guards against — an award of one item is not a choice, and an award of none
- * is a bug that would look exactly like a bounty quietly paying nothing.
+ * Returns fewer than asked only if the pool itself is smaller, which a test
+ * guards against — an award of none is a bug that would look exactly like a
+ * bounty quietly paying nothing.
  */
 export function spoilOffer(
   runSeed: number, day: number, half: 'morning' | 'afternoon',
-  bountyIndex: number, level: number,
+  door: number, level: number,
 ): Id[] {
   const pool = spoilPool(spoilTierFor(level), level);
   // The attempt number is deliberately absent: a retried day must offer the
@@ -105,7 +116,7 @@ export function spoilOffer(
     runSeed * 2654435761 +
     day * 40503 +
     (half === 'afternoon' ? 1013904223 : 0) +
-    bountyIndex * 2246822519 +
+    door * 2246822519 +
     level * 374761393
   ) >>> 0;
   const rest = [...pool];
@@ -127,6 +138,20 @@ export function spoilOffer(
  */
 export function spoilTierLabel(level: number): string {
   return spoilTierFor(level) === 'permanent' ? 'a magic item' : 'a scroll or potion';
+}
+
+/**
+ * The single item this bounty is paying, named on the card before the fight.
+ *
+ * The whole point of naming bounties in advance is that they are something to
+ * play FOR, and a reward described as "a scroll or potion" is not something
+ * anyone plays for. This is what turns the card into an objective.
+ */
+export function spoilPrize(
+  runSeed: number, day: number, half: 'morning' | 'afternoon',
+  door: number, level: number,
+): Id | undefined {
+  return spoilOffer(runSeed, day, half, door, level)[0];
 }
 
 /** A short line for why this item is on the table, shown under its name. */
