@@ -208,7 +208,7 @@ export const CLASSES: Record<Id, ClassData> = {
       spellsByLevel: {
         1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good'],
         2: ['guiding-bolt'],
-        3: ['hold-person', 'aid', 'spiritual-weapon', 'blindness', 'lesser-restoration', 'warding-bond'],
+        3: ['hold-person', 'aid', 'spiritual-weapon', 'silence', 'blindness', 'lesser-restoration', 'warding-bond'],
         5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic', 'protection-from-energy', 'bestow-curse'], // 3rd-level slot arrives here
         // 4th-level slot arrives here, and used to hold exactly one spell.
         7: ['banishment', 'death-ward', 'freedom-of-movement'],
@@ -259,8 +259,8 @@ export const CLASSES: Record<Id, ClassData> = {
           'find-familiar', // ritual: always known, never counts against the spellbook
         ],
         2: ['thunderwave'],
-        3: ['scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness', 'flaming-sphere'],
-        5: ['fireball', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
+        3: ['shatter', 'mirror-image', 'scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness', 'flaming-sphere'],
+        5: ['fireball', 'counterspell', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
         7: ['greater-invisibility', 'wall-of-fire', 'confusion', 'dimension-door',
             'blight', 'ice-storm', 'banishment', 'phantasmal-killer'],   // 4th-level slot arrives here
       },
@@ -347,7 +347,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // Strongest first within each level — see spellsByLevel's note.
         1: ['vicious-mockery', 'starry-wisp', 'minor-illusion', 'true-strike', 'sleep', 'healing-word', 'command',
             'cure-wounds', 'faerie-fire', 'color-spray', 'thunderwave', 'bane', 'animal-friendship'],
-        3: ['hold-person', 'invisibility', 'suggestion', 'blindness', 'aid', 'lesser-restoration'],
+        3: ['hold-person', 'shatter', 'mirror-image', 'silence', 'invisibility', 'suggestion', 'blindness', 'aid', 'lesser-restoration'],
         5: ['fear', 'mass-healing-word', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
         // Magical Discoveries (6): two spells from off the bard's own list.
         // Written here rather than through new machinery because this table is
@@ -419,7 +419,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // with Wild Shape itself — a ritual is always known and costs no slot,
         // which is the same "free, once you have it" shape.
         2: ['find-familiar'],
-        3: ['moonbeam', 'hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
+        3: ['moonbeam', 'pass-without-trace', 'hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
         5: ['call-lightning', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
         7: ['wall-of-fire', 'confusion', 'freedom-of-movement', 'blight', 'ice-storm'],
       },

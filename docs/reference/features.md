@@ -177,6 +177,7 @@ What the engine can put on a combatant, and what the log calls it.
 | `sapped` | sapped |
 | `shielded` | shielded |
 | `shillelagh` | wielding a shillelagh |
+| `silenced` | silenced |
 | `slowed` | slowed |
 | `smiting` | ready to smite |
 | `stunned` | stunned |

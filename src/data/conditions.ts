@@ -58,6 +58,7 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   veiled: 'invisible',
   deathWarded: 'warded against death',
   unbound: 'moving freely',
+  silenced: 'silenced',
 };
 
 export function conditionName(id: ConditionId): string {

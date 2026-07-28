@@ -75,6 +75,15 @@ export interface Cell {
    */
   fire?: { sourceId: Id; dice: string };
   /**
+   * Silence: no spell with a spoken word can be cast from this cell.
+   *
+   * An overlay for the same reason the fire and the web are: it sits on top of
+   * whatever the ground is, and a creature can walk out of it. Unlike those two
+   * it hushes BOTH sides — a party that could cast freely inside its own
+   * Silence would be casting from behind a wall the enemy cannot shout over.
+   */
+  silent?: { sourceId: Id };
+  /**
    * A lingering Web: strands of webbing filling the cell while the caster
    * concentrates. Unlike the old fire-and-forget Web (which only caught who
    * stood in the blast at cast time), this persists — a creature that *enters*
@@ -144,7 +153,8 @@ export type ConditionId =
   | 'stunned'      // Stunning Strike: incapacitated, speed 0, and attacks against it have advantage
   | 'veiled'       // Greater Invisibility: hidden, and attacking does not reveal you
   | 'deathWarded'  // Death Ward: the next drop to 0 leaves you standing at 1 instead
-  | 'unbound';     // Freedom of Movement: nothing magical holds you
+  | 'unbound'      // Freedom of Movement: nothing magical holds you
+  | 'silenced';    // standing in a Silence: no spell with a spoken word
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -430,6 +440,15 @@ export interface Combatant {
    * it -- without confiscating anything.
    */
   corroded?: number;
+  /**
+   * Mirror Image: how many duplicates are still shimmering around you.
+   *
+   * A count on the combatant rather than a condition, for the same reason
+   * `corroded` is one: conditions are on/off and this is a resource that gets
+   * chewed through. Each attack that would land may strike an image instead,
+   * and each one struck is gone.
+   */
+  mirrorImages?: number;
   /**
    * Death Burst: the thing goes off when it dies. A magmin bursts into fire, a
    * mephit into ice or steam. It is the whole point of those monsters — kill

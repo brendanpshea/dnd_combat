@@ -17,7 +17,7 @@ import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
-import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS } from './rules/attack.js';
+import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
 import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
@@ -291,6 +291,10 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (actor.wildShape) return false;
       const spell = SPELLS[action.spellId];
       if (!spell || spell.outOfCombat) return false; // Guidance and the like never resolve in a fight
+      // Silence: no spoken word, no spell. Gated here rather than at cast time
+      // so the spells simply are not offered — telling a player "you cannot"
+      // by removing the button beats letting them press one that does nothing.
+      if (cellAt(state.grid, actor.position)?.silent) return false;
       const costsAction = spell.castingTime === 'action';
       if (costsAction && actor.turn.actionUsed) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
@@ -677,6 +681,14 @@ export function step(state: GameState, action: Action): { state: GameState; even
         type: 'spellCast', casterId: actorId, spellId: action.spellId,
         origin: actor.position, cells: spellFootprint(draft, actor, spell, action.targets),
       });
+      // Counterspell, after the slot is spent and the cast is telegraphed but
+      // before anything resolves — which is exactly when it happens at a table.
+      // The caster loses the slot either way; that is the spell's whole cost.
+      const counteredBy = tryCounterspell(draft, actorId, spell.level);
+      if (counteredBy) {
+        events.push({ type: 'counterspelled', casterId: actorId, byId: counteredBy, spellId: action.spellId });
+        break;
+      }
       const castEvents = spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) });
       events.push(...castEvents);
       // Blessed Healer (Life Domain, Cleric 6): a healing spell cast on someone

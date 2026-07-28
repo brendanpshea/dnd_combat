@@ -257,6 +257,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.combatantId)} shifts into the shape of a ${e.formId.replace(/-/g, ' ')}! (+${e.tempHp} temp HP)`;
     case 'wildShapeEnded':
       return `${nm(e.combatantId)} sheds the ${e.formId.replace(/-/g, ' ')} shape.`;
+    case 'mirrorImageStruck':
+      return `  A duplicate of ${nm(e.combatantId)} shatters — ${e.left} left.`;
+    case 'counterspelled':
+      return `  ${nm(e.byId)} counters ${nm(e.casterId)}'s ${e.spellId.replace(/-/g, ' ')}!`;
     case 'cuttingWords':
       return `  ${nm(e.bardId)} cuts in with a jibe — ${e.amount} off the roll.`;
     case 'attackWarded':

@@ -8,7 +8,7 @@ import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
-import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, coverBetween } from '../grid.js';
+import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -323,6 +323,26 @@ export function resolveAttack(
     (isMeleeAttack ? 0 : shieldRangedBonus(target.equipped.offHand));
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
+
+  // Mirror Image: the blow finds a duplicate instead of the caster.
+  //
+  // Rolled before Shield, because an image costs nothing where Shield costs a
+  // slot and a reaction — spending the cheap defence first is what a player
+  // would do, and doing it in the other order would quietly waste slots.
+  // A natural 20 finds the real one; so does an attacker that cannot see.
+  if (hit && d20.natural !== 20 && (target.mirrorImages ?? 0) > 0) {
+    const images = target.mirrorImages!;
+    // 3 images: 6+ on a d20 hits an image. 2: 8+. 1: 11+. (SRD's own ladder.)
+    const need = images >= 3 ? 6 : images === 2 ? 8 : 11;
+    const roll = rollDice(state.rng, '1d20');
+    state.rng = roll.state;
+    if (roll.total >= need) {
+      target.mirrorImages = images - 1;
+      if (target.mirrorImages === 0) delete target.mirrorImages;
+      hit = false;
+      events.push({ type: 'mirrorImageStruck', combatantId: targetId, left: target.mirrorImages ?? 0 });
+    }
+  }
 
   // Shield reaction (autocast): a would-be hit that +5 AC turns into a miss, if
   // the defender can react. A natural 20 lands regardless.
@@ -1169,6 +1189,44 @@ export function tryAutoShield(state: GameState, targetId: Id): boolean {
   return true;
 }
 
+/**
+ * Counterspell: somebody stops the spell before it happens.
+ *
+ * AUTOCAST, like every other reaction in this game — Shield, Cutting Words and
+ * the monk's Deflect Attacks all fire on their own. There is no interrupt
+ * prompt in the turn loop and inventing one for a single spell would be a lot
+ * of machinery pointed at one button.
+ *
+ * The interesting part is not the plumbing, it is the GATE. Shield's gate is
+ * objective ("would +5 turn this hit into a miss?") and needs no judgement.
+ * Counterspell's does: countering a Vicious Mockery with a 3rd-level slot is
+ * a waste, and countering a Fireball is the whole reason to hold the slot.
+ *
+ * So the bar is the incoming spell's level. Cantrips and 1st-level spells go
+ * through; 2nd and above are stopped while a 3rd-level slot remains. Measured
+ * against the sixteen enemy casters actually in the game, that means Fireball,
+ * Lightning Bolt, Fear, Spirit Guardians, Hold Person and Web get answered, and
+ * a goblin hexer's Vicious Mockery never burns anything.
+ */
+export function tryCounterspell(state: GameState, casterId: Id, spellLevel: number): Id | undefined {
+  if (spellLevel < 2) return undefined;
+  const caster = state.combatants[casterId];
+  if (!caster) return undefined;
+  for (const c of Object.values(state.combatants)) {
+    if (c.team === caster.team || !c.alive || isDown(c) || isIncapacitated(c)) continue;
+    if (!c.spellIds.includes('counterspell') || c.turn.reactionUsed) continue;
+    // 60 feet and line of sight: you cannot stop what you cannot see.
+    if (distanceFeet(c.position, caster.position) > 60) continue;
+    if (!hasLineOfSight(state.grid, c.position, caster.position)) continue;
+    const slot = c.spellSlots[2];   // a 3rd-level slot, which is what it costs
+    if (!slot || slot.current <= 0) continue;
+    slot.current -= 1;
+    c.turn.reactionUsed = true;
+    return c.id;
+  }
+  return undefined;
+}
+
 export function breakConcentration(state: GameState, combatantId: Id): GameEvent[] {
   const c = state.combatants[combatantId]!;
   if (!c.concentratingOn) return [];
@@ -1206,8 +1264,9 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
     // The wall goes out with the same breath — it rides the same "keyed off the
     // caster, not the spell id" rule, so it was covered before it was written.
     const burnt = clearFireBySource(state.grid, combatantId);
-    if (cleared.length + burnt.length > 0) {
-      events.push({ type: 'webCleared', sourceId: combatantId, cells: [...cleared, ...burnt] });
+    const hushed = clearSilenceBySource(state.grid, combatantId);
+    if (cleared.length + burnt.length + hushed.length > 0) {
+      events.push({ type: 'webCleared', sourceId: combatantId, cells: [...cleared, ...burnt, ...hushed] });
     }
     for (const other of Object.values(state.combatants)) {
       const held = other.conditions.some((k) => k.sourceId === combatantId && k.concentration && k.id === 'restrained');

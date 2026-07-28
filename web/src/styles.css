@@ -3486,3 +3486,14 @@ button.category .count {
   cursor: pointer; padding: 8px 2px; color: #8d84a6; font-size: .84rem; list-style: revert;
 }
 .adv-template-more[open] > summary { margin-bottom: 8px; }
+
+/* Counterspell shouts, because it fires on its own turn-out-of-turn and spends
+   a 3rd-level slot the player never clicked. Cold blue against the gold tags so
+   it reads as "something was stopped", not "something was hit harder". */
+.float.tag.counterspell {
+  font-size: 1.3em;
+  font-weight: 900;
+  color: #9be2ff;
+  text-shadow: 0 0 10px #4aa8ff, 0 2px 3px #000c;
+  letter-spacing: 0.02em;
+}

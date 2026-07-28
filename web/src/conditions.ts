@@ -62,6 +62,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   veiled:         { icon: '🫥', label: 'Invisible — can’t be targeted, and attacking doesn’t reveal it', kind: 'buff' },
   deathWarded:    { icon: '🕯️', label: 'Death Ward — the next blow that would drop it leaves it at 1 HP', kind: 'buff' },
   unbound:        { icon: '🌀', label: 'Freedom of Movement — webs, vines and paralysis can’t hold it', kind: 'buff' },
+  silenced:       { icon: '🔇', label: 'Silenced — can’t cast anything with a spoken word', kind: 'debuff' },
   marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
   inspired:       { icon: '⭐', label: 'Inspired — advantage on next attack', kind: 'buff' },
   shielded:       { icon: '🛡️', label: 'Shielded — +5 AC', kind: 'buff' },
