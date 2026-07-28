@@ -76,9 +76,18 @@ describe('campaign state', () => {
       }
     }
     // A 1st-level party is offered NO enchanted gear (no +1, adamantine, trinkets).
-    const enchanted = (id: string) => id.endsWith('plus1') || id.includes('adamantine') || id.includes('silvered')
+    //
+    // Silvering is NOT on that list, and used to be. It is a coating a smith
+    // applies, not an enchantment: it adds nothing to hit or damage and does
+    // exactly one thing, which is get through "nonmagical" resistance. So it is
+    // a staple on the shelf at every level — and it has to be, because it is
+    // the answer to a problem the game shows you rather than a reward for
+    // having survived long enough. Buying one at level 1 costs a hundred gold
+    // for no combat benefit at all against anything a level-1 party fights.
+    const enchanted = (id: string) => id.endsWith('plus1') || id.includes('adamantine')
       || ['gauntlets-ogre-power', 'headband-intellect', 'cloak-protection', 'brooch-shielding', 'bracers-archery', 'boots-winterlands', 'gloves-thievery'].includes(id);
     expect(l1.some(enchanted)).toBe(false);
+    expect(l1.some((id) => id.startsWith('silvered-')), 'silver is a staple').toBe(true);
     // Magical rotation grows with level, and never carries the whole catalogue.
     const magical = (shelf: string[]) => shelf.filter((id) => enchanted(id) || id.includes('resistance') || id.includes('giant-strength') || (id.includes('scroll') && itemPrice(id)! > 60));
     expect(magical(l5).length).toBeGreaterThan(magical(l1).length);

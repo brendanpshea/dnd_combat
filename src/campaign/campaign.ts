@@ -16,7 +16,7 @@ import {
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS, SCROLL_IDS } from '../data/items.js';
-import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS, isWeaponProficient } from '../data/weapons.js';
+import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS, SILVERED_WEAPONS, isWeaponProficient } from '../data/weapons.js';
 import { ARMOR, SHIELDS, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
@@ -316,7 +316,7 @@ const TREASURE_POOL: Record<Rarity, Id[]> = {
     // most parties never saw one at all.
     ...PLUS_ONE_WEAPONS, 'shield-plus1',
     'wand-magic-missiles', 'wand-web', 'wand-war-mage-1', 'staff-python',
-    'silvered-shortsword', 'silvered-warhammer',
+    ...SILVERED_WEAPONS,
     'potion-greater-healing', 'greatsword', 'longbow', 'scale-mail',
     'rapier', 'warhammer', 'battleaxe', 'scroll-web', 'scroll-scorching-ray', 'scroll-hold-person',
     'scroll-ray-of-sickness', 'scroll-blindness', 'scroll-invisibility',
@@ -495,7 +495,10 @@ const ALL_WARES: Id[] = [
   'dagger', 'handaxe', 'spear', 'rapier', 'warhammer', 'battleaxe', 'morningstar',
   'greatsword', 'longbow',
   ...PLUS_ONE_WEAPONS, ...VICIOUS_WEAPONS,
-  'silvered-shortsword', 'silvered-warhammer',
+  // Every melee weapon has a silvered version now, generated in weapons.ts —
+  // so the answer to "this thing shrugs off my sword" is not limited to the
+  // two weapons somebody happened to type.
+  ...SILVERED_WEAPONS,
   'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
   'sword-of-wounding', 'sword-of-life-stealing', 'berserker-axe', 'mace-of-terror',
   // armor
@@ -554,7 +557,16 @@ export function isMagicalWare(itemId: Id): boolean {
   if (SHIELDS[itemId]) return SHIELDS[itemId]!.rarity !== 'common';
   if (TRINKETS[itemId]) return true;
   const w = WEAPONS[itemId];
-  if (w) return !!w.magic || itemId.endsWith('plus1') || itemId.includes('silvered');
+  // Silvering is a craft, not an enchantment. A smith coats the edge and the
+  // weapon gains nothing to hit or damage — the only effect is getting through
+  // "nonmagical" resistance. So it is a staple a shop always stocks, not
+  // treasure: it is the ANSWER to a problem the game has just shown you, and
+  // being able to walk up and buy the fix for the wraith behind door two is
+  // the entire loop. Treasure-only silver would arrive by luck instead.
+  //
+  // It also keeps it out of the consumable award pool, where a silvered
+  // greatsword would have been a very strange thing to call a consumable.
+  if (w) return (!!w.magic && !itemId.startsWith('silvered-')) || itemId.endsWith('plus1');
   if (ARMOR[itemId]) return itemId.endsWith('plus1') || itemId.includes('adamantine');
   if (ITEMS[itemId]) {
     if (itemId.includes('potion-healing') || itemId.includes('greater-healing')) return false;
