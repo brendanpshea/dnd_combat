@@ -8,7 +8,7 @@ import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
-import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, coverBetween } from '../grid.js';
+import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, coverBetween } from '../grid.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -1203,7 +1203,12 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   // id now, so the next strand spell is covered before it is written.
   {
     const cleared = clearWebBySource(state.grid, combatantId);
-    if (cleared.length > 0) events.push({ type: 'webCleared', sourceId: combatantId, cells: cleared });
+    // The wall goes out with the same breath — it rides the same "keyed off the
+    // caster, not the spell id" rule, so it was covered before it was written.
+    const burnt = clearFireBySource(state.grid, combatantId);
+    if (cleared.length + burnt.length > 0) {
+      events.push({ type: 'webCleared', sourceId: combatantId, cells: [...cleared, ...burnt] });
+    }
     for (const other of Object.values(state.combatants)) {
       const held = other.conditions.some((k) => k.sourceId === combatantId && k.concentration && k.id === 'restrained');
       if (held) {
@@ -1285,6 +1290,20 @@ function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
  * forget a step.
  */
 export function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
+  // Death Ward: one reprieve, spent the moment it is needed. Here rather than
+  // in the damage maths because this is the single place every route to zero
+  // passes through — a blow, a failed save, a hazard — and a ward that only
+  // caught swords would be a ward nobody could rely on.
+  const ward = state.combatants[combatantId]?.conditions.find((k) => k.id === 'deathWarded');
+  if (ward) {
+    const c = state.combatants[combatantId]!;
+    c.conditions = c.conditions.filter((k) => k !== ward);
+    c.hp = 1;
+    return [
+      { type: 'conditionRemoved', combatantId, condition: 'deathWarded' },
+      { type: 'healed', targetId: combatantId, sourceId: ward.sourceId ?? combatantId, amount: 1 },
+    ];
+  }
   const events = [
     ...transferHuntersMark(state, combatantId),
     ...downCombatant(state, combatantId),

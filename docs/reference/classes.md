@@ -68,7 +68,7 @@ Spellcasting ability: **CHA**.
 | 3 | Hold Person, Invisibility, Suggestion, Blindness, Aid, Lesser Restoration |
 | 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
 | 6 | Fireball, Spiritual Weapon |
-| 7 | Phantasmal Killer |
+| 7 | Greater Invisibility, Confusion, Dimension Door, Freedom of Movement, Phantasmal Killer |
 
 ## Cleric
 
@@ -111,7 +111,7 @@ Spellcasting ability: **WIS**.
 | 2 | Guiding Bolt |
 | 3 | Hold Person, Aid, Spiritual Weapon, Blindness, Lesser Restoration, Warding Bond |
 | 5 | Mass Healing Word, Spirit Guardians, Dispel Magic, Protection from Energy, Bestow Curse |
-| 7 | Banishment |
+| 7 | Banishment, Death Ward, Freedom of Movement |
 
 ## Druid
 
@@ -155,7 +155,7 @@ Spellcasting ability: **WIS**.
 | 2 | Find Familiar |
 | 3 | Moonbeam, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
 | 5 | Call Lightning, Protection from Energy, Dispel Magic |
-| 7 | Blight, Ice Storm |
+| 7 | Wall of Fire, Confusion, Freedom of Movement, Blight, Ice Storm |
 
 ## Fighter
 
@@ -378,6 +378,6 @@ Spellcasting ability: **INT**.
 | 2 | Thunderwave |
 | 3 | Scorching Ray, Misty Step, Suggestion, Web, Invisibility, Blindness, Flaming Sphere |
 | 5 | Fireball, Fear, Lightning Bolt, Dispel Magic, Haste |
-| 7 | Blight, Ice Storm, Banishment, Phantasmal Killer |
+| 7 | Greater Invisibility, Wall of Fire, Confusion, Dimension Door, Blight, Ice Storm, Banishment, Phantasmal Killer |
 
 Learnable from scrolls found in play: Ray of Sickness.

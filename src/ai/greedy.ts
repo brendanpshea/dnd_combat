@@ -732,6 +732,76 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const meleeBonus = w?.melee ? avgDice(w.damage) : 0;
       return 4 + meleeBonus - slotCost;
     }
+    // --- 4th level ---------------------------------------------------------
+    // The tier was unscored entirely, which meant a party's own hints never
+    // suggested the best spell it owned. Ice Storm, Banishment and Blight are
+    // still unscored — they predate this and are a separate job.
+    case 'wall-of-fire': {
+      const center = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        const pFail = saveFailProb(state, t, 'dex', dc);
+        const ev = avgDice('5d8') * (pFail + (1 - pFail) * 0.5);
+        // The wall burns everyone, so an ally standing in it is a real cost —
+        // heavier than Fireball's, because the wall stays there.
+        v += t.team === actor.team ? -3 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    case 'confusion': {
+      const center = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || t.team === actor.team) continue;
+        if (t.conditions.some((k) => k.id === 'incapacitated')) continue;
+        // A turn taken off an enemy is worth a slice of what killing it is —
+        // the same shape Turn Undead uses, and for the same reason: removing a
+        // creature from the fight for a round is not free but is not a kill.
+        v += saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) * 0.35;
+      }
+      return v - slotCost;
+    }
+    case 'greater-invisibility': {
+      // Worth it on whoever is going to swing next and is in reach of something
+      // — advantage on every attack, and nothing can target them back.
+      const tid = (a.targets[0] as { combatantId: Id }).combatantId;
+      const t = state.combatants[tid]!;
+      if (!t.alive || t.conditions.some((k) => k.id === 'veiled')) return 0;
+      const threatened = Object.values(state.combatants).some(
+        (c) => c.alive && !isDown(c) && c.team !== actor.team && distanceCells(c.position, t.position) <= 2,
+      );
+      return threatened ? 8 - slotCost : 0;
+    }
+    case 'death-ward': {
+      // Insurance, and only worth a slot on somebody the fight is actually
+      // threatening — on a full-health hero at the back it is a wasted 4th.
+      const tid = (a.targets[0] as { combatantId: Id }).combatantId;
+      const t = state.combatants[tid]!;
+      if (!t.alive || t.conditions.some((k) => k.id === 'deathWarded')) return 0;
+      return t.hp <= t.maxHp * 0.5 ? 6 - slotCost : 0;
+    }
+    case 'freedom-of-movement': {
+      const tid = (a.targets[0] as { combatantId: Id }).combatantId;
+      const t = state.combatants[tid]!;
+      if (!t.alive || t.conditions.some((k) => k.id === 'unbound')) return 0;
+      // Reactive: it is worth a slot when something is holding them, and
+      // nothing much when it is not — this game has no way to know a Web is
+      // coming.
+      const held = t.conditions.some((k) => k.id === 'restrained' || k.id === 'paralyzed');
+      return held ? 7 - slotCost : 0;
+    }
+    // Dimension Door is deliberately unscored. Valuing a teleport means valuing
+    // a POSITION, and every cheap proxy ("get away from things") makes a caster
+    // that runs from fights it was winning. A player can see the board; this
+    // cannot, yet.
+
     default:
       return 0;
   }

@@ -150,6 +150,7 @@ What the engine can put on a combatant, and what the log calls it.
 | `charmed` | charmed |
 | `commanded` | commanded |
 | `cursed` | cursed |
+| `deathWarded` | warded against death |
 | `dodging` | dodging |
 | `energyWarded` | warded against an element |
 | `fleeing` | fleeing |
@@ -179,7 +180,9 @@ What the engine can put on a combatant, and what the log calls it.
 | `slowed` | slowed |
 | `smiting` | ready to smite |
 | `stunned` | stunned |
+| `unbound` | moving freely |
 | `unconscious` | unconscious |
+| `veiled` | invisible |
 | `vexed` | vexed |
 | `warded` | warded |
 | `wounded` | wounded — cannot heal |

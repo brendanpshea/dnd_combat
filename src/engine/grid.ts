@@ -155,6 +155,29 @@ export function webCell(
   return true;
 }
 
+/** Set a cell alight (Wall of Fire). Same rules as the web: never a wall. */
+export function fireCell(grid: GridState, p: Position, sourceId: Id, dice: string): boolean {
+  const cell = cellAt(grid, p);
+  if (!cell || blocksMovement(cell.terrain)) return false;
+  cell.fire = { sourceId, dice };
+  return true;
+}
+
+/** Clear every burning cell a caster lit — their concentration dropped. */
+export function clearFireBySource(grid: GridState, sourceId: Id): Position[] {
+  const cleared: Position[] = [];
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const cell = cellAt(grid, { x, y })!;
+      if (cell.fire?.sourceId === sourceId) {
+        delete cell.fire;
+        cleared.push({ x, y });
+      }
+    }
+  }
+  return cleared;
+}
+
 /** Clear every Web strand a given caster laid (their concentration dropped),
  *  returning the cleared cells so the UI can animate them fading. */
 export function clearWebBySource(grid: GridState, sourceId: Id): Position[] {

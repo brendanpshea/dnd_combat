@@ -6,7 +6,7 @@ import { cellAt, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBindin
 import { blocksMovement, reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
-import { savingThrow } from './saves.js';
+import { savingThrow, saveForHalf } from './saves.js';
 import { rollDice, parseDice } from '../dice.js';
 import type { GameEvent } from '../events.js';
 
@@ -269,6 +269,21 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         events.unshift({ type: 'moved', combatantId: moverId, path: walked });
         return events;
       }
+    }
+
+    // Walking through the wall of fire. Unlike the web, it burns EVERYONE —
+    // the caster's own party included. A wall that only hurts the enemy is not
+    // a wall, it is a damage aura, and placing it badly has to cost something
+    // or there is no decision in where it goes.
+    const fire = cellAt(state.grid, step)!.fire;
+    if (fire) {
+      const roll = rollDice(state.rng, fire.dice);
+      state.rng = roll.state;
+      const save = savingThrow(state, moverId, 'dex', 15);
+      events.push(save.event);
+      const amount = saveForHalf(mover, 'dex', roll.total, save.success);
+      events.push(...applyDamage(state, moverId, fire.sourceId, amount, 'fire', roll.rolls, { tags: ['Wall of Fire'] }));
+      if (!mover.alive || isDown(mover)) { stopShort(); return events; }
     }
 
     // Walking into a lingering Web: a creature not on the caster's side must

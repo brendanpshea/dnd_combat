@@ -77,6 +77,10 @@ export function attemptHide(state: GameState, actorId: Id): GameEvent[] {
 
 /** End Hide and emit the matching observable event if it was active. */
 export function endHide(c: Combatant): GameEvent[] {
+  // Greater Invisibility is the whole point of being 4th level rather than 2nd:
+  // the veil does not lift when you swing. Checked here rather than at every
+  // call site, because every call site means "you just did something loud".
+  if (c.conditions.some((k) => k.id === 'veiled')) return [];
   if (!isHidden(c)) return [];
   c.conditions = c.conditions.filter((condition) => condition.id !== 'hidden');
   return [{ type: 'conditionRemoved', combatantId: c.id, condition: 'hidden' }];
