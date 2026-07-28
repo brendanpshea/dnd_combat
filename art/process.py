@@ -421,6 +421,7 @@ IDS = [
     "aboleth", "otyugh", "roper",
     "flying-sword", "rug-of-smothering", "flesh-golem", "scarecrow", "shield-guardian", "stone-golem",
     "black-pudding", "gelatinous-cube", "gray-ooze", "ochre-jelly",
+    "druid", "apprentice-mage", "lion", "goblin-hexer", "skeleton-bonechanter", "gnoll-packcaller", "azer-forgecaller", "kobold-emberling", "ettercap-snarecaller",
     # Adventure NPC archetypes
     "npc-innkeeper", "npc-elder", "npc-merchant", "npc-guard",
     "npc-scout", "npc-commoner", "npc-child", "npc-noble",
@@ -449,8 +450,11 @@ captioned = []
 
 unstacked = []
 
+target_cids = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
+process_ids = [cid for cid in IDS if cid in target_cids] if target_cids else IDS
+
 for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
-    for cid in IDS:
+    for cid in process_ids:
         src = os.path.join(SRC, f"{kind}-{cid}.png")
         if not os.path.exists(src):
             continue
