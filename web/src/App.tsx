@@ -29,8 +29,8 @@ import { AdventureScreen } from './Adventure.js';
 import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { completedModules } from './adventureProgress.js';
 import { moduleChains, chapterStates, currentChapter } from '../../src/adventure/chain.js';
-import { loadCampaignWeb } from './campaignStorage.js';
-import { loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
+import { loadCampaignWeb, campaignLoadProblem } from './campaignStorage.js';
+import { loadArenaWeb, deleteArenaWeb, arenaLoadProblem } from './arenaStorage.js';
 import { classLook } from './classLook.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
@@ -161,8 +161,18 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
   const states = chapterStates(storyChain, completed, savedId);
   const at = currentChapter(storyChain, completed, savedId);
 
+  // A save that cannot be opened used to read as no save at all: the screen
+  // simply offered a fresh start and the player was never told their party had
+  // been there. Whatever else goes wrong, being told is the minimum.
+  const saveProblems = [arenaLoadProblem(), campaignLoadProblem()].filter(Boolean);
+
   return (
     <div className="setup landing">
+      {saveProblems.length > 0 && (
+        <div className="save-warning" role="status">
+          ⚠️ {saveProblems[0]}
+        </div>
+      )}
       <header className="landing-head">
         <h1>⚔️ The Free Company</h1>
         <p className="landing-tag">The fifth-edition tabletop rules you already know — solo, in your browser, free.</p>
