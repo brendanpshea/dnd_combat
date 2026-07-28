@@ -44,6 +44,10 @@ const GLYPH: Record<string, string> = {
   chimera: '🦁', wyvern: '🐲', hydra: '🐉',
   'young-white': '🐉', 'young-black': '🐉', 'young-green': '🐉',
   'young-blue': '🐉', 'young-red': '🐉',
+  // Lycanthropes. Each is the beast rather than the human half: the hybrid is
+  // what you fight, and a row of identical 🧑 tokens would tell you nothing
+  // about which one is about to gore you.
+  wererat: '🐀', werewolf: '🐺', wereboar: '🐗', weretiger: '🐯', werebear: '🐻',
   // The caster variants. Each one is a magic-using version of a mundane base,
   // so the glyph says "spellcaster" rather than repeating the base's silhouette
   // — a hexer drawn as another 👺 is indistinguishable from the goblins it

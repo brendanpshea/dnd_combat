@@ -409,6 +409,79 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 15, dex: 10, con: 13, int: 7, wis: 12, cha: 7 },
     weaponIds: ['mace', 'bite'],
   },
+  /**
+   * Lycanthropes: SRD 5.2.1 stat blocks, with one deliberate house rule.
+   *
+   * The 2024 SRD dropped silver entirely. The word does not appear in it once,
+   * and these five blocks carry no damage immunity or resistance of any kind —
+   * the 2014 "nonmagical attacks that aren't silvered" clause is gone. Their
+   * numbers below are the 5.2.1 ones; `resistNonmagical` is not.
+   *
+   * It is added on purpose. `resistNonmagical` is this game's own field and
+   * fifteen monsters already carry it — every elemental and most of the undead
+   * — but they cluster at CR 4-5, so nothing below that level ever asks a
+   * martial character to solve anything with equipment. A wererat at CR 2 is
+   * the earliest the question can be posed, and silver is the answer players
+   * already expect to be right. Bludgeoning, piercing and slashing only:
+   * a fireball hurts a werewolf exactly as much as it hurts anyone.
+   *
+   * Shape-shifting is not modelled. The SRD says the statistics are identical
+   * in every form but size, so the hybrid is the only form worth fielding, and
+   * a bonus action that changes nothing but a word would be dead data.
+   */
+  wererat: {
+    id: 'wererat', name: 'Wererat',
+    ac: 13, cr: 2, hp: 60, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'medium',
+    abilities: { str: 10, dex: 16, con: 12, int: 11, wis: 10, cha: 8 },
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    weaponIds: ['were-bite-rat', 'hand-crossbow'],
+    attacksPerAction: 2,
+  },
+  werewolf: {
+    id: 'werewolf', name: 'Werewolf',
+    ac: 15, cr: 3, hp: 71, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'medium',
+    abilities: { str: 16, dex: 14, con: 14, int: 10, wis: 11, cha: 10 },
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    // Pack Tactics is on the block, and it is the trait that makes a werewolf
+    // read differently from a bag of hit points: it wants a friend adjacent.
+    featureIds: ['pack-tactics'],
+    weaponIds: ['were-bite-wolf', 'were-claw'],
+    attacksPerAction: 2,
+  },
+  wereboar: {
+    id: 'wereboar', name: 'Wereboar',
+    ac: 15, cr: 4, hp: 97, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'medium',
+    abilities: { str: 17, dex: 10, con: 15, int: 10, wis: 11, cha: 8 },
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    weaponIds: ['were-bite-boar', 'javelin'],
+    attacksPerAction: 2,
+  },
+  weretiger: {
+    id: 'weretiger', name: 'Weretiger',
+    ac: 12, cr: 4, hp: 120, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'medium',
+    abilities: { str: 17, dex: 15, con: 16, int: 10, wis: 13, cha: 11 },
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    weaponIds: ['were-bite-tiger', 'longbow'],
+    attacksPerAction: 2,
+  },
+  werebear: {
+    id: 'werebear', name: 'Werebear',
+    ac: 15, cr: 5, hp: 135, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'medium',
+    abilities: { str: 19, dex: 10, con: 17, int: 11, wis: 12, cha: 12 },
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    weaponIds: ['were-bite-bear', 'were-rend'],
+    attacksPerAction: 2,
+  },
   gnoll: {
     id: 'gnoll', name: 'Gnoll Warrior',
     ac: 15, hp: 27, speed: 30,
@@ -1787,6 +1860,8 @@ export const MONSTER_XP: Record<Id, number> = {
   // so every fight holding one was budgeted at well under half what it plays
   // like, in the arena and on the ladder alike.
   'ogre-mage': 2900,
+  // Lycanthropes, by CR: 2, 3, 4, 4, 5.
+  wererat: 450, werewolf: 700, wereboar: 1100, weretiger: 1100, werebear: 1800,
   guard: 25, bugbear: 200, lizardfolk: 100, gnoll: 100, spy: 200,
   'giant-badger': 50, 'giant-toad': 200, 'giant-hyena': 200, 'giant-boar': 450, 'giant-constrictor-snake': 450,
   lion: 200,

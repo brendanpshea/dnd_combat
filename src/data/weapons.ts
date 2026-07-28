@@ -357,17 +357,36 @@ export const WEAPONS: Record<Id, WeaponData> = {
     grants: { featureIds: ['wave-of-terror'] },
   },
 
-  // --- silvered — no bonus, bypasses resistance -------------
-  'silvered-shortsword': {
-    id: 'silvered-shortsword', name: 'Silvered Shortsword', damage: '1d6', damageType: 'piercing',
-    properties: ['finesse', 'light'], melee: true, mastery: 'vex', cost: 150, magic: true,
-  },
-  'silvered-warhammer': {
-    id: 'silvered-warhammer', name: 'Silvered Warhammer', damage: '1d8', damageType: 'bludgeoning',
-    properties: ['versatile'], melee: true, mastery: 'push', cost: 150, magic: true,
-  },
-
   // --- monster natural weapons and gear (SRD 5.2.1 stat blocks) ------------
+  // --- lycanthrope natural weapons (SRD 5.2.1 stat blocks) ----------------
+  'were-bite-rat': {
+    id: 'were-bite-rat', name: 'Bite', damage: '2d4', damageType: 'piercing',
+    properties: ['finesse'], melee: true,
+  },
+  'were-bite-wolf': {
+    id: 'were-bite-wolf', name: 'Bite', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'were-bite-boar': {
+    id: 'were-bite-boar', name: 'Gore', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'were-bite-tiger': {
+    id: 'were-bite-tiger', name: 'Bite', damage: '2d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'were-bite-bear': {
+    id: 'were-bite-bear', name: 'Bite', damage: '2d12', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'were-claw': {
+    id: 'were-claw', name: 'Scratch', damage: '2d6', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+  },
+  'were-rend': {
+    id: 'were-rend', name: 'Rend', damage: '2d10', damageType: 'slashing',
+    properties: [], melee: true,
+  },
   'goblin-scimitar': {
     id: 'goblin-scimitar', name: 'Scimitar', damage: '1d6', damageType: 'slashing',
     properties: ['finesse', 'light'], melee: true, bonusDiceOnAdvantage: '1d4',
@@ -1126,3 +1145,56 @@ export const PLUS_ONE_WEAPONS: Id[] = Object.keys(PLUS_ONE_COST).map((id) => `${
 
 /** The vicious weapons, for the loot tables and the shop. */
 export const VICIOUS_WEAPONS: Id[] = Object.keys(VICIOUS_COST).map((id) => `vicious-${id}`);
+
+/**
+ * Silvered weapons, one per melee weapon a player can buy.
+ *
+ * There were two: a shortsword and a warhammer, hand-written. Which meant the
+ * answer to "something here shrugs off my sword" was open to a rogue and a
+ * cleric and nobody else — a greatsword fighter or an axe-carrying barbarian
+ * had no silvered weapon to reach for at all, and buying the shortsword meant
+ * giving up their whole build to hit the thing.
+ *
+ * Fifteen monsters already halve nonmagical damage — every elemental and most
+ * of the undead — and `isMagicWeapon` already lets silver through. The mechanic
+ * worked; there was just nothing to buy.
+ *
+ * Silvering costs a flat fee over the base rather than scaling: it is a coating,
+ * not a better weapon, and a silvered dagger and a silvered greatsword take the
+ * same amount of silver. That also keeps it the cheap answer — it does nothing
+ * to hit or damage, so anyone paying for it is buying the ability to hurt one
+ * kind of enemy at all.
+ *
+ * NOT IN THE 2024 SRD, DELIBERATELY
+ *
+ * SRD 5.2.1 dropped silver entirely — the word does not appear in it once, and
+ * its lycanthropes have no damage immunity of any kind. `resistNonmagical` is
+ * this game's own field and always was. Keeping silver is a house rule, kept
+ * because it is the answer players reach for and because it gives a martial
+ * something to buy that a caster cannot simply out-spell.
+ */
+const SILVERING_FEE = 100;
+
+/** Melee weapons a player can buy, which is what there is any point silvering. */
+function silverable(): Id[] {
+  return Object.values(WEAPONS)
+    .filter((w) => w.melee && w.cost !== undefined && !w.magic
+      && !/-plus1$|^vicious-|^silvered-/.test(w.id))
+    .map((w) => w.id);
+}
+
+for (const baseId of silverable()) {
+  const base = WEAPONS[baseId]!;
+  WEAPONS[`silvered-${baseId}`] = {
+    ...base,
+    id: `silvered-${baseId}`,
+    name: `Silvered ${base.name}`,
+    cost: (base.cost ?? 0) + SILVERING_FEE,
+    // No attack or damage bonus: `isMagicWeapon` keys off `magic`, which is the
+    // whole and only effect — it gets through "nonmagical" resistance.
+    magic: true,
+  };
+}
+
+/** The silvered weapons, for the loot tables and the shop. */
+export const SILVERED_WEAPONS: Id[] = silverable().map((id) => `silvered-${id}`);

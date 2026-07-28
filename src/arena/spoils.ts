@@ -77,10 +77,36 @@ const AWARD_MIN_LEVEL: Record<SpoilTier, Record<string, number>> = {
   permanent: { common: 1, uncommon: 3, rare: 5 },
 };
 
+/**
+ * Armour a martial can be handed early without breaking anything.
+ *
+ * Reclassifying the adamantine armours would have done nothing on its own:
+ * rarity is not what gates them, `spoilTierFor` is. Below level 4 the arena
+ * awards no permanent magic at all, at any rarity — which was the right answer
+ * to "my first fight gave me a Mace +1", and the wrong one for a fighter, who
+ * then has nothing to win for three levels but potions somebody else drinks.
+ *
+ * So the exception is shaped like the problem. Adamantine armour adds nothing
+ * to hit and nothing to damage; all it does is take the crits off, which is
+ * defence a fighter feels and an arms race nobody joins. Full plate is left
+ * out — AC 18 at level 1 is a different conversation, and it is the one piece
+ * here a party could not otherwise reach for years.
+ */
+const EARLY_MARTIAL_KIT = new Set<Id>([
+  'adamantine-scale-mail', 'adamantine-chain-mail',
+  'adamantine-half-plate', 'adamantine-splint',
+]);
+
 /** Everything the arena might hand over, by tier. Derived, never hand-kept. */
 export function spoilPool(tier: SpoilTier, level: number): Id[] {
   const source = tier === 'permanent' ? MAGIC_SPOILS : SHOP_STOCK;
-  return source.filter((id) => {
+  // Below the permanent tier the pool is supplies — plus the martial kit above,
+  // which is the only way a fighter's prize is ever a piece of gear.
+  const early = tier === 'consumable'
+    ? MAGIC_SPOILS.filter((id) => EARLY_MARTIAL_KIT.has(id))
+    : [];
+  return [...early, ...source].filter((id) => {
+    if (EARLY_MARTIAL_KIT.has(id) && tier === 'consumable') return true;
     if (tier === 'permanent') {
       if (!isPermanentMagic(id)) return false;
     } else {
