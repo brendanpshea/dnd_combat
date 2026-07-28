@@ -205,9 +205,11 @@ describe('the gate offers them, not just the party screen', () => {
     const c = party();
     const idx = casterOf(c, 'aid');
     const level = SPELLS.aid!.level;
+    const built = buildCampaignParty(c)[idx]!;
     c.characters[idx]!.resources = {
       ...c.characters[idx]!.resources,
-      slots: buildCampaignParty(c)[idx]!.spellSlots.map((s, i) => (i === level - 1 ? 0 : s.current)),
+      hp: c.characters[idx]!.resources?.hp ?? built.hp,
+      slots: built.spellSlots.map((sl, i) => (i === level - 1 ? 0 : sl.current)),
     };
     expect(spellOptions(c).some((o) => o.who === idx && o.id === 'aid')).toBe(false);
   });
