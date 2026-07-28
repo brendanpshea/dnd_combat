@@ -148,26 +148,35 @@ export function PartyScreen(
                 : <span className="adv-party-emoji">🧑</span>}
               <div>
                 <strong>{ch.name} <span className="adv-camp-sheethint">ⓘ</span></strong>
-                <span className="muted"> · HP {party[idx]!.hp}/{party[idx]!.maxHp} · 🛡 {acOf(party[idx]!)}</span>
-                {/* Hit dice left to spend on a short rest — a die per level,
-                    refreshed (half) by a long rest. A short rest auto-spends
-                    them to heal. */}
-                <span className="muted adv-camp-hd" title="Hit dice — spent on a short rest to heal, half restored by a long rest">
-                  {' '}· 🎲 {hitDiceLeft(campaign, idx)}/{hitDiceMax(campaign)} HD
-                </span>
-                {/* Active camp-drunk buff potions (until the next rest), so a
-                    drink you took before the fight visibly stuck. */}
-                {(() => {
-                  const eff = ch.resources?.effects;
-                  const chips: string[] = [];
-                  if (eff?.giantStrength) chips.push(`💪 Str ${eff.giantStrength}`);
-                  for (const r of eff?.resistances ?? []) chips.push(`🛡 ${r} resist`);
-                  return chips.length ? (
-                    <span className="muted adv-camp-buffs" title="Camp buff — lasts until the next short or long rest">
-                      {' · '}{chips.join(' · ')}
-                    </span>
-                  ) : null;
-                })()}
+                {/* A wrapping flex row, not a run of spans each opening with a
+                    "·". Those separators are fine until the line wraps, and on a
+                    430px phone with a long name it always does — leaving the
+                    second line starting "· 🎲 3/3 HD", which reads as a bullet
+                    list that lost its first item. Spacing separates them now, so
+                    there is nothing to strand. */}
+                <div className="adv-camp-stats muted">
+                  <span>HP {party[idx]!.hp}/{party[idx]!.maxHp}</span>
+                  <span>🛡 {acOf(party[idx]!)}</span>
+                  {/* Hit dice left to spend on a short rest — a die per level,
+                      refreshed (half) by a long rest. A short rest auto-spends
+                      them to heal. */}
+                  <span className="adv-camp-hd" title="Hit dice — spent on a short rest to heal, half restored by a long rest">
+                    🎲 {hitDiceLeft(campaign, idx)}/{hitDiceMax(campaign)} HD
+                  </span>
+                  {/* Active camp-drunk buff potions (until the next rest), so a
+                      drink you took before the fight visibly stuck. */}
+                  {(() => {
+                    const eff = ch.resources?.effects;
+                    const chips: string[] = [];
+                    if (eff?.giantStrength) chips.push(`💪 Str ${eff.giantStrength}`);
+                    for (const r of eff?.resistances ?? []) chips.push(`🛡 ${r} resist`);
+                    return chips.map((chip) => (
+                      <span key={chip} className="adv-camp-buffs" title="Camp buff — lasts until the next short or long rest">
+                        {chip}
+                      </span>
+                    ));
+                  })()}
+                </div>
                 {/* Spell slots remaining, per level (renders nothing for a
                     non-caster) — so a wizard down to 1 of 2 first-level slots
                     reads at a glance, and "rest to recover" has a visible meter. */}

@@ -49,7 +49,7 @@ import { Silhouette } from './Silhouette.js';
  * the glyph at all. Without this, every warm load flickers for one frame.
  */
 export function ArtImage({
-  id, src, className, glyphClassName, alt = '', title, style,
+  id, src, className, glyphClassName, alt = '', title, style, priority,
 }: {
   /** Creature id — chooses the fallback glyph. */
   id: string;
@@ -58,6 +58,21 @@ export function ArtImage({
   className?: string;
   /** Class for the fallback span, when it needs different sizing to the img. */
   glyphClassName?: string;
+  /**
+   * Ask the browser to fetch this ahead of whatever else is queued.
+   *
+   * The board sets `high` for its tokens: they are the one thing a player is
+   * actually waiting on, and on a slow connection they compete with whatever
+   * the landing page left in flight, which the browser will not cancel.
+   *
+   * ON THE EVIDENCE, HONESTLY. Repeated runs on an emulated 400 kbps profile
+   * were tight within a build (±0.01s across three runs) and jumped between
+   * builds, which is the signature of a confound rather than a signal — one
+   * promising 1.8s result did not reproduce, and re-measuring the same build
+   * gave 3.6s. So this is here because it is semantically right, not because a
+   * number was demonstrated. No configuration measured worse than the baseline.
+   */
+  priority?: 'high' | 'low';
   alt?: string;
   title?: string;
   /**
@@ -109,6 +124,7 @@ export function ArtImage({
         src={src}
         alt={alt}
         title={title}
+        {...(priority ? { fetchPriority: priority } : {})}
         draggable={false}
         onLoad={() => setState('ok')}
         onError={() => setState('failed')}
