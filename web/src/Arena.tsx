@@ -22,6 +22,7 @@ import {
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
   partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck,
+  itemFitFor,
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
 import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
@@ -59,7 +60,7 @@ import {
   ambushDc, canCreepIn, creepKey, creepFor, surprisedTeam,
 } from '../../src/arena/ambush.js';
 import {
-  stallVisitOf, stallPrice, stallResale, type StallVisit,
+  stallVisitOf, stallPrice, stallResale, stallWillBuy, type StallVisit,
 } from '../../src/arena/stall.js';
 import { chorusLine, firstUnheard, type ChorusCue } from '../../src/arena/chorus.js';
 import { ArtImage } from './ArtImage.js';
@@ -97,6 +98,18 @@ interface Props {
   Battle: ComponentType<BattleProps>;
   onExit(): void;
 }
+
+/**
+ * Pull a confirm row into view when it appears.
+ *
+ * Without it, tapping a row near the bottom of a scrolling shelf expands its
+ * Buy/Cancel buttons underneath the party strip, where the player cannot see
+ * them — they tap, apparently nothing happens, and the purchase never
+ * completes. The adventure shop has carried this callback since it was
+ * written; the arena's stall needed it the moment it grew a confirm step.
+ */
+const revealConfirm = (el: HTMLDivElement | null) =>
+  el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
 function makeCombat(
   c: CampaignState, run: ArenaRunState, wave: ArenaWave, surprised?: 'team1' | 'team2',
@@ -171,6 +184,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    */
   const [showParty, setShowParty] = useState(false);
   const [shopTab, setShopTab] = useState<'buy' | 'sell'>('buy');
+  /**
+   * The row waiting for a second tap.
+   *
+   * Buying and selling used to happen on a single tap, so a stray thumb on a
+   * scrolling list could empty the purse or sell the party's only healing
+   * potion with nothing to undo it. The adventure shop has always confirmed;
+   * this is the same two-tap shape.
+   */
+  const [pendingBuy, setPendingBuy] = useState<Id | null>(null);
+  const [pendingSell, setPendingSell] = useState<string | null>(null);
   /** Which caster's prepared list is open, if any. */
   const [prepareFor, setPrepareFor] = useState<number | null>(null);
   const [buyFor, setBuyFor] = useState(0);
@@ -1000,30 +1023,17 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <div className="arena-shop">
                   <div className="arena-shop-head">
                     <b>The armourer's stall</b>
-                    <div className="arena-buyer">
-                      {c.characters.map((ch, i) => {
-                        const look = classLook(ch.classId);
-                        return (
-                          <button
-                            key={i}
-                            className={`arena-buyer-pick ${buyFor === i ? 'on' : ''}`}
-                            onClick={() => setBuyFor(i)}
-                            title={`Buy for ${ch.name}${look ? ` — ${look.name}` : ''}`}
-                          >
-                            <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
-                            {look && (
-                              <span className="class-pip on-portrait" style={{ ['--pip' as string]: look.color }}>
-                                {look.glyph}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {/* No portrait row here. The party strip along the bottom
+                        of the screen is already a row of faces, and adding a
+                        second one to choose a buyer meant two identical rows
+                        competing to be the party. Tapping a face down there
+                        picks who this is for — the same thing the adventure
+                        shop does, with the same component. */}
+                    <span className="arena-shop-gold">💰 {c.gold}</span>
                   </div>
                   <p className="hint">
                     {shopTab === 'buy'
-                      ? <>Buying for <b>{c.characters[buyFor]?.name}</b></>
+                      ? <>Buying for <b>{c.characters[buyFor]?.name}</b> — tap a face below to change</>
                       : <>Selling from <b>{c.characters[buyFor]?.name}</b>&rsquo;s pack and the party loot</>}
                     {visit.priceMult !== 1 && (
                       <span className={visit.priceMult < 1 ? 'haggle-good' : 'haggle-bad'}>
@@ -1091,83 +1101,125 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   </div>
 
                   <div className="stall-tabs">
-                    <button className={shopTab === 'buy' ? 'on' : ''} onClick={() => setShopTab('buy')}>Buy</button>
-                    <button className={shopTab === 'sell' ? 'on' : ''} onClick={() => setShopTab('sell')}>Sell</button>
+                    <button className={shopTab === 'buy' ? 'on' : ''}
+                      onClick={() => { setShopTab('buy'); setPendingSell(null); }}>Buy</button>
+                    <button className={shopTab === 'sell' ? 'on' : ''}
+                      onClick={() => { setShopTab('sell'); setPendingBuy(null); }}>Sell</button>
                   </div>
 
                   {shopTab === 'buy' ? (
                     <div className="arena-shelf">
                       {shelf.map((id) => {
                         const price = stallPrice(id, visit);
+                        const afford = c.gold >= price;
+                        const confirming = pendingBuy === id;
+                        const fit = itemFitFor(c, buyFor, id);
                         return (
-                          <button
-                            key={id}
-                            className="arena-buy"
-                            disabled={c.gold < price}
-                            onClick={() => {
-                              // The haggled price, not the list price — pass it
-                              // explicitly, because `buyItem` charges list by
-                              // default and a silent list charge would make a
-                              // good roll look like it did nothing.
-                              if (buyItem(c, buyFor, id, price)) {
-                                setNotice(`${itemName(id)} → ${c.characters[buyFor]?.name}`);
-                                refresh(); persist(c, run);
-                              }
-                            }}
-                          >
-                            <span className="arena-buy-icon">{itemIcon(id)}</span>
-                            <span className="arena-buy-name">{itemName(id)}</span>
-                            <span className="arena-buy-price">{price}g</span>
-                          </button>
+                          <div key={id} className="arena-buy-row">
+                            <button
+                              className={`arena-buy${confirming ? ' confirming' : ''}`}
+                              disabled={!afford}
+                              onClick={() => setPendingBuy(confirming ? null : id)}
+                            >
+                              <span className="arena-buy-icon">{itemIcon(id)}</span>
+                              <span className="arena-buy-name">
+                                {itemName(id)}
+                                {/* Whether it suits the hero you are buying for.
+                                    The one thing a shop can tell you that the
+                                    row cannot, and a breastplate bought for
+                                    someone who cannot wear it is a mistake you
+                                    find out about two screens later. */}
+                                {fit === 'fits' && <i className="shop-fit ok">✓ fits</i>}
+                                {fit === 'noprof' && <i className="shop-fit warn">⚠ not proficient</i>}
+                                {fit === 'noequip' && <i className="shop-fit no">⚠ can't use</i>}
+                              </span>
+                              <span className="arena-buy-price">{price}g</span>
+                            </button>
+                            {confirming && (
+                              <div className="arena-confirm-row" ref={revealConfirm}>
+                                <button
+                                  className="primary"
+                                  disabled={!afford}
+                                  onClick={() => {
+                                    if (buyItem(c, buyFor, id, price)) {
+                                      setNotice(`${itemName(id)} → ${c.characters[buyFor]?.name}`);
+                                      refresh(); persist(c, run);
+                                    }
+                                    setPendingBuy(null);
+                                  }}
+                                >
+                                  Buy for {c.characters[buyFor]?.name?.split(' ')[0]} — {price}g
+                                </button>
+                                <button className="ghost" onClick={() => setPendingBuy(null)}>Cancel</button>
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
                   ) : (
                     <div className="arena-shelf">
                       {(() => {
-                        const pack = (c.characters[buyFor]?.inventory ?? []).filter((st) => st.qty > 0);
-                        const loot = partyStash(c).filter((st) => st.qty > 0);
+                        // Only what the stall will actually buy. `sellItem`
+                        // refuses anything with no price, so an unpriced item
+                        // (a light crossbow, say) offered at "+0g" is a row
+                        // that takes a tap, a confirm, and then does nothing at
+                        // all — the worst kind of button.
+                        const sellable = (st: { itemId: Id; qty: number }) =>
+                          st.qty > 0 && stallWillBuy(st.itemId);
+                        const pack = (c.characters[buyFor]?.inventory ?? []).filter(sellable);
+                        const loot = partyStash(c).filter(sellable);
                         if (pack.length === 0 && loot.length === 0) {
                           return <span className="hint">Nothing to sell — this pack is empty.</span>;
                         }
+                        const row = (
+                          stack: { itemId: Id; qty: number },
+                          from: 'pack' | 'loot',
+                        ) => {
+                          const key = `${from}-${stack.itemId}`;
+                          const confirming = pendingSell === key;
+                          const paid = stallResale(stack.itemId);
+                          return (
+                            <div key={key} className="arena-buy-row">
+                              <button
+                                className={`arena-buy${confirming ? ' confirming' : ''}`}
+                                onClick={() => setPendingSell(confirming ? null : key)}
+                              >
+                                <span className="arena-buy-icon">
+                                  {from === 'loot' ? '🎁' : itemIcon(stack.itemId)}
+                                </span>
+                                <span className="arena-buy-name">
+                                  {itemName(stack.itemId)}{stack.qty > 1 ? ` ×${stack.qty}` : ''}
+                                </span>
+                                <span className="arena-buy-price">+{paid}g</span>
+                              </button>
+                              {confirming && (
+                                <div className="arena-confirm-row" ref={revealConfirm}>
+                                  <button
+                                    className="primary"
+                                    onClick={() => {
+                                      const sold = from === 'loot'
+                                        ? sellFromStash(c, stack.itemId)
+                                        : sellItem(c, buyFor, stack.itemId);
+                                      if (sold) {
+                                        setNotice(`Sold ${itemName(stack.itemId)} (+${paid}g).`);
+                                        refresh(); persist(c, run);
+                                      }
+                                      setPendingSell(null);
+                                    }}
+                                  >
+                                    Sell for {paid}g
+                                  </button>
+                                  <button className="ghost" onClick={() => setPendingSell(null)}>Cancel</button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        };
                         return (
                           <>
-                            {pack.map((st) => (
-                              <button
-                                key={`p-${st.itemId}`}
-                                className="arena-buy"
-                                onClick={() => {
-                                  if (sellItem(c, buyFor, st.itemId)) {
-                                    setNotice(`Sold ${itemName(st.itemId)} (+${stallResale(st.itemId)}g).`);
-                                    refresh(); persist(c, run);
-                                  }
-                                }}
-                              >
-                                <span className="arena-buy-icon">{itemIcon(st.itemId)}</span>
-                                <span className="arena-buy-name">
-                                  {itemName(st.itemId)}{st.qty > 1 ? ` ×${st.qty}` : ''}
-                                </span>
-                                <span className="arena-buy-price">+{stallResale(st.itemId)}g</span>
-                              </button>
-                            ))}
-                            {loot.map((st) => (
-                              <button
-                                key={`s-${st.itemId}`}
-                                className="arena-buy"
-                                onClick={() => {
-                                  if (sellFromStash(c, st.itemId)) {
-                                    setNotice(`Sold ${itemName(st.itemId)} from the party loot (+${stallResale(st.itemId)}g).`);
-                                    refresh(); persist(c, run);
-                                  }
-                                }}
-                              >
-                                <span className="arena-buy-icon">🎁</span>
-                                <span className="arena-buy-name">
-                                  {itemName(st.itemId)}{st.qty > 1 ? ` ×${st.qty}` : ''}
-                                </span>
-                                <span className="arena-buy-price">+{stallResale(st.itemId)}g</span>
-                              </button>
-                            ))}
+                            {pack.map((st) => row(st, 'pack'))}
+                            {loot.map((st) => row(st, 'loot'))}
                           </>
                         );
                       })()}
@@ -1213,7 +1265,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
           </div>
         </div>
       </div>
-      <PartyStrip campaign={c} />
+      {/* While the stall is open the strip IS the buyer selector — tapping a
+          face picks who this purchase is for. That is what the adventure shop
+          does, with this same component, and it is why the stall panel does not
+          carry a second row of the same portraits. */}
+      <PartyStrip
+        campaign={c}
+        {...(panel === 'shop'
+          ? {
+              active: buyFor,
+              onSelect: (i: number) => {
+                setBuyFor(i);
+                // A pending confirm belonged to the old buyer, so drop it
+                // rather than let a second tap buy for somebody else.
+                setPendingBuy(null); setPendingSell(null);
+              },
+            }
+          : {})}
+      />
       {showParty && (
         <PartyScreen
           campaign={c}

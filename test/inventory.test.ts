@@ -4,6 +4,7 @@ import { buildCharacter } from '../src/builder/character.js';
 import { acOf } from '../src/data/armor.js';
 import { makeCombatant } from './helpers.js';
 import type { Combatant, Position } from '../src/engine/types.js';
+import { newCampaign, itemFitFor } from '../src/campaign/campaign.js';
 
 function place(classId: string, team: 'team1' | 'team2', position: Position, over: Partial<Combatant> = {}): Combatant {
   const c = buildCharacter({ classId, team, position });
@@ -191,5 +192,46 @@ describe('consumables', () => {
       const c = buildCharacter({ classId, team: 'team1', position: { x: 0, y: 0 } });
       expect(c.inventory.some((s) => s.itemId === 'potion-healing' && s.qty > 0)).toBe(true);
     }
+  });
+});
+
+describe('what an item is worth to the hero buying it', () => {
+  /**
+   * `itemFitFor` was private to the adventure shop until the arena's stall
+   * needed the same answer. It is the one thing a shop can tell you that the
+   * row itself cannot — a breastplate bought for someone who cannot wear it is
+   * a mistake you discover two screens later, at the point of equipping.
+   */
+  it('says a fighter can use plate and a wizard cannot', () => {
+    const c = newCampaign(3);
+    const fighter = c.characters.findIndex((ch) => ch.classId === 'fighter');
+    const wizard = c.characters.findIndex((ch) => ch.classId === 'wizard');
+    if (fighter < 0 || wizard < 0) return;   // comp without both; nothing to say
+    expect(itemFitFor(c, fighter, 'plate')).toBe('fits');
+    expect(itemFitFor(c, wizard, 'plate')).toBe('noequip');
+  });
+
+  it('separates "cannot hold it" from "holds it badly"', () => {
+    // A wizard's greatsword is the case the middle value exists for: equippable
+    // and useless, which reads very differently from unequippable.
+    const c = newCampaign(3);
+    const wizard = c.characters.findIndex((ch) => ch.classId === 'wizard');
+    if (wizard < 0) return;
+    expect(itemFitFor(c, wizard, 'greatsword')).toBe('noprof');
+  });
+
+  it('has nothing to say about a potion', () => {
+    const c = newCampaign(3);
+    expect(itemFitFor(c, 0, 'potion-healing')).toBeNull();
+  });
+
+  it('never mutates the party while answering', () => {
+    // It probes on a shallow clone. Asking a question must not put the item in
+    // anybody's pack, which is exactly what a careless implementation would do.
+    const c = newCampaign(3);
+    const before = c.characters.map((ch) => ch.inventory.map((s) => `${s.itemId}x${s.qty}`).join());
+    itemFitFor(c, 0, 'plate');
+    itemFitFor(c, 1, 'greatsword');
+    expect(c.characters.map((ch) => ch.inventory.map((s) => `${s.itemId}x${s.qty}`).join())).toEqual(before);
   });
 });

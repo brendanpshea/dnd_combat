@@ -13,11 +13,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  newStallVisit, stallVisitOf, stallPrice, stallResale,
+  newStallVisit, stallVisitOf, stallPrice, stallResale, stallWillBuy,
 } from '../src/arena/stall.js';
 import {
-  newCampaign, itemPrice, attemptHaggle, attemptSteal, HAGGLE, STEAL_FINE,
-  type CampaignState,
+  newCampaign, itemPrice, attemptHaggle, attemptSteal, sellItem, addItem,
+  HAGGLE, STEAL_FINE, type CampaignState,
 } from '../src/campaign/campaign.js';
 import { newArenaRun } from '../src/arena/run.js';
 
@@ -138,6 +138,37 @@ describe('the gambits themselves', () => {
       const c = camp(seed, 10);
       attemptSteal(c, ['dagger']);
       expect(c.gold).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
+describe('what the stall will not buy', () => {
+  /**
+   * Found by driving the real shop: a Light Crossbow showed up on the sell list
+   * at "+0g". It has no price, `sellItem` refuses anything unpriced, and so the
+   * row took a tap, took a confirm, and did nothing — which is worse than not
+   * being offered at all. A button that visibly fails teaches a player not to
+   * trust the ones beside it.
+   */
+  it('refuses anything the shop has no price for', () => {
+    expect(itemPrice('light-crossbow'), 'the case that was found').toBeUndefined();
+    expect(stallWillBuy('light-crossbow')).toBe(false);
+  });
+
+  it('buys what it has a price for', () => {
+    for (const id of ['potion-healing', 'longsword', 'splint']) {
+      expect(itemPrice(id), id).toBeDefined();
+      expect(stallWillBuy(id), id).toBe(true);
+    }
+  });
+
+  it('agrees with sellItem, which is the thing that actually refuses', () => {
+    // The list and the transaction have to hold the same opinion, or one of
+    // them is lying to the player.
+    for (const id of ['light-crossbow', 'potion-healing', 'longsword']) {
+      const c = camp(1);
+      addItem(c.characters[0]!.inventory, id);
+      expect(sellItem(c, 0, id), id).toBe(stallWillBuy(id));
     }
   });
 });
