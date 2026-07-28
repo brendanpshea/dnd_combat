@@ -19,6 +19,7 @@ import type { MapData } from '../data/maps.js';
 import type { Id } from '../engine/types.js';
 import type { StallVisit } from './stall.js';
 import type { LoreStudy } from './lore.js';
+import type { CreepAttempt } from './ambush.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap, type LayoutName } from './map.js';
@@ -310,6 +311,11 @@ export interface ArenaRunState {
    * so switching doors neither rerolls it nor loses it.
    */
   lore?: LoreStudy;
+  /**
+   * The one attempt to creep into this fight (see ambush.ts). Records the door
+   * it was made at, so a gamble taken at one gate cannot be cashed at another.
+   */
+  creep?: CreepAttempt;
   /**
    * Which of the wave's three doors is selected (see gates.ts). Optional so a
    * save written before gates existed loads and simply starts on door 0.
