@@ -1,11 +1,16 @@
 /**
- * The emoji a creature falls back to when it has no generated art — and, now,
- * when its art fails to load.
+ * A one-emoji sketch of every creature, for the art backlog.
  *
- * Lived in Board.tsx, which meant the board degraded gracefully to a glyph
- * while the portrait frame and the arena's wave preview had nothing to degrade
- * to: one showed an empty circle, the other Chrome's torn-photo icon. One map,
- * every place that draws a creature.
+ * This used to be what the board, the portrait ring and the arena's wave
+ * preview drew when a creature had no art. It is not any more: measured on a
+ * 430px phone, the glyph came out 20px inside a 49px cell — it was sized off
+ * the viewport rather than the cell — and a board of specks reads as broken.
+ * Abstract silhouettes took that job over (`silhouette.ts`), and they fill the
+ * cell by construction because an SVG has no font-size to get wrong.
+ *
+ * What is left is the use these were always best at: `scripts/art-backlog.ts`
+ * prints one per undrawn monster, and in a table of names an artist has never
+ * read, the emoji is the fastest available answer to "what even is this".
  */
 const GLYPH: Record<string, string> = {
   fighter: '⚔️', wizard: '🧙', cleric: '✨', rogue: '🗡️',

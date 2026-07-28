@@ -20,7 +20,9 @@
     "web:typecheck": "tsc -p web/tsconfig.json",
     "reference": "tsx scripts/reference.ts",
     "art-registry": "tsx scripts/art-registry.ts",
-    "art-backlog": "tsx scripts/art-backlog.ts"
+    "art-backlog": "tsx scripts/art-backlog.ts",
+    "token-silhouettes": "python3 art/generate_svg_tokens.py",
+    "token-sheet": "tsx scripts/token-sheet.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
