@@ -422,6 +422,7 @@ IDS = [
     "flying-sword", "rug-of-smothering", "flesh-golem", "scarecrow", "shield-guardian", "stone-golem",
     "black-pudding", "gelatinous-cube", "gray-ooze", "ochre-jelly",
     "druid", "apprentice-mage", "lion", "goblin-hexer", "skeleton-bonechanter", "gnoll-packcaller", "azer-forgecaller", "kobold-emberling", "ettercap-snarecaller",
+    "werebear", "wereboar", "weretiger", "werewolf", "wererat",
     # Adventure NPC archetypes
     "npc-innkeeper", "npc-elder", "npc-merchant", "npc-guard",
     "npc-scout", "npc-commoner", "npc-child", "npc-noble",
