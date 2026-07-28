@@ -53,6 +53,10 @@ export type GameEvent =
   | { type: 'wildShapeEnded'; combatantId: Id; formId: Id }
   /** Cutting Words: a bard talked an attacker's roll down. */
   | { type: 'cuttingWords'; bardId: Id; targetId: Id; amount: number }
+  /** A Mirror Image duplicate took the blow and popped. */
+  | { type: 'mirrorImageStruck'; combatantId: Id; left: number }
+  /** A Counterspell stopped a spell before it happened. */
+  | { type: 'counterspelled'; casterId: Id; byId: Id; spellId: Id }
   /** Sanctuary turned an attack aside before it was ever rolled. */
   | { type: 'attackWarded'; attackerId: Id; targetId: Id }
   /** A rust monster ate a point of AC off someone's metal armour. */

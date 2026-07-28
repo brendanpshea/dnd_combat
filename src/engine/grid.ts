@@ -163,6 +163,26 @@ export function fireCell(grid: GridState, p: Position, sourceId: Id, dice: strin
   return true;
 }
 
+/** Hush a cell (Silence). Walls are already quiet. */
+export function silenceCell(grid: GridState, p: Position, sourceId: Id): boolean {
+  const cell = cellAt(grid, p);
+  if (!cell || blocksMovement(cell.terrain)) return false;
+  cell.silent = { sourceId };
+  return true;
+}
+
+/** Clear every hushed cell a caster made. */
+export function clearSilenceBySource(grid: GridState, sourceId: Id): Position[] {
+  const cleared: Position[] = [];
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const cell = cellAt(grid, { x, y })!;
+      if (cell.silent?.sourceId === sourceId) { delete cell.silent; cleared.push({ x, y }); }
+    }
+  }
+  return cleared;
+}
+
 /** Clear every burning cell a caster lit — their concentration dropped. */
 export function clearFireBySource(grid: GridState, sourceId: Id): Position[] {
   const cleared: Position[] = [];

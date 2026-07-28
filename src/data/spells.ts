@@ -10,7 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
-import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, coverBetween } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -2615,6 +2615,130 @@ export const SPELLS: Record<Id, SpellData> = {
       return [{ type: 'conditionApplied', combatantId: targetId, condition: 'deathWarded', sourceId: casterId }];
     },
   },
+
+  /**
+   * Shatter: the tier's missing area damage.
+   *
+   * Second level had none — Scorching Ray hits one target and Flaming Sphere is
+   * a summon — so a caster's answer to a crowd jumped straight from Burning
+   * Hands at 1st to Fireball at 3rd, with nothing in between at exactly the
+   * levels most parties spend the longest.
+   */
+  shatter: {
+    id: 'shatter', name: 'Shatter', level: 2, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 60 },
+    concentration: false,
+    upcast: true,
+    icon: '💥',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dc = spellDc(state, casterId);
+      const dice = `${3 + Math.max(0, slotLevel - 2)}d8`;
+      const events: GameEvent[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || (sculpt && t.team === caster.team)) continue;
+        const save = savingThrow(state, tid, 'con', dc);
+        events.push(save.event);
+        const roll = rollDice(state.rng, dice); state.rng = roll.state;
+        const amount = saveForHalf(t, 'con', roll.total, save.success);
+        events.push(...applyDamage(state, tid, casterId, amount, 'thunder', roll.rolls));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Mirror Image: three of you, and only one is real.
+   *
+   * The duplicates are a count on the combatant rather than a condition,
+   * because they are a resource that gets chewed through rather than a state
+   * that is on or off — the same reason `corroded` is a number. `resolveAttack`
+   * rolls against them before it considers Shield, so the free defence is spent
+   * before the one that costs a slot.
+   */
+  'mirror-image': {
+    id: 'mirror-image', name: 'Mirror Image', level: 2, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '👥',
+    cast({ state, casterId }) {
+      state.combatants[casterId]!.mirrorImages = 3;
+      return [{ type: 'conditionApplied', combatantId: casterId, condition: 'shielded', sourceId: casterId }];
+    },
+  },
+
+  /**
+   * Silence: a patch of ground where no spell can be spoken.
+   *
+   * A cell overlay, like the Web's strands and the Wall of Fire's flames, so it
+   * persists and can be walked into and out of. What it does is checked where
+   * casting is decided, not here — a creature standing in it simply has no
+   * spells among its legal actions, which is the honest way to say "you cannot"
+   * to a player rather than letting them press a button that does nothing.
+   */
+  silence: {
+    id: 'silence', name: 'Silence', level: 2, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 120 },
+    concentration: true,
+    icon: '🔇',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const hushed: Position[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        if (silenceCell(state.grid, pos, casterId)) hushed.push(pos);
+      }
+      caster.concentratingOn = { spellId: 'silence', targetIds: [] };
+      return [];
+    },
+  },
+
+
+  /**
+   * Counterspell: the spell that happens to somebody else.
+   *
+   * It has no `cast` worth the name, because it never resolves on its own turn.
+   * `tryCounterspell` in the attack rules fires it as a reaction the moment an
+   * enemy commits to a spell — the same autocast every other reaction here uses
+   * — and this entry exists so it can be learned, prepared and shown on a
+   * character sheet like anything else.
+   *
+   * Casting it deliberately does nothing, which is honest: there is nothing to
+   * counter on your own turn.
+   */
+  counterspell: {
+    id: 'counterspell', name: 'Counterspell', level: 3, castingTime: 'reaction',
+    targeting: { kind: 'self' },
+    concentration: false,
+    icon: '🚫',
+    cast() { return []; },
+  },
+
+  /**
+   * Pass without Trace: the whole party moves quietly.
+   *
+   * Cast in camp, not in a fight — which is the only place it would matter,
+   * because the one Stealth roll this game makes is the group check at the
+   * arena's gate, before the doors open. It rides the same out-of-combat spell
+   * path Mage Armor uses and sets a persisted effect that
+   * `characterSkillBonus` reads.
+   *
+   * +10 to every member is enormous on a check where half the party must pass:
+   * it is the difference between the plate-wearers being the reason you are
+   * heard and their not mattering.
+   */
+  'pass-without-trace': {
+    id: 'pass-without-trace', name: 'Pass without Trace', level: 2, castingTime: 'action',
+    targeting: { kind: 'self' },
+    concentration: true,
+    outOfCombat: true,
+    icon: '🌫️',
+    cast() { return []; },
+  },
+
 };
 
 export function directionFromDelta(from: Position, to: Position): Direction8 {

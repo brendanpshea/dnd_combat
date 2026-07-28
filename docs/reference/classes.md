@@ -65,7 +65,7 @@ Spellcasting ability: **CHA**.
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
 | 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Healing Word, Command, Cure Wounds, Faerie Fire, Color Spray, Thunderwave, Bane, Animal Friendship |
-| 3 | Hold Person, Invisibility, Suggestion, Blindness, Aid, Lesser Restoration |
+| 3 | Hold Person, Shatter, Mirror Image, Silence, Invisibility, Suggestion, Blindness, Aid, Lesser Restoration |
 | 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
 | 6 | Fireball, Spiritual Weapon |
 | 7 | Greater Invisibility, Confusion, Dimension Door, Freedom of Movement, Phantasmal Killer |
@@ -109,7 +109,7 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Sacred Flame, Guidance, Cure Wounds, Bless, Healing Word, Command, Inflict Wounds, Bane, Shield of Faith, Sanctuary, Protection from Evil and Good |
 | 2 | Guiding Bolt |
-| 3 | Hold Person, Aid, Spiritual Weapon, Blindness, Lesser Restoration, Warding Bond |
+| 3 | Hold Person, Aid, Spiritual Weapon, Silence, Blindness, Lesser Restoration, Warding Bond |
 | 5 | Mass Healing Word, Spirit Guardians, Dispel Magic, Protection from Energy, Bestow Curse |
 | 7 | Banishment, Death Ward, Freedom of Movement |
 
@@ -153,7 +153,7 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Healing Word, Faerie Fire, Thunderwave, Protection from Evil and Good, Animal Friendship |
 | 2 | Find Familiar |
-| 3 | Moonbeam, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
+| 3 | Moonbeam, Pass without Trace, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
 | 5 | Call Lightning, Protection from Energy, Dispel Magic |
 | 7 | Wall of Fire, Confusion, Freedom of Movement, Blight, Ice Storm |
 
@@ -376,8 +376,8 @@ Spellcasting ability: **INT**.
 | --- | --- |
 | 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, True Strike, Acid Splash, Minor Illusion, Magic Missile, Sleep, Burning Hands, Shield, Mage Armor, Color Spray, False Life, Find Familiar |
 | 2 | Thunderwave |
-| 3 | Scorching Ray, Misty Step, Suggestion, Web, Invisibility, Blindness, Flaming Sphere |
-| 5 | Fireball, Fear, Lightning Bolt, Dispel Magic, Haste |
+| 3 | Shatter, Mirror Image, Scorching Ray, Misty Step, Suggestion, Web, Invisibility, Blindness, Flaming Sphere |
+| 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
 | 7 | Greater Invisibility, Wall of Fire, Confusion, Dimension Door, Blight, Ice Storm, Banishment, Phantasmal Killer |
 
 Learnable from scrolls found in play: Ray of Sickness.

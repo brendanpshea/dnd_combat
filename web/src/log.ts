@@ -35,6 +35,10 @@ function kindOf(e: GameEvent): string {
     case 'maxHpDrained': return 'downed';
     case 'armorCorroded': return 'cond';
     case 'attackWarded': return 'miss';
+    case 'mirrorImageStruck': return 'miss';
+    // Loud on purpose: a reaction that fires on its own has to be visible, or
+    // a player learns nothing from the spell they are paying a slot for.
+    case 'counterspelled': return 'cond';
     case 'cuttingWords': return 'cond';
     case 'wildShaped':
     case 'wildShapeEnded': return 'cond';
@@ -92,6 +96,8 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'maxHpDrained':
     case 'armorCorroded': return e.combatantId;
     case 'attackWarded': return e.attackerId;
+    case 'mirrorImageStruck': return e.combatantId;
+    case 'counterspelled': return e.byId;
     case 'cuttingWords': return e.bardId;
     case 'wildShaped':
     case 'wildShapeEnded': return e.combatantId;

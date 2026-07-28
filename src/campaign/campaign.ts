@@ -78,6 +78,8 @@ export interface PartyCharacter {
       /** Damage types a camp-drunk resistance potion grants until the next
        *  short or long rest. */
       resistances?: DamageType[];
+      /** Pass without Trace: +10 Stealth to this hero until the next rest. */
+      passWithoutTrace?: true;
     };
   };
   /**
@@ -1490,8 +1492,9 @@ export function shortRest(c: CampaignState): RestResult {
  *  it. A no-op if none are set. */
 function clearCampBuffs(ch: PartyCharacter): void {
   const eff = ch.resources?.effects;
-  if (!eff || (eff.giantStrength === undefined && eff.resistances === undefined)) return;
-  const { giantStrength: _s, resistances: _r, ...rest } = eff;
+  if (!eff || (eff.giantStrength === undefined && eff.resistances === undefined &&
+      eff.passWithoutTrace === undefined)) return;
+  const { giantStrength: _s, resistances: _r, passWithoutTrace: _p, ...rest } = eff;
   if (Object.keys(rest).length) ch.resources = { ...ch.resources!, effects: rest };
   else { const { effects: _e, ...noEffects } = ch.resources!; ch.resources = noEffects; }
 }
@@ -1651,6 +1654,12 @@ const STORE_SPELL_ACTIONS: Record<Id, StoreSpellAction> = {
     spellId: 'mage-armor', name: 'Mage Armor', icon: '🛡️', targeting: 'self',
     castLabel: 'Ward self', castNotice: 'is protected by Mage Armor',
   },
+  // Cast before the doors open, which is the only moment it could matter: the
+  // one Stealth roll this game makes is the group check at the arena's gate.
+  'pass-without-trace': {
+    spellId: 'pass-without-trace', name: 'Pass without Trace', icon: '🌫️', targeting: 'party',
+    castLabel: 'Hush the party', castNotice: 'muffles the whole party (+10 Stealth)',
+  },
 };
 
 /** Store spells are a curated subset of a combatant's known spells. */
@@ -1666,7 +1675,12 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
   const user = c.characters[userIdx];
   const caster = user ? buildCampaignParty(c)[userIdx] : undefined;
   const action = caster ? storeSpellActions(caster).find((candidate) => candidate.spellId === spellId) : undefined;
-  if (!user || !caster || !action || action.targeting !== 'self') return false;
+  if (!user || !caster || !action) return false;
+  // The targeting check used to sit here and reject everything that was not
+  // 'self', which was fine while every spell on this path was. Pass without
+  // Trace hushes the whole party, so the check moved into the branches that
+  // actually care — a party-targeting spell handled below is not a bug.
+  if (action.targeting !== 'self' && spellId !== 'pass-without-trace') return false;
   if (spellId === 'find-familiar') {
     // A ritual in 5e: a wizard can cast it without spending a slot.
     user.resources = {
@@ -1679,6 +1693,19 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     const slotLevelIdx = SPELLS[spellId]!.level - 1;
     if (!spendSlot(user, caster, slotLevelIdx)) return false;
     user.resources = { ...user.resources, hp: user.resources?.hp ?? caster.hp, effects: { ...user.resources?.effects, mageArmor: true } };
+    return true;
+  }
+  if (spellId === 'pass-without-trace') {
+    // The whole party, not the caster — the check it exists for is a group one.
+    const slotLevelIdx = SPELLS[spellId]!.level - 1;
+    if (!spendSlot(user, caster, slotLevelIdx)) return false;
+    for (const [i, ch] of c.characters.entries()) {
+      ch.resources = {
+        ...ch.resources,
+        hp: ch.resources?.hp ?? buildCampaignParty(c)[i]!.hp,
+        effects: { ...ch.resources?.effects, passWithoutTrace: true },
+      };
+    }
     return true;
   }
   return false;
@@ -2132,6 +2159,10 @@ export function characterSkillBonus(c: CampaignState, idx: number, skill: SkillI
   let bonus = skillBonus(ch.classId, partyLevelOf(c), skill, ch.speciesId, ch.backgroundId);
   // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
   if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
+  // Pass without Trace, drunk in camp: +10 to the whole party until the next
+  // rest. On a group check where half must pass, this is the spell that stops
+  // the armoured members being the reason you are heard.
+  if (skill === 'stealth' && ch.resources?.effects?.passWithoutTrace) bonus += 10;
   return bonus;
 }
 
