@@ -50,6 +50,7 @@ import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers } from './art.js';
+import { morningReview, spellTasks } from '../../src/arena/morning.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
@@ -183,6 +184,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * night, which happen to you rather than being chosen.
    */
   const [showParty, setShowParty] = useState(false);
+  // The morning review: after a night's rest, walk the player through anything
+  // sitting unused. 'gear' opens the party screen, 'spells' the spellbook, and
+  // closing one advances to the next. Null the rest of the time — a review that
+  // opens every morning regardless is a screen you learn to close unread.
+  const [review, setReview] = useState<'gear' | 'spells' | null>(null);
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
+  // Casters already offered the spellbook this morning. Without it, closing the
+  // tray without preparing anything would immediately reopen it on the same
+  // hero: a modal you cannot get out of, built out of a helpful reminder.
+  const [offeredSpells, setOfferedSpells] = useState<number[]>([]);
   const [shopTab, setShopTab] = useState<'buy' | 'sell'>('buy');
   /**
    * The row waiting for a second tap.
@@ -196,6 +207,27 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [pendingSell, setPendingSell] = useState<string | null>(null);
   /** Which caster's prepared list is open, if any. */
   const [prepareFor, setPrepareFor] = useState<number | null>(null);
+
+  // The spells leg of the morning review. Declared here with the other hooks
+  // and NOT beside the panel it drives: every `phase.p === ...` branch below
+  // returns early, so a hook further down runs on some renders and not
+  // others — which is React error #300, and it took the arena out entirely.
+  //
+  // Offers each caster with unused prepared slots the spellbook, once, then
+  // stops. Self-terminating: a caster who fills their list drops out of
+  // `spellTasks`, and one who declines is on the offered list. offer each caster with unused
+  // prepared slots the spellbook, once, then stop. Self-terminating — a caster
+  // who fills their list drops out of `spellTasks`, and one who declines is on
+  // the offered list, so the queue empties either way.
+  useEffect(() => {
+    if (review !== 'spells' || prepareFor !== null) return;
+    const next = spellTasks(c).map((t) => t.who).find((i) => !offeredSpells.includes(i));
+    if (next === undefined) { setReview(null); setReviewNote(null); setOfferedSpells([]); return; }
+    setOfferedSpells((o) => [...o, next]);
+    setPrepareFor(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [review, prepareFor]);
+
   const [buyFor, setBuyFor] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmRestart, setConfirmRestart] = useState(false);
@@ -487,13 +519,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
             : ['firstClear' as const]),
         )} />}
         onLevelChange={() => { refresh(); persist(c, run); }}
-        onContinue={() => setPhase(
-          // Crossing the finish line ends the run here rather than sending the
-          // party back to a gate they no longer have any reason to walk through.
-          runComplete(c.xp)
-            ? { p: 'summary', summary: summarise(run, c.xp) }
-            : { p: 'brief' },
-        )}
+        onContinue={() => {
+          if (runComplete(c.xp)) { setPhase({ p: 'summary', summary: summarise(run, c.xp) }); return; }
+          // Only after a night. `phase.rested.hitDiceSpent` is the honest
+          // signal for which break this was — only lunch reports it — and
+          // lunch keeps slots and charges, so nothing about the loadout has
+          // changed by then.
+          const next = morningReview(phase.rested, c);
+          if (next) { setReview(next.open); setReviewNote(next.note); }
+          setPhase({ p: 'brief' });
+        }}
       />
     );
   }
@@ -1283,13 +1318,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
             }
           : {})}
       />
-      {showParty && (
+      {(showParty || review === 'gear') && (
         <PartyScreen
           campaign={c}
           camp={null}
+          {...(review === 'gear' && reviewNote ? { notice: reviewNote } : {})}
           onRest={() => { /* the arena rests on its own clock */ }}
           onChange={() => { persist(c, run); refresh(); }}
-          onClose={() => setShowParty(false)}
+          onClose={() => {
+            setShowParty(false);
+            // Hand straight on to the spellbook if anyone still has room, so
+            // the two halves of "get ready" are one pass rather than two
+            // things to remember.
+            if (review === 'gear') {
+              const casters = spellTasks(c);
+              setReview(casters.length > 0 ? 'spells' : null);
+              if (casters.length === 0) setReviewNote(null);
+            }
+          }}
         />
       )}
       {spellPanel}
