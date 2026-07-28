@@ -1472,8 +1472,23 @@ export function partyNeedsRest(c: CampaignState): boolean {
     if (m.hp <= m.maxHp / 2) return true;
     const max = m.spellSlots.reduce((n, s) => n + s.max, 0);
     const cur = m.spellSlots.reduce((n, s) => n + s.current, 0);
-    return max > 0 && cur <= max / 2;
+    if (max > 0 && cur <= max / 2) return true;
+    // Feature pools now deplete across a day, so a fighter out of Action Surge
+    // or a paladin out of Lay on Hands is as good a reason to rest as an empty
+    // spellbook. Without this the prompt would keep answering a question about
+    // casters only, and the martials' new resource would be invisible to it.
+    return restPoolLow(m);
   });
+}
+
+/** Half or less of any rest-scoped pool left — the same bar the slot rule uses. */
+function restPoolLow(m: Combatant): boolean {
+  for (const [id, pool] of Object.entries(m.featureUses)) {
+    const per = FEATURES[id]?.uses?.per;
+    if (per !== 'shortRest' && per !== 'longRest') continue;
+    if (pool.max > 0 && pool.current <= pool.max / 2) return true;
+  }
+  return false;
 }
 
 /** Drink a duration buff potion in camp: consume it from the hero's pack and

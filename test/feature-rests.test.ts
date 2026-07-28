@@ -24,6 +24,7 @@ import { setPartyClass } from '../src/campaign/campaign.js';
 import { FEATURES } from '../src/data/features.js';
 import { CLASSES } from '../src/data/classes.js';
 import { buildMonster } from '../src/data/monsters.js';
+import { restPools, shortLabel } from '../web/src/featurePools.js';
 
 /** A campaign whose first hero is the given class, at the given level. */
 function partyOf(classId: string, level = 5) {
@@ -148,5 +149,63 @@ describe('feature pools and rests', () => {
     const built = buildCampaignParty(c)[0]!;
     const pool = built.featureUses['heroic-inspiration'];
     if (pool) expect(pool.current).toBe(pool.max);
+  });
+});
+
+/**
+ * What the player can see of all this.
+ *
+ * A resource that depletes and is invisible is worse than one that refills:
+ * the button is simply gone next wave and nothing said why. These are the
+ * selection rules behind the camp screen's meter.
+ */
+describe('the feature-pool meter', () => {
+  it('shows the pools that outlive a fight and hides the ones that do not', () => {
+    const c = partyOf('paladin');
+    const m = buildCampaignParty(c)[0]!;
+    const shown = restPools(m.featureUses).map((p) => p.id);
+    expect(shown).toContain('lay-on-hands');
+    expect(shown).toContain('sacred-weapon');
+    // Heroic Inspiration refills every fight; a meter that cannot go down
+    // teaches a player to ignore the meters that can.
+    expect(shown).not.toContain('heroic-inspiration');
+  });
+
+  it('renders nothing at all for a class with no rest-scoped pools', () => {
+    // The wizard's only limited feature is the species trait. An empty meter
+    // must render as nothing, not as an empty box next to the spell slots.
+    const c = partyOf('wizard');
+    expect(restPools(buildCampaignParty(c)[0]!.featureUses)).toEqual([]);
+  });
+
+  it('counts a big pool instead of drawing twenty-five dots', () => {
+    const c = partyOf('paladin', 5);
+    const pools = restPools(buildCampaignParty(c)[0]!.featureUses);
+    const loh = pools.find((p) => p.id === 'lay-on-hands')!;
+    expect(loh.max).toBe(25);
+    expect(loh.style).toBe('count');
+    expect(pools.find((p) => p.id === 'sacred-weapon')!.style).toBe('pips');
+  });
+
+  it('labels Channel Divinity options apart from each other', () => {
+    // Initialling the whole name would render every one of them as "CD".
+    expect(shortLabel('turn-undead')).toBe('TU');
+    expect(shortLabel('preserve-life')).toBe('PL');
+    expect(shortLabel('action-surge')).toBe('AS');
+  });
+
+  it('gives every rest-scoped feature a label of its own', () => {
+    // Found by rendering, not by reasoning: Second Wind and Sacred Weapon were
+    // both "SW", and a camp screen lists the fighter and the paladin together.
+    const ids = Object.keys(FEATURES).filter((id) => {
+      const per = FEATURES[id]?.uses?.per;
+      return per === 'shortRest' || per === 'longRest';
+    });
+    expect(ids.length).toBeGreaterThan(5);
+    const labels = ids.map(shortLabel);
+    const dupes = labels.filter((l, i) => labels.indexOf(l) !== i);
+    expect(dupes, 'two features share a meter label').toEqual([]);
+    expect(shortLabel('second-wind')).not.toBe(shortLabel('sacred-weapon'));
+    for (const l of labels) expect(l.length, l).toBeLessThanOrEqual(4);
   });
 });
