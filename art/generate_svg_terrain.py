@@ -1,8 +1,16 @@
 import os
 import subprocess
 
-# Output directories
-SVG_DIR = os.path.abspath("art/svg-terrain")
+# Output directories.
+#
+# The SVGs are written straight into the folder the web build serves, because
+# they ARE the shipping asset — SVG needs no processing step, unlike the token
+# and portrait sheets that go through green-screen keying. Keeping a second
+# copy under art/ would just be two things to drift apart.
+#
+# The preview PNGs and the gallery README stay under art/, since they are
+# documentation rather than something the game loads.
+SVG_DIR = os.path.abspath("web/public/art/terrain")
 PREVIEW_DIR = os.path.abspath("art/svg-terrain/preview")
 os.makedirs(SVG_DIR, exist_ok=True)
 os.makedirs(PREVIEW_DIR, exist_ok=True)

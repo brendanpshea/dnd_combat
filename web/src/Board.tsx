@@ -5,7 +5,10 @@ import { acOf } from '../../src/data/armor.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { glyphFor } from './glyphs.js';
-import { hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl } from './art.js';
+import {
+  hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl,
+  HAS_TERRAIN_ART, terrainUrl,
+} from './art.js';
 import { conditionBadges, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
 import { classLook } from './classLook.js';
@@ -62,6 +65,11 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
     }
   }, [movePaths, height]);
 
+  // Hoisted above the cell loop: the drawn blocking props are per-theme, so the
+  // loop needs to know which theme it is drawing before it draws anything.
+  const boardTheme = (theme ?? 'stone') as MapTheme;
+  const drawnProps = HAS_TERRAIN_ART.has(boardTheme);
+
   const cells = [];
   for (let y = height - 1; y >= 0; y--) {
     for (let x = 0; x < width; x++) {
@@ -79,7 +87,24 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
           const n = cellAt(state.grid, { x: x + dx, y: y + dy });
           return !n || n.terrain !== cell.terrain;
         });
-        if (edge) classes.push('needs-badge');
+        // A drawn prop carries its own meaning; stamping an emoji on top of it
+        // would be the placeholder showing through the thing that replaced it.
+        if (edge && !(cell.terrain === 'cover' && drawnProps)) {
+          classes.push('needs-badge');
+        }
+      }
+      // A drawn blocking prop, where the theme has a full set.
+      //
+      // The variant is chosen from the cell's own coordinates rather than at
+      // random: a board must look the same every time it is drawn, and a
+      // re-render that reshuffled the scenery would be its own kind of bug.
+      // Mixing two variants is the whole reason there are two — a run of one
+      // sprite down a map edge reads as wallpaper rather than as a wall.
+      let propUrl: string | undefined;
+      if ((cell.terrain === 'wall' || cell.terrain === 'cover') && drawnProps) {
+        propUrl = terrainUrl(cell.terrain === 'wall' ? 'wall' : 'cover', boardTheme,
+          (x * 3 + y * 5) % 2 === 0 ? 'a' : 'b');
+        classes.push('art-prop');
       }
       // An overlay, not a terrain: it sits on top of whatever the cell really
       // is, so it can't just be another terrain-* class (that would replace
@@ -100,7 +125,10 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
         <div
           key={key}
           className={classes.join(' ')}
-          style={webbed && hasSpellIcon('web') ? { ['--web-img' as string]: `url(${spellIconUrl('web')})` } : undefined}
+          style={{
+            ...(webbed && hasSpellIcon('web') ? { ['--web-img' as string]: `url(${spellIconUrl('web')})` } : {}),
+            ...(propUrl ? { ['--prop' as string]: `url(${propUrl})` } : {}),
+          }}
           onClick={() => onCellTap(pos, cell.occupantId ? state.combatants[cell.occupantId] : undefined)}
         >
           {cellAreas.map((a) => (
@@ -287,7 +315,6 @@ export function Board({ state, activeId, highlights, selectedId, multiCounts, fl
     );
   });
 
-  const boardTheme = (theme ?? 'stone') as MapTheme;
   // Floor + blocking-prop colours come from the palette (boardTheme.ts), fed in
   // as custom properties so styles.css holds only the shapes — and a contrast
   // test can hold the colours to a legibility floor.

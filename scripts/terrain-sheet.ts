@@ -91,7 +91,7 @@ function cell(
     ? '<span class="sheet-token" aria-hidden>🧙</span>'
     : '';
   const prop = art
-    ? `<img class="prop" src="../art/svg-terrain/terrain-${terrain === 'wall' ? 'wall' : 'cover'}-${art.theme}-${art.variant}.svg" alt="">`
+    ? `<img class="prop" src="../web/public/art/terrain/terrain-${terrain === 'wall' ? 'wall' : 'cover'}-${art.theme}-${art.variant}.svg" alt="">`
     : '';
   return `<div class="${classes.join(' ')}">${prop}${token}</div>`;
 }
