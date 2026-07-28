@@ -3085,43 +3085,6 @@ button.category .count {
 }
 .chorus-toggle:hover { opacity: 1; }
 
-/* Three on the table, take one. The passing-over is the point, so all three
-   are shown at once and equally — a list you scroll would make the first the
-   default answer. */
-.spoils { margin: 12px 0; }
-.spoil-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-  margin-top: 8px;
-}
-.spoil {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 8px;
-  background: var(--panel-2, #2a2440);
-  border: 1px solid #453d63;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: center;
-  transition: transform 0.12s, border-color 0.12s;
-}
-.spoil:hover { transform: translateY(-2px); }
-.spoil.on { border-color: var(--accent, #c79ae0); box-shadow: 0 0 0 1px var(--accent, #c79ae0); }
-.spoil-ico { font-size: 26px; line-height: 1; }
-.spoil-name { font-weight: 600; font-size: 13px; line-height: 1.2; }
-.spoil-tags { display: flex; gap: 6px; font-size: 11px; color: var(--muted); }
-.spoil.r-rare .spoil-name { color: #ffd76e; }
-.spoil.r-uncommon .spoil-name { color: #8fe3a0; }
-.spoil-detail {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed #453d63;
-  text-align: center;
-}
-.spoil-detail p { margin: 0 0 8px; color: var(--text); font-size: 14px; }
 
 /* The stall's gambits and its sell tab. The arena shop was a vending machine;
    these are the two things the adventure shop has always had. */
@@ -3158,31 +3121,32 @@ button.category .count {
 /* A visible skill check, before it is rolled: who, with what, against what.
    The numbers go on the button because the decision is made before the dice,
    not after them — and because nothing else in the arena tells a player what
-   their party is actually good at. */
+   their party is actually good at.
+
+   ONE LINE, NOT A CARD. The first cut gave each check a portrait, a title, a
+   maths line and a row of chips, repeated up to four times across the gate
+   screen — four lines of furniture for one d20, and it crowded out the thing
+   the screen is actually for. Everything that is not a number now lives in the
+   tooltip: ability, proficiency, whether the dice can change the answer. */
 .skill-gambit {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 9px;
-  border-radius: 10px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
   border: 1px solid #453d63;
   background: var(--panel);
   cursor: pointer;
-  text-align: left;
-  min-width: 148px;
+  font-size: 11px;
+  line-height: 1.5;
 }
 .skill-gambit:hover:not(:disabled) { border-color: #6b5f95; }
-.skill-gambit.spent { opacity: 0.42; cursor: default; }
-.sg-head { display: flex; align-items: center; gap: 6px; }
-.sg-head .portrait, .sg-head img { width: 22px; height: 22px; border-radius: 50%; }
-.sg-title { font-weight: 700; font-size: 13px; }
-.sg-math { font-size: 12px; color: var(--text); }
-.sg-math b { color: var(--gold); }
-.sg-sub { display: flex; flex-wrap: wrap; gap: 5px; font-size: 10px; color: var(--muted); }
-.sg-sub i { font-style: normal; }
-.sg-prof { color: #8fe3a0; }
-.sg-sure { color: #8fe3a0; }
-.sg-hopeless { color: var(--red); }
+.skill-gambit.spent { opacity: 0.4; cursor: default; }
+.sg-title { font-weight: 700; }
+.sg-math { color: var(--muted); }
+.sg-math b { color: var(--gold); font-weight: 700; }
+/* When the dice cannot change the answer, the number says so quietly. */
+.odds-certain .sg-math b { color: var(--green); }
 .odds-impossible .sg-math b { color: var(--red); }
 
 /* What the study turned up, left on the gate card — a result you dismiss is no
@@ -3294,3 +3258,17 @@ button.category .count {
   pointer-events: none;
   z-index: 3;
 }
+
+/* What a door is paying, on the door. The three gates already differ by ground
+   and by what is waiting behind them; the prize is the third axis, and it is
+   the one that makes choosing a door a decision rather than a preference. */
+.gate-bounty {
+  display: block;
+  margin-top: 3px;
+  padding-top: 3px;
+  border-top: 1px dashed #453d63;
+  font-size: 10px;
+  line-height: 1.35;
+}
+.gate-bounty b { color: var(--gold); font-weight: 700; }
+.gate-prize { display: block; color: #c79ae0; }

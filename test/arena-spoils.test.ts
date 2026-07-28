@@ -13,7 +13,8 @@ import {
   shopOffering, rarityOf, itemName, itemPrice, treasureFor,
 } from '../src/campaign/campaign.js';
 import {
-  spoilOffer, spoilPool, spoilTierFor, spoilTierLabel, SPOIL_CHOICES, PERMANENT_FROM_LEVEL,
+  spoilOffer, spoilPool, spoilTierFor, spoilTierLabel, spoilPrize,
+  SPOIL_CHOICES, PERMANENT_FROM_LEVEL,
 } from '../src/arena/spoils.js';
 import { ITEMS } from '../src/data/items.js';
 import { WEAPONS } from '../src/data/weapons.js';
@@ -255,6 +256,44 @@ describe('the routine drop is not a second magic shop', () => {
         expect(stack.itemId, 'an undefined item id reached the pack').toBeTruthy();
         expect(itemPrice(stack.itemId) !== undefined || rarityOf(stack.itemId)).toBeTruthy();
       }
+    }
+  });
+});
+
+describe('the door is the choice', () => {
+  /**
+   * The arena's central decision. Three gates already differ by ground and by
+   * what waits behind them; each now carries its own objective and its own
+   * named prize, so choosing a door is choosing what you are playing for.
+   *
+   * A picker after the fight cannot do this job: it arrives too late to be
+   * planned around, and it takes the headline off the card where it belongs.
+   */
+  it('pays a different prize behind each door', () => {
+    let differed = 0;
+    for (let day = 1; day <= 40; day++) {
+      const prizes = [0, 1, 2].map((door) => spoilPrize(5, day, 'morning', door, 5));
+      for (const p of prizes) expect(p, `day ${day}`).toBeDefined();
+      if (new Set(prizes).size > 1) differed += 1;
+    }
+    // The pool is large, so near-always. Not a hard "every time": two doors
+    // landing on the same item is legitimate, just rare.
+    expect(differed, `only ${differed} of 40 days offered a real choice`).toBeGreaterThan(34);
+  });
+
+  it('names exactly one prize, because that is what the card promises', () => {
+    expect(SPOIL_CHOICES).toBe(1);
+    for (const level of [1, 4, 7]) {
+      expect(spoilOffer(3, 2, 'morning', 1, level)).toHaveLength(1);
+      expect(spoilPrize(3, 2, 'morning', 1, level)).toBe(spoilOffer(3, 2, 'morning', 1, level)[0]);
+    }
+  });
+
+  it('promises the same thing on a retry, so a lost day is not a reroll', () => {
+    // The load-bearing seed rule, restated for the prize specifically: a player
+    // must not be able to throw the day until the door pays something better.
+    for (const door of [0, 1, 2]) {
+      expect(spoilPrize(9, 4, 'afternoon', door, 5)).toBe(spoilPrize(9, 4, 'afternoon', door, 5));
     }
   });
 });
