@@ -2396,6 +2396,16 @@ button.category .count {
 .adv-rest-warn.muted { color: var(--muted); }
 .adv-camp-notice { font-size: .85rem; color: var(--green); margin: 0; }
 .adv-camp-hd { white-space: nowrap; }
+/* The hero's stat line: HP, AC, hit dice and any camp buff, wrapping as whole
+   items. It used to be inline spans separated by a literal "·", which strands
+   a separator at the start of every wrapped line — guaranteed on a phone with
+   a long name. Column gap does the separating, so a wrap cannot strand
+   anything, and each stat stays intact instead of breaking mid-value. */
+.adv-camp-stats {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  column-gap: 10px; row-gap: 1px; line-height: 1.45;
+}
+.adv-camp-stats > span { white-space: nowrap; }
 .adv-camp-buffs { color: var(--green); white-space: nowrap; }
 .adv-camp-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .adv-camp-stash, .adv-camp-char { border-top: 1px solid var(--panel2); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }

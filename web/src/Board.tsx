@@ -241,6 +241,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
               {...(hasArt(artId) ? { src: tokenUrl(artId) } : {})}
               className="art"
               glyphClassName="sil"
+              priority="high"
               style={{ transform: `scale(${tokenScale(artId)})` }}
             />
             {c.familiar?.kind === 'owl' && (

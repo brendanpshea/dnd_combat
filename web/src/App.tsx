@@ -381,8 +381,18 @@ function ArenaCard({ onPick }: { onPick(s: Screen): void }) {
               but the roster. A row of faces says "every monster in the game"
               in a way a painted backdrop of anywhere cannot. */}
           <div className="arena-cover-roster">
+            {/* Lazy and low, because this row is decoration below the fold.
+                Measured on a 400 kbps profile: these seven faces plus the two
+                card thumbnails are 132 KB fetched eagerly, occupying the
+                connection for the first 2.6 seconds. A player who taps "Begin
+                the story" has already left, but the requests are in flight and
+                browsers do not cancel them, so the fight they are waiting on
+                queues behind a picture of an owlbear they never looked at.
+                The hint is here on those grounds rather than on a measured
+                improvement — see the note on `priority` in ArtImage. */}
             {ARENA_FACES.filter(hasArt).map((id, i) => (
               <img key={id} src={tokenUrl(id)} alt="" draggable={false}
+                   loading="lazy" fetchPriority="low"
                    style={{ zIndex: i === 3 ? 4 : 3 - Math.abs(3 - i) }} />
             ))}
           </div>
