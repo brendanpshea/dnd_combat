@@ -84,10 +84,21 @@ export interface CreepAttempt {
   door: number;
   /** True: they are surprised. False: you are. */
   success: boolean;
-  /** Whoever the group check turned on, for the line on the card. */
+  /**
+   * The best (or, on a failure, worst) single roll.
+   *
+   * Kept because saves written before the tally existed have it, and because a
+   * single number is still the honest thing to quote for "how close was it".
+   * It is NOT what the card reports any more: this is a group check, and
+   * crediting one hero for it told players the wrong thing about what to
+   * change — usually somebody else's armour.
+   */
   by: number;
   total: number;
   dc: number;
+  /** How many of the party got through, and how many rolled. */
+  passed?: number;
+  of?: number;
 }
 
 export function creepKey(day: number, half: 'morning' | 'afternoon'): string {

@@ -17,7 +17,7 @@ import {
 import { SPELLS } from '../data/spells.js';
 import { ITEMS, SCROLL_IDS } from '../data/items.js';
 import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS, SILVERED_WEAPONS, isWeaponProficient } from '../data/weapons.js';
-import { ARMOR, SHIELDS, isShield } from '../data/armor.js';
+import { ARMOR, SHIELDS, isShield, armorStealthDisadvantage } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
@@ -2025,6 +2025,21 @@ export function characterSkillBonus(c: CampaignState, idx: number, skill: SkillI
   return bonus;
 }
 
+/**
+ * Does this hero's armour make them clank?
+ *
+ * The engine's Hide rule has applied this since it was written, and the arena's
+ * morning gear advisor knows about it — but the campaign-level skill check did
+ * not, so the paladin in plate rolled Stealth flat every time the party crept
+ * up on a gate. It mattered most in exactly the place it was missing: creeping
+ * in is a GROUP check, and the armoured members are the reason a party gets
+ * heard.
+ */
+export function skillDisadvantage(c: CampaignState, idx: number, skill: SkillId): boolean {
+  const ch = c.characters[idx];
+  return skill === 'stealth' && !!ch && armorStealthDisadvantage(ch.equipped.armor);
+}
+
 /** The party member with the highest bonus rolls every party skill check. */
 export function bestAtSkill(c: CampaignState, skill: SkillId): { idx: number; bonus: number } {
   let best = { idx: 0, bonus: -Infinity };
@@ -2063,8 +2078,16 @@ export function characterSkillCheck(
   c: CampaignState, idx: number, skill: SkillId, dc: number, opts: CheckOptions = {},
 ): SkillRoll {
   const bonus = characterSkillBonus(c, idx, skill);
-  const d = rollDie(c.rng, 20);
-  c.rng = d.state;
+  // Plate does not creep. Two dice, keep the worse — the same disadvantage the
+  // in-combat Hide rule has always applied, finally applied out of combat too.
+  const d1 = rollDie(c.rng, 20);
+  c.rng = d1.state;
+  let d = d1;
+  if (skillDisadvantage(c, idx, skill)) {
+    const d2 = rollDie(c.rng, 20);
+    c.rng = d2.state;
+    if (d2.value < d1.value) d = d2;
+  }
   let total = d.value + bonus;
   // A party cleric casts Guidance before the check — +1d4, no combat resource.
   let guidance = 0;
