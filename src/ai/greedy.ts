@@ -52,6 +52,17 @@ function damageValue(ev: number, target: Combatant): number {
   return ev + killBonus;
 }
 
+/**
+ * Does this creature cast at all? Silence is worth nothing over a creature with
+ * no spells, and the difference between a hushed mage and a hushed ogre is the
+ * whole spell.
+ *
+ * Cantrips count: Vicious Mockery and Fire Bolt are somebody's whole turn.
+ */
+function canCastAnything(c: Combatant): boolean {
+  return c.spellIds.length > 0;
+}
+
 // --- action scoring ----------------------------------------------------------
 
 function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'attack' }): number {
@@ -796,6 +807,117 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // coming.
       const held = t.conditions.some((k) => k.id === 'restrained' || k.id === 'paralyzed');
       return held ? 7 - slotCost : 0;
+    }
+    // Ice Storm: Fireball's shape one tier up, and the same ally arithmetic.
+    // The hail is 2d10 + 4d6 on a Dex save for half; the ice it leaves behind is
+    // worth a little on top, but only a little — chilled ground slows whoever
+    // walks it, and both sides walk it.
+    case 'ice-storm': {
+      const center = (a.targets[0] as { position: Position }).position;
+      const sculpt = actor.featureIds.includes('sculpt-spells');
+      const dice = avgDice(`${2 + Math.max(0, a.slotLevel - 4)}d10`) + avgDice('4d6');
+      let v = 0;
+      let caught = 0;
+      for (const pos of sphere5x5(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        if (sculpt && t.team === actor.team) continue;
+        const pFail = saveFailProb(state, t, 'dex', dc);
+        const ev = dice * (pFail + (1 - pFail) * 0.5);
+        if (t.team === actor.team) { v -= 2 * ev; continue; }
+        v += damageValue(ev, t);
+        caught++;
+      }
+      return (caught > 0 ? v + 1.5 : v) - slotCost;
+    }
+    // Shatter: the 2nd-level tier's only area damage, so a caster that cannot
+    // score it holds the one spell that answers a clump of goblins.
+    case 'shatter': {
+      const center = (a.targets[0] as { position: Position }).position;
+      const sculpt = actor.featureIds.includes('sculpt-spells');
+      const dice = avgDice(`${3 + Math.max(0, a.slotLevel - 2)}d8`);
+      let v = 0;
+      for (const pos of sphere2x2(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        if (sculpt && t.team === actor.team) continue;
+        const pFail = saveFailProb(state, t, 'con', dc);
+        const ev = dice * (pFail + (1 - pFail) * 0.5);
+        v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    // Blight: a single enormous save-for-half hit, and no concentration to hold.
+    // Worth its slot on something big; wasted on the last two hit points of a
+    // goblin, which `damageValue` capping at the target's HP already handles.
+    case 'blight': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const pFail = saveFailProb(state, t, 'con', dc);
+      const ev = avgDice(`${8 + Math.max(0, a.slotLevel - 4)}d8`) * (pFail + (1 - pFail) * 0.5);
+      return damageValue(ev, t) - slotCost;
+    }
+    // Banishment: Suggestion's shape — a creature removed from the fight is
+    // worth roughly what killing it is — but on a Charisma save, and it holds
+    // concentration, so it is never worth breaking something else for.
+    case 'banishment': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      return saveFailProb(state, t, 'cha', dc) * damageValue(t.hp, t) - slotCost;
+    }
+    // Phantasmal Killer: the damage lands whether or not the save is made, and
+    // the fear is the rider. That makes it the 4th-level answer to a single
+    // durable target — but it takes concentration for a spell whose main value
+    // is damage, so it loses to Blight while something else is already up.
+    case 'phantasmal-killer': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const dmg = avgDice(`${4 + Math.max(0, a.slotLevel - 4)}d10`);
+      const fear = t.conditions.some((k) => k.id === 'frightened')
+        ? 0 : saveFailProb(state, t, 'wis', dc) * 4;
+      return damageValue(dmg, t) + fear - slotCost;
+    }
+    // Mirror Image: three illusions that eat attacks. Only worth an action when
+    // something is close enough to swing, and never worth re-casting on top of
+    // images that are still standing.
+    case 'mirror-image': {
+      if ((actor.mirrorImages ?? 0) > 0) return 0;
+      const threats = Object.values(state.combatants).filter(
+        (c) => c.alive && !isDown(c) && c.team !== actor.team &&
+          distanceCells(c.position, actor.position) <= 2,
+      ).length;
+      if (threats === 0) return 0;
+      return 5 + 2 * threats - slotCost;
+    }
+    // Silence: worth exactly as much as the casting it stops, so it is priced
+    // off the enemy casters standing in it — and refuses outright if it would
+    // gag one of your own. A patch dropped on a pack of goblins with no spells
+    // between them is an action and a slot for nothing.
+    case 'silence': {
+      if (actor.concentratingOn) return 0;
+      const center = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere2x2(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t)) continue;
+        if (t.team === actor.team) return 0;      // never gag your own casters
+        if (!canCastAnything(t)) continue;        // a silenced brute is unbothered
+        v += 6;
+      }
+      return v - slotCost;
+    }
+    // Mage Armor: normally a prep-screen button, but a wizard who skipped it can
+    // still spend a 1st-level slot on +3 AC for the fight. Nothing if it is
+    // already up, or if there is armour on to begin with — the spell does not
+    // stack with either.
+    case 'mage-armor': {
+      if (actor.mageArmor || actor.equipped.armor !== undefined) return 0;
+      return 4 - slotCost;
     }
     // Dimension Door is deliberately unscored. Valuing a teleport means valuing
     // a POSITION, and every cheap proxy ("get away from things") makes a caster
