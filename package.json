@@ -19,7 +19,8 @@
     "web:build": "vite build --config web/vite.config.ts",
     "web:typecheck": "tsc -p web/tsconfig.json",
     "reference": "tsx scripts/reference.ts",
-    "art-registry": "tsx scripts/art-registry.ts"
+    "art-registry": "tsx scripts/art-registry.ts",
+    "art-backlog": "tsx scripts/art-backlog.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
