@@ -26,7 +26,7 @@ describe('art registry', () => {
     let out = '';
     try {
       out = execFileSync('npx', ['tsx', 'scripts/art-registry.ts', '--check'], {
-        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], shell: true,
       });
     } catch (e) {
       const err = e as { stdout?: string; stderr?: string };

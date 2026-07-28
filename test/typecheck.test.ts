@@ -35,7 +35,7 @@ describe('typecheck', () => {
     let out = '';
     try {
       out = execFileSync('npx', ['tsc', '-p', 'tsconfig.all.json', '--noEmit'], {
-        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], shell: true,
       });
     } catch (e) {
       const err = e as { stdout?: string; stderr?: string };
