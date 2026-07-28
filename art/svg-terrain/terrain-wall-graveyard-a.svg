@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <g id="terrain-prop">
+
+    <!-- Base Shadow -->
+    <ellipse cx="256" cy="455" rx="170" ry="24" fill="#12131a" opacity="0.6"/>
+
+    <!-- Tall Standing Tomb Marker (Tilted 4deg, y=50 to 450) -->
+    <g transform="rotate(-4 256 450)">
+      <!-- Back Slab Shadow -->
+      <path d="M 120,450 L 120,130 C 120,70 360,70 360,130 L 360,450 Z" fill="#363942" stroke="#1b1c21" stroke-width="9" stroke-linejoin="round"/>
+
+      <!-- Lit Top Rim -->
+      <path d="M 120,130 C 120,70 360,70 360,130 L 340,145 C 340,90 140,90 140,145 Z" fill="#9fa6b5"/>
+
+      <!-- Front Face -->
+      <path d="M 140,145 C 140,90 340,90 340,145 L 340,450 L 140,450 Z" fill="#575a66" stroke="#1b1c21" stroke-width="9" stroke-linejoin="round"/>
+
+      <!-- Carved Inscription Relief Cross -->
+      <rect x="225" y="190" width="30" height="110" fill="#363942" stroke="#25262c" stroke-width="3"/>
+      <rect x="185" y="220" width="110" height="30" fill="#363942" stroke="#25262c" stroke-width="3"/>
+
+      <!-- Lichen Base Patches -->
+      <path d="M 140,410 Q 180,380 220,450 Z" fill="#475e3e"/>
+      <path d="M 280,450 Q 310,400 340,430 Z" fill="#475e3e"/>
+    </g>
+
+  </g>
+</svg>

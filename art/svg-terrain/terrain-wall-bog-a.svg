@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <g id="terrain-prop">
+
+    <!-- Base Shadow -->
+    <ellipse cx="256" cy="455" rx="185" ry="24" fill="#091410" opacity="0.7"/>
+
+    <!-- Mossy Hummock Wall -->
+    <path d="M 80,450 C 50,320 80,180 160,110 C 230,50 330,60 380,140 C 450,220 460,350 430,450 Z" fill="#241e17" stroke="#100d0a" stroke-width="9" stroke-linejoin="round"/>
+
+    <!-- Lush Green Moss Top Curve -->
+    <path d="M 100,320 C 80,200 150,110 240,80 C 330,60 390,130 410,250 Z" fill="#4d692b" stroke="#100d0a" stroke-width="7"/>
+    <path d="M 140,180 C 180,100 280,80 340,120 Z" fill="#73993d"/>
+
+    <!-- Reeds -->
+    <path d="M 220,100 L 200,20 M 240,90 L 240,10 M 260,90 L 280,25 M 280,100 L 310,35" stroke="#8fa843" stroke-width="6" stroke-linecap="round"/>
+
+  </g>
+</svg>

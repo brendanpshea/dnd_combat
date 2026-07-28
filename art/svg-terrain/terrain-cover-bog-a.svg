@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <g id="terrain-prop">
+
+    <!-- Base Shadow -->
+    <ellipse cx="256" cy="455" rx="210" ry="20" fill="#091410" opacity="0.7"/>
+
+    <!-- Low Peat & Root Bank -->
+    <path d="M 40,450 L 50,290 L 460,290 L 470,450 Z" fill="#2b231a" stroke="#100d0a" stroke-width="8"/>
+
+    <polygon points="40,290 80,230 430,230 470,290" fill="#4d692b" stroke="#100d0a" stroke-width="8" stroke-linejoin="round"/>
+    <polygon points="80,230 430,230 445,275 65,275" fill="#73993d"/>
+
+    <!-- Grass Fringe -->
+    <path d="M 50,290 L 40,260 M 90,290 L 85,250 M 150,290 L 160,255 M 230,290 L 220,250 M 310,290 L 320,255 M 400,290 L 390,260" stroke="#8fa843" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Water Pool -->
+    <ellipse cx="256" cy="445" rx="200" ry="12" fill="#182e2b" opacity="0.8"/>
+
+  </g>
+</svg>

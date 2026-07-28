@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <g id="terrain-prop">
+
+    <!-- Base Shadow -->
+    <ellipse cx="256" cy="450" rx="175" ry="25" fill="#101c0c" opacity="0.6"/>
+
+    <!-- Trunk Base -->
+    <rect x="210" y="380" width="80" height="70" rx="10" fill="#3d2616" stroke="#1c1109" stroke-width="8"/>
+
+    <!-- Protruding Broken Branch (Right) -->
+    <path d="M 280,240 L 430,130 L 450,145 L 300,270 Z" fill="#523520" stroke="#1c1109" stroke-width="6"/>
+
+    <!-- Lopsided Bush Foliage -->
+    <path d="M 100,380 C 40,320 50,180 120,120 C 180,60 290,60 340,120 C 420,160 440,280 390,360 C 330,430 160,430 100,380 Z" fill="#203310" stroke="#101b08" stroke-width="9" stroke-linejoin="round"/>
+
+    <path d="M 110,310 Q 80,230 130,170 Q 180,110 270,130 Q 370,150 380,250 Q 360,350 250,370 Z" fill="#36541b" stroke="#101b08" stroke-width="7"/>
+
+    <!-- Lighter Yellow-Green Cluster on Left -->
+    <circle cx="150" cy="170" r="65" fill="#85b82e" stroke="#101b08" stroke-width="6"/>
+    <circle cx="230" cy="140" r="55" fill="#699e26" stroke="#101b08" stroke-width="6"/>
+
+  </g>
+</svg>

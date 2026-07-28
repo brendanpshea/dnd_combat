@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="lava-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#ff4500" flood-opacity="0.8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffeb3b" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <g id="terrain-prop">
+
+    <!-- Base Shadow -->
+    <ellipse cx="256" cy="455" rx="210" ry="22" fill="#171324" opacity="0.6"/>
+
+    <!-- Low Stone Barricade (Chest High: y=230 to 450) -->
+    <!-- Top Face (Broad & Lit) -->
+    <polygon points="40,290 90,230 420,230 470,290" fill="#9e95ba" stroke="#1f1a29" stroke-width="8" stroke-linejoin="round"/>
+    <polygon points="98,238 412,238 456,282 54,282" fill="#beb6d9"/>
+
+    <!-- Front Face -->
+    <rect x="40" y="290" width="430" height="160" rx="4" fill="#69617d" stroke="#1f1a29" stroke-width="8"/>
+
+    <!-- Alternating Bricks -->
+    <rect x="40" y="290" width="130" height="80" fill="#756c8c" stroke="#2a2338" stroke-width="5"/>
+    <rect x="170" y="290" width="150" height="80" fill="#5e5670" stroke="#2a2338" stroke-width="5"/>
+    <rect x="320" y="290" width="150" height="80" fill="#756c8c" stroke="#2a2338" stroke-width="5"/>
+
+    <rect x="40" y="370" width="190" height="80" fill="#5e5670" stroke="#2a2338" stroke-width="5"/>
+    <rect x="230" y="370" width="140" height="80" fill="#756c8c" stroke="#2a2338" stroke-width="5"/>
+    <rect x="370" y="370" width="100" height="80" fill="#5e5670" stroke="#2a2338" stroke-width="5"/>
+
+    <!-- Rubble Foot -->
+    <path d="M 60,450 Q 80,425 100,450 Z" fill="#474059" stroke="#1f1a29" stroke-width="4"/>
+    <path d="M 390,450 Q 415,420 440,450 Z" fill="#474059" stroke="#1f1a29" stroke-width="4"/>
+
+  </g>
+</svg>
