@@ -26,6 +26,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   lured:          { icon: '🎶', label: 'Lured — drawn toward the singer, and can’t act', kind: 'control', tint: 'fear' },
   fleeing:        { icon: '🏃', label: 'Fleeing — runs for the edge each turn, and is gone when it gets there', kind: 'control', tint: 'fear' },
   paralyzed:      { icon: '😵', label: 'Paralyzed — can’t move or act', kind: 'control', tint: 'frozen' },
+  stunned:        { icon: '💫', label: 'Stunned — can’t move or act, and easier to hit', kind: 'control', tint: 'frozen' },
   unconscious:    { icon: '💤', label: 'Unconscious', kind: 'control' },
   restrained:     { icon: '⛓️', label: 'Restrained — speed 0, easier to hit', kind: 'control', tint: 'bound' },
   commanded:      { icon: '🫵', label: 'Commanded — loses its next action', kind: 'control' },

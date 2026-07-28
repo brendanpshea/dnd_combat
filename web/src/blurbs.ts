@@ -11,6 +11,7 @@ export const CLASS_BLURB: Record<string, string> = {
   ranger: "Marksman. Hunter's Mark, Colossus Slayer, a bow and a blade.",
   paladin: 'Holy tank. Lay on Hands, Divine Smite, heavy armor and a shield.',
   barbarian: 'Rages. Huge hit dice, greataxe, half damage from blades — and no armor at all.',
+  monk: 'Fists and focus. Flurries, stuns, deflects blows — fast, and wears nothing.',
   bard: 'Support caster. Hands out Bardic Inspiration dice, and spends them to spoil enemy hits.',
   druid: 'Shapeshifter. Nature magic, or Wild Shape into a beast and fight with its body instead.',
 };

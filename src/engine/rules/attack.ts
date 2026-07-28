@@ -147,6 +147,9 @@ export function collectAttackSources(
   if (target.conditions.some((c) => c.id === 'paralyzed')) {
     adv.push('target paralyzed');
   }
+  if (target.conditions.some((c) => c.id === 'stunned')) {
+    adv.push('target stunned');
+  }
   if (target.conditions.some((c) => c.id === 'guided')) {
     adv.push('guiding bolt');
   }
@@ -376,7 +379,9 @@ export function resolveAttack(
     return events;
   }
 
-  const dmg = rollDice(state.rng, shillelagh ? shillelaghDamage(attacker.level) : weapon.damage, crit);
+  const dmg = rollDice(state.rng,
+    shillelagh ? shillelaghDamage(attacker.level)
+      : martialArtsDie(attacker, weapon) ?? weapon.damage, crit);
   state.rng = dmg.state;
   let rolls = dmg.rolls;
   // Which named bonuses actually fired — surfaced in the log and as toasts so
@@ -559,7 +564,12 @@ export function resolveAttack(
 
   amount = Math.max(1, amount);
 
-  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls, { crit, tags, magical: isMagicWeapon(weapon) }));
+  // Empowered Strikes (Monk 6): the fists themselves count as magical, which
+  // is what stops a monk falling off a cliff the moment the bestiary starts
+  // shrugging off nonmagical weapons.
+  const empowered = weapon.id === 'unarmed-strike' && attacker.featureIds.includes('empowered-strikes');
+  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls,
+    { crit, tags, magical: isMagicWeapon(weapon) || empowered, melee: isMeleeAttack }));
 
   // Secondary damage of a different type (giant spider poison). A rider with a
   // `save` is halved on a success — the SRD shape for the big poison stings,
@@ -927,6 +937,18 @@ export function isShillelaghed(attacker: Combatant, weapon: WeaponData): boolean
 
 /** The die a Shillelagh'd weapon rolls: d8, growing to d10 at level 5 (and the
  *  SRD's d12/2d6 tiers, which this game's level cap never reaches). */
+/**
+ * The Martial Arts die, when a monk is the one punching.
+ *
+ * Undefined for everyone else — an ordinary character's fist is still 1d6, and
+ * the weapon carries that. A die that grows with its wielder cannot live on the
+ * weapon, which is why this reads like Shillelagh's below.
+ */
+export function martialArtsDie(attacker: Combatant, weapon: WeaponData): string | undefined {
+  if (weapon.id !== 'unarmed-strike' || !attacker.featureIds.includes('martial-arts')) return undefined;
+  return attacker.level >= 5 ? '1d8' : '1d6';
+}
+
 export function shillelaghDamage(level: number): string {
   return level >= 17 ? '2d6' : level >= 11 ? '1d12' : level >= 5 ? '1d10' : '1d8';
 }
@@ -945,7 +967,11 @@ export function applyDamage(
   amount: number,
   damageType: DamageType,
   rolls: number[] = [],
-  opts: { crit?: boolean; tags?: string[]; magical?: boolean; via?: string; shared?: boolean } = {},
+  opts: {
+    crit?: boolean; tags?: string[]; magical?: boolean; via?: string; shared?: boolean;
+    /** A weapon swing in reach — the only thing Deflect Attacks can catch. */
+    melee?: boolean;
+  } = {},
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -961,6 +987,18 @@ export function applyDamage(
   const energyWard = target.conditions.some(
     (k) => k.id === 'energyWarded' && k.damageType === damageType,
   );
+  let deflected = false;
+  // Deflect Attacks (Monk 3): a reaction that catches a melee blow and halves
+  // it. Here rather than in resolveAttack because this is the only place that
+  // sees the number before it lands — and gated on the reaction, so it is once
+  // a round and competes with everything else a monk might react with.
+  if (opts.melee && target.featureIds.includes('deflect-attacks') &&
+      !target.turn.reactionUsed && !isIncapacitated(target) && amount > 0) {
+    target.turn.reactionUsed = true;
+    amount = Math.ceil(amount / 2);
+    deflected = true;
+  }
+
   // Rage halves blades, arrows and clubs — and unlike a monster's physical
   // resistance it is NOT waived by a magic weapon. That is the SRD rule and it
   // is also what keeps rage worth using in the levels where the enemies start
@@ -1019,7 +1057,10 @@ export function applyDamage(
   target.hp = Math.max(0, target.hp - (amount - absorbed));
   events.push({
     type: 'damageDealt', targetId, sourceId, amount, damageType, rolls,
-    ...(opts.tags && opts.tags.length > 0 ? { tags: opts.tags } : {}),
+    ...(() => {
+      const tags = [...(opts.tags ?? []), ...(deflected ? ['Deflected'] : [])];
+      return tags.length > 0 ? { tags } : {};
+    })(),
     ...(opts.via ? { via: opts.via } : {}),
   });
 

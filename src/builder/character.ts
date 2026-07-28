@@ -242,6 +242,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
         // minimum one — a bard with no Charisma is not a bard, but the pool
         // must never be zero or the feature simply isn't there.
         f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(abilities.cha)) :
+        // The monk's Focus Points: one per level, which is the only pool in the
+        // game that scales one-for-one with the character rather than with
+        // proficiency. It is the class's whole economy, so it gets its own kind
+        // rather than an approximation.
+        f.uses.count === 'level' ? level :
         f.uses.count;
       // Absent means full, the same convention HP, slots and wand charges use.
       const left = f.uses.per === 'encounter' ? undefined : opts.featureUsesOverride?.[fid];

@@ -26,6 +26,7 @@ export const HERO_NAMES: Record<Id, string> = {
   ranger: 'Sylva Thornwood',
   paladin: 'Ser Roland',
   barbarian: 'Hrothgar',
+  monk: 'Shen',
   bard: 'Lyra Songthread',
   druid: 'Alder Mosswood',
 };
@@ -38,6 +39,7 @@ export const RIVAL_NAMES: Record<Id, string> = {
   ranger: 'Kael Grimshaw',
   paladin: 'Dame Vex',
   barbarian: 'Skarn',
+  monk: 'Ilma',
   bard: 'Corvin Blackquill',
   druid: 'Nettle Ashbark',
 };

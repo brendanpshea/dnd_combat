@@ -11,7 +11,7 @@ import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow, saveForHalf, charmWarded, immuneToCharmAndFear } from '../engine/rules/saves.js';
-import { applyDamage, kill, dropToZero } from '../engine/rules/attack.js';
+import { applyDamage, kill, dropToZero, resolveAttack } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
@@ -50,7 +50,7 @@ export interface FeatureData {
    * even from an old save.
    */
   uses?: {
-    count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod';
+    count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod' | 'level';
     per: 'encounter' | 'shortRest' | 'longRest';
   };
   /**
@@ -246,6 +246,32 @@ export const WILD_SHAPE_FORMS: Array<{ monsterId: Id; minLevel: number }> = [
   { monsterId: 'wolf', minLevel: 2 },          // CR 1/4: speed 40, Pack Tactics
   { monsterId: 'giant-badger', minLevel: 2 },  // CR 1/4: AC 13, two attacks
 ];
+
+/**
+ * Spend a point from the monk's shared Focus pool.
+ *
+ * The pool lives on `monks-focus` and the techniques draw on it, so this is the
+ * one place that knows that. Returns false when it is empty, and every
+ * technique bails on false rather than firing for free — a bonus action that
+ * silently does nothing is worse than a greyed-out button.
+ */
+function spendFocus(me: Combatant): boolean {
+  const pool = me.featureUses['monks-focus'];
+  if (!pool || pool.current <= 0) return false;
+  pool.current -= 1;
+  return true;
+}
+
+/** The adjacent enemy worth hitting most: the one closest to dropping. */
+function bestAdjacentFoe(state: GameState, me: Combatant): Combatant | undefined {
+  let best: Combatant | undefined;
+  for (const c of Object.values(state.combatants)) {
+    if (!c.alive || isDown(c) || c.team === me.team) continue;
+    if (distanceFeet(c.position, me.position) > 5) continue;
+    if (!best || c.hp < best.hp) best = c;
+  }
+  return best;
+}
 
 export const FEATURES: Record<Id, FeatureData> = {
   'heroic-inspiration': {
@@ -1185,5 +1211,155 @@ export const FEATURES: Record<Id, FeatureData> = {
   'natural-recovery': {
     id: 'natural-recovery', name: 'Natural Recovery', trigger: 'passive',
     uses: { count: 1, per: 'longRest' },
+  },
+
+  // --- monk -----------------------------------------------------------------
+  /**
+   * Martial Arts: the monk fights with its hands, on Dexterity, and gets a
+   * second swing for free.
+   *
+   * The Dexterity half needed nothing new — the unarmed strike is a `finesse`
+   * weapon and `attackAbility` already takes the better of Strength and
+   * Dexterity, which for a monk is always Dexterity. The growing die is read in
+   * `resolveAttack`, exactly as Shillelagh's is, because a die that scales with
+   * its wielder cannot sit on the weapon.
+   *
+   * The free bonus-action strike is the class's rhythm and is offered through
+   * the same path as the barbarian's Frenzy: a bonus-action attack with the
+   * weapon in hand, which for a monk is a fist.
+   */
+  'martial-arts': {
+    id: 'martial-arts', name: 'Martial Arts', trigger: 'passive',
+  },
+  /** Unarmored Defense: 10 + Dex + Wis, read by `acOf`. */
+  'monk-defense': {
+    id: 'monk-defense', name: 'Unarmored Defense', trigger: 'passive',
+  },
+  /**
+   * Monk's Focus: the pool everything else spends.
+   *
+   * One point per level, back on a short rest — which is a clock that did not
+   * exist until feature pools got them, and the reason the monk could not have
+   * been built before now. `count: 'level'` is its own kind because this is the
+   * only resource in the game that tracks the character one-for-one.
+   *
+   * The pool lives on this feature and the three techniques spend it, rather
+   * than each carrying its own: they are three things to do with one budget,
+   * and that budget being shared is the decision the class is made of.
+   */
+  'monks-focus': {
+    id: 'monks-focus', name: "Monk's Focus", trigger: 'passive',
+    uses: { count: 'level', per: 'shortRest' },
+  },
+  /**
+   * Flurry of Blows: a focus point for two more unarmed strikes.
+   *
+   * Auto-targets the adjacent enemy it can hurt most, rather than asking. The
+   * feature system has no targeted-activation path, and inventing one for this
+   * would be a lot of machinery for a button whose answer is almost always "the
+   * thing I am already punching".
+   */
+  'flurry-of-blows': {
+    id: 'flurry-of-blows', name: 'Flurry of Blows', trigger: 'bonus',
+    manualUses: true,
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const target = bestAdjacentFoe(state, me);
+      if (!target || !spendFocus(me)) return [];
+      const events: GameEvent[] = [];
+      for (let i = 0; i < 2 && state.combatants[target.id]?.alive; i++) {
+        const before = state.combatants[target.id]!.hp;
+        events.push(...resolveAttack(state, actorId, target.id, 'unarmed-strike', {}));
+        // Open Hand Technique: a Flurry strike that lands puts them on the
+        // floor. Read off the hit rather than passed down, so the technique is
+        // a property of the monk rather than of the attack rules.
+        const t = state.combatants[target.id]!;
+        if (me.featureIds.includes('open-hand-technique') && t.alive && t.hp < before &&
+            !t.conditions.some((k) => k.id === 'prone')) {
+          t.conditions.push({ id: 'prone', sourceId: actorId });
+          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'prone', sourceId: actorId });
+        }
+      }
+      return events;
+    },
+  },
+  /** Patient Defense: a focus point to Dodge as a bonus action. */
+  'patient-defense': {
+    id: 'patient-defense', name: 'Patient Defense', trigger: 'bonus',
+    manualUses: true,
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      if (me.conditions.some((k) => k.id === 'dodging') || !spendFocus(me)) return [];
+      me.conditions.push({ id: 'dodging', sourceId: actorId });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'dodging', sourceId: actorId }];
+    },
+  },
+  /** Step of the Wind: a focus point to Disengage AND Dash as a bonus action. */
+  'step-of-the-wind': {
+    id: 'step-of-the-wind', name: 'Step of the Wind', trigger: 'bonus',
+    manualUses: true,
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      if (me.turn.disengaged || !spendFocus(me)) return [];
+      me.turn.disengaged = true;
+      me.turn.movementMax += me.speed;   // Dash
+      return [];
+    },
+  },
+  /**
+   * Stunning Strike: a focus point to take an enemy's turn away.
+   *
+   * RAW this rides on a hit you have already landed, which needs a "you hit —
+   * spend now?" interrupt the turn loop does not have. Here it is a bonus
+   * action against an adjacent enemy, save or stunned until the end of its next
+   * turn. The cost, the resource and the effect are the SRD's; what moved is
+   * when you decide, and deciding before rather than after is if anything the
+   * harder call.
+   */
+  'stunning-strike': {
+    id: 'stunning-strike', name: 'Stunning Strike', trigger: 'bonus',
+    manualUses: true,
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      const target = bestAdjacentFoe(state, me);
+      if (!target) return [];
+      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.wis);
+      if (!spendFocus(me)) return [];
+      const save = savingThrow(state, target.id, 'con', dc);
+      const events: GameEvent[] = [save.event];
+      if (!save.success) {
+        // Until the end of its NEXT turn, so a stun taken before its turn costs
+        // it that turn — which is the whole point of spending a point on it.
+        target.conditions.push({ id: 'stunned', sourceId: actorId, expiresAtRound: state.round + 1 });
+        events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'stunned', sourceId: actorId });
+      }
+      return events;
+    },
+  },
+  /**
+   * Deflect Attacks: catch the blow.
+   *
+   * A reaction that halves an incoming melee hit — read in `applyDamage`, since
+   * that is the only place that sees the number before it lands. RAW reduces by
+   * 1d10 + Dex + level, which at these levels is most of a hit; halving is the
+   * same idea with a shape that cannot accidentally heal.
+   */
+  'deflect-attacks': {
+    id: 'deflect-attacks', name: 'Deflect Attacks', trigger: 'passive',
+  },
+  /** Empowered Strikes: the monk's fists count as magical. */
+  'empowered-strikes': {
+    id: 'empowered-strikes', name: 'Empowered Strikes', trigger: 'passive',
+  },
+  /**
+   * Open Hand Technique: a Flurry hit knocks the target down.
+   *
+   * The SRD offers three riders and lets you pick per strike. Prone is the one
+   * with something to say on a grid — it costs the target half its movement to
+   * stand and hands every melee ally advantage — where "push 15 feet" and "no
+   * reactions" mostly do not change where anyone stands.
+   */
+  'open-hand-technique': {
+    id: 'open-hand-technique', name: 'Open Hand Technique', trigger: 'passive',
   }
 };

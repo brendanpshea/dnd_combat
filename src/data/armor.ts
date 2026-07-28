@@ -171,8 +171,17 @@ export function acOf(c: Combatant): number {
   // the barbarian's armour, so it has to beat what it replaces or the class
   // simply wears half plate instead — and the whole point of the feature is
   // that a barbarian does not.
-  if (c.featureIds.includes('unarmored-defense') && c.equipped.armor === undefined) {
-    return 10 + abilityMod(c.abilities.dex) + abilityMod(c.abilities.con)
+  // Unarmored Defense, twice: the barbarian adds Constitution, the monk adds
+  // Wisdom, and the monk may not use a shield with it. Two features rather than
+  // one with a parameter, because they are two class features that happen to
+  // share a name — and the shield clause is a real difference, not a detail.
+  const unarmored = c.equipped.armor === undefined
+    ? c.featureIds.includes('unarmored-defense') ? 'con'
+      : c.featureIds.includes('monk-defense') && !isShield(c.equipped.offHand) ? 'wis'
+      : undefined
+    : undefined;
+  if (unarmored) {
+    return 10 + abilityMod(c.abilities.dex) + abilityMod(c.abilities[unarmored])
       + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
   }
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);

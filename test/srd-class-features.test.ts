@@ -75,6 +75,10 @@ const DELIBERATE: Record<string, string> = {
   'potent-spellcasting': "Cleric 7 Blessed Strikes and Druid 7 Elemental Fury are each a choice between two named options. This is the Potent Spellcasting option of both, and carries the option's name because that is what it does.",
   'escape-the-horde': 'Ranger 7 Defensive Tactics is a choice between two named options; this is the Escape the Horde one.',
   'divine-smite': "Paladin 2 is Paladin's Smite, which grants the Divine Smite spell always-prepared. The spell is the part with mechanical effect here, so it carries the name.",
+  'flurry-of-blows': "Monk 2 is Monk's Focus, whose whole content is three named techniques sharing one pool. Each is a separate feature here because each is a separate button; the SRD writes them as sub-headings, so they have no `Level N:` line of their own.",
+  'patient-defense': "As Flurry of Blows: one of Monk's Focus's three techniques.",
+  'step-of-the-wind': "As Flurry of Blows: one of Monk's Focus's three techniques.",
+  'monk-defense': 'Monk 1 Unarmored Defense. Its id differs from the barbarian feature of the same name because the two add different abilities and the monk forbids a shield.',
 };
 
 describe('class features against the SRD', () => {

@@ -185,7 +185,8 @@ export function startTurn(state: GameState): GameEvent[] {
   // Stand up from prone automatically for half speed — unless you're in no
   // condition to: a downed hero standing itself up every turn is nonsense, and
   // it would strip the prone that marks it as a body on the floor.
-  const helpless = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed');
+  const helpless = c.conditions.some(
+    (k) => k.id === 'unconscious' || k.id === 'paralyzed' || k.id === 'stunned');
   let speed = helpless ? 0 : c.speed;
   // Haste: double speed (before prone/restrained/slowed apply their own
   // reductions on top, same as any other speed-affecting condition would).

@@ -130,7 +130,8 @@ export type ConditionId =
   | 'inspiring'    // Bardic Inspiration: +1d6 on the next attack roll or save, then spent
   | 'shillelagh'   // a club/quarterstaff swings on the caster's spell ability, at a bigger die
   | 'raging'       // Rage: bonus melee damage, physical resistance, Str advantage
-  | 'reckless';    // Reckless Attack: advantage on your melee attacks and on everyone else's against you
+  | 'reckless'     // Reckless Attack: advantage on your melee attacks and on everyone else's against you
+  | 'stunned';     // Stunning Strike: incapacitated, speed 0, and attacks against it have advantage
 
 export interface ActiveCondition {
   id: ConditionId;
@@ -516,7 +517,8 @@ export function isDown(c: Combatant): boolean {
  */
 export function isIncapacitated(c: Combatant): boolean {
   return c.conditions.some(
-    (k) => k.id === 'incapacitated' || k.id === 'unconscious' || k.id === 'paralyzed',
+    (k) => k.id === 'incapacitated' || k.id === 'unconscious' ||
+           k.id === 'paralyzed' || k.id === 'stunned',
   );
 }
 

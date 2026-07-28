@@ -732,7 +732,7 @@ const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id; skirmisher
 /** Classes whose look is robes and spellbooks rather than mail and axes. */
 const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric', 'bard', 'druid']);
 /** Light, hooded, knife-in-the-dark classes — the third look, where it's drawn. */
-const SKIRMISHER_CLASSES = new Set<Id>(['rogue']);
+const SKIRMISHER_CLASSES = new Set<Id>(['rogue', 'monk']);
 
 /**
  * Class portraits for hero classes — ranger and paladin now have dedicated art.
@@ -748,6 +748,9 @@ const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
   // barbarian with no armour is, so no new picture was needed. An orc or dwarf
   // barbarian still gets its own species art through SPECIES_PORTRAIT above.
   barbarian: 'berserker',
+  // No monk art yet; the halfling rogue is the closest thing the set has to a
+  // light, unarmoured fighter, and reads better than handing them a knight.
+  monk: 'halfling-rogue',
 };
 
 /** Sensible default portrait for a species/class combo: species art if it has
