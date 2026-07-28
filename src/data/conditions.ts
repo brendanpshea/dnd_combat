@@ -52,6 +52,8 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   cursed: 'cursed',
   inspiring: 'holding an inspiration die',
   shillelagh: 'wielding a shillelagh',
+  raging: 'raging',
+  reckless: 'attacking recklessly',
 };
 
 export function conditionName(id: ConditionId): string {

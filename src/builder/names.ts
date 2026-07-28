@@ -25,6 +25,7 @@ export const HERO_NAMES: Record<Id, string> = {
   rogue: 'Cedric the Sneaky',
   ranger: 'Sylva Thornwood',
   paladin: 'Ser Roland',
+  barbarian: 'Hrothgar',
   bard: 'Lyra Songthread',
   druid: 'Alder Mosswood',
 };
@@ -36,6 +37,7 @@ export const RIVAL_NAMES: Record<Id, string> = {
   rogue: 'Nessa Quickfingers',
   ranger: 'Kael Grimshaw',
   paladin: 'Dame Vex',
+  barbarian: 'Skarn',
   bard: 'Corvin Blackquill',
   druid: 'Nettle Ashbark',
 };

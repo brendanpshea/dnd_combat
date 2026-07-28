@@ -47,9 +47,11 @@ export const MAX_ROUNDS = 100;
 export function rollInitiative(state: GameState): GameEvent[] {
   const entries: Array<{ id: Id; initiative: number; dex: number; tiebreak: number }> = [];
   for (const c of Object.values(state.combatants)) {
-    // Remarkable Athlete (Champion 3): advantage on Initiative.
-    const athlete = c.featureIds.includes('remarkable-athlete');
-    const d = athlete ? rollD20(state.rng, 'advantage') : rollDie(state.rng, 20);
+    // Advantage on Initiative: Remarkable Athlete (Champion 3) and Feral
+    // Instinct (Barbarian 7). Same effect, so one check rather than two.
+    const quick = c.featureIds.includes('remarkable-athlete') ||
+      c.featureIds.includes('feral-instinct');
+    const d = quick ? rollD20(state.rng, 'advantage') : rollDie(state.rng, 20);
     state.rng = d.state;
     // Seeded tiebreak so equal-init, equal-dex ordering stays deterministic.
     const t = coinFlip(state.rng);
@@ -156,8 +158,12 @@ export function startTurn(state: GameState): GameEvent[] {
   // `repeatSave`: Blindness the spell applies the same condition id with a
   // repeat save instead, and that flavor must survive here and expire only
   // through the generic save-ends machinery (runEndOfTurnSaves).
+  // Reckless Attack is the same clock, and that clock is the whole gamble: the
+  // advantage is spent on this turn's swings, and every enemy in reach gets a
+  // free round of hitting back at advantage before it lifts.
   const selfClearing = (k: { id: string; repeatSave?: unknown }) =>
     k.id === 'dodging' || k.id === 'noReactions' || k.id === 'shielded' ||
+    k.id === 'reckless' ||
     (k.id === 'blinded' && !k.repeatSave);
   for (const cond of c.conditions) {
     if (selfClearing(cond)) events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });

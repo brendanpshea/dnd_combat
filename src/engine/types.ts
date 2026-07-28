@@ -128,7 +128,9 @@ export type ConditionId =
   | 'energyWarded' // Protection from Energy: resistance to one damage type
   | 'cursed'       // Bestow Curse: disadvantage on attack rolls and saving throws
   | 'inspiring'    // Bardic Inspiration: +1d6 on the next attack roll or save, then spent
-  | 'shillelagh';  // a club/quarterstaff swings on the caster's spell ability, at a bigger die
+  | 'shillelagh'   // a club/quarterstaff swings on the caster's spell ability, at a bigger die
+  | 'raging'       // Rage: bonus melee damage, physical resistance, Str advantage
+  | 'reckless';    // Reckless Attack: advantage on your melee attacks and on everyone else's against you
 
 export interface ActiveCondition {
   id: ConditionId;

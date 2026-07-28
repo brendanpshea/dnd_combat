@@ -29,7 +29,19 @@ export type Target = { combatantId: Id } | { position: Position };
 
 export type Action =
   | { kind: 'move'; to: Position }
-  | { kind: 'attack'; weaponId: Id; targetId: Id; offhand?: boolean }
+  | {
+      kind: 'attack'; weaponId: Id; targetId: Id;
+      /** The two-weapon bonus attack: off-hand weapon, no ability modifier. */
+      offhand?: boolean;
+      /**
+       * Berserker's Frenzy: a bonus-action attack with the MAIN hand while
+       * raging. Its own flag rather than reusing `offhand`, because the two
+       * differ in the thing that matters — a frenzy swing keeps its Strength
+       * modifier, and calling it an off-hand attack would quietly halve it and
+       * tag the log "Two-Weapon Fighting".
+       */
+      frenzy?: boolean;
+    }
   | { kind: 'castSpell'; spellId: Id; slotLevel: number; targets: Target[]; weaponId?: Id }
   | { kind: 'useFeature'; featureId: Id }
   | { kind: 'useItem'; itemId: Id; targets?: Target[] }
@@ -70,6 +82,23 @@ function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
     mainW.properties.includes('light') && offW.properties.includes('light') &&
     actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed
   );
+}
+
+/**
+ * Berserker's Frenzy: one extra main-hand melee swing, as a bonus action.
+ *
+ * The SRD version costs a level of exhaustion, which this game does not model.
+ * The cost here is the bonus action — which is what a barbarian would otherwise
+ * spend entering the rage this requires, so it is a real one on the turn the
+ * fight starts and free every turn after. That is the right shape: frenzy is
+ * what rage is FOR.
+ */
+function canFrenzy(actor: Combatant, weaponId: Id): boolean {
+  if (!actor.featureIds.includes('frenzy')) return false;
+  if (!actor.conditions.some((c) => c.id === 'raging')) return false;
+  if (actor.equipped.mainHand !== weaponId) return false;
+  const w = WEAPONS[weaponId];
+  return !!w && w.melee && actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed;
 }
 
 function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, targets: Target[]): boolean {
@@ -231,6 +260,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       return moveDestinations(state, actor).some((p) => posEq(p, action.to));
     case 'attack':
       if (incap) return false;
+      if (action.frenzy) {
+        return canFrenzy(actor, action.weaponId) && canAttackWith(state, actor, action.weaponId, action.targetId);
+      }
       if (action.offhand) {
         return canUseOffhand(actor, action.weaponId) && canAttackWith(state, actor, action.weaponId, action.targetId);
       }
@@ -440,6 +472,16 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
       if (isLegalAction(state, actorId, off)) actions.push(off);
     }
   }
+  // Frenzy's bonus swing, with the main hand. Offered separately from the
+  // Attack action above so it survives `actionUsed` — it is the bonus action,
+  // not part of the action, and the two are spent independently.
+  const mainWeapon = actor.equipped.mainHand;
+  if (mainWeapon) {
+    for (const t of enemies) {
+      const fz: Action = { kind: 'attack', weaponId: mainWeapon, targetId: t.id, frenzy: true };
+      if (isLegalAction(state, actorId, fz)) actions.push(fz);
+    }
+  }
 
   // Consumables.
   for (const stack of actor.inventory) {
@@ -579,7 +621,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (!equippedWeapons(actor).includes(action.weaponId)) {
         events.push(...autoSwap(draft, actorId, action.weaponId));
       }
-      if (action.offhand) {
+      if (action.offhand || action.frenzy) {
         actor.turn.bonusActionUsed = true;
       } else if (!actor.turn.actionUsed) {
         // First attack of the Attack action: bank any multiattack follow-ups

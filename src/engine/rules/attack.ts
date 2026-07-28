@@ -153,6 +153,15 @@ export function collectAttackSources(
   if (target.conditions.some((c) => c.id === 'outlined')) {
     adv.push('faerie fire');   // outlined: stays until the light does, not one-shot
   }
+  // Reckless Attack, both halves. The barbarian swings with advantage, and
+  // everything swings back with advantage — one condition, read from both
+  // ends, so the two can never come apart.
+  if (attacker.conditions.some((c) => c.id === 'reckless') && isMeleeAttack) {
+    adv.push('reckless');
+  }
+  if (target.conditions.some((c) => c.id === 'reckless')) {
+    adv.push('target reckless');
+  }
   // Assassinate: the target hasn't taken a turn yet this combat.
   if (attacker.featureIds.includes('assassinate') && !target.hasActed) {
     adv.push('assassinate');
@@ -169,6 +178,16 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'frightened')) dis.push('attacker frightened');
 
   return { adv, dis };
+}
+
+/**
+ * Rage's bonus damage by level. The SRD table is +2 through 8th, so this is a
+ * function of one value today — written as a function anyway because the level
+ * is the thing that will change, and a caller reading `rageDamage(level)` will
+ * not have to be corrected when it does.
+ */
+export function rageDamage(level: number): number {
+  return level >= 9 ? 3 : 2;
 }
 
 /** An owl familiar can Help with the caster's first attack roll each round. */
@@ -343,10 +362,16 @@ export function resolveAttack(
     // Graze mastery: a miss still deals the attacker's ability modifier in
     // damage (no dice), for a trained wielder. Cleave is modeled with the same
     // mechanic (the heavy blade carries through even on a glancing swing).
+    // `applyDamage` takes (target, source) in that order. This read
+    // (attacker, target), so for as long as the mastery has existed a miss has
+    // damaged the WIELDER for their own ability modifier. Nothing caught it
+    // because no player class carried a graze or cleave weapon until the
+    // barbarian's greataxe — and the first thing rage did was halve the
+    // self-damage, which is what made it visible.
     if ((weapon.mastery === 'graze' || weapon.mastery === 'cleave') &&
         attacker.weaponMasteries.includes(weaponId) &&
         target.alive && mod > 0) {
-      events.push(...applyDamage(state, attackerId, targetId, mod, weapon.damageType, []));
+      events.push(...applyDamage(state, targetId, attackerId, mod, weapon.damageType, []));
     }
     return events;
   }
@@ -407,6 +432,16 @@ export function resolveAttack(
   if (attacker.featureIds.includes('bracers-archery') && !weapon.melee) {
     amount += 2;
     tags.push('Bracers of Archery');
+  }
+
+  // Rage: bonus damage on Strength-based melee attacks. Flat rather than dice,
+  // which is the SRD shape and also the right feel — rage is a floor under
+  // every swing, not another thing to roll. A finesse weapon swung on Dex is
+  // deliberately excluded: the barbarian's whole bargain is Strength.
+  if (attacker.conditions.some((k) => k.id === 'raging') && isMeleeAttack &&
+      attackAbility(attacker, weapon) === 'str') {
+    amount += rageDamage(attacker.level);
+    tags.push('Rage');
   }
 
   // Brute (Bugbear): a melee hit deals one extra weapon damage die.
@@ -926,8 +961,15 @@ export function applyDamage(
   const energyWard = target.conditions.some(
     (k) => k.id === 'energyWarded' && k.damageType === damageType,
   );
+  // Rage halves blades, arrows and clubs — and unlike a monster's physical
+  // resistance it is NOT waived by a magic weapon. That is the SRD rule and it
+  // is also what keeps rage worth using in the levels where the enemies start
+  // carrying magic: a barbarian's toughness is their own, not a property of
+  // what is being swung at them.
+  const raging = target.conditions.some((k) => k.id === 'raging') &&
+    (damageType === 'slashing' || damageType === 'piercing' || damageType === 'bludgeoning');
   if (target.immunities.includes(damageType)) amount = 0;
-  else if (target.resistances.includes(damageType) || energyWard) amount = Math.floor(amount / 2);
+  else if (target.resistances.includes(damageType) || energyWard || raging) amount = Math.floor(amount / 2);
   else if (!opts.magical && (target.resistNonmagical ?? []).includes(damageType)) amount = Math.floor(amount / 2);
   else if (target.vulnerabilities.includes(damageType)) amount *= 2;
 

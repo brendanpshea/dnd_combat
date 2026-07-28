@@ -195,6 +195,10 @@ CLASSES = {
     "paladin": BODY + "M50 12l10 4v10c0 7-5 12-10 14-5-2-10-7-10-14V16z",            # shield
     "bard":    BODY + "M50 18a10 10 0 1 1-10 12l-6-14 3-2 6 13a10 10 0 0 1 7-9z",    # lute
     "druid":   BODY + "M50 12c6 6 6 16 0 22-6-6-6-16 0-22z M50 20v18",               # leaf
+    # A great axe, raised. The only class shape whose object is ABOVE the head:
+    # every other burden hangs at the side, and at 34px the barbarian has to be
+    # tellable from the fighter, whose sword is a thin diagonal at the hip.
+    "barbarian": BODY + "M50 3h5v37h-5z M40 1c10-3 19-1 24 6-8 4-17 4-24 0z",
 }
 
 

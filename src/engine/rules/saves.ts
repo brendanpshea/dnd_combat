@@ -42,6 +42,20 @@ function countercharmed(state: GameState, c: Combatant, ability: Ability): boole
  * the aura it rides on, it is a position: step outside the ten feet and the
  * protection stops.
  */
+/**
+ * Mindless Rage: a raging barbarian cannot be charmed or frightened.
+ *
+ * A hard block at the five places those conditions are pushed, rather than
+ * advantage on the save — the SRD says immune, and there is no central
+ * condition applier to hang it on. Five call sites is small enough that one
+ * exported predicate is honest; a sixth should call this too, which is why it
+ * is named for the rule rather than for the barbarian.
+ */
+export function immuneToCharmAndFear(c: Combatant): boolean {
+  return c.featureIds.includes('mindless-rage') &&
+    c.conditions.some((k) => k.id === 'raging');
+}
+
 export function charmWarded(state: GameState, c: Combatant): boolean {
   for (const other of Object.values(state.combatants)) {
     if (other.team !== c.team || !other.alive || isDown(other)) continue;
@@ -120,6 +134,9 @@ export function savingThrow(
   // Magic Resistance (Satyr/Unicorn): advantage on saves against spells.
   const hasAdvantage =
     c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
+    // Rage: advantage on Strength saves. A condition rather than a feature, so
+    // it cannot ride on `saveAdvantage` — that list is unconditional.
+    (ability === 'str' && c.conditions.some((k) => k.id === 'raging')) ||
     // Magic Resistance is a monster trait; the Mantle of Spell Resistance is
     // the party's version of the same thing, so it reads the same flag.
     (opts.magical === true &&

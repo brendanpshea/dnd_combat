@@ -14,6 +14,7 @@ import { logLinesFor, type LogLine } from './log.js';
 import { sphere2x2, sphere5x5, cone15, cube15, line15 } from '../../src/engine/grid.js';
 import { SPELLS, directionFromDelta } from '../../src/data/spells.js';
 import { SPECIES } from '../../src/data/species.js';
+import { CLASS_COUNT, SPECIES_COUNT, SPELL_COUNT, MONSTER_COUNT } from './contentCounts.js';
 import { STAGES } from '../../src/campaign/campaign.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
@@ -168,8 +169,8 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         <div className="landing-badges">
           <span>📱 Plays anywhere</span>
           <span>🆓 Free &amp; open</span>
-          <span>⚔️ 6 classes · 8 ancestries</span>
-          <span>🐉 45+ spells · 130+ monsters</span>
+          <span>⚔️ {CLASS_COUNT} classes · {SPECIES_COUNT} ancestries</span>
+          <span>🐉 {SPELL_COUNT} spells · {MONSTER_COUNT} monsters</span>
         </div>
         <p className="landing-legal">
           Built on the <b>Dungeons &amp; Dragons</b> SRD 5.2, released free under Creative Commons —
@@ -326,7 +327,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           <div className="overlay-box about-box" onClick={(e) => e.stopPropagation()}>
             <h2>The Free Company</h2>
             <p>A little tactics-and-story RPG that runs on the fifth-edition <b>Dungeons &amp; Dragons</b> rules — play it in a browser, on a phone or a laptop. No account, no cost; your progress saves in this browser.</p>
-            <p className="muted">Inside: 6 classes, 8 ancestries, 45+ spells, and 130+ monsters, plus the full skill and grid-combat rules — all drawn from the SRD.</p>
+            <p className="muted">Inside: {CLASS_COUNT} classes, {SPECIES_COUNT} ancestries, {SPELL_COUNT} spells, and {MONSTER_COUNT} monsters, plus the full skill and grid-combat rules — all drawn from the SRD.</p>
             <p className="muted">Built on the <b>System Reference Document 5.2.1</b>, © Wizards of the Coast LLC, released under <b>CC-BY-4.0</b>. This game uses those rules with house rules where noted, and is not affiliated with or endorsed by Wizards of the Coast.</p>
             <p className="muted">Open source — <a href="https://github.com/brendanpshea/dnd_combat" target="_blank" rel="noreferrer">github.com/brendanpshea/dnd_combat</a>.</p>
             <button className="primary" onClick={() => setAbout(false)}>Close</button>
