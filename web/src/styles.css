@@ -3387,3 +3387,8 @@ button.category .count {
    takes the height the backdrop was using. */
 .adv-panel.arena-gate { max-height: 86%; }
 .adv-panel.arena-gate.tall { max-height: 96%; }
+/* Pre-fight buffs, on the gate beside the knowledge check — the two things you
+   do with the door card in view. Same chip as a skill gambit, because they are
+   the same kind of decision: spend something now against what is behind it. */
+.prep-row .skill-gambit { border-color: #5a6b4a; }
+.prep-row .skill-gambit:hover:not(:disabled) { border-color: #7d9668; }

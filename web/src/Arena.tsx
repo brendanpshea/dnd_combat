@@ -22,7 +22,7 @@ import {
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
   partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck, bestAtSkill,
-  scrollLearnable, learnSpellFromScroll,
+  scrollLearnable, learnSpellFromScroll, drinkCampBuffPotion, useStoreSpell,
   itemFitFor,
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
@@ -52,6 +52,7 @@ import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers } from './art.js';
 import { morningReview, spellTasks } from '../../src/arena/morning.js';
+import { prepOptions } from '../../src/arena/prep.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
@@ -293,6 +294,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // always "whichever of ours is best". The decision worth keeping is whether
   // to study at all, and that survives being one button.
   const lens = bestLens(allFoes, (skill) => bestAtSkill(c, skill).bonus);
+  const prep = prepOptions(c);
   /** Creatures this run has successfully placed, by id. */
   const known = new Set<Id>(
     study?.success ? loreTargets(allFoes, study.skill) : [],
@@ -870,6 +872,31 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               {/* One study, before you choose. Which lens is the question when a
                   wave is mixed; the numbers are on the buttons so the choice is
                   made with them in view. */}
+              {/* Buffs, at the moment the door is in view. The machinery has
+                  been in the Gear panel all along; what it never had was a
+                  place where you could see what you are about to fight while
+                  deciding. Quiet when there is nothing to take. */}
+              {prep.length > 0 && (
+                <div className="lore-row prep-row">
+                  {prep.map((o) => (
+                    <button
+                      key={`${o.kind}-${o.who}-${o.id}`}
+                      className="skill-gambit"
+                      title={o.detail}
+                      onClick={() => {
+                        const done = o.kind === 'potion'
+                          ? drinkCampBuffPotion(c, o.who, o.id)
+                          : (useStoreSpell(c, o.who, o.id) ? `${o.name} casts Mage Armor.` : null);
+                        if (done) { setNotice(done); refresh(); persist(c, run); }
+                      }}
+                    >
+                      <b>{o.icon} {o.detail.split(' — ')[0]}</b>
+                      <span className="muted">{o.name.split(' ')[0]}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="lore-row">
                 {study ? (
                   <span className={study.success ? 'lore-known' : 'lore-blind'}>
