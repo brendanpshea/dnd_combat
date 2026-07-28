@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
+import { coverReadAt, coverReadFor, type CoverRead } from '../../src/engine/rules/cover.js';
 import { buildParty } from '../../src/builder/character.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
 import { MAPS, MAP_IDS, farRank } from '../../src/data/maps.js';
@@ -756,6 +757,41 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grouped, targeting, state, active, hint]);
 
+  /**
+   * Cover at every cell you could move to, and on everyone already standing.
+   *
+   * XCOM's shield: the point is that the mechanical fact arrives at the moment
+   * of the decision, not as scenery you have to decode first. Computed here
+   * rather than in the board because it is a rules question, and the board's
+   * job is to draw what it is handed.
+   *
+   * Only while it is a human's turn and nothing else is being targeted — during
+   * an enemy turn or mid-spell there is no move decision to inform, and the
+   * badges would just be clutter over the thing you are actually looking at.
+   */
+  const coverCells = useMemo(() => {
+    const m = new Map<string, CoverRead>();
+    if (!grouped || !active || targeting || !isHumanTurn) return m;
+    for (const k of grouped.moves.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      const read = coverReadAt(state, { x: x!, y: y! }, active.team, active.size ?? 'medium');
+      if (read.covered) m.set(k, read);
+    }
+    return m;
+  }, [grouped, active, state, targeting, isHumanTurn]);
+
+  /** Everyone currently behind something, so the board's defensive shape reads
+   *  at a glance rather than one hover at a time. */
+  const coverUnits = useMemo(() => {
+    const m = new Map<Id, CoverRead>();
+    for (const c of Object.values(state.combatants)) {
+      if (!c.alive) continue;
+      const read = coverReadFor(state, c.id);
+      if (read.covered) m.set(c.id, read);
+    }
+    return m;
+  }, [state]);
+
   const multiCounts = useMemo(() => {
     if (targeting?.type !== 'multi') return undefined;
     const m = new Map<Id, number>();
@@ -967,6 +1003,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         state={state}
         activeId={activeId ?? ''}
         highlights={highlights}
+        coverCells={coverCells}
+        coverUnits={coverUnits}
         selectedId={activeId}
         multiCounts={multiCounts}
         movePaths={movePaths}

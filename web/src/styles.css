@@ -3248,3 +3248,49 @@ button.category .count {
 /* The flat fills these terrains used are the prop's job now. */
 .board .cell.art-prop.terrain-cover { background: var(--floor, var(--cell)); box-shadow: inset 0 0 0 1px #14101f; }
 .board .cell.art-prop.terrain-cover.dark { background: var(--floor-dark, var(--cell-dark)); }
+
+/* ---- cover markers -------------------------------------------------------
+   XCOM's shield. Barricades have granted +2 AC since they were added and the
+   only way to find out was to notice that some attacks missed more often; the
+   tile looked different but nothing ever said what the difference did.
+
+   Two placements, answering two different questions. On a move destination:
+   "what do I get if I stand there" — the fact arrives while the decision is
+   being made, which is the whole trick. On a token: "who is protected right
+   now" — so the board's defensive shape reads at a glance.
+
+   Deliberately not a colour cue alone: the shield glyph carries it, so it
+   survives both colour-blindness and a 34px tile. */
+.cover-badge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 1px 4px;
+  border-radius: 7px;
+  background: #142a1ee6;
+  border: 1px solid var(--green, #6ee7a0);
+  color: var(--green, #6ee7a0);
+  font-size: clamp(8px, 2.1vmin, 11px);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 3;
+}
+.cover-badge::before { content: '🛡'; font-size: 0.95em; }
+.cover-badge b { font-family: var(--display); }
+/* On a token: smaller, tucked opposite the class pip so the two never collide. */
+.cover-pip {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  font-size: clamp(8px, 2vmin, 11px);
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px #000c);
+  pointer-events: none;
+  z-index: 3;
+}
