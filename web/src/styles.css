@@ -3283,3 +3283,16 @@ button.category .count {
 .arena-shop-gold { margin-left: auto; color: var(--gold); font-weight: 700; font-size: 13px; }
 /* Whether the item suits the hero it is being bought for. */
 .arena-buy-name .shop-fit { display: block; font-style: normal; font-size: 10px; }
+
+/* ── Art that has not arrived yet ──────────────────────────────────────────
+   The glyph standing in for an image still in flight. It is the same emoji
+   the game falls back to when there is no art at all, so a slow connection
+   looks like the no-art mode rather than like breakage — but it breathes,
+   which says "still coming" rather than "this is what you get".
+   Deliberately faint: on a fast connection this is on screen for two frames
+   and must not flash. */
+.art-waiting { animation: art-waiting 1.4s ease-in-out infinite; }
+@keyframes art-waiting { 0%, 100% { opacity: .45; } 50% { opacity: .8; } }
+@media (prefers-reduced-motion: reduce) {
+  .art-waiting { animation: none; opacity: .6; }
+}

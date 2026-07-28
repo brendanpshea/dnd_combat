@@ -32,7 +32,7 @@ import { classLook } from './classLook.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
 import type { AdventureState } from '../../src/adventure/runtime.js';
-import { hasSceneArt, sceneArtUrl, hasSpellIcon, spellIconUrl, boardBgUrl, HAS_BOARD_BG, tokenUrl, hasArt } from './art.js';
+import { hasSceneArt, sceneArtUrl, hasSpellIcon, spellIconUrl, boardBgUrl, HAS_BOARD_BG, tokenUrl, hasArt, thumbUrl } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
 import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
@@ -184,7 +184,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
             <div key={m.id} className={`module-card${resume ? ' resuming' : ''}`}>
               <button className="module-cover" onClick={() => play()} aria-label={`Play ${m.title}`}>
                 {cover && hasSceneArt(cover)
-                  ? <div className="module-cover-art" style={{ backgroundImage: `url(${sceneArtUrl(cover)})` }} />
+                  ? <div className="module-cover-art" style={{ backgroundImage: `url(${thumbUrl(sceneArtUrl(cover))})` }} />
                   : <div className="module-cover-art glyph"><span>{(cover && artEmoji(cover)) ?? '📜'}</span></div>}
                 <div className="module-cover-body">
                   <strong>{m.title}{dev && !['hollow-road'].includes(m.id) ? ' · dev' : ''}</strong>
@@ -290,7 +290,7 @@ function ArenaCard({ onPick }: { onPick(s: Screen): void }) {
         <div
           className="module-cover-art arena-cover"
           style={HAS_BOARD_BG.has('ember')
-            ? { backgroundImage: `url(${boardBgUrl('ember')})` }
+            ? { backgroundImage: `url(${thumbUrl(boardBgUrl('ember'))})` }
             : undefined}
         >
           {/* The cover the mode deserves is not a place — it has no place —

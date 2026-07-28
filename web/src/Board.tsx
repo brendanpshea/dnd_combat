@@ -6,6 +6,7 @@ import type { CoverRead } from '../../src/engine/rules/cover.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { glyphFor } from './glyphs.js';
+import { ArtImage } from './ArtImage.js';
 import {
   hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl,
   HAS_TERRAIN_ART, terrainUrl,
@@ -229,18 +230,17 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
           >
             {c.id === activeId && <div className="turn-arrow" />}
             <div className="base" />
-            {hasArt(artId) ? (
-              <img
-                className="art"
-                src={tokenUrl(artId)}
-                alt=""
-                draggable={false}
-                style={{ transform: `scale(${tokenScale(artId)})` }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-              />
-            ) : (
-              <span className="glyph">{glyphFor(c.classId)}</span>
-            )}
+            {/* The board rolled its own image-with-fallback, and its error path
+                hid the img and left the cell empty — worse than the glyph it
+                already had to hand. ArtImage holds the glyph while the token is
+                in flight and returns to it if the token never comes. */}
+            <ArtImage
+              id={c.classId}
+              {...(hasArt(artId) ? { src: tokenUrl(artId) } : {})}
+              className="art"
+              glyphClassName="glyph"
+              style={{ transform: `scale(${tokenScale(artId)})` }}
+            />
             {c.familiar?.kind === 'owl' && (
               <span
                 className={`familiar${c.familiar.helpedRound === state.round ? ' spent' : ''}`}
