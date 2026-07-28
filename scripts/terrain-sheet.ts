@@ -76,25 +76,40 @@ function themeVars(theme: MapTheme): string {
  * exists to make visible: the pair that matters most tactically is the pair
  * with no badge on either side of the comparison.
  */
-function cell(terrain: string, dark: boolean, withToken: boolean): string {
+function cell(
+  terrain: string, dark: boolean, withToken: boolean,
+  art?: { theme: MapTheme; variant: 'a' | 'b' },
+): string {
   const classes = ['cell', `terrain-${terrain}`];
   if (dark) classes.push('dark');
-  if (terrain === 'difficult' || terrain === 'hazard' || terrain === 'cover') classes.push('needs-badge');
+  // With a drawn prop on it, the CSS gradient and its emoji badge are exactly
+  // what the prop is replacing — so suppress both, or we would be judging the
+  // art through the thing it exists to remove.
+  if (art) classes.push('art-prop');
+  else if (terrain === 'difficult' || terrain === 'hazard' || terrain === 'cover') classes.push('needs-badge');
   const token = withToken
     ? '<span class="sheet-token" aria-hidden>🧙</span>'
     : '';
-  return `<div class="${classes.join(' ')}">${token}</div>`;
+  const prop = art
+    ? `<img class="prop" src="../art/svg-terrain/terrain-${terrain === 'wall' ? 'wall' : 'cover'}-${art.theme}-${art.variant}.svg" alt="">`
+    : '';
+  return `<div class="${classes.join(' ')}">${prop}${token}</div>`;
 }
 
 /** A 4×2 patch of one terrain, half of it occupied, as it appears in play. */
-function patch(theme: MapTheme, terrain: string, px: number, bg: boolean): string {
+function patch(theme: MapTheme, terrain: string, px: number, bg: boolean, svg = false): string {
   const cells: string[] = [];
+  let nth = 0;
   for (let y = 0; y < 2; y++) {
     for (let x = 0; x < 4; x++) {
       // Every other tile is the terrain in question, so it is always seen
       // against the floor it has to be distinguished from.
       const isTerrain = (x + y) % 2 === 0 || terrain === 'open';
-      cells.push(cell(isTerrain ? terrain : 'open', (x + y) % 2 === 1, x === 3 && y === 0));
+      // Alternate the two variants, which is the whole reason there are two:
+      // a run of one sprite reads as wallpaper.
+      const drawn = svg && isTerrain && (terrain === 'wall' || terrain === 'cover');
+      const art = drawn ? { theme, variant: (nth++ % 2 === 0 ? 'a' : 'b') as 'a' | 'b' } : undefined;
+      cells.push(cell(isTerrain ? terrain : 'open', (x + y) % 2 === 1, x === 3 && y === 0, art));
     }
   }
   // Relative to docs/, where the sheet is written — the real art, not a copy.
@@ -108,13 +123,23 @@ function build(): string {
 
   const sections = THEMES.map((theme) => {
     const hasBg = existsSync(join(ROOT, `web/public/art/bg-${theme}.webp`));
+    const hasSvg = existsSync(join(ROOT, `art/svg-terrain/terrain-wall-${theme}-a.svg`));
     const rows = SIZES.map(({ px, label }) => {
-      const patches = TERRAINS.map((t) => `
+      const patches = TERRAINS.map((t) => {
+        const drawable = (t.id === 'wall' || t.id === 'cover') && hasSvg;
+        // Side by side, because "is the new art better" is a comparison and
+        // showing only the new one invites grading it against a memory.
+        const both = drawable
+          ? `<div class="ab"><div><div class="ab-tag">css</div>${patch(theme, t.id, px, hasBg)}</div>
+             <div><div class="ab-tag on">svg</div>${patch(theme, t.id, px, hasBg, true)}</div></div>`
+          : patch(theme, t.id, px, hasBg);
+        return `
         <div class="swatch">
           <div class="swatch-name">${t.label}</div>
-          ${patch(theme, t.id, px, hasBg)}
+          ${both}
           <div class="swatch-rule">${t.rule}</div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
       return `<div class="size-row"><div class="size-label">${label} · ${px}px</div>
         <div class="swatches">${patches}</div></div>`;
     }).join('');
@@ -138,7 +163,16 @@ h2 em { color:#6b6480; font-size:11px; letter-spacing:0; text-transform:none; }
 .swatches { display:flex; gap:16px; flex-wrap:wrap; }
 .swatch-name { font-size:11px; font-weight:700; margin-bottom:3px; }
 .swatch-rule { font-size:10px; color:#6b6480; margin-top:3px; max-width:150px; }
-.sheet-token { font-size:70%; filter:drop-shadow(0 1px 2px #000); }
+.sheet-token { font-size:70%; filter:drop-shadow(0 1px 2px #000); position:relative; z-index:2; }
+/* The drawn prop, filling its cell — this is how it would ship. */
+.cell .prop { position:absolute; inset:0; width:100%; height:100%; display:block; }
+/* A cell carrying a prop drops the CSS gradient it replaces. */
+.cell.art-prop.terrain-wall::before, .cell.art-prop.terrain-cover { background:none; box-shadow:inset 0 0 0 1px #14101f; }
+.cell.art-prop.terrain-wall::before { content:none; }
+.cell.art-prop::after { content:none; }
+.ab { display:flex; gap:8px; }
+.ab-tag { font-size:9px; color:#6b6480; text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+.ab-tag.on { color:#8fe3a0; }
 </style></head><body>
 <h1>Terrain contact sheet</h1>
 <p class="intro">The real markup, the real stylesheet, the real theme colours and backdrops — so this
