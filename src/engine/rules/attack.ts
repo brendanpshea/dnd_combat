@@ -5,7 +5,7 @@
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
-import { FEATURES } from '../../data/features.js';
+import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
@@ -1238,6 +1238,16 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   if (spellId === 'call-lightning') delete c.stormCloud;      // the storm blows out
   if (spellId === 'moonbeam') delete c.moonbeam;              // the beam winks out
   const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
+  // Polymorph: the shape was being held by this mind, so it ends with the
+  // concentration — the ape's remaining hit points simply vanish, which is what
+  // makes the spell breakable rather than a free 168-point buffer.
+  if (spellId === 'polymorph') {
+    for (const tid of targetIds) {
+      const t = state.combatants[tid];
+      if (t?.wildShape?.original.hp !== undefined) events.push(...revertShape(t));
+    }
+  }
+
   // A concentration-held summon: sweep it off the board. A summon's `kind` is
   // the id of the spell that made it (see Combatant.summons), so this is the
   // general rule rather than a list — which is what it used to be, naming only
@@ -1364,6 +1374,23 @@ export function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
       { type: 'conditionRemoved', combatantId, condition: 'deathWarded' },
       { type: 'healed', targetId: combatantId, sourceId: ward.sourceId ?? combatantId, amount: 1 },
     ];
+  }
+  // Polymorph: the ape's hit points running out ends the form, it does not
+  // drop the hero. They come back with exactly the hit points they had.
+  //
+  // Here, alongside Death Ward, because this is the single place every route to
+  // zero passes through — a blow, a failed save, a hazard. The excess damage is
+  // deliberately NOT carried over: the SRD does carry it, but the ape has 168
+  // hit points and the hero often has 40, so one big hit at the end would
+  // reliably drop them the instant they reverted, which reads as the spell
+  // killing the person it was cast to protect.
+  const shaped = state.combatants[combatantId];
+  if (shaped?.wildShape?.original.hp !== undefined) {
+    const back = revertShape(shaped);
+    const holder = Object.values(state.combatants).find(
+      (x) => x.concentratingOn?.spellId === 'polymorph' && x.concentratingOn.targetIds.includes(combatantId),
+    );
+    return [...back, ...(holder ? breakConcentration(state, holder.id) : [])];
   }
   const events = [
     ...transferHuntersMark(state, combatantId),

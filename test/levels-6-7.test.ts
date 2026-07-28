@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { RUN_TARGET_XP } from '../src/arena/medal.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -111,5 +112,75 @@ describe('upcasting', () => {
     const innate = c.legalActions('ftr')
       .filter((a) => a.kind === 'castSpell' && a.spellId === 'ray-of-sickness' && a.slotLevel === 0);
     expect(innate.length, 'the innate cast was dropped').toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Level 8: cheap to add, and the reason for adding it.
+ *
+ * In the SRD level 8 is an Ability Score Increase and nothing else for most
+ * classes — no new spell tier, no new subclass feature — so the cost is a +2
+ * and one more entry in each per-level array. What it buys is several more
+ * fights with a second 4th-level slot in hand, which is where the interesting
+ * spells are and where the arena had almost no data.
+ *
+ * The trap it opened: the finish line was 34,000, the level-8 threshold. Adding
+ * the level would have meant reaching it and having the run end in the same
+ * instant — an eighth level that exists and is never played.
+ */
+describe('level 8', () => {
+  it('is reachable, and is not the finish line', () => {
+    expect(MAX_LEVEL).toBe(8);
+    expect(levelForXp(LEVEL_XP[7]!)).toBe(8);
+    // Strictly greater, with room in it: a party that hits level 8 must get
+    // fights at level 8.
+    expect(RUN_TARGET_XP).toBeGreaterThan(LEVEL_XP[7]! + 5000);
+  });
+
+  it('gives every class its ability score increase', () => {
+    for (const id of Object.keys(CLASSES)) {
+      const at7 = buildCharacter({ classId: id, team: 'team1', position: { x: 0, y: 0 }, level: 7 });
+      const at8 = buildCharacter({ classId: id, team: 'team1', position: { x: 0, y: 0 }, level: 8 });
+      const primary = CLASSES[id]!.statPriority[0]!;
+      // Capped at 20, so a class already there gains nothing rather than
+      // overflowing — which is the correct outcome, not a missing feature.
+      const expected = Math.min(20, at7.abilities[primary] + 2);
+      expect(at8.abilities[primary], `${id} primary at level 8`).toBe(expected);
+    }
+  });
+
+  it('gives every caster the slots the level comes with', () => {
+    for (const [id, cls] of Object.entries(CLASSES)) {
+      const sc = cls.spellcasting;
+      if (!sc) continue;
+      expect(sc.slotsByLevel, `${id} slots`).toHaveLength(MAX_LEVEL);
+      const at7 = sc.slotsByLevel[6]!;
+      const at8 = sc.slotsByLevel[7]!;
+      // Never fewer slots for being a level higher — the shape of bug that
+      // would be invisible until somebody levelled up and lost a spell.
+      at8.forEach((n, i) => expect(n, `${id} tier ${i + 1}`).toBeGreaterThanOrEqual(at7[i] ?? 0));
+      expect(at8.length).toBeGreaterThanOrEqual(at7.length);
+    }
+  });
+
+  it('gives every caster a prepared/cantrip column for the new level', () => {
+    // A short array reads as `undefined` at level 8 and silently falls back,
+    // which is how a level-8 wizard ends up preparing a level-1 loadout.
+    for (const [id, cls] of Object.entries(CLASSES)) {
+      const sc = cls.spellcasting;
+      if (!sc) continue;
+      for (const key of ['cantripsKnownByLevel', 'spellbookByLevel', 'preparedByLevel'] as const) {
+        const arr = sc[key];
+        if (arr) expect(arr, `${id}.${key}`).toHaveLength(MAX_LEVEL);
+      }
+    }
+  });
+
+  it('keeps generating harder encounters at the new level', () => {
+    // `evenBudgetFor` clamps to the array length, so a short EVEN_BUDGET does
+    // not throw — it feeds a level-8 party level-7 encounters, and the arena
+    // gets easier exactly where it should get harder.
+    expect(EVEN_BUDGET).toHaveLength(MAX_LEVEL);
+    expect(evenBudgetFor(8)).toBeGreaterThan(evenBudgetFor(7));
   });
 });

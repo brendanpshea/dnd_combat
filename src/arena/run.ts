@@ -72,7 +72,7 @@ import { generateArenaMap, type LayoutName } from './map.js';
  * more monster. The number between them is not a fine adjustment, it is the
  * only place to stand.
  */
-export const EVEN_BUDGET = [1500, 2600, 6200, 8000, 14000, 20000, 23000];
+export const EVEN_BUDGET = [1500, 2600, 6200, 8000, 14000, 20000, 23000, 28000];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;

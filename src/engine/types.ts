@@ -355,9 +355,18 @@ export interface Combatant {
    * swept by breakConcentration instead.
    */
   summons?: Array<{
-    kind: 'spiritual-weapon' | 'flaming-sphere';
+    kind: 'spiritual-weapon' | 'flaming-sphere' | 'conjure-animals';
     position: Position;
     expiresAtRound?: number;
+    /**
+     * The damage the summon deals, when it scales with the slot it was cast
+     * from. Conjure Animals is 3d10 at 3rd level and +1d10 per level above,
+     * and unlike Spirit Guardians (which keeps its dice on the caster) a pack
+     * roams away from whoever called it, so the dice ride with the pack.
+     *
+     * Absent for the two older summons, whose damage is fixed by the spell.
+     */
+    dice?: string;
   }>;
   /** Spirit Guardians: a radiant aura around the caster that hurts enemies
    *  who start their turn near it, and halves their Speed while they are in it
@@ -416,6 +425,24 @@ export interface Combatant {
    * until someone spends an action shifting it.
    */
   moonbeam?: { position: Position; dice: string; dc: number };
+  /**
+   * The body this creature is currently wearing: Wild Shape, or Polymorph.
+   *
+   * One slot for both, because they are the same operation — snapshot what you
+   * were, overwrite with a statblock, put it all back later. What differs is
+   * the hit points, and that difference is the whole of Polymorph:
+   *
+   *   Wild Shape keeps the druid's own hit points and adds temporary ones. Drop
+   *   to zero and the druid is down.
+   *
+   *   Polymorph gives the BEAST's hit points as a separate pool. Drop to zero
+   *   and the beast's form ends, the original creature comes back with exactly
+   *   the hit points it had, and only the excess damage carries over. That is
+   *   why Polymorph is not a control spell here and not a damage spell — it is
+   *   a large temporary pool, and this game had no version of that.
+   *
+   * `original.hp` present is what marks the second kind.
+   */
   wildShape?: {
     formId: Id;
     original: {
@@ -426,6 +453,18 @@ export interface Combatant {
       inventory: ItemStack[];
       featureIds: Id[];
       attacksPerAction: number;
+      /** Polymorph only: the hit points to hand back when the form ends. */
+      hp?: number;
+      maxHp?: number;
+      /**
+       * Polymorph only: the spells to hand back.
+       *
+       * A polymorphed creature cannot cast — that is most of what "you are an
+       * ape now" means, and without it the player keeps every button they had
+       * and simply gains 168 hit points and two fist attacks. Wild Shape does
+       * not clear this, which is why it is optional rather than always present.
+       */
+      spellIds?: Id[];
     };
   };
   holdDamage?: { dice: string; type: DamageType };

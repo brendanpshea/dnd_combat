@@ -27,15 +27,23 @@
 import { LEVEL_XP } from '../campaign/campaign.js';
 
 /**
- * Experience that ends a run: the level-8 threshold, one step past the level-7
- * ceiling the classes are built to.
+ * Experience that ends a run: one rung past the last level the classes reach.
  *
- * Not read from `LEVEL_XP` — that table stops at level 7 by design, and adding
- * an eighth entry to it would tell the whole campaign that level 8 exists.
- * This is 5e's own next rung, kept here where it means "the finish line" and
- * nowhere else. The assertion below is what keeps the two facts consistent.
+ * This was 34,000 — the level-8 threshold — while the classes stopped at 7. Now
+ * that level 8 is implemented, 34,000 is a level the party actually reaches,
+ * and leaving the finish line there would mean hitting level 8 and having the
+ * run end in the same instant. The eighth level would exist and never be
+ * played, which is the opposite of the reason it was added.
+ *
+ * So it moves to 5e's next rung, 48,000, which buys several fights with a
+ * level-8 party and its second 4th-level slot in hand.
+ *
+ * Deliberately not read from `LEVEL_XP`: this is the finish line, and it means
+ * "past the end of the ladder" rather than "the next entry in it". The
+ * assertion below is what keeps the two facts consistent — it is the reason
+ * extending `LEVEL_XP` could not silently leave this behind.
  */
-export const RUN_TARGET_XP = 34_000;
+export const RUN_TARGET_XP = 48_000;
 
 if (RUN_TARGET_XP <= (LEVEL_XP[LEVEL_XP.length - 1] ?? 0)) {
   throw new Error('the arena finish line must sit beyond the last implemented level');

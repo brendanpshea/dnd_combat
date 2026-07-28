@@ -29,9 +29,9 @@
  * you are facing. Ranking them here would be doing the read for you, which is
  * the part worth keeping.
  */
-import type { Id, DamageType } from '../engine/types.js';
+import type { Id, DamageType, Combatant } from '../engine/types.js';
 import {
-  type CampaignState, buildCampaignParty, isCampBuffPotion, storeSpellActions,
+  type CampaignState, type PartyCharacter, buildCampaignParty, isCampBuffPotion, storeSpellActions,
   itemName,
 } from '../campaign/campaign.js';
 import { SPELLS } from '../data/spells.js';
@@ -85,15 +85,57 @@ export function potionOptions(c: CampaignState): PrepOption[] {
  * Out-of-combat casts that are worth making now and not in the fight.
  *
  * Only the ones with a duration long enough to survive the walk through the
- * door, which in practice means Mage Armor: Cure Wounds is a heal rather than a
- * buff and belongs on the party screen, and Find Familiar is a ritual the owl
- * is already out for.
+ * door. Cure Wounds is a heal rather than a buff and belongs on the party
+ * screen; Find Familiar is a ritual the owl is already out for.
  *
- * Skipped when it is already up. Mage Armor does not stack with itself and does
- * nothing over worn armour, so a wizard in a robe is the only one it helps —
- * which `mageArmor` in `acOf` already knows, and this mirrors so the button is
- * never offered to somebody it would do nothing for.
+ * WHY THIS IS A TABLE NOW
+ *
+ * It used to be one hard-coded `if (action.spellId !== 'mage-armor') continue`,
+ * which meant every camp spell added afterwards was castable from the party
+ * screen and invisible at the gate — the one moment a buff is worth most,
+ * because the wave is on screen and the fight is the next click. Each entry
+ * carries its own "would this do anything" test, since the reason to hide a
+ * button differs per spell: Mage Armor does nothing over worn armour, False
+ * Life does nothing on top of itself, and a concentration buff cannot be
+ * stacked at all.
  */
+interface CampSpell {
+  detail: string;
+  /** True when the button would change nothing, so it is not offered. */
+  redundant(ctx: { c: CampaignState; ch: PartyCharacter; me: Combatant; idx: number }): boolean;
+}
+
+const CAMP_SPELLS: Record<Id, CampSpell> = {
+  'mage-armor': {
+    detail: 'Mage Armor — 13 + Dex, and it lasts all day.',
+    // `mageArmor` in `acOf` already knows armour wins; this mirrors it so the
+    // button is never offered to somebody it would do nothing for.
+    redundant: ({ ch, me }) => !!ch.resources?.effects?.mageArmor || me.equipped.armor !== undefined,
+  },
+  'false-life': {
+    detail: 'False Life — temporary hit points, before anyone reaches you.',
+    redundant: ({ ch }) => ch.resources?.effects?.falseLife !== undefined,
+  },
+  aid: {
+    detail: 'Aid — +5 hit points to everyone else, for the day.',
+    redundant: ({ ch }) => ch.resources?.effects?.aid !== undefined,
+  },
+  haste: {
+    detail: 'Haste — an ally moves and strikes twice; you hold the concentration.',
+    // One mind, one spell: not offered if this caster already holds a camp
+    // buff, nor if there is nobody left unbuffed to put it on.
+    redundant: ({ c, idx }) =>
+      c.characters.some((x) => x.resources?.effects?.campConcentration?.casterIdx === idx) ||
+      !c.characters.some((x, i) => i !== idx && !x.resources?.effects?.campConcentration),
+  },
+  'protection-from-evil-and-good': {
+    detail: 'Protection — fiends and undead strike an ally at disadvantage.',
+    redundant: ({ c, idx }) =>
+      c.characters.some((x) => x.resources?.effects?.campConcentration?.casterIdx === idx) ||
+      !c.characters.some((x, i) => i !== idx && !x.resources?.effects?.campConcentration),
+  },
+};
+
 export function spellOptions(c: CampaignState): PrepOption[] {
   const party = buildCampaignParty(c);
   const out: PrepOption[] = [];
@@ -101,14 +143,14 @@ export function spellOptions(c: CampaignState): PrepOption[] {
     const me = party[i];
     if (!me) continue;
     for (const action of storeSpellActions(me)) {
-      if (action.spellId !== 'mage-armor') continue;
-      if (ch.resources?.effects?.mageArmor) continue;      // already warded
-      if (me.equipped.armor !== undefined) continue;        // armour wins; the spell would do nothing
+      const entry = CAMP_SPELLS[action.spellId];
+      if (!entry) continue;
+      if (entry.redundant({ c, ch, me, idx: i })) continue;
       const level = SPELLS[action.spellId]?.level ?? 1;
       if ((me.spellSlots[level - 1]?.current ?? 0) <= 0) continue;   // no slot to spend
       out.push({
         kind: 'spell', who: i, name: ch.name, id: action.spellId, icon: action.icon,
-        detail: 'Mage Armor — 13 + Dex, and it lasts all day.',
+        detail: entry.detail,
       });
     }
   }

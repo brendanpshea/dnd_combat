@@ -10,6 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
+import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
@@ -417,6 +418,8 @@ const SUMMON_SPECS: Record<Summon['kind'], { moveCells: number; spectral: boolea
   'spiritual-weapon': { moveCells: 4, spectral: true },
   // 30-ft roll; a physical ball of fire — walls stop it.
   'flaming-sphere': { moveCells: 6, spectral: false },
+  // 40-ft lope; real animals, so walls and bodies stop them.
+  'conjure-animals': { moveCells: 8, spectral: false },
 };
 
 /** The caster's nearest living enemy, measured from the summon (id tiebreak). */
@@ -454,6 +457,31 @@ function summonStep(state: GameState, s: Summon, toward: Position): Position | n
  *  the start-of-turn activation. Attacks/damage are attributed to the caster. */
 function summonStrike(state: GameState, casterId: Id, s: Summon): GameEvent[] {
   const caster = state.combatants[casterId]!;
+  /**
+   * Conjure Animals is a PACK, not a single striker: everything within ten feet
+   * of where the animals are standing takes the hit, and the save avoids it
+   * outright rather than halving it. That shape is why it does not go through
+   * the adjacency check below — a pack that could only maul one creature at a
+   * time would be a Spiritual Weapon that bites.
+   */
+  if (s.kind === 'conjure-animals') {
+    const events: GameEvent[] = [];
+    const dc = spellDc(state, casterId);
+    for (const t of Object.values(state.combatants)) {
+      if (!t.alive || isDown(t) || t.team === caster.team) continue;
+      if (distanceFeet(s.position, t.position) > 10) continue;
+      const save = savingThrow(state, t.id, 'dex', dc);
+      events.push(save.event);
+      // Save for NOTHING, not for half — the 2024 spell's own wording, and the
+      // reason it is worth a 3rd-level slot against a pack of low-Dex brutes
+      // and much less against a room full of goblins.
+      if (save.success) continue;
+      const dmg = rollDice(state.rng, s.dice ?? '3d10');
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, t.id, casterId, dmg.total, 'slashing', dmg.rolls, { via: s.kind }));
+    }
+    return events;
+  }
   const prey = summonPrey(state, caster.team, s.position);
   if (!prey || !adjacent(s.position, prey.position)) return [];
   const events: GameEvent[] = [];
@@ -1352,6 +1380,42 @@ export const SPELLS: Record<Id, SpellData> = {
    * physical, so walls stop it — and rams (2d6 fire, Dexterity save for
    * half). It burns until concentration drops (breakConcentration sweeps it).
    */
+  /**
+   * Conjure Animals: a pack of spirit beasts that runs down whatever is nearest.
+   *
+   * WHY IT IS A SUMMON AND NOT AN AURA
+   *
+   * The 2024 spell is a ten-foot emanation, and the obvious implementation here
+   * is `spiritualGuardians` — an aura hanging off the caster, which this engine
+   * already has. That would be the wrong spell. The pack MOVES: it lopes across
+   * the board after whatever is closest, which is the whole difference between
+   * a wizard standing in a cloud of blades and a druid setting animals on
+   * somebody. So it rides the Spiritual Weapon and Flaming Sphere machinery
+   * instead — a thing with its own position that chases and strikes.
+   *
+   * What it does not share with those two is the strike: they pick one adjacent
+   * victim, and a pack mauls everything within ten feet of where it is standing.
+   * And the save avoids the damage entirely rather than halving it, which is
+   * what makes it a gamble against nimble things and brutal against brutes.
+   */
+  'conjure-animals': {
+    id: 'conjure-animals', name: 'Conjure Animals', level: 3, castingTime: 'action',
+    targeting: { kind: 'emptyCell', range: 60 },
+    concentration: true,
+    upcast: true,
+    icon: '🐺',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      caster.concentratingOn = { spellId: 'conjure-animals', targetIds: [] };
+      return placeSummon(state, casterId, {
+        kind: 'conjure-animals',
+        position: { ...positions[0]! },
+        // 3d10 at 3rd, +1d10 per level above. Carried on the pack rather than
+        // on the caster because the pack roams away from whoever called it.
+        dice: `${3 + Math.max(0, slotLevel - 3)}d10`,
+      });
+    },
+  },
   'flaming-sphere': {
     id: 'flaming-sphere', name: 'Flaming Sphere', level: 2, castingTime: 'action',
     targeting: { kind: 'emptyCell', range: 60 },
@@ -2376,6 +2440,81 @@ export const SPELLS: Record<Id, SpellData> = {
       // nothing and Banishment was strictly better than the book.
       state.combatants[casterId]!.concentratingOn = { spellId: 'banishment', targetIds: [targetId] };
       return [save.event, ...charmAway(state, targetId)];
+    },
+  },
+  /**
+   * Polymorph: an ally becomes a giant ape until something ends it.
+   *
+   * ALLY ONLY, DELIBERATELY.
+   *
+   * Cast on an enemy, this spell is strictly worse than two things the same
+   * caster already has. Banishment and Suggestion both route through
+   * `charmAway`, which takes a creature off the board for good — a fight here
+   * is shorter than the minute those spells last, so they are permanent
+   * removal. Polymorph is *reverting* removal: turn the ogre into a frog,
+   * somebody pops the frog, the ogre is back at full health. It also opens no
+   * new save axis, since Suggestion is already a Wisdom save. An enemy-target
+   * version would be a trap for the player and would never be chosen by the AI,
+   * which is the worst combination there is.
+   *
+   * On an ally it is a thing this game has no other version of: a large
+   * temporary hit point pool wrapped around a fresh statblock. The ape's 168
+   * hit points are its own; when they run out the hero comes back with exactly
+   * what they had.
+   *
+   * ONE FORM, ON PURPOSE.
+   *
+   * The SRD allows any beast of CR up to the target's level. Choosing means a
+   * form-picker UI, and a form-picker for a spell cast once a fight is a lot of
+   * screen for one decision. The giant ape is the fantasy anyway — and it is
+   * the strongest beast in the bestiary, so a picker would mostly be a longer
+   * road to the same answer.
+   */
+  polymorph: {
+    id: 'polymorph', name: 'Polymorph', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '🦍',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const beast = MONSTERS['giant-ape'];
+      // Already wearing a body — a druid mid-Wild Shape, or a second Polymorph.
+      if (!beast || t.wildShape) return [];
+      t.wildShape = {
+        formId: beast.id,
+        original: {
+          ...(t.acOverride !== undefined ? { acOverride: t.acOverride } : {}),
+          speed: t.speed,
+          abilities: { ...t.abilities },
+          equipped: { ...t.equipped },
+          inventory: t.inventory.map((it) => ({ ...it })),
+          featureIds: [...t.featureIds],
+          attacksPerAction: t.attacksPerAction,
+          // The three that make this Polymorph rather than Wild Shape.
+          hp: t.hp,
+          maxHp: t.maxHp,
+          spellIds: [...t.spellIds],
+        },
+      };
+      t.acOverride = beast.ac;
+      t.speed = beast.speed;
+      t.abilities = { ...t.abilities, str: beast.abilities.str, dex: beast.abilities.dex, con: beast.abilities.con };
+      t.equipped = { mainHand: beast.weaponIds[0]! };
+      t.inventory = beast.weaponIds.slice(1).map((w: Id) => ({ itemId: w, qty: 1 }));
+      t.attacksPerAction = beast.attacksPerAction ?? 1;
+      // An ape casts nothing. This is what makes it "play as the ape" rather
+      // than "keep your character and gain 168 hit points".
+      t.spellIds = [];
+      delete t.concentratingOn;
+      // The beast's own hit points, not a bonus on top of the hero's.
+      t.maxHp = beast.hp;
+      t.hp = beast.hp;
+      state.combatants[casterId]!.concentratingOn = { spellId: 'polymorph', targetIds: [targetId] };
+      return [
+        { type: 'wildShaped', combatantId: targetId, formId: beast.id, tempHp: 0 },
+        { type: 'conditionApplied', combatantId: targetId, condition: 'shielded', sourceId: casterId },
+      ];
     },
   },
   'phantasmal-killer': {

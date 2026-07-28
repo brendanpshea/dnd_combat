@@ -15,9 +15,13 @@ import { LEVEL_XP, MAX_LEVEL } from '../src/campaign/campaign.js';
 
 describe('the finish line', () => {
   it('sits past the top of the implemented levels', () => {
-    // The whole trick: the run ends exactly where the content does, so no
-    // eighth tier of class features has to exist for it to work.
-    expect(MAX_LEVEL).toBe(7);
+    // The finish line sits one rung PAST the top of the ladder, so the last
+    // implemented level is a level the party actually plays at rather than a
+    // number it touches on the way out. When the cap was 7 and the line was
+    // 34,000 that was automatic; when level 8 was added, 34,000 became a level
+    // the party reaches, and the line had to move with it or the eighth level
+    // would have existed and never been played.
+    expect(MAX_LEVEL).toBe(8);
     expect(RUN_TARGET_XP).toBeGreaterThan(LEVEL_XP[MAX_LEVEL - 1]!);
   });
 
