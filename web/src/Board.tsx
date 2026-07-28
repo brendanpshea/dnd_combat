@@ -9,7 +9,7 @@ import { glyphFor } from './glyphs.js';
 import { ArtImage } from './ArtImage.js';
 import {
   hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl,
-  HAS_TERRAIN_ART, terrainUrl,
+  HAS_TERRAIN_ART, terrainUrl, backdropLayers,
 } from './art.js';
 import { conditionBadges, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
@@ -356,7 +356,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
     // art/arena-prompts.md. Set inline (not in styles.css) so the URL goes
     // through the same BASE_URL-aware helper as token/portrait art, which a
     // plain CSS `url()` can't: the GitHub Pages build serves from a subpath.
-    boardStyle.backgroundImage = `url(${boardBgUrl(boardTheme)})`;
+    boardStyle.backgroundImage = backdropLayers(boardBgUrl(boardTheme));
   }
 
   return (

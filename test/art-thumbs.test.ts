@@ -20,6 +20,7 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { LQIP } from '../web/src/art-lqip.js';
 
 const ART = fileURLToPath(new URL('../web/public/art/', import.meta.url));
 const THUMB = `${ART}thumb/`;
@@ -52,5 +53,38 @@ describe('cover thumbnails', () => {
       const small = statSync(THUMB + `thumb-${f}`).size;
       expect(small, f).toBeLessThan(full * 0.6);
     }
+  });
+});
+
+/**
+ * The blur-up placeholders, which are the same bargain struck the other way
+ * round: these are small enough that a request costs more than the bytes, so
+ * they ride in the bundle as data URIs and appear with no network at all.
+ *
+ * Which puts them on the critical path — every byte here is a byte before the
+ * app renders. That is the thing to hold the line on, and it is what the size
+ * assertions below are for.
+ */
+describe('backdrop placeholders', () => {
+  it('has one for every backdrop', () => {
+    const missing = covers.filter((f) => !LQIP[f]);
+    expect(missing, 'run: python3 art/make_thumbs.py').toEqual([]);
+  });
+
+  it('has none for a backdrop that has gone', () => {
+    expect(Object.keys(LQIP).filter((f) => !covers.includes(f))).toEqual([]);
+  });
+
+  it('is a data URI, so it costs no round trip', () => {
+    for (const f of covers) expect(LQIP[f], f).toMatch(/^data:image\/webp;base64,/);
+  });
+
+  it('stays small enough to be worth inlining', () => {
+    // Individually: a placeholder that has crept up to kilobytes should have
+    // been a request. Collectively: the whole set is the tax on first paint,
+    // and 20 KB of it would cost more than the empty frames it prevents.
+    for (const f of covers) expect(LQIP[f]!.length, f).toBeLessThan(1200);
+    const total = Object.values(LQIP).reduce((n, s) => n + s.length, 0);
+    expect(total).toBeLessThan(20_000);
   });
 });

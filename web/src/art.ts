@@ -13,6 +13,7 @@ import {
   HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG,
   HAS_TERRAIN_ART,
 } from './art-registry.js';
+import { LQIP } from './art-lqip.js';
 
 export {
   HAS_ART, HAS_NPC_ART, HAS_SCENE_ART, HAS_TOKEN_ART, HAS_SPELL_ICON, HAS_BOARD_BG,
@@ -86,8 +87,35 @@ export function boardBgUrl(theme: string): string {
  * shadows, and `make_thumbs.py --check` is what keeps that true.
  */
 export function thumbUrl(fullUrl: string): string {
-  const file = fullUrl.slice(fullUrl.lastIndexOf('/') + 1);
-  return `${BASE}art/thumb/thumb-${file}`;
+  return `${BASE}art/thumb/thumb-${fileOf(fullUrl)}`;
+}
+
+function fileOf(fullUrl: string): string {
+  return fullUrl.slice(fullUrl.lastIndexOf('/') + 1);
+}
+
+/**
+ * A `background-image` that shows something the instant the element exists.
+ *
+ * The backdrops are the heaviest single images in the game — `bg-graveyard` is
+ * 212 KB — and where they belong, behind the board and behind an adventure
+ * scene, they have to stay that size. On a slow connection that used to be a
+ * flat dark panel for twenty seconds where a painting should be.
+ *
+ * Two stacked layers, full-size on top of the inlined 32px placeholder. The
+ * browser paints each layer as it becomes available and the placeholder is a
+ * data URI, so it is available immediately: the frame fills with an
+ * out-of-focus version of the right picture and sharpens when the real one
+ * lands. No load handler, no second element, no state — the whole thing is one
+ * CSS declaration, which is why it works identically for the board (a style
+ * object) and for the scene backdrops (a div).
+ *
+ * Falls back to the plain URL for anything without a placeholder, so a new
+ * backdrop that has not been through `make_thumbs.py` still renders.
+ */
+export function backdropLayers(fullUrl: string): string {
+  const small = LQIP[fileOf(fullUrl)];
+  return small ? `url(${fullUrl}), url(${small})` : `url(${fullUrl})`;
 }
 
 /**

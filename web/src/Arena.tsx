@@ -49,7 +49,7 @@ import { PartyStrip } from './Adventure.js';
 import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
-import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl } from './art.js';
+import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers } from './art.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
@@ -499,7 +499,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   }
 
   const backdrop = HAS_BOARD_BG.has(wave.map.theme)
-    ? <div className="adv-backdrop" style={{ backgroundImage: `url(${boardBgUrl(wave.map.theme)})` }} />
+    ? <div className="adv-backdrop" style={{ backgroundImage: backdropLayers(boardBgUrl(wave.map.theme)) }} />
     : <div className="adv-backdrop glyph"><span>🏟️</span></div>;
 
   if (phase.p === 'intro') {

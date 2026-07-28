@@ -38,7 +38,7 @@ import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
 import { AdventureShop } from './AdventureShop.js';
 import { JournalDrawer } from './Journal.js';
-import { hasSceneArt, sceneArtUrl, hasArt, hasTokenArt, tokenUrl } from './art.js';
+import { hasSceneArt, sceneArtUrl, hasArt, hasTokenArt, tokenUrl, backdropLayers } from './art.js';
 import { classLook } from './classLook.js';
 import { artEmoji, nodeEmoji } from '../../src/data/adventure-art.js';
 import { sfx, initAudio, isMuted, setMuted } from './sound.js';
@@ -552,7 +552,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
 /** Full-bleed location backdrop; a generated painting, else a soft glyph card. */
 function Backdrop({ artId, glyph }: { artId: string | undefined; glyph: string }) {
   if (artId && hasSceneArt(artId)) {
-    return <div className="adv-backdrop" style={{ backgroundImage: `url(${sceneArtUrl(artId)})` }} />;
+    return <div className="adv-backdrop" style={{ backgroundImage: backdropLayers(sceneArtUrl(artId)) }} />;
   }
   return <div className="adv-backdrop glyph"><span>{glyph}</span></div>;
 }
