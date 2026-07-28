@@ -772,7 +772,14 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         {backdrop}
         <div className="adv-content">
           <div className="adv-scene bottom">
-            <div className="adv-panel">
+            <div className={`adv-panel arena-gate${panel === 'none' ? '' : ' tall'}`}>
+              <div className="arena-scroll">
+              {/* The gate itself: doors, checks, and the wave you are picking
+                  between. A panel REPLACES this rather than appending to it —
+                  the stall used to open underneath, so buying a potion meant
+                  scrolling past three door cards and five skill checks first,
+                  and the screen measured 4.8 phone-fulls end to end. */}
+              <div className={panel === 'none' ? '' : 'hidden'}>
               <div className="arena-head">
                 <h2>
                   Day {dayOf(run)} · {half === 'morning' ? 'Morning' : 'Afternoon'}
@@ -1016,6 +1023,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   })}
                 </div>
               )}
+
+                <div className="arena-exit">
+                  <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
+                  {restartButton}
+                </div>
+              </div>{/* /gate content */}
 
               {notice && <div className="notice">{notice}</div>}
 
@@ -1263,38 +1276,53 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 </div>
               )}
 
-              <div className="adv-choices">
+              </div>{/* /arena-scroll */}
+
+              {/* Pinned. Every action used to sit at the bottom of a two-screen
+                  scroll, so the thing you came to do was never on the same
+                  screen as the thing that told you to do it. */}
+              <div className="adv-choices arena-actions">
                 <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave, surprised) })}>
                   ⚔️ Fight — {gate.name}
                 </button>
-                {/* The market keeps daylight hours. Two breaks with different
-                    characters: the night is where you re-equip and re-prepare,
-                    lunch is only a rest — which is what makes what you carry
-                    into the morning a decision rather than a shopping list. */}
-                {half === 'morning' ? (
-                  <button onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}>
-                    🛒 {panel === 'shop' ? 'Close the stall' : 'Visit the stall'}
+                {/* Three tools in a row rather than three stacked buttons: a
+                    pinned bar has to earn its height, and stacking every action
+                    would pin 280px of a 900px phone. Labels are short for the
+                    same reason — what they open is on the button's own screen. */}
+                <div className="arena-tools">
+                  {/* The market keeps daylight hours. Two breaks with different
+                      characters: the night is where you re-equip and re-prepare,
+                      lunch is only a rest — which is what makes what you carry
+                      into the morning a decision rather than a shopping list. */}
+                  {half === 'morning' ? (
+                    <button
+                      className={panel === 'shop' ? 'on' : ''}
+                      onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}
+                    >
+                      🛒<small>{panel === 'shop' ? 'Close' : 'Stall'}</small>
+                    </button>
+                  ) : (
+                    <button disabled title="The stalls shut at noon — you buy in the morning">
+                      🛒<small>Shut</small>
+                    </button>
+                  )}
+                  {casters.length > 0 && (
+                    <button
+                      className={panel === 'prepare' ? 'on' : ''}
+                      onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}
+                    >
+                      📖<small>{panel === 'prepare' ? 'Close' : 'Spells'}</small>
+                      {panel !== 'prepare' && withRoom.length > 0 && (
+                        <span className="prep-badge" title="Spare prepared slots going unused">
+                          {withRoom.length}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                  <button onClick={() => { setShowParty(true); setNotice(null); }}>
+                    🎒<small>Gear</small>
                   </button>
-                ) : (
-                  <button disabled title="The stalls shut at noon — you buy in the morning">
-                    🛒 The stalls are shut
-                  </button>
-                )}
-                {casters.length > 0 && (
-                  <button onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}>
-                    📖 {panel === 'prepare' ? 'Close the spellbook' : 'Prepare spells'}
-                    {panel !== 'prepare' && withRoom.length > 0 && (
-                      <span className="prep-badge" title="Spare prepared slots going unused">
-                        {withRoom.length} with room
-                      </span>
-                    )}
-                  </button>
-                )}
-                <button onClick={() => { setShowParty(true); setNotice(null); }}>
-                  🎒 Party &amp; gear
-                </button>
-                <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
-                {restartButton}
+                </div>
               </div>
             </div>
           </div>

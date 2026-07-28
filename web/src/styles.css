@@ -3337,3 +3337,53 @@ button.category .count {
 .chapter-row.done .chapter-mark { color: var(--green, #6bbf6b); }
 .chapter-name { flex: 1; }
 .chapter-note { flex: 0 0 auto; font-size: .76rem; color: var(--muted); }
+
+/* ── The arena gate on a phone ────────────────────────────────────────────
+   The gate was one long scroll — doors, checks, wave preview, and whichever
+   panel was open — with every action at the bottom of it. Measured at 430x900:
+   the screen ran 1.95 phone-fulls and 4.81 with the stall open, and the Fight
+   button was never on the same screen as the doors you were choosing between.
+
+   So the panel is a fixed frame now: a body that scrolls and a bar that does
+   not. */
+.adv-panel.arena-gate { overflow: hidden; padding-bottom: 0; }
+.arena-gate .arena-scroll {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+  /* Clear the pinned bar's shadow rather than ending flush against it. */
+  padding-bottom: 6px;
+}
+/* A panel replaces the gate rather than appending to it. */
+.arena-gate .hidden { display: none; }
+
+.arena-actions {
+  flex: 0 0 auto; margin-top: 0;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--panel2);
+  background: linear-gradient(rgba(26,22,37,0), rgba(26,22,37,.55) 12px);
+}
+/* Three tools abreast: a pinned bar has to earn its height, and stacking every
+   action would pin 280px of a 900px phone. */
+.arena-tools { display: flex; gap: 8px; }
+.arena-tools button {
+  flex: 1; position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 4px; font-size: 1.15rem; line-height: 1;
+}
+.arena-tools button small { font-size: .72rem; font-weight: 700; letter-spacing: .02em; }
+.arena-tools button.on { border-color: var(--gold); color: var(--gold); }
+.arena-tools .prep-badge {
+  position: absolute; top: 2px; right: 6px;
+  min-width: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--gold); color: #241f33;
+  font-size: .66rem; font-weight: 800; line-height: 16px; text-align: center;
+}
+/* Leaving and restarting are session-ending and rare — the foot of the scroll,
+   not a bar you look at every turn. */
+.arena-exit { display: flex; gap: 8px; margin-top: 4px; }
+.arena-exit button { flex: 1; font-size: .86rem; }
+/* The gate keeps some sand visible — you are standing outside, and the board
+   you are choosing is behind you. A panel has a list to show instead, so it
+   takes the height the backdrop was using. */
+.adv-panel.arena-gate { max-height: 86%; }
+.adv-panel.arena-gate.tall { max-height: 96%; }
