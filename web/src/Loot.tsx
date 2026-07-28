@@ -40,7 +40,11 @@ export interface LootProps {
    * everything back — and a player who cannot tell them apart cannot learn to
    * hold anything in reserve.
    */
-  rested?: { totalHealed: number; hitDiceSpent?: number; revived?: number } | undefined;
+  rested?: {
+    totalHealed: number; hitDiceSpent?: number; revived?: number;
+    /** Slots handed back by Arcane / Natural Recovery at the lunch break. */
+    recovered?: Array<{ name: string; slots: number[] }>;
+  } | undefined;
   /**
    * The arena's commentary, if it has anything to say about this break. Passed
    * in as a node rather than looked up here: the loot screen is shared with
@@ -144,7 +148,8 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
         )}
       </div>
 
-      {rested && (rested.totalHealed > 0 || rested.hitDiceSpent || rested.revived) && (
+      {rested && (rested.totalHealed > 0 || rested.hitDiceSpent || rested.revived
+        || (rested.recovered?.length ?? 0) > 0) && (
         <div className="loot-panel rest-panel">
           <div className="loot-line">
             <span>{rested.hitDiceSpent ? '🍞 Lunch' : '🌙 Night'}</span>
@@ -157,6 +162,16 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
                 ? `${rested.hitDiceSpent} hit dice spent`
                 : 'Everything back — hit points, slots, hit dice.'}
           </div>
+          {/* Recovery is the one thing lunch gives a caster, and it is the
+              reason a wizard can still cast in the afternoon. Saying it here is
+              what turns it from a hidden refund into something to plan the
+              morning around. */}
+          {(rested.recovered ?? []).map((r) => (
+            <div key={r.name} className="loot-sub gain">
+              ✨ {r.name} recovers {r.slots.length} spell slot{r.slots.length === 1 ? '' : 's'}
+              {' '}({r.slots.slice().sort((a, b) => b - a).map((l) => `L${l}`).join(', ')})
+            </div>
+          ))}
         </div>
       )}
 

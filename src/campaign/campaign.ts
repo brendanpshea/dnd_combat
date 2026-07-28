@@ -1273,6 +1273,12 @@ export interface RestResult {
   hitDiceSpent?: number;
   /** Heroes who were at 0 HP and were raised by the rest (arena lunch only). */
   revived?: number;
+  /**
+   * Spell slots handed back by Arcane / Natural Recovery, per hero who has it.
+   * Present only when something actually came back — a recovery nobody is told
+   * about is a recovery nobody plans around.
+   */
+  recovered?: Array<{ name: string; slots: number[] }>;
 }
 
 /** A hero's pool of hit dice equals their level (the shared party level). */
@@ -1329,6 +1335,60 @@ function restScoped(featureId: Id): boolean {
   return per === 'shortRest' || per === 'longRest';
 }
 
+/**
+ * Arcane Recovery (wizard) and Natural Recovery (druid): slots back on a short
+ * rest, once between long rests.
+ *
+ * Recovers slots totalling half the caster's level rounded up, nothing above
+ * 5th, spending the budget on the HIGHEST slots it can afford first. RAW lets
+ * the player choose; highest-first is the choice almost everyone makes and the
+ * only one worth an interface, since a recovered 1st-level slot is rarely what
+ * a wizard is short of.
+ *
+ * WHY IT EXISTS. Every other class's short-rest resource comes back at the
+ * arena's lunch break. The caster's did not, so a wizard who spent their slots
+ * in the morning fight was a crossbow with a book for the rest of the day —
+ * which is also the pacing problem that made the whole feature-pool clock worth
+ * fixing in the first place.
+ *
+ * Returns what came back, for the rest summary. A recovery nobody is told about
+ * is a recovery nobody plans around.
+ */
+function recoverSlotsOnShortRest(c: CampaignState, idx: number, caster: Combatant): number[] {
+  const ch = c.characters[idx];
+  if (!ch) return [];
+  const featureId = caster.featureIds.includes('arcane-recovery') ? 'arcane-recovery'
+    : caster.featureIds.includes('natural-recovery') ? 'natural-recovery' : undefined;
+  if (!featureId) return [];
+  // The once-per-long-rest clause IS the feature's pool, so nothing new tracks
+  // it — and a long rest refills it by the same "absent means full" rule that
+  // refills everything else.
+  const spent = ch.resources?.featureUses?.[featureId];
+  if (spent !== undefined && spent <= 0) return [];
+
+  let budget = Math.ceil(caster.level / 2);
+  const slots = caster.spellSlots.map((p) => p.current);
+  const recovered: number[] = [];
+  // Highest first, and never above 5th (index 4).
+  for (let i = Math.min(slots.length, 5) - 1; i >= 0 && budget > 0; i--) {
+    const level = i + 1;
+    const pool = caster.spellSlots[i]!;
+    while (slots[i]! < pool.max && level <= budget) {
+      slots[i] = slots[i]! + 1;
+      budget -= level;
+      recovered.push(level);
+    }
+  }
+  if (recovered.length === 0) return [];
+  ch.resources = {
+    ...ch.resources,
+    hp: ch.resources?.hp ?? caster.hp,
+    slots,
+    featureUses: { ...ch.resources?.featureUses, [featureId]: 0 },
+  };
+  return recovered;
+}
+
 /** A short rest refills the short-rest pools and leaves the daily ones spent. */
 function refillShortRestFeatures(ch: PartyCharacter): void {
   const left = ch.resources?.featureUses;
@@ -1346,6 +1406,7 @@ function refillShortRestFeatures(ch: PartyCharacter): void {
 export function shortRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   let hitDiceSpent = 0;
+  const recovered: Array<{ name: string; slots: number[] }> = [];
   const party = buildCampaignParty(c);
   for (const [index, combatant] of party.entries()) {
     const ch = c.characters[index]!;
@@ -1368,11 +1429,14 @@ export function shortRest(c: CampaignState): RestResult {
     // Second Wind, Action Surge, Channel Divinity and Wild Shape come back
     // here; Lay on Hands and Bardic Inspiration are the day's budget and do not.
     refillShortRestFeatures(ch);
+    // …and the casters get some slots back, once between long rests.
+    const slots = recoverSlotsOnShortRest(c, index, combatant);
+    if (slots.length > 0) recovered.push({ name: ch.name, slots });
     // A short rest ends the 1-hour camp buff potions (giant strength,
     // resistances); familiar/mageArmor keep their own longer clocks.
     clearCampBuffs(ch);
   }
-  return { totalHealed, hitDiceSpent };
+  return { totalHealed, hitDiceSpent, ...(recovered.length > 0 ? { recovered } : {}) };
 }
 
 /** Drop the camp-drunk buff-potion effects (giant strength, resistances) from

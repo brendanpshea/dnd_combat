@@ -172,9 +172,10 @@ describe('the feature-pool meter', () => {
   });
 
   it('renders nothing at all for a class with no rest-scoped pools', () => {
-    // The wizard's only limited feature is the species trait. An empty meter
-    // must render as nothing, not as an empty box next to the spell slots.
-    const c = partyOf('wizard');
+    // An empty meter must render as nothing, not as an empty box next to the
+    // spell slots. The rogue is the class with no limited features of its own
+    // — the wizard used to be, until Arcane Recovery gave it a daily pool.
+    const c = partyOf('rogue');
     expect(restPools(buildCampaignParty(c)[0]!.featureUses)).toEqual([]);
   });
 

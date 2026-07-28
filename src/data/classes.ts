@@ -265,7 +265,7 @@ export const CLASSES: Record<Id, ClassData> = {
       learnableExtra: ['ray-of-sickness'],
     },
     featuresByLevel: {
-      1: [],
+      1: ['arcane-recovery'],
       // Evoker subclass at level 3: a simplified Enhanced Cantrip (adds the
       // evoker's Int modifier to its damaging cantrips). Sculpt Spells is a
       // level-6 feature in the 2024 PHB and lands there for when the campaign
@@ -419,6 +419,7 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     featuresByLevel: {
       3: ['lands-aid'],            // Circle of the Land
+      6: ['natural-recovery'],     // Circle of the Land, and SRD-placed at 6 — not 2
       7: ['potent-spellcasting'],   // Elemental Fury, taken as Potent Spellcasting
       1: [],   // Druidic and Primal Order are flavour and skills, not grid rules
       2: ['wild-shape'],
