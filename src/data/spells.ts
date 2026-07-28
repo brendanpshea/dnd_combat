@@ -10,6 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
+import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
@@ -2376,6 +2377,81 @@ export const SPELLS: Record<Id, SpellData> = {
       // nothing and Banishment was strictly better than the book.
       state.combatants[casterId]!.concentratingOn = { spellId: 'banishment', targetIds: [targetId] };
       return [save.event, ...charmAway(state, targetId)];
+    },
+  },
+  /**
+   * Polymorph: an ally becomes a giant ape until something ends it.
+   *
+   * ALLY ONLY, DELIBERATELY.
+   *
+   * Cast on an enemy, this spell is strictly worse than two things the same
+   * caster already has. Banishment and Suggestion both route through
+   * `charmAway`, which takes a creature off the board for good — a fight here
+   * is shorter than the minute those spells last, so they are permanent
+   * removal. Polymorph is *reverting* removal: turn the ogre into a frog,
+   * somebody pops the frog, the ogre is back at full health. It also opens no
+   * new save axis, since Suggestion is already a Wisdom save. An enemy-target
+   * version would be a trap for the player and would never be chosen by the AI,
+   * which is the worst combination there is.
+   *
+   * On an ally it is a thing this game has no other version of: a large
+   * temporary hit point pool wrapped around a fresh statblock. The ape's 168
+   * hit points are its own; when they run out the hero comes back with exactly
+   * what they had.
+   *
+   * ONE FORM, ON PURPOSE.
+   *
+   * The SRD allows any beast of CR up to the target's level. Choosing means a
+   * form-picker UI, and a form-picker for a spell cast once a fight is a lot of
+   * screen for one decision. The giant ape is the fantasy anyway — and it is
+   * the strongest beast in the bestiary, so a picker would mostly be a longer
+   * road to the same answer.
+   */
+  polymorph: {
+    id: 'polymorph', name: 'Polymorph', level: 4, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'ally', count: 1 },
+    concentration: true,
+    icon: '🦍',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const t = state.combatants[targetId]!;
+      const beast = MONSTERS['giant-ape'];
+      // Already wearing a body — a druid mid-Wild Shape, or a second Polymorph.
+      if (!beast || t.wildShape) return [];
+      t.wildShape = {
+        formId: beast.id,
+        original: {
+          ...(t.acOverride !== undefined ? { acOverride: t.acOverride } : {}),
+          speed: t.speed,
+          abilities: { ...t.abilities },
+          equipped: { ...t.equipped },
+          inventory: t.inventory.map((it) => ({ ...it })),
+          featureIds: [...t.featureIds],
+          attacksPerAction: t.attacksPerAction,
+          // The three that make this Polymorph rather than Wild Shape.
+          hp: t.hp,
+          maxHp: t.maxHp,
+          spellIds: [...t.spellIds],
+        },
+      };
+      t.acOverride = beast.ac;
+      t.speed = beast.speed;
+      t.abilities = { ...t.abilities, str: beast.abilities.str, dex: beast.abilities.dex, con: beast.abilities.con };
+      t.equipped = { mainHand: beast.weaponIds[0]! };
+      t.inventory = beast.weaponIds.slice(1).map((w: Id) => ({ itemId: w, qty: 1 }));
+      t.attacksPerAction = beast.attacksPerAction ?? 1;
+      // An ape casts nothing. This is what makes it "play as the ape" rather
+      // than "keep your character and gain 168 hit points".
+      t.spellIds = [];
+      delete t.concentratingOn;
+      // The beast's own hit points, not a bonus on top of the hero's.
+      t.maxHp = beast.hp;
+      t.hp = beast.hp;
+      state.combatants[casterId]!.concentratingOn = { spellId: 'polymorph', targetIds: [targetId] };
+      return [
+        { type: 'wildShaped', combatantId: targetId, formId: beast.id, tempHp: 0 },
+        { type: 'conditionApplied', combatantId: targetId, condition: 'shielded', sourceId: casterId },
+      ];
     },
   },
   'phantasmal-killer': {

@@ -416,6 +416,24 @@ export interface Combatant {
    * until someone spends an action shifting it.
    */
   moonbeam?: { position: Position; dice: string; dc: number };
+  /**
+   * The body this creature is currently wearing: Wild Shape, or Polymorph.
+   *
+   * One slot for both, because they are the same operation — snapshot what you
+   * were, overwrite with a statblock, put it all back later. What differs is
+   * the hit points, and that difference is the whole of Polymorph:
+   *
+   *   Wild Shape keeps the druid's own hit points and adds temporary ones. Drop
+   *   to zero and the druid is down.
+   *
+   *   Polymorph gives the BEAST's hit points as a separate pool. Drop to zero
+   *   and the beast's form ends, the original creature comes back with exactly
+   *   the hit points it had, and only the excess damage carries over. That is
+   *   why Polymorph is not a control spell here and not a damage spell — it is
+   *   a large temporary pool, and this game had no version of that.
+   *
+   * `original.hp` present is what marks the second kind.
+   */
   wildShape?: {
     formId: Id;
     original: {
@@ -426,6 +444,18 @@ export interface Combatant {
       inventory: ItemStack[];
       featureIds: Id[];
       attacksPerAction: number;
+      /** Polymorph only: the hit points to hand back when the form ends. */
+      hp?: number;
+      maxHp?: number;
+      /**
+       * Polymorph only: the spells to hand back.
+       *
+       * A polymorphed creature cannot cast — that is most of what "you are an
+       * ape now" means, and without it the player keeps every button they had
+       * and simply gains 168 hit points and two fist attacks. Wild Shape does
+       * not clear this, which is why it is optional rather than always present.
+       */
+      spellIds?: Id[];
     };
   };
   holdDamage?: { dice: string; type: DamageType };
