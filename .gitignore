@@ -6,3 +6,8 @@ dist-web/
 .devserver.log
 __pycache__/
 *.pyc
+
+# Generated design contact sheets (scripts/terrain-sheet.ts) — regenerate, do
+# not commit: the PNG is megabytes and the HTML inlines the whole stylesheet.
+docs/terrain-sheet.html
+docs/terrain-sheet.png
