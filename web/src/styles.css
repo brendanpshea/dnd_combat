@@ -3272,3 +3272,14 @@ button.category .count {
 }
 .gate-bounty b { color: var(--gold); font-weight: 700; }
 .gate-prize { display: block; color: #c79ae0; }
+
+/* A stall row awaiting its second tap. Buying and selling used to happen on a
+   single tap, so a stray thumb on a scrolling list could empty the purse or
+   sell the party's last healing potion with nothing to undo it. */
+.arena-buy-row { display: flex; flex-direction: column; }
+.arena-buy.confirming { border-color: var(--gold); background: color-mix(in srgb, var(--panel) 70%, #3a3018); }
+.arena-confirm-row { display: flex; gap: 6px; padding: 5px 4px 7px; }
+.arena-confirm-row button { flex: 1; font-size: 12px; padding: 5px 8px; }
+.arena-shop-gold { margin-left: auto; color: var(--gold); font-weight: 700; font-size: 13px; }
+/* Whether the item suits the hero it is being bought for. */
+.arena-buy-name .shop-fit { display: block; font-style: normal; font-size: 10px; }

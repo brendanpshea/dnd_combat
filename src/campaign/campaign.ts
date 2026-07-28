@@ -16,7 +16,7 @@ import {
 } from '../builder/character.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
-import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS } from '../data/weapons.js';
+import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS, isWeaponProficient } from '../data/weapons.js';
 import { ARMOR, SHIELDS, isShield } from '../data/armor.js';
 import { VALUABLES } from '../data/valuables.js';
 import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
@@ -2167,6 +2167,39 @@ export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot
 }
 
 /** Equip from inventory into a slot; whatever was there goes to inventory. */
+/**
+ * How well an item would suit a hero, for the moment of buying it.
+ *
+ *   fits     wear or wield it with full benefit
+ *   noprof   can wield it, but adds no proficiency bonus (a wizard's greatsword)
+ *   noequip  cannot equip it at all (a wizard's plate)
+ *   null     nothing to equip — a potion, a scroll
+ *
+ * Lifted out of the adventure shop so the arena's stall can say the same thing.
+ * It is the one piece of information a shop can give that a player cannot work
+ * out from the row itself, and buying a breastplate for someone who cannot wear
+ * it is a mistake you only discover two screens later.
+ */
+export function itemFitFor(
+  c: CampaignState, charIdx: number, itemId: Id,
+): 'fits' | 'noprof' | 'noequip' | null {
+  const cat = itemCategory(itemId);
+  if (cat !== 'weapon' && cat !== 'armor' && cat !== 'trinket') return null;
+  const ch = c.characters[charIdx];
+  if (!ch) return null;
+  // `equipBlocked` wants the item in hand, so ask on a shallow clone that has
+  // one — cheaper and safer than mutating the real party to answer a question.
+  const probe = {
+    ...c,
+    characters: c.characters.map((x, i) =>
+      (i === charIdx ? { ...x, inventory: [...x.inventory, { itemId, qty: 1 }] } : x)),
+  };
+  const canEquip = EQUIP_SLOTS.some((slot) => equipBlocked(probe, charIdx, itemId, slot) === undefined);
+  if (!canEquip) return 'noequip';
+  if (cat === 'weapon' && !isWeaponProficient(CLASSES[ch.classId]?.weaponProfs, itemId)) return 'noprof';
+  return 'fits';
+}
+
 export function equipItem(c: CampaignState, charIdx: number, itemId: Id, slot: EquipSlot): boolean {
   if (equipBlocked(c, charIdx, itemId, slot) !== undefined) return false;
   const ch = c.characters[charIdx]!;

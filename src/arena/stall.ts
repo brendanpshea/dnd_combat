@@ -66,3 +66,15 @@ export function stallPrice(itemId: Id, visit: StallVisit): number {
 export function stallResale(itemId: Id): number {
   return Math.floor((itemPrice(itemId) ?? 0) / 2);
 }
+
+/**
+ * Will the stall buy this at all?
+ *
+ * Plenty of starting gear carries no price — a light crossbow, for one — and
+ * `sellItem` refuses anything unpriced. Offering such a row at "+0g" costs a
+ * tap and a confirm and then does nothing, which is worse than not offering it:
+ * a button that visibly fails teaches a player not to trust the others.
+ */
+export function stallWillBuy(itemId: Id): boolean {
+  return itemPrice(itemId) !== undefined;
+}
