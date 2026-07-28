@@ -31,21 +31,33 @@ export function PartySetup(
         <button className="ghost" onClick={onExit}>✕</button>
         <h1>Assemble your party</h1>
       </div>
-      <p className="hint">Take a ready-made band, roll random heroes, or tap anyone to change their class, kin, portrait, build choices, and spells.</p>
+      <p className="hint">This party works as it is — begin whenever you like. Roll a new one, or tap anyone to change their class, kin, portrait, build choices, and spells.</p>
 
-      <div className="adv-templates">
-        {PARTY_TEMPLATES.map((t) => (
-          <button key={t.id} className="adv-template" onClick={() => { applyPartyTemplate(c, t.id); setEditing(null); bump(); }}>
-            <b>{t.name}</b><small>{t.blurb}</small>
-          </button>
-        ))}
+      {/* One roller, not two. The old pair were "random kin" and "random
+          everything, no promises" — and the promise-free one could deal four
+          wizards, which the arena will happily build an unwinnable fight for.
+
+          And it stands alone above the roster, because the party below is
+          already a good party: the two things a player needs on this screen are
+          "go" and "give me a different one". Six named bands ahead of their own
+          roster made choosing feel mandatory before they had seen what they
+          had. They are still here, one tap away, for anyone who wants one. */}
+      <div className="adv-templates one-roll">
         <button className="adv-template" onClick={() => { randomizeParty(c); setEditing(null); bump(); }}>
-          <b>🎲 Surprise me</b><small>Random kin for all four.</small>
-        </button>
-        <button className="adv-template" onClick={() => { randomizeParty(c, { roles: true }); setEditing(null); bump(); }}>
-          <b>🎲 Total chaos</b><small>Random classes and kin. No promises.</small>
+          <b>🎲 Surprise me</b><small>Random kin and classes — always a party that works.</small>
         </button>
       </div>
+
+      <details className="adv-template-more">
+        <summary>Or take a ready-made band</summary>
+        <div className="adv-templates">
+          {PARTY_TEMPLATES.map((t) => (
+            <button key={t.id} className="adv-template" onClick={() => { applyPartyTemplate(c, t.id); setEditing(null); bump(); }}>
+              <b>{t.name}</b><small>{t.blurb}</small>
+            </button>
+          ))}
+        </div>
+      </details>
 
       <div className="adv-roster-list">
         {c.characters.map((ch, idx) => {

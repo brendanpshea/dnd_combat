@@ -97,9 +97,17 @@ describe('build-choice points', () => {
     expect(randomizeParty(c)).toBe(false);
   });
 
-  it('default party portraits are the class images (all human)', () => {
+  it('default party portraits follow the starting kin', () => {
+    // The four used to be human, so every portrait was simply the class image.
+    // They are now human/dwarf/elf/halfling — a new player meets four different
+    // faces on the first screen instead of one drawn four times — so the rule
+    // is the species mapping, not the class id.
     const c = newCampaign(1);
-    for (const ch of c.characters) expect(ch.portraitId).toBe(ch.classId);
+    for (const ch of c.characters) {
+      expect(ch.portraitId).toBe(defaultPortraitFor(ch.speciesId, ch.classId));
+    }
+    expect(new Set(c.characters.map((ch) => ch.speciesId)).size,
+      'four kin, so the species traits are visible from the start').toBe(4);
   });
 
   it('a template gives each member their species portrait', () => {

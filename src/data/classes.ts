@@ -347,6 +347,10 @@ export const CLASSES: Record<Id, ClassData> = {
             'cure-wounds', 'faerie-fire', 'color-spray', 'thunderwave', 'bane', 'animal-friendship'],
         3: ['hold-person', 'invisibility', 'suggestion', 'blindness', 'aid', 'lesser-restoration'],
         5: ['fear', 'mass-healing-word', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
+        // Magical Discoveries (6): two spells from off the bard's own list.
+        // Written here rather than through new machinery because this table is
+        // already "what this class can have, and when".
+        6: ['fireball', 'spiritual-weapon'],
         7: ['phantasmal-killer'],
       },
     },
@@ -355,6 +359,7 @@ export const CLASSES: Record<Id, ClassData> = {
       1: ['bardic-inspiration'],
       2: ['expertise', 'jack-of-all-trades'],
       3: ['cutting-words'], // College of Lore
+      6: ['magical-discoveries'], // College of Lore: two spells from any list
       // 4: Ability Score Increase (builder).
       // 5: Font of Inspiration — regaining uses on a short rest, which this
       //    engine already does for every per-encounter pool. Left off rather

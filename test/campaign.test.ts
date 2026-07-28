@@ -569,11 +569,15 @@ describe('shop skills', () => {
     STEAL_FINE,
   } = campaignModule;
 
-  it('skill bonuses reflect class skills plus Human Skillful defaults', () => {
+  it('skill bonuses reflect class skills and species traits', () => {
+    // Deception used to land on the wizard, whose Human Skillful granted it.
+    // The starting party is no longer four humans — only the fighter is — so
+    // the rogue's own proficiency wins it instead. The class-level assertions
+    // below are the part that was never about species.
     const c = newCampaign(5);
     expect(bestAtSkill(c, 'stealth').idx).toBe(3);          // rogue (dex 16 + prof)
     expect(bestAtSkill(c, 'sleight-of-hand').idx).toBe(3);
-    expect(bestAtSkill(c, 'deception').idx).toBe(1);        // Human wizard Skillful
+    expect(bestAtSkill(c, 'deception').idx).toBe(3);        // rogue proficient
     expect(bestAtSkill(c, 'intimidation').idx).toBe(0);     // fighter proficient
     expect(bestAtSkill(c, 'persuasion').idx).toBe(2);       // cleric proficient
     expect(skillBonus('rogue', 1, 'stealth')).toBe(5);      // +3 dex +2 prof
