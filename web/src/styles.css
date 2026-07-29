@@ -3529,3 +3529,12 @@ button.category .count {
   text-shadow: 0 0 10px #4aa8ff, 0 2px 3px #000c;
   letter-spacing: 0.02em;
 }
+
+/* Quick-battle hero rows: class and species side by side, so four heroes read
+   as four rows rather than eight stacked dropdowns. */
+.setup-hero { display: block; }
+.setup-hero-pair {
+  display: flex;
+  gap: 6px;
+}
+.setup-hero-pair select { flex: 1; min-width: 0; }

@@ -470,14 +470,27 @@ export function buildCharacter(opts: BuildOptions): Combatant {
 }
 
 /** The standard party of four, placed on a rank. */
+/** The party a skirmish builds when nobody says otherwise. */
+export const DEFAULT_PARTY: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
+
 export function buildParty(
   team: TeamId,
   rank: number,
   level = 1,
   files: number[] = [1, 2, 4, 6],
   speciesIds: Id[] = [],
+  /**
+   * Which classes stand in the four files.
+   *
+   * Defaulted rather than fixed because the skirmish setup screen used to have
+   * no say in it at all: the party was these four, hard-coded here and again in
+   * the web setup, so eight of the twelve classes could not be taken into a
+   * quick battle by any route. That is the one mode whose whole purpose is
+   * trying something out.
+   */
+  classIds: Id[] = DEFAULT_PARTY,
 ): Combatant[] {
-  const order: Id[] = ['fighter', 'wizard', 'cleric', 'rogue'];
+  const order = classIds.length > 0 ? classIds : DEFAULT_PARTY;
   return order.map((classId, i) =>
     buildCharacter({
       classId, team, level,
@@ -485,7 +498,7 @@ export function buildParty(
       // the narration bar reads "Wizard is down" — a class, not a character.
       // Distinct per side, or a mirror match kills Sir Arthur with Sir Arthur.
       name: defaultNameFor(classId, team),
-      position: { x: files[i]!, y: rank },
+      position: { x: files[i % files.length]!, y: rank },
       speciesId: speciesIds[i] ?? 'human',
     }),
   );

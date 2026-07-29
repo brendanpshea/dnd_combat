@@ -2639,10 +2639,13 @@ export const SPELLS: Record<Id, SpellData> = {
       t.maxHp = beast.hp;
       t.hp = beast.hp;
       state.combatants[casterId]!.concentratingOn = { spellId: 'polymorph', targetIds: [targetId] };
-      return [
-        { type: 'wildShaped', combatantId: targetId, formId: beast.id, tempHp: 0 },
-        { type: 'conditionApplied', combatantId: targetId, condition: 'shielded', sourceId: casterId },
-      ];
+      // Just the shape change. There used to be a `conditionApplied: shielded`
+      // alongside this, which nothing ever applied -- `cast` pushes conditions
+      // onto `t.conditions` itself and this one never did, so the log announced
+      // "... is shielded" on every Polymorph and no AC changed. A line that
+      // reports an effect the game does not have is worse than no line: a
+      // player counts on the +5.
+      return [{ type: 'wildShaped', combatantId: targetId, formId: beast.id, tempHp: 0 }];
     },
   },
   'phantasmal-killer': {

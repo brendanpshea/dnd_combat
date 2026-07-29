@@ -18,6 +18,9 @@ import { join } from 'node:path';
  */
 import { fileURLToPath } from 'node:url';
 
+import { CLASSES } from '../src/data/classes.js';
+import { SPECIES } from '../src/data/species.js';
+
 const WEB = fileURLToPath(new URL('../web/src/', import.meta.url));
 const CSS = readFileSync(join(WEB, 'styles.css'), 'utf8');
 
@@ -162,5 +165,35 @@ describe('web stylesheet coverage', () => {
     // The board shrinks to fit, so this should never engage — but a button you
     // cannot reach is worse than a board you have to scroll to.
     expect(rule, 'the action bar must stay reachable').toContain('overflow-y: auto');
+  });
+});
+
+/**
+ * Every playable class and species needs a one-line blurb.
+ *
+ * `classBlurb` falls back to an empty string, which is the right runtime
+ * behaviour and the wrong development one: a class with no entry renders a card
+ * with a name and a blank line under it, next to eleven cards that explain
+ * themselves. Nothing errors, nothing logs, and it looks like a styling glitch
+ * rather than missing copy.
+ *
+ * Both the warlock and the sorcerer shipped that way and were only found by
+ * opening the party forge and reading it. This is the same "dead data" shape
+ * the rest of the repo guards against — content that exists but says nothing —
+ * so it gets the same treatment.
+ */
+describe('forge copy', () => {
+  it('has a blurb for every class and every species', () => {
+    const src = readFileSync(join(WEB, 'blurbs.ts'), 'utf8');
+    const body = (start: string) => {
+      const i = src.indexOf(start);
+      return src.slice(i, src.indexOf('};', i));
+    };
+    const classes = body('export const CLASS_BLURB');
+    const species = body('export const SPECIES_BLURB');
+    const missingClass = Object.keys(CLASSES).filter((id) => !new RegExp(`\\b${id}:`).test(classes));
+    const missingSpecies = Object.keys(SPECIES).filter((id) => !new RegExp(`\\b${id}:`).test(species));
+    expect(missingClass, `classes with a blank card in the forge: ${missingClass.join(', ')}`).toEqual([]);
+    expect(missingSpecies, `species with a blank card in the forge: ${missingSpecies.join(', ')}`).toEqual([]);
   });
 });

@@ -192,8 +192,18 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       const from = e.via ? ` from ${actor(e.sourceId, e.via)}` : '';
       return `  ${nm(e.targetId)} takes ${e.amount} ${e.damageType}${dice}${tags}${from}.`;
     }
-    case 'healed':
-      return `${nm(e.targetId)} regains ${e.amount} HP (${state.combatants[e.targetId]?.hp}/${state.combatants[e.targetId]?.maxHp}).`;
+    case 'healed': {
+      const t = state.combatants[e.targetId];
+      // See the note in web/src/pacing.ts: a zero is either "already full" or
+      // a Sword of Wounding refusing to let the wound close, and "regains 0 HP"
+      // says neither.
+      if (e.amount === 0) {
+        return t?.conditions.some((k) => k.id === 'wounded')
+          ? `${nm(e.targetId)}'s wound refuses to close — no healing.`
+          : `${nm(e.targetId)} is already at full health.`;
+      }
+      return `${nm(e.targetId)} regains ${e.amount} HP (${t?.hp}/${t?.maxHp}).`;
+    }
     case 'savingThrow':
       return `  ${nm(e.combatantId)} ${e.ability.toUpperCase()} save: ` +
         `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.`;
@@ -253,8 +263,23 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `  The webs wither and fall away.`;
     case 'lightningStruck':
       return `  A bolt cracks down from ${nm(e.casterId)}'s storm cloud.`;
-    case 'wildShaped':
-      return `${nm(e.combatantId)} shifts into the shape of a ${e.formId.replace(/-/g, ' ')}! (+${e.tempHp} temp HP)`;
+    case 'wildShaped': {
+      const form = e.formId.replace(/-/g, ' ');
+      /**
+       * Wild Shape and Polymorph give a body in two different ways, and this
+       * line used to describe only the first.
+       *
+       * A druid's Wild Shape keeps its own hit points and gains the beast's as
+       * TEMPORARY ones, so "+13 temp HP" is exactly right. Polymorph replaces
+       * the creature outright -- `t.maxHp = beast.hp` -- so its event carries
+       * `tempHp: 0` and the line read "shifts into the shape of a giant ape!
+       * (+0 temp HP)", which says the spell did nothing. It had in fact just
+       * handed somebody a 168-point health bar.
+       */
+      return e.tempHp > 0
+        ? `${nm(e.combatantId)} shifts into the shape of a ${form}! (+${e.tempHp} temp HP)`
+        : `${nm(e.combatantId)} becomes a ${form}!`;
+    }
     case 'wildShapeEnded':
       return `${nm(e.combatantId)} sheds the ${e.formId.replace(/-/g, ' ')} shape.`;
     case 'mirrorImageStruck':

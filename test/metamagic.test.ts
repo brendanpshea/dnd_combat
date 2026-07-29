@@ -47,6 +47,8 @@ import { chooseAction, scoreCastForTest } from '../src/ai/greedy.js';
 import { SORCERY_POINTS, metamagicOptions, knownMetamagic } from '../src/engine/rules/metamagic.js';
 import { SPELLS } from '../src/data/spells.js';
 import { acOf } from '../src/data/armor.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { abilityMod, type Combatant, type Position } from '../src/engine/types.js';
 
 function board(opts: { level?: number; spellIds?: string[]; foes?: Position[] } = {}) {
@@ -330,6 +332,34 @@ describe('Heightened Spell', () => {
     const before = c.state.combatants[meId]!.featureUses[SORCERY_POINTS]!.current;
     c.apply(heighten('hold-person', 2));
     expect(c.state.combatants[meId]!.featureUses[SORCERY_POINTS]!.current).toBe(before - 2);
+  });
+
+  it('offers only spells that actually roll a save', () => {
+    /**
+     * Every id in SAVE_OR_SUCK must be a real spell whose `cast` calls
+     * `savingThrow`. Both halves earned their place: `polymorph` was on the list
+     * and rolls nothing at all here (this game's version is ally-only), so the
+     * tray offered a 2-point button that did nothing; and `slow` is not a spell
+     * this game has, so it sat in the set forever doing nothing.
+     *
+     * Read off the source, because whether a save happens lives inside a `cast`
+     * closure and there is no data flag for it.
+     */
+    const src = readFileSync(fileURLToPath(new URL('../src/data/spells.ts', import.meta.url)), 'utf8');
+    const metaSrc = readFileSync(fileURLToPath(new URL('../src/engine/rules/metamagic.ts', import.meta.url)), 'utf8');
+    const listed = [...metaSrc.slice(metaSrc.indexOf('const SAVE_OR_SUCK'))
+      .slice(0, metaSrc.slice(metaSrc.indexOf('const SAVE_OR_SUCK')).indexOf(']'))
+      .matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]!);
+    expect(listed.length, 'the set should not be empty').toBeGreaterThan(4);
+    const bad: string[] = [];
+    for (const id of listed) {
+      if (!SPELLS[id]) { bad.push(`${id}: no such spell`); continue; }
+      const key = `\n  ${/^[a-z]+$/.test(id) ? `${id}: {` : `'${id}': {`}`;
+      const i = src.indexOf(key);
+      const body = src.slice(i, src.indexOf('\n  },', i));
+      if (!/savingThrow\(/.test(body)) bad.push(`${id}: rolls no save, so Heightened does nothing`);
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
   });
 
   it('only bends spells whose whole effect hangs on one save', () => {

@@ -3,7 +3,8 @@ import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { coverReadAt, coverReadFor, type CoverRead } from '../../src/engine/rules/cover.js';
-import { buildParty } from '../../src/builder/character.js';
+import { buildParty, DEFAULT_PARTY } from '../../src/builder/character.js';
+import { CLASSES } from '../../src/data/classes.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
 import { MAPS, MAP_IDS, farRank } from '../../src/data/maps.js';
 import { acOf } from '../../src/data/armor.js';
@@ -62,9 +63,9 @@ interface SetupConfig {
   seed: number;
   aiLevel: AiLevel;
   speciesIds: Id[];
+  classIds: Id[];
 }
 
-const PARTY_CLASS_IDS = ['fighter', 'wizard', 'cleric', 'rogue'] as const;
 
 /**
  * The action bar shows one control per category, not per action, so it is the
@@ -489,7 +490,15 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
   const [encounterId, setEncounterId] = useState('goblins');
   const [aiLevel, setAiLevel] = useState<AiLevel>('normal');
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 2 ** 31));
-  const [speciesIds, setSpeciesIds] = useState<Id[]>(() => PARTY_CLASS_IDS.map(() => 'human'));
+  const [speciesIds, setSpeciesIds] = useState<Id[]>(() => DEFAULT_PARTY.map(() => 'human'));
+  /**
+   * Which four classes fight. Previously fixed at fighter/wizard/cleric/rogue,
+   * which meant eight of the twelve classes could not be taken into a quick
+   * battle by any route -- in the one mode whose whole point is trying
+   * something out. A player who wanted to see the new sorcerer had to play an
+   * arena run to level 2 to reach its first interesting feature.
+   */
+  const [classIds, setClassIds] = useState<Id[]>(() => [...DEFAULT_PARTY]);
 
   return (
     <div className="setup">
@@ -522,7 +531,11 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
       <label>
         Party level
         <select value={level} onChange={(e) => setLevel(Number(e.target.value))}>
-          {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
+          {/* The campaign reaches 8, and several classes only become themselves
+              above 5 -- the sorcerer's Metamagic is a level-2 feature but its
+              subclass lands at 3 and its 4th-level slots at 7. Capping the
+              try-it-out mode at 5 hid the top half of the game. */}
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
       </label>
       {mode !== 'hotseat' && (
@@ -535,17 +548,27 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           </select>
         </label>
       )}
-      {PARTY_CLASS_IDS.map((classId, index) => (
-        <label key={classId}>
-          {classId[0]!.toUpperCase() + classId.slice(1)} species
-          <select
-            value={speciesIds[index]}
-            onChange={(e) => setSpeciesIds((current) => current.map((id, i) => i === index ? e.target.value : id))}
-          >
-            {Object.values(SPECIES).map((species) => (
-              <option key={species.id} value={species.id}>{species.name}</option>
-            ))}
-          </select>
+      {classIds.map((classId, index) => (
+        <label key={index} className="setup-hero">
+          {`Hero ${index + 1}`}
+          <span className="setup-hero-pair">
+            <select
+              value={classId}
+              onChange={(e) => setClassIds((cur) => cur.map((id, i) => (i === index ? e.target.value : id)))}
+            >
+              {Object.values(CLASSES).map((cls) => (
+                <option key={cls.id} value={cls.id}>{cls.name}</option>
+              ))}
+            </select>
+            <select
+              value={speciesIds[index]}
+              onChange={(e) => setSpeciesIds((current) => current.map((id, i) => i === index ? e.target.value : id))}
+            >
+              {Object.values(SPECIES).map((species) => (
+                <option key={species.id} value={species.id}>{species.name}</option>
+              ))}
+            </select>
+          </span>
         </label>
       ))}
       <label>
@@ -556,7 +579,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           onChange={(e) => setSeed(Number(e.target.value) || 0)}
         />
       </label>
-      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed, aiLevel, speciesIds })}>
+      <button className="primary" onClick={() => onStart({ mode, mapId, level, encounterId, seed, aiLevel, speciesIds, classIds })}>
         Fight!
       </button>
     </div>
@@ -569,11 +592,11 @@ function makeCombat(config: SetupConfig): { combat: Combat; aiTeams: Set<TeamId>
   if (config.mode === 'spectate') aiTeams.add('team1');
   const team2 = config.mode === 'encounter'
     ? buildEncounter(config.encounterId, 'team2', farRank(config.mapId))
-    : buildParty('team2', farRank(config.mapId), config.level, undefined, config.speciesIds);
+    : buildParty('team2', farRank(config.mapId), config.level, undefined, config.speciesIds, config.classIds);
   const combat = new Combat({
     seed: config.seed,
     mapId: config.mapId,
-    combatants: [...buildParty('team1', 0, config.level, undefined, config.speciesIds), ...team2],
+    combatants: [...buildParty('team1', 0, config.level, undefined, config.speciesIds, config.classIds), ...team2],
   });
   return { combat, aiTeams };
 }
@@ -998,6 +1021,23 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       const gap = Number.parseFloat(style.rowGap) || 0;
       const pad = (Number.parseFloat(style.paddingTop) || 0) + (Number.parseFloat(style.paddingBottom) || 0);
       let others = pad + gap * Math.max(0, root.children.length - 1);
+      /**
+       * Only what is ABOVE OR BELOW the board, not what is beside it.
+       *
+       * `.battle` is a grid, and on a wide screen the log sits in a second
+       * COLUMN — same row as the board, to its right. Summing every child's
+       * height subtracted that column's 559px from the board's vertical budget,
+       * which is height the board was never going to get back: the floor below
+       * then bit on every desktop, and the board rendered at 0.38 of the
+       * viewport. Measured at 1680x1050 it came out 266x395 — smaller than the
+       * same board on a 390px phone, on a screen with 400px of empty space
+       * under it.
+       *
+       * Horizontal overlap is the test, because it is the one that matches what
+       * "stacked" actually means here: the topbar spans the full width and
+       * counts, the side log does not touch the board's columns and does not.
+       */
+      const wrapBox = wrap.getBoundingClientRect();
       for (const child of Array.from(root.children) as HTMLElement[]) {
         // Only things that actually take space in the column. A floating toast,
         // the slide-over log and anything hidden are out of flow, and counting
@@ -1005,6 +1045,15 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         // could afford.
         const cs = getComputedStyle(child);
         if (cs.position === 'absolute' || cs.position === 'fixed' || cs.display === 'none') {
+          others -= gap;
+          continue;
+        }
+        const box = child.getBoundingClientRect();
+        // Side by side with the board: it costs width, not height. Guarded on
+        // a real measurement, so the first paint (every rect zero) keeps the
+        // old conservative behaviour rather than over-claiming.
+        if (!child.contains(wrap) && wrapBox.width > 0 && box.width > 0 &&
+            (box.right <= wrapBox.left || box.left >= wrapBox.right)) {
           others -= gap;
           continue;
         }

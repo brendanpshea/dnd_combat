@@ -500,7 +500,19 @@ export function bendEntry(entry: BarEntry, metamagic: MetamagicId): BarEntry | u
   return {
     ...entry,
     id: `${entry.id}#${metamagic}`,
-    label: bentName(entry.label, metamagic),
+    /**
+     * The LABEL is left alone, deliberately.
+     *
+     * `bentName` suffixes the option — "Fireball (Quickened)" — and that is
+     * right for the entries `legalActions` enumerates, which sit in an ordinary
+     * tray beside unbent ones and have to say what they are. It is wrong here:
+     * with a chip armed, EVERY row in the tray is bent, so the suffix is on all
+     * of them and says nothing. Read in a browser, it also wrapped every label
+     * to two lines and squeezed the note down to "L2 -" — clipping the sorcery
+     * point cost, which is the one thing the note exists to show.
+     *
+     * The armed chip is the label. The rows just say what they cost.
+     */
     note: [entry.note, `${meta.cost} SP`].filter(Boolean).join(' · '),
     ...(entry.action ? { action: bend(entry.action) } : {}),
     ...(entry.cellTargets
