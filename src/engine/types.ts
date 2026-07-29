@@ -111,6 +111,20 @@ export interface GridState {
   height: number;
   /** Row-major, index = y * width + x. */
   cells: Cell[];
+  /**
+   * The map's theme, carried on the grid rather than left with the MapData.
+   *
+   * It is not decoration down here: a hazard tile means something different in
+   * a forest than in a volcano — brambles that catch you against lava that
+   * takes half your hit points — and the rules layer is where that is decided.
+   * Everything that reads a hazard (the damage on entry, the AI's pathing
+   * weight, the risk badge on the board) needs it, and all of them have a grid
+   * and none of them have the MapData.
+   *
+   * Optional so a hand-built grid in a test still works; `hazardFor` falls back
+   * to the molten default.
+   */
+  theme?: string;
 }
 
 export type ConditionId =

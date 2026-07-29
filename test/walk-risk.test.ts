@@ -31,13 +31,18 @@ const RAW = (() => { const d = parseDice(HAZARD_DAMAGE); return d.count * d.side
  * nothing and asserted it cost something. Walling the lane leaves one way
  * through, which is the situation the badge exists for.
  */
-function board(opts: { speciesId?: string; hazards: Position[]; corridor?: boolean }) {
+function board(opts: { speciesId?: string; hazards: Position[]; corridor?: boolean; theme?: string }) {
   const me: Combatant = buildCharacter({
     classId: 'fighter', team: 'team1', position: { x: 0, y: 0 }, level: 3,
     ...(opts.speciesId ? { speciesId: opts.speciesId } : {}),
   });
   const foe = { ...buildMonster('orc', 'team2', { x: 7, y: 7 }), id: 'far' };
   const c = new Combat({ combatants: [me, foe], seed: 3, mapId: 'open' });
+  // The theme decides what a hazard IS — lava, or a bramble thicket — so a test
+  // about fire resistance has to say which ground it is standing on. The
+  // `open` map is themed forest, where the hazard is 1d4 piercing and a
+  // dragonborn's scales are worth nothing at all.
+  c.state.grid.theme = opts.theme ?? 'ember';
   const at = (p: Position) => c.state.grid.cells[p.y * c.state.grid.width + p.x]!;
   if (opts.corridor) {
     for (let x = 0; x < c.state.grid.width; x++) at({ x, y: 1 }).terrain = 'wall';
@@ -50,9 +55,19 @@ function board(opts: { speciesId?: string; hazards: Position[]; corridor?: boole
 
 describe('the hazard number is the one this hero would take', () => {
   it('is the raw maximum for somebody with no defence against fire', () => {
-    const { me } = board({ hazards: [] });
+    const { c, me } = board({ hazards: [] });
     expect(me.resistances).not.toContain(HAZARD_DAMAGE_TYPE);
-    expect(hazardMaxFor(me)).toBe(RAW);
+    expect(hazardMaxFor(me, c.state.grid)).toBe(RAW);
+  });
+
+  it('is a different number on different ground', () => {
+    // The whole point of making a hazard a property of the map: lava takes
+    // half a hero and a bramble thicket is a scratch, and the badge on the tile
+    // has to say which one you are about to walk into.
+    const lava = board({ hazards: [], theme: 'ember' });
+    const thorns = board({ hazards: [], theme: 'forest' });
+    expect(hazardMaxFor(lava.me, lava.c.state.grid))
+      .toBeGreaterThan(hazardMaxFor(thorns.me, thorns.c.state.grid) * 2);
   });
 
   it('is halved for a dragonborn, which resists fire', () => {
@@ -60,9 +75,9 @@ describe('the hazard number is the one this hero would take', () => {
     // was harmless while only the AI read it and is a lie the moment it is
     // painted on a tile: the one hero who can walk through fire would be shown
     // the number they never take.
-    const { me } = board({ speciesId: 'dragonborn', hazards: [] });
+    const { c, me } = board({ speciesId: 'dragonborn', hazards: [] });
     expect(me.resistances, 'this test needs a fire-resistant species').toContain(HAZARD_DAMAGE_TYPE);
-    expect(hazardMaxFor(me)).toBe(Math.floor(RAW / 2));
+    expect(hazardMaxFor(me, c.state.grid)).toBe(Math.floor(RAW / 2));
   });
 
   it('reaches the walk itself, not just the helper', () => {

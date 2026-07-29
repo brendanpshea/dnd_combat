@@ -1,7 +1,7 @@
 /**
  * Movement execution with opportunity attacks.
  */
-import type { GameState, Combatant, Id, Position } from '../types.js';
+import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
 import { cellAt, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBinding } from '../types.js';
 import { blocksMovement, reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
 import { WEAPONS } from '../../data/weapons.js';
@@ -9,11 +9,26 @@ import { resolveAttack, applyDamage } from './attack.js';
 import { savingThrow, saveForHalf } from './saves.js';
 import { rollDice, parseDice } from '../dice.js';
 import type { GameEvent } from '../events.js';
+import { hazardFor, DEFAULT_HAZARD } from '../../data/hazards.js';
+import type { MapTheme } from '../../data/maps.js';
 
-/** Damage for entering a hazard cell (fire pit, spikes...). */
-export const HAZARD_DAMAGE = '1d4';
-/** Hazards burn: the damage they deal is fire, and fire can be resisted. */
-export const HAZARD_DAMAGE_TYPE = 'fire' as const;
+/**
+ * What a hazard does is now a property of the MAP, not a constant.
+ *
+ * `HAZARD_DAMAGE` was one global 1d4 of fire for every hazard in the game —
+ * lava, brambles, grave gas and burning wreckage alike. See data/hazards.ts for
+ * why that was wrong about both the rules and the fiction. Kept as the value
+ * the default (molten) hazard deals, because a handful of callers and tests
+ * want "what does a hazard do" without a grid in hand.
+ */
+export const HAZARD_DAMAGE = DEFAULT_HAZARD.damage;
+export const HAZARD_DAMAGE_TYPE = DEFAULT_HAZARD.damageType;
+
+/** Biggest single roll of a dice expression. */
+function maxOf(expr: string): number {
+  const d = parseDice(expr);
+  return d.count * d.sides + d.bonus;
+}
 
 /**
  * The most a hazard cell can take off THIS creature, after its own defences.
@@ -23,14 +38,51 @@ export const HAZARD_DAMAGE_TYPE = 'fire' as const;
  * little while this was only read by the AI; it matters a lot now that the
  * board shows it to a player, because a badge that overstates the risk on the
  * one hero who can walk through fire is worse than no badge at all.
+ *
+ * Takes the GRID because the answer depends on where you are standing: lava is
+ * 3d6 fire and a bramble thicket is 1d4 piercing, and a dragonborn shrugs off
+ * one of those and not the other.
  */
-export function hazardMaxFor(c: Combatant): number {
-  const d = parseDice(HAZARD_DAMAGE);
-  const raw = d.count * d.sides + d.bonus;
-  if (c.immunities.includes(HAZARD_DAMAGE_TYPE)) return 0;
-  if (c.resistances.includes(HAZARD_DAMAGE_TYPE)) return Math.floor(raw / 2);
-  if (c.vulnerabilities.includes(HAZARD_DAMAGE_TYPE)) return raw * 2;
+export function hazardMaxFor(c: Combatant, grid?: GridState): number {
+  const kind = hazardFor(grid?.theme as MapTheme | undefined);
+  const raw = maxOf(kind.damage);
+  if (c.immunities.includes(kind.damageType)) return 0;
+  if (c.resistances.includes(kind.damageType)) return Math.floor(raw / 2);
+  if (c.vulnerabilities.includes(kind.damageType)) return raw * 2;
   return raw;
+}
+
+/**
+ * Walking into a hazard: the damage, and the rider if it has one.
+ *
+ * One place, so the walking path and a forced push cannot disagree about what
+ * the ground does — they used to share a copy-pasted four lines, which is
+ * exactly how a bramble ends up burning somebody on one route and not the
+ * other.
+ */
+export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
+  const kind = hazardFor(state.grid.theme as MapTheme | undefined);
+  const events: GameEvent[] = [];
+  const dmg = rollDice(state.rng, kind.damage);
+  state.rng = dmg.state;
+  // Tagged so the log can name it and an arena bounty can see it: driving
+  // something into the fire is a play, and nothing could tell it apart from any
+  // other fire damage.
+  events.push(...applyDamage(state, victimId, victimId, dmg.total, kind.damageType, dmg.rolls, { tags: ['Hazard'] }));
+  const victim = state.combatants[victimId]!;
+  if (!kind.rider || !victim.alive || isDown(victim)) return events;
+  // The save is only ever for the CONDITION. You always get burned; you might
+  // get caught.
+  const save = savingThrow(state, victimId, kind.rider.ability, kind.rider.dc);
+  events.push(save.event);
+  if (save.success) return events;
+  if (victim.conditions.some((k) => k.id === kind.rider!.condition)) return events;
+  if (wardedAgainstMagicalBinding(victim, kind.rider.condition)) return events;
+  victim.conditions.push({
+    id: kind.rider.condition, repeatSave: { ability: kind.rider.ability, dc: kind.rider.dc },
+  });
+  events.push({ type: 'conditionApplied', combatantId: victimId, condition: kind.rider.condition });
+  return events;
 }
 
 /**
@@ -84,11 +136,21 @@ export function moveDestinations(state: GameState, mover: Combatant): Position[]
 /**
  * Rough expected damage of the two things a route can walk you into. Only
  * their *relative* size matters — they rank equal-length paths against each
- * other, nothing else — and a 1d4 hazard and a melee swing that lands about
- * half the time are genuinely close, so neither dominates.
+ * other, nothing else.
+ *
+ * The hazard term used to be a flat 2.5, which was the average of the 1d4 every
+ * hazard in the game dealt. Now that a hazard is whatever the map says it is,
+ * a flat number would have the AI stroll through 3d6 of lava as cheerfully as
+ * through a bramble — and lava is the one route cost worth walking a long way
+ * round to avoid.
  */
-const HAZARD_DANGER = 2.5;   // 1d4, and certain
 const PROVOKE_DANGER = 4;    // one opportunity attack, at roughly even odds
+
+/** Average of a dice expression: what a hazard costs to step in, per step. */
+function avgOf(expr: string): number {
+  const d = parseDice(expr);
+  return d.count * (d.sides + 1) / 2 + d.bonus;
+}
 
 /**
  * The danger of each step, for picking between equal-length routes.
@@ -103,6 +165,15 @@ function stepDanger(state: GameState, mover: Combatant): StepDanger {
   const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
     .map((id) => state.combatants[id]!)
     .filter((h) => canTakeReaction(h) && meleeWeaponOf(h));
+  // What this map's hazard actually costs THIS creature — a dragonborn wading
+  // a lava seam pays half, and a bramble is a scratch to anybody.
+  const kind = hazardFor(state.grid.theme as MapTheme | undefined);
+  const resisted = mover.immunities.includes(kind.damageType) ? 0
+    : mover.resistances.includes(kind.damageType) ? 0.5
+    : mover.vulnerabilities.includes(kind.damageType) ? 2 : 1;
+  // The rider is worth avoiding too: being stuck in a thicket is worse than
+  // the 1d4 that put you there.
+  const hazardDanger = avgOf(kind.damage) * resisted + (kind.rider ? 4 : 0);
   return (from, to) => {
     let danger = 0;
     // Mirrors the provoke rule below exactly: you pay for *leaving* reach, so
@@ -110,7 +181,7 @@ function stepDanger(state: GameState, mover: Combatant): StepDanger {
     for (const h of threats) {
       if (adjacent(h.position, from) && !adjacent(h.position, to)) danger += PROVOKE_DANGER;
     }
-    if (cellAt(state.grid, to)!.terrain === 'hazard') danger += HAZARD_DANGER;
+    if (cellAt(state.grid, to)!.terrain === 'hazard') danger += hazardDanger;
     return danger;
   };
 }
@@ -158,7 +229,7 @@ export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Posi
   const path = pathTo(r, mover.position, to);
   if (!path) return 0;
 
-  const hazardMax = hazardMaxFor(mover);
+  const hazardMax = hazardMaxFor(mover, state.grid);
   const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
     .map((id) => state.combatants[id]!)
     .filter((h) => canTakeReaction(h));
@@ -278,13 +349,10 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     }
 
     if (cellAt(state.grid, step)!.terrain === 'hazard') {
-      const dmg = rollDice(state.rng, HAZARD_DAMAGE);
-      state.rng = dmg.state;
-      // Tagged so the log can name it and an arena bounty can see it: driving
-      // something into the fire is a play, and nothing could tell it apart
-      // from any other fire damage.
-      events.push(...applyDamage(state, moverId, moverId, dmg.total, 'fire', dmg.rolls, { tags: ['Hazard'] }));
-      if (!mover.alive || isDown(mover)) {
+      events.push(...enterHazard(state, moverId));
+      // Restrained by brambles ends the walk as surely as dropping does: speed
+      // is zero from here.
+      if (!mover.alive || isDown(mover) || mover.conditions.some((k) => k.id === 'restrained')) {
         stopShort();
         events.unshift({ type: 'moved', combatantId: moverId, path: walked });
         return events;
@@ -368,14 +436,11 @@ export function pushCreature(
       events.push({ type: 'illusionPopped', position: next });
     }
     if (cell.terrain === 'hazard') {
-      const dmg = rollDice(state.rng, HAZARD_DAMAGE);
-      state.rng = dmg.state;
-      // Tagged, like the walking path is. Forced movement into a hazard is the
-      // *intended* way to claim the Into the Fire bounty — enemies path around
-      // fire on their own, so a push or a Thunderwave is most of how anything
-      // ever ends up standing in it — and an untagged burn here meant the one
-      // route the bounty was written for did not count.
-      events.push(...applyDamage(state, targetId, targetId, dmg.total, 'fire', dmg.rolls, { tags: ['Hazard'] }));
+      // The same door the walking path uses. Forced movement into a hazard is
+      // the *intended* way to claim the Into the Fire bounty — enemies path
+      // around fire on their own, so a push or a Thunderwave is most of how
+      // anything ever ends up standing in it.
+      events.push(...enterHazard(state, targetId));
       if (!t.alive) break;
     }
   }
