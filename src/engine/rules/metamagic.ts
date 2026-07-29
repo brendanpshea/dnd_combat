@@ -45,7 +45,7 @@
 import type { GameState, Id, Combatant } from '../types.js';
 import type { SpellData } from '../../data/spells.js';
 
-export type MetamagicId = 'quickened';
+export type MetamagicId = 'quickened' | 'heightened';
 
 export interface MetamagicData {
   id: MetamagicId;
@@ -59,6 +59,26 @@ export interface MetamagicData {
   applies(spell: SpellData): boolean;
 }
 
+/**
+ * Which spells Heightened Spell is OFFERED for, and why it is not all of them.
+ *
+ * The SRD lets it bend any spell that forces a save. Enumerating that would
+ * double the spell pass for a sorcerer, and — worse — a heightened cast is
+ * STRICTLY better than the plain one, so offering both side by side means the
+ * bent version wins every time unless a sorcery point has a price. That price
+ * is the thing this codebase has got wrong six times.
+ *
+ * Both problems go away by offering it only where it is actually the point of
+ * the option: a spell whose ENTIRE effect hangs on one creature's save. On a
+ * Fireball, disadvantage on one target's Dexterity save moves a few hit points
+ * of the half-damage margin. On a Banishment it is the difference between
+ * removing the boss from the fight and spending a 4th-level slot on nothing.
+ */
+const SAVE_OR_SUCK = new Set([
+  'hold-person', 'banishment', 'blindness', 'fear', 'confusion', 'suggestion',
+  'polymorph', 'phantasmal-killer', 'sleep', 'command', 'bane', 'slow',
+]);
+
 export const METAMAGIC: Record<MetamagicId, MetamagicData> = {
   quickened: {
     id: 'quickened',
@@ -71,13 +91,42 @@ export const METAMAGIC: Record<MetamagicId, MetamagicData> = {
     // never reaches this path at all.
     applies: (spell) => spell.castingTime === 'action',
   },
+  heightened: {
+    id: 'heightened',
+    name: 'Heightened Spell',
+    featureId: 'metamagic-heightened',
+    cost: 2,
+    blurb: 'One target of the spell has Disadvantage on its saves against it.',
+    applies: (spell) => SAVE_OR_SUCK.has(spell.id),
+  },
 };
+
+/**
+ * Which target a bend lands on, decided in ONE place so the engine and the AI
+ * can never disagree about it.
+ *
+ * Heightened protects nobody and picks one victim: the creature the caster most
+ * wants the spell to stick to. For a single-target spell that is the target it
+ * was aimed at, which is every spell `SAVE_OR_SUCK` currently lists. For an
+ * area spell it would have to be chosen from the footprint, and the honest
+ * engine-side proxy is the biggest enemy in it — the engine cannot see the AI's
+ * notion of threat, and `outputPerRound` lives in the scorer.
+ */
+export function heightenedTarget(targets: Array<{ combatantId?: Id }>): Id | undefined {
+  return targets.find((t) => t.combatantId !== undefined)?.combatantId;
+}
 
 /** Where a sorcerer's points live: a long-rest pool, like every other. */
 export const SORCERY_POINTS = 'font-of-magic';
 
 export function sorceryPoints(c: Combatant): number {
   return c.featureUses[SORCERY_POINTS]?.current ?? 0;
+}
+
+/** The options this creature knows AND can currently pay for — the chip row. */
+export function affordableMetamagic(c: Combatant): MetamagicData[] {
+  const points = sorceryPoints(c);
+  return knownMetamagic(c).filter((m) => m.cost <= points);
 }
 
 /** The options this creature actually knows. */

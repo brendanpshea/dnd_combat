@@ -81,3 +81,65 @@ the caster's next turn. The off-by-one had been invisible while nothing could
 reach the spell; once the sorcerer could, it became the second most-cast leveled
 spell in the game at a third more damage than it is entitled to. Fixed, with the
 scoring case rewritten to match.
+
+---
+
+# Heightened Spell: the option the AI should not have
+
+```
+npm run arena-eda -- 60 --start-level 8 --give-up 12 --random-prep
+```
+
+Heightened Spell — 2 points, one target of the spell has disadvantage on its
+saves against it — was built, measured twice, and then deliberately taken away
+from the AI. This records why, because the code that results looks like an
+oversight and is not.
+
+## It is always chosen
+
+Offered to the AI alongside the ordinary cast, across 40 level-8 runs:
+
+```
+heightened  208   Suggestion 74, Command 47, Confusion 28, Hold Person 22, Sleep 19, ...
+quickened    20   (was 78)
+```
+
+A heightened cast is *strictly better* than the plain one, and `scoreSpell` has
+no term at all for a sorcery point — so the bent version wins every time it is
+on the list. It also crowds out the option that is genuinely worth the points:
+Quickened fell from 78 uses to 20.
+
+## Charging for it would be a guess
+
+The obvious answer is to price a sorcery point. The trouble is that the price
+would be invented, and an invented constant on a modifier is precisely the
+mistake this codebase has made six times (Bless, Haste, Mirror Image, Steady
+Aim, Hex, the defensive tier).
+
+So the question asked instead was whether the option is worth anything **at
+all** — by giving it away free and comparing 60-run outcomes:
+
+| | baseline (Quickened only) | + free Heightened |
+| --- | --- | --- |
+| finished within 120 days | 52/60 | 52/60 |
+| fights won | 413 / 867 (48%) | 413 / 855 (48%) |
+| median per-run win rate | 57% | 62% |
+
+Two of the three headline numbers are **identical**. The median moved five
+points, which at n=60 — with only ~17 runs containing a sorcerer at all — is not
+a finding. Free, it does not move the outcome. Charged, it can only be worse.
+
+## So it is a player option
+
+The AI keeps its points for Quickened, which converts them into a whole extra
+spell. Heightened reaches the *player* through the Metamagic chip row instead.
+
+That is not a consolation prize. A player heightening a Banishment on the one
+creature that decides the fight is making a real decision, and it is exactly the
+kind of decision a greedy one-turn scorer cannot see — it has no idea that this
+particular enemy is the fight.
+
+It is also the case the UI was built for. `legalActions` never enumerates
+Heightened; `isLegalAction` and `metamagicOptions` are unchanged, so the chip
+row constructs the bent cast itself and validates it. The engine stays the
+authority without the hot path paying anything.

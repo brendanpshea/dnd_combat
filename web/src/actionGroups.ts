@@ -461,3 +461,63 @@ export function buildMultiAction(spec: MultiTargetSpec, ids: Id[]): Action {
     ...(spec.metamagic ? { metamagic: spec.metamagic } : {}),
   };
 }
+
+
+/**
+ * A tray entry with a Metamagic option applied, or `undefined` if the option
+ * cannot bend it.
+ *
+ * THE CHIP ROW, AND WHY IT EXISTS NOW
+ *
+ * While Quickened was the only option, a bent cast was its own tray entry —
+ * the shape upcasting already uses. That worked because Quickened is offered
+ * only once the action is spent, so a bent entry never sat beside its own plain
+ * version. Heightened breaks it in two ways: it applies to an ordinary action
+ * cast, so every affected spell would appear twice; and it is not enumerated at
+ * ALL (see legalActions — the AI measured it as not worth its points), so there
+ * is no entry to duplicate in the first place.
+ *
+ * So the player arms an option and the tray re-reads through this. `armed`
+ * lives in the UI, the bending lives here, and the engine stays the authority:
+ * every action this produces is validated by `isLegalAction` before it is
+ * applied, exactly like an unbent one.
+ *
+ * Pure on purpose. Every web test in this repo runs without a DOM, so the
+ * decision "which spells can this option touch, and what does the button do
+ * when pressed" has to be testable on its own — otherwise the whole chip row
+ * would ship unverified.
+ */
+export function bendEntry(entry: BarEntry, metamagic: MetamagicId): BarEntry | undefined {
+  const meta = METAMAGIC[metamagic];
+  const spellId = entry.multi?.spellId
+    ?? (entry.action?.kind === 'castSpell' ? entry.action.spellId : undefined)
+    ?? (entry.id.startsWith('spell:') ? entry.id.slice(6).split(/[@#]/)[0] : undefined);
+  const spell = spellId ? SPELLS[spellId] : undefined;
+  // Items are never bendable: a scroll is not the sorcerer's own casting.
+  if (!spell || entry.group !== 'spell' || !meta.applies(spell)) return undefined;
+  const bend = (a: Action): Action =>
+    (a.kind === 'castSpell' ? { ...a, metamagic } : a);
+  return {
+    ...entry,
+    id: `${entry.id}#${metamagic}`,
+    label: bentName(entry.label, metamagic),
+    note: [entry.note, `${meta.cost} SP`].filter(Boolean).join(' · '),
+    ...(entry.action ? { action: bend(entry.action) } : {}),
+    ...(entry.cellTargets
+      ? { cellTargets: new Map([...entry.cellTargets].map(([k, a]) => [k, bend(a)])) }
+      : {}),
+    ...(entry.multi ? { multi: { ...entry.multi, metamagic } } : {}),
+  };
+}
+
+/**
+ * The spell tray as it looks with `armed` held down: only what the option can
+ * touch, each entry bent. `armed === null` gives the ordinary tray back.
+ */
+export function bendTray(bar: BarEntry[], armed: MetamagicId | null): BarEntry[] {
+  if (!armed) return bar;
+  return bar.flatMap((b) => {
+    const bent = bendEntry(b, armed);
+    return bent ? [bent] : [];
+  });
+}

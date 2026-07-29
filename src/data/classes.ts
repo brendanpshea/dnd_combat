@@ -525,7 +525,7 @@ export const CLASSES: Record<Id, ClassData> = {
       // Level 1 is Spellcasting and nothing else — the SRD gives a sorcerer no
       // level-1 feature beyond its spells, and Innate Sorcery (also level 1)
       // waits for its own change rather than being guessed at now.
-      2: ['font-of-magic', 'metamagic-quickened'],
+      2: ['font-of-magic', 'metamagic-quickened', 'metamagic-heightened'],
       // Draconic Sorcery, the SRD's only sorcerer subclass. Scales for armour
       // and a hit point a level, which is what makes a d6 caster survivable
       // enough to spend its points instead of hiding.

@@ -579,6 +579,19 @@ export interface GameState {
   /** Index into initiativeOrder of whose turn it is. */
   turnIndex: number;
   winner: TeamId | null;
+  /**
+   * Metamagic bending the cast that is resolving RIGHT NOW.
+   *
+   * A spell's `cast` function is handed a state and a caster and rolls its own
+   * saves through the shared `savingThrow`; there is no way to pass a modifier
+   * down through seventy spell implementations without changing all of them.
+   * So the modifier waits here, set immediately before `cast` and cleared
+   * immediately after, and `savingThrow` reads it.
+   *
+   * Narrow on purpose: one target, one cast, and gone by the time the next
+   * action starts. It is state in the sense that a stack frame is state.
+   */
+  metamagicCast?: { casterId: Id; heightenedId?: Id };
 }
 
 /**
