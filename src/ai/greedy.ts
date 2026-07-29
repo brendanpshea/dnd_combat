@@ -554,6 +554,28 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const p = hitProb(spellAtkBonus, acOf(t), 'flat');
       return damageValue(p * avgDice('4d6'), t) + p * 2 - slotCost; // rider bonus
     }
+    /**
+     * Ray of Sickness: a spell attack for (2+slot)d8 poison, then a Con save or
+     * Poisoned.
+     *
+     * Unscored until the sorcerer arrived, because the only way to reach it
+     * before was a tiefling's innate casting or a wizard's `learnableExtra` —
+     * both rare enough that nobody noticed the AI holding it. It is on the
+     * sorcerer's list outright, so it needs a price.
+     *
+     * Poisoned is disadvantage on attacks, which is a fraction of the target's
+     * output rather than a flat number — `denialValue` already knows how to
+     * price that, so the rider costs no new currency.
+     */
+    case 'ray-of-sickness': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const hit = hitProb(spellAtkBonus, acOf(t), 'flat');
+      const dmg = damageValue(hit * avgDice(`${2 + a.slotLevel}d8`), t);
+      // The rider only lands if the ray does, and only if the save fails.
+      const failProb = hit * saveFailProb(state, t, 'con', dc);
+      // Disadvantage is worth roughly a quarter of what it is rolling for.
+      return dmg + denialValue(state, t, failProb * 0.25, 2) - slotCost;
+    }
     case 'scorching-ray': {
       let v = 0;
       for (const tg of a.targets) {

@@ -59,6 +59,8 @@ export function makeCombatant(over: Partial<Combatant> & { team: TeamId; positio
       movementUsed: 0, movementMax: 30, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
       colossusUsed: false,
+      leveledSpellCast: false,
+      quickenedThisTurn: false,
     },
     alive: true,
     ...defined(over),

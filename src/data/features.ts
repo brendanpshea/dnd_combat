@@ -1385,6 +1385,73 @@ export const FEATURES: Record<Id, FeatureData> = {
     uses: { count: 1, per: 'longRest' },
   },
 
+  // --- sorcerer ---------------------------------------------------------------
+  /**
+   * Font of Magic: the sorcery-point pool itself.
+   *
+   * `passive` with a pool and no `apply` — there is nothing to press. The pool
+   * IS the feature, and everything that spends it (currently one Metamagic
+   * option) reads it by id. `count: 'level'` is the SRD's own table: a
+   * 5th-level sorcerer has five points.
+   *
+   * `longRest`, so a sorcerer is the second class in the game whose budget is
+   * the DAY rather than the fight. That is the design of the class and it is
+   * also what makes the arena's two-fights-a-day shape mean something for it:
+   * points spent winning the morning are points not available at lunch, and
+   * the short rest does not give them back.
+   *
+   * Deliberately NOT convertible to spell slots yet. The SRD's exchange rate is
+   * the sorcerer's most powerful lever and the one most likely to distort a
+   * measurement, and it is a separate decision from Metamagic — this ships the
+   * pool and one thing to spend it on, so the next measurement has a baseline.
+   */
+  'font-of-magic': {
+    id: 'font-of-magic', name: 'Font of Magic', trigger: 'passive',
+    uses: { count: 'level', per: 'longRest' },
+  },
+  /**
+   * Metamagic (Quickened Spell).
+   *
+   * A marker, not a button: holding this feature is what makes
+   * `metamagic: 'quickened'` a legal field on a cast. The rule lives in
+   * engine/rules/metamagic.ts because it changes the timing of an action, which
+   * is engine business, not a `FeatureData.apply` hook — an `apply` runs on its
+   * own and cannot reach inside somebody else's cast.
+   *
+   * One option rather than the SRD's two, on purpose: Quickened is the one
+   * whose value the existing scorer can already read (a second spell is worth
+   * what that spell is worth). Empowered and Heightened both need a price for
+   * something nothing in this codebase currently computes, and inventing one
+   * before it is measured is how the last six modifiers got mispriced.
+   */
+  'metamagic-quickened': {
+    id: 'metamagic-quickened', name: 'Metamagic: Quickened Spell', trigger: 'passive',
+  },
+  /**
+   * Draconic Resilience (Draconic Sorcery, level 3): scales instead of armour,
+   * and a hit point per level.
+   *
+   * Passive and hookless — the AC lives in `acOf` and the hit points in the
+   * builder, which are the two places that could act on it. What it does for
+   * the class is stop the d6 caster from being the thing every monster runs at
+   * first: 10 + Dex + Cha at level 8 is AC 17, which is plate.
+   */
+  'draconic-resilience': {
+    id: 'draconic-resilience', name: 'Draconic Resilience', trigger: 'passive',
+  },
+  /**
+   * Draconic Spells (level 3 and 5): always prepared, off the sorcerer's list.
+   *
+   * Of the SRD's eight, this game has two — Command at 3 and Fear at 5. Alter
+   * Self, Chromatic Orb, Dragon's Breath, Fly, Arcane Eye and Charm Monster
+   * are all unimplemented, and inventing them to fill the table out would be
+   * four new spells hiding inside a subclass change. Fear is on the sorcerer's
+   * own list anyway, so what this actually buys is Command four levels early.
+   */
+  'draconic-spells': {
+    id: 'draconic-spells', name: 'Draconic Spells', trigger: 'passive',
+  },
+
   // --- monk -----------------------------------------------------------------
   /**
    * Martial Arts: the monk fights with its hands, on Dexterity, and gets a

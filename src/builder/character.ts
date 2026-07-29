@@ -171,6 +171,19 @@ function fiendSpells(level: number): Id[] {
   return out;
 }
 
+/**
+ * Draconic Spells (Draconic Sorcery), always prepared and never counted against
+ * the sorcerer's prepared list — the same SRD clause the Fiend patron uses.
+ */
+function draconicSpells(level: number): Id[] {
+  const out: Id[] = [];
+  // The SRD's table is Alter Self / Chromatic Orb / Command / Dragon's Breath
+  // at 3 and Fear / Fly at 5. Two of those six exist here; see the feature.
+  if (level >= 3) out.push('command');
+  if (level >= 5) out.push('fear');
+  return out;
+}
+
 export function buildCharacter(opts: BuildOptions): Combatant {
   const cls = CLASSES[opts.classId];
   if (!cls) throw new Error(`Unknown class: ${opts.classId}`);
@@ -225,8 +238,16 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const heldGrants = [opts.equipped?.mainHand, opts.equipped?.offHand]
     .map((id) => (id && id !== 'shield' ? WEAPONS[id]?.grants : undefined))
     .filter((g): g is NonNullable<typeof g> => g !== undefined);
+  // Draconic Resilience: +3 at level 3 and +1 per sorcerer level after, which
+  // is 3 + (level - 3). It matters more than it reads — a d6 caster is the
+  // squishiest thing in the party, and at level 8 this is a sixth of its
+  // hit points.
+  const draconicHp = Object.entries(cls.featuresByLevel)
+    .some(([lvl, ids]) => Number(lvl) <= level && ids.includes('draconic-resilience'))
+    ? 3 + (level - 3)
+    : 0;
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level +
-    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0);
+    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp;
 
   const grants = resolveChoiceGrants(cls.choices, level, opts.choices);
   const speciesGrants = resolveChoiceGrants(species.choices, level, opts.choices);
@@ -338,6 +359,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     // the Book of Shadows' cantrips and ritual. Folded in here rather than into
     // the class table so they cannot be trimmed by the prepared-spell cap.
     ...(featureIds.includes('fiend-spells') ? fiendSpells(level) : []),
+    ...(featureIds.includes('draconic-spells') ? draconicSpells(level) : []),
     ...(featureIds.includes('pact-of-the-tome')
       ? ['vicious-mockery', 'sacred-flame', 'ray-of-frost', 'find-familiar'] : []),
   ])];
@@ -427,6 +449,8 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       movementUsed: 0, movementMax: 30, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
       colossusUsed: false,
+      leveledSpellCast: false,
+      quickenedThisTurn: false,
     },
     alive: true,
   };

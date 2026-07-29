@@ -17,18 +17,18 @@ see `src/data/spells.ts`.
 
 | Spell | ID | Cast | Aimed at | Conc. | Upcast | Notes | Known by |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 🧪 Acid Splash | `acid-splash` | action | 2×2 burst within 60 ft | — | — | — | Wizard 1, Aboleth |
+| 🧪 Acid Splash | `acid-splash` | action | 2×2 burst within 60 ft | — | — | — | Wizard 1, Sorcerer 1, Aboleth |
 | 🟣 Eldritch Blast | `eldritch-blast` | action | 2 enemys within 120 ft | — | — | — | Warlock 1 |
-| 🔥 Fire Bolt | `fire-bolt` | action | 1 enemy within 120 ft | — | — | — | Wizard 1, Kobold Emberling, Oni, Mage, Azer Forgecaller |
+| 🔥 Fire Bolt | `fire-bolt` | action | 1 enemy within 120 ft | — | — | — | Wizard 1, Sorcerer 1, Kobold Emberling, Oni, Mage, Azer Forgecaller |
 | 🔮 Guidance | `guidance` | action | self (offered when it would reach someone) | yes | — | out of combat | Cleric 1, Druid 1 |
-| 🌫️ Minor Illusion | `minor-illusion` | action | an empty cell within 30 ft | — | — | — | Wizard 1, Warlock 1, Bard 1, Gnome |
-| ☠️ Poison Spray | `poison-spray` | action | 1 enemy within 30 ft | — | — | — | Wizard 1, Warlock 1, Druid 1, Abyssal Tiefling, Skeleton Bonechanter, Night Hag, Ettercap Snarecaller, Druid |
-| ❄️ Ray of Frost | `ray-of-frost` | action | 1 enemy within 60 ft | — | — | — | Wizard 1, Apprentice Mage |
+| 🌫️ Minor Illusion | `minor-illusion` | action | an empty cell within 30 ft | — | — | — | Wizard 1, Warlock 1, Sorcerer 1, Bard 1, Gnome |
+| ☠️ Poison Spray | `poison-spray` | action | 1 enemy within 30 ft | — | — | — | Wizard 1, Warlock 1, Sorcerer 1, Druid 1, Abyssal Tiefling, Skeleton Bonechanter, Night Hag, Ettercap Snarecaller, Druid |
+| ❄️ Ray of Frost | `ray-of-frost` | action | 1 enemy within 60 ft | — | — | — | Wizard 1, Sorcerer 1, Apprentice Mage |
 | 🔆 Sacred Flame | `sacred-flame` | action | 1 enemy within 60 ft | — | — | — | Cleric 1, Priest Acolyte, Cult Fanatic, Priest |
 | 🌳 Shillelagh | `shillelagh` | bonus | self (castable any time) | — | — | — | Druid 1 |
-| ⚡ Shocking Grasp | `shocking-grasp` | action | 1 enemy you can touch | — | — | — | Wizard 1 |
+| ⚡ Shocking Grasp | `shocking-grasp` | action | 1 enemy you can touch | — | — | — | Wizard 1, Sorcerer 1 |
 | ✨ Starry Wisp | `starry-wisp` | action | 1 enemy within 60 ft | — | — | — | Bard 1, Druid 1, Gnoll Packcaller, Dryad |
-| 🗡️ True Strike | `true-strike` | action | the weapon in hand (its own reach) | — | — | — | Wizard 1, Warlock 1, Bard 1, Wood Elf |
+| 🗡️ True Strike | `true-strike` | action | the weapon in hand (its own reach) | — | — | — | Wizard 1, Warlock 1, Sorcerer 1, Bard 1, Wood Elf |
 | 🗯️ Vicious Mockery | `vicious-mockery` | action | 1 enemy within 60 ft | — | — | — | Bard 1, Goblin Hexer |
 
 ## Level 1
@@ -39,55 +39,55 @@ see `src/data/spells.ts`.
 | 💀 Bane | `bane` | action | 3 enemys within 30 ft | yes | — | — | Cleric 1, Warlock 1, Bard 1, Goblin Hexer |
 | 🙏 Bless | `bless` | action | 3 allys within 30 ft | yes | — | — | Cleric 1, Paladin 1, Priest Acolyte, Cult Fanatic, Priest |
 | 🐲 Breath Weapon | `breath-weapon` | action | 15 ft cone | — | — | — | Dragonborn |
-| 🖐️ Burning Hands | `burning-hands` | action | 15 ft cone | — | yes | — | Wizard 1, Kobold Emberling |
-| 🌈 Color Spray | `color-spray` | action | 15 ft cone | — | — | — | Wizard 1, Bard 1, Apprentice Mage |
+| 🖐️ Burning Hands | `burning-hands` | action | 15 ft cone | — | yes | — | Wizard 1, Sorcerer 1, Kobold Emberling |
+| 🌈 Color Spray | `color-spray` | action | 15 ft cone | — | — | — | Wizard 1, Sorcerer 1, Bard 1, Apprentice Mage |
 | ❗ Command | `command` | action | 1 enemy within 60 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | — | — | — | Cleric 1, Bard 1, Paladin 1, Priest Acolyte, Cult Fanatic, Priest |
 | 💚 Cure Wounds | `cure-wounds` | action | 1 ally you can touch | — | yes | — | Cleric 1, Bard 1, Druid 1, Ranger 1, Paladin 1, Priest Acolyte, Priest, Dryad |
 | ⚡ Divine Smite | `divine-smite` | bonus | self (offered when it would reach someone) | — | — | — | — |
 | 🌿 Ensnaring Strike | `ensnaring-strike` | bonus | self (castable any time) | yes | — | — | Ranger 1 |
 | 🌱 Entangle | `entangle` | action | 5×5 burst within 90 ft | yes | — | — | Druid 1, Ettercap Snarecaller |
 | 🧚 Faerie Fire | `faerie-fire` | action | 2×2 burst within 60 ft | yes | — | — | Bard 1, Druid 1, Wood Elf, Gnoll Packcaller |
-| 💀 False Life | `false-life` | action | self (castable any time) | — | yes | — | Wizard 1, Skeleton Bonechanter |
+| 💀 False Life | `false-life` | action | self (castable any time) | — | yes | — | Wizard 1, Sorcerer 1, Skeleton Bonechanter |
 | 🦉 Find Familiar | `find-familiar` | action | self (offered when it would reach someone) | — | — | ritual, out of combat | Wizard 1, Druid 2 |
 | 🌟 Guiding Bolt | `guiding-bolt` | action | 1 enemy within 120 ft | — | yes | — | Cleric 2, Priest |
 | 🩹 Healing Word | `healing-word` | bonus | 1 ally within 60 ft | — | yes | — | Cleric 1, Bard 1, Druid 1, Priest Acolyte, Priest |
 | 👁️‍🗨️ Hex | `hex` | bonus | 1 enemy within 90 ft | yes | — | — | Warlock 1 |
 | 🎯 Hunter's Mark | `hunters-mark` | bonus | 1 enemy within 90 ft | yes | — | — | Ranger 1 |
 | 👻 Inflict Wounds | `inflict-wounds` | action | 1 enemy you can touch | — | yes | — | Cleric 1, Skeleton Bonechanter |
-| 🛡️ Mage Armor | `mage-armor` | action | self (offered when it would reach someone) | — | — | — | Wizard 1 |
-| ✨ Magic Missile | `magic-missile` | action | 3 enemys within 120 ft | — | — | — | Wizard 1, Oni, Night Hag, Mage |
+| 🛡️ Mage Armor | `mage-armor` | action | self (offered when it would reach someone) | — | — | — | Wizard 1, Sorcerer 1 |
+| ✨ Magic Missile | `magic-missile` | action | 3 enemys within 120 ft | — | — | — | Wizard 1, Sorcerer 1, Oni, Night Hag, Mage |
 | ✝️ Protection from Evil and Good | `protection-from-evil-and-good` | action | 1 ally you can touch | yes | — | — | Cleric 1, Warlock 1, Druid 1, Paladin 2 |
-| 🤢 Ray of Sickness | `ray-of-sickness` | action | 1 enemy within 60 ft | — | yes | — | Wizard (scroll), Abyssal Tiefling, Night Hag, Aboleth |
+| 🤢 Ray of Sickness | `ray-of-sickness` | action | 1 enemy within 60 ft | — | yes | — | Wizard (scroll), Sorcerer 1, Abyssal Tiefling, Night Hag, Aboleth |
 | ⛪ Sanctuary | `sanctuary` | bonus | 1 ally within 30 ft | — | — | — | Cleric 1 |
 | 🔥 Searing Smite | `searing-smite` | bonus | self (offered when it would reach someone) | — | — | — | Paladin 2 |
-| 🛡️ Shield | `shield` | reaction | self (offered when it would reach someone) | — | — | — | Wizard 1, Mage |
+| 🛡️ Shield | `shield` | reaction | self (offered when it would reach someone) | — | — | — | Wizard 1, Sorcerer 1, Mage |
 | 🛡️ Shield of Faith | `shield-of-faith` | bonus | 1 ally within 60 ft | yes | — | — | Cleric 1, Paladin 2 |
-| 😴 Sleep | `sleep` | action | 2×2 burst within 60 ft | yes | — | — | Wizard 1, Bard 1, Night Hag |
-| 💥 Thunderwave | `thunderwave` | action | 15 ft cube (adjacent) | — | yes | — | Wizard 2, Bard 1, Druid 1, Gnoll Packcaller |
+| 😴 Sleep | `sleep` | action | 2×2 burst within 60 ft | yes | — | — | Wizard 1, Sorcerer 1, Bard 1, Night Hag |
+| 💥 Thunderwave | `thunderwave` | action | 15 ft cube (adjacent) | — | yes | — | Wizard 2, Sorcerer 1, Bard 1, Druid 1, Gnoll Packcaller |
 
 ## Level 2
 
 | Spell | ID | Cast | Aimed at | Conc. | Upcast | Notes | Known by |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 💗 Aid | `aid` | action | 3 allys within 30 ft | — | yes | — | Cleric 3, Bard 3, Druid 3, Ranger 5, Paladin 5 |
-| 🙈 Blindness | `blindness` | action | 1 enemy within 30 ft | — | — | — | Cleric 3, Wizard 3, Bard 3, Aboleth |
-| 🔥 Flaming Sphere | `flaming-sphere` | action | an empty cell within 60 ft | yes | — | — | Wizard 3, Druid 3, Azer Forgecaller |
+| 🙈 Blindness | `blindness` | action | 1 enemy within 30 ft | — | — | — | Cleric 3, Wizard 3, Sorcerer 3, Bard 3, Aboleth |
+| 🔥 Flaming Sphere | `flaming-sphere` | action | an empty cell within 60 ft | yes | — | — | Wizard 3, Sorcerer 3, Druid 3, Azer Forgecaller |
 | 🔥 Heat Metal | `heat-metal` | action | 1 enemy within 60 ft | yes | yes | — | Druid 3, Azer Forgecaller |
-| ⛓️ Hold Person | `hold-person` | action | 1 enemy within 60 ft | yes | — | — | Cleric 3, Warlock 3, Bard 3, Druid 3, Cult Fanatic, Night Hag, Aboleth |
-| 👤 Invisibility | `invisibility` | action | 1 ally you can touch | yes | — | — | Wizard 3, Warlock 3, Bard 3, Night Hag |
+| ⛓️ Hold Person | `hold-person` | action | 1 enemy within 60 ft | yes | — | — | Cleric 3, Warlock 3, Sorcerer 3, Bard 3, Druid 3, Cult Fanatic, Night Hag, Aboleth |
+| 👤 Invisibility | `invisibility` | action | 1 ally you can touch | yes | — | — | Wizard 3, Warlock 3, Sorcerer 3, Bard 3, Night Hag |
 | 💫 Lesser Restoration | `lesser-restoration` | bonus | 1 ally you can touch | — | — | — | Cleric 3, Bard 3, Druid 3, Ranger 5, Paladin 5 |
-| 👥 Mirror Image | `mirror-image` | action | self (offered when it would reach someone) | — | — | — | Wizard 3, Warlock 3, Bard 3 |
-| 👣 Misty Step | `misty-step` | bonus | an empty cell within 30 ft | — | — | — | Wizard 3, Warlock 3, Mage |
+| 👥 Mirror Image | `mirror-image` | action | self (offered when it would reach someone) | — | — | — | Wizard 3, Warlock 3, Sorcerer 3, Bard 3 |
+| 👣 Misty Step | `misty-step` | bonus | an empty cell within 30 ft | — | — | — | Wizard 3, Warlock 3, Sorcerer 3, Mage |
 | 🌙 Moonbeam | `moonbeam` | action | 2×2 burst within 120 ft | yes | yes | — | Druid 3, Druid |
 | 🌫️ Pass without Trace | `pass-without-trace` | action | self (offered when it would reach someone) | yes | — | out of combat | Druid 3 |
-| ☄️ Scorching Ray | `scorching-ray` | action | 3 enemys within 120 ft | — | — | — | Wizard 3 |
-| 💥 Shatter | `shatter` | action | 2×2 burst within 60 ft | — | yes | — | Wizard 3, Bard 3 |
+| ☄️ Scorching Ray | `scorching-ray` | action | 3 enemys within 120 ft | — | — | — | Wizard 3, Sorcerer 3 |
+| 💥 Shatter | `shatter` | action | 2×2 burst within 60 ft | — | yes | — | Wizard 3, Sorcerer 3, Bard 3 |
 | 🌟 Shining Smite | `shining-smite` | bonus | self (offered when it would reach someone) | yes | — | — | Paladin 5 |
 | 🔇 Silence | `silence` | action | 2×2 burst within 120 ft | yes | — | — | Cleric 3, Bard 3 |
 | 🔨 Spiritual Weapon | `spiritual-weapon` | bonus | an empty cell within 60 ft | yes | — | — | Cleric 3, Bard 6, Cult Fanatic, Priest |
-| 💭 Suggestion | `suggestion` | action | 1 enemy within 30 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | yes | — | — | Wizard 3, Warlock 3, Bard 3, Cult Fanatic |
+| 💭 Suggestion | `suggestion` | action | 1 enemy within 30 ft (humanoid/fey/fiend/giant/dragon/monstrosity/aberration/elemental only) | yes | — | — | Wizard 3, Warlock 3, Sorcerer 3, Bard 3, Cult Fanatic |
 | 🔗 Warding Bond | `warding-bond` | action | 1 ally you can touch | — | — | — | Cleric 3, Paladin 5 |
-| 🕸️ Web | `web` | action | 5×5 burst within 60 ft | yes | — | — | Wizard 3, Oni, Dryad, Ettercap Snarecaller, Mage |
+| 🕸️ Web | `web` | action | 5×5 burst within 60 ft | yes | — | — | Wizard 3, Sorcerer 3, Oni, Dryad, Ettercap Snarecaller, Mage |
 
 ## Level 3
 
@@ -96,28 +96,28 @@ see `src/data/spells.ts`.
 | ☠️ Bestow Curse | `bestow-curse` | action | 1 enemy you can touch | yes | — | — | Cleric 5, Bard 5 |
 | ⚡ Call Lightning | `call-lightning` | action | 2×2 burst within 120 ft | yes | yes | — | Druid 5, Druid |
 | 🐺 Conjure Animals | `conjure-animals` | action | an empty cell within 60 ft | yes | yes | — | Druid 5 |
-| 🚫 Counterspell | `counterspell` | reaction | self (offered when it would reach someone) | — | — | — | Wizard 5, Warlock 5 |
-| 🚫 Dispel Magic | `dispel-magic` | action | 1 creature within 120 ft | — | — | — | Cleric 5, Wizard 5, Warlock 5, Bard 5, Druid 5 |
-| 😱 Fear | `fear` | action | 15 ft cone | yes | — | — | Wizard 5, Warlock 5, Bard 5, Aboleth, Mage |
-| 💥 Fireball | `fireball` | action | 5×5 burst within 150 ft | — | yes | — | Wizard 5, Bard 6, Oni, Mage |
-| 🐇 Haste | `haste` | action | 1 ally within 30 ft | yes | — | — | Wizard 5 |
-| ⚡ Lightning Bolt | `lightning-bolt` | action | line to the board edge | — | yes | — | Wizard 5, Mage |
+| 🚫 Counterspell | `counterspell` | reaction | self (offered when it would reach someone) | — | — | — | Wizard 5, Warlock 5, Sorcerer 5 |
+| 🚫 Dispel Magic | `dispel-magic` | action | 1 creature within 120 ft | — | — | — | Cleric 5, Wizard 5, Warlock 5, Sorcerer 5, Bard 5, Druid 5 |
+| 😱 Fear | `fear` | action | 15 ft cone | yes | — | — | Wizard 5, Warlock 5, Sorcerer 5, Bard 5, Aboleth, Mage |
+| 💥 Fireball | `fireball` | action | 5×5 burst within 150 ft | — | yes | — | Wizard 5, Sorcerer 5, Bard 6, Oni, Mage |
+| 🐇 Haste | `haste` | action | 1 ally within 30 ft | yes | — | — | Wizard 5, Sorcerer 5 |
+| ⚡ Lightning Bolt | `lightning-bolt` | action | line to the board edge | — | yes | — | Wizard 5, Sorcerer 5, Mage |
 | 💞 Mass Healing Word | `mass-healing-word` | bonus | 6 allys within 60 ft | — | — | — | Cleric 5, Bard 5 |
-| 🔥 Protection from Energy | `protection-from-energy` | action | 1 ally you can touch | yes | — | — | Cleric 5, Druid 5 |
+| 🔥 Protection from Energy | `protection-from-energy` | action | 1 ally you can touch | yes | — | — | Cleric 5, Sorcerer 5, Druid 5 |
 | 👼 Spirit Guardians | `spiritual-guardians` | action | self (offered when it would reach someone) | yes | yes | — | Cleric 5, Priest |
 
 ## Level 4
 
 | Spell | ID | Cast | Aimed at | Conc. | Upcast | Notes | Known by |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 🌀 Banishment | `banishment` | action | 1 enemy within 30 ft | yes | — | — | Cleric 7, Wizard 7, Warlock 7 |
-| 🥀 Blight | `blight` | action | 1 enemy within 30 ft | — | yes | — | Wizard 7, Warlock 7, Druid 7 |
-| 😵‍💫 Confusion | `confusion` | action | 2×2 burst within 90 ft | yes | — | — | Wizard 7, Bard 7, Druid 7 |
+| 🌀 Banishment | `banishment` | action | 1 enemy within 30 ft | yes | — | — | Cleric 7, Wizard 7, Warlock 7, Sorcerer 7 |
+| 🥀 Blight | `blight` | action | 1 enemy within 30 ft | — | yes | — | Wizard 7, Warlock 7, Sorcerer 7, Druid 7 |
+| 😵‍💫 Confusion | `confusion` | action | 2×2 burst within 90 ft | yes | — | — | Wizard 7, Sorcerer 7, Bard 7, Druid 7 |
 | 🕯️ Death Ward | `death-ward` | action | 1 ally you can touch | — | — | — | Cleric 7 |
-| 🚪 Dimension Door | `dimension-door` | action | an empty cell within 500 ft | — | — | — | Wizard 7, Warlock 7, Bard 7 |
+| 🚪 Dimension Door | `dimension-door` | action | an empty cell within 500 ft | — | — | — | Wizard 7, Warlock 7, Sorcerer 7, Bard 7 |
 | 🌀 Freedom of Movement | `freedom-of-movement` | action | 1 ally you can touch | — | — | — | Cleric 7, Bard 7, Druid 7 |
-| 🫥 Greater Invisibility | `greater-invisibility` | action | 1 ally you can touch | yes | — | — | Wizard 7, Bard 7 |
-| 🧊 Ice Storm | `ice-storm` | action | 5×5 burst within 300 ft | — | yes | — | Wizard 7, Druid 7 |
+| 🫥 Greater Invisibility | `greater-invisibility` | action | 1 ally you can touch | yes | — | — | Wizard 7, Sorcerer 7, Bard 7 |
+| 🧊 Ice Storm | `ice-storm` | action | 5×5 burst within 300 ft | — | yes | — | Wizard 7, Sorcerer 7, Druid 7 |
 | 👁️ Phantasmal Killer | `phantasmal-killer` | action | 1 enemy within 120 ft | yes | — | — | Wizard 7, Bard 7 |
-| 🦍 Polymorph | `polymorph` | action | 1 ally within 60 ft | yes | — | — | Wizard 7, Druid 7 |
-| 🔥 Wall of Fire | `wall-of-fire` | action | 2×2 burst within 120 ft | yes | yes | — | Wizard 7, Druid 7 |
+| 🦍 Polymorph | `polymorph` | action | 1 ally within 60 ft | yes | — | — | Wizard 7, Sorcerer 7, Druid 7 |
+| 🔥 Wall of Fire | `wall-of-fire` | action | 2×2 burst within 120 ft | yes | yes | — | Wizard 7, Sorcerer 7, Druid 7 |

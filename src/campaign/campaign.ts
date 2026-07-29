@@ -765,7 +765,7 @@ const SPECIES_PORTRAIT: Partial<Record<Id, { martial: Id; caster: Id; skirmisher
 };
 
 /** Classes whose look is robes and spellbooks rather than mail and axes. */
-const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric', 'bard', 'druid', 'warlock']);
+const CASTER_CLASSES = new Set<Id>(['wizard', 'cleric', 'bard', 'druid', 'warlock', 'sorcerer']);
 /** Light, hooded, knife-in-the-dark classes — the third look, where it's drawn. */
 const SKIRMISHER_CLASSES = new Set<Id>(['rogue', 'monk']);
 
@@ -784,6 +784,10 @@ const CLASS_PORTRAIT: Partial<Record<Id, Id>> = {
   // tiefling until somebody draws one, which is a wrong picture rather than a
   // missing one — and a missing one renders as a question mark.
   warlock: 'tiefling-warlock',
+  // The dragonborn sorcerer is the only sorcerer art there is, so a human one
+  // looks dragonborn — the same stand-in call as the warlock and the druid,
+  // and for the same reason: a wrong picture beats a question mark.
+  sorcerer: 'dragonborn-sorcerer',
   // The berserker art is a bare-armed axe-carrier — which is exactly what a
   // barbarian with no armour is, so no new picture was needed. An orc or dwarf
   // barbarian still gets its own species art through SPECIES_PORTRAIT above.
