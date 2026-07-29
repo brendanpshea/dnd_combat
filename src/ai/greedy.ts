@@ -124,6 +124,28 @@ function danger(state: GameState, ally: Combatant): number {
 
 /** The giant ape's hit points — what Polymorph hands an ally. */
 const APE_HP = MONSTERS['giant-ape']?.hp ?? 168;
+/**
+ * And what the ape DOES with a round, on the same scale `outputPerRound` uses.
+ *
+ * Two attacks of 3d10 + 6, discounted for hitting, which is about 27 — better
+ * than most of the party. Polymorph was priced as a rescue and nothing else,
+ * so this half of the spell was worth exactly zero to the scorer.
+ */
+/**
+ * How long the ape is expected to matter.
+ *
+ * Polymorph runs an hour, so the fight is what ends it, not the clock. Three
+ * rounds is the same horizon `denialValue` and the ward spells use — long
+ * enough that the body means something, short enough that it cannot outbid
+ * ending the fight outright.
+ */
+const POLYMORPH_ROUNDS = 3;
+const APE_OUTPUT = (() => {
+  const ape = MONSTERS['giant-ape'];
+  const fist = ape ? WEAPONS[ape.weaponIds?.[0] ?? ''] : undefined;
+  if (!ape || !fist) return 27;
+  return (avgDice(fist.damage) + abilityMod(ape.abilities.str)) * (ape.attacksPerAction ?? 1) * 0.6;
+})();
 
 /**
  * Roughly what a creature does with a round, in hit points.
@@ -1302,10 +1324,44 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       if (!t.alive || isDown(t) || t.wildShape) return 0;
       const hurt = 1 - t.hp / Math.max(1, t.maxHp);
       if (hurt < 0.4) return 0;                 // still healthy: not worth the slot
-      // A whole second health bar, in the currency damage is priced in. Capped
-      // at the ally's own maximum rather than the ape's 168: the pool is only
-      // worth what the fight would actually have taken off them.
-      return rescueValue(Math.min(APE_HP, t.maxHp), state, t) - slotCost;
+      /**
+       * TWO things, and the first version priced only one of them.
+       *
+       * The body. `revertShape` puts the original back "with the hit points it
+       * had", so the ape's 168 are a whole extra health bar on top of the
+       * ally's own — not a replacement for it. Capping the pool at the ally's
+       * OWN maximum was therefore wrong twice over: wrong about the rule, and
+       * wrong about the quantity (a level-8 fighter's 76). What actually bounds
+       * it is how much the room can still deal, so that is the cap.
+       *
+       * The ape. Two attacks of 3d10 + 6 is about 27 a round on this scale,
+       * better than most of the party — and it was worth zero here. Polymorph
+       * is not a ward, it is a ward that also hits people, and the second half
+       * is most of why anyone casts it.
+       *
+       * Measured before this: on a board where a Fireball catches three orcs,
+       * Polymorph scored 49 on a half-dead fighter and 64 on a nearly-dead one
+       * against the Fireball's 69 — so it lost at EVERY hit-point level and was
+       * cast 11 times in 20,578 arena fights.
+       */
+      const incoming = incomingPerRound(state, t);
+      const soak = Math.min(APE_HP, incoming * POLYMORPH_ROUNDS);
+      /**
+       * What the ally would have contributed WITHOUT the spell — which is
+       * nothing at all if the next round takes them off the board.
+       *
+       * This is the term that makes Polymorph a rescue rather than a buff. On a
+       * fighter one hit from dropping, the ape is not worth "27 a round minus
+       * what the fighter was already doing"; it is worth the whole 27, because
+       * the alternative is a body on the floor. Pricing it as the difference in
+       * output — which is what a plain uplift does — quietly assumes the ally
+       * lives either way, and that assumption is exactly wrong in the situation
+       * the spell exists for.
+       */
+      const wouldSurvive = t.hp > incoming;
+      const without = wouldSurvive ? outputPerRound(t) : 0;
+      const gain = Math.max(0, APE_OUTPUT - without) * POLYMORPH_ROUNDS;
+      return rescueValue(soak, state, t) + gain - slotCost;
     }
     /**
      * Conjure Animals: the pack lands where you put it, then hunts by itself.

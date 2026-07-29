@@ -37,9 +37,13 @@
 import {
   newCampaign, applyArenaVictory, buildCampaignParty, partyLevelOf, reviveParty, randomizeParty,
   LEVEL_XP, growSpellsForLevel, preparableSpells, preparedLimit, setPrepared,
+  SHOP_STOCK, itemPrice, buyItem, equipItem, equipBlocked, groupSkillCheck,
 } from '../src/campaign/campaign.js';
+import { ARMOR as ARMOR_TABLE } from '../src/data/armor.js';
 import { next } from '../src/engine/rng.js';
 import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/arena/run.js';
+import { ambushDc, canCreepIn, creepKey, surprisedTeam } from '../src/arena/ambush.js';
+import { parseMap } from '../src/data/maps.js';
 import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
 import { RUN_TARGET_XP } from '../src/arena/medal.js';
 import { Combat } from '../src/engine/combat.js';
@@ -54,7 +58,15 @@ import { ITEMS } from '../src/data/items.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
 import type { Id } from '../src/engine/types.js';
 
-const RUNS = Number(process.argv[2] ?? 40);
+/**
+ * The run count is POSITIONAL, and the second argv is not always it.
+ *
+ * `Number('--start-level')` is NaN, so invoking this with a flag first — which
+ * reads perfectly naturally — made every loop below run zero times and printed
+ * a full report of nothing, with "NaN runs" in one header as the only clue.
+ * The same shape as the `indexOf(flag) + 1` bug documented just underneath.
+ */
+const RUNS = Number.isFinite(Number(process.argv[2])) ? Number(process.argv[2]) : 40;
 /**
  * `argv.indexOf(flag) + 1` is 0 when the flag is absent, and argv[0] is the node
  * binary — a truthy string that `Number()` turns into NaN. The `|| default`
@@ -119,6 +131,26 @@ const VARIETY = flag('--variety', -1);
  */
 const RANDOM_PREP = process.argv.includes('--random-prep');
 /**
+ * Let the party SPEND its gold, and let it try to creep in.
+ *
+ * Both were listed at the top of this file as things the harness does not do,
+ * and both turned out to bias specific classes rather than everything evenly.
+ *
+ * The fighter starts in scale mail and, with no shopping, is still wearing it
+ * at level 8 while plate sits on a shelf -- four points of armour class missing
+ * from the class that measured as taking the most damage in the game. And
+ * surprise, which the arena has had since `ambush.ts`, is worth more to a rogue
+ * than to anyone: a free round with advantage is a free Sneak Attack. The rogue
+ * measured as the top damage dealer AND the worst finisher, which is exactly
+ * what you would expect from a class whose best round never happens.
+ *
+ * So the two classes that looked anomalous were the two this harness
+ * under-served. Off by default so old numbers stay comparable; on, the run is
+ * a closer model of a played campaign.
+ */
+const SHOPPING = process.argv.includes('--shop');
+const CREEPING = process.argv.includes('--creep');
+/**
  * Start runs at this level instead of at 1.
  *
  * Needed because the two things worth measuring pull against each other. A
@@ -154,17 +186,32 @@ interface ClassTally {
   runsIn: number; runsFinished: number;
 }
 const byClass = new Map<Id, ClassTally>();
-const tally = (id: Id): ClassTally => {
-  let t = byClass.get(id);
+/**
+ * The same tally again, keyed by SPECIES.
+ *
+ * Species used to be reported as one column — the share of runs containing it
+ * that finished — which is a party statistic wearing a species label. Four
+ * heroes are in every run, so a species' number is three quarters somebody
+ * else's, and with a dozen species over a few hundred runs almost every row
+ * lands on the overall average. It said nothing.
+ *
+ * Damage, damage taken and downs are per FIGHTER, so they say something a party
+ * average cannot drown: a dwarf takes fewer hit points to the face than an elf
+ * because of what a dwarf is, whoever it is standing next to.
+ */
+const bySpecies = new Map<Id, ClassTally>();
+const tallyIn = (m: Map<Id, ClassTally>, id: Id): ClassTally => {
+  let t = m.get(id);
   if (!t) {
     t = { fights: 0, damage: 0, taken: 0, healing: 0, kills: 0, downs: 0, deaths: 0, casts: 0, runsIn: 0, runsFinished: 0 };
-    byClass.set(id, t);
+    m.set(id, t);
   }
   return t;
 };
+const tally = (id: Id): ClassTally => tallyIn(byClass, id);
 
 /** casts[spellId] = { total, byClass } */
-const spellCasts = new Map<Id, { total: number; byClass: Map<Id, number> }>();
+const spellCasts = new Map<Id, { total: number; enemy: number; byClass: Map<Id, number> }>();
 /**
  * Metamagic use, by option and by the spell it bent.
  *
@@ -185,6 +232,9 @@ const itemUses = new Map<Id, number>();
  * Image does), so it cannot be separated here and is simply not claimed.
  */
 let counterspells = 0;
+/** Creep attempts and how many bought a surprise round. */
+let creeps = 0;
+let creepWins = 0;
 const speciesRuns = new Map<Id, { runs: number; finished: number }>();
 
 /**
@@ -196,6 +246,64 @@ const speciesRuns = new Map<Id, { runs: number; finished: number }>();
  * would happily prepare a spell the character cannot cast and the whole
  * measurement would be of something the game cannot produce.
  */
+/**
+ * Spend the purse on the best armour each hero can actually wear.
+ *
+ * A deliberately narrow shopper. It buys ARMOUR and nothing else, because
+ * armour is the one slot where the gap between what the party starts in and
+ * what the shop sells is enormous and monotonic -- scale mail at 14 against
+ * plate at 18, with no trade-off to model beyond the price. Weapons, trinkets
+ * and potions all involve choices this has no business guessing at, and a
+ * shopper that guesses badly would replace one bias with another.
+ *
+ * Cheapest-first within an upgrade, so a party does not blow the entire purse
+ * kitting one hero out in plate while the other three stay in leather.
+ */
+function shopForArmor(c: CampaignState): void {
+  const wearable = SHOP_STOCK
+    .filter((id) => ARMOR_TABLE[id] !== undefined)
+    .map((id) => ({ id, armor: ARMOR_TABLE[id]!, price: itemPrice(id) ?? Infinity }))
+    .sort((a, b) => a.price - b.price);
+  /**
+   * Can this hero actually wear it?
+   *
+   * NOT `equipBlocked`, which checks the inventory before the proficiency and
+   * so answers "not in inventory" for a wizard eyeing plate -- indistinguishable
+   * from a fighter who simply has not bought it yet. Asking that question of a
+   * thing nobody owns would have sold plate to the whole party.
+   *
+   * Strength minimums matter here too: plate and splint want 15, and the stat
+   * array only reaches that for a class with Strength first in its priority.
+   */
+  const party = buildCampaignParty(c);
+  const canWear = (idx: number, id: Id): boolean => {
+    const ch = c.characters[idx];
+    const built = party[idx];
+    const a = ARMOR_TABLE[id];
+    if (!ch || !built || !a) return false;
+    if (!CLASSES[ch.classId]!.armorProfs.includes(a.category)) return false;
+    if (a.strMin !== undefined && built.abilities.str < a.strMin) return false;
+    return true;
+  };
+  // One upgrade per pass, cheapest first, so the purse spreads across the party
+  // instead of putting one hero in plate while three stay in leather.
+  let bought = true;
+  let guard = 0;
+  while (bought && guard++ < 40) {
+    bought = false;
+    for (const [idx, ch] of c.characters.entries()) {
+      const wornBase = ch.equipped.armor ? (ARMOR_TABLE[ch.equipped.armor]?.base ?? 10) : 10;
+      const upgrade = wearable.find((w) =>
+        w.armor.base > wornBase && w.price <= c.gold && canWear(idx, w.id));
+      if (!upgrade) continue;
+      if (buyItem(c, idx, upgrade.id) && equipItem(c, idx, upgrade.id, 'armor')) {
+        bought = true;
+        break;
+      }
+    }
+  }
+}
+
 function randomizePrepared(c: CampaignState): void {
   c.characters.forEach((_ch, i) => {
     const pool = preparableSpells(c, i);
@@ -242,6 +350,30 @@ function playOne(seed: number, collect: boolean): Outcome {
     const half = halfOf(run);
     const level = dayLevelOf(run, partyLevelOf(c));
     const wave = buildWave(run.seed, level, run.wave, undefined, run.gate ?? 0, half);
+    // Shop between fights, which is when a player does it. Before the party is
+    // built, so the armour bought is the armour worn into this fight.
+    if (SHOPPING) shopForArmor(c);
+    /**
+     * Creep in, when there is cover to creep behind.
+     *
+     * Always attempted rather than judged, because the harness has no read on
+     * whether the gamble is worth it and inventing one would be measuring my
+     * guess instead of the mechanic. A failed creep surprises the PARTY, so
+     * this is not free — which is the design, and taking both ends of it is the
+     * honest way to measure it.
+     */
+    let surprised: 'team1' | 'team2' | undefined;
+    if (CREEPING) {
+      if (canCreepIn(parseMap(wave.map))) {
+        const dc = ambushDc(wave.encounter.members);
+        const group = groupSkillCheck(c, 'stealth', dc);
+        surprised = surprisedTeam({
+          key: creepKey(dayOf(run), half), door: run.gate ?? 0,
+          success: group.success, by: 0, total: 0, dc,
+        }, run.gate ?? 0);
+        if (collect) { creeps++; if (group.success) creepWins++; }
+      }
+    }
     const party = buildCampaignParty(c);
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: 6 }, String(i + 1)));
@@ -256,12 +388,25 @@ function playOne(seed: number, collect: boolean): Outcome {
     // not, which is what a player actually gets when they take the wave again.
     const combat = new Combat({
       combatants: [...party, ...foes], seed: seed * 31 + run.wave * 101 + run.attempts,
+      ...(surprised ? { surprisedTeam: surprised } : {}),
     });
 
     // Who is who, so an event carrying only an id can be attributed to a class.
     const classOf = new Map<Id, Id>();
-    for (const p of party) classOf.set(p.id, p.classId);
-    if (collect) for (const p of party) tally(p.classId).fights++;
+    const speciesOf = new Map<Id, Id>();
+    for (const p of party) { classOf.set(p.id, p.classId); speciesOf.set(p.id, p.speciesId ?? 'human'); }
+    if (collect) {
+      for (const p of party) {
+        tally(p.classId).fights++;
+        tallyIn(bySpecies, p.speciesId ?? 'human').fights++;
+      }
+    }
+    /** Both tallies a party member belongs to — class and species. */
+    const both = (id: Id | undefined): ClassTally[] => {
+      const cid = id === undefined ? undefined : classOf.get(id);
+      if (id === undefined || cid === undefined) return [];
+      return [tally(cid), tallyIn(bySpecies, speciesOf.get(id) ?? 'human')];
+    };
 
     let steps = 0;
     while (!combat.state.winner && steps++ < 600) {
@@ -270,17 +415,14 @@ function playOne(seed: number, collect: boolean): Outcome {
       for (const e of events) {
         switch (e.type) {
           case 'damageDealt': {
-            const src = classOf.get(e.sourceId);
-            if (src) tally(src).damage += e.amount;
-            const dst = classOf.get(e.targetId);
-            if (dst) tally(dst).taken += e.amount;
+            for (const t of both(e.sourceId)) t.damage += e.amount;
+            for (const t of both(e.targetId)) t.taken += e.amount;
             break;
           }
           case 'healed': {
-            const src = classOf.get(e.sourceId);
             // Self-healing counts — a potion is still hit points back on the
             // board — but it is the healer's own action either way.
-            if (src) tally(src).healing += e.amount;
+            for (const t of both(e.sourceId)) t.healing += e.amount;
             break;
           }
           case 'died': {
@@ -288,13 +430,11 @@ function playOne(seed: number, collect: boolean): Outcome {
             // damage, which the event does not carry. Attribute instead to the
             // party as "an enemy died while you were here"? No — that is not a
             // statistic. Only count party deaths, which the event does support.
-            const own = classOf.get(e.combatantId);
-            if (own) tally(own).deaths++;
+            for (const t of both(e.combatantId)) t.deaths++;
             break;
           }
           case 'downed': {
-            const own = classOf.get(e.combatantId);
-            if (own) tally(own).downs++;
+            for (const t of both(e.combatantId)) t.downs++;
             break;
           }
           case 'metamagic': {
@@ -307,12 +447,20 @@ function playOne(seed: number, collect: boolean): Outcome {
           case 'spellCast': {
             const src = classOf.get(e.casterId);
             let s = spellCasts.get(e.spellId);
-            if (!s) { s = { total: 0, byClass: new Map() }; spellCasts.set(e.spellId, s); }
-            s.total++;
+            if (!s) { s = { total: 0, enemy: 0, byClass: new Map() }; spellCasts.set(e.spellId, s); }
+            // The party's casts and the MONSTERS' casts were both landing in
+            // `total`, with only the party's attributed underneath. So Flaming
+            // Sphere read 1886 casts with no class beside it and Guiding Bolt
+            // 1406 — both entirely enemy acolytes — while looking exactly like
+            // a party spell nobody could account for. The two are different
+            // questions and now sit in different columns.
             if (src) {
+              s.total++;
               s.byClass.set(src, (s.byClass.get(src) ?? 0) + 1);
-              tally(src).casts++;
+            } else {
+              s.enemy++;
             }
+            for (const t of both(e.casterId)) t.casts++;
             break;
           }
           case 'counterspelled': {
@@ -534,12 +682,23 @@ for (const [id, t] of rows) {
 console.log('  dmg/taken/heal/casts are per fight; downs is per 100 fights;');
 console.log('  fin% is the share of runs reaching the finish line with this class in the party.');
 
-console.log(`\n--- spells cast (${[...spellCasts.values()].reduce((a, s) => a + s.total, 0)} casts)`);
+const partyCasts = [...spellCasts.values()].reduce((a, s) => a + s.total, 0);
+const enemyCasts = [...spellCasts.values()].reduce((a, s) => a + s.enemy, 0);
+console.log(`\n--- spells cast by the PARTY (${partyCasts} casts; ${enemyCasts} more were cast at it)`);
 const casts = [...spellCasts.entries()].sort((a, b) => b[1].total - a[1].total);
 for (const [id, s] of casts) {
+  if (s.total === 0) continue;   // enemy-only; listed separately below
   const who = [...s.byClass.entries()].sort((a, b) => b[1] - a[1])
     .map(([cid, n]) => `${CLASSES[cid]?.name ?? cid} ${n}`).join(', ');
-  console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level ?? '?'} ${num(s.total, 5)}   ${who}`);
+  const foe = s.enemy > 0 ? `  (+${s.enemy} by enemies)` : '';
+  console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level ?? '?'} ${num(s.total, 5)}   ${who}${foe}`);
+}
+const foeOnly = casts.filter(([, s]) => s.total === 0);
+if (foeOnly.length > 0) {
+  console.log('  cast only by monsters, never by the party:');
+  for (const [id, s] of foeOnly) {
+    console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level ?? '?'} ${num(s.enemy, 5)}`);
+  }
 }
 
 // The whole reason for the counter: what never came off the shelf.
@@ -553,9 +712,17 @@ for (const cls of Object.values(CLASSES)) {
 // listing them as "never cast" would be a bug in this script reported as a bug
 // in the game.
 const never = [...everPlayable]
-  .filter((id) => !spellCasts.has(id) && SPELLS[id]?.castingTime !== 'reaction').sort();
+  // `total === 0` counts too: a spell only ever cast BY A MONSTER is a spell
+  // the party never cast, which is the question this list asks.
+  .filter((id) => (spellCasts.get(id)?.total ?? 0) === 0 && SPELLS[id]?.castingTime !== 'reaction').sort();
 console.log(`\n--- never cast (${never.length} of ${everPlayable.size} playable combat spells)`);
 for (const id of never) console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level}`);
+
+if (CREEPING) {
+  console.log(`\n--- creeping in (${creeps} attempts where there was cover)`);
+  console.log(`  surprised the enemy ${pct(creepWins, creeps)} of the time;` +
+    ` the other ${pct(creeps - creepWins, creeps)} surprised the party`);
+}
 
 console.log('\n--- metamagic');
 if (metamagicUse.size === 0) {
@@ -577,10 +744,26 @@ if (itemUses.size) {
   for (const [id, n] of [...itemUses.entries()].sort((a, b) => b[1] - a[1])) console.log(`  ${pad(id, 26)} ${n}`);
 }
 
-console.log(`\n--- species (runs finished, ${RUNS} runs)`);
-for (const [id, s] of [...speciesRuns.entries()].sort((a, b) => b[1].finished / Math.max(1, b[1].runs) - a[1].finished / Math.max(1, a[1].runs))) {
-  console.log(`  ${pad(id, 14)} ${String(s.runs).padStart(3)} runs  ${pct(s.finished, s.runs).padStart(5)}`);
+console.log(`\n--- species (per fight a hero of that species was in)`);
+console.log(pad('species', 14) + ['   dmg', ' taken', '  heal', ' downs', ' casts', ' fights'].join(''));
+const sRows = [...bySpecies.entries()]
+  .sort((a, b) => b[1].damage / Math.max(1, b[1].fights) - a[1].damage / Math.max(1, a[1].fights));
+for (const [id, t] of sRows) {
+  const f = Math.max(1, t.fights);
+  console.log(
+    pad(id, 14) +
+    num(t.damage / f) + num(t.taken / f) + num(t.healing / f) +
+    num((t.downs / f) * 100) + num(t.casts / f) + num(t.fights),
+  );
 }
+// A species row is an average over whatever classes happened to roll it, so a
+// gap under a few points is class-mix noise, not a species difference. The
+// column that resists that is `taken`: it is hit points arriving at one body,
+// and armour, hit dice and resistances are what decide it.
+console.log('  the last column is hero-fights, i.e. the sample behind the row;');
+console.log(`  runs containing each species: ${
+  [...speciesRuns.entries()].sort((a, b) => b[1].runs - a[1].runs)
+    .map(([id, r]) => `${id} ${pct(r.finished, r.runs)}`).join(' · ')}`);
 
 /**
  * Everything worth A/B-ing, grouped so the report reads as families rather than
