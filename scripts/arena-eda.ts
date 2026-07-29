@@ -36,8 +36,9 @@
  */
 import {
   newCampaign, applyArenaVictory, buildCampaignParty, partyLevelOf, reviveParty, randomizeParty,
-  LEVEL_XP, growSpellsForLevel,
+  LEVEL_XP, growSpellsForLevel, preparableSpells, preparedLimit, setPrepared,
 } from '../src/campaign/campaign.js';
+import { next } from '../src/engine/rng.js';
 import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/arena/run.js';
 import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
 import { RUN_TARGET_XP } from '../src/arena/medal.js';
@@ -98,6 +99,40 @@ const GIVE_UP = flag('--give-up', 10);
 // every caster does, so it has to be shown NOT to cost win rate before it can
 // be a default. -1 leaves the module default alone.
 const VARIETY = flag('--variety', -1);
+/**
+ * Randomize each caster's PREPARED list every run.
+ *
+ * WHY THIS MATTERS MORE THAN IT LOOKS
+ *
+ * The auto-prepared default takes the first few spells of each tier in list
+ * order, so a wizard that knows nine 4th-level spells prepares three — the same
+ * three, every run, forever. Every "never cast" line in this report was
+ * therefore two different findings wearing one label:
+ *
+ *   - the spell is never PREPARED, so of course it is never cast; and
+ *   - the spell is prepared, scored, legal, and still never chosen.
+ *
+ * Only the second is a bug, and the two are indistinguishable while the
+ * loadout is fixed. Randomizing the prepared list separates them: a spell that
+ * is still never cast when it has been prepared across dozens of runs is one
+ * the scorer genuinely will not pick.
+ */
+const RANDOM_PREP = process.argv.includes('--random-prep');
+/**
+ * Start runs at this level instead of at 1.
+ *
+ * Needed because the two things worth measuring pull against each other. A
+ * randomized prepared list is a much worse loadout than the curated default —
+ * measured, it drops the finish rate from 32% to 8% and the median level
+ * reached from 6 to 5 — so a random-prep run never reaches a 4th-level slot,
+ * and the tier it was meant to examine is empty in every run.
+ *
+ * Starting high is not a balance measurement and must not be read as one: the
+ * party skips the fights that would have taught it anything. It is a
+ * MICROSCOPE, for the question "given this spell is available, does the scorer
+ * ever pick it".
+ */
+const START_LEVEL = flag('--start-level', 1);
 if (VARIETY >= 0) setSpellVariety(VARIETY);
 const ITEM_FIGHTS = flag('--item-fights', 40);
 // Skip calibration and pin the fight. The calibrated wave lands low (a level-2
@@ -143,6 +178,31 @@ const itemUses = new Map<Id, number>();
 let counterspells = 0;
 const speciesRuns = new Map<Id, { runs: number; finished: number }>();
 
+/**
+ * Deal each caster a random prepared list from everything it knows.
+ *
+ * Uses the campaign's own RNG so a run stays reproducible from its seed, and
+ * `setPrepared` rather than writing `prepared` directly, so the same filtering
+ * and cap the player's own choices go through applies here too — otherwise this
+ * would happily prepare a spell the character cannot cast and the whole
+ * measurement would be of something the game cannot produce.
+ */
+function randomizePrepared(c: CampaignState): void {
+  c.characters.forEach((_ch, i) => {
+    const pool = preparableSpells(c, i);
+    const limit = preparedLimit(c, i);
+    if (limit <= 0 || pool.length === 0) return;
+    const shuffled = [...pool];
+    for (let j = shuffled.length - 1; j > 0; j--) {
+      const roll = next(c.rng);
+      c.rng = roll.state;
+      const k = Math.floor(roll.value * (j + 1));
+      [shuffled[j], shuffled[k]] = [shuffled[k]!, shuffled[j]!];
+    }
+    setPrepared(c, i, shuffled.slice(0, limit));
+  });
+}
+
 // --- one run ----------------------------------------------------------------
 
 interface Outcome {
@@ -156,6 +216,13 @@ function playOne(seed: number, collect: boolean): Outcome {
   // the real button uses, so a run is never handed an unplayable party.
   if (!FIXED) randomizeParty(c);
   c.partyReady = true;
+  if (START_LEVEL > 1) {
+    c.xp = LEVEL_XP[Math.min(LEVEL_XP.length, START_LEVEL) - 1]!;
+    growSpellsForLevel(c);
+  }
+  // After the level, so the prepared list is dealt from everything the caster
+  // knows at that level rather than from its level-1 book.
+  if (RANDOM_PREP) randomizePrepared(c);
   const classes = c.characters.map((ch) => ch.classId);
   const species = c.characters.map((ch) => ch.speciesId);
 
@@ -418,7 +485,8 @@ console.log(`finished within ${MAX_DAYS} days: ${finished}/${RUNS} (${pct(finish
 const stalled = out.filter((o) => o.stalled).length;
 const allFights = out.reduce((a, o) => a + o.fights, 0);
 const allWins = out.reduce((a, o) => a + o.wins, 0);
-console.log(`spell variety margin: ${spellVariety()}`);
+console.log(`spell variety margin: ${spellVariety()}${RANDOM_PREP ? ' · prepared lists randomized' : ''}` +
+  (START_LEVEL > 1 ? ` · started at level ${START_LEVEL} (a microscope, not a balance run)` : ''));
 console.log(`stalled (${GIVE_UP} losses in a row): ${stalled}/${RUNS} (${pct(stalled, RUNS)})`);
 console.log(`fights ${allFights} · wins ${allWins} (${pct(allWins, allFights)})`);
 // The pooled rate above is NOT the win rate a player experiences. A stalled run
