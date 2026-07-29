@@ -26,6 +26,7 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
 import { CLASSES } from '../src/data/classes.js';
+import { FEATURES } from '../src/data/features.js';
 import { SPELLS, eldritchBeams } from '../src/data/spells.js';
 import { legalActions } from '../src/engine/actions.js';
 import { chooseAction } from '../src/ai/greedy.js';
@@ -148,7 +149,7 @@ describe('Eldritch Blast', () => {
       let beams = 0;
       for (let seed = 1; seed <= 60; seed++) {
         const me = warlock(5);
-        if (!withInvocation) me.featureIds = me.featureIds.filter((f) => f !== 'eldritch-invocations');
+        if (!withInvocation) me.featureIds = me.featureIds.filter((f) => f !== 'agonizing-blast');
         const foes = [{ x: 4, y: 3 }, { x: 5, y: 3 }].map((p, i) => ({
           ...buildMonster('orc', 'team2', p), id: `e${i}`, hp: 200, maxHp: 200,
         }));
@@ -201,13 +202,16 @@ describe("Dark One's Blessing", () => {
     const c = new Combat({ combatants: [me, foe], seed: 4 });
     let guard = 0;
     while (c.activeId !== me.id && guard++ < 30) c.apply({ kind: 'endTurn' });
-    expect(c.state.combatants[me.id]!.tempHp ?? 0).toBe(0);
+    // A level-7 warlock already carries Fiendish Vigor's temporary hit points
+    // (the level-5 invocation's default), so this measures the CHANGE rather
+    // than assuming it starts at zero.
+    const before = c.state.combatants[me.id]!.tempHp ?? 0;
     // Straight through the damage rule, which is the one place that knows both
     // that a creature reached zero AND who put it there — `kill` takes only the
     // body, which is why the hook cannot live there.
     applyDamage(c.state, 'e0', me.id, 5, 'force', [5]);
     expect(c.state.combatants.e0!.alive).toBe(false);
-    expect(c.state.combatants[me.id]!.tempHp ?? 0).toBeGreaterThan(0);
+    expect(c.state.combatants[me.id]!.tempHp ?? 0).toBeGreaterThan(before);
   });
 
   it('does not feed on an ally, or on itself', () => {
@@ -215,8 +219,9 @@ describe("Dark One's Blessing", () => {
     const friend = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 3 }, level: 3 }), id: 'a0' };
     const c = new Combat({ combatants: [me, friend, { ...buildMonster('orc', 'team2', { x: 6, y: 6 }), id: 'e9' }], seed: 4 });
     c.state.combatants.a0!.hp = 1;
+    const before = c.state.combatants[me.id]!.tempHp ?? 0;
     applyDamage(c.state, 'a0', me.id, 50, 'force', [50]);
-    expect(c.state.combatants[me.id]!.tempHp ?? 0).toBe(0);
+    expect(c.state.combatants[me.id]!.tempHp ?? 0).toBe(before);
   });
 });
 
@@ -357,5 +362,129 @@ describe('Hex', () => {
     // Bonus action free, nothing hexed yet: Hex should be the pick.
     const a = chooseAction(c.state, meId);
     expect(a.kind === 'castSpell' && a.spellId === 'hex').toBe(true);
+  });
+});
+
+/**
+ * Eldritch Invocations, as choices.
+ *
+ * The first version of this class granted exactly ONE invocation, hard-coded,
+ * where the SRD's own table gives 1 at level 1, 3 by level 2, 5 by level 5 and
+ * 6 by level 7. That is about a sixth of the feature, and the invocations are
+ * where most of a warlock's power budget lives — it measured as the
+ * lowest-damage non-support class, which read as a design trade and was a
+ * missing feature.
+ */
+describe('Eldritch Invocations', () => {
+  it('grows with level instead of stopping at one', () => {
+    const points = CLASSES.warlock!.choices ?? [];
+    expect(points.length, 'a warlock should gain invocations as it levels').toBeGreaterThanOrEqual(4);
+    // One at level 1, and more later — the shape of the SRD's column.
+    expect(points.filter((p) => p.atLevel === 1)).toHaveLength(1);
+    expect(points.some((p) => p.atLevel > 1)).toBe(true);
+  });
+
+  it('gives a warlock who never opens the screen a working set', () => {
+    // Every default is the strongest option, which is the "auto-choose best"
+    // half of this — the picks are visible and changeable, but ignoring them
+    // must not produce a broken character.
+    const at1 = warlock(1).featureIds;
+    const at7 = warlock(7).featureIds;
+    expect(at1).toContain('agonizing-blast');
+    expect(at7.filter((f) => INVOCATIONS.has(f)).length,
+      'a level-7 warlock should hold several invocations').toBeGreaterThanOrEqual(3);
+  });
+
+  it('offers only invocations that do something in this game', () => {
+    // Eldritch Spear extends a range nothing on an eight-cell board can exceed;
+    // Devil's Sight needs a Darkness that does not exist; Thirsting Blade,
+    // Lifedrinker and Devouring Blade all hang off a pact weapon. Four real
+    // choices beat six where two are decoration.
+    for (const point of CLASSES.warlock!.choices ?? []) {
+      for (const opt of point.options) {
+        for (const id of opt.grants?.featureIds ?? []) {
+          expect(FEATURES[id], `${opt.id} grants ${id}, which does not exist`).toBeDefined();
+          expect(INVOCATIONS.has(id), `${id} should be a known invocation`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('every default is a real option of its own choice point', () => {
+    for (const point of CLASSES.warlock!.choices ?? []) {
+      expect(point.options.some((o) => o.id === point.default),
+        `${point.id}'s default is not one of its options`).toBe(true);
+    }
+  });
+});
+
+const INVOCATIONS = new Set([
+  'agonizing-blast', 'armor-of-shadows', 'fiendish-vigor', 'repelling-blast',
+  'gift-of-the-protectors',
+]);
+
+describe('what the invocations actually do', () => {
+  it('Armor of Shadows is simply on', () => {
+    const me = buildCharacter({
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 1,
+      choices: { 'invocation-1': 'armor-of-shadows' },
+    });
+    expect(me.mageArmor).toBe(true);
+  });
+
+  it('Fiendish Vigor brings temporary hit points into the fight', () => {
+    const with_ = buildCharacter({
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 1,
+      choices: { 'invocation-1': 'fiendish-vigor' },
+    });
+    const without = buildCharacter({
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 1,
+      choices: { 'invocation-1': 'agonizing-blast' },
+    });
+    expect(with_.tempHp ?? 0).toBeGreaterThan(0);
+    expect(without.tempHp ?? 0).toBe(0);
+  });
+
+  it('Repelling Blast shoves on every beam', () => {
+    // The one invocation that changes the shape of a fight rather than its
+    // numbers. Two beams means two shoves, so it must move further at level 5
+    // than a single hit could.
+    let moved = false;
+    for (let seed = 1; seed <= 40 && !moved; seed++) {
+      const me = buildCharacter({
+        classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 5,
+        choices: { 'invocation-2': 'repelling-blast' },
+      });
+      const foe = { ...buildMonster('orc', 'team2', { x: 2, y: 3 }), id: 'e0', hp: 300, maxHp: 300 };
+      const c = new Combat({ combatants: [me, foe], seed });
+      let guard = 0;
+      while (c.activeId !== me.id && guard++ < 30) c.apply({ kind: 'endTurn' });
+      const from = { ...c.state.combatants.e0!.position };
+      c.apply({
+        kind: 'castSpell', spellId: 'eldritch-blast', slotLevel: 0,
+        targets: [{ combatantId: 'e0' }, { combatantId: 'e0' }],
+      });
+      const to = c.state.combatants.e0!.position;
+      if (to.x !== from.x || to.y !== from.y) moved = true;
+    }
+    expect(moved, 'a landed beam never once shoved anything').toBe(true);
+  });
+
+  it('Gift of the Protectors leaves an ally standing on 1, once per rest', () => {
+    const me = buildCharacter({
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 7,
+      choices: { 'invocation-4': 'gift-of-the-protectors' },
+    });
+    const friend = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 3 }, level: 5 }), id: 'a0' };
+    const foe = { ...buildMonster('orc', 'team2', { x: 6, y: 6 }), id: 'e9' };
+    const c = new Combat({ combatants: [me, friend, foe], seed: 3 });
+    c.state.combatants.a0!.hp = 4;
+    applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40]);
+    expect(c.state.combatants.a0!.hp, 'the ally should be left on 1').toBe(1);
+    expect(c.state.combatants.a0!.conditions.some((k) => k.id === 'unconscious')).toBe(false);
+    // Spent: the next ally to fall gets no such courtesy.
+    c.state.combatants.a0!.hp = 4;
+    applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40]);
+    expect(c.state.combatants.a0!.hp).toBe(0);
   });
 });

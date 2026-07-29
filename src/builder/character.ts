@@ -348,6 +348,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
     weaponProfs: { ...cls.weaponProfs, ...(cls.weaponProfs.specific ? { specific: [...cls.weaponProfs.specific] } : {}) },
+    // Armor of Shadows and Fiendish Vigor are "at will, no slot, no
+    // concentration", which for a fight means simply always on. A button that
+    // can never be declined is a worse way to say the same thing.
+    ...(featureIds.includes('armor-of-shadows') ? { mageArmor: true } : {}),
+    ...(featureIds.includes('fiendish-vigor') ? { tempHp: 9 } : {}),   // 2d4+4, averaged
     spellSlots: slots.map((n, i) => ({
       current: opts.spellSlotsOverride ? Math.max(0, Math.min(n, opts.spellSlotsOverride[i] ?? n)) : n,
       max: n,
