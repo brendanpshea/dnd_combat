@@ -558,8 +558,27 @@ const ALL_WARES: Id[] = [
   ...SILVERED_WEAPONS,
   'dragon-slayer', 'giant-slayer', 'sun-blade', 'mace-of-disruption', 'mace-of-smiting',
   'sword-of-wounding', 'sword-of-life-stealing', 'berserker-axe', 'mace-of-terror',
-  // armor
-  'leather', 'chain-shirt', 'breastplate', 'half-plate', 'splint',
+  /**
+   * Armor: the WHOLE mundane table, not a selection.
+   *
+   * Five of these were missing and three of the five were armor a class
+   * literally walks in wearing — a rogue and a ranger start in studded leather,
+   * a fighter and a druid in scale mail, a cleric and a paladin in chain mail,
+   * and none of the three could be bought by anybody at any price. Studded
+   * leather was the worst of it: the best mundane light armor in the game, the
+   * natural upgrade for a bard, a warlock or a Duelist fighter, and reachable
+   * only by being born a rogue.
+   *
+   * That is the dead-data shape this repository keeps rediscovering, and the
+   * existing reachability guard did not catch it because it asks about the
+   * treasure pool. `test/armor-shop.test.ts` now asks the simpler and stronger
+   * question instead: every common, non-magical armor is on this list. Complete
+   * beats curated — a gap here is invisible, and every one of these is SRD gear
+   * at SRD prices that some hero already owns.
+   */
+  'padded', 'leather', 'studded-leather',
+  'hide', 'chain-shirt', 'scale-mail', 'breastplate', 'half-plate',
+  'ring-mail', 'chain-mail', 'splint',
   // Plate is the most expensive thing money can buy and the arena's main gold
   // sink: rare-tier, so it only reaches a shelf at level 5, by which point a
   // party that has been saving can finally afford the armor class ceiling.

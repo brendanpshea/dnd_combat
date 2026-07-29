@@ -270,8 +270,10 @@ export const CLASSES: Record<Id, ClassData> = {
          * then pulls ahead at every ability increase, since scale mail's +2 cap
          * means the soldier's own increases buy it no armour class at all.
          * Leather instead gives an arc rather than a free lunch — one AC behind
-         * at 1st, level at 4th, one ahead at 8th — and leaves studded leather
-         * sitting in the shop for 45gp as something worth saving for.
+         * at 1st, level at 4th, one ahead at 8th — with studded leather in the
+         * shop for 45gp as something worth saving for. (That last part was not
+         * true when this kit was written: studded leather was on no ware list at
+         * all and could not be bought by anyone. See ALL_WARES in campaign.ts.)
          *
          * WHAT IT TRADES. It gives up Strength: a worse Shove DC, Athletics,
          * Strength saves, and 20/60 thrown range instead of the javelin's
