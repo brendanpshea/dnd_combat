@@ -371,7 +371,7 @@ Spellcasting ability: **WIS**.
 | 5 | 0 | 0 | 2 | — | 3 | 6 |
 | 6 | 0 | 0 | 2 | — | 3 | 7 |
 | 7 | 0 | 0 | 0 | 2 | 3 | 8 |
-| 8 | 0 | 0 | 0 | 2 | 4 | 9 |
+| 8 | 0 | 0 | 0 | 2 | 3 | 9 |
 
 Spellcasting ability: **CHA**.
 
@@ -383,6 +383,38 @@ Spellcasting ability: **CHA**.
 | 3 | Hold Person, Mirror Image, Invisibility, Suggestion, Misty Step |
 | 5 | Fear, Counterspell, Dispel Magic |
 | 7 | Banishment, Blight, Dimension Door |
+
+### Choice: Eldritch Invocation (level 1)
+
+| Option | Grants | Blurb |
+| --- | --- | --- |
+| Agonizing Blast *(default)* | Agonizing Blast | Add your Charisma to every beam of Eldritch Blast. |
+| Armor of Shadows | Armor of Shadows | Mage Armor on yourself, always, for free. |
+| Fiendish Vigor | Fiendish Vigor | Start every fight with False Life already up. |
+
+### Choice: Eldritch Invocation (2nd) (level 2)
+
+| Option | Grants | Blurb |
+| --- | --- | --- |
+| Repelling Blast *(default)* | Repelling Blast | Each beam of Eldritch Blast shoves its target 10 ft. |
+| Fiendish Vigor | Fiendish Vigor | Start every fight with False Life already up. |
+| Armor of Shadows | Armor of Shadows | Mage Armor on yourself, always, for free. |
+
+### Choice: Eldritch Invocation (3rd) (level 5)
+
+| Option | Grants | Blurb |
+| --- | --- | --- |
+| Fiendish Vigor *(default)* | Fiendish Vigor | Start every fight with False Life already up. |
+| Armor of Shadows | Armor of Shadows | Mage Armor on yourself, always, for free. |
+| Repelling Blast | Repelling Blast | Each beam of Eldritch Blast shoves its target 10 ft. |
+
+### Choice: Eldritch Invocation (4th) (level 7)
+
+| Option | Grants | Blurb |
+| --- | --- | --- |
+| Gift of the Protectors *(default)* | Gift of the Protectors | Once a rest, an ally who would drop to 0 is left on 1 instead. |
+| Armor of Shadows | Armor of Shadows | Mage Armor on yourself, always, for free. |
+| Repelling Blast | Repelling Blast | Each beam of Eldritch Blast shoves its target 10 ft. |
 
 ## Wizard
 

@@ -1407,6 +1407,30 @@ export function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
       { type: 'healed', targetId: combatantId, sourceId: ward.sourceId ?? combatantId, amount: 1 },
     ];
   }
+  // Gift of the Protectors: a warlock's ward on the whole party. An ally who
+  // would drop is left standing on 1 instead, once per short rest.
+  //
+  // Here beside Death Ward because this is the single place every route to zero
+  // passes through, and because the two are the same promise made by different
+  // classes — a ward that only caught swords would be a ward nobody could rely
+  // on. Death Ward is checked first: it is on the victim and costs a 4th-level
+  // slot, so it should be the one spent before somebody else's invocation.
+  const falling = state.combatants[combatantId];
+  if (falling?.alive) {
+    const protector = Object.values(state.combatants).find(
+      (c) => c.alive && !isDown(c) && c.id !== combatantId && c.team === falling.team &&
+        c.featureIds.includes('gift-of-the-protectors') &&
+        (c.featureUses['gift-of-the-protectors']?.current ?? 0) > 0,
+    );
+    if (protector) {
+      protector.featureUses['gift-of-the-protectors']!.current -= 1;
+      falling.hp = 1;
+      return [
+        { type: 'healed', targetId: combatantId, sourceId: protector.id, amount: 1 },
+      ];
+    }
+  }
+
   // Polymorph: the ape's hit points running out ends the form, it does not
   // drop the hero. They come back with exactly the hit points they had.
   //

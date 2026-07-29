@@ -521,8 +521,16 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'pact-magic': { id: 'pact-magic', name: 'Pact Magic', trigger: 'passive' },
   /**
-   * Eldritch Invocations, of which this game grants exactly one: Agonizing
-   * Blast, +Charisma to every beam of Eldritch Blast.
+   * Eldritch Invocations: the level-1 heading itself, kept as a marker.
+   *
+   * The invocations proper are CHOICES (see the warlock's `choices`), because
+   * the SRD gives a warlock several and lets it pick. What this feature does is
+   * name the thing in the class table, so the SRD level-heading check has
+   * something to match and a character sheet has something to print.
+   */
+  'eldritch-invocations': { id: 'eldritch-invocations', name: 'Eldritch Invocations', trigger: 'passive' },
+  /**
+   * Agonizing Blast: +Charisma to every beam of Eldritch Blast.
    *
    * Named for the SRD heading rather than for the invocation, because that is
    * what the class actually gets at level 1 — and because there is no
@@ -535,7 +543,39 @@ export const FEATURES: Record<Id, FeatureData> = {
    * BEAM — a generic "+Cha to spell damage" would pay it once and quietly halve
    * the invocation for a warlock who has earned a second beam.
    */
-  'eldritch-invocations': { id: 'eldritch-invocations', name: 'Eldritch Invocations', trigger: 'passive' },
+  'agonizing-blast': { id: 'agonizing-blast', name: 'Agonizing Blast', trigger: 'passive' },
+  /**
+   * Armor of Shadows: Mage Armor on yourself, at will and for free.
+   *
+   * Applied in the builder rather than as a spell the warlock casts, because
+   * "at will, no slot, no concentration" means it is simply always on — a
+   * button that can never be declined is a worse way to say the same thing.
+   */
+  'armor-of-shadows': { id: 'armor-of-shadows', name: 'Armor of Shadows', trigger: 'passive' },
+  /**
+   * Fiendish Vigor: False Life on yourself at will, so the warlock walks into
+   * every fight already wearing the temporary hit points. The average of
+   * 2d4+4 rather than a roll, for the same reason the camp version takes the
+   * average: a value that silently varies invites re-rolling it.
+   */
+  'fiendish-vigor': { id: 'fiendish-vigor', name: 'Fiendish Vigor', trigger: 'passive' },
+  /**
+   * Repelling Blast: each beam of Eldritch Blast shoves its target 10 feet.
+   *
+   * The one invocation that changes the shape of a fight rather than its
+   * numbers — a warlock with this can hold a doorway, and pushing something out
+   * of reach costs it a turn of walking back.
+   */
+  'repelling-blast': { id: 'repelling-blast', name: 'Repelling Blast', trigger: 'passive' },
+  /**
+   * Gift of the Protectors: an ally who would drop to 0 drops to 1 instead,
+   * once per short rest. Rides `dropToZero`, the single place every route to
+   * zero passes through — the same hook Death Ward uses, for the same reason.
+   */
+  'gift-of-the-protectors': {
+    id: 'gift-of-the-protectors', name: 'Gift of the Protectors', trigger: 'passive',
+    uses: { count: 1, per: 'shortRest' },
+  },
   /**
    * Dark One's Blessing (Fiend patron): temporary hit points when you drop
    * something. Checked in `applyDamage`, which is the one place that knows both

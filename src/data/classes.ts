@@ -361,7 +361,8 @@ export const CLASSES: Record<Id, ClassData> = {
       // and the TIER is what climbs. The zeros are the point — a level-7
       // warlock holds two 4th-level slots and nothing at all below them.
       slotsByLevel: [[1], [2], [0, 2], [0, 2], [0, 0, 2], [0, 0, 2], [0, 0, 0, 2], [0, 0, 0, 2]],
-      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3, 4],
+      // SRD row: 2 2 2 3 3 3 3 3. The 8th entry read 4 in the first draft.
+      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3, 3],
       // A warlock knows a short list and has them all ready; there is no
       // preparing and unpreparing. Capped low to match.
       preparedByLevel: [2, 3, 4, 5, 6, 7, 8, 9],
@@ -383,6 +384,62 @@ export const CLASSES: Record<Id, ClassData> = {
         7: ['banishment', 'blight', 'dimension-door'],
       },
     },
+    /**
+     * Eldritch Invocations, as choices.
+     *
+     * The SRD's own table grants 1 invocation at level 1, 3 by level 2, 5 by
+     * level 5 and 6 by level 7. The first version of this class granted exactly
+     * ONE, hard-coded — about a sixth of the feature, and the invocations are
+     * where most of a warlock's power budget lives. It measured as the
+     * lowest-damage non-support class, which read as a design trade and was a
+     * missing feature.
+     *
+     * Four choice points rather than six, because only so many invocations have
+     * any expression in a game with no exploration, no vertical space and no
+     * pact weapon: Eldritch Spear extends a range nothing on an eight-cell
+     * board can exceed, Devil's Sight needs a Darkness that does not exist yet,
+     * and Thirsting Blade, Lifedrinker and Devouring Blade all hang off Pact of
+     * the Blade. Four real ones beat six where two do nothing.
+     *
+     * The slates overlap deliberately, so every point offers something worth
+     * having rather than a forced pick from what is left. Taking the same
+     * invocation twice is possible and harmless — they are all idempotent
+     * flags, so the second pick simply buys nothing, which is the same thing
+     * the SRD's "you can't pick it twice" rule achieves without a cross-point
+     * validation the choice machinery cannot express.
+     *
+     * Every default is the strongest option, so a player who never opens the
+     * screen still gets a working warlock.
+     */
+    choices: [{
+      id: 'invocation-1', label: 'Eldritch Invocation', atLevel: 1, default: 'agonizing-blast',
+      options: [
+        { id: 'agonizing-blast', name: 'Agonizing Blast', blurb: 'Add your Charisma to every beam of Eldritch Blast.', grants: { featureIds: ['agonizing-blast'] } },
+        { id: 'armor-of-shadows', name: 'Armor of Shadows', blurb: 'Mage Armor on yourself, always, for free.', grants: { featureIds: ['armor-of-shadows'] } },
+        { id: 'fiendish-vigor', name: 'Fiendish Vigor', blurb: 'Start every fight with False Life already up.', grants: { featureIds: ['fiendish-vigor'] } },
+      ],
+    }, {
+      id: 'invocation-2', label: 'Eldritch Invocation (2nd)', atLevel: 2, default: 'repelling-blast',
+      options: [
+        { id: 'repelling-blast', name: 'Repelling Blast', blurb: 'Each beam of Eldritch Blast shoves its target 10 ft.', grants: { featureIds: ['repelling-blast'] } },
+        { id: 'fiendish-vigor', name: 'Fiendish Vigor', blurb: 'Start every fight with False Life already up.', grants: { featureIds: ['fiendish-vigor'] } },
+        { id: 'armor-of-shadows', name: 'Armor of Shadows', blurb: 'Mage Armor on yourself, always, for free.', grants: { featureIds: ['armor-of-shadows'] } },
+      ],
+    }, {
+      id: 'invocation-3', label: 'Eldritch Invocation (3rd)', atLevel: 5, default: 'fiendish-vigor',
+      options: [
+        { id: 'fiendish-vigor', name: 'Fiendish Vigor', blurb: 'Start every fight with False Life already up.', grants: { featureIds: ['fiendish-vigor'] } },
+        { id: 'armor-of-shadows', name: 'Armor of Shadows', blurb: 'Mage Armor on yourself, always, for free.', grants: { featureIds: ['armor-of-shadows'] } },
+        { id: 'repelling-blast', name: 'Repelling Blast', blurb: 'Each beam of Eldritch Blast shoves its target 10 ft.', grants: { featureIds: ['repelling-blast'] } },
+      ],
+    }, {
+      id: 'invocation-4', label: 'Eldritch Invocation (4th)', atLevel: 7, default: 'gift-of-the-protectors',
+      options: [
+        { id: 'gift-of-the-protectors', name: 'Gift of the Protectors', blurb: 'Once a rest, an ally who would drop to 0 is left on 1 instead.', grants: { featureIds: ['gift-of-the-protectors'] } },
+        { id: 'armor-of-shadows', name: 'Armor of Shadows', blurb: 'Mage Armor on yourself, always, for free.', grants: { featureIds: ['armor-of-shadows'] } },
+        { id: 'repelling-blast', name: 'Repelling Blast', blurb: 'Each beam of Eldritch Blast shoves its target 10 ft.', grants: { featureIds: ['repelling-blast'] } },
+      ],
+    }],
     featuresByLevel: {
       1: ['pact-magic', 'eldritch-invocations'],
       // 2: Magical Cunning regains the pact slots once per long rest. It is a

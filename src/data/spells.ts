@@ -655,7 +655,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [];
       // Agonizing Blast adds the warlock's Charisma to EACH beam, which is what
       // makes the invocation the one every warlock takes.
-      const agonizing = caster.featureIds.includes('eldritch-invocations')
+      const agonizing = caster.featureIds.includes('agonizing-blast')
         ? Math.max(0, abilityMod(caster.abilities.cha)) : 0;
       for (const tid of targetIds.slice(0, eldritchBeams(caster.level))) {
         const t = state.combatants[tid];
@@ -674,6 +674,13 @@ export const SPELLS: Record<Id, SpellData> = {
           [...dmg.rolls, ...(hex?.rolls ?? [])],
           hex ? { tags: ['Hex'] } : {},
         ));
+        // Repelling Blast: every beam shoves, so a two-beam blast moves a
+        // creature twice. Only while it is still standing — pushing a corpse
+        // around is not a thing, and `pushCreature` would happily do it.
+        if (caster.featureIds.includes('repelling-blast') && t.alive && !isDown(t)) {
+          const dir = directionFromDelta(caster.position, t.position);
+          events.push(...pushCreature(state, tid, DIRECTIONS[dir], 2));
+        }
       }
       return events;
     },
