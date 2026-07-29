@@ -117,9 +117,19 @@ describe('one attempt per fight', () => {
 });
 
 describe('what surprise actually does to a fight', () => {
-  it('takes the first round off the surprised team', () => {
-    // Checked against the engine rather than assumed: this is the payoff the
-    // whole gamble is for, and it is the one part of it we did not write.
+  /**
+   * The 2024 rule, and not the one this used to assert.
+   *
+   *   "Surprise. If a combatant is surprised by combat starting, that combatant
+   *    has Disadvantage on their Initiative roll."
+   *
+   * The old implementation was the 2014 rule — the surprised side started
+   * `incapacitated` and lost its whole first round. In the arena, where a party
+   * can gamble on creeping in, the group Stealth check succeeds 84% of the time
+   * and that bought a free round against the entire enemy line, which is most
+   * of a fight. Disadvantage on initiative is a real edge and a far smaller one.
+   */
+  it('gives the surprised side disadvantage on initiative, not a lost round', () => {
     const hero = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 1 } });
     const foe = buildMonster('goblin-warrior', 'team2', { x: 5, y: 5 });
     const c = new Combat({
@@ -127,8 +137,50 @@ describe('what surprise actually does to a fight', () => {
     });
     const surprised = c.state.combatants[foe.id]!;
     expect(surprised.conditions.some((k) => k.id === 'incapacitated'),
-      'a surprised creature starts the fight unable to act').toBe(true);
-    expect(isDown(surprised), 'incapacitated, not downed').toBe(false);
+      'a surprised creature can still act — it just probably acts later').toBe(false);
+    expect(isDown(surprised)).toBe(false);
+  });
+
+  it('actually lowers the roll, measured over many seeds', () => {
+    // One seed proves nothing about a die. Rolling the same fight a hundred
+    // times with and without the flag is what tells disadvantage from noise —
+    // and it is the check that would have caught the rule being the 2014 one,
+    // because that version never touched the initiative roll at all.
+    const initiatives = (surprised: boolean): number[] => {
+      const out: number[] = [];
+      for (let seed = 1; seed <= 120; seed++) {
+        const hero = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 1 } });
+        const foe = buildMonster('goblin-warrior', 'team2', { x: 5, y: 5 });
+        const c = new Combat({
+          seed, map: COVERED, combatants: [hero, foe],
+          ...(surprised ? { surprisedTeam: 'team2' as const } : {}),
+        });
+        out.push(c.state.combatants[foe.id]!.initiative ?? 0);
+      }
+      return out;
+    };
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const plain = mean(initiatives(false));
+    const ambushed = mean(initiatives(true));
+    // Disadvantage on a d20 costs about 3.3 on average; allow plenty of room
+    // for a 120-sample wobble while still failing if the flag does nothing.
+    expect(ambushed, `plain ${plain.toFixed(1)} vs surprised ${ambushed.toFixed(1)}`)
+      .toBeLessThan(plain - 1.5);
+  });
+
+  it('leaves the ambusher alone', () => {
+    // Only the surprised team rolls badly. A rule that quietly slowed everyone
+    // would look identical on the losing side.
+    const hero = buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 1 } });
+    const foe = buildMonster('goblin-warrior', 'team2', { x: 5, y: 5 });
+    const a = new Combat({ seed: 11, map: COVERED, combatants: [hero, foe] });
+    const b = new Combat({
+      seed: 11, map: COVERED, combatants: [
+        buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 1 } }),
+        buildMonster('goblin-warrior', 'team2', { x: 5, y: 5 }),
+      ], surprisedTeam: 'team2',
+    });
+    expect(b.state.combatants[hero.id]!.initiative).toBe(a.state.combatants[hero.id]!.initiative);
   });
 
   it('leaves an ordinary fight alone', () => {

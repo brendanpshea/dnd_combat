@@ -79,6 +79,9 @@ export type GameEvent =
   | { type: 'itemUsed'; combatantId: Id; itemId: Id; targetId?: Id }
   | { type: 'dashed'; combatantId: Id }
   | { type: 'recharged'; combatantId: Id; featureId: Id }
+  /** An Unarmed Strike's Shove: pushed five feet, or knocked prone. `success`
+   *  is false when the target made its save and nothing happened. */
+  | { type: 'shoved'; shoverId: Id; targetId: Id; mode: 'push' | 'prone'; success: boolean }
   /** A sorcerer spent points to bend a spell. Emitted before `spellCast`, so a
    *  log reads "Quickened Spell (2 SP)" and then the cast it paid for. */
   | { type: 'metamagic'; casterId: Id; metamagicId: Id; spellId: Id; cost: number }
