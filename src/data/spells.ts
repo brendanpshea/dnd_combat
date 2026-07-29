@@ -13,7 +13,7 @@ import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
+import { applyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { BREATH_WEAPONS } from './features.js';
@@ -665,7 +665,15 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!atk.hit) continue;
         const dmg = rollDice(state.rng, '1d10', atk.crit);
         state.rng = dmg.state;
-        events.push(...applyDamage(state, tid, casterId, dmg.total + agonizing, 'force', dmg.rolls));
+        // Hex rides each beam separately — see `hexBonus`, which exists because
+        // a spell attack does not pass through `resolveAttack` where the
+        // Hunter's Mark rider lives.
+        const hex = hexBonus(state, casterId, tid, atk.crit);
+        events.push(...applyDamage(
+          state, tid, casterId, dmg.total + agonizing + (hex?.total ?? 0), 'force',
+          [...dmg.rolls, ...(hex?.rolls ?? [])],
+          hex ? { tags: ['Hex'] } : {},
+        ));
       }
       return events;
     },
@@ -2407,6 +2415,37 @@ export const SPELLS: Record<Id, SpellData> = {
     cast: (ctx) => armSmite(ctx, 'ensnaring-strike'),
   },
 
+  /**
+   * Hex: the warlock's Hunter's Mark, and the other half of Eldritch Blast.
+   *
+   * A bonus action for +1d6 necrotic on every hit against one creature. Paired
+   * with Eldritch Blast that is a die PER BEAM, which is why the two are the
+   * class's whole damage plan and why the warlock does not need a Fireball.
+   *
+   * ON UPCASTING, WHICH THIS GAME CANNOT EXPRESS
+   *
+   * In the book, a 3rd-level Hex lasts 8 hours and a 5th-level one 24 — the
+   * reason a warlock casts it once and carries it all day. None of that has any
+   * meaning here: combatants are rebuilt from the campaign roster for every
+   * fight, and concentration does not survive the encounter, so a Hex is a
+   * one-fight rider however it is cast. Flagging it `upcast` would offer a
+   * choice of slot levels that all do exactly the same thing, which is the
+   * near-duplicate menu `legalActions` is careful to avoid. If cross-fight
+   * durations ever exist, this is the spell that wants them first.
+   */
+  hex: {
+    id: 'hex', name: 'Hex', level: 1, castingTime: 'bonus',
+    targeting: { kind: 'creature', range: 90, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '👁️‍🗨️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const target = state.combatants[targetId]!;
+      target.conditions.push({ id: 'hexed', sourceId: casterId, concentration: true });
+      state.combatants[casterId]!.concentratingOn = { spellId: 'hex', targetIds: [targetId] };
+      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'hexed', sourceId: casterId }];
+    },
+  },
   'hunters-mark': {
     id: 'hunters-mark', name: "Hunter's Mark", level: 1, castingTime: 'bonus',
     targeting: { kind: 'creature', range: 90, who: 'enemy', count: 1 },

@@ -118,24 +118,30 @@ const SRD: Record<string, string[]> = {
     'wind-wall',
   ],
   /**
-   * SRD 5.2 warlock list. Written out in full like the others so the class's
-   * own table is checked against the book rather than against itself — the
-   * point of this file is that a spell nobody looked up cannot quietly become
-   * a warlock spell by being convenient.
+   * SRD 5.2 warlock list, transcribed from the document's own Warlock Spell
+   * List tables rather than from memory.
+   *
+   * The first version of this entry WAS from memory and was wrong in both
+   * directions: it invented a 3rd-level tier out of the 2014 list (Gaseous
+   * Form, Hypnotic Pattern, Vampiric Touch, Major Image…) and it omitted Hex,
+   * which the SRD not only lists but recommends as one of a warlock's two
+   * starting spells. The omission is the dangerous half — this check only fires
+   * when the game grants something absent from the list, so a missing entry
+   * silently forbids a legitimate spell rather than flagging anything.
    */
   warlock: [
     // Cantrips
-    'blade-ward', 'chill-touch', 'eldritch-blast', 'friends', 'mage-hand', 'minor-illusion',
-    'poison-spray', 'prestidigitation', 'true-strike',
+    'chill-touch', 'eldritch-blast', 'mage-hand', 'minor-illusion', 'poison-spray',
+    'prestidigitation', 'true-strike',
     // 1st
-    'bane', 'charm-person', 'comprehend-languages', 'expeditious-retreat', 'hellish-rebuke',
-    'illusory-script', 'protection-from-evil-and-good', 'unseen-servant', 'witch-bolt',
+    'bane', 'charm-person', 'comprehend-languages', 'detect-magic', 'expeditious-retreat',
+    'hellish-rebuke', 'hex', 'hideous-laughter', 'illusory-script',
+    'protection-from-evil-and-good', 'speak-with-animals', 'unseen-servant',
     // 2nd
-    'darkness', 'enthrall', 'hold-person', 'invisibility', 'mirror-image', 'misty-step',
-    'ray-of-enfeeblement', 'shatter', 'spider-climb', 'suggestion',
+    'darkness', 'enthrall', 'hold-person', 'invisibility', 'mind-spike', 'mirror-image',
+    'misty-step', 'ray-of-enfeeblement', 'spider-climb', 'suggestion',
     // 3rd
-    'counterspell', 'dispel-magic', 'fear', 'fly', 'gaseous-form', 'hypnotic-pattern',
-    'magic-circle', 'major-image', 'remove-curse', 'tongues', 'vampiric-touch',
+    'counterspell', 'dispel-magic', 'fear', 'fly',
     // 4th
     'banishment', 'blight', 'charm-monster', 'dimension-door', 'hallucinatory-terrain',
   ],

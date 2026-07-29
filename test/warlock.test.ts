@@ -273,3 +273,89 @@ describe('multi-shot spells fire every shot', () => {
     }
   });
 });
+
+describe('Hex', () => {
+  it('is a 1st-level bonus action the warlock starts with', () => {
+    // The SRD recommends Hex as one of a warlock's two starting spells, and it
+    // is the other half of Eldritch Blast. Its own list check missed it: the
+    // hand-written SRD list in srd-spell-lists omitted Hex entirely, which
+    // would have silently forbidden it.
+    const spell = SPELLS.hex!;
+    expect(spell.level).toBe(1);
+    expect(spell.castingTime).toBe('bonus');
+    expect(spell.concentration).toBe(true);
+    expect(CLASSES.warlock!.spellcasting!.spellsByLevel[1] ?? []).toContain('hex');
+  });
+
+  it('adds a die to every hit, not once per turn', () => {
+    // The pairing that makes the class work: two beams carry the rider twice.
+    // Rolled against an unhexed control over many seeds, because 1d6 cannot be
+    // separated from 1d10's spread in a single cast.
+    const damage = (hexed: boolean) => {
+      let total = 0;
+      let hits = 0;
+      for (let seed = 1; seed <= 60; seed++) {
+        const me = warlock(5);
+        const foe = { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e0', hp: 400, maxHp: 400 };
+        const c = new Combat({ combatants: [me, foe], seed });
+        let guard = 0;
+        while (c.activeId !== me.id && guard++ < 30) c.apply({ kind: 'endTurn' });
+        if (hexed) {
+          c.state.combatants.e0!.conditions.push({ id: 'hexed', sourceId: me.id, concentration: true });
+        }
+        for (const e of c.apply({
+          kind: 'castSpell', spellId: 'eldritch-blast', slotLevel: 0,
+          targets: [{ combatantId: 'e0' }, { combatantId: 'e0' }],
+        })) {
+          if (e.type === 'attackRolled' && e.hit) hits++;
+          if (e.type === 'damageDealt') total += e.amount;
+        }
+      }
+      return { total, hits };
+    };
+    const on = damage(true);
+    const off = damage(false);
+    expect(on.hits).toBeGreaterThan(0);
+    const perHit = (on.total - off.total) / Math.max(1, (on.hits + off.hits) / 2);
+    // 1d6 averages 3.5; anything near 1.75 would mean it paid once per CAST
+    // rather than once per beam.
+    expect(perHit, 'Hex should add about 3.5 per landed beam').toBeGreaterThan(2.2);
+  });
+
+  it('only helps the warlock who cast it', () => {
+    const me = warlock(5);
+    const friend = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 3, y: 3 }, level: 5 }), id: 'a0' };
+    const foe = { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e0', hp: 400, maxHp: 400 };
+    const c = new Combat({ combatants: [me, friend, foe], seed: 3 });
+    // Hexed by somebody else entirely — the fighter's swings must not carry it.
+    c.state.combatants.e0!.conditions.push({ id: 'hexed', sourceId: 'nobody', concentration: true });
+    let guard = 0;
+    while (c.activeId !== 'a0' && guard++ < 30) c.apply({ kind: 'endTurn' });
+    const events = c.apply({ kind: 'attack', weaponId: 'longsword', targetId: 'e0' });
+    for (const e of events) {
+      if (e.type === 'damageDealt') expect(e.tags ?? []).not.toContain('Hex');
+    }
+  });
+
+  it('moves to a new quarry when its target drops', () => {
+    // Same courtesy Hunter's Mark gets, and for the same reason: a rider that
+    // died with its target would make the bonus action a worse deal than it
+    // reads as. Both riders share one loop so neither can be forgotten.
+    const me = warlock(5);
+    const a = { ...buildMonster('orc', 'team2', { x: 2, y: 3 }), id: 'e0', hp: 1, maxHp: 60 };
+    const b = { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e1', hp: 60, maxHp: 60 };
+    const c = new Combat({ combatants: [me, a, b], seed: 3 });
+    c.state.combatants.e0!.conditions.push({ id: 'hexed', sourceId: me.id, concentration: true });
+    c.state.combatants[me.id]!.concentratingOn = { spellId: 'hex', targetIds: ['e0'] };
+    applyDamage(c.state, 'e0', me.id, 20, 'necrotic', [20]);
+    expect(c.state.combatants.e1!.conditions.some((k) => k.id === 'hexed' && k.sourceId === me.id)).toBe(true);
+    expect(c.state.combatants[me.id]!.concentratingOn?.targetIds).toEqual(['e1']);
+  });
+
+  it('is what the AI spends its bonus action on', () => {
+    const { c, meId } = fight(5, [{ x: 4, y: 3 }]);
+    // Bonus action free, nothing hexed yet: Hex should be the pick.
+    const a = chooseAction(c.state, meId);
+    expect(a.kind === 'castSpell' && a.spellId === 'hex').toBe(true);
+  });
+});

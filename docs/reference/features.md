@@ -163,6 +163,7 @@ What the engine can put on a combatant, and what the log calls it.
 | `frightened` | frightened |
 | `guided` | marked by light |
 | `hasted` | hasted |
+| `hexed` | hexed |
 | `hidden` | hidden |
 | `incapacitated` | incapacitated |
 | `inspired` | inspired |

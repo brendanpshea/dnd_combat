@@ -142,6 +142,7 @@ export type ConditionId =
   | 'noReactions'  // Shocking Grasp rider
   | 'outlined'     // outlined: attacks against this creature have advantage, and it can't hide
   | 'marked'       // Hunter's Mark: +1d6 force per hit, from the marking ranger only
+  | 'hexed'        // Hex: +1d6 necrotic per hit, from the hexing warlock only
   | 'sacredWeapon' // Devotion's Channel Divinity: +Cha to the paladin's own attack rolls
   | 'sanctuary'    // Sanctuary: an attacker must make a Wis save or waste the attack
   | 'protected'    // Protection from Evil and Good: disadvantage for the six listed types
