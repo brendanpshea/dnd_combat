@@ -839,6 +839,20 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
     events.push(save.event);
     if (save.success) {
       events.push({ type: 'conditionRemoved', combatantId: id, condition: cond.id });
+      // Shaking off the fear stops the running too.
+      //
+      // Fear applies both `frightened` and `fleeing`, and only the first
+      // carries the save — this loop rolls once per condition that has one, so
+      // giving the flight its own would let a creature pass one save and fail
+      // the other, and keep sprinting for the door with no fear left in it.
+      // Companion conditions from the same source go when their holder goes.
+      if (cond.id === 'frightened') {
+        for (const other of c.conditions) {
+          if (other.id === 'fleeing' && other.sourceId === cond.sourceId) {
+            events.push({ type: 'conditionRemoved', combatantId: id, condition: 'fleeing' });
+          }
+        }
+      }
     } else if (cond.id === 'burning') {
       // Searing Smite: still alight, so it bites again. The only save-ends
       // condition that *does* something on a failure rather than merely
@@ -862,6 +876,10 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
       keep.push(cond); // failed but no escalation: condition persists
     }
   }
-  c.conditions = keep;
+  // Applied after the loop so a companion dropped above cannot be re-kept by
+  // its own iteration.
+  const shed = new Set(events.flatMap((e) =>
+    e.type === 'conditionRemoved' && e.combatantId === id ? [e.condition] : []));
+  c.conditions = keep.filter((k) => !(k.id === 'fleeing' && shed.has('fleeing')));
   return events;
 }

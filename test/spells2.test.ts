@@ -441,7 +441,16 @@ describe('Lightning Bolt', () => {
 });
 
 describe('Fear', () => {
-  it('frightens enemies in the cone so they attack at disadvantage', () => {
+  it('routs enemies in the cone: they are frightened AND they run', () => {
+    // This used to assert that a frightened goblin swings at disadvantage, and
+    // it was measuring half the spell. The SRD is explicit that a creature
+    // frightened by Fear must Dash away from the caster each turn — running is
+    // the difference between Fear and a cone of disadvantage, and without it
+    // the spell was a worse Bane.
+    //
+    // So the goblin can no longer be made to attack at all: a fleeing creature
+    // takes no actions. Disadvantage-while-frightened is still real and is
+    // checked below, from a source that does not also rout.
     for (let seed = 1; seed <= 40; seed++) {
       const c = new Combat({
         seed,
@@ -450,14 +459,48 @@ describe('Fear', () => {
       until(c, 'wiz');
       const events = c.apply({ kind: 'castSpell', spellId: 'fear', slotLevel: 3, targets: [{ position: { x: 3, y: 4 } }] });
       if (!events.some((e) => e.type === 'conditionApplied' && e.condition === 'frightened')) continue;
-      until(c, 'gob');
-      const swing = c.apply({ kind: 'attack', weaponId: 'goblin-scimitar', targetId: 'wiz' });
-      const roll = swing.find((e) => e.type === 'attackRolled')!;
-      if (roll.type !== 'attackRolled') throw new Error();
-      expect(roll.disSources).toContain('attacker frightened');
+      const gob = c.state.combatants.gob!;
+      expect(gob.conditions.some((k) => k.id === 'frightened')).toBe(true);
+      expect(gob.conditions.some((k) => k.id === 'fleeing'), 'Fear must make them run').toBe(true);
       return;
     }
     throw new Error('goblin never got frightened across 40 seeds');
+  });
+
+  it('frightened on its own still means disadvantage', () => {
+    // The half of the old test that is still true, kept from a source that
+    // frightens without routing — otherwise removing the disadvantage rule
+    // entirely would leave every test green.
+    const c = new Combat({
+      seed: 4,
+      combatants: [pc('wizard', 5, { x: 3, y: 3 }, 'wiz'), foe('goblin-warrior', { x: 3, y: 4 }, 'gob')],
+    });
+    c.state.combatants.gob!.conditions.push({ id: 'frightened', sourceId: 'wiz' });
+    until(c, 'gob');
+    const swing = c.apply({ kind: 'attack', weaponId: 'goblin-scimitar', targetId: 'wiz' });
+    const roll = swing.find((e) => e.type === 'attackRolled')!;
+    if (roll.type !== 'attackRolled') throw new Error();
+    expect(roll.disSources).toContain('attacker frightened');
+  });
+
+  it('shaking off the fear stops the running too', () => {
+    // Both conditions come from one spell but only `frightened` carries the
+    // save — `runEndOfTurnSaves` rolls once per condition that has one, so
+    // giving the flight its own would let a creature pass one save and fail the
+    // other, and keep sprinting with no fear left in it.
+    const c = new Combat({
+      seed: 4,
+      combatants: [pc('wizard', 5, { x: 3, y: 3 }, 'wiz'), foe('goblin-warrior', { x: 3, y: 4 }, 'gob')],
+    });
+    const gob = c.state.combatants.gob!;
+    gob.conditions.push({ id: 'frightened', sourceId: 'wiz', repeatSave: { ability: 'wis', dc: 1 } });
+    gob.conditions.push({ id: 'fleeing', sourceId: 'wiz' });
+    until(c, 'gob');
+    // DC 1: the save cannot fail, so the fear lifts this turn.
+    c.apply({ kind: 'endTurn' });
+    const after = c.state.combatants.gob!;
+    expect(after.conditions.some((k) => k.id === 'frightened')).toBe(false);
+    expect(after.conditions.some((k) => k.id === 'fleeing'), 'the flight must lift with the fear').toBe(false);
   });
 });
 

@@ -644,13 +644,15 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         if (!t.alive || isDown(t) || t.team === actor.team) continue;
         if (t.conditions.some((k) => k.id === 'frightened')) continue;
         // Priced in hit points, like everything else, rather than on a flat
-        // 3.5-per-head scale that no damage spell could ever lose to. What
-        // `frightened` does here is impose disadvantage on every attack the
-        // creature makes, so it is worth a share of what that creature was
-        // going to do — smaller than Confusion's 0.35, which takes the turn
-        // away outright, and larger than nothing, which is what a flat 3.5
-        // amounted to next to a cantrip.
-        v += saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) * 0.18;
+        // 3.5-per-head scale that no damage spell could ever lose to.
+        //
+        // Fear does not merely impose disadvantage: a creature caught by it
+        // RUNS, and one that reaches the edge is gone. So it is priced closer
+        // to Suggestion's outright removal than to Confusion's lost turn —
+        // discounted because a save every turn often ends the flight before
+        // anybody reaches a door, and because a cone catches several at once,
+        // which multiplies whatever this is worth.
+        v += saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) * 0.45;
       }
       return v - slotCost;
     }
