@@ -54,7 +54,15 @@ import { ITEMS } from '../src/data/items.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
 import type { Id } from '../src/engine/types.js';
 
-const RUNS = Number(process.argv[2] ?? 40);
+/**
+ * The run count is POSITIONAL, and the second argv is not always it.
+ *
+ * `Number('--start-level')` is NaN, so invoking this with a flag first — which
+ * reads perfectly naturally — made every loop below run zero times and printed
+ * a full report of nothing, with "NaN runs" in one header as the only clue.
+ * The same shape as the `indexOf(flag) + 1` bug documented just underneath.
+ */
+const RUNS = Number.isFinite(Number(process.argv[2])) ? Number(process.argv[2]) : 40;
 /**
  * `argv.indexOf(flag) + 1` is 0 when the flag is absent, and argv[0] is the node
  * binary — a truthy string that `Number()` turns into NaN. The `|| default`
@@ -154,14 +162,29 @@ interface ClassTally {
   runsIn: number; runsFinished: number;
 }
 const byClass = new Map<Id, ClassTally>();
-const tally = (id: Id): ClassTally => {
-  let t = byClass.get(id);
+/**
+ * The same tally again, keyed by SPECIES.
+ *
+ * Species used to be reported as one column — the share of runs containing it
+ * that finished — which is a party statistic wearing a species label. Four
+ * heroes are in every run, so a species' number is three quarters somebody
+ * else's, and with a dozen species over a few hundred runs almost every row
+ * lands on the overall average. It said nothing.
+ *
+ * Damage, damage taken and downs are per FIGHTER, so they say something a party
+ * average cannot drown: a dwarf takes fewer hit points to the face than an elf
+ * because of what a dwarf is, whoever it is standing next to.
+ */
+const bySpecies = new Map<Id, ClassTally>();
+const tallyIn = (m: Map<Id, ClassTally>, id: Id): ClassTally => {
+  let t = m.get(id);
   if (!t) {
     t = { fights: 0, damage: 0, taken: 0, healing: 0, kills: 0, downs: 0, deaths: 0, casts: 0, runsIn: 0, runsFinished: 0 };
-    byClass.set(id, t);
+    m.set(id, t);
   }
   return t;
 };
+const tally = (id: Id): ClassTally => tallyIn(byClass, id);
 
 /** casts[spellId] = { total, byClass } */
 const spellCasts = new Map<Id, { total: number; byClass: Map<Id, number> }>();
@@ -260,8 +283,20 @@ function playOne(seed: number, collect: boolean): Outcome {
 
     // Who is who, so an event carrying only an id can be attributed to a class.
     const classOf = new Map<Id, Id>();
-    for (const p of party) classOf.set(p.id, p.classId);
-    if (collect) for (const p of party) tally(p.classId).fights++;
+    const speciesOf = new Map<Id, Id>();
+    for (const p of party) { classOf.set(p.id, p.classId); speciesOf.set(p.id, p.speciesId ?? 'human'); }
+    if (collect) {
+      for (const p of party) {
+        tally(p.classId).fights++;
+        tallyIn(bySpecies, p.speciesId ?? 'human').fights++;
+      }
+    }
+    /** Both tallies a party member belongs to — class and species. */
+    const both = (id: Id | undefined): ClassTally[] => {
+      const cid = id === undefined ? undefined : classOf.get(id);
+      if (id === undefined || cid === undefined) return [];
+      return [tally(cid), tallyIn(bySpecies, speciesOf.get(id) ?? 'human')];
+    };
 
     let steps = 0;
     while (!combat.state.winner && steps++ < 600) {
@@ -270,17 +305,14 @@ function playOne(seed: number, collect: boolean): Outcome {
       for (const e of events) {
         switch (e.type) {
           case 'damageDealt': {
-            const src = classOf.get(e.sourceId);
-            if (src) tally(src).damage += e.amount;
-            const dst = classOf.get(e.targetId);
-            if (dst) tally(dst).taken += e.amount;
+            for (const t of both(e.sourceId)) t.damage += e.amount;
+            for (const t of both(e.targetId)) t.taken += e.amount;
             break;
           }
           case 'healed': {
-            const src = classOf.get(e.sourceId);
             // Self-healing counts — a potion is still hit points back on the
             // board — but it is the healer's own action either way.
-            if (src) tally(src).healing += e.amount;
+            for (const t of both(e.sourceId)) t.healing += e.amount;
             break;
           }
           case 'died': {
@@ -288,13 +320,11 @@ function playOne(seed: number, collect: boolean): Outcome {
             // damage, which the event does not carry. Attribute instead to the
             // party as "an enemy died while you were here"? No — that is not a
             // statistic. Only count party deaths, which the event does support.
-            const own = classOf.get(e.combatantId);
-            if (own) tally(own).deaths++;
+            for (const t of both(e.combatantId)) t.deaths++;
             break;
           }
           case 'downed': {
-            const own = classOf.get(e.combatantId);
-            if (own) tally(own).downs++;
+            for (const t of both(e.combatantId)) t.downs++;
             break;
           }
           case 'metamagic': {
@@ -309,10 +339,8 @@ function playOne(seed: number, collect: boolean): Outcome {
             let s = spellCasts.get(e.spellId);
             if (!s) { s = { total: 0, byClass: new Map() }; spellCasts.set(e.spellId, s); }
             s.total++;
-            if (src) {
-              s.byClass.set(src, (s.byClass.get(src) ?? 0) + 1);
-              tally(src).casts++;
-            }
+            if (src) s.byClass.set(src, (s.byClass.get(src) ?? 0) + 1);
+            for (const t of both(e.casterId)) t.casts++;
             break;
           }
           case 'counterspelled': {
@@ -577,10 +605,26 @@ if (itemUses.size) {
   for (const [id, n] of [...itemUses.entries()].sort((a, b) => b[1] - a[1])) console.log(`  ${pad(id, 26)} ${n}`);
 }
 
-console.log(`\n--- species (runs finished, ${RUNS} runs)`);
-for (const [id, s] of [...speciesRuns.entries()].sort((a, b) => b[1].finished / Math.max(1, b[1].runs) - a[1].finished / Math.max(1, a[1].runs))) {
-  console.log(`  ${pad(id, 14)} ${String(s.runs).padStart(3)} runs  ${pct(s.finished, s.runs).padStart(5)}`);
+console.log(`\n--- species (per fight a hero of that species was in)`);
+console.log(pad('species', 14) + ['   dmg', ' taken', '  heal', ' downs', ' casts', ' fights'].join(''));
+const sRows = [...bySpecies.entries()]
+  .sort((a, b) => b[1].damage / Math.max(1, b[1].fights) - a[1].damage / Math.max(1, a[1].fights));
+for (const [id, t] of sRows) {
+  const f = Math.max(1, t.fights);
+  console.log(
+    pad(id, 14) +
+    num(t.damage / f) + num(t.taken / f) + num(t.healing / f) +
+    num((t.downs / f) * 100) + num(t.casts / f) + num(t.fights),
+  );
 }
+// A species row is an average over whatever classes happened to roll it, so a
+// gap under a few points is class-mix noise, not a species difference. The
+// column that resists that is `taken`: it is hit points arriving at one body,
+// and armour, hit dice and resistances are what decide it.
+console.log('  the last column is hero-fights, i.e. the sample behind the row;');
+console.log(`  runs containing each species: ${
+  [...speciesRuns.entries()].sort((a, b) => b[1].runs - a[1].runs)
+    .map(([id, r]) => `${id} ${pct(r.finished, r.runs)}`).join(' · ')}`);
 
 /**
  * Everything worth A/B-ing, grouped so the report reads as families rather than
