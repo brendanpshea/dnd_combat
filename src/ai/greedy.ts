@@ -641,8 +641,16 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         const occ = cellAt(state.grid, pos)?.occupantId;
         if (!occ) continue;
         const t = state.combatants[occ]!;
-        if (!t.alive || t.team === actor.team) continue;
-        v += saveFailProb(state, t, 'wis', dc) * 3.5;
+        if (!t.alive || isDown(t) || t.team === actor.team) continue;
+        if (t.conditions.some((k) => k.id === 'frightened')) continue;
+        // Priced in hit points, like everything else, rather than on a flat
+        // 3.5-per-head scale that no damage spell could ever lose to. What
+        // `frightened` does here is impose disadvantage on every attack the
+        // creature makes, so it is worth a share of what that creature was
+        // going to do — smaller than Confusion's 0.35, which takes the turn
+        // away outright, and larger than nothing, which is what a flat 3.5
+        // amounted to next to a cantrip.
+        v += saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) * 0.18;
       }
       return v - slotCost;
     }

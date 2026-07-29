@@ -545,6 +545,60 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'agonizing-blast': { id: 'agonizing-blast', name: 'Agonizing Blast', trigger: 'passive' },
   /**
+   * Magical Cunning (Warlock 2): an action to get a pact slot back.
+   *
+   * The SRD's rite is a minute long and returns half the warlock's maximum,
+   * once per long rest. A minute is ten rounds, which is longer than most
+   * fights here, so the printed version is a between-fights button — and the
+   * arena already short-rests between the day's two fights, which refills
+   * everything anyway. As printed it would do nothing at all.
+   *
+   * So it is an ACTION for ONE slot, in the fight, once per long rest. That is
+   * the same resource in the place it can matter: a warlock holding two slots
+   * gets a third across a long fight, at the cost of a whole turn — which is a
+   * real decision, and reads as the same feature rather than as a new one.
+   */
+  'magical-cunning': {
+    id: 'magical-cunning', name: 'Magical Cunning', trigger: 'action',
+    uses: { count: 1, per: 'longRest' },
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      // The pact tier is the only one a warlock has, so refill the highest
+      // tier that is missing anything rather than assuming an index.
+      for (let i = c.spellSlots.length - 1; i >= 0; i--) {
+        const pool = c.spellSlots[i]!;
+        if (pool.max > 0 && pool.current < pool.max) {
+          pool.current += 1;
+          return [{ type: 'recharged', combatantId: actorId, featureId: 'magical-cunning' }];
+        }
+      }
+      return [];
+    },
+  },
+  /**
+   * Pact of the Tome: the Book of Shadows.
+   *
+   * Three cantrips from any class's list and a ritual, which the builder folds
+   * in as granted spells so they do not eat the warlock's own cantrip budget —
+   * the SRD is explicit that feature-granted spells do not count against what
+   * you prepare.
+   *
+   * The three are chosen rather than offered, for now: a picker over every
+   * cantrip in the game is a screen this does not have, and the useful answer
+   * for a warlock is narrow anyway. Vicious Mockery is the pick that is not
+   * about damage — a Wisdom save that leaves disadvantage behind, which
+   * Eldritch Blast cannot do at any level. Sacred Flame is a Dexterity save,
+   * so it goes through the armoured things a spell attack struggles with. Ray
+   * of Frost slows what is closing.
+   */
+  'pact-of-the-tome': { id: 'pact-of-the-tome', name: 'Pact of the Tome', trigger: 'passive' },
+  /**
+   * Fiend Spells (Fiend patron): always prepared, and not counted against the
+   * warlock's own prepared list — the SRD says so in as many words. This is
+   * where a warlock gets Fireball, which is not on its own spell list at all.
+   */
+  'fiend-spells': { id: 'fiend-spells', name: 'Fiend Spells', trigger: 'passive' },
+  /**
    * Armor of Shadows: Mage Armor on yourself, at will and for free.
    *
    * Applied in the builder rather than as a spell the warlock casts, because

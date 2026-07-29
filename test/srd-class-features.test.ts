@@ -78,6 +78,8 @@ const DELIBERATE: Record<string, string> = {
   'flurry-of-blows': "Monk 2 is Monk's Focus, whose whole content is three named techniques sharing one pool. Each is a separate feature here because each is a separate button; the SRD writes them as sub-headings, so they have no `Level N:` line of their own.",
   'patient-defense': "As Flurry of Blows: one of Monk's Focus's three techniques.",
   'step-of-the-wind': "As Flurry of Blows: one of Monk's Focus's three techniques.",
+  'pact-of-the-tome': "An Eldritch Invocation, not a level feature. The SRD lists invocations under one Level 1 heading and describes each in its own section, so none has a `Level N:` line. Granted outright because this game has no invocation picker deep enough to offer a pact boon alongside the four that are choices.",
+  'fiend-spells': 'Warlock 3 Fiend Spells IS a Level 3 heading in the Fiend Patron section; it is listed here only because the parser reads class sections and this one lives under the subclass.',
   'monk-defense': 'Monk 1 Unarmored Defense. Its id differs from the barbarian feature of the same name because the two add different abilities and the monk forbids a shield.',
 };
 
