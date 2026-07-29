@@ -442,6 +442,85 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   from { filter: brightness(0.9) saturate(0.95); }
   to   { filter: brightness(1.18) saturate(1.1); }
 }
+/* HAZARD, PER THEME.
+   `terrain-hazard` above is molten lava, and for a long time it was the ONLY
+   hazard in the game: the same orange glow in a forest, a graveyard, a market
+   square and a swamp. `difficult` had already been given a fiction per theme —
+   seepage between flagstones, boggy undergrowth, grave-mist, the Black Ford —
+   and hazard never was, so four of the six boards had a lava pool dropped into
+   them. Reviewed on whole boards rather than tile patches, which is what makes
+   it obvious: a lava tile is perfectly legible on its own and still wrong when
+   the ground around it is grass.
+   Stone and ember keep the molten default, where it is the fiction. */
+.board.theme-forest .cell.terrain-hazard {
+  /* a bramble thicket — thorns, not embers, so the danger is still hot-coloured
+     enough to read as "do not walk here" without being on fire */
+  background:
+    radial-gradient(70% 60% at 40% 34%, #7d3f2e 0%, #4a2a20 55%, transparent 78%),
+    repeating-linear-gradient(58deg, #2d4423 0 4px, #1c2f16 4px 8px),
+    linear-gradient(150deg, #33501f, #22380f);
+  animation: none;
+}
+.board.theme-forest .cell.terrain-hazard.needs-badge::after { content: '🌿'; }
+
+.board.theme-bog .cell.terrain-hazard {
+  /* bubbling muck — the swamp's own poison, sickly rather than molten */
+  background:
+    radial-gradient(66% 56% at 44% 40%, #b9c94a 0%, #6f8a2a 46%, transparent 76%),
+    radial-gradient(40% 34% at 70% 70%, #d6e06acc, transparent 70%),
+    linear-gradient(150deg, #3c4d1c, #22300f);
+  animation: emberGlow 2.6s ease-in-out infinite alternate;
+}
+.board.theme-bog .cell.terrain-hazard.needs-badge::after { content: '☠️'; }
+
+.board.theme-graveyard .cell.terrain-hazard {
+  /* an open grave breathing necrotic gas.
+     GREEN, not violet. The first version of this tile was a bright violet, and
+     on a whole board it sat two rows from the illusion overlay, which is also
+     violet — so the one square you must not step on and the one square that is
+     not really there were the same colour. Sickly green is the older and
+     better shorthand for grave-gas anyway, and it collides with nothing else
+     on this theme. */
+  background:
+    radial-gradient(72% 62% at 48% 42%, #cfe07a 0%, #6d8a3a 46%, transparent 76%),
+    linear-gradient(150deg, #2f3a24, #1a2016);
+  animation: emberGlow 2.6s ease-in-out infinite alternate;
+}
+.board.theme-graveyard .cell.terrain-hazard.needs-badge::after { content: '☠️'; }
+
+.board.theme-village .cell.terrain-hazard {
+  /* burning wreckage: fire belongs in a sacked village, but as charred timber
+     with flame in the gaps rather than as an open pool of lava */
+  background:
+    radial-gradient(58% 46% at 46% 62%, #ffb03c 0%, #d1521a 44%, transparent 74%),
+    repeating-linear-gradient(88deg, #2a1c16 0 5px, #1a110d 5px 10px),
+    linear-gradient(150deg, #4a2c1c, #291812);
+}
+.board.theme-village .cell.terrain-hazard.needs-badge::after { content: '🔥'; }
+
+/* DIFFICULT, for the two themes that never got one.
+   Both fell through to the generic rule, which is bright teal water — a
+   turquoise pool on scorched volcanic rock, and another on cobblestones. */
+.board.theme-ember .cell.terrain-difficult {
+  /* drifting ash and cinder, deep enough to wade — warm grey, not water */
+  background:
+    radial-gradient(90% 70% at 34% 28%, #9a8b80cc, transparent 62%),
+    radial-gradient(85% 65% at 70% 74%, #6f5f57cc, transparent 60%),
+    linear-gradient(150deg, #574840, #3a2e29);
+}
+/* A gust rather than a fog cloud: the badge is 13px at its largest, and a pale
+   grey-white fog emoji on pale grey ash vanished at that size. The badge is the
+   colour-blind fallback, so it has to survive the tile it sits on. */
+.board.theme-ember .cell.terrain-difficult.needs-badge::after { content: '💨'; }
+
+.board.theme-village .cell.terrain-difficult {
+  /* churned mud between the cobbles, after a lot of boots */
+  background:
+    radial-gradient(90% 70% at 32% 26%, #8a7350cc, transparent 62%),
+    radial-gradient(85% 65% at 70% 74%, #6b573bcc, transparent 60%),
+    linear-gradient(150deg, #574227, #3b2d1c);
+}
+
 /* A corner glyph so terrain meaning doesn't ride on colour alone (colour-blind
    safe, readable at a glance). Board.tsx tags only field edges and lone tiles
    with `needs-badge`, so a big lava pool or marsh isn't stamped on every cell. */
