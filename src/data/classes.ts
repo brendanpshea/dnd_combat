@@ -471,6 +471,86 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
   },
+  /**
+   * The sorcerer: a wizard's slot table and a wizard's spell list, spent
+   * differently.
+   *
+   * That is the honest summary of the class in a game this size, and it is why
+   * the class has to bring Metamagic to be worth adding at all. Its spell list
+   * is a subset of the wizard's here — the two spells that would have
+   * distinguished it (Sorcerous Burst, Chromatic Orb) do not exist in this
+   * codebase, and Find Familiar, Sleep-adjacent utility and the whole ritual
+   * half of the wizard's book are things the sorcerer does NOT get. What it
+   * gets instead is sorcery points.
+   *
+   * Charisma, d6, no armour: the squishiest caster in the game, which the
+   * arena's opening rounds will notice.
+   *
+   * The spell list below was transcribed from the SRD's Sorcerer Spell List and
+   * then intersected with what this game implements — 41 of them, which is why
+   * this class needed no new spells. Nothing was added because it looked good
+   * on a sorcerer; the same check that rejected four spells off the warlock
+   * (test/srd-spell-lists.test.ts) holds this list too, and Phantasmal Killer,
+   * Bane and Find Familiar are all absent from it for that reason.
+   */
+  sorcerer: {
+    id: 'sorcerer', name: 'Sorcerer', hitDie: 6,
+    savingThrows: ['con', 'cha'],
+    armorProfs: [],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['arcana', 'persuasion'],
+    statPriority: ['cha', 'con', 'dex', 'wis', 'int', 'str'],
+    spellcasting: {
+      ability: 'cha',
+      slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2]],
+      // SRD: four at level 1, a fifth at 4, a sixth at 10 (past this cap).
+      cantripsKnownByLevel: [4, 4, 4, 5, 5, 5, 5, 5],
+      preparedByLevel: [2, 4, 6, 7, 9, 10, 11, 12],
+      spellsByLevel: {
+        1: [
+          'fire-bolt', 'ray-of-frost', 'shocking-grasp', 'poison-spray', 'acid-splash',
+          'true-strike', 'minor-illusion',
+          'magic-missile', 'burning-hands', 'shield', 'mage-armor', 'sleep', 'color-spray',
+          'false-life', 'thunderwave', 'ray-of-sickness',
+        ],
+        3: ['scorching-ray', 'mirror-image', 'misty-step', 'web', 'invisibility', 'blindness',
+            'shatter', 'suggestion', 'hold-person', 'flaming-sphere'],
+        5: ['fireball', 'counterspell', 'fear', 'lightning-bolt', 'haste', 'dispel-magic',
+            'protection-from-energy'],
+        7: ['polymorph', 'greater-invisibility', 'banishment', 'confusion', 'blight',
+            'ice-storm', 'wall-of-fire', 'dimension-door'],
+      },
+    },
+    featuresByLevel: {
+      // Level 1 is Spellcasting and nothing else — the SRD gives a sorcerer no
+      // level-1 feature beyond its spells, and Innate Sorcery (also level 1)
+      // waits for its own change rather than being guessed at now.
+      2: ['font-of-magic', 'metamagic-quickened'],
+      // Draconic Sorcery, the SRD's only sorcerer subclass. Scales for armour
+      // and a hit point a level, which is what makes a d6 caster survivable
+      // enough to spend its points instead of hiding.
+      //
+      // Elemental Affinity (level 6) is deliberately absent: it is resistance
+      // plus a Charisma bonus on one damage roll of a matching spell, and the
+      // second half needs a hook in the damage pipeline that nothing else in
+      // the game wants. It belongs with the rest of the subclass rather than
+      // wedged in here.
+      3: ['draconic-resilience', 'draconic-spells'],
+      // 4: Ability Score Increase (builder).
+    },
+    weaponMasteries: [],
+    equipment: {
+      // Spear and daggers, per the SRD's option A. The daggers are what
+      // actually get thrown; the spear is the thing in hand when something
+      // closes, which for a d6 caster with no armour happens more than it
+      // should.
+      mainHand: 'dagger', offHand: 'dagger',
+      inventory: [
+        { itemId: 'spear', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   bard: {
     id: 'bard', name: 'Bard', hitDie: 8,
     savingThrows: ['dex', 'cha'],

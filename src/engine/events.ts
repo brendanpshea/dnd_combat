@@ -79,6 +79,9 @@ export type GameEvent =
   | { type: 'itemUsed'; combatantId: Id; itemId: Id; targetId?: Id }
   | { type: 'dashed'; combatantId: Id }
   | { type: 'recharged'; combatantId: Id; featureId: Id }
+  /** A sorcerer spent points to bend a spell. Emitted before `spellCast`, so a
+   *  log reads "Quickened Spell (2 SP)" and then the cast it paid for. */
+  | { type: 'metamagic'; casterId: Id; metamagicId: Id; spellId: Id; cost: number }
   | { type: 'disengaged'; combatantId: Id }
   | { type: 'dodging'; combatantId: Id }
   | { type: 'died'; combatantId: Id }

@@ -323,6 +323,22 @@ export interface Combatant {
     interacted: boolean;    // free object interaction (weapon swap) spent
     sneakAttackUsed: boolean;
     colossusUsed: boolean;  // Colossus Slayer: once per turn
+    /**
+     * A level 1+ spell has been cast this turn, and whether Quickened Spell was
+     * what cast it. Both halves of the 2024 Quickened clause need this:
+     *
+     *   "You can't modify a spell in this way if you've already cast a level 1+
+     *    spell on the current turn, nor can you cast a level 1+ spell on this
+     *    turn after modifying a spell in this way."
+     *
+     * This is the 2024 replacement for the old bonus-action-spell rule, and it
+     * is the whole balance of the option — without it, Quickened is "two
+     * leveled spells a turn for two points", which is not what it says.
+     * Cantrips are unaffected, so Quicken-a-Fireball-then-Fire-Bolt is the
+     * combination the rule intends to leave open.
+     */
+    leveledSpellCast: boolean;
+    quickenedThisTurn: boolean;
   };
   alive: boolean;
   /**

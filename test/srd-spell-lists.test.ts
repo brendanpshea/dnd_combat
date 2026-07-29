@@ -145,6 +145,40 @@ const SRD: Record<string, string[]> = {
     // 4th
     'banishment', 'blight', 'charm-monster', 'dimension-door', 'hallucinatory-terrain',
   ],
+  /**
+   * Sorcerer, transcribed from the SRD 5.2 Sorcerer Spell List rather than
+   * recalled. Two things worth knowing about it, both of which contradict a
+   * plausible guess: there is no Bane and no Find Familiar on it at all, and
+   * Flaming Sphere IS on it (it reads as a wizard/druid spell and is on all
+   * three lists). Phantasmal Killer is NOT — the wizard and bard have it, the
+   * sorcerer does not.
+   */
+  sorcerer: [
+    // Cantrips
+    'acid-splash', 'chill-touch', 'dancing-lights', 'elementalism', 'fire-bolt', 'light',
+    'mage-hand', 'mending', 'message', 'minor-illusion', 'poison-spray', 'prestidigitation',
+    'ray-of-frost', 'shocking-grasp', 'sorcerous-burst', 'true-strike',
+    // 1st
+    'burning-hands', 'charm-person', 'chromatic-orb', 'color-spray', 'comprehend-languages',
+    'detect-magic', 'disguise-self', 'expeditious-retreat', 'false-life', 'feather-fall',
+    'fog-cloud', 'grease', 'ice-knife', 'jump', 'mage-armor', 'magic-missile',
+    'ray-of-sickness', 'shield', 'silent-image', 'sleep', 'thunderwave',
+    // 2nd
+    'alter-self', 'blindness', 'blur', 'darkness', 'darkvision', 'detect-thoughts',
+    'dragons-breath', 'enhance-ability', 'enlarge-reduce', 'flame-blade', 'flaming-sphere',
+    'gust-of-wind', 'hold-person', 'invisibility', 'knock', 'levitate', 'magic-weapon',
+    'mirror-image', 'misty-step', 'scorching-ray', 'see-invisibility', 'shatter',
+    'spider-climb', 'suggestion', 'web',
+    // 3rd
+    'blink', 'clairvoyance', 'counterspell', 'daylight', 'dispel-magic', 'fear', 'fireball',
+    'fly', 'gaseous-form', 'haste', 'hypnotic-pattern', 'lightning-bolt', 'major-image',
+    'protection-from-energy', 'sleet-storm', 'slow', 'stinking-cloud', 'tongues',
+    'vampiric-touch', 'water-breathing', 'water-walk',
+    // 4th
+    'banishment', 'blight', 'charm-monster', 'confusion', 'dimension-door', 'dominate-beast',
+    'fire-shield', 'greater-invisibility', 'ice-storm', 'polymorph', 'stoneskin',
+    'vitriolic-sphere', 'wall-of-fire',
+  ],
   bard: [
     // Cantrips
     'dancing-lights', 'light', 'mage-hand', 'mending', 'message', 'minor-illusion',
@@ -207,6 +241,11 @@ const FEATURE_GRANTED: Record<string, Record<string, string>> = {
     'sacred-flame': 'Pact of the Tome: as Vicious Mockery.',
     'ray-of-frost': 'Pact of the Tome: as Vicious Mockery.',
     'find-familiar': "Pact of the Tome: the Book of Shadows' ritual.",
+  },
+  sorcerer: {
+    // Draconic Spells (level 3): always prepared, off-list by design, exactly
+    // as the Fiend patron's are for the warlock.
+    command: 'Draconic Spells (level 3): always prepared.',
   },
 };
 

@@ -206,6 +206,13 @@ CLASSES = {
     # is a cantrip rather than a held object, so the shape has to be the blast
     # itself -- a wand or a book would read as the wizard at 34px.
     "warlock": BODY + "M50 24a4 4 0 1 1 0 8 4 4 0 0 1 0-8z M56 28h12 M70 25l6 3-6 3z",
+    # A star bursting off the hand, with sparks. The sorcerer's magic comes from
+    # inside rather than out of a book, so it carries no object at all -- and it
+    # has to be tellable from BOTH the wizard (hat and orb) and the warlock
+    # (a straight beam) at 34px, which is why this one radiates in every
+    # direction instead of pointing anywhere.
+    "sorcerer": BODY + ("M52 18l3.5 6.5L62 28l-6.5 3.5L52 38l-3.5-6.5L42 28l6.5-3.5z "
+                        "M52 8v5 M52 43v5 M67 28h5 M62 18l4-4 M62 38l4 4"),
 }
 
 

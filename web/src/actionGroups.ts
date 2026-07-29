@@ -9,6 +9,7 @@ import { SPELLS, validTarget, type SpellData } from '../../src/data/spells.js';
 import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { FEATURES } from '../../src/data/features.js';
+import { METAMAGIC, type MetamagicId } from '../../src/engine/rules/metamagic.js';
 
 export const posKey = (p: Position) => `${p.x},${p.y}`;
 
@@ -47,6 +48,10 @@ export interface BarEntry {
 export interface MultiTargetSpec {
   spellId: Id;
   slotLevel: number;
+  /** Carried through the accumulate-taps flow so `buildMultiAction` rebuilds
+   *  the *bent* cast rather than a plain one — otherwise picking targets for a
+   *  quickened Magic Missile silently spends the action instead of the points. */
+  metamagic?: MetamagicId;
   maxTargets: number;
   allowRepeats: boolean;
   validIds: Set<Id>;
@@ -73,7 +78,8 @@ export function describeShort(a: Action): string {
       const name = SPELLS[a.spellId]?.name ?? a.spellId;
       // Weapon-attack spells carry which weapon; showing it is the whole point
       // of offering one per weapon (crossbow to shoot, mace to bonk).
-      return a.weaponId ? `${name} (${WEAPONS[a.weaponId]?.name ?? a.weaponId})` : name;
+      const bent = bentName(name, a.metamagic);
+      return a.weaponId ? `${bent} (${WEAPONS[a.weaponId]?.name ?? a.weaponId})` : bent;
     }
     case 'useItem': return ITEMS[a.itemId]?.name ?? a.itemId;
     case 'useFeature':
@@ -124,12 +130,31 @@ export function targetingNote(spell: SpellData): string {
 /** Level + aim: "L1 · 2×2 area". Cantrips cost no slot, so they show only aim.
  *  `castLevel` overrides the spell's own level for an upcast (a smite paid for
  *  with a bigger slot), so the note reports the slot actually being spent. */
-function spellNote(spell: SpellData, innateUsesLeft?: number, castLevel?: number): string {
+function spellNote(spell: SpellData, innateUsesLeft?: number, castLevel?: number, metamagic?: MetamagicId): string {
   const level = castLevel ?? spell.level;
   const cost = innateUsesLeft !== undefined ? `${innateUsesLeft} left`
     : level > 0 ? `L${level}` : '';
-  return [cost, targetingNote(spell)].filter(Boolean).join(' · ');
+  // The point cost goes in the note, not the label: it is the thing a player
+  // needs before pressing, and a button that spends a resource without saying
+  // which one is how a sorcerer arrives at the second fight of the day empty.
+  const sp = metamagic ? `${METAMAGIC[metamagic].cost} SP` : '';
+  return [cost, sp, targetingNote(spell)].filter(Boolean).join(' · ');
 }
+
+/**
+ * How a bent cast is labelled, and how its entry is keyed.
+ *
+ * A separate entry per Metamagic option — the same shape upcasting already
+ * uses ("Fireball (L4)"). That works while there is ONE option and it is only
+ * offered once the action is spent, so a bent entry never sits next to its own
+ * plain version. It stops working the moment a second option arrives that
+ * applies to an ordinary action cast: then the tray doubles, and the chip-row
+ * design (arm an option, filter the list) is what replaces this.
+ */
+function bentName(name: string, metamagic?: MetamagicId): string {
+  return metamagic ? `${name} (${METAMAGIC[metamagic].name.replace(' Spell', '')})` : name;
+}
+const bentKey = (id: string, metamagic?: MetamagicId): string => (metamagic ? `${id}#${metamagic}` : id);
 
 /** Remaining innate casts of a spell for the actor, or undefined if not innate. */
 function innateLeft(actor: Combatant, spellId: Id): number | undefined {
@@ -198,25 +223,26 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         const spell = SPELLS[a.spellId]!;
         const t = spell.targeting;
         if (first && 'position' in first) {
-          const m = cellSpells.get(a.spellId) ?? new Map<string, Action>();
+          const cellKey = bentKey(a.spellId, a.metamagic);
+          const m = cellSpells.get(cellKey) ?? new Map<string, Action>();
           m.set(posKey(first.position), a);
-          cellSpells.set(a.spellId, m);
+          cellSpells.set(cellKey, m);
         } else if (t.kind === 'self') {
           // Smites are offered at every slot level the caster can pay for, so
           // the key has to carry the level too — otherwise "Divine Smite L1"
           // and "L2" collide into one entry.
-          const key = `${a.spellId}@${a.slotLevel}`;
+          const key = bentKey(`${a.spellId}@${a.slotLevel}`, a.metamagic);
           if (!seenMulti.has(key)) {
             seenMulti.add(key);
             // Only an upcast carries the level in its id, so the base entry
             // keeps the stable `spell:<id>` every other lookup expects.
             const upcast = a.slotLevel > spell.level;
             bar.push({
-              id: upcast ? `spell:${a.spellId}@${a.slotLevel}` : `spell:${a.spellId}`,
-              label: upcast ? `${spell.name} (L${a.slotLevel})` : spell.name,
+              id: `spell:${bentKey(upcast ? `${a.spellId}@${a.slotLevel}` : a.spellId, a.metamagic)}`,
+              label: bentName(upcast ? `${spell.name} (L${a.slotLevel})` : spell.name, a.metamagic),
               icon: spell.icon,
               group: 'spell',
-              note: spellNote(spell, undefined, a.slotLevel),
+              note: spellNote(spell, undefined, a.slotLevel, a.metamagic),
               action: a,
             });
           }
@@ -225,20 +251,20 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           // the weapon does — but it carries no `count`, so it takes the plain
           // single-target route rather than the multi-tap spec.
           pushTarget(first.combatantId, describeShort(a), a, spell.icon);
-          if (!seenMulti.has(a.spellId)) {
-            seenMulti.add(a.spellId);
+          if (!seenMulti.has(bentKey(a.spellId, a.metamagic))) {
+            seenMulti.add(bentKey(a.spellId, a.metamagic));
             const validIds = new Set(
               Object.values(state.combatants)
                 .filter((cc: Combatant) => cc.alive && validTarget(state, actorId, spell, cc.id))
                 .map((cc: Combatant) => cc.id),
             );
             bar.push({
-              id: `spell:${a.spellId}`,
-              label: spell.name,
+              id: `spell:${bentKey(a.spellId, a.metamagic)}`,
+              label: bentName(spell.name, a.metamagic),
               icon: spell.icon,
               group: 'spell',
-              note: spellNote(spell),
-              multi: { spellId: a.spellId, slotLevel: a.slotLevel, maxTargets: 1, allowRepeats: false, validIds },
+              note: spellNote(spell, undefined, undefined, a.metamagic),
+              multi: { spellId: a.spellId, slotLevel: a.slotLevel, maxTargets: 1, allowRepeats: false, validIds, ...(a.metamagic ? { metamagic: a.metamagic } : {}) },
             });
           }
         } else if (t.kind === 'creature' && first && 'combatantId' in first) {
@@ -255,8 +281,8 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           // ...and *every* creature-targeted spell gets a tray entry, because
           // opening "Spells" and finding only some of your spells is a lie. The
           // two paths answer different questions: what can I do, vs do it now.
-          if (!seenMulti.has(a.spellId)) {
-            seenMulti.add(a.spellId);
+          if (!seenMulti.has(bentKey(a.spellId, a.metamagic))) {
+            seenMulti.add(bentKey(a.spellId, a.metamagic));
             const validIds = new Set(
               Object.values(state.combatants)
                 .filter((c: Combatant) => c.alive && validTarget(state, actorId, spell, c.id))
@@ -267,13 +293,14 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
               maxTargets: t.count,
               allowRepeats: a.spellId === 'magic-missile' || a.spellId === 'scorching-ray',
               validIds,
+              ...(a.metamagic ? { metamagic: a.metamagic } : {}),
             };
             bar.push({
-              id: `spell:${a.spellId}`,
-              label: spell.name,
+              id: `spell:${bentKey(a.spellId, a.metamagic)}`,
+              label: bentName(spell.name, a.metamagic),
               icon: spell.icon,
               group: 'spell',
-              note: spellNote(spell),
+              note: spellNote(spell, undefined, undefined, a.metamagic),
               multi,
             });
             // A multi-target enemy spell (Scorching Ray, Magic Missile) also
@@ -286,9 +313,9 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
               for (const id of validIds) {
                 // Anchor the flow on the tapped enemy (its first ray/dart), then
                 // pick the rest; falls back to a single-target cast if applied.
-                const firstAction: Action = { kind: 'castSpell', spellId: a.spellId, slotLevel: a.slotLevel, targets: [{ combatantId: id }] };
+                const firstAction: Action = { kind: 'castSpell', spellId: a.spellId, slotLevel: a.slotLevel, targets: [{ combatantId: id }], ...(a.metamagic ? { metamagic: a.metamagic } : {}) };
                 const list = perTarget.get(id) ?? [];
-                list.push({ label: `${spell.name} (${t.count} ${unit})`, icon: spell.icon, action: firstAction, multi });
+                list.push({ label: `${bentName(spell.name, a.metamagic)} (${t.count} ${unit})`, icon: spell.icon, action: firstAction, multi });
                 perTarget.set(id, list);
               }
             }
@@ -395,14 +422,15 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
   }
 
   const me = state.combatants[actorId]!;
-  for (const [spellId, cells] of cellSpells) {
+  for (const [key, cells] of cellSpells) {
+    const [spellId, metamagic] = key.split('#') as [Id, MetamagicId | undefined];
     const spell = SPELLS[spellId];
     bar.push({
-      id: `spell:${spellId}`,
-      label: spell?.name ?? spellId,
+      id: `spell:${key}`,
+      label: bentName(spell?.name ?? spellId, metamagic),
       ...(spell ? { icon: spell.icon } : {}),
       group: 'spell',
-      ...(spell ? { note: spellNote(spell, innateLeft(me, spellId)) } : {}),
+      ...(spell ? { note: spellNote(spell, innateLeft(me, spellId), undefined, metamagic) } : {}),
       cellTargets: cells,
     });
   }
@@ -428,5 +456,8 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
 export function buildMultiAction(spec: MultiTargetSpec, ids: Id[]): Action {
   const targets: Target[] = ids.map((combatantId) => ({ combatantId }));
   if (spec.itemId) return { kind: 'useItem', itemId: spec.itemId, targets };
-  return { kind: 'castSpell', spellId: spec.spellId, slotLevel: spec.slotLevel, targets };
+  return {
+    kind: 'castSpell', spellId: spec.spellId, slotLevel: spec.slotLevel, targets,
+    ...(spec.metamagic ? { metamagic: spec.metamagic } : {}),
+  };
 }

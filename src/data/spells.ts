@@ -883,18 +883,24 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
       if (!atk.hit) return events;
-      const dmg = rollDice(state.rng, `${2 + slotLevel}d8`, atk.crit);
+      // "2d8 Poison damage", +1d8 per slot level ABOVE 1st -- so 1 + slotLevel,
+      // not 2 + slotLevel. The off-by-one read plausibly and was invisible
+      // while the only ways to reach this spell were a tiefling's innate
+      // casting and the wizard's `learnableExtra`; adding it to the sorcerer's
+      // list made it the second most-cast leveled spell in a 40-run arena, at
+      // a third more damage than it is entitled to.
+      const dmg = rollDice(state.rng, `${1 + slotLevel}d8`, atk.crit);
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       const target = state.combatants[targetId]!;
       if (target.alive) {
-        const dc = spellDc(state, casterId);
-        const save = savingThrow(state, targetId, 'con', dc);
-        events.push(save.event);
-        if (!save.success) {
-          target.conditions.push({ id: 'poisoned', sourceId: casterId, repeatSave: { ability: 'con', dc } });
-          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'poisoned', sourceId: casterId });
-        }
+        // No save: the SRD applies Poisoned on a hit, full stop -- the attack
+        // roll IS the contest. And it lasts "until the end of your next turn",
+        // one round, rather than until a Constitution save shakes it off.
+        target.conditions.push({
+          id: 'poisoned', sourceId: casterId, expiresAtRound: state.round + 1,
+        });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'poisoned', sourceId: casterId });
       }
       return events;
     },

@@ -164,9 +164,21 @@ export function acOf(c: Combatant): number {
   // gone, and a corroded knight should not end up worse off than a naked one.
   const rust = c.corroded ?? 0;
   const shield = shieldBonus(c.equipped.offHand);
+  const extras = () => shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+  // Draconic Resilience: 10 + Dex + Cha while unarmoured. It shares the branch
+  // with Mage Armor rather than sitting below it because a draconic sorcerer
+  // has Mage Armor on its own spell list and will happily cast it — and at
+  // level 8 its scales (10 + Dex + 4) beat the spell (13 + Dex), so resolving
+  // in written order would have quietly made the subclass feature worthless on
+  // the exact character that has both. The higher of the two, which is also
+  // what the SRD means by "your base Armor Class equals".
+  const draconic = c.equipped.armor === undefined && c.featureIds.includes('draconic-resilience')
+    ? 10 + abilityMod(c.abilities.dex) + abilityMod(c.abilities.cha)
+    : undefined;
   if (c.mageArmor && c.equipped.armor === undefined) {
-    return 13 + abilityMod(c.abilities.dex) + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+    return Math.max(13 + abilityMod(c.abilities.dex), draconic ?? 0) + extras();
   }
+  if (draconic !== undefined) return draconic + extras();
   // Unarmored Defense: 10 + Dex + Con, with a shield still allowed. This is
   // the barbarian's armour, so it has to beat what it replaces or the class
   // simply wears half plate instead — and the whole point of the feature is

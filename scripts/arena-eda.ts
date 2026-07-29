@@ -165,6 +165,15 @@ const tally = (id: Id): ClassTally => {
 
 /** casts[spellId] = { total, byClass } */
 const spellCasts = new Map<Id, { total: number; byClass: Map<Id, number> }>();
+/**
+ * Metamagic use, by option and by the spell it bent.
+ *
+ * Counted separately because a `spellCast` event says nothing about how the
+ * cast was paid for, and "is Quickened ever chosen" is the only question the
+ * sorcerer's whole resource system turns on. A Metamagic option nothing picks
+ * is a Metamagic option that does not exist.
+ */
+const metamagicUse = new Map<string, { total: number; bySpell: Map<Id, number> }>();
 const itemUses = new Map<Id, number>();
 /**
  * Reactions never produce a `spellCast` event — they fire from inside the
@@ -286,6 +295,13 @@ function playOne(seed: number, collect: boolean): Outcome {
           case 'downed': {
             const own = classOf.get(e.combatantId);
             if (own) tally(own).downs++;
+            break;
+          }
+          case 'metamagic': {
+            let m = metamagicUse.get(e.metamagicId);
+            if (!m) { m = { total: 0, bySpell: new Map() }; metamagicUse.set(e.metamagicId, m); }
+            m.total++;
+            m.bySpell.set(e.spellId, (m.bySpell.get(e.spellId) ?? 0) + 1);
             break;
           }
           case 'spellCast': {
@@ -540,6 +556,17 @@ const never = [...everPlayable]
   .filter((id) => !spellCasts.has(id) && SPELLS[id]?.castingTime !== 'reaction').sort();
 console.log(`\n--- never cast (${never.length} of ${everPlayable.size} playable combat spells)`);
 for (const id of never) console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level}`);
+
+console.log('\n--- metamagic');
+if (metamagicUse.size === 0) {
+  console.log('  never used — either no sorcerer rolled, or the option is priced out of reach');
+} else {
+  for (const [id, m] of [...metamagicUse.entries()].sort((a, b) => b[1].total - a[1].total)) {
+    const spells = [...m.bySpell.entries()].sort((a, b) => b[1] - a[1])
+      .map(([sid, n]) => `${SPELLS[sid]?.name ?? sid} ${n}`).join(', ');
+    console.log(`  ${id.padEnd(12)} ${String(m.total).padStart(4)}   ${spells}`);
+  }
+}
 
 console.log(`\n--- reactions (no spellCast event; counted from their own)`);
 console.log(`  Counterspell fired ${counterspells} times`);

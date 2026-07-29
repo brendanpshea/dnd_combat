@@ -23,6 +23,7 @@ import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
 import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
+import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, type MetamagicId } from './rules/metamagic.js';
 import type { GameEvent } from './events.js';
 
 export type Target = { combatantId: Id } | { position: Position };
@@ -42,7 +43,16 @@ export type Action =
        */
       frenzy?: boolean;
     }
-  | { kind: 'castSpell'; spellId: Id; slotLevel: number; targets: Target[]; weaponId?: Id }
+  | {
+      kind: 'castSpell'; spellId: Id; slotLevel: number; targets: Target[]; weaponId?: Id;
+      /**
+       * Metamagic bending this cast. A modifier, not a different spell — every
+       * other gate on a cast applies unchanged, which is why it lives here
+       * rather than in an action kind of its own. See rules/metamagic.ts for
+       * why `legalActions` does not enumerate these.
+       */
+      metamagic?: MetamagicId;
+    }
   | { kind: 'useFeature'; featureId: Id }
   | { kind: 'useItem'; itemId: Id; targets?: Target[] }
   | { kind: 'dash' }
@@ -295,7 +305,18 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       // so the spells simply are not offered — telling a player "you cannot"
       // by removing the button beats letting them press one that does nothing.
       if (cellAt(state.grid, actor.position)?.silent) return false;
-      const costsAction = spell.castingTime === 'action';
+      // Quickened Spell rewrites the timing: an action-cast spell costs the
+      // bonus action instead. Checked before the timing gates because it
+      // changes which gate applies, not whether one does.
+      if (action.metamagic && !canMetamagic(state, actorId, spell, action.metamagic)) return false;
+      const quickened = action.metamagic === 'quickened';
+      // The 2024 Quickened clause, both directions. A leveled spell is what it
+      // gates on, so a quickened Fireball still leaves the cantrip — which is
+      // the combination the rule is written to allow.
+      const leveled = spell.level >= 1;
+      if (quickened && leveled && actor.turn.leveledSpellCast) return false;
+      if (!quickened && leveled && actor.turn.quickenedThisTurn) return false;
+      const costsAction = spell.castingTime === 'action' && !quickened;
       if (costsAction && actor.turn.actionUsed) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
       return spellAvailable(actor, spell, action.slotLevel) &&
@@ -596,6 +617,72 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     }
   }
 
+  /**
+   * Quickened Spell, and ONLY once the action is gone.
+   *
+   * This is the whole fan-out budget for Metamagic. On an ordinary turn the
+   * guard is false at the first clause and nothing below runs, so the cost to
+   * the eleven classes that cannot do this — and to a sorcerer's first cast —
+   * is one boolean. On the turn it does run, it re-walks the spell list once
+   * for the one class that can pay for it.
+   *
+   * Restricting it to `actionUsed` also happens to be the AI's whole story:
+   * scored in this state, a quickened cast is competing against ending the
+   * turn, so its score is exactly the delta it buys. Offered before the action
+   * is spent it would be competing against the same spell for free, and every
+   * modifier priced that way in this codebase has come out never-or-always.
+   */
+  const points = actor.featureUses[SORCERY_POINTS]?.current ?? 0;
+  if (actor.turn.actionUsed && !actor.turn.bonusActionUsed && points > 0) {
+    for (const meta of knownMetamagic(actor)) {
+      if (meta.cost > points) continue;
+      for (const sid of actor.spellIds) {
+        const spell = SPELLS[sid]!;
+        if (spell.castingTime === 'reaction' || spell.outOfCombat) continue;
+        if (!meta.applies(spell)) continue;
+        /**
+         * Leveled spells only, and this one is MEASURED rather than reasoned.
+         *
+         * The first version offered every quickenable spell, cantrips included,
+         * on the theory that `scoreSpell` would sort it out. Across 40 level-8
+         * arena runs, Quickened fired 258 times and 236 of those were Poison
+         * Spray — a quarter of the day's sorcery points for about five hit
+         * points of cantrip. That is the always-chosen half of the modifier
+         * bug: the scorer prices what a spell DOES and has no term at all for
+         * the points, so anything above zero wins.
+         *
+         * Rather than invent a price for a sorcery point — a constant with
+         * nothing behind it, which is how the other six went wrong — this is a
+         * stated policy: the pool exists to buy a second REAL spell, and a
+         * cantrip is never what it is for. `isLegalAction` still permits it, so
+         * a player who wants to spend two points on a Fire Bolt may.
+         */
+        if (spell.level < 1) continue;
+        const baseLevel = actor.innateSpells[sid] ? 0 : spell.level;
+        // No upcast ladder here: the point of the extra pass is the second
+        // cast, not a second menu, and the lowest slot that can pay is the
+        // same rule the ordinary path settled on for non-scaling spells.
+        let slotLevel: number | undefined;
+        if (baseLevel === 0) {
+          // Innate, so there is no slot to find — the species pool pays.
+          slotLevel = spellAvailable(actor, spell, 0) ? 0 : undefined;
+        } else {
+          for (let i = baseLevel; i <= actor.spellSlots.length; i++) {
+            if (spellAvailable(actor, spell, i)) { slotLevel = i; break; }
+          }
+        }
+        if (slotLevel === undefined) continue;
+        for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
+          const a: Action = {
+            kind: 'castSpell', spellId: sid, slotLevel, targets, metamagic: meta.id,
+            ...(weaponId ? { weaponId } : {}),
+          };
+          if (isLegalAction(state, actorId, a)) actions.push(a);
+        }
+      }
+    }
+  }
+
   for (const fid of actor.featureIds) {
     const a: Action = { kind: 'useFeature', featureId: fid };
     if (isLegalAction(state, actorId, a)) actions.push(a);
@@ -692,8 +779,18 @@ export function step(state: GameState, action: Action): { state: GameState; even
       break;
     case 'castSpell': {
       const spell = SPELLS[action.spellId]!;
-      if (spell.castingTime === 'action') actor.turn.actionUsed = true;
+      if (action.metamagic) {
+        const meta = METAMAGIC[action.metamagic];
+        const pool = actor.featureUses[SORCERY_POINTS];
+        if (pool) pool.current -= meta.cost;
+        events.push({ type: 'metamagic', casterId: actorId, metamagicId: meta.id, spellId: action.spellId, cost: meta.cost });
+      }
+      if (spell.castingTime === 'action' && action.metamagic !== 'quickened') actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
+      if (spell.level >= 1) {
+        actor.turn.leveledSpellCast = true;
+        if (action.metamagic === 'quickened') actor.turn.quickenedThisTurn = true;
+      }
       if (action.slotLevel >= 1) actor.spellSlots[action.slotLevel - 1]!.current -= 1;
       else if (actor.innateSpells[action.spellId]) actor.innateSpells[action.spellId]!.current -= 1;
       if (spell.concentration) events.push(...breakConcentration(draft, actorId));

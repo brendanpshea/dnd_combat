@@ -247,6 +247,8 @@ export function startTurn(state: GameState): GameEvent[] {
     interacted: false,
     sneakAttackUsed: false,
     colossusUsed: false,
+    leveledSpellCast: false,
+    quickenedThisTurn: false,
   };
   // The caster's summons act on their own: the Spiritual Weapon hammer and the
   // Flaming Sphere chase the nearest enemy and strike, and anything out of
