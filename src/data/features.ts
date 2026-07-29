@@ -509,6 +509,39 @@ export const FEATURES: Record<Id, FeatureData> = {
       return [{ type: 'conditionApplied', combatantId: actorId, condition: 'aiming', sourceId: actorId }];
     },
   },
+  /**
+   * Pact Magic: a marker, not an effect.
+   *
+   * The mechanics live in two places that read it — `recoverSlotsOnShortRest`
+   * gives every slot back rather than the half-level budget Arcane Recovery
+   * uses, and the class's own `slotsByLevel` puts all of them at one tier. This
+   * exists so both can ask "is this a pact caster" without either of them
+   * hard-coding the class id, which is how the warlock would end up half
+   * implemented the day somebody adds a second pact class.
+   */
+  'pact-magic': { id: 'pact-magic', name: 'Pact Magic', trigger: 'passive' },
+  /**
+   * Eldritch Invocations, of which this game grants exactly one: Agonizing
+   * Blast, +Charisma to every beam of Eldritch Blast.
+   *
+   * Named for the SRD heading rather than for the invocation, because that is
+   * what the class actually gets at level 1 — and because there is no
+   * invocation-picking screen here, so a feature called "Agonizing Blast" would
+   * be claiming a choice the player never makes. Agonizing Blast is the one
+   * every warlock takes, and a warlock without it is a warlock that does not
+   * work.
+   *
+   * Read inside the spell rather than as a damage hook, because it applies per
+   * BEAM — a generic "+Cha to spell damage" would pay it once and quietly halve
+   * the invocation for a warlock who has earned a second beam.
+   */
+  'eldritch-invocations': { id: 'eldritch-invocations', name: 'Eldritch Invocations', trigger: 'passive' },
+  /**
+   * Dark One's Blessing (Fiend patron): temporary hit points when you drop
+   * something. Checked in `applyDamage`, which is the one place that knows both
+   * that a creature reached zero and who put it there.
+   */
+  'dark-ones-blessing': { id: 'dark-ones-blessing', name: "Dark One's Blessing", trigger: 'passive' },
   'cunning-dash': {
     id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {

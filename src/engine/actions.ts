@@ -391,12 +391,17 @@ export function spellTargetSets(
       // Default selection depends on whether the spell's "shots" can double up
       // on one creature:
       //   Magic Missile  → every dart at the first target (its classic use);
-      //   Scorching Ray  → one ray per enemy, but *all* rays still fire — with a
-      //                    lone target every ray lands on it (previously it fired
-      //                    just one), and with too few enemies the extras pile on
-      //                    the last rather than vanishing;
+      //   Scorching Ray, Eldritch Blast → one shot per enemy, but *all* shots
+      //                    still fire: with a lone target every one lands on it,
+      //                    and with too few enemies the extras pile on the last
+      //                    rather than vanishing;
       //   Bless / Mass Healing Word → distinct allies, so no doubling up.
-      const stackable = spell.id === 'magic-missile' || spell.id === 'scorching-ray';
+      //
+      // Read off the spell (`stacksOnOneTarget`) rather than a list of ids kept
+      // here, which is what it was. That list named Magic Missile and Scorching
+      // Ray, so Eldritch Blast — added later, same shape — quietly fired one
+      // beam at a lone enemy however many it had earned.
+      const stackable = spell.stacksOnOneTarget === true;
       const targets: Target[] =
         spell.id === 'magic-missile'
           ? Array.from({ length: t.count }, () => ({ combatantId: valid[0]!.id }))

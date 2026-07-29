@@ -110,6 +110,22 @@ export interface SpellData {
    */
   outOfCombat?: boolean;
   /**
+   * The spell's several shots may all land on ONE creature.
+   *
+   * Scorching Ray's rays, Eldritch Blast's beams: with a lone enemy every shot
+   * hits it, and with too few enemies the extras pile on the last rather than
+   * vanishing. Contrast Bless and Mass Healing Word, whose targets must be
+   * distinct creatures.
+   *
+   * A property of the spell rather than a list of ids in `spellTargetSets`,
+   * which is where it started. That list named Magic Missile and Scorching Ray,
+   * so Eldritch Blast — added later, same shape — silently fired ONE beam at a
+   * lone enemy however many it had earned, which is most of a warlock's damage
+   * going quietly missing. A flag here cannot be forgotten by the next spell of
+   * this shape, because the spell has to say what it is either way.
+   */
+  stacksOnOneTarget?: boolean;
+  /**
    * This spell gets stronger in a bigger slot, so it is worth offering at every
    * slot the caster can afford rather than only at its own level.
    *
@@ -312,6 +328,15 @@ function armSmite({ state, casterId, slotLevel }: CastContext, spellId: Id): Gam
  * a dice expression ('1d10' → '2d10' at level 5), so a cantrip's damage roll is
  * `rollDice(rng, cantripDice(base, caster.level))`.
  */
+/**
+ * Eldritch Blast's beams. The SRD adds one at 5th, 11th and 17th; this game
+ * stops at 8, so in practice it is one beam or two — but the whole ladder is
+ * written out so the number does not have to be revisited if the cap moves.
+ */
+export function eldritchBeams(level: number): number {
+  return level >= 17 ? 4 : level >= 11 ? 3 : level >= 5 ? 2 : 1;
+}
+
 export function cantripDice(base: string, level: number): string {
   const m = base.match(/^(\d+)d(\d+)$/);
   if (!m) return base;
@@ -607,6 +632,44 @@ const PERSUADABLE: CreatureType[] = [
 ];
 
 export const SPELLS: Record<Id, SpellData> = {
+  /**
+   * Eldritch Blast: the warlock's whole attack routine.
+   *
+   * A cantrip rather than a spell, which is the point — Pact Magic gives so few
+   * slots that a warlock spends most turns on this. It fires more beams as the
+   * warlock grows (a second at 5th), each its own attack roll, and the beams
+   * may be split or stacked exactly like Magic Missile's darts.
+   *
+   * `count` on the targeting is a MAXIMUM (see isLegalAction), so it is written
+   * at the cap and the beams the caster has actually earned are taken here. A
+   * level-3 warlock handed two targets fires one, at the first of them.
+   */
+  'eldritch-blast': {
+    id: 'eldritch-blast', name: 'Eldritch Blast', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 2 },
+    concentration: false,
+    stacksOnOneTarget: true,
+    icon: '🟣',
+    cast({ state, casterId, targetIds }) {
+      const caster = state.combatants[casterId]!;
+      const events: GameEvent[] = [];
+      // Agonizing Blast adds the warlock's Charisma to EACH beam, which is what
+      // makes the invocation the one every warlock takes.
+      const agonizing = caster.featureIds.includes('eldritch-invocations')
+        ? Math.max(0, abilityMod(caster.abilities.cha)) : 0;
+      for (const tid of targetIds.slice(0, eldritchBeams(caster.level))) {
+        const t = state.combatants[tid];
+        if (!t?.alive) continue;
+        const atk = spellAttack(state, casterId, tid, { melee: false });
+        events.push(atk.event);
+        if (!atk.hit) continue;
+        const dmg = rollDice(state.rng, '1d10', atk.crit);
+        state.rng = dmg.state;
+        events.push(...applyDamage(state, tid, casterId, dmg.total + agonizing, 'force', dmg.rolls));
+      }
+      return events;
+    },
+  },
   'fire-bolt': {
     id: 'fire-bolt', name: 'Fire Bolt', level: 0, castingTime: 'action',
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
@@ -1631,6 +1694,7 @@ export const SPELLS: Record<Id, SpellData> = {
     // One entry per ray, repeats allowed (like Magic Missile darts).
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 3 },
     concentration: false,
+    stacksOnOneTarget: true,
     icon: '☄️',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];

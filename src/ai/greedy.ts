@@ -9,7 +9,7 @@ import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { next } from '../engine/rng.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, spellDc, cantripDice, wearsMetal, canBePutToSleep } from '../data/spells.js';
+import { SPELLS, spellDc, cantripDice, eldritchBeams, wearsMetal, canBePutToSleep } from '../data/spells.js';
 import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
@@ -199,6 +199,29 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
   const slotCost = spell.level >= 1 ? 2 : 0;
 
   switch (a.spellId) {
+    /**
+     * Eldritch Blast: the warlock's every turn.
+     *
+     * Priced per BEAM, because the beam count is the whole progression — a
+     * cantrip case that priced one beam would quietly halve the class from
+     * level 5 on, which is exactly the "cantrip cases still use their level-1
+     * dice" trap noted on Vicious Mockery.
+     *
+     * The targets arrive one per beam (Magic Missile's shape), so the score is
+     * summed over the entries rather than multiplied by a count.
+     */
+    case 'eldritch-blast': {
+      const agonizing = actor.featureIds.includes('eldritch-invocations')
+        ? Math.max(0, abilityMod(actor.abilities.cha)) : 0;
+      const beams = eldritchBeams(actor.level);
+      let v = 0;
+      for (const entry of a.targets.slice(0, beams)) {
+        const t = state.combatants[(entry as { combatantId: Id }).combatantId];
+        if (!t?.alive || isDown(t)) continue;
+        v += damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * (avgDice('1d10') + agonizing), t);
+      }
+      return v;
+    }
     case 'fire-bolt': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d10'), t);
