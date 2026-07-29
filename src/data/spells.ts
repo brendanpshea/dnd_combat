@@ -1596,6 +1596,18 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!save.success) {
           t.conditions.push({ id: 'frightened', sourceId: casterId, concentration: true, repeatSave: { ability: 'wis', dc } });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'frightened', sourceId: casterId });
+          // …and it RUNS. The SRD is explicit that a creature frightened by
+          // this spell must Dash away from the caster each turn, which is the
+          // whole difference between Fear and a cone of disadvantage — and
+          // this game already has the behaviour, as Turn Undead's rout.
+          //
+          // No `repeatSave` on the flight itself: `runEndOfTurnSaves` rolls one
+          // save per condition that carries one, so two would desync and leave
+          // a creature that had shaken off the fear still sprinting for the
+          // door. The save lives on `frightened`, and dropping it drops this
+          // with it — see `runEndOfTurnSaves`.
+          t.conditions.push({ id: 'fleeing', sourceId: casterId, concentration: true });
+          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'fleeing', sourceId: casterId });
           caught.push(tid);
         }
       }

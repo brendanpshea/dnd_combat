@@ -441,12 +441,19 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     }],
     featuresByLevel: {
-      1: ['pact-magic', 'eldritch-invocations'],
-      // 2: Magical Cunning regains the pact slots once per long rest. It is a
-      //    second short rest for slots and nothing else, and the arena already
-      //    gives a short rest between the day's two fights — left off rather
-      //    than added as a button that duplicates the schedule.
-      3: ['dark-ones-blessing'],   // Fiend patron
+      // Pact of the Tome is an invocation rather than a level feature, granted
+      // outright here because this game has no invocation picker deep enough to
+      // offer it alongside the four that are choices — and a warlock without a
+      // pact boon is missing the most recognisable thing about the class.
+      1: ['pact-magic', 'eldritch-invocations', 'pact-of-the-tome'],
+      // Magical Cunning, reshaped: the SRD's minute-long rite returns half the
+      // pact slots once per long rest, and a minute is ten rounds — longer than
+      // most fights here, and the arena already short-rests between the day's
+      // two fights, which refills everything. As printed it would do nothing at
+      // all. As an action for one slot, in the fight, it is the same resource
+      // somewhere it can matter.
+      2: ['magical-cunning'],
+      3: ['dark-ones-blessing', 'fiend-spells'],   // Fiend patron
       // 4: Ability Score Increase (builder).
       // 5: a second Eldritch Blast beam, which the spell reads off level.
       // 6: Dark One's Own Luck adds a d10 to an ability check or save. This

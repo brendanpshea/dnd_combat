@@ -194,6 +194,20 @@ const FEATURE_GRANTED: Record<string, Record<string, string>> = {
     fireball: 'Magical Discoveries (level 6): two spells from the cleric, druid or wizard list. Being off the bard list IS the feature.',
     'spiritual-weapon': 'Magical Discoveries (level 6): as Fireball.',
   },
+  warlock: {
+    // Fiend Spells (level 3) and the Book of Shadows (Pact of the Tome) both
+    // grant spells from outside the warlock list, and the SRD says in as many
+    // words that they do not count against what the warlock prepares. Being off
+    // the list IS the feature, exactly as with the bard's Magical Discoveries.
+    'burning-hands': 'Fiend Spells (level 3): always prepared.',
+    'scorching-ray': 'Fiend Spells (level 3): always prepared.',
+    fireball: 'Fiend Spells (level 5): always prepared, and the only area damage a warlock ever gets.',
+    'wall-of-fire': 'Fiend Spells (level 7): always prepared.',
+    'vicious-mockery': 'Pact of the Tome: three cantrips from any class list.',
+    'sacred-flame': 'Pact of the Tome: as Vicious Mockery.',
+    'ray-of-frost': 'Pact of the Tome: as Vicious Mockery.',
+    'find-familiar': "Pact of the Tome: the Book of Shadows' ritual.",
+  },
 };
 
 /** Every spell id a class hands out, from any level of its progression. */

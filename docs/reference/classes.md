@@ -357,8 +357,9 @@ Spellcasting ability: **WIS**.
 
 | Level | Features |
 | --- | --- |
-| 1 | Pact Magic, Eldritch Invocations |
-| 3 | Dark One's Blessing |
+| 1 | Pact Magic, Eldritch Invocations, Pact of the Tome |
+| 2 | Magical Cunning |
+| 3 | Dark One's Blessing, Fiend Spells |
 
 ### Spell slots
 

@@ -641,8 +641,18 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         const occ = cellAt(state.grid, pos)?.occupantId;
         if (!occ) continue;
         const t = state.combatants[occ]!;
-        if (!t.alive || t.team === actor.team) continue;
-        v += saveFailProb(state, t, 'wis', dc) * 3.5;
+        if (!t.alive || isDown(t) || t.team === actor.team) continue;
+        if (t.conditions.some((k) => k.id === 'frightened')) continue;
+        // Priced in hit points, like everything else, rather than on a flat
+        // 3.5-per-head scale that no damage spell could ever lose to.
+        //
+        // Fear does not merely impose disadvantage: a creature caught by it
+        // RUNS, and one that reaches the edge is gone. So it is priced closer
+        // to Suggestion's outright removal than to Confusion's lost turn —
+        // discounted because a save every turn often ends the flight before
+        // anybody reaches a door, and because a cone catches several at once,
+        // which multiplies whatever this is worth.
+        v += saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) * 0.45;
       }
       return v - slotCost;
     }

@@ -28,7 +28,8 @@ import { Combat } from '../src/engine/combat.js';
 import { CLASSES } from '../src/data/classes.js';
 import { FEATURES } from '../src/data/features.js';
 import { SPELLS, eldritchBeams } from '../src/data/spells.js';
-import { legalActions } from '../src/engine/actions.js';
+import { legalActions, isLegalAction } from '../src/engine/actions.js';
+import { acOf } from '../src/data/armor.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { applyDamage } from '../src/engine/rules/attack.js';
 import {
@@ -486,5 +487,111 @@ describe('what the invocations actually do', () => {
     c.state.combatants.a0!.hp = 4;
     applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40]);
     expect(c.state.combatants.a0!.hp).toBe(0);
+  });
+});
+
+describe('Magical Cunning', () => {
+  it('is an action that buys a pact slot back, once a day', () => {
+    // The SRD's rite is a minute long — ten rounds, longer than most fights —
+    // and returns half the maximum once per long rest. The arena already
+    // short-rests between the day's two fights, which refills everything, so
+    // as printed the feature would do nothing at all. As an action for one
+    // slot, in the fight, it is the same resource somewhere it can matter.
+    const { c, meId } = fight(7);
+    const live = c.state.combatants[meId]!;
+    const top = live.spellSlots.length - 1;
+    live.spellSlots[top]!.current = 0;
+    expect(isLegalAction(c.state, meId, { kind: 'useFeature', featureId: 'magical-cunning' })).toBe(true);
+    c.apply({ kind: 'useFeature', featureId: 'magical-cunning' });
+    expect(c.state.combatants[meId]!.spellSlots[top]!.current).toBe(1);
+    // Spent for the day.
+    expect(c.state.combatants[meId]!.featureUses['magical-cunning']?.current).toBe(0);
+  });
+
+  it('arrives at level 2, not before', () => {
+    expect(warlock(1).featureIds).not.toContain('magical-cunning');
+    expect(warlock(2).featureIds).toContain('magical-cunning');
+  });
+});
+
+describe('the Fiend patron', () => {
+  it('hands over Fireball at 5 and Wall of Fire at 7', () => {
+    // Neither is on the warlock spell list at all — this is the whole reason
+    // the class reads as having no area damage and then suddenly does.
+    expect(warlock(3).spellIds).not.toContain('fireball');
+    expect(warlock(5).spellIds).toContain('fireball');
+    expect(warlock(7).spellIds).toContain('wall-of-fire');
+    for (const id of ['burning-hands', 'command', 'scorching-ray', 'suggestion']) {
+      expect(warlock(3).spellIds, id).toContain(id);
+    }
+  });
+
+  it('does not spend the warlock\'s own prepared budget on them', () => {
+    // The SRD says in as many words that feature-granted spells do not count
+    // against what you prepare. Folded in at build time rather than through the
+    // class table, so the prepared cap cannot trim them away.
+    const cap = CLASSES.warlock!.spellcasting!.preparedByLevel![4]!;
+    const leveled = warlock(5).spellIds.filter((id) => (SPELLS[id]?.level ?? 0) > 0);
+    expect(leveled.length, 'the patron spells should be on top of the cap').toBeGreaterThan(cap);
+  });
+});
+
+describe('Pact of the Tome', () => {
+  it('grants three extra cantrips and a ritual', () => {
+    const ids = warlock(1).spellIds;
+    for (const id of ['vicious-mockery', 'sacred-flame', 'ray-of-frost', 'find-familiar']) {
+      expect(ids, id).toContain(id);
+    }
+    // On top of the warlock's own two, not instead of them.
+    const cantrips = ids.filter((id) => SPELLS[id]?.level === 0);
+    expect(cantrips.length).toBeGreaterThan(CLASSES.warlock!.spellcasting!.cantripsKnownByLevel![0]!);
+  });
+});
+
+describe('Armor of Shadows actually raises AC', () => {
+  it('sheds the leather rather than wearing it as well', () => {
+    // Mage Armor ends the instant you don armour — `acOf` has always known
+    // that, and it is the rule for the spell however it is cast. A warlock
+    // starting in leather (11 + Dex) therefore gained EXACTLY NOTHING from an
+    // invocation offering 13 + Dex: the pick was dead the moment it was made.
+    //
+    // The fix is not to let Mage Armor beat armour, which would rewrite the
+    // spell for every wizard too. It is that a warlock who took this would not
+    // be wearing the leather.
+    const plain = buildCharacter({
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 0 }, level: 3,
+      choices: { 'invocation-1': 'agonizing-blast' },
+    });
+    const warded = buildCharacter({
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 0 }, level: 3,
+      choices: { 'invocation-1': 'armor-of-shadows' },
+    });
+    expect(warded.equipped.armor, 'the leather should come off').toBeUndefined();
+    expect(acOf(warded)).toBeGreaterThan(acOf(plain));
+  });
+});
+
+describe('Fear is worth its slot', () => {
+  it('beats a cantrip, and still loses to a Fireball on the same three', () => {
+    // Fear was priced at a flat 3.5 a head — the same hand-tuned small-number
+    // scale the defensive spells were on, and no damage spell could ever lose
+    // to it. `frightened` here means disadvantage on every attack the creature
+    // makes, so it is worth a share of what that creature was going to do.
+    const clump = [{ x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }];
+    const pick = (spells: string[]) => {
+      const me = warlock(7);
+      me.spellIds = spells;
+      me.inventory = [];
+      const foes = clump.map((p, i) => ({
+        ...buildMonster('orc', 'team2', p), id: `e${i}`, hp: 60, maxHp: 60,
+      }));
+      const c = new Combat({ combatants: [me, ...foes], seed: 4 });
+      let guard = 0;
+      while (c.activeId !== me.id && guard++ < 30) c.apply({ kind: 'endTurn' });
+      const a = chooseAction(c.state, me.id);
+      return a.kind === 'castSpell' ? a.spellId : a.kind;
+    };
+    expect(pick(['fear', 'fire-bolt'])).toBe('fear');
+    expect(pick(['fear', 'fireball', 'fire-bolt'])).toBe('fireball');
   });
 });
