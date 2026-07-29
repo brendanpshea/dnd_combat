@@ -17,6 +17,7 @@ the reports for that reason.
 | --- | --- | --- |
 | `arena-eda.md` | `npm run arena-eda -- 40 --items` | Class performance, spell usage, species, and a 91-item A/B over randomized parties |
 | `spell-variety.md` | `npm run arena-eda -- --variety N` | Whether randomizing spell choice among near-ties costs win rate |
+| `classes-and-species.md` | `npm run arena-eda -- 300 --give-up 12 --shop --creep` | All twelve classes and eight species, and what the harness was missing |
 | `sorcerer.md` | `npm run arena-eda -- 60 --start-level 8 --give-up 12 --random-prep` | Where the sorcerer lands, and whether Quickened Spell is ever chosen |
 
 ## Reading them honestly
