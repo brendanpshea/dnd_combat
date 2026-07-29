@@ -72,7 +72,13 @@ import { generateArenaMap, type LayoutName } from './map.js';
  * more monster. The number between them is not a fine adjustment, it is the
  * only place to stand.
  */
-export const EVEN_BUDGET = [1500, 2600, 6200, 8000, 14000, 20000, 23000, 28000];
+// Levels 1 and 2 re-measured after the spell-scoring sweep (1500 -> 1650,
+// 2600 -> 2900). The AI
+// now puts up wards and buffs it previously scored below a cantrip, so the same
+// budget became an easier fight — 66% against a bound of "roughly even". This
+// is the re-measurement the calibration test asks for by name when it fires,
+// not a difficulty decision taken for its own sake.
+export const EVEN_BUDGET = [1650, 2900, 6200, 8000, 14000, 20000, 23000, 28000];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;
