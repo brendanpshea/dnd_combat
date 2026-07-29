@@ -21,9 +21,18 @@ export interface CombatSetup {
    *  so they never live in MAPS. Takes precedence over `mapId`. */
   map?: MapData;
   combatants: Combatant[]; // positions must be set and unique
-  /** A surprised team loses its first round: every member starts `incapacitated`
-   *  until the top of round 2 (can't act or take reactions). Models an ambush —
-   *  the party surprising raiders, or being caught out. */
+  /**
+   * A surprised team rolls Initiative with Disadvantage.
+   *
+   * That is the 2024 rule, whole: "If a combatant is surprised by combat
+   * starting, that combatant has Disadvantage on their Initiative roll."
+   *
+   * It used to be the 2014 one — every member `incapacitated` until the top of
+   * round 2, so the ambushed side lost a complete turn. Measured in the arena,
+   * where a party can gamble on creeping in, that was worth far too much: the
+   * group Stealth check succeeds 84% of the time and bought a free round
+   * against the whole enemy line, which is most of a fight.
+   */
   surprisedTeam?: TeamId;
 }
 
@@ -56,17 +65,7 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
     turnIndex: 0,
     winner: null,
   };
-  // Surprise: the surprised team is incapacitated through round 1, cleared at
-  // the start of each member's round-2 turn by the expiresAtRound machinery.
-  if (setup.surprisedTeam) {
-    for (const c of Object.values(combatants)) {
-      if (c.team === setup.surprisedTeam) {
-        c.conditions.push({ id: 'incapacitated', expiresAtRound: 1 });
-      }
-    }
-  }
-
-  const events = rollInitiative(state);
+  const events = rollInitiative(state, setup.surprisedTeam);
   return { state, events };
 }
 

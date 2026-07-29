@@ -46,14 +46,24 @@ function expireSummonsOnClock(state: GameState): GameEvent[] {
  *  this only ever fires on a pathological stall, to guarantee termination. */
 export const MAX_ROUNDS = 100;
 
-export function rollInitiative(state: GameState): GameEvent[] {
+export function rollInitiative(state: GameState, surprisedTeam?: TeamId): GameEvent[] {
   const entries: Array<{ id: Id; initiative: number; dex: number; tiebreak: number }> = [];
   for (const c of Object.values(state.combatants)) {
     // Advantage on Initiative: Remarkable Athlete (Champion 3) and Feral
     // Instinct (Barbarian 7). Same effect, so one check rather than two.
     const quick = c.featureIds.includes('remarkable-athlete') ||
       c.featureIds.includes('feral-instinct');
-    const d = quick ? rollD20(state.rng, 'advantage') : rollDie(state.rng, 20);
+    /**
+     * Surprise, 2024: "If a combatant is surprised by combat starting, that
+     * combatant has Disadvantage on their Initiative roll."
+     *
+     * That is the WHOLE rule. It is not the 2014 one, which took the surprised
+     * side's entire first round away, and the difference is enormous: a bad
+     * initiative roll means acting later, not not at all.
+     */
+    const surprised = surprisedTeam !== undefined && c.team === surprisedTeam;
+    const mode = quick && surprised ? 'flat' : quick ? 'advantage' : surprised ? 'disadvantage' : undefined;
+    const d = mode ? rollD20(state.rng, mode) : rollDie(state.rng, 20);
     state.rng = d.state;
     // Seeded tiebreak so equal-init, equal-dex ordering stays deterministic.
     const t = coinFlip(state.rng);

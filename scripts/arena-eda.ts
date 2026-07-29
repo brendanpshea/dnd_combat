@@ -233,6 +233,7 @@ const itemUses = new Map<Id, number>();
  */
 let counterspells = 0;
 /** Creep attempts and how many bought a surprise round. */
+const shoves = new Map<string, number>();
 let creeps = 0;
 let creepWins = 0;
 const speciesRuns = new Map<Id, { runs: number; finished: number }>();
@@ -435,6 +436,12 @@ function playOne(seed: number, collect: boolean): Outcome {
           }
           case 'downed': {
             for (const t of both(e.combatantId)) t.downs++;
+            break;
+          }
+          case 'shoved': {
+            const key = `${e.mode}${e.success ? '' : ' (saved)'}`;
+            shoves.set(key, (shoves.get(key) ?? 0) + 1);
+            if (classOf.has(e.shoverId)) shoves.set(`party ${key}`, (shoves.get(`party ${key}`) ?? 0) + 1);
             break;
           }
           case 'metamagic': {
@@ -722,6 +729,11 @@ if (CREEPING) {
   console.log(`\n--- creeping in (${creeps} attempts where there was cover)`);
   console.log(`  surprised the enemy ${pct(creepWins, creeps)} of the time;` +
     ` the other ${pct(creeps - creepWins, creeps)} surprised the party`);
+}
+
+if (shoves.size > 0) {
+  console.log('\n--- shoves');
+  for (const [k, n] of [...shoves.entries()].sort((a, b) => b[1] - a[1])) console.log(`  ${pad(k, 22)} ${n}`);
 }
 
 console.log('\n--- metamagic');

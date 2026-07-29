@@ -24,6 +24,7 @@ import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
 import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
 import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, heightenedTarget, type MetamagicId } from './rules/metamagic.js';
+import { canShove, resolveShove, type ShoveMode } from './rules/shove.js';
 import type { GameEvent } from './events.js';
 
 export type Target = { combatantId: Id } | { position: Position };
@@ -60,6 +61,16 @@ export type Action =
   | { kind: 'dodge' }
   | { kind: 'hide' }
   | { kind: 'shakeAwake'; targetId: Id }
+  /**
+   * The Unarmed Strike's Shove: five feet back, or flat on the floor.
+   *
+   * Its own action kind rather than a flavour of `attack`, because it rolls no
+   * attack roll at all — the target saves — and shares none of the weapon
+   * machinery. Two modes, because the SRD gives the shover the choice and they
+   * are good in completely different situations: push somebody into the fire,
+   * or put them on the floor for the melee line.
+   */
+  | { kind: 'shove'; targetId: Id; mode: ShoveMode }
   | { kind: 'endTurn' };
 
 /** Weapons True Strike can guide: anything currently attackable (in hand or a
@@ -381,6 +392,13 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       return !!t && t.alive && !isDown(t) && t.team === actor.team && t.id !== actorId &&
         adjacent(actor.position, t.position) &&
         t.conditions.some((c) => c.id === 'unconscious');
+    }
+    case 'shove': {
+      if (incap || actor.turn.actionUsed) return false;
+      const t = state.combatants[action.targetId];
+      // Hostiles only. Shoving an ally out of a fire is a lovely idea and a
+      // different feature; offering it here would double every tray entry.
+      return !!t && t.team !== actor.team && !isHidden(t) && canShove(actor, t);
     }
   }
 }
@@ -723,6 +741,16 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     const a: Action = { kind: 'shakeAwake', targetId: t.id };
     if (isLegalAction(state, actorId, a)) actions.push(a);
   }
+  // Shove: two entries per adjacent enemy, which is a handful at most. The two
+  // modes are genuinely different plays — five feet into the fire, or flat on
+  // the floor for the melee line — so both are offered rather than the engine
+  // guessing which one was meant.
+  for (const t of enemies) {
+    for (const mode of ['push', 'prone'] as const) {
+      const a: Action = { kind: 'shove', targetId: t.id, mode };
+      if (isLegalAction(state, actorId, a)) actions.push(a);
+    }
+  }
 
   actions.push({ kind: 'endTurn' });
   return actions;
@@ -946,6 +974,13 @@ export function step(state: GameState, action: Action): { state: GameState; even
       events.push({ type: 'conditionRemoved', combatantId: t.id, condition: 'unconscious' });
       break;
     }
+    case 'shove':
+      actor.turn.actionUsed = true;
+      // Shoving is hostile: it breaks a Sanctuary exactly as an attack does.
+      actor.conditions = actor.conditions.filter((k) => k.id !== 'sanctuary');
+      events.push(...endHide(actor));
+      events.push(...resolveShove(draft, actorId, action.targetId, action.mode));
+      break;
     case 'endTurn':
       events.push(...endTurn(draft, runEndOfTurnSaves));
       break;

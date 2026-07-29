@@ -21,19 +21,25 @@ function duel(seed = 1) {
 }
 
 describe('surprise (ambush)', () => {
-  it('the surprised team is incapacitated through round 1, freed at round 2', () => {
-    const c = new Combat({
+  it('costs the surprised team its initiative roll, not its first round', () => {
+    // 2024: "If a combatant is surprised by combat starting, that combatant has
+    // Disadvantage on their Initiative roll." Nobody is incapacitated — the old
+    // implementation was the 2014 rule, which took the whole first round away.
+    const build = (surprised: boolean) => new Combat({
       seed: 5,
       combatants: [
         makeCombatant({ id: 'a', team: 'team1', position: { x: 1, y: 1 } }),
         makeCombatant({ id: 'b', team: 'team2', position: { x: 6, y: 6 } }),
       ],
-      surprisedTeam: 'team2',
+      ...(surprised ? { surprisedTeam: 'team2' as const } : {}),
     });
-    const b = c.state.combatants['b']!;
-    expect(b.conditions.some((k) => k.id === 'incapacitated')).toBe(true);
-    // The un-surprised side is free from the start.
-    expect(c.state.combatants['a']!.conditions.some((k) => k.id === 'incapacitated')).toBe(false);
+    const c = build(true);
+    for (const id of ['a', 'b']) {
+      expect(c.state.combatants[id]!.conditions.some((k) => k.id === 'incapacitated'), id).toBe(false);
+    }
+    // Same seed, so the only thing that can move the number is the extra die.
+    expect(c.state.combatants['b']!.initiative)
+      .toBeLessThanOrEqual(build(false).state.combatants['b']!.initiative!);
   });
 
   it('does nothing when no team is surprised', () => {

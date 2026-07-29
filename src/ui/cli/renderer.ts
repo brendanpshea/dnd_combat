@@ -227,6 +227,11 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     }
     case 'dashed':
       return `${nm(e.combatantId)} dashes.`;
+    case 'shoved': {
+      const who = `${nm(e.shoverId)} shoves ${nm(e.targetId)}`;
+      if (!e.success) return `${who} — ${nm(e.targetId)} holds its ground.`;
+      return e.mode === 'prone' ? `${who} to the ground!` : `${who} back!`;
+    }
     case 'recharged':
       return `${nm(e.combatantId)}'s ${FEATURES[e.featureId]?.name ?? e.featureId} recharges!`;
     case 'disengaged':
@@ -310,6 +315,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
 export function describeAction(state: GameState, a: Action): string {
   switch (a.kind) {
     case 'move': return `Move to ${cellName(a.to)}`;
+    case 'shove':
+      return `Shove ${name(state, a.targetId)} ${a.mode === 'prone' ? 'prone' : 'back'}`;
     case 'attack': {
       const w = WEAPONS[a.weaponId]?.name ?? a.weaponId;
       return `${a.offhand ? 'Off-hand attack' : 'Attack'} ${name(state, a.targetId)} with ${w}`;
