@@ -117,6 +117,28 @@ const SRD: Record<string, string[]> = {
     'protection-from-energy', 'revivify', 'speak-with-plants', 'water-breathing', 'water-walk',
     'wind-wall',
   ],
+  /**
+   * SRD 5.2 warlock list. Written out in full like the others so the class's
+   * own table is checked against the book rather than against itself — the
+   * point of this file is that a spell nobody looked up cannot quietly become
+   * a warlock spell by being convenient.
+   */
+  warlock: [
+    // Cantrips
+    'blade-ward', 'chill-touch', 'eldritch-blast', 'friends', 'mage-hand', 'minor-illusion',
+    'poison-spray', 'prestidigitation', 'true-strike',
+    // 1st
+    'bane', 'charm-person', 'comprehend-languages', 'expeditious-retreat', 'hellish-rebuke',
+    'illusory-script', 'protection-from-evil-and-good', 'unseen-servant', 'witch-bolt',
+    // 2nd
+    'darkness', 'enthrall', 'hold-person', 'invisibility', 'mirror-image', 'misty-step',
+    'ray-of-enfeeblement', 'shatter', 'spider-climb', 'suggestion',
+    // 3rd
+    'counterspell', 'dispel-magic', 'fear', 'fly', 'gaseous-form', 'hypnotic-pattern',
+    'magic-circle', 'major-image', 'remove-curse', 'tongues', 'vampiric-touch',
+    // 4th
+    'banishment', 'blight', 'charm-monster', 'dimension-door', 'hallucinatory-terrain',
+  ],
   bard: [
     // Cantrips
     'dancing-lights', 'light', 'mage-hand', 'mending', 'message', 'minor-illusion',

@@ -202,6 +202,10 @@ CLASSES = {
     # Two raised fists and nothing else carried. The one class shape with no
     # object at all, which is exactly what a monk is.
     "monk":     BODY + "M14 22a5 5 0 1 1 0 10 5 5 0 0 1 0-10z M50 22a5 5 0 1 1 0 10 5 5 0 0 1 0-10z",
+    # A beam leaving an open hand. The warlock is the one caster whose signature
+    # is a cantrip rather than a held object, so the shape has to be the blast
+    # itself -- a wand or a book would read as the wizard at 34px.
+    "warlock": BODY + "M50 24a4 4 0 1 1 0 8 4 4 0 0 1 0-8z M56 28h12 M70 25l6 3-6 3z",
 }
 
 

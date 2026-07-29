@@ -329,6 +329,82 @@ export const CLASSES: Record<Id, ClassData> = {
    * someone — but Vicious Mockery is a 60 ft cantrip and Bardic Inspiration
    * reaches 60 ft too, which is exactly where it should be standing anyway.
    */
+  /**
+   * The Warlock. Pact Magic is the whole of it.
+   *
+   * Two slots, always at the caster's highest tier, back on every short rest —
+   * against a wizard's many that only come back at dawn. The arena runs two
+   * fights a day with a short rest between, which is exactly the rhythm this
+   * class is built for: a wizard walks into the afternoon depleted and a
+   * warlock walks in full.
+   *
+   * The consequence is that a warlock casts CANTRIPS most turns, which is why
+   * Eldritch Blast has to be good, and why Agonizing Blast is the invocation
+   * every warlock takes. It is written in here at 2 rather than offered as a
+   * choice: this game has no invocation-picking screen, and a warlock without
+   * it is a warlock that does not work.
+   *
+   * The gapped slot table (`[0, 0, 2]` and so on) is exactly the shape that
+   * `legalActions` could not cast from until the slot-payment fix -- a spell
+   * whose own tier is empty now finds the lowest slot that can pay for it.
+   */
+  warlock: {
+    id: 'warlock', name: 'Warlock', hitDie: 8,
+    savingThrows: ['wis', 'cha'],
+    armorProfs: ['light'],
+    weaponProfs: { simple: true, martial: false },
+    skillProfs: ['arcana', 'deception'],
+    statPriority: ['cha', 'con', 'dex', 'wis', 'int', 'str'],
+    spellcasting: {
+      ability: 'cha',
+      // Pact Magic: the count never grows past two inside this game's levels,
+      // and the TIER is what climbs. The zeros are the point — a level-7
+      // warlock holds two 4th-level slots and nothing at all below them.
+      slotsByLevel: [[1], [2], [0, 2], [0, 2], [0, 0, 2], [0, 0, 2], [0, 0, 0, 2], [0, 0, 0, 2]],
+      cantripsKnownByLevel: [2, 2, 2, 3, 3, 3, 3, 4],
+      // A warlock knows a short list and has them all ready; there is no
+      // preparing and unpreparing. Capped low to match.
+      preparedByLevel: [2, 3, 4, 5, 6, 7, 8, 9],
+      // Strongest first within each level — see spellsByLevel's note.
+      //
+      // Shorter than the other casters' lists, and deliberately not padded. The
+      // first draft reached for Vicious Mockery, Sleep, Fireball and Confusion
+      // because they are good and this class looked thin without them; the SRD
+      // list check rejected every one. A warlock is not a wizard with fewer
+      // slots — it has no Fireball and no healing at all, and the class works
+      // because Eldritch Blast is a cantrip it can throw every single turn.
+      spellsByLevel: {
+        1: ['eldritch-blast', 'poison-spray', 'true-strike', 'minor-illusion',
+            'bane', 'protection-from-evil-and-good'],
+        3: ['hold-person', 'shatter', 'mirror-image', 'invisibility', 'suggestion', 'misty-step'],
+        5: ['fear', 'counterspell', 'dispel-magic'],   // 3rd-level slots
+        7: ['banishment', 'blight', 'dimension-door'],
+      },
+    },
+    featuresByLevel: {
+      1: ['pact-magic', 'eldritch-invocations'],
+      // 2: Magical Cunning regains the pact slots once per long rest. It is a
+      //    second short rest for slots and nothing else, and the arena already
+      //    gives a short rest between the day's two fights — left off rather
+      //    than added as a button that duplicates the schedule.
+      3: ['dark-ones-blessing'],   // Fiend patron
+      // 4: Ability Score Increase (builder).
+      // 5: a second Eldritch Blast beam, which the spell reads off level.
+      // 6: Dark One's Own Luck adds a d10 to an ability check or save. This
+      //    game rolls neither outside combat saves, where the feature would be
+      //    a once-a-rest +d10 nobody chooses to spend — left off rather than
+      //    invented into something it is not, the same call the bard's Font of
+      //    Inspiration got.
+    },
+    weaponMasteries: [],
+    equipment: {
+      mainHand: 'dagger', armor: 'leather',
+      inventory: [
+        { itemId: 'light-crossbow', qty: 1 },
+        { itemId: 'potion-healing', qty: 1 },
+      ],
+    },
+  },
   bard: {
     id: 'bard', name: 'Bard', hitDie: 8,
     savingThrows: ['dex', 'cha'],

@@ -1131,6 +1131,18 @@ export function applyDamage(
     }
   }
 
+  if (target.hp === 0 && !wasDown && sourceId !== targetId) {
+    // Dark One's Blessing: the warlock is fed by what it kills. Here rather
+    // than in `kill`, because this is the one place that knows BOTH that a
+    // creature reached zero and who put it there — `kill` takes only the body.
+    const killer = state.combatants[sourceId];
+    if (killer?.alive && killer.featureIds.includes('dark-ones-blessing') && killer.team !== target.team) {
+      const temp = Math.max(1, abilityMod(killer.abilities.cha)) + killer.level;
+      // Temporary hit points do not stack: the larger pool wins.
+      killer.tempHp = Math.max(killer.tempHp ?? 0, temp);
+    }
+  }
+
   if (target.hp === 0) {
     // Heroes drop; monsters die. A downed hero can't be finished off — further
     // damage finds it already at 0 and changes nothing — so the fight's stake
