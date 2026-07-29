@@ -718,6 +718,11 @@ export const FEATURES: Record<Id, FeatureData> = {
   archery: { id: 'archery', name: 'Fighting Style: Archery', trigger: 'passive' },
   'great-weapon-fighting': { id: 'great-weapon-fighting', name: 'Fighting Style: Great Weapon Fighting', trigger: 'passive' },
   'two-weapon-fighting': { id: 'two-weapon-fighting', name: 'Fighting Style: Two-Weapon Fighting', trigger: 'passive' },
+  // Origin feat. Passive: the attack rule rerolls a below-average weapon damage
+  // roll once a turn (see rules/attack.ts). Listed here so it appears on the
+  // character sheet with everything else the hero has — a feature the engine
+  // reads but no panel names is a feat the player cannot tell they took.
+  'savage-attacker': { id: 'savage-attacker', name: 'Savage Attacker', trigger: 'passive' },
   'sneak-attack': {
     id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive',
     advantageDice: (level) => `${Math.ceil(level / 2)}d6`,

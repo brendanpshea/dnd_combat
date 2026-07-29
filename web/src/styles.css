@@ -3712,3 +3712,6 @@ button.category .count {
 .ability-foot .points { color: var(--gold); font-size: 10.5px; }
 /* Nothing left to spend is the finished state, not a warning. */
 .ability-foot .points.spent-all { color: var(--muted); }
+
+/* Origin feat picker: the second slot explains itself, since only humans see it. */
+.feat-why { color: var(--gold); font-size: 10px; font-weight: 600; }

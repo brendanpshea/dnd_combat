@@ -32,6 +32,7 @@ import { SPECIES } from '../src/data/species.js';
 import { CLASSES, SKILL_LABEL, kitFor } from '../src/data/classes.js';
 import { FEATURES, BREATH_WEAPONS } from '../src/data/features.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
+import { ORIGIN_FEATS, BACKGROUND_FEAT } from '../src/data/feats.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
 import { MAPS, parseMap } from '../src/data/maps.js';
 import { TRINKETS, trinketSlot } from '../src/data/trinkets.js';
@@ -458,7 +459,8 @@ function charactersDoc(): string {
   const species = Object.values(SPECIES).sort(byName);
   const backgrounds = Object.values(BACKGROUNDS).sort(byName);
   return [
-    preamble('Species & Backgrounds', `${species.length} species, ${backgrounds.length} backgrounds.`),
+    preamble('Species & Backgrounds',
+      `${species.length} species, ${backgrounds.length} backgrounds, ${Object.keys(ORIGIN_FEATS).length} origin feats.`),
     '## Species',
     '',
     table(
@@ -474,10 +476,30 @@ function charactersDoc(): string {
     '## Backgrounds',
     '',
     table(
-      ['Name', 'ID', 'Skills', 'Tool', 'Blurb'],
-      backgrounds.map((b) => [b.name, `\`${b.id}\``, b.skills.map((s) => SKILL_LABEL[s]).join(', '), b.toolNote, b.blurb]),
+      ['Name', 'ID', 'Skills', 'Origin feat', 'Tool', 'Blurb'],
+      backgrounds.map((b) => [b.name, `\`${b.id}\``, b.skills.map((s) => SKILL_LABEL[s]).join(', '),
+        ORIGIN_FEATS[BACKGROUND_FEAT[b.id] ?? '']?.name ?? '—', b.toolNote, b.blurb]),
     ),
     '',
+    '',
+    '## Origin Feats',
+    '',
+    'Every character gets one, from its background. Humans get two (Versatile).',
+    '',
+    table(
+      ['Name', 'ID', 'Grants', 'Blurb'],
+      Object.values(ORIGIN_FEATS).sort(byName).map((f) => [
+        f.name, `\`${f.id}\``,
+        [
+          ...(f.grants.spellIds ?? []).map((id) => `${SPELLS[id]?.name ?? id} (at will)`),
+          ...(f.grants.innateSpells ?? []).map((i) => `${SPELLS[i.spellId]?.name ?? i.spellId} ×${i.uses}/day`),
+          ...(f.grants.featureIds ?? []).map((id) => FEATURES[id]?.name ?? id),
+          ...(f.grants.hpPerLevel ? [`+${f.grants.hpPerLevel} HP per level`] : []),
+          ...(f.grants.skillCount ? [`${f.grants.skillCount} skill proficiencies`] : []),
+        ].join(', '),
+        f.blurb,
+      ]),
+    ),
   ].join('\n');
 }
 

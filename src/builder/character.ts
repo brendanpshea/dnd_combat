@@ -4,6 +4,7 @@
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
+import { ORIGIN_FEATS } from '../data/feats.js';
 import { defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
@@ -141,6 +142,12 @@ export interface BuildOptions {
    */
   statBuild?: StatBuild;
   /**
+   * Origin feats, from the background (and a second one for humans). Unknown
+   * ids are skipped rather than throwing — a save may name a feat a later
+   * version removed, and losing a feat beats failing to load the party.
+   */
+  featIds?: Id[];
+  /**
    * Campaign override: remaining spell slots by level (index 0 = 1st), from
    * before a long rest. Missing entries (new slot levels from a level-up, or
    * the field itself) default to full — a level-up never strands a hero with
@@ -270,6 +277,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     }
   }
 
+  /**
+   * Origin feats, folded once. Unknown ids drop out rather than throwing: a
+   * save may name a feat a later version removed, and losing a feat beats
+   * failing to load the party.
+   */
+  const feats = (opts.featIds ?? []).map((id) => ORIGIN_FEATS[id]).filter((f) => f !== undefined);
+
   const conMod = abilityMod(abilities.con);
   // A held weapon can grant things too (Berserker Axe: hit points per level).
   const heldGrants = [opts.equipped?.mainHand, opts.equipped?.offHand]
@@ -284,7 +298,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ? 3 + (level - 3)
     : 0;
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level +
-    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp;
+    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp +
+    // Tough. Per level and not a flat lump, exactly like a species' own bonus,
+    // so it stays worth taking at 8th instead of rounding to nothing.
+    feats.reduce((n, f) => n + (f.grants.hpPerLevel ?? 0) * level, 0);
 
   // The kit's defaults sit UNDER the player's picks: an unchosen Fighting Style
   // comes from the kit that has to live with it, and anything explicitly picked
@@ -315,6 +332,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     .flatMap(([, ids]) => ids),
     ...(species.featureIds ?? []),
     ...grants.featureIds,
+    ...feats.flatMap((f) => f.grants.featureIds ?? []),
   ])];
 
   const featureUses: Record<Id, ResourcePool> = {};
@@ -364,6 +382,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   for (const s of species?.innateSpells ?? []) {
     if (s.atLevel <= level) innateSpells[s.spellId] = { current: s.uses, max: s.uses };
   }
+  // Magic Initiate's one-a-day spell rides the same pool the species use, which
+  // is the whole reason the feat needed no new machinery.
+  for (const f of feats) {
+    for (const s of f.grants.innateSpells ?? []) {
+      innateSpells[s.spellId] = { current: s.uses, max: s.uses };
+    }
+  }
 
   // "Spells known" model: the class table is the menu; the caster knows a
   // capped selection of cantrips and leveled spells, chosen in the campaign's
@@ -395,6 +420,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ...known(species?.spellsByLevel),
     ...Object.keys(innateSpells),
     ...grants.spellIds,
+    ...feats.flatMap((f) => f.grants.spellIds ?? []),
     // Feature-granted spells, which the SRD is explicit do NOT count against
     // what the class can prepare: the Fiend patron's always-prepared list, and
     // the Book of Shadows' cantrips and ritual. Folded in here rather than into
@@ -489,13 +515,19 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
-      colossusUsed: false,
+      colossusUsed: false, savageUsed: false,
       leveledSpellCast: false,
       quickenedThisTurn: false,
     },
     alive: true,
   };
   if (cls.spellcasting) combatant.spellcastingAbility = cls.spellcasting.ability;
+  // A feat's casting ability only applies to a character that has none of its
+  // own — Magic Initiate must never overwrite a wizard's Intelligence.
+  else {
+    const fromFeat = feats.find((f) => f.grants.spellcastingAbility)?.grants.spellcastingAbility;
+    if (fromFeat) combatant.spellcastingAbility = fromFeat;
+  }
   // Find Familiar is a slot-free ritual that never dies in this model, so a
   // caster who knows it has no reason not to have cast it — grant the owl by
   // default (players, and the AI, forgot to summon it otherwise). The campaign

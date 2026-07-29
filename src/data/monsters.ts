@@ -1838,7 +1838,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: m.speed, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
-      colossusUsed: false,
+      colossusUsed: false, savageUsed: false,
       leveledSpellCast: false,
       quickenedThisTurn: false,
     },

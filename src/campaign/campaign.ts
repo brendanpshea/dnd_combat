@@ -28,6 +28,7 @@ import { missingRoles } from './roles.js';
 import { actsOnItsOwn } from '../engine/rules/summon.js';
 import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool, kitFor, defaultKitId } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
+import { ORIGIN_FEATS, defaultFeatFor, skilledSkills } from '../data/feats.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/encounters.js';
 import type { Rarity } from '../data/armor.js';
@@ -133,6 +134,12 @@ export interface PartyCharacter {
   kitId?: Id;
   /** Hand-edited point-buy scores. Absent = the kit's recommended build. */
   statBuild?: StatBuild;
+  /**
+   * Chosen origin feats, by slot: `[0]` is the background's, `[1]` the human's
+   * second. Absent entries fall back to the background default, so a save
+   * written before feats existed gains the right ones rather than none.
+   */
+  feats?: Array<Id | undefined>;
   /** Background id — grants two skill proficiencies (see data/backgrounds.ts).
    *  Absent = none (legacy saves, skirmish parties). */
   backgroundId?: Id;
@@ -1124,6 +1131,10 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
     delete target.choices;
     delete target.kitId;
     delete target.statBuild;
+    // Feats follow the background, and an un-customized background follows the
+    // class — so a hand-picked feat outliving the class it was picked for would
+    // be the one thing that did not move.
+    delete target.feats;
     target.inventory = equipment.inventory.map((stack) => ({ ...stack }));
     target.equipped = {
       mainHand: equipment.mainHand,
@@ -1250,6 +1261,66 @@ export function clearPartyStatBuild(c: CampaignState, charIdx: number): boolean 
 export function partyChoice(ch: PartyCharacter, pointId: Id, fallback: Id): Id {
   const cls = CLASSES[ch.classId];
   return ch.choices?.[pointId] ?? (cls ? kitFor(cls, ch.kitId).choices[pointId] : undefined) ?? fallback;
+}
+
+/**
+ * How many origin feats this member gets: one, or two for a human (Versatile).
+ */
+export function featSlots(ch: PartyCharacter): number {
+  return SPECIES[ch.speciesId]?.originFeats ?? 1;
+}
+
+/**
+ * The feats a member actually has.
+ *
+ * Slot 0 falls back to the background's own feat, so a save written before
+ * feats existed — and a player who never opens the panel — gets the right one
+ * rather than none. Slot 1 (the human's) has no background to fall back to, so
+ * it defaults to the first feat the character does not already have; a second
+ * copy of Skilled would grant nothing and read as a bug.
+ */
+export function featsOf(ch: PartyCharacter): Id[] {
+  const slots = featSlots(ch);
+  const out: Id[] = [];
+  for (let i = 0; i < slots; i++) {
+    const chosen = ch.feats?.[i];
+    const pick = chosen && ORIGIN_FEATS[chosen] ? chosen
+      : i === 0 ? defaultFeatFor(ch.backgroundId ?? defaultBackgroundFor(ch.classId))
+      : Object.keys(ORIGIN_FEATS).find((f) => !out.includes(f));
+    if (pick && !out.includes(pick)) out.push(pick);
+  }
+  return out;
+}
+
+/** Extra skill proficiencies a member's feats grant (Skilled). */
+export function featSkills(ch: PartyCharacter): SkillId[] {
+  const count = featsOf(ch).reduce((n, f) => n + (ORIGIN_FEATS[f]?.grants.skillCount ?? 0), 0);
+  if (count === 0) return [];
+  const cls = CLASSES[ch.classId];
+  const already = [
+    ...(cls?.skillProfs ?? []),
+    ...backgroundSkills(ch.backgroundId),
+    ...(SPECIES[ch.speciesId]?.skillProficienciesByClass?.[ch.classId]
+      ? [SPECIES[ch.speciesId]!.skillProficienciesByClass![ch.classId]!] : []),
+    ...(SPECIES[ch.speciesId]?.featureIds ?? [])
+      .map((f) => FEATURES[f]?.grantsSkill).filter((x): x is SkillId => x !== undefined),
+  ];
+  return skilledSkills(already, count);
+}
+
+/** Choose an origin feat for a slot, pre-launch. */
+export function setPartyFeat(c: CampaignState, charIdx: number, slot: number, featId: Id): boolean {
+  const ch = c.characters[charIdx];
+  if (c.partyReady || !ch || !ORIGIN_FEATS[featId]) return false;
+  if (slot < 0 || slot >= featSlots(ch)) return false;
+  const feats = [...(ch.feats ?? [])];
+  // The same feat twice is not a build, it is a mistake the UI should absorb:
+  // the other slot takes what this one was holding.
+  const other = feats.findIndex((f, i) => i !== slot && f === featId);
+  if (other >= 0) feats[other] = featsOf(ch)[slot];
+  feats[slot] = featId;
+  ch.feats = feats;
+  return true;
 }
 
 /** Record a build-choice pick (Fighting Style, …) for a party member, pre-launch. */
@@ -1436,6 +1507,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.kitId ? { kitId: ch.kitId } : {}),
+      featIds: featsOf(ch),
       // The stored build if it is legal, the kit's own if not — one function,
       // so the sheet, the skill check and the combatant can never disagree.
       statBuild: statBuildOf(ch),
@@ -2401,6 +2473,8 @@ export function skillBonus(
    * adventure checks honest about the party you actually built.
    */
   abilitiesOverride?: AbilityScores,
+  /** Proficiencies from origin feats (Skilled), which no class table knows about. */
+  extraSkills: readonly SkillId[] = [],
 ): number {
   const cls = CLASSES[classId]!;
   const abilities = abilitiesOverride ?? assignStats(cls.statPriority);
@@ -2411,7 +2485,7 @@ export function skillBonus(
     .some((f) => FEATURES[f]?.grantsSkill === skill);
   const backgroundProficiency = backgroundSkills(backgroundId).includes(skill);
   const proficient = cls.skillProfs.includes(skill) || speciesProficiency ||
-    featureProficiency || backgroundProficiency;
+    featureProficiency || backgroundProficiency || extraSkills.includes(skill);
   const classFeatures = Object.entries(cls.featuresByLevel)
     .filter(([lvl]) => Number(lvl) <= level).flatMap(([, ids]) => ids);
   const pb = proficiencyBonus(level);
@@ -2439,7 +2513,10 @@ export function characterSkillProficient(c: CampaignState, idx: number, skill: S
   const speciesProf = SPECIES[ch.speciesId]?.skillProficienciesByClass?.[ch.classId] === skill;
   const featureProf = (SPECIES[ch.speciesId]?.featureIds ?? []).some((f) => FEATURES[f]?.grantsSkill === skill);
   const bgProf = backgroundSkills(ch.backgroundId).includes(skill);
-  return cls.skillProfs.includes(skill) || speciesProf || featureProf || bgProf;
+  // Skilled, too. Without this the sheet shows the higher bonus and no
+  // proficiency dot beside it — the display disagreeing with the character.
+  const featProf = featSkills(ch).includes(skill);
+  return cls.skillProfs.includes(skill) || speciesProf || featureProf || bgProf || featProf;
 }
 
 export interface SkillRow { skill: SkillId; label: string; bonus: number; proficient: boolean }
@@ -2462,7 +2539,7 @@ export function characterSkillBonus(c: CampaignState, idx: number, skill: SkillI
   const ch = c.characters[idx];
   if (!ch) return -Infinity;
   let bonus = skillBonus(ch.classId, partyLevelOf(c), skill, ch.speciesId, ch.backgroundId,
-    abilitiesOf(ch));
+    abilitiesOf(ch), featSkills(ch));
   // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
   if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
   // Pass without Trace, drunk in camp: +10 to the whole party until the next

@@ -14,10 +14,12 @@ import {
   type CampaignState,
   setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, setPartyKit,
   rerollPartyName, partyLevelOf, cantripLimit, partyChoice,
+  featSlots, featsOf, featSkills, setPartyFeat,
 } from '../../src/campaign/campaign.js';
 import { CLASSES, defaultKitId } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
 import { BACKGROUNDS, defaultBackgroundFor } from '../../src/data/backgrounds.js';
+import { ORIGIN_FEATS } from '../../src/data/feats.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
 import { Portrait } from './Portrait.js';
 import { PORTRAITS } from './portraits.js';
@@ -162,6 +164,42 @@ export function ForgeMemberEditor(
           </div>
         </div>
       )}
+
+      {/* Origin feat: what the background trained into you. Sits directly under
+          Background because that is where it comes from — and a human gets two,
+          which is the only place the species changes the shape of this panel. */}
+      {Array.from({ length: featSlots(ch) }, (_, slot) => {
+        const held = featsOf(ch);
+        const selected = held[slot];
+        const extraSkills = featSkills(ch);
+        return (
+          <div className="forge-field" key={`feat-${slot}`}>
+            <span>
+              {featSlots(ch) > 1 ? `Origin Feat ${slot + 1}` : 'Origin Feat'}
+              {slot === 1 && <small className="feat-why"> — humans get a second</small>}
+            </span>
+            <div className="card-grid" role="radiogroup" aria-label={`${ch.name} origin feat ${slot + 1}`}>
+              {Object.values(ORIGIN_FEATS).map((feat) => (
+                <button
+                  key={feat.id}
+                  className={selected === feat.id ? 'pick-card selected' : 'pick-card'}
+                  role="radio" aria-checked={selected === feat.id}
+                  onClick={() => mutate(() => setPartyFeat(c, idx, slot, feat.id))}
+                >
+                  <b>{feat.name}</b><small>{feat.blurb}</small>
+                  {/* Skilled is the one feat whose effect depends on the rest of
+                      the character, so it says which three it is giving you. */}
+                  {selected === feat.id && feat.grants.skillCount && extraSkills.length > 0 && (
+                    <small className="pick-grants">
+                      {extraSkills.map((sk) => SKILL_LABEL[sk]).join(' · ')}
+                    </small>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
       <AbilityEditor campaign={c} idx={idx} mutate={mutate} />
 

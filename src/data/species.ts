@@ -27,6 +27,8 @@ export interface SpeciesData {
    * without this a racial Faerie Fire would silently be a caster-only perk.
    */
   innateSpells?: Array<{ spellId: Id; atLevel: number; uses: number }>;
+  /** How many origin feats this species gets. Absent = one (everybody else). */
+  originFeats?: number;
   /** Deterministic Skillful choice for the campaign's limited skill list. */
   skillProficienciesByClass?: Partial<Record<Id, SkillId>>;
   /** Build decisions this species offers (e.g. a future draconic ancestry). */
@@ -37,6 +39,11 @@ export const SPECIES: Record<Id, SpeciesData> = {
   human: {
     id: 'human', name: 'Human', speed: 30,
     featureIds: ['heroic-inspiration'],
+    /**
+     * Versatile: a second origin feat. The 2024 Human's defining trait and the
+     * only species-level exception to one-feat-per-character.
+     */
+    originFeats: 2,
     skillProficienciesByClass: {
       fighter: 'persuasion', wizard: 'deception', cleric: 'stealth', rogue: 'persuasion',
     },
