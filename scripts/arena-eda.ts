@@ -187,7 +187,7 @@ const tallyIn = (m: Map<Id, ClassTally>, id: Id): ClassTally => {
 const tally = (id: Id): ClassTally => tallyIn(byClass, id);
 
 /** casts[spellId] = { total, byClass } */
-const spellCasts = new Map<Id, { total: number; byClass: Map<Id, number> }>();
+const spellCasts = new Map<Id, { total: number; enemy: number; byClass: Map<Id, number> }>();
 /**
  * Metamagic use, by option and by the spell it bent.
  *
@@ -337,9 +337,19 @@ function playOne(seed: number, collect: boolean): Outcome {
           case 'spellCast': {
             const src = classOf.get(e.casterId);
             let s = spellCasts.get(e.spellId);
-            if (!s) { s = { total: 0, byClass: new Map() }; spellCasts.set(e.spellId, s); }
-            s.total++;
-            if (src) s.byClass.set(src, (s.byClass.get(src) ?? 0) + 1);
+            if (!s) { s = { total: 0, enemy: 0, byClass: new Map() }; spellCasts.set(e.spellId, s); }
+            // The party's casts and the MONSTERS' casts were both landing in
+            // `total`, with only the party's attributed underneath. So Flaming
+            // Sphere read 1886 casts with no class beside it and Guiding Bolt
+            // 1406 — both entirely enemy acolytes — while looking exactly like
+            // a party spell nobody could account for. The two are different
+            // questions and now sit in different columns.
+            if (src) {
+              s.total++;
+              s.byClass.set(src, (s.byClass.get(src) ?? 0) + 1);
+            } else {
+              s.enemy++;
+            }
             for (const t of both(e.casterId)) t.casts++;
             break;
           }
@@ -562,12 +572,23 @@ for (const [id, t] of rows) {
 console.log('  dmg/taken/heal/casts are per fight; downs is per 100 fights;');
 console.log('  fin% is the share of runs reaching the finish line with this class in the party.');
 
-console.log(`\n--- spells cast (${[...spellCasts.values()].reduce((a, s) => a + s.total, 0)} casts)`);
+const partyCasts = [...spellCasts.values()].reduce((a, s) => a + s.total, 0);
+const enemyCasts = [...spellCasts.values()].reduce((a, s) => a + s.enemy, 0);
+console.log(`\n--- spells cast by the PARTY (${partyCasts} casts; ${enemyCasts} more were cast at it)`);
 const casts = [...spellCasts.entries()].sort((a, b) => b[1].total - a[1].total);
 for (const [id, s] of casts) {
+  if (s.total === 0) continue;   // enemy-only; listed separately below
   const who = [...s.byClass.entries()].sort((a, b) => b[1] - a[1])
     .map(([cid, n]) => `${CLASSES[cid]?.name ?? cid} ${n}`).join(', ');
-  console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level ?? '?'} ${num(s.total, 5)}   ${who}`);
+  const foe = s.enemy > 0 ? `  (+${s.enemy} by enemies)` : '';
+  console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level ?? '?'} ${num(s.total, 5)}   ${who}${foe}`);
+}
+const foeOnly = casts.filter(([, s]) => s.total === 0);
+if (foeOnly.length > 0) {
+  console.log('  cast only by monsters, never by the party:');
+  for (const [id, s] of foeOnly) {
+    console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level ?? '?'} ${num(s.enemy, 5)}`);
+  }
 }
 
 // The whole reason for the counter: what never came off the shelf.
@@ -581,7 +602,9 @@ for (const cls of Object.values(CLASSES)) {
 // listing them as "never cast" would be a bug in this script reported as a bug
 // in the game.
 const never = [...everPlayable]
-  .filter((id) => !spellCasts.has(id) && SPELLS[id]?.castingTime !== 'reaction').sort();
+  // `total === 0` counts too: a spell only ever cast BY A MONSTER is a spell
+  // the party never cast, which is the question this list asks.
+  .filter((id) => (spellCasts.get(id)?.total ?? 0) === 0 && SPELLS[id]?.castingTime !== 'reaction').sort();
 console.log(`\n--- never cast (${never.length} of ${everPlayable.size} playable combat spells)`);
 for (const id of never) console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level}`);
 
