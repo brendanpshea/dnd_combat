@@ -558,10 +558,31 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     // enumerating slot levels alone silently took that away. A tiefling's Ray
     // of Sickness is innate AND upcastable, and flagging it stopped a fighter
     // casting it at all.
+    //
+    // A spell that does NOT scale still has to be castable from a bigger slot.
+    // `[baseLevel]` alone meant a caster with nothing left at the spell's own
+    // tier simply could not cast it, however many higher slots it was holding:
+    // a level-7 wizard out of 2nd-level slots but sitting on three 3rd-level
+    // ones could not cast Suggestion at all. That is wrong by the SRD — you may
+    // always burn a bigger slot, you just get nothing extra for it — and it is
+    // fatal for a pact caster, whose slots are ALL above the tier of most of
+    // its list. 50 of the game's 70 leveled spells are not flagged `upcast`.
+    //
+    // One candidate, not a menu of them: the LOWEST slot that can pay for it.
+    // Offering every higher tier as well would fill the tray with entries that
+    // do literally nothing different, which is what `upcastable` is guarding
+    // against and worth keeping.
+    const affordable = (lvl: number): number | undefined => {
+      if (lvl === 0) return 0;    // innate/cantrip: no slot to find
+      for (let i = lvl; i <= actor.spellSlots.length; i++) {
+        if (spellAvailable(actor, spell, i)) return i;
+      }
+      return undefined;
+    };
     const levels = (upcastable
       ? [...new Set([baseLevel, ...actor.spellSlots.map((_, i) => i + 1)])]
-      : [baseLevel]
-    ).filter((lvl) => spellAvailable(actor, spell, lvl));
+          .filter((lvl) => spellAvailable(actor, spell, lvl))
+      : [affordable(baseLevel)].filter((lvl): lvl is number => lvl !== undefined));
     for (const slotLevel of levels) {
       for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
         const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };

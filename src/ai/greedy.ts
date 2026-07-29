@@ -56,6 +56,65 @@ function damageValue(ev: number, target: Combatant): number {
 }
 
 /**
+ * How much of an ally's hit points a protective spell is actually saving.
+ *
+ * THE BUG THIS EXISTS FOR
+ *
+ * Damage spells are priced in hit points removed — `damageValue` returns an
+ * expectation in the tens, and a Fireball across three orcs comes to about 80.
+ * The defensive spells were priced on a hand-tuned 0-to-10 scale: Death Ward
+ * peaked at 4, Freedom of Movement at 5, Greater Invisibility at 6, Polymorph
+ * at 14. Nothing on the first scale can ever outbid anything on the second, so
+ * the entire defensive half of the 4th-level tier was legal, prepared, scored,
+ * and never once chosen. Measured: Polymorph was a legal action on 251 caster
+ * turns across 60 level-8 runs and was picked zero times.
+ *
+ * The scales have to be the same currency or the comparison is meaningless.
+ * These are hit points, weighted by how likely the ally is to actually lose
+ * them — the same shape as `damageValue`, and deliberately so.
+ *
+ * The estimates are rough on purpose. What was wrong was the ORDER OF
+ * MAGNITUDE, not the second decimal place, and a precise threat model would be
+ * a lot of machinery pointed at a number that only has to land in the right
+ * decade.
+ */
+function danger(state: GameState, ally: Combatant): number {
+  // Nothing is at risk if nothing is near them.
+  //
+  // The first version used "within a turn's reach" (speed + 10 ft), which is
+  // the correct idea and useless on this board: an orc moves 30 ft, the grid is
+  // eight cells across, so every living enemy qualified from anywhere and the
+  // term was always 1. Fifteen feet is close enough to mean something here —
+  // it is the band where a creature is being fought rather than approached.
+  const closing = Object.values(state.combatants).filter(
+    (c) => c.alive && !isDown(c) && c.team !== ally.team &&
+      distanceFeet(c.position, ally.position) <= 15,
+  ).length;
+  if (closing === 0) return 0;
+  // Two enemies on somebody is roughly the point at which they are in real
+  // trouble; beyond that it saturates rather than growing without bound.
+  //
+  // This gradation is TUNING, not a rule, and no unit test pins it: planting
+  // `pressure = 1` changes no test outcome, because one attacker on a badly
+  // hurt ally already clears every bar in the suite. Its effect shows only in
+  // aggregate, in how often these spells fire across a run. The distance gate
+  // above IS load-bearing and is tested.
+  const pressure = Math.min(1, closing / 2);
+  // And how much they have left to lose. A hero at full health is not being
+  // rescued, however many things are looking at them.
+  const hurt = 1 - ally.hp / Math.max(1, ally.maxHp);
+  return pressure * (0.35 + 0.65 * hurt);
+}
+
+/** The giant ape's hit points — what Polymorph hands an ally. */
+const APE_HP = MONSTERS['giant-ape']?.hp ?? 168;
+
+/** Hit points kept on the board, in the same units `damageValue` deals in. */
+function rescueValue(hpSaved: number, state: GameState, ally: Combatant): number {
+  return hpSaved * danger(state, ally);
+}
+
+/**
  * Does this creature cast at all? Silence is worth nothing over a creature with
  * no spells, and the difference between a hushed mage and a hushed ogre is the
  * whole spell.
@@ -798,18 +857,24 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const tid = (a.targets[0] as { combatantId: Id }).combatantId;
       const t = state.combatants[tid]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'veiled')) return 0;
-      const threatened = Object.values(state.combatants).some(
-        (c) => c.alive && !isDown(c) && c.team !== actor.team && distanceCells(c.position, t.position) <= 2,
-      );
-      return threatened ? 8 - slotCost : 0;
+      if (isDown(t)) return 0;
+      // Untargetable is worth roughly the damage that would otherwise go into
+      // them, bounded by what they have left — saving more hit points than a
+      // creature owns is not a thing. Advantage on their own swings is worth
+      // about a fifth of a hit each, over a few rounds.
+      const shielded = rescueValue(t.hp, state, t);
+      const offence = t.team === actor.team ? t.attacksPerAction * 4 : 0;
+      return shielded + offence - slotCost;
     }
     case 'death-ward': {
       // Insurance, and only worth a slot on somebody the fight is actually
       // threatening — on a full-health hero at the back it is a wasted 4th.
       const tid = (a.targets[0] as { combatantId: Id }).combatantId;
       const t = state.combatants[tid]!;
-      if (!t.alive || t.conditions.some((k) => k.id === 'deathWarded')) return 0;
-      return t.hp <= t.maxHp * 0.5 ? 6 - slotCost : 0;
+      if (!t.alive || isDown(t) || t.conditions.some((k) => k.id === 'deathWarded')) return 0;
+      // What it saves is the whole blow that would have dropped them, plus the
+      // turns they would have spent on the floor.
+      return rescueValue(t.hp + t.maxHp * 0.25, state, t) - slotCost;
     }
     case 'freedom-of-movement': {
       const tid = (a.targets[0] as { combatantId: Id }).combatantId;
@@ -819,7 +884,12 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // nothing much when it is not — this game has no way to know a Web is
       // coming.
       const held = t.conditions.some((k) => k.id === 'restrained' || k.id === 'paralyzed');
-      return held ? 7 - slotCost : 0;
+      if (!held) return 0;
+      // Paralysis is far worse than a web: every melee hit against them crits
+      // automatically, so freeing them saves a share of their health rather
+      // than a couple of wasted turns.
+      const paralyzed = t.conditions.some((k) => k.id === 'paralyzed');
+      return rescueValue(paralyzed ? t.hp : t.maxHp * 0.3, state, t) - slotCost;
     }
     // Ice Storm: Fireball's shape one tier up, and the same ally arithmetic.
     // The hail is 2d10 + 4d6 on a Dex save for half; the ice it leaves behind is
@@ -951,9 +1021,10 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (!t.alive || isDown(t) || t.wildShape) return 0;
       const hurt = 1 - t.hp / Math.max(1, t.maxHp);
       if (hurt < 0.4) return 0;                 // still healthy: not worth the slot
-      // Scaled by how badly they need it, and capped so it never outbids
-      // finishing a fight that is nearly won.
-      return 6 + hurt * 10 - slotCost;
+      // A whole second health bar, in the currency damage is priced in. Capped
+      // at the ally's own maximum rather than the ape's 168: the pool is only
+      // worth what the fight would actually have taken off them.
+      return rescueValue(Math.min(APE_HP, t.maxHp), state, t) - slotCost;
     }
     /**
      * Conjure Animals: the pack lands where you put it, then hunts by itself.
