@@ -215,40 +215,42 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ? resolveStatBuild(opts.statBuild)
     : resolveStatBuild(defaultStatBuild(kit.statPriority));
   /**
-   * Every ability increase goes to the KIT's primary ability, not to whichever
-   * score happens to be highest.
+   * ABILITY SCORE INCREASES, AND THE ONE THAT USED TO EVAPORATE.
    *
-   * That is worth stating because it is now possible to disagree with: a player
-   * who point-buys a Duelist fighter's Strength above its Dexterity still gets
-   * the Dexterity bumps, because the kit is what the character is. Retargeting
-   * to "highest score under 20" would be defensible and would also silently
-   * change every existing level-8 build (whose primary is capped by then and
-   * whose increase is currently thrown away), which is a balance change and not
-   * this one. Predictable beats clever; the forge says which ability it is.
+   * Each increase is +2, applied as two separate +1s, each landing on the first
+   * ability in the KIT's priority order that is still below 20.
+   *
+   * It used to be "+2 to the primary, capped at 20", and the cap was not a
+   * safety net — it was a hole. A fighter gets three increases (4th, 6th, 8th)
+   * and starts at 16, so it reaches 20 at 6th and its ENTIRE 8th-level increase
+   * vanished. Level 8 is the top of this game; the class with the most increases
+   * was the one that threw one away, silently, with nothing in the UI to say so.
+   * No player has ever done that.
+   *
+   * Two +1s rather than one +2 so that nothing is wasted at the boundary either:
+   * a 19 goes to 20 and the spare point moves down the priority list instead of
+   * disappearing.
+   *
+   * Still the KIT's priority, not "whichever score is highest". A player who
+   * point-buys a Duelist's Strength above its Dexterity still gets the Dexterity
+   * bumps, because the kit is what the character is, and the forge says which
+   * ability it will be. Predictable beats clever.
    */
-  const primaryAbility = kit.statPriority[0]!;
-  // Level-4 Ability Score Increase. No feats yet, so it's a deterministic +2 to
-  // the class's primary stat (capped at 20) — attack, damage, HP and spell DC
-  // all read the modifier, so the boost flows without further wiring.
-  if (level >= 4) {
-    const primary = primaryAbility;
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
+  const raisePriority = kit.statPriority;
+  const applyIncrease = () => {
+    for (let point = 0; point < 2; point++) {
+      const target = raisePriority.find((ab) => abilities[ab] < 20);
+      if (!target) return;   // every ability at 20: genuinely nothing to buy
+      abilities[target] += 1;
+    }
+  };
+  if (level >= 4) applyIncrease();
+  // The Fighter alone gets a second increase at 6th. (Its 7th is the Champion's
+  // Additional Fighting Style, a choice point rather than a stat bump.)
+  if (level >= 6 && opts.classId === 'fighter') applyIncrease();
   // Every class gets one at 8th — the whole of what level 8 is in the SRD for
-  // most of them, and the reason the level was cheap to add. It goes to the
-  // same primary stat, capped at 20, so a class already at 20 gains nothing
-  // rather than overflowing.
-  if (level >= 8) {
-    const primary = primaryAbility;
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
-  // The Fighter alone gets a second Ability Score Increase at 6th. (Its 7th is
-  // the Champion's Additional Fighting Style, a choice point rather than a stat
-  // bump — see classes.ts.)
-  if (level >= 6 && opts.classId === 'fighter') {
-    const primary = primaryAbility;
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
+  // most of them, and the reason the level was cheap to add.
+  if (level >= 8) applyIncrease();
   // A worn trinket (Gauntlets of Ogre Power, …) can raise an ability score, so
   // apply its floor before HP/AC-relevant mods are computed off the abilities.
   // Worn wondrous items — the trinket slot and the ring slot both fold in the
@@ -284,8 +286,12 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level +
     heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp;
 
-  const grants = resolveChoiceGrants(cls.choices, level, opts.choices);
-  const speciesGrants = resolveChoiceGrants(species.choices, level, opts.choices);
+  // The kit's defaults sit UNDER the player's picks: an unchosen Fighting Style
+  // comes from the kit that has to live with it, and anything explicitly picked
+  // in the forge still wins.
+  const picks = { ...kit.choices, ...opts.choices };
+  const grants = resolveChoiceGrants(cls.choices, level, picks);
+  const speciesGrants = resolveChoiceGrants(species.choices, level, picks);
   grants.featureIds.push(...speciesGrants.featureIds);
   grants.spellIds.push(...speciesGrants.spellIds);
   grants.weaponMasteries.push(...speciesGrants.weaponMasteries);

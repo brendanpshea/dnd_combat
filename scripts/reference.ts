@@ -362,6 +362,14 @@ function classesDoc(): string {
         // has to be looked up in both tables.
         ...k.equipment.inventory.map((s) => `${ITEMS[s.itemId]?.name ?? WEAPONS[s.itemId]?.name ?? s.itemId} ×${s.qty}`),
       ].filter(Boolean).join(', ')}`,
+      // Which build choices this kit takes when the player says nothing — the
+      // Fighting Style its weapons can actually fire, which is most of why a
+      // kit is a kit and not just a bag.
+      ...((c.choices ?? [])
+        .map((cp) => ({ cp, picked: k.choices[cp.id] ?? cp.default }))
+        .filter(({ cp }) => k.choices[cp.id] !== undefined)
+        .map(({ cp, picked }) =>
+          `- **${cp.label} (default):** ${cp.options.find((o) => o.id === picked)?.name ?? picked}`)),
     ];
   };
 

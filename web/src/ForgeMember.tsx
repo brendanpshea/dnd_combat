@@ -13,7 +13,7 @@
 import {
   type CampaignState,
   setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, setPartyKit,
-  rerollPartyName, partyLevelOf, cantripLimit,
+  rerollPartyName, partyLevelOf, cantripLimit, partyChoice,
 } from '../../src/campaign/campaign.js';
 import { CLASSES, defaultKitId } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
@@ -166,7 +166,7 @@ export function ForgeMemberEditor(
       <AbilityEditor campaign={c} idx={idx} mutate={mutate} />
 
       {choicePoints.map((cp) => {
-        const selected = ch.choices?.[cp.id] ?? cp.default;
+        const selected = partyChoice(ch, cp.id, cp.default);
         return (
           <div className="forge-field" key={cp.id}>
             <span>{cp.label}</span>

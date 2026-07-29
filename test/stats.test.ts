@@ -16,7 +16,8 @@ import { STANDARD_ARRAY, assignStats, buildCharacter } from '../src/builder/char
 import { CLASSES, kitFor, defaultKitId } from '../src/data/classes.js';
 import {
   newCampaign, setPartyKit, setPartyClass, setPartyStatBuild, clearPartyStatBuild,
-  abilitiesOf, buildCampaignParty, skillBonus,
+  abilitiesOf, buildCampaignParty, skillBonus, applyPartyTemplate, PARTY_TEMPLATES,
+  partyChoice, setPartyChoice,
 } from '../src/campaign/campaign.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { ARMOR, armorStealthDisadvantage } from '../src/data/armor.js';
@@ -345,5 +346,214 @@ describe('the forge', () => {
     const fighter = buildCampaignParty(c)[0]!;
     expect(fighter.equipped.mainHand).toBe('longsword');
     expect(fighter.abilities.str).toBe(16);
+  });
+});
+
+/**
+ * Every Fighting Style must have a kit whose weapons can actually fire it.
+ *
+ * Three of the five were unreachable before kits: Archery, Great Weapon
+ * Fighting and Two-Weapon Fighting were all on the fighter's list while the
+ * class started with a longsword and a shield. Great Weapon Fighting was also
+ * the *default* for the fighter's second style at 7th level, so a sword-and-
+ * board fighter reached the top of the game and gained nothing. The paladin and
+ * the ranger had the same shape of hole.
+ *
+ * This is the dead-data standard applied to a build choice rather than an item:
+ * an option nobody can use is worse than an absent one, because it looks like a
+ * decision.
+ */
+describe('every Fighting Style has gear that fires it', () => {
+  /** What each style needs from the hand it is holding. */
+  const usable: Record<string, (e: { mainHand: string; offHand?: string; armor?: string }) => boolean> = {
+    archery: (e) => WEAPONS[e.mainHand]?.melee === false,
+    'great-weapon-fighting': (e) => !!WEAPONS[e.mainHand]?.properties.includes('two-handed'),
+    'two-weapon-fighting': (e) => e.offHand !== undefined && e.offHand !== 'shield',
+    dueling: (e) => !!WEAPONS[e.mainHand]?.melee && !WEAPONS[e.mainHand]?.properties.includes('two-handed'),
+    defense: (e) => e.armor !== undefined,
+  };
+
+  const styled = Object.values(CLASSES)
+    .flatMap((cls) => (cls.choices ?? [])
+      .filter((cp) => cp.id.startsWith('fighting-style'))
+      .map((cp) => ({ cls, cp })));
+
+  it('covers a class that actually has styles', () => {
+    expect(styled.length).toBeGreaterThan(0);
+    expect(new Set(styled.map((x) => x.cls.id))).toContain('fighter');
+  });
+
+  for (const { cls, cp } of styled) {
+    it(`${cls.id} / ${cp.id}: every option is playable on some kit`, () => {
+      const kitIds = cls.kits?.map((k) => k.id) ?? [undefined];
+      for (const opt of cp.options) {
+        const test = usable[opt.id];
+        expect(test, `no usability rule written for ${opt.id}`).toBeDefined();
+        const fits = kitIds.some((kitId) => test!(kitFor(cls, kitId).equipment));
+        expect(fits, `${cls.id}: no kit can use ${opt.id}`).toBe(true);
+      }
+    });
+  }
+
+  it("the kit's default style reaches the built character", () => {
+    // Data alone is not enough: buildCharacter has to actually fold the kit's
+    // picks under the player's. Without this, every assertion above passes
+    // while every character still gets the class-wide default.
+    const gw = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, kitId: 'greatweapon' });
+    expect(gw.featureIds).toContain('great-weapon-fighting');
+    expect(gw.featureIds).not.toContain('dueling');
+
+    const archer = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, kitId: 'archer' });
+    expect(archer.featureIds).toContain('archery');
+
+    // The bug this was written for: a 7th-level sword-and-board fighter used to
+    // take Great Weapon Fighting as its second style and gain nothing.
+    const martial7 = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, level: 7 });
+    expect(martial7.featureIds).toContain('defense');
+    expect(martial7.featureIds).not.toContain('great-weapon-fighting');
+  });
+
+  it('a player pick still beats the kit default', () => {
+    const stubborn = buildCharacter({
+      classId: 'fighter', team: 'team1', position: HERE, kitId: 'greatweapon',
+      choices: { 'fighting-style': 'defense' },
+    });
+    expect(stubborn.featureIds).toContain('defense');
+    expect(stubborn.featureIds).not.toContain('great-weapon-fighting');
+  });
+
+  it("a kit's own default style is one it can use", () => {
+    // The specific bug: the fighter's second style defaulted to Great Weapon
+    // Fighting on a sword-and-shield kit.
+    for (const { cls, cp } of styled) {
+      for (const kit of cls.kits ?? []) {
+        const picked = kitFor(cls, kit.id).choices[cp.id] ?? cp.default;
+        const equipment = kitFor(cls, kit.id).equipment;
+        expect(usable[picked]?.(equipment), `${cls.id}/${kit.id} defaults to ${picked}, which it cannot use`)
+          .toBe(true);
+      }
+    }
+  });
+});
+
+describe('ability increases are never thrown away', () => {
+  it('a level-8 fighter no longer wastes its third increase', () => {
+    const f = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, level: 8 });
+    expect(f.abilities.str).toBe(20);   // 16 -> 18 (4th) -> 20 (6th)
+    expect(f.abilities.con).toBe(18);   // 8th used to vanish into the cap
+  });
+
+  it('spills the spare point when the primary is one short of 20', () => {
+    // Strength 15 +2 = 17 at first level, 19 after the 4th-level increase. The
+    // 6th-level one then takes it to 20 with a point left over, and that point
+    // moves down the priority list instead of vanishing into the cap.
+    const build = {
+      base: { str: 15, dex: 8, con: 14, int: 10, wis: 12, cha: 13 },
+      plus2: 'str', plus1: 'con',
+    } as StatBuild;
+    const at4 = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, level: 4, statBuild: build });
+    expect(at4.abilities.str).toBe(19);
+    expect(at4.abilities.con).toBe(15);   // untouched so far
+
+    const at6 = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, level: 6, statBuild: build });
+    expect(at6.abilities.str).toBe(20);
+    expect(at6.abilities.con).toBe(16);   // the spare point, not lost
+  });
+
+  it('follows the kit, so a Duelist raises Dexterity and a Martial raises Strength', () => {
+    const d = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, level: 8, kitId: 'duelist' });
+    expect(d.abilities.dex).toBe(20);
+    expect(d.abilities.con).toBe(18);
+    expect(d.abilities.str).toBe(13);
+  });
+
+  it('never exceeds 20 anywhere', () => {
+    for (const id of Object.keys(CLASSES)) {
+      const c = buildCharacter({ classId: id, team: 'team1', position: HERE, level: 8 });
+      for (const ab of ABILITIES) expect(c.abilities[ab], `${id}.${ab}`).toBeLessThanOrEqual(20);
+    }
+  });
+});
+
+describe('quick-start templates', () => {
+  it('a template that names a kit gets that kit, gear and all', () => {
+    const c = newCampaign(3);
+    expect(applyPartyTemplate(c, 'hunt')).toBe(true);
+    const fighter = c.characters.find((ch) => ch.classId === 'fighter')!;
+    expect(fighter.kitId).toBe('archer');
+    // The bug this guards: fitCharacter read CLASSES[...].equipment directly,
+    // which would hand an Archer a longsword and a shield and silently undo it.
+    expect(fighter.equipped.mainHand).toBe('longbow');
+    expect(fighter.equipped.offHand).toBeUndefined();
+    const built = buildCampaignParty(c)[c.characters.indexOf(fighter)]!;
+    expect(built.featureIds).toContain('archery');
+  });
+
+  it('a template with no kit gets the class default', () => {
+    const c = newCampaign(3);
+    applyPartyTemplate(c, 'classic');
+    const fighter = c.characters.find((ch) => ch.classId === 'fighter')!;
+    expect(fighter.kitId).toBeUndefined();
+    expect(fighter.equipped.mainHand).toBe('longsword');
+  });
+
+  it('every template names a kit its class actually has', () => {
+    for (const t of PARTY_TEMPLATES) {
+      for (const m of t.members) {
+        if (!m.kitId) continue;
+        const ids = CLASSES[m.classId]?.kits?.map((k) => k.id) ?? [];
+        expect(ids, `${t.id}: ${m.classId} has no kit ${m.kitId}`).toContain(m.kitId);
+      }
+    }
+  });
+
+  it('switching template twice does not leave the old kit behind', () => {
+    const c = newCampaign(3);
+    applyPartyTemplate(c, 'hunt');       // fighter -> archer
+    applyPartyTemplate(c, 'classic');    // fighter -> default
+    const fighter = c.characters.find((ch) => ch.classId === 'fighter')!;
+    expect(fighter.kitId).toBeUndefined();
+    expect(fighter.equipped.mainHand).toBe('longsword');
+  });
+});
+
+describe('the forge panel shows what the character actually has', () => {
+  it('a kit default reaches the Fighting Style panel', () => {
+    // The panel used to compute `ch.choices?.[id] ?? cp.default` itself, so an
+    // Archer displayed "Dueling" selected while the built character had Archery.
+    // The UI was not describing the character.
+    const c = newCampaign(5);
+    c.characters[0]!.classId = 'fighter';
+    const cp = CLASSES.fighter!.choices!.find((x) => x.id === 'fighting-style')!;
+    expect(partyChoice(c.characters[0]!, cp.id, cp.default)).toBe('dueling');
+    setPartyKit(c, 0, 'archer');
+    expect(partyChoice(c.characters[0]!, cp.id, cp.default)).toBe('archery');
+    // …and it agrees with the combatant, which is the whole point.
+    expect(buildCampaignParty(c)[0]!.featureIds).toContain('archery');
+  });
+
+  it('an explicit pick still shows as the explicit pick', () => {
+    const c = newCampaign(5);
+    c.characters[0]!.classId = 'fighter';
+    setPartyKit(c, 0, 'archer');
+    setPartyChoice(c, 0, 'fighting-style', 'defense');
+    expect(partyChoice(c.characters[0]!, 'fighting-style', 'dueling')).toBe('defense');
+  });
+
+  it('and the forge actually calls it', async () => {
+    // Source-read, in the manner of the other harness guards: the helper being
+    // correct is worthless if the panel keeps computing its own answer, and
+    // that is precisely the bug that shipped.
+    const { readFileSync } = await import('node:fs');
+    const { fileURLToPath } = await import('node:url');
+    const src = readFileSync(fileURLToPath(new URL('../web/src/ForgeMember.tsx', import.meta.url)), 'utf8');
+    expect(src).toContain('partyChoice(ch, cp.id, cp.default)');
+    expect(src, 'the panel computes its own selection again')
+      .not.toMatch(/selected\s*=\s*ch\.choices\?\.\[cp\.id\]/);
+  });
+
+  it('a class with no kits falls through to the class default', () => {
+    const c = newCampaign(5);
+    expect(partyChoice(c.characters[1]!, 'fighting-style', 'dueling')).toBe('dueling');
   });
 });

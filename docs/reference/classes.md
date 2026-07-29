@@ -169,6 +169,8 @@ Spellcasting ability: **WIS**.
 - **Ability priority:** STR > CON > DEX > WIS > INT > CHA
 - **Weapon masteries:** Longsword, Longsword +1, Javelin
 - **Starting kit:** Longsword, shield, Scale Mail, Javelin ×2, Potion of Healing ×1, Alchemist's Fire ×1
+- **Fighting Style (default):** Dueling
+- **Additional Fighting Style (default):** Defense
 
 ### Kit: Duelist
 
@@ -177,6 +179,38 @@ Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.
 - **Ability priority:** DEX > CON > STR > WIS > INT > CHA
 - **Weapon masteries:** Rapier, Rapier +1, Dagger
 - **Starting kit:** Rapier, shield, Leather, Dagger ×2, Potion of Healing ×1, Alchemist's Fire ×1
+- **Fighting Style (default):** Dueling
+- **Additional Fighting Style (default):** Defense
+
+### Kit: Archer
+
+Dexterity, longbow, studded leather. Hits hardest from across the board.
+
+- **Ability priority:** DEX > CON > STR > WIS > INT > CHA
+- **Weapon masteries:** Longbow, Longbow +1, Shortsword
+- **Starting kit:** Longbow, Studded Leather, Shortsword ×1, Potion of Healing ×1, Alchemist's Fire ×1
+- **Fighting Style (default):** Archery
+- **Additional Fighting Style (default):** Defense
+
+### Kit: Great Weapon
+
+Strength, greatsword, scale mail. Two hands, no shield, more damage.
+
+- **Ability priority:** STR > CON > DEX > WIS > INT > CHA
+- **Weapon masteries:** Greatsword, Greatsword +1, Javelin
+- **Starting kit:** Greatsword, Scale Mail, Javelin ×2, Potion of Healing ×1, Alchemist's Fire ×1
+- **Fighting Style (default):** Great Weapon Fighting
+- **Additional Fighting Style (default):** Defense
+
+### Kit: Two Blades
+
+Dexterity, a shortsword in each hand, studded leather. More swings, less armour.
+
+- **Ability priority:** DEX > CON > STR > WIS > INT > CHA
+- **Weapon masteries:** Shortsword, Shortsword +1, Dagger
+- **Starting kit:** Shortsword, Shortsword, Studded Leather, Dagger ×2, Potion of Healing ×1, Alchemist's Fire ×1
+- **Fighting Style (default):** Two-Weapon Fighting
+- **Additional Fighting Style (default):** Defense
 
 ### Features by level
 
@@ -237,6 +271,16 @@ Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.
 - **Ability priority:** STR > CHA > CON > WIS > DEX > INT
 - **Weapon masteries:** Longsword, Longsword +1, Warhammer, Warhammer +1
 - **Starting kit:** Longsword, shield, Chain Mail, Javelin ×2, Potion of Healing ×1
+- **Fighting Style (default):** Defense
+
+### Kit: Crusader
+
+Greatsword and chain mail. Trades the shield for something to smite with.
+
+- **Ability priority:** STR > CHA > CON > WIS > DEX > INT
+- **Weapon masteries:** Greatsword, Greatsword +1, Javelin
+- **Starting kit:** Greatsword, Chain Mail, Javelin ×2, Potion of Healing ×1
+- **Fighting Style (default):** Great Weapon Fighting
 
 ### Features by level
 
@@ -289,6 +333,16 @@ Spellcasting ability: **CHA**.
 - **Ability priority:** DEX > WIS > CON > STR > INT > CHA
 - **Weapon masteries:** Longbow, Longbow +1, Shortsword, Shortsword +1
 - **Starting kit:** Longbow, Studded Leather, Shortsword ×2, Potion of Healing ×1
+- **Fighting Style (default):** Archery
+
+### Kit: Skirmisher
+
+A shortsword in each hand. Fights up close instead of across the board.
+
+- **Ability priority:** DEX > WIS > CON > STR > INT > CHA
+- **Weapon masteries:** Shortsword, Shortsword +1, Longbow
+- **Starting kit:** Shortsword, Shortsword, Studded Leather, Longbow ×1, Potion of Healing ×1
+- **Fighting Style (default):** Two-Weapon Fighting
 
 ### Features by level
 

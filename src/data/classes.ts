@@ -108,13 +108,28 @@ export interface ClassKit {
   statPriority?: readonly Ability[];
   weaponMasteries?: Id[];
   equipment?: ClassData['equipment'];
+  /**
+   * Default picks for this class's choice points — in practice, the Fighting
+   * Style the kit's weapons can actually fire.
+   *
+   * A choice point has ONE default for the whole class, and that was wrong the
+   * moment kits existed: the fighter's second Fighting Style at 7th defaulted to
+   * Great Weapon Fighting, which rerolls damage dice on TWO-HANDED weapons, on a
+   * class whose starting kit is a longsword and a shield. Every sword-and-board
+   * fighter in the game reached 7th level and gained nothing at all.
+   *
+   * The player still overrides freely; this only moves what "I didn't choose"
+   * means, from a class-wide guess to one the kit can back up.
+   */
+  choices?: Record<Id, Id>;
 }
 
-/** The three fields a kit can override, resolved against the class. */
+/** The fields a kit can override, resolved against the class. */
 export function kitFor(cls: ClassData, kitId: Id | undefined): {
   statPriority: readonly Ability[];
   weaponMasteries: Id[];
   equipment: ClassData['equipment'];
+  choices: Record<Id, Id>;
 } {
   // Falls back to the FIRST kit, not to none: a class that offers kits names
   // its own default as kits[0], so an unset id and the default id agree.
@@ -123,6 +138,7 @@ export function kitFor(cls: ClassData, kitId: Id | undefined): {
     statPriority: k?.statPriority ?? cls.statPriority,
     weaponMasteries: k?.weaponMasteries ?? cls.weaponMasteries,
     equipment: k?.equipment ?? cls.equipment,
+    choices: k?.choices ?? {},
   };
 }
 
@@ -251,7 +267,13 @@ export const CLASSES: Record<Id, ClassData> = {
       ],
     },
     kits: [
-      { id: 'martial', name: 'Martial', blurb: 'Strength, longsword and shield, scale mail. The soldier.' },
+      {
+        id: 'martial', name: 'Martial',
+        blurb: 'Strength, longsword and shield, scale mail. The soldier.',
+        // Defense, not the class-wide Great Weapon Fighting: this kit has no
+        // two-handed weapon, so that default was worth precisely nothing.
+        choices: { 'fighting-style': 'dueling', 'fighting-style-2': 'defense' },
+      },
       {
         /**
          * The Dexterity fighter — the reason kits exist at all.
@@ -292,6 +314,74 @@ export const CLASSES: Record<Id, ClassData> = {
             { itemId: 'alchemists-fire', qty: 1 },
           ],
         },
+        choices: { 'fighting-style': 'dueling', 'fighting-style-2': 'defense' },
+      },
+      {
+        /**
+         * The bow fighter. Archery (+2 to hit with ranged weapons) was in the
+         * Fighting Style list from the beginning and no fighter has ever been
+         * able to use it, because the class starts with a longsword.
+         *
+         * No shield: a longbow is two-handed. That is the whole cost — AC 15
+         * against the Martial fighter's 17 — and it is the right cost for a
+         * character whose plan is to not be reached.
+         */
+        id: 'archer', name: 'Archer',
+        blurb: 'Dexterity, longbow, studded leather. Hits hardest from across the board.',
+        statPriority: ['dex', 'con', 'str', 'wis', 'int', 'cha'],
+        weaponMasteries: ['longbow', 'longbow-plus1', 'shortsword'],
+        equipment: {
+          mainHand: 'longbow', armor: 'studded-leather',
+          inventory: [
+            // Something to hold when a bow is the wrong answer: finesse, so it
+            // swings off the same Dexterity.
+            { itemId: 'shortsword', qty: 1 },
+            { itemId: 'potion-healing', qty: 1 },
+            { itemId: 'alchemists-fire', qty: 1 },
+          ],
+        },
+        choices: { 'fighting-style': 'archery', 'fighting-style-2': 'defense' },
+      },
+      {
+        /**
+         * Two hands on one big sword. 2d6 against the longsword's 1d8, Great
+         * Weapon Fighting rerolling the 1s and 2s, and Graze mastery so a miss
+         * still lands the ability modifier — a fighter that trades the shield
+         * for the certainty that the turn was not wasted.
+         */
+        id: 'greatweapon', name: 'Great Weapon',
+        blurb: 'Strength, greatsword, scale mail. Two hands, no shield, more damage.',
+        weaponMasteries: ['greatsword', 'greatsword-plus1', 'javelin'],
+        equipment: {
+          mainHand: 'greatsword', armor: 'scale-mail',
+          inventory: [
+            { itemId: 'javelin', qty: 2 },
+            { itemId: 'potion-healing', qty: 1 },
+            { itemId: 'alchemists-fire', qty: 1 },
+          ],
+        },
+        choices: { 'fighting-style': 'great-weapon-fighting', 'fighting-style-2': 'defense' },
+      },
+      {
+        /**
+         * A blade in each hand. Two-Weapon Fighting adds the ability modifier
+         * to the off-hand blow, which is most of what makes the second attack
+         * worth the bonus action at all, and Nick (the dagger's mastery) is the
+         * property that makes the off-hand swing free.
+         */
+        id: 'twoblade', name: 'Two Blades',
+        blurb: 'Dexterity, a shortsword in each hand, studded leather. More swings, less armour.',
+        statPriority: ['dex', 'con', 'str', 'wis', 'int', 'cha'],
+        weaponMasteries: ['shortsword', 'shortsword-plus1', 'dagger'],
+        equipment: {
+          mainHand: 'shortsword', offHand: 'shortsword', armor: 'studded-leather',
+          inventory: [
+            { itemId: 'dagger', qty: 2 },
+            { itemId: 'potion-healing', qty: 1 },
+            { itemId: 'alchemists-fire', qty: 1 },
+          ],
+        },
+        choices: { 'fighting-style': 'two-weapon-fighting', 'fighting-style-2': 'defense' },
       },
     ],
   },
@@ -824,6 +914,29 @@ export const CLASSES: Record<Id, ClassData> = {
         { itemId: 'potion-healing', qty: 1 },
       ],
     },
+    kits: [
+      { id: 'hunter', name: 'Hunter', blurb: 'Longbow and studded leather. Kills things before they arrive.',
+        choices: { 'fighting-style': 'archery' } },
+      {
+        /**
+         * The close-quarters ranger. Two-Weapon Fighting is on the ranger's
+         * style list and the class starts with a bow in its hands, so the option
+         * was there and nothing could fire it — the shortswords were sitting in
+         * the pack the whole time.
+         */
+        id: 'skirmisher', name: 'Skirmisher',
+        blurb: 'A shortsword in each hand. Fights up close instead of across the board.',
+        weaponMasteries: ['shortsword', 'shortsword-plus1', 'longbow'],
+        equipment: {
+          mainHand: 'shortsword', offHand: 'shortsword', armor: 'studded-leather',
+          inventory: [
+            { itemId: 'longbow', qty: 1 },
+            { itemId: 'potion-healing', qty: 1 },
+          ],
+        },
+        choices: { 'fighting-style': 'two-weapon-fighting' },
+      },
+    ],
   },
   /**
    * The barbarian.
@@ -953,6 +1066,32 @@ export const CLASSES: Record<Id, ClassData> = {
         { itemId: 'potion-healing', qty: 1 },
       ],
     },
+    kits: [
+      { id: 'templar', name: 'Templar', blurb: 'Longsword, shield and chain mail. The wall the party stands behind.',
+        choices: { 'fighting-style': 'defense' } },
+      {
+        /**
+         * Great Weapon Fighting is on the paladin's style list and the class
+         * starts sword-and-board, so — as with the fighter and the ranger — the
+         * option existed and no paladin could ever use it.
+         *
+         * A two-handed paladin is also the one that most wants Divine Smite:
+         * the smite rides on a hit, so fewer, larger hits are worth more of the
+         * slot than more, smaller ones.
+         */
+        id: 'crusader', name: 'Crusader',
+        blurb: 'Greatsword and chain mail. Trades the shield for something to smite with.',
+        weaponMasteries: ['greatsword', 'greatsword-plus1', 'javelin'],
+        equipment: {
+          mainHand: 'greatsword', armor: 'chain-mail',
+          inventory: [
+            { itemId: 'javelin', qty: 2 },
+            { itemId: 'potion-healing', qty: 1 },
+          ],
+        },
+        choices: { 'fighting-style': 'great-weapon-fighting' },
+      },
+    ],
   },
 };
 

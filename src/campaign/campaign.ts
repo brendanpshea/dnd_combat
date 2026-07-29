@@ -905,10 +905,13 @@ export function newCampaign(seed = 1, speciesIds: Id[] = []): CampaignState {
  * A template names the whole roster including classes, so the shelf can show
  * parties the default four roles can't — a paladin's holy order, a ranger-led
  * hunt. Names are rolled from the species pools rather than fixed, so tapping
- * the same template twice gives different people. Fighter styles stay on
- * Dueling/Defense because the starting kit (longsword + shield) is what makes
- * the others (Archery, Great Weapon, Two-Weapon) fire, and it has none of
- * those weapons yet.
+ * the same template twice gives different people.
+ *
+ * Templates used to be stuck on Dueling and Defense, because those were the only
+ * two Fighting Styles the starting longsword-and-shield could fire — Archery,
+ * Great Weapon and Two-Weapon Fighting had no weapons behind them. Kits fixed
+ * that at the source, so a template now names a KIT and the style comes with it.
+ * `style` is kept for the two that want a non-default pick within a kit.
  */
 export interface PartyTemplate {
   id: string;
@@ -916,7 +919,7 @@ export interface PartyTemplate {
   blurb: string;
   /** The whole roster, in order — classes included, so a template can field a
    *  ranger or a paladin instead of the default fighter/wizard/cleric/rogue. */
-  members: Array<{ classId: Id; speciesId: Id; style?: Id; backgroundId?: Id }>;
+  members: Array<{ classId: Id; speciesId: Id; kitId?: Id; style?: Id; backgroundId?: Id }>;
 }
 
 export const PARTY_TEMPLATES: PartyTemplate[] = [
@@ -941,7 +944,7 @@ export const PARTY_TEMPLATES: PartyTemplate[] = [
   {
     id: 'bloodline', name: 'Strange Bloodlines', blurb: 'Exotic ancestries — draconic, infernal, and fey.',
     members: [
-      { classId: 'fighter', speciesId: 'dragonborn', style: 'dueling', backgroundId: 'noble' },
+      { classId: 'fighter', speciesId: 'dragonborn', kitId: 'duelist', backgroundId: 'noble' },
       { classId: 'wizard', speciesId: 'tiefling', backgroundId: 'charlatan' },
       { classId: 'cleric', speciesId: 'gnome', backgroundId: 'acolyte' },
       { classId: 'rogue', speciesId: 'orc', backgroundId: 'criminal' },
@@ -950,7 +953,7 @@ export const PARTY_TEMPLATES: PartyTemplate[] = [
   {
     id: 'wardens', name: 'The Wardens', blurb: 'An oath-sworn front line, with a ranger reading the ground ahead.',
     members: [
-      { classId: 'paladin', speciesId: 'dragonborn', backgroundId: 'acolyte' },
+      { classId: 'paladin', speciesId: 'dragonborn', kitId: 'crusader', backgroundId: 'acolyte' },
       { classId: 'ranger', speciesId: 'elf', backgroundId: 'guide' },
       { classId: 'cleric', speciesId: 'dwarf', backgroundId: 'hermit' },
       { classId: 'rogue', speciesId: 'gnome', backgroundId: 'scribe' },
@@ -959,10 +962,10 @@ export const PARTY_TEMPLATES: PartyTemplate[] = [
   {
     id: 'hunt', name: 'The Long Hunt', blurb: 'Trackers and skirmishers — light on armour, hard to corner.',
     members: [
-      { classId: 'ranger', speciesId: 'human', backgroundId: 'guide' },
+      { classId: 'ranger', speciesId: 'human', kitId: 'skirmisher', backgroundId: 'guide' },
       { classId: 'rogue', speciesId: 'halfling', backgroundId: 'wayfarer' },
       { classId: 'wizard', speciesId: 'gnome', backgroundId: 'artisan' },
-      { classId: 'fighter', speciesId: 'orc', style: 'defense', backgroundId: 'soldier' },
+      { classId: 'fighter', speciesId: 'orc', kitId: 'archer', backgroundId: 'soldier' },
     ],
   },
   {
@@ -979,12 +982,17 @@ export const PARTY_TEMPLATES: PartyTemplate[] = [
 /** Rebuild one party slot from scratch: class kit, species, background, art. */
 function fitCharacter(
   c: CampaignState, ch: PartyCharacter,
-  spec: { classId: Id; speciesId: Id; style?: Id; backgroundId?: Id },
+  spec: { classId: Id; speciesId: Id; kitId?: Id; style?: Id; backgroundId?: Id },
   charIdx: number,
 ): void {
-  const equipment = CLASSES[spec.classId]!.equipment;
+  // Through `kitFor`, so a template that names a kit gets that kit's gear —
+  // reading `CLASSES[...].equipment` directly would hand a Great Weapon fighter
+  // a longsword and a shield and quietly undo the choice.
+  const equipment = kitFor(CLASSES[spec.classId]!, spec.kitId).equipment;
   ch.classId = spec.classId;
   ch.speciesId = spec.speciesId;
+  if (spec.kitId) ch.kitId = spec.kitId; else delete ch.kitId;
+  delete ch.statBuild;
   ch.backgroundId = spec.backgroundId ?? defaultBackgroundFor(spec.classId);
   ch.portraitId = freshPortraitFor(c, charIdx, spec.speciesId, spec.classId);
   const rolled = randomNameFor(spec.speciesId, c.rng);
@@ -1179,6 +1187,10 @@ export function setPartyKit(c: CampaignState, charIdx: number, kitId: Id): boole
   if (!cls?.kits?.some((k) => k.id === kitId)) return false;
   character.kitId = kitId;
   delete character.statBuild;
+  // Style picks go too. An Archer carrying a Great Weapon Fighting pick made
+  // against the old kit would gain nothing from it, and would have arrived
+  // there without ever opening the Fighting Style panel.
+  delete character.choices;
   const equipment = kitFor(cls, kitId).equipment;
   character.inventory = equipment.inventory.map((stack) => ({ ...stack }));
   character.equipped = {
@@ -1224,6 +1236,20 @@ export function clearPartyStatBuild(c: CampaignState, charIdx: number): boolean 
   if (c.partyReady || !character) return false;
   delete character.statBuild;
   return true;
+}
+
+/**
+ * Which option a member has at a choice point, counting the kit's default.
+ *
+ * The forge used to compute this itself as `ch.choices?.[id] ?? cp.default`,
+ * which was right until kits could carry defaults and then quietly wrong: an
+ * Archer showed "Dueling" selected in the Fighting Style panel while the built
+ * character had Archery. The UI was not describing the character. One function,
+ * so the panel and the builder cannot disagree again.
+ */
+export function partyChoice(ch: PartyCharacter, pointId: Id, fallback: Id): Id {
+  const cls = CLASSES[ch.classId];
+  return ch.choices?.[pointId] ?? (cls ? kitFor(cls, ch.kitId).choices[pointId] : undefined) ?? fallback;
 }
 
 /** Record a build-choice pick (Fighting Style, …) for a party member, pre-launch. */
