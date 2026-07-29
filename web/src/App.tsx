@@ -3,6 +3,7 @@ import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { coverReadAt, coverReadFor, type CoverRead } from '../../src/engine/rules/cover.js';
+import { worstCaseWalkDamage } from '../../src/engine/rules/movement.js';
 import { buildParty, DEFAULT_PARTY } from '../../src/builder/character.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
@@ -914,6 +915,30 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
    * an enemy turn or mid-spell there is no move decision to inform, and the
    * badges would just be clutter over the thing you are actually looking at.
    */
+  /**
+   * Worst-case damage for each cell the hero could walk to.
+   *
+   * The engine has computed this since pathing was written — `worstCaseWalkDamage`
+   * walks the route the mover would actually take, adds every opportunity
+   * attack it provokes at maximum, and every hazard it crosses — and until now
+   * only the AI ever read it. The player, who is asked the same question every
+   * turn, was told nothing.
+   *
+   * Cheap enough to do per cell: each call is one BFS over an eighty-cell grid,
+   * and it runs for the forty-odd cells in range, memoised on the same
+   * dependencies as the cover read beside it.
+   */
+  const riskCells = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!grouped || !active || targeting || !isHumanTurn) return m;
+    for (const k of grouped.moves.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      const worst = worstCaseWalkDamage(state, active, { x: x!, y: y! });
+      if (worst > 0) m.set(k, worst);
+    }
+    return m;
+  }, [grouped, active, state, targeting, isHumanTurn]);
+
   const coverCells = useMemo(() => {
     const m = new Map<string, CoverRead>();
     if (!grouped || !active || targeting || !isHumanTurn) return m;
@@ -1175,6 +1200,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         activeId={activeId ?? ''}
         highlights={highlights}
         coverCells={coverCells}
+        riskCells={riskCells}
         coverUnits={coverUnits}
         selectedId={activeId}
         multiCounts={multiCounts}

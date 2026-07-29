@@ -3626,3 +3626,56 @@ button.category .count {
   box-shadow: inset 0 0 0 3px #ffd76a, inset 0 0 0 5px #1a1526;
   z-index: 4;
 }
+
+/* XCOM's other tile badge: what the walk costs.
+   The cover shield sits in the middle of the cell, so this sits at the top and
+   in the opposite colour — a cell can be both good cover AND expensive to
+   reach, and those are two different facts a player weighs against each other.
+
+   DELIBERATELY QUIET. The first version wore a 💥 and the same weight as the
+   cover shield, and on the Fire Pit map that put nineteen loud badges on a
+   sixty-four-cell board, two of them on every lava tile (the risk number on top
+   and the terrain's own 🔥 underneath). The information was right and the board
+   was unreadable. A bare number in a thin red pill carries the same fact and
+   lets the terrain stay visible.
+
+   `lethal` is the one case worth interrupting for — the worst case is at least
+   your current hit points, so this move can end with you on the floor — and it
+   is the only one that gets a glyph, full contrast and motion. */
+.risk-badge {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  transform: translateX(-50%);
+  padding: 0 3px;
+  border-radius: 6px;
+  background: #1c0f0fd0;
+  border: 1px solid #c76a5c99;
+  color: #ffb4a4;
+  font-size: clamp(7px, 1.9vmin, 10px);
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 3;
+  white-space: nowrap;
+}
+.risk-badge b { font-family: var(--display); font-weight: 600; }
+.risk-badge.lethal {
+  padding: 0 4px;
+  background: #3a0f14f2;
+  border-color: #ff5468;
+  color: #ffd7dc;
+  font-size: clamp(8px, 2.1vmin, 11px);
+  animation: riskPulse 1.1s ease-in-out infinite alternate;
+}
+.risk-badge.lethal::before { content: '☠'; margin-right: 2px; }
+@keyframes riskPulse {
+  from { box-shadow: 0 0 0 0 #ff546800; }
+  to   { box-shadow: 0 0 0 3px #ff546855; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the cue, drop the motion. On the Fire Pit map a hurt hero can have a
+     dozen lethal moves at once, which is a dozen things pulsing together —
+     exactly the case this media query exists for. The colour and the ☠ still
+     carry it. */
+  .risk-badge.lethal { animation: none; box-shadow: 0 0 0 2px #ff546877; }
+}
