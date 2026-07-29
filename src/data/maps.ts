@@ -44,7 +44,7 @@ export function parseMap(map: MapData): GridState {
       cells[y * width + x] = { terrain: t };
     }
   });
-  return { width, height, cells };
+  return { width, height, cells, theme: map.theme };
 }
 
 export const MAPS: Record<string, MapData> = {

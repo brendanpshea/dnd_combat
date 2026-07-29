@@ -1968,7 +1968,7 @@ function scoreShove(state: GameState, actor: Combatant, a: Action & { kind: 'sho
   const to = { x: t.position.x + dir.x, y: t.position.y + dir.y };
   const cell = cellAt(state.grid, to);
   if (!cell || blocksMovement(cell.terrain) || cell.occupantId !== undefined) return 0;
-  const intoFire = cell.terrain === 'hazard' ? damageValue(hazardMaxFor(t) * 0.6, t) : 0;
+  const intoFire = cell.terrain === 'hazard' ? damageValue(hazardMaxFor(t, state.grid) * 0.6, t) : 0;
   const intoWeb = cell.web ? denialValue(state, t, 0.5, 1) : 0;
   // Bare ground still costs them a step back toward whoever they were hitting.
   const stepBack = denialValue(state, t, 1, 1) * 0.12;

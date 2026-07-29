@@ -30,6 +30,8 @@ import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/a
 import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
 import { RUN_TARGET_XP } from '../src/arena/medal.js';
 import { Combat } from '../src/engine/combat.js';
+import { parseMap } from '../src/data/maps.js';
+import { deployFoes } from '../src/arena/deploy.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { buildMonster } from '../src/data/monsters.js';
 
@@ -49,8 +51,15 @@ function playOne(seed: number): Outcome {
     const level = dayLevelOf(run, partyLevelOf(c));
     const wave = buildWave(run.seed, level, run.wave, undefined, run.gate ?? 0, half);
     const party = buildCampaignParty(c);
+    // Deployed the way Arena.tsx deploys them. The old hardcoded rank 6 only
+    // made sense on the bare 8x8 box this harness was accidentally fighting on;
+    // real arena boards are 12 or 16 rows deep, so it is the middle of the map.
+    const grid = parseMap(wave.map);
+    const spots = deployFoes(grid, wave.encounter.members.length,
+      (run.seed ^ (run.wave * 2654435761)) >>> 0);
     const foes = wave.encounter.members.map((id, i) =>
-      buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: 6 }, String(i + 1)));
+      buildMonster(id, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
+        String(i + 1)));
     // The retry has to be a DIFFERENT fight.
     //
     // A lost wave leaves `run.wave` alone (that is what "try again" means) and
@@ -61,6 +70,19 @@ function playOne(seed: number): Outcome {
     // `run.attempts` counts retries, so the dice differ while the matchup does
     // not, which is what a player actually gets when they take the wave again.
     const combat = new Combat({
+      /**
+       * THE WAVE'S MAP. Omitting it does not fail — `startCombat` falls back to
+       * `makeGrid(8, 8)`, a bare grid with no walls, no cover, no difficult
+       * ground and no hazards — so every fight this harness has ever simulated
+       * was fought on an empty box while the generated board sat unused beside
+       * it. The web arena passes it (Arena.tsx), so the game was always fine;
+       * only the measurements were of somewhere else.
+       *
+       * Everything terrain-shaped was therefore invisible here: cover, the map
+       * generator, the hazard tiles, and the creep check that reads
+       * `canCreepIn(wave.map)` for a board nobody then fought on.
+       */
+      map: wave.map,
       combatants: [...party, ...foes], seed: seed * 31 + run.wave * 101 + run.attempts,
     });
     let steps = 0;

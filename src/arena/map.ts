@@ -24,13 +24,28 @@ const DEPLOY_FILES = [0, 1, 2, 3, 4, 5, 6, 7];
 const THEMES: MapTheme[] = ['stone', 'forest', 'graveyard', 'ember', 'village', 'bog'];
 
 /** Terrain a theme prefers for its scatter, so a bog is boggy and a forge burns. */
-const THEME_SCATTER: Record<MapTheme, { difficult: number; hazard: number }> = {
-  stone:     { difficult: 0.06, hazard: 0.00 },
-  forest:    { difficult: 0.14, hazard: 0.00 },
-  graveyard: { difficult: 0.08, hazard: 0.00 },
+/**
+ * Hazard rates, now that a hazard means something different on each theme.
+ *
+ * Four of these were zero. That was defensible while every hazard in the game
+ * was the same 1d4 of fire — a lava tile in a graveyard is nonsense, so the
+ * graveyard simply had none — and it stopped being defensible the moment each
+ * theme got its own: brambles, grave gas and burning wreckage were written,
+ * drawn, and generated exactly never.
+ *
+ * The rates are deliberately unequal, because the hazards are. Lava is 3d6 and
+ * stays at 8% on the volcano where it belongs; a bramble thicket is 1d4 and a
+ * snare, so a forest can afford more of it than a lava field can. Stone keeps a
+ * token seam: a ruin with a crack of molten rock in it is a set-piece, not the
+ * ordinary state of a dungeon.
+ */
+export const THEME_SCATTER: Record<MapTheme, { difficult: number; hazard: number }> = {
+  stone:     { difficult: 0.06, hazard: 0.02 },
+  forest:    { difficult: 0.14, hazard: 0.06 },
+  graveyard: { difficult: 0.08, hazard: 0.04 },
   ember:     { difficult: 0.04, hazard: 0.08 },
-  village:   { difficult: 0.04, hazard: 0.00 },
-  bog:       { difficult: 0.20, hazard: 0.02 },
+  village:   { difficult: 0.04, hazard: 0.04 },
+  bog:       { difficult: 0.20, hazard: 0.05 },
 };
 
 export interface ArenaMapOptions {
