@@ -1512,6 +1512,38 @@ button.category .count {
 .tray-head button { margin-left: auto; }
 
 /* Roomy targets: this is a phone, and a mis-tap costs a turn. */
+/* Metamagic chip row: the armed option is the one thing on this screen that
+   changes what every button below it means, so it reads as pressed-in rather
+   than merely selected. */
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  border-radius: 999px;
+}
+.meta-chip.armed {
+  background: var(--accent, #b98a2e);
+  color: #14110b;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+.meta-chip.armed .chip-note { background: rgba(0, 0, 0, 0.25); color: inherit; }
+.tray-empty {
+  grid-column: 1 / -1;
+  padding: 14px 4px;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
 .tray-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

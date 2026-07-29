@@ -3,7 +3,8 @@ import { Combat } from '../src/engine/combat.js';
 import { buildCharacter, buildParty } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { buildEncounter } from '../src/data/encounters.js';
-import { groupActions, buildMultiAction, posKey } from '../web/src/actionGroups.js';
+import { groupActions, buildMultiAction, bendTray, bendEntry, posKey } from '../web/src/actionGroups.js';
+import { affordableMetamagic, SORCERY_POINTS } from '../src/engine/rules/metamagic.js';
 import { SPELLS } from '../src/data/spells.js';
 import { isLegalAction } from '../src/engine/actions.js';
 import type { Combatant, Position } from '../src/engine/types.js';
@@ -416,5 +417,86 @@ describe('quickened casts in the tray', () => {
     const bar = groupActions(c.state, 'wiz', c.legalActions()).bar;
     expect(bar.filter((b) => b.label.includes('(') && b.label.includes('Quickened'))).toEqual([]);
     expect(bar.filter((b) => (b.note ?? '').includes('SP'))).toEqual([]);
+  });
+});
+
+/**
+ * The Metamagic chip row.
+ *
+ * WHY THIS IS TESTED HERE AND NOT IN THE APP
+ *
+ * Every web test in this repo runs without a DOM. So the chip row is split: the
+ * *decision* — which spells an armed option can touch, and what the button does
+ * when pressed — lives in `bendTray`/`bendEntry` as pure functions, and
+ * `App.tsx` holds only the `armed` state and the markup. Written the other way
+ * round, the whole feature would ship unverified.
+ *
+ * The row exists because the second Metamagic option broke the shape the first
+ * one used. While Quickened stood alone, a bent cast was its own tray entry
+ * (like an upcast) and never sat beside its plain version, because it is only
+ * offered once the action is spent. Heightened applies to an ordinary action
+ * cast — so every affected spell would appear twice — and is not enumerated at
+ * all, so there is no entry to duplicate in the first place.
+ */
+describe('the metamagic chip row', () => {
+  function sorcerer(spellIds: string[]) {
+    const me = buildCharacter({ classId: 'sorcerer', team: 'team1', position: { x: 0, y: 3 }, level: 8 });
+    me.spellIds = spellIds;
+    const c = new Combat({
+      seed: 4,
+      combatants: [me, { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e0', hp: 60, maxHp: 60 }],
+    });
+    until(c, me.id);
+    return { c, meId: me.id };
+  }
+
+  it('reaches a spell the AI is never offered, and builds a legal action', () => {
+    // The whole point of arming an option: Heightened has no entry in
+    // `legalActions` at all, so without this the player could not cast it.
+    const { c, meId } = sorcerer(['hold-person', 'fire-bolt']);
+    const bar = groupActions(c.state, meId, c.legalActions()).bar.filter((b) => b.group === 'spell');
+    const bent = bendTray(bar, 'heightened');
+    const entry = bent.find((b) => b.label.includes('Hold Person'));
+    expect(entry, 'Hold Person should be reachable with Heightened armed').toBeDefined();
+    expect(entry!.label).toContain('Heightened');
+    expect(entry!.note).toContain('2 SP');
+    const action = entry!.action ?? buildMultiAction(entry!.multi!, ['e0']);
+    expect(action.kind === 'castSpell' && action.metamagic).toBe('heightened');
+    expect(isLegalAction(c.state, meId, action)).toBe(true);
+  });
+
+  it('hides everything the armed option cannot touch', () => {
+    // The reason it is a filter and not a decoration. A row of spells that
+    // silently ignore the armed option is worse than not offering it.
+    const { c, meId } = sorcerer(['hold-person', 'fireball', 'fire-bolt']);
+    const bar = groupActions(c.state, meId, c.legalActions()).bar.filter((b) => b.group === 'spell');
+    const bent = bendTray(bar, 'heightened');
+    expect(bar.some((b) => b.label.includes('Fireball'))).toBe(true);
+    expect(bent.some((b) => b.label.includes('Fireball'))).toBe(false);
+  });
+
+  it('gives the ordinary tray back when nothing is armed', () => {
+    const { c, meId } = sorcerer(['hold-person', 'fireball', 'fire-bolt']);
+    const bar = groupActions(c.state, meId, c.legalActions()).bar;
+    expect(bendTray(bar, null)).toBe(bar);
+  });
+
+  it('never bends an item — a scroll is not the sorcerer casting', () => {
+    const { c, meId } = sorcerer(['hold-person', 'fire-bolt']);
+    const bar = groupActions(c.state, meId, c.legalActions()).bar;
+    for (const b of bar.filter((x) => x.group !== 'spell')) {
+      expect(bendEntry(b, 'heightened'), b.id).toBeUndefined();
+    }
+  });
+
+  it('offers a chip only to a sorcerer with points left', () => {
+    const { c, meId } = sorcerer(['hold-person', 'fire-bolt']);
+    expect(affordableMetamagic(c.state.combatants[meId]!).map((m) => m.id))
+      .toEqual(['quickened', 'heightened']);
+    c.state.combatants[meId]!.featureUses[SORCERY_POINTS]!.current = 0;
+    expect(affordableMetamagic(c.state.combatants[meId]!)).toEqual([]);
+    // And no other class ever sees the row.
+    const wiz = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 0, y: 0 }, level: 8 });
+    expect(affordableMetamagic(wiz)).toEqual([]);
   });
 });

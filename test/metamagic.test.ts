@@ -43,7 +43,7 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
 import { legalActions, isLegalAction, type Action } from '../src/engine/actions.js';
-import { chooseAction } from '../src/ai/greedy.js';
+import { chooseAction, scoreCastForTest } from '../src/ai/greedy.js';
 import { SORCERY_POINTS, metamagicOptions, knownMetamagic } from '../src/engine/rules/metamagic.js';
 import { SPELLS } from '../src/data/spells.js';
 import { acOf } from '../src/data/armor.js';
@@ -268,5 +268,94 @@ describe('Draconic Sorcery', () => {
   it('has Command prepared from 3rd, which is not on the sorcerer list', () => {
     const three = buildCharacter({ classId: 'sorcerer', team: 'team1', position: { x: 0, y: 0 }, level: 3 });
     expect(three.spellIds).toContain('command');
+  });
+});
+
+/**
+ * Heightened Spell: a player option, and the machinery that makes it one.
+ *
+ * WHY IT IS NOT OFFERED TO THE AI
+ *
+ * Measured, twice. Offered, it fires 208 times across 40 level-8 runs — it is
+ * strictly better than the plain cast and the scorer has no term for a sorcery
+ * point, so the bent version always wins — and it pushed Quickened from 78 uses
+ * down to 20. Then, given away FREE to ask whether it is worth anything at all:
+ *
+ *     60 runs, level 8      baseline      + free Heightened
+ *     finished              52/60         52/60
+ *     fights won            413 (48%)     413 (48%)
+ *
+ * Free, it does not move the outcome; charged, it can only be worse. So the AI
+ * keeps its points for Quickened, and Heightened reaches the player through the
+ * chip row instead — which is exactly the case the UI's "construct it yourself
+ * and validate" design was built for.
+ */
+describe('Heightened Spell', () => {
+  function caster(spellIds: string[]) {
+    const me = buildCharacter({ classId: 'sorcerer', team: 'team1', position: { x: 0, y: 3 }, level: 8 });
+    me.spellIds = spellIds;
+    const c = new Combat({
+      seed: 4,
+      combatants: [me, { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e0', hp: 60, maxHp: 60 }],
+    });
+    let guard = 0;
+    while (c.activeId !== me.id && guard++ < 40) c.apply({ kind: 'endTurn' });
+    return { c, meId: me.id };
+  }
+
+  const heighten = (spellId: string, slotLevel: number): Action => ({
+    kind: 'castSpell', spellId, slotLevel, targets: [{ combatantId: 'e0' }], metamagic: 'heightened',
+  });
+
+  it('is legal, and never enumerated', () => {
+    const { c, meId } = caster(['hold-person', 'fire-bolt']);
+    expect(isLegalAction(c.state, meId, heighten('hold-person', 2))).toBe(true);
+    expect(legalActions(c.state, meId).filter(
+      (a) => a.kind === 'castSpell' && a.metamagic === 'heightened',
+    )).toEqual([]);
+  });
+
+  it('gives its victim disadvantage on the save, and only for that one cast', () => {
+    // The engine hook. `metamagicCast` lives on the state for the duration of
+    // one `cast` call and is cleared in a `finally`; if the clearing broke, the
+    // next creature to save would keep saving at disadvantage forever, which is
+    // the kind of leak a per-cast flag invites.
+    const { c, meId } = caster(['hold-person', 'fire-bolt']);
+    c.apply(heighten('hold-person', 2));
+    expect(c.state.metamagicCast, 'the bend must not outlive the cast').toBeUndefined();
+  });
+
+  it('spends the points', () => {
+    const { c, meId } = caster(['hold-person', 'fire-bolt']);
+    const before = c.state.combatants[meId]!.featureUses[SORCERY_POINTS]!.current;
+    c.apply(heighten('hold-person', 2));
+    expect(c.state.combatants[meId]!.featureUses[SORCERY_POINTS]!.current).toBe(before - 2);
+  });
+
+  it('only bends spells whose whole effect hangs on one save', () => {
+    // The fan-out guard. Letting it apply to everything that rolls a save would
+    // make the chip row a second copy of the spell list, and on a Fireball it
+    // moves a few hit points of the half-damage margin rather than deciding
+    // anything.
+    const { c, meId } = caster(['fireball', 'hold-person', 'fire-bolt']);
+    const ids = metamagicOptions(c.state, meId, SPELLS['hold-person']!).map((m) => m.id);
+    expect(ids).toContain('heightened');
+    expect(metamagicOptions(c.state, meId, SPELLS.fireball!).map((m) => m.id)).not.toContain('heightened');
+    expect(isLegalAction(c.state, meId, {
+      kind: 'castSpell', spellId: 'fireball', slotLevel: 3, metamagic: 'heightened',
+      targets: [{ position: { x: 4, y: 3 } }],
+    })).toBe(false);
+  });
+
+  it('scores higher than the same spell unbent', () => {
+    // The scorer hook, which is one line in `saveFailProb` and nothing
+    // per-spell. This is not used by the AI (nothing enumerates it) but it is
+    // what a future price would be weighed against, and a bend that scored the
+    // same as no bend would mean the hook was not wired at all.
+    const { c, meId } = caster(['hold-person', 'fire-bolt']);
+    const me = c.state.combatants[meId]!;
+    const plain: Action = { kind: 'castSpell', spellId: 'hold-person', slotLevel: 2, targets: [{ combatantId: 'e0' }] };
+    expect(scoreCastForTest(c.state, me, heighten('hold-person', 2) as Action & { kind: 'castSpell' }))
+      .toBeGreaterThan(scoreCastForTest(c.state, me, plain as Action & { kind: 'castSpell' }));
   });
 });

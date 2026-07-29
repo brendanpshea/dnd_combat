@@ -23,7 +23,7 @@ import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
 import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
-import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, type MetamagicId } from './rules/metamagic.js';
+import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, heightenedTarget, type MetamagicId } from './rules/metamagic.js';
 import type { GameEvent } from './events.js';
 
 export type Target = { combatantId: Id } | { position: Position };
@@ -633,6 +633,33 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
    * modifier priced that way in this codebase has come out never-or-always.
    */
   const points = actor.featureUses[SORCERY_POINTS]?.current ?? 0;
+  /**
+   * Heightened Spell is deliberately NOT enumerated. It is a player option.
+   *
+   * MEASURED. Offered to the AI it fires constantly — 208 times across 40
+   * level-8 runs — because it is strictly better than the plain cast and the
+   * scorer has no term for a sorcery point, so the bent version always wins.
+   * And it crowded out the option that is actually worth the points: Quickened
+   * fell from 78 uses to 20.
+   *
+   * The obvious answer is to charge for the points. The trouble is that the
+   * charge would be invented, and an invented constant on a modifier is the
+   * mistake this codebase has made six times. So the question asked instead was
+   * whether the option is worth anything AT ALL, by giving it away free:
+   *
+   *     60 runs, level 8         baseline      + free Heightened
+   *     finished                 52/60         52/60
+   *     fights won               413 (48%)     413 (48%)
+   *
+   * Free, it does not move the outcome. Charged, it can only be worse. So the
+   * AI does not spend its points this way — but a player heightening a
+   * Banishment on the one creature that matters is a real decision, and the
+   * greedy scorer's one-turn horizon is exactly what cannot see it.
+   *
+   * `isLegalAction` and `metamagicOptions` are unchanged, so the chip row in
+   * the web UI reaches it without any enumeration at all. That is the whole
+   * reason the UI was built to construct bent casts itself.
+   */
   if (actor.turn.actionUsed && !actor.turn.bonusActionUsed && points > 0) {
     for (const meta of knownMetamagic(actor)) {
       if (meta.cost > points) continue;
@@ -818,7 +845,21 @@ export function step(state: GameState, action: Action): { state: GameState; even
         events.push({ type: 'counterspelled', casterId: actorId, byId: counteredBy, spellId: action.spellId });
         break;
       }
-      const castEvents = spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) });
+      // Heightened Spell rides on the state for the duration of this one cast:
+      // a spell's `cast` rolls its own saves through the shared `savingThrow`,
+      // and there is no way to hand a modifier down through seventy spell
+      // implementations. Cleared in `finally` so a spell that throws cannot
+      // leave the next creature saving at disadvantage.
+      if (action.metamagic === 'heightened') {
+        const victim = heightenedTarget(action.targets as Array<{ combatantId?: Id }>);
+        if (victim) draft.metamagicCast = { casterId: actorId, heightenedId: victim };
+      }
+      let castEvents;
+      try {
+        castEvents = spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) });
+      } finally {
+        delete draft.metamagicCast;
+      }
       events.push(...castEvents);
       // Blessed Healer (Life Domain, Cleric 6): a healing spell cast on someone
       // else heals you too, for 2 plus the slot's level.

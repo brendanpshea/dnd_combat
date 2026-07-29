@@ -10,6 +10,7 @@ import { parseDice } from '../engine/dice.js';
 import { next } from '../engine/rng.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, spellDc, cantripDice, eldritchBeams, wearsMetal, canBePutToSleep } from '../data/spells.js';
+import { heightenedTarget } from '../engine/rules/metamagic.js';
 import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
@@ -41,12 +42,27 @@ function hitProb(bonus: number, ac: number, mode: 'flat' | 'advantage' | 'disadv
   return p;
 }
 
+/**
+ * Heightened Spell, while the cast being scored is heightened.
+ *
+ * Set at the top of `scoreSpell` and cleared in its `finally`, so it is a stack
+ * frame rather than state. It exists so that Heightened needs NO per-spell
+ * scoring at all: every case already prices its effect through `saveFailProb`,
+ * so bending that one function bends all of them, and the delta falls out as
+ * the difference between the bent score and the plain one. A flat number for
+ * "what disadvantage on a save is worth" would have been the seventh guess.
+ */
+let heightenedVictim: Id | undefined;
+
 function saveFailProb(state: GameState, target: Combatant, ability: keyof Combatant['abilities'], dc: number): number {
   const bonus =
     abilityMod(target.abilities[ability]) +
     (target.savingThrowProfs.includes(ability) ? proficiencyBonus(target.level) : 0);
   // P(d20 + bonus < dc)
-  return clampP((dc - bonus - 1) / 20);
+  const p = clampP((dc - bonus - 1) / 20);
+  // Disadvantage: both dice must clear the DC, so the chance of failing is
+  // 1 - (1 - p)^2 written the other way round.
+  return target.id === heightenedVictim ? 1 - (1 - p) * (1 - p) : p;
 }
 
 /** Damage EV weighted up when it can kill. */
@@ -291,6 +307,17 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
 }
 
 function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
+  heightenedVictim = a.metamagic === 'heightened'
+    ? heightenedTarget(a.targets as Array<{ combatantId?: Id }>)
+    : undefined;
+  try {
+    return scoreSpellInner(state, actor, a);
+  } finally {
+    heightenedVictim = undefined;
+  }
+}
+
+function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
   const spell = SPELLS[a.spellId]!;
   const dc = spellDc(state, actor.id);
   const castMod = abilityMod(actor.abilities[actor.spellcastingAbility ?? 'int']);
@@ -1807,6 +1834,19 @@ function stableRoll(state: GameState, actorId: Id, salt: number): number {
 }
 
 /** Pick the best action for the current combatant. Returns endTurn when done. */
+/**
+ * What this scorer thinks one cast is worth, in hit points.
+ *
+ * Exported for tests only — nothing in the game calls it, because the AI always
+ * scores a whole legal-action list rather than one action. It exists so that a
+ * Metamagic option that is deliberately NOT enumerated (Heightened) can still
+ * be shown to price higher than the plain cast: without it, the one line in
+ * `saveFailProb` that makes the bend real would be unverifiable.
+ */
+export function scoreCastForTest(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
+  return scoreSpell(state, actor, a);
+}
+
 export function chooseAction(state: GameState, actorId: Id): Action {
   const actor = state.combatants[actorId]!;
   const actions = legalActions(state, actorId);

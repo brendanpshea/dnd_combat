@@ -357,7 +357,7 @@ Spellcasting ability: **WIS**.
 
 | Level | Features |
 | --- | --- |
-| 2 | Font of Magic, Metamagic: Quickened Spell |
+| 2 | Font of Magic, Metamagic: Quickened Spell, Metamagic: Heightened Spell |
 | 3 | Draconic Resilience, Draconic Spells |
 
 ### Spell slots

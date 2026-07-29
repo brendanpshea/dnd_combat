@@ -17,7 +17,8 @@ import { SPECIES } from '../../src/data/species.js';
 import { CLASS_COUNT, SPECIES_COUNT, SPELL_COUNT, MONSTER_COUNT } from './contentCounts.js';
 import { STAGES } from '../../src/campaign/campaign.js';
 import { Board, CellHighlight, tooltipFor } from './Board.js';
-import { groupActions, buildMultiAction, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
+import { groupActions, buildMultiAction, bendTray, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
+import { affordableMetamagic, type MetamagicId } from '../../src/engine/rules/metamagic.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
@@ -94,6 +95,11 @@ function footprint(caster: Combatant, spellId: string, target: Position): string
   }
   return [posKey(target)]; // emptyCell (teleport), self
 }
+
+/** "Quickened Spell" -> "quickened", for the empty-tray line. */
+const METAMAGIC_LABEL: Record<MetamagicId, string> = {
+  quickened: 'quickened', heightened: 'heightened',
+};
 
 type Targeting =
   | { type: 'cells'; label: string; spellId: string; byCell: Map<string, Action>; preview?: Position | undefined }
@@ -593,6 +599,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [version, setVersion] = useState(0);
   const [log, setLog] = useState<LogLine[]>(() => logLinesFor(combat.state, combat.log));
   const [targeting, setTargeting] = useState<Targeting | null>(null);
+  /**
+   * The Metamagic option the sorcerer is holding down, if any.
+   *
+   * A mode, like `targeting` — it changes what the next tap means rather than
+   * doing anything itself. Cleared whenever the tray closes or a cast goes off,
+   * because an option left armed across turns is a resource spent by accident.
+   */
+  const [armed, setArmed] = useState<MetamagicId | null>(null);
   const [chooser, setChooser] = useState<{ target: Combatant; options: TargetOption[] } | null>(null);
   const [showLog, setShowLog] = useState(false);
   const [floats, setFloats] = useState<FloatEffect[]>([]);
@@ -788,6 +802,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
 
   function runEntry(b: BarEntry) {
     setTray(null);
+    // The bend is already baked into `b` by `bendTray`; disarming here rather
+    // than on apply keeps a multi-tap flow (which returns later, through
+    // `buildMultiAction`) carrying the option it was started with.
+    setArmed(null);
     if (b.action) apply(b.action);
     else if (b.cellTargets) {
       const first = [...b.cellTargets.values()][0];
@@ -1262,21 +1280,43 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           it. Roughly two thirds of every spell is bar-bound, so a flat bar was
           fine at level 3 and hopeless by level 9. */}
       {isHumanTurn && grouped && tray && (
-        <div className="tray-backdrop" onClick={() => setTray(null)}>
+        <div className="tray-backdrop" onClick={() => { setTray(null); setArmed(null); }}>
           <div className="tray" onClick={(e) => e.stopPropagation()}>
             <div className="tray-head">
               {CATEGORIES.find((c) => c.group === tray)?.icon}{' '}
               {CATEGORIES.find((c) => c.group === tray)?.name}
-              <button className="ghost" onClick={() => setTray(null)}>✕</button>
+              <button className="ghost" onClick={() => { setTray(null); setArmed(null); }}>✕</button>
             </div>
+            {/* Metamagic: arm an option, and the list below becomes what that
+                option can touch. One chip per option the sorcerer knows and can
+                pay for, so the list stays N buttons however many it learns —
+                the alternative, an entry per spell x option, is what the tray
+                looked like before this and it doubled at the second option. */}
+            {tray === 'spell' && active && affordableMetamagic(active).length > 0 && (
+              <div className="meta-row">
+                {affordableMetamagic(active).map((m) => (
+                  <button
+                    key={m.id}
+                    className={`meta-chip${armed === m.id ? ' armed' : ''}`}
+                    title={m.blurb}
+                    onClick={() => setArmed(armed === m.id ? null : m.id)}
+                  >
+                    {m.name.replace(' Spell', '')} <span className="chip-note">{m.cost} SP</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="tray-grid">
-              {grouped.bar.filter((b) => b.group === tray).map((b) => (
+              {bendTray(grouped.bar.filter((b) => b.group === tray), armed).map((b) => (
                 <button key={b.id} className="chip" onClick={() => runEntry(b)}>
                   <span className="chip-ico">{actionIcon(b.icon, b.id)}</span>
                   <span className="chip-label">{b.label}</span>
                   {b.note && <span className="chip-note">{b.note}</span>}
                 </button>
               ))}
+              {armed && bendTray(grouped.bar.filter((b) => b.group === tray), armed).length === 0 && (
+                <div className="tray-empty">Nothing you have prepared can be {METAMAGIC_LABEL[armed]}.</div>
+              )}
             </div>
           </div>
         </div>

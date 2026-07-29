@@ -146,7 +146,11 @@ export function savingThrow(
   // Bestow Curse: disadvantage on every saving throw the cursed creature makes.
   const hasDisadvantage =
     (ability === 'dex' && c.conditions.some((k) => k.id === 'restrained')) ||
-    c.conditions.some((k) => k.id === 'cursed');
+    c.conditions.some((k) => k.id === 'cursed') ||
+    // Heightened Spell: the sorcerer picked this creature out of the cast that
+    // is resolving right now. See GameState.metamagicCast for why it arrives
+    // this way rather than as an argument.
+    state.metamagicCast?.heightenedId === combatantId;
   const mode = hasAdvantage === hasDisadvantage ? 'flat' : hasAdvantage ? 'advantage' : 'disadvantage';
   const d20 = applyLucky(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
