@@ -29,6 +29,8 @@ export const HERO_NAMES: Record<Id, string> = {
   monk: 'Shen',
   bard: 'Lyra Songthread',
   druid: 'Alder Mosswood',
+  warlock: 'Thessaly Grimm',
+  sorcerer: 'Seraphina Ember',
 };
 
 export const RIVAL_NAMES: Record<Id, string> = {
@@ -42,6 +44,8 @@ export const RIVAL_NAMES: Record<Id, string> = {
   monk: 'Ilma',
   bard: 'Corvin Blackquill',
   druid: 'Nettle Ashbark',
+  warlock: 'Malachai Crowe',
+  sorcerer: 'Draven Coil',
 };
 
 /** A starting name for a class, distinct per side so a mirror match reads. */

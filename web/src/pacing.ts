@@ -97,7 +97,19 @@ export function narrate(state: GameState, events: GameEvent[]): string | undefin
         break;
       }
       case 'healed':
-        line = `${name(e.sourceId)} heals ${name(e.targetId)} for ${e.amount}.`;
+        /**
+         * A heal of nothing is two different facts, and neither of them is
+         * "heals X for 0".
+         *
+         * Aid tops up the whole party, so anyone already at full generates a
+         * zero — "Brother Mordred heals Brother Mordred for 0." was on screen
+         * within three rounds of a fight starting. The other zero is a Sword of
+         * Wounding: the wound genuinely refuses to close, which is the item
+         * working and is worth saying out loud.
+         */
+        line = e.amount > 0
+          ? `${name(e.sourceId)} heals ${name(e.targetId)} for ${e.amount}.`
+          : `${name(e.targetId)} is already at full health.`;
         break;
       case 'savingThrow':
         if (!line) line = e.success ? `${name(e.combatantId)} resists!` : `${name(e.combatantId)} fails the save!`;

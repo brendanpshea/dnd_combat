@@ -76,8 +76,25 @@ export interface MetamagicData {
  */
 const SAVE_OR_SUCK = new Set([
   'hold-person', 'banishment', 'blindness', 'fear', 'confusion', 'suggestion',
-  'polymorph', 'phantasmal-killer', 'sleep', 'command', 'bane', 'slow',
+  'phantasmal-killer', 'sleep', 'command', 'bane',
 ]);
+/*
+ * Two entries were removed from that list after the chip row was opened in a
+ * browser and read.
+ *
+ * `polymorph` looked obvious and is wrong HERE: the SRD version lets an
+ * unwilling creature save, but this game's Polymorph targets an ally only and
+ * rolls nothing at all. Heightening it would have charged two sorcery points
+ * for no effect whatsoever — and the tray offered it, in gold, with the price
+ * printed on the button.
+ *
+ * `slow` was worse: there is no such spell in this game. It sat in the set
+ * doing nothing, and would have gone on doing nothing forever.
+ *
+ * `metamagic.test.ts` now holds every id here to being a real spell that
+ * actually calls `savingThrow`, which is the check that would have caught both
+ * without anyone opening a browser.
+ */
 
 export const METAMAGIC: Record<MetamagicId, MetamagicData> = {
   quickened: {

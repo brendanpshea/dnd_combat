@@ -458,8 +458,13 @@ describe('the metamagic chip row', () => {
     const bent = bendTray(bar, 'heightened');
     const entry = bent.find((b) => b.label.includes('Hold Person'));
     expect(entry, 'Hold Person should be reachable with Heightened armed').toBeDefined();
-    expect(entry!.label).toContain('Heightened');
-    expect(entry!.note).toContain('2 SP');
+    // The label is NOT suffixed with the option: with a chip armed every row is
+    // bent, so the suffix would be on all of them and say nothing — and read in
+    // a browser it wrapped each label to two lines and clipped the note down to
+    // "L2 -", hiding the sorcery-point cost. The armed chip is the label; the
+    // note is what each row costs.
+    expect(entry!.label).toBe('Hold Person');
+    expect(entry!.note, 'the cost has to survive on the row').toContain('2 SP');
     const action = entry!.action ?? buildMultiAction(entry!.multi!, ['e0']);
     expect(action.kind === 'castSpell' && action.metamagic).toBe('heightened');
     expect(isLegalAction(c.state, meId, action)).toBe(true);

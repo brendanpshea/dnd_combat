@@ -30,6 +30,7 @@ import { SPELLS } from '../src/data/spells.js';
 import { CLASSES } from '../src/data/classes.js';
 import { breakConcentration, dropToZero } from '../src/engine/rules/attack.js';
 import { legalActions } from '../src/engine/actions.js';
+import { renderEvent } from '../src/ui/cli/renderer.js';
 import type { Combatant } from '../src/engine/types.js';
 
 const APE = MONSTERS['giant-ape']!;
@@ -169,5 +170,43 @@ describe('the three ways it ends', () => {
     expect(after.attacksPerAction).toBe(snapshot.attacks);
     expect(after.spellIds).toEqual(snapshot.spells);
     expect(after.maxHp).toBe(snapshot.maxHp);
+  });
+});
+
+/**
+ * What the log SAYS about a Polymorph, which is not what it used to say.
+ *
+ * Found by playing the game rather than by a test: the combat log read
+ *
+ *     Vivian the Cold shifts into the shape of a giant ape! (+0 temp HP)
+ *     Vivian the Cold is shielded.
+ *
+ * Neither line was true. Wild Shape hands a druid the beast's hit points as
+ * TEMPORARY ones and the line is right for it; Polymorph replaces the creature
+ * outright (`t.maxHp = beast.hp`), so its event carries `tempHp: 0` and the
+ * line announced a 168-point health bar as nothing at all. And the `shielded`
+ * condition was emitted as an event but never pushed onto the target, so the
+ * log promised +5 AC that no roll ever saw.
+ *
+ * A log line that reports an effect the game does not have is worse than no
+ * line, because a player plans around it.
+ */
+describe('the log tells the truth about a Polymorph', () => {
+  it('does not claim a shield nobody gets', () => {
+    const { c, casterId, allyId } = fight();
+    const events = cast(c, casterId, allyId);
+    expect(events.some((e) => e.type === 'conditionApplied' && e.condition === 'shielded')).toBe(false);
+    expect(c.state.combatants[allyId]!.conditions.some((k) => k.id === 'shielded')).toBe(false);
+  });
+
+  it('reads as a transformation rather than "+0 temp HP"', () => {
+    const { c, casterId, allyId } = fight();
+    const events = cast(c, casterId, allyId);
+    const shaped = events.find((e) => e.type === 'wildShaped')!;
+    const line = renderEvent(c.state, shaped, { tagTeams: false });
+    expect(line).not.toContain('temp HP');
+    expect(line).toContain('giant ape');
+    // And the body really is there, which is what the line is describing.
+    expect(c.state.combatants[allyId]!.maxHp).toBe(APE.hp);
   });
 });
