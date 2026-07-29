@@ -46,6 +46,7 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   noReactions: 'unable to react',
   outlined: 'outlined in light',
   marked: "marked by the hunter",
+  hexed: 'hexed',
   sacredWeapon: 'wielding a sacred weapon',
   sanctuary: 'under sanctuary',
   protected: 'protected from evil and good',

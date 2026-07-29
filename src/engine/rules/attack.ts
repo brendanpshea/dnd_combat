@@ -541,6 +541,16 @@ export function resolveAttack(
     tags.push("Hunter's Mark");
   }
 
+  // Hex, on a weapon swing. Spell attacks do not come through here, so the
+  // roll itself lives in `hexBonus` and Eldritch Blast calls it too — see the
+  // note there.
+  const hexed = hexBonus(state, attackerId, targetId, crit);
+  if (hexed) {
+    amount += hexed.total;
+    rolls = [...rolls, ...hexed.rolls];
+    tags.push('Hex');
+  }
+
   // Colossus Slayer (Hunter's Prey): once per turn, +1d8 on a hit against a
   // target below its HP max.
   if (
@@ -1338,9 +1348,18 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
 function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
   const fallen = state.combatants[fallenId]!;
   const events: GameEvent[] = [];
-  for (const cond of fallen.conditions.filter((k) => k.id === 'marked' && k.sourceId)) {
+  // Hex moves the same way and for the same reason — the SRD lets the caster
+  // shift it to a new quarry when the old one drops, and a rider that died with
+  // its target would make the bonus action and the concentration a worse deal
+  // than they read as. Both riders, one loop, so neither can be forgotten.
+  const RIDERS: Array<{ condition: 'marked' | 'hexed'; spellId: Id }> = [
+    { condition: 'marked', spellId: 'hunters-mark' },
+    { condition: 'hexed', spellId: 'hex' },
+  ];
+  for (const rider of RIDERS) {
+  for (const cond of fallen.conditions.filter((k) => k.id === rider.condition && k.sourceId)) {
     const caster = state.combatants[cond.sourceId!];
-    if (!caster?.alive || caster.concentratingOn?.spellId !== 'hunters-mark') continue;
+    if (!caster?.alive || caster.concentratingOn?.spellId !== rider.spellId) continue;
     // Nearest living enemy of the caster; id as a deterministic tiebreak.
     const next = Object.values(state.combatants)
       .filter((c) => c.alive && !isDown(c) && c.id !== fallenId && c.team !== caster.team)
@@ -1350,12 +1369,13 @@ function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
     if (!next) continue; // no quarry left — the fight is over anyway
     // Lift the mark off the fallen (a killed body loses all conditions anyway,
     // but a *downed* hero keeps his — without this the stale mark lingers there).
-    fallen.conditions = fallen.conditions.filter((k) => !(k.id === 'marked' && k.sourceId === caster.id));
-    if (!next.conditions.some((k) => k.id === 'marked' && k.sourceId === caster.id)) {
-      next.conditions.push({ id: 'marked', sourceId: caster.id, concentration: true });
-      events.push({ type: 'conditionApplied', combatantId: next.id, condition: 'marked', sourceId: caster.id });
+    fallen.conditions = fallen.conditions.filter((k) => !(k.id === rider.condition && k.sourceId === caster.id));
+    if (!next.conditions.some((k) => k.id === rider.condition && k.sourceId === caster.id)) {
+      next.conditions.push({ id: rider.condition, sourceId: caster.id, concentration: true });
+      events.push({ type: 'conditionApplied', combatantId: next.id, condition: rider.condition, sourceId: caster.id });
     }
-    caster.concentratingOn = { spellId: 'hunters-mark', targetIds: [next.id] };
+    caster.concentratingOn = { spellId: rider.spellId, targetIds: [next.id] };
+  }
   }
   return events;
 }
@@ -1426,6 +1446,33 @@ function expireSummonsOf(state: GameState, casterId: Id): GameEvent[] {
   ));
   delete c.summons;
   return events;
+}
+
+/**
+ * Hex's rider: +1d6 necrotic on a hit against the hexed creature, for the
+ * warlock who hexed it and nobody else. Returns undefined when it does not
+ * apply.
+ *
+ * WHY THIS IS A FUNCTION AND NOT A BLOCK IN resolveAttack
+ *
+ * It started as one, sitting beside Hunter's Mark — and did nothing at all,
+ * because `resolveAttack` handles WEAPON attacks and Eldritch Blast rolls its
+ * own spell attack and calls `applyDamage` directly. Hex would have added
+ * precisely zero damage to the one spell it exists to pair with, and the class
+ * would have looked weak rather than the rider looking broken. Hunter's Mark
+ * has never shown the same gap only because a ranger swings a bow.
+ *
+ * So both callers share this, and a third attack path that wants it has one
+ * obvious thing to call.
+ */
+export function hexBonus(
+  state: GameState, attackerId: Id, targetId: Id, crit: boolean,
+): { total: number; rolls: number[] } | undefined {
+  const target = state.combatants[targetId];
+  if (!target?.conditions.some((c) => c.id === 'hexed' && c.sourceId === attackerId)) return undefined;
+  const hex = rollDice(state.rng, '1d6', crit);
+  state.rng = hex.state;
+  return { total: hex.total, rolls: hex.rolls };
 }
 
 export function kill(state: GameState, combatantId: Id): GameEvent[] {

@@ -593,6 +593,39 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       }
       return v - slotCost;
     }
+    /**
+     * Hex: priced exactly like Hunter's Mark, because it is the same bargain —
+     * a bonus action and the caster's concentration for a die on every hit
+     * from here on. The one difference is who is casting it: a warlock's beams
+     * carry the rider once EACH, so the same spell is worth more in its hands
+     * than a single-attack caster's.
+     */
+    case 'hex': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (!t.alive || isDown(t) || t.conditions.some((k) => k.id === 'hexed')) return 0;
+      // Rough expectation of hits still to come: more when the quarry is
+      // healthy enough to be hit several times, and nothing at all on something
+      // about to die, where the bonus action is better spent elsewhere.
+      const hits = Math.min(4, Math.max(1, Math.round(t.hp / 12)));
+      const perHit = avgDice('1d6') * eldritchBeams(actor.level);
+      const gain = hits * perHit * 0.5 - slotCost;
+      if (gain <= 0) return 0;
+      // Priced as an ORDERING, exactly like Steady Aim: this is a BONUS action
+      // and the spell it improves costs the action, so they are not rivals —
+      // but `chooseAction` compares them as if they were. Priced as the bare
+      // gain, the warlock blasted first every turn and never got round to the
+      // Hex, which is the whole plan of the class.
+      let bestOther = 0;
+      for (const other of legalActions(state, actor.id)) {
+        if (other.kind === 'castSpell' && other.spellId !== 'hex') {
+          bestOther = Math.max(bestOther, scoreSpell(state, actor, other));
+        } else if (other.kind === 'attack') {
+          bestOther = Math.max(bestOther, scoreAttack(state, actor, other));
+        }
+      }
+      return bestOther + gain;
+    }
     case 'hunters-mark': {
       if (actor.concentratingOn) return 0;
       // Roughly two rounds of attacks' worth of extra 1d6 hits, discounted for

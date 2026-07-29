@@ -374,9 +374,11 @@ export const CLASSES: Record<Id, ClassData> = {
       // slots — it has no Fireball and no healing at all, and the class works
       // because Eldritch Blast is a cantrip it can throw every single turn.
       spellsByLevel: {
-        1: ['eldritch-blast', 'poison-spray', 'true-strike', 'minor-illusion',
+        // Hex first: it is the warlock's damage plan, and the SRD itself
+        // recommends it as one of the two spells a warlock starts with.
+        1: ['eldritch-blast', 'hex', 'poison-spray', 'true-strike', 'minor-illusion',
             'bane', 'protection-from-evil-and-good'],
-        3: ['hold-person', 'shatter', 'mirror-image', 'invisibility', 'suggestion', 'misty-step'],
+        3: ['hold-person', 'mirror-image', 'invisibility', 'suggestion', 'misty-step'],
         5: ['fear', 'counterspell', 'dispel-magic'],   // 3rd-level slots
         7: ['banishment', 'blight', 'dimension-door'],
       },

@@ -64,6 +64,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   unbound:        { icon: '🌀', label: 'Freedom of Movement — webs, vines and paralysis can’t hold it', kind: 'buff' },
   silenced:       { icon: '🔇', label: 'Silenced — can’t cast anything with a spoken word', kind: 'debuff' },
   marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
+  hexed:          { icon: '👁️‍🗨️', label: 'Hexed — takes extra necrotic damage from the warlock', kind: 'debuff' },
   inspired:       { icon: '⭐', label: 'Inspired — advantage on next attack', kind: 'buff' },
   aiming:         { icon: '🎯', label: 'Steady Aim — advantage on next attack, speed 0', kind: 'buff' },
   confused:       { icon: '😵‍💫', label: 'Confused — may waste its turn, or strike whoever is nearest', kind: 'control', tint: 'fear' },

@@ -379,8 +379,8 @@ Spellcasting ability: **CHA**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Eldritch Blast, Poison Spray, True Strike, Minor Illusion, Bane, Protection from Evil and Good |
-| 3 | Hold Person, Shatter, Mirror Image, Invisibility, Suggestion, Misty Step |
+| 1 | Eldritch Blast, Hex, Poison Spray, True Strike, Minor Illusion, Bane, Protection from Evil and Good |
+| 3 | Hold Person, Mirror Image, Invisibility, Suggestion, Misty Step |
 | 5 | Fear, Counterspell, Dispel Magic |
 | 7 | Banishment, Blight, Dimension Door |
 
