@@ -255,7 +255,7 @@ describe('Abyssal Tiefling', () => {
     expect(hit).toBe(true);   // sanity: the loop actually exercised a hit
   });
 
-  it('poisons on a hit that fails the Con save — the first-ever user of `poisoned`', () => {
+  it('poisons on a hit, with no save — the first-ever user of `poisoned`', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const ftr = fell('fighter', { x: 2, y: 2 }, 'ftr', 3);
       const c = new Combat({ seed, mapId: 'open', combatants: [ftr, goblin({ x: 4, y: 2 }, 'g')] });
@@ -265,9 +265,15 @@ describe('Abyssal Tiefling', () => {
       if (!cast) continue;
       const { state: after } = step(c.state, cast);
       const g = after.combatants['g']!;
-      if (g.conditions.some((k) => k.id === 'poisoned')) {
-        // Rides the generic repeat-save mechanism, so it must carry one.
-        expect(g.conditions.find((k) => k.id === 'poisoned')?.repeatSave?.ability).toBe('con');
+      const poison = g.conditions.find((k) => k.id === 'poisoned');
+      if (poison) {
+        // The SRD gives no save at all: "on a hit, the target takes 2d8 Poison
+        // damage AND has the Poisoned condition until the end of your next
+        // turn". This used to roll a Constitution save that is not in the
+        // spell, and then hang the condition off the generic save-ends
+        // mechanism, which made it last far longer than a round when it landed.
+        expect(poison.repeatSave).toBeUndefined();
+        expect(poison.expiresAtRound).toBe(after.round + 1);
         return;
       }
     }

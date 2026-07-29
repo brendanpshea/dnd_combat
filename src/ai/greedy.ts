@@ -570,11 +570,11 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'ray-of-sickness': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const hit = hitProb(spellAtkBonus, acOf(t), 'flat');
-      const dmg = damageValue(hit * avgDice(`${2 + a.slotLevel}d8`), t);
-      // The rider only lands if the ray does, and only if the save fails.
-      const failProb = hit * saveFailProb(state, t, 'con', dc);
-      // Disadvantage is worth roughly a quarter of what it is rolling for.
-      return dmg + denialValue(state, t, failProb * 0.25, 2) - slotCost;
+      const dmg = damageValue(hit * avgDice(`${1 + a.slotLevel}d8`), t);
+      // The rider lands whenever the ray does — there is no save — and lasts
+      // one round. Disadvantage is worth roughly a quarter of what it is
+      // rolling for, so this is a quarter of a round of the target's output.
+      return dmg + denialValue(state, t, hit * 0.25, 1) - slotCost;
     }
     case 'scorching-ray': {
       let v = 0;
