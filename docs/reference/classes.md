@@ -170,6 +170,14 @@ Spellcasting ability: **WIS**.
 - **Weapon masteries:** Longsword, Longsword +1, Javelin
 - **Starting kit:** Longsword, shield, Scale Mail, Javelin ×2, Potion of Healing ×1, Alchemist's Fire ×1
 
+### Kit: Duelist
+
+Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.
+
+- **Ability priority:** DEX > CON > STR > WIS > INT > CHA
+- **Weapon masteries:** Rapier, Rapier +1, Dagger
+- **Starting kit:** Rapier, shield, Leather, Dagger ×2, Potion of Healing ×1, Alchemist's Fire ×1
+
 ### Features by level
 
 | Level | Features |

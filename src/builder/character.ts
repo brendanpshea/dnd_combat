@@ -3,7 +3,8 @@
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
-import { CLASSES, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
+import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
+import { defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
@@ -93,12 +94,17 @@ function resolveChoiceGrants(
   return merged;
 }
 
+/**
+ * What a class's recommended build comes out as. Kept as a named constant
+ * because it is what every character in the game has always had, and
+ * `test/stats.test.ts` pins the point-buy default to it — see stats.ts for why
+ * it is two 16s rather than a 17 and a 15.
+ */
 export const STANDARD_ARRAY = [16, 16, 13, 12, 10, 8] as const;
 
+/** The recommended scores for a stat priority: point-buy's default, resolved. */
 export function assignStats(priority: readonly Ability[]): AbilityScores {
-  const scores = {} as AbilityScores;
-  priority.forEach((ab, i) => { scores[ab] = STANDARD_ARRAY[i]!; });
-  return scores;
+  return resolveStatBuild(defaultStatBuild(priority));
 }
 
 /** Average-rounded-up hit die per level after 1st (the 5e fixed value). */
@@ -121,6 +127,19 @@ export interface BuildOptions {
   equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
   /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
   choices?: Record<Id, Id>;
+  /**
+   * Which of the class's kits this character is built on — its stat priority,
+   * starting gear and weapon masteries move together (see ClassKit). Missing →
+   * the class's first kit, or the class's own fields if it offers none.
+   */
+  kitId?: Id;
+  /**
+   * Hand-edited ability scores from the point-buy editor. Missing → the kit's
+   * recommended build, which is what every character had before the editor
+   * existed. An ILLEGAL build (over budget, out of range, hand-edited save) is
+   * ignored rather than honoured — a save file must not be a way to buy 15s.
+   */
+  statBuild?: StatBuild;
   /**
    * Campaign override: remaining spell slots by level (index 0 = 1st), from
    * before a long rest. Missing entries (new slot levels from a level-up, or
@@ -191,12 +210,28 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const species = SPECIES[speciesId];
   if (!species) throw new Error(`Unknown species: ${speciesId}`);
   const level = opts.level ?? 1;
-  const abilities = assignStats(cls.statPriority);
+  const kit = kitFor(cls, opts.kitId);
+  const abilities = isLegalStatBuild(opts.statBuild)
+    ? resolveStatBuild(opts.statBuild)
+    : resolveStatBuild(defaultStatBuild(kit.statPriority));
+  /**
+   * Every ability increase goes to the KIT's primary ability, not to whichever
+   * score happens to be highest.
+   *
+   * That is worth stating because it is now possible to disagree with: a player
+   * who point-buys a Duelist fighter's Strength above its Dexterity still gets
+   * the Dexterity bumps, because the kit is what the character is. Retargeting
+   * to "highest score under 20" would be defensible and would also silently
+   * change every existing level-8 build (whose primary is capped by then and
+   * whose increase is currently thrown away), which is a balance change and not
+   * this one. Predictable beats clever; the forge says which ability it is.
+   */
+  const primaryAbility = kit.statPriority[0]!;
   // Level-4 Ability Score Increase. No feats yet, so it's a deterministic +2 to
   // the class's primary stat (capped at 20) — attack, damage, HP and spell DC
   // all read the modifier, so the boost flows without further wiring.
   if (level >= 4) {
-    const primary = cls.statPriority[0];
+    const primary = primaryAbility;
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
   // Every class gets one at 8th — the whole of what level 8 is in the SRD for
@@ -204,14 +239,14 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   // same primary stat, capped at 20, so a class already at 20 gains nothing
   // rather than overflowing.
   if (level >= 8) {
-    const primary = cls.statPriority[0];
+    const primary = primaryAbility;
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
   // The Fighter alone gets a second Ability Score Increase at 6th. (Its 7th is
   // the Champion's Additional Fighting Style, a choice point rather than a stat
   // bump — see classes.ts.)
   if (level >= 6 && opts.classId === 'fighter') {
-    const primary = cls.statPriority[0];
+    const primary = primaryAbility;
     abilities[primary] = Math.min(20, abilities[primary] + 2);
   }
   // A worn trinket (Gauntlets of Ogre Power, …) can raise an ability score, so
@@ -378,7 +413,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
    * would not be wearing the leather. Only when the ward is actually better,
    * so a warlock who later buys half plate keeps it.
    */
-  const wornArmor = opts.equipped?.armor ?? cls.equipment.armor;
+  const wornArmor = opts.equipped?.armor ?? kit.equipment.armor;
   const shedForWard = featureIds.includes('armor-of-shadows') && wornArmor !== undefined &&
     armorClass(wornArmor, abilityMod(abilities.dex), 0) < 13 + abilityMod(abilities.dex);
 
@@ -406,7 +441,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       // Fast Movement (Barbarian 5): +10 ft, on the same terms as Roving — the
       // heavy-armour penalty below applies to both.
       + (featureIds.includes('fast-movement') ? 10 : 0) -
-      armorSpeedPenalty(opts.equipped?.armor ?? cls.equipment.armor, abilities.str),
+      armorSpeedPenalty(opts.equipped?.armor ?? kit.equipment.armor, abilities.str),
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
@@ -425,19 +460,19 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     featureUses,
     ...(Object.keys(itemUses).length > 0 ? { itemUses } : {}),
     innateSpells,
-    inventory: (opts.inventory ?? cls.equipment.inventory).map((s) => ({ ...s })),
+    inventory: (opts.inventory ?? kit.equipment.inventory).map((s) => ({ ...s })),
     equipped: (() => {
       const base = opts.equipped
         ? { ...opts.equipped }
         : {
-            mainHand: cls.equipment.mainHand,
-            ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
-            ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
+            mainHand: kit.equipment.mainHand,
+            ...(kit.equipment.offHand !== undefined ? { offHand: kit.equipment.offHand } : {}),
+            ...(kit.equipment.armor !== undefined ? { armor: kit.equipment.armor } : {}),
           };
       if (shedForWard) delete base.armor;
       return base;
     })(),
-    weaponMasteries: [...cls.weaponMasteries, ...grants.weaponMasteries],
+    weaponMasteries: [...kit.weaponMasteries, ...grants.weaponMasteries],
     attacksPerAction: featureIds.includes('extra-attack') ? 2 : 1,
     resistances: [...(species.resistances ?? []), ...grants.resistances],
     vulnerabilities: [],

@@ -74,6 +74,63 @@ export const SKILL_LABEL: Record<SkillId, string> = {
   intimidation: 'Intimidation', performance: 'Performance', persuasion: 'Persuasion',
 };
 
+/**
+ * A named way to build a class: which abilities it wants, what it starts
+ * holding, and what it has weapon mastery with.
+ *
+ * WHY ALL THREE TOGETHER, AND WHY NOT JUST STATS
+ *
+ * "Let me play a Dexterity fighter" sounds like a stat question and is not.
+ * Move a fighter's 16 from Strength to Dexterity today and three separate
+ * things quietly refuse to follow:
+ *
+ *   - the longsword is not a finesse weapon, so `attackAbility` keeps reading
+ *     Strength and the attack bonus simply drops;
+ *   - scale mail is medium armour, so the Dexterity bonus to AC caps at +2 and
+ *     nothing above 14 Dex buys anything;
+ *   - the weapon masteries are the literal ids `longsword`/`javelin`, so a
+ *     rapier would have no mastery at all.
+ *
+ * The character would be strictly worse and the player would have no way to
+ * see why. So a kit moves the stats and the kit together or it is not offered.
+ * (The same fact was already written down, in `campaign.ts`, as the reason the
+ * Quick Start shelf never picks Archery or Two-Weapon Fighting: the styles are
+ * there but the starting gear cannot fire them.)
+ *
+ * Every mechanical field is optional and falls back to the class's own — so a
+ * kit list can name the class's existing build without restating it, and the
+ * two can never drift apart.
+ */
+export interface ClassKit {
+  id: Id;
+  name: string;
+  blurb: string;
+  statPriority?: readonly Ability[];
+  weaponMasteries?: Id[];
+  equipment?: ClassData['equipment'];
+}
+
+/** The three fields a kit can override, resolved against the class. */
+export function kitFor(cls: ClassData, kitId: Id | undefined): {
+  statPriority: readonly Ability[];
+  weaponMasteries: Id[];
+  equipment: ClassData['equipment'];
+} {
+  // Falls back to the FIRST kit, not to none: a class that offers kits names
+  // its own default as kits[0], so an unset id and the default id agree.
+  const k = cls.kits?.find((x) => x.id === kitId) ?? cls.kits?.[0];
+  return {
+    statPriority: k?.statPriority ?? cls.statPriority,
+    weaponMasteries: k?.weaponMasteries ?? cls.weaponMasteries,
+    equipment: k?.equipment ?? cls.equipment,
+  };
+}
+
+/** The kit a class starts on when nobody has chosen — `undefined` if it offers none. */
+export function defaultKitId(cls: ClassData): Id | undefined {
+  return cls.kits?.[0]?.id;
+}
+
 export interface ClassData {
   id: Id;
   name: string;
@@ -135,6 +192,13 @@ export interface ClassData {
     armor?: Id;
     inventory: ItemStack[];   // spare weapons + consumables
   };
+  /**
+   * Alternate builds, if this class has more than one shape worth playing.
+   * `kits[0]` names the class's own default and overrides nothing. Omitted by
+   * every class whose kit is not a real decision — a rogue is already Dexterous
+   * and a barbarian in studded leather is a worse barbarian, not a different one.
+   */
+  kits?: ClassKit[];
 }
 
 export const CLASSES: Record<Id, ClassData> = {
@@ -186,6 +250,48 @@ export const CLASSES: Record<Id, ClassData> = {
         { itemId: 'alchemists-fire', qty: 1 },
       ],
     },
+    kits: [
+      { id: 'martial', name: 'Martial', blurb: 'Strength, longsword and shield, scale mail. The soldier.' },
+      {
+        /**
+         * The Dexterity fighter — the reason kits exist at all.
+         *
+         * Everything about it is a consequence of moving the primary stat:
+         * the rapier because it is the finesse weapon that still deals a d8
+         * one-handed (so Dueling, the class's default Fighting Style, keeps
+         * firing and the damage per swing does not move); studded leather
+         * because light armour is the only kind that pays out an unbounded
+         * Dexterity bonus; daggers instead of javelins because a thrown
+         * javelin is a Strength attack.
+         *
+         * PLAIN LEATHER, AND WHY NOT STUDDED. Studded leather was the first
+         * try and it made the kit strictly better: the Martial fighter's
+         * Dexterity is 13, not 14, so 12+3+2 ties its 14+1+2 at first level and
+         * then pulls ahead at every ability increase, since scale mail's +2 cap
+         * means the soldier's own increases buy it no armour class at all.
+         * Leather instead gives an arc rather than a free lunch — one AC behind
+         * at 1st, level at 4th, one ahead at 8th — and leaves studded leather
+         * sitting in the shop for 45gp as something worth saving for.
+         *
+         * WHAT IT TRADES. It gives up Strength: a worse Shove DC, Athletics,
+         * Strength saves, and 20/60 thrown range instead of the javelin's
+         * 30/120. It buys initiative, Dexterity saves, and — because leather
+         * has no stealth penalty and scale mail does — the party's creep check.
+         */
+        id: 'duelist', name: 'Duelist',
+        blurb: 'Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.',
+        statPriority: ['dex', 'con', 'str', 'wis', 'int', 'cha'],
+        weaponMasteries: ['rapier', 'rapier-plus1', 'dagger'],
+        equipment: {
+          mainHand: 'rapier', offHand: 'shield', armor: 'leather',
+          inventory: [
+            { itemId: 'dagger', qty: 2 },
+            { itemId: 'potion-healing', qty: 1 },
+            { itemId: 'alchemists-fire', qty: 1 },
+          ],
+        },
+      },
+    ],
   },
   cleric: {
     id: 'cleric', name: 'Cleric', hitDie: 8,

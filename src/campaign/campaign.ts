@@ -8,12 +8,15 @@
  * inventory back afterwards.
  */
 import { HERO_NAMES, defaultNameFor, randomNameFor } from '../builder/names.js';
-import type { Id, Combatant, ItemStack, TeamId, Ability, DamageType } from '../engine/types.js';
+import type { Id, Combatant, ItemStack, TeamId, Ability, AbilityScores, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import {
   buildCharacter, assignStats,
   availableLeveledSpells, classCantrips, classRituals, cantripsKnownCount, spellbookSize, preparedCount,
 } from '../builder/character.js';
+import {
+  defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild,
+} from '../builder/stats.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS, SCROLL_IDS } from '../data/items.js';
 import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS, SILVERED_WEAPONS, isWeaponProficient } from '../data/weapons.js';
@@ -23,7 +26,7 @@ import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { missingRoles } from './roles.js';
 import { actsOnItsOwn } from '../engine/rules/summon.js';
-import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool } from '../data/classes.js';
+import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool, kitFor, defaultKitId } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/encounters.js';
@@ -125,6 +128,11 @@ export interface PartyCharacter {
   equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
   choices?: Record<Id, Id>;
+  /** Which class kit — stat priority + starting gear + masteries. Absent = the
+   *  class's default kit, which is what every save written before kits has. */
+  kitId?: Id;
+  /** Hand-edited point-buy scores. Absent = the kit's recommended build. */
+  statBuild?: StatBuild;
   /** Background id — grants two skill proficiencies (see data/backgrounds.ts).
    *  Absent = none (legacy saves, skirmish parties). */
   backgroundId?: Id;
@@ -1082,8 +1090,13 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
     }
     target.classId = nextClassId;
     // Fighting Style and other picks belong to the old class; drop them so the
-    // new class resolves to its own defaults.
+    // new class resolves to its own defaults. The kit and the hand-bought
+    // scores go the same way and for the same reason: a Duelist is a fighter's
+    // kit, and a build bought around 16 Dexterity is not what a new cleric
+    // wants. Both fall back to the new class's recommendation.
     delete target.choices;
+    delete target.kitId;
+    delete target.statBuild;
     target.inventory = equipment.inventory.map((stack) => ({ ...stack }));
     target.equipped = {
       mainHand: equipment.mainHand,
@@ -1124,6 +1137,73 @@ export function rerollPartyName(c: CampaignState, charIdx: number): boolean {
 export function setPartyBackground(c: CampaignState, charIdx: number, backgroundId: Id): boolean {
   if (c.partyReady || !BACKGROUNDS[backgroundId] || !c.characters[charIdx]) return false;
   c.characters[charIdx]!.backgroundId = backgroundId;
+  return true;
+}
+
+/**
+ * Switch a member to one of its class's kits, pre-launch.
+ *
+ * The gear moves with it, which is the entire point — a Duelist who kept the
+ * scale mail and the longsword would be a fighter who had lost three points of
+ * attack bonus for nothing (see ClassKit). Re-equipping wholesale is safe here
+ * and only here: the forge is pre-launch, so nothing has been bought, found or
+ * upgraded yet and there is no player property to throw away.
+ *
+ * Hand-bought scores are dropped too. They were bought against the old kit's
+ * priorities; carrying a Strength-first spread onto the Duelist would hand the
+ * player a build they did not choose and would not notice.
+ */
+export function setPartyKit(c: CampaignState, charIdx: number, kitId: Id): boolean {
+  const character = c.characters[charIdx];
+  if (c.partyReady || !character) return false;
+  const cls = CLASSES[character.classId];
+  if (!cls?.kits?.some((k) => k.id === kitId)) return false;
+  character.kitId = kitId;
+  delete character.statBuild;
+  const equipment = kitFor(cls, kitId).equipment;
+  character.inventory = equipment.inventory.map((stack) => ({ ...stack }));
+  character.equipped = {
+    mainHand: equipment.mainHand,
+    ...(equipment.offHand !== undefined ? { offHand: equipment.offHand } : {}),
+    ...(equipment.armor !== undefined ? { armor: equipment.armor } : {}),
+  };
+  return true;
+}
+
+/** The stat priority a member's ability scores are recommended from. */
+export function statPriorityOf(ch: PartyCharacter): readonly Ability[] {
+  const cls = CLASSES[ch.classId]!;
+  return kitFor(cls, ch.kitId ?? defaultKitId(cls)).statPriority;
+}
+
+/** A member's point-buy build — hand-edited if legal, otherwise the kit's own. */
+export function statBuildOf(ch: PartyCharacter): StatBuild {
+  return isLegalStatBuild(ch.statBuild) ? ch.statBuild : defaultStatBuild(statPriorityOf(ch));
+}
+
+/** A member's finished ability scores, before level-up increases and worn gear. */
+export function abilitiesOf(ch: PartyCharacter): AbilityScores {
+  return resolveStatBuild(statBuildOf(ch));
+}
+
+/**
+ * Store hand-bought ability scores, pre-launch. Refuses an illegal build rather
+ * than clamping one: the editor never offers an over-budget spread, so anything
+ * that fails here came from somewhere that should not be trusted to be nearly
+ * right either.
+ */
+export function setPartyStatBuild(c: CampaignState, charIdx: number, build: StatBuild): boolean {
+  const character = c.characters[charIdx];
+  if (c.partyReady || !character || !isLegalStatBuild(build)) return false;
+  character.statBuild = { base: { ...build.base }, plus2: build.plus2, plus1: build.plus1 };
+  return true;
+}
+
+/** Back to the kit's recommended spread. */
+export function clearPartyStatBuild(c: CampaignState, charIdx: number): boolean {
+  const character = c.characters[charIdx];
+  if (c.partyReady || !character) return false;
+  delete character.statBuild;
   return true;
 }
 
@@ -1310,6 +1390,10 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       inventory: ch.inventory.map((s) => ({ ...s })),
       equipped: { ...ch.equipped },
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
+      ...(ch.kitId ? { kitId: ch.kitId } : {}),
+      // The stored build if it is legal, the kit's own if not — one function,
+      // so the sheet, the skill check and the combatant can never disagree.
+      statBuild: statBuildOf(ch),
       ...(ch.resources?.slots ? { spellSlotsOverride: ch.resources.slots } : {}),
       ...(ch.resources?.featureUses ? { featureUsesOverride: ch.resources.featureUses } : {}),
       ...(ch.resources?.itemCharges ? { itemChargesOverride: ch.resources.itemCharges } : {}),
@@ -2264,9 +2348,17 @@ export const STEAL_FINE = 50;
  *  `backgroundId` grants two skills on top of class/species/feature sources. */
 export function skillBonus(
   classId: Id, level: number, skill: SkillId, speciesId: Id = 'human', backgroundId?: Id,
+  /**
+   * The character's actual scores, when there is a character. Defaulted to the
+   * class recommendation because most callers (tests, "what would a rogue roll
+   * here?") have a class and not a person — but a Duelist fighter's Stealth is
+   * its own, and passing the real scores is what keeps the shop and the
+   * adventure checks honest about the party you actually built.
+   */
+  abilitiesOverride?: AbilityScores,
 ): number {
   const cls = CLASSES[classId]!;
-  const abilities = assignStats(cls.statPriority);
+  const abilities = abilitiesOverride ?? assignStats(cls.statPriority);
   const speciesProficiency = SPECIES[speciesId]?.skillProficienciesByClass?.[classId] === skill;
   // A species feature can grant a skill outright (a wood elf's Keen Senses),
   // regardless of class — the same fact the engine reads to spot hidden foes.
@@ -2324,7 +2416,8 @@ export function characterSkills(c: CampaignState, idx: number): SkillRow[] {
 export function characterSkillBonus(c: CampaignState, idx: number, skill: SkillId): number {
   const ch = c.characters[idx];
   if (!ch) return -Infinity;
-  let bonus = skillBonus(ch.classId, partyLevelOf(c), skill, ch.speciesId, ch.backgroundId);
+  let bonus = skillBonus(ch.classId, partyLevelOf(c), skill, ch.speciesId, ch.backgroundId,
+    abilitiesOf(ch));
   // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
   if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
   // Pass without Trace, drunk in camp: +10 to the whole party until the next

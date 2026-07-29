@@ -12,16 +12,17 @@
  */
 import {
   type CampaignState,
-  setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, rerollPartyName,
-  partyLevelOf, cantripLimit,
+  setPartyClass, setPartySpecies, setPartyChoice, setPartyBackground, setPartyKit,
+  rerollPartyName, partyLevelOf, cantripLimit,
 } from '../../src/campaign/campaign.js';
-import { CLASSES } from '../../src/data/classes.js';
+import { CLASSES, defaultKitId } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
 import { BACKGROUNDS, defaultBackgroundFor } from '../../src/data/backgrounds.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
 import { Portrait } from './Portrait.js';
 import { PORTRAITS } from './portraits.js';
 import { classBlurb, speciesBlurb } from './blurbs.js';
+import { AbilityEditor } from './AbilityEditor.js';
 
 export function ForgeMemberEditor(
   { campaign: c, idx, mutate, onEditSpells }: {
@@ -137,6 +138,32 @@ export function ForgeMemberEditor(
           })}
         </div>
       </div>
+
+      {/* Kit: which shape of this class. Only rendered when the class actually
+          offers a choice, so eleven of the twelve see nothing new — a picker
+          with one card is a worse way to say "no decision here". */}
+      {(classData.kits?.length ?? 0) > 1 && (
+        <div className="forge-field">
+          <span>Kit</span>
+          <div className="card-grid" role="radiogroup" aria-label={`${ch.name} kit`}>
+            {classData.kits!.map((kit) => {
+              const selected = (ch.kitId ?? defaultKitId(classData)) === kit.id;
+              return (
+                <button
+                  key={kit.id}
+                  className={selected ? 'pick-card selected' : 'pick-card'}
+                  role="radio" aria-checked={selected}
+                  onClick={() => mutate(() => setPartyKit(c, idx, kit.id))}
+                >
+                  <b>{kit.name}</b><small>{kit.blurb}</small>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <AbilityEditor campaign={c} idx={idx} mutate={mutate} />
 
       {choicePoints.map((cp) => {
         const selected = ch.choices?.[cp.id] ?? cp.default;
