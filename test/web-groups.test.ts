@@ -5,6 +5,7 @@ import { buildMonster } from '../src/data/monsters.js';
 import { buildEncounter } from '../src/data/encounters.js';
 import { groupActions, buildMultiAction, posKey } from '../web/src/actionGroups.js';
 import { SPELLS } from '../src/data/spells.js';
+import { isLegalAction } from '../src/engine/actions.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 function place(classId: string, team: 'team1' | 'team2', position: Position, over: Partial<Combatant> = {}): Combatant {
@@ -355,5 +356,65 @@ describe('the Spells tray shows every spell', () => {
     c.apply({ kind: 'castSpell', spellId: 'divine-smite', slotLevel: 1, targets: [] });
     const g = groupActions(c.state, 'pal', c.legalActions());
     expect(g.bar.some((b) => b.id.includes('smite'))).toBe(false);
+  });
+});
+
+/**
+ * The tray for a bent cast.
+ *
+ * A quickened cast is a separate bar entry, the same shape upcasting already
+ * uses. The thing that must not break is the *note*: a button that spends two
+ * sorcery points without saying so is how a sorcerer arrives at the second
+ * fight of the day empty and cannot tell why. And `buildMultiAction` has to
+ * carry the modifier through the accumulate-taps flow — dropping it there
+ * builds a plain cast, which spends the ACTION the player already used, so the
+ * apply silently fails and the button does nothing.
+ */
+describe('quickened casts in the tray', () => {
+  function sorcererMidTurn(spellIds: string[]) {
+    const me = buildCharacter({ classId: 'sorcerer', team: 'team1', position: { x: 0, y: 3 }, level: 8 });
+    me.spellIds = spellIds;
+    const c = new Combat({
+      seed: 4,
+      combatants: [me, { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e0', hp: 60, maxHp: 60 }],
+    });
+    until(c, me.id);
+    // Spend the action on a cantrip: the state in which Quickened is offered.
+    c.apply({ kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'e0' }] });
+    return { c, meId: me.id };
+  }
+
+  it('labels the entry and shows what it costs', () => {
+    const { c, meId } = sorcererMidTurn(['fireball', 'fire-bolt']);
+    const grouped = groupActions(c.state, meId, c.legalActions());
+    const entry = grouped.bar.find((b) => b.label.includes('Fireball'));
+    expect(entry, 'a quickened Fireball should be in the tray').toBeDefined();
+    expect(entry!.label).toContain('Quickened');
+    expect(entry!.note, 'the sorcery-point cost has to be visible').toContain('2 SP');
+  });
+
+  it('carries the modifier through the accumulate-taps flow', () => {
+    const { c, meId } = sorcererMidTurn(['magic-missile', 'fire-bolt']);
+    const grouped = groupActions(c.state, meId, c.legalActions());
+    const entry = grouped.bar.find((b) => b.multi && b.label.includes('Magic Missile'));
+    expect(entry?.multi?.metamagic).toBe('quickened');
+    const built = buildMultiAction(entry!.multi!, ['e0', 'e0', 'e0']);
+    expect(built.kind === 'castSpell' && built.metamagic).toBe('quickened');
+    // And it is actually playable — the whole point of threading it.
+    expect(isLegalAction(c.state, meId, built)).toBe(true);
+  });
+
+  it('leaves every other class tray exactly as it was', () => {
+    const c = new Combat({
+      seed: 4,
+      combatants: [
+        place('wizard', 'team1', { x: 3, y: 3 }, { id: 'wiz' }),
+        place('fighter', 'team2', { x: 3, y: 4 }, { id: 'foe', hp: 1000, maxHp: 1000 }),
+      ],
+    });
+    until(c, 'wiz');
+    const bar = groupActions(c.state, 'wiz', c.legalActions()).bar;
+    expect(bar.filter((b) => b.label.includes('(') && b.label.includes('Quickened'))).toEqual([]);
+    expect(bar.filter((b) => (b.note ?? '').includes('SP'))).toEqual([]);
   });
 });
