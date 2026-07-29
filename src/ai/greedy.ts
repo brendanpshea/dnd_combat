@@ -109,9 +109,109 @@ function danger(state: GameState, ally: Combatant): number {
 /** The giant ape's hit points — what Polymorph hands an ally. */
 const APE_HP = MONSTERS['giant-ape']?.hp ?? 168;
 
+/**
+ * Roughly what a creature does with a round, in hit points.
+ *
+ * The unit every non-damage spell should be priced in. A control spell is worth
+ * the output it removes; a buff is worth the output it adds; a ward is worth
+ * the output it stops arriving. All three were priced on hand-tuned 0-to-10
+ * scales instead, against damage spells scored in the tens — Bless capped at
+ * 15 for the whole party, Haste at about 6, Mirror Image at 9 — so a caster
+ * with anything else on its list never chose them. Fourteen playable spells
+ * were never cast once across sixty runs.
+ *
+ * Deliberately rough. What was wrong is the ORDER OF MAGNITUDE; a precise
+ * threat model would be a lot of machinery pointed at a number that only has to
+ * land in the right decade.
+ */
+function outputPerRound(c: Combatant): number {
+  let best = 0;
+  for (const id of attackableWeapons(c)) {
+    const w = WEAPONS[id];
+    if (!w) continue;
+    const mod = abilityMod(c.abilities[attackAbility(c, w)]);
+    best = Math.max(best, (avgDice(w.damage) + (w.damageBonus ?? 0) + mod) * c.attacksPerAction * 0.6);
+  }
+  // A caster's turn is a spell, not a swing, and its cantrip alone scales with
+  // level — enough of a proxy to keep a wizard from reading as harmless.
+  const magic = c.spellIds.length > 0 ? avgDice(cantripDice('1d10', c.level)) * 0.6 : 0;
+  // A floor, so a creature with an odd kit is never priced at zero and made
+  // invisible to every ward in the game.
+  return Math.max(best, magic, 3 + c.level);
+}
+
+/**
+ * What removing a creature's turns is worth: its output, for as long as the
+ * effect plausibly lasts. `rounds` is the honest place to express how sticky
+ * an effect is — a save-ends condition rarely runs its full duration.
+ */
+function denialValue(state: GameState, target: Combatant, failProb: number, rounds: number): number {
+  void state;
+  return failProb * outputPerRound(target) * rounds;
+}
+
+/** What raising an ally's output is worth: the same units, from the other side. */
+function upliftValue(ally: Combatant, fraction: number, rounds: number): number {
+  return outputPerRound(ally) * fraction * rounds;
+}
+
 /** Hit points kept on the board, in the same units `damageValue` deals in. */
 function rescueValue(hpSaved: number, state: GameState, ally: Combatant): number {
   return hpSaved * danger(state, ally);
+}
+
+/**
+ * What is actually being thrown at this creature, per round, in hit points.
+ *
+ * The quantity a ward is worth a share of. Pricing wards off the TARGET's hit
+ * points instead — `hp * 0.5` and the like — was the second wrong answer here:
+ * it makes a ward on a healthy wizard worth more than the same ward on a
+ * bloodied one, which is backwards, and it has nothing to do with how hard the
+ * room is hitting. Mirror Image eats three attacks; what those attacks are
+ * worth depends entirely on who is swinging them.
+ *
+ * Counts anything that could reach the ally within a turn, since a ward is put
+ * up as the line closes rather than after it lands.
+ */
+function incomingPerRound(state: GameState, ally: Combatant): number {
+  let total = 0;
+  let defenders = 0;
+  for (const c of Object.values(state.combatants)) {
+    if (!c.alive || isDown(c)) continue;
+    if (c.team === ally.team) { defenders++; continue; }
+    if (distanceFeet(c.position, ally.position) > c.speed + 10) continue;
+    total += outputPerRound(c);
+  }
+  // Spread across whoever is standing.
+  //
+  // The first version returned the whole room's output as the value of a ward
+  // on ONE creature, which in a four-on-four is four times too much: Greater
+  // Invisibility priced at ninety outbid a Fireball, and casters spent every
+  // turn warding instead of fighting. The arena's even-budget guard caught it
+  // — a level-6 fight fell from an even match to 24% — which is exactly the
+  // regression that test exists for.
+  return total / Math.max(1, defenders);
+}
+
+/**
+ * The same, for a ward put up BEFORE it is needed rather than as a rescue.
+ *
+ * `danger` asks whether something is within fifteen feet right now, which is
+ * the right question for Death Ward or Polymorph — waiting until the ally is
+ * actually in trouble is correct play for those. It is the wrong question for
+ * Mage Armor, Mirror Image and False Life, which a caster puts up at the top of
+ * a fight precisely because it is cheaper than needing them later. Priced
+ * through `rescueValue` they scored zero while the enemy was still walking
+ * over, and Mirror Image went from being cast twice in sixty runs to never.
+ *
+ * So: a floor while anything hostile is alive at all. Still scaled by real
+ * pressure, so it rises as the fight closes.
+ */
+function wardValue(hpSaved: number, state: GameState, ally: Combatant): number {
+  const anyFoe = Object.values(state.combatants).some(
+    (c) => c.alive && !isDown(c) && c.team !== ally.team);
+  if (!anyFoe) return 0;
+  return hpSaved * Math.max(0.3, danger(state, ally));
 }
 
 /**
@@ -243,7 +343,10 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         // Vines do not pick sides once they are down; never plant them on allies.
         if (t.team === actor.team) return 0;
         if (t.conditions.some((k) => k.id === 'restrained')) continue;
-        v += saveFailProb(state, t, 'str', dc) * 4;
+        // Restrained: speed 0 and disadvantage on its attacks, until it
+        // breaks out. Roughly half of what the creature was going to do, for
+        // a couple of rounds.
+        v += denialValue(state, t, saveFailProb(state, t, 'str', dc), 2) * 0.5;
       }
       return v - slotCost;
     }
@@ -322,7 +425,17 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     }
     case 'bless': {
       if (actor.concentratingOn) return 0;
-      return 3 * a.targets.length + (state.round <= 2 ? 3 : 0) - slotCost;
+      // +1d4 on every attack and save, for the whole fight, for everyone it
+      // touches. Was a flat 3 a head, so a cleric with anything else on its
+      // list never opened with it.
+      let v = 0;
+      for (const entry of a.targets) {
+        const t = state.combatants[(entry as { combatantId: Id }).combatantId];
+        if (!t?.alive || isDown(t)) continue;
+        // +1d4 to hit is worth about a tenth of a creature's output.
+        v += upliftValue(t, 0.1, state.round <= 2 ? 4 : 2);
+      }
+      return v - slotCost;
     }
     case 'divine-smite':
     case 'searing-smite':
@@ -346,7 +459,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // this turn, or the slot is spent on a swing that never comes.
       const canStillAttack = !actor.turn.actionUsed || actor.turn.attacksLeft > 0;
       if (!foe || !canStillAttack) return 0;
-      let v = avgDice(smiteDice(a.spellId, a.slotLevel));
+      // The dice are hit points; the riders below are priced against them.
+      let v = damageValue(avgDice(smiteDice(a.spellId, a.slotLevel)), foe);
       // Riders are worth about a slot's cost again on a target that will live
       // long enough to suffer them; on something nearly dead, raw damage wins.
       const durable = foe.hp > avgDice('2d8') * 1.5;
@@ -371,7 +485,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         if (t.conditions.some((k) => k.id === 'outlined')) continue;
         // Worth roughly what advantage is worth to everyone who will swing at
         // it: a fifth of a hit per attacker per round, for a while.
-        v += 4 + t.hp / 10;
+        // Advantage for everyone who swings at it, for as long as the light
+        // holds — about a fifth more output from the whole party, aimed here.
+        v += upliftValue(actor, 0.2, 3);
       }
       return v - slotCost;
     }
@@ -399,7 +515,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'animal-friendship': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       if (t.creatureType !== 'beast') return 0;
-      return saveFailProb(state, t, 'wis', dc) * (6 + t.hp / 2) - slotCost;
+      // A beast talked out of the fight entirely — removal, so the whole of
+      // what it was going to do.
+      return denialValue(state, t, saveFailProb(state, t, 'wis', dc), 4) - slotCost;
     }
     // True Strike: a weapon attack powered by the caster's spellcasting ability.
     // Worth it exactly when that modifier beats the one the weapon would use.
@@ -421,7 +539,13 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         const t = state.combatants[occ]!;
         if (!t.alive || !canBePutToSleep(t)) continue;
         const p = saveFailProb(state, t, 'wis', dc);
-        v += t.team === actor.team ? -8 * p : p * (6 + t.maxHp / 3);
+        // Asleep is out of the fight until something wakes it: the whole of
+        // what it was going to do. Catching an ALLY is the same quantity with
+        // the sign flipped, and then some — it is your own front line on the
+        // floor.
+        v += t.team === actor.team
+          ? -denialValue(state, t, p, 3) * 1.5
+          : denialValue(state, t, p, 3);
       }
       return v - slotCost;
     }
@@ -467,10 +591,17 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (actor.concentratingOn) return 0;
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       // Paralysis is near-lethal: allies auto-crit. Weight by save-fail odds and target beefiness.
-      return saveFailProb(state, t, 'wis', dc) * (8 + t.hp / 3) - slotCost;
+      // Paralysed: no actions at all, and every melee hit against it crits.
+      // Four rounds is optimistic for a save-ends effect, which is why the
+      // fail probability multiplies it.
+      return denialValue(state, t, saveFailProb(state, t, 'wis', dc), 4) - slotCost;
     }
     case 'aid': {
-      return state.round <= 2 ? 2.5 * a.targets.length - slotCost : 0;
+      // +5 maximum and current hit points each, which is hit points on the
+      // board however the fight goes — priced as exactly that rather than as
+      // 2.5 a head.
+      if (state.round > 2) return 0;
+      return a.targets.length * 5 * 0.8 - slotCost;
     }
     case 'burning-hands': {
       const caster = actor;
@@ -530,7 +661,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'command': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       // Stealing one turn (grovel prone) is worth a slice of the target's threat.
-      return saveFailProb(state, t, 'wis', dc) * (5 + t.hp / 4) - slotCost;
+      // One turn, and only one — Command is the cheapest control in the game
+      // and should read as exactly a turn's worth.
+      return denialValue(state, t, saveFailProb(state, t, 'wis', dc), 1) - slotCost;
     }
     case 'web': {
       if (actor.concentratingOn) return 0;
@@ -541,7 +674,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         if (!occ) continue;
         const t = state.combatants[occ]!;
         if (!t.alive || t.team === actor.team) continue;
-        v += saveFailProb(state, t, 'dex', dc) * 5; // restrain value per enemy
+        // The same restraint as Entangle, and it keeps catching whoever
+        // walks in — which is why the strands are worth a round more.
+        v += denialValue(state, t, saveFailProb(state, t, 'dex', dc), 3) * 0.5;
       }
       return v - slotCost;
     }
@@ -573,7 +708,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       for (const e of Object.values(state.combatants)) {
         if (!e.alive || e.team === actor.team) continue;
         if (distanceFeet(e.position, actor.position) > 15) continue;
-        v += saveFailProb(state, e, 'wis', dc) * avgDice('3d8') * 0.6; // damage over the next turns
+        // Real damage, every round anything stands in it.
+        v += damageValue(saveFailProb(state, e, 'wis', dc) * avgDice('3d8') * 0.6, e);
       }
       return v - slotCost;
     }
@@ -631,7 +767,12 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // Roughly two rounds of attacks' worth of extra 1d6 hits, discounted for
       // the chance the target dies or the mark breaks before then.
       const expectedHits = actor.attacksPerAction * 2;
-      return avgDice('1d6') * expectedHits * 0.6 - slotCost;
+      // Through `damageValue` like any other damage: the rider is extra hit
+      // points off a specific creature, and the kill bonus applies to it for
+      // the same reason it applies to a Fire Bolt.
+      const quarry = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId];
+      if (!quarry?.alive || isDown(quarry)) return 0;
+      return damageValue(avgDice('1d6') * expectedHits * 0.6, quarry) - slotCost;
     }
     case 'fear': {
       if (actor.concentratingOn) return 0;
@@ -723,7 +864,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         if (!occ) continue;
         const t = state.combatants[occ]!;
         if (!t.alive || t.team === actor.team || t.conditions.some((c) => c.id === 'blinded')) continue;
-        v += saveFailProb(state, t, 'con', dc) * 4; // one turn of disadvantage-out/advantage-in
+        // Blinded for a turn: it swings at disadvantage and everything swings
+        // back at advantage.
+        v += denialValue(state, t, saveFailProb(state, t, 'con', dc), 1) * 0.6;
       }
       return v - slotCost;
     }
@@ -732,7 +875,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       const amount = avgDice('1d4') + 4;
       if (current >= amount) return 0; // wouldn't improve on what's already there
       // A defensive pick, most worth it before the caster has taken a hit.
-      return (amount - current) * 0.4 - slotCost;
+      // Temporary hit points are hit points: priced as the ward they are,
+      // rather than at 40% of face value.
+      return (amount - current) * (incomingPerRound(state, actor) > 0 ? 1 : 0) - slotCost;
     }
     case 'inflict-wounds': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -741,7 +886,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     case 'blindness': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       // Blinded is real but milder than paralysis (no auto-crit): weight below hold-person.
-      return saveFailProb(state, t, 'con', dc) * (5 + t.hp / 5) - slotCost;
+      // Blind: attacks at disadvantage, and everything swings back at
+      // advantage. Not a lost turn, so a share of one, for a few of them.
+      return denialValue(state, t, saveFailProb(state, t, 'con', dc), 3) * 0.5 - slotCost;
     }
     case 'invisibility': {
       if (actor.concentratingOn) return 0;
@@ -749,7 +896,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (t.conditions.some((c) => c.id === 'hidden')) return 0;
       // Most valuable on a squishy caster who isn't already safe.
       const exposed = nearestEnemyDist(state, t.position, t.team) <= 3;
-      return (exposed ? 5 : 2.5) - slotCost;
+      // Untargetable while it holds. Worth what would otherwise be coming at
+      // them, which is what `rescueValue` measures.
+      return incomingPerRound(state, t) * 0.6 * 2 + (exposed ? 2 : 0) - slotCost;
     }
     case 'lesser-restoration': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -773,7 +922,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       let v = 0;
       for (const tg of a.targets) {
         const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
-        v += saveFailProb(state, t, 'cha', dc) * 3;
+        // -1d4 on every attack and save: about a tenth off what the creature
+        // manages, mirroring how Bless is priced from the other side.
+        v += denialValue(state, t, saveFailProb(state, t, 'cha', dc), 3) * 0.1;
       }
       return v - slotCost;
     }
@@ -783,7 +934,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (t.conditions.some((c) => c.id === 'warded')) return 0;
       // Worth more on a target enemies are already reaching for.
       const threatened = nearestEnemyDist(state, t.position, t.team) <= 2;
-      return (threatened ? 3.5 : 1.5) - slotCost;
+      // +2 AC is roughly a tenth of the attacks against them missing instead.
+      return incomingPerRound(state, t) * 0.10 * 3 - slotCost;
     }
     // Sanctuary: worth a slot only on someone actually being swung at, and
     // worth nothing on a melee ally who is going to break it themselves on
@@ -826,7 +978,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (actor.hp < actor.maxHp / 2) return 0;      // no cushion left to lend
       if (t.hp > t.maxHp * 0.8 && nearestEnemyDist(state, t.position, t.team) > 2) return 0;
       const frailer = t.hp / t.maxHp < actor.hp / actor.maxHp;
-      return (frailer ? 6 : 2.5) + (isMeleeFighter(t) ? 2 : 0) - slotCost;
+      // Half of everything they take moves to the cleric, plus +1 AC and
+      // saves. Priced off what is actually coming at them.
+      return incomingPerRound(state, t) * 0.4 * 2 + (frailer ? 3 : 0) - slotCost;
     }
     // Protection from Energy: only worth a 3rd-level slot when something on the
     // board actually deals the element it picks — the spell chooses by reading
@@ -859,7 +1013,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       if (t.conditions.some((c) => c.id === 'cursed')) return 0;
       const fail = saveFailProb(state, t, 'wis', dc);
       // Scaled by how long they're likely to be around to suffer it.
-      return fail * (4 + t.hp / 8) - slotCost;
+      // Disadvantage on attacks and saves for the fight: about a quarter of
+      // what the creature was going to manage.
+      return denialValue(state, t, fail, 4) * 0.25 - slotCost;
     }
     case 'haste': {
       if (actor.concentratingOn) return 0;
@@ -869,7 +1025,10 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // still solid on anyone as +2 AC and a mobility boost.
       const w = t.equipped.mainHand ? WEAPONS[t.equipped.mainHand] : undefined;
       const meleeBonus = w?.melee ? avgDice(w.damage) : 0;
-      return 4 + meleeBonus - slotCost;
+      // Double speed, +2 AC and an extra attack for the rest of the fight.
+      // Was a flat 4, which is less than a cantrip.
+      void meleeBonus;
+      return upliftValue(t, 0.5, 3) - slotCost;
     }
     // --- 4th level ---------------------------------------------------------
     // The tier was unscored entirely, which meant a party's own hints never
@@ -928,7 +1087,7 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
       // them, bounded by what they have left — saving more hit points than a
       // creature owns is not a thing. Advantage on their own swings is worth
       // about a fifth of a hit each, over a few rounds.
-      const shielded = rescueValue(t.hp, state, t);
+      const shielded = incomingPerRound(state, t) * 0.6 * 3;
       const offence = t.team === actor.team ? t.attacksPerAction * 4 : 0;
       return shielded + offence - slotCost;
     }
@@ -1039,7 +1198,9 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
           distanceCells(c.position, actor.position) <= 2,
       ).length;
       if (threats === 0) return 0;
-      return 5 + 2 * threats - slotCost;
+      // Three illusions, each eating an attack outright. Worth roughly three
+      // attacks' worth of whatever is standing there.
+      return incomingPerRound(state, actor) * 1.0 + threats * 2 - slotCost;
     }
     // Silence: worth exactly as much as the casting it stops, so it is priced
     // off the enemy casters standing in it — and refuses outright if it would
@@ -1056,7 +1217,11 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
         if (!t.alive || isDown(t)) continue;
         if (t.team === actor.team) return 0;      // never gag your own casters
         if (!canCastAnything(t)) continue;        // a silenced brute is unbothered
-        v += 6;
+        // A caster that cannot cast is a caster doing nothing much. Priced
+        // off its own output rather than a flat six, so gagging an archmage is
+        // worth more than gagging a goblin hexer — which is the whole judgement
+        // the spell asks for.
+        v += denialValue(state, t, 1, 2) * 0.7;
       }
       return v - slotCost;
     }
@@ -1066,7 +1231,8 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     // stack with either.
     case 'mage-armor': {
       if (actor.mageArmor || actor.equipped.armor !== undefined) return 0;
-      return 4 - slotCost;
+      // +3 AC for the whole fight, on somebody with no armour at all.
+      return incomingPerRound(state, actor) * 0.15 * 3 - slotCost;
     }
     /**
      * Polymorph: priced as what it actually is — a large temporary hit point
