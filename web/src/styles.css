@@ -3538,3 +3538,12 @@ button.category .count {
   gap: 6px;
 }
 .setup-hero-pair select { flex: 1; min-width: 0; }
+
+/* Keyboard play: the focused cell needs a ring that survives every board theme
+   and every highlight colour, so it is drawn inset rather than as an outline
+   the neighbouring cell can paint over. */
+.board .cell:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px #ffd76a, inset 0 0 0 5px #1a1526;
+  z-index: 4;
+}

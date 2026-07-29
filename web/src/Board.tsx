@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { GameState, Position, Combatant, Id } from '../../src/engine/types.js';
 import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
@@ -58,6 +58,25 @@ export interface BoardProps {
 export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
+  /**
+   * Keyboard play: which cell the arrow keys are on.
+   *
+   * The board was mouse-and-touch only. Measured in a browser, a battle offered
+   * thirteen focusable controls -- the whole action bar -- and ZERO focusable
+   * cells, so a keyboard user could open the spell tray and never move, never
+   * attack, and never target anything. The game was unfinishable without a
+   * pointer.
+   *
+   * A roving tabindex is the standard fix for a grid and the only one that
+   * works at this size: eighty cells each in the tab order would mean eighty
+   * presses to cross the board and would bury the action bar behind them. One
+   * cell is tabbable, the arrows move which one, Enter and Space tap it.
+   *
+   * `undefined` until the first keyboard press, so that the tabbable cell is
+   * the active hero's own square -- the place a player would start from -- and
+   * so nothing shows a focus ring for a mouse user who never pressed a key.
+   */
+  const [cursor, setCursor] = useState<Position | undefined>(undefined);
 
   // Slide tokens along their actual path (around walls / through allies) via
   // the Web Animations API. Runs before paint so there's no jump-then-slide.
@@ -77,6 +96,17 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
   // loop needs to know which theme it is drawing before it draws anything.
   const boardTheme = (theme ?? 'stone') as MapTheme;
   const drawnProps = HAS_TERRAIN_ART.has(boardTheme);
+
+  /**
+   * Which cell carries `tabIndex={0}` — the single keyboard entry point.
+   *
+   * Before any key is pressed that is the ACTIVE HERO's own square, so the
+   * first Tab into the board lands where a player would look, and the first
+   * arrow press moves off their own feet rather than from a corner.
+   */
+  const tabPos: Position = cursor
+    ?? state.combatants[activeId]?.position
+    ?? { x: 0, y: 0 };
 
   const cells = [];
   for (let y = height - 1; y >= 0; y--) {
@@ -137,6 +167,12 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
         <div
           key={key}
           className={classes.join(' ')}
+          role="gridcell"
+          data-x={x}
+          data-y={y}
+          /* Roving tabindex: exactly one cell is reachable by Tab. See `cursor`. */
+          tabIndex={posKey(tabPos) === key ? 0 : -1}
+          aria-label={cellLabel(state, pos, cell.occupantId, hl)}
           style={{
             ...(webbed && hasSpellIcon('web') ? { ['--web-img' as string]: `url(${spellIconUrl('web')})` } : {}),
             ...(propUrl ? { ['--prop' as string]: `url(${propUrl})` } : {}),
@@ -368,7 +404,47 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
     // height. Width is what sets cell size, so this is the whole responsive
     // story — columns never grow, so taps stay finger-sized on a phone.
     <div className="board-wrap" style={{ ['--board-aspect' as string]: `${height / width}` }}>
-      <div className={`board theme-${boardTheme}`} style={boardStyle}>
+      <div
+        className={`board theme-${boardTheme}`}
+        style={boardStyle}
+        role="grid"
+        aria-label="Battle map"
+        /* One handler on the grid rather than eighty on the cells: the target
+           carries its own coordinates, so this stays O(1) per keypress and does
+           not re-create eighty closures on every render. */
+        onKeyDown={(e) => {
+          /**
+           * Up is +y, and that is not a typo.
+           *
+           * The cell loop runs `for (let y = height - 1; y >= 0; y--)`, so rank
+           * 1 (y = 0) is drawn at the BOTTOM — the chessboard convention this
+           * game labels its squares with. Mapping ArrowUp to -y read as
+           * obviously right and did nothing at all on the back rank, which is
+           * exactly where a hero starts and therefore the first key a keyboard
+           * player would ever press.
+           */
+          const step: Record<string, [number, number]> = {
+            ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1],
+          };
+          const target = e.target as HTMLElement;
+          const at = { x: Number(target.dataset?.x), y: Number(target.dataset?.y) };
+          if (!Number.isFinite(at.x) || !Number.isFinite(at.y)) return;
+          if (step[e.key]) {
+            const [dx, dy] = step[e.key]!;
+            const to = { x: at.x + dx, y: at.y + dy };
+            if (to.x < 0 || to.y < 0 || to.x >= width || to.y >= height) return;
+            e.preventDefault();
+            setCursor(to);
+            // Focus follows the cursor, so the ring and the tab stop agree.
+            const next = e.currentTarget.querySelector<HTMLElement>(`[data-x="${to.x}"][data-y="${to.y}"]`);
+            next?.focus();
+          } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const occ = cellAt(state.grid, at)?.occupantId;
+            onCellTap(at, occ ? state.combatants[occ] : undefined);
+          }
+        }}
+      >
         {cells}
         {summonTokens.length > 0 && <div className="token-layer summon-layer">{summonTokens}</div>}
         <div className="token-layer">{tokens}</div>
@@ -381,4 +457,31 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
 export function tooltipFor(c: Combatant): string {
   const temp = c.tempHp ? ` + ${c.tempHp} temporary` : '';
   return `${c.name} — HP ${c.hp}/${c.maxHp}${temp}, AC ${acOf(c)}`;
+}
+
+/**
+ * What a screen reader says about a cell.
+ *
+ * Position first ("d4"), because a grid without coordinates read aloud is a
+ * maze; then who is standing there and what the game is currently offering to
+ * do with the square. The highlight is the game's own answer to "can I act
+ * here", so reusing it keeps the spoken board and the painted board in step.
+ */
+function cellLabel(
+  state: GameState, pos: Position, occupantId: Id | undefined, hl: CellHighlight,
+): string {
+  const file = String.fromCharCode(97 + pos.x);
+  const where = `${file}${pos.y + 1}`;
+  const occ = occupantId ? state.combatants[occupantId] : undefined;
+  const who = occ
+    ? `${occ.name}, ${occ.team === 'team1' ? 'ally' : 'enemy'}, ${occ.hp} of ${occ.maxHp} hit points`
+    : 'empty';
+  const offer =
+    hl === 'move' ? ', can move here'
+      : hl === 'enemy' ? ', can attack'
+      : hl === 'ally' ? ', can target'
+      : hl === 'cell-target' || hl === 'aoe' ? ', can aim here'
+      : hl === 'hint' ? ', suggested'
+      : '';
+  return `${where}, ${who}${offer}`;
 }
