@@ -640,15 +640,37 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
         const spell = SPELLS[sid]!;
         if (spell.castingTime === 'reaction' || spell.outOfCombat) continue;
         if (!meta.applies(spell)) continue;
+        /**
+         * Leveled spells only, and this one is MEASURED rather than reasoned.
+         *
+         * The first version offered every quickenable spell, cantrips included,
+         * on the theory that `scoreSpell` would sort it out. Across 40 level-8
+         * arena runs, Quickened fired 258 times and 236 of those were Poison
+         * Spray — a quarter of the day's sorcery points for about five hit
+         * points of cantrip. That is the always-chosen half of the modifier
+         * bug: the scorer prices what a spell DOES and has no term at all for
+         * the points, so anything above zero wins.
+         *
+         * Rather than invent a price for a sorcery point — a constant with
+         * nothing behind it, which is how the other six went wrong — this is a
+         * stated policy: the pool exists to buy a second REAL spell, and a
+         * cantrip is never what it is for. `isLegalAction` still permits it, so
+         * a player who wants to spend two points on a Fire Bolt may.
+         */
+        if (spell.level < 1) continue;
         const baseLevel = actor.innateSpells[sid] ? 0 : spell.level;
         // No upcast ladder here: the point of the extra pass is the second
         // cast, not a second menu, and the lowest slot that can pay is the
         // same rule the ordinary path settled on for non-scaling spells.
         let slotLevel: number | undefined;
-        for (let i = Math.max(baseLevel, 1); i <= actor.spellSlots.length; i++) {
-          if (spellAvailable(actor, spell, i)) { slotLevel = i; break; }
+        if (baseLevel === 0) {
+          // Innate, so there is no slot to find — the species pool pays.
+          slotLevel = spellAvailable(actor, spell, 0) ? 0 : undefined;
+        } else {
+          for (let i = baseLevel; i <= actor.spellSlots.length; i++) {
+            if (spellAvailable(actor, spell, i)) { slotLevel = i; break; }
+          }
         }
-        if (baseLevel === 0) slotLevel = 0;
         if (slotLevel === undefined) continue;
         for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
           const a: Action = {

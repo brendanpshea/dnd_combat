@@ -165,6 +165,22 @@ describe('the enumeration gate is the whole pricing story', () => {
     expect(quickened(c, meId)).toEqual([]);
   });
 
+  it('does not offer a cantrip, however cheap the points look', () => {
+    // MEASURED, not reasoned. Offering every quickenable spell put Quickened at
+    // 258 uses across 40 level-8 arena runs — 236 of them Poison Spray, a
+    // quarter of the day's points for about five hit points of cantrip. The
+    // scorer prices what a spell does and has no term for the pool at all, so
+    // anything above zero wins; the pool is reserved by policy instead.
+    // (`isLegalAction` still allows it — a player may spend the points.)
+    const { c, meId } = board({ spellIds: ['fireball', 'fire-bolt', 'poison-spray'] });
+    c.apply({ kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'e0' }] });
+    expect(quickened(c, meId)).not.toContain('poison-spray');
+    expect(isLegalAction(c.state, meId, {
+      kind: 'castSpell', spellId: 'poison-spray', slotLevel: 0, metamagic: 'quickened',
+      targets: [{ combatantId: 'e0' }],
+    })).toBe(true);
+  });
+
   it('offers them once the action is gone', () => {
     const { c, meId } = board({ spellIds: ['fireball', 'fire-bolt'] });
     c.apply({ kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'e0' }] });
