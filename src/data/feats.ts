@@ -61,11 +61,15 @@ export interface OriginFeat {
      * its own. A fighter with Magic Initiate would otherwise fall through to
      * `spellMod`'s Intelligence default and cast off a 12.
      *
-     * SIDE EFFECT, deliberately taken: `spellcastingAbility` is also what
-     * `actions.ts` checks before letting anyone use a scroll or a wand, so this
-     * feat opens those to a non-caster. That is a real, if modest, extra grant
-     * beyond the SRD wording, and it is the honest reading of "Wisdom is your
-     * spellcasting ability" — a character who can cast can read a scroll.
+     * This is the spell MATH only, and deliberately not permission to hold a
+     * wand. It used to be both: `actions.ts` gated wands on
+     * `spellcastingAbility !== undefined`, so this feat handed a fighter a Wand
+     * of Fireballs. See `Combatant.classCaster` for the split.
+     *
+     * Scrolls were never affected either way — they are gated by
+     * `classScrollPool(classId)`, which is built from the class table and is
+     * empty for every non-caster, so a fighter could not read one before this
+     * feat and cannot now.
      */
     spellcastingAbility?: 'wis' | 'int' | 'cha';
     /** Extra hit points per level, exactly like a species' `hpPerLevel`. */

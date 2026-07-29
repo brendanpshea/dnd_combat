@@ -5,28 +5,27 @@
  * party, same waves, same seeds, 200 fights per cell, all four heroes carrying
  * the feat:
  *
- *   level 1   none 136/200 · tough 161 · magic-initiate 163 · savage 140 · skilled 136
- *   level 4   none 131/200 · tough 150 · magic-initiate 150 · savage 138 · skilled 131
+ *   level 1  none 134 · hardy 158 · alert 144 · fated 165 · savage 138 · skilled 135 · initiate 168
+ *   level 4  none 129 · hardy 154 · alert 134 · fated 145 · savage 145 · skilled 130 · initiate 147
  *
- * Three things that says, all of them worth writing down:
+ * Four things that says, all of them worth writing down:
  *
- *  - Hardy and Magic Initiate are strong and roughly equal. Hardy is about a
- *    fifth more party hit points at every level; Magic Initiate is four extra
- *    Healing Words a day when the whole party takes it.
- *  - Savage Attacker is real but small: +1.15 damage on a d8 when it fires, and
- *    it fires once a TURN, so a fighter with two attacks gets it on one of them.
- *    That is RAW and the implementation is right — it is simply a modest feat
- *    next to a fifth more hit points.
- *  - Skilled is byte-identical to no feat at all, twice. That is not a bug and
- *    not dead data: it is an out-of-combat feat and this harness only fights.
- *    Its value is in the creep check, the shop and the adventure scenes, which
- *    is what the tests below actually check it against.
- *
- * ALERT was going to be the fourth and was measured out instead: the ceiling
- * probe gave the WHOLE PARTY +20 initiative, so every hero acted before every
- * foe in every fight, and that was worth 141/200 against a baseline of 131/200.
- * One character with +2 is a small fraction of five percentage points. Tough
- * took the slot.
+ *  - Hardy, Fated and Magic Initiate are the strong three. Hardy is about a
+ *    fifth more party hit points at every level; Fated is twelve rerolls a day
+ *    across four heroes; Magic Initiate is four extra Healing Words.
+ *  - ALERT is worth something now, which it was not when it was only
+ *    +proficiency to Initiative. The ceiling probe still stands — the WHOLE PARTY
+ *    given +20 initiative was worth 141/200 against 131/200 — so the bonus says
+ *    almost nothing and the INITIATIVE SWAP is the entire feat.
+ *  - SAVAGE ATTACKER measures stronger here than an earlier run reported (+8pp at
+ *    4th against +3.5pp). The earlier figure was taken before Shove became a
+ *    contest, which moved the baseline; this table supersedes it. The feat itself
+ *    is unchanged and still modest: +1.15 damage on a d8, once a turn.
+ *  - SKILLED is close to nothing in combat and that is nearly the whole truth of
+ *    it: it is an out-of-combat feat and this harness only fights. It stopped
+ *    being byte-identical only because Shove made Athletics matter, which is a
+ *    sliver rather than a purpose. Its value is the creep check, the shop and the
+ *    adventure scenes.
  */
 import { describe, it, expect } from 'vitest';
 import { ORIGIN_FEATS, BACKGROUND_FEAT, SKILLED_ORDER, skilledSkills, defaultFeatFor } from '../src/data/feats.js';
@@ -115,9 +114,9 @@ describe('Hardy', () => {
   it('is two hit points per level, not a flat lump', () => {
     for (const level of [1, 4, 8]) {
       const plain = buildCharacter({ classId: 'rogue', team: 'team1', position: HERE, level });
-      const tough = buildCharacter({ classId: 'rogue', team: 'team1', position: HERE, level, featIds: ['hardy'] });
-      expect(tough.maxHp - plain.maxHp, `level ${level}`).toBe(2 * level);
-      expect(tough.hp).toBe(tough.maxHp);
+      const hardy = buildCharacter({ classId: 'rogue', team: 'team1', position: HERE, level, featIds: ['hardy'] });
+      expect(hardy.maxHp - plain.maxHp, `level ${level}`).toBe(2 * level);
+      expect(hardy.hp).toBe(hardy.maxHp);
     }
   });
 });
@@ -244,8 +243,8 @@ describe('slots and defaults', () => {
     setPartySpecies(c, 0, 'dwarf');
     setPartyFeat(c, 0, 0, 'hardy');
     const plain = buildCampaignParty(newCampaign(2))[0]!;
-    const tough = buildCampaignParty(c)[0]!;
-    expect(tough.maxHp).toBeGreaterThan(plain.maxHp);
+    const hardy = buildCampaignParty(c)[0]!;
+    expect(hardy.maxHp).toBeGreaterThan(plain.maxHp);
   });
 
   it('refuses an unknown feat, a bad slot, and a launched party', () => {
