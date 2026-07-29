@@ -1812,6 +1812,26 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     position,
     initiative: 0,
     savingThrowProfs: [...(m.savingThrowProfs ?? [])],
+    /**
+     * Athletics and Acrobatics, DERIVED from the save proficiencies the stat
+     * blocks already carry rather than invented per monster.
+     *
+     * Shove is now an opposed Athletics check (see rules/shove.ts), and monsters
+     * have no skill list at all. Without this, switching from a saving throw to
+     * a contest would quietly STRIP proficiency from every monster that had
+     * Strength or Dexterity save proficiency — making shove better against
+     * exactly the creatures built to resist being moved. The stat block already
+     * says "this thing is trained at not being budged"; this reads that answer
+     * instead of guessing a new one.
+     */
+    skillProfs: [
+      ...(m.savingThrowProfs?.includes('str') ? ['athletics' as const] : []),
+      ...(m.savingThrowProfs?.includes('dex') ? ['acrobatics' as const] : []),
+    ],
+    // Monsters cast from their stat block, which is a class-caster equivalent
+    // for attunement purposes -- they never hold player wands, but the field
+    // must not be silently false for a dragon.
+    ...(m.spellcasting ? { classCaster: true as const } : {}),
     spellSlots: (m.spellcasting?.slots ?? []).map((n) => ({ current: n, max: n })),
     spellIds: [...(m.spellcasting?.spellIds ?? [])],
     ...(m.spellcasting ? { spellcastingAbility: m.spellcasting.ability } : {}),

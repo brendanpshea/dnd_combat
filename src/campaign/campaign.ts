@@ -1508,6 +1508,9 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
       ...(ch.choices ? { choices: { ...ch.choices } } : {}),
       ...(ch.kitId ? { kitId: ch.kitId } : {}),
       featIds: featsOf(ch),
+      // The background's two skills, so an in-combat contest (Shove) reads the
+      // same proficiencies the shop and the adventure scenes do.
+      ...(ch.backgroundId ? { backgroundId: ch.backgroundId } : {}),
       // The stored build if it is legal, the kit's own if not — one function,
       // so the sheet, the skill check and the combatant can never disagree.
       statBuild: statBuildOf(ch),

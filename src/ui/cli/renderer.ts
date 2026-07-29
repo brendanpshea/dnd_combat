@@ -159,6 +159,9 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       const oa = e.opportunity ? ' (opportunity attack)' : '';
       const mode = e.mode !== 'flat' ? ` [${e.mode}: ${[...e.advSources, ...e.disSources].join(', ')}]` : '';
       const familiar = e.advSources.includes('owl familiar') ? ' An owl familiar distracts the target.' : '';
+      // Unconditional, unlike `mode`: a Fated reroll leaves the roll flat, so
+      // hanging this off the adv/dis bracket would have shown nothing.
+      const luck = e.luck ? ` [${e.luck}]` : '';
       const result = e.hit ? (e.crit ? 'CRIT!' : 'hit') : 'miss';
       // Roll20-style math: the bonus is whatever the engine added on top of
       // the die (proficiency, ability, Bless's d4, a +1 weapon...).
@@ -166,7 +169,7 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       // line that already names the hammer.
       const wielding = e.via ? '' : ` with ${w}`;
       return `${actor(e.attackerId, e.via)} attacks ${nm(e.targetId)}${wielding}${oa}: ` +
-        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}${familiar}`;
+        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs AC ${e.targetAc} — ${result}${mode}${luck}${familiar}`;
     }
     case 'smited': {
       // The paladin's signature, so it gets its own shouted line rather than a
@@ -206,7 +209,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     }
     case 'savingThrow':
       return `  ${nm(e.combatantId)} ${e.ability.toUpperCase()} save: ` +
-        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.`;
+        `🎲 d20(${e.natural})${signed(e.total - e.natural)} = ${e.total} vs DC ${e.dc} — ${e.success ? 'success' : 'fail'}.` +
+        // Halfling Luck or Fated changed this die. A save that held because of a
+        // feat should say so, or the feat did its work invisibly.
+        (e.luck ? ` [${e.luck}]` : '');
     case 'hideCheck':
       return `  ${nm(e.combatantId)} hides: d20(${e.natural}) = ${e.total} vs DC 15 — ${e.success ? 'hidden' : 'seen'}.`;
     case 'hiddenRevealed':
@@ -229,9 +235,22 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       return `${nm(e.combatantId)} dashes.`;
     case 'shoved': {
       const who = `${nm(e.shoverId)} shoves ${nm(e.targetId)}`;
-      if (!e.success) return `${who} — ${nm(e.targetId)} holds its ground.`;
-      return e.mode === 'prone' ? `${who} to the ground!` : `${who} back!`;
+      /**
+       * The contest totals, so a failed shove reads as a contest lost rather
+       * than as nothing happening — and so a reroll that decided it is visible.
+       * Shove is an opposed Athletics check (see rules/shove.ts).
+       */
+      const c = e.contest;
+      const how = c ? ` [${c.attackerTotal} vs ${c.defenderTotal} ${c.defenderSkill}` +
+        `${c.luck?.length ? `, ${c.luck.join('; ')}` : ''}]` : '';
+      if (!e.success) return `${who} — ${nm(e.targetId)} holds its ground.${how}`;
+      return (e.mode === 'prone' ? `${who} to the ground!` : `${who} back!`) + how;
     }
+    case 'initiativeSwapped':
+      // Alert. Named explicitly, because a swapped turn order is otherwise the
+      // most invisible thing a feat could possibly do.
+      return `${nm(e.combatantId)} is Alert — trades initiative with ` +
+        `${nm(e.allyId)} (${e.from} → ${e.to}), putting them first.`;
     case 'recharged':
       return `${nm(e.combatantId)}'s ${FEATURES[e.featureId]?.name ?? e.featureId} recharges!`;
     case 'disengaged':

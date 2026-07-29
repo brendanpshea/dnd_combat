@@ -7,6 +7,12 @@ import type { RollMode } from './dice.js';
 
 export type GameEvent =
   | { type: 'combatStarted'; order: Array<{ id: Id; initiative: number }> }
+  /**
+   * Alert's Initiative Swap fired: this character handed its place in the order
+   * to an ally who could do more with it. Surfaced so the player can see the feat
+   * they chose actually did something, rather than the order quietly differing.
+   */
+  | { type: 'initiativeSwapped'; combatantId: Id; allyId: Id; from: number; to: number }
   | { type: 'roundStarted'; round: number }
   | { type: 'turnStarted'; combatantId: Id; round: number }
   | { type: 'turnEnded'; combatantId: Id }
@@ -16,6 +22,8 @@ export type GameEvent =
       attackerId: Id; targetId: Id; weaponId: Id;
       natural: number; total: number; targetAc: number;
       mode: RollMode; advSources: string[]; disSources: string[];
+      /** "Fated (4 → 17)" when a reroll changed the die — see rules/luck.ts. */
+      luck?: string;
       hit: boolean; crit: boolean;
       opportunity: boolean;
       /** A barricade on the line of the shot: `targetAc` already includes the
@@ -69,6 +77,8 @@ export type GameEvent =
       type: 'savingThrow';
       combatantId: Id; ability: Ability; dc: number;
       natural: number; total: number; success: boolean;
+      /** "Fated (4 → 17)" when a reroll changed the die — see rules/luck.ts. */
+      luck?: string;
     }
   | { type: 'hideCheck'; combatantId: Id; natural: number; total: number; success: boolean }
   | { type: 'hiddenRevealed'; combatantId: Id; observerId: Id; passivePerception: number; hideCheck: number }
@@ -81,7 +91,20 @@ export type GameEvent =
   | { type: 'recharged'; combatantId: Id; featureId: Id }
   /** An Unarmed Strike's Shove: pushed five feet, or knocked prone. `success`
    *  is false when the target made its save and nothing happened. */
-  | { type: 'shoved'; shoverId: Id; targetId: Id; mode: 'push' | 'prone'; success: boolean }
+  | {
+      type: 'shoved'; shoverId: Id; targetId: Id; mode: 'push' | 'prone'; success: boolean;
+      /**
+       * The contest, when there was one: Athletics against the defender's better
+       * of Athletics and Acrobatics. Optional so an older replay without it
+       * still renders.
+       */
+      contest?: {
+        attackerTotal: number; defenderTotal: number;
+        defenderSkill: string;
+        /** "Fated (4 → 17)" on either side, when a reroll changed the die. */
+        luck?: string[];
+      };
+    }
   /** A sorcerer spent points to bend a spell. Emitted before `spellCast`, so a
    *  log reads "Quickened Spell (2 SP)" and then the cast it paid for. */
   | { type: 'metamagic'; casterId: Id; metamagicId: Id; spellId: Id; cost: number }

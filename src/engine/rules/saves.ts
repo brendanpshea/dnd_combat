@@ -201,6 +201,9 @@ export function savingThrow(
     event: {
       type: 'savingThrow', combatantId, ability, dc,
       natural: d20.natural, total, success,
+      // Halfling Luck or Fated rerolled this. Reported so a saved life is
+      // attributable to the feat that saved it.
+      ...(d20.luck ? { luck: d20.luck } : {}),
     },
   };
 }

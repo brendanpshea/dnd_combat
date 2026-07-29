@@ -3,7 +3,7 @@
  * are represented as data; vision and exploration-only traits stay out of
  * the headless combat engine until those systems exist.
  */
-import type { DamageType, Id , CreatureSize } from '../engine/types.js';
+import type { DamageType, Id , CreatureSize, Ability } from '../engine/types.js';
 import type { SkillId, ChoicePoint } from './classes.js';
 
 export interface SpeciesData {
@@ -29,6 +29,17 @@ export interface SpeciesData {
   innateSpells?: Array<{ spellId: Id; atLevel: number; uses: number }>;
   /** How many origin feats this species gets. Absent = one (everybody else). */
   originFeats?: number;
+  /**
+   * Which ability powers this species' innate magic, for a character whose CLASS
+   * gives it none.
+   *
+   * Without it, `spellMod` fell through to a hardcoded default and a tiefling
+   * fighter cast Ray of Sickness off Intelligence — the score a martial
+   * character dumps. The right answer differs per species (a wood elf's magic is
+   * Wisdom, a tiefling's is Charisma), which is exactly why it belongs here
+   * rather than in one fallback that has to be wrong for somebody.
+   */
+  innateSpellAbility?: Ability;
   /** Deterministic Skillful choice for the campaign's limited skill list. */
   skillProficienciesByClass?: Partial<Record<Id, SkillId>>;
   /** Build decisions this species offers (e.g. a future draconic ancestry). */
@@ -63,6 +74,8 @@ export const SPECIES: Record<Id, SpeciesData> = {
     // Faerie Fire at 3rd — the elf lights a cluster of foes so the whole party
     // strikes them with advantage, and no one among them can hide.
     innateSpells: [{ spellId: 'faerie-fire', atLevel: 3, uses: 1 }],
+    // A wood elf's magic is Wisdom in 2024.
+    innateSpellAbility: 'wis',
   },
   orc: {
     id: 'orc', name: 'Orc', speed: 30,
@@ -74,6 +87,9 @@ export const SPECIES: Record<Id, SpeciesData> = {
     // couple of times a fight, the innate-spell path's damage shape.
     resistances: ['fire'],
     innateSpells: [{ spellId: 'breath-weapon', atLevel: 1, uses: 2 }],
+    // The breath weapon sets its own Constitution DC (see spells.ts), so this
+    // is only here for completeness if the dragonborn ever gains a second spell.
+    innateSpellAbility: 'cha',
   },
   tiefling: {
     id: 'tiefling', name: 'Abyssal Tiefling', speed: 30,
@@ -85,6 +101,8 @@ export const SPECIES: Record<Id, SpeciesData> = {
     resistances: ['poison'],
     spellsByLevel: { 1: ['poison-spray'] },
     innateSpells: [{ spellId: 'ray-of-sickness', atLevel: 3, uses: 1 }],
+    // Infernal legacy is Charisma.
+    innateSpellAbility: 'cha',
   },
   gnome: {
     id: 'gnome', name: 'Gnome', speed: 30, size: 'small',
@@ -99,6 +117,8 @@ export const SPECIES: Record<Id, SpeciesData> = {
     featureIds: ['gnomish-cunning'],
     spellsByLevel: { 1: ['minor-illusion'] },
     innateSpells: [{ spellId: 'animal-friendship', atLevel: 1, uses: 2 }],
+    // Gnomish innate magic is Charisma.
+    innateSpellAbility: 'cha',
   },
   halfling: {
     id: 'halfling', name: 'Halfling', speed: 30, size: 'small',

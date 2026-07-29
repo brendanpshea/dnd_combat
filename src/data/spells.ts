@@ -150,9 +150,20 @@ export interface SpellData {
 
 // --- shared helpers --------------------------------------------------------
 
+/**
+ * The modifier a caster's spells run on.
+ *
+ * The `?? 'wis'` fallback replaced an `?? 'int'` one, which was nobody's plan: a
+ * tiefling FIGHTER casting its innate Ray of Sickness has no
+ * `spellcastingAbility` at all, so it was casting off Intelligence — the score
+ * a martial character dumps. Wisdom is not obviously right either, but it is the
+ * ability innate species magic and the Magic Initiate feat both key off here, so
+ * it is at least the same answer twice. Any character that actually casts sets
+ * the field explicitly and never reaches the fallback.
+ */
 function spellMod(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
-  return abilityMod(c.abilities[c.spellcastingAbility ?? 'int']);
+  return abilityMod(c.abilities[c.spellcastingAbility ?? 'wis']);
 }
 
 /**

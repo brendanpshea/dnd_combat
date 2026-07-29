@@ -344,7 +344,19 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       // Wands the SRD gates behind attunement by a spellcaster. Wand of Magic
       // Missiles needs no attunement at all and so carries no requirement,
       // which is exactly what makes it worth a fighter's pack slot.
-      if (item.requires === 'spellcaster' && actor.spellcastingAbility === undefined) return false;
+      /**
+       * Attunement, which is NOT the same question as "which ability powers my
+       * spells". This read `spellcastingAbility === undefined`, so the Magic
+       * Initiate origin feat -- which must set that field or a fighter's Sacred
+       * Flame is cast off Intelligence -- also handed the fighter a Wand of
+       * Fireballs. One field was answering two questions; see
+       * Combatant.classCaster.
+       *
+       * Scrolls were never gated by this and still are not: only five wands and
+       * staves carry `requires`, which is what makes a Wand of Magic Missiles
+       * (no attunement, no requirement) worth a fighter's pack slot.
+       */
+      if (item.requires === 'spellcaster' && !actor.classCaster) return false;
       // Fast Hands (Thief): "use an object" as a Bonus Action, which on a
       // battle grid means drinking the potion without giving up the attack.
       const asBonus = item.useTime === 'bonus' || actor.featureIds.includes('fast-hands');
