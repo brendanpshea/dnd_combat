@@ -5,7 +5,7 @@ import {
   PARTY_TEMPLATES, applyPartyTemplate, randomizeParty, defaultPortraitFor, rerollPartyName,
 } from '../src/campaign/campaign.js';
 import { SPECIES } from '../src/data/species.js';
-import { CLASSES } from '../src/data/classes.js';
+import { CLASSES, kitFor } from '../src/data/classes.js';
 import { randomNameFor } from '../src/builder/names.js';
 import { seedRng } from '../src/engine/rng.js';
 // From the registry, not from `art.js`. The latter only re-exports this set,
@@ -177,7 +177,13 @@ describe('build-choice points', () => {
     applyPartyTemplate(c, 'wardens');
     expect(c.characters.map((ch) => ch.classId)).toEqual(['paladin', 'ranger', 'cleric', 'rogue']);
     // …and re-kits them: a paladin must not be holding the fighter's loadout.
-    expect(c.characters[0]!.equipped.mainHand).toBe(CLASSES['paladin']!.equipment.mainHand);
+    // Asked of the KIT rather than the class, because this template's paladin is
+    // a Crusader — reading `CLASSES.paladin.equipment` would assert the longsword
+    // the template deliberately does not hand out.
+    const spec = PARTY_TEMPLATES.find((t) => t.id === 'wardens')!.members[0]!;
+    expect(c.characters[0]!.equipped.mainHand)
+      .toBe(kitFor(CLASSES['paladin']!, spec.kitId).equipment.mainHand);
+    expect(c.characters[0]!.equipped.mainHand).not.toBe(CLASSES['fighter']!.equipment.mainHand);
     expect(c.characters[0]!.backgroundId).toBe('acolyte');
   });
 

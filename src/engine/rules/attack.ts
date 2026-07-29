@@ -438,6 +438,38 @@ export function resolveAttack(
     }
   }
 
+  /**
+   * Savage Attacker (origin feat): once per turn, reroll the weapon's damage
+   * dice and use either total.
+   *
+   * "Either total", not "either die" — so it is one decision about the whole
+   * roll, which is the SRD wording and also what makes it worth a feat: it
+   * rescues the swing that rolled two 1s rather than shaving a point off an
+   * average one. Rerolled only when the first roll is below its own average, so
+   * the AI does not burn the turn's one use on a roll that was already good.
+   *
+   * Deliberately before the flat adders below (Dueling, Rage, Bracers): those
+   * are not dice and rerolling them would be rerolling nothing.
+   */
+  if (
+    attacker.featureIds.includes('savage-attacker') &&
+    !attacker.turn.savageUsed &&
+    rolls.length > 0
+  ) {
+    const faces = Number(weapon.damage.match(/d(\d+)/)?.[1] ?? 0);
+    const first = rolls.reduce((s, r) => s + r, 0);
+    const average = rolls.length * (faces + 1) / 2;
+    if (faces > 0 && first < average) {
+      attacker.turn.savageUsed = true;
+      const again = rollDice(state.rng, `${rolls.length}d${faces}`);
+      state.rng = again.state;
+      if (again.total > first) {
+        rolls = again.rolls ?? rolls;
+        tags.push('Savage Attacker');
+      }
+    }
+  }
+
   // Off-hand attacks add no ability modifier to damage (RAW default) — unless
   // the Two-Weapon Fighting style restores it.
   const offhandMod = ctx.offhand && !attacker.featureIds.includes('two-weapon-fighting') ? 0 : mod;

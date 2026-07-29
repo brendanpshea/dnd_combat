@@ -256,7 +256,7 @@ export function startTurn(state: GameState): GameEvent[] {
     attacksLeft: 0,
     interacted: false,
     sneakAttackUsed: false,
-    colossusUsed: false,
+    colossusUsed: false, savageUsed: false,
     leveledSpellCast: false,
     quickenedThisTurn: false,
   };

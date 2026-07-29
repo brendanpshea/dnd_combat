@@ -39,7 +39,7 @@ import {
   LEVEL_XP, growSpellsForLevel, preparableSpells, preparedLimit, setPrepared,
   SHOP_STOCK, itemPrice, buyItem, equipItem, equipBlocked, groupSkillCheck,
 } from '../src/campaign/campaign.js';
-import { ARMOR as ARMOR_TABLE } from '../src/data/armor.js';
+import { ARMOR as ARMOR_TABLE, armorClass } from '../src/data/armor.js';
 import { next } from '../src/engine/rng.js';
 import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/arena/run.js';
 import { ambushDc, canCreepIn, creepKey, surprisedTeam } from '../src/arena/ambush.js';
@@ -58,6 +58,7 @@ import { WEAPONS, PLUS_ONE_WEAPONS, VICIOUS_WEAPONS } from '../src/data/weapons.
 import { ITEMS } from '../src/data/items.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
 import type { Id } from '../src/engine/types.js';
+import { abilityMod } from '../src/engine/types.js';
 
 /**
  * The run count is POSITIONAL, and the second argv is not always it.
@@ -294,9 +295,22 @@ function shopForArmor(c: CampaignState): void {
   while (bought && guard++ < 40) {
     bought = false;
     for (const [idx, ch] of c.characters.entries()) {
-      const wornBase = ch.equipped.armor ? (ARMOR_TABLE[ch.equipped.armor]?.base ?? 10) : 10;
+      /**
+       * Compared by the armour class this hero would ACTUALLY have, not by the
+       * armour's base number.
+       *
+       * Base alone ignores the Dexterity cap, which used to be harmless because
+       * every hero's Dexterity was middling and every cheap armour was medium.
+       * It stopped being harmless the moment a kit could lead on Dexterity: a
+       * Duelist fighter with Dex 20 in leather sits at AC 16, and a shopper
+       * reading base numbers sees chain mail's 16 beat leather's 11 and sells it
+       * an armour that takes the hero DOWN to 16 and costs it stealth. The
+       * harness would then have measured a kit nobody would play.
+       */
+      const dexMod = abilityMod(party[idx]?.abilities.dex ?? 10);
+      const wornAc = armorClass(ch.equipped.armor, dexMod, 0);
       const upgrade = wearable.find((w) =>
-        w.armor.base > wornBase && w.price <= c.gold && canWear(idx, w.id));
+        armorClass(w.id, dexMod, 0) > wornAc && w.price <= c.gold && canWear(idx, w.id));
       if (!upgrade) continue;
       if (buyItem(c, idx, upgrade.id) && equipItem(c, idx, upgrade.id, 'armor')) {
         bought = true;

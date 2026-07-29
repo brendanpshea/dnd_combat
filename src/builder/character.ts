@@ -3,7 +3,9 @@
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
-import { CLASSES, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
+import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
+import { ORIGIN_FEATS } from '../data/feats.js';
+import { defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
@@ -93,12 +95,17 @@ function resolveChoiceGrants(
   return merged;
 }
 
+/**
+ * What a class's recommended build comes out as. Kept as a named constant
+ * because it is what every character in the game has always had, and
+ * `test/stats.test.ts` pins the point-buy default to it — see stats.ts for why
+ * it is two 16s rather than a 17 and a 15.
+ */
 export const STANDARD_ARRAY = [16, 16, 13, 12, 10, 8] as const;
 
+/** The recommended scores for a stat priority: point-buy's default, resolved. */
 export function assignStats(priority: readonly Ability[]): AbilityScores {
-  const scores = {} as AbilityScores;
-  priority.forEach((ab, i) => { scores[ab] = STANDARD_ARRAY[i]!; });
-  return scores;
+  return resolveStatBuild(defaultStatBuild(priority));
 }
 
 /** Average-rounded-up hit die per level after 1st (the 5e fixed value). */
@@ -121,6 +128,25 @@ export interface BuildOptions {
   equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
   /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
   choices?: Record<Id, Id>;
+  /**
+   * Which of the class's kits this character is built on — its stat priority,
+   * starting gear and weapon masteries move together (see ClassKit). Missing →
+   * the class's first kit, or the class's own fields if it offers none.
+   */
+  kitId?: Id;
+  /**
+   * Hand-edited ability scores from the point-buy editor. Missing → the kit's
+   * recommended build, which is what every character had before the editor
+   * existed. An ILLEGAL build (over budget, out of range, hand-edited save) is
+   * ignored rather than honoured — a save file must not be a way to buy 15s.
+   */
+  statBuild?: StatBuild;
+  /**
+   * Origin feats, from the background (and a second one for humans). Unknown
+   * ids are skipped rather than throwing — a save may name a feat a later
+   * version removed, and losing a feat beats failing to load the party.
+   */
+  featIds?: Id[];
   /**
    * Campaign override: remaining spell slots by level (index 0 = 1st), from
    * before a long rest. Missing entries (new slot levels from a level-up, or
@@ -191,29 +217,47 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const species = SPECIES[speciesId];
   if (!species) throw new Error(`Unknown species: ${speciesId}`);
   const level = opts.level ?? 1;
-  const abilities = assignStats(cls.statPriority);
-  // Level-4 Ability Score Increase. No feats yet, so it's a deterministic +2 to
-  // the class's primary stat (capped at 20) — attack, damage, HP and spell DC
-  // all read the modifier, so the boost flows without further wiring.
-  if (level >= 4) {
-    const primary = cls.statPriority[0];
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
+  const kit = kitFor(cls, opts.kitId);
+  const abilities = isLegalStatBuild(opts.statBuild)
+    ? resolveStatBuild(opts.statBuild)
+    : resolveStatBuild(defaultStatBuild(kit.statPriority));
+  /**
+   * ABILITY SCORE INCREASES, AND THE ONE THAT USED TO EVAPORATE.
+   *
+   * Each increase is +2, applied as two separate +1s, each landing on the first
+   * ability in the KIT's priority order that is still below 20.
+   *
+   * It used to be "+2 to the primary, capped at 20", and the cap was not a
+   * safety net — it was a hole. A fighter gets three increases (4th, 6th, 8th)
+   * and starts at 16, so it reaches 20 at 6th and its ENTIRE 8th-level increase
+   * vanished. Level 8 is the top of this game; the class with the most increases
+   * was the one that threw one away, silently, with nothing in the UI to say so.
+   * No player has ever done that.
+   *
+   * Two +1s rather than one +2 so that nothing is wasted at the boundary either:
+   * a 19 goes to 20 and the spare point moves down the priority list instead of
+   * disappearing.
+   *
+   * Still the KIT's priority, not "whichever score is highest". A player who
+   * point-buys a Duelist's Strength above its Dexterity still gets the Dexterity
+   * bumps, because the kit is what the character is, and the forge says which
+   * ability it will be. Predictable beats clever.
+   */
+  const raisePriority = kit.statPriority;
+  const applyIncrease = () => {
+    for (let point = 0; point < 2; point++) {
+      const target = raisePriority.find((ab) => abilities[ab] < 20);
+      if (!target) return;   // every ability at 20: genuinely nothing to buy
+      abilities[target] += 1;
+    }
+  };
+  if (level >= 4) applyIncrease();
+  // The Fighter alone gets a second increase at 6th. (Its 7th is the Champion's
+  // Additional Fighting Style, a choice point rather than a stat bump.)
+  if (level >= 6 && opts.classId === 'fighter') applyIncrease();
   // Every class gets one at 8th — the whole of what level 8 is in the SRD for
-  // most of them, and the reason the level was cheap to add. It goes to the
-  // same primary stat, capped at 20, so a class already at 20 gains nothing
-  // rather than overflowing.
-  if (level >= 8) {
-    const primary = cls.statPriority[0];
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
-  // The Fighter alone gets a second Ability Score Increase at 6th. (Its 7th is
-  // the Champion's Additional Fighting Style, a choice point rather than a stat
-  // bump — see classes.ts.)
-  if (level >= 6 && opts.classId === 'fighter') {
-    const primary = cls.statPriority[0];
-    abilities[primary] = Math.min(20, abilities[primary] + 2);
-  }
+  // most of them, and the reason the level was cheap to add.
+  if (level >= 8) applyIncrease();
   // A worn trinket (Gauntlets of Ogre Power, …) can raise an ability score, so
   // apply its floor before HP/AC-relevant mods are computed off the abilities.
   // Worn wondrous items — the trinket slot and the ring slot both fold in the
@@ -233,6 +277,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     }
   }
 
+  /**
+   * Origin feats, folded once. Unknown ids drop out rather than throwing: a
+   * save may name a feat a later version removed, and losing a feat beats
+   * failing to load the party.
+   */
+  const feats = (opts.featIds ?? []).map((id) => ORIGIN_FEATS[id]).filter((f) => f !== undefined);
+
   const conMod = abilityMod(abilities.con);
   // A held weapon can grant things too (Berserker Axe: hit points per level).
   const heldGrants = [opts.equipped?.mainHand, opts.equipped?.offHand]
@@ -247,10 +298,17 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ? 3 + (level - 3)
     : 0;
   const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level +
-    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp;
+    heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp +
+    // Tough. Per level and not a flat lump, exactly like a species' own bonus,
+    // so it stays worth taking at 8th instead of rounding to nothing.
+    feats.reduce((n, f) => n + (f.grants.hpPerLevel ?? 0) * level, 0);
 
-  const grants = resolveChoiceGrants(cls.choices, level, opts.choices);
-  const speciesGrants = resolveChoiceGrants(species.choices, level, opts.choices);
+  // The kit's defaults sit UNDER the player's picks: an unchosen Fighting Style
+  // comes from the kit that has to live with it, and anything explicitly picked
+  // in the forge still wins.
+  const picks = { ...kit.choices, ...opts.choices };
+  const grants = resolveChoiceGrants(cls.choices, level, picks);
+  const speciesGrants = resolveChoiceGrants(species.choices, level, picks);
   grants.featureIds.push(...speciesGrants.featureIds);
   grants.spellIds.push(...speciesGrants.spellIds);
   grants.weaponMasteries.push(...speciesGrants.weaponMasteries);
@@ -274,6 +332,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     .flatMap(([, ids]) => ids),
     ...(species.featureIds ?? []),
     ...grants.featureIds,
+    ...feats.flatMap((f) => f.grants.featureIds ?? []),
   ])];
 
   const featureUses: Record<Id, ResourcePool> = {};
@@ -323,6 +382,13 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   for (const s of species?.innateSpells ?? []) {
     if (s.atLevel <= level) innateSpells[s.spellId] = { current: s.uses, max: s.uses };
   }
+  // Magic Initiate's one-a-day spell rides the same pool the species use, which
+  // is the whole reason the feat needed no new machinery.
+  for (const f of feats) {
+    for (const s of f.grants.innateSpells ?? []) {
+      innateSpells[s.spellId] = { current: s.uses, max: s.uses };
+    }
+  }
 
   // "Spells known" model: the class table is the menu; the caster knows a
   // capped selection of cantrips and leveled spells, chosen in the campaign's
@@ -354,6 +420,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ...known(species?.spellsByLevel),
     ...Object.keys(innateSpells),
     ...grants.spellIds,
+    ...feats.flatMap((f) => f.grants.spellIds ?? []),
     // Feature-granted spells, which the SRD is explicit do NOT count against
     // what the class can prepare: the Fiend patron's always-prepared list, and
     // the Book of Shadows' cantrips and ritual. Folded in here rather than into
@@ -378,7 +445,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
    * would not be wearing the leather. Only when the ward is actually better,
    * so a warlock who later buys half plate keeps it.
    */
-  const wornArmor = opts.equipped?.armor ?? cls.equipment.armor;
+  const wornArmor = opts.equipped?.armor ?? kit.equipment.armor;
   const shedForWard = featureIds.includes('armor-of-shadows') && wornArmor !== undefined &&
     armorClass(wornArmor, abilityMod(abilities.dex), 0) < 13 + abilityMod(abilities.dex);
 
@@ -406,7 +473,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       // Fast Movement (Barbarian 5): +10 ft, on the same terms as Roving — the
       // heavy-armour penalty below applies to both.
       + (featureIds.includes('fast-movement') ? 10 : 0) -
-      armorSpeedPenalty(opts.equipped?.armor ?? cls.equipment.armor, abilities.str),
+      armorSpeedPenalty(opts.equipped?.armor ?? kit.equipment.armor, abilities.str),
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
@@ -425,19 +492,19 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     featureUses,
     ...(Object.keys(itemUses).length > 0 ? { itemUses } : {}),
     innateSpells,
-    inventory: (opts.inventory ?? cls.equipment.inventory).map((s) => ({ ...s })),
+    inventory: (opts.inventory ?? kit.equipment.inventory).map((s) => ({ ...s })),
     equipped: (() => {
       const base = opts.equipped
         ? { ...opts.equipped }
         : {
-            mainHand: cls.equipment.mainHand,
-            ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
-            ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
+            mainHand: kit.equipment.mainHand,
+            ...(kit.equipment.offHand !== undefined ? { offHand: kit.equipment.offHand } : {}),
+            ...(kit.equipment.armor !== undefined ? { armor: kit.equipment.armor } : {}),
           };
       if (shedForWard) delete base.armor;
       return base;
     })(),
-    weaponMasteries: [...cls.weaponMasteries, ...grants.weaponMasteries],
+    weaponMasteries: [...kit.weaponMasteries, ...grants.weaponMasteries],
     attacksPerAction: featureIds.includes('extra-attack') ? 2 : 1,
     resistances: [...(species.resistances ?? []), ...grants.resistances],
     vulnerabilities: [],
@@ -448,13 +515,19 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
       movementUsed: 0, movementMax: 30, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
-      colossusUsed: false,
+      colossusUsed: false, savageUsed: false,
       leveledSpellCast: false,
       quickenedThisTurn: false,
     },
     alive: true,
   };
   if (cls.spellcasting) combatant.spellcastingAbility = cls.spellcasting.ability;
+  // A feat's casting ability only applies to a character that has none of its
+  // own — Magic Initiate must never overwrite a wizard's Intelligence.
+  else {
+    const fromFeat = feats.find((f) => f.grants.spellcastingAbility)?.grants.spellcastingAbility;
+    if (fromFeat) combatant.spellcastingAbility = fromFeat;
+  }
   // Find Familiar is a slot-free ritual that never dies in this model, so a
   // caster who knows it has no reason not to have cast it — grant the owl by
   // default (players, and the AI, forgot to summon it otherwise). The campaign

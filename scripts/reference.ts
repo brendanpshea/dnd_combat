@@ -29,9 +29,10 @@ import { ITEMS } from '../src/data/items.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { ARMOR } from '../src/data/armor.js';
 import { SPECIES } from '../src/data/species.js';
-import { CLASSES, SKILL_LABEL } from '../src/data/classes.js';
+import { CLASSES, SKILL_LABEL, kitFor } from '../src/data/classes.js';
 import { FEATURES, BREATH_WEAPONS } from '../src/data/features.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
+import { ORIGIN_FEATS, BACKGROUND_FEAT } from '../src/data/feats.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
 import { MAPS, parseMap } from '../src/data/maps.js';
 import { TRINKETS, trinketSlot } from '../src/data/trinkets.js';
@@ -348,6 +349,31 @@ function classesDoc(): string {
   const all = Object.values(CLASSES).sort(byName);
   const maxLevel = Math.max(...all.map((c) => Math.max(...Object.keys(c.featuresByLevel).map(Number))));
 
+  /** The three lines a kit can change, rendered for any (class, kit) pair. */
+  const buildLines = (c: typeof all[number], kitId: string | undefined) => {
+    const k = kitFor(c, kitId);
+    return [
+      `- **Ability priority:** ${k.statPriority.map((a) => a.toUpperCase()).join(' > ')}`,
+      `- **Weapon masteries:** ${cell(k.weaponMasteries.map((w) => WEAPONS[w]?.name ?? w))}`,
+      `- **Starting kit:** ${[
+        WEAPONS[k.equipment.mainHand]?.name ?? k.equipment.mainHand,
+        k.equipment.offHand === 'shield' ? 'shield' : k.equipment.offHand ? WEAPONS[k.equipment.offHand]?.name ?? k.equipment.offHand : '',
+        k.equipment.armor ? ARMOR[k.equipment.armor]?.name ?? k.equipment.armor : '',
+        // A starting pack holds spare weapons as well as potions, so the id
+        // has to be looked up in both tables.
+        ...k.equipment.inventory.map((s) => `${ITEMS[s.itemId]?.name ?? WEAPONS[s.itemId]?.name ?? s.itemId} ×${s.qty}`),
+      ].filter(Boolean).join(', ')}`,
+      // Which build choices this kit takes when the player says nothing — the
+      // Fighting Style its weapons can actually fire, which is most of why a
+      // kit is a kit and not just a bag.
+      ...((c.choices ?? [])
+        .map((cp) => ({ cp, picked: k.choices[cp.id] ?? cp.default }))
+        .filter(({ cp }) => k.choices[cp.id] !== undefined)
+        .map(({ cp, picked }) =>
+          `- **${cp.label} (default):** ${cp.options.find((o) => o.id === picked)?.name ?? picked}`)),
+    ];
+  };
+
   const sections = all.map((c) => {
     const lines = [
       `## ${c.name}`,
@@ -356,17 +382,19 @@ function classesDoc(): string {
       '',
       `- **Armor:** ${cell(c.armorProfs)}`,
       `- **Skills offered:** ${c.skillProfs.map((s) => SKILL_LABEL[s]).join(', ')}`,
-      `- **Ability priority:** ${c.statPriority.map((a) => a.toUpperCase()).join(' > ')}`,
-      `- **Weapon masteries:** ${cell(c.weaponMasteries.map((w) => WEAPONS[w]?.name ?? w))}`,
-      `- **Starting kit:** ${[
-        WEAPONS[c.equipment.mainHand]?.name ?? c.equipment.mainHand,
-        c.equipment.offHand === 'shield' ? 'shield' : c.equipment.offHand ? WEAPONS[c.equipment.offHand]?.name ?? c.equipment.offHand : '',
-        c.equipment.armor ? ARMOR[c.equipment.armor]?.name ?? c.equipment.armor : '',
-        // A starting pack holds spare weapons as well as potions, so the id
-        // has to be looked up in both tables.
-        ...c.equipment.inventory.map((s) => `${ITEMS[s.itemId]?.name ?? WEAPONS[s.itemId]?.name ?? s.itemId} ×${s.qty}`),
-      ].filter(Boolean).join(', ')}`,
+      ...buildLines(c, undefined),
       '',
+      // Alternate kits, when the class has any. Skipping kits[0] because the
+      // three lines above already are it — printing it twice would invite the
+      // two copies to disagree.
+      ...(c.kits ?? []).slice(1).flatMap((kit) => [
+        `### Kit: ${kit.name}`,
+        '',
+        kit.blurb,
+        '',
+        ...buildLines(c, kit.id),
+        '',
+      ]),
       '### Features by level',
       '',
       table(['Level', 'Features'], Object.entries(c.featuresByLevel)
@@ -431,7 +459,8 @@ function charactersDoc(): string {
   const species = Object.values(SPECIES).sort(byName);
   const backgrounds = Object.values(BACKGROUNDS).sort(byName);
   return [
-    preamble('Species & Backgrounds', `${species.length} species, ${backgrounds.length} backgrounds.`),
+    preamble('Species & Backgrounds',
+      `${species.length} species, ${backgrounds.length} backgrounds, ${Object.keys(ORIGIN_FEATS).length} origin feats.`),
     '## Species',
     '',
     table(
@@ -447,10 +476,30 @@ function charactersDoc(): string {
     '## Backgrounds',
     '',
     table(
-      ['Name', 'ID', 'Skills', 'Tool', 'Blurb'],
-      backgrounds.map((b) => [b.name, `\`${b.id}\``, b.skills.map((s) => SKILL_LABEL[s]).join(', '), b.toolNote, b.blurb]),
+      ['Name', 'ID', 'Skills', 'Origin feat', 'Tool', 'Blurb'],
+      backgrounds.map((b) => [b.name, `\`${b.id}\``, b.skills.map((s) => SKILL_LABEL[s]).join(', '),
+        ORIGIN_FEATS[BACKGROUND_FEAT[b.id] ?? '']?.name ?? '—', b.toolNote, b.blurb]),
     ),
     '',
+    '',
+    '## Origin Feats',
+    '',
+    'Every character gets one, from its background. Humans get two (Versatile).',
+    '',
+    table(
+      ['Name', 'ID', 'Grants', 'Blurb'],
+      Object.values(ORIGIN_FEATS).sort(byName).map((f) => [
+        f.name, `\`${f.id}\``,
+        [
+          ...(f.grants.spellIds ?? []).map((id) => `${SPELLS[id]?.name ?? id} (at will)`),
+          ...(f.grants.innateSpells ?? []).map((i) => `${SPELLS[i.spellId]?.name ?? i.spellId} ×${i.uses}/day`),
+          ...(f.grants.featureIds ?? []).map((id) => FEATURES[id]?.name ?? id),
+          ...(f.grants.hpPerLevel ? [`+${f.grants.hpPerLevel} HP per level`] : []),
+          ...(f.grants.skillCount ? [`${f.grants.skillCount} skill proficiencies`] : []),
+        ].join(', '),
+        f.blurb,
+      ]),
+    ),
   ].join('\n');
 }
 

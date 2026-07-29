@@ -337,6 +337,7 @@ export interface Combatant {
     interacted: boolean;    // free object interaction (weapon swap) spent
     sneakAttackUsed: boolean;
     colossusUsed: boolean;  // Colossus Slayer: once per turn
+    savageUsed: boolean;    // Savage Attacker (origin feat): once per turn
     /**
      * A level 1+ spell has been cast this turn, and whether Quickened Spell was
      * what cast it. Both halves of the 2024 Quickened clause need this:

@@ -3679,3 +3679,39 @@ button.category .count {
      carry it. */
   .risk-badge.lethal { animation: none; box-shadow: 0 0 0 2px #ff546877; }
 }
+
+/* Expert ability-score editor (AbilityEditor.tsx). Folded shut by default: the
+   summary carries the whole state ("Recommended" / "Custom · 27/27") so a
+   player who never opens it still knows nothing is unspent behind the fold. */
+.ability-editor > summary {
+  cursor: pointer; display: flex; align-items: baseline; gap: 8px;
+  color: var(--muted); font-size: 11px;
+}
+.ability-editor > summary small { color: var(--gold); font-size: 10px; }
+.ability-note { margin: 6px 0 8px; color: var(--muted); font-size: 10.5px; line-height: 1.45; }
+.ability-note b { color: var(--text); }
+.ability-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.ability-table th, .ability-table td { padding: 3px 4px; text-align: left; }
+.ability-table thead th { color: var(--muted); font-weight: 600; font-size: 10px; }
+.ability-table tbody th { color: var(--text); font-weight: 600; }
+/* The ability every level-up increase lands on — the one number a player most
+   needs to find, and the only cue that the kit (not the spread) decides it. */
+.ability-table tr.primary tbody th, .ability-table tr.primary > th { color: var(--gold); }
+.ability-table .buy { display: flex; align-items: center; gap: 4px; }
+.ability-table .bought { min-width: 16px; text-align: center; color: var(--text); }
+.ability-table .score b { color: var(--text); font-size: 12.5px; }
+.ability-table .score small { color: var(--muted); }
+.bonus-chip {
+  min-width: 26px; padding: 2px 5px; border-radius: 5px; cursor: pointer;
+  background: #181323; border: 1px solid #534a70; color: var(--muted); font: inherit; font-size: 10px;
+}
+.bonus-chip.on { border-color: var(--gold); background: #c69b2b24; color: var(--gold); }
+.ability-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px;
+}
+.ability-foot .points { color: var(--gold); font-size: 10.5px; }
+/* Nothing left to spend is the finished state, not a warning. */
+.ability-foot .points.spent-all { color: var(--muted); }
+
+/* Origin feat picker: the second slot explains itself, since only humans see it. */
+.feat-why { color: var(--gold); font-size: 10px; font-weight: 600; }
