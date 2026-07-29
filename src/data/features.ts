@@ -723,6 +723,22 @@ export const FEATURES: Record<Id, FeatureData> = {
   // character sheet with everything else the hero has — a feature the engine
   // reads but no panel names is a feat the player cannot tell they took.
   'savage-attacker': { id: 'savage-attacker', name: 'Savage Attacker', trigger: 'passive' },
+  /**
+   * Origin feat. Two halves, both automatic: `rollInitiative` adds proficiency,
+   * and then swaps the holder into a spellcaster ally's place when that helps
+   * (see rules/initiative.ts). The swap is the half that matters — see feats.ts
+   * for the measurement showing the bonus alone is worth almost nothing.
+   */
+  alert: { id: 'alert', name: 'Alert', trigger: 'passive' },
+  /**
+   * Origin feat (the SRD's Lucky, renamed). Three rerolls a day, spent by
+   * `rules/luck.ts` on the first three natural rolls of 10 or less — no prompt
+   * and no AI scoring, deliberately.
+   */
+  fated: {
+    id: 'fated', name: 'Fated', trigger: 'passive',
+    uses: { count: 3, per: 'longRest' },
+  },
   'sneak-attack': {
     id: 'sneak-attack', name: 'Sneak Attack', trigger: 'passive',
     advantageDice: (level) => `${Math.ceil(level / 2)}d6`,

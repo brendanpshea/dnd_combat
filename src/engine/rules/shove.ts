@@ -9,9 +9,27 @@
  *
  *   "Shove. The target must succeed on a Strength or Dexterity saving throw (it
  *    chooses which), or you either push it 5 feet away or cause it to have the
- *    Prone condition. The DC for the saving throw equals 8 plus your Strength
- *    modifier and Proficiency Bonus. This shove is possible only if the target
- *    is no more than one size larger than you."
+ *    Prone condition. ... This shove is possible only if the target is no more
+ *    than one size larger than you."
+ *
+ * ADAPTED: A CONTEST, NOT A SAVE
+ *
+ * The 2024 wording above is a saving throw against a flat DC. This game resolves
+ * it as the older opposed check instead — the shover's Athletics against the
+ * target's better of Athletics and Acrobatics — and that is a deliberate
+ * departure, made for a reason that has nothing to do with shoving.
+ *
+ * Athletics and Acrobatics were worth NOTHING in combat. They are the two most
+ * physical skills in the game, and every skill check happened in the shop or in
+ * an adventure scene, because a `Combatant` did not carry its skill
+ * proficiencies at all. A fight could not ask what you were good at. Making the
+ * one board-shaped martial move a contest is what gives those two skills — and
+ * therefore skill proficiency generally, including the Skilled feat — something
+ * to do once swords are out.
+ *
+ * The cost is variance: two d20s rather than one against a fixed number, so a
+ * shove is less predictable than RAW. The gain is that training matters on both
+ * sides of it, which is the more interesting rule on a grid.
  *
  * WHY IT IS WORTH HAVING
  *
@@ -24,15 +42,17 @@
  *
  * "IT CHOOSES WHICH" MEANS THE BETTER ONE
  *
- * The target picks the save, so a rational target picks whichever ability it is
- * better at. That is one line here and it matters: rolling Strength against a
- * nimble creature, or Dexterity against a strong one, would make shove roughly
- * twice as good as it should be.
+ * The target picks, so a rational target picks whichever it is better at —
+ * Athletics if strong, Acrobatics if nimble. That is one line (`bestSkill`) and
+ * it matters: rolling the shover against a defender's WORSE option would make
+ * shove roughly twice as good as it should be. Ties go to the defender, which is
+ * the contest rule and the right default for a thing the attacker is trying to
+ * make happen.
  */
 import type { GameState, Id, Combatant, CreatureSize } from '../types.js';
-import { abilityMod, proficiencyBonus, isDown, isIncapacitated } from '../types.js';
+import { isDown, isIncapacitated } from '../types.js';
 import { adjacent } from '../grid.js';
-import { savingThrow } from './saves.js';
+import { contest, skillMod } from './skills.js';
 import { pushCreature } from './movement.js';
 import type { GameEvent } from '../events.js';
 
@@ -42,10 +62,21 @@ export type ShoveMode = 'push' | 'prone';
 const SIZES: CreatureSize[] = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'];
 const rank = (c: Combatant): number => Math.max(0, SIZES.indexOf(c.size ?? 'medium'));
 
-/** DC 8 + the shover's Strength modifier and proficiency bonus. */
+/**
+ * The number a defender has to beat, on average — the shover's Athletics
+ * modifier plus eleven (the mean of a d20, rounded the way a DC is).
+ *
+ * Kept as a function with the old name because the AI's scorer and several tests
+ * ask "how good is this creature at shoving?" and want one number, not a
+ * distribution. It is no longer the DC of a saving throw; it is the centre of
+ * the contest.
+ */
 export function shoveDc(shover: Combatant): number {
-  return 8 + abilityMod(shover.abilities.str) + proficiencyBonus(shover.level);
+  return 11 + skillMod(shover, 'athletics');
 }
+
+/** What a defender resists a shove with: whichever of these it is better at. */
+export const SHOVE_DEFENCES = ['athletics', 'acrobatics'] as const;
 
 /**
  * Can `shover` shove `target` at all?
@@ -73,15 +104,20 @@ export function resolveShove(
 ): GameEvent[] {
   const shover = state.combatants[shoverId]!;
   const target = state.combatants[targetId]!;
-  const ability = abilityMod(target.abilities.dex) > abilityMod(target.abilities.str) ? 'dex' : 'str';
-  const dc = shoveDc(shover);
-  const save = savingThrow(state, targetId, ability, dc);
-  const events: GameEvent[] = [save.event];
-  if (save.success) {
-    events.push({ type: 'shoved', shoverId, targetId, mode, success: false });
+  const c = contest(state, shoverId, 'athletics', targetId, SHOVE_DEFENCES);
+  const luck = [c.attacker.luck, c.defender.luck].filter((x): x is string => x !== undefined);
+  const detail = {
+    attackerTotal: c.attacker.total,
+    defenderTotal: c.defender.total,
+    defenderSkill: c.defender.skill,
+    ...(luck.length > 0 ? { luck } : {}),
+  };
+  const events: GameEvent[] = [];
+  if (!c.won) {
+    events.push({ type: 'shoved', shoverId, targetId, mode, success: false, contest: detail });
     return events;
   }
-  events.push({ type: 'shoved', shoverId, targetId, mode, success: true });
+  events.push({ type: 'shoved', shoverId, targetId, mode, success: true, contest: detail });
   if (mode === 'prone') {
     if (!target.conditions.some((k) => k.id === 'prone')) {
       target.conditions.push({ id: 'prone', sourceId: shoverId });

@@ -62,6 +62,13 @@ export interface D20Roll {
   dice: number[];
   mode: RollMode;
   state: RngState;
+  /**
+   * Set by `rules/luck.ts` when a reroll from Halfling Luck or the Fated feat
+   * replaced the die — a label like "Fated (4 → 17)". Purely for reporting: it
+   * exists so a player can see the feat they chose actually did something,
+   * rather than a reroll happening invisibly.
+   */
+  luck?: string;
 }
 
 export function rollD20(state: RngState, mode: RollMode = 'flat'): D20Roll {

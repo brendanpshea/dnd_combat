@@ -4,7 +4,9 @@
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
-import { ORIGIN_FEATS } from '../data/feats.js';
+import { ORIGIN_FEATS, skilledSkills } from '../data/feats.js';
+import { backgroundSkills } from '../data/backgrounds.js';
+import type { SkillId } from '../data/classes.js';
 import { defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
 import { FEATURES } from '../data/features.js';
@@ -147,6 +149,12 @@ export interface BuildOptions {
    * version removed, and losing a feat beats failing to load the party.
    */
   featIds?: Id[];
+  /**
+   * The character's background, for its two skill proficiencies. The engine now
+   * rolls skill contests (Shove), so a combatant has to know what it is trained
+   * in — and two of the four sources of that live outside the class.
+   */
+  backgroundId?: Id;
   /**
    * Campaign override: remaining spell slots by level (index 0 = 1st), from
    * before a long rest. Missing entries (new slot levels from a level-up, or
@@ -449,6 +457,29 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   const shedForWard = featureIds.includes('armor-of-shadows') && wornArmor !== undefined &&
     armorClass(wornArmor, abilityMod(abilities.dex), 0) < 13 + abilityMod(abilities.dex);
 
+  /**
+   * Every skill this character is trained in, folded once.
+   *
+   * Four sources, and the engine must not have to know about any of them: the
+   * class table, a species' class-specific grant, a species feature that hands
+   * one over (a wood elf's Keen Senses), the background's pair, and the Skilled
+   * origin feat filling gaps in whatever is left.
+   *
+   * Order matters for Skilled: it has to see everything else first, or it would
+   * cheerfully grant a proficiency the character already has.
+   */
+  const baseSkills: SkillId[] = [...new Set<SkillId>([
+    ...cls.skillProfs,
+    ...(species.skillProficienciesByClass?.[opts.classId]
+      ? [species.skillProficienciesByClass[opts.classId]!] : []),
+    ...featureIds.map((f) => FEATURES[f]?.grantsSkill).filter((x): x is SkillId => x !== undefined),
+    ...backgroundSkills(opts.backgroundId),
+  ])];
+  const skilledCount = feats.reduce((n, f) => n + (f.grants.skillCount ?? 0), 0);
+  const skillProfs: SkillId[] = skilledCount > 0
+    ? [...baseSkills, ...skilledSkills(baseSkills, skilledCount)]
+    : baseSkills;
+
   const combatant: Combatant = {
     id: `${opts.team}-${opts.classId}`,
     name: opts.name ?? cls.name,
@@ -477,6 +508,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],
+    skillProfs,
+    // Attunement, not spell math — see Combatant.classCaster. A class caster
+    // may hold a wand; a Magic Initiate fighter may not.
+    ...(cls.spellcasting ? { classCaster: true } : {}),
     weaponProfs: { ...cls.weaponProfs, ...(cls.weaponProfs.specific ? { specific: [...cls.weaponProfs.specific] } : {}) },
     // Armor of Shadows and Fiendish Vigor are "at will, no slot, no
     // concentration", which for a fight means simply always on. A button that
@@ -521,12 +556,23 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     },
     alive: true,
   };
+  /**
+   * Which ability powers this character's spells. Class first, then the species'
+   * own innate magic, then an origin feat — a wizard's Intelligence must never be
+   * overwritten by Magic Initiate, and a tiefling's Charisma is more who it is
+   * than a feat taken later.
+   *
+   * One field for the whole combatant, which is a real limitation worth naming: a
+   * tiefling with Magic Initiate casts BOTH its infernal Ray of Sickness and its
+   * granted Sacred Flame off Charisma. Splitting it per spell would mean
+   * threading a source through every cast site for a case almost nobody builds.
+   */
   if (cls.spellcasting) combatant.spellcastingAbility = cls.spellcasting.ability;
-  // A feat's casting ability only applies to a character that has none of its
-  // own — Magic Initiate must never overwrite a wizard's Intelligence.
   else {
+    const fromSpecies = species.innateSpellAbility;
     const fromFeat = feats.find((f) => f.grants.spellcastingAbility)?.grants.spellcastingAbility;
-    if (fromFeat) combatant.spellcastingAbility = fromFeat;
+    const chosen = fromSpecies ?? fromFeat;
+    if (chosen) combatant.spellcastingAbility = chosen;
   }
   // Find Familiar is a slot-free ritual that never dies in this model, so a
   // caster who knows it has no reason not to have cast it — grant the owl by

@@ -14,20 +14,26 @@
  * Humans get a second. That is the 2024 Human's Versatile trait, and it is the
  * one species-level exception.
  *
- * WHY THESE FOUR, AND WHY NOT ALERT
+ * NAMES
  *
- * The SRD has ten. Four are built, chosen for reaching different parts of the
- * engine: a non-caster's route to magic, a damage floor, out-of-combat range,
- * and hit points. Anything that only touched one of those would make the pick a
- * false choice.
+ * Two of these are renamed. "Tough" and "Lucky" are Player's Handbook feats
+ * rather than SRD ones, so they ship here as HARDY and FATED with the same
+ * mechanics — the same substitution `backgrounds.ts` already made when Folk Hero
+ * became Farmer and Investigator became Scribe.
  *
- * Alert (+proficiency to Initiative) was on the list and was measured out. The
- * probe was deliberately absurd — the WHOLE PARTY given +20 initiative, so every
- * hero acts before every foe in every fight — and that ceiling was worth 141/200
- * wins against a baseline of 131/200. Five percentage points for a guarantee no
- * feat can approach; one character with +2 or +3 is a small fraction of it, well
- * under the noise. A chip that says nothing is worse than no chip, so Alert is
- * not here. Tough took its place.
+ * ALERT, AND WHY IT IS HERE ANYWAY
+ *
+ * Alert was cut once for being useless and is back, because it was only
+ * half-built. The measurement stands: a ceiling probe giving the WHOLE PARTY +20
+ * initiative — every hero acting before every foe in every fight — was worth
+ * 141/200 wins against a baseline of 131/200. Five percentage points for a
+ * guarantee no feat can approach, so +proficiency alone says almost nothing.
+ *
+ * But +proficiency is only Alert's first half. The second is INITIATIVE SWAP:
+ * "immediately after you roll Initiative, you can swap your Initiative with one
+ * willing ally." That is not a small bonus to a die, it is handing the party's
+ * artillery the top of the round, and it is the actual reason the feat exists.
+ * It applies itself (see rules/initiative.ts) — no prompt, no AI tuning.
  *
  * See test/feats.test.ts for the per-feat measurements.
  */
@@ -94,28 +100,60 @@ export const ORIGIN_FEATS: Record<Id, OriginFeat> = {
     blurb: 'Three more skill proficiencies, picked to fill the gaps you have.',
     grants: { skillCount: 3 },
   },
-  tough: {
-    id: 'tough', name: 'Tough',
+  hardy: {
+    id: 'hardy', name: 'Hardy',
     blurb: 'Two extra hit points per level. Simple, and it never stops mattering.',
     grants: { hpPerLevel: 2 },
+  },
+  alert: {
+    id: 'alert', name: 'Alert',
+    blurb: 'Add your proficiency to Initiative — and start the fight in an ally\'s place if it helps them more.',
+    grants: { featureIds: ['alert'] },
+  },
+  fated: {
+    id: 'fated', name: 'Fated',
+    blurb: 'Three times a day, a bad roll gets a second chance. It happens on its own.',
+    grants: { featureIds: ['fated'] },
   },
 };
 
 /**
- * The skills Skilled hands out: the first N of a fixed order that the character
- * is not already proficient in.
+ * The skills Skilled hands out: the first N of a fixed order the character is not
+ * already proficient in.
  *
- * A FIXED ORDER rather than a random or a "best" one, because the arena's
- * randomized parties have to be comparable run to run, and because a player
- * reading the forge should be able to predict what they are getting. The order
- * is roughly by how often this game actually rolls the skill — Perception and
- * Stealth lead because the arena's creep check and the adventure's scene checks
- * ask for them more than anything else.
+ * ORDERED BY WHAT THIS GAME ACTUALLY ROLLS, counted rather than guessed. Every
+ * quoted skill id in the shop, the arena and the three shipped adventure modules
+ * was tallied, and the head of that list is Stealth (6), Perception (5),
+ * Religion/Nature/Intimidation/Insight/Arcana (4 each), Persuasion (3).
+ *
+ * Two corrections to the raw count, both from reading the code that rolls:
+ *
+ *  - SLEIGHT OF HAND is promoted well above its tally of 2. Stealing requires
+ *    passing BOTH a Stealth and a Sleight of Hand check (`attemptSteal`), so it
+ *    is a bottleneck, not a tail skill: granting Stealth alone leaves the gambit
+ *    exactly as blocked as before.
+ *  - PERSUASION outranks Intimidation and Deception despite similar tallies,
+ *    because it is the safe haggle — 20% off with no penalty on a failure, where
+ *    Intimidation risks 25% and Deception only saves 15% (`HAGGLE`).
+ *
+ *  - ATHLETICS is third and ACROBATICS sixth, on a tally of one each, because
+ *    Shove became an opposed Athletics-versus-Athletics-or-Acrobatics check, and
+ *    that made them the most-rolled skills in the game by a distance: a single
+ *    60-run arena sample threw over three thousand shove contests. Counting
+ *    quoted ids could not see that — the rule names them once, in one file, and
+ *    then rolls them every round. It is also why Skilled is no longer a purely
+ *    out-of-combat feat.
+ *
+ * Fixed rather than random or "best", because the arena's randomized parties have
+ * to stay comparable run to run, and because the forge shows the player exactly
+ * which three they are getting.
  */
 export const SKILLED_ORDER: readonly SkillId[] = [
-  'perception', 'stealth', 'insight', 'athletics', 'persuasion', 'investigation',
-  'survival', 'acrobatics', 'arcana', 'deception', 'intimidation', 'medicine',
-  'nature', 'religion', 'history', 'sleight-of-hand', 'animal-handling', 'performance',
+  'stealth', 'perception', 'athletics', 'sleight-of-hand',
+  'persuasion', 'acrobatics', 'insight', 'investigation',
+  'intimidation', 'arcana', 'religion', 'nature',
+  'deception', 'survival', 'medicine', 'history',
+  'animal-handling', 'performance',
 ];
 
 export function skilledSkills(already: readonly SkillId[], count: number): SkillId[] {
@@ -134,19 +172,19 @@ export const BACKGROUND_FEAT: Record<Id, Id> = {
   acolyte: 'magic-initiate-cleric',   // SRD: Magic Initiate (Cleric)
   artisan: 'skilled',                 // SRD: Crafter — not modelled; Skilled is the nearest
   charlatan: 'skilled',               // SRD: Skilled
-  criminal: 'skilled',                // SRD: Alert — measured out, see above
+  criminal: 'alert',                  // SRD: Alert
   entertainer: 'skilled',             // SRD: Musician — not modelled
-  farmer: 'tough',                    // SRD: Tough
-  guard: 'savage-attacker',           // SRD: Alert — measured out; Savage Attacker fits a guard
+  farmer: 'hardy',                    // SRD: Tough (renamed; PHB name)
+  guard: 'alert',                     // SRD: Alert
   guide: 'magic-initiate-cleric',     // SRD: Magic Initiate (Druid) — cleric is the one built
   hermit: 'magic-initiate-cleric',    // SRD: Healer — not modelled
-  merchant: 'skilled',                // SRD: Lucky — not modelled
+  merchant: 'fated',                  // SRD: Lucky (renamed; PHB name)
   noble: 'skilled',                   // SRD: Skilled
   sage: 'magic-initiate-cleric',      // SRD: Magic Initiate (Wizard) — cleric is the one built
-  sailor: 'tough',                    // SRD: Tavern Brawler — not modelled; Tough is the nearest
+  sailor: 'hardy',                    // SRD: Tavern Brawler — not modelled; Hardy is the nearest
   scribe: 'skilled',                  // SRD: Skilled
   soldier: 'savage-attacker',         // SRD: Savage Attacker
-  wayfarer: 'savage-attacker',        // SRD: Lucky — not modelled
+  wayfarer: 'fated',                  // SRD: Lucky (renamed; PHB name)
 };
 
 export function defaultFeatFor(backgroundId: Id | undefined): Id | undefined {

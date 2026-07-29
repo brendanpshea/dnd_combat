@@ -377,6 +377,11 @@ export function resolveAttack(
     attackerId, targetId, weaponId,
     natural: d20.natural, total, targetAc,
     mode, advSources: adv, disSources: dis,
+    // Its own field rather than folded into `advSources`: a reroll is not
+    // advantage, and — the reason this matters — the log only prints the
+    // adv/dis bracket when the mode is not 'flat'. A Fated reroll on an
+    // ordinary roll would have rendered nothing at all.
+    ...(d20.luck ? { luck: d20.luck } : {}),
     hit, crit: hit && crit,
     opportunity: ctx.opportunity ?? false,
     ...(behindCover ? { cover: true } : {}),

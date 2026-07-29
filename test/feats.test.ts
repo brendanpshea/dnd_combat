@@ -10,7 +10,7 @@
  *
  * Three things that says, all of them worth writing down:
  *
- *  - Tough and Magic Initiate are strong and roughly equal. Tough is about a
+ *  - Hardy and Magic Initiate are strong and roughly equal. Hardy is about a
  *    fifth more party hit points at every level; Magic Initiate is four extra
  *    Healing Words a day when the whole party takes it.
  *  - Savage Attacker is real but small: +1.15 damage on a d8 when it fires, and
@@ -34,8 +34,16 @@ import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { SPELLS } from '../src/data/spells.js';
 import { FEATURES } from '../src/data/features.js';
 import { SPECIES } from '../src/data/species.js';
-import { CLASSES, SKILL_ABILITY, type SkillId } from '../src/data/classes.js';
+import { CLASSES, SKILL_ABILITY, classScrollPool, type SkillId } from '../src/data/classes.js';
 import { buildCharacter } from '../src/builder/character.js';
+import { Combat } from '../src/engine/combat.js';
+import { buildMonster } from '../src/data/monsters.js';
+import { legalActions } from '../src/engine/actions.js';
+import { ITEMS } from '../src/data/items.js';
+import { applyLuck, FATED_THRESHOLD, FATED_USES } from '../src/engine/rules/luck.js';
+import { rollD20 } from '../src/engine/dice.js';
+import { seedRng } from '../src/engine/rng.js';
+import { proficiencyBonus, type GameState, type Id } from '../src/engine/types.js';
 import {
   newCampaign, setPartyFeat, setPartyBackground, setPartySpecies, setPartyClass,
   featsOf, featSlots, featSkills, buildCampaignParty, characterSkillBonus,
@@ -103,11 +111,11 @@ describe('Magic Initiate', () => {
   });
 });
 
-describe('Tough', () => {
+describe('Hardy', () => {
   it('is two hit points per level, not a flat lump', () => {
     for (const level of [1, 4, 8]) {
       const plain = buildCharacter({ classId: 'rogue', team: 'team1', position: HERE, level });
-      const tough = buildCharacter({ classId: 'rogue', team: 'team1', position: HERE, level, featIds: ['tough'] });
+      const tough = buildCharacter({ classId: 'rogue', team: 'team1', position: HERE, level, featIds: ['hardy'] });
       expect(tough.maxHp - plain.maxHp, `level ${level}`).toBe(2 * level);
       expect(tough.hp).toBe(tough.maxHp);
     }
@@ -216,10 +224,10 @@ describe('slots and defaults', () => {
   it("the two slots never hold the same feat", () => {
     const c = newCampaign(2);
     setPartySpecies(c, 0, 'human');
-    setPartyFeat(c, 0, 0, 'tough');
-    setPartyFeat(c, 0, 1, 'tough');            // asked for a duplicate…
+    setPartyFeat(c, 0, 0, 'hardy');
+    setPartyFeat(c, 0, 1, 'hardy');            // asked for a duplicate…
     const held = featsOf(c.characters[0]!);
-    expect(held).toContain('tough');
+    expect(held).toContain('hardy');
     expect(new Set(held).size).toBe(held.length);   // …and did not get one
   });
 
@@ -228,13 +236,13 @@ describe('slots and defaults', () => {
     delete c.characters[0]!.feats;
     c.characters[0]!.backgroundId = 'farmer';
     expect(featsOf(c.characters[0]!)).toContain(defaultFeatFor('farmer'));
-    expect(featsOf(c.characters[0]!)[0]).toBe('tough');
+    expect(featsOf(c.characters[0]!)[0]).toBe('hardy');
   });
 
   it('reaches the built combatant', () => {
     const c = newCampaign(2);
     setPartySpecies(c, 0, 'dwarf');
-    setPartyFeat(c, 0, 0, 'tough');
+    setPartyFeat(c, 0, 0, 'hardy');
     const plain = buildCampaignParty(newCampaign(2))[0]!;
     const tough = buildCampaignParty(c)[0]!;
     expect(tough.maxHp).toBeGreaterThan(plain.maxHp);
@@ -244,8 +252,8 @@ describe('slots and defaults', () => {
     const c = newCampaign(2);
     setPartySpecies(c, 0, 'dwarf');
     expect(setPartyFeat(c, 0, 0, 'not-a-feat')).toBe(false);
-    expect(setPartyFeat(c, 0, 1, 'tough')).toBe(false);   // dwarves have one slot
-    expect(setPartyFeat(c, 0, 0, 'tough')).toBe(true);
+    expect(setPartyFeat(c, 0, 1, 'hardy')).toBe(false);   // dwarves have one slot
+    expect(setPartyFeat(c, 0, 0, 'hardy')).toBe(true);
     c.partyReady = true;
     expect(setPartyFeat(c, 0, 0, 'skilled')).toBe(false);
   });
@@ -257,5 +265,249 @@ describe('slots and defaults', () => {
     setPartyClass(c, 0, 'cleric');
     expect(c.characters[0]!.feats).toBeUndefined();
     expect(featsOf(c.characters[0]!)[0]).toBe(defaultFeatFor(c.characters[0]!.backgroundId));
+  });
+});
+
+describe('Fated', () => {
+  const rig = (featIds: Id[], seed = 1) => {
+    const c = buildCharacter({ classId: 'fighter', team: 'team1', position: HERE, featIds });
+    return { c, state: { combatants: { [c.id]: c }, rng: seedRng(seed) } as unknown as GameState };
+  };
+
+  it('has three uses a day', () => {
+    const { c } = rig(['fated']);
+    expect(c.featureUses['fated']).toEqual({ current: 3, max: 3 });
+  });
+
+  it('never makes a roll worse', () => {
+    /**
+     * The bug this exists for. The first version replaced the die
+     * unconditionally, so it could hand back a 1 in place of a 10 — a feat that
+     * hurt you. Halfling Luck genuinely does replace unconditionally (RAW), which
+     * is what made the wrong shape look plausible.
+     */
+    const { c, state } = rig(['fated']);
+    c.featureUses['fated'] = { current: 500, max: 500 };
+    let rng = state.rng;
+    for (let i = 0; i < 400; i++) {
+      const first = rollD20(rng, 'flat');
+      rng = first.state;
+      state.rng = rng;
+      const out = applyLuck(state, c.id, first, 'flat');
+      rng = out.state;
+      expect(out.natural, `roll ${i}`).toBeGreaterThanOrEqual(first.natural);
+    }
+  });
+
+  it('spends a use only on a roll worth rerolling, and only three times', () => {
+    const { c, state } = rig(['fated']);
+    let rng = state.rng;
+    let spent = 0, high = 0;
+    for (let i = 0; i < 100; i++) {
+      const first = rollD20(rng, 'flat');
+      rng = first.state;
+      state.rng = rng;
+      const before = c.featureUses['fated']!.current;
+      const out = applyLuck(state, c.id, first, 'flat');
+      rng = out.state;
+      if (c.featureUses['fated']!.current < before) {
+        spent++;
+        expect(first.natural, 'spent on a roll above the threshold').toBeLessThanOrEqual(FATED_THRESHOLD);
+      } else if (first.natural > FATED_THRESHOLD) high++;
+    }
+    expect(spent).toBe(FATED_USES);
+    expect(high, 'no high rolls seen — the test proves nothing').toBeGreaterThan(0);
+  });
+
+  it('does nothing at all without the feat', () => {
+    const { c, state } = rig([]);
+    let rng = state.rng;
+    for (let i = 0; i < 60; i++) {
+      const first = rollD20(rng, 'flat');
+      rng = first.state;
+      state.rng = rng;
+      const out = applyLuck(state, c.id, first, 'flat');
+      rng = out.state;
+      expect(out.natural).toBe(first.natural);
+      expect(out.luck).toBeUndefined();
+    }
+  });
+
+  it('reports itself, so the player can see it fired', () => {
+    // A reroll that changes a die invisibly is a feat the player cannot tell
+    // they took. See rules/luck.ts.
+    const { c, state } = rig(['fated']);
+    let rng = state.rng;
+    let labelled = 0;
+    for (let i = 0; i < 60; i++) {
+      const first = rollD20(rng, 'flat');
+      rng = first.state;
+      state.rng = rng;
+      const out = applyLuck(state, c.id, first, 'flat');
+      rng = out.state;
+      if (out.luck) { labelled++; expect(out.luck).toContain('Fated'); }
+    }
+    expect(labelled).toBe(FATED_USES);
+  });
+
+  it('lets a halfling keep its free reroll rather than paying for it', () => {
+    // Halfling Luck is unlimited, so spending a Fated use on a natural 1 a
+    // species trait would have rerolled anyway is pure waste.
+    const c = buildCharacter({
+      classId: 'rogue', team: 'team1', position: HERE, speciesId: 'halfling', featIds: ['fated'],
+    });
+    const state = { combatants: { [c.id]: c }, rng: seedRng(3) } as unknown as GameState;
+    const one = { natural: 1, dice: [1], mode: 'flat' as const, state: state.rng };
+    const out = applyLuck(state, c.id, one, 'flat');
+    expect(out.luck).toBe('Halfling Luck');
+    expect(c.featureUses['fated']!.current).toBe(3);   // untouched
+  });
+});
+
+describe('Alert', () => {
+  const party = (opts: { alertOn?: string } = {}) => {
+    const roles = ['fighter', 'wizard'];
+    return roles.map((classId, i) => buildCharacter({
+      classId, team: 'team1', position: { x: i + 1, y: 0 }, level: 5,
+      ...(opts.alertOn === classId ? { featIds: ['alert'] } : {}),
+    }));
+  };
+
+  it('adds proficiency to initiative', () => {
+    const plain = new Combat({ combatants: party(), seed: 5, mapId: 'open' });
+    const alert = new Combat({ combatants: party({ alertOn: 'fighter' }), seed: 5, mapId: 'open' });
+    const f = (c: Combat) => Object.values(c.state.combatants).find((x) => x.classId === 'fighter')!;
+    // Same seed, so the die is the same; the difference is the feat. The wizard
+    // swap may move it afterwards, so compare the total the fighter ROLLED via
+    // the swap event's `from`.
+    const swap = alert.log.find((e) => e.type === 'initiativeSwapped');
+    const rolled = swap?.type === 'initiativeSwapped' ? swap.from : f(alert).initiative;
+    expect(rolled).toBe(f(plain).initiative + proficiencyBonus(5));
+  });
+
+  it('hands its place to the wizard when that helps', () => {
+    const c = new Combat({ combatants: party({ alertOn: 'fighter' }), seed: 5, mapId: 'open' });
+    const swap = c.log.find((e) => e.type === 'initiativeSwapped');
+    expect(swap, 'no swap happened at all').toBeDefined();
+    if (swap?.type !== 'initiativeSwapped') throw new Error('unreachable');
+    const wizard = Object.values(c.state.combatants).find((x) => x.classId === 'wizard')!;
+    expect(swap.allyId).toBe(wizard.id);
+    // The whole point: the wizard ends up where the fighter was, which is higher.
+    expect(swap.from).toBeGreaterThan(swap.to);
+    expect(wizard.initiative).toBe(swap.from);
+    // …and the order actually reflects it, rather than the sort running first.
+    const order = c.state.initiativeOrder;
+    expect(order.indexOf(wizard.id)).toBeLessThan(order.indexOf(swap.combatantId));
+  });
+
+  it('never swaps to make an ally worse off', () => {
+    // A swap with a caster already ahead of you would hand YOU the good slot and
+    // slow the party down — the feat helping nobody.
+    for (let seed = 1; seed <= 40; seed++) {
+      const c = new Combat({ combatants: party({ alertOn: 'fighter' }), seed, mapId: 'open' });
+      const swap = c.log.find((e) => e.type === 'initiativeSwapped');
+      if (swap?.type !== 'initiativeSwapped') continue;
+      expect(swap.from, `seed ${seed}`).toBeGreaterThan(swap.to);
+    }
+  });
+
+  it('does not swap with a non-caster', () => {
+    const two = ['fighter', 'rogue'].map((classId, i) => buildCharacter({
+      classId, team: 'team1', position: { x: i + 1, y: 0 }, level: 5,
+      ...(classId === 'fighter' ? { featIds: ['alert'] } : {}),
+    }));
+    for (let seed = 1; seed <= 20; seed++) {
+      const c = new Combat({ combatants: two, seed, mapId: 'open' });
+      expect(c.log.some((e) => e.type === 'initiativeSwapped'), `seed ${seed}`).toBe(false);
+    }
+  });
+
+  it('is deterministic — the same fight swaps the same way twice', () => {
+    const a = new Combat({ combatants: party({ alertOn: 'fighter' }), seed: 9, mapId: 'open' });
+    const b = new Combat({ combatants: party({ alertOn: 'fighter' }), seed: 9, mapId: 'open' });
+    expect(a.state.initiativeOrder).toEqual(b.state.initiativeOrder);
+  });
+});
+
+describe('a feat that lets you cast is not a licence to hold a wand', () => {
+  /**
+   * The bug: `spellcastingAbility` answered two different questions — "which
+   * ability powers my spells?" (math) and "may I attune to a wand?"
+   * (permission). Magic Initiate has to set the first, or a fighter's Sacred
+   * Flame is cast off Intelligence; setting it granted the second for free, and
+   * one origin feat handed a fighter a Wand of Fireballs.
+   *
+   * WHAT WAS AND WAS NOT LEAKING, exactly — two earlier descriptions of this got
+   * it wrong in opposite directions, so it is written down here:
+   *
+   *  - WANDS and staves are gated by `requires: 'spellcaster'`, which used to
+   *    read `spellcastingAbility !== undefined`. This is what leaked.
+   *  - SCROLLS are gated by `classScrollPool(actor.classId)`, which is EMPTY for
+   *    every non-caster class and is built from the class table alone. A fighter
+   *    could never read a scroll, before this feat or after it. Nothing leaked
+   *    here, and nothing should start.
+   */
+  const GATED = ['wand-fireballs', 'wand-web', 'wand-lightning-bolts', 'wand-paralysis', 'staff-healing'];
+
+  const hero = (classId: string, featIds: Id[], itemId: string) => buildCharacter({
+    classId, team: 'team1', position: HERE, level: 5, featIds,
+    inventory: [{ itemId, qty: 1 }],
+  });
+
+  /** Every use of this item the engine will actually offer. */
+  const offers = (classId: string, featIds: Id[], itemId: string) => {
+    const me = hero(classId, featIds, itemId);
+    const foe = buildMonster('goblin-warrior', 'team2', { x: 3, y: 6 }, '1');
+    const c = new Combat({ combatants: [me, foe], seed: 4, mapId: 'open' });
+    let guard = 0;
+    while (c.activeId !== me.id && guard++ < 20) c.apply({ kind: 'endTurn' });
+    return legalActions(c.state, me.id).filter((a) => a.kind === 'useItem' && a.itemId === itemId);
+  };
+
+  it('every wand this test names really is gated', () => {
+    // Or the assertions below would pass by testing nothing.
+    for (const id of GATED) expect(ITEMS[id]?.requires, id).toBe('spellcaster');
+  });
+
+  it('marks only class casters as attunement-capable', () => {
+    expect(hero('wizard', [], 'wand-fireballs').classCaster).toBe(true);
+    expect(hero('cleric', [], 'wand-fireballs').classCaster).toBe(true);
+    expect(hero('fighter', [], 'wand-fireballs').classCaster ?? false).toBe(false);
+    // The feat sets the spell MATH and must not set the permission.
+    const initiate = hero('fighter', ['magic-initiate-cleric'], 'wand-fireballs');
+    expect(initiate.spellcastingAbility).toBe('wis');
+    expect(initiate.classCaster ?? false).toBe(false);
+  });
+
+  it('offers no wand use to a Magic Initiate fighter, and does to a wizard', () => {
+    for (const itemId of GATED) {
+      expect(offers('fighter', ['magic-initiate-cleric'], itemId), itemId).toHaveLength(0);
+    }
+    // The control: without it, the assertions above could be passing because the
+    // engine never offers these items to anybody.
+    expect(offers('wizard', [], 'wand-fireballs').length).toBeGreaterThan(0);
+  });
+
+  it('a scroll is gated by the class spell list, not by this', () => {
+    expect(ITEMS['scroll-magic-missile']?.requires).toBeUndefined();
+    expect(classScrollPool('fighter').size).toBe(0);
+    expect(classScrollPool('wizard').has('magic-missile')).toBe(true);
+    // So a fighter is refused a scroll for a different and correct reason, and
+    // the origin feat does not change that either way.
+    expect(offers('fighter', [], 'scroll-magic-missile')).toHaveLength(0);
+    expect(offers('fighter', ['magic-initiate-cleric'], 'scroll-magic-missile')).toHaveLength(0);
+    expect(offers('wizard', [], 'scroll-magic-missile').length).toBeGreaterThan(0);
+  });
+
+  it('a species with innate magic is not a wand-holder either', () => {
+    for (const speciesId of ['tiefling', 'elf', 'gnome', 'dragonborn']) {
+      const c = buildCharacter({
+        classId: 'fighter', team: 'team1', position: HERE, level: 5, speciesId,
+      });
+      expect(c.classCaster ?? false, speciesId).toBe(false);
+      // …but its innate spell still runs on a sensible ability rather than the
+      // Intelligence a martial character dumps.
+      expect(c.spellcastingAbility, speciesId).toBeDefined();
+    }
   });
 });

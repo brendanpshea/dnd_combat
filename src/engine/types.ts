@@ -4,6 +4,13 @@
  * as JSON.
  */
 import type { RngState } from './rng.js';
+/**
+ * Type-only, so it is erased at compile time and creates no runtime cycle even
+ * though `data/classes.ts` imports back from here. A skill is arguably an
+ * engine-level concept now that the engine rolls contests with them, but moving
+ * the type would touch every importer for no behavioural gain.
+ */
+import type { SkillId } from '../data/classes.js';
 
 export type Id = string;
 export type TeamId = 'team1' | 'team2';
@@ -246,6 +253,32 @@ export interface Combatant {
   position: Position;
   initiative: number;
   savingThrowProfs: Ability[];
+  /**
+   * Skills this creature is trained in.
+   *
+   * New because the engine had NO idea what a character was good at. Every skill
+   * check in this game happened in campaign or adventure code, through
+   * `skillBonus(classId, ...)`, so a fight could not roll one — which is why
+   * Shove was a saving throw against a flat DC rather than the contest it is,
+   * and why Athletics and Acrobatics were worth nothing once combat started.
+   *
+   * Folded on the combatant rather than looked up from the class, because the
+   * real answer is class + species + background + origin feat and the engine
+   * must not have to know about any of those.
+   */
+  skillProfs?: SkillId[];
+  /**
+   * This creature casts spells as a CLASS feature -- the question "may I attune
+   * to a wand?", which is not the same question as "which ability powers my
+   * spells?".
+   *
+   * They used to be one field. `spellcastingAbility` answered both, so Magic
+   * Initiate -- which has to set the second so a fighter's Sacred Flame is not
+   * cast off Intelligence -- silently granted the first as well, and a fighter
+   * with one origin feat could attune to a Wand of Fireballs. One field doing
+   * two jobs; now two fields.
+   */
+  classCaster?: boolean;
   /** Weapon proficiencies, baked from the class at build time. Absent for
    *  monsters (natural weapons are always proficient) — a non-proficient
    *  attacker keeps its ability mod but loses the proficiency bonus. */

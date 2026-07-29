@@ -4,12 +4,13 @@
  */
 import type { GameState, Combatant, Id, TeamId, GridState } from './types.js';
 import { cellAt } from './types.js';
-import { abilityMod, isDown } from './types.js';
+import { abilityMod, proficiencyBonus, isDown } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollD20 } from './dice.js';
 import { rollDice } from './dice.js';
 import { expireIllusions, expireChill, distanceFeet, distanceCells, reachable, sphere2x2 } from './grid.js';
 import { executeMove, hostileIds } from './rules/movement.js';
+import { applyAlertSwaps } from './rules/initiative.js';
 import type { Position } from './types.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
@@ -68,10 +69,23 @@ export function rollInitiative(state: GameState, surprisedTeam?: TeamId): GameEv
     // Seeded tiebreak so equal-init, equal-dex ordering stays deterministic.
     const t = coinFlip(state.rng);
     state.rng = t.state;
-    const initiative = ('natural' in d ? d.natural : d.value) + abilityMod(c.abilities.dex);
+    // Alert's first half: proficiency added to the roll. Worth little on its own
+    // (see rules/initiative.ts); the swap below is the half that matters.
+    const alert = c.featureIds.includes('alert') ? proficiencyBonus(c.level) : 0;
+    const initiative = ('natural' in d ? d.natural : d.value) + abilityMod(c.abilities.dex) + alert;
     c.initiative = initiative;
     entries.push({ id: c.id, initiative, dex: c.abilities.dex, tiebreak: t.value ? 1 : 0 });
   }
+  /**
+   * Alert's second half, applied once every die is in — the rule is "immediately
+   * after you roll", and a swap has to be able to see the whole order.
+   *
+   * The swap mutates `c.initiative`, so the entries have to be re-read from the
+   * combatants before sorting. Sorting first and swapping after would leave
+   * `initiativeOrder` describing an order nobody is actually in.
+   */
+  const swaps = applyAlertSwaps(state);
+  for (const e of entries) e.initiative = state.combatants[e.id]!.initiative;
   entries.sort((a, b) =>
     b.initiative - a.initiative || b.dex - a.dex || b.tiebreak - a.tiebreak || a.id.localeCompare(b.id),
   );
@@ -79,6 +93,7 @@ export function rollInitiative(state: GameState, surprisedTeam?: TeamId): GameEv
   state.turnIndex = 0;
   state.round = 1;
   return [
+    ...swaps,
     { type: 'combatStarted', order: entries.map((e) => ({ id: e.id, initiative: e.initiative })) },
     { type: 'roundStarted', round: 1 },
     ...startTurn(state),
