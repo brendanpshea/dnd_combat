@@ -37,9 +37,13 @@
 import {
   newCampaign, applyArenaVictory, buildCampaignParty, partyLevelOf, reviveParty, randomizeParty,
   LEVEL_XP, growSpellsForLevel, preparableSpells, preparedLimit, setPrepared,
+  SHOP_STOCK, itemPrice, buyItem, equipItem, equipBlocked, groupSkillCheck,
 } from '../src/campaign/campaign.js';
+import { ARMOR as ARMOR_TABLE } from '../src/data/armor.js';
 import { next } from '../src/engine/rng.js';
 import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/arena/run.js';
+import { ambushDc, canCreepIn, creepKey, surprisedTeam } from '../src/arena/ambush.js';
+import { parseMap } from '../src/data/maps.js';
 import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
 import { RUN_TARGET_XP } from '../src/arena/medal.js';
 import { Combat } from '../src/engine/combat.js';
@@ -127,6 +131,26 @@ const VARIETY = flag('--variety', -1);
  */
 const RANDOM_PREP = process.argv.includes('--random-prep');
 /**
+ * Let the party SPEND its gold, and let it try to creep in.
+ *
+ * Both were listed at the top of this file as things the harness does not do,
+ * and both turned out to bias specific classes rather than everything evenly.
+ *
+ * The fighter starts in scale mail and, with no shopping, is still wearing it
+ * at level 8 while plate sits on a shelf -- four points of armour class missing
+ * from the class that measured as taking the most damage in the game. And
+ * surprise, which the arena has had since `ambush.ts`, is worth more to a rogue
+ * than to anyone: a free round with advantage is a free Sneak Attack. The rogue
+ * measured as the top damage dealer AND the worst finisher, which is exactly
+ * what you would expect from a class whose best round never happens.
+ *
+ * So the two classes that looked anomalous were the two this harness
+ * under-served. Off by default so old numbers stay comparable; on, the run is
+ * a closer model of a played campaign.
+ */
+const SHOPPING = process.argv.includes('--shop');
+const CREEPING = process.argv.includes('--creep');
+/**
  * Start runs at this level instead of at 1.
  *
  * Needed because the two things worth measuring pull against each other. A
@@ -208,6 +232,9 @@ const itemUses = new Map<Id, number>();
  * Image does), so it cannot be separated here and is simply not claimed.
  */
 let counterspells = 0;
+/** Creep attempts and how many bought a surprise round. */
+let creeps = 0;
+let creepWins = 0;
 const speciesRuns = new Map<Id, { runs: number; finished: number }>();
 
 /**
@@ -219,6 +246,64 @@ const speciesRuns = new Map<Id, { runs: number; finished: number }>();
  * would happily prepare a spell the character cannot cast and the whole
  * measurement would be of something the game cannot produce.
  */
+/**
+ * Spend the purse on the best armour each hero can actually wear.
+ *
+ * A deliberately narrow shopper. It buys ARMOUR and nothing else, because
+ * armour is the one slot where the gap between what the party starts in and
+ * what the shop sells is enormous and monotonic -- scale mail at 14 against
+ * plate at 18, with no trade-off to model beyond the price. Weapons, trinkets
+ * and potions all involve choices this has no business guessing at, and a
+ * shopper that guesses badly would replace one bias with another.
+ *
+ * Cheapest-first within an upgrade, so a party does not blow the entire purse
+ * kitting one hero out in plate while the other three stay in leather.
+ */
+function shopForArmor(c: CampaignState): void {
+  const wearable = SHOP_STOCK
+    .filter((id) => ARMOR_TABLE[id] !== undefined)
+    .map((id) => ({ id, armor: ARMOR_TABLE[id]!, price: itemPrice(id) ?? Infinity }))
+    .sort((a, b) => a.price - b.price);
+  /**
+   * Can this hero actually wear it?
+   *
+   * NOT `equipBlocked`, which checks the inventory before the proficiency and
+   * so answers "not in inventory" for a wizard eyeing plate -- indistinguishable
+   * from a fighter who simply has not bought it yet. Asking that question of a
+   * thing nobody owns would have sold plate to the whole party.
+   *
+   * Strength minimums matter here too: plate and splint want 15, and the stat
+   * array only reaches that for a class with Strength first in its priority.
+   */
+  const party = buildCampaignParty(c);
+  const canWear = (idx: number, id: Id): boolean => {
+    const ch = c.characters[idx];
+    const built = party[idx];
+    const a = ARMOR_TABLE[id];
+    if (!ch || !built || !a) return false;
+    if (!CLASSES[ch.classId]!.armorProfs.includes(a.category)) return false;
+    if (a.strMin !== undefined && built.abilities.str < a.strMin) return false;
+    return true;
+  };
+  // One upgrade per pass, cheapest first, so the purse spreads across the party
+  // instead of putting one hero in plate while three stay in leather.
+  let bought = true;
+  let guard = 0;
+  while (bought && guard++ < 40) {
+    bought = false;
+    for (const [idx, ch] of c.characters.entries()) {
+      const wornBase = ch.equipped.armor ? (ARMOR_TABLE[ch.equipped.armor]?.base ?? 10) : 10;
+      const upgrade = wearable.find((w) =>
+        w.armor.base > wornBase && w.price <= c.gold && canWear(idx, w.id));
+      if (!upgrade) continue;
+      if (buyItem(c, idx, upgrade.id) && equipItem(c, idx, upgrade.id, 'armor')) {
+        bought = true;
+        break;
+      }
+    }
+  }
+}
+
 function randomizePrepared(c: CampaignState): void {
   c.characters.forEach((_ch, i) => {
     const pool = preparableSpells(c, i);
@@ -265,6 +350,30 @@ function playOne(seed: number, collect: boolean): Outcome {
     const half = halfOf(run);
     const level = dayLevelOf(run, partyLevelOf(c));
     const wave = buildWave(run.seed, level, run.wave, undefined, run.gate ?? 0, half);
+    // Shop between fights, which is when a player does it. Before the party is
+    // built, so the armour bought is the armour worn into this fight.
+    if (SHOPPING) shopForArmor(c);
+    /**
+     * Creep in, when there is cover to creep behind.
+     *
+     * Always attempted rather than judged, because the harness has no read on
+     * whether the gamble is worth it and inventing one would be measuring my
+     * guess instead of the mechanic. A failed creep surprises the PARTY, so
+     * this is not free — which is the design, and taking both ends of it is the
+     * honest way to measure it.
+     */
+    let surprised: 'team1' | 'team2' | undefined;
+    if (CREEPING) {
+      if (canCreepIn(parseMap(wave.map))) {
+        const dc = ambushDc(wave.encounter.members);
+        const group = groupSkillCheck(c, 'stealth', dc);
+        surprised = surprisedTeam({
+          key: creepKey(dayOf(run), half), door: run.gate ?? 0,
+          success: group.success, by: 0, total: 0, dc,
+        }, run.gate ?? 0);
+        if (collect) { creeps++; if (group.success) creepWins++; }
+      }
+    }
     const party = buildCampaignParty(c);
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: 6 }, String(i + 1)));
@@ -279,6 +388,7 @@ function playOne(seed: number, collect: boolean): Outcome {
     // not, which is what a player actually gets when they take the wave again.
     const combat = new Combat({
       combatants: [...party, ...foes], seed: seed * 31 + run.wave * 101 + run.attempts,
+      ...(surprised ? { surprisedTeam: surprised } : {}),
     });
 
     // Who is who, so an event carrying only an id can be attributed to a class.
@@ -607,6 +717,12 @@ const never = [...everPlayable]
   .filter((id) => (spellCasts.get(id)?.total ?? 0) === 0 && SPELLS[id]?.castingTime !== 'reaction').sort();
 console.log(`\n--- never cast (${never.length} of ${everPlayable.size} playable combat spells)`);
 for (const id of never) console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level}`);
+
+if (CREEPING) {
+  console.log(`\n--- creeping in (${creeps} attempts where there was cover)`);
+  console.log(`  surprised the enemy ${pct(creepWins, creeps)} of the time;` +
+    ` the other ${pct(creeps - creepWins, creeps)} surprised the party`);
+}
 
 console.log('\n--- metamagic');
 if (metamagicUse.size === 0) {
