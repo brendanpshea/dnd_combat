@@ -12,6 +12,26 @@ import type { GameEvent } from '../events.js';
 
 /** Damage for entering a hazard cell (fire pit, spikes...). */
 export const HAZARD_DAMAGE = '1d4';
+/** Hazards burn: the damage they deal is fire, and fire can be resisted. */
+export const HAZARD_DAMAGE_TYPE = 'fire' as const;
+
+/**
+ * The most a hazard cell can take off THIS creature, after its own defences.
+ *
+ * A dragonborn resists fire and a fire elemental is immune to it, so the raw
+ * maximum is a number neither of them would ever actually take. That mattered
+ * little while this was only read by the AI; it matters a lot now that the
+ * board shows it to a player, because a badge that overstates the risk on the
+ * one hero who can walk through fire is worse than no badge at all.
+ */
+export function hazardMaxFor(c: Combatant): number {
+  const d = parseDice(HAZARD_DAMAGE);
+  const raw = d.count * d.sides + d.bonus;
+  if (c.immunities.includes(HAZARD_DAMAGE_TYPE)) return 0;
+  if (c.resistances.includes(HAZARD_DAMAGE_TYPE)) return Math.floor(raw / 2);
+  if (c.vulnerabilities.includes(HAZARD_DAMAGE_TYPE)) return raw * 2;
+  return raw;
+}
 
 /**
  * Creatures that ignore the movement cost of difficult terrain: Boots of the
@@ -138,7 +158,7 @@ export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Posi
   const path = pathTo(r, mover.position, to);
   if (!path) return 0;
 
-  const hazardMax = (() => { const d = parseDice(HAZARD_DAMAGE); return d.count * d.sides + d.bonus; })();
+  const hazardMax = hazardMaxFor(mover);
   const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
     .map((id) => state.combatants[id]!)
     .filter((h) => canTakeReaction(h));
