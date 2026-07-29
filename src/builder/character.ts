@@ -11,7 +11,7 @@ import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
-import { armorSpeedPenalty } from '../data/armor.js';
+import { armorSpeedPenalty, armorClass } from '../data/armor.js';
 
 /** Every spell a class's table grants at or below a character level, matching
  *  a predicate on the spell's own level. */
@@ -153,6 +153,22 @@ export interface BuildOptions {
    * spent forever.
    */
   featureUsesOverride?: Record<Id, number>;
+}
+
+/**
+ * The Fiend patron's always-prepared spells, by warlock level.
+ *
+ * Straight from the SRD's Fiend Spells table, minus the ones this game has no
+ * version of (Stinking Cloud at 5, Fire Shield at 7). This is where a warlock
+ * gets Fireball — it is not on the warlock spell list at all, which is why the
+ * class reads as having no area damage until level 5 and then suddenly does.
+ */
+function fiendSpells(level: number): Id[] {
+  const out: Id[] = [];
+  if (level >= 3) out.push('burning-hands', 'command', 'scorching-ray', 'suggestion');
+  if (level >= 5) out.push('fireball');
+  if (level >= 7) out.push('wall-of-fire');
+  return out;
 }
 
 export function buildCharacter(opts: BuildOptions): Combatant {
@@ -317,7 +333,32 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ...known(species?.spellsByLevel),
     ...Object.keys(innateSpells),
     ...grants.spellIds,
+    // Feature-granted spells, which the SRD is explicit do NOT count against
+    // what the class can prepare: the Fiend patron's always-prepared list, and
+    // the Book of Shadows' cantrips and ritual. Folded in here rather than into
+    // the class table so they cannot be trimmed by the prepared-spell cap.
+    ...(featureIds.includes('fiend-spells') ? fiendSpells(level) : []),
+    ...(featureIds.includes('pact-of-the-tome')
+      ? ['vicious-mockery', 'sacred-flame', 'ray-of-frost', 'find-familiar'] : []),
   ])];
+
+  /**
+   * Armor of Shadows means going without armour, not wearing it as well.
+   *
+   * Mage Armor ends the instant you don armour — `acOf` has always known that,
+   * and it is the SRD rule for the spell whether it is cast from a slot or from
+   * an invocation. So a warlock that starts in leather (11 + Dex) gains exactly
+   * nothing from an invocation offering 13 + Dex, and the pick was dead the
+   * moment it was granted.
+   *
+   * The fix is not to make Mage Armor beat armour — that would rewrite the
+   * spell for every wizard too. It is that a warlock who took this invocation
+   * would not be wearing the leather. Only when the ward is actually better,
+   * so a warlock who later buys half plate keeps it.
+   */
+  const wornArmor = opts.equipped?.armor ?? cls.equipment.armor;
+  const shedForWard = featureIds.includes('armor-of-shadows') && wornArmor !== undefined &&
+    armorClass(wornArmor, abilityMod(abilities.dex), 0) < 13 + abilityMod(abilities.dex);
 
   const combatant: Combatant = {
     id: `${opts.team}-${opts.classId}`,
@@ -363,13 +404,17 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     ...(Object.keys(itemUses).length > 0 ? { itemUses } : {}),
     innateSpells,
     inventory: (opts.inventory ?? cls.equipment.inventory).map((s) => ({ ...s })),
-    equipped: opts.equipped
-      ? { ...opts.equipped }
-      : {
-          mainHand: cls.equipment.mainHand,
-          ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
-          ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
-        },
+    equipped: (() => {
+      const base = opts.equipped
+        ? { ...opts.equipped }
+        : {
+            mainHand: cls.equipment.mainHand,
+            ...(cls.equipment.offHand !== undefined ? { offHand: cls.equipment.offHand } : {}),
+            ...(cls.equipment.armor !== undefined ? { armor: cls.equipment.armor } : {}),
+          };
+      if (shedForWard) delete base.armor;
+      return base;
+    })(),
     weaponMasteries: [...cls.weaponMasteries, ...grants.weaponMasteries],
     attacksPerAction: featureIds.includes('extra-attack') ? 2 : 1,
     resistances: [...(species.resistances ?? []), ...grants.resistances],
