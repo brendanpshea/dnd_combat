@@ -253,7 +253,14 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  /* Highlights FADE rather than pop.
+     Committing to a move cleared every highlight in the same frame the token
+     started sliding, so the blue vanished out from under the animation — the
+     board flickered on every single action. A short cross-fade costs nothing
+     and lets the two changes read as one movement. */
+  transition: background-color .16s ease-out, box-shadow .16s ease-out;
 }
+@media (prefers-reduced-motion: reduce) { .cell { transition: none; } }
 .cell.dark { background: var(--floor-dark, var(--cell-dark)); }
 
 /* ---- board themes -------------------------------------------------------
@@ -589,8 +596,12 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   background-size: cover; background-position: center; opacity: 0.62;
 }
 
-.hl-move { box-shadow: inset 0 0 0 3px #4a9eff88; }
-.hl-move:hover { background: #4a9eff33; }
+/* See Board.tsx: the reachable area is one region. The interior is a wash, and
+   only the region's edge carries a ring — thinner and quieter than the old
+   3px/53% one, which was drawn on every square. */
+.hl-move { background: #4a9eff1c; }
+.hl-move-edge { box-shadow: inset 0 0 0 2px #4a9eff5c; }
+.hl-move:hover { background: #4a9eff3d; }
 .hl-enemy { box-shadow: inset 0 0 0 3px var(--red); }
 .hl-ally { box-shadow: inset 0 0 0 3px var(--green); }
 .hl-cell-target { box-shadow: inset 0 0 0 3px var(--gold); background: #ffd16622; }

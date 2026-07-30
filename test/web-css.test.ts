@@ -197,3 +197,56 @@ describe('forge copy', () => {
     expect(missingSpecies, `species with a blank card in the forge: ${missingSpecies.join(', ')}`).toEqual([]);
   });
 });
+
+/**
+ * Where you can walk reads as ONE region, not forty-eight boxes.
+ *
+ * Every reachable cell used to carry `inset 0 0 0 3px #4a9eff88`, so a 30-foot
+ * move on an 8x8 board ringed 48 of its 64 squares in bright blue. The map art,
+ * the terrain and the tokens all read through a grid of loud rectangles, and
+ * the one thing the rings existed to say — "here is where you can go" — was the
+ * hardest thing on the board to see.
+ *
+ * The ring now belongs to the region's EDGE and the interior gets a wash, which
+ * is the same trick the terrain badges already use: an area marked on every
+ * interior tile is marked on nothing.
+ */
+describe('the move overlay is a region, not a grid of boxes', () => {
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+  const board = readFileSync(fileURLToPath(new URL('../web/src/Board.tsx', import.meta.url)), 'utf8');
+
+  const rule = (selector: string) => {
+    const at = css.indexOf(`${selector} {`);
+    return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
+  };
+
+  it('gives the interior no ring at all', () => {
+    const base = rule('.hl-move');
+    expect(base, 'no .hl-move rule found — has it been renamed?').not.toBe('');
+    expect(base, 'every reachable cell is ringed again').not.toContain('box-shadow');
+    expect(base, 'the interior lost its wash').toContain('background');
+  });
+
+  it('rings only the edge, and more quietly than the old every-cell ring', () => {
+    const edge = rule('.hl-move-edge');
+    expect(edge, 'the region has no outline').toContain('box-shadow');
+    // Thinner than the 3px it replaced: the ring is now a boundary rather than
+    // a repeated stamp, so it does not need the weight.
+    const px = Number(edge.match(/inset 0 0 0 (\d+)px/)?.[1] ?? 99);
+    expect(px, 'the edge ring is back to its old weight').toBeLessThan(3);
+  });
+
+  it('marks the edge from the neighbours, not from a guess', () => {
+    // The class has to be computed against the highlight map, or it is
+    // decoration that happens to look right on one board.
+    expect(board, 'Board.tsx never emits hl-move-edge').toContain('hl-move-edge');
+    expect(board, 'the edge is not derived from neighbouring cells')
+      .toMatch(/highlights\.get\(posKey\(\{ x: x \+ dx, y: y \+ dy \}\)\) === 'move'/);
+  });
+
+  it('cross-fades instead of popping when an action clears it', () => {
+    // Committing to a move cleared every highlight in the frame the token
+    // started sliding, so the board flickered on every action.
+    expect(rule('.cell'), 'cells no longer transition their highlight').toContain('transition');
+  });
+});
