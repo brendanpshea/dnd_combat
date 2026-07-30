@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
+import { restPools, shortLabel } from '../web/src/featurePools.js';
 import { join } from 'node:path';
 
 /**
@@ -495,5 +496,75 @@ describe('the coach banner cannot block the action bar', () => {
     expect(css).toContain('var(--above-bar');
     expect(app, 'nothing measures the bar\'s top edge').toContain('--above-bar');
     expect(app).toMatch(/innerHeight - abar\.getBoundingClientRect\(\)\.top/);
+  });
+});
+
+/**
+ * The combat status box: say what a player can read, and only what they can use.
+ *
+ * Two faults, both visible in one screenshot at 412x800.
+ *
+ * "SeW oo" — the fighter's Second Wind, abbreviated. `shortLabel` goes to real
+ * trouble to keep those initials unique ("SeW" against the paladin's "SaW"),
+ * and it is right to: the CAMP screen lists every hero at once, so labels
+ * collide and space is tight. None of that is true of the combat card, which
+ * shows exactly one creature with nothing beside it — and on a touch screen
+ * there is no tooltip to decode a crossword clue with.
+ *
+ * And on an enemy's turn the card lit ACTION and BONUS in gold beside a
+ * movement figure — an enemy's action economy, which is the AI's business and
+ * nothing the player can spend. Three things that looked usable and were not.
+ */
+describe('the combat status box', () => {
+  const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+  const pips = readFileSync(fileURLToPath(new URL('../web/src/FeaturePips.tsx', import.meta.url)), 'utf8');
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+
+  it('spells feature pools out in combat instead of initialling them', () => {
+    expect(app, 'the combat card is back to abbreviations').toMatch(/labels="full"/);
+    expect(pips, 'FeaturePips cannot say the whole name').toMatch(/labels === 'full' \? p\.name : p\.short/);
+  });
+
+  it('keeps the abbreviation for the camp, where labels really do collide', () => {
+    // `short` must survive: the multi-hero row is what it was built for, and
+    // deleting it would trade one unreadable screen for another.
+    expect(pips).toContain('p.short');
+    expect(shortLabel('second-wind'), 'the camp label changed shape').toBe('SeW');
+  });
+
+  it('offers a real name to spell out', () => {
+    // Behavioural, not a source read: the pool has to carry the feature's
+    // actual name or "full" would print an id.
+    const pools = restPools({ 'second-wind': { current: 1, max: 2 } });
+    expect(pools[0]?.name).toBe('Second Wind');
+    expect(pools[0]?.short).toBe('SeW');
+  });
+
+  it('sets the text beside the portrait instead of below it', () => {
+    // The portrait was a flex item in the same wrap flow as the text, so it
+    // claimed row one alone and the card stood `portrait + gap + text` tall —
+    // 86px measured at 412px wide for two short lines. Boxing the text puts it
+    // alongside the face, so the card is the taller of the two, not their sum:
+    // 52px measured for the same content, hero and enemy alike.
+    const face = app.indexOf('adv-party-face');
+    const body = app.indexOf('className="statusline-body"', face);
+    expect(body, 'the status text is loose in the portrait row again').toBeGreaterThan(face);
+    // The name is the first thing after the face, so it has to be inside.
+    expect(app.indexOf('<strong>{active.name}</strong>'), 'the text escaped the box')
+      .toBeGreaterThan(body);
+    const rule = css.slice(css.indexOf('.statusline-body {'));
+    expect(rule.slice(0, 200), 'the box no longer takes the leftover width')
+      .toMatch(/flex:\s*1 1 0/);
+  });
+
+  it('shows action economy only for a creature the player drives', () => {
+    const at = app.indexOf('className="economy"');
+    expect(at, 'no economy chips at all').toBeGreaterThan(0);
+    // The gate has to be immediately above them, not merely somewhere earlier
+    // in the file: `runsItself` is used to decide whose turn it is too, and
+    // matching that one would pass with the chips wide open.
+    const near = app.slice(Math.max(0, at - 400), at);
+    expect(near, 'the economy chips are shown for enemies again')
+      .toContain('!runsItself(active) && (');
   });
 });

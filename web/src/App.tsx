@@ -1293,6 +1293,16 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
             <Portrait id={active.portraitId ?? active.classId} team={active.team} />
             {activeLook && <span className="class-pip on-portrait" title={activeLook.name}>{activeLook.glyph}</span>}
           </span>
+          {/*
+            EVERYTHING BUT THE FACE, in its own wrapping block.
+            The portrait used to be a flex item in the same wrap flow as the
+            text, so it took the whole of the first row on its own: the card's
+            height was `portrait + row-gap + second row` (40 + 12 + 22 = 74 plus
+            padding, 86px measured) instead of `max(portrait, both rows)`. With
+            the text in its own box beside the face, the two overlap instead of
+            stacking and the same content fits in about 54px.
+          */}
+          <span className="statusline-body">
           <strong>{active.name}</strong>
           {/* The line named who and how hurt, but never *what* — and portraits
               follow species, so nothing on screen said "wizard". Words, not a
@@ -1306,23 +1316,37 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           <span>HP {active.hp}/{active.maxHp}</span>
           <span>AC {acOf(active)}</span>
           <SlotPips spellSlots={active.spellSlots} />
-          <FeaturePips featureUses={active.featureUses} />
+          <FeaturePips featureUses={active.featureUses} labels="full" />
           {/* Was a bare "AB" that decayed to "A·" / "··". Sitting next to "AC 15"
               it read like a stat with a missing value, and nothing on screen
               said what it meant — so the one indicator of what you still have
               left to spend this turn was the least legible thing on the line. */}
-          <span className="economy">
-            <span
-              className={`econ-chip${active.turn.actionUsed ? ' spent' : ''}`}
-              title={active.turn.actionUsed ? 'Action spent' : 'Action available'}
-            >Action</span>
-            <span
-              className={`econ-chip${active.turn.bonusActionUsed ? ' spent' : ''}`}
-              title={active.turn.bonusActionUsed ? 'Bonus action spent' : 'Bonus action available'}
-            >Bonus</span>
-          </span>
-          <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
+          {/*
+            WHAT IS LEFT TO SPEND — and only for a creature the player can spend
+            it with. On an enemy's turn the card lit up ACTION and BONUS in gold
+            beside a movement figure, none of which the player can do anything
+            about: an enemy's action economy is the AI's business. It read as
+            three things you could use and cost the card a whole second row on a
+            phone. What a player wants to know about a monster is what it is and
+            how hurt it is, and that is the row above.
+          */}
+          {!runsItself(active) && (
+            <>
+              <span className="economy">
+                <span
+                  className={`econ-chip${active.turn.actionUsed ? ' spent' : ''}`}
+                  title={active.turn.actionUsed ? 'Action spent' : 'Action available'}
+                >Action</span>
+                <span
+                  className={`econ-chip${active.turn.bonusActionUsed ? ' spent' : ''}`}
+                  title={active.turn.bonusActionUsed ? 'Bonus action spent' : 'Bonus action available'}
+                >Bonus</span>
+              </span>
+              <span>{active.turn.movementMax - active.turn.movementUsed}ft</span>
+            </>
+          )}
           {!isHumanTurn && !combat.isOver() && <em className="thinking">AI thinking…</em>}
+          </span>
         </div>
       )}
 
