@@ -334,12 +334,11 @@ export const STAGES: StageData[] = [
  * and the whole reason the threshold moved. Casters reaching 9 get Hold
  * Monster, Cone of Cold, Flame Strike, Mass Cure Wounds and Synaptic Static.
  *
- * MARTIAL CLASSES GAIN NOTHING AT 9 YET, and that is a real hole rather than a
- * design choice: the SRD gives the fighter Indomitable, the barbarian Brutal
- * Strike, the bard and ranger Expertise, the paladin Abjure Foes. They are a
- * separate pass, and `test/fifth-level-spells.test.ts` names every one of them
- * so the gap is recorded where it can be deleted rather than only described
- * here.
+ * FOUR CLASSES GAIN NOTHING AT 9 YET — fighter, rogue, barbarian and monk. The
+ * paladin and ranger are fine: 9 is where a half-caster reaches 3rd-level
+ * slots. That leaves a real hole rather than a design choice, and
+ * `test/fifth-level-spells.test.ts` names the four so the gap is recorded where
+ * it can be deleted rather than only described here.
  *
  * Level 8 was added because it is nearly free — the SRD gives every class an
  * Ability Score Increase there and no new spell tier — and because the arena's
