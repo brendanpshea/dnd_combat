@@ -12,7 +12,7 @@ import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedA
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { MONSTERS } from './monsters.js';
-import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, silenceCell, coverBetween } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -25,7 +25,7 @@ import { savingThrow as rawSavingThrow, saveForHalf, immuneToCharmAndFear } from
 // Resistance (Satyr, Unicorn) grants advantage here without each spell needing
 // to opt in.
 function savingThrow(state: GameState, combatantId: Id, ability: Ability, dc: number) {
-  return rawSavingThrow(state, combatantId, ability, dc, { magical: true });
+  return rawSavingThrow(state, combatantId, ability, dc);
 }
 import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
@@ -1929,9 +1929,21 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  /**
+   * Hold Person, and the "person" it never used to check for.
+   *
+   * The `humanoid` gate is the SRD's and was simply missing, so this spell has
+   * been paralysing dragons and oozes for a 2nd-level slot. It is added here as
+   * part of shipping Hold Monster — see that spell for why the pair does not
+   * work unless this one is restricted.
+   *
+   * Only 18 of the bestiary's 143 monsters are humanoid, so this IS a large
+   * nerf, and the class lists move it later to match: a spell that answers one
+   * enemy in eight should not be the first 2nd-level spell a bard prepares.
+   */
   'hold-person': {
     id: 'hold-person', name: 'Hold Person', level: 2, castingTime: 'action',
-    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1, creatureType: 'humanoid' },
     concentration: true,
     icon: '⛓️',
     cast({ state, casterId, targetIds }) {
@@ -3085,6 +3097,267 @@ export const SPELLS: Record<Id, SpellData> = {
     outOfCombat: true,
     icon: '🌫️',
     cast() { return []; },
+  },
+
+  // --- 5th level ------------------------------------------------------------
+  /*
+   * The tier that unlocks character level 9, and the first new spell level in
+   * this game since it was built. Five spells, chosen off the SRD by how many
+   * class lists carry them, because a spell on four lists is four classes'
+   * level 9 and a spell on one is one class's.
+   *
+   *   Hold Monster      bard, sorcerer, warlock, wizard
+   *   Insect Plague     cleric, druid, sorcerer
+   *   Mass Cure Wounds  bard, cleric, druid
+   *   Cone of Cold      druid, sorcerer, wizard
+   *   Flame Strike      cleric
+   *
+   * The class lists are the SRD's own, read out of `SRD_CC_v5.2.1.txt` in this
+   * repo rather than recalled — which is how the sixth candidate, Synaptic
+   * Static, was caught not being in SRD 5.2 at all.
+   *
+   * Flame Strike is the one on a single list and it is here anyway: without it
+   * the cleric reaches its best slot with nothing to put in it but healing.
+   * The warlock is the opposite case and gets only Hold Monster — every other
+   * 5th-level spell on its SRD list (Scrying, Dream, Mislead, Planar Binding,
+   * Contact Other Plane, Teleportation Circle) is out-of-combat utility this
+   * game has no room for.
+   *
+   * AREA SIZES ARE THE BOARD'S, NOT THE SRD'S. A 60-foot cone is twelve cells
+   * on a board eight cells wide — it would be "everything". Cone of Cold uses
+   * the same `cone15` template Burning Hands does and Flame Strike the same
+   * `sphere5x5` Fireball does, so the shapes stay comparable to the spells
+   * players already know. The DICE are the SRD's; only the footprint is scaled.
+   */
+
+  /**
+   * Hold Monster: Hold Person without the "person".
+   *
+   * WHY THIS ALSO CHANGES HOLD PERSON. Hold Person in this game paralysed
+   * anything — a dragon, an ooze, a wall of animated armour — because it never
+   * checked what it was aimed at. Ship Hold Monster alongside that and the new
+   * spell is strictly worse: same effect, same save, two slot levels dearer.
+   * The 5th-level spell would be dead the day it arrived.
+   *
+   * So Hold Person gets its `creatureType: 'humanoid'` gate (which the SRD has
+   * always had, and which this file's targeting already supported for Animal
+   * Friendship), and Hold Monster is the one that works on the other 87% of the
+   * bestiary. That is a real nerf to a spell casters lean on, and it is the
+   * price of the 5th-level spell meaning anything at all.
+   */
+  'hold-monster': {
+    id: 'hold-monster', name: 'Hold Monster', level: 5, castingTime: 'action',
+    targeting: { kind: 'creature', range: 90, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '⛓️',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'wis', dc);
+      const events: GameEvent[] = [save.event];
+      if (!save.success && !wardedAgainstMagicalBinding(state.combatants[targetId]!, 'paralyzed')) {
+        const t = state.combatants[targetId]!;
+        t.conditions.push({
+          id: 'paralyzed', sourceId: casterId, concentration: true,
+          repeatSave: { ability: 'wis', dc },
+        });
+        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: casterId });
+        state.combatants[casterId]!.concentratingOn = { spellId: 'hold-monster', targetIds: [targetId] };
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Insect Plague: a swarm that stays on the board.
+   *
+   * WHY THIS ONE AND NOT SYNAPTIC STATIC. The first draft of this batch had
+   * Synaptic Static in this slot, on the strength of it being on four class
+   * lists. It is not in SRD 5.2 at all — it is a 2024 Player's Handbook spell
+   * that the SRD does not carry — and it was caught only by grepping the SRD
+   * document in this repo for the name. That is the exact failure
+   * `srd-spell-lists.test.ts` was written about, made again.
+   *
+   * Insect Plague is the real thing in the same shape: Cleric, Druid and
+   * Sorcerer, 4d10 piercing, Constitution rather than Dexterity, and it LASTS —
+   * which is the part a 5th-level slot is really buying. A Fireball happens
+   * once; a swarm makes the ground it sits on cost hit points to cross, for the
+   * rest of the fight.
+   *
+   * Built on the burning-cell machinery Wall of Fire already uses, generalised
+   * from "fire" to "a damage type" — two lines in grid.ts and one in the
+   * movement rules — rather than a second parallel zone system.
+   */
+  'insect-plague': {
+    id: 'insect-plague', name: 'Insect Plague', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 300 },
+    concentration: true,
+    upcast: true,
+    icon: '\u{1F997}',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dice = `${4 + Math.max(0, slotLevel - 5)}d10`;
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const filled: Position[] = [];
+      for (const pos of sphere2x2(positions[0]!)) {
+        if (hazardCell(state.grid, pos, casterId, dice, 'piercing',
+                       { ability: 'con', dc }, 'Insect Plague')) filled.push(pos);
+      }
+      // Whoever the swarm appears around saves immediately, on the same terms
+      // as walking into it — the SRD says so, and Wall of Fire does the same.
+      for (const pos of filled) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive) continue;
+        const save = savingThrow(state, tid, 'con', dc);
+        events.push(save.event);
+        const roll = rollSpellDice(state, casterId, dice, false, 'piercing');
+        const amount = saveForHalf(state.combatants[tid]!, 'con', roll.total, save.success);
+        if (amount > 0) {
+          events.push(...applyDamage(state, tid, casterId, amount, 'piercing', roll.rolls, { tags: ['Insect Plague'] }));
+        }
+      }
+      caster.concentratingOn = { spellId: 'insect-plague', targetIds: [] };
+      return events;
+    },
+  },
+
+  /**
+   * Mass Cure Wounds: the healer's answer to a party that is all hurt at once.
+   *
+   * 5d8 + the caster's ability to up to six allies. Mass Healing Word's shape
+   * (a `count: 6` ally list, distinct targets) rather than a footprint, for the
+   * same reason that spell uses it: an area heal on this board would either
+   * catch everybody or be a positioning puzzle, and the SRD's own version is
+   * "up to six creatures you can see".
+   *
+   * What makes it a 5th-level slot and not a bigger Mass Healing Word is the
+   * die: 1d4 + mod is a thing you cast to pick somebody up off the floor, and
+   * 5d8 + mod is a thing you cast to undo a Fireball.
+   */
+  'mass-cure-wounds': {
+    id: 'mass-cure-wounds', name: 'Mass Cure Wounds', level: 5, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'ally', count: 6 },
+    concentration: false,
+    upcast: true,
+    icon: '💖',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const mod = spellMod(state, casterId);
+      const dice = `${5 + Math.max(0, slotLevel - 5)}d8`; // 5d8 at 5th, +1d8 per higher slot
+      const events: GameEvent[] = [];
+      for (const tid of new Set(targetIds)) {
+        const heal = rollDice(state.rng, dice);
+        state.rng = heal.state;
+        events.push(...applyHealing(state, tid, casterId, heal.total + mod));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Cone of Cold: 8d8 in the cone every wizard already knows how to aim.
+   *
+   * The SRD's 60-foot cone is twelve cells long on an eight-cell board, so this
+   * takes Burning Hands' `cone15` template. That is a deliberate flattening and
+   * the note at the top of this section says why: a spell whose area is "the
+   * entire arena" is not a spell you aim, and aiming is the whole difference
+   * between a cone and a Fireball.
+   *
+   * Constitution rather than Dexterity, which is the SRD's and matters more
+   * than it reads: it is the one big blast in the game that a rogue's Evasion
+   * does not shrug off, and the reason a sorcerer carries it next to Fireball.
+   *
+   * AND THE AI ALMOST NEVER CASTS IT — once across sixty arena runs. Not a
+   * scoring bug: a cone starts at the CASTER, and this AI kites at three to
+   * eight cells, so it is never standing where the cone would catch anything.
+   * Burning Hands, the game's other cone, gets nineteen casts for the same
+   * reason. The spell is fully reachable and a player standing in the right
+   * place gets 8d8 on a Constitution save; the auto-player just will not be
+   * standing there. Fixing that means teaching the mover to walk INTO cone
+   * range, which is a change to positioning rather than to this spell.
+   */
+  'cone-of-cold': {
+    id: 'cone-of-cold', name: 'Cone of Cold', level: 5, castingTime: 'action',
+    targeting: { kind: 'cone15' },
+    concentration: false,
+    upcast: true,
+    icon: '❄️',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const sculpt = caster.featureIds.includes('sculpt-spells');
+      const dc = spellDc(state, casterId);
+      const dice = `${8 + Math.max(0, slotLevel - 5)}d8`;
+      const events: GameEvent[] = [];
+      for (const pos of positions) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive || tid === casterId) continue;
+        if (sculpt && t.team === caster.team) continue;
+        const save = savingThrow(state, tid, 'con', dc);
+        events.push(save.event);
+        const dmg = rollSpellDice(state, casterId, dice, false, 'cold');
+        const amount = saveForHalf(state.combatants[tid]!, 'con', dmg.total, save.success);
+        if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'cold', dmg.rolls));
+      }
+      return events;
+    },
+  },
+
+  /**
+   * Flame Strike: the cleric's Fireball, arriving six levels late.
+   *
+   * The only spell in this batch on a single class list, and the one the batch
+   * would be wrong without. A cleric at 9 has 5th-level slots and, until now,
+   * nothing to spend them on but healing — which is a class reaching its best
+   * resource and finding it can only play defence.
+   *
+   * 5d6 FIRE AND 5d6 RADIANT, and the split is the point rather than flavour: the
+   * bestiary is full of fire-resistant things (every devil, most elementals,
+   * the red dragon line) and almost nothing resists radiant. Splitting the dice
+   * means the cleric's big spell keeps working on exactly the enemies a wizard's
+   * does not — so `applyDamage` is called twice, once per type, rather than
+   * once with a total.
+   */
+  'flame-strike': {
+    id: 'flame-strike', name: 'Flame Strike', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 60 },
+    concentration: false,
+    upcast: true,
+    icon: '🔥',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      const dc = spellDc(state, casterId);
+      // The SRD raises BOTH halves by a d6 per slot above 5th, so both dice
+      // expressions scale — checked against the entry rather than assumed.
+      const dice = `${5 + Math.max(0, slotLevel - 5)}d6`;
+      const events: GameEvent[] = [];
+      for (const pos of sphere5x5(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid) continue;
+        const t = state.combatants[tid]!;
+        if (!t.alive) continue;
+        // No Sculpt Spells check: that is an Evoker feature and no cleric has
+        // it. A cleric aims this one carefully or singes the fighter.
+        const save = savingThrow(state, tid, 'dex', dc);
+        events.push(save.event);
+        const fire = rollSpellDice(state, casterId, dice, false, 'fire');
+        const radiant = rollDice(state.rng, dice);
+        state.rng = radiant.state;
+        const target = state.combatants[tid]!;
+        const fireAmount = saveForHalf(target, 'dex', fire.total, save.success);
+        const radiantAmount = saveForHalf(target, 'dex', radiant.total, save.success);
+        if (fireAmount > 0) {
+          events.push(...applyDamage(state, tid, casterId, fireAmount, 'fire', fire.rolls));
+        }
+        if (radiantAmount > 0 && state.combatants[tid]?.alive) {
+          events.push(...applyDamage(state, tid, casterId, radiantAmount, 'radiant', radiant.rolls));
+        }
+      }
+      return events;
+    },
   },
 
 };

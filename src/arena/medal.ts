@@ -35,15 +35,22 @@ import { LEVEL_XP } from '../campaign/campaign.js';
  * run end in the same instant. The eighth level would exist and never be
  * played, which is the opposite of the reason it was added.
  *
- * So it moves to 5e's next rung, 48,000, which buys several fights with a
- * level-8 party and its second 4th-level slot in hand.
+ * So it moves to 5e's next rung — and then again, to 64,000, when level 9 made
+ * 48,000 a level the party reaches. The same argument each time: the finish
+ * line has to sit past the top of the ladder or the top rung is never played,
+ * and level 9 is the 5th-level spell tier, which is the most worth playing.
+ *
+ * THIS LENGTHENS EVERY RUN, and the cost is real rather than notional — a run
+ * now has to earn a third again as much experience inside the same 120 days.
+ * The arena measurement in the change that raised it is the honest number, not
+ * this comment.
  *
  * Deliberately not read from `LEVEL_XP`: this is the finish line, and it means
  * "past the end of the ladder" rather than "the next entry in it". The
  * assertion below is what keeps the two facts consistent — it is the reason
  * extending `LEVEL_XP` could not silently leave this behind.
  */
-export const RUN_TARGET_XP = 48_000;
+export const RUN_TARGET_XP = 64_000;
 
 if (RUN_TARGET_XP <= (LEVEL_XP[LEVEL_XP.length - 1] ?? 0)) {
   throw new Error('the arena finish line must sit beyond the last implemented level');

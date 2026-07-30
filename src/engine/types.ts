@@ -80,7 +80,12 @@ export interface Cell {
    * is a wall that costs nothing to place badly, and placing it badly is the
    * decision the spell is made of.
    */
-  fire?: { sourceId: Id; dice: string };
+  /**
+   * A standing hazard a spell put here: Wall of Fire's flames, Insect Plague's
+   * locusts. `damageType` and `save` default to the wall's fire/Dex 15 when
+   * absent, so every cell laid down before this field existed still burns.
+   */
+  fire?: { sourceId: Id; dice: string; damageType?: DamageType; save?: { ability: Ability; dc: number }; label?: string };
   /**
    * Silence: no spell with a spoken word can be cast from this cell.
    *

@@ -642,9 +642,9 @@ function scrollApply(spellId: Id) {
  * A hand-written scroll keeps its own entry. Command is 40g and Ray of Sickness
  * is uncommon — tuned exceptions, and generation must not quietly flatten them.
  */
-const SCROLL_COST: Record<number, number> = { 1: 50, 2: 120, 3: 250, 4: 500 };
+const SCROLL_COST: Record<number, number> = { 1: 50, 2: 120, 3: 250, 4: 500, 5: 1000 };
 const SCROLL_RARITY: Record<number, Rarity> = {
-  1: 'common', 2: 'uncommon', 3: 'rare', 4: 'rare',
+  1: 'common', 2: 'uncommon', 3: 'rare', 4: 'rare', 5: 'rare',
 };
 
 /** Spell ids at least one class could read from a scroll. */
@@ -664,7 +664,9 @@ for (const spellId of readableSpells()) {
   const id = `scroll-${spellId}`;
   if (ITEMS[id]) continue;                              // hand-tuned entry wins
   const spell = SPELLS[spellId]!;
-  const level = Math.min(4, Math.max(1, spell.level));
+  // Clamped to the top of the SCROLL_COST table, which is now 5th — it was 4,
+  // and a 5th-level scroll would have quietly been priced as a 4th-level one.
+  const level = Math.min(5, Math.max(1, spell.level));
   ITEMS[id] = {
     id, name: `Scroll of ${spell.name}`,
     // A scroll costs what the spell costs: a bonus-action spell read from a

@@ -78,7 +78,10 @@ import { generateArenaMap, type LayoutName } from './map.js';
 // budget became an easier fight — 66% against a bound of "roughly even". This
 // is the re-measurement the calibration test asks for by name when it fires,
 // not a difficulty decision taken for its own sake.
-export const EVEN_BUDGET = [1650, 2900, 6200, 8000, 14000, 20000, 23000, 28000];
+// Level 9's 34000 is extrapolated, NOT measured: it continues the +5000 step
+// the last two rungs take. The calibration test will say so when a run reaches
+// level 9 often enough to measure, and this comment is what it is arguing with.
+export const EVEN_BUDGET = [1650, 2900, 6200, 8000, 14000, 20000, 23000, 28000, 34000];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;

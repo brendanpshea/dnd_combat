@@ -20,8 +20,9 @@ describe('the finish line', () => {
     // number it touches on the way out. When the cap was 7 and the line was
     // 34,000 that was automatic; when level 8 was added, 34,000 became a level
     // the party reaches, and the line had to move with it or the eighth level
-    // would have existed and never been played.
-    expect(MAX_LEVEL).toBe(8);
+    // would have existed and never been played. Level 9 — the 5th-level spell
+    // tier — moved it again, for the same reason and with more at stake.
+    expect(MAX_LEVEL).toBe(9);
     expect(RUN_TARGET_XP).toBeGreaterThan(LEVEL_XP[MAX_LEVEL - 1]!);
   });
 

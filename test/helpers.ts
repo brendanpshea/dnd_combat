@@ -30,6 +30,10 @@ export function makeCombatant(over: Partial<Combatant> & { team: TeamId; positio
     name: over.name ?? over.id ?? `c${counter}`,
     classId: 'fighter',
     speciesId: 'human',
+    // A human fighter is a humanoid. It went unstated while nothing asked, and
+    // then Hold Person got its SRD `humanoid` gate and every test dummy became
+    // immune to it.
+    creatureType: 'humanoid',
     level: 1,
     abilities,
     maxHp: 13,
