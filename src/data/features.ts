@@ -1451,6 +1451,9 @@ export const FEATURES: Record<Id, FeatureData> = {
   'metamagic-heightened': {
     id: 'metamagic-heightened', name: 'Metamagic: Heightened Spell', trigger: 'passive',
   },
+  'metamagic-empowered': {
+    id: 'metamagic-empowered', name: 'Metamagic: Empowered Spell', trigger: 'passive',
+  },
   /**
    * Draconic Resilience (Draconic Sorcery, level 3): scales instead of armour,
    * and a hit point per level.

@@ -10,6 +10,7 @@
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
+import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -883,6 +884,69 @@ export const SPELLS: Record<Id, SpellData> = {
    * target's turn removes it), the same one Sleep and Hold Person use, so no
    * new expiry logic was needed.
    */
+  /**
+   * Dissonant Whispers — the bard's answer to a creature it does not want next
+   * to it.
+   *
+   *   "One creature of your choice that you can see within range hears the
+   *    whispers. It must make a Wisdom saving throw. On a failed save, it takes
+   *    3d6 Psychic damage and must immediately use its Reaction, if available, to
+   *    move as far from you as its Speed allows. On a successful save, it takes
+   *    half as much damage only."
+   *
+   * WHY THIS SPELL AND NOT ANOTHER
+   *
+   * The bard's 1st-level line was all support and control with no single-target
+   * damage on it at all, and psychic is the least-resisted damage type in the
+   * bestiary. But the reason to have it is the SECOND half: it is the only spell
+   * in the game that makes one creature run away from the caster, which on a grid
+   * full of hazards and reach is a different tool from Sleep or Command.
+   *
+   * ADAPTED: the flight is resolved with `pushCreature` rather than as the
+   * target's own movement, because the engine has no way to hand a creature a
+   * reaction-move and then re-run its pathing. That means it travels in a
+   * straight line away rather than "by the safest route", and it does NOT provoke
+   * opportunity attacks the way RAW's ordinary movement would. Both differences
+   * make it slightly weaker than the real spell, which is the right direction for
+   * a shortcut — and it keeps the hazard interaction, which is most of the point:
+   * whispering something backwards into a lava tile is the play.
+   */
+  'dissonant-whispers': {
+    id: 'dissonant-whispers', name: 'Dissonant Whispers', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    upcast: true,
+    icon: '🗣️',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const caster = state.combatants[casterId]!;
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'wis', dc);
+      const events: GameEvent[] = [save.event];
+      // 3d6 at 1st, +1d6 per slot above. Through `rollSpellDice` so a sorcerer
+      // could empower it if it ever joined that list — see EMPOWERABLE.
+      const dmg = rollSpellDice(state, casterId, `${2 + slotLevel}d6`);
+      const amount = saveForHalf(state.combatants[targetId]!, 'wis', dmg.total, save.success);
+      if (amount > 0) {
+        events.push(...applyDamage(state, targetId, casterId, amount, 'psychic', dmg.rolls));
+      }
+      const target = state.combatants[targetId]!;
+      if (!save.success && target.alive && !isDown(target)) {
+        // "As far from you as its Speed allows", in cells, straight back.
+        const away = {
+          x: Math.sign(target.position.x - caster.position.x),
+          y: Math.sign(target.position.y - caster.position.y),
+        };
+        // A creature standing exactly on the caster has nowhere to flee to; the
+        // sign vector would be {0,0} and `pushCreature` would loop in place.
+        if (away.x !== 0 || away.y !== 0) {
+          events.push(...pushCreature(state, targetId, away, Math.max(1, Math.floor(target.speed / 5))));
+        }
+      }
+      return events;
+    },
+  },
+
   'ray-of-sickness': {
     id: 'ray-of-sickness', name: 'Ray of Sickness', level: 1, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
@@ -900,8 +964,7 @@ export const SPELLS: Record<Id, SpellData> = {
       // casting and the wizard's `learnableExtra`; adding it to the sorcerer's
       // list made it the second most-cast leveled spell in a 40-run arena, at
       // a third more damage than it is entitled to.
-      const dmg = rollDice(state.rng, `${1 + slotLevel}d8`, atk.crit);
-      state.rng = dmg.state;
+      const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`, atk.crit);
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       const target = state.combatants[targetId]!;
       if (target.alive) {
@@ -1103,8 +1166,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
-        const dmg = rollDice(state.rng, dice);
-        state.rng = dmg.state;
+        const dmg = rollSpellDice(state, casterId, dice);
         const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) {
           events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
@@ -1141,8 +1203,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
-        const dmg = rollDice(state.rng, dice);
-        state.rng = dmg.state;
+        const dmg = rollSpellDice(state, casterId, dice);
         const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
       }
@@ -1577,8 +1638,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue;
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
-        const dmg = rollDice(state.rng, dice);
-        state.rng = dmg.state;
+        const dmg = rollSpellDice(state, casterId, dice);
         const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'lightning', dmg.rolls));
       }
@@ -1717,8 +1777,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue;
         const save = savingThrow(state, t.id, 'con', dc);
         events.push(save.event);
-        const dmg = rollDice(state.rng, `${1 + slotLevel}d8`); // 2d8 at slot 1
-        state.rng = dmg.state;
+        const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`); // 2d8 at slot 1
         const amount = saveForHalf(state.combatants[t.id]!, 'con', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, t.id, casterId, amount, 'thunder', dmg.rolls));
         if (!save.success && t.alive) {
@@ -1748,8 +1807,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const atk = spellAttack(state, casterId, tid, { melee: false });
         events.push(atk.event);
         if (atk.hit) {
-          const dmg = rollDice(state.rng, '2d6', atk.crit);
-          state.rng = dmg.state;
+          const dmg = rollSpellDice(state, casterId, '2d6', atk.crit);
           events.push(...applyDamage(state, tid, casterId, dmg.total, 'fire', dmg.rolls));
         }
       }
@@ -2514,8 +2572,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const save = savingThrow(state, targetId, 'con', dc);
       const dice = `${8 + Math.max(0, slotLevel - 4)}d8`;
-      const dmg = rollDice(state.rng, dice);
-      state.rng = dmg.state;
+      const dmg = rollSpellDice(state, casterId, dice);
       const amount = saveForHalf(state.combatants[targetId]!, 'con', dmg.total, save.success);
       return [save.event, ...applyDamage(state, targetId, casterId, amount, 'necrotic', dmg.rolls)];
     },
@@ -2540,8 +2597,8 @@ export const SPELLS: Record<Id, SpellData> = {
           if (t.alive && !(sculpt && t.team === caster.team)) {
             const save = savingThrow(state, tid, 'dex', dc);
             events.push(save.event);
-            const bludgeon = rollDice(state.rng, hail); state.rng = bludgeon.state;
-            const cold = rollDice(state.rng, '4d6'); state.rng = cold.state;
+            const bludgeon = rollSpellDice(state, casterId, hail); state.rng = bludgeon.state;
+            const cold = rollSpellDice(state, casterId, '4d6'); state.rng = cold.state;
             const total = bludgeon.total + cold.total;
             const amount = saveForHalf(t, 'dex', total, save.success);
             events.push(...applyDamage(state, tid, casterId, amount, 'cold', [...bludgeon.rolls, ...cold.rolls]));
@@ -2929,7 +2986,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!t.alive || (sculpt && t.team === caster.team)) continue;
         const save = savingThrow(state, tid, 'con', dc);
         events.push(save.event);
-        const roll = rollDice(state.rng, dice); state.rng = roll.state;
+        const roll = rollSpellDice(state, casterId, dice); state.rng = roll.state;
         const amount = saveForHalf(t, 'con', roll.total, save.success);
         events.push(...applyDamage(state, tid, casterId, amount, 'thunder', roll.rolls));
       }

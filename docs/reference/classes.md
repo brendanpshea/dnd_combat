@@ -65,11 +65,11 @@ Spellcasting ability: **CHA**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Healing Word, Command, Cure Wounds, Faerie Fire, Color Spray, Thunderwave, Bane, Animal Friendship |
-| 3 | Hold Person, Shatter, Mirror Image, Silence, Invisibility, Suggestion, Blindness, Aid, Lesser Restoration |
+| 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Dissonant Whispers, Healing Word, Thunderwave, Faerie Fire, Cure Wounds, Command, Bane, Color Spray, Animal Friendship |
+| 3 | Hold Person, Suggestion, Mirror Image, Shatter, Invisibility, Silence, Blindness, Aid, Lesser Restoration |
 | 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
 | 6 | Fireball, Spiritual Weapon |
-| 7 | Greater Invisibility, Confusion, Dimension Door, Freedom of Movement, Phantasmal Killer |
+| 7 | Confusion, Greater Invisibility, Phantasmal Killer, Dimension Door, Freedom of Movement |
 
 ## Cleric
 
@@ -111,8 +111,8 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Sacred Flame, Guidance, Cure Wounds, Bless, Healing Word, Command, Inflict Wounds, Bane, Shield of Faith, Sanctuary, Protection from Evil and Good |
 | 2 | Guiding Bolt |
-| 3 | Hold Person, Aid, Spiritual Weapon, Silence, Blindness, Lesser Restoration, Warding Bond |
-| 5 | Mass Healing Word, Spirit Guardians, Dispel Magic, Protection from Energy, Bestow Curse |
+| 3 | Hold Person, Aid, Spiritual Weapon, Silence, Blindness, Warding Bond, Lesser Restoration |
+| 5 | Mass Healing Word, Spirit Guardians, Protection from Energy, Dispel Magic, Bestow Curse |
 | 7 | Banishment, Death Ward, Freedom of Movement |
 
 ## Druid
@@ -154,11 +154,11 @@ Spellcasting ability: **WIS**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Healing Word, Faerie Fire, Thunderwave, Protection from Evil and Good, Animal Friendship |
+| 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Thunderwave, Faerie Fire, Healing Word, Protection from Evil and Good, Animal Friendship |
 | 2 | Find Familiar |
-| 3 | Moonbeam, Pass without Trace, Hold Person, Flaming Sphere, Heat Metal, Aid, Lesser Restoration |
+| 3 | Moonbeam, Pass without Trace, Hold Person, Heat Metal, Flaming Sphere, Aid, Lesser Restoration |
 | 5 | Call Lightning, Conjure Animals, Protection from Energy, Dispel Magic |
-| 7 | Wall of Fire, Confusion, Freedom of Movement, Blight, Ice Storm, Polymorph |
+| 7 | Ice Storm, Wall of Fire, Confusion, Polymorph, Blight, Freedom of Movement |
 
 ## Fighter
 
@@ -314,7 +314,7 @@ Spellcasting ability: **CHA**.
 | --- | --- |
 | 1 | Bless, Cure Wounds, Command |
 | 2 | Searing Smite, Shield of Faith, Protection from Evil and Good |
-| 5 | Aid, Shining Smite, Lesser Restoration, Warding Bond |
+| 5 | Aid, Shining Smite, Warding Bond, Lesser Restoration |
 
 ### Choice: Fighting Style (level 2)
 
@@ -419,7 +419,7 @@ Spellcasting ability: **WIS**.
 
 | Level | Features |
 | --- | --- |
-| 2 | Font of Magic, Metamagic: Quickened Spell, Metamagic: Heightened Spell |
+| 2 | Font of Magic, Metamagic: Quickened Spell, Metamagic: Heightened Spell, Metamagic: Empowered Spell |
 | 3 | Draconic Resilience, Draconic Spells |
 
 ### Spell slots
@@ -441,10 +441,10 @@ Spellcasting ability: **CHA**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, Acid Splash, True Strike, Minor Illusion, Magic Missile, Burning Hands, Shield, Mage Armor, Sleep, Color Spray, False Life, Thunderwave, Ray of Sickness |
-| 3 | Scorching Ray, Mirror Image, Misty Step, Web, Invisibility, Blindness, Shatter, Suggestion, Hold Person, Flaming Sphere |
-| 5 | Fireball, Counterspell, Fear, Lightning Bolt, Haste, Dispel Magic, Protection from Energy |
-| 7 | Polymorph, Greater Invisibility, Banishment, Confusion, Blight, Ice Storm, Wall of Fire, Dimension Door |
+| 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, Acid Splash, True Strike, Minor Illusion, Sleep, Thunderwave, Shield, Mage Armor, Ray of Sickness, Burning Hands, False Life, Magic Missile, Color Spray |
+| 3 | Shatter, Mirror Image, Suggestion, Web, Scorching Ray, Hold Person, Invisibility, Flaming Sphere, Blindness, Misty Step |
+| 5 | Fireball, Counterspell, Lightning Bolt, Fear, Haste, Protection from Energy, Dispel Magic |
+| 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Dimension Door |
 
 ## Warlock
 
@@ -484,7 +484,7 @@ Spellcasting ability: **CHA**.
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
 | 1 | Eldritch Blast, Hex, Poison Spray, True Strike, Minor Illusion, Bane, Protection from Evil and Good |
-| 3 | Hold Person, Mirror Image, Invisibility, Suggestion, Misty Step |
+| 3 | Suggestion, Mirror Image, Hold Person, Invisibility, Misty Step |
 | 5 | Fear, Counterspell, Dispel Magic |
 | 7 | Banishment, Blight, Dimension Door |
 
@@ -559,8 +559,8 @@ Spellcasting ability: **INT**.
 | --- | --- |
 | 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, True Strike, Acid Splash, Minor Illusion, Magic Missile, Sleep, Burning Hands, Shield, Mage Armor, Color Spray, False Life, Find Familiar |
 | 2 | Thunderwave |
-| 3 | Shatter, Mirror Image, Scorching Ray, Misty Step, Suggestion, Web, Invisibility, Blindness, Flaming Sphere |
+| 3 | Suggestion, Mirror Image, Shatter, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step |
 | 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
-| 7 | Greater Invisibility, Wall of Fire, Confusion, Dimension Door, Blight, Ice Storm, Banishment, Phantasmal Killer, Polymorph |
+| 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Phantasmal Killer, Dimension Door |
 
 Learnable from scrolls found in play: Ray of Sickness.

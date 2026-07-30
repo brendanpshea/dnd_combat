@@ -225,9 +225,12 @@ describe('metamagicOptions is what a UI reads', () => {
     // The UI arms a chip and builds the action itself; it never enumerates.
     // So this has to answer independently of what `legalActions` chose to emit.
     const { c, meId } = board({ spellIds: ['fireball', 'fire-bolt'] });
-    expect(quickened(c, meId)).toEqual([]);      // not offered...
+    expect(quickened(c, meId)).toEqual([]);      // not QUICKENED-offered...
     const opts = metamagicOptions(c.state, meId, SPELLS.fireball!);
-    expect(opts.map((m) => m.id)).toEqual(['quickened']);   // ...but available
+    // Both bends a Fireball can take: Quickened (it is an action) and Empowered
+    // (it rolls damage dice). Not Heightened — see SAVE_OR_SUCK for why an area
+    // spell is not what that option is for.
+    expect(opts.map((m) => m.id).sort()).toEqual(['empowered', 'quickened']);
     expect(isLegalAction(c.state, meId, {
       kind: 'castSpell', spellId: 'fireball', slotLevel: 3, metamagic: 'quickened',
       targets: [{ position: { x: 4, y: 3 } }],

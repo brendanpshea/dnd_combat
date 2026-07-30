@@ -406,8 +406,10 @@ export const CLASSES: Record<Id, ClassData> = {
       spellsByLevel: {
         1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good'],
         2: ['guiding-bolt'],
-        3: ['hold-person', 'aid', 'spiritual-weapon', 'silence', 'blindness', 'lesser-restoration', 'warding-bond'],
-        5: ['mass-healing-word', 'spiritual-guardians', 'dispel-magic', 'protection-from-energy', 'bestow-curse'], // 3rd-level slot arrives here
+        3: ['hold-person', 'aid', 'spiritual-weapon', 'silence', 'blindness', 'warding-bond',
+               'lesser-restoration'],
+        5: ['mass-healing-word', 'spiritual-guardians', 'protection-from-energy', 'dispel-magic',
+               'bestow-curse'], // 3rd-level slot arrives here
         // 4th-level slot arrives here, and used to hold exactly one spell.
         7: ['banishment', 'death-ward', 'freedom-of-movement'],
       },
@@ -457,10 +459,11 @@ export const CLASSES: Record<Id, ClassData> = {
           'find-familiar', // ritual: always known, never counts against the spellbook
         ],
         2: ['thunderwave'],
-        3: ['shatter', 'mirror-image', 'scorching-ray', 'misty-step', 'suggestion', 'web', 'invisibility', 'blindness', 'flaming-sphere'],
+        3: ['suggestion', 'mirror-image', 'shatter', 'web', 'scorching-ray', 'invisibility',
+               'flaming-sphere', 'blindness', 'misty-step'],
         5: ['fireball', 'counterspell', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
-        7: ['greater-invisibility', 'wall-of-fire', 'confusion', 'dimension-door',
-            'blight', 'ice-storm', 'banishment', 'phantasmal-killer', 'polymorph'],   // 4th-level slot arrives here
+        7: ['ice-storm', 'wall-of-fire', 'banishment', 'confusion', 'polymorph', 'blight',
+               'greater-invisibility', 'phantasmal-killer', 'dimension-door'],   // 4th-level slot arrives here
       },
       learnableExtra: ['ray-of-sickness'],
     },
@@ -577,7 +580,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // recommends it as one of the two spells a warlock starts with.
         1: ['eldritch-blast', 'hex', 'poison-spray', 'true-strike', 'minor-illusion',
             'bane', 'protection-from-evil-and-good'],
-        3: ['hold-person', 'mirror-image', 'invisibility', 'suggestion', 'misty-step'],
+        3: ['suggestion', 'mirror-image', 'hold-person', 'invisibility', 'misty-step'],
         5: ['fear', 'counterspell', 'dispel-magic'],   // 3rd-level slots
         7: ['banishment', 'blight', 'dimension-door'],
       },
@@ -705,25 +708,22 @@ export const CLASSES: Record<Id, ClassData> = {
       cantripsKnownByLevel: [4, 4, 4, 5, 5, 5, 5, 5],
       preparedByLevel: [2, 4, 6, 7, 9, 10, 11, 12],
       spellsByLevel: {
-        1: [
-          'fire-bolt', 'ray-of-frost', 'shocking-grasp', 'poison-spray', 'acid-splash',
-          'true-strike', 'minor-illusion',
-          'magic-missile', 'burning-hands', 'shield', 'mage-armor', 'sleep', 'color-spray',
-          'false-life', 'thunderwave', 'ray-of-sickness',
-        ],
-        3: ['scorching-ray', 'mirror-image', 'misty-step', 'web', 'invisibility', 'blindness',
-            'shatter', 'suggestion', 'hold-person', 'flaming-sphere'],
-        5: ['fireball', 'counterspell', 'fear', 'lightning-bolt', 'haste', 'dispel-magic',
-            'protection-from-energy'],
-        7: ['polymorph', 'greater-invisibility', 'banishment', 'confusion', 'blight',
-            'ice-storm', 'wall-of-fire', 'dimension-door'],
+        1: ['fire-bolt', 'ray-of-frost', 'shocking-grasp', 'poison-spray', 'acid-splash',
+               'true-strike', 'minor-illusion', 'sleep', 'thunderwave', 'shield', 'mage-armor',
+               'ray-of-sickness', 'burning-hands', 'false-life', 'magic-missile', 'color-spray'],
+        3: ['shatter', 'mirror-image', 'suggestion', 'web', 'scorching-ray', 'hold-person',
+               'invisibility', 'flaming-sphere', 'blindness', 'misty-step'],
+        5: ['fireball', 'counterspell', 'lightning-bolt', 'fear', 'haste', 'protection-from-energy',
+               'dispel-magic'],
+        7: ['ice-storm', 'wall-of-fire', 'banishment', 'confusion', 'polymorph', 'blight',
+               'greater-invisibility', 'dimension-door'],
       },
     },
     featuresByLevel: {
       // Level 1 is Spellcasting and nothing else — the SRD gives a sorcerer no
       // level-1 feature beyond its spells, and Innate Sorcery (also level 1)
       // waits for its own change rather than being guessed at now.
-      2: ['font-of-magic', 'metamagic-quickened', 'metamagic-heightened'],
+      2: ['font-of-magic', 'metamagic-quickened', 'metamagic-heightened', 'metamagic-empowered'],
       // Draconic Sorcery, the SRD's only sorcerer subclass. Scales for armour
       // and a hit point a level, which is what makes a d6 caster survivable
       // enough to spend its points instead of hiding.
@@ -765,15 +765,18 @@ export const CLASSES: Record<Id, ClassData> = {
       preparedByLevel: [4, 5, 6, 7, 9, 10, 11, 12],
       spellsByLevel: {
         // Strongest first within each level — see spellsByLevel's note.
-        1: ['vicious-mockery', 'starry-wisp', 'minor-illusion', 'true-strike', 'sleep', 'healing-word', 'command',
-            'cure-wounds', 'faerie-fire', 'color-spray', 'thunderwave', 'bane', 'animal-friendship'],
-        3: ['hold-person', 'shatter', 'mirror-image', 'silence', 'invisibility', 'suggestion', 'blindness', 'aid', 'lesser-restoration'],
+        1: ['vicious-mockery', 'starry-wisp', 'minor-illusion', 'true-strike', 'sleep',
+               'dissonant-whispers', 'healing-word', 'thunderwave', 'faerie-fire', 'cure-wounds',
+               'command', 'bane', 'color-spray', 'animal-friendship'],
+        3: ['hold-person', 'suggestion', 'mirror-image', 'shatter', 'invisibility', 'silence',
+               'blindness', 'aid', 'lesser-restoration'],
         5: ['fear', 'mass-healing-word', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
         // Magical Discoveries (6): two spells from off the bard's own list.
         // Written here rather than through new machinery because this table is
         // already "what this class can have, and when".
         6: ['fireball', 'spiritual-weapon'],
-        7: ['greater-invisibility', 'confusion', 'dimension-door', 'freedom-of-movement', 'phantasmal-killer'],
+        7: ['confusion', 'greater-invisibility', 'phantasmal-killer', 'dimension-door',
+               'freedom-of-movement'],
       },
     },
     featuresByLevel: {
@@ -831,17 +834,18 @@ export const CLASSES: Record<Id, ClassData> = {
         // was checked against dropped the druid's cantrip table row entirely,
         // twice, which read as an absence — confirmed present against the real
         // document.
-        1: ['starry-wisp', 'poison-spray', 'shillelagh', 'guidance', 'entangle',
-            'cure-wounds', 'healing-word', 'faerie-fire', 'thunderwave',
-            'protection-from-evil-and-good', 'animal-friendship'],
+        1: ['starry-wisp', 'poison-spray', 'shillelagh', 'guidance', 'entangle', 'cure-wounds',
+               'thunderwave', 'faerie-fire', 'healing-word', 'protection-from-evil-and-good',
+               'animal-friendship'],
         // Wild Companion (level 2): the 2024 druid spends a Wild Shape use to
         // conjure a familiar. Modelled as the ritual the wizard gets, arriving
         // with Wild Shape itself — a ritual is always known and costs no slot,
         // which is the same "free, once you have it" shape.
         2: ['find-familiar'],
-        3: ['moonbeam', 'pass-without-trace', 'hold-person', 'flaming-sphere', 'heat-metal', 'aid', 'lesser-restoration'],
+        3: ['moonbeam', 'pass-without-trace', 'hold-person', 'heat-metal', 'flaming-sphere', 'aid',
+               'lesser-restoration'],
         5: ['call-lightning', 'conjure-animals', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
-        7: ['wall-of-fire', 'confusion', 'freedom-of-movement', 'blight', 'ice-storm', 'polymorph'],
+        7: ['ice-storm', 'wall-of-fire', 'confusion', 'polymorph', 'blight', 'freedom-of-movement'],
       },
     },
     featuresByLevel: {
@@ -1038,7 +1042,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // that the SRD 5.2 paladin list does not carry, so Shining Smite (which
         // it does) is the second smite instead.
         2: ['searing-smite', 'shield-of-faith', 'protection-from-evil-and-good'],
-        5: ['aid', 'shining-smite', 'lesser-restoration', 'warding-bond'], // 2nd-level slot arrives here
+        5: ['aid', 'shining-smite', 'warding-bond', 'lesser-restoration'], // 2nd-level slot arrives here
       },
     },
     featuresByLevel: {

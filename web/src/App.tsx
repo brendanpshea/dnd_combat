@@ -100,7 +100,7 @@ function footprint(caster: Combatant, spellId: string, target: Position): string
 
 /** "Quickened Spell" -> "quickened", for the empty-tray line. */
 const METAMAGIC_LABEL: Record<MetamagicId, string> = {
-  quickened: 'quickened', heightened: 'heightened',
+  quickened: 'quickened', heightened: 'heightened', empowered: 'empowered',
 };
 
 type Targeting =
