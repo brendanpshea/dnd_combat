@@ -25,7 +25,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Correctness gate only. The balance/sim harnesses (caster-variants,
+      # arena, sim-ai) are slow, CPU-bound, and not what "can we ship" asks;
+      # SKIP_SIMS leaves them out (see vitest.config.ts). They run nightly in
+      # sims.yml instead, so a change never waits on thousands of battles to
+      # reach production.
       - run: npm test
+        env:
+          SKIP_SIMS: '1'
       - run: npm run typecheck
       - run: npm run web:build
       - uses: actions/upload-pages-artifact@v3

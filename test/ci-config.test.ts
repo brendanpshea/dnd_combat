@@ -9,27 +9,36 @@ import { fileURLToPath } from 'node:url';
  * incognito load from github, not seeing anything."
  *
  *     Error: [vitest-worker]: Timeout calling "onTaskUpdate"
- *     Test Files  131 passed (131)
- *          Tests  1941 passed (1941)
+ *     Test Files  132 passed (132)
+ *          Tests  1944 passed (1944)
  *         Errors  1 error
  *     Process completed with exit code 1
  *
  * `onTaskUpdate` is not one of vitest's `eventNames`, so it is a call-and-WAIT
  * RPC with birpc's 60s timeout: the worker blocks until the main process
  * answers and throws if it never does. Sixty seconds of no answer is severe
- * starvation, and this suite arranges it — `caster-variants` alone spends 50s
- * in one CPU-bound test playing thousands of battles, while a worker per core
- * does the same beside it.
+ * starvation, and the balance sims arrange it — `caster-variants` alone spends
+ * ~50s in CPU-bound tests playing thousands of battles, with `arena` and
+ * `sim-ai` doing the same beside it, a worker per core.
  *
- * `vitest.config.ts` leaves one core for the coordinator and asks CI for a
- * reporter that doesn't redraw a 1941-test tree. Both look like fussy tuning
- * that a tidy-up would delete, so they are pinned here with the reason.
+ * Two things keep the deploy green, and both are pinned here with the reason so
+ * a tidy-up doesn't quietly delete them:
+ *
+ *  1. The deploy does not run the sims at all (SKIP_SIMS). They are balance
+ *     checks, not ship-blockers, and run nightly in `sims.yml` (ONLY_SIMS)
+ *     instead — a change never waits on thousands of battles to reach players.
+ *  2. When the sims DO run together, `vitest.config.ts` leaves TWO cores free
+ *     for the coordinator (one was too few) and uses a reporter that doesn't
+ *     redraw a 1900-test tree on every update.
  */
 describe('the CI test runner', () => {
-  const cfg = readFileSync(fileURLToPath(new URL('../vitest.config.ts', import.meta.url)), 'utf8');
-  const wf = readFileSync(fileURLToPath(new URL('../.github/workflows/deploy.yml', import.meta.url)), 'utf8');
+  const root = new URL('../', import.meta.url);
+  const read = (p: string) => readFileSync(fileURLToPath(new URL(p, root)), 'utf8');
+  const cfg = read('vitest.config.ts');
+  const deploy = read('.github/workflows/deploy.yml');
+  const sims = read('.github/workflows/sims.yml');
 
-  it('leaves a core for the process that answers the workers', () => {
+  it('leaves cores for the process that answers the workers', () => {
     expect(cfg, 'a worker per core starves the RPC and the deploy stops').toContain('cpus()');
     expect(cfg).toMatch(/maxForks|maxThreads/);
   });
@@ -40,10 +49,27 @@ describe('the CI test runner', () => {
     expect(cfg).toContain('process.env.CI');
   });
 
-  it('still refuses to deploy a red build', () => {
-    // The wrong fix for a flaky gate is to stop gating. `deploy` runs only
-    // after `build`, and `build` runs the suite.
-    expect(wf).toContain('npm test');
-    expect(wf, 'the deploy no longer waits for the build').toMatch(/deploy:[\s\S]*needs: build/);
+  it('gates the sims by env, from one shared list', () => {
+    // SKIP_SIMS excludes them, ONLY_SIMS runs only them; `npm test` bare runs
+    // everything (local dev, keeps them from rotting).
+    expect(cfg).toContain('SKIP_SIMS');
+    expect(cfg).toContain('ONLY_SIMS');
+    expect(cfg, 'the sim list must be real files').toContain('caster-variants');
+  });
+
+  it('keeps the sims out of the deploy but still gates it', () => {
+    // The wrong fix for a flaky gate is to stop gating: the deploy still runs
+    // the (fast) suite, and `deploy` still waits on `build`.
+    expect(deploy).toContain('npm test');
+    expect(deploy, 'the deploy must not run the slow sims').toContain('SKIP_SIMS');
+    expect(deploy).toMatch(/deploy:[\s\S]*needs: build/);
+  });
+
+  it('runs the sims on their own cadence, not on every change', () => {
+    expect(sims).toContain('ONLY_SIMS');
+    expect(sims, 'nightly, so a normal change is never gated on them').toContain('schedule');
+    expect(sims, 'and on demand').toContain('workflow_dispatch');
+    // Deliberately NOT triggered by push — that is the whole point.
+    expect(sims).not.toMatch(/^\s*push:/m);
   });
 });

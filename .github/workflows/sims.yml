@@ -1,0 +1,31 @@
+name: Balance & sim suite
+
+# The battle-simulation / balance harnesses (caster-variants, arena, sim-ai)
+# play thousands of full battles. They are useful checks but slow and CPU-bound,
+# and deliberately do NOT gate the deploy or run on every change (see
+# vitest.config.ts / deploy.yml). They run here on their own cadence: once a
+# night, and on demand.
+on:
+  schedule:
+    - cron: '0 7 * * *' # ~07:00 UTC nightly
+  workflow_dispatch:
+
+# A newer nightly supersedes an in-flight one; never block a deploy on these.
+concurrency:
+  group: sims
+  cancel-in-progress: true
+
+jobs:
+  sims:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # ONLY_SIMS runs just the balance/sim harnesses (see vitest.config.ts).
+      - run: npm test
+        env:
+          ONLY_SIMS: '1'
