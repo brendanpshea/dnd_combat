@@ -560,8 +560,11 @@ describe('the combat status box', () => {
   it('shows action economy only for a creature the player drives', () => {
     const at = app.indexOf('className="economy"');
     expect(at, 'no economy chips at all').toBeGreaterThan(0);
-    // The gate has to be above them in the markup.
-    const gate = app.lastIndexOf('!runsItself(active)', at);
-    expect(gate, 'the economy chips are shown for enemies again').toBeGreaterThan(0);
+    // The gate has to be immediately above them, not merely somewhere earlier
+    // in the file: `runsItself` is used to decide whose turn it is too, and
+    // matching that one would pass with the chips wide open.
+    const near = app.slice(Math.max(0, at - 400), at);
+    expect(near, 'the economy chips are shown for enemies again')
+      .toContain('!runsItself(active) && (');
   });
 });
