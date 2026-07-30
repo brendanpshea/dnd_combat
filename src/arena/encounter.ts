@@ -34,7 +34,11 @@ import { next, type RngState } from '../engine/rng.js';
  * conjures onto the PARTY's side, and it has no `cr` for the same reason — a
  * conjured ally is not an encounter-budget line.
  */
-export const ARENA_EXCLUDED = new Set<Id>(['unicorn', 'otherworldly-steed']);
+export const ARENA_EXCLUDED = new Set<Id>([
+  'unicorn',
+  // Conjured allies: they exist only as what a spell puts on the PARTY's side.
+  'otherworldly-steed', 'draconic-spirit', 'animated-object',
+]);
 
 /**
  * 5e's encounter multiplier by headcount. Applied to get the *difficulty* of a

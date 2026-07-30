@@ -126,6 +126,18 @@ export interface BreathSpec {
 
 export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   'breath-acid':      { shape: 'line', length: 3, save: 'dex', damageType: 'acid',      dice: '5d8' }, // Black
+  /**
+   * The Draconic Spirit's. 2d6 in a cone on a Dexterity save, per the stat
+   * block — far smaller than a real dragon's, because the SRD fires it as part
+   * of the spirit's Multiattack EVERY round rather than on a recharge.
+   *
+   * This game gives it the recharge every other dragon here has, because
+   * "attack twice AND breathe" is not something a monster turn can express and
+   * inventing that for one summon would be a lot of engine for one spell. The
+   * result is a spirit that breathes less often and hits just as hard, which is
+   * the same creature from across the table.
+   */
+  'breath-draconic': { shape: 'cone', save: 'dex', damageType: 'fire', dice: '2d6' },
   'breath-lightning': { shape: 'line', length: 6, save: 'dex', damageType: 'lightning', dice: '6d6' }, // Blue
   'breath-poison':    { shape: 'cone',            save: 'con', damageType: 'poison',    dice: '6d6' }, // Green
   'breath-fire':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d6' }, // Red
@@ -1274,6 +1286,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   // come from BREATH_WEAPONS; the DC is the dragon's Constitution. Auto-aimed at
   // the direction catching the most foes, since a monster ability picks no cell.
   'breath-acid':      { id: 'breath-acid',      name: 'Acid Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-acid') },
+  'breath-draconic':  { id: 'breath-draconic',  name: 'Breath Weapon',    trigger: 'action', recharge: 5, apply: breathApply('breath-draconic') },
   'breath-lightning': { id: 'breath-lightning', name: 'Lightning Breath', trigger: 'action', recharge: 5, apply: breathApply('breath-lightning') },
   'breath-poison':    { id: 'breath-poison',    name: 'Poison Breath',    trigger: 'action', recharge: 5, apply: breathApply('breath-poison') },
   'breath-fire':      { id: 'breath-fire',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire') },

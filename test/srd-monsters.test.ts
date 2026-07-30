@@ -138,6 +138,22 @@ const NOT_IN_SRD: Record<string, string> = {
  * stands for how fast the thing actually moves around a battlefield.
  */
 const DELIBERATE: Record<string, string> = {
+  'draconic-spirit': [
+    'AC and speed both differ by derivation rather than by choice. The SRD prints',
+    '"AC 14 + the spell\'s level", and a wizard in this game can only ever cast',
+    'Summon Dragon from a 5th-level slot, so the AC is always 19 — the sum, not a',
+    'different number. Speed is the usual flier convention: SRD walks 30, flies 60',
+    'and swims 30, and with no third dimension here one speed stands for how fast',
+    'it actually crosses a battlefield.',
+  ].join(' '),
+  'animated-object': [
+    'Size: the SRD block is "Huge or Smaller" and the spell charges two of your',
+    'budget for a Large and three for a Huge, so the same modifier buys either one',
+    'big object or several small ones. This game always takes the smallest, which',
+    'buys the most bodies — four Slams beat one, they spread across four enemies,',
+    'and four bodies soak four attacks. The stat block is therefore the',
+    'Medium-or-smaller row: AC 15, 10 hit points, 1d4 + 3.',
+  ].join(' '),
   'air-elemental': 'Flier: SRD walks 10 and flies 90 (hover). No flight here, so one speed stands for both.',
   'ghost': 'Flier: SRD walks 5 and flies 40 (hover). No flight here, so one speed stands for both.',
   'wraith': 'Flier: SRD walks 5 and flies 60 (hover). No flight here, so one speed stands for both.',

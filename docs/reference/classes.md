@@ -71,7 +71,7 @@ Spellcasting ability: **CHA**.
 | 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
 | 6 | Fireball, Spiritual Weapon |
 | 7 | Confusion, Greater Invisibility, Phantasmal Killer, Dimension Door, Freedom of Movement |
-| 9 | Hold Monster, Mass Cure Wounds |
+| 9 | Animate Objects, Hold Monster, Mass Cure Wounds |
 
 ## Cleric
 
@@ -458,7 +458,7 @@ Spellcasting ability: **CHA**.
 | 3 | Shatter, Mirror Image, Suggestion, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step, Hold Person |
 | 5 | Fireball, Counterspell, Lightning Bolt, Fear, Haste, Protection from Energy, Dispel Magic |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Dimension Door |
-| 9 | Cone of Cold, Insect Plague, Hold Monster |
+| 9 | Animate Objects, Cone of Cold, Insect Plague, Hold Monster |
 
 ## Warlock
 
@@ -580,6 +580,6 @@ Spellcasting ability: **INT**.
 | 3 | Suggestion, Mirror Image, Shatter, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step |
 | 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Phantasmal Killer, Dimension Door |
-| 9 | Cone of Cold, Conjure Elemental, Hold Monster |
+| 9 | Summon Dragon, Cone of Cold, Conjure Elemental, Hold Monster, Animate Objects |
 
 Learnable from scrolls found in play: Ray of Sickness.

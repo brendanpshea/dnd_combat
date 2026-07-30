@@ -9,7 +9,7 @@ import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
-import { dismissSummonedBy } from './summon.js';
+import { dismissSummonedBy, dismissSummonsOfSpell } from './summon.js';
 import { withinReach, reachesCell } from './reach.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
@@ -1299,7 +1299,13 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   if (spellId === 'call-lightning') delete c.stormCloud;      // the storm blows out
   if (spellId === 'moonbeam') delete c.moonbeam;              // the beam winks out
-  const events: GameEvent[] = [{ type: 'concentrationBroken', combatantId, spellId }];
+  const events: GameEvent[] = [
+    { type: 'concentrationBroken', combatantId, spellId },
+    // Conjured CREATURES held by this concentration — the dragon spirit, the
+    // animated objects. Scoped to the spell so a paladin's steed, which is not
+    // concentration at all, is never caught by somebody else's broken spell.
+    ...dismissSummonsOfSpell(state, combatantId, spellId),
+  ];
   // Polymorph: the shape was being held by this mind, so it ends with the
   // concentration — the ape's remaining hit points simply vanish, which is what
   // makes the spell breakable rather than a free 168-point buffer.

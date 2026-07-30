@@ -176,8 +176,12 @@ describe('spell stat lines against the SRD', () => {
       if (spell.outOfCombat) continue;
       let cast = false;
       for (const classId of Object.keys(CLASSES)) {
+        // Level 9, not 7. Every 5th-level spell was unreachable at 7 — no slot
+        // to cast one from — so the whole newest tier was landing in
+        // `unreachable` and the check was quietly hollowing out as the game
+        // grew. Nine is the cap, and it can reach everything.
         const hero = buildCharacter({
-          classId, team: 'team1', level: 7, name: 'H', position: { x: 4, y: 1 }, speciesId: 'human',
+          classId, team: 'team1', level: 9, name: 'H', position: { x: 4, y: 1 }, speciesId: 'human',
         });
         if (!hero.spellIds.includes(spell.id)) continue;
         // A knight, not an ogre: Heat Metal returns early with nothing to heat,

@@ -3324,6 +3324,89 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+
+  /**
+   * Summon Dragon: a spirit with a stat block, for the whole fight.
+   *
+   * A REAL COMBATANT, and the SRD says so plainly: "It manifests… uses the
+   * Draconic Spirit stat block… shares your Initiative count, but it takes its
+   * turn immediately after yours." `summonCombatant` already inserts exactly
+   * there. It obeys verbal commands with no action required, and if you issue
+   * none it Dodges — this game runs the full AI over it instead, which is
+   * strictly the "always commanded" reading and the right one for a game that
+   * plays itself.
+   *
+   * FIXED AT A 5TH-LEVEL CAST, because that is the only slot that exists for
+   * it: Summon Dragon is wizard-only and a level-9 wizard's table is
+   * [4,3,3,3,1]. Scaling code for slots 6 through 9 would be four branches
+   * that can never run — the same call made for the steed's flight.
+   *
+   * Shared Resistances (the caster picks one of the spirit's five and gains it)
+   * is deliberately absent: it is a buff on the CASTER chosen at cast time, and
+   * a resistance picker is a screen this game does not have for a choice whose
+   * right answer depends on a wave the player has not seen yet.
+   */
+  'summon-dragon': {
+    id: 'summon-dragon', name: 'Summon Dragon', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 60 },
+    concentration: true,
+    icon: '\u{1F409}',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      caster.concentratingOn = { spellId: 'summon-dragon', targetIds: [] };
+      return summonCombatant(state, {
+        monsterId: 'draconic-spirit',
+        summonerId: casterId,
+        near: positions[0] ?? caster.position,
+        idHint: 'dragon',
+        spellId: 'summon-dragon',
+        patch: { summonSlotLevel: 5 },
+      });
+    },
+  },
+
+  /**
+   * Animate Objects: as many bodies as the caster's modifier will buy.
+   *
+   * THE SIZE CHOICE IS SETTLED, NOT OFFERED. The SRD lets you animate anything
+   * up to Huge and charges two of your budget for a Large and three for a Huge,
+   * so the same modifier buys either one big object or several small ones. The
+   * small ones win and it is not close: four Slams at 1d4+3 beat one at 2d12+3
+   * on any target that can be killed, they spread across four enemies, and four
+   * bodies soak four attacks. Offering the choice would be offering a trap.
+   *
+   * So: always Medium-or-smaller, always the maximum count, which is the
+   * caster's spellcasting ability modifier — three or four in practice.
+   *
+   * Held by concentration, and `dismissSummonsOfSpell` ends exactly these when
+   * it drops. That scoping is the reason `summonSpell` exists: a wizard holding
+   * both a Fireball's concentration and a paladin's steed on the board must not
+   * lose the horse.
+   */
+  'animate-objects': {
+    id: 'animate-objects', name: 'Animate Objects', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 120 },
+    concentration: true,
+    icon: '\u{1FA91}',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const count = Math.max(1, spellMod(state, casterId));
+      caster.concentratingOn = { spellId: 'animate-objects', targetIds: [] };
+      const events: GameEvent[] = [];
+      for (let i = 0; i < count; i++) {
+        events.push(...summonCombatant(state, {
+          monsterId: 'animated-object',
+          summonerId: casterId,
+          near: positions[0] ?? caster.position,
+          idHint: 'object',
+          spellId: 'animate-objects',
+          index: i,
+        }));
+      }
+      return events;
+    },
+  },
+
   // --- 5th level ------------------------------------------------------------
   /*
    * The tier that unlocks character level 9, and the first new spell level in

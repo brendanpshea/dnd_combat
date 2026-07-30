@@ -77,6 +77,15 @@ export interface SummonOptions {
   /** Id prefix, so two snakes from one staff do not collide. */
   idHint?: string;
   /**
+   * Which of a batch this is. Animate Objects conjures one object per point of
+   * the caster's spellcasting modifier, all in the same round — and the id was
+   * `${hint}-${summoner}-${round}`, with a guard that silently dropped a
+   * duplicate. Three of four objects would simply never have appeared.
+   */
+  index?: number;
+  /** The spell that made it, so concentration can end exactly these. */
+  spellId?: Id;
+  /**
    * Fields written over the stat block after it is built.
    *
    * Find Steed's steed is the reason: the SRD gives it AC 10 + the spell's
@@ -104,7 +113,8 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
   const spot = freeCellNear(state, opts.near);
   if (!spot) return [];
 
-  const id = `${opts.idHint ?? opts.monsterId}-${opts.summonerId}-${state.round}`;
+  const suffix = opts.index === undefined ? '' : `-${opts.index}`;
+  const id = `${opts.idHint ?? opts.monsterId}-${opts.summonerId}-${state.round}${suffix}`;
   if (state.combatants[id]) return [];   // already out; one at a time
 
   const beast: Combatant = {
@@ -116,6 +126,7 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
     // with nothing to catch it.
     id,
     summonedBy: opts.summonerId,
+    ...(opts.spellId ? { summonSpell: opts.spellId } : {}),
     position: spot,
     team: summoner.team,
   };
@@ -151,6 +162,27 @@ export function dismissSummonedBy(state: GameState, summonerId: Id): GameEvent[]
   const events: GameEvent[] = [];
   for (const [id, c] of Object.entries(state.combatants)) {
     if (c.summonedBy !== summonerId) continue;
+    const cell = cellAt(state.grid, c.position);
+    if (cell?.occupantId === id) delete cell.occupantId;
+    delete state.combatants[id];
+    state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+    events.push({ type: 'summonExpired', casterId: summonerId, kind: c.classId, position: { ...c.position } });
+  }
+  return events;
+}
+
+/**
+ * A concentration-held summon ends with the concentration.
+ *
+ * Scoped to the SPELL and not merely the caster, which is the whole reason
+ * `summonSpell` exists: Summon Dragon and Animate Objects end when the caster's
+ * mind wanders, and Find Steed does not. Sweeping by caster alone would make a
+ * wizard's broken Fireball concentration dismiss a paladin's horse.
+ */
+export function dismissSummonsOfSpell(state: GameState, summonerId: Id, spellId: Id): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const [id, c] of Object.entries(state.combatants)) {
+    if (c.summonedBy !== summonerId || c.summonSpell !== spellId) continue;
     const cell = cellAt(state.grid, c.position);
     if (cell?.occupantId === id) delete cell.occupantId;
     delete state.combatants[id];

@@ -698,6 +698,43 @@ export const MONSTERS: Record<Id, MonsterData> = {
    * line, and giving it one would let the party's own steed inflate the
    * difficulty of the wave it is helping to fight.
    */
+  /**
+   * The Draconic Spirit a wizard's Summon Dragon calls up. AC 14 + the spell's
+   * level and 50 hit points, both fixed at the 5th-level cast because that is
+   * the only slot a wizard in this game can reach.
+   *
+   * `long-limbed` gives it the SRD's 10-foot Rend reach — the same feature a
+   * bugbear uses, rather than a second way of saying reach.
+   */
+  'draconic-spirit': {
+    id: 'draconic-spirit', name: 'Draconic Spirit',
+    artId: 'young-red',
+    ac: 19, hp: 50, speed: 60,
+    creatureType: 'dragon',
+    size: 'large',
+    fly: true,
+    abilities: { str: 19, dex: 14, con: 17, int: 10, wis: 14, cha: 14 },
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'poison'],
+    featureIds: ['long-limbed', 'breath-draconic'],
+    weaponIds: ['draconic-rend'],
+    attacksPerAction: 2,
+  },
+  /**
+   * An Animated Object. The SRD sizes them Medium-or-smaller up to Huge and
+   * prices a Large as two objects and a Huge as three; this game always takes
+   * the smallest, which buys the MOST bodies — see the `animate-objects` spell
+   * for why that is the only reading worth offering.
+   */
+  'animated-object': {
+    id: 'animated-object', name: 'Animated Object',
+    artId: 'animated-armor',
+    ac: 15, hp: 10, speed: 30,
+    creatureType: 'construct',
+    size: 'small',
+    abilities: { str: 16, dex: 10, con: 10, int: 3, wis: 3, cha: 1 },
+    immunities: ['poison', 'psychic'],
+    weaponIds: ['object-slam'],
+  },
   'otherworldly-steed': {
     id: 'otherworldly-steed', name: 'Otherworldly Steed',
     artId: 'unicorn',

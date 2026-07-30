@@ -360,6 +360,16 @@ export interface Combatant {
    * ride on the creature rather than be recomputed from its stats.
    */
   summonSlotLevel?: number;
+  /**
+   * The spell that conjured this creature, when a spell did.
+   *
+   * Concentration is why. Summon Dragon and Animate Objects both END when the
+   * caster's concentration drops, and Find Steed does not — so "sweep this
+   * caster's summons" is the wrong question and "sweep the ones this SPELL
+   * made" is the right one. Without it, breaking concentration on a Fireball
+   * would dismiss a paladin's steed.
+   */
+  summonSpell?: Id;
   /** A summoned familiar follows its caster without occupying a grid cell. */
   familiar?: {
     kind: 'owl';
