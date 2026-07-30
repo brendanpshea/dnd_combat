@@ -176,6 +176,26 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
       const webbed = !!cell.web;
       if (webbed) classes.push(hasSpellIcon('web') ? 'webbed webbed-art' : 'webbed');
       if (hl) classes.push(`hl-${hl}`);
+      /**
+       * Where you can walk is ONE REGION, not forty-eight boxes.
+       *
+       * Every reachable cell wore a 3px bright-blue ring, so a 30-foot move on
+       * an 8x8 board ringed forty-eight of its sixty-four squares — the map art,
+       * the terrain and the tokens all read through a grid of loud rectangles,
+       * and the thing the rings were meant to communicate ("here is where you
+       * can go") was the hardest thing on the board to see.
+       *
+       * So the ring is drawn only on the REGION'S EDGE — a reachable cell with
+       * at least one unreachable orthogonal neighbour — and the interior gets a
+       * faint wash instead. Same information, one shape. This is the same trick
+       * the terrain badges above already use, for the same reason: a large area
+       * marked on every interior tile is marked on nothing.
+       */
+      if (hl === 'move') {
+        const open = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const)
+          .every(([dx, dy]) => highlights.get(posKey({ x: x + dx, y: y + dy })) === 'move');
+        if (!open) classes.push('hl-move-edge');
+      }
       if ((x + y) % 2 === 0) classes.push('dark');
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];
       const cellCorpses = corpses?.filter((c) => c.cellKey === key) ?? [];
