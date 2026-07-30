@@ -69,6 +69,32 @@ function freeCellNear(state: GameState, at: Position): Position | undefined {
   return undefined;
 }
 
+
+/**
+ * Take a creature out of the initiative order without derailing whose turn it
+ * is.
+ *
+ * `summonCombatant` is careful about this on the way IN — it splices at
+ * `turnIndex + 1` precisely so the index cannot move — and removal has the
+ * mirror problem, which cost an arena run to find. Dropping an entry before the
+ * current index shifts everything after it down one, so `turnIndex` then names
+ * the NEXT creature; drop enough and it runs off the end of the array, at which
+ * point `currentCombatant` returns undefined and `step` throws on `.id`.
+ *
+ * Nothing in the suite caught it: 1891 tests passed and the game crashed on the
+ * first arena run. Animate Objects is what makes it easy to hit, because it
+ * removes three or four entries at once.
+ */
+export function removeFromOrder(state: GameState, id: Id): void {
+  const at = state.initiativeOrder.indexOf(id);
+  if (at < 0) return;
+  state.initiativeOrder.splice(at, 1);
+  // Strictly before: removing the creature whose turn it IS leaves the index
+  // on whoever slid into its place, which is right — they have not acted yet.
+  if (at < state.turnIndex) state.turnIndex -= 1;
+  if (state.turnIndex >= state.initiativeOrder.length) state.turnIndex = 0;
+}
+
 export interface SummonOptions {
   monsterId: Id;
   summonerId: Id;
@@ -76,6 +102,15 @@ export interface SummonOptions {
   near: Position;
   /** Id prefix, so two snakes from one staff do not collide. */
   idHint?: string;
+  /**
+   * Which of a batch this is. Animate Objects conjures one object per point of
+   * the caster's spellcasting modifier, all in the same round — and the id was
+   * `${hint}-${summoner}-${round}`, with a guard that silently dropped a
+   * duplicate. Three of four objects would simply never have appeared.
+   */
+  index?: number;
+  /** The spell that made it, so concentration can end exactly these. */
+  spellId?: Id;
   /**
    * Fields written over the stat block after it is built.
    *
@@ -104,7 +139,8 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
   const spot = freeCellNear(state, opts.near);
   if (!spot) return [];
 
-  const id = `${opts.idHint ?? opts.monsterId}-${opts.summonerId}-${state.round}`;
+  const suffix = opts.index === undefined ? '' : `-${opts.index}`;
+  const id = `${opts.idHint ?? opts.monsterId}-${opts.summonerId}-${state.round}${suffix}`;
   if (state.combatants[id]) return [];   // already out; one at a time
 
   const beast: Combatant = {
@@ -116,6 +152,7 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
     // with nothing to catch it.
     id,
     summonedBy: opts.summonerId,
+    ...(opts.spellId ? { summonSpell: opts.spellId } : {}),
     position: spot,
     team: summoner.team,
   };
@@ -154,7 +191,28 @@ export function dismissSummonedBy(state: GameState, summonerId: Id): GameEvent[]
     const cell = cellAt(state.grid, c.position);
     if (cell?.occupantId === id) delete cell.occupantId;
     delete state.combatants[id];
-    state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+    removeFromOrder(state, id);
+    events.push({ type: 'summonExpired', casterId: summonerId, kind: c.classId, position: { ...c.position } });
+  }
+  return events;
+}
+
+/**
+ * A concentration-held summon ends with the concentration.
+ *
+ * Scoped to the SPELL and not merely the caster, which is the whole reason
+ * `summonSpell` exists: Summon Dragon and Animate Objects end when the caster's
+ * mind wanders, and Find Steed does not. Sweeping by caster alone would make a
+ * wizard's broken Fireball concentration dismiss a paladin's horse.
+ */
+export function dismissSummonsOfSpell(state: GameState, summonerId: Id, spellId: Id): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const [id, c] of Object.entries(state.combatants)) {
+    if (c.summonedBy !== summonerId || c.summonSpell !== spellId) continue;
+    const cell = cellAt(state.grid, c.position);
+    if (cell?.occupantId === id) delete cell.occupantId;
+    delete state.combatants[id];
+    removeFromOrder(state, id);
     events.push({ type: 'summonExpired', casterId: summonerId, kind: c.classId, position: { ...c.position } });
   }
   return events;

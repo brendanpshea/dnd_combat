@@ -11,7 +11,7 @@ import type { GameState, Combatant, Id, Ability, Position, CreatureType, Conditi
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
-import { summonCombatant } from '../engine/rules/summon.js';
+import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -3297,7 +3297,9 @@ export const SPELLS: Record<Id, SpellData> = {
           delete state.combatants[id];
           const cell = cellAt(state.grid, c.position);
           if (cell?.occupantId === id) delete cell.occupantId;
-          state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+          // Through the shared helper: a raw filter here shifts `turnIndex`
+          // under the current creature, which is how an arena run crashed.
+          removeFromOrder(state, id);
         }
       }
       const hp = 5 + 10 * slotLevel;
@@ -3306,6 +3308,10 @@ export const SPELLS: Record<Id, SpellData> = {
         summonerId: casterId,
         near: positions[0] ?? caster.position,
         idHint: 'steed',
+        // Tagged even though Find Steed takes no concentration: the sweep that
+        // ends a dragon spirit is keyed on the spell, and a steed that carried
+        // no spell id would be a summon the bookkeeping could not name.
+        spellId: 'find-steed',
         patch: {
           hp, maxHp: hp,
           acOverride: 10 + slotLevel,
@@ -3321,6 +3327,89 @@ export const SPELLS: Record<Id, SpellData> = {
            */
         },
       });
+    },
+  },
+
+
+  /**
+   * Summon Dragon: a spirit with a stat block, for the whole fight.
+   *
+   * A REAL COMBATANT, and the SRD says so plainly: "It manifests… uses the
+   * Draconic Spirit stat block… shares your Initiative count, but it takes its
+   * turn immediately after yours." `summonCombatant` already inserts exactly
+   * there. It obeys verbal commands with no action required, and if you issue
+   * none it Dodges — this game runs the full AI over it instead, which is
+   * strictly the "always commanded" reading and the right one for a game that
+   * plays itself.
+   *
+   * FIXED AT A 5TH-LEVEL CAST, because that is the only slot that exists for
+   * it: Summon Dragon is wizard-only and a level-9 wizard's table is
+   * [4,3,3,3,1]. Scaling code for slots 6 through 9 would be four branches
+   * that can never run — the same call made for the steed's flight.
+   *
+   * Shared Resistances (the caster picks one of the spirit's five and gains it)
+   * is deliberately absent: it is a buff on the CASTER chosen at cast time, and
+   * a resistance picker is a screen this game does not have for a choice whose
+   * right answer depends on a wave the player has not seen yet.
+   */
+  'summon-dragon': {
+    id: 'summon-dragon', name: 'Summon Dragon', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 60 },
+    concentration: true,
+    icon: '\u{1F409}',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      caster.concentratingOn = { spellId: 'summon-dragon', targetIds: [] };
+      return summonCombatant(state, {
+        monsterId: 'draconic-spirit',
+        summonerId: casterId,
+        near: positions[0] ?? caster.position,
+        idHint: 'dragon',
+        spellId: 'summon-dragon',
+        patch: { summonSlotLevel: 5 },
+      });
+    },
+  },
+
+  /**
+   * Animate Objects: as many bodies as the caster's modifier will buy.
+   *
+   * THE SIZE CHOICE IS SETTLED, NOT OFFERED. The SRD lets you animate anything
+   * up to Huge and charges two of your budget for a Large and three for a Huge,
+   * so the same modifier buys either one big object or several small ones. The
+   * small ones win and it is not close: four Slams at 1d4+3 beat one at 2d12+3
+   * on any target that can be killed, they spread across four enemies, and four
+   * bodies soak four attacks. Offering the choice would be offering a trap.
+   *
+   * So: always Medium-or-smaller, always the maximum count, which is the
+   * caster's spellcasting ability modifier — three or four in practice.
+   *
+   * Held by concentration, and `dismissSummonsOfSpell` ends exactly these when
+   * it drops. That scoping is the reason `summonSpell` exists: a wizard holding
+   * both a Fireball's concentration and a paladin's steed on the board must not
+   * lose the horse.
+   */
+  'animate-objects': {
+    id: 'animate-objects', name: 'Animate Objects', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 120 },
+    concentration: true,
+    icon: '\u{1FA91}',
+    cast({ state, casterId, positions }) {
+      const caster = state.combatants[casterId]!;
+      const count = Math.max(1, spellMod(state, casterId));
+      caster.concentratingOn = { spellId: 'animate-objects', targetIds: [] };
+      const events: GameEvent[] = [];
+      for (let i = 0; i < count; i++) {
+        events.push(...summonCombatant(state, {
+          monsterId: 'animated-object',
+          summonerId: casterId,
+          near: positions[0] ?? caster.position,
+          idHint: 'object',
+          spellId: 'animate-objects',
+          index: i,
+        }));
+      }
+      return events;
     },
   },
 

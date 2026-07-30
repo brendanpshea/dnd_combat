@@ -818,6 +818,33 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       }
       return v - slotCost;
     }
+    /**
+     * The two conjured-creature spells, priced exactly as Find Steed is: what
+     * the bodies DO over the rounds a fight has left, plus what they soak.
+     * Built rather than guessed so the numbers come off the real stat blocks
+     * through `outputPerRound` — a hand-written "about 20 a round" here is the
+     * habit `scoring-currency.test.ts` exists to catch.
+     */
+    case 'summon-dragon':
+    case 'animate-objects': {
+      const already = Object.values(state.combatants).some(
+        (c) => c.alive && c.summonedBy === actor.id && c.summonSpell === a.spellId);
+      if (already) return 0;
+      const foe = Object.values(state.combatants)
+        .filter((c) => c.alive && !isDown(c) && c.team !== actor.team)
+        .sort((x, y) => distanceCells(actor.position, x.position) - distanceCells(actor.position, y.position))[0];
+      if (!foe) return 0;
+      const isDragon = a.spellId === 'summon-dragon';
+      // Animate Objects buys one body per point of spellcasting modifier; the
+      // dragon buys one, much bigger. Both come off the same stat blocks the
+      // spells actually summon.
+      const count = isDragon ? 1 : Math.max(1, abilityMod(actor.abilities[actor.spellcastingAbility ?? 'int']));
+      const body = buildMonster(isDragon ? 'draconic-spirit' : 'animated-object', actor.team, actor.position);
+      return count * (
+        damageValue(outputPerRound(body) * HASTE_ROUNDS, foe) +
+        wardValue(body.maxHp * 0.5, state, actor)
+      ) - slotCost;
+    }
     case 'find-steed': {
       /**
        * A whole second body, for a bonus action, that keeps paying every round.

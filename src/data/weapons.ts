@@ -591,6 +591,22 @@ export const WEAPONS: Record<Id, WeaponData> = {
    * gives +4, which is the 2nd-level steed's 1d8+2 rounded generously and the
    * 4th-level steed's 1d8+4 exactly.
    */
+  /**
+   * The Draconic Spirit's Rend. The SRD is "1d6 + 4 + the spell's level"; the
+   * +4 arrives as the spirit's own Strength modifier the way every monster
+   * attack does, and the +5 is the spell level — fixed rather than scaled
+   * because a wizard in this game can only ever cast Summon Dragon from a
+   * 5th-level slot (a level-9 wizard's table is [4,3,3,3,1] and stops there).
+   */
+  'draconic-rend': {
+    id: 'draconic-rend', name: 'Rend', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true, damageBonus: 5,
+  },
+  /** An Animated Object's Slam: 1d4 force, plus its Strength. */
+  'object-slam': {
+    id: 'object-slam', name: 'Slam', damage: '1d4', damageType: 'force',
+    properties: [], melee: true,
+  },
   'otherworldly-slam': {
     id: 'otherworldly-slam', name: 'Slam', damage: '1d8', damageType: 'radiant',
     properties: [], melee: true,
