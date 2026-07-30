@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { restPools, shortLabel } from '../web/src/featurePools.js';
 import { byTier } from '../web/src/spellTiers.js';
+import { CONDITION_META } from '../web/src/conditions.js';
 import { join } from 'node:path';
 
 /**
@@ -656,5 +657,42 @@ describe('the spell tray', () => {
     expect(close, 'no close button after the title').toBeGreaterThan(title);
     expect(tally, 'the tally is back between the title and the ✕').toBeGreaterThan(close);
     expect(rule('.tray-tally'), 'the tally no longer takes a row of its own').toContain('100%');
+  });
+});
+
+/**
+ * A sleeping enemy has to LOOK asleep.
+ *
+ * The board toppled a creature with the `prone` condition and a hero at 0 HP,
+ * and nothing else. A target that failed its save against Sleep stood upright
+ * in full colour — indistinguishable from an enemy about to act, which is the
+ * one thing the caster spent a slot to change. The rules agree: an unconscious
+ * creature falls prone.
+ *
+ * `incapacitated` is deliberately excluded. It is Sleep's first stage, and a
+ * merely incapacitated creature stays on its feet.
+ */
+describe('unconscious creatures on the board', () => {
+  const board = readFileSync(fileURLToPath(new URL('../web/src/Board.tsx', import.meta.url)), 'utf8');
+
+  it('are toppled like a prone one', () => {
+    const at = board.indexOf("? 'prone' : ''");
+    expect(at, 'the board no longer tilts anything').toBeGreaterThan(0);
+    const test = board.slice(Math.max(0, at - 260), at);
+    expect(test, 'a slept creature stands upright again').toContain("condition.id === 'unconscious'");
+    expect(test).toContain("condition.id === 'prone'");
+    expect(test, 'merely incapacitated should stay on its feet')
+      .not.toContain("'incapacitated'");
+  });
+
+  it('still let a downed body own the greyed-out look', () => {
+    // Both classes on one token would fight over `transform`; `downed` is the
+    // one that also greys and hides the HP bar, so it must win.
+    const at = board.indexOf("? 'prone' : ''");
+    expect(board.slice(Math.max(0, at - 300), at)).toContain('!isDown(c)');
+  });
+
+  it('have a glyph to go with the posture', () => {
+    expect(CONDITION_META.unconscious?.icon, 'nothing marks the sleeper').toBeTruthy();
   });
 });

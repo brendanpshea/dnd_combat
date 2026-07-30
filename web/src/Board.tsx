@@ -309,7 +309,17 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
               // Knocked prone but still conscious: toppled like a downed body,
               // yet in full colour and still in the fight (down already owns the
               // greyed-out look, so only tilt a prone creature that isn't down).
-              !isDown(c) && c.conditions.some((condition) => condition.id === 'prone') ? 'prone' : '',
+              //
+              // An unconscious creature is toppled too. The rules say so — an
+              // unconscious creature falls prone — and until this it did not
+              // read that way at all: a target that failed its save against
+              // Sleep stood upright in full colour, indistinguishable from an
+              // enemy about to act, which is the one thing the caster spent a
+              // slot to change. `incapacitated` is deliberately NOT included:
+              // Sleep's first stage, and a creature that is merely incapacitated
+              // stays on its feet in the rules.
+              !isDown(c) && c.conditions.some((condition) =>
+                condition.id === 'prone' || condition.id === 'unconscious') ? 'prone' : '',
               // Scale alone was carrying the whole "this thing is enormous"
               // signal, and it could not: the bands overlapped, and a token 15%
               // bigger than its neighbour is easy to miss on a phone. A Huge
