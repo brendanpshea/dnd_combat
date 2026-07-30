@@ -122,6 +122,20 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   gap: 8px 12px;
 }
 .topbar .round { font-weight: 700; }
+/**
+ * ONE ROW ON A PHONE, not two.
+ *
+ * At 412px the bar wrapped its six controls onto a second row and stood 88px
+ * tall — on a 600px screen that is nearly a sixth of everything, spent on
+ * chrome, and it comes straight out of the board's budget. Tightening the
+ * control row's own padding and gaps fits it beside the title again.
+ */
+@media (max-width: 899px) {
+  .topbar { gap: 4px 8px; }
+  .topbar button { padding: 4px 8px; }
+  .battle { gap: 6px; padding: 6px; }
+  .battle-main { gap: 6px; }
+}
 /* min-width:0 because a flex item defaults to min-width:auto and so refuses to
    shrink below its text — which is what let a long roster ("Wave 1 — Worg,
    Bugbear Warrior, Satyr") push the row wider than the screen. Truncate on one
@@ -1569,6 +1583,24 @@ button.danger { border-color: var(--red); color: var(--red); }
   border: 1px solid #453d63;
   border-radius: 10px;
   animation: narrate-in 0.22s ease-out;
+}
+/**
+ * Nothing to say, so say nothing — but keep the space.
+ *
+ * The element renders a non-breaking space when there is no line, so its height
+ * is reserved and the board never shifts as lines arrive and clear. That is
+ * worth keeping. What was not worth keeping is the panel, border and shadow
+ * drawn around that space: with nothing to read, a small empty box sat under
+ * the board for most of the fight, looking like a component that had failed to
+ * load.
+ *
+ * `:empty` cannot do this — the space is a text node, so the element is never
+ * empty — which is why the component hands down a class instead.
+ */
+.narration.quiet {
+  background: none;
+  border-color: transparent;
+  animation: none;
 }
 @keyframes narrate-in {
   0% { opacity: 0.4; transform: translateY(-3px) scale(0.99); }
@@ -3683,6 +3715,32 @@ button.category .count {
    `lethal` is the one case worth interrupting for — the worst case is at least
    your current hit points, so this move can end with you on the floor — and it
    is the only one that gets a glyph, full contrast and motion. */
+/**
+ * THE NUMBERS ARE THE CLUTTER, not the blue.
+ *
+ * Every reachable cell with any risk at all wore a number, and every one with
+ * any cover wore a shield — on a hazard map that is dozens of small figures
+ * competing with the board they are drawn on. The rule now matches what this
+ * file already says about the lethal case being "the one worth interrupting
+ * for": the tile you are actually considering tells you everything, and the
+ * board only speaks up unprompted for something that can drop you.
+ *
+ * Hidden with opacity rather than `display`, so the labels stay in the
+ * accessibility tree and a screen reader still hears every one of them.
+ */
+.cover-badge,
+.risk-badge:not(.lethal) {
+  opacity: 0;
+  transition: opacity .12s ease-out;
+}
+.cell:hover .cover-badge,
+.cell:hover .risk-badge,
+.cell:focus-visible .cover-badge,
+.cell:focus-visible .risk-badge { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .cover-badge, .risk-badge:not(.lethal) { transition: none; }
+}
+
 .risk-badge {
   position: absolute;
   left: 50%;
