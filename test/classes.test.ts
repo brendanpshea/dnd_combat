@@ -133,7 +133,11 @@ describe('class skill proficiencies (2024 counts)', () => {
  */
 describe('auto-prepared loadouts include each class signature', () => {
   const MUST_PREPARE: Record<string, string[]> = {
-    bard: ['sleep', 'hold-person', 'healing-word'],
+    // Suggestion rather than Hold Person at 2nd: Hold Person now carries the
+    // SRD's `humanoid` gate, which answers 18 of the bestiary's 143 monsters,
+    // and it moved to the END of every line that led with it. A spell that
+    // works one fight in eight must not be the one a bard walks in holding.
+    bard: ['sleep', 'suggestion', 'healing-word'],
     druid: ['entangle', 'call-lightning', 'cure-wounds'],
     wizard: ['sleep', 'fireball', 'magic-missile'],
     cleric: ['spiritual-guardians', 'bless', 'cure-wounds'],

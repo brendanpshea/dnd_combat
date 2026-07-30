@@ -327,7 +327,19 @@ export const STAGES: StageData[] = [
  *  run reaches L4 in the late Act II fights and L5 just before the giants
  *  finale (fighting the boss at full L5 power). */
 /**
- * 5e's XP thresholds, through level 8.
+ * 5e's XP thresholds, through level 9.
+ *
+ * LEVEL 9 IS THE FIRST ONE THAT IS NOT NEARLY FREE. It is the 5th-level spell
+ * tier — the first new spell level this game has gained since it was built —
+ * and the whole reason the threshold moved. Casters reaching 9 get Hold
+ * Monster, Cone of Cold, Flame Strike, Mass Cure Wounds and Synaptic Static.
+ *
+ * MARTIAL CLASSES GAIN NOTHING AT 9 YET, and that is a real hole rather than a
+ * design choice: the SRD gives the fighter Indomitable, the barbarian Brutal
+ * Strike, the bard and ranger Expertise, the paladin Abjure Foes. They are a
+ * separate pass, and `test/fifth-level-spells.test.ts` names every one of them
+ * so the gap is recorded where it can be deleted rather than only described
+ * here.
  *
  * Level 8 was added because it is nearly free — the SRD gives every class an
  * Ability Score Increase there and no new spell tier — and because the arena's
@@ -336,7 +348,7 @@ export const STAGES: StageData[] = [
  * ladder a number rather than a level. It also buys several more fights with
  * 4th-level slots in hand, which is where the interesting spells are.
  */
-export const LEVEL_XP = [0, 300, 900, 2700, 6500, 14000, 23000, 34000] as const;
+export const LEVEL_XP = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000] as const;
 export const MAX_LEVEL = LEVEL_XP.length;
 
 export function levelForXp(xp: number): number {

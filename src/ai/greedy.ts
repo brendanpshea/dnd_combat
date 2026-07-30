@@ -764,6 +764,90 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       }
       return v - slotCost;
     }
+    /**
+     * The 5th-level tier. Each one is priced with the same currency as its
+     * nearest 3rd- or 4th-level relative rather than with a new constant —
+     * every time a modifier in this file got a flat number of its own it either
+     * never fired or always did.
+     */
+    case 'hold-monster': {
+      // Hold Person's scoring exactly, which is the point: the two spells do
+      // the same thing to different halves of the bestiary, so scoring them
+      // differently would make one of them a mistake to prepare.
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      return denialValue(state, t, saveFailProb(state, t, 'wis', dc), 4) - slotCost;
+    }
+    case 'cone-of-cold': {
+      const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
+      const sculpt = actor.featureIds.includes('sculpt-spells');
+      const dice = avgDice(`${8 + Math.max(0, a.slotLevel - 5)}d8`);
+      let v = 0;
+      for (const pos of cone15(actor.position, dir)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ || occ === actor.id) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        if (sculpt && t.team === actor.team) continue;
+        // Constitution, not Dexterity — which is exactly why a caster carries
+        // this next to Fireball, and the scorer has to read the right save or
+        // it will price the cone as a worse Fireball against nimble enemies.
+        const pFail = saveFailProb(state, t, 'con', dc);
+        const ev = dice * (pFail + (1 - pFail) * 0.5);
+        v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    case 'flame-strike': {
+      const center = (a.targets[0] as { position: Position }).position;
+      // Both halves, and both scale — the fire half can be resisted and the
+      // radiant half essentially never is, but `damageValue` already reads the
+      // target's resistances, so the two are summed and priced per creature.
+      const dice = 2 * avgDice(`${5 + Math.max(0, a.slotLevel - 5)}d6`);
+      let v = 0;
+      for (const pos of sphere5x5(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        const pFail = saveFailProb(state, t, 'dex', dc);
+        const ev = dice * (pFail + (1 - pFail) * 0.5);
+        // No Sculpt Spells on a cleric, so an ally in the column always costs.
+        v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    case 'insect-plague': {
+      if (actor.concentratingOn) return 0;
+      const center = (a.targets[0] as { position: Position }).position;
+      const dice = avgDice(`${4 + Math.max(0, a.slotLevel - 5)}d10`);
+      let v = 0;
+      for (const pos of sphere2x2(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive) continue;
+        const pFail = saveFailProb(state, t, 'con', dc);
+        const ev = dice * (pFail + (1 - pFail) * 0.5);
+        // Wall of Fire's ally penalty, for Wall of Fire's reason: the swarm
+        // stays, so a friend standing in it pays again every round.
+        v += t.team === actor.team ? -3 * ev : damageValue(ev, t);
+      }
+      return v - slotCost;
+    }
+    case 'mass-cure-wounds': {
+      // Mass Healing Word's shape with a far bigger die, so the same weighting
+      // (badly hurt allies count for more than scratches) over `5d8 + mod`.
+      let v = 0;
+      for (const tg of a.targets) {
+        const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
+        const missing = t.maxHp - t.hp;
+        if (missing <= 0) continue;
+        const heal = Math.min(avgDice(`${5 + Math.max(0, a.slotLevel - 5)}d8`) + castMod, missing);
+        v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4);
+      }
+      return v - slotCost;
+    }
     case 'fireball': {
       const center = (a.targets[0] as { position: Position }).position;
       const sculpt = actor.featureIds.includes('sculpt-spells');

@@ -130,11 +130,14 @@ describe('upcasting', () => {
  */
 describe('level 8', () => {
   it('is reachable, and is not the finish line', () => {
-    expect(MAX_LEVEL).toBe(8);
+    expect(MAX_LEVEL).toBe(9);
     expect(levelForXp(LEVEL_XP[7]!)).toBe(8);
-    // Strictly greater, with room in it: a party that hits level 8 must get
-    // fights at level 8.
-    expect(RUN_TARGET_XP).toBeGreaterThan(LEVEL_XP[7]! + 5000);
+    // Level 8 is no longer the top rung, so it is no longer the one the finish
+    // line has to clear — but it must still be a level with fights left in it.
+    expect(levelForXp(LEVEL_XP[8]!)).toBe(9);
+    // Strictly greater, with room in it: a party that hits the top level must
+    // get fights AT the top level.
+    expect(RUN_TARGET_XP).toBeGreaterThan(LEVEL_XP[8]! + 5000);
   });
 
   it('gives every class its ability score increase', () => {

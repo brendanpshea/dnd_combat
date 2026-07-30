@@ -385,10 +385,16 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     if (fire) {
       const roll = rollDice(state.rng, fire.dice);
       state.rng = roll.state;
-      const save = savingThrow(state, moverId, 'dex', 15);
+      // Wall of Fire's Dexterity 15 unless the hazard named its own — Insect
+      // Plague is a Constitution save against the caster's DC.
+      const ability = fire.save?.ability ?? 'dex';
+      const save = savingThrow(state, moverId, ability, fire.save?.dc ?? 15);
       events.push(save.event);
-      const amount = saveForHalf(mover, 'dex', roll.total, save.success);
-      events.push(...applyDamage(state, moverId, fire.sourceId, amount, 'fire', roll.rolls, { tags: ['Wall of Fire'] }));
+      const amount = saveForHalf(mover, ability, roll.total, save.success);
+      events.push(...applyDamage(
+        state, moverId, fire.sourceId, amount, fire.damageType ?? 'fire', roll.rolls,
+        { tags: [fire.label ?? 'Wall of Fire'] },
+      ));
       if (!mover.alive || isDown(mover)) { stopShort(); return events; }
     }
 

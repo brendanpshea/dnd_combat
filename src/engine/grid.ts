@@ -2,7 +2,7 @@
  * Grid geometry: Chebyshev distance, line of sight, BFS pathing over terrain
  * cost, and AoE templates.
  */
-import { GridState, Position, Cell, TerrainId, Id, Ability, cellAt, posEq } from './types.js';
+import { GridState, Position, Cell, TerrainId, Id, Ability, DamageType, cellAt, posEq } from './types.js';
 
 export const CELL_FEET = 5;
 
@@ -166,12 +166,33 @@ export function webCell(
   return true;
 }
 
-/** Set a cell alight (Wall of Fire). Same rules as the web: never a wall. */
-export function fireCell(grid: GridState, p: Position, sourceId: Id, dice: string): boolean {
+/**
+ * Stamp a standing hazard onto a cell. Same rules as the web: never a wall.
+ *
+ * Wall of Fire was the only one of these for a long time, so the cell field is
+ * still called `fire`. Insect Plague is the second, and it is locusts rather
+ * than flame — so the damage type, the save and the log label are arguments
+ * now instead of being baked in. Omitting them gives the wall's own numbers,
+ * which is what every existing caller wants.
+ */
+export function hazardCell(
+  grid: GridState, p: Position, sourceId: Id, dice: string,
+  damageType?: DamageType, save?: { ability: Ability; dc: number }, label?: string,
+): boolean {
   const cell = cellAt(grid, p);
   if (!cell || blocksMovement(cell.terrain)) return false;
-  cell.fire = { sourceId, dice };
+  cell.fire = {
+    sourceId, dice,
+    ...(damageType ? { damageType } : {}),
+    ...(save ? { save } : {}),
+    ...(label ? { label } : {}),
+  };
   return true;
+}
+
+/** Wall of Fire's own name for it. */
+export function fireCell(grid: GridState, p: Position, sourceId: Id, dice: string): boolean {
+  return hazardCell(grid, p, sourceId, dice);
 }
 
 /** Hush a cell (Silence). Walls are already quiet. */

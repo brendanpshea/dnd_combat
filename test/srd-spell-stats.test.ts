@@ -49,14 +49,33 @@ function parseSrd(): Map<string, SrdSpell> {
     // The name sits on its own line directly above. Anything with sentence
     // punctuation is prose that happened to end near a header.
     if (!name || name.length > 40 || /[.:;]/.test(name)) continue;
-    // The stat line wraps for the long ones ("Casting Time: Bonus Action, which
-    // you take immediately after hitting..."), so join a few and let each field
-    // regex find its own end.
-    const meta = [lines[i + 1], lines[i + 2], lines[i + 3]].join(' ');
+    /**
+     * The stat line wraps for the long ones ("Casting Time: Bonus Action, which
+     * you take immediately after hitting..."), so gather a few lines and let
+     * each field regex find its own end.
+     *
+     * A fixed three-line window was not enough. Hold Monster's entry straddles a
+     * PAGE BREAK, so its Components/Duration line sits five lines below the
+     * header with a page footer and two blanks in between — the parser read its
+     * range and duration as empty, and the concentration check then reported the
+     * spell as disagreeing with an SRD that says no such thing.
+     *
+     * So the window runs forward to the next spell header instead of a fixed
+     * distance, dropping the page furniture on the way.
+     */
+    const FOOTER = /^\d+\s+System Reference Document/;
+    const window: string[] = [];
+    for (let j = i + 1; j < lines.length && window.length < 4; j++) {
+      const line = lines[j]!;
+      if (header.test(line.trim())) break;      // next spell's stat line
+      if (!line.trim() || FOOTER.test(line.trim())) continue;
+      window.push(line);
+    }
+    const meta = window.join(' ');
     if (!meta.startsWith('Casting Time:')) continue;
     // Duration runs to the end of whichever *physical* line carries it — on the
     // joined string it would swallow the next spell's name.
-    const durLine = [lines[i + 1], lines[i + 2], lines[i + 3]].find((l) => l?.includes('Duration:')) ?? '';
+    const durLine = window.find((l) => l.includes('Duration:')) ?? '';
     const duration = durLine.match(/Duration:\s*(.+?)\s*$/)?.[1] ?? '';
     // First block wins: the magic-item chapter repeats a few spell names.
     const key = name.toLowerCase();

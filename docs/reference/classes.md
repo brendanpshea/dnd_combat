@@ -48,16 +48,17 @@
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd | 4th | Cantrips | Prepared |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | 2 | — | — | — | 2 | 4 |
-| 2 | 3 | — | — | — | 2 | 5 |
-| 3 | 4 | 2 | — | — | 2 | 6 |
-| 4 | 4 | 3 | — | — | 3 | 7 |
-| 5 | 4 | 3 | 2 | — | 3 | 9 |
-| 6 | 4 | 3 | 3 | — | 3 | 10 |
-| 7 | 4 | 3 | 3 | 1 | 3 | 11 |
-| 8 | 4 | 3 | 3 | 2 | 3 | 12 |
+| Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Prepared |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | — | — | 2 | 4 |
+| 2 | 3 | — | — | — | — | 2 | 5 |
+| 3 | 4 | 2 | — | — | — | 2 | 6 |
+| 4 | 4 | 3 | — | — | — | 3 | 7 |
+| 5 | 4 | 3 | 2 | — | — | 3 | 9 |
+| 6 | 4 | 3 | 3 | — | — | 3 | 10 |
+| 7 | 4 | 3 | 3 | 1 | — | 3 | 11 |
+| 8 | 4 | 3 | 3 | 2 | — | 3 | 12 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 3 | 14 |
 
 Spellcasting ability: **CHA**.
 
@@ -66,10 +67,11 @@ Spellcasting ability: **CHA**.
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
 | 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Dissonant Whispers, Healing Word, Thunderwave, Faerie Fire, Cure Wounds, Command, Bane, Color Spray, Animal Friendship |
-| 3 | Hold Person, Suggestion, Mirror Image, Shatter, Invisibility, Silence, Blindness, Aid, Lesser Restoration |
+| 3 | Suggestion, Mirror Image, Shatter, Invisibility, Silence, Blindness, Aid, Lesser Restoration, Hold Person |
 | 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
 | 6 | Fireball, Spiritual Weapon |
 | 7 | Confusion, Greater Invisibility, Phantasmal Killer, Dimension Door, Freedom of Movement |
+| 9 | Hold Monster, Mass Cure Wounds |
 
 ## Cleric
 
@@ -92,16 +94,17 @@ Spellcasting ability: **CHA**.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd | 4th | Cantrips | Prepared |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | 2 | — | — | — | 2 | 4 |
-| 2 | 3 | — | — | — | 2 | 5 |
-| 3 | 4 | 2 | — | — | 2 | 7 |
-| 4 | 4 | 3 | — | — | 2 | 8 |
-| 5 | 4 | 3 | 2 | — | 2 | 11 |
-| 6 | 4 | 3 | 3 | — | 2 | 12 |
-| 7 | 4 | 3 | 3 | 1 | 2 | 13 |
-| 8 | 4 | 3 | 3 | 2 | 2 | 14 |
+| Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Prepared |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | — | — | 2 | 4 |
+| 2 | 3 | — | — | — | — | 2 | 5 |
+| 3 | 4 | 2 | — | — | — | 2 | 7 |
+| 4 | 4 | 3 | — | — | — | 2 | 8 |
+| 5 | 4 | 3 | 2 | — | — | 2 | 11 |
+| 6 | 4 | 3 | 3 | — | — | 2 | 12 |
+| 7 | 4 | 3 | 3 | 1 | — | 2 | 13 |
+| 8 | 4 | 3 | 3 | 2 | — | 2 | 14 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 2 | 15 |
 
 Spellcasting ability: **WIS**.
 
@@ -111,9 +114,10 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Sacred Flame, Guidance, Cure Wounds, Bless, Healing Word, Command, Inflict Wounds, Bane, Shield of Faith, Sanctuary, Protection from Evil and Good |
 | 2 | Guiding Bolt |
-| 3 | Hold Person, Aid, Spiritual Weapon, Silence, Blindness, Warding Bond, Lesser Restoration |
+| 3 | Aid, Spiritual Weapon, Silence, Blindness, Warding Bond, Lesser Restoration, Hold Person |
 | 5 | Mass Healing Word, Spirit Guardians, Protection from Energy, Dispel Magic, Bestow Curse |
 | 7 | Banishment, Death Ward, Freedom of Movement |
+| 9 | Flame Strike, Insect Plague, Mass Cure Wounds |
 
 ## Druid
 
@@ -137,16 +141,17 @@ Spellcasting ability: **WIS**.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd | 4th | Cantrips | Prepared |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | 2 | — | — | — | 2 | 4 |
-| 2 | 3 | — | — | — | 2 | 5 |
-| 3 | 4 | 2 | — | — | 2 | 6 |
-| 4 | 4 | 3 | — | — | 3 | 7 |
-| 5 | 4 | 3 | 2 | — | 3 | 9 |
-| 6 | 4 | 3 | 3 | — | 3 | 10 |
-| 7 | 4 | 3 | 3 | 1 | 3 | 11 |
-| 8 | 4 | 3 | 3 | 2 | 3 | 12 |
+| Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Prepared |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | — | — | 2 | 4 |
+| 2 | 3 | — | — | — | — | 2 | 5 |
+| 3 | 4 | 2 | — | — | — | 2 | 6 |
+| 4 | 4 | 3 | — | — | — | 3 | 7 |
+| 5 | 4 | 3 | 2 | — | — | 3 | 9 |
+| 6 | 4 | 3 | 3 | — | — | 3 | 10 |
+| 7 | 4 | 3 | 3 | 1 | — | 3 | 11 |
+| 8 | 4 | 3 | 3 | 2 | — | 3 | 12 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 3 | 14 |
 
 Spellcasting ability: **WIS**.
 
@@ -159,6 +164,7 @@ Spellcasting ability: **WIS**.
 | 3 | Moonbeam, Pass without Trace, Hold Person, Heat Metal, Flaming Sphere, Aid, Lesser Restoration |
 | 5 | Call Lightning, Conjure Animals, Protection from Energy, Dispel Magic |
 | 7 | Ice Storm, Wall of Fire, Confusion, Polymorph, Blight, Freedom of Movement |
+| 9 | Cone of Cold, Insect Plague, Mass Cure Wounds |
 
 ## Fighter
 
@@ -295,16 +301,17 @@ Greatsword and chain mail. Trades the shield for something to smite with.
 
 ### Spell slots
 
-| Level | 1st | 2nd |
-| --- | --- | --- |
-| 1 | 2 | — |
-| 2 | 2 | — |
-| 3 | 3 | — |
-| 4 | 3 | — |
-| 5 | 4 | 2 |
-| 6 | 4 | 2 |
-| 7 | 4 | 3 |
-| 8 | 4 | 3 |
+| Level | 1st | 2nd | 3rd |
+| --- | --- | --- | --- |
+| 1 | 2 | — | — |
+| 2 | 2 | — | — |
+| 3 | 3 | — | — |
+| 4 | 3 | — | — |
+| 5 | 4 | 2 | — |
+| 6 | 4 | 2 | — |
+| 7 | 4 | 3 | — |
+| 8 | 4 | 3 | — |
+| 9 | 4 | 3 | 2 |
 
 Spellcasting ability: **CHA**.
 
@@ -356,16 +363,17 @@ A shortsword in each hand. Fights up close instead of across the board.
 
 ### Spell slots
 
-| Level | 1st | 2nd |
-| --- | --- | --- |
-| 1 | 2 | — |
-| 2 | 2 | — |
-| 3 | 3 | — |
-| 4 | 3 | — |
-| 5 | 4 | 2 |
-| 6 | 4 | 2 |
-| 7 | 4 | 3 |
-| 8 | 4 | 3 |
+| Level | 1st | 2nd | 3rd |
+| --- | --- | --- | --- |
+| 1 | 2 | — | — |
+| 2 | 2 | — | — |
+| 3 | 3 | — | — |
+| 4 | 3 | — | — |
+| 5 | 4 | 2 | — |
+| 6 | 4 | 2 | — |
+| 7 | 4 | 3 | — |
+| 8 | 4 | 3 | — |
+| 9 | 4 | 3 | 2 |
 
 Spellcasting ability: **WIS**.
 
@@ -428,16 +436,17 @@ Spellcasting ability: **WIS**.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd | 4th | Cantrips | Prepared |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | 2 | — | — | — | 4 | 2 |
-| 2 | 3 | — | — | — | 4 | 4 |
-| 3 | 4 | 2 | — | — | 4 | 6 |
-| 4 | 4 | 3 | — | — | 5 | 7 |
-| 5 | 4 | 3 | 2 | — | 5 | 9 |
-| 6 | 4 | 3 | 3 | — | 5 | 10 |
-| 7 | 4 | 3 | 3 | 1 | 5 | 11 |
-| 8 | 4 | 3 | 3 | 2 | 5 | 12 |
+| Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Prepared |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | — | — | 4 | 2 |
+| 2 | 3 | — | — | — | — | 4 | 4 |
+| 3 | 4 | 2 | — | — | — | 4 | 6 |
+| 4 | 4 | 3 | — | — | — | 5 | 7 |
+| 5 | 4 | 3 | 2 | — | — | 5 | 9 |
+| 6 | 4 | 3 | 3 | — | — | 5 | 10 |
+| 7 | 4 | 3 | 3 | 1 | — | 5 | 11 |
+| 8 | 4 | 3 | 3 | 2 | — | 5 | 12 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 5 | 14 |
 
 Spellcasting ability: **CHA**.
 
@@ -446,9 +455,10 @@ Spellcasting ability: **CHA**.
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
 | 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, Acid Splash, True Strike, Minor Illusion, Sleep, Thunderwave, Shield, Mage Armor, Ray of Sickness, Burning Hands, False Life, Magic Missile, Color Spray |
-| 3 | Shatter, Mirror Image, Suggestion, Web, Scorching Ray, Hold Person, Invisibility, Flaming Sphere, Blindness, Misty Step |
+| 3 | Shatter, Mirror Image, Suggestion, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step, Hold Person |
 | 5 | Fireball, Counterspell, Lightning Bolt, Fear, Haste, Protection from Energy, Dispel Magic |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Dimension Door |
+| 9 | Cone of Cold, Insect Plague, Hold Monster |
 
 ## Warlock
 
@@ -471,16 +481,17 @@ Spellcasting ability: **CHA**.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd | 4th | Cantrips | Prepared |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | 1 | — | — | — | 2 | 2 |
-| 2 | 2 | — | — | — | 2 | 3 |
-| 3 | 0 | 2 | — | — | 2 | 4 |
-| 4 | 0 | 2 | — | — | 3 | 5 |
-| 5 | 0 | 0 | 2 | — | 3 | 6 |
-| 6 | 0 | 0 | 2 | — | 3 | 7 |
-| 7 | 0 | 0 | 0 | 2 | 3 | 8 |
-| 8 | 0 | 0 | 0 | 2 | 3 | 9 |
+| Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Prepared |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1 | — | — | — | — | 2 | 2 |
+| 2 | 2 | — | — | — | — | 2 | 3 |
+| 3 | 0 | 2 | — | — | — | 2 | 4 |
+| 4 | 0 | 2 | — | — | — | 3 | 5 |
+| 5 | 0 | 0 | 2 | — | — | 3 | 6 |
+| 6 | 0 | 0 | 2 | — | — | 3 | 7 |
+| 7 | 0 | 0 | 0 | 2 | — | 3 | 8 |
+| 8 | 0 | 0 | 0 | 2 | — | 3 | 9 |
+| 9 | 0 | 0 | 0 | 0 | 2 | 3 | 10 |
 
 Spellcasting ability: **CHA**.
 
@@ -489,9 +500,10 @@ Spellcasting ability: **CHA**.
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
 | 1 | Eldritch Blast, Hex, Poison Spray, True Strike, Minor Illusion, Bane, Protection from Evil and Good |
-| 3 | Suggestion, Mirror Image, Hold Person, Invisibility, Misty Step |
+| 3 | Suggestion, Mirror Image, Invisibility, Misty Step, Hold Person |
 | 5 | Fear, Counterspell, Dispel Magic |
 | 7 | Banishment, Blight, Dimension Door |
+| 9 | Hold Monster |
 
 ### Choice: Eldritch Invocation (level 1)
 
@@ -545,16 +557,17 @@ Spellcasting ability: **CHA**.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd | 4th | Cantrips | Spellbook | Prepared |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 2 | — | — | — | 3 | 6 | 4 |
-| 2 | 3 | — | — | — | 3 | 8 | 5 |
-| 3 | 4 | 2 | — | — | 3 | 10 | 6 |
-| 4 | 4 | 3 | — | — | 4 | 12 | 7 |
-| 5 | 4 | 3 | 2 | — | 4 | 14 | 9 |
-| 6 | 4 | 3 | 3 | — | 4 | 16 | 10 |
-| 7 | 4 | 3 | 3 | 1 | 4 | 18 | 11 |
-| 8 | 4 | 3 | 3 | 2 | 4 | 20 | 12 |
+| Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Spellbook | Prepared |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | — | — | 3 | 6 | 4 |
+| 2 | 3 | — | — | — | — | 3 | 8 | 5 |
+| 3 | 4 | 2 | — | — | — | 3 | 10 | 6 |
+| 4 | 4 | 3 | — | — | — | 4 | 12 | 7 |
+| 5 | 4 | 3 | 2 | — | — | 4 | 14 | 9 |
+| 6 | 4 | 3 | 3 | — | — | 4 | 16 | 10 |
+| 7 | 4 | 3 | 3 | 1 | — | 4 | 18 | 11 |
+| 8 | 4 | 3 | 3 | 2 | — | 4 | 20 | 12 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 4 | 22 | 14 |
 
 Spellcasting ability: **INT**.
 
@@ -567,5 +580,6 @@ Spellcasting ability: **INT**.
 | 3 | Suggestion, Mirror Image, Shatter, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step |
 | 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Phantasmal Killer, Dimension Door |
+| 9 | Cone of Cold, Hold Monster |
 
 Learnable from scrolls found in play: Ray of Sickness.

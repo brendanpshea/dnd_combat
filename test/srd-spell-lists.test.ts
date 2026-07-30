@@ -42,6 +42,10 @@ const SRD: Record<string, string[]> = {
     // 4th
     'aura-of-life', 'banishment', 'control-water', 'death-ward', 'divination',
     'freedom-of-movement', 'guardian-of-faith', 'locate-creature', 'stone-shape',
+    // 5th
+    'commune', 'contagion', 'dispel-evil-and-good', 'flame-strike', 'geas',
+    'greater-restoration', 'hallow', 'insect-plague', 'legend-lore', 'mass-cure-wounds',
+    'planar-binding', 'raise-dead', 'scrying',
   ],
   wizard: [
     // Cantrips
@@ -74,6 +78,12 @@ const SRD: Record<string, string[]> = {
     'faithful-hound', 'fire-shield', 'greater-invisibility', 'hallucinatory-terrain', 'ice-storm',
     'locate-creature', 'phantasmal-killer', 'polymorph', 'private-sanctum', 'resilient-sphere',
     'secret-chest', 'stone-shape', 'stoneskin', 'vitriolic-sphere', 'wall-of-fire',
+    // 5th
+    'animate-objects', 'arcane-hand', 'cloudkill', 'cone-of-cold', 'conjure-elemental',
+    'contact-other-plane', 'creation', 'dominate-person', 'dream', 'geas', 'hold-monster',
+    'legend-lore', 'mislead', 'modify-memory', 'passwall', 'planar-binding', 'scrying',
+    'seeming', 'summon-dragon', 'telekinesis', 'telepathic-bond', 'teleportation-circle',
+    'wall-of-force', 'wall-of-stone',
   ],
   druid: [
     // Cantrips. The markdown conversion this was transcribed from drops the
@@ -102,6 +112,10 @@ const SRD: Record<string, string[]> = {
     'control-water', 'divination', 'dominate-beast', 'fire-shield', 'freedom-of-movement',
     'giant-insect', 'hallucinatory-terrain', 'ice-storm', 'locate-creature', 'polymorph',
     'stone-shape', 'stoneskin', 'wall-of-fire',
+    // 5th
+    'antilife-shell', 'awaken', 'commune-with-nature', 'cone-of-cold', 'conjure-elemental',
+    'contagion', 'geas', 'greater-restoration', 'insect-plague', 'mass-cure-wounds',
+    'planar-binding', 'reincarnate', 'scrying', 'tree-stride', 'wall-of-stone',
   ],
   ranger: [
     // 1st
@@ -116,6 +130,8 @@ const SRD: Record<string, string[]> = {
     'conjure-animals', 'daylight', 'dispel-magic', 'meld-into-stone', 'nondetection', 'plant-growth',
     'protection-from-energy', 'revivify', 'speak-with-plants', 'water-breathing', 'water-walk',
     'wind-wall',
+    // 5th
+    'commune-with-nature', 'greater-restoration', 'tree-stride',
   ],
   /**
    * SRD 5.2 warlock list, transcribed from the document's own Warlock Spell
@@ -144,6 +160,9 @@ const SRD: Record<string, string[]> = {
     'counterspell', 'dispel-magic', 'fear', 'fly',
     // 4th
     'banishment', 'blight', 'charm-monster', 'dimension-door', 'hallucinatory-terrain',
+    // 5th
+    'contact-other-plane', 'dream', 'hold-monster', 'mislead', 'planar-binding', 'scrying',
+    'teleportation-circle',
   ],
   /**
    * Sorcerer, transcribed from the SRD 5.2 Sorcerer Spell List rather than
@@ -178,6 +197,10 @@ const SRD: Record<string, string[]> = {
     'banishment', 'blight', 'charm-monster', 'confusion', 'dimension-door', 'dominate-beast',
     'fire-shield', 'greater-invisibility', 'ice-storm', 'polymorph', 'stoneskin',
     'vitriolic-sphere', 'wall-of-fire',
+    // 5th
+    'animate-objects', 'arcane-hand', 'cloudkill', 'cone-of-cold', 'creation',
+    'dominate-person', 'hold-monster', 'insect-plague', 'seeming', 'telekinesis',
+    'teleportation-circle', 'wall-of-stone',
   ],
   bard: [
     // Cantrips
@@ -202,6 +225,11 @@ const SRD: Record<string, string[]> = {
     'charm-monster', 'compulsion', 'confusion', 'dimension-door', 'freedom-of-movement',
     'greater-invisibility', 'hallucinatory-terrain', 'locate-creature', 'phantasmal-killer',
     'polymorph',
+    // 5th
+    'animate-objects', 'awaken', 'dominate-person', 'dream', 'geas', 'greater-restoration',
+    'hold-monster', 'legend-lore', 'mass-cure-wounds', 'mislead', 'modify-memory',
+    'planar-binding', 'raise-dead', 'scrying', 'seeming', 'telepathic-bond',
+    'teleportation-circle',
   ],
   paladin: [
     // 1st
@@ -213,6 +241,8 @@ const SRD: Record<string, string[]> = {
     'prayer-of-healing', 'protection-from-poison', 'shining-smite', 'warding-bond', 'zone-of-truth',
     // 3rd
     'create-food-and-water', 'daylight', 'dispel-magic', 'magic-circle', 'remove-curse', 'revivify',
+    // 5th
+    'dispel-evil-and-good', 'geas', 'greater-restoration', 'raise-dead',
   ],
 };
 
