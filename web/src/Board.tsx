@@ -10,6 +10,7 @@ import {
   hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl,
   HAS_TERRAIN_ART, terrainUrl, backdropLayers,
 } from './art.js';
+import { reachCells } from '../../src/engine/rules/reach.js';
 import { conditionBadges, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
 import { classLook } from './classLook.js';
@@ -289,6 +290,16 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
               // yet in full colour and still in the fight (down already owns the
               // greyed-out look, so only tilt a prone creature that isn't down).
               !isDown(c) && c.conditions.some((condition) => condition.id === 'prone') ? 'prone' : '',
+              // Scale alone was carrying the whole "this thing is enormous"
+              // signal, and it could not: the bands overlapped, and a token 15%
+              // bigger than its neighbour is easy to miss on a phone. A Huge
+              // creature also gets a heavier base and a broader shadow.
+              c.size === 'huge' || c.size === 'gargantuan' ? 'size-huge' : '',
+              // Reach is the tactical half and matters more than bulk: this
+              // creature threatens the ring TWO cells out, so the square that
+              // looks safe is not.
+              reachCells(c) > 1 ? 'has-reach' : '',
+              c.flying ? 'flying' : '',
             ].join(' ')}
           >
             {c.id === activeId && <div className="turn-arrow" />}
@@ -306,7 +317,7 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
               className="art"
               glyphClassName="sil"
               priority="high"
-              style={{ transform: `scale(${tokenScale(artId)})` }}
+              style={{ transform: `scale(${tokenScale(artId, c.size)})` }}
             />
             {c.familiar?.kind === 'owl' && (
               <span

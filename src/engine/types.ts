@@ -581,6 +581,15 @@ export interface Combatant {
   creatureType?: CreatureType;
   /** SRD size. Absent means medium — see CreatureSize. */
   size?: CreatureSize;
+  /**
+   * This creature flies, so the ground is not its problem.
+   *
+   * Mechanically narrow ON PURPOSE (see rules/movement.ts): it ignores difficult
+   * ground and hazard tiles, and crosses chest-high barricades. It does NOT pass
+   * through walls — that would make it a ghost, and it would also quietly break
+   * cover and line of sight, which are computed from the same terrain.
+   */
+  flying?: boolean;
 }
 
 /**

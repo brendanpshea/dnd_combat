@@ -51,7 +51,7 @@
  */
 import type { GameState, Id, Combatant, CreatureSize } from '../types.js';
 import { isDown, isIncapacitated } from '../types.js';
-import { adjacent } from '../grid.js';
+import { withinReach } from './reach.js';
 import { contest, skillMod } from './skills.js';
 import { pushCreature } from './movement.js';
 import type { GameEvent } from '../events.js';
@@ -89,7 +89,9 @@ export function canShove(shover: Combatant, target: Combatant): boolean {
   if (!shover.alive || isDown(shover) || isIncapacitated(shover)) return false;
   if (!target.alive || isDown(target)) return false;
   if (shover.id === target.id) return false;
-  if (!adjacent(shover.position, target.position)) return false;
+  // Reach, not adjacency: a giant shoves from ten feet, which is the same arm
+  // it hits with. See rules/reach.ts.
+  if (!withinReach(shover, target)) return false;
   // "no more than one size larger than you"
   return rank(target) - rank(shover) <= 1;
 }

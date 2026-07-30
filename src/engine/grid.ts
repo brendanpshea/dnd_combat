@@ -43,7 +43,18 @@ export function neighbors(grid: GridState, p: Position): Position[] {
   return out;
 }
 
-function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number): number {
+/**
+ * WHAT FLYING CROSSES, AND WHAT IT DOES NOT.
+ *
+ * A barricade is chest-high — `terrainMoveCost` says so itself — so a flier goes
+ * over it. A wall does not stop at the shoulder, and more importantly walls are
+ * what `coverBetween` and `hasLineOfSight` are computed from: letting fliers
+ * cross them would mean a creature standing inside a wall, seen through a wall,
+ * shooting through a wall. That is a design question, not plumbing, and this
+ * deliberately does not open it.
+ */
+function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number, flying = false): number {
+  if (flying && cell.terrain === 'cover') return CELL_FEET;
   // Ice underfoot costs what difficult ground costs, without being it.
   const iced = cell.chilled !== undefined && (round === undefined || round <= cell.chilled.expiresAtRound);
   switch (cell.terrain) {
@@ -273,6 +284,8 @@ export function reachable(
   blockedBy: Set<Id>,
   danger?: StepDanger,
   ignoreDifficult = false,
+  /** Crosses barricades (never walls) — see terrainMoveCost. */
+  flying = false,
 ): ReachResult {
   const costs = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, Position>();
@@ -304,7 +317,7 @@ export function reachable(
     for (const n of neighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
-      const stepCost = terrainMoveCost(cell, ignoreDifficult);
+      const stepCost = terrainMoveCost(cell, ignoreDifficult, undefined, flying);
       const total = curCost + stepCost;
       if (total > budgetFeet) continue;
       const totalRisk = curRisk + (danger ? danger(cur, n) : 0);

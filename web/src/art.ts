@@ -1,3 +1,5 @@
+import type { CreatureSize } from '../../src/engine/types.js';
+import { bandedScale } from '../../src/data/token-size.js';
 /**
  * Character/monster art lookup. Processed WebP assets live in web/public/art
  * (see art/process.py); anything without art falls back to the emoji glyph.
@@ -158,6 +160,8 @@ const SCALE: Record<string, number> = {
   'young-blue': 1.5, 'young-red': 1.5,
 };
 
-export function tokenScale(id: string): number {
-  return SCALE[id] ?? 1;
+export function tokenScale(id: string, size?: CreatureSize): number {
+  // The hand table above is an artist's tweak; `bandedScale` is the rule that
+  // stops it drifting until size stops meaning anything. See data/token-size.ts.
+  return bandedScale(SCALE[id] ?? 1, size);
 }

@@ -64,6 +64,8 @@ export interface MonsterData {
    * a down payment on it.
    */
   size: CreatureSize;
+  /** Flies: ignores difficult ground, hazards and barricades. See Combatant.flying. */
+  fly?: boolean;
   /** Regeneration (troll): heals at the start of its turn unless it has taken
    *  one of `stoppedBy` damage types since the last one. */
   regeneration?: { amount: number; stoppedBy: DamageType[] };
@@ -575,7 +577,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
 
   gargoyle: {
-    id: 'gargoyle', name: 'Gargoyle',
+    id: 'gargoyle', fly: true, name: 'Gargoyle',
     ac: 15, hp: 67, speed: 30,
     creatureType: 'elemental',
     size: 'medium',
@@ -622,7 +624,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'air-elemental': {
-    id: 'air-elemental', name: 'Air Elemental',
+    id: 'air-elemental', fly: true, name: 'Air Elemental',
     ac: 15, cr: 5, hp: 90, speed: 30,
     creatureType: 'elemental',
     size: 'large',
@@ -636,7 +638,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
 
   sprite: {
-    id: 'sprite', name: 'Sprite',
+    id: 'sprite', fly: true, name: 'Sprite',
     ac: 15, hp: 10, speed: 10,
     creatureType: 'fey',
     size: 'tiny',
@@ -694,7 +696,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['cockatrice-bite'],
   },
   harpy: {
-    id: 'harpy', name: 'Harpy',
+    id: 'harpy', fly: true, name: 'Harpy',
     ac: 11, hp: 38, speed: 20,
     creatureType: 'monstrosity',
     size: 'medium',
@@ -756,7 +758,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // A mephit is a damage type with legs, which is exactly what that slot
   // wants.
   'dust-mephit': {
-    id: 'dust-mephit', name: 'Dust Mephit',
+    id: 'dust-mephit', fly: true, name: 'Dust Mephit',
     deathBurst: { dice: '2d4', type: 'bludgeoning', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 12, hp: 17, speed: 30,
     creatureType: 'elemental',
@@ -766,7 +768,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['poison'],
   },
   'ice-mephit': {
-    id: 'ice-mephit', name: 'Ice Mephit',
+    id: 'ice-mephit', fly: true, name: 'Ice Mephit',
     deathBurst: { dice: '2d4', type: 'cold', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 11, hp: 21, speed: 30,
     creatureType: 'elemental',
@@ -778,7 +780,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     vulnerabilities: ['fire', 'bludgeoning'],
   },
   'magma-mephit': {
-    id: 'magma-mephit', name: 'Magma Mephit',
+    id: 'magma-mephit', fly: true, name: 'Magma Mephit',
     deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 11 }, radius: 10 },
     ac: 11, hp: 18, speed: 30,
     creatureType: 'elemental',
@@ -790,7 +792,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     vulnerabilities: ['cold'],
   },
   'steam-mephit': {
-    id: 'steam-mephit', name: 'Steam Mephit',
+    id: 'steam-mephit', fly: true, name: 'Steam Mephit',
     deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 10, hp: 17, speed: 30,
     creatureType: 'elemental',
@@ -917,7 +919,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['rust-monster-antennae'],
   },
   griffon: {
-    id: 'griffon', name: 'Griffon',
+    id: 'griffon', fly: true, name: 'Griffon',
     ac: 12, cr: 2, hp: 59, speed: 30,
     creatureType: 'monstrosity',
     size: 'large',
@@ -1077,7 +1079,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['poison'],
   },
   ghost: {
-    id: 'ghost', name: 'Ghost',
+    id: 'ghost', fly: true, name: 'Ghost',
     ac: 11, cr: 4, hp: 45, speed: 30,
     creatureType: 'undead',
     size: 'medium',
@@ -1088,7 +1090,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['necrotic', 'poison'],
   },
   wraith: {
-    id: 'wraith', name: 'Wraith',
+    id: 'wraith', fly: true, name: 'Wraith',
     ac: 13, cr: 5, hp: 67, speed: 30,
     creatureType: 'undead',
     size: 'medium',
@@ -1364,7 +1366,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // on the higher ones is the point of the type: a party that solves every
   // fight with save-or-suck spells has to find another answer.
   imp: {
-    id: 'imp', name: 'Imp',
+    id: 'imp', fly: true, name: 'Imp',
     ac: 13, cr: 1, hp: 21, speed: 20,
     creatureType: 'fiend',
     size: 'tiny',
@@ -1481,7 +1483,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // ---- constructs -------------------------------------------------------
   // One animated armor was the whole type.
   'flying-sword': {
-    id: 'flying-sword', name: 'Animated Flying Sword',
+    id: 'flying-sword', fly: true, name: 'Animated Flying Sword',
     ac: 17, hp: 14, speed: 30,
     creatureType: 'construct',
     size: 'small',
@@ -1534,7 +1536,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 3,
   },
   wyvern: {
-    id: 'wyvern', name: 'Wyvern',
+    id: 'wyvern', fly: true, name: 'Wyvern',
     ac: 14, cr: 6, hp: 127, speed: 30,
     creatureType: 'dragon',
     size: 'large',
@@ -1658,7 +1660,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   specter: {
-    id: 'specter', name: 'Specter',
+    id: 'specter', fly: true, name: 'Specter',
     ac: 12, hp: 22, speed: 50,
     creatureType: 'undead',
     size: 'medium',
@@ -1669,7 +1671,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'will-o-wisp': {
-    id: 'will-o-wisp', name: "Will-o'-Wisp",
+    id: 'will-o-wisp', fly: true, name: "Will-o'-Wisp",
     ac: 19, hp: 27, speed: 50,
     creatureType: 'undead',
     size: 'tiny',
@@ -1711,7 +1713,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // speed isn't modelled, so they keep a ground speed. PB +2 (all wyrmlings are
   // CR 2–4) makes their breath DCs land at the SRD's 11–13.
   'black-wyrmling': {
-    id: 'black-wyrmling', name: 'Black Dragon Wyrmling',
+    id: 'black-wyrmling', fly: true, name: 'Black Dragon Wyrmling',
     ac: 17, hp: 33, speed: 30, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
@@ -1721,7 +1723,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['acid'],
   },
   'blue-wyrmling': {
-    id: 'blue-wyrmling', name: 'Blue Dragon Wyrmling',
+    id: 'blue-wyrmling', fly: true, name: 'Blue Dragon Wyrmling',
     ac: 17, hp: 65, speed: 30, cr: 3,
     creatureType: 'dragon',
     size: 'medium',
@@ -1731,7 +1733,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['lightning'],
   },
   'green-wyrmling': {
-    id: 'green-wyrmling', name: 'Green Dragon Wyrmling',
+    id: 'green-wyrmling', fly: true, name: 'Green Dragon Wyrmling',
     ac: 17, hp: 38, speed: 30, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
@@ -1741,7 +1743,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['poison'],
   },
   'red-wyrmling': {
-    id: 'red-wyrmling', name: 'Red Dragon Wyrmling',
+    id: 'red-wyrmling', fly: true, name: 'Red Dragon Wyrmling',
     ac: 17, hp: 75, speed: 30, cr: 4,
     creatureType: 'dragon',
     size: 'medium',
@@ -1751,7 +1753,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['fire'],
   },
   'white-wyrmling': {
-    id: 'white-wyrmling', name: 'White Dragon Wyrmling',
+    id: 'white-wyrmling', fly: true, name: 'White Dragon Wyrmling',
     ac: 16, hp: 32, speed: 30, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
@@ -1865,6 +1867,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     alive: true,
     creatureType: m.creatureType,
     size: m.size,
+    ...(m.fly ? { flying: true as const } : {}),
     // Copied, not shared: `suppressed` is per-combatant turn state, and three
     // trolls from one stat block must not share one flag.
     ...(m.regeneration

@@ -3715,3 +3715,64 @@ button.category .count {
 
 /* Origin feat picker: the second slot explains itself, since only humans see it. */
 .feat-why { color: var(--gold); font-size: 10px; font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   Big things, and things that threaten further than they stand.
+
+   Token SCALE alone was carrying this and could not: the per-monster scale
+   table had grown until Large ranged 0.85-1.50 and Huge 1.30-1.50, so some
+   Large creatures drew bigger than some Huge ones and size was unreadable.
+   art.ts now clamps scale into non-overlapping bands; these are the cues that
+   do not depend on noticing fifteen percent.
+   --------------------------------------------------------------------------- */
+
+/* A Huge creature stands on a broader, heavier base and throws a longer
+   shadow. Reads at a glance and survives a phone screen, where a scale
+   difference does not. */
+.token.size-huge.art .base {
+  bottom: 3%;
+  left: 8%;
+  width: 84%;
+  height: 19%;
+  box-shadow: 0 5px 10px #000c, 0 0 0 1px #0006;
+}
+
+/* Reach: this creature threatens two cells, so the ring of squares that looks
+   safe is not. A faint outward glow, sized to read as "further than it looks"
+   rather than as a targeting highlight (which is a different colour entirely). */
+.token.has-reach::before {
+  content: '';
+  position: absolute;
+  inset: -26%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, transparent 52%, #ff6b3520 62%, transparent 76%);
+  z-index: -1;
+}
+/* The reach ring is a threat, so it belongs to the enemy palette. On a hero it
+   reads as an aura instead, since a player's own reach is good news. */
+.token.team1.has-reach::before {
+  background: radial-gradient(circle, transparent 52%, #6bd5ff20 62%, transparent 76%);
+}
+
+/* Flying: lifted off its own shadow, which is the whole read. The shadow
+   staying put underneath is what makes the lift legible — a token that simply
+   moved up would just look mispositioned. */
+.token.flying .art { transform-origin: 50% 100%; }
+.token.flying.art .base {
+  opacity: 0.5;
+  filter: blur(1px);
+  transform: scale(0.82);
+}
+.token.flying .art,
+.token.flying .sil { animation: hover-bob 2.6s ease-in-out infinite; }
+@keyframes hover-bob {
+  0%, 100% { translate: 0 -6%; }
+  50%      { translate: 0 -11%; }
+}
+/* Motion is a signal, not decoration: a player who has asked for less of it
+   still gets the lift, just without the bob. */
+@media (prefers-reduced-motion: reduce) {
+  .token.flying .art,
+  .token.flying .sil { animation: none; translate: 0 -8%; }
+}
