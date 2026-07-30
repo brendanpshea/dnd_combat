@@ -160,25 +160,29 @@ describe('concentration holds them up', () => {
     });
   }
 
-  it('and does not take a paladin’s steed with it', () => {
+  it('and does not take the SAME caster’s non-concentration steed with it', () => {
     /**
-     * The reason the sweep is keyed on the SPELL. Find Steed takes no
-     * concentration at all, so a wizard's broken spell must not dismiss a
-     * horse standing next to them.
+     * The reason the sweep is keyed on the SPELL rather than the caster.
+     *
+     * It has to be ONE caster holding both, or the test proves nothing — a
+     * wizard's broken spell never touched a paladin's steed anyway, because
+     * they are different summoners. So: a paladin conjures a steed (no
+     * concentration at all), then picks up a concentration of its own, then
+     * loses it. The steed must still be standing.
      */
-    const wiz = { ...buildCharacter({ classId: 'wizard', team: 'team1', position: at(1, 1), level: 9 }), id: 'caster' };
-    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: at(2, 1), level: 9 }), id: 'pal' };
+    const pal = { ...buildCharacter({ classId: 'paladin', team: 'team1', position: at(1, 1), level: 9 }), id: 'caster' };
     const foe = { ...buildMonster('ogre', 'team2', at(6, 6), '1'), id: 'foe' };
-    const c = new Combat({ combatants: [wiz, pal, foe], seed: 4, mapId: 'open' });
+    const c = new Combat({ combatants: [pal, foe], seed: 4, mapId: 'open' });
     let guard = 0;
-    while (c.activeId !== 'pal' && guard++ < 30) c.apply({ kind: 'endTurn' });
+    while (c.activeId !== 'caster' && guard++ < 30) c.apply({ kind: 'endTurn' });
     c.apply({ kind: 'castSpell', spellId: 'find-steed', slotLevel: 2, targets: [{ position: at(3, 1) }] });
-    expect(summonsOf(c, 'find-steed').length).toBe(1);
+    expect(summonsOf(c, 'find-steed').length, 'no steed to begin with').toBe(1);
 
-    // The wizard picks up a concentration of its own, then loses it.
-    c.state.combatants['caster']!.concentratingOn = { spellId: 'summon-dragon', targetIds: [] };
+    // A concentration of its own — Shining Smite is the paladin's — and then
+    // that concentration drops.
+    c.state.combatants['caster']!.concentratingOn = { spellId: 'shining-smite', targetIds: [] };
     breakConcentration(c.state, 'caster');
-    expect(summonsOf(c, 'find-steed').length, 'the wizard dismissed the paladin’s steed').toBe(1);
+    expect(summonsOf(c, 'find-steed').length, 'a broken smite dismissed the steed').toBe(1);
   });
 });
 
