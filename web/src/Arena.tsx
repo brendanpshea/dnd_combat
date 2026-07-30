@@ -755,6 +755,32 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // does not grow when the cap does, so this is easy to end up in and
   // impossible to notice from the outside — the badge is the whole point.
   const withRoom = partyPreparedRoom(c);
+  /**
+   * Every scroll somebody in the party could copy into their book, and who.
+   *
+   * SCRIBING WAS IN THE STALL, AND SCRIBING IS NOT SHOPPING. It sat four taps
+   * deep inside the market — open the stall, pick a buyer, tap a pack item,
+   * find a `Scribe` button under the sell price — and the stalls shut at noon,
+   * so the one camp activity that is pure study was unavailable for half of
+   * every day. A player reported simply not finding it.
+   *
+   * It belongs beside the spellbook it writes into, which is open both halves.
+   */
+  const scribable = useMemo(() => {
+    const out: Array<{ charIdx: number; itemId: Id; fee: number; spellId: Id }> = [];
+    for (const { i } of casters) {
+      const seen = new Set<Id>();
+      for (const stack of [...(c.characters[i]?.inventory ?? []), ...partyStash(c)]) {
+        if (seen.has(stack.itemId)) continue;
+        seen.add(stack.itemId);
+        const learn = scrollLearnable(c, i, stack.itemId);
+        if (learn) out.push({ charIdx: i, itemId: stack.itemId, fee: learn.fee, spellId: learn.spellId });
+      }
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c, casters]);
+
 
   /**
    * The prepared-spell tray, on the gate screen.
@@ -792,8 +818,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   and the screen measured 4.8 phone-fulls end to end. */}
               <div className={panel === 'none' ? '' : 'hidden'}>
               <div className="arena-head">
-                <h2>
+                {/*
+                  WHAT THE PARTY JUST GOT, not only where we are in the day.
+                  "Day 2 · Morning" is a position; what a player actually needs
+                  before spending anything is which rest they have had. Morning
+                  follows a night — everything back. Afternoon follows lunch —
+                  hit points and hit dice only, and the spell slots you burnt
+                  this morning are still burnt. Reported as the two being hard
+                  to tell apart, and they were: the header read the same either
+                  way apart from one word.
+                */}
+                <h2 className={`arena-when ${half}`}>
+                  <span className="when-mark">{half === 'morning' ? '🌅' : '🍞'}</span>
                   Day {dayOf(run)} · {half === 'morning' ? 'Morning' : 'Afternoon'}
+                  <small>
+                    {half === 'morning'
+                      ? 'rested overnight — slots, abilities and hit dice all back'
+                      : 'after lunch — hit points only; spent slots stay spent until tonight'}
+                  </small>
                 </h2>
                 <span className="arena-score">
                   wave {run.wave} · {run.cleared} cleared · {c.gold}g
@@ -1102,6 +1144,35 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     You rested after the last wave — swap in whatever this one calls for.
                     {withRoom.length > 0 && ' Anyone showing spare slots is walking in with fewer spells than they could.'}
                   </p>
+
+                  {/* Scribing, where the spellbook is — see `scribable`. */}
+                  {scribable.length > 0 && (
+                    <div className="scribe-shelf">
+                      <b>📜 Copy a scroll into a spellbook</b>
+                      <p className="hint">The scroll is used up; the spell is yours for good.</p>
+                      {scribable.map((sc) => {
+                        const who = c.characters[sc.charIdx];
+                        const broke = c.gold < sc.fee;
+                        return (
+                          <button
+                            key={`${sc.charIdx}:${sc.itemId}`}
+                            className="scribe-row"
+                            disabled={broke}
+                            title={broke ? `Scribing costs ${sc.fee}g` : undefined}
+                            onClick={() => {
+                              if (learnSpellFromScroll(c, sc.charIdx, sc.itemId)) {
+                                setNotice(`${who?.name} scribes ${itemName(sc.itemId)} into their spellbook (−${sc.fee}g).`);
+                                refresh(); persist(c, run);
+                              }
+                            }}
+                          >
+                            <span>{itemName(sc.itemId)} → <b>{who?.name}</b></span>
+                            <span className={broke ? 'haggle-bad' : ''}>{sc.fee}g</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1377,9 +1448,14 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}
                     >
                       📖<small>{panel === 'prepare' ? 'Close' : 'Spells'}</small>
-                      {panel !== 'prepare' && withRoom.length > 0 && (
-                        <span className="prep-badge" title="Spare prepared slots going unused">
-                          {withRoom.length}
+                      {panel !== 'prepare' && (withRoom.length > 0 || scribable.length > 0) && (
+                        <span
+                          className={`prep-badge${scribable.length > 0 ? ' scribe' : ''}`}
+                          title={scribable.length > 0
+                            ? 'A scroll here can be copied into a spellbook'
+                            : 'Spare prepared slots going unused'}
+                        >
+                          {scribable.length > 0 ? '📜' : withRoom.length}
                         </span>
                       )}
                     </button>

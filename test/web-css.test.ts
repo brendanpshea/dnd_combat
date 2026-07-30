@@ -405,3 +405,47 @@ describe('the narration strip is invisible when it has nothing to say', () => {
     expect(css, ':empty cannot match an element holding a space').not.toContain('.narration:empty');
   });
 });
+
+/**
+ * Camp: scribing is study, not shopping — and a lunch is not a night.
+ *
+ * Scribing a scroll sat FOUR TAPS deep inside the market (open the stall, pick
+ * a buyer, tap a pack item, find `Scribe` under the sell price) and the stalls
+ * shut at noon — so the one camp activity that is pure study was unavailable
+ * for half of every day. Reported as simply not finding it.
+ *
+ * And the day header read "Day 2 · Morning" against "Day 1 · Afternoon": one
+ * word apart, for two rests that restore very different things. A night gives
+ * everything back; a lunch gives hit points and leaves your spent slots spent.
+ */
+describe('the camp says what it is offering', () => {
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+
+  it('offers scribing from the spell panel, which is open all day', () => {
+    // The panel the spellbook is already in — not the stall, which is shut in
+    // the afternoon.
+    expect(arena, 'nothing computes what can be scribed').toContain('const scribable');
+    expect(arena, 'the scribe list is not rendered').toContain('scribe-shelf');
+    const at = arena.indexOf('scribe-shelf');
+    // It has to sit inside the prepare panel, not the shop one.
+    const panelAt = arena.lastIndexOf("panel === 'prepare'", at);
+    const shopAt = arena.lastIndexOf("panel === 'shop'", at);
+    expect(panelAt, 'the scribe shelf is not under the spell panel').toBeGreaterThan(shopAt);
+  });
+
+  it('flags a scribable scroll on the closed panel', () => {
+    // Otherwise it is discoverable only by opening the panel that hides it —
+    // which is the bug, one level shallower.
+    expect(arena).toMatch(/scribable\.length > 0 \? '\u{1F4DC}'/u);
+    expect(css, 'the scroll marker has no style of its own').toContain('.prep-badge.scribe');
+  });
+
+  it('tells the two rests apart by what they restore', () => {
+    expect(arena, 'the morning no longer says what a night gives back').toContain('rested overnight');
+    expect(arena, 'the afternoon no longer warns that slots stay spent').toContain('stay spent until tonight');
+    // …and they do not merely differ by a word: the halves are styled apart.
+    expect(css).toContain('.arena-when.morning');
+    expect(css).toContain('.arena-when.afternoon');
+  });
+});
