@@ -1111,8 +1111,11 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 /* ---- status + actions ---- */
 .statusline {
   display: flex;
-  gap: 12px;
-  align-items: baseline;
+  gap: 10px;
+  /* Centred against the portrait, not sitting on its baseline: the text is now
+     a block of its own beside the face rather than a run of items sharing the
+     face's row. See `statusline-body`. */
+  align-items: center;
   flex-wrap: wrap;
   justify-content: center;
   background: var(--panel);
@@ -3915,3 +3918,22 @@ button.category .count {
 /* The scroll marker outranks the spare-slot count: one is an opportunity that
    expires with the scroll, the other is a nudge. */
 .prep-badge.scribe { background: #7a5cc4; color: #fff; }
+
+/**
+ * The status card's text, beside the portrait rather than wrapping around it.
+ *
+ * The portrait was a flex item in the same wrap flow as everything else, so it
+ * claimed the first row by itself and the card stood `portrait + gap + text row`
+ * tall — 86px measured on a 412px phone for two short lines. As its own block it
+ * sits alongside the face instead, and the card is the taller of the two rather
+ * than their sum.
+ */
+.statusline-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px 10px;
+  flex: 1 1 0;
+  min-width: 0;
+}

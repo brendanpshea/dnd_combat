@@ -13,16 +13,28 @@ import { restPools, poolTooltip } from './featurePools.js';
  *
  * Which pools, and pips-versus-number, live in `featurePools.ts`.
  */
-export function FeaturePips({ featureUses }: { featureUses: Combatant['featureUses'] }) {
+export function FeaturePips(
+  { featureUses, labels = 'short' }:
+  { featureUses: Combatant['featureUses']; labels?: 'short' | 'full' },
+) {
   const pools = restPools(featureUses);
   if (pools.length === 0) return null;
   return (
     <span className="slot-pips feature-pips" title={poolTooltip(pools)}>
       {pools.map((p) => (
         <span key={p.id} className="slot-pip-group">
-          {/* The feature's initials, so a row of pools is readable without the
-              tooltip: "AS" next to one pip is Action Surge, spent. */}
-          <span className="slot-pip-level">{p.short}</span>
+          {/*
+            THE INITIALS ARE FOR THE CAMP, NOT FOR COMBAT.
+            `short` exists because the camp screen lists every hero at once, so
+            labels collide and space is tight — and `shortLabel` goes to real
+            trouble to keep "SeW" and "SaW" apart. It was reused on the combat
+            status box, where neither pressure exists: that card shows ONE
+            creature, and nothing is next to it to collide with.
+            What it bought there was "SeW ●●" on a phone, which is a crossword
+            clue, not a label. There is no tooltip on a touch screen to decode
+            it with either. So combat asks for the whole name.
+          */}
+          <span className="slot-pip-level">{labels === 'full' ? p.name : p.short}</span>
           {p.style === 'pips' ? (
             Array.from({ length: p.max }, (_, j) => (
               <span key={j} className={`slot-pip${j < p.current ? ' filled' : ''}`} />
