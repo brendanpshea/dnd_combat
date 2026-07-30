@@ -1597,6 +1597,13 @@ export interface RestResult {
    * about is a recovery nobody plans around.
    */
   recovered?: Array<{ name: string; slots: number[] }>;
+  /**
+   * Sorcery points handed back by Sorcerous Restoration. A separate field from
+   * `recovered` because they are not slots and printing them as one would be a
+   * lie in the rest summary — but surfaced for the same reason: a sorcerer who
+   * is not told the points came back plans the afternoon without them.
+   */
+  pointsRestored?: Array<{ name: string; points: number }>;
 }
 
 /** A hero's pool of hit dice equals their level (the shared party level). */
@@ -1724,6 +1731,39 @@ function recoverSlotsOnShortRest(c: CampaignState, idx: number, caster: Combatan
 }
 
 /** A short rest refills the short-rest pools and leaves the daily ones spent. */
+/**
+ * Sorcerous Restoration (Sorcerer 5): sorcery points equal to half the
+ * sorcerer's level, rounded down, once between long rests.
+ *
+ * Arcane Recovery's shape exactly — including the once-a-day clause being the
+ * feature's own `longRest` pool rather than anything new — but it operates on a
+ * feature pool instead of the slot array, which is why it is its own function
+ * rather than another branch inside `recoverSlotsOnShortRest`.
+ *
+ * Must run AFTER `refillShortRestFeatures`, which drops every short-rest pool
+ * from `resources`; running before would have the refill wipe the points back
+ * out. Returns how many came back, 0 if nothing did.
+ */
+function restoreSorceryPoints(ch: PartyCharacter, caster: Combatant): number {
+  if (!caster.featureIds.includes('sorcerous-restoration')) return 0;
+  const spent = ch.resources?.featureUses?.['sorcerous-restoration'];
+  if (spent !== undefined && spent <= 0) return 0;
+  const pool = caster.featureUses['font-of-magic'];
+  if (!pool) return 0;
+  const back = Math.min(Math.floor(caster.level / 2), pool.max - pool.current);
+  if (back <= 0) return 0;
+  ch.resources = {
+    ...ch.resources,
+    hp: ch.resources?.hp ?? caster.hp,
+    featureUses: {
+      ...ch.resources?.featureUses,
+      'font-of-magic': pool.current + back,
+      'sorcerous-restoration': 0,
+    },
+  };
+  return back;
+}
+
 function refillShortRestFeatures(ch: PartyCharacter): void {
   const left = ch.resources?.featureUses;
   if (!left) return;
@@ -1741,6 +1781,7 @@ export function shortRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   let hitDiceSpent = 0;
   const recovered: Array<{ name: string; slots: number[] }> = [];
+  const pointsRestored: Array<{ name: string; points: number }> = [];
   const party = buildCampaignParty(c);
   for (const [index, combatant] of party.entries()) {
     const ch = c.characters[index]!;
@@ -1766,11 +1807,18 @@ export function shortRest(c: CampaignState): RestResult {
     // …and the casters get some slots back, once between long rests.
     const slots = recoverSlotsOnShortRest(c, index, combatant);
     if (slots.length > 0) recovered.push({ name: ch.name, slots });
+    // Sorcerous Restoration, after the short-rest pools have been cleared out.
+    const points = restoreSorceryPoints(ch, combatant);
+    if (points > 0) pointsRestored.push({ name: ch.name, points });
     // A short rest ends the 1-hour camp buff potions (giant strength,
     // resistances); familiar/mageArmor keep their own longer clocks.
     clearCampBuffs(ch);
   }
-  return { totalHealed, hitDiceSpent, ...(recovered.length > 0 ? { recovered } : {}) };
+  return {
+    totalHealed, hitDiceSpent,
+    ...(recovered.length > 0 ? { recovered } : {}),
+    ...(pointsRestored.length > 0 ? { pointsRestored } : {}),
+  };
 }
 
 /** Drop the camp-drunk buff-potion effects (giant strength, resistances) from

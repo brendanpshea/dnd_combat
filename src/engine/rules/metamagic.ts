@@ -42,7 +42,7 @@
  * rerolled dice, which nothing currently computes — and that is where the delta
  * problem comes back.
  */
-import type { GameState, Id, Combatant } from '../types.js';
+import type { GameState, Id, Combatant, DamageType } from '../types.js';
 import { abilityMod } from '../types.js';
 import { rollDice, type DiceRoll } from '../dice.js';
 import { rollDie } from '../rng.js';
@@ -118,9 +118,31 @@ export const EMPOWERABLE = new Set([
   'thunderwave', 'scorching-ray', 'blight', 'ray-of-sickness',
 ]);
 
+/** The damage type Draconic Sorcery is affine to. See `elemental-affinity`. */
+export const AFFINITY_TYPE: DamageType = 'fire';
+
+/**
+ * Elemental Affinity's damage half: Charisma modifier on ONE damage roll of a
+ * spell of the matching type.
+ *
+ * "One roll" is what `state.elementalAffinityUsed` is for. Scorching Ray rolls
+ * three separate 2d6 and Fireball rolls one 8d6; without the flag the ray would
+ * quietly get the bonus three times, which is the shape of mistake that has cost
+ * this codebase the most measurements. Cleared per cast in `castSpell`, next to
+ * `metamagicCast`, because it is the same kind of thing: a fact about one cast
+ * that seventy spell implementations cannot be handed as an argument.
+ */
+function elementalAffinity(state: GameState, casterId: Id, damageType?: DamageType): number {
+  if (damageType !== AFFINITY_TYPE || state.elementalAffinityUsed) return 0;
+  const c = state.combatants[casterId];
+  if (!c?.featureIds.includes('elemental-affinity')) return 0;
+  return Math.max(0, abilityMod(c.abilities[c.spellcastingAbility ?? 'cha']));
+}
+
 /**
  * Roll a damage expression for a spell, applying Empowered Spell if this cast
- * was bent.
+ * was bent, and Elemental Affinity if the caster is a 6th-level Draconic
+ * sorcerer throwing fire.
  *
  * WHY THE ROLL AND NOT THE DAMAGE
  *
@@ -137,9 +159,15 @@ export const EMPOWERABLE = new Set([
  */
 export function rollSpellDice(
   state: GameState, casterId: Id, expr: string, doubleDice = false,
+  damageType?: DamageType,
 ): DiceRoll {
   const roll = rollDice(state.rng, expr, doubleDice);
   state.rng = roll.state;
+  const affinity = elementalAffinity(state, casterId, damageType);
+  if (affinity > 0) {
+    state.elementalAffinityUsed = true;
+    roll.total += affinity;
+  }
   if (state.metamagicCast?.casterId !== casterId || !state.metamagicCast.empowered) return roll;
   const caster = state.combatants[casterId];
   if (!caster) return roll;

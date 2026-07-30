@@ -188,6 +188,26 @@ export function savingThrow(
    * always right when it comes up.
    */
   let success = total >= dc;
+  /**
+   * Dark One's Own Luck (Fiend warlock, level 6): a d10 on a save that failed.
+   *
+   * Before the Ring of Evasion check, so the ring — three charges and an
+   * automatic success — is not spent on a save a d10 would have carried. The
+   * cheaper resource goes first, which is the same order a player would choose.
+   *
+   * Costs no reaction: the SRD's version does not take one, and this is the
+   * warlock's daily pool rather than a per-turn one.
+   */
+  if (!success) {
+    const pool = c.featureUses['dark-ones-own-luck'];
+    if (pool && pool.current > 0) {
+      pool.current -= 1;
+      const d10 = rollDice(state.rng, '1d10');
+      state.rng = d10.state;
+      total += d10.total;
+      success = total >= dc;
+    }
+  }
   if (!success && ability === 'dex' && !c.turn.reactionUsed) {
     const pool = c.featureUses['ring-evasion'];
     if (pool && pool.current > 0) {

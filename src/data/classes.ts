@@ -657,11 +657,15 @@ export const CLASSES: Record<Id, ClassData> = {
       3: ['dark-ones-blessing', 'fiend-spells'],   // Fiend patron
       // 4: Ability Score Increase (builder).
       // 5: a second Eldritch Blast beam, which the spell reads off level.
-      // 6: Dark One's Own Luck adds a d10 to an ability check or save. This
-      //    game rolls neither outside combat saves, where the feature would be
-      //    a once-a-rest +d10 nobody chooses to spend — left off rather than
-      //    invented into something it is not, the same call the bard's Font of
-      //    Inspiration got.
+      // Dark One's Own Luck: a d10 on a failed save, Charisma-modifier times a
+      // day. It was left off as "a once-a-rest +d10 nobody chooses to spend" —
+      // which was true only because it was written as a choice. Auto-applied on
+      // a save that has already failed, the way the Ring of Evasion is, it is
+      // never spent on a save that did not need it, and a d10 across a whole
+      // day of Fireballs is several hundred hit points of Charisma.
+      6: ['dark-ones-own-luck'],
+      // 7: a fourth invocation (choice point above).
+      // 8: Ability Score Increase (builder).
     },
     weaponMasteries: [],
     equipment: {
@@ -720,21 +724,22 @@ export const CLASSES: Record<Id, ClassData> = {
       },
     },
     featuresByLevel: {
-      // Level 1 is Spellcasting and nothing else — the SRD gives a sorcerer no
-      // level-1 feature beyond its spells, and Innate Sorcery (also level 1)
-      // waits for its own change rather than being guessed at now.
+      1: ['innate-sorcery'],
       2: ['font-of-magic', 'metamagic-quickened', 'metamagic-heightened', 'metamagic-empowered'],
       // Draconic Sorcery, the SRD's only sorcerer subclass. Scales for armour
       // and a hit point a level, which is what makes a d6 caster survivable
       // enough to spend its points instead of hiding.
-      //
-      // Elemental Affinity (level 6) is deliberately absent: it is resistance
-      // plus a Charisma bonus on one damage roll of a matching spell, and the
-      // second half needs a hook in the damage pipeline that nothing else in
-      // the game wants. It belongs with the rest of the subclass rather than
-      // wedged in here.
       3: ['draconic-resilience', 'draconic-spells'],
       // 4: Ability Score Increase (builder).
+      // Points back at the arena's lunch break — without it Font of Magic, a
+      // long-rest pool, leaves the afternoon sorcerer with no Metamagic at all.
+      5: ['sorcerous-restoration'],
+      // Elemental Affinity, both halves: fire resistance and Charisma on a fire
+      // spell's damage. It was deferred for want of a damage-pipeline hook;
+      // `rollSpellDice`, built for Empowered Spell, is that hook.
+      6: ['elemental-affinity'],
+      7: ['sorcery-incarnate'],
+      // 8: Ability Score Increase (builder).
     },
     weaponMasteries: [],
     equipment: {

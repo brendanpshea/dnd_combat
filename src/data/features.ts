@@ -13,6 +13,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow, saveForHalf, charmWarded, immuneToCharmAndFear } from '../engine/rules/saves.js';
 import { applyDamage, kill, dropToZero, resolveAttack } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
+import { SORCERY_POINTS } from '../engine/rules/metamagic.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
@@ -98,6 +99,15 @@ export interface FeatureData {
    * to just the fear save — is another one-line feature, not new mechanism.
    */
   saveAdvantage?: Ability[];
+  /**
+   * Resistance to one damage type, for anyone holding this feature.
+   *
+   * Species and worn items could already grant resistance; a CLASS FEATURE
+   * could not, which is why Elemental Affinity's resistance half had nowhere to
+   * live. Folded in by the builder alongside the species' own list, so it is
+   * one line here rather than a special case there.
+   */
+  grantsResistance?: DamageType;
 }
 
 // --- dragon breath weapons -------------------------------------------------
@@ -636,6 +646,35 @@ export const FEATURES: Record<Id, FeatureData> = {
    * that a creature reached zero and who put it there.
    */
   'dark-ones-blessing': { id: 'dark-ones-blessing', name: "Dark One's Blessing", trigger: 'passive' },
+  /**
+   * Dark One's Own Luck (Fiend, level 6): the patron leans on a die.
+   *
+   * The warlock's only gap. Levels 4 and 8 are Ability Score Increases in the
+   * SRD — the builder's job, already done — so this one feature completes the
+   * class through 8.
+   *
+   * Add a d10 to a failed saving throw, Charisma-modifier times a day. Passive
+   * and hookless here because it fires from inside `savingThrow`: it is a
+   * reaction to a roll that already happened, and the feature system has no path
+   * for that. Ring of Evasion is the same shape in the same function, and this
+   * is deliberately modelled on it.
+   *
+   * AUTO-APPLIED, AND ONLY WHEN IT RESCUES. The d10 is rolled only if the save
+   * failed AND the pool has charges; nothing is spent on a save that succeeded,
+   * and nothing is spent on one the d10 could not have saved... except that it
+   * can, since the roll comes after. So it can miss — which is the honest
+   * version, and a d10 that lands short is still information in the log.
+   *
+   * The SRD's "or an ability check" half is left out on purpose. A skill check
+   * inside a fight has no DC to fail against (`contest` is opposed, and the
+   * result is not known to be a loss until both dice are down), so "spend it
+   * when it would help" has nothing to read. Saves are where it would be spent
+   * anyway.
+   */
+  'dark-ones-own-luck': {
+    id: 'dark-ones-own-luck', name: "Dark One's Own Luck", trigger: 'passive',
+    uses: { count: 'charismaMod', per: 'longRest' },
+  },
   'cunning-dash': {
     id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {
@@ -1477,6 +1516,105 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'draconic-spells': {
     id: 'draconic-spells', name: 'Draconic Spells', trigger: 'passive',
+  },
+  /**
+   * Innate Sorcery (level 1): the feature the sorcerer was missing.
+   *
+   * A sorcerer had NOTHING at level 1 but its spell list — the only class in the
+   * game with an empty first level — and nothing at 5, 6 or 7 either. This is
+   * the first of the four that fill it in.
+   *
+   * A bonus action, twice a day, for a minute: spell save DC +1 and advantage on
+   * spell attack rolls. Both halves ride the two functions every spell in the
+   * game already goes through (`spellDc` and `spellAttack`), so it applies to
+   * seventy spells without touching any of them — the same reason `rollSpellDice`
+   * was worth building for Empowered.
+   *
+   * WHY THE DURATION IS TEN ROUNDS AND NOT "THE FIGHT"
+   *
+   * The SRD says one minute, which is ten rounds, which is longer than most
+   * fights here. Writing it as a real expiry anyway costs one field
+   * (`expiresAtRound`, which conditions already have) and means a long fight
+   * ends it honestly instead of the sorcerer carrying a one-minute buff through
+   * twenty rounds. Magical Cunning is the cautionary tale in the other
+   * direction: printed RAW it would have done nothing at all here.
+   */
+  'innate-sorcery': {
+    id: 'innate-sorcery', name: 'Innate Sorcery', trigger: 'bonus',
+    uses: { count: 2, per: 'longRest' }, manualUses: true,
+    apply({ state, actorId }) {
+      const c = state.combatants[actorId]!;
+      if (c.conditions.some((k) => k.id === 'innateSorcery')) return [];
+      const pool = c.featureUses['innate-sorcery'];
+      if (pool && pool.current > 0) pool.current -= 1;
+      // Sorcery Incarnate (level 7): out of uses, pay two sorcery points
+      // instead. The pool is the day's, so this is the feature that keeps the
+      // second fight from being a strictly worse version of the first.
+      else if (c.featureIds.includes('sorcery-incarnate') &&
+               (c.featureUses[SORCERY_POINTS]?.current ?? 0) >= 2) {
+        c.featureUses[SORCERY_POINTS]!.current -= 2;
+      } else return [];
+      c.conditions.push({
+        id: 'innateSorcery', sourceId: actorId, expiresAtRound: state.round + 10,
+      });
+      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'innateSorcery', sourceId: actorId }];
+    },
+  },
+  /**
+   * Sorcerous Restoration (level 5): sorcery points back at lunch.
+   *
+   * Arcane Recovery's twin, and deliberately built the same way — `passive`, no
+   * `apply`, a once-per-long-rest pool, and `shortRest` in campaign.ts does the
+   * work. This happens in camp, not on a turn.
+   *
+   * It matters more for a sorcerer than Arcane Recovery does for a wizard. Font
+   * of Magic is a LONG-rest pool by design, so before this the sorcerer that
+   * spent its points winning the morning fight had no Metamagic at all in the
+   * afternoon one — the class's whole distinguishing mechanic switched off
+   * halfway through every arena day.
+   */
+  'sorcerous-restoration': {
+    id: 'sorcerous-restoration', name: 'Sorcerous Restoration', trigger: 'passive',
+    uses: { count: 1, per: 'longRest' },
+  },
+  /**
+   * Elemental Affinity (Draconic, level 6). Both halves, at last.
+   *
+   * The resistance half needed `grantsResistance`, above: a class feature had no
+   * way to say "resistant to fire" even though a species and a cloak both did.
+   *
+   * The damage half is the one this file's old comment deferred as needing "a
+   * hook in the damage pipeline that nothing else in the game wants". That hook
+   * now exists and something else does want it: `rollSpellDice` was built for
+   * Empowered Spell, sits at the point where a spell's dice are rolled, and
+   * takes the caster's id. Passing it the damage type as well is the whole
+   * change — see metamagic.ts.
+   *
+   * Fire, because this game's Draconic Sorcery has no ancestry PICK: there is
+   * one draconic subclass, and giving it a colour choice is a choice point and a
+   * forge screen, not a level-6 feature. Fire is the red dragon's, which is the
+   * ancestry every sorcerer takes anyway, and it lines up with the fire spells
+   * this game actually has.
+   */
+  'elemental-affinity': {
+    id: 'elemental-affinity', name: 'Elemental Affinity', trigger: 'passive',
+    grantsResistance: 'fire',
+  },
+  /**
+   * Sorcery Incarnate (level 7): Innate Sorcery on credit.
+   *
+   * Half of the SRD feature, and the half that works. The printed version also
+   * lets two Metamagic options ride one spell, which `Action.metamagic` — a
+   * single `MetamagicId`, threaded through the engine, the AI and the web
+   * client's chip row — cannot express. Widening it to an array is a real change
+   * to the cast action and belongs in its own one, not smuggled in here.
+   *
+   * A marker with no `apply`: `innate-sorcery` reads it. Same shape as the three
+   * Metamagic markers above, for the same reason — the rule it changes lives
+   * inside somebody else's activation, and an `apply` cannot reach in there.
+   */
+  'sorcery-incarnate': {
+    id: 'sorcery-incarnate', name: 'Sorcery Incarnate', trigger: 'passive',
   },
 
   // --- monk -----------------------------------------------------------------

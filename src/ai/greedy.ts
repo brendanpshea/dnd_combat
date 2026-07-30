@@ -1607,6 +1607,30 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     const floor = actor.conditions.some((c) => c.id === 'raging') ? 0.3 : 0.5;
     return actor.hp > actor.maxHp * floor ? 3 : 0;
   }
+  if (a.featureId === 'innate-sorcery') {
+    /**
+     * Innate Sorcery: a bonus action for ten rounds of advantage on spell
+     * attacks and +1 to every save DC.
+     *
+     * Rage's shape rather than a flat number, and for the same reason — it
+     * lasts, so turning it on early wastes a bonus action and turning it on
+     * late wastes the buff. The line is "something is close enough to cast at
+     * this turn", which for a caster is its own spell range rather than a
+     * walk. Two uses a day, so an AI that lights it up at an empty board
+     * spends the whole day on the first fight.
+     *
+     * The score is deliberately modest. A bonus action costs a sorcerer almost
+     * nothing on most turns — Quickened is the only other thing competing for
+     * it, and Quickened is only offered once the action is already spent, so
+     * these two never contend on the same turn.
+     */
+    if (actor.conditions.some((c) => c.id === 'innateSorcery')) return 0;
+    const near = Object.values(state.combatants).some(
+      (c) => c.alive && !isDown(c) && c.team !== actor.team &&
+             distanceCells(actor.position, c.position) <= 12,
+    );
+    return near ? 5 : 0;
+  }
   // The monk's three techniques, all drawing on one pool — so the scores are
   // relative to each other, not just to zero. Without these an auto-played monk
   // never spends a focus point, and the pool IS the class.

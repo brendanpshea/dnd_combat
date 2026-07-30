@@ -178,6 +178,7 @@ export type ConditionId =
   | 'veiled'       // Greater Invisibility: hidden, and attacking does not reveal you
   | 'deathWarded'  // Death Ward: the next drop to 0 leaves you standing at 1 instead
   | 'unbound'      // Freedom of Movement: nothing magical holds you
+  | 'innateSorcery' // Innate Sorcery: +1 spell save DC and advantage on spell attacks
   | 'silenced';    // standing in a Silence: no spell with a spoken word
 
 export interface ActiveCondition {
@@ -658,6 +659,12 @@ export interface GameState {
    * cannot leave the next creature saving at disadvantage.
    */
   metamagicCast?: { casterId: Id; heightenedId?: Id; empowered?: boolean };
+  /**
+   * Elemental Affinity has already added its Charisma modifier to a damage roll
+   * of the cast currently resolving. Rides the state and is cleared in the same
+   * `finally` as `metamagicCast`, for the same reason — see `rollSpellDice`.
+   */
+  elementalAffinityUsed?: boolean;
 }
 
 /**

@@ -61,6 +61,7 @@ export const CONDITION_NAME: Record<ConditionId, string> = {
   veiled: 'invisible',
   deathWarded: 'warded against death',
   unbound: 'moving freely',
+  innateSorcery: 'burning with innate sorcery',
   silenced: 'silenced',
 };
 

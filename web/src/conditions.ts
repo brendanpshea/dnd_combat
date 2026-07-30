@@ -62,6 +62,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   veiled:         { icon: '🫥', label: 'Invisible — can’t be targeted, and attacking doesn’t reveal it', kind: 'buff' },
   deathWarded:    { icon: '🕯️', label: 'Death Ward — the next blow that would drop it leaves it at 1 HP', kind: 'buff' },
   unbound:        { icon: '🌀', label: 'Freedom of Movement — webs, vines and paralysis can’t hold it', kind: 'buff' },
+  innateSorcery:  { icon: '✨', label: 'Innate Sorcery — advantage on spell attacks, and +1 to its spell save DC', kind: 'buff' },
   silenced:       { icon: '🔇', label: 'Silenced — can’t cast anything with a spoken word', kind: 'debuff' },
   marked:         { icon: '🏹', label: 'Hunter’s Mark — takes extra damage from the hunter', kind: 'debuff' },
   hexed:          { icon: '👁️‍🗨️', label: 'Hexed — takes extra necrotic damage from the warlock', kind: 'debuff' },

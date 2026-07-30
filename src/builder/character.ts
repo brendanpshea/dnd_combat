@@ -541,7 +541,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     })(),
     weaponMasteries: [...kit.weaponMasteries, ...grants.weaponMasteries],
     attacksPerAction: featureIds.includes('extra-attack') ? 2 : 1,
-    resistances: [...(species.resistances ?? []), ...grants.resistances],
+    resistances: [...new Set([
+      ...(species.resistances ?? []), ...grants.resistances,
+      // A class feature can grant one too (Elemental Affinity: fire).
+      ...featureIds.map((f) => FEATURES[f]?.grantsResistance).filter((d) => d !== undefined),
+    ])],
     vulnerabilities: [],
     immunities: [],
     conditions: [],
