@@ -151,3 +151,52 @@ describe('the bands still mean something once framing is corrected', () => {
     expect(tiny.hi - small.lo, 'the tiny/small overlap has grown').toBeLessThan(0.03);
   });
 });
+
+/**
+ * The party is Medium. So are most of the things trying to kill it.
+ *
+ * Everything above compares monsters to monsters, and all of it passed while a
+ * barbed devil drew 41% wider and 56% larger in area than the party's fighter.
+ * Nothing ever put a hero next to a monster, so nothing caught it — reported
+ * from a board, not from a test: "newish tokens still look fat in comparison to
+ * the PCs, take up much more of width than the PCs do."
+ *
+ * The cause was the per-monster hand-tuned scale table that predated size
+ * bands. Banding fixed the ordering BETWEEN sizes and left the spread INSIDE
+ * each one: Medium ran 1.00 (every hero, since none had an entry) to 1.14 (the
+ * devils, the wraith). Once framing is corrected toward a common target,
+ * apparent size is just `scale x target`, so that leftover tweak was a straight
+ * multiplier on how big a creature looked. Size decides it now, and alone.
+ */
+describe('heroes and monsters of the same size', () => {
+  const HEROES = ['fighter', 'wizard', 'cleric', 'rogue', 'ranger', 'paladin',
+    'druid', 'elf-wizard', 'elf-archer', 'dwarf-cleric', 'human-bard'];
+
+  it('draw at the same size', () => {
+    const heroes = HEROES.filter((h) => TOKEN_FILL[h]).map((h) => apparent(h, 'medium'));
+    expect(heroes.length, 'no hero art to compare against').toBeGreaterThan(6);
+    const monsters = (byBand().get('medium') ?? []).map((r) => r.seen);
+    expect(monsters.length).toBeGreaterThan(20);
+
+    // One population, not two: the widest Medium monster must not out-draw the
+    // smallest Medium hero by more than the framing correction's own clamp.
+    const gap = Math.max(...monsters) / Math.min(...heroes);
+    expect(gap, `widest Medium monster is ${((gap - 1) * 100).toFixed(0)}% bigger than the smallest Medium hero`)
+      .toBeLessThan(1.1);
+  });
+
+  it('are sized by their size and nothing else', () => {
+    // The specific regression: a per-id table creeping back in. Two Medium
+    // creatures with equally well-framed art must land on the same number, so
+    // any id-keyed multiplier shows up here.
+    const wellFramed = (id: string) => Math.abs((TOKEN_FILL[id] ?? 0) - 0.87) < 0.02;
+    const ids = Object.values(MONSTERS)
+      .filter((m) => m.size === 'medium' && wellFramed(m.id))
+      .map((m) => m.id);
+    expect(ids.length, 'no well-framed Medium art to compare').toBeGreaterThan(2);
+    const seen = ids.map((id) => apparent(id, 'medium'));
+    expect(Math.max(...seen) - Math.min(...seen),
+      `well-framed Medium art still draws at different sizes: ${ids.join(', ')}`)
+      .toBeLessThan(0.02);
+  });
+});

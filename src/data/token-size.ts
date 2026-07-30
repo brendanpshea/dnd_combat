@@ -42,3 +42,32 @@ export function bandedScale(raw: number, size: CreatureSize | undefined): number
   const [lo, hi] = sizeBand(size);
   return Math.min(hi, Math.max(lo, raw));
 }
+
+/**
+ * The one scale every creature of a given size draws at: the middle of its band.
+ *
+ * Clamping into a band fixed the ordering — no Large creature outdraws a Huge
+ * one any more — but it left the spread INSIDE each band intact, and that
+ * spread had no meaning left. Once `tokenScale` corrects each token's framing
+ * toward a common target, apparent size is exactly `scale x FILL_TARGET`, so a
+ * leftover hand tweak is a straight multiplier on how big a creature looks.
+ *
+ * Measured: Medium ran from 1.00 (every hero, and any monster with no hand
+ * entry) to 1.14 (the devils, the wraith), which on the board is a barbed devil
+ * 41% wider and 56% larger in area than the party's fighter — two creatures the
+ * rules call the same size. Reported as "newish tokens look fat in comparison
+ * to the PCs", and that is exactly what it was.
+ *
+ * So size alone decides it. This is the mephit argument one level up: the four
+ * mephits were one declared size drawn at four framings, and this was one
+ * declared size drawn at a dozen hand tweaks.
+ *
+ * The cost, stated plainly: a fire giant and a hill giant are now the same size
+ * on the board. They are both Huge, so that is the rules' answer too — but it
+ * is a real loss of flavour, and the place to put it back is a size, not a
+ * multiplier.
+ */
+export function canonicalScale(size: CreatureSize | undefined): number {
+  const [lo, hi] = sizeBand(size);
+  return (lo + hi) / 2;
+}
