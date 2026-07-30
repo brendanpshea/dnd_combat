@@ -178,11 +178,20 @@ describe('heroes and monsters of the same size', () => {
     const monsters = (byBand().get('medium') ?? []).map((r) => r.seen);
     expect(monsters.length).toBeGreaterThan(20);
 
-    // One population, not two: the widest Medium monster must not out-draw the
-    // smallest Medium hero by more than the framing correction's own clamp.
-    const gap = Math.max(...monsters) / Math.min(...heroes);
-    expect(gap, `widest Medium monster is ${((gap - 1) * 100).toFixed(0)}% bigger than the smallest Medium hero`)
-      .toBeLessThan(1.1);
+    // One population, not two. The bar is near-equality, not a tolerance band:
+    // size alone decides the scale, so every Medium creature lands on the same
+    // number (0.909 measured) unless its art is framed badly enough to hit the
+    // correction's clamp — and that clamp can only make a token SMALLER. So the
+    // MAXIMUM is the canonical size for heroes and monsters alike, and any
+    // per-id tweak creeping back shows up immediately.
+    //
+    // An earlier draft allowed 10%, which is most of the bug this describes:
+    // planting a single 1.14 tweak back on the barbed devil sailed through it.
+    const gap = Math.max(...monsters) / Math.max(...heroes);
+    expect(gap, `widest Medium monster is ${((gap - 1) * 100).toFixed(1)}% bigger than the widest Medium hero`)
+      .toBeLessThan(1.005);
+    // Nothing may exceed the canonical size either — the clamp only shrinks.
+    expect(Math.max(...monsters)).toBeLessThan(Math.max(...heroes) * 1.005);
   });
 
   it('are sized by their size and nothing else', () => {
