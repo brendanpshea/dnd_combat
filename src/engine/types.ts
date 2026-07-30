@@ -639,7 +639,16 @@ export interface GameState {
    * Narrow on purpose: one target, one cast, and gone by the time the next
    * action starts. It is state in the sense that a stack frame is state.
    */
-  metamagicCast?: { casterId: Id; heightenedId?: Id };
+  /**
+   * A metamagic bend riding on the state for the duration of ONE cast.
+   *
+   * Both bends that need to reach inside a spell's own resolution arrive this
+   * way, because there is no route for a modifier through seventy `cast`
+   * implementations: Heightened is read by the shared `savingThrow`, Empowered by
+   * the shared `rollSpellDice`. Cleared in a `finally`, so a spell that throws
+   * cannot leave the next creature saving at disadvantage.
+   */
+  metamagicCast?: { casterId: Id; heightenedId?: Id; empowered?: boolean };
 }
 
 /**

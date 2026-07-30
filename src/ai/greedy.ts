@@ -142,12 +142,41 @@ const APE_HP = MONSTERS['giant-ape']?.hp ?? 168;
  * ending the fight outright.
  */
 const POLYMORPH_ROUNDS = 3;
+/** The same three-round horizon, for the same reason: a buff must not outbid
+ *  ending the fight. Named so Haste and Polymorph cannot drift apart. */
+const HASTE_ROUNDS = 3;
 const APE_OUTPUT = (() => {
   const ape = MONSTERS['giant-ape'];
   const fist = ape ? WEAPONS[ape.weaponIds?.[0] ?? ''] : undefined;
   if (!ape || !fist) return 27;
   return (avgDice(fist.damage) + abilityMod(ape.abilities.str)) * (ape.attacksPerAction ?? 1) * 0.6;
 })();
+
+/**
+ * What ONE more weapon attack from this creature is worth, in hit points.
+ *
+ * The quantity Haste actually grants — and the reason it needs its own function
+ * rather than a fraction of `outputPerRound`. Haste's extra attack is a WEAPON
+ * attack, so on a wizard it is a dagger and worth almost nothing, while
+ * `outputPerRound` would report the wizard's Fireball-scale magic. Pricing Haste
+ * as "half of what you do per round" therefore credited it with half of a
+ * caster's spellcasting, which Haste cannot boost, and the AI would happily
+ * Haste a wizard.
+ *
+ * Zero for a creature with nothing to swing, which is the honest answer.
+ */
+function extraAttackValue(c: Combatant): number {
+  let best = 0;
+  for (const id of attackableWeapons(c)) {
+    const w = WEAPONS[id];
+    if (!w) continue;
+    const mod = abilityMod(c.abilities[attackAbility(c, w)]);
+    // The 0.6 is the same rough hit-probability discount `outputPerRound` uses,
+    // kept identical on purpose so the two numbers stay comparable.
+    best = Math.max(best, (avgDice(w.damage) + (w.damageBonus ?? 0) + mod) * 0.6);
+  }
+  return best;
+}
 
 /**
  * Roughly what a creature does with a round, in hit points.
@@ -335,10 +364,54 @@ function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'cas
     ? heightenedTarget(a.targets as Array<{ combatantId?: Id }>)
     : undefined;
   try {
-    return scoreSpellInner(state, actor, a);
+    const base = scoreSpellInner(state, actor, a);
+    /**
+     * The bend is priced HERE rather than inside each spell's case, because
+     * otherwise the empowered variant and the plain one score identically and
+     * the AI picks whichever the enumeration happened to emit first — a bend
+     * that fires arbitrarily, which is worse than one that never fires because
+     * it looks like it works.
+     */
+    if (a.metamagic === 'empowered') {
+      return base + empoweredGain(actor) - POINT_COST;
+    }
+    return base;
   } finally {
     heightenedVictim = undefined;
   }
+}
+
+/**
+ * What Empowered Spell is worth, and what a sorcery point costs.
+ *
+ * The value half is easy and honest: rerolling a die that came up below its own
+ * average gains about a fifth of the die's faces, and the bend rerolls up to
+ * Charisma-modifier of them. So `dice × gain`, capped by the modifier.
+ *
+ * The PRICE half is the thing this codebase has got wrong six times by inventing
+ * a constant. It is not invented here: a spell slot already costs `SLOT_COST` in
+ * this scorer, and Font of Magic's own conversion rate is two sorcery points for
+ * a 1st-level slot — so one point is half a slot, and the price falls out of a
+ * number that already existed.
+ *
+ * That makes Empowered almost always worth taking when it applies, which is
+ * correct rather than broken: the constraint on a sorcerer is the SIZE of the
+ * pool, not the price of one use. It is the same conclusion the Quickened policy
+ * reached from the other direction — gate what a bend applies to, and let the
+ * pool do the limiting.
+ */
+const SLOT_COST = 2;
+const POINT_COST = SLOT_COST / 2;
+
+function empoweredGain(actor: Combatant): number {
+  const cha = Math.max(1, abilityMod(actor.abilities[actor.spellcastingAbility ?? 'cha']));
+  // About a fifth of a die gained per reroll, and the dice these spells roll are
+  // d6s and d8s — so a bit over one hit point each. Deliberately not read off the
+  // spell: the expression lives inside each `cast`, and copying it onto the data
+  // would be a second source of truth for the sake of a tie-breaker that only has
+  // to land in the right decade. Same rough-on-purpose reasoning as
+  // `outputPerRound`.
+  return cha * 1.2;
 }
 
 function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
@@ -731,6 +804,27 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       // Removing an enemy from the fight is worth roughly killing it.
       return saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) - slotCost;
     }
+    /**
+     * Dissonant Whispers: damage plus a shove that costs the target a turn of
+     * walking back.
+     *
+     * The displacement is priced as a FRACTION of a denied turn, not a whole one.
+     * A creature driven its full speed away has to spend most of the next round
+     * returning, but not all of it — it can still Dash, and a ranged attacker
+     * loses nothing at all. Half a turn is the honest middle, and it is the term
+     * that makes this spell worth more than its dice against a melee bruiser and
+     * exactly its dice against an archer.
+     */
+    case 'dissonant-whispers': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const fail = saveFailProb(state, t, 'wis', dc);
+      const dice = avgDice(`${2 + a.slotLevel}d6`);
+      // Half damage on a save, so the expected damage is the weighted mix.
+      const dmg = dice * (fail + (1 - fail) * 0.5);
+      const flees = isMeleeFighter(t) || attackableWeapons(t).every((id) => WEAPONS[id]?.melee);
+      const displaced = flees ? denialValue(state, t, fail, 0.5) : 0;
+      return damageValue(dmg, t) + displaced - slotCost;
+    }
     case 'command': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       // Stealing one turn (grovel prone) is worth a slice of the target's threat.
@@ -1094,14 +1188,29 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       if (actor.concentratingOn) return 0;
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       if (t.conditions.some((c) => c.id === 'hasted')) return 0;
-      // Best on a melee ally who can turn the extra attack into real damage;
-      // still solid on anyone as +2 AC and a mobility boost.
-      const w = t.equipped.mainHand ? WEAPONS[t.equipped.mainHand] : undefined;
-      const meleeBonus = w?.melee ? avgDice(w.damage) : 0;
-      // Double speed, +2 AC and an extra attack for the rest of the fight.
-      // Was a flat 4, which is less than a cantrip.
-      void meleeBonus;
-      return upliftValue(t, 0.5, 3) - slotCost;
+      /**
+       * THE ALLY'S EXTRA DAMAGE, which this spell was never credited with.
+       *
+       * The previous version computed a `meleeBonus` and then threw it away with
+       * `void meleeBonus`, scoring `upliftValue(t, 0.5, 3)` instead — half of
+       * whatever the target does per round, for three rounds. That is wrong in
+       * both directions at once:
+       *
+       *  - it credited Haste with half a WIZARD'S SPELL output, which Haste
+       *    cannot boost at all (the extra attack is a weapon attack), so the AI
+       *    would cheerfully Haste a caster; and
+       *  - on a fighter with Extra Attack it undercounted, because a third attack
+       *    on top of two is a third more swinging, not half of everything.
+       *
+       * So: the extra attack is priced as one more weapon attack (see
+       * `extraAttackValue`), and the +2 AC as a ward against what is actually
+       * being thrown at the target. Speed is left at zero — it wins positions,
+       * not hit points, and this scorer has no way to say so honestly.
+       */
+      const extra = extraAttackValue(t) * HASTE_ROUNDS;
+      // +2 AC is roughly a tenth off every d20 aimed at them.
+      const ward = incomingPerRound(state, t) * 0.1 * HASTE_ROUNDS;
+      return extra + ward - slotCost;
     }
     // --- 4th level ---------------------------------------------------------
     // The tier was unscored entirely, which meant a party's own hints never

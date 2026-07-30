@@ -43,9 +43,12 @@
  * problem comes back.
  */
 import type { GameState, Id, Combatant } from '../types.js';
+import { abilityMod } from '../types.js';
+import { rollDice, type DiceRoll } from '../dice.js';
+import { rollDie } from '../rng.js';
 import type { SpellData } from '../../data/spells.js';
 
-export type MetamagicId = 'quickened' | 'heightened';
+export type MetamagicId = 'quickened' | 'heightened' | 'empowered';
 
 export interface MetamagicData {
   id: MetamagicId;
@@ -96,6 +99,69 @@ const SAVE_OR_SUCK = new Set([
  * without anyone opening a browser.
  */
 
+/**
+ * Which spells Empowered Spell is offered for.
+ *
+ * An explicit set for the same two reasons `SAVE_OR_SUCK` is one: it keeps the
+ * spell pass small, and it keeps the option honest. Empowered rerolls DAMAGE
+ * dice, so a spell with no damage dice would charge a sorcery point for nothing
+ * — the exact mistake `SAVE_OR_SUCK` made with Polymorph, caught only by opening
+ * a browser and reading the chip row.
+ *
+ * These are also the spells that had to be converted to `rollSpellDice` below,
+ * so the set is not a wish list: `metamagic.test.ts` reads the source and holds
+ * every id here to actually rolling its damage through the helper. Adding a
+ * spell to this set without converting it is a caught error, not a silent one.
+ */
+export const EMPOWERABLE = new Set([
+  'fireball', 'lightning-bolt', 'ice-storm', 'shatter', 'burning-hands',
+  'thunderwave', 'scorching-ray', 'blight', 'ray-of-sickness',
+]);
+
+/**
+ * Roll a damage expression for a spell, applying Empowered Spell if this cast
+ * was bent.
+ *
+ * WHY THE ROLL AND NOT THE DAMAGE
+ *
+ * The obvious place to put this was `applyDamage`, which every damage spell
+ * already calls and which already receives the individual `rolls`. It is the
+ * wrong place: by then the total has been through save-for-half, resistance and
+ * the target's own modifiers, so improving the dice means back-computing a delta
+ * through all of it. Rerolling where the dice are rolled is correct by
+ * construction and the downstream halving simply applies to a better number.
+ *
+ * "Up to your Charisma modifier" dice, and only ones below their own average —
+ * rerolling a 6 on a d6 can only lose. Keeps the better of the two, so the bend
+ * can never make a spell worse.
+ */
+export function rollSpellDice(
+  state: GameState, casterId: Id, expr: string, doubleDice = false,
+): DiceRoll {
+  const roll = rollDice(state.rng, expr, doubleDice);
+  state.rng = roll.state;
+  if (state.metamagicCast?.casterId !== casterId || !state.metamagicCast.empowered) return roll;
+  const caster = state.combatants[casterId];
+  if (!caster) return roll;
+  const faces = Number(expr.match(/d(\d+)/)?.[1] ?? 0);
+  if (!faces) return roll;
+  const average = (faces + 1) / 2;
+  let budget = Math.max(1, abilityMod(caster.abilities[caster.spellcastingAbility ?? 'cha']));
+  let rng = state.rng;
+  let gained = 0;
+  const rolls = roll.rolls.map((r) => {
+    if (budget <= 0 || r >= average) return r;
+    budget -= 1;
+    const again = rollDie(rng, faces);
+    rng = again.state;
+    if (again.value <= r) return r;
+    gained += again.value - r;
+    return again.value;
+  });
+  state.rng = rng;
+  return { ...roll, rolls, total: roll.total + gained, state: rng };
+}
+
 export const METAMAGIC: Record<MetamagicId, MetamagicData> = {
   quickened: {
     id: 'quickened',
@@ -115,6 +181,16 @@ export const METAMAGIC: Record<MetamagicId, MetamagicData> = {
     cost: 2,
     blurb: 'One target of the spell has Disadvantage on its saves against it.',
     applies: (spell) => SAVE_OR_SUCK.has(spell.id),
+  },
+  empowered: {
+    id: 'empowered',
+    name: 'Empowered Spell',
+    featureId: 'metamagic-empowered',
+    // One point, against Quickened's and Heightened's two, and RAW. It is the
+    // cheapest bend because it is the smallest: a few hit points, not a turn.
+    cost: 1,
+    blurb: 'Reroll the weakest damage dice, up to your Charisma modifier.',
+    applies: (spell) => EMPOWERABLE.has(spell.id),
   },
 };
 

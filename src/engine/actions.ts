@@ -23,7 +23,7 @@ import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
 import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
-import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, heightenedTarget, type MetamagicId } from './rules/metamagic.js';
+import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, heightenedTarget, sorceryPoints, type MetamagicId } from './rules/metamagic.js';
 import { canShove, resolveShove, type ShoveMode } from './rules/shove.js';
 import type { GameEvent } from './events.js';
 
@@ -639,10 +639,54 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
       ? [...new Set([baseLevel, ...actor.spellSlots.map((_, i) => i + 1)])]
           .filter((lvl) => spellAvailable(actor, spell, lvl))
       : [affordable(baseLevel)].filter((lvl): lvl is number => lvl !== undefined));
+    /**
+     * Empowered Spell rides the ORDINARY cast, not the Quickened pass below.
+     *
+     * That distinction was nearly a silent hole. The bent-cast pass is gated on
+     * `actor.turn.actionUsed`, because it exists for Quickened — the bend that
+     * turns an action into a bonus action. Empowered does nothing to the action
+     * economy, so enumerating it there would have produced action-casts on a turn
+     * whose action was already spent: every one rejected by `isLegalAction`, and
+     * the option offered to the player in the chip row while the AI could never
+     * once take it.
+     */
+    /**
+     * EMPOWERED KEEPS ITS HANDS OFF THE LAST TWO POINTS, and this is measured.
+     *
+     * Offered unconditionally, Empowered fired 2129 times across 60 runs and
+     * Quickened collapsed from 404 to 125. That is not a preference, it is the
+     * greedy scorer's one-turn horizon: Empowered costs one point and pays about
+     * six hit points NOW, Quickened costs two and pays a whole second spell —
+     * thirty or more — but only later in the same turn, which nothing in a
+     * one-turn score can see. So the sorcerer spent its day a point at a time on
+     * rerolls and stopped doing the thing the class is for.
+     *
+     * The fix is a policy rather than a price, exactly as the Quickened cantrip
+     * problem was: Empowered may spend anything DOWN TO the cost of one Quickened
+     * cast and no further. The pool's last two points stay earmarked for the
+     * bigger use, and the reserve is read from Quickened's own cost so the two
+     * cannot drift apart.
+     *
+     * `isLegalAction` is deliberately wider, so a player may spend the last point
+     * however they like.
+     */
+    const reserve = METAMAGIC.quickened.cost;
+    const bends: Array<MetamagicId | undefined> = [undefined];
+    if (spell.level >= 1 &&
+        sorceryPoints(actor) - METAMAGIC.empowered.cost >= reserve &&
+        canMetamagic(state, actorId, spell, 'empowered')) {
+      bends.push('empowered');
+    }
     for (const slotLevel of levels) {
       for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
-        const a: Action = { kind: 'castSpell', spellId: sid, slotLevel, targets, ...(weaponId ? { weaponId } : {}) };
-        if (isLegalAction(state, actorId, a)) actions.push(a);
+        for (const bend of bends) {
+          const a: Action = {
+            kind: 'castSpell', spellId: sid, slotLevel, targets,
+            ...(weaponId ? { weaponId } : {}),
+            ...(bend ? { metamagic: bend } : {}),
+          };
+          if (isLegalAction(state, actorId, a)) actions.push(a);
+        }
       }
     }
   }
@@ -893,6 +937,11 @@ export function step(state: GameState, action: Action): { state: GameState; even
       if (action.metamagic === 'heightened') {
         const victim = heightenedTarget(action.targets as Array<{ combatantId?: Id }>);
         if (victim) draft.metamagicCast = { casterId: actorId, heightenedId: victim };
+      }
+      // Empowered rides the same channel, read by `rollSpellDice` rather than by
+      // `savingThrow`. See GameState.metamagicCast.
+      if (action.metamagic === 'empowered') {
+        draft.metamagicCast = { casterId: actorId, empowered: true };
       }
       let castEvents;
       try {

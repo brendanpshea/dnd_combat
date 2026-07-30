@@ -496,8 +496,8 @@ describe('the metamagic chip row', () => {
 
   it('offers a chip only to a sorcerer with points left', () => {
     const { c, meId } = sorcerer(['hold-person', 'fire-bolt']);
-    expect(affordableMetamagic(c.state.combatants[meId]!).map((m) => m.id))
-      .toEqual(['quickened', 'heightened']);
+    expect(affordableMetamagic(c.state.combatants[meId]!).map((m) => m.id).sort())
+      .toEqual(['empowered', 'heightened', 'quickened']);
     c.state.combatants[meId]!.featureUses[SORCERY_POINTS]!.current = 0;
     expect(affordableMetamagic(c.state.combatants[meId]!)).toEqual([]);
     // And no other class ever sees the row.
