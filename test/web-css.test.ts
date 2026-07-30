@@ -250,3 +250,53 @@ describe('the move overlay is a region, not a grid of boxes', () => {
     expect(rule('.cell'), 'cells no longer transition their highlight').toContain('transition');
   });
 });
+
+/**
+ * The board must not resize because the browser's URL bar moved.
+ *
+ * MEASURED, at 412x600 with an 8x8 board (short enough that the board is
+ * height-constrained rather than width-constrained, which is the case a 390x780
+ * phone never exercises):
+ *
+ *     chrome visible (600px)  board 259px
+ *     chrome hidden  (710px)  board 364px
+ *     chrome back    (600px)  board 254px
+ *
+ * A 41% jump mid-fight, triggered by nothing the player did — and it did not
+ * land back where it started. The board sizes itself to the height left over,
+ * and `height: 100%` tracks the visual viewport, which is exactly what the URL
+ * bar changes.
+ *
+ * WHY THIS IS A SOURCE GUARD AND NOT A BROWSER TEST. Headless Chromium has no
+ * URL bar, so it reports `100svh`, `100dvh` and `100lvh` as identical — all
+ * equal to the viewport. Checked directly:
+ *
+ *     headless viewport units: {"svh":600,"dvh":600,"lvh":600,"inner":600}
+ *
+ * `setViewportSize` changes the real viewport, which `svh` is not supposed to
+ * resist. So no automated browser check can tell the fixed layout from the
+ * broken one; what can be held is that the shell asks for the stable unit.
+ */
+describe('the app shell is pinned to the small viewport', () => {
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+
+  it('sizes the shell in svh, the unit the URL bar does not move', () => {
+    expect(css, 'the shell no longer asks for svh').toMatch(/@supports \(height: 100svh\)/);
+    const at = css.indexOf('@supports (height: 100svh)');
+    const block = css.slice(at, css.indexOf('}', css.indexOf('{', at) + 1) + 1);
+    expect(block, 'the svh rule does not cover the shell').toMatch(/html,\s*body,\s*#root/);
+    expect(block).toContain('100svh');
+  });
+
+  it('keeps a plain fallback for anything without svh', () => {
+    // The `@supports` guard means an engine that has never heard of svh gets
+    // exactly today's behaviour rather than a shell with no height at all.
+    expect(css).toMatch(/html,\s*body,\s*#root \{ height: 100%; \}/);
+  });
+
+  it('does not use dvh, which is the unit that tracks the bar', () => {
+    // dvh is the trap: it looks like the modern choice and it is precisely the
+    // one that changes as the chrome slides.
+    expect(css, 'dvh tracks the URL bar — that is the bug, not the fix').not.toContain('dvh');
+  });
+});

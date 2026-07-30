@@ -18,7 +18,25 @@
   --cell-dark: #322b48;
 }
 
+/**
+ * THE APP IS THE SMALL VIEWPORT, ALWAYS.
+ *
+ * `height: 100%` tracks the visual viewport, which on a phone changes by ~110px
+ * every time the browser's URL bar slides away. The board sizes itself to
+ * whatever height is left over, so on a short screen it was re-fitting on every
+ * one of those: measured at 412x600, the board went 259px -> 364px -> 254px as
+ * the bar hid and came back. A 41% jump, mid-fight, triggered by nothing the
+ * player did — and it did not even land back where it started.
+ *
+ * `svh` is the viewport with the browser chrome SHOWN, and it does not move when
+ * the chrome does. So the layout is stable by construction: when the bar hides,
+ * the extra strip is simply background. Nothing reflows, nothing jumps, and
+ * nothing can be hidden behind the bar when it comes back.
+ */
 html, body, #root { height: 100%; }
+@supports (height: 100svh) {
+  html, body, #root { height: 100svh; }
+}
 body {
   background: var(--bg);
   color: var(--text);
