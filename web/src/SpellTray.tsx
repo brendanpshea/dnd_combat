@@ -5,7 +5,7 @@
  * campaign through the same setters both callers already use. Save applies the
  * three tiers and hands a message back; the caller persists and re-renders.
  */
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { Id } from '../../src/engine/types.js';
 import {
   type CampaignState,
@@ -16,6 +16,28 @@ import {
 } from '../../src/campaign/campaign.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellInfoDot } from './InfoCard.js';
+import { byTier, TIER_NAME } from './spellTiers.js';
+
+/**
+ * One pickable spell. The ⓘ button sits BESIDE the label, never inside it — a
+ * button inside a label is invalid HTML and folds the dot's name into the
+ * checkbox's accessible label.
+ */
+function Option(
+  { id, checked, disabled, onToggle }:
+  { id: Id; checked: boolean; disabled: boolean; onToggle: () => void },
+) {
+  return (
+    <div className="prepare-option-row">
+      <label className={`prepare-option${checked ? ' checked' : ''}`}>
+        <input type="checkbox" checked={checked} disabled={disabled} onChange={onToggle} />
+        <span className="prepare-option-name">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
+      </label>
+      <SpellInfoDot spellId={id} />
+    </div>
+  );
+}
+
 
 export function SpellTray(
   { campaign: c, idx, mode = 'create', onClose, onSaved }: {
@@ -60,12 +82,15 @@ export function SpellTray(
   return (
     <div className="tray-backdrop" onClick={onClose}>
       <div className="tray" onClick={(e) => e.stopPropagation()}>
+        {/* Title and tally on separate lines. Run together they wrapped into
+            four ragged lines on a 390px phone, and the ✕ — the only way out of
+            a sheet this long — floated off beside the middle of the name. */}
         <div className="tray-head">
-          📖 {ch.name}'s Spells
-          <span className="muted">
-            — {cantripDraft.length}/{cCap} cantrips{usesBook ? `, ${spellbookDraft.length}/${bookCap} known` : ''}, {prepareDraft.length}/{cap} prepared
-          </span>
+          <span className="tray-title">📖 {ch.name}'s Spells</span>
           <button className="ghost" onClick={onClose}>✕</button>
+          <span className="muted tray-tally">
+            {cantripDraft.length}/{cCap} cantrips{usesBook ? `, ${spellbookDraft.length}/${bookCap} known` : ''}, {prepareDraft.length}/{cap} prepared
+          </span>
         </div>
         {isDefault && !locked && (
           <p className="hint">A sensible set is chosen by default — adjust only if you want to.</p>
@@ -86,21 +111,14 @@ export function SpellTray(
             <div className="sheet-row">
               <span className="sheet-label">Cantrips ({cantripDraft.length}/{cCap}) — always ready</span>
               <div className="prepare-grid">
-                {cPool.map((id) => {
-                  const checked = cantripDraft.includes(id);
-                  return (
-                    // The ⓘ button sits BESIDE the label, never inside it — a
-                    // button inside a label is invalid HTML and folds the
-                    // dot's name into the checkbox's accessible label.
-                    <div key={id} className="prepare-option-row">
-                      <label className={`prepare-option${checked ? ' checked' : ''}`}>
-                        <input type="checkbox" checked={checked} disabled={!checked && cAtCap} onChange={() => toggleCantrip(id)} />
-                        {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
-                      </label>
-                      <SpellInfoDot spellId={id} />
-                    </div>
-                  );
-                })}
+                {cPool.map((id) => (
+                  <Option
+                    key={id} id={id}
+                    checked={cantripDraft.includes(id)}
+                    disabled={!cantripDraft.includes(id) && cAtCap}
+                    onToggle={() => toggleCantrip(id)}
+                  />
+                ))}
               </div>
             </div>
           )
@@ -118,18 +136,19 @@ export function SpellTray(
             <div className="sheet-row">
               <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
               <div className="prepare-grid">
-                {bookPool.map((id) => {
-                  const checked = spellbookDraft.includes(id);
-                  return (
-                    <div key={id} className="prepare-option-row">
-                      <label className={`prepare-option${checked ? ' checked' : ''}`}>
-                        <input type="checkbox" checked={checked} disabled={!checked && bookAtCap} onChange={() => toggleBook(id)} />
-                        {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}
-                      </label>
-                      <SpellInfoDot spellId={id} />
-                    </div>
-                  );
-                })}
+                {byTier(bookPool).map(([lv, ids]) => (
+                  <Fragment key={lv}>
+                    <span className="prepare-tier">{TIER_NAME[lv] ?? `L${lv}`} level</span>
+                    {ids.map((id) => (
+                      <Option
+                        key={id} id={id}
+                        checked={spellbookDraft.includes(id)}
+                        disabled={!spellbookDraft.includes(id) && bookAtCap}
+                        onToggle={() => toggleBook(id)}
+                      />
+                    ))}
+                  </Fragment>
+                ))}
               </div>
             </div>
           )
@@ -137,18 +156,19 @@ export function SpellTray(
         <div className="sheet-row">
           <span className="sheet-label">Prepared ({prepareDraft.length}/{cap})</span>
           <div className="prepare-grid">
-            {leveledPool.map((id) => {
-              const checked = prepareDraft.includes(id);
-              return (
-                <div key={id} className="prepare-option-row">
-                  <label className={`prepare-option${checked ? ' checked' : ''}`}>
-                    <input type="checkbox" checked={checked} disabled={!checked && atCap} onChange={() => togglePrepare(id)} />
-                    {SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}<span className="muted"> (L{SPELLS[id]?.level ?? 1})</span>
-                  </label>
-                  <SpellInfoDot spellId={id} />
-                </div>
-              );
-            })}
+            {byTier(leveledPool).map(([lv, ids]) => (
+              <Fragment key={lv}>
+                <span className="prepare-tier">{TIER_NAME[lv] ?? `L${lv}`} level</span>
+                {ids.map((id) => (
+                  <Option
+                    key={id} id={id}
+                    checked={prepareDraft.includes(id)}
+                    disabled={!prepareDraft.includes(id) && atCap}
+                    onToggle={() => togglePrepare(id)}
+                  />
+                ))}
+              </Fragment>
+            ))}
             {leveledPool.length === 0 && <span className="muted">Pick spellbook spells above first.</span>}
           </div>
         </div>

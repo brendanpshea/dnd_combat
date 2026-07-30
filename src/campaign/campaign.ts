@@ -332,7 +332,7 @@ export const STAGES: StageData[] = [
  * LEVEL 9 IS THE FIRST ONE THAT IS NOT NEARLY FREE. It is the 5th-level spell
  * tier — the first new spell level this game has gained since it was built —
  * and the whole reason the threshold moved. Casters reaching 9 get Hold
- * Monster, Cone of Cold, Flame Strike, Mass Cure Wounds and Synaptic Static.
+ * Monster, Cone of Cold, Flame Strike, Mass Cure Wounds and Insect Plague.
  *
  * FOUR CLASSES GAIN NOTHING AT 9 YET — fighter, rogue, barbarian and monk. The
  * paladin and ranger are fine: 9 is where a half-caster reaches 3rd-level

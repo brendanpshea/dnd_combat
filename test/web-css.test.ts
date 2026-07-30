@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { restPools, shortLabel } from '../web/src/featurePools.js';
+import { byTier } from '../web/src/spellTiers.js';
 import { join } from 'node:path';
 
 /**
@@ -566,5 +567,94 @@ describe('the combat status box', () => {
     const near = app.slice(Math.max(0, at - 400), at);
     expect(near, 'the economy chips are shown for enemies again')
       .toContain('!runsItself(active) && (');
+  });
+});
+
+/**
+ * The spell tray, reported from a real phone: "each spell / box / check is
+ * multiple lines (breaks out spell title from check)".
+ *
+ * The name was a bare text node inside the label, which makes it an anonymous
+ * flex item — free to wrap. It did: the checkbox held the left edge and
+ * "Shocking Grasp" broke underneath it, so a row was two or three ragged lines
+ * and the tick no longer read as belonging to the spell beside it.
+ *
+ * Three more faults came out of measuring it at 390x780 with a 9th-level
+ * wizard, whose three lists come to 3178px of content:
+ *
+ *   - the ⓘ dot asked for 24px and got 40, because the global
+ *     `button { min-height: 40px }` outranks a plain `height`. It was the
+ *     tallest thing in every row, so 66 spells cost 44px of pitch each for a
+ *     26px label — and the roominess of the row was an accident nobody meant.
+ *   - `max-height: 60vh` showed 468px of that behind 312px of backdrop. It is
+ *     a modal; there is nothing behind it worth keeping in view.
+ *   - the lists arrive in pool order, so a 37-entry spellbook was one
+ *     undifferentiated wall. A caster picks by tier.
+ */
+describe('the spell tray', () => {
+  const tray = readFileSync(fileURLToPath(new URL('../web/src/SpellTray.tsx', import.meta.url)), 'utf8');
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+  // Anchored to the start of a line: `.prepare-option {` is a substring of
+  // `.prepare-option-row .prepare-option {`, and matching that one reads a
+  // three-word rule instead of the one being asserted about.
+  const rule = (sel: string): string => {
+    const i = css.indexOf('\n' + sel + ' {');
+    expect(i, `no rule for ${sel}`).toBeGreaterThan(-1);
+    return css.slice(i, css.indexOf('}', i));
+  };
+
+  it('never breaks a spell name away from its checkbox', () => {
+    // The name has to be an element of its own — a bare text node cannot be
+    // told not to wrap.
+    expect(tray, 'the name is a loose text node again').toContain('className="prepare-option-name"');
+    expect(rule('.prepare-option-name'), 'the name may wrap under its tick again')
+      .toContain('white-space: nowrap');
+  });
+
+  it('sizes columns so a whole name fits on a phone', () => {
+    // Measured: 210px tracks give one column at 360 and 390px (nothing
+    // clipped, no row over 40px tall) and two in the 560px desktop tray.
+    // Narrower tracks fit two columns on a phone and truncated real spells —
+    // "Burning Han…" is no better than a wrapped row.
+    const track = rule('.prepare-grid').match(/minmax\((\d+)px/);
+    expect(track, 'the grid no longer sizes its own tracks').toBeTruthy();
+    expect(Number(track![1]), 'a column this narrow clips real spell names')
+      .toBeGreaterThanOrEqual(200);
+  });
+
+  it('lets the info dot be smaller than a full button', () => {
+    expect(rule('.prepare-option-row .info-dot'), 'the global 40px button floor is back')
+      .toContain('min-height');
+    // ...and the label keeps a real tap target of its own, rather than
+    // inheriting one from the dot beside it.
+    expect(rule('.prepare-option')).toContain('min-height: 34px');
+  });
+
+  it('gives the sheet most of the phone rather than most of the backdrop', () => {
+    const max = rule('.tray').match(/max-height:\s*(\d+)vh/);
+    expect(max, 'the tray lost its height cap').toBeTruthy();
+    expect(Number(max![1]), 'back to showing a sixth of the content').toBeGreaterThanOrEqual(80);
+  });
+
+  it('groups the leveled lists by tier, cheapest first', () => {
+    // Behavioural: real spell ids through the real grouping.
+    const tiers = byTier(['fireball', 'magic-missile', 'shield', 'cone-of-cold', 'web']);
+    expect(tiers.map(([lv]) => lv), 'tiers out of order').toEqual([1, 2, 3, 5]);
+    expect(tiers[0]![1], 'first-level spells split up').toEqual(['magic-missile', 'shield']);
+    expect(tiers[2]![1]).toEqual(['fireball']);
+    // A heading must span the grid or the spells under it start in column two.
+    expect(rule('.prepare-tier')).toContain('grid-column: 1 / -1');
+  });
+
+  it('keeps the close button in the corner, not adrift in the title', () => {
+    // The tally used to sit inline between the name and the ✕, wrapping the
+    // header to four lines and pushing the only way out of a long sheet into
+    // the middle of it.
+    const title = tray.indexOf('className="tray-title"');
+    const close = tray.indexOf('onClick={onClose}>✕', title);
+    const tally = tray.indexOf('tray-tally');
+    expect(close, 'no close button after the title').toBeGreaterThan(title);
+    expect(tally, 'the tally is back between the title and the ✕').toBeGreaterThan(close);
+    expect(rule('.tray-tally'), 'the tally no longer takes a row of its own').toContain('100%');
   });
 });

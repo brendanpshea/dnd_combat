@@ -1644,7 +1644,11 @@ button.category .count {
 
 .tray {
   width: min(560px, 100%);
-  max-height: 60vh;
+  /* The spell tray holds far more than fits: a 9th-level wizard's three lists
+     came to 3178px behind a 468px window, so 60vh spent 312px of a 780px phone
+     on backdrop nobody needs to see. It is a modal — there is nothing behind
+     it to keep in view. */
+  max-height: 88vh;
   overflow-y: auto;
   background: var(--panel);
   border: 1px solid #453d63;
@@ -1659,12 +1663,17 @@ button.category .count {
 .tray-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 0 8px;
   font-family: var(--display);
   font-weight: 800;
   padding-bottom: 8px;
 }
 .tray-head button { margin-left: auto; }
+.tray-title { min-width: 0; }
+/* Its own row, under the title and the ✕ — inline it wrapped the header into
+   four lines and pushed the close button out of reach of the corner. */
+.tray-tally { flex: 1 0 100%; }
 
 /* Roomy targets: this is a phone, and a mis-tap costs a turn. */
 /* Metamagic chip row: the armed option is the one thing on this screen that
@@ -2152,13 +2161,39 @@ button.category .count {
 .tray-head .muted { font-weight: 400; font-size: 13px; }
 
 .prepare-btn { margin: 4px 0; align-self: flex-start; }
+/* Columns only where a whole spell name fits on one line.
+ *
+ * The name used to be a bare text node in the label, which makes it an
+ * anonymous flex item — free to wrap. On a phone it did: the checkbox held the
+ * left and "Shocking Grasp" broke underneath it, so every row was two or three
+ * ragged lines and the tick no longer read as belonging to the spell beside it.
+ * That is the fault, and the fix is that a name never breaks and never
+ * truncates: "Burning Han…" is no better than a wrapped row.
+ *
+ * So the track is sized to the longest name plus its furniture (checkbox, icon,
+ * ⓘ) rather than to how many columns would be nice. A 390px phone gets one
+ * clean column; the 560px tray on a desktop gets two. */
 .prepare-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 4px;
   width: 100%;
 }
-.prepare-option-row { display: flex; align-items: center; gap: 2px; }
+/* Tier headings span the whole grid, or they become a cell of their own and
+   the spells under them start in column two. */
+.prepare-tier {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 6px 2px 0;
+}
+.prepare-option-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+/* `nowrap` is the actual fix for the reported fault — the name is one line,
+   beside its tick, always. The ellipsis is only a backstop for a name longer
+   than any we ship; the track above is sized so it never fires. */
+.prepare-option-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .prepare-option-row .prepare-option { flex: 1; }
 .prepare-option {
   display: flex;
@@ -2168,6 +2203,10 @@ button.category .count {
   border-radius: 6px;
   font-size: 13px;
   cursor: pointer;
+  /* The label is the tap target; it used to be 26px and only looked roomy
+     because the ⓘ beside it was accidentally stretching the row to 40. */
+  min-height: 34px;
+  min-width: 0;
 }
 .prepare-option.checked { background: #3a3260; }
 .prepare-option input[disabled] { cursor: not-allowed; }
@@ -2731,7 +2770,11 @@ button.category .count {
   cursor: pointer; font-size: 1rem; line-height: 1; margin-left: 4px;
 }
 .info-dot:hover { color: var(--blue); border-color: var(--blue); }
-.prepare-option-row .info-dot { width: 24px; height: 24px; font-size: .9rem; }
+/* `min-height` too: the global `button { min-height: 40px }` outranked the
+   height here, so every spell row stood 40px tall for a 26px label — 66 spells
+   at 44px pitch. The dot is the secondary target (the label beside it is the
+   one that matters), so it may be smaller than the row. */
+.prepare-option-row .info-dot { width: 24px; height: 24px; min-height: 24px; font-size: .9rem; }
 .info-scrim {
   position: fixed; inset: 0; z-index: 40; display: flex;
   align-items: center; justify-content: center; padding: 16px;
