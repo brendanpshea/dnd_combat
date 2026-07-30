@@ -3310,8 +3310,15 @@ export const SPELLS: Record<Id, SpellData> = {
           hp, maxHp: hp,
           acOverride: 10 + slotLevel,
           summonSlotLevel: slotLevel,
-          // Fly at 4th level or higher, per the stat block's own note.
-          ...(slotLevel >= 4 ? { flying: true as const } : {}),
+          /*
+           * The stat block's "Fly 60 ft. (requires level 4+ spell)" is NOT
+           * implemented, because a paladin in this game can never trigger it.
+           * Find Steed is paladin-only, and a half-caster's slots stop at 3rd
+           * at the level cap (9 gives [4, 3, 2]). A `slotLevel >= 4` branch
+           * would be a line that reads as a feature and can never once run —
+           * so it is written down here instead, and comes back with the level
+           * that makes it reachable.
+           */
         },
       });
     },
