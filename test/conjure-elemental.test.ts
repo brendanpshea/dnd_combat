@@ -33,7 +33,10 @@ const at = (x: number, y: number): Position => ({ x, y });
 /** A druid, three ogres crowded next to the spirit's landing spot, and a cast. */
 function field(seed = 4) {
   const hero = { ...buildCharacter({ classId: 'druid', team: 'team1', position: at(0, 0), level: 9 }), id: 'druid' };
-  const foes = [at(3, 3), at(4, 3), at(3, 4)].map((p, i) => ({
+  // Inside the spirit's 2x2 (anchored at 3,3) but never ON the anchor cell:
+  // `adjacent` is false for two things in the same square, which would hide a
+  // phantom strike the moment `activateSummons` stopped skipping the spirit.
+  const foes = [at(4, 3), at(3, 4), at(4, 4)].map((p, i) => ({
     ...buildMonster('ogre', 'team2', p, `${i}`), id: `foe${i}`,
   }));
   const c = new Combat({ combatants: [hero, ...foes], seed, mapId: 'open' });
