@@ -449,3 +449,51 @@ describe('the camp says what it is offering', () => {
     expect(css).toContain('.arena-when.afternoon');
   });
 });
+
+/**
+ * A banner that floats over the play area must not eat taps.
+ *
+ * The coach banner is `position: fixed` and was anchored `bottom: actionbar-h +
+ * 14px` — which assumes the action bar is flush with the bottom of the window.
+ * It is in flow, so it is not: whenever the layout does not fill the viewport
+ * the bar rides up and the banner lands on top of it.
+ *
+ * Found by a Playwright click on "End turn" timing out at 412x800 with
+ * "coach-banner subtree intercepts pointer events" — in the TUTORIAL, which is
+ * the worst possible place for an unclickable button. It was a regression from
+ * moving the banner to the bottom to stop it covering the enemies.
+ *
+ * Two independent fixes, because either alone would have left the bug
+ * reachable: the banner is anchored to where the bar actually is, and it is
+ * click-through regardless of where it lands.
+ */
+describe('the coach banner cannot block the action bar', () => {
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+  const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+
+  it('lets taps through, since it carries no controls of its own', () => {
+    // The standalone rule, not the `\n.tip-toast, .coach-banner {` one that
+    // contains the same text — the shared rule covers both banners, and the
+    // tip must stay clickable.
+    const at = css.indexOf('\n.coach-banner {');
+    expect(at, 'no standalone .coach-banner rule').toBeGreaterThan(0);
+    const block = css.slice(at, css.indexOf('}', at));
+    expect(block, 'the banner can swallow a tap again').toContain('pointer-events: none');
+  });
+
+  it('leaves the tip toast clickable, because that one has a dismiss button', () => {
+    // Blanket `pointer-events: none` on both would make the tip impossible to
+    // close — the opposite bug.
+    const at = css.indexOf('.tip-toast {');
+    const block = css.slice(at, css.indexOf('}', at));
+    expect(block).not.toContain('pointer-events: none');
+  });
+
+  it('anchors to where the action bar actually is', () => {
+    // Not to the bottom of the window, which is only the same thing when the
+    // layout happens to fill the screen.
+    expect(css).toContain('var(--above-bar');
+    expect(app, 'nothing measures the bar\'s top edge').toContain('--above-bar');
+    expect(app).toMatch(/innerHeight - abar\.getBoundingClientRect\(\)\.top/);
+  });
+});

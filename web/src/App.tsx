@@ -1014,6 +1014,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const battleRef = useRef<HTMLDivElement | null>(null);
   /** The action bar's height, kept across the turns it is not rendered on. */
   const barHeight = useRef(0);
+  /** Distance from the window's bottom to the action bar's top edge. */
+  const aboveBar = useRef(14);
   const topbarRef = useRef<HTMLElement | null>(null);
   const publishRef = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -1043,6 +1045,23 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       // turn. That is the resize, and it is far more frequent than the URL bar
       // one it was mistaken for.
       if (abar) barHeight.current = Math.round(abar.getBoundingClientRect().height);
+      /**
+       * How far the action bar's TOP sits above the bottom of the window.
+       *
+       * The banners were anchored `bottom: actionbar-h + 14`, which assumes the
+       * bar is flush with the bottom of the screen. It is in flow, so it is not:
+       * whenever the layout does not fill the viewport the bar rides up and the
+       * banner lands on top of it — and a fixed element over a button eats the
+       * tap. Caught by a click on "End turn" timing out at 412x800, in the
+       * tutorial, which is the worst possible place for an unclickable button.
+       *
+       * Remembered across the turns the bar is not rendered on, like its height,
+       * so the banner does not hop about either.
+       */
+      if (abar) {
+        aboveBar.current = Math.round(window.innerHeight - abar.getBoundingClientRect().top);
+      }
+      root.style.setProperty('--above-bar', `${aboveBar.current}px`);
 
       // How much height is left for the board once everything else has taken
       // what it needs.
