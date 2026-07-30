@@ -321,7 +321,7 @@ Spellcasting ability: **CHA**.
 | --- | --- |
 | 1 | Bless, Cure Wounds, Command |
 | 2 | Searing Smite, Shield of Faith, Protection from Evil and Good |
-| 5 | Aid, Shining Smite, Warding Bond, Lesser Restoration |
+| 5 | Find Steed, Aid, Shining Smite, Warding Bond, Lesser Restoration |
 
 ### Choice: Fighting Style (level 2)
 

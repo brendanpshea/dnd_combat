@@ -110,6 +110,11 @@ function parseSrd(): Map<string, Block> {
  * *meant* to be new (see caster-variants.test.ts for what holds them honest).
  */
 const NOT_IN_SRD: Record<string, string> = {
+  // In the SRD, but not as a BESTIARY entry: the Otherworldly Steed's stat
+  // block is printed inside the Find Steed spell and has "CR None", so the
+  // parser below — which keys off a monster's CR/XP line — cannot see it. Its
+  // numbers are checked against the document in `find-steed.test.ts` instead.
+  'otherworldly-steed': 'Printed inside the Find Steed spell rather than in the bestiary, with no CR.',
   'goblin-hexer': "This game's own caster variant of the goblin.",
   'skeleton-bonechanter': "This game's own caster variant of the skeleton.",
   'kobold-emberling': "This game's own caster variant of the kobold.",

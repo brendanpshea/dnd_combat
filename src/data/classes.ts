@@ -1060,7 +1060,10 @@ export const CLASSES: Record<Id, ClassData> = {
         // that the SRD 5.2 paladin list does not carry, so Shining Smite (which
         // it does) is the second smite instead.
         2: ['searing-smite', 'shield-of-faith', 'protection-from-evil-and-good'],
-        5: ['aid', 'shining-smite', 'warding-bond', 'lesser-restoration'], // 2nd-level slot arrives here
+        // 2nd-level slot arrives here. Find Steed leads it: a second body on
+        // the board for a bonus action outvalues any single 2nd-level effect a
+        // paladin can buy, and it is the only one that keeps paying every round.
+        5: ['find-steed', 'aid', 'shining-smite', 'warding-bond', 'lesser-restoration'],
       },
     },
     featuresByLevel: {

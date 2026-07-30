@@ -26,11 +26,17 @@ import { chooseAction } from '../src/ai/greedy.js';
  * exactly why they're asserted rather than trusted.
  */
 describe('arena roster coverage', () => {
-  it('every monster has an XP value and a creature type', () => {
+  it('every monster the arena can field has an XP value and a creature type', () => {
     const noXp: string[] = [];
     const noType: string[] = [];
     for (const m of Object.values(MONSTERS)) {
-      if (!MONSTER_XP[m.id]) noXp.push(m.id);
+      // Scoped to what the generator can actually reach. The guard exists
+      // because a monster without XP reads as FREE and gets stacked six deep
+      // into a "budget-appropriate" fight — which cannot happen to something
+      // the roster never offers. The Otherworldly Steed is the case that
+      // forced the distinction: it is a paladin's conjured ally, has no CR on
+      // purpose, and is opposition to nobody.
+      if (!ARENA_EXCLUDED.has(m.id) && !MONSTER_XP[m.id]) noXp.push(m.id);
       if (!m.creatureType) noType.push(m.id);
     }
     expect(noXp, `monsters missing MONSTER_XP: ${noXp.join(', ')}`).toEqual([]);

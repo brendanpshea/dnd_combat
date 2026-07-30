@@ -8,6 +8,7 @@ import { isDown, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { next } from '../engine/rng.js';
+import { buildMonster } from '../data/monsters.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, spellDc, cantripDice, eldritchBeams, wearsMetal, canBePutToSleep } from '../data/spells.js';
 import { heightenedTarget } from '../engine/rules/metamagic.js';
@@ -816,6 +817,35 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
       }
       return v - slotCost;
+    }
+    case 'find-steed': {
+      /**
+       * A whole second body, for a bonus action, that keeps paying every round.
+       *
+       * Priced as what it actually adds: the steed's own output for the rest of
+       * the fight, plus the hit points the enemy has to chew through before it
+       * stops contributing. A flat number would either make it never worth
+       * casting or always worth recasting, which is the mistake this file has
+       * made six times.
+       *
+       * Zero if one is already out — the SRD replaces the old steed with the
+       * new one, so a second cast buys nothing but a fresh hit point pool, and
+       * an AI that valued it would recast every single turn.
+       */
+      if (Object.values(state.combatants).some(
+        (c) => c.alive && c.summonedBy === actor.id && c.classId === 'otherworldly-steed')) return 0;
+      const foe = Object.values(state.combatants)
+        .filter((c) => c.alive && !isDown(c) && c.team !== actor.team)
+        .sort((x, y) => distanceCells(actor.position, x.position) - distanceCells(actor.position, y.position))[0];
+      if (!foe) return 0;
+      // Built rather than guessed, so the price comes off the real stat block
+      // through the same `outputPerRound` every other creature is measured by.
+      // A hand-written "about 8 a round" here is exactly the habit
+      // `scoring-currency.test.ts` exists to catch.
+      const steed = buildMonster('otherworldly-steed', actor.team, actor.position);
+      const hp = 5 + 10 * a.slotLevel;
+      return damageValue(outputPerRound(steed) * HASTE_ROUNDS, foe) +
+        wardValue(hp * 0.5, state, actor) - slotCost;
     }
     case 'conjure-elemental': {
       /**
@@ -1735,6 +1765,19 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
     if (!adjacent) return 0;
     const floor = actor.conditions.some((c) => c.id === 'raging') ? 0.3 : 0.5;
     return actor.hp > actor.maxHp * floor ? 3 : 0;
+  }
+  if (a.featureId === 'healing-touch') {
+    // The steed's once-a-day heal, priced exactly as every other heal in this
+    // file: worth more on somebody close to the floor than on a scratch, and
+    // worth nothing at all when there is nobody hurt in reach.
+    const me = actor;
+    const hurt = Object.values(state.combatants)
+      .filter((c) => c.alive && c.team === me.team && c.hp < c.maxHp &&
+        distanceCells(me.position, c.position) <= 1)
+      .sort((x, y) => (x.hp / x.maxHp) - (y.hp / y.maxHp))[0];
+    if (!hurt) return 0;
+    const heal = Math.min(avgDice('2d8') + (me.summonSlotLevel ?? 2), hurt.maxHp - hurt.hp);
+    return heal * (hurt.hp <= hurt.maxHp / 2 ? 1.4 : 0.4);
   }
   if (a.featureId === 'innate-sorcery') {
     /**

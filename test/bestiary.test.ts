@@ -3,6 +3,7 @@ import { distanceFeet } from '../src/engine/grid.js';
 import { Combat } from '../src/engine/combat.js';
 import { buildParty, buildCharacter } from '../src/builder/character.js';
 import { buildMonster, MONSTERS, MONSTER_XP, monsterLevel } from '../src/data/monsters.js';
+import { ARENA_EXCLUDED } from '../src/arena/encounter.js';
 import { buildEncounter, ENCOUNTERS, encounterXP } from '../src/data/encounters.js';
 import { SPELLS } from '../src/data/spells.js';
 import { BREATH_WEAPONS } from '../src/data/features.js';
@@ -39,8 +40,13 @@ describe('new monster stat blocks', () => {
     expect(a.spellIds).toEqual(expect.arrayContaining(['sacred-flame', 'cure-wounds', 'bless']));
   });
 
-  it('every monster has an XP entry (guards the parallel XP map from drift)', () => {
+  it('every monster the arena can field has an XP entry (guards the parallel XP map from drift)', () => {
     for (const id of Object.keys(MONSTERS)) {
+      // MONSTER_XP is an ENCOUNTER BUDGET map, so it covers what can be fielded
+      // as opposition. The Otherworldly Steed is a paladin's conjured ally and
+      // is excluded from the roster; pricing it would let the party's own steed
+      // inflate the difficulty of the wave it is helping to fight.
+      if (ARENA_EXCLUDED.has(id)) continue;
       expect(MONSTER_XP[id], `${id} missing from MONSTER_XP`).toBeGreaterThan(0);
     }
     expect(encounterXP('kobolds')).toBe(6 * 25);

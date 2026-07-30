@@ -46,7 +46,10 @@ function prompted(): Set<string> {
 
 describe('the art worklist', () => {
   const withPrompt = prompted();
-  const noArt = Object.keys(MONSTERS).filter((id) => !HAS_ART.has(id));
+  // `artId` borrows another creature's picture (the Otherworldly Steed is a
+  // unicorn to look at), so there is nothing to generate and nothing to prompt.
+  const noArt = Object.keys(MONSTERS).filter(
+    (id) => MONSTERS[id]?.artId === undefined && !HAS_ART.has(id));
 
   it('finds the queue it is meant to be reading', () => {
     // Guards the guard: a parser that matched nothing would pass the next

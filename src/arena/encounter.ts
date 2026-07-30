@@ -28,8 +28,13 @@ import { next, type RngState } from '../engine/rng.js';
  * The unicorn is a benign celestial guardian. It was reading as the face of
  * the late game — a third of high-budget fights had one — which is the same
  * category of wrongness as a wolf pack carrying a purse.
+ *
+ * The Otherworldly Steed is excluded for a different and stronger reason: it is
+ * not opposition at all. It exists only as the thing a paladin's Find Steed
+ * conjures onto the PARTY's side, and it has no `cr` for the same reason — a
+ * conjured ally is not an encounter-budget line.
  */
-export const ARENA_EXCLUDED = new Set<Id>(['unicorn']);
+export const ARENA_EXCLUDED = new Set<Id>(['unicorn', 'otherworldly-steed']);
 
 /**
  * 5e's encounter multiplier by headcount. Applied to get the *difficulty* of a

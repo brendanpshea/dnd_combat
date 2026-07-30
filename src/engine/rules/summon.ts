@@ -76,6 +76,15 @@ export interface SummonOptions {
   near: Position;
   /** Id prefix, so two snakes from one staff do not collide. */
   idHint?: string;
+  /**
+   * Fields written over the stat block after it is built.
+   *
+   * Find Steed's steed is the reason: the SRD gives it AC 10 + the spell's
+   * level and 5 + 10 hit points per spell level, so one stat block has to cover
+   * every slot it can be cast from. Writing a second monster entry per slot
+   * level would be four copies of one creature that drift.
+   */
+  patch?: Partial<Combatant>;
 }
 
 /**
@@ -100,8 +109,15 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
 
   const beast: Combatant = {
     ...buildMonster(opts.monsterId, summoner.team, spot),
+    ...(opts.patch ?? {}),
+    // AFTER the patch, never before: these four are what make it a summon
+    // rather than a party member, and a patch that overwrote `summonedBy`
+    // would put a conjured creature into the win check and the campaign roster
+    // with nothing to catch it.
     id,
     summonedBy: opts.summonerId,
+    position: spot,
+    team: summoner.team,
   };
   state.combatants[id] = beast;
   const cell = cellAt(state.grid, spot);
@@ -113,4 +129,33 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
   else state.initiativeOrder.splice(at + 1, 0, id);
 
   return [{ type: 'summoned', combatantId: id, summonerId: opts.summonerId, position: spot }];
+}
+
+/**
+ * A conjurer died: everything it called up goes with it.
+ *
+ * Find Steed says so in as many words — "the steed disappears if it drops to 0
+ * Hit Points or if you die" — and this is the DIE half. The drops-to-0 half is
+ * ordinary death for the steed itself.
+ *
+ * Deliberately keyed on death and not on being DOWNED. A hero at 0 hit points
+ * in this game is unconscious and comes back the moment anything heals them, so
+ * a steed that vanished then would vanish at exactly the moment its paladin
+ * most needed something standing over the body.
+ *
+ * General rather than per-spell: a conjured creature outliving the mind that
+ * conjured it is strange in every case. The only other summoner in the game is
+ * the Staff of the Python, whose snake now goes the same way.
+ */
+export function dismissSummonedBy(state: GameState, summonerId: Id): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const [id, c] of Object.entries(state.combatants)) {
+    if (c.summonedBy !== summonerId) continue;
+    const cell = cellAt(state.grid, c.position);
+    if (cell?.occupantId === id) delete cell.occupantId;
+    delete state.combatants[id];
+    state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+    events.push({ type: 'summonExpired', casterId: summonerId, kind: c.classId, position: { ...c.position } });
+  }
+  return events;
 }
