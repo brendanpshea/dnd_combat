@@ -426,9 +426,19 @@ export interface Combatant {
    * swept by breakConcentration instead.
    */
   summons?: Array<{
-    kind: 'spiritual-weapon' | 'flaming-sphere' | 'conjure-animals';
+    kind: 'spiritual-weapon' | 'flaming-sphere' | 'conjure-animals' | 'conjure-elemental';
     position: Position;
     expiresAtRound?: number;
+    /**
+     * The save a creature caught by this summon rolls. Only the elemental
+     * spirit has one — the hammer and the sphere make attack rolls.
+     */
+    dc?: number;
+    /**
+     * Conjure Elemental holds ONE creature at a time (the SRD is explicit), so
+     * the spirit has to remember which. Absent means its grip is free.
+     */
+    restrainedId?: Id;
     /**
      * The damage the summon deals, when it scales with the slot it was cast
      * from. Conjure Animals is 3d10 at 3rd level and +1d10 per level above,

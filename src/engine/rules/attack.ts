@@ -1315,6 +1315,20 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   // Flaming Sphere. Spiritual Weapon is concentration in the 2024 rules too,
   // and would otherwise have outlived the concentration that held it.
   if (c.summons) {
+    // Conjure Elemental's grip: the spirit is about to vanish, so whatever it
+    // is holding has to be let go. The restrained condition is flagged
+    // `concentration`, but nothing sweeps a condition off a THIRD party when
+    // the caster's concentration drops — that machinery only knows about the
+    // caster's own `concentratingOn.targetIds`, and the spirit's victim is not
+    // in it.
+    for (const s of c.summons) {
+      if (s.kind !== spellId || s.restrainedId === undefined) continue;
+      const victim = state.combatants[s.restrainedId];
+      if (!victim) continue;
+      victim.conditions = victim.conditions.filter(
+        (k) => !(k.id === 'restrained' && k.sourceId === combatantId),
+      );
+    }
     const held = c.summons.filter((x) => x.kind === spellId);
     for (const s of held) {
       events.push({ type: 'summonExpired', casterId: combatantId, kind: s.kind, position: { ...s.position } });

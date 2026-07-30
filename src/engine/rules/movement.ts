@@ -2,8 +2,8 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
-import { cellAt, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBinding } from '../types.js';
-import { blocksMovement, reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
+import { cellAt, posEq, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBinding } from '../types.js';
+import { blocksMovement, reachable, pathTo, adjacent, sphere2x2, popIllusion, type StepDanger } from '../grid.js';
 import { reachesCell } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
@@ -11,6 +11,7 @@ import { savingThrow, saveForHalf } from './saves.js';
 import { rollDice, parseDice } from '../dice.js';
 import type { GameEvent } from '../events.js';
 import { hazardFor, DEFAULT_HAZARD } from '../../data/hazards.js';
+import { catchInSpirit } from '../../data/spells.js';
 import type { MapTheme } from '../../data/maps.js';
 
 /**
@@ -396,6 +397,23 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         { tags: [fire.label ?? 'Wall of Fire'] },
       ));
       if (!mover.alive || isDown(mover)) { stopShort(); return events; }
+    }
+
+    // Walking into the elemental spirit's space. The SRD triggers on entering
+    // the space OR starting a turn within five feet; this is the first half,
+    // and `startTurn` is the second.
+    for (const other of Object.values(state.combatants)) {
+      if (!other.alive || other.team === mover.team) continue;
+      const spirit = other.summons?.find((x) => x.kind === 'conjure-elemental');
+      if (!spirit || spirit.restrainedId !== undefined) continue;
+      if (!sphere2x2(spirit.position).some((p) => posEq(p, step))) continue;
+      events.push(...catchInSpirit(state, other.id, moverId));
+      if (!mover.alive || isDown(mover) || mover.conditions.some((k) => k.id === 'restrained')) {
+        stopShort();
+        mover.turn.movementUsed += r.costs.get(`${step.x},${step.y}`) ?? cost;
+        events.unshift({ type: 'moved', combatantId: moverId, path: walked });
+        return events;
+      }
     }
 
     // Walking into a lingering Web: a creature not on the caster's side must

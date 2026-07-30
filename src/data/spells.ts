@@ -12,7 +12,7 @@ import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedA
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { MONSTERS } from './monsters.js';
-import { blocksMovement, adjacent, distanceFeet, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -462,6 +462,10 @@ const SUMMON_SPECS: Record<Summon['kind'], { moveCells: number; spectral: boolea
   'flaming-sphere': { moveCells: 6, spectral: false },
   // 40-ft lope; real animals, so walls and bodies stop them.
   'conjure-animals': { moveCells: 8, spectral: false },
+  // The elemental spirit does not chase anything. It is an anchored hazard
+  // that happens to live in the summon list because that is what already
+  // carries a position, draws a token, and is swept when concentration drops.
+  'conjure-elemental': { moveCells: 0, spectral: false },
 };
 
 /** The caster's nearest living enemy, measured from the summon (id tiebreak). */
@@ -568,6 +572,108 @@ function placeSummon(state: GameState, casterId: Id, s: Summon): GameEvent[] {
  * time, then each survivor glides toward the nearest enemy and strikes if it
  * reaches one. Called from startTurn for the combatant whose turn begins.
  */
+
+/**
+ * Conjure Elemental's spirit, and the one creature it has hold of.
+ *
+ * WHY THIS IS NOT A SUMMONED CREATURE. The 2024 spell does not conjure a stat
+ * block at all — it conjures "a Large, intangible spirit". No hit points, no
+ * initiative, nothing to command. Everything that made this look like a summon
+ * is 2014 text. It is a hazard that stands still and grabs, which is why it
+ * rides `Combatant.summons` (a position, a token on the board, swept when
+ * concentration drops) rather than `summonCombatant`.
+ *
+ * ONE CREATURE AT A TIME is the rule that shapes it. The SRD only offers the
+ * save "if the spirit has no creature Restrained", so a spirit that has caught
+ * something is spent until that thing escapes — which is what stops a 5th-level
+ * slot from locking down a whole wave, and what `restrainedId` is for.
+ *
+ * Called from three places, because the SRD gives it three triggers: the cast
+ * itself, the start of a nearby creature's turn, and walking into its space.
+ */
+export function catchInSpirit(state: GameState, casterId: Id, onlyId?: Id): GameEvent[] {
+  const caster = state.combatants[casterId];
+  const spirit = caster?.summons?.find((x) => x.kind === 'conjure-elemental');
+  if (!caster || !spirit) return [];
+  const events: GameEvent[] = [];
+
+  // The creature already held repeats its save at the start of its turn: free
+  // on a success, another 4d8 on a failure. Half the initial dice, per the SRD.
+  if (spirit.restrainedId !== undefined && (onlyId === undefined || onlyId === spirit.restrainedId)) {
+    const held = state.combatants[spirit.restrainedId];
+    if (!held?.alive || isDown(held)) {
+      releaseSpirit(state, spirit.restrainedId);
+      delete spirit.restrainedId;
+    } else if (onlyId === spirit.restrainedId) {
+      const save = savingThrow(state, held.id, 'dex', spirit.dc ?? 13);
+      events.push(save.event);
+      if (save.success) {
+        releaseSpirit(state, held.id);
+        delete spirit.restrainedId;
+      } else {
+        const half = halfDice(spirit.dice ?? '8d8');
+        const dmg = rollSpellDice(state, casterId, half, false, SPIRIT_DAMAGE);
+        events.push(...applyDamage(state, held.id, casterId, dmg.total, SPIRIT_DAMAGE, dmg.rolls,
+          { tags: ['Conjure Elemental'] }));
+      }
+    }
+  }
+  if (spirit.restrainedId !== undefined) return events;   // its grip is full
+
+  // Otherwise it reaches for whoever is standing in or beside it.
+  for (const tid of nearSpirit(state, caster, spirit.position)) {
+    if (onlyId !== undefined && tid !== onlyId) continue;
+    const save = savingThrow(state, tid, 'dex', spirit.dc ?? 13);
+    events.push(save.event);
+    if (save.success) continue;
+    const dmg = rollSpellDice(state, casterId, spirit.dice ?? '8d8', false, SPIRIT_DAMAGE);
+    events.push(...applyDamage(state, tid, casterId, dmg.total, SPIRIT_DAMAGE, dmg.rolls,
+      { tags: ['Conjure Elemental'] }));
+    const t = state.combatants[tid];
+    if (!t?.alive || isDown(t)) continue;
+    if (!wardedAgainstMagicalBinding(t, 'restrained')) {
+      t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true });
+      events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
+      spirit.restrainedId = tid;
+    }
+    break;                                                 // it only has one grip
+  }
+  return events;
+}
+
+/** Half a dice expression, for the spirit's ongoing crush ('8d8' -> '4d8'). */
+function halfDice(expr: string): string {
+  const m = expr.match(/^(\d+)d(\d+)$/);
+  if (!m) return expr;
+  return `${Math.max(1, Math.floor(Number(m[1]) / 2))}d${m[2]}`;
+}
+
+/** Let go: the restrained condition this spirit applied, and nothing else. */
+function releaseSpirit(state: GameState, victimId: Id): void {
+  const v = state.combatants[victimId];
+  if (!v) return;
+  v.conditions = v.conditions.filter((k) => !(k.id === 'restrained' && k.concentration));
+}
+
+/**
+ * Every hostile creature in the spirit's space or within five feet of it.
+ *
+ * The spirit is Large, so its space is the same 2x2 block every other area
+ * effect in this game uses, and "within 5 feet" is the ring around that.
+ */
+function nearSpirit(state: GameState, caster: Combatant, at: Position): Id[] {
+  const out: Id[] = [];
+  for (const c of Object.values(state.combatants)) {
+    if (!c.alive || isDown(c) || c.team === caster.team) continue;
+    const close = sphere2x2(at).some((p) => distanceCells(c.position, p) <= 1);
+    if (close) out.push(c.id);
+  }
+  return out.sort();
+}
+
+/** The earth spirit's thunder. See the spell for why the element is fixed. */
+const SPIRIT_DAMAGE: DamageType = 'thunder';
+
 export function activateSummons(state: GameState, casterId: Id): GameEvent[] {
   const caster = state.combatants[casterId];
   if (!caster?.summons?.length) return [];
@@ -579,6 +685,9 @@ export function activateSummons(state: GameState, casterId: Id): GameEvent[] {
   caster.summons = caster.summons.filter((s) => !expired.includes(s));
 
   for (const s of caster.summons) {
+    // The elemental spirit is stationary and strikes nobody on the caster's
+    // turn — it catches whoever comes to IT. See `catchInSpirit`.
+    if (s.kind === 'conjure-elemental') continue;
     const prey = summonPrey(state, caster.team, s.position);
     if (!prey) continue;
     const from = { ...s.position };
@@ -3097,6 +3206,48 @@ export const SPELLS: Record<Id, SpellData> = {
     outOfCombat: true,
     icon: '🌫️',
     cast() { return []; },
+  },
+
+
+  /**
+   * Conjure Elemental: an anchored spirit that grabs one thing and crushes it.
+   *
+   * NOT A SUMMON, which is the whole point of how it is built. The 2024 spell
+   * conjures "a Large, intangible spirit" — no stat block, no hit points, no
+   * initiative slot, nothing to give orders to. Reading the 2014 version into
+   * it would have meant a whole conjured creature; reading the actual SRD
+   * entry, it is Moonbeam's shape with a grapple.
+   *
+   * WHY THE ELEMENT IS FIXED TO EARTH (THUNDER). The SRD lets the caster pick
+   * air, earth, fire or water, which sets the damage type. A per-cast element
+   * picker is a new piece of UI for a decision almost nobody would think hard
+   * about, so it is chosen once, on evidence: across the 143 monsters in this
+   * bestiary, 13 resist fire and 17 are immune, 16 resist cold, 11 resist
+   * lightning — and exactly 3 resist thunder, with none immune. Earth is the
+   * element that keeps working.
+   *
+   * 8d8 to catch, 4d8 a round to hold, and only ever ONE creature at a time.
+   */
+  'conjure-elemental': {
+    id: 'conjure-elemental', name: 'Conjure Elemental', level: 5, castingTime: 'action',
+    targeting: { kind: 'sphere2x2', range: 60 },
+    concentration: true,
+    upcast: true,
+    icon: '\u{1FAA8}',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      caster.summons = [
+        ...(caster.summons ?? []).filter((x) => x.kind !== 'conjure-elemental'),
+        {
+          kind: 'conjure-elemental',
+          position: { ...positions[0]! },
+          dice: `${8 + Math.max(0, slotLevel - 5)}d8`,
+          dc: spellDc(state, casterId),
+        },
+      ];
+      caster.concentratingOn = { spellId: 'conjure-elemental', targetIds: [] };
+      return catchInSpirit(state, casterId);
+    },
   },
 
   // --- 5th level ------------------------------------------------------------

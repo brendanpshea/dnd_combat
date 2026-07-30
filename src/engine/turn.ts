@@ -14,7 +14,7 @@ import { applyAlertSwaps } from './rules/initiative.js';
 import type { Position } from './types.js';
 import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
-import { activateSummons, strikeLightning, burnInMoonbeam } from '../data/spells.js';
+import { activateSummons, strikeLightning, burnInMoonbeam, catchInSpirit } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
 import { applyDamage, charmAway, resolveAttack } from './rules/attack.js';
 import { attackableWeapons } from './rules/equipment.js';
@@ -451,6 +451,16 @@ export function startTurn(state: GameState): GameEvent[] {
   for (const other of Object.values(state.combatants)) {
     if (!other.moonbeam || !other.alive || other.team === c.team) continue;
     events.push(...burnInMoonbeam(state, other.id, c.id));
+    if (!c.alive || isDown(c)) break;
+  }
+
+  // Conjure Elemental: the spirit reaches for anyone starting a turn beside it,
+  // and squeezes whoever it already holds. Both are start-of-turn, so both are
+  // one call — see `catchInSpirit` for the one-at-a-time rule.
+  for (const other of Object.values(state.combatants)) {
+    if (!other.alive || other.team === c.team) continue;
+    if (!other.summons?.some((x) => x.kind === 'conjure-elemental')) continue;
+    events.push(...catchInSpirit(state, other.id, c.id));
     if (!c.alive || isDown(c)) break;
   }
 

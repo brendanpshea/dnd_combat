@@ -467,7 +467,7 @@ export const CLASSES: Record<Id, ClassData> = {
         7: ['ice-storm', 'wall-of-fire', 'banishment', 'confusion', 'polymorph', 'blight',
                'greater-invisibility', 'phantasmal-killer', 'dimension-door'],   // 4th-level slot arrives here
         // 5th-level slot arrives here.
-        9: ['cone-of-cold', 'hold-monster'],
+        9: ['cone-of-cold', 'conjure-elemental', 'hold-monster'],
       },
       learnableExtra: ['ray-of-sickness'],
     },
@@ -863,7 +863,7 @@ export const CLASSES: Record<Id, ClassData> = {
         5: ['call-lightning', 'conjure-animals', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
         7: ['ice-storm', 'wall-of-fire', 'confusion', 'polymorph', 'blight', 'freedom-of-movement'],
         // 5th-level slot arrives here.
-        9: ['cone-of-cold', 'insect-plague', 'mass-cure-wounds'],
+        9: ['cone-of-cold', 'insect-plague', 'conjure-elemental', 'mass-cure-wounds'],
       },
     },
     featuresByLevel: {
