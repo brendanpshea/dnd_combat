@@ -1238,7 +1238,7 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
    So they sit down there instead, over nothing. */
 .tip-toast, .coach-banner {
   position: fixed; z-index: 45;
-  bottom: calc(var(--actionbar-h, 0px) + 14px);
+  bottom: calc(var(--above-bar, 14px) + 8px);
   left: 50%; transform: translateX(-50%);
   width: min(94vw, 560px); margin: 0;
   max-height: 40vh; overflow-y: auto;
@@ -3057,6 +3057,10 @@ button.category .count {
 
 /* Training Yard coach banner — a persistent, prominent step prompt. */
 .coach-banner {
+  /* Never eats a tap. It carries no controls — it is a line of text — and it
+     floats over the play area, so anything it happens to cover must still be
+     reachable through it. The tutorial's own "End turn" button was not. */
+  pointer-events: none;
   padding: 11px 14px; border-radius: 12px;
   background: linear-gradient(#2a4166, #21344f); border: 1px solid #4a78ad;
   box-shadow: 0 6px 20px #0008; animation: tipIn .22s ease-out;
