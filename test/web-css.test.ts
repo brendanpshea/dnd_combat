@@ -696,3 +696,76 @@ describe('unconscious creatures on the board', () => {
     expect(CONDITION_META.unconscious?.icon, 'nothing marks the sleeper').toBeTruthy();
   });
 });
+
+/**
+ * The arena's day, as a step bar rather than three toggles.
+ *
+ * Reported: "clicking on shop or party management entirely removes the choice
+ * of combat." It did. A panel replaces the gate content, so the doors you were
+ * picking between vanish — a deliberate fix for a real problem (the stall used
+ * to open UNDERNEATH, making the screen 4.8 phone-fulls long) that traded one
+ * bad screen for a mode you had to work out how to leave. The Fight button
+ * stayed pinned, so you could still commit; you just could not see to what.
+ *
+ * The row is now Spells, Stall, Gear, Doors — the day's own order, and the
+ * doors are a destination you can tap from anywhere rather than the absence of
+ * a panel. Nothing is locked: on a day where you want only the fight, the fight
+ * is one tap away. That is deliberate, and the alternative was considered — a
+ * strict cycle would guarantee the ordering but nag on the fifth identical day,
+ * and steps that are no-ops nag worst of all.
+ */
+describe('the arena day steps', () => {
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+  // To the element's real end, not a guessed window: a short slice silently
+  // cut the Doors step off and the order assertion "passed" on -1s.
+  const barStart = arena.indexOf('className="arena-tools"');
+  const bar = arena.slice(barStart, arena.indexOf('\n                </div>', barStart));
+
+  it('runs in the day\'s order, ending at the doors', () => {
+    const at = (label: string) => bar.indexOf(`<small>${label}</small>`);
+    for (const l of ['Spells', 'Stall', 'Gear', 'Doors']) {
+      expect(at(l), `no ${l} step`).toBeGreaterThan(-1);
+    }
+    expect(at('Spells')).toBeLessThan(at('Stall'));
+    expect(at('Stall')).toBeLessThan(at('Gear'));
+    expect(at('Gear'), 'the doors must come last — they are what the rest is for')
+      .toBeLessThan(at('Doors'));
+  });
+
+  it('always offers a way back to the doors', () => {
+    // The regression this exists for: no Doors step, so a panel is a mode and
+    // the only exit is noticing the button you pressed now says Close.
+    const doors = bar.slice(bar.indexOf('<small>Doors</small>') - 320);
+    expect(bar, 'the doors step is gone').toContain('<small>Doors</small>');
+    expect(doors, 'the doors step must clear whatever panel is open')
+      .toContain("setPanel('none')");
+  });
+
+  it('selects rather than toggles', () => {
+    // A step bar's buttons name where you are going. `Close` made a button name
+    // what it would do to itself, which is the mode it used to be.
+    expect(bar, 'the tools toggle themselves shut again').not.toContain("'none' : 'shop'");
+    expect(bar).not.toContain("'none' : 'prepare'");
+    // Every step's label is a fixed word. A `<small>{...}</small>` is the shape
+    // the old toggles had — the label changing to "Close" is how a button stops
+    // naming a place and starts naming a mode. (Matching the bare word "Close"
+    // is no good here: this file's own comments explain the fault.)
+    expect(bar, 'a step is labelled by what it does to itself again')
+      .not.toMatch(/<small>\{/);
+  });
+
+  it('says a step is shut rather than hiding it', () => {
+    // The stall closes at noon. A step that vanishes half the time reads as a
+    // bug; one that says "Shut" teaches the day model.
+    expect(bar).toContain('<small>Shut</small>');
+    expect(bar).toContain('disabled');
+  });
+
+  it('badges the steps with work waiting, gear included', () => {
+    // Gear was the silent one: the morning review names upgradeable kit once
+    // and is then gone, so a Mace +1 sat in a pack with nothing on screen.
+    expect(bar, 'no unfinished badge on gear').toContain('gearTodo');
+    expect(arena, 'the badge must come from the same helper the review uses')
+      .toContain('gearTasks(c).length');
+  });
+});
