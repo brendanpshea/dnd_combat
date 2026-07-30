@@ -26,6 +26,7 @@ import { buildEncounter } from '../src/data/encounters.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { ITEMS } from '../src/data/items.js';
 import { CLASSES } from '../src/data/classes.js';
+import { HERO_NAMES, RIVAL_NAMES } from '../src/builder/names.js';
 import { SPELLS } from '../src/data/spells.js';
 import { attackableWeapons } from '../src/engine/rules/equipment.js';
 import { buildParty } from '../src/builder/character.js';
@@ -112,7 +113,12 @@ describe('campaign state', () => {
     const c = newCampaign();
     const fighter = c.characters[0]!;
     expect(c.partyReady).toBe(false);
-    expect(fighter.name).toBe('Sir Arthur'); // flavourful sample name, not the class
+    // A flavourful sample name, not the class. Read off the table rather than
+    // pinned to a string: what matters is that the wiring reaches it, and the
+    // names themselves changed once already when they had to stop asserting a
+    // gender the per-class portraits could not back.
+    expect(fighter.name).toBe(HERO_NAMES['fighter']);
+    expect(fighter.name).not.toBe(CLASSES['fighter']!.name);
     expect(fighter.portraitId).toBe('fighter');
     fighter.name = 'Aster';
     fighter.portraitId = 'wizard';
@@ -763,9 +769,12 @@ describe('names in old saves', () => {
     const c = newCampaign(1);
     for (const ch of c.characters) ch.name = CLASSES[ch.classId]!.name; // 'Fighter', 'Wizard', ...
     const revived = parseCampaign(JSON.stringify(c))!;
-    expect(revived.characters.map((ch) => ch.name)).toEqual([
-      'Sir Arthur', 'Morgana Le Fey', 'Elaine the Holy', 'Cedric the Sneaky',
-    ]);
+    expect(revived.characters.map((ch) => ch.name))
+      .toEqual(revived.characters.map((ch) => HERO_NAMES[ch.classId]));
+    // …and none of them is left as the bare class name, which is the bug.
+    for (const ch of revived.characters) {
+      expect(ch.name).not.toBe(CLASSES[ch.classId]!.name);
+    }
   });
 
   it('keeps a name the player actually chose', () => {
@@ -779,8 +788,8 @@ describe('names in old saves', () => {
     // "Fighter" — and one list for both sides would be Sir Arthur vs Sir Arthur.
     const heroes = buildParty('team1', 0, 1).map((c) => c.name);
     const rivals = buildParty('team2', 7, 1).map((c) => c.name);
-    expect(heroes[0]).toBe('Sir Arthur');
-    expect(rivals[0]).toBe('Sir Kay');
+    expect(heroes[0]).toBe(HERO_NAMES['fighter']);
+    expect(rivals[0]).toBe(RIVAL_NAMES['fighter']);
     expect(heroes.some((n) => rivals.includes(n))).toBe(false);
   });
 });
@@ -791,8 +800,9 @@ describe('skill gambits identify the character, not the class', () => {
     const roll = partySkillCheck(c, 'stealth', 15);
     expect(typeof roll.by).toBe('number');
     expect(c.characters[roll.by]).toBeDefined();
-    // A rogue is best at stealth, and this party's rogue is Cedric.
-    expect(c.characters[roll.by]!.name).toBe('Cedric the Sneaky');
+    // A rogue is best at stealth, so the roller is the party's rogue.
+    expect(c.characters[roll.by]!.classId).toBe('rogue');
+    expect(c.characters[roll.by]!.name).toBe(HERO_NAMES['rogue']);
   });
 
   it('gives a stolen item to the hero whose hands did the stealing', () => {

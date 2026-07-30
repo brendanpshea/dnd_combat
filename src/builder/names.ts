@@ -18,28 +18,44 @@ import type { Id, TeamId } from '../engine/types.js';
 import { next, type RngState } from '../engine/rng.js';
 import { CLASSES } from '../data/classes.js';
 
+/**
+ * A NAME MAY NOT ASSERT A GENDER, because there is no picture for it to be
+ * right about.
+ *
+ * Portraits in this game are per-CLASS, not per-character: every cleric wears
+ * the same face, and so does every paladin. So a default name that commits to
+ * one is a coin flip against art that cannot change — and it kept losing. The
+ * cleric portrait is a woman and the rival cleric was "Brother Mordred"; the
+ * paladin portrait is a woman and the hero paladin was "Ser Roland". The same
+ * mistake had already been found and fixed in the tutorial, where the cleric
+ * was "Brother Alden".
+ *
+ * So: no honorifics that carry a gender (Sir, Ser, Dame, Brother, Sister), and
+ * given names chosen to sit either side of the line. Epithets do the work the
+ * honorifics were doing — "the Holy", "the Sneaky" — and carry no such claim.
+ */
 export const HERO_NAMES: Record<Id, string> = {
-  fighter: 'Sir Arthur',
-  wizard: 'Morgana Le Fey',
+  fighter: 'Arthur the Bold',
+  wizard: 'Morgan Le Fey',
   cleric: 'Elaine the Holy',
-  rogue: 'Cedric the Sneaky',
+  rogue: 'Ash the Sneaky',
   ranger: 'Sylva Thornwood',
-  paladin: 'Ser Roland',
+  paladin: 'Roan the Radiant',
   barbarian: 'Hrothgar',
   monk: 'Shen',
   bard: 'Lyra Songthread',
   druid: 'Alder Mosswood',
   warlock: 'Thessaly Grimm',
-  sorcerer: 'Seraphina Ember',
+  sorcerer: 'Ember',
 };
 
 export const RIVAL_NAMES: Record<Id, string> = {
-  fighter: 'Sir Kay',
+  fighter: 'Kay the Grim',
   wizard: 'Vivian the Cold',
-  cleric: 'Brother Mordred',
+  cleric: 'Mordred the Pale',
   rogue: 'Nessa Quickfingers',
   ranger: 'Kael Grimshaw',
-  paladin: 'Dame Vex',
+  paladin: 'Vex the Sworn',
   barbarian: 'Skarn',
   monk: 'Ilma',
   bard: 'Corvin Blackquill',
@@ -70,7 +86,17 @@ export function defaultNameFor(classId: Id, team: TeamId = 'team1'): string {
  * relies on.
  */
 interface NamePool {
-  /** First names — one pool, not split by gender: the game never asks. */
+  /**
+   * First names — one pool, and every name in it deliberately reads either way.
+   *
+   * "Not split by gender" was already the rule; what it missed is that the pool
+   * still HELD strongly gendered names (Rosie, Lilith, Elena, Dagna, Marigold),
+   * and a random name lands on a per-class portrait it has no say over. Drawing
+   * "Rosie" for a character wearing the fighter's face is the same mismatch as
+   * calling the woman in the cleric portrait "Brother". Each species keeps its
+   * phonetic identity — dwarves hard and stony, elves liquid, halflings homely —
+   * because that legibility is the whole point; only the gendering is gone.
+   */
   first: string[];
   /** Family names / epithets. Empty for species that use a single name. */
   last: string[];
@@ -78,49 +104,49 @@ interface NamePool {
 
 const NAME_POOLS: Record<Id, NamePool> = {
   human: {
-    first: ['Alric', 'Mara', 'Cedric', 'Rowan', 'Elena', 'Garrick', 'Isolde', 'Tomas',
-      'Bryn', 'Aldous', 'Wren', 'Halvard'],
+    first: ['Rowan', 'Wren', 'Bryn', 'Quinn', 'Ellis', 'Marlow', 'Rory', 'Emery',
+      'Ash', 'Hale', 'Wynn', 'Sloane'],
     last: ['Ashdown', 'Vale', 'Thorne', 'Marsh', 'Whitlock', 'Grey', 'Fenn', 'Harrow'],
   },
   dwarf: {
-    first: ['Borin', 'Thrain', 'Dagna', 'Hilde', 'Grum', 'Onar', 'Brunna', 'Kildr',
-      'Vesta', 'Durgan', 'Norra', 'Balin'],
+    first: ['Borin', 'Thrain', 'Brok', 'Durn', 'Grum', 'Onar', 'Torv', 'Kildr',
+      'Rune', 'Ordan', 'Skald', 'Balin'],
     last: ['Ironbeard', 'Stonehand', 'Deepdelve', 'Coalheart', 'Hammerfall', 'Grimforge',
       'Oreson', 'Anvilbrow'],
   },
   elf: {
-    first: ['Aelith', 'Sylvara', 'Faelen', 'Ilyra', 'Thaerin', 'Nuala', 'Erevan', 'Miriel',
-      'Caladan', 'Yssara', 'Loriel', 'Aramil'],
+    first: ['Aelith', 'Faelen', 'Thaerin', 'Loriel', 'Caladan', 'Aramil', 'Erevan', 'Ilyan',
+      'Sevrin', 'Naeryn', 'Vaelor', 'Ithil'],
     last: ['Moonwhisper', 'Silverbough', 'Nightbreeze', 'Dawnrunner', 'Starfall',
       'Willowmere', 'Highgrove', 'Sunweaver'],
   },
   orc: {
-    first: ['Grosh', 'Karza', 'Ulk', 'Nazha', 'Dregg', 'Morga', 'Thokk', 'Ruka',
-      'Skarn', 'Vashka', 'Gorm', 'Ilza'],
+    first: ['Grosh', 'Ulk', 'Dregg', 'Thokk', 'Skarn', 'Gorm', 'Zug', 'Mokk',
+      'Brag', 'Hruk', 'Varg', 'Krell'],
     last: ['Skullsplitter', 'Ironjaw', 'Bloodtusk', 'the Unbroken', 'Bonebreaker',
       'Ashfist', 'the Roaring', 'Redhand'],
   },
   dragonborn: {
-    first: ['Rhogar', 'Sora', 'Balasar', 'Kavax', 'Thava', 'Arjhan', 'Nala', 'Torinn',
-      'Vezra', 'Medrash', 'Surina', 'Kriv'],
+    first: ['Rhogar', 'Kavax', 'Arjhan', 'Torinn', 'Medrash', 'Kriv', 'Zarax', 'Nyrek',
+      'Halvax', 'Vrask', 'Skerrin', 'Thorvax'],
     last: ['Emberscale', 'Stormhorn', 'Goldclaw', 'Ashwing', 'Brightfang', 'Cinderhide',
       'Thunderjaw', 'Frostmaw'],
   },
   tiefling: {
-    first: ['Kesh', 'Nyx', 'Damaris', 'Zevran', 'Lilith', 'Mordai', 'Ash', 'Verrin',
-      'Sable', 'Iskra', 'Thren', 'Ravel'],
+    first: ['Kesh', 'Nyx', 'Zevran', 'Mordai', 'Ash', 'Verrin', 'Sable', 'Iskra',
+      'Thren', 'Ravel', 'Vesper', 'Corvin'],
     last: ['Duskbane', 'Emberlyn', 'the Quiet', 'Nightfell', 'Hollowmark', 'Sorrowvale',
       'Blackthorn', 'the Wry'],
   },
   gnome: {
-    first: ['Fibble', 'Wren', 'Zook', 'Nissa', 'Pipp', 'Bramblewick', 'Tilda', 'Orin',
-      'Jeb', 'Marigold', 'Corky', 'Nell'],
+    first: ['Fibble', 'Wren', 'Zook', 'Pipp', 'Bramblewick', 'Orin', 'Corky', 'Tinker',
+      'Bobbin', 'Quill', 'Sprocket', 'Nim'],
     last: ['Cogsworth', 'Fizzlebang', 'Copperkettle', 'Tinkertop', 'Sparkwhistle',
       'Underbramble', 'Quickfix', 'Nimblenock'],
   },
   halfling: {
-    first: ['Perrin', 'Rosie', 'Milo', 'Poppy', 'Bandobras', 'Daisy', 'Tolman', 'Merry',
-      'Nob', 'Pearl', 'Odo', 'Lily'],
+    first: ['Perrin', 'Merry', 'Nob', 'Bramble', 'Hob', 'Pip', 'Tansy', 'Fen',
+      'Marlow', 'Wick', 'Bilberry', 'Rue'],
     last: ['Goodbarrel', 'Underhill', 'Tealeaf', 'Brambleburr', 'Thistledown',
       'Applewood', 'Greenbottle', 'Highhill'],
   },
