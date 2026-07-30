@@ -419,8 +419,12 @@ Spellcasting ability: **WIS**.
 
 | Level | Features |
 | --- | --- |
+| 1 | Innate Sorcery |
 | 2 | Font of Magic, Metamagic: Quickened Spell, Metamagic: Heightened Spell, Metamagic: Empowered Spell |
 | 3 | Draconic Resilience, Draconic Spells |
+| 5 | Sorcerous Restoration |
+| 6 | Elemental Affinity |
+| 7 | Sorcery Incarnate |
 
 ### Spell slots
 
@@ -463,6 +467,7 @@ Spellcasting ability: **CHA**.
 | 1 | Pact Magic, Eldritch Invocations, Pact of the Tome |
 | 2 | Magical Cunning |
 | 3 | Dark One's Blessing, Fiend Spells |
+| 6 | Dark One's Own Luck |
 
 ### Spell slots
 

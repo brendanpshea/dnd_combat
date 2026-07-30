@@ -948,6 +948,9 @@ export function step(state: GameState, action: Action): { state: GameState; even
         castEvents = spell.cast({ state: draft, casterId: actorId, slotLevel: action.slotLevel, targetIds, positions, ...(action.weaponId ? { weaponId: action.weaponId } : {}) });
       } finally {
         delete draft.metamagicCast;
+        // Elemental Affinity is once per CAST, so the flag has to be gone
+        // before the next one — including when a spell throws.
+        delete draft.elementalAffinityUsed;
       }
       events.push(...castEvents);
       // Blessed Healer (Life Domain, Cleric 6): a healing spell cast on someone

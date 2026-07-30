@@ -565,9 +565,12 @@ export function CampaignScreen({ Battle, onExit }: Props) {
               // told you what the rest cost; this is what it bought, and a
               // caster who does not know the slots came back will keep playing
               // as though they had not.
-              const back = (result.recovered ?? [])
-                .map((r) => `${r.name} recovers ${describeSlots(r.slots)}`)
-                .join('; ');
+              const back = [
+                ...(result.recovered ?? [])
+                  .map((r) => `${r.name} recovers ${describeSlots(r.slots)}`),
+                ...(result.pointsRestored ?? [])
+                  .map((r) => `${r.name} recovers ${r.points} sorcery point${r.points === 1 ? '' : 's'}`),
+              ].join('; ');
               const heal = result.totalHealed > 0
                 ? `Short rest: the party spends ${result.hitDiceSpent} hit ${result.hitDiceSpent === 1 ? 'die' : 'dice'} and recovers ${result.totalHealed} HP.`
                 : 'Short rest: no one needed to spend a hit die.';

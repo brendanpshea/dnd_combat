@@ -314,7 +314,10 @@ function warMageBonus(c: Combatant): number {
 
 export function spellDc(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
-  return 8 + proficiencyBonus(c.level) + spellMod(state, casterId);
+  return 8 + proficiencyBonus(c.level) + spellMod(state, casterId) +
+    // Innate Sorcery. Here rather than at seventy call sites, which is the
+    // entire reason this function exists.
+    (c.conditions.some((k) => k.id === 'innateSorcery') ? 1 : 0);
 }
 
 /**
@@ -388,6 +391,8 @@ function spellAttack(
   const { adv, dis } = collectAttackSources(state, caster, target, fake as never, opts.melee);
   const warMage = warMageBonus(caster);
   adv.push(...(opts.extraAdv ?? []));
+  // Innate Sorcery: advantage on every spell attack while it burns.
+  if (caster.conditions.some((c) => c.id === 'innateSorcery')) adv.push('Innate Sorcery');
   const mode = resolveRollMode(adv, dis);
   const d20 = applyLucky(state, casterId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
@@ -707,7 +712,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, cantripDice('1d10', state.combatants[casterId]!.level), atk.crit);
+        const dmg = rollSpellDice(state, casterId, cantripDice('1d10', state.combatants[casterId]!.level), atk.crit, 'fire');
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'fire', dmg.rolls));
       }
@@ -1166,7 +1171,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
-        const dmg = rollSpellDice(state, casterId, dice);
+        const dmg = rollSpellDice(state, casterId, dice, false, 'fire');
         const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) {
           events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
@@ -1203,7 +1208,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue; // Sculpt Spells: allies unharmed
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
-        const dmg = rollSpellDice(state, casterId, dice);
+        const dmg = rollSpellDice(state, casterId, dice, false, 'fire');
         const amount = saveForHalf(state.combatants[tid]!, 'dex', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, tid, casterId, amount, 'fire', dmg.rolls));
       }
@@ -1807,7 +1812,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const atk = spellAttack(state, casterId, tid, { melee: false });
         events.push(atk.event);
         if (atk.hit) {
-          const dmg = rollSpellDice(state, casterId, '2d6', atk.crit);
+          const dmg = rollSpellDice(state, casterId, '2d6', atk.crit, 'fire');
           events.push(...applyDamage(state, tid, casterId, dmg.total, 'fire', dmg.rolls));
         }
       }
