@@ -1,4 +1,4 @@
-import { silhouettePath } from './silhouette.js';
+import { silhouettePath } from './silhouettePlan.js';
 import { SILHOUETTE_BOX } from './silhouettes.js';
 
 /**

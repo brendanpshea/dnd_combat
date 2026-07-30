@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { MONSTERS } from '../src/data/monsters.js';
 import { CLASSES } from '../src/data/classes.js';
 import { SILHOUETTE_PATH, SILHOUETTE_BOX } from '../web/src/silhouettes.js';
-import { silhouetteKey, silhouettePath, PLAN } from '../web/src/silhouette.js';
+import { silhouetteKey, silhouettePath, PLAN } from '../web/src/silhouettePlan.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const keys = Object.keys(SILHOUETTE_PATH);

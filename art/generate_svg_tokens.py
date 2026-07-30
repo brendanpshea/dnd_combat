@@ -153,7 +153,7 @@ TYPES = {
         "M34 22c0-3 2-5 5-5s5 2 5 5-2 5-5 5-5-2-5-5z",
 }
 
-#: Body plans, chosen per monster in `web/src/silhouette.ts` where the creature
+#: Body plans, chosen per monster in `web/src/silhouettePlan.ts` where the creature
 #: type is too coarse. A griffon, a giant spider and a constrictor are all
 #: "monstrosity" or "beast", and all three read differently in one glance —
 #: which is the glance a player gets while deciding where to move.
