@@ -764,7 +764,11 @@ describe('the arena day steps', () => {
   it('badges the steps with work waiting, gear included', () => {
     // Gear was the silent one: the morning review names upgradeable kit once
     // and is then gone, so a Mace +1 sat in a pack with nothing on screen.
-    expect(bar, 'no unfinished badge on gear').toContain('gearTodo');
+    // On the GATE, not merely mentioned: `toContain('gearTodo')` passed with
+    // the condition replaced by `false`, because the count inside the badge
+    // still spelled the name.
+    expect(bar, 'the gear badge no longer depends on there being work')
+      .toMatch(/\{gearTodo > 0 && \(/);
     expect(arena, 'the badge must come from the same helper the review uses')
       .toContain('gearTasks(c).length');
   });
