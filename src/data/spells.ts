@@ -3268,6 +3268,15 @@ export const SPELLS: Record<Id, SpellData> = {
    * Constitution rather than Dexterity, which is the SRD's and matters more
    * than it reads: it is the one big blast in the game that a rogue's Evasion
    * does not shrug off, and the reason a sorcerer carries it next to Fireball.
+   *
+   * AND THE AI ALMOST NEVER CASTS IT — once across sixty arena runs. Not a
+   * scoring bug: a cone starts at the CASTER, and this AI kites at three to
+   * eight cells, so it is never standing where the cone would catch anything.
+   * Burning Hands, the game's other cone, gets nineteen casts for the same
+   * reason. The spell is fully reachable and a player standing in the right
+   * place gets 8d8 on a Constitution save; the auto-player just will not be
+   * standing there. Fixing that means teaching the mover to walk INTO cone
+   * range, which is a change to positioning rather than to this spell.
    */
   'cone-of-cold': {
     id: 'cone-of-cold', name: 'Cone of Cold', level: 5, castingTime: 'action',

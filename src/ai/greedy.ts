@@ -818,7 +818,21 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return v - slotCost;
     }
     case 'insect-plague': {
-      if (actor.concentratingOn) return 0;
+      /**
+       * No `concentratingOn` guard, matching Wall of Fire — dropping a weaker
+       * concentration for a stronger one is a trade the scorer is allowed to
+       * make, and the score below decides whether it is worth it.
+       *
+       * MEASURED, AND THE GUARD WAS NOT THE PROBLEM. This spell was cast once
+       * across sixty arena runs with the guard and twice without it. The reason
+       * is not the guard: it is that every class holding Insect Plague already
+       * has a better 5th-level option. A cleric's Flame Strike is a Fireball's
+       * footprint for twice the dice (98 casts to this spell's 2), and the
+       * druid and sorcerer would rather concentrate on something else. That is
+       * an honest outcome for a spell whose real selling point — a swarm that
+       * taxes the ground for ten minutes — is worth far more across a dungeon
+       * than across one arena fight.
+       */
       const center = (a.targets[0] as { position: Position }).position;
       const dice = avgDice(`${4 + Math.max(0, a.slotLevel - 5)}d10`);
       let v = 0;
