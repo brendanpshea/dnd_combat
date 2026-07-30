@@ -1309,26 +1309,24 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
     }
   }
 
+  /**
+   * A concentration-held summon: sweep it off the board.
+   *
+   * Conjure Elemental's grip needs NOTHING here, which was worth finding out.
+   * The spirit restrains a third party, and this change first added an explicit
+   * release for it on the theory that concentration only sweeps conditions
+   * listed in the caster's own `concentratingOn.targetIds`. That theory was
+   * wrong: the Web/Entangle fix further down already frees anyone restrained
+   * with `sourceId === this caster && concentration`, keyed off the CASTER
+   * rather than the spell — written that way, in its own words, so "the next
+   * strand spell is covered before it is written". It was.
+   */
   // A concentration-held summon: sweep it off the board. A summon's `kind` is
   // the id of the spell that made it (see Combatant.summons), so this is the
   // general rule rather than a list — which is what it used to be, naming only
   // Flaming Sphere. Spiritual Weapon is concentration in the 2024 rules too,
   // and would otherwise have outlived the concentration that held it.
   if (c.summons) {
-    // Conjure Elemental's grip: the spirit is about to vanish, so whatever it
-    // is holding has to be let go. The restrained condition is flagged
-    // `concentration`, but nothing sweeps a condition off a THIRD party when
-    // the caster's concentration drops — that machinery only knows about the
-    // caster's own `concentratingOn.targetIds`, and the spirit's victim is not
-    // in it.
-    for (const s of c.summons) {
-      if (s.kind !== spellId || s.restrainedId === undefined) continue;
-      const victim = state.combatants[s.restrainedId];
-      if (!victim) continue;
-      victim.conditions = victim.conditions.filter(
-        (k) => !(k.id === 'restrained' && k.sourceId === combatantId),
-      );
-    }
     const held = c.summons.filter((x) => x.kind === spellId);
     for (const s of held) {
       events.push({ type: 'summonExpired', casterId: combatantId, kind: s.kind, position: { ...s.position } });

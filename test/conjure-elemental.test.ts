@@ -25,6 +25,7 @@ import { CLASSES } from '../src/data/classes.js';
 import { actsOnItsOwn } from '../src/engine/rules/summon.js';
 import { breakConcentration } from '../src/engine/rules/attack.js';
 import { scoreCastForTest } from '../src/ai/greedy.js';
+import { activateSummons } from '../src/data/spells.js';
 import type { Combatant, Id, Position } from '../src/engine/types.js';
 
 const at = (x: number, y: number): Position => ({ x, y });
@@ -80,13 +81,23 @@ describe('it is a spirit, not a creature', () => {
     expect(s.dice).toBe('8d8');
   });
 
-  it('never moves, unlike every other summon in the list', () => {
-    // Spiritual Weapon and Flaming Sphere chase; this one is anchored, and
-    // `activateSummons` has to skip it or it would hunt.
+  it('never chases and never strikes on its caster turn', () => {
+    /**
+     * Spiritual Weapon and Flaming Sphere glide toward the nearest enemy and hit
+     * it every time their caster's turn comes round. The spirit does neither: it
+     * is anchored, and it catches whoever comes to IT.
+     *
+     * Position alone would not test this — the spirit's `moveCells` is 0, so it
+     * cannot move whatever `activateSummons` does. The thing the skip in
+     * `activateSummons` actually prevents is a PHANTOM ATTACK every round, so
+     * that is what is asserted.
+     */
     const c = field();
     c.apply({ kind: 'castSpell', spellId: 'conjure-elemental', slotLevel: 5, targets: [{ position: at(3, 3) }] });
     const start = { ...spiritOf(c)!.position };
-    for (let i = 0; i < 12 && !c.state.winner; i++) c.apply({ kind: 'endTurn' });
+    // Straight at the animator: every other summon kind produces events here.
+    const strikes = activateSummons(c.state, 'druid').length;
+    expect(strikes, 'the spirit moved or struck like a roaming summon').toBe(0);
     const now = spiritOf(c);
     if (now) expect(now.position).toEqual(start);
   });
