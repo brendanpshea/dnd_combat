@@ -766,7 +766,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    *
    * It belongs beside the spellbook it writes into, which is open both halves.
    */
-  const scribable = useMemo(() => {
+  // NOT a useMemo: this sits below the phase early-returns (forge/battle/loot/
+  // ...), so a hook here is a conditional hook — it runs on the gate screen but
+  // not once a fight starts and this branch returns early, and React throws
+  // "rendered more hooks than during the previous render" (#310). It is a cheap
+  // per-render scan of the party's scrolls, so a plain computation is fine.
+  const scribable = ((): Array<{ charIdx: number; itemId: Id; fee: number; spellId: Id }> => {
     const out: Array<{ charIdx: number; itemId: Id; fee: number; spellId: Id }> = [];
     for (const { i } of casters) {
       const seen = new Set<Id>();
@@ -778,8 +783,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       }
     }
     return out;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c, casters]);
+  })();
 
 
   /**
