@@ -52,7 +52,7 @@ import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers } from './art.js';
-import { morningReview, spellTasks } from '../../src/arena/morning.js';
+import { gearTasks, morningReview, spellTasks } from '../../src/arena/morning.js';
 import { prepOptions } from '../../src/arena/prep.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
@@ -755,6 +755,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // does not grow when the cap does, so this is easy to end up in and
   // impossible to notice from the outside — the badge is the whole point.
   const withRoom = partyPreparedRoom(c);
+  // Derived every render from the party itself, never stored: a refresh mid-day
+  // has to show the same badge, and a counter would have to be kept in step
+  // with equipping something by hand.
+  const gearTodo = gearTasks(c).length;
   /**
    * Every scroll somebody in the party could copy into their book, and who.
    *
@@ -1425,33 +1429,37 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave, surprised) })}>
                   ⚔️ Fight — {gate.name}
                 </button>
-                {/* Three tools in a row rather than three stacked buttons: a
-                    pinned bar has to earn its height, and stacking every action
-                    would pin 280px of a 900px phone. Labels are short for the
-                    same reason — what they open is on the button's own screen. */}
+                {/*
+                  THE DAY'S STEPS, and a way back to the doors.
+                  Reported: "clicking on shop or party management entirely
+                  removes the choice of combat." It did — a panel replaces the
+                  gate content, so the doors you were picking between vanish,
+                  and the only way back was to press the same tool again and
+                  notice it now says Close. The Fight button stayed pinned, so
+                  you could still commit; you just could not see what to.
+
+                  So the row is a step bar, not three toggles: Spells, Stall,
+                  Gear and the Doors themselves, with the current one lit. The
+                  doors are a destination you can always tap, from anywhere.
+
+                  The order is the day's order — prepare, buy, equip, then
+                  choose — so the rhythm is visible without being enforced. A
+                  step with real work waiting says so with a badge, and one that
+                  cannot be used now (the stall shuts at noon) says that instead
+                  of disappearing. Nothing is locked: on a day where you want
+                  nothing but the fight, the fight is one tap away.
+
+                  Still one row rather than stacked buttons — a pinned bar has
+                  to earn its height, and stacking would pin 280px of a 900px
+                  phone. Labels are short for the same reason: what a step opens
+                  is on the step's own screen. */}
                 <div className="arena-tools">
-                  {/* The market keeps daylight hours. Two breaks with different
-                      characters: the night is where you re-equip and re-prepare,
-                      lunch is only a rest — which is what makes what you carry
-                      into the morning a decision rather than a shopping list. */}
-                  {half === 'morning' ? (
-                    <button
-                      className={panel === 'shop' ? 'on' : ''}
-                      onClick={() => { setPanel(panel === 'shop' ? 'none' : 'shop'); setNotice(null); }}
-                    >
-                      🛒<small>{panel === 'shop' ? 'Close' : 'Stall'}</small>
-                    </button>
-                  ) : (
-                    <button disabled title="The stalls shut at noon — you buy in the morning">
-                      🛒<small>Shut</small>
-                    </button>
-                  )}
                   {casters.length > 0 && (
                     <button
                       className={panel === 'prepare' ? 'on' : ''}
-                      onClick={() => { setPanel(panel === 'prepare' ? 'none' : 'prepare'); setNotice(null); }}
+                      onClick={() => { setPanel('prepare'); setNotice(null); }}
                     >
-                      📖<small>{panel === 'prepare' ? 'Close' : 'Spells'}</small>
+                      📖<small>Spells</small>
                       {panel !== 'prepare' && (withRoom.length > 0 || scribable.length > 0) && (
                         <span
                           className={`prep-badge${scribable.length > 0 ? ' scribe' : ''}`}
@@ -1464,8 +1472,44 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       )}
                     </button>
                   )}
+                  {/* The market keeps daylight hours. Two breaks with different
+                      characters: the night is where you re-equip and re-prepare,
+                      lunch is only a rest — which is what makes what you carry
+                      into the morning a decision rather than a shopping list. */}
+                  {half === 'morning' ? (
+                    <button
+                      className={panel === 'shop' ? 'on' : ''}
+                      onClick={() => { setPanel('shop'); setNotice(null); }}
+                    >
+                      {/* Selects, never toggles. A step bar's buttons name where
+                          you are going; "Close" made this one name what it would
+                          do to itself, which is the mode it used to be. */}
+                      🛒<small>Stall</small>
+                    </button>
+                  ) : (
+                    <button disabled title="The stalls shut at noon — you buy in the morning">
+                      🛒<small>Shut</small>
+                    </button>
+                  )}
+                  {/* Gear carried the day's only silent step: the morning
+                      review names upgradeable kit once and is then gone, so a
+                      Mace +1 sat in a pack with nothing on screen saying so.
+                      Same badge as the spellbook, from the same helper the
+                      review itself uses. */}
                   <button onClick={() => { setShowParty(true); setNotice(null); }}>
                     🎒<small>Gear</small>
+                    {gearTodo > 0 && (
+                      <span className="prep-badge" title="Better gear is sitting in a pack">
+                        {gearTodo}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    className={panel === 'none' ? 'on' : ''}
+                    onClick={() => { setPanel('none'); setNotice(null); }}
+                    title="The fights you are choosing between"
+                  >
+                    ⚔️<small>Doors</small>
                   </button>
                 </div>
               </div>
