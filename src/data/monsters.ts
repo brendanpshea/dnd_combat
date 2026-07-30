@@ -54,6 +54,15 @@ export interface MonsterData {
    *  Friendship needs to tell a wolf from a goblin. */
   creatureType: CreatureType;
   /**
+   * Render as another creature's art.
+   *
+   * The Otherworldly Steed is why: it is a distinct stat block that IS a
+   * unicorn to look at, and the game already ships unicorn art. Without this
+   * the choice is a duplicate image file or a stat block that draws as an
+   * emoji, and the art tests correctly object to both.
+   */
+  artId?: Id;
+  /**
    * SRD size. Load-bearing for cover: a barricade is chest-high to a person,
    * so a kobold ducks behind it and an ogre simply stands there being shot at.
    * That makes the same board play differently against a goblin warband and
@@ -675,6 +684,29 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['fey-invisibility'],
     weaponIds: ['hag-claws'],
     attacksPerAction: 2,
+  },
+  /**
+   * The Otherworldly Steed a paladin's Find Steed calls up.
+   *
+   * A monster entry because `summonCombatant` builds from one, and because a
+   * steed IS a creature here: hit points, an AC, its own turn, and it can be
+   * killed. The numbers are the 2nd-level cast (SRD: AC 10 + spell level,
+   * HP 5 + 10 per spell level); a higher slot patches them upward at summon
+   * time rather than needing a second stat block.
+   *
+   * `cr` is deliberately absent. A conjured ally is not an encounter-budget
+   * line, and giving it one would let the party's own steed inflate the
+   * difficulty of the wave it is helping to fight.
+   */
+  'otherworldly-steed': {
+    id: 'otherworldly-steed', name: 'Otherworldly Steed',
+    artId: 'unicorn',
+    ac: 12, hp: 25, speed: 60,
+    creatureType: 'celestial',
+    size: 'large',
+    abilities: { str: 18, dex: 12, con: 14, int: 6, wis: 12, cha: 8 },
+    featureIds: ['healing-touch'],
+    weaponIds: ['otherworldly-slam'],
   },
   unicorn: {
     id: 'unicorn', name: 'Unicorn',
@@ -1866,6 +1898,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     },
     alive: true,
     creatureType: m.creatureType,
+    ...(m.artId ? { portraitId: m.artId } : {}),
     size: m.size,
     ...(m.fly ? { flying: true as const } : {}),
     // Copied, not shared: `suppressed` is per-combatant turn state, and three

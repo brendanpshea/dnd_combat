@@ -9,6 +9,7 @@ import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
+import { dismissSummonedBy } from './summon.js';
 import { withinReach, reachesCell } from './reach.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
@@ -1555,6 +1556,9 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
   const events: GameEvent[] = [
     ...transferHuntersMark(state, combatantId),
     ...expireSummonsOf(state, combatantId),
+    // …and anything it CONJURED as a creature, which is a different list: see
+    // dismissSummonedBy for why death and not merely being downed.
+    ...dismissSummonedBy(state, combatantId),
     ...releaseCharmedBy(state, combatantId),
     // Before the body is cleared off the grid, so the blast measures from
     // where it actually stood.

@@ -1617,6 +1617,40 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'sorcery-incarnate', name: 'Sorcery Incarnate', trigger: 'passive',
   },
 
+  /**
+   * Healing Touch: the Celestial steed's bonus action, once a day.
+   *
+   * WHY THE STEED IS ALWAYS CELESTIAL. The SRD lets the paladin choose
+   * Celestial, Fey or Fiend when casting Find Steed, and the choice sets both
+   * the slam's damage type and which bonus action the steed gets: Healing
+   * Touch, Fey Step or Fell Glare. Fey Step teleports a RIDER, which this game
+   * has no mounted-combat rules for, and Fell Glare is a second source of
+   * Frightened. Healing Touch is the one that does something no paladin
+   * otherwise has spare actions for, so it is the steed this game conjures.
+   *
+   * 2d8 plus the slot's level, to whoever nearby needs it most. Auto-targeted
+   * like the monk's Flurry: the feature system has no targeted-activation path,
+   * and the answer is nearly always "the ally closest to the floor".
+   */
+  'healing-touch': {
+    id: 'healing-touch', name: 'Healing Touch', trigger: 'bonus',
+    uses: { count: 1, per: 'longRest' },
+    apply({ state, actorId }) {
+      const me = state.combatants[actorId]!;
+      // Everyone it can reach, worst off first — a downed ally outranks a
+      // scratched one, which is the whole reason the steed holds this.
+      const hurt = Object.values(state.combatants)
+        .filter((c) => c.alive && c.team === me.team && c.hp < c.maxHp &&
+          distanceFeet(me.position, c.position) <= 5)
+        .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+      const target = hurt[0];
+      if (!target) return [];
+      const roll = rollDice(state.rng, '2d8');
+      state.rng = roll.state;
+      return applyHealing(state, target.id, actorId, roll.total + (me.summonSlotLevel ?? 2));
+    },
+  },
+
   // --- monk -----------------------------------------------------------------
   /**
    * Martial Arts: the monk fights with its hands, on Dexterity, and gets a

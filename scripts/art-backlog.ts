@@ -43,7 +43,12 @@ import { glyphFor } from '../web/src/glyphs.js';
 
 const DOC = fileURLToPath(new URL('../art/prompts.md', import.meta.url));
 
-const all = Object.keys(MONSTERS);
+/**
+ * The worklist is monsters that need a picture drawing. A stat block with
+ * `artId` borrows another creature's — the Otherworldly Steed is a unicorn to
+ * look at — so it needs no prompt and never joins the backlog.
+ */
+const all = Object.keys(MONSTERS).filter((id) => MONSTERS[id]?.artId === undefined);
 const missing = all.filter((id) => !HAS_ART.has(id));
 const done = all.length - missing.length;
 

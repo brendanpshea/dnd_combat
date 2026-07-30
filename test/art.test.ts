@@ -149,7 +149,12 @@ describe('board tokens', () => {
     const body = src.slice(i, src.indexOf('};', i)).replace(/\/\/[^\n]*/g, '');
     const tokens = new Set([...body.matchAll(/'?([a-z0-9-]+)'?\s*:\s*'/g)].map((m) => m[1]!));
 
-    const naked = Object.keys(MONSTERS).filter((id) => !HAS_ART.has(id) && !tokens.has(id));
+    // `artId` means "drawn as that one instead" — a stat block wearing another
+    // creature's picture is not naked. The Otherworldly Steed is a unicorn to
+    // look at and ships no file of its own.
+    const drawnAs = (id: string) => MONSTERS[id]?.artId ?? id;
+    const naked = Object.keys(MONSTERS).filter(
+      (id) => !HAS_ART.has(drawnAs(id)) && !tokens.has(id));
     expect(naked, `monsters that render as "?" on the board: ${naked.join(', ')}`).toEqual([]);
 
     // The player classes go through the same fallback.

@@ -353,6 +353,13 @@ export interface Combatant {
    * back into a campaign roster — a snake must never end up in the party.
    */
   summonedBy?: Id;
+  /**
+   * The spell slot a conjured ally was called with. The Otherworldly Steed
+   * scales off it — AC, hit points and the size of its Healing Touch — and the
+   * SRD writes every one of those as "the spell's level", so the level has to
+   * ride on the creature rather than be recomputed from its stats.
+   */
+  summonSlotLevel?: number;
   /** A summoned familiar follows its caster without occupying a grid cell. */
   familiar?: {
     kind: 'owl';

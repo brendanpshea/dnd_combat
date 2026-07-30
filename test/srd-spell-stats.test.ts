@@ -98,6 +98,13 @@ function parseSrd(): Map<string, SrdSpell> {
  * a bug, not a decision.
  */
 const DELIBERATE: Record<string, string> = {
+  'find-steed': [
+    'SRD casting time is "Action". Made a BONUS ACTION here because this is a',
+    'spell cast before the doors open, and the game only simulates what happens',
+    'after them: as an action it is either never cast at all, or cast at the cost',
+    'of the very round it was meant to help with. The slot is still spent, which',
+    'is the part with mechanical meaning.',
+  ].join(' '),
   'find-familiar': [
     'SRD casting time is "1 hour or Ritual". This game is a combat simulator with',
     'no out-of-combat clock, so the ritual is folded into an action — the `ritual`',

@@ -580,6 +580,21 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'hag-claws', name: 'Claws', damage: '2d8', damageType: 'slashing',
     properties: [], melee: true,
   },
+  /**
+   * The Otherworldly Steed's slam. Radiant because this game's steed is always
+   * the Celestial one — see the `find-steed` spell for why the SRD's three-way
+   * creature-type choice is settled rather than offered.
+   *
+   * The SRD's damage is "1d8 plus the spell's level", and the extra rides the
+   * steed's Strength instead: an SRD steed hits for a flat bonus off the
+   * caster, and a monster in this engine adds its own ability modifier. Str 18
+   * gives +4, which is the 2nd-level steed's 1d8+2 rounded generously and the
+   * 4th-level steed's 1d8+4 exactly.
+   */
+  'otherworldly-slam': {
+    id: 'otherworldly-slam', name: 'Slam', damage: '1d8', damageType: 'radiant',
+    properties: [], melee: true,
+  },
   'unicorn-horn': {
     id: 'unicorn-horn', name: 'Horn', damage: '1d8', damageType: 'piercing',
     properties: [], melee: true,

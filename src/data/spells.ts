@@ -11,6 +11,7 @@ import type { GameState, Combatant, Id, Ability, Position, CreatureType, Conditi
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
+import { summonCombatant } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -3247,6 +3248,79 @@ export const SPELLS: Record<Id, SpellData> = {
       ];
       caster.concentratingOn = { spellId: 'conjure-elemental', targetIds: [] };
       return catchInSpirit(state, casterId);
+    },
+  },
+
+
+  /**
+   * Find Steed: a paladin calls up something to fight beside.
+   *
+   * A REAL COMBATANT, unlike the elemental spirit above — and for once that is
+   * what the SRD actually says. The steed has a stat block, hit points, an AC
+   * and its own turn, so it goes through `summonCombatant` and the AI drives it
+   * exactly as it drives a monster. `actsOnItsOwn` already keeps it out of the
+   * win check and out of the campaign roster.
+   *
+   * FOUR DELIBERATE DEPARTURES FROM THE PRINTED SPELL, all in the same
+   * direction — this is a spell cast before the doors open, and the game only
+   * simulates what happens after them:
+   *
+   *   - A BONUS ACTION, not an action. Nobody realistically spends their first
+   *     turn of a fight conjuring a horse; making it an action would mean the
+   *     spell is either never cast or cast at the cost of the round it was
+   *     meant to help with.
+   *   - ALWAYS CELESTIAL. The SRD's creature-type choice picks the slam's
+   *     damage and the steed's bonus action; see `healing-touch` for why this
+   *     game takes the healing one every time.
+   *   - IT SURVIVES ITS PALADIN GOING DOWN. The SRD dismisses the steed when
+   *     you DIE, and a hero at 0 hit points in this game is unconscious, not
+   *     dead. A steed that vanished the moment its paladin fell would vanish
+   *     at exactly the moment it was most needed.
+   *   - NO MOUNT. There are no mounted-combat rules here, so the steed fights
+   *     beside the paladin rather than under them. That is also why Fey Step,
+   *     which teleports a rider, was never a candidate.
+   *
+   * Scales with the slot: AC 10 + level, 5 + 10 hit points per level, and a
+   * bigger Healing Touch. A 3rd-level cast is AC 13 and 35 hit points.
+   */
+  'find-steed': {
+    id: 'find-steed', name: 'Find Steed', level: 2, castingTime: 'bonus',
+    targeting: { kind: 'sphere2x2', range: 30 },
+    concentration: false,
+    upcast: true,
+    icon: '\u{1F984}',
+    cast({ state, casterId, slotLevel, positions }) {
+      const caster = state.combatants[casterId]!;
+      // One steed: the SRD replaces the old one, so the old one goes first.
+      for (const [id, c] of Object.entries(state.combatants)) {
+        if (c.summonedBy === casterId && c.classId === 'otherworldly-steed') {
+          delete state.combatants[id];
+          const cell = cellAt(state.grid, c.position);
+          if (cell?.occupantId === id) delete cell.occupantId;
+          state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+        }
+      }
+      const hp = 5 + 10 * slotLevel;
+      return summonCombatant(state, {
+        monsterId: 'otherworldly-steed',
+        summonerId: casterId,
+        near: positions[0] ?? caster.position,
+        idHint: 'steed',
+        patch: {
+          hp, maxHp: hp,
+          acOverride: 10 + slotLevel,
+          summonSlotLevel: slotLevel,
+          /*
+           * The stat block's "Fly 60 ft. (requires level 4+ spell)" is NOT
+           * implemented, because a paladin in this game can never trigger it.
+           * Find Steed is paladin-only, and a half-caster's slots stop at 3rd
+           * at the level cap (9 gives [4, 3, 2]). A `slotLevel >= 4` branch
+           * would be a line that reads as a feature and can never once run —
+           * so it is written down here instead, and comes back with the level
+           * that makes it reachable.
+           */
+        },
+      });
     },
   },
 
