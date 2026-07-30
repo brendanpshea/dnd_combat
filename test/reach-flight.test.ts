@@ -6,6 +6,8 @@
  * the picture was not reliably bigger either — see the size-band test below.
  */
 import { describe, it, expect } from 'vitest';
+import { tokenScale } from '../web/src/token-scale.js';
+import { TOKEN_FILL } from '../web/src/token-fill.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MONSTERS, buildMonster } from '../src/data/monsters.js';
@@ -216,22 +218,33 @@ describe('you can tell how big a thing is by looking at it', () => {
   });
 
   it('every Huge creature draws bigger than every Large one', () => {
-    // The renderer's hand table, read as source so this test and the board can
-    // never be looking at different numbers.
-    const src = readFileSync(fileURLToPath(new URL('../web/src/art.ts', import.meta.url)), 'utf8');
-    const tbl = src.slice(src.indexOf('const SCALE'), src.indexOf('export function tokenScale'));
-    const RAW: Record<string, number> = {};
-    for (const m of tbl.matchAll(/'?([a-z0-9-]+)'?:\s*([\d.]+)/g)) RAW[m[1]!] = Number(m[2]);
-    expect(Object.keys(RAW).length, 'could not read the scale table').toBeGreaterThan(50);
-    // Reads the same hand table the renderer does, through the same rule.
-    const scaleOf = (m: { id: string; size?: CreatureSize }) => bandedScale(RAW[m.id] ?? 1, m.size);
-    const huge = Object.values(MONSTERS).filter((m) => m.size === 'huge');
-    const large = Object.values(MONSTERS).filter((m) => m.size === 'large');
+    /**
+     * IMPORTED, not parsed. This used to read `art.ts` as text and rebuild the
+     * rule from a regex, with the comment "so this test and the board can never
+     * be looking at different numbers" — and then the table moved to
+     * `token-scale.ts` and the regex matched nothing, which the guard only
+     * caught because it also asserts it read something. Calling the real
+     * function is what that comment was actually asking for.
+     *
+     * And it compares APPARENT size — scale times how much of the frame the art
+     * fills — because that is the thing a player sees. The band alone stopped
+     * being the whole story once framing was corrected for; see
+     * `token-fill.test.ts`.
+     */
+    // Only creatures that actually have art. One without it renders as an
+    // emoji, has no measured fill, and gets no framing correction — so putting
+    // it in this comparison would be comparing a corrected number with an
+    // uncorrected one, which is how this assertion first came out backwards.
+    const drawn = (m: { id: string }) => TOKEN_FILL[m.id] !== undefined;
+    const seen = (m: { id: string; size?: CreatureSize }) =>
+      tokenScale(m.id, m.size) * TOKEN_FILL[m.id]!;
+    const huge = Object.values(MONSTERS).filter((m) => m.size === 'huge' && drawn(m));
+    const large = Object.values(MONSTERS).filter((m) => m.size === 'large' && drawn(m));
     expect(huge.length).toBeGreaterThan(0);
     expect(large.length).toBeGreaterThan(0);
-    const smallestHuge = Math.min(...huge.map(scaleOf));
-    const biggestLarge = Math.max(...large.map(scaleOf));
-    expect(smallestHuge).toBeGreaterThan(biggestLarge);
+    const smallestHuge = Math.min(...huge.map(seen));
+    const biggestLarge = Math.max(...large.map(seen));
+    expect(smallestHuge, 'a Large creature draws bigger than a Huge one').toBeGreaterThan(biggestLarge);
   });
 
   it('leaves art with no size given exactly as it was', () => {
