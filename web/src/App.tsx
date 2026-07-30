@@ -1021,6 +1021,20 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     const publish = () => {
       root.style.setProperty('--topbar-h', `${Math.round(bar.getBoundingClientRect().height)}px`);
 
+      // …and the action bar's, which the coach banner and the learning toast
+      // sit ABOVE. They used to hang under the top bar, where they covered the
+      // top three rows of the board — and the board draws rank 0 at the bottom,
+      // so those three rows are exactly where the enemies start. The training
+      // yard's opening screen hid all four kobolds while telling the player to
+      // go and attack one. Moving them to the bottom put them over the action
+      // bar instead, hence this: the bar's real height, so they clear it.
+      // Absent (nobody's turn to act) it is 0 and they sit at the floor.
+      const abar = root.querySelector('.actionbar') as HTMLElement | null;
+      root.style.setProperty(
+        '--actionbar-h',
+        `${abar ? Math.round(abar.getBoundingClientRect().height) : 0}px`,
+      );
+
       // How much height is left for the board once everything else has taken
       // what it needs.
       //

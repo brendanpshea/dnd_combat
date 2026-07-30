@@ -71,3 +71,73 @@ describe('the Training Yard', () => {
     expect(TRAINING_COACH[0]!.done(foeMoved, s, isPlayer)).toBe(false);
   });
 });
+
+/**
+ * WHAT WAS BROKEN, and why these are separate from the block above.
+ *
+ * The tests above check that the yard is winnable and that each lesson gates on
+ * the right mechanic. Both passed while the tutorial was, in the player's words,
+ * nonfunctional — because neither asks the one question that matters on the
+ * first screen: does the coach's text match what the board is doing?
+ *
+ * It did not. The coach opens with "the bobbing gold arrow marks whose turn it
+ * is — Rurik the fighter is up", and the seed rolled initiative as
+ *
+ *     Kobold 2 → Kobold 3 → Elsa → Kobold 4 → Rurik → Kobold 1 → Alden
+ *
+ * so a newcomer read that sentence and watched a kobold move. Every hero-named
+ * step after it was a coin flip. Nothing threw; the tutorial simply read as
+ * broken.
+ */
+describe('the coach and the board agree', () => {
+  const namesInOrder = () => {
+    const { combat } = makeTrainingCombat();
+    return combat.state.initiativeOrder.map((id) => combat.state.combatants[id]!.name);
+  };
+
+  it('starts with the hero the first step names', () => {
+    const { combat } = makeTrainingCombat();
+    const first = combat.state.combatants[combat.activeId!]!;
+    expect(TRAINING_COACH[0]!.text, 'step 1 no longer names Rurik').toContain('Rurik');
+    expect(first.name, 'the coach says Rurik is up and somebody else is').toBe('Rurik');
+  });
+
+  it('runs the heroes in the order the curriculum teaches them', () => {
+    /**
+     * Move and swing with the fighter, cantrip and spend a slot with the wizard,
+     * heal with the cleric — and only then does anything hit back. Any other
+     * order sits a newcomer through enemy turns between lessons, or asks them to
+     * act with a hero who is not up.
+     */
+    const order = namesInOrder();
+    expect(order.slice(0, 3)).toEqual(['Rurik', 'Elsa', 'Alden']);
+    expect(
+      order.slice(3).every((n) => n.startsWith('Kobold')),
+      `enemies interleaved with the lessons: ${order.join(' \u2192 ')}`,
+    ).toBe(true);
+  });
+
+  it('names every hero the script talks about', () => {
+    // A step coaching "on Alden's turn" is useless if nobody is called Alden,
+    // which is exactly what renaming a hero would silently cause.
+    const heroes = namesInOrder().filter((n) => !n.startsWith('Kobold'));
+    const script = TRAINING_COACH.map((s) => s.text).join(' ');
+    for (const name of heroes) {
+      expect(script, `${name} is in the fight but the coach never mentions them`).toContain(name);
+    }
+  });
+
+  it('gives nobody a gender the art contradicts', () => {
+    /**
+     * The cleric was "Brother Alden" and the cleric portrait is a woman. Tokens
+     * here are per-CLASS art, not per-character, so a hero's name cannot assert
+     * a gender at all — there is no picture for it to be right about.
+     */
+    const script = TRAINING_COACH.map((s) => s.text).join(' ');
+    const names = namesInOrder().join(' ');
+    for (const honorific of ['Brother', 'Sister', 'Father', 'Mother', 'Lady', 'Lord']) {
+      expect(script, `the coach calls somebody "${honorific}"`).not.toContain(honorific);
+      expect(names, `a hero is named "${honorific} ..."`).not.toContain(honorific);
+    }
+  });
+});

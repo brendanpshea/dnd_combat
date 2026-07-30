@@ -1185,19 +1185,31 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .tips-toggle.off { opacity: 0.4; filter: grayscale(1); }
 /* Notifications float over the board instead of sitting in the column flow —
    otherwise, on a short laptop screen, each one shoved the board (and the
-   action bar under it) down and out of view. Fixed + centered near the top,
-   above the board, dismissible / transient. */
+   action bar under it) down and out of view.
+   
+   ANCHORED TO THE BOTTOM, NOT THE TOP. Pinned under the header they covered the
+   top three rows of the board — which is exactly where the enemies start, since
+   the board draws rank 0 at the bottom. On the training yard's first screen the
+   coach banner hid all four kobolds while telling the player to go and attack
+   one. Meanwhile a phone had ~300px of unused space below the status panel.
+   So they sit down there instead, over nothing. */
 .tip-toast, .coach-banner {
   position: fixed; z-index: 45;
-  top: calc(var(--topbar-h, 46px) + 8px);
+  bottom: calc(var(--actionbar-h, 0px) + 14px);
   left: 50%; transform: translateX(-50%);
   width: min(94vw, 560px); margin: 0;
+  max-height: 40vh; overflow-y: auto;
 }
 /* On desktop the board and the enemies' starting row live on the left; the
    right column (the log) has room to spare, so float notifications there
    instead of over the board. */
 @media (min-width: 900px) {
-  .tip-toast, .coach-banner { left: auto; right: 16px; transform: none; width: 324px; }
+  /* Desktop keeps them in the right-hand column, where the log has room to
+     spare — the board never shared that space to begin with. */
+  .tip-toast, .coach-banner {
+    left: auto; right: 16px; transform: none; width: 324px;
+    top: calc(var(--topbar-h, 46px) + 8px); bottom: auto;
+  }
 }
 .tip-toast {
   display: flex; align-items: flex-start; gap: 10px;
