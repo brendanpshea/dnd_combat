@@ -44,6 +44,8 @@ export interface LootProps {
     totalHealed: number; hitDiceSpent?: number; revived?: number;
     /** Slots handed back by Arcane / Natural Recovery at the lunch break. */
     recovered?: Array<{ name: string; slots: number[] }>;
+    /** Sorcery points handed back by Sorcerous Restoration. */
+    pointsRestored?: Array<{ name: string; points: number }>;
   } | undefined;
   /**
    * The arena's commentary, if it has anything to say about this break. Passed
@@ -149,7 +151,8 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
       </div>
 
       {rested && (rested.totalHealed > 0 || rested.hitDiceSpent || rested.revived
-        || (rested.recovered?.length ?? 0) > 0) && (
+        || (rested.recovered?.length ?? 0) > 0
+        || (rested.pointsRestored?.length ?? 0) > 0) && (
         <div className="loot-panel rest-panel">
           <div className="loot-line">
             <span>{rested.hitDiceSpent ? '🍞 Lunch' : '🌙 Night'}</span>
@@ -170,6 +173,14 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
             <div key={r.name} className="loot-sub gain">
               ✨ {r.name} recovers {r.slots.length} spell slot{r.slots.length === 1 ? '' : 's'}
               {' '}({r.slots.slice().sort((a, b) => b - a).map((l) => `L${l}`).join(', ')})
+            </div>
+          ))}
+          {/* Sorcery points, same reasoning: Font of Magic is a long-rest pool,
+              so this is the only thing between a sorcerer and an afternoon with
+              no Metamagic at all. */}
+          {(rested.pointsRestored ?? []).map((r) => (
+            <div key={r.name} className="loot-sub gain">
+              🔮 {r.name} recovers {r.points} sorcery point{r.points === 1 ? '' : 's'}
             </div>
           ))}
         </div>
