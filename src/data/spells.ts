@@ -3306,6 +3306,10 @@ export const SPELLS: Record<Id, SpellData> = {
         summonerId: casterId,
         near: positions[0] ?? caster.position,
         idHint: 'steed',
+        // Tagged even though Find Steed takes no concentration: the sweep that
+        // ends a dragon spirit is keyed on the spell, and a steed that carried
+        // no spell id would be a summon the bookkeeping could not name.
+        spellId: 'find-steed',
         patch: {
           hp, maxHp: hp,
           acOverride: 10 + slotLevel,
