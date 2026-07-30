@@ -27,7 +27,20 @@ export interface CoachStep {
   done: (events: GameEvent[], state: GameState, isPlayer: (id: Id) => boolean) => boolean;
 }
 
-const TRAINING_SEED = 424242;
+/**
+ * Chosen, not arbitrary. The old seed rolled initiative as
+ * `Kobold 2 → Kobold 3 → Elsa → Kobold 4 → Rurik → Kobold 1 → Alden`, and the
+ * coach's very first line says "Rurik the fighter is up" — so a total newcomer
+ * opened the tutorial, read that, and watched a kobold move. Every hero-named
+ * step was a coin flip after that.
+ *
+ * Seed 101 orders it `Rurik → Elsa → Alden → all four kobolds`, which is the
+ * curriculum's own order: move and swing with the fighter, cantrip and slot
+ * with the wizard, heal with the cleric, and only then does anything hit back.
+ * `training.test.ts` holds the order so the next seed change cannot quietly
+ * make the script lie again.
+ */
+const TRAINING_SEED = 101;
 
 /** A brand-new player's first fight: Fighter + Wizard + Cleric vs four kobolds
  *  on an open field. The heroes start a rank back so closing the distance
@@ -40,7 +53,7 @@ export function makeTrainingCombat(): { combat: Combat; aiTeams: Set<TeamId> } {
   const heroes = [
     rurik,
     buildCharacter({ classId: 'wizard', team: 'team1', level: 1, name: 'Elsa', position: { x: 1, y: 0 }, speciesId: 'human' }),
-    buildCharacter({ classId: 'cleric', team: 'team1', level: 1, name: 'Brother Alden', position: { x: 5, y: 0 }, speciesId: 'human' }),
+    buildCharacter({ classId: 'cleric', team: 'team1', level: 1, name: 'Alden', position: { x: 5, y: 0 }, speciesId: 'human' }),
   ];
   const foes = [
     buildMonster('kobold', 'team2', { x: 1, y: 6 }, '1'),
@@ -107,7 +120,7 @@ export const TRAINING_COACH: CoachStep[] = [
     done: (e, _s, isP) => playerLeveledSpell(e, isP),
   },
   {
-    text: '💚 Heal: Rurik is bloodied. On Brother Alden\'s turn, step beside Rurik and cast Cure Wounds from the 🔮 bar to patch him back up — keeping the party standing wins fights.',
+    text: '💚 Heal: Rurik is bloodied. On Alden\'s turn, step beside Rurik and cast Cure Wounds from the 🔮 bar to patch him back up — keeping the party standing wins fights.',
     done: (e, _s, isP) => playerHealed(e, isP),
   },
   {
