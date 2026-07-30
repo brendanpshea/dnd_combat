@@ -4,6 +4,7 @@
 import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
 import { cellAt, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBinding } from '../types.js';
 import { blocksMovement, reachable, pathTo, adjacent, popIllusion, type StepDanger } from '../grid.js';
+import { reachesCell } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';
 import { savingThrow, saveForHalf } from './saves.js';
@@ -61,6 +62,11 @@ export function hazardMaxFor(c: Combatant, grid?: GridState): number {
  * other.
  */
 export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
+  // A flier is above the lava, the brambles and the grave gas. This is the one
+  // door both walking and being pushed go through, so the check belongs here and
+  // nowhere else — a giant ape shoved into a fire pit still burns; a wyvern
+  // shoved over one does not.
+  if (state.combatants[victimId]?.flying) return [];
   const kind = hazardFor(state.grid.theme as MapTheme | undefined);
   const events: GameEvent[] = [];
   const dmg = rollDice(state.rng, kind.damage);
@@ -92,6 +98,10 @@ export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
  */
 function ignoresDifficult(mover: Combatant): boolean {
   return (
+    // A flier is not walking on it. The cheapest and least surprising half of
+    // flight, and the one that makes a bog or a bramble map read differently
+    // the moment a wyvern arrives.
+    mover.flying === true ||
     mover.featureIds.includes('boots-winterlands') ||
     mover.featureIds.includes('free-action') ||
     mover.featureIds.includes('burrow') ||
@@ -120,7 +130,7 @@ export function hostileIds(state: GameState, mover: Combatant): Set<Id> {
 export function moveDestinations(state: GameState, mover: Combatant): Position[] {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   if (budget <= 0) return [];
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, ignoresDifficult(mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, ignoresDifficult(mover), mover.flying === true);
   const out: Position[] = [];
   for (const k of r.costs.keys()) {
     const [x, y] = k.split(',').map(Number) as [number, number];
@@ -179,9 +189,9 @@ function stepDanger(state: GameState, mover: Combatant): StepDanger {
     // Mirrors the provoke rule below exactly: you pay for *leaving* reach, so
     // sidestepping within it is free.
     for (const h of threats) {
-      if (adjacent(h.position, from) && !adjacent(h.position, to)) danger += PROVOKE_DANGER;
+      if (reachesCell(h, from) && !reachesCell(h, to)) danger += PROVOKE_DANGER;
     }
-    if (cellAt(state.grid, to)!.terrain === 'hazard') danger += hazardDanger;
+    if (!mover.flying && cellAt(state.grid, to)!.terrain === 'hazard') danger += hazardDanger;
     return danger;
   };
 }
@@ -225,7 +235,7 @@ function maxHit(c: Combatant, weaponId: Id): number {
  */
 export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Position): number {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true);
   const path = pathTo(r, mover.position, to);
   if (!path) return 0;
 
@@ -245,7 +255,7 @@ export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Posi
       if (spent.has(h.id)) continue;
       const weapon = meleeWeaponOf(h);
       if (!weapon) continue;
-      if (adjacent(h.position, from) && !adjacent(h.position, step)) {
+      if (reachesCell(h, from) && !reachesCell(h, step)) {
         worst += maxHit(h, weapon);
         spent.add(h.id);
       }
@@ -264,7 +274,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const events: GameEvent[] = [];
   const mover = state.combatants[moverId]!;
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover));
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true);
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   // Reachable is not the same as free to stand on: `reachable` deliberately
@@ -323,7 +333,15 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         if (!canTakeReaction(h)) continue;
         const weapon = meleeWeaponOf(h);
         if (!weapon) continue;
-        if (adjacent(h.position, from) && !adjacent(h.position, step)) {
+        /**
+         * Leaving a creature's REACH provokes, not merely leaving the square
+         * beside it. This read `adjacent` on both sides, so a bugbear — which
+         * has had ten-foot reach since it was added — could strike at ten feet
+         * and threaten only at five: walking out of its reach was free, which is
+         * the one thing reach exists to stop. Now that Huge creatures reach too,
+         * that gap would have applied to every giant in the bestiary.
+         */
+        if (reachesCell(h, from) && !reachesCell(h, step)) {
           h.turn.reactionUsed = true;
           events.push(...resolveAttack(state, hid, moverId, weapon, { opportunity: true }));
           if (!mover.alive || isDown(mover)) {

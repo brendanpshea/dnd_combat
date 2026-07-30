@@ -9,6 +9,7 @@ import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
+import { withinReach, reachesCell } from './reach.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -47,8 +48,7 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   }
   if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
-  const reachCells = actor.featureIds.includes('long-limbed') ? 2 : 1;
-  const inMelee = w.melee && distanceCells(actor.position, t.position) <= reachCells;
+  const inMelee = w.melee && withinReach(actor, t);
   const inRange =
     w.range !== undefined && dist <= w.range.long &&
     hasLineOfSight(state.grid, actor.position, t.position);
@@ -90,9 +90,11 @@ export function collectAttackSources(
 
   if (!isMeleeAttack) {
     if (weapon.range && dist > weapon.range.normal) dis.push('long range');
-    // Ranged attack with any hostile adjacent to the attacker.
+    // A hostile close enough to swing at the shooter. Its REACH, not plain
+    // adjacency: a giant looming from ten feet is exactly as distracting as an
+    // ogre at five, and that is the whole point of it having reach.
     for (const c of Object.values(state.combatants)) {
-      if (c.alive && !isDown(c) && c.team !== attacker.team && adjacent(c.position, attacker.position)) {
+      if (c.alive && !isDown(c) && c.team !== attacker.team && reachesCell(c, attacker.position)) {
         dis.push('enemy adjacent');
         break;
       }
@@ -227,9 +229,9 @@ export function resolveAttack(
   const attacker = state.combatants[attackerId]!;
   const target = state.combatants[targetId]!;
   const weapon = WEAPONS[weaponId]!;
-  // Long-Limbed (Bugbear): 10-ft reach with melee weapons instead of 5 ft.
-  const reachCells = attacker.featureIds.includes('long-limbed') ? 2 : 1;
-  const isMeleeAttack = distanceCells(attacker.position, target.position) <= reachCells && weapon.melee;
+  // Reach: Long-Limbed, or simply being Huge. See rules/reach.ts — one answer,
+  // so hitting at reach and threatening at reach can never disagree again.
+  const isMeleeAttack = withinReach(attacker, target) && weapon.melee;
 
   // Sanctuary: before anything else, the attacker must steel itself. A failed
   // Wisdom save means it cannot bring itself to strike this target at all and
@@ -859,7 +861,7 @@ export function resolveAttack(
       target.hp === 0 && attacker.alive) {
     const next = Object.values(state.combatants).find(
       (c) => c.alive && !isDown(c) && c.team !== attacker.team && c.id !== targetId &&
-             adjacent(c.position, attacker.position),
+             withinReach(attacker, c),
     );
     if (next) {
       events.push(...resolveAttack(state, attackerId, next.id, weaponId, { noRampage: true }));
