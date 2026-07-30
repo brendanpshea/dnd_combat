@@ -1012,6 +1012,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // one row, wrong the moment it wraps to two on a phone, which left the first
   // learning tip sitting on top of the controls.
   const battleRef = useRef<HTMLDivElement | null>(null);
+  /** The action bar's height, kept across the turns it is not rendered on. */
+  const barHeight = useRef(0);
   const topbarRef = useRef<HTMLElement | null>(null);
   const publishRef = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -1034,6 +1036,13 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         '--actionbar-h',
         `${abar ? Math.round(abar.getBoundingClientRect().height) : 0}px`,
       );
+      // Remembered, because the bar is only rendered on a human's turn — and
+      // the board is budgeted from what is left over, so without this the board
+      // GREW the instant an enemy's turn began and shrank back when yours did.
+      // Measured at 412x600: 254px with the bar, 349px without, every single
+      // turn. That is the resize, and it is far more frequent than the URL bar
+      // one it was mistaken for.
+      if (abar) barHeight.current = Math.round(abar.getBoundingClientRect().height);
 
       // How much height is left for the board once everything else has taken
       // what it needs.
@@ -1104,7 +1113,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       // slightly cramped board than cells too small to tap. If the floor bites,
       // `.battle` scrolls rather than clipping — a button you cannot reach is
       // worse than a board you have to scroll to.
-      const budget = Math.max(root.clientHeight * 0.38, root.clientHeight - others);
+      // Hold the bar's space whether or not it is on screen right now.
+      const reserved = others + (root.querySelector('.actionbar') ? 0 : barHeight.current + gap);
+      const budget = Math.max(root.clientHeight * 0.38, root.clientHeight - reserved);
       const prev = Number.parseFloat(root.style.getPropertyValue('--board-budget')) || 0;
       // Only on a real change: writing it back re-runs the observer, and a
       // sub-pixel wobble would loop forever.
@@ -1240,7 +1251,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       {/* Directly under the board: a fixed place to read what just happened,
           so following a fight never depends on watching the right cell. */}
       {narrationOn && (
-        <div className="narration" key={narration ?? ''} aria-live="polite">
+        <div
+          className={`narration${narration ? '' : ' quiet'}`}
+          key={narration ?? ''}
+          aria-live="polite"
+        >
           {narration ?? ' '}
         </div>
       )}

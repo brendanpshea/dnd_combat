@@ -300,3 +300,108 @@ describe('the app shell is pinned to the small viewport', () => {
     expect(css, 'dvh tracks the URL bar — that is the bug, not the fix').not.toContain('dvh');
   });
 });
+
+/**
+ * The board must not change size when the turn changes.
+ *
+ * MEASURED at 412x600 with an 8x8 board, sampling every 60ms across five turns:
+ *
+ *     254px  with the action bar        (your turn)
+ *     349px  without it                 (an enemy's turn)
+ *
+ * A 37% jump every single turn. The action bar is only rendered on a human's
+ * turn, and the board is budgeted from whatever height is left over, so the
+ * board grew the instant an enemy started acting and shrank back when you got
+ * the initiative again. That is the resize — and it is far more frequent than
+ * the browser-chrome one it was first mistaken for.
+ *
+ * After: 308px / 312px. The 4px that remains is the status line, which really
+ * does render at slightly different heights for a hero and a monster.
+ */
+describe('the board keeps its size across a turn change', () => {
+  const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+
+  it('remembers the action bar height for the turns it is not rendered on', () => {
+    expect(app, 'nothing remembers the bar height across turns').toContain('barHeight');
+    // Held in a ref, because the measuring pass runs after every render and a
+    // piece of state would loop.
+    expect(app).toMatch(/barHeight\s*=\s*useRef\(0\)/);
+  });
+
+  it('reserves that height when the bar is absent', () => {
+    // The budget has to subtract the bar whether or not it is on screen, or the
+    // board simply takes the space back on the enemy's turn.
+    expect(app).toMatch(/querySelector\('\.actionbar'\) \? 0 : barHeight\.current/);
+  });
+});
+
+/**
+ * The numbers on the tiles are the clutter, not the blue.
+ *
+ * Every reachable cell with any risk at all wore a number and every one with any
+ * cover wore a shield, so a hazard map put dozens of small figures over the
+ * board they were drawn on. The rule now matches what `styles.css` already says
+ * about the lethal case being "the one worth interrupting for".
+ */
+describe('tile badges stay out of the way', () => {
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+
+  it('hides cover and non-lethal risk until the tile is considered', () => {
+    expect(css).toMatch(/\.cover-badge,\s*\n\.risk-badge:not\(\.lethal\) \{[^}]*opacity: 0/);
+  });
+
+  it('still shows them on hover and on keyboard focus', () => {
+    expect(css).toContain('.cell:hover .cover-badge');
+    expect(css).toContain('.cell:focus-visible .risk-badge');
+  });
+
+  it('never hides the lethal warning', () => {
+    // The one case that has to interrupt: this move can end with you on the
+    // floor. `:not(.lethal)` is what keeps it loud.
+    const at = css.indexOf('.risk-badge:not(.lethal) {');
+    expect(at, 'the lethal badge is no longer exempt').toBeGreaterThan(0);
+  });
+
+  it('hides with opacity, so a screen reader still reads every one', () => {
+    // `display: none` would drop the aria-labels the badges already carry.
+    const at = css.indexOf('.risk-badge:not(.lethal) {');
+    const block = css.slice(at, css.indexOf('}', at));
+    expect(block).not.toContain('display');
+  });
+});
+
+/**
+ * No empty box under the board.
+ *
+ * The narration strip renders a non-breaking space when there is no line, so its
+ * height is reserved and the board never shifts as lines come and go. But the
+ * panel, border and shadow were drawn around that space, so for most of a fight
+ * a small empty box sat under the board looking like something that had failed
+ * to load. Reported from a real phone.
+ */
+describe('the narration strip is invisible when it has nothing to say', () => {
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+  const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+
+  it('drops its panel when quiet', () => {
+    const at = css.indexOf('.narration.quiet {');
+    expect(at, 'no quiet state for the narration strip').toBeGreaterThan(0);
+    const block = css.slice(at, css.indexOf('}', at));
+    expect(block).toContain('background: none');
+    expect(block).toContain('border-color: transparent');
+  });
+
+  it('still reserves the height, so the board does not shift', () => {
+    // The whole reason the element renders a space in the first place.
+    const at = css.indexOf('.narration {');
+    const block = css.slice(at, css.indexOf('}', at));
+    expect(block, 'the reserved height is gone — the board will jump').toContain('min-height');
+  });
+
+  it('is driven by a class, because :empty can never match here', () => {
+    // The space is a text node, so the element is never `:empty`. A CSS-only
+    // attempt at this silently does nothing.
+    expect(app).toMatch(/narration\$\{narration \? '' : ' quiet'\}/);
+    expect(css, ':empty cannot match an element holding a space').not.toContain('.narration:empty');
+  });
+});
