@@ -186,6 +186,73 @@ describe('concentration holds them up', () => {
   });
 });
 
+describe('dismissing a summon does not derail the turn order', () => {
+  /**
+   * THE BUG THE WHOLE TEST SUITE MISSED. 1891 tests passed and the first arena
+   * run crashed: `currentCombatant` returned undefined and `step` threw.
+   *
+   * `summonCombatant` splices INTO the order at `turnIndex + 1` precisely so
+   * the index cannot move. Removal has the mirror problem and had no such care
+   * — dropping entries at or before the current index shifts everything after
+   * them down, so `turnIndex` ends up pointing at the wrong creature or off the
+   * end of the array. Animate Objects makes it easy to hit, because it removes
+   * three or four entries at once.
+   *
+   * It needs a summon dismissed while the order is MID-LAP, which is why no
+   * unit test happened to arrange it and why an arena run found it instead.
+   */
+  it('keeps the SAME creature current when a whole batch is dismissed', () => {
+    const c = field('wizard');
+    cast(c, 'animate-objects');
+    const objects = summonsOf(c, 'animate-objects').map((x) => x.id);
+    expect(objects.length, 'nothing to dismiss').toBeGreaterThan(2);
+
+    /**
+     * The order is arranged by hand, because it cannot arise on its own:
+     * `summonCombatant` splices every object in at `turnIndex + 1`, so they
+     * always sit immediately after their caster and there is never a
+     * non-summon standing behind them. What is under test is the index
+     * arithmetic, and this is the arrangement that gets it wrong — doomed
+     * entries BEFORE the current one.
+     */
+    c.state.initiativeOrder = [...objects, 'caster', 'foe'];
+    c.state.turnIndex = objects.length + 1;          // the ogre's turn
+    expect(c.state.initiativeOrder[c.state.turnIndex]).toBe('foe');
+
+    breakConcentration(c.state, 'caster');
+    expect(summonsOf(c, 'animate-objects')).toEqual([]);
+    // Still the ogre's turn — not whoever slid into that slot.
+    expect(c.state.initiativeOrder[c.state.turnIndex],
+      'the turn jumped to a different creature when the objects vanished').toBe('foe');
+    expect(() => c.apply({ kind: 'endTurn' })).not.toThrow();
+  });
+
+  it('never leaves the index pointing off the end of the order', () => {
+    // The half that actually crashed the arena: `currentCombatant` returned
+    // undefined and `step` threw on `.id`.
+    const c = field('wizard');
+    cast(c, 'animate-objects');
+    const objects = summonsOf(c, 'animate-objects').map((x) => x.id);
+    c.state.initiativeOrder = ['caster', 'foe', ...objects];
+    c.state.turnIndex = c.state.initiativeOrder.length - 1;   // the last object
+    breakConcentration(c.state, 'caster');
+    const nowId = c.state.initiativeOrder[c.state.turnIndex];
+    expect(nowId, 'turnIndex points off the end of the order').toBeDefined();
+    expect(c.state.combatants[nowId!], `turnIndex names a ghost: ${nowId}`).toBeDefined();
+  });
+
+  it('leaves no ghost ids behind for any summon path', () => {
+    for (const spellId of ['summon-dragon', 'animate-objects'] as const) {
+      const c = field('wizard');
+      cast(c, spellId);
+      c.apply({ kind: 'endTurn' });
+      breakConcentration(c.state, 'caster');
+      const ghosts = c.state.initiativeOrder.filter((id) => !c.state.combatants[id]);
+      expect(ghosts, `${spellId} left ghosts in the order`).toEqual([]);
+    }
+  });
+});
+
 describe('the classes can reach them', () => {
   it('Summon Dragon is the wizard’s alone, Animate Objects is on three lists', () => {
     const carries = (id: string) => Object.values(CLASSES)

@@ -11,7 +11,7 @@ import type { GameState, Combatant, Id, Ability, Position, CreatureType, Conditi
 import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
-import { summonCombatant } from '../engine/rules/summon.js';
+import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -3297,7 +3297,9 @@ export const SPELLS: Record<Id, SpellData> = {
           delete state.combatants[id];
           const cell = cellAt(state.grid, c.position);
           if (cell?.occupantId === id) delete cell.occupantId;
-          state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+          // Through the shared helper: a raw filter here shifts `turnIndex`
+          // under the current creature, which is how an arena run crashed.
+          removeFromOrder(state, id);
         }
       }
       const hp = 5 + 10 * slotLevel;

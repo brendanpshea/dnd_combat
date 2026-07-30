@@ -69,6 +69,32 @@ function freeCellNear(state: GameState, at: Position): Position | undefined {
   return undefined;
 }
 
+
+/**
+ * Take a creature out of the initiative order without derailing whose turn it
+ * is.
+ *
+ * `summonCombatant` is careful about this on the way IN — it splices at
+ * `turnIndex + 1` precisely so the index cannot move — and removal has the
+ * mirror problem, which cost an arena run to find. Dropping an entry before the
+ * current index shifts everything after it down one, so `turnIndex` then names
+ * the NEXT creature; drop enough and it runs off the end of the array, at which
+ * point `currentCombatant` returns undefined and `step` throws on `.id`.
+ *
+ * Nothing in the suite caught it: 1891 tests passed and the game crashed on the
+ * first arena run. Animate Objects is what makes it easy to hit, because it
+ * removes three or four entries at once.
+ */
+export function removeFromOrder(state: GameState, id: Id): void {
+  const at = state.initiativeOrder.indexOf(id);
+  if (at < 0) return;
+  state.initiativeOrder.splice(at, 1);
+  // Strictly before: removing the creature whose turn it IS leaves the index
+  // on whoever slid into its place, which is right — they have not acted yet.
+  if (at < state.turnIndex) state.turnIndex -= 1;
+  if (state.turnIndex >= state.initiativeOrder.length) state.turnIndex = 0;
+}
+
 export interface SummonOptions {
   monsterId: Id;
   summonerId: Id;
@@ -165,7 +191,7 @@ export function dismissSummonedBy(state: GameState, summonerId: Id): GameEvent[]
     const cell = cellAt(state.grid, c.position);
     if (cell?.occupantId === id) delete cell.occupantId;
     delete state.combatants[id];
-    state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+    removeFromOrder(state, id);
     events.push({ type: 'summonExpired', casterId: summonerId, kind: c.classId, position: { ...c.position } });
   }
   return events;
@@ -186,7 +212,7 @@ export function dismissSummonsOfSpell(state: GameState, summonerId: Id, spellId:
     const cell = cellAt(state.grid, c.position);
     if (cell?.occupantId === id) delete cell.occupantId;
     delete state.combatants[id];
-    state.initiativeOrder = state.initiativeOrder.filter((x) => x !== id);
+    removeFromOrder(state, id);
     events.push({ type: 'summonExpired', casterId: summonerId, kind: c.classId, position: { ...c.position } });
   }
   return events;
