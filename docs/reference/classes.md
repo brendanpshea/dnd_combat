@@ -164,7 +164,7 @@ Spellcasting ability: **WIS**.
 | 3 | Moonbeam, Pass without Trace, Hold Person, Heat Metal, Flaming Sphere, Aid, Lesser Restoration |
 | 5 | Call Lightning, Conjure Animals, Protection from Energy, Dispel Magic |
 | 7 | Ice Storm, Wall of Fire, Confusion, Polymorph, Blight, Freedom of Movement |
-| 9 | Cone of Cold, Insect Plague, Mass Cure Wounds |
+| 9 | Cone of Cold, Insect Plague, Conjure Elemental, Mass Cure Wounds |
 
 ## Fighter
 
@@ -580,6 +580,6 @@ Spellcasting ability: **INT**.
 | 3 | Suggestion, Mirror Image, Shatter, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step |
 | 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Phantasmal Killer, Dimension Door |
-| 9 | Cone of Cold, Hold Monster |
+| 9 | Cone of Cold, Conjure Elemental, Hold Monster |
 
 Learnable from scrolls found in play: Ray of Sickness.

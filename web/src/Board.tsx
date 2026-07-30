@@ -378,6 +378,9 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
   const SUMMON_GLYPH: Record<string, { icon: string; iconId: string; label: string }> = {
     'spiritual-weapon': { icon: '🔨', iconId: 'spiritual-weapon', label: 'Spiritual Weapon — strikes on its own each turn' },
     'flaming-sphere': { icon: '🔥', iconId: 'fireball', label: 'Flaming Sphere — rolls and rams on its own each turn' },
+    // The elemental spirit does not roam — but it has to be VISIBLE, or it is
+    // an invisible square that grabs you and deals 8d8.
+    'conjure-elemental': { icon: '🪨', iconId: 'conjure-elemental', label: 'Elemental Spirit — grabs and crushes one creature that comes within 5 feet' },
   };
   const summonTokens = Object.values(state.combatants)
     .filter((c) => c.alive && c.summons?.length)

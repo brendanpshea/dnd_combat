@@ -1309,6 +1309,18 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
     }
   }
 
+  /**
+   * A concentration-held summon: sweep it off the board.
+   *
+   * Conjure Elemental's grip needs NOTHING here, which was worth finding out.
+   * The spirit restrains a third party, and this change first added an explicit
+   * release for it on the theory that concentration only sweeps conditions
+   * listed in the caster's own `concentratingOn.targetIds`. That theory was
+   * wrong: the Web/Entangle fix further down already frees anyone restrained
+   * with `sourceId === this caster && concentration`, keyed off the CASTER
+   * rather than the spell — written that way, in its own words, so "the next
+   * strand spell is covered before it is written". It was.
+   */
   // A concentration-held summon: sweep it off the board. A summon's `kind` is
   // the id of the spell that made it (see Combatant.summons), so this is the
   // general rule rather than a list — which is what it used to be, naming only

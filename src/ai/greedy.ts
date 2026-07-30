@@ -817,6 +817,37 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       }
       return v - slotCost;
     }
+    case 'conjure-elemental': {
+      /**
+       * The spirit is priced as a GRAPPLE that also hurts, because that is what
+       * it is: 8d8 on the catch, then 4d8 a round while it holds one creature,
+       * and that creature is restrained the whole time.
+       *
+       * `denialValue` is the currency for taking a creature out of the fight,
+       * and it is most of the spell's worth — a restrained enemy attacks at
+       * disadvantage and is hit at advantage. The damage rides on top.
+       *
+       * Only counts a target it could actually catch THIS turn (in or beside
+       * the 2x2), because the spirit does not move: placed where nothing stands,
+       * it is a 5th-level slot spent on scenery.
+       */
+      if (actor.concentratingOn) return 0;
+      const center = (a.targets[0] as { position: Position }).position;
+      const dice = avgDice(`${8 + Math.max(0, a.slotLevel - 5)}d8`);
+      let best = 0;
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || isDown(t) || t.team === actor.team) continue;
+        const close = sphere2x2(center).some((p) => distanceCells(t.position, p) <= 1);
+        if (!close) continue;
+        const pFail = saveFailProb(state, t, 'dex', dc);
+        // Three rounds held is the same optimistic-but-discounted horizon Hold
+        // Person uses, and the fail probability multiplies it the same way.
+        const grip = denialValue(state, t, pFail, 3);
+        const hurt = damageValue(dice * pFail, t);
+        best = Math.max(best, grip + hurt);
+      }
+      return best - slotCost;
+    }
     case 'insect-plague': {
       /**
        * No `concentratingOn` guard, matching Wall of Fire — dropping a weaker
