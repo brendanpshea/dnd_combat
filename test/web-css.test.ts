@@ -1097,3 +1097,69 @@ describe('the gate backdrop', () => {
     expect(CSS, 'the tall variant is back').not.toContain('.adv-panel.arena-gate.tall');
   });
 });
+
+/**
+ * The gear screen, reported as "a mess, completely unlike other tabs, no bottom
+ * navigation, no indicator of what is equipped".
+ *
+ * All three were true and the last was the worst. `.adv-camp-gear` rendered the
+ * FILLED slots only, as chips near-identical to the pack chips beneath them —
+ * so a worn Splint and a packed Adamantine Scale Mail were the same object on
+ * screen, and nothing said which of two swords was in hand. And the whole thing
+ * was a scrim over everything with an ✕ for an exit, where every other tab kept
+ * the step bar, the Fight button and the party strip.
+ *
+ * Six slots now, always, for every character. Fixed positions are what make it
+ * scannable — slot four is always ranged, so an empty one reads without being
+ * read — and empty is the useful state, because it is what prompts a player to
+ * mark the javelin. No slot is ever unavailable to a class either: a wizard's
+ * off hand takes a dagger, it just cannot take a shield, and what is blocked is
+ * always an ITEM in a slot.
+ */
+describe('the gear screen', () => {
+  const ps = readFileSync(fileURLToPath(new URL('../web/src/PartyScreen.tsx', import.meta.url)), 'utf8');
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+
+  it('lays out every slot for every character', () => {
+    expect(ps, 'the strip is gone').toContain('className="gear-slots"');
+    // The regression this replaces: only the filled ones were drawn.
+    expect(ps, 'empty slots are being skipped again — the useful ones')
+      .not.toMatch(/const held = ch\.equipped\[slot\];\s*if \(!held\) return null;/);
+    expect(ps, 'a slot needs a label and an empty-state mark')
+      .toContain('SLOT_GLYPH[slot]');
+  });
+
+  it('is a step in the arena, not a modal over it', () => {
+    expect(ps, 'the frame is not selectable').toContain("frame?: 'modal' | 'panel'");
+    expect(arena, 'the arena is still opening it as a scrim').not.toContain('showParty');
+    expect(arena, 'gear is not a panel value').toMatch(/'none' \| 'shop' \| 'prepare' \| 'gear'/);
+    expect(arena).toContain('frame="panel"');
+  });
+
+  it('explains a blocked item rather than hiding it', () => {
+    // `equipBlocked` already writes the sentence; a wizard should see the
+    // shield and be told why, not wonder where it went.
+    expect(ps).toContain('equipBlocked(campaign, idx, id, slot)');
+    expect(ps, 'the reason is not shown').toContain('gear-cand');
+    // ...but only for near-misses. Listing every potion against the ranged
+    // slot as "not a weapon" is noise, not teaching.
+    expect(ps, 'wrong-kind items are back in the picker').toContain('wrongKind');
+  });
+
+  it('folds the packs away', () => {
+    // Four open chip lists is why the party's loadout could not be seen at a
+    // glance, which is the one thing this screen is for.
+    expect(ps).toContain('pack-toggle');
+    expect(ps, 'more than one pack can be open at once again').toContain('openPack === idx ? null : idx');
+  });
+
+  it('leaves spells to the spells step', () => {
+    // They were duplicated: the arena's Spells step offers the same casts WITH
+    // the slot cost on the button, so Mage Armor appeared twice in one mode —
+    // priced in one place and free-looking in the other.
+    const at = ps.indexOf('const spells = storeSpellActions');
+    expect(at).toBeGreaterThan(0);
+    expect(ps.slice(at - 300, at), 'camp casting is showing in the arena panel again')
+      .toContain("frame === 'modal'");
+  });
+});

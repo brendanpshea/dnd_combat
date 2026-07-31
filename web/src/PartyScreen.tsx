@@ -36,10 +36,31 @@ function label(itemId: string): string {
   return itemId.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
+/**
+ * The strip's fixed order and its empty-state marks.
+ *
+ * Order is armour outward: what you are wearing, what is in each hand, what you
+ * keep for range, then the two worn trinkets. Labels are short because the slot
+ * is 50-63px wide on a phone — position does most of the telling, and the
+ * picker names the slot in full when you open it.
+ */
+const SLOT_LABEL: Record<EquipSlot, string> = {
+  armor: 'Armor', mainHand: 'Main', offHand: 'Off', ranged: 'Ranged',
+  trinket: 'Trinket', ring: 'Ring',
+};
+/** Shown when a slot is empty: the shape of the thing that goes there. */
+const SLOT_GLYPH: Record<EquipSlot, string> = {
+  armor: '🥋', mainHand: '⚔️', offHand: '🛡️', ranged: '🏹',
+  trinket: '🧿', ring: '💍',
+};
+
 type Pick =
   | { kind: 'pack'; charIdx: number; itemId: string }
   | { kind: 'stash'; itemId: string }
   | { kind: 'equipped'; charIdx: number; slot: EquipSlot; itemId: string }
+  /** A slot tapped on the strip — filled or empty. Empty is the useful case:
+   *  it is what prompts a player to put the javelin somewhere. */
+  | { kind: 'slot'; charIdx: number; slot: EquipSlot }
   | { kind: 'spell'; charIdx: number; spellId: string }
   | null;
 
@@ -48,9 +69,24 @@ type Pick =
  *  Tap an item, then choose what to do with it — the same verb-after-noun flow
  *  as the campaign's between-battle screen, reusing the same state helpers. */
 export function PartyScreen(
-  { campaign, camp, onRest, onChange, onClose, notice: opening }: {
+  { campaign, camp, onRest, onChange, onClose, notice: opening, frame = 'modal' }: {
     campaign: CampaignState;
     camp: CampRule | null;
+    /**
+     * How this screen is framed.
+     *
+     * `modal` — a scrim with an ✕ over the current scene. Right for an
+     * adventure, which has no step bar to belong to.
+     *
+     * `panel` — bare content, for the arena to drop into its gate panel as the
+     * Gear step. Reported as "camp screen is a mess, completely unlike other
+     * tabs, no bottom navigation": every other tab kept the step bar, the Fight
+     * button and the party strip, and this one replaced the whole screen with a
+     * modal whose only exit was a ✕ in the corner.
+     *
+     * The guts are identical either way — only the frame differs.
+     */
+    frame?: 'modal' | 'panel';
     onRest: (variant: 'short' | 'long') => void;
     onChange: () => void;
     onClose: () => void;
@@ -66,6 +102,8 @@ export function PartyScreen(
   const [picked, setPicked] = useState<Pick>(null);
   const [notice, setNotice] = useState<string | null>(opening ?? null);
   const [sheetIdx, setSheetIdx] = useState<number | null>(null);
+  /** Which character's pack is open — at most one, so the screen stays short. */
+  const [openPack, setOpenPack] = useState<number | null>(null);
   const party = buildCampaignParty(campaign);
   const stash = partyStash(campaign).filter((s) => s.qty > 0);
 
@@ -76,15 +114,20 @@ export function PartyScreen(
     onChange();
   };
 
-  return (
-    <div className="adv-camp-scrim" onClick={onClose}>
-      <div className="adv-camp" onClick={(e) => e.stopPropagation()}>
-        <div className="adv-camp-head">
-          <h2>🎒 Party</h2>
-          <button className="ghost" onClick={onClose}>✕</button>
-        </div>
+  const body = (
+    <>
+        {frame === 'modal' && (
+          <div className="adv-camp-head">
+            <h2>🎒 Party</h2>
+            <button className="ghost" onClick={onClose}>✕</button>
+          </div>
+        )}
 
-        {/* Rest — only where you can safely (or riskily) make camp. */}
+        {/* Rest — only where you can safely (or riskily) make camp, and only in
+            the modal frame at all. The arena rests on its own clock, so the
+            panel there was opening with "No safe place to rest here" every
+            single time: a line that is always true and never actionable. */}
+        {(camp || frame === 'modal') && (
         <div className="adv-camp-rest">
           {camp ? (
             <>
@@ -100,6 +143,7 @@ export function PartyScreen(
             <p className="adv-rest-warn muted">No safe place to rest here. You can still sort your gear.</p>
           )}
         </div>
+        )}
 
         {notice && <p className="adv-camp-notice">{notice}</p>}
 
@@ -190,30 +234,106 @@ export function PartyScreen(
               </div>
             </div>
 
-            <div className="adv-camp-gear">
+            {/*
+              SIX SLOTS, ALWAYS, FOR EVERY CHARACTER.
+
+              This was a flex row of the FILLED slots only, rendered as chips
+              that looked all but identical to the pack chips below them — so a
+              worn Splint and a packed Adamantine Scale Mail were the same
+              object on screen, and nothing said which sword was in hand.
+
+              Fixed positions are what make it scannable: slot four is always
+              ranged, so an empty one reads without being read. And empty is the
+              useful state — an empty ranged slot on the fighter is exactly what
+              gets the javelin marked. Showing only what is filled hides the one
+              thing worth acting on.
+
+              No slot is ever unavailable to a class, either. A wizard's off
+              hand takes a dagger; it just cannot take a shield. What is blocked
+              is always an ITEM in a slot, never the slot — and `equipBlocked`
+              already returns the sentence that says why, which the picker shows
+              rather than silently omitting the option.
+            */}
+            <div className="gear-slots">
               {EQUIP_SLOTS.map((slot) => {
                 const held = ch.equipped[slot];
-                if (!held) return null;
-                const sel = picked?.kind === 'equipped' && picked.charIdx === idx && picked.slot === slot;
+                const sel = picked?.kind === 'slot' && picked.charIdx === idx && picked.slot === slot;
                 return (
                   <button
                     key={slot}
-                    className={`adv-item gear ${sel ? 'sel' : ''}`}
-                    onClick={() => setPicked(sel ? null : { kind: 'equipped', charIdx: idx, slot, itemId: held })}
+                    className={`gear-slot${held ? ' filled' : ''}${sel ? ' sel' : ''}`}
+                    title={held ? itemName(held) : `${SLOT_LABEL[slot]} — empty`}
+                    onClick={() => setPicked(sel ? null : { kind: 'slot', charIdx: idx, slot })}
                   >
-                    {itemIcon(held)} {itemName(held)}
+                    <span className="gear-slot-icon">{held ? itemIcon(held) : SLOT_GLYPH[slot]}</span>
+                    <small>{SLOT_LABEL[slot]}</small>
                   </button>
                 );
               })}
             </div>
-            {picked?.kind === 'equipped' && picked.charIdx === idx && (
-              <div className="adv-item-acts">
-                <InfoDot sheet={infoFor(picked.itemId)} />
-                <button onClick={() => act(() => unequipSlot(campaign, idx, picked.slot), `${ch.name} stows ${itemName(picked.itemId)}`)}>Unequip</button>
-              </div>
-            )}
+            {picked?.kind === 'slot' && picked.charIdx === idx && (() => {
+              const slot = picked.slot;
+              const held = ch.equipped[slot];
+              // Everything this character could put here — their own pack and
+              // the party's loot — with the blocked ones kept and explained.
+              const candidates = [
+                ...ch.inventory.filter((st) => st.qty > 0).map((st) => st.itemId),
+                ...stash.map((st) => st.itemId),
+              ].filter((id, i, all) => all.indexOf(id) === i && id !== held);
+              // Keep the near-misses and explain them — a wizard should see the
+              // shield and be told why it cannot go there. But "explain
+              // everything" listed every potion in the pack against the ranged
+              // slot as "not a weapon", which is noise, not teaching: a potion
+              // is not a near-miss for anything. `equipBlocked` opens exactly
+              // those with "not a …", so that is the line.
+              const wrongKind = (why?: string) => !!why && /^not a(rmor)?\b/.test(why);
+              const fits = candidates
+                .map((id) => ({ id, why: equipBlocked(campaign, idx, id, slot) }))
+                .filter(({ id, why }) => !wrongKind(why)
+                  && (why === undefined || ch.inventory.some((st) => st.itemId === id)));
+              return (
+                <div className="gear-picker">
+                  <b>{SLOT_LABEL[slot]}{held ? ` — ${itemName(held)}` : ''}</b>
+                  {held && (
+                    <div className="adv-item-acts">
+                      <InfoDot sheet={infoFor(held)} />
+                      <button onClick={() => act(() => unequipSlot(campaign, idx, slot), `${ch.name} ${slot === 'ranged' ? 'stops keeping' : 'stows'} ${itemName(held)}`)}>
+                        {slot === 'ranged' ? 'Clear' : 'Unequip'}
+                      </button>
+                    </div>
+                  )}
+                  {fits.length === 0 && <span className="muted">Nothing here fits this slot.</span>}
+                  {fits.map(({ id, why }) => (
+                    <button
+                      key={id}
+                      className={`gear-cand${why ? ' blocked' : ''}`}
+                      disabled={!!why}
+                      title={why ?? undefined}
+                      onClick={() => act(
+                        () => equipItem(campaign, idx, id, slot),
+                        `${ch.name} ${slot === 'ranged' ? 'keeps' : 'equips'} ${itemName(id)}`,
+                      )}
+                    >
+                      <span>{itemIcon(id)} {itemName(id)}</span>
+                      {why && <small>{why}</small>}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
 
-            <div className="adv-camp-items">
+            {/* The pack, folded away. Four characters' worth of open chip lists
+                is the reason you could not see the party's loadout at a glance
+                — which is the one thing this screen is for. Shut, all four fit
+                on one screen; open, it is the list it always was. */}
+            <button
+              className="pack-toggle"
+              onClick={() => setOpenPack(openPack === idx ? null : idx)}
+            >
+              🎒 Pack · {ch.inventory.reduce((n, st) => n + Math.max(0, st.qty), 0)}
+              <span>{openPack === idx ? '▾' : '▸'}</span>
+            </button>
+            <div className={`adv-camp-items${openPack === idx ? '' : ' hidden'}`}>
               {ch.inventory.filter((s) => s.qty > 0).map((s) => {
                 const sel = picked?.kind === 'pack' && picked.charIdx === idx && picked.itemId === s.itemId;
                 return (
@@ -261,9 +381,17 @@ export function PartyScreen(
               </div>
             )}
 
-            {/* Camp spellcasting: Cure Wounds, Mage Armor, Find Familiar, … —
-                the same out-of-combat casts as the old between-battle store. */}
-            {(() => {
+            {/*
+              Camp spellcasting — in the modal frame only.
+
+              "Spells are here but belong in spells." They do, and worse, this
+              had become a duplicate: the arena's Spells step now offers the
+              same casts WITH the slot cost on the button, so Mage Armor was
+              appearing twice in one mode, priced in one place and free-looking
+              in the other. An adventure has no Spells step to move them to, so
+              there they stay.
+            */}
+            {frame === 'modal' && (() => {
               const spells = storeSpellActions(party[idx]!);
               const canPrepare = cantripLimit(campaign, idx) > 0;
               if (spells.length === 0 && !canPrepare) return null;
@@ -322,16 +450,27 @@ export function PartyScreen(
             })()}
           </div>
         ))}
-      </div>
+    </>
+  );
 
-      {sheetIdx !== null && campaign.characters[sheetIdx] && party[sheetIdx] && (
-        <CharacterSheet
-          c={party[sheetIdx]!}
-          subtitle={`${label(campaign.characters[sheetIdx]!.classId)} · Level ${levelForXp(campaign.xp)}`}
-          skills={characterSkills(campaign, sheetIdx)}
-          onClose={() => setSheetIdx(null)}
-        />
-      )}
+  const sheet = sheetIdx !== null && campaign.characters[sheetIdx] && party[sheetIdx] ? (
+    <CharacterSheet
+      c={party[sheetIdx]!}
+      subtitle={`${label(campaign.characters[sheetIdx]!.classId)} · Level ${levelForXp(campaign.xp)}`}
+      skills={characterSkills(campaign, sheetIdx)}
+      onClose={() => setSheetIdx(null)}
+    />
+  ) : null;
+
+  // Bare, for the arena to place inside its own panel under its own step bar.
+  if (frame === 'panel') return <>{body}{sheet}</>;
+
+  return (
+    <div className="adv-camp-scrim" onClick={onClose}>
+      <div className="adv-camp" onClick={(e) => e.stopPropagation()}>
+        {body}
+      </div>
+      {sheet}
     </div>
   );
 }
