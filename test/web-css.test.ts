@@ -757,7 +757,11 @@ describe('the arena day steps', () => {
   it('says a step is shut rather than hiding it', () => {
     // The stall closes at noon. A step that vanishes half the time reads as a
     // bug; one that says "Shut" teaches the day model.
-    expect(bar).toContain('<small>Shut</small>');
+    // ...and it keeps its own name while saying so. Renaming the step to
+    // "Shut" made a lone verb sit in a row of places, reading as an
+    // instruction to shut something rather than as the stall being closed.
+    expect(bar, 'the stall step stops naming the stall').toContain('<small>Stall</small>');
+    expect(bar, 'nothing says the stall is closed').toContain('step-shut');
     expect(bar).toContain('disabled');
   });
 
@@ -771,5 +775,87 @@ describe('the arena day steps', () => {
       .toMatch(/\{gearTodo > 0 && \(/);
     expect(arena, 'the badge must come from the same helper the review uses')
       .toContain('gearTasks(c).length');
+  });
+});
+
+/**
+ * The arena gate, after a design pass on a real phone screenshot.
+ *
+ * The screen had twelve zones at roughly one weight, and the decision it exists
+ * for — which door — was the most cramped thing on it. Three faults were cheap
+ * to fix and are pinned here; the fourth (the doors' own layout) is its own
+ * change.
+ *
+ *  - THE SAME MONSTERS, TWICE. Each door card drew 16px thumbnails, and the
+ *    selected door's roster drew the same creatures full-size and named, 400px
+ *    further down. Two representations of one fact, neither near the other.
+ *  - THE ROSTER WAS DETACHED FROM THE DOORS. It sat below the buffs and the
+ *    skill checks, so the one row that CHANGES when you pick a different door
+ *    was separated from the doors by two rows that do not.
+ *  - THE WARNING WAS A FOOTNOTE. "You have outgrown this day" means the fight
+ *    is beneath you and so is its reward — and it was grey, small and last,
+ *    tacked onto the end of a sentence about rests.
+ */
+describe('the arena gate', () => {
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+
+  it('draws each monster once', () => {
+    expect(arena, 'the door cards are repeating the roster below them')
+      .not.toContain('gate-foe');
+    expect(arena, 'nothing names the monsters at all now').toContain('arena-foes');
+    // The card still has to say HOW MANY — that is the part it was carrying.
+    expect(arena).toContain('gate-count');
+  });
+
+  it('puts the roster with the doors it belongs to', () => {
+    const gates = arena.indexOf('<div className="gates">');
+    const foes = arena.indexOf('<div className="arena-foes">');
+    const checks = arena.indexOf('lore-row');
+    expect(gates).toBeGreaterThan(-1);
+    expect(foes, 'the roster is back below the buffs and checks').toBeGreaterThan(gates);
+    expect(foes, 'the buffs and checks are between the doors and their roster again')
+      .toBeLessThan(checks);
+  });
+
+  it('gives the outgrown-day warning its own weight', () => {
+    expect(arena, 'the warning is back to being a hint').toContain('arena-warn');
+    // Specifically NOT welded onto the rest sentence, which is where it hid.
+    const hint = arena.indexOf("'The second fight of the day");
+    const warn = arena.indexOf('arena-warn');
+    expect(warn, 'the warning trails the sentence it used to hide in')
+      .toBeLessThan(hint);
+    expect(CSS).toContain('.arena-warn {');
+  });
+
+  it('marks the time of day with something that reads as a time', () => {
+    // 🍞 is a loaf. The sub-line had to explain the mark, which is the mark
+    // failing at its one job.
+    expect(arena, 'the afternoon is a bakery again').not.toContain("'🍞'");
+    expect(arena).toContain("'☀️'");
+  });
+});
+
+/**
+ * A health bar's colour has to mean health.
+ *
+ * The fill was `linear-gradient(90deg, red, green)` across its OWN width, so
+ * every bar was red at the left edge and green at the right — including a hero
+ * at full health, who read as half-wounded. Colour encoded position in the bar,
+ * which is not a fact about anything.
+ */
+describe('the party strip health bars', () => {
+  const adv = readFileSync(fileURLToPath(new URL('../web/src/Adventure.tsx', import.meta.url)), 'utf8');
+
+  it('are a solid band chosen by how hurt you are', () => {
+    expect(CSS, 'the gradient is back — full health reads as wounded')
+      .not.toMatch(/\.adv-party-hpbar > div \{[^}]*linear-gradient/);
+    for (const band of ['hp-ok', 'hp-hurt', 'hp-low']) {
+      expect(CSS, `no rule for ${band}`).toContain(`.adv-party-hpbar > div.${band}`);
+    }
+    expect(adv, 'the band is not chosen from the percentage').toContain('hpBand(pct)');
+  });
+
+  it('still say how much is left with width', () => {
+    expect(adv).toMatch(/width: `\$\{pct\}%`/);
   });
 });

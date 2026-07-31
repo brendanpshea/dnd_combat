@@ -837,7 +837,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   way apart from one word.
                 */}
                 <h2 className={`arena-when ${half}`}>
-                  <span className="when-mark">{half === 'morning' ? '🌅' : '🍞'}</span>
+                  {/* A sun low, then a sun high. The afternoon used to be a
+                      loaf, which reads as bread rather than as a time — the
+                      sub-line had to do the explaining the mark should do. */}
+                  <span className="when-mark">{half === 'morning' ? '🌅' : '☀️'}</span>
                   Day {dayOf(run)} · {half === 'morning' ? 'Morning' : 'Afternoon'}
                   <small>
                     {half === 'morning'
@@ -865,19 +868,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   >
                     <b className="gate-name">{g.name}</b>
                     <span className="gate-blurb">{g.blurb}</span>
-                    <span className="gate-foes">
-                      {foeCounts(g.wave.encounter.members).map(({ id, n }) => (
-                        <span key={id} className="gate-foe" title={MONSTERS[id]?.name ?? id}>
-                          <ArtImage
-                            id={id}
-                            {...(hasArt(id) ? { src: tokenUrl(id) } : {})}
-                            glyphClassName="gate-foe-glyph"
-                            alt=""
-                          />
-                          {n > 1 && <i className="gate-foe-count">×{n}</i>}
-                        </span>
-                      ))}
-                    </span>
+                    {/* No thumbnails here. The same creatures were drawn
+                        twice on one screen — 16px and unidentifiable on the
+                        card, then again full-size and named below it, 400px
+                        apart. The card carries the count; `arena-foes` carries
+                        the faces. */}
                     <span className="gate-count">
                       {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
                     </span>
@@ -917,6 +912,30 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       );
                     })()}
                   </button>
+                ))}
+              </div>
+
+              {/* Who the SELECTED door puts in front of you, named — and
+                  directly beneath the doors it belongs to.
+
+                  It used to sit two rows lower, under the buffs and the skill
+                  checks, so the one thing on the screen that CHANGES when you
+                  pick a different door was separated from the doors by two rows
+                  that do not change at all. The tokens on a card are too small
+                  to name a monster from; these are the same creatures, legible,
+                  and the card no longer repeats them. */}
+              <div className="arena-foes">
+                {foeCounts(wave.encounter.members).map(({ id, n }) => (
+                  <div key={id} className="arena-foe" title={MONSTERS[id]?.name ?? id}>
+                    <ArtImage
+                      id={id}
+                      {...(hasArt(id) ? { src: tokenUrl(id) } : {})}
+                      glyphClassName="arena-foe-glyph"
+                      alt=""
+                    />
+                    {n > 1 && <span className="arena-foe-count">×{n}</span>}
+                    <small>{MONSTERS[id]?.name ?? id}</small>
+                  </div>
                 ))}
               </div>
 
@@ -1032,22 +1051,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 })()}
               </div>
 
-              {/* Who the selected door actually puts in front of you, named —
-                  the tokens on a card are too small to identify a monster from. */}
-              <div className="arena-foes">
-                {foeCounts(wave.encounter.members).map(({ id, n }) => (
-                  <div key={id} className="arena-foe" title={MONSTERS[id]?.name ?? id}>
-                    <ArtImage
-                      id={id}
-                      {...(hasArt(id) ? { src: tokenUrl(id) } : {})}
-                      glyphClassName="arena-foe-glyph"
-                      alt=""
-                    />
-                    {n > 1 && <span className="arena-foe-count">×{n}</span>}
-                    <small>{MONSTERS[id]?.name ?? id}</small>
-                  </div>
-                ))}
-              </div>
 
               <p className="hint">
                 <button
@@ -1067,12 +1070,22 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               {/* The afternoon is the same wave as the morning, fought by a
                   party that has already spent one. Saying so is the only way a
                   player learns to keep something back. */}
+              {/* A day pinned below the party's level pays out for the level
+                  it was pinned at, so the fight is easy AND the reward is
+                  small. That is worth leaving for — and it was the smallest,
+                  greyest, last thing on the screen, tacked to the end of a
+                  sentence about rests. Anything that changes whether a player
+                  should be here has to carry weight. */}
+              {run.dayLevel !== undefined && run.dayLevel < level && (
+                <p className="arena-warn">
+                  ⚠️ <b>You have outgrown this day.</b> It is still set for level{' '}
+                  {run.dayLevel}, so these fights — and their rewards — are pitched below you.
+                </p>
+              )}
               <p className="hint">
                 {half === 'morning'
                   ? 'Two fights today. Whatever you spend this morning is gone until tonight.'
                   : 'The second fight of the day — no rest after this one until the day is done.'}
-                {run.dayLevel !== undefined && run.dayLevel < level &&
-                  ` You have outgrown this day: it is still set for level ${run.dayLevel}.`}
               </p>
 
               {/* The quasit, on the way in. Ordered most-interesting-first:
@@ -1488,7 +1501,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     </button>
                   ) : (
                     <button disabled title="The stalls shut at noon — you buy in the morning">
-                      🛒<small>Shut</small>
+                      {/* Named for the place, not its state: every other step
+                          is a destination, and a lone verb in the row read as
+                          an instruction to shut something. */}
+                      🛒<small>Stall</small>
+                      <span className="step-shut">closed</span>
                     </button>
                   )}
                   {/* Gear carried the day's only silent step: the morning
