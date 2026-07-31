@@ -4089,3 +4089,8 @@ button.category .count {
   color: var(--muted); font: inherit; font-size: 12px; cursor: pointer;
 }
 .pack-toggle:hover { border-color: #453d63; }
+
+/* The pack half of an attack chooser, folded away. Every stowed weapon is a
+   legal attack while the free interaction is unspent, so a fighter carrying
+   four of them met four buttons before the one they wanted. */
+.chooser-box .draw-more { font-size: .85rem; opacity: .8; }

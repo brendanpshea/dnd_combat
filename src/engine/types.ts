@@ -227,6 +227,21 @@ export interface Equipped {
   armor?: Id;             // armor id; undefined = unarmored
   trinket?: Id;           // wondrous item (one accessory slot); undefined = none
   ring?: Id;              // a ring — its own slot, so a ring and a cloak can be worn together
+  /**
+   * A carried weapon the player wants surfaced first. DISPLAY ONLY.
+   *
+   * Nothing in the engine may read this. It is not a hand and it is not a
+   * container: the weapon stays in `inventory`, so `equippedWeapons` and
+   * `stowedWeapons` — the two lists legality is built from — are exactly what
+   * they were, and the AI sees exactly what it saw. Its whole job is to let the
+   * UI put one weapon above the fold instead of listing every javelin in the
+   * pack against every enemy.
+   *
+   * `test/ranged-slot.test.ts` asserts `attackableWeapons` is byte-identical
+   * with this set. If you are here because you want the engine to honour it,
+   * that is a rules change and it needs the balance harness, not a one-liner.
+   */
+  ranged?: Id;
 }
 
 /** Which weapons a class can wield proficiently. `finesseLight` grants the

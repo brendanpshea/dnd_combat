@@ -1165,3 +1165,38 @@ describe('the gear screen', () => {
       .toContain("frame === 'modal'");
   });
 });
+
+/**
+ * The attack chooser: ready weapons first, the pack behind one control.
+ *
+ * Every stowed weapon is a legal attack while the free interaction is unspent,
+ * so tapping one goblin met a fighter with Longsword, Javelin, Silvered Spear
+ * and Silvered Javelin before the button they wanted.
+ *
+ * Folded, not filtered. Removing the pack weapons would be a rules change for
+ * the human — the AI would keep options the player could not reach — so they
+ * are one tap away rather than absent.
+ */
+describe('the attack chooser', () => {
+  const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+  const groups = readFileSync(fileURLToPath(new URL('../web/src/actionGroups.ts', import.meta.url)), 'utf8');
+
+  it('folds pack weapons instead of dropping them', () => {
+    expect(app, 'the chooser is flat again').toContain('o.stowed || showStowed');
+    expect(app, 'no way to reach a pack weapon at all — that is a rules change')
+      .toContain('setShowStowed(true)');
+  });
+
+  it('reopens folded, not left open from last time', () => {
+    const at = app.indexOf('setChooser({ target: occ');
+    expect(app.slice(Math.max(0, at - 200), at), 'the fold sticks open between targets')
+      .toContain('setShowStowed(false)');
+  });
+
+  it('counts the ranged marker as ready', () => {
+    // Which is the entire reason the marker exists.
+    expect(groups).toContain('actor?.equipped.ranged');
+    expect(groups, 'unarmed must not be treated as a draw from the pack')
+      .toContain("'unarmed-strike'");
+  });
+});

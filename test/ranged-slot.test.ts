@@ -23,6 +23,7 @@ import {
   EQUIP_SLOTS, type CampaignState,
 } from '../src/campaign/campaign.js';
 import { attackableWeapons, equippedWeapons, stowedWeapons } from '../src/engine/rules/equipment.js';
+import { groupActions } from '../web/src/actionGroups.js';
 
 function fighterWithJavelin(): { c: CampaignState; f: number } {
   const c = newCampaign(3);
@@ -93,5 +94,46 @@ describe('marking a weapon ready at range', () => {
     // the meaning and an empty slot reads as an opportunity.
     expect(EQUIP_SLOTS).toContain('ranged');
     expect(EQUIP_SLOTS).toHaveLength(6);
+  });
+});
+
+/**
+ * …and what the marker is FOR: the attack chooser.
+ *
+ * `attackableWeapons` includes every stowed weapon while the free interaction
+ * is unspent, so tapping one goblin offered a fighter Longsword, Javelin,
+ * Silvered Spear and Silvered Javelin — reported as "combat screen becomes
+ * unwieldy with characters who have lots of weapons in pack".
+ *
+ * The options are TAGGED, not filtered. Dropping the pack weapons here would be
+ * a rules change for the human, because the AI would keep options the player
+ * could not reach; the UI folds them behind one control instead.
+ */
+describe('what the chooser calls ready', () => {
+  it('tags pack weapons apart from the ones in hand', () => {
+    const { c, f } = fighterWithJavelin();
+    const party = buildCampaignParty(c);
+    const me = party[f]!;
+    const state = { combatants: Object.fromEntries(party.map((p) => [p.id, p])) } as never;
+    const opts = [
+      { kind: 'attack' as const, weaponId: me.equipped.mainHand!, targetId: 'x' },
+      { kind: 'attack' as const, weaponId: 'javelin' as const, targetId: 'x' },
+    ];
+    const g = groupActions(state, me.id, opts);
+    const list = g.perTarget.get('x' as never) ?? [];
+    expect(list, 'both attacks should be offered').toHaveLength(2);
+    expect(list[0]!.stowed, 'the weapon in hand is not a draw').toBeFalsy();
+    expect(list[1]!.stowed, 'a pack weapon should be marked as a draw').toBe(true);
+  });
+
+  it('counts a marked ranged weapon as ready', () => {
+    const { c, f } = fighterWithJavelin();
+    equipItem(c, f, 'javelin', 'ranged');
+    const party = buildCampaignParty(c);
+    const me = party[f]!;
+    const state = { combatants: Object.fromEntries(party.map((p) => [p.id, p])) } as never;
+    const g = groupActions(state, me.id, [{ kind: 'attack', weaponId: 'javelin', targetId: 'x' }]);
+    expect(g.perTarget.get('x' as never)![0]!.stowed,
+      'the whole point of the marker: this one is ready, not buried').toBeFalsy();
   });
 });
