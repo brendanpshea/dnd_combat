@@ -60,7 +60,21 @@ ROSTER = {
     "tiefling-knight", "gnome-warden", "halfling-warrior", "halfling-priest",
 }
 
-SIZE_CEILINGS = {
+# The ink area each size tier is normalised TO — not merely capped at.
+#
+# This was a ceiling, applied downward only, so any asset already under it
+# passed through at whatever framing the generation session happened to give.
+# The result was two populations of hero art: nine drawn tall and narrow
+# (ink 0.49x0.91) and the rest drawn wide (0.84x0.69), which after tokenScale's
+# longest-axis correction rendered as 2.21x variation in width — the wide ones
+# both fatter AND shorter than the narrow ones. Reported as "some medium tokens
+# are fatter than others", correctly guessed as being the art rather than the
+# renderer.
+#
+# A target normalises both directions, so a tier's assets occupy the same area
+# whatever the pose. Sources are 512px against a 256px output, so a modest
+# scale-up costs nothing; UPSCALE_MAX stops a mis-keyed speck being blown up.
+SIZE_TARGETS = {
     "tiny":       {"token": 0.38, "portrait": 0.45},
     "small":      {"token": 0.45, "portrait": 0.52},
     "medium":     {"token": 0.55, "portrait": 0.62},
@@ -69,7 +83,11 @@ SIZE_CEILINGS = {
     "gargantuan": {"token": 0.78, "portrait": 0.82},
 }
 
-DEFAULT_CEILING = {"token": 0.55, "portrait": 0.62}
+DEFAULT_TARGET = {"token": 0.55, "portrait": 0.62}
+
+# Never enlarge a subject more than this: past it, the thing being scaled is
+# almost certainly a keying leftover rather than a small figure.
+UPSCALE_MAX = 1.6
 
 # Nothing may touch the canvas edge — 5% padding on all sides
 MIN_PAD = 0.05
@@ -355,18 +373,22 @@ def normalize_framing(im, kind, cid):
     area = (bw / w) * (bh / h)
     
     size = MONSTER_SIZES.get(cid, "medium")
-    ceiling = SIZE_CEILINGS.get(size, DEFAULT_CEILING)[kind]
-    
-    scale = 1.0
-    if area > ceiling:
-        scale = (ceiling / area) ** 0.5
-    
-    # Never let any asset touch or get closer than MIN_PAD to the canvas edge
+    target = SIZE_TARGETS.get(size, DEFAULT_TARGET)[kind]
+
+    # BOTH DIRECTIONS. Scaling down only left everything under the ceiling at
+    # whatever framing it arrived with, which is where the two populations of
+    # hero art came from.
+    scale = (target / area) ** 0.5 if area > 0 else 1.0
+    scale = min(scale, UPSCALE_MAX)
+
+    # Never let any asset touch or get closer than MIN_PAD to the canvas edge.
+    # A wide pose hits this before it reaches the area target, which is correct:
+    # the alternative is cropping the drawn bow off the ranger.
     cap = min((1 - 2 * MIN_PAD) * w / bw, (1 - 2 * MIN_PAD) * h / bh)
     scale = min(scale, cap)
-    
-    # If untouched and no edge clip, return original
-    if scale >= 0.99 and x0 >= w * MIN_PAD and y0 >= h * MIN_PAD and (w - x1) >= w * MIN_PAD and (h - y1) >= h * MIN_PAD:
+
+    # Already there, and clear of the edge: leave the file byte-identical.
+    if 0.99 <= scale <= 1.01 and x0 >= w * MIN_PAD and y0 >= h * MIN_PAD and (w - x1) >= w * MIN_PAD and (h - y1) >= h * MIN_PAD:
         return im, 1.0
 
     target_w = max(1, round(bw * scale))
