@@ -262,3 +262,53 @@ describe('the art pipeline normalises framing', () => {
       .not.toContain('SIZE_CEILINGS');
   });
 });
+
+/**
+ * Every token stands on the same line.
+ *
+ * Reported as two things — "some heroes float above the floor while others are
+ * anchored" and "the floating ones are also the fat ones" — which is one bug
+ * seen twice. `normalize_framing` CENTRED tokens vertically, and a square
+ * canvas gives a short figure equal space above and below. Short means wide
+ * once area is normalised, so the wide-posed heroes floated above the cell
+ * floor by exactly the amount they were fat:
+ *
+ *   gnome-warden  ink 0.840 wide -> floated 0.156
+ *   gnome-bard    ink 0.422 wide -> floated 0.039
+ *
+ * Scaling the artist's original gap was the first attempt and only halved it
+ * (wide-hero mean 0.135 -> 0.067), because the source gaps differ to begin
+ * with. There is no floating to preserve either: flight is the renderer's job
+ * and `.token.flying` already lifts and bobs its figure in CSS. So the art's
+ * contract is "feet at the bottom", and hovering is applied from there.
+ *
+ * Measured after: every one of 169 tokens sits at 0.039-0.047, the spread being
+ * rounding on a 256px canvas.
+ */
+describe('tokens share a baseline', () => {
+  const py = readFileSync(fileURLToPath(new URL('../art/process.py', import.meta.url)), 'utf8');
+
+  it('anchors a token to the bottom rather than centring it', () => {
+    expect(py, 'tokens are centred again — short figures will float')
+      .toMatch(/elif kind == "token":[\s\S]{0,900}?pos_y = h - target_h - round\(h \* MIN_PAD\)/);
+  });
+
+  it('does not let the no-op shortcut skip the baseline', () => {
+    // Without this the early return skipped the re-paste for anything already
+    // at target area, so 169 tokens kept whatever gap the source had (0.039 to
+    // 0.141) while everything rescaled was grounded.
+    expect(py, 'the early return no longer checks the baseline').toContain('grounded');
+    expect(py).toMatch(/grounded = kind != "token"/);
+  });
+
+  it('leaves flight to the renderer, which already does it', () => {
+    const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+    // The BINDING, not just the selector. Deleting the transform-origin line
+    // left `.token.flying .art` present in the animation rule below it and this
+    // assertion green — while a plant that removed the lift itself would not
+    // have been caught.
+    expect(css, 'nothing lifts a flyer, so grounding the art would strand them')
+      .toMatch(/\.token\.flying \.art,\s*\n\s*\.token\.flying \.sil \{ animation: hover-bob/);
+    expect(css, 'the lift has no keyframes to run').toContain('@keyframes hover-bob');
+  });
+});
