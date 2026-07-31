@@ -36,11 +36,18 @@ OUT = os.path.join(HERE, "..", "web", "src", "token-fill.ts")
 
 
 def fills() -> dict[str, float]:
-    """Per token id, the fraction of the canvas its longest axis spans.
+    """Per token id, the fraction of the canvas its ink AREA covers.
 
-    The *constraining* axis, not the height: a wide creature (an elephant, a
-    worg) is held by its width when the token is fitted to a square cell, and
-    measuring height alone would report every four-legged animal as tiny.
+    This measured the longest axis, which quietly became the wrong quantity.
+    `process.py` normalises framing to an area target per size tier, so pinning
+    the longest axis at render time re-introduced exactly what the pipeline had
+    just removed: two Medium creatures with the same area but different aspect
+    ratios got different corrections, and the wide one drew visibly fatter.
+
+    Measured on the corrected art, holding the longest axis equal needs a +/-29%
+    correction — against a +/-12% clamp that exists to keep this a correction
+    rather than a second scale system. Area needs about half that, because it is
+    the quantity the pipeline already controls.
     """
     out: dict[str, float] = {}
     for path in sorted(glob.glob(os.path.join(ART, "token-*.webp"))):
@@ -50,14 +57,15 @@ def fills() -> dict[str, float]:
             if not box:
                 continue
             w, h = im.size
-            out[tid] = round(max((box[3] - box[1]) / h, (box[2] - box[0]) / w), 3)
+            out[tid] = round(((box[2] - box[0]) / w) * ((box[3] - box[1]) / h), 4)
     return out
 
 
 def render(table: dict[str, float]) -> str:
     lines = [
         "/**",
-        " * How much of its canvas each token's art fills, measured from the art.",
+        " * What fraction of its canvas each token's ink AREA covers, measured",
+        " * from the art itself.",
         " *",
         " * DERIVED — do not edit. Regenerate with `python art/token_fill.py`.",
         " * See that script for why framing has to be corrected for at all.",

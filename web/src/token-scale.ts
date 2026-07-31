@@ -10,21 +10,29 @@ import { canonicalScale } from '../../src/data/token-size.js';
 import { TOKEN_FILL } from './token-fill.js';
 
 /**
- * The framing every token is corrected TOWARD, and how far a correction may go.
+ * The ink AREA every token is corrected toward, and how far a correction may go.
  *
- * A token's ink fills somewhere between 0.69 and 0.92 of its canvas depending on
- * which generation session drew it, and nothing downstream knew — so two
- * creatures of the same declared size rendered at visibly different sizes. The
- * four mephits are the clearest case: one declared size, one hand-tuned scale,
- * and fills of 0.78, 0.79, 0.88 and 0.90.
+ * AREA, not the longest axis, and that change is the point.
  *
- * The target is the measured median across the roster, so most art is already
- * at it and does not move. The clamp is what keeps this a correction rather than
- * a second scale system: art within ~12% of the house framing is left exactly
- * alone, and nothing is ever pushed further than that.
+ * Pinning the longest axis was the original rule and it quietly became the
+ * wrong quantity, because `process.py` normalises framing to an area target per
+ * size tier. Correcting a different quantity at render time re-introduced
+ * exactly what the pipeline had removed: two Medium creatures with equal area
+ * but different aspect ratios got different corrections, and the wide one drew
+ * visibly fatter. Reported twice — "some medium tokens are fatter than others",
+ * then "later ones look fat" — and measured at 2.56x area spread across the
+ * medium roster.
+ *
+ * It is also the only one that fits under a sane clamp. On the corrected art,
+ * holding the longest axis equal needs +/-29%; area needs 15%, because it is the
+ * quantity the pipeline already controls.
+ *
+ * The target is the measured median across the roster, so most art is already at
+ * it and does not move. The clamp keeps this a correction rather than a second
+ * scale system.
  */
-const FILL_TARGET = 0.87;
-const FILL_CLAMP = 0.12;
+const FILL_TARGET = 0.579;
+const FILL_CLAMP = 0.15;
 
 export function tokenScale(id: string, size?: CreatureSize): number {
   // SIZE DECIDES HOW BIG A CREATURE DRAWS. Nothing else does.
@@ -44,12 +52,13 @@ export function tokenScale(id: string, size?: CreatureSize): number {
   // now, which makes the mistake impossible rather than merely documented.
   //
   // The size is really a statement about APPARENT size, and apparent size is
-  // `scale x fill`. Dividing by the token's own fill is what makes the size mean
-  // what it says: every Medium creature now occupies the same fraction of its
+  // `scale x area`. Dividing by the token's own ink area is what makes the size
+  // mean what it says: every Medium creature now covers the same fraction of its
   // cell, whichever session drew it and whichever shape it is.
+  // The square root because `scale` is linear and the quantity is an area.
   const fill = TOKEN_FILL[id];
   const correction = fill
-    ? Math.min(1 + FILL_CLAMP, Math.max(1 - FILL_CLAMP, FILL_TARGET / fill))
+    ? Math.min(1 + FILL_CLAMP, Math.max(1 - FILL_CLAMP, Math.sqrt(FILL_TARGET / fill)))
     : 1;
   return canonicalScale(size) * correction;
 }

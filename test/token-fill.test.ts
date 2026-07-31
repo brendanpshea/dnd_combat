@@ -27,8 +27,19 @@ import type { CreatureSize } from '../src/engine/types.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-/** What a player actually sees: the CSS scale times the ink in the frame. */
-const apparent = (id: string, size: CreatureSize) => tokenScale(id, size) * (TOKEN_FILL[id] ?? 1);
+/**
+ * What a player actually sees, as an AREA: the CSS scale squared times the ink
+ * area in the frame.
+ *
+ * This used to be `scale x fill` when `fill` was the longest axis — a linear
+ * measure. `TOKEN_FILL` is now an ink AREA, so the same expression mixes units
+ * and reads as neither one thing nor the other. Scale is linear, so an area
+ * scales with its square.
+ */
+const apparent = (id: string, size: CreatureSize) => {
+  const s = tokenScale(id, size);
+  return s * s * (TOKEN_FILL[id] ?? 1);
+};
 
 const byBand = () => {
   const out = new Map<CreatureSize, Array<{ id: string; seen: number }>>();
@@ -65,7 +76,9 @@ describe('the correction is applied where it does something', () => {
       .filter(([id]) => MONSTERS[id])
       .sort((a, b) => b[1] - a[1])[0]!;
     const [id, fill] = off;
-    expect(fill, 'no token is far enough off the house framing to test with').toBeGreaterThan(0.89);
+    // The AREA target, not the old longest-axis 0.87 — the widest-framed
+    // monster still has to be far enough off it for the correction to bite.
+    expect(fill, 'no token is far enough off the house framing to test with').toBeGreaterThan(0.70);
     const size = MONSTERS[id]!.size;
     expect(
       tokenScale(id, size),
@@ -75,7 +88,7 @@ describe('the correction is applied where it does something', () => {
 
   it('leaves well-framed art alone', () => {
     // A correction that moved everything would be a second scale system.
-    const near = Object.entries(TOKEN_FILL).find(([id, f]) => MONSTERS[id] && Math.abs(f - 0.87) < 0.005);
+    const near = Object.entries(TOKEN_FILL).find(([id, f]) => MONSTERS[id] && Math.abs(f - 0.579) < 0.006);
     expect(near, 'nothing is at the house framing').toBeDefined();
     const [id] = near!;
     const size = MONSTERS[id]!.size;
@@ -200,7 +213,7 @@ describe('heroes and monsters of the same size', () => {
     // The specific regression: a per-id table creeping back in. Two Medium
     // creatures with equally well-framed art must land on the same number, so
     // any id-keyed multiplier shows up here.
-    const wellFramed = (id: string) => Math.abs((TOKEN_FILL[id] ?? 0) - 0.87) < 0.02;
+    const wellFramed = (id: string) => Math.abs((TOKEN_FILL[id] ?? 0) - 0.579) < 0.02;
     const ids = Object.values(MONSTERS)
       .filter((m) => m.size === 'medium' && wellFramed(m.id))
       .map((m) => m.id);
@@ -349,5 +362,45 @@ describe('edge remnants', () => {
     expect(v, 'a zero margin is the old behaviour under a new name').toBeGreaterThan(0.005);
     // ...and 3% of 512 is 15px, against the rune at 75.
     expect(v, 'wide enough to start eating detached art').toBeLessThanOrEqual(0.05);
+  });
+});
+
+/**
+ * Every monster is framed for the size it actually is.
+ *
+ * `load_monster_sizes` used one regex with `[^}]*?` between the id and `size:`,
+ * and that stops at the first closing brace — so any monster with a nested
+ * object ahead of its size was invisible. It missed 80 of 146, and nothing
+ * failed: the `.get(cid, "medium")` default quietly framed a mammoth, a hydra,
+ * a tyrannosaurus and an ogre to the MEDIUM target, so each was drawn small in
+ * its own file and scaled back up by CSS, throwing away the resolution the
+ * 512px source had to give. The newer monsters carry the richer stat blocks,
+ * which is exactly why they were the ones reported as looking wrong.
+ *
+ * Found by planting the old regex back and watching the whole suite stay green.
+ */
+describe('framing follows the declared size', () => {
+  const py = readFileSync(fileURLToPath(new URL('../art/process.py', import.meta.url)), 'utf8');
+
+  it('scans each entry rather than stopping at the first brace', () => {
+    expect(py, 'the brace-truncating regex is back — 80 monsters go silently Medium')
+      .not.toMatch(/\[\^\}\]\*\?size:/);
+    expect(py, 'no per-entry scan').toMatch(/starts = \[\(m\.start\(\), m\.group\(1\)\)/);
+  });
+
+  it('shows up in the art: a Huge creature is framed larger than a Medium one', () => {
+    // Behavioural, on the shipped table. If the parser regresses, these fall
+    // back to the Medium target and the gap closes.
+    const med = ['orc', 'skeleton', 'zombie'].map((m) => TOKEN_FILL[m]).filter((v): v is number => v !== undefined);
+    const huge = ['tyrannosaurus', 'mammoth'].map((m) => TOKEN_FILL[m]).filter((v): v is number => v !== undefined);
+    expect(med.length, 'no medium art to compare').toBeGreaterThan(1);
+    expect(huge.length, 'no huge art to compare').toBeGreaterThan(1);
+    expect(Math.max(...huge), 'a Huge creature is framed no bigger than a Medium one')
+      .toBeGreaterThan(Math.max(...med) * 1.15);
+  });
+
+  it('and a Small one is framed smaller', () => {
+    expect(TOKEN_FILL['kobold']!, 'kobold is framed as if it were Medium')
+      .toBeLessThan(TOKEN_FILL['orc']! * 0.92);
   });
 });
