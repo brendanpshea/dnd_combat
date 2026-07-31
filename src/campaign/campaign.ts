@@ -126,7 +126,7 @@ export interface PartyCharacter {
    *  Sickness). Absent = none scribed. */
   scribedSpells?: Id[];
   inventory: ItemStack[];
-  equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
+  equipped: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id; ranged?: Id };
   /** Selected build options per choice-point id (Fighting Style, …). */
   choices?: Record<Id, Id>;
   /** Which class kit — stat priority + starting gear + masteries. Absent = the
@@ -2828,7 +2828,25 @@ export function sellFromStash(c: CampaignState, itemId: Id): boolean {
   return true;
 }
 
-export type EquipSlot = 'mainHand' | 'offHand' | 'armor' | 'trinket' | 'ring';
+export type EquipSlot = 'mainHand' | 'offHand' | 'armor' | 'trinket' | 'ring' | 'ranged';
+
+/**
+ * `ranged` IS A MARKER, NOT A CONTAINER — and that distinction is the whole
+ * reason this is safe.
+ *
+ * Every other slot MOVES the item: `equipItem` decrements the stack and
+ * `equipped[slot]` holds it. Doing that for `ranged` would be a rules change of
+ * the worst kind, because `equippedWeapons` reads only the two hands: a javelin
+ * moved into `ranged` would be in neither `equippedWeapons` NOR
+ * `stowedWeapons`, and would quietly stop being attackable at all.
+ *
+ * So `ranged` records WHICH carried weapon the player wants surfaced first, and
+ * the weapon stays in the pack. Nothing in the engine reads it — legality is
+ * exactly what it was, which is why the AI, the sims and the win rates are
+ * untouched. `test/ranged-slot.test.ts` pins both halves: the item stays in
+ * inventory, and `attackableWeapons` is byte-identical with the marker set.
+ */
+export const MARKER_SLOTS: readonly EquipSlot[] = ['ranged'];
 
 /**
  * Every slot, in the order a character sheet shows them.
@@ -2837,7 +2855,7 @@ export type EquipSlot = 'mainHand' | 'offHand' | 'armor' | 'trinket' | 'ring';
  * a fifth slot meant finding all four. One of them is the shop's equip picker,
  * where a missing slot does not look broken — the item simply cannot be worn.
  */
-export const EQUIP_SLOTS: EquipSlot[] = ['mainHand', 'offHand', 'armor', 'trinket', 'ring'];
+export const EQUIP_SLOTS: EquipSlot[] = ['armor', 'mainHand', 'offHand', 'ranged', 'trinket', 'ring'];
 
 /** Why an equip is disallowed, or undefined if fine. */
 export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot: EquipSlot): string | undefined {
@@ -2861,6 +2879,15 @@ export function equipBlocked(c: CampaignState, charIdx: number, itemId: Id, slot
     const a = ARMOR[itemId];
     if (!a) return 'not armor';
     if (!profs.includes(a.category)) return `${CLASSES[ch.classId]!.name}s can't wear ${a.category} armor`;
+    return undefined;
+  }
+  if (slot === 'ranged') {
+    // Anything you could actually attack at range with — which the data already
+    // marks: `range` is present on ranged AND thrown weapons, absent on pure
+    // melee. So a javelin qualifies and a longsword does not.
+    const rw = WEAPONS[itemId];
+    if (!rw) return 'not a weapon';
+    if (!rw.range) return `${rw.name} has no range`;
     return undefined;
   }
   if (isShield(itemId)) {
@@ -2917,6 +2944,9 @@ export function itemFitFor(
 export function equipItem(c: CampaignState, charIdx: number, itemId: Id, slot: EquipSlot): boolean {
   if (equipBlocked(c, charIdx, itemId, slot) !== undefined) return false;
   const ch = c.characters[charIdx]!;
+  // A marker slot points at something in the pack and leaves it there. Taking
+  // it out of inventory is what would change the rules — see MARKER_SLOTS.
+  if (MARKER_SLOTS.includes(slot)) { ch.equipped[slot] = itemId; return true; }
   const stack = ch.inventory.find((s) => s.itemId === itemId && s.qty > 0)!;
   stack.qty -= 1;
   if (stack.qty === 0) ch.inventory = ch.inventory.filter((s) => s !== stack);
@@ -2945,6 +2975,8 @@ export function equipItem(c: CampaignState, charIdx: number, itemId: Id, slot: E
 export function unequipSlot(c: CampaignState, charIdx: number, slot: EquipSlot): boolean {
   const ch = c.characters[charIdx];
   if (!ch || ch.equipped[slot] === undefined) return false;
+  // Nothing to hand back for a marker: it never left the pack.
+  if (MARKER_SLOTS.includes(slot)) { delete ch.equipped[slot]; return true; }
   addItem(ch.inventory, ch.equipped[slot]!);
   delete ch.equipped[slot];
   return true;

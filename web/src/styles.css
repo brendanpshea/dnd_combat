@@ -4044,3 +4044,48 @@ button.category .count {
    rather than a choice — no checkbox to untick and no count against the base
    spellbook's size. It used to appear nowhere at all. */
 .prepare-option.scribed { cursor: default; background: #2f2a44; }
+
+/* ---- the equipment strip: six slots, always, for every character --------- */
+/* This was a flex row of the FILLED slots only, drawn as chips near-identical
+   to the pack chips below — so worn Splint and packed Adamantine Scale Mail
+   were the same object on screen. Fixed positions make it scannable without
+   reading: slot four is always ranged, so an empty one shows at a glance. And
+   empty is the useful state — it is what prompts the javelin to be marked. */
+.gear-slots { display: flex; gap: 6px; width: 100%; }
+.gear-slot {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 2px; border-radius: 10px;
+  border: 1px dashed #4a4270; background: transparent;
+  color: inherit; font: inherit; cursor: pointer; min-height: 52px;
+}
+.gear-slot .gear-slot-icon { font-size: 1.15rem; line-height: 1; opacity: .35; }
+.gear-slot small { font-size: .58rem; color: var(--muted); letter-spacing: .02em; }
+/* Filled reads as solid, empty as an outline waiting for something. */
+.gear-slot.filled { border-style: solid; border-color: #453d63; background: var(--panel); }
+.gear-slot.filled .gear-slot-icon { opacity: 1; }
+.gear-slot.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+
+.gear-picker {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px; border-radius: 10px; background: var(--panel2);
+}
+.gear-picker > b { font-size: 12px; }
+.gear-cand {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; border-radius: 8px; min-height: 40px;
+  border: 1px solid #453d63; background: var(--panel);
+  color: inherit; font: inherit; text-align: left; cursor: pointer; font-size: 13px;
+}
+/* Kept and explained rather than hidden: a player who cannot see the shield at
+   all just wonders where it went. `equipBlocked` already writes the sentence. */
+.gear-cand.blocked { opacity: .55; cursor: not-allowed; }
+.gear-cand small { color: var(--muted); font-size: 10.5px; text-align: right; }
+
+.pack-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 6px 10px; border-radius: 8px; min-height: 36px;
+  border: 1px solid transparent; background: transparent;
+  color: var(--muted); font: inherit; font-size: 12px; cursor: pointer;
+}
+.pack-toggle:hover { border-color: #453d63; }

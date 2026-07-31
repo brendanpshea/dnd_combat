@@ -177,7 +177,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [c, setC] = useState<CampaignState>(() => saved?.campaign ?? newCampaign(Date.now() & 0xffff));
   const [run, setRun] = useState<ArenaRunState>(() => saved?.run ?? newArenaRun(Date.now() & 0xffff));
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
-  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare'>('none');
+  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear'>('none');
   /**
    * The party screen — packs, worn gear, camp buffs, camp spellcasting.
    *
@@ -186,13 +186,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * adventures use, with `camp` null — the arena's rests are lunch and the
    * night, which happen to you rather than being chosen.
    */
-  const [showParty, setShowParty] = useState(false);
   // The morning review: after a night's rest, walk the player through anything
   // sitting unused. 'gear' opens the party screen, 'spells' the spellbook, and
   // closing one advances to the next. Null the rest of the time — a review that
   // opens every morning regardless is a screen you learn to close unread.
-  const [review, setReview] = useState<'gear' | 'spells' | null>(null);
-  const [reviewNote, setReviewNote] = useState<string | null>(null);
+  // Only the spells leg now: the gear leg selects the Gear step instead of
+  // opening a modal, so there is nothing left to walk the player out of.
+  const [review, setReview] = useState<'spells' | null>(null);
   // Casters already offered the spellbook this morning. Without it, closing the
   // tray without preparing anything would immediately reopen it on the same
   // hero: a modal you cannot get out of, built out of a helpful reminder.
@@ -225,7 +225,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   useEffect(() => {
     if (review !== 'spells' || prepareFor !== null) return;
     const next = spellTasks(c).map((t) => t.who).find((i) => !offeredSpells.includes(i));
-    if (next === undefined) { setReview(null); setReviewNote(null); setOfferedSpells([]); return; }
+    if (next === undefined) { setReview(null); setOfferedSpells([]); return; }
     setOfferedSpells((o) => [...o, next]);
     setPrepareFor(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -539,7 +539,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
           // lunch keeps slots and charges, so nothing about the loadout has
           // changed by then.
           const next = morningReview(phase.rested, c);
-          if (next) { setReview(next.open); setReviewNote(next.note); }
+          if (next) {
+            // Select the step that has the work rather than opening a modal
+            // over everything. The gear leg used to be a full-screen scrim you
+            // closed to be handed to the next one; the step bar carries badges
+            // now, so pointing at the first step and posting the note is
+            // enough — and it leaves the player somewhere they can navigate.
+            setNotice(next.note);
+            if (next.open === 'gear') setPanel('gear');
+            else setReview('spells');
+          }
           setPhase({ p: 'brief' });
         }}
       />
@@ -1116,6 +1125,24 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
               {notice && <div className="notice">{notice}</div>}
 
+              {panel === 'gear' && (
+                <div className="arena-shop">
+                  {/* The gear screen as a STEP, not a modal over everything.
+                      It used to open as a full-screen scrim whose only exit was
+                      an ✕ — no step bar, no party strip, nothing like the other
+                      tabs. Same component, framed as a panel; the adventure
+                      keeps the modal, which is right there because it has no
+                      step bar to belong to. */}
+                  <PartyScreen
+                    campaign={c}
+                    camp={null}
+                    frame="panel"
+                    onRest={() => { /* the arena rests on its own clock */ }}
+                    onChange={() => { persist(c, run); refresh(); }}
+                    onClose={() => setPanel('none')}
+                  />
+                </div>
+              )}
               {panel === 'prepare' && (
                 <div className="arena-shop">
                   {/*
@@ -1591,7 +1618,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       Mace +1 sat in a pack with nothing on screen saying so.
                       Same badge as the spellbook, from the same helper the
                       review itself uses. */}
-                  <button onClick={() => { setShowParty(true); setNotice(null); }}>
+                  <button
+                    className={panel === 'gear' ? 'on' : ''}
+                    onClick={() => { setPanel('gear'); setNotice(null); }}
+                  >
                     🎒<small>Gear</small>
                     {gearTodo > 0 && (
                       <span className="prep-badge" title="Better gear is sitting in a pack">
@@ -1630,26 +1660,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
             }
           : {})}
       />
-      {(showParty || review === 'gear') && (
-        <PartyScreen
-          campaign={c}
-          camp={null}
-          {...(review === 'gear' && reviewNote ? { notice: reviewNote } : {})}
-          onRest={() => { /* the arena rests on its own clock */ }}
-          onChange={() => { persist(c, run); refresh(); }}
-          onClose={() => {
-            setShowParty(false);
-            // Hand straight on to the spellbook if anyone still has room, so
-            // the two halves of "get ready" are one pass rather than two
-            // things to remember.
-            if (review === 'gear') {
-              const casters = spellTasks(c);
-              setReview(casters.length > 0 ? 'spells' : null);
-              if (casters.length === 0) setReviewNote(null);
-            }
-          }}
-        />
-      )}
       {spellPanel}
     </div>
   );
