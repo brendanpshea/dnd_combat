@@ -22,6 +22,21 @@ export interface TargetOption {
    *  tapped enemy — but tapping this option *starts* the accumulate-taps flow
    *  with that enemy pre-picked, rather than firing `action` immediately. */
   multi?: MultiTargetSpec;
+  /**
+   * This attack uses a weapon that is in the pack rather than ready.
+   *
+   * `attackableWeapons` includes every stowed weapon while the free
+   * interaction is unspent — which is rules-correct and produced a chooser
+   * listing Longsword, Javelin, Silvered Spear and Silvered Javelin every time
+   * you tapped a goblin. Reported as "combat screen becomes unwieldy with
+   * characters who have lots of weapons in pack".
+   *
+   * Nothing is removed — dropping them WOULD be a rules change for the human,
+   * since the AI would keep options the player could not reach. They fold
+   * behind one control instead. Ready means in hand or marked in the `ranged`
+   * slot, which is what that marker is for.
+   */
+  stowed?: boolean;
 }
 
 /**
@@ -202,11 +217,20 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     if (verb) bonusVerbs.set(verb, a);
   }
 
-  const pushTarget = (id: Id, label: string, action: Action, icon?: string) => {
+  const pushTarget = (id: Id, label: string, action: Action, icon?: string, stowed?: boolean) => {
     const list = perTarget.get(id) ?? [];
-    list.push({ label, action, ...(icon ? { icon } : {}) });
+    list.push({ label, action, ...(icon ? { icon } : {}), ...(stowed ? { stowed: true } : {}) });
     perTarget.set(id, list);
   };
+
+  /** In hand, or marked ready at range. Everything else is a draw from the pack. */
+  const actor = state.combatants[actorId];
+  const ready = new Set<Id>([
+    ...(actor?.equipped.mainHand ? [actor.equipped.mainHand] : []),
+    ...(actor?.equipped.offHand && actor.equipped.offHand !== 'shield' ? [actor.equipped.offHand] : []),
+    ...(actor?.equipped.ranged ? [actor.equipped.ranged] : []),
+    'unarmed-strike',
+  ]);
 
   for (const a of actions) {
     switch (a.kind) {
@@ -214,7 +238,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         moves.set(posKey(a.to), a);
         break;
       case 'attack':
-        pushTarget(a.targetId, describeShort(a), a, weaponIcon(a.weaponId));
+        pushTarget(a.targetId, describeShort(a), a, weaponIcon(a.weaponId), !ready.has(a.weaponId));
         break;
       case 'shakeAwake':
         pushTarget(a.targetId, 'Shake awake', a, '🫱');

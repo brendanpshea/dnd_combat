@@ -127,7 +127,7 @@ export interface BuildOptions {
   speciesId?: Id;
   /** Campaign overrides: persisted gear instead of the class defaults. */
   inventory?: Array<{ itemId: Id; qty: number }>;
-  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id };
+  equipped?: { mainHand: Id; offHand?: Id | 'shield'; armor?: Id; trinket?: Id; ring?: Id; ranged?: Id };
   /** Selected option per choice-point id (Fighting Style, …). Missing → default. */
   choices?: Record<Id, Id>;
   /**

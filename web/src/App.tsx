@@ -632,6 +632,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
    */
   const [armed, setArmed] = useState<MetamagicId | null>(null);
   const [chooser, setChooser] = useState<{ target: Combatant; options: TargetOption[] } | null>(null);
+  /** Pack weapons revealed for this one chooser — reset every time it opens. */
+  const [showStowed, setShowStowed] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [floats, setFloats] = useState<FloatEffect[]>([]);
   const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
@@ -995,6 +997,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     if (occ && grouped.perTarget.has(occ.id)) {
       // Always confirm via the chooser — even a single option — so the player
       // sees what they're about to do and can back out.
+      setShowStowed(false);
       setChooser({ target: occ, options: grouped.perTarget.get(occ.id)! });
       return;
     }
@@ -1476,7 +1479,21 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               <Portrait id={chooser.target.portraitId ?? chooser.target.classId} team={chooser.target.team} big />
               <h3>{chooser.target.name}</h3>
             </div>
-            {chooser.options.map((o, i) => (
+            {/*
+              READY FIRST, THE PACK BEHIND A CONTROL.
+
+              `attackableWeapons` includes every stowed weapon while the free
+              interaction is unspent — rules-correct, and it produced a chooser
+              listing Longsword, Javelin, Silvered Spear and Silvered Javelin
+              every time you tapped a goblin.
+
+              Nothing is removed. Dropping the pack weapons would be a rules
+              change for the human, because the AI would keep options the player
+              could not reach; they fold behind one button instead. Ready means
+              in hand or marked in the `ranged` slot — which is the entire point
+              of that marker.
+            */}
+            {chooser.options.filter((o) => !o.stowed || showStowed).map((o, i) => (
               <button key={i} onClick={() => {
                 // A multi-target spell tapped off an enemy starts the
                 // accumulate-taps flow with that enemy pre-picked as its first
@@ -1499,6 +1516,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
                 {o.label}
               </button>
             ))}
+            {!showStowed && chooser.options.some((o) => o.stowed) && (
+              <button className="ghost draw-more" onClick={() => setShowStowed(true)}>
+                ⋯ Draw from the pack ({chooser.options.filter((o) => o.stowed).length})
+              </button>
+            )}
             <button className="ghost" onClick={() => setChooser(null)}>Cancel</button>
           </div>
         </div>
