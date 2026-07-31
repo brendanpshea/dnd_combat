@@ -1917,56 +1917,6 @@ button.category .count {
 .loot-line .gain { margin-left: 0; color: var(--green); font-weight: 700; }
 .loot-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
 
-/* Pre-wave bounties: the planning half of the brief screen. */
-.bounties {
-  width: 100%;
-  margin-top: 10px;
-  background: var(--panel);
-  border: 1px solid #453d63;
-  border-radius: 12px;
-  padding: 8px 10px;
-}
-.bounties-head {
-  display: block;
-  font-family: var(--display);
-  color: var(--gold);
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  margin-bottom: 4px;
-}
-.bounty {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 3px 0;
-}
-.bounty + .bounty { border-top: 1px dashed #3a3358; }
-.bounty-name { font-weight: 700; font-size: 13px; }
-.bounty-blurb { color: var(--muted); font-size: 12px; flex: 1 1 60%; }
-.bounty-gold {
-  margin-left: auto;
-  color: var(--gold);
-  font-weight: 700;
-  font-size: 13px;
-  text-align: right;
-  white-space: nowrap;
-}
-/* A bounty pays coin AND an award. The award used to go unmentioned until it
-   turned up on the loot screen, which is too late to have played for it. */
-.bounty-award {
-  display: block;
-  color: #c79ae0;
-  font-weight: 600;
-  font-style: normal;
-  font-size: 11px;
-}
-.bounties-sub {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-  margin: -2px 0 6px;
-}
 
 /* What the break gave back — lunch, or a night's sleep. */
 .rest-panel { margin-top: 8px; }
@@ -3557,14 +3507,13 @@ button.category .count {
   font-size: 11.5px;
   line-height: 1.4;
 }
-/* The bounty's NAME is a label; the prize is the content.
-   It used to be gold and 10px, which inside a card that also uses gold for
-   selection made every unselected door look half-chosen — gold was carrying
-   five jobs on this screen. Demoted to a small caps label so the eye goes to
-   the item, which is the thing actually worth choosing a door for. */
+/* The prize is the content; the condition under it is the small print.
+   This was a small-caps label when it held the bounty's NAME ("Two Birds").
+   It now holds the sentence that says how to earn the prize, and a sentence in
+   caps shouts — sentence case, muted, out of the way of the item. */
 .gate-bounty b {
-  color: var(--muted); font-weight: 700;
-  font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;
+  display: block;
+  color: var(--muted); font-weight: 400; font-size: 11px;
 }
 .gate-prize { display: block; color: #c79ae0; font-size: 12px; }
 

@@ -445,7 +445,12 @@ describe('the camp says what it is offering', () => {
   });
 
   it('tells the two rests apart by what they restore', () => {
-    expect(arena, 'the morning no longer says what a night gives back').toContain('rested overnight');
+    // What each rest RESTORES, which is the difference that matters. This used
+    // to check for the literal "rested overnight" — but that phrase was the
+    // line saying WHEN it is for a third time, after the sun mark and the
+    // title had both already said so. The news is the restore list.
+    expect(arena, 'the morning no longer says what a night gives back')
+      .toContain('slots, abilities and hit dice all back');
     expect(arena, 'the afternoon no longer warns that slots stay spent').toContain('stay spent until tonight');
     // …and they do not merely differ by a word: the halves are styled apart.
     expect(css).toContain('.arena-when.morning');
@@ -820,8 +825,11 @@ describe('the arena gate', () => {
   it('gives the outgrown-day warning its own weight', () => {
     expect(arena, 'the warning is back to being a hint').toContain('arena-warn');
     // Specifically NOT welded onto the rest sentence, which is where it hid.
-    const hint = arena.indexOf("'The second fight of the day");
+    // Anchored on the class, not on the prose beside it — the wording of that
+    // sentence has already changed once since this was written.
+    const hint = arena.indexOf('<p className="hint">', arena.indexOf('arena-warn'));
     const warn = arena.indexOf('arena-warn');
+    expect(hint, 'no rest hint after the warning at all').toBeGreaterThan(-1);
     expect(warn, 'the warning trails the sentence it used to hide in')
       .toBeLessThan(hint);
     expect(CSS).toContain('.arena-warn {');
@@ -923,5 +931,73 @@ describe('the arena doors', () => {
     // the dashed rule spanned about a third of the card — which reads as a
     // broken border rather than a divider.
     expect(rule('.gate-bounty')).toContain('align-self: stretch');
+  });
+});
+
+/**
+ * Repetitive text on the gate, reported from the same screen: "there is a lot
+ * of repetitive unnecessary text."
+ *
+ * Counted, there was — 131 words, with the same facts printed twice:
+ *
+ *  - THE BOUNTY, DRAWN TWICE. The selected door's reward was on its card
+ *    (name + prize) and again below under "This door pays" (heading + the same
+ *    name + the same prize + gold), with only the how-to-earn-it line unique to
+ *    the second. Exactly the duplication the monster art had one change ago.
+ *  - "ENEMIES", THREE TIMES. Printed on every card, never varying. The number
+ *    is the information, and the roster underneath names them anyway.
+ *  - "MORNING", THREE TIMES. The sun mark, the title, and then a sub-line that
+ *    opened with "rested overnight" before getting to its actual news.
+ *  - THE BOUNTY'S FLAVOUR NAME. "Two Birds", "Opening Act" — three per screen,
+ *    nothing a player can act on, occupying the slot the condition needed.
+ *
+ * 131 words to 116, one whole zone gone, and every card now says the same four
+ * things in the same order.
+ */
+describe('the gate says each thing once', () => {
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+
+  it('draws the bounty on the card and nowhere else', () => {
+    // Markup, not the phrase: this file's own comment explains the fault and
+    // names the heading, so matching the words "This door pays" fails on the
+    // explanation rather than on the bug.
+    expect(arena, 'the duplicate reward block is back')
+      .not.toMatch(/className="bounties"/);
+    expect(arena, 'the duplicate block is back').not.toMatch(/className="bounties-head"/);
+    // ...and the card carries what that block was uniquely for.
+    expect(arena, 'the card no longer says how to earn the prize')
+      .toContain('bounty!.blurb');
+  });
+
+  it('leaves no dead styling behind the block it deleted', () => {
+    for (const dead of ['.bounties {', '.bounties-head {', '.bounty-name {', '.bounty-gold {']) {
+      expect(CSS, `${dead} outlived its markup`).not.toContain(dead);
+    }
+  });
+
+  it('prints the headcount as a number, not a sentence', () => {
+    const head = arena.indexOf('className="gate-head"');
+    const card = arena.slice(head, head + 600);
+    expect(card, 'the word "enemies" is back on every card')
+      .not.toMatch(/enem\{/);
+    expect(card).toContain('members.length');
+  });
+
+  it('says which half of the day it is once', () => {
+    // The mark and the title have both said it by the time this line runs; it
+    // used to spend its opening words saying it a third time.
+    expect(arena, 'the sub-line is restating the time of day again')
+      .not.toContain('rested overnight');
+    expect(arena, 'the sub-line no longer says what a night restores')
+      .toContain('slots, abilities and hit dice all back');
+  });
+
+  it('sets the earn-it line as small print, not a label', () => {
+    const i = CSS.indexOf('\n.gate-bounty b {');
+    const rule = CSS.slice(i, CSS.indexOf('}', i));
+    // It was a small-caps label when it held a two-word bounty NAME. It now
+    // holds a sentence, and a sentence in caps shouts.
+    expect(rule, 'the condition is shouting in small caps').not.toContain('uppercase');
+    expect(rule, 'the condition is competing with the prize above it').toContain('var(--muted)');
   });
 });
