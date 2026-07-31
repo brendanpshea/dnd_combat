@@ -42,21 +42,26 @@ def load_monster_sizes():
     try:
         with open(MONSTERS_TS, "r", encoding="utf-8") as f:
             text = f.read()
-        # NOTE: this pattern is WRONG and the fix is held back deliberately.
-        # `[^}]*?` stops at the first closing brace, so any monster with a
-        # nested object ahead of its `size:` is invisible — 80 of 146, including
-        # a mammoth, a hydra, a tyrannosaurus and an ogre, all silently framed to
-        # the MEDIUM target by the `.get(cid, "medium")` default below.
+        # Each top-level entry, then the first `size:` before the NEXT entry.
         #
-        # Fixing it is a two-line change, but correcting those framings makes the
-        # RENDER-time correction unreachable: holding the longest axis equal then
-        # needs +/-29% against a +/-12% clamp, so the fix has to land together
-        # with switching that correction to area. Both are written up rather than
-        # half-shipped.
-        pattern = r"['\"]([a-z0-9-]+)['\"]\s*:\s*\{[^}]*?size:\s*['\"]([a-z]+)['\"]"
-        matches = re.findall(pattern, text, re.DOTALL)
-        for m_id, m_size in matches:
-            sizes[m_id] = m_size
+        # This was one regex with `[^}]*?` between the id and the size, and that
+        # stops at the first closing brace — so any monster with a nested object
+        # ahead of its size (an attack, a resistance list) was invisible. It
+        # missed 80 of 146, and they did not fail loudly: the `.get(cid,
+        # "medium")` default below quietly framed a mammoth, a hydra, a
+        # tyrannosaurus and an ogre to the MEDIUM target, so each was drawn small
+        # in its own file and scaled back up by CSS, throwing away the resolution
+        # the 512px source had to give.
+        #
+        # The newer monsters have the richer stat blocks, which is why they were
+        # the ones that looked wrong.
+        starts = [(m.start(), m.group(1)) for m in
+                  re.finditer(r"^  '?([a-z0-9-]+)'?:\s*\{", text, re.M)]
+        for i, (pos, m_id) in enumerate(starts):
+            end = starts[i + 1][0] if i + 1 < len(starts) else len(text)
+            found = re.search(r"size:\s*'([a-z]+)'", text[pos:end])
+            if found:
+                sizes[m_id] = found.group(1)
     except Exception:
         pass
     return sizes

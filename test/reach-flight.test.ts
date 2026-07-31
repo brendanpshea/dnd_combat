@@ -226,18 +226,25 @@ describe('you can tell how big a thing is by looking at it', () => {
      * caught because it also asserts it read something. Calling the real
      * function is what that comment was actually asking for.
      *
-     * And it compares APPARENT size — scale times how much of the frame the art
-     * fills — because that is the thing a player sees. The band alone stopped
-     * being the whole story once framing was corrected for; see
-     * `token-fill.test.ts`.
+     * And it compares APPARENT size, because that is what a player sees. The
+     * band alone stopped being the whole story once framing was corrected for;
+     * see `token-fill.test.ts`.
+     *
+     * As an AREA, and the square matters. This read `scale x fill` when `fill`
+     * was a longest-axis fraction — both linear. `TOKEN_FILL` is an ink area
+     * now, so the same expression multiplies a length by an area and compares
+     * a quantity that is neither. Scale is linear; an area goes with its
+     * square.
      */
     // Only creatures that actually have art. One without it renders as an
     // emoji, has no measured fill, and gets no framing correction — so putting
     // it in this comparison would be comparing a corrected number with an
     // uncorrected one, which is how this assertion first came out backwards.
     const drawn = (m: { id: string }) => TOKEN_FILL[m.id] !== undefined;
-    const seen = (m: { id: string; size?: CreatureSize }) =>
-      tokenScale(m.id, m.size) * TOKEN_FILL[m.id]!;
+    const seen = (m: { id: string; size?: CreatureSize }) => {
+      const s = tokenScale(m.id, m.size);
+      return s * s * TOKEN_FILL[m.id]!;
+    };
     const huge = Object.values(MONSTERS).filter((m) => m.size === 'huge' && drawn(m));
     const large = Object.values(MONSTERS).filter((m) => m.size === 'large' && drawn(m));
     expect(huge.length).toBeGreaterThan(0);

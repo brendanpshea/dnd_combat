@@ -27,8 +27,19 @@ import type { CreatureSize } from '../src/engine/types.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-/** What a player actually sees: the CSS scale times the ink in the frame. */
-const apparent = (id: string, size: CreatureSize) => tokenScale(id, size) * (TOKEN_FILL[id] ?? 1);
+/**
+ * What a player actually sees, as an AREA: the CSS scale squared times the ink
+ * area in the frame.
+ *
+ * This used to be `scale x fill` when `fill` was the longest axis — a linear
+ * measure. `TOKEN_FILL` is now an ink AREA, so the same expression mixes units
+ * and reads as neither one thing nor the other. Scale is linear, so an area
+ * scales with its square.
+ */
+const apparent = (id: string, size: CreatureSize) => {
+  const s = tokenScale(id, size);
+  return s * s * (TOKEN_FILL[id] ?? 1);
+};
 
 const byBand = () => {
   const out = new Map<CreatureSize, Array<{ id: string; seen: number }>>();
@@ -65,7 +76,9 @@ describe('the correction is applied where it does something', () => {
       .filter(([id]) => MONSTERS[id])
       .sort((a, b) => b[1] - a[1])[0]!;
     const [id, fill] = off;
-    expect(fill, 'no token is far enough off the house framing to test with').toBeGreaterThan(0.89);
+    // The AREA target, not the old longest-axis 0.87 — the widest-framed
+    // monster still has to be far enough off it for the correction to bite.
+    expect(fill, 'no token is far enough off the house framing to test with').toBeGreaterThan(0.70);
     const size = MONSTERS[id]!.size;
     expect(
       tokenScale(id, size),
@@ -75,7 +88,7 @@ describe('the correction is applied where it does something', () => {
 
   it('leaves well-framed art alone', () => {
     // A correction that moved everything would be a second scale system.
-    const near = Object.entries(TOKEN_FILL).find(([id, f]) => MONSTERS[id] && Math.abs(f - 0.87) < 0.005);
+    const near = Object.entries(TOKEN_FILL).find(([id, f]) => MONSTERS[id] && Math.abs(f - 0.579) < 0.006);
     expect(near, 'nothing is at the house framing').toBeDefined();
     const [id] = near!;
     const size = MONSTERS[id]!.size;
@@ -200,7 +213,7 @@ describe('heroes and monsters of the same size', () => {
     // The specific regression: a per-id table creeping back in. Two Medium
     // creatures with equally well-framed art must land on the same number, so
     // any id-keyed multiplier shows up here.
-    const wellFramed = (id: string) => Math.abs((TOKEN_FILL[id] ?? 0) - 0.87) < 0.02;
+    const wellFramed = (id: string) => Math.abs((TOKEN_FILL[id] ?? 0) - 0.579) < 0.02;
     const ids = Object.values(MONSTERS)
       .filter((m) => m.size === 'medium' && wellFramed(m.id))
       .map((m) => m.id);
