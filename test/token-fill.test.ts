@@ -312,3 +312,42 @@ describe('tokens share a baseline', () => {
     expect(css, 'the lift has no keyframes to run').toContain('@keyframes hover-bob');
   });
 });
+
+/**
+ * A keying remnant one stripper leaves and the other declines.
+ *
+ * Reported from the hero sheet: "elf wizard has an artifact" — a 425px wedge of
+ * greenscreen at the lower left, which reframing had scaled up into plain view.
+ *
+ * Two passes, and one defeated the other. `strip_edge_curtains` removes only the
+ * columns it recognises; on that source it took 5 of a 64-wide strip, stranding
+ * the remainder at x=5. `strip_specks` then declined it, because its edge test
+ * was `min(xs) <= 1` and the remnant no longer touched the border. Neither pass
+ * owned it, and nothing failed.
+ *
+ * The margin stays deliberately small. The elf wizard's floating rune — which an
+ * earlier, blunter rule deleted, and which its prompt exists to produce — sits at
+ * x=75 of 512, five times outside it.
+ */
+describe('edge remnants', () => {
+  const py = readFileSync(fileURLToPath(new URL('../art/process.py', import.meta.url)), 'utf8');
+
+  it('counts as an edge artefact when merely near the border', () => {
+    expect(py, 'back to a two-pixel test, which the curtain pass steps over')
+      .not.toMatch(/touches_edge = min\(xs\) <= 1 or/);
+    expect(py).toContain('EDGE_MARGIN');
+    expect(py).toMatch(/margin = max\(2, round\(EDGE_MARGIN \* min\(w, h\)\)\)/);
+  });
+
+  it('keeps that margin narrow enough to spare detached art', () => {
+    const m = py.match(/EDGE_MARGIN = ([\d.]+)/);
+    expect(m, 'no margin defined').toBeTruthy();
+    const v = Number(m![1]);
+    // Both ends matter. Zero collapses straight back to the two-pixel test the
+    // curtain pass steps over — a plant that set it to 0.0 passed an
+    // upper-bound-only check while restoring the exact bug.
+    expect(v, 'a zero margin is the old behaviour under a new name').toBeGreaterThan(0.005);
+    // ...and 3% of 512 is 15px, against the rune at 75.
+    expect(v, 'wide enough to start eating detached art').toBeLessThanOrEqual(0.05);
+  });
+});

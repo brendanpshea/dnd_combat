@@ -41,7 +41,7 @@ export const TOKEN_FILL: Record<string, number> = {
   'earth-elemental': 0.918,
   elephant: 0.922,
   'elf-archer': 0.848,
-  'elf-wizard': 0.789,
+  'elf-wizard': 0.77,
   'ettercap-snarecaller': 0.859,
   ettin: 0.898,
   fighter: 0.922,
