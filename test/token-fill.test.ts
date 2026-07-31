@@ -303,8 +303,12 @@ describe('tokens share a baseline', () => {
 
   it('leaves flight to the renderer, which already does it', () => {
     const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+    // The BINDING, not just the selector. Deleting the transform-origin line
+    // left `.token.flying .art` present in the animation rule below it and this
+    // assertion green — while a plant that removed the lift itself would not
+    // have been caught.
     expect(css, 'nothing lifts a flyer, so grounding the art would strand them')
-      .toContain('.token.flying .art');
-    expect(css).toContain('hover-bob');
+      .toMatch(/\.token\.flying \.art,\s*\n\s*\.token\.flying \.sil \{ animation: hover-bob/);
+    expect(css, 'the lift has no keyframes to run').toContain('@keyframes hover-bob');
   });
 });
