@@ -342,7 +342,12 @@ describe('edge remnants', () => {
   it('keeps that margin narrow enough to spare detached art', () => {
     const m = py.match(/EDGE_MARGIN = ([\d.]+)/);
     expect(m, 'no margin defined').toBeTruthy();
-    // 3% of 512 is 15px. The rune is at 75.
-    expect(Number(m![1])).toBeLessThanOrEqual(0.05);
+    const v = Number(m![1]);
+    // Both ends matter. Zero collapses straight back to the two-pixel test the
+    // curtain pass steps over — a plant that set it to 0.0 passed an
+    // upper-bound-only check while restoring the exact bug.
+    expect(v, 'a zero margin is the old behaviour under a new name').toBeGreaterThan(0.005);
+    // ...and 3% of 512 is 15px, against the rune at 75.
+    expect(v, 'wide enough to start eating detached art').toBeLessThanOrEqual(0.05);
   });
 });
