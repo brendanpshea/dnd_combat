@@ -364,3 +364,43 @@ describe('edge remnants', () => {
     expect(v, 'wide enough to start eating detached art').toBeLessThanOrEqual(0.05);
   });
 });
+
+/**
+ * Every monster is framed for the size it actually is.
+ *
+ * `load_monster_sizes` used one regex with `[^}]*?` between the id and `size:`,
+ * and that stops at the first closing brace — so any monster with a nested
+ * object ahead of its size was invisible. It missed 80 of 146, and nothing
+ * failed: the `.get(cid, "medium")` default quietly framed a mammoth, a hydra,
+ * a tyrannosaurus and an ogre to the MEDIUM target, so each was drawn small in
+ * its own file and scaled back up by CSS, throwing away the resolution the
+ * 512px source had to give. The newer monsters carry the richer stat blocks,
+ * which is exactly why they were the ones reported as looking wrong.
+ *
+ * Found by planting the old regex back and watching the whole suite stay green.
+ */
+describe('framing follows the declared size', () => {
+  const py = readFileSync(fileURLToPath(new URL('../art/process.py', import.meta.url)), 'utf8');
+
+  it('scans each entry rather than stopping at the first brace', () => {
+    expect(py, 'the brace-truncating regex is back — 80 monsters go silently Medium')
+      .not.toMatch(/\[\^\}\]\*\?size:/);
+    expect(py, 'no per-entry scan').toMatch(/starts = \[\(m\.start\(\), m\.group\(1\)\)/);
+  });
+
+  it('shows up in the art: a Huge creature is framed larger than a Medium one', () => {
+    // Behavioural, on the shipped table. If the parser regresses, these fall
+    // back to the Medium target and the gap closes.
+    const med = ['orc', 'skeleton', 'zombie'].map((m) => TOKEN_FILL[m]).filter((v): v is number => v !== undefined);
+    const huge = ['tyrannosaurus', 'mammoth'].map((m) => TOKEN_FILL[m]).filter((v): v is number => v !== undefined);
+    expect(med.length, 'no medium art to compare').toBeGreaterThan(1);
+    expect(huge.length, 'no huge art to compare').toBeGreaterThan(1);
+    expect(Math.max(...huge), 'a Huge creature is framed no bigger than a Medium one')
+      .toBeGreaterThan(Math.max(...med) * 1.15);
+  });
+
+  it('and a Small one is framed smaller', () => {
+    expect(TOKEN_FILL['kobold']!, 'kobold is framed as if it were Medium')
+      .toBeLessThan(TOKEN_FILL['orc']! * 0.92);
+  });
+});
