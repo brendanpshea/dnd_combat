@@ -24,6 +24,8 @@ import { tokenScale } from '../web/src/token-scale.js';
 import { bandedScale } from '../src/data/token-size.js';
 import { MONSTERS } from '../src/data/monsters.js';
 import type { CreatureSize } from '../src/engine/types.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 /** What a player actually sees: the CSS scale times the ink in the frame. */
 const apparent = (id: string, size: CreatureSize) => tokenScale(id, size) * (TOKEN_FILL[id] ?? 1);
@@ -207,5 +209,56 @@ describe('heroes and monsters of the same size', () => {
     expect(Math.max(...seen) - Math.min(...seen),
       `well-framed Medium art still draws at different sizes: ${ids.join(', ')}`)
       .toBeLessThan(0.02);
+  });
+});
+
+/**
+ * The framing pipeline normalises in BOTH directions.
+ *
+ * `normalize_framing` used to enforce an area CEILING, applied downward only,
+ * so any asset already under it passed through at whatever framing its
+ * generation session gave. The roster ended up as two populations — nine heroes
+ * drawn tall and narrow (ink 0.49x0.91) and the rest drawn wide (0.84x0.69) —
+ * and since `tokenScale` corrects on the longest axis, that is height for one
+ * group and width for the other. The wide ones rendered both fatter AND
+ * shorter, which is what got reported.
+ *
+ * Measured after the change, ink area spread within a size tier: medium
+ * monsters 1.76x -> 1.20x. Heroes only 1.54x -> 1.50x, because the tall-narrow
+ * ones are already against the edge-padding cap and cannot grow — a 0.45x0.92
+ * figure would have to be taller than the canvas to cover the same area as a
+ * 0.84x0.69 one. That part needs redrawing, not reframing.
+ *
+ * Pinned as a source read because the alternative is committing 100 webp files
+ * to a fixture. Reverting the `if area > target` guard was the plant that found
+ * this file had no guard at all.
+ */
+describe('the art pipeline normalises framing', () => {
+  const py = readFileSync(fileURLToPath(new URL('../art/process.py', import.meta.url)), 'utf8');
+
+  it('scales up as well as down', () => {
+    expect(py, 'the ceiling is back — art under it passes through unframed')
+      .not.toMatch(/scale = \(target \/ area\) \*\* 0\.5 if area > target/);
+    expect(py).toMatch(/scale = \(target \/ area\) \*\* 0\.5/);
+  });
+
+  it('still refuses to blow up a speck', () => {
+    // Scaling up is only safe because the sources are 512px against a 256px
+    // output. A mis-keyed fragment must not be enlarged to fill the frame.
+    expect(py).toContain('UPSCALE_MAX');
+    expect(py).toMatch(/scale = min\(scale, UPSCALE_MAX\)/);
+  });
+
+  it('still keeps everything clear of the canvas edge', () => {
+    // The cap that stops a wide pose being cropped — and the reason the
+    // tall-narrow heroes cannot reach the target.
+    expect(py).toContain('MIN_PAD');
+    expect(py).toMatch(/scale = min\(scale, cap\)/);
+  });
+
+  it('names the target per size tier, not one number for everything', () => {
+    expect(py).toContain('SIZE_TARGETS');
+    expect(py, 'the old ceiling name should be gone with the old behaviour')
+      .not.toContain('SIZE_CEILINGS');
   });
 });
