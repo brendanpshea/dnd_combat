@@ -866,16 +866,18 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     disabled={locked && g.door !== (run.gate ?? 0)}
                     aria-pressed={g.door === (run.gate ?? 0)}
                   >
-                    <b className="gate-name">{g.name}</b>
+                    <span className="gate-head">
+                      <b className="gate-name">{g.name}</b>
+                      <span className="gate-count">
+                        {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
+                      </span>
+                    </span>
                     <span className="gate-blurb">{g.blurb}</span>
                     {/* No thumbnails here. The same creatures were drawn
                         twice on one screen — 16px and unidentifiable on the
                         card, then again full-size and named below it, 400px
                         apart. The card carries the count; `arena-foes` carries
                         the faces. */}
-                    <span className="gate-count">
-                      {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
-                    </span>
                     {/* What this door is paying, and for what. The prize is the
                         reason to take one door over another, so it belongs on
                         the card and not on a screen after the fight. */}
