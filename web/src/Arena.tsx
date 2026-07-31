@@ -843,9 +843,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   <span className="when-mark">{half === 'morning' ? '🌅' : '☀️'}</span>
                   Day {dayOf(run)} · {half === 'morning' ? 'Morning' : 'Afternoon'}
                   <small>
+                    {/* What you HAVE, not when it is. The mark and the title
+                        have both already said which half of the day this is;
+                        this line repeated it a third time before getting to
+                        its actual news. */}
                     {half === 'morning'
-                      ? 'rested overnight — slots, abilities and hit dice all back'
-                      : 'after lunch — hit points only; spent slots stay spent until tonight'}
+                      ? 'slots, abilities and hit dice all back'
+                      : 'hit points only — spent slots stay spent until tonight'}
                   </small>
                 </h2>
                 <span className="arena-score">
@@ -868,8 +872,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   >
                     <span className="gate-head">
                       <b className="gate-name">{g.name}</b>
-                      <span className="gate-count">
-                        {g.wave.encounter.members.length} enem{g.wave.encounter.members.length === 1 ? 'y' : 'ies'}
+                      {/* The number, not the word. "enemies" was printed on
+                          every card and never varied; the roster underneath
+                          says what they are. */}
+                      <span className="gate-count" title="Enemies behind this door">
+                        ⚔ {g.wave.encounter.members.length}
                       </span>
                     </span>
                     <span className="gate-blurb">{g.blurb}</span>
@@ -883,12 +890,18 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                         the card and not on a screen after the fight. */}
                     {gateOffers[g.door]?.bounty && (
                       <span className="gate-bounty">
-                        <b>{gateOffers[g.door]!.bounty!.name}</b>
+                        {/* The prize, then what earns it. The bounty's own
+                            NAME used to sit here — "Two Birds", "Opening Act" —
+                            three per screen, telling a player nothing they can
+                            act on, while the sentence that says how to earn it
+                            was in a separate block below. Swapped: the flavour
+                            title goes, the condition comes up. */}
                         {gateOffers[g.door]!.prize && (
                           <span className="gate-prize">
                             {itemIcon(gateOffers[g.door]!.prize!)} {itemName(gateOffers[g.door]!.prize!)}
                           </span>
                         )}
+                        <b>{gateOffers[g.door]!.bounty!.blurb}</b>
                       </span>
                     )}
                     {/* What the study turned up about what is behind THIS door.
@@ -1086,8 +1099,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               )}
               <p className="hint">
                 {half === 'morning'
-                  ? 'Two fights today. Whatever you spend this morning is gone until tonight.'
-                  : 'The second fight of the day — no rest after this one until the day is done.'}
+                  ? 'Two fights today — what you spend now is gone until tonight.'
+                  : 'Second fight of the day. No rest until the day is done.'}
               </p>
 
               {/* The quasit, on the way in. Ordered most-interesting-first:
@@ -1101,31 +1114,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 'firstGate',
               )} />
 
-              {/* The planning half of the screen: what this wave will pay extra
-                  for. Named before the fight, or they are not something to play
-                  toward — they are a surprise at the end. */}
-              {bounties.length > 0 && (
-                <div className="bounties">
-                  <b className="bounties-head">This door pays</b>
-                  {bounties.map((b, i) => {
-                    const prize = spoilPrize(run.seed, dayOf(run), half, run.gate ?? 0, level);
-                    return (
-                      <div key={b.id} className="bounty">
-                        <span className="bounty-name">{b.name}</span>
-                        <span className="bounty-blurb">{b.blurb}</span>
-                        <span className="bounty-gold">
-                          +{bountyGold(b, wave.purse)}g
-                          {prize && (
-                            <i className="bounty-award">
-                              {itemIcon(prize)} {itemName(prize)}
-                            </i>
-                          )}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              {/* The bounty used to be drawn TWICE for the selected door: once
+                  on its card, and again here under "This door pays" — the same
+                  name and the same prize, with only the how-to-earn-it line
+                  unique to this block. That line is now on the card, next to
+                  the prize it buys, where the comparison between doors is
+                  actually made. The same duplication the monster art had.
+
+                  Gold went with it. It scales with the wave's purse, so it is
+                  near-identical across the three doors and never the reason to
+                  pick one. */}
 
                 <div className="arena-exit">
                   <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
