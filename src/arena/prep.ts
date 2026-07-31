@@ -46,6 +46,22 @@ export interface PrepOption {
   icon: string;
   /** One line for the button: what it does and how long it lasts. */
   detail: string;
+  /**
+   * What taking this costs, in the player's words.
+   *
+   * These buttons SPEND something — `useStoreSpell` calls `spendSlot`, and a
+   * potion is gone once drunk — and the screen never said so. A tap cost a
+   * first-level slot with no cost shown, no confirmation and no undo. Carried
+   * on the option itself rather than worked out at the button, so every place
+   * that offers one has to have an answer.
+   */
+  cost: string;
+}
+
+/** "1st-level slot", "2nd-level slot" — what casting this spends. */
+function slotCost(level: number): string {
+  const ord = ['cantrip', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'][level] ?? `L${level}`;
+  return level === 0 ? 'no slot' : `${ord}-level slot`;
 }
 
 /** Damage types this hero is already resistant to from a drunk potion. */
@@ -75,6 +91,7 @@ export function potionOptions(c: CampaignState): PrepOption[] {
       out.push({
         kind: 'potion', who: i, name: ch.name, id: stack.itemId, icon: '🧪',
         detail: `${itemName(stack.itemId)} — lasts this fight.`,
+        cost: 'drinks the potion',
       });
     }
   }
@@ -150,7 +167,7 @@ export function spellOptions(c: CampaignState): PrepOption[] {
       if ((me.spellSlots[level - 1]?.current ?? 0) <= 0) continue;   // no slot to spend
       out.push({
         kind: 'spell', who: i, name: ch.name, id: action.spellId, icon: action.icon,
-        detail: entry.detail,
+        detail: entry.detail, cost: slotCost(level),
       });
     }
   }

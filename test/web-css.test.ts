@@ -1001,3 +1001,99 @@ describe('the gate says each thing once', () => {
     expect(rule, 'the condition is competing with the prize above it').toContain('var(--muted)');
   });
 });
+
+/**
+ * The Spells step, after a look at a real phone screenshot.
+ *
+ * Preparing spells is what the step is for, and the only way to do it was to
+ * tap a 34px portrait in the panel header — the smallest target on a screen
+ * where everything else ran full width — while "Copy a scroll into a
+ * spellbook", a rare secondary action, got a full-width card with a heading and
+ * its own explanatory line. Above them sat thirty words urging the player to
+ * consider their spells, and NO visible state at all.
+ *
+ * Four things came out of it:
+ *
+ *  - the casters are the screen, one full-width row each, showing the count;
+ *  - the exhortation is gone. A screen that nags is one you learn to scroll
+ *    past; one that shows "5/6, one spare" needs no nagging, and on a day with
+ *    nothing to change it says that instead;
+ *  - camp buffs moved here from the door screen — they spend spell slots and
+ *    potions, which is this step's business — and they say what they cost;
+ *  - the primary button belongs to the step you are on.
+ */
+describe('the arena spells step', () => {
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+
+  it('makes the casters the screen, not a header of thumbnails', () => {
+    expect(arena, 'the caster list is gone').toContain('className="prep-casters"');
+    expect(CSS, 'a caster row must be a real tap target').toMatch(/\.prep-caster \{[\s\S]*?min-height: 52px/);
+    // The old header row of portrait buttons must not come back as the way in.
+    expect(arena, 'prep is back behind thumbnails in the header')
+      .not.toContain('arena-buyer-pick');
+  });
+
+  it('shows state instead of urging', () => {
+    expect(arena, 'the exhortation is back')
+      .not.toContain('walking in with fewer spells than they could');
+    expect(arena, 'a quiet day says nothing at all again')
+      .toContain('Everyone is fully prepared');
+  });
+
+  it('offers camp buffs here, not on the door screen', () => {
+    const spells = arena.indexOf("panel === 'prepare' && (");
+    const buffs = arena.indexOf('className="camp-buffs"');
+    expect(buffs, 'the buffs are not in the spells panel').toBeGreaterThan(spells);
+    expect(arena, 'the door screen is offering buffs again').not.toContain('lore-row prep-row');
+    // Potions came with the spells on purpose: splitting the row by which
+    // resource it spends is a distinction the player does not hold.
+    expect(arena.slice(buffs, buffs + 1800)).toContain('drinkCampBuffPotion');
+  });
+
+  it('puts the price on the button that charges it', () => {
+    const buffs = arena.indexOf('className="camp-buffs"');
+    const block = arena.slice(buffs, buffs + 1800);
+    expect(block, 'the buff no longer quotes its cost').toContain('o.cost');
+    expect(block, 'nothing says how much of that resource is left').toContain('left');
+  });
+
+  it('gives the primary button to the step you are on', () => {
+    // It read "Fight — <door>" from every step, and from a panel the doors are
+    // off screen — so the biggest button on the phone committed you to a fight
+    // you could not see, on a day where `run.gate ?? 0` may have picked it.
+    expect(arena, 'the primary button is unconditional again')
+      .toMatch(/panel === 'none' \? \([\s\S]{0,400}Fight —/);
+    expect(arena, 'no way onward from a panel').toContain('Choose a door →');
+  });
+});
+
+/**
+ * The backdrop was not a decision — it was the leftover.
+ *
+ * The gate panel is bottom-anchored and used to size to its content, so the
+ * sand took whatever was left: measured at 443x990, 13% of the screen on the
+ * Doors step and 67% on the Spells step, lurching between the two as you moved
+ * along the step bar. Same instability as the board resizing between actions.
+ *
+ * Pinning the height outright was tried first and was worse — a quiet Spells
+ * step opened at 86% with 900px of empty card in it, the same wasted space in a
+ * different colour. A floor bounds the sand (14%-38%) and lets a short step be
+ * short.
+ */
+describe('the gate backdrop', () => {
+  it('is bounded rather than left over', () => {
+    const i = CSS.indexOf('.adv-panel.arena-gate { min-height');
+    expect(i, 'the panel has no height floor, so the sand is the remainder again')
+      .toBeGreaterThan(-1);
+    const rule = CSS.slice(i, CSS.indexOf('}', i));
+    const floor = Number(rule.match(/min-height: (\d+)%/)![1]);
+    expect(floor, 'the floor is too low to bound the backdrop').toBeGreaterThanOrEqual(55);
+    expect(rule).toContain('max-height');
+  });
+
+  it('does not grow a taller panel just because one is open', () => {
+    // `.tall` took the panel to 96% whenever a panel was open, which swung the
+    // backdrop 13% -> 4% instead of holding it steady.
+    expect(CSS, 'the tall variant is back').not.toContain('.adv-panel.arena-gate.tall');
+  });
+});
