@@ -387,8 +387,15 @@ def normalize_framing(im, kind, cid):
     cap = min((1 - 2 * MIN_PAD) * w / bw, (1 - 2 * MIN_PAD) * h / bh)
     scale = min(scale, cap)
 
-    # Already there, and clear of the edge: leave the file byte-identical.
-    if 0.99 <= scale <= 1.01 and x0 >= w * MIN_PAD and y0 >= h * MIN_PAD and (w - x1) >= w * MIN_PAD and (h - y1) >= h * MIN_PAD:
+    # Already there, clear of the edge, AND standing on the baseline: leave the
+    # file byte-identical. The baseline check is load-bearing — without it this
+    # early return skipped the re-paste for anything already at target area, so
+    # 169 tokens kept whatever gap under their feet the source happened to have
+    # (0.039 to 0.141) while everything that got rescaled was grounded.
+    grounded = kind != "token" or abs((h - y1) - round(h * MIN_PAD)) <= 2
+    if (0.99 <= scale <= 1.01 and grounded
+            and x0 >= w * MIN_PAD and y0 >= h * MIN_PAD
+            and (w - x1) >= w * MIN_PAD and (h - y1) >= h * MIN_PAD):
         return im, 1.0
 
     target_w = max(1, round(bw * scale))
@@ -399,10 +406,34 @@ def normalize_framing(im, kind, cid):
     # Horizontal centering for all
     pos_x = (w - target_w) // 2
 
-    # Vertical positioning:
-    # If portrait and the original figure reached the bottom of the canvas (y1 >= h - 20),
-    # anchor it to the bottom with MIN_PAD so busts don't float in mid-air.
+    # Vertical positioning: KEEP THE ARTIST'S BASELINE.
+    #
+    # This centred every token, which is wrong for a figure standing on a
+    # floor. A square canvas gives a short figure equal space above and below,
+    # and short means WIDE once area is normalised — so the wide-posed heroes
+    # floated above the cell floor by exactly the amount they were fat.
+    # Reported as two things, "some heroes float while others are anchored" and
+    # "the floating ones are also the fat ones", which is one bug seen twice:
+    #
+    #   gnome-warden   ink 0.840 wide -> floated 0.156
+    #   gnome-bard     ink 0.422 wide -> floated 0.039
+    #
+    # Scaling the original gap below the figure keeps a grounded figure grounded
+    # (gap 0 stays 0) and keeps a deliberately airborne one — a ghost, a
+    # will-o-wisp — off the ground by the same proportion it was drawn at.
+    # Centring threw that information away.
     if kind == "portrait" and y1 >= h - 20:
+        pos_y = h - target_h - round(h * MIN_PAD)
+    elif kind == "token":
+        # ONE BASELINE FOR EVERY TOKEN. Scaling the artist's original gap was
+        # the first attempt and only halved the problem (wide-hero mean 0.135
+        # -> 0.067), because the source art has different gaps to begin with —
+        # incidental framing, not intent.
+        #
+        # There is no floating to preserve, either: flight is the renderer's
+        # job and already handled, `.token.flying` lifts and bobs its figure in
+        # CSS. So the art's contract is simply "feet at the bottom", and a
+        # creature that hovers is lifted from there.
         pos_y = h - target_h - round(h * MIN_PAD)
     else:
         pos_y = (h - target_h) // 2
