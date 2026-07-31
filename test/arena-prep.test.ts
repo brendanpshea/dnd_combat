@@ -153,3 +153,53 @@ describe('how long a buff lasts, which is what makes it a decision', () => {
     expect(acOf(buildCampaignParty(c)[w]!), 'gone after the night').toBe(bare);
   });
 });
+
+/**
+ * These buttons SPEND, and the screen never said so.
+ *
+ * `useStoreSpell` calls `spendSlot`; a potion is gone once drunk. The gate
+ * offered "🛡 Mage Armor · Morgan" as a plain chip — no price on it, no
+ * confirmation, no undo — so a curious tap cost a first-level slot and the
+ * player found out during the fight, if at all. Reported as "needs to be more
+ * systematic (so players know they are spending a spell slot)".
+ *
+ * The cost rides on the option rather than being worked out at the button, so
+ * every caller has to have an answer and no new offer can arrive without one.
+ */
+describe('what an offer costs', () => {
+  it('prices a camp spell by the slot it burns', () => {
+    const c = party();
+    readyWizard(c);
+    const [opt] = spellOptions(c);
+    expect(opt, 'no spell on offer to price').toBeDefined();
+    expect(opt!.cost, 'Mage Armor is a 1st-level spell').toBe('1st-level slot');
+  });
+
+  it('prices a potion by the potion', () => {
+    const c = party();
+    addItem(c.characters[idxOf(c, 'fighter')]!.inventory, 'potion-fire-resistance');
+    expect(potionOptions(c)[0]!.cost).toBe('drinks the potion');
+  });
+
+  it('leaves nothing on offer without a price', () => {
+    // The guard that matters: a new camp spell or potion added later cannot
+    // reach the screen priceless.
+    const c = party();
+    readyWizard(c);
+    addItem(c.characters[idxOf(c, 'fighter')]!.inventory, 'potion-fire-resistance');
+    const all = prepOptions(c);
+    expect(all.length).toBeGreaterThan(1);
+    for (const o of all) expect(o.cost, `${o.id} has no stated cost`).toBeTruthy();
+  });
+
+  it('really does spend the slot it quotes', () => {
+    // Behavioural, not a label check: the price has to be the truth.
+    const c = party();
+    readyWizard(c);
+    const w = idxOf(c, 'wizard');
+    const before = buildCampaignParty(c)[w]!.spellSlots[0]!.current;
+    expect(useStoreSpell(c, w, 'mage-armor')).toBe(true);
+    expect(buildCampaignParty(c)[w]!.spellSlots[0]!.current,
+      'the quoted 1st-level slot was not actually spent').toBe(before - 1);
+  });
+});

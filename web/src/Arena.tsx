@@ -296,6 +296,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // to study at all, and that survives being one button.
   const lens = bestLens(allFoes, (skill) => bestAtSkill(c, skill).bonus);
   const prep = prepOptions(c);
+  /** Built party, for the slot counts the camp-buff buttons quote. */
+  const party = buildCampaignParty(c);
   /** Creatures this run has successfully placed, by id. */
   const known = new Set<Id>(
     study?.success ? loreTargets(allFoes, study.skill) : [],
@@ -817,7 +819,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         {backdrop}
         <div className="adv-content">
           <div className="adv-scene bottom">
-            <div className={`adv-panel arena-gate${panel === 'none' ? '' : ' tall'}`}>
+            {/* One height, every step. The panel used to grow to 96% whenever a
+                panel was open, on the reasoning that a list needs the room the
+                backdrop was using — but now that the panel is a fixed height
+                and scrolls inside itself, that only made the backdrop swing
+                between 13% and 4% as you moved along the step bar. */}
+            <div className="adv-panel arena-gate">
               <div className="arena-scroll">
               {/* The gate itself: doors, checks, and the wave you are picking
                   between. A panel REPLACES this rather than appending to it —
@@ -957,35 +964,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               {/* One study, before you choose. Which lens is the question when a
                   wave is mixed; the numbers are on the buttons so the choice is
                   made with them in view. */}
-              {/* Buffs, at the moment the door is in view. The machinery has
-                  been in the Gear panel all along; what it never had was a
-                  place where you could see what you are about to fight while
-                  deciding. Quiet when there is nothing to take. */}
-              {prep.length > 0 && (
-                <div className="lore-row prep-row">
-                  {prep.map((o) => (
-                    <button
-                      key={`${o.kind}-${o.who}-${o.id}`}
-                      className="skill-gambit"
-                      title={o.detail}
-                      onClick={() => {
-                        const done = o.kind === 'potion'
-                          ? drinkCampBuffPotion(c, o.who, o.id)
-                          // Was hard-coded to "casts Mage Armor", which was
-                          // true while Mage Armor was the only gate spell and
-                          // became a lie the moment it was not.
-                          : (useStoreSpell(c, o.who, o.id)
-                            ? `${o.name} casts ${SPELLS[o.id]?.name ?? o.id}.` : null);
-                        if (done) { setNotice(done); refresh(); persist(c, run); }
-                      }}
-                    >
-                      <b>{o.icon} {o.detail.split(' — ')[0]}</b>
-                      <span className="muted">{o.name.split(' ')[0]}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
+              {/* The pre-fight buffs used to sit here, beside the knowledge
+                  check, on the reasoning that these are the two things you do
+                  with the door card in view. But they spend spell slots and
+                  potions, which is what the Spells step is about — and here the
+                  cost was never shown at all. Moved, with a price on it. */}
               <div className="lore-row">
                 {study ? (
                   <span className={study.success ? 'lore-known' : 'lore-blind'}>
@@ -1135,36 +1118,111 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
               {panel === 'prepare' && (
                 <div className="arena-shop">
-                  <div className="arena-shop-head">
-                    <b>Study your spells</b>
-                    <div className="arena-buyer">
-                      {casters.map(({ ch, i }) => {
-                        const look = classLook(ch.classId);
-                        return (
-                          <button
-                            key={i}
-                            className="arena-buyer-pick"
-                            onClick={() => setPrepareFor(i)}
-                            title={`Prepare spells for ${ch.name}`}
-                          >
+                  {/*
+                    THE CASTERS ARE THE SCREEN.
+
+                    Preparing spells is what this step is for, and the only way
+                    to do it was to tap a 34px portrait in the header — the
+                    smallest target on a screen where everything else ran the
+                    full width — while "Copy a scroll into a spellbook", a rare
+                    secondary action, got a full-width card with a heading and
+                    its own explanatory line. The hierarchy was inverted.
+
+                    The prose went with it. Thirty words telling a player to
+                    consider swapping spells, above no visible state at all. A
+                    screen that exhorts is one you learn to scroll past; a
+                    screen that SHOWS "5/6, one spare" needs no exhortation, and
+                    on the days when nothing wants changing it says that too.
+                  */}
+                  <div className="arena-shop-head"><b>Study your spells</b></div>
+                  <div className="prep-casters">
+                    {casters.map(({ ch, i }) => {
+                      const look = classLook(ch.classId);
+                      const room = preparedRoom(c, i);
+                      return (
+                        <button
+                          key={i}
+                          className="prep-caster"
+                          onClick={() => setPrepareFor(i)}
+                        >
+                          <span className="adv-party-face">
                             <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
                             {look && (
                               <span className="class-pip on-portrait" style={{ ['--pip' as string]: look.color }}>
                                 {look.glyph}
                               </span>
                             )}
-                            <span className={`prep-count${preparedRoom(c, i).room > 0 ? ' has-room' : ''}`}>
-                              {preparedRoom(c, i).used}/{preparedRoom(c, i).limit}
+                          </span>
+                          <span className="prep-caster-who">
+                            <b>{ch.name}</b>
+                            <small>{look?.name ?? ch.classId}</small>
+                          </span>
+                          <span className={`prep-caster-slots${room.room > 0 ? ' has-room' : ''}`}>
+                            {room.used}/{room.limit}
+                            <small>{room.room > 0 ? `${room.room} spare` : 'prepared'}</small>
+                          </span>
+                          <span className="prep-caster-go">›</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/*
+                    Camp buffs, moved here from the door screen and told to say
+                    what they cost.
+
+                    They belong on the step about spending spell resources, not
+                    on the one about picking a fight. And POTIONS came with the
+                    spells deliberately: splitting the row by which resource it
+                    spends is a distinction the player does not hold — both are
+                    "things I spend now to walk in stronger".
+
+                    The cost is the point. `useStoreSpell` calls `spendSlot`, so
+                    tapping this used to spend a first-level slot with nothing on
+                    screen saying so, no confirmation and no undo. Now the button
+                    names the price and what is left of it.
+                  */}
+                  {/* Nothing to do is the common case and the screen should
+                      say so plainly. The old copy exhorted a player to consider
+                      their spells on every visit, including the visits where
+                      there was nothing to consider — which is how a screen
+                      teaches you to scroll past it. */}
+                  {withRoom.length === 0 && prep.length === 0 && scribable.length === 0 && (
+                    <p className="hint">Everyone is fully prepared. Nothing to change before this one.</p>
+                  )}
+                  {prep.length > 0 && (
+                    <div className="camp-buffs">
+                      <b>Cast or drink before you walk in</b>
+                      {prep.map((o) => {
+                        const lvl = o.kind === 'spell' ? (SPELLS[o.id]?.level ?? 1) : 0;
+                        const left = o.kind === 'spell'
+                          ? (party[o.who]?.spellSlots[lvl - 1]?.current ?? 0) : 0;
+                        return (
+                          <button
+                            key={`${o.kind}-${o.who}-${o.id}`}
+                            className="camp-buff"
+                            title={o.detail}
+                            onClick={() => {
+                              const done = o.kind === 'potion'
+                                ? drinkCampBuffPotion(c, o.who, o.id)
+                                : (useStoreSpell(c, o.who, o.id)
+                                  ? `${o.name} casts ${SPELLS[o.id]?.name ?? o.id}.` : null);
+                              if (done) { setNotice(done); refresh(); persist(c, run); }
+                            }}
+                          >
+                            <span className="camp-buff-what">
+                              <b>{o.icon} {o.detail.split(' — ')[0]}</b>
+                              <small>{o.name}</small>
+                            </span>
+                            <span className="camp-buff-cost">
+                              {o.cost}
+                              {o.kind === 'spell' && <small>{left} left</small>}
                             </span>
                           </button>
                         );
                       })}
                     </div>
-                  </div>
-                  <p className="hint">
-                    You rested after the last wave — swap in whatever this one calls for.
-                    {withRoom.length > 0 && ' Anyone showing spare slots is walking in with fewer spells than they could.'}
-                  </p>
+                  )}
 
                   {/* Scribing, where the spellbook is — see `scribable`. */}
                   {scribable.length > 0 && (
@@ -1439,9 +1497,30 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   scroll, so the thing you came to do was never on the same
                   screen as the thing that told you to do it. */}
               <div className="adv-choices arena-actions">
-                <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave, surprised) })}>
-                  ⚔️ Fight — {gate.name}
-                </button>
+                {/*
+                  THE PRIMARY BUTTON BELONGS TO THE STEP YOU ARE ON.
+
+                  It said "Fight — <door>" from every step, and from the Spells
+                  or Stall panel the doors are not on screen: the biggest button
+                  on the phone committed you to a fight you could not see. Worse
+                  on a fresh day, where `run.gate ?? 0` means door 0 is selected
+                  by default — so it could commit you to a door you had never
+                  looked at, let alone chosen.
+
+                  Away from the doors it now walks you to them instead. That is
+                  the same number of taps to reach a fight; the difference is
+                  that you see what you are agreeing to. Only the Doors step
+                  offers the fight itself.
+                */}
+                {panel === 'none' ? (
+                  <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave, surprised) })}>
+                    ⚔️ Fight — {gate.name}
+                  </button>
+                ) : (
+                  <button className="primary" onClick={() => { setPanel('none'); setNotice(null); }}>
+                    Choose a door →
+                  </button>
+                )}
                 {/*
                   THE DAY'S STEPS, and a way back to the doors.
                   Reported: "clicking on shop or party management entirely
@@ -1504,8 +1583,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       {/* Named for the place, not its state: every other step
                           is a destination, and a lone verb in the row read as
                           an instruction to shut something. */}
-                      🛒<small>Stall</small>
-                      <span className="step-shut">closed</span>
+                      🛒<small>Stall <span className="step-shut">closed</span></small>
                     </button>
                   )}
                   {/* Gear carried the day's only silent step: the morning

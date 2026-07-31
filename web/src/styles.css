@@ -3623,8 +3623,21 @@ button.category .count {
 /* The gate keeps some sand visible — you are standing outside, and the board
    you are choosing is behind you. A panel has a list to show instead, so it
    takes the height the backdrop was using. */
-.adv-panel.arena-gate { max-height: 86%; }
-.adv-panel.arena-gate.tall { max-height: 96%; }
+/* THE SAME HEIGHT ON EVERY STEP.
+ *
+ * `max-height` alone let the panel size to its content, which made the backdrop
+ * whatever was left over rather than a decision: measured at 443x990, the sand
+ * took 13% of the screen on the Doors step and 67% on the Spells step, and the
+ * whole layout lurched between the two as you tapped along the step bar. That
+ * is the board-resizes-between-actions complaint again, one screen over.
+ *
+ * A FLOOR, not a fixed height. Pinning it outright was the first attempt and
+ * it was worse: the Spells step on a quiet day has two rows to show, so the
+ * panel opened at 86% with 900px of empty card under them — the same wasted
+ * space as the backdrop, in a different colour. A minimum bounds how much sand
+ * can ever show (14%-38% against the old 13%-67%) and lets a short step be
+ * short. */
+.adv-panel.arena-gate { min-height: 62%; max-height: 86%; }
 /* Pre-fight buffs, on the gate beside the knowledge check — the two things you
    do with the door card in view. Same chip as a skill gambit, because they are
    the same kind of decision: spend something now against what is behind it. */
@@ -3957,13 +3970,13 @@ button.category .count {
   min-width: 0;
 }
 
-/* A shut step still says what it is, with its state underneath. A step that
-   renamed itself to its own state read as a verb — an instruction to shut
-   something — where every other step in the row names a place. */
+/* A shut step still says what it is, with its state beside it. Absolutely
+   positioned at `bottom: 1px` this landed ON TOP of the step's own label — the
+   button is a centred column and the label is already at its foot, so "Stall"
+   and "closed" overprinted each other. Inline instead: no third line, no
+   overlap, and the row keeps its height. */
 .arena-tools button .step-shut {
-  position: absolute; bottom: 1px; left: 0; right: 0;
-  font-size: .58rem; font-weight: 700; letter-spacing: .04em;
-  text-transform: uppercase; color: var(--muted); opacity: .8;
+  font-size: .62rem; font-weight: 700; color: var(--muted); opacity: .85;
 }
 .arena-tools button:disabled { opacity: .55; }
 
@@ -3978,3 +3991,51 @@ button.category .count {
   font-size: .84rem; line-height: 1.35;
 }
 .arena-warn b { color: var(--gold); }
+
+/* ---- the Spells step: casters first ------------------------------------- */
+/* Preparing spells was reachable only through a 34px portrait in the panel
+   header — the smallest target on a screen where everything else ran full
+   width. These are the screen now. */
+.prep-casters { display: flex; flex-direction: column; gap: 6px; }
+.prep-caster {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 12px; border-radius: 10px;
+  border: 1px solid #453d63; background: var(--panel);
+  color: inherit; font: inherit; text-align: left; cursor: pointer;
+  min-height: 52px;
+}
+.prep-caster .adv-party-face { flex: 0 0 auto; position: relative; }
+.prep-caster .portrait { width: 34px; height: 34px; }
+.prep-caster-who { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.prep-caster-who b { font-size: 14px; }
+.prep-caster-who small { color: var(--muted); font-size: 11px; }
+.prep-caster-slots {
+  display: flex; flex-direction: column; align-items: flex-end;
+  font-size: 14px; font-weight: 700; color: var(--muted); white-space: nowrap;
+}
+.prep-caster-slots small { font-size: 10px; font-weight: 400; }
+/* Spare slots are the one thing worth chasing here, so they are the one thing
+   that changes colour. Nothing else on this screen is gold. */
+.prep-caster-slots.has-room { color: var(--gold); }
+.prep-caster-go { color: var(--muted); font-size: 18px; flex: 0 0 auto; }
+
+/* ---- camp buffs: what it does, and what it costs ------------------------ */
+/* These SPEND — `useStoreSpell` calls `spendSlot`, a potion is gone once drunk
+   — and the old chip on the door screen said neither. The price and what is
+   left of it sit on the button itself. */
+.camp-buffs { display: flex; flex-direction: column; gap: 6px; }
+.camp-buffs > b { font-size: 13px; }
+.camp-buff {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; padding: 8px 12px; border-radius: 10px;
+  border: 1px solid #453d63; background: var(--panel);
+  color: inherit; font: inherit; text-align: left; cursor: pointer; min-height: 48px;
+}
+.camp-buff-what { display: flex; flex-direction: column; min-width: 0; }
+.camp-buff-what b { font-size: 13px; }
+.camp-buff-what small { color: var(--muted); font-size: 11px; }
+.camp-buff-cost {
+  display: flex; flex-direction: column; align-items: flex-end;
+  color: var(--muted); font-size: 11px; white-space: nowrap;
+}
+.camp-buff-cost small { font-size: 10px; opacity: .8; }
