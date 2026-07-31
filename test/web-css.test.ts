@@ -1183,8 +1183,13 @@ describe('the attack chooser', () => {
 
   it('folds pack weapons instead of dropping them', () => {
     expect(app, 'the chooser is flat again').toContain('o.stowed || showStowed');
+    // The CONDITION, not just the handler. Replacing the reveal button's guard
+    // with `false` left `setShowStowed(true)` in a dead branch and this
+    // assertion green, while every pack weapon became unreachable — which is
+    // precisely the rules change this describe block exists to prevent.
     expect(app, 'no way to reach a pack weapon at all — that is a rules change')
-      .toContain('setShowStowed(true)');
+      .toMatch(/!showStowed && chooser\.options\.some\(\(o\) => o\.stowed\) && \(/);
+    expect(app).toContain('setShowStowed(true)');
   });
 
   it('reopens folded, not left open from last time', () => {
