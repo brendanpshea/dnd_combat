@@ -671,6 +671,12 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
     reviveParty(state.campaign);
     return enterScene(state, module, module.defeatScene);
   }
+  // No authored loss beat and no defeat scene: the fight is simply offered
+  // again. The party MUST be picked up first. Without that the retry starts
+  // with everyone still at 0 HP, so it is lost before the first turn, and the
+  // only thing on offer is the same fight again — a loop with no exit, which
+  // reads from the outside as "I pressed Continue and nothing happened".
+  reviveParty(state.campaign);
   return enterScene(state, module, state.sceneId);
 }
 

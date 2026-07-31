@@ -550,6 +550,20 @@ describe('defeat, finished locations, battle rewards', () => {
     expect(party.every((p) => p.hp > 0)).toBe(true);
   });
 
+  it('a module with no defeat scene retries the fight with the party on its feet', () => {
+    // The forever-loop: without a revive here the retry begins with the whole
+    // party at 0 HP, loses immediately, and offers the same fight again.
+    const hideout = MODULES.find((m) => m.id === 'hideout')!;
+    const c = newCampaign(1);
+    expect(hideout.defeatScene).toBeUndefined();
+    const s = startAdventure(c, hideout);
+    enterScene(s, hideout, 'lookout-fight');
+    c.characters.forEach((ch) => { ch.resources = { hp: 0 }; });
+    resolveBattle(s, hideout, false);
+    expect(s.sceneId).toBe('lookout-fight');
+    expect(buildCampaignPartyFor(c).every((p) => p.hp > 0)).toBe(true);
+  });
+
   it('a finished location redirects via sceneWhen instead of replaying', () => {
     const s = startAdventure(newCampaign(1), hollow);
     enterScene(s, hollow, 'trail');
