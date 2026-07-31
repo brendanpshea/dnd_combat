@@ -3166,15 +3166,28 @@ button.category .count {
 /* The three doors. Side by side on anything wide enough to compare them in one
    look, stacked on a narrow phone — comparing is the whole interaction, so a
    horizontal scroll would be the wrong answer. */
+/* THE DOORS ARE THE DECISION. They get the width.
+ *
+ * Three columns on a phone gave each card ~130px, which bought three-line
+ * descriptions in 11px grey, a reward that wrapped into the card edge, and the
+ * most cramped element on a screen whose only real question it is. Everything
+ * BELOW it — the roster, the checks, the prose — had five times the room.
+ *
+ * There was a `max-width: 420px` rule meant to stack them, and it is why this
+ * was reported from a phone and not seen here: the reporter's phone is ~443px
+ * across, so the breakpoint never fired and they got three columns anyway. A
+ * fixed pixel breakpoint guesses at devices. Sizing the TRACK instead says the
+ * real rule — a column narrower than this cannot hold a door's name, a line of
+ * description and a reward — and it holds on hardware nobody tested. Same fix
+ * as the spell tray's option grid.
+ *
+ * 260px: one column on any phone, three on a tablet or desktop. */
 .gates {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 6px;
   width: 100%;
   margin-bottom: 10px;
-}
-@media (max-width: 420px) {
-  .gates { grid-template-columns: 1fr; }
 }
 .gate {
   display: flex;
@@ -3196,10 +3209,17 @@ button.category .count {
   box-shadow: 0 0 0 1px var(--gold) inset;
 }
 .gate:disabled { opacity: 0.4; cursor: default; }
-.gate-name { font-family: var(--display); font-size: 13px; }
+/* Name and headcount share the top line — the count was pinned to the bottom
+   of the card by `margin-top: auto`, which was doing the work of making three
+   ragged columns end level. Stacked, there is nothing to line up. */
+.gate-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; width: 100%;
+}
+.gate-name { font-family: var(--display); font-size: 15px; }
 .gate.on .gate-name { color: var(--gold); }
-.gate-blurb { color: var(--muted); font-size: 11px; line-height: 1.25; }
-.gate-count { color: var(--muted); font-size: 11px; margin-top: auto; padding-top: 2px; }
+.gate-blurb { color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+.gate-count { color: var(--muted); font-size: 12px; white-space: nowrap; }
 
 .arena-foes { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .arena-foe {
@@ -3527,14 +3547,26 @@ button.category .count {
    the one that makes choosing a door a decision rather than a preference. */
 .gate-bounty {
   display: block;
-  margin-top: 3px;
-  padding-top: 3px;
+  /* Full width. `.gate` is `align-items: flex-start`, so this shrank to its
+     text and the dashed rule spanned about a third of the card — which reads
+     as a broken border rather than a divider. */
+  align-self: stretch;
+  margin-top: 4px;
+  padding-top: 4px;
   border-top: 1px dashed #453d63;
-  font-size: 10px;
-  line-height: 1.35;
+  font-size: 11.5px;
+  line-height: 1.4;
 }
-.gate-bounty b { color: var(--gold); font-weight: 700; }
-.gate-prize { display: block; color: #c79ae0; }
+/* The bounty's NAME is a label; the prize is the content.
+   It used to be gold and 10px, which inside a card that also uses gold for
+   selection made every unselected door look half-chosen — gold was carrying
+   five jobs on this screen. Demoted to a small caps label so the eye goes to
+   the item, which is the thing actually worth choosing a door for. */
+.gate-bounty b {
+  color: var(--muted); font-weight: 700;
+  font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;
+}
+.gate-prize { display: block; color: #c79ae0; font-size: 12px; }
 
 /* A stall row awaiting its second tap. Buying and selling used to happen on a
    single tap, so a stray thumb on a scrolling list could empty the purse or

@@ -859,3 +859,69 @@ describe('the party strip health bars', () => {
     expect(adv).toMatch(/width: `\$\{pct\}%`/);
   });
 });
+
+/**
+ * The doors are the decision. They get the width.
+ *
+ * Three columns on a phone gave each card ~130px: three-line descriptions in
+ * 11px grey, a reward that wrapped into the card edge, and the most cramped
+ * element on a screen whose only real question it is — while the roster, the
+ * checks and the prose below it had five times the room.
+ *
+ * There WAS a `max-width: 420px` rule meant to stack them, and it is why this
+ * was reported from a phone rather than caught here: the reporter's phone is
+ * ~443px across, so the breakpoint never fired and they got three columns
+ * anyway. A pixel breakpoint guesses at devices; sizing the track states the
+ * actual rule — a column narrower than this cannot hold a name, a line of
+ * description and a reward — and it holds on hardware nobody tested. The spell
+ * tray's option grid learnt the same lesson.
+ */
+describe('the arena doors', () => {
+  const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
+  const rule = (sel: string): string => {
+    const i = CSS.indexOf('\n' + sel + ' {');
+    expect(i, `no rule for ${sel}`).toBeGreaterThan(-1);
+    return CSS.slice(i, CSS.indexOf('}', i));
+  };
+
+  it('size their own tracks instead of guessing at a phone', () => {
+    const gates = rule('.gates');
+    expect(gates, 'three hard columns are back — that is the bug on a 443px phone')
+      .not.toMatch(/repeat\(3,/);
+    const track = gates.match(/minmax\((\d+)px/);
+    expect(track, 'the grid no longer sizes its own tracks').toBeTruthy();
+    // Measured: 260px gives one column at 390 and 443, two at 900, with every
+    // blurb on a single line and no card overflowing.
+    expect(Number(track![1]), 'a column this narrow puts the blurb back to three lines')
+      .toBeGreaterThanOrEqual(240);
+    expect(CSS, 'the pixel breakpoint is back').not.toMatch(/max-width: 420px[\s\S]{0,80}\.gates/);
+  });
+
+  it('put the name and the headcount on one line', () => {
+    expect(arena, 'the head row is gone').toContain('className="gate-head"');
+    const head = arena.indexOf('className="gate-head"');
+    const name = arena.indexOf('gate-name', head);
+    const count = arena.indexOf('gate-count', head);
+    expect(name).toBeGreaterThan(head);
+    expect(count, 'the headcount left the head row').toBeGreaterThan(name);
+    // `margin-top: auto` existed to make three ragged columns end level.
+    // Stacked, there is nothing to line up and it just pushed the count away.
+    expect(rule('.gate-count'), 'the count is being pushed to the card foot again')
+      .not.toContain('margin-top: auto');
+  });
+
+  it('keep gold for selection alone', () => {
+    // Inside a card that uses gold to mean "you picked this", a gold reward
+    // title on every card made them all look half-chosen.
+    expect(rule('.gate-bounty b'), 'the reward title is competing with the selected door again')
+      .not.toContain('var(--gold)');
+    expect(rule('.gate.on .gate-name'), 'selection lost its colour').toContain('var(--gold)');
+  });
+
+  it('draw the reward divider across the whole card', () => {
+    // `.gate` is align-items: flex-start, so this shrank to its own text and
+    // the dashed rule spanned about a third of the card — which reads as a
+    // broken border rather than a divider.
+    expect(rule('.gate-bounty')).toContain('align-self: stretch');
+  });
+});
