@@ -669,6 +669,14 @@ function FrozenScene({ scene }: { scene: Scene }) {
 /** The persistent status bar: party portraits + HP, and — since it's the one
  *  element on every scene — the Journal and Party/Camp affordances, moved here
  *  out of the top bar (bottom-anchored, thumb-reachable, styled like the rest). */
+/** Green while it is a scratch, amber once it matters, red when it is urgent. */
+function hpBand(pct: number): string {
+  if (pct <= 0) return 'hp-out';
+  if (pct <= 25) return 'hp-low';
+  if (pct <= 60) return 'hp-hurt';
+  return 'hp-ok';
+}
+
 export function PartyStrip(
   { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread, needsRest }: {
     campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
@@ -692,7 +700,15 @@ export function PartyStrip(
                   : <span className="adv-party-emoji">🧑</span>}
                 {look && <span className="class-pip on-portrait" title={look.name}>{look.glyph}</span>}
               </span>
-              <div className="adv-party-hpbar"><div style={{ width: `${pct}%` }} /></div>
+              {/* Colour says HOW HURT, width says how much left.
+                  The fill was a red-to-green gradient spanning its own width,
+                  so colour encoded position in the bar rather than health: a
+                  hero at 17/17 showed red down its left half and read as
+                  wounded. Solid bands instead, and full health is simply
+                  green. */}
+              <div className="adv-party-hpbar">
+                <div className={hpBand(pct)} style={{ width: `${pct}%` }} />
+              </div>
               <span className="adv-party-hp">{c.hp}/{c.maxHp}</span>
             </>
           );
