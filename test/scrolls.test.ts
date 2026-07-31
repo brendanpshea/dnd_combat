@@ -12,7 +12,11 @@ import { describe, it, expect } from 'vitest';
 import { ITEMS, SCROLL_IDS } from '../src/data/items.js';
 import { SPELLS } from '../src/data/spells.js';
 import { CLASSES, classScrollPool } from '../src/data/classes.js';
-import { SHOP_STOCK, isObtainable } from '../src/campaign/campaign.js';
+import {
+  SHOP_STOCK, isObtainable, newCampaign, addItem, partyLevelOf, LEVEL_XP,
+  scrollLearnable, learnSpellFromScroll, preparableSpells, setPrepared, preparedSpells,
+  type CampaignState,
+} from '../src/campaign/campaign.js';
 
 const spellOf = (scrollId: string) => scrollId.slice('scroll-'.length);
 const casters = Object.keys(CLASSES).filter((id) => CLASSES[id]?.spellcasting);
@@ -109,5 +113,108 @@ describe('who can actually use what is on sale', () => {
       expect(isObtainable(id), id).toBe(true);
       expect(SHOP_STOCK, id).toContain(id);
     }
+  });
+});
+
+/**
+ * Scribing, reported from a real run: "I tried scribing web at level 3 and the
+ * spellbook didn't update. Also we shouldn't allow scribing level 2 spells
+ * below level 3."
+ *
+ * Two separate faults, both real.
+ *
+ * NO LEVEL GATE AT ALL. `scrollLearnable` checked the class pool and whether
+ * the spell was already known, and nothing else — so a first-level wizard could
+ * pay to copy a ninth-level scroll into a book they cannot cast from for eight
+ * more levels. The gate is the class table, which already says which spells a
+ * wizard of a given level may have.
+ *
+ * AND THE SCROLL VANISHED. `learnSpellFromScroll` puts the spell in
+ * `scribedSpells`, and `preparableSpells` reads it, so the ENGINE knew — but
+ * the tray's leveled pool for a wizard was `spellbookDraft`, the base book
+ * alone. A scribed spell therefore appeared in neither list: not in the
+ * spellbook, not among the spells you may prepare. 100 gold for something the
+ * player could not see or use.
+ */
+describe('copying a scroll into a spellbook', () => {
+  const wizardIdx = (c: CampaignState) => c.characters.findIndex((x) => x.classId === 'wizard');
+
+  const runAt = (xp: number): CampaignState => {
+    const c = newCampaign(5);
+    c.partyReady = true;
+    c.xp = xp;
+    // An explicit book WITHOUT Web. The level-3 default already contains it,
+    // which makes `scrollLearnable` decline for the "already known" reason and
+    // would let these pass without the level gate they are about.
+    const w = c.characters.findIndex((x) => x.classId === 'wizard');
+    c.characters[w]!.spellbook = ['magic-missile', 'shield', 'burning-hands'];
+    return c;
+  };
+
+  it('refuses a spell the caster is not high enough to have', () => {
+    // Web is a 2nd-level spell the wizard table grants at character level 3.
+    const c = runAt(0);
+    expect(partyLevelOf(c)).toBe(1);
+    const w = wizardIdx(c);
+    addItem(c.characters[w]!.inventory, 'scroll-web');
+    expect(scrollLearnable(c, w, 'scroll-web'),
+      'a level-1 wizard was allowed to buy a 2nd-level spell').toBeUndefined();
+    expect(learnSpellFromScroll(c, w, 'scroll-web')).toBe(false);
+  });
+
+  it('allows it once the caster is high enough', () => {
+    const c = runAt(LEVEL_XP[2]!);   // level 3
+    expect(partyLevelOf(c)).toBe(3);
+    const w = wizardIdx(c);
+    addItem(c.characters[w]!.inventory, 'scroll-web');
+    c.gold = 500;
+    expect(scrollLearnable(c, w, 'scroll-web')).toBeDefined();
+    expect(learnSpellFromScroll(c, w, 'scroll-web')).toBe(true);
+  });
+
+  it('puts the spell somewhere the player can actually prepare it', () => {
+    const c = runAt(LEVEL_XP[2]!);
+    const w = wizardIdx(c);
+    addItem(c.characters[w]!.inventory, 'scroll-web');
+    c.gold = 500;
+    expect(learnSpellFromScroll(c, w, 'scroll-web')).toBe(true);
+    expect(preparableSpells(c, w), 'scribed spell is not preparable').toContain('web');
+    // ...and preparing it sticks, rather than being filtered back out.
+    setPrepared(c, w, [...preparedSpells(c, w).slice(0, 1), 'web']);
+    expect(preparedSpells(c, w), 'the scribed spell would not stay prepared').toContain('web');
+  });
+
+  it('charges and consumes only on success', () => {
+    const c = runAt(0);
+    const w = wizardIdx(c);
+    addItem(c.characters[w]!.inventory, 'scroll-web');
+    const gold = c.gold;
+    expect(learnSpellFromScroll(c, w, 'scroll-web')).toBe(false);
+    expect(c.gold, 'a refused scribe still took the fee').toBe(gold);
+    expect(c.characters[w]!.inventory.some((s) => s.itemId === 'scroll-web' && s.qty > 0),
+      'a refused scribe still burnt the scroll').toBe(true);
+  });
+});
+
+/**
+ * The level gate is on the spell's LEVEL, not on the class's offer list.
+ *
+ * The first fix gated on `availableLeveledSpells`, which broke the feature
+ * outright: the whole point of scribing is to learn spells that are NOT on your
+ * default list. `test/campaign.test.ts` caught it — Ray of Sickness is a
+ * wizard-list scroll the wizard table never offers, and it had stopped being
+ * learnable at any level.
+ */
+describe('what the scribing gate is made of', () => {
+  it('still allows a spell that is off the class offer list', () => {
+    const c = newCampaign(9);
+    c.partyReady = true;
+    const w = c.characters.findIndex((x) => x.classId === 'wizard');
+    expect(preparableSpells(c, w), 'this test needs a spell off the default list')
+      .not.toContain('ray-of-sickness');
+    addItem(c.characters[w]!.inventory, 'scroll-ray-of-sickness');
+    expect(scrollLearnable(c, w, 'scroll-ray-of-sickness'),
+      'gating on the offer list would reduce scribing to spells you could already pick')
+      .toBeDefined();
   });
 });

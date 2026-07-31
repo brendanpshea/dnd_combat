@@ -4039,3 +4039,8 @@ button.category .count {
   color: var(--muted); font-size: 11px; white-space: nowrap;
 }
 .camp-buff-cost small { font-size: 10px; opacity: .8; }
+
+/* A spell copied in from a scroll: in the book for good, so it shows as a fact
+   rather than a choice — no checkbox to untick and no count against the base
+   spellbook's size. It used to appear nowhere at all. */
+.prepare-option.scribed { cursor: default; background: #2f2a44; }
