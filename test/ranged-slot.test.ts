@@ -28,6 +28,12 @@ function fighterWithJavelin(): { c: CampaignState; f: number } {
   const c = newCampaign(3);
   c.partyReady = true;
   const f = c.characters.findIndex((x) => x.classId === 'fighter');
+  // EXACTLY ONE. The fighter's kit already carries javelins, and with a stack
+  // of three the equality test below passed even when `equipItem` was wrongly
+  // consuming one — two were left in the pack, so `stowedWeapons` never
+  // noticed. Found by planting the container behaviour back and watching the
+  // test that exists to catch it stay green.
+  c.characters[f]!.inventory = c.characters[f]!.inventory.filter((s) => s.itemId !== 'javelin');
   addItem(c.characters[f]!.inventory, 'javelin');
   return { c, f };
 }

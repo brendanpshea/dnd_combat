@@ -1143,7 +1143,9 @@ describe('the gear screen', () => {
     expect(ps, 'the reason is not shown').toContain('gear-cand');
     // ...but only for near-misses. Listing every potion against the ranged
     // slot as "not a weapon" is noise, not teaching.
-    expect(ps, 'wrong-kind items are back in the picker').toContain('wrongKind');
+    // The CALL, not the declaration: removing only the filter left the helper
+    // defined and this assertion passing on a dead name.
+    expect(ps, 'wrong-kind items are back in the picker').toContain('!wrongKind(why)');
   });
 
   it('folds the packs away', () => {
