@@ -2482,12 +2482,32 @@ function scribingFee(spellId: Id): number {
  * Returns the spell and its fee for the shop UI to show, regardless of whether
  * the party can currently afford it — the caller checks gold.
  */
+/** The highest spell level this class can cast at this character level. */
+function maxCastableLevel(classId: Id, level: number): number {
+  const slots = CLASSES[classId]?.spellcasting?.slotsByLevel[level - 1] ?? [];
+  let max = 0;
+  for (const [i, n] of slots.entries()) if (n > 0) max = i + 1;
+  return max;
+}
+
 export function scrollLearnable(c: CampaignState, charIdx: number, itemId: Id): { spellId: Id; fee: number } | undefined {
   const ch = c.characters[charIdx];
   if (!ch || ch.classId !== 'wizard') return undefined;
   const spellId = scrollSpellId(itemId);
   if (!spellId) return undefined;
   if (!classScrollPool('wizard').has(spellId)) return undefined;
+  // High enough to CAST it. There was no level check of any kind here, so a
+  // first-level wizard could pay to copy a ninth-level scroll into a book they
+  // could not cast from for eight more levels — gold spent on nothing, with
+  // nothing on screen to say why.
+  //
+  // The gate is the spell's LEVEL against this caster's slots, and not
+  // membership of `availableLeveledSpells`. That was the first attempt and it
+  // broke the feature: the whole point of scribing is to learn spells that are
+  // NOT on your default list, so gating on that list reduced it to "spells you
+  // could already have picked". `test/campaign.test.ts` caught it — Ray of
+  // Sickness is a wizard-list scroll that the wizard table never offers.
+  if ((SPELLS[spellId]?.level ?? 1) > maxCastableLevel('wizard', partyLevelOf(c))) return undefined;
   if (knownLeveledSpells(c, charIdx).includes(spellId)) return undefined; // already in the spellbook
   return { spellId, fee: scribingFee(spellId) };
 }

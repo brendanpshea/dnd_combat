@@ -64,7 +64,22 @@ export function SpellTray(
   const usesBook = bookCap !== undefined;
   const cap = preparedLimit(c, idx);
   const rituals = knownRitualSpells(c, idx);
-  const leveledPool = usesBook ? spellbookDraft : preparableSpells(c, idx);
+  /**
+   * Scrolls this wizard has copied in. They are not part of the base book —
+   * they do not count against its size and cannot be un-picked — so they live
+   * beside the draft rather than in it.
+   */
+  const scribed = ch.scribedSpells ?? [];
+  /**
+   * Everything this caster may prepare FROM.
+   *
+   * This was `spellbookDraft` for a wizard: the base book alone. A scribed
+   * scroll went into `scribedSpells`, which `preparableSpells` reads and the
+   * engine honours — but the tray showed it in neither list, so a spell bought
+   * for 100 gold appeared nowhere and could never be prepared. Reported as
+   * "I tried scribing web and the spellbook didn't update".
+   */
+  const leveledPool = usesBook ? [...spellbookDraft, ...scribed] : preparableSpells(c, idx);
   const isDefault = ch.prepared === undefined && ch.cantrips === undefined && ch.spellbook === undefined;
   const cAtCap = cantripDraft.length >= cCap;
   const bookAtCap = usesBook && spellbookDraft.length >= (bookCap ?? 0);
@@ -136,6 +151,21 @@ export function SpellTray(
             <div className="sheet-row">
               <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
               <div className="prepare-grid">
+                {scribed.length > 0 && (
+                  <>
+                    <span className="prepare-tier">Copied from scrolls</span>
+                    {scribed.map((id) => (
+                      <div key={id} className="prepare-option-row">
+                        <label className="prepare-option checked scribed">
+                          <span className="prepare-option-name">
+                            📜 {SPELLS[id]?.name ?? id}
+                          </span>
+                        </label>
+                        <SpellInfoDot spellId={id} />
+                      </div>
+                    ))}
+                  </>
+                )}
                 {byTier(bookPool).map(([lv, ids]) => (
                   <Fragment key={lv}>
                     <span className="prepare-tier">{TIER_NAME[lv] ?? `L${lv}`} level</span>
