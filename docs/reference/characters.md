@@ -30,7 +30,7 @@
 | Farmer | `farmer` | Animal Handling, Nature | Hardy | Carpenter’s Tools | You worked the land; patient, strong, good with beasts. |
 | Guard | `guard` | Athletics, Perception | Alert | Gaming Set | You watched a gate, and learned to notice what moved. |
 | Guide | `guide` | Stealth, Survival | Magic Initiate (Cleric) | Cartographer’s Tools | At home in the wild; sure-footed and hard to spot. |
-| Hermit | `hermit` | Medicine, Religion | Magic Initiate (Cleric) | Herbalism Kit | You lived apart, tending your own hurts and questions. |
+| Hermit | `hermit` | Medicine, Religion | Hardy | Herbalism Kit | You lived apart, tending your own hurts and questions. |
 | Merchant | `merchant` | Animal Handling, Persuasion | Fated | Navigator’s Tools | A stall or a caravan; you can read a buyer at ten paces. |
 | Noble | `noble` | History, Persuasion | Skilled | Gaming Set | Raised to privilege, and to the histories behind it. |
 | Sage | `sage` | Arcana, History | Magic Initiate (Cleric) | Calligrapher’s Supplies | A scholar of the arcane and the ages. |

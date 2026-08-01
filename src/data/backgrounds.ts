@@ -112,18 +112,35 @@ export function backgroundSkills(backgroundId: Id | undefined): SkillId[] {
  * never opens the picker still gets the skills — the same way an untouched
  * Fighting Style still applies. Chosen to spread skill coverage across the
  * party, so an adventure's varied scene checks land on different heroes.
+ *
+ * IT ALSO PICKS THE FEAT, which is what this table kept getting wrong.
+ * `BACKGROUND_FEAT` hangs a feat off the background, so a choice made for skill
+ * coverage silently decides a mechanical one too. Six of the twelve classes
+ * landed on Magic Initiate — including the BARBARIAN, which cannot cast at all
+ * while raging, so the feat was strictly dead weight on the one class whose
+ * whole turn is raging. Reported as "Magic Initiate is the default for nearly
+ * every character".
+ *
+ * Two rules now, both test-enforced in `background-defaults.test.ts`:
+ * every class appears here (warlock and sorcerer did not, and fell through to
+ * Wayfarer without anyone deciding that), and no class whose kit has no
+ * spellcasting defaults into a spellcasting feat.
  */
 const DEFAULT_BY_CLASS: Record<Id, Id> = {
-  fighter: 'soldier',
-  wizard: 'sage',
-  cleric: 'acolyte',
-  rogue: 'criminal',
-  ranger: 'guide',
-  paladin: 'noble',
-  barbarian: 'guide',
-  monk: 'hermit',
-  bard: 'entertainer',
-  druid: 'hermit',
+  // martial — nothing here grants spells
+  fighter: 'soldier',      // Savage Attacker
+  barbarian: 'farmer',     // Hardy: Tough on a rager, and never Magic Initiate
+  rogue: 'criminal',       // Alert
+  monk: 'hermit',          // Hardy
+  // half-casters and full casters
+  ranger: 'guide',         // Magic Initiate — a half-caster can use it
+  paladin: 'noble',        // Skilled
+  wizard: 'sage',          // Magic Initiate
+  cleric: 'acolyte',       // Magic Initiate — the SRD's own pairing
+  druid: 'hermit',         // Hardy
+  bard: 'entertainer',     // Skilled
+  warlock: 'wayfarer',     // Fated — a pact-maker's luck
+  sorcerer: 'merchant',    // Fated — the wild talent's
 };
 
 export function defaultBackgroundFor(classId: Id): Id {

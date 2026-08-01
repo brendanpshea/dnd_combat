@@ -11,7 +11,7 @@ import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
 import { savingThrow, saveForHalf, charmWarded, immuneToCharmAndFear } from '../engine/rules/saves.js';
-import { applyDamage, kill, dropToZero, resolveAttack } from '../engine/rules/attack.js';
+import { applyDamage, kill, dropToZero, resolveAttack, breakConcentration } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { SORCERY_POINTS } from '../engine/rules/metamagic.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
@@ -1369,7 +1369,17 @@ export const FEATURES: Record<Id, FeatureData> = {
       const c = state.combatants[actorId]!;
       if (c.conditions.some((k) => k.id === 'raging')) return [];
       c.conditions.push({ id: 'raging', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'raging', sourceId: actorId }];
+      const events: GameEvent[] = [
+        { type: 'conditionApplied', combatantId: actorId, condition: 'raging', sourceId: actorId },
+      ];
+      // "No Concentration or Spells." The spell half is enforced in
+      // `spellAvailable`; this is the concentration half. A barbarian who has
+      // been handed a concentration effect — a scroll read before raging, an
+      // ancestry spell, Hunter's Mark from a multiclass build the data does not
+      // have yet — drops it the moment the rage starts, rather than quietly
+      // keeping a benefit the rule takes away.
+      events.push(...breakConcentration(state, actorId));
+      return events;
     },
   },
   /**
