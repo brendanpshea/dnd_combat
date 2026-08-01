@@ -4,21 +4,28 @@ A grid-based tactical combat game using a simplified subset of the SRD 5.2.1
 rules. The engine is headless, deterministic, and data-driven; the terminal
 CLI, the web app, and both AIs drive it through the same action API.
 
-**Status: all planned phases shipped.** Eight classes at levels 1–7 (one
-subclass each), eight species, 70 spells (cantrips through 4th level), 140 SRD
-monsters — 16 of them spellcasters — in 63 authored encounters, eleven themed
-battle maps plus a map generator, inventory/equipment/trinkets, a persistent
-34-stage campaign (shop, loot, skill gambits, hit-dice rests), a data-driven
-**adventure mode** with a flagship story trilogy, an **arena mode** of
-generated fights on generated maps, and a deployed web frontend
+**Status: all planned phases shipped.** Twelve classes across levels 1–9,
+eight species, 94 spells (cantrips through 5th level), 146 SRD monsters — 16 of
+them spellcasters — in 63 authored encounters, eleven themed battle maps plus a
+map generator, inventory/equipment/trinkets, a persistent 34-stage campaign
+(shop, loot, skill gambits, hit-dice rests), a data-driven **adventure mode**
+with a flagship story trilogy, an **arena mode** of generated fights on
+generated maps organised into two-fight days, and a deployed web frontend
 (https://brendanpshea.github.io/dnd_combat/). See §10 for history and next
 candidates.
 
-Levels 6 and 7 are an **arena** reward: the campaign ladder awards about 7,500
-XP a character across all 34 stages and 6th needs 14,000, so a campaign run
-tops out at 5th however it is played. The arena has no such ceiling — it
-reaches 6th around wave 18 and 7th around wave 21, against a median run of
-9–11 waves. Both are for a run that goes deep.
+The shipped menu is three things: a guided tutorial, the story trilogy, and the
+arena. The 34-stage ladder and the configurable skirmish are dev-build only —
+they still pass their tests, but `import.meta.env.DEV` gates them out of the
+bundle. Counts above are from `src/data/`; regenerate
+[reference/](reference/README.md) rather than editing them here by hand.
+
+Levels past 5 are an **arena** reward. The XP curve runs to 9th
+(`LEVEL_XP`, `MAX_LEVEL`), and the story trilogy is built for 1–5: the 34-stage
+ladder awards about 7,500 XP a character across all of it and 6th needs 14,000,
+so neither authored mode can reach the top. The arena has no ceiling — 6th lands
+around wave 18 and 7th around wave 21, against a median run of 9–11 waves. The
+levels above that are for a run that goes a long way.
 
 **How to read this document.** §1–§6 are the combat rules model and its
 architecture; §7 is the AI (including its measured tuning history — the
@@ -36,7 +43,7 @@ fix the file.
 | Question | Decision |
 | --- | --- |
 | Interface | Headless engine; three drivers — terminal CLI, React web app, and the AIs — all through one action API |
-| Rules depth | Faithful core; simplified edges (no cover, no readied actions, no components) |
+| Rules depth | Faithful core; simplified edges (no readied actions, no components, no flanking). Cover IS implemented — half cover from barricades, +2 AC, applied to weapon and spell attacks alike, and read back to the player as a badge (`engine/rules/cover.ts`) |
 | Grid | Square, 5 ft cells, Chebyshev distance (diagonal costs 5 ft) |
 | Data | Data-driven: classes, weapons, armor, spells, monsters, maps are typed data |
 | Initiative | Rolled: d20 + Dex mod, individual turns, teams interleaved. Ties: higher Dex, then seeded coin flip |
@@ -395,9 +402,10 @@ thrown weapons are not consumed (abstract recovery). Default kits: everyone
 carries a healing potion; the wizard/cleric get a scroll, the fighter
 alchemist's fire and two javelins.
 
-## 4. Classes (levels 1–7, one subclass each)
+## 4. Classes (levels 1–9, one subclass each)
 
-Eight classes ship. All: standard array by priority, standard gear, weapon
+Twelve classes ship: the founding four (Fighter, Wizard, Cleric, Rogue), then
+Ranger, Paladin, Warlock, Sorcerer, Bard, Druid, Barbarian and Monk. All: standard array by priority, standard gear, weapon
 masteries per the 5.5e list. Level 1 details (AC/HP/features) are
 authoritative in `src/data/classes.ts`. The founding four are summarized
 below; **Ranger (Hunter)** and **Paladin (Devotion)** follow in prose later
@@ -1107,9 +1115,28 @@ sized so fights carry the leveling and `xpToLevel` milestones are floors.
 ## 7d. Arena mode
 
 Generated fights on generated maps, at a budget that rises with the wave and
-scales with party level. `src/arena/` is three files: `encounter.ts` drafts a
-roster, `map.ts` draws a board, `run.ts` holds the wave/budget curve and the
-run's score.
+scales with party level. The core three are `encounter.ts` (drafts a roster),
+`map.ts` (draws a board) and `run.ts` (the wave/budget curve and the run's
+score); the rest of `src/arena/` is the frame around a fight — `day.ts`,
+`gates.ts`, `spoils.ts`, `revival.ts`, `stall.ts`, `lore.ts`, `deploy.ts`,
+`prep.ts`, `morning.ts`, `ambush.ts`, `bounties.ts`, `medal.ts`, `chorus.ts`.
+
+**A run is a series of days, not a queue of waves.** `day.ts` splits the run
+into two-fight days — morning and afternoon — with a hit-dice lunch between them
+and a full rest overnight. `gates.ts` offers three **doors** before each fight,
+each naming its map, its difficulty, its roster and a **prize** carrying a
+condition (`spoils.ts`): *catch three enemies in one spell*, *use a potion,
+scroll or flask*. The choice is a plan rather than a coin flip, and the
+condition is what makes a weaker door worth taking.
+
+**A defeat ends the day, not the run.** The party is revived, the night passes,
+and tomorrow holds the same two fights, frozen at the level they were met at, so
+what was learned and bought still applies. `revival.ts` bills for it, and the
+first defeat of a run is free — at 1st level the bill is most of a starting
+purse, and a party that loses its opening day should not be broke before it has
+learned what the arena is. This replaced an earlier rule where a defeat retried
+the wave immediately; the day frame gives a loss a cost without ending the run
+over one bad draw.
 
 **The roster is `MONSTERS`, not a list.** A monster added to the game is arena
 opposition the same day; the opt-out is `ARENA_EXCLUDED` (currently the
@@ -1176,8 +1203,8 @@ effect — win rate is flat across depths, it is the tactical band that changes.
 **Enemies do not always start on the far rank.** `arena/deploy.ts` picks one of
 four seeded patterns — far rank (45%), advanced (25%), pincer (18%), scattered
 (12%) — weighted so the classic layout still reads as normal and the rest as
-variations. Nothing there is a new rule: no cover, no flanking, no elevation,
-purely where the fight begins. Seeded off the wave, so a retry is the same
+variations. Nothing there is a new rule — no flanking, no elevation, no
+deployment-only mechanic — purely where the fight begins. Seeded off the wave, so a retry is the same
 fight rather than a reroll of the layout.
 
 **Every wave contains something with reach.** Two thirds of the bestiary is

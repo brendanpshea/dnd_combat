@@ -1,5 +1,9 @@
 # The Reedwife's Debt — a 1→5 campaign in three modules
 
+> **Status: delivered.** All three modules ship, and the trilogy is the game's
+> headline mode. Kept as the design record — the XP maths that forced three
+> modules rather than one, and the party-continuation rule that links them.
+
 The Hollow Road was designed (and plays well) as a tight L1→3 adventure.
 Taking a company from 1 to 5 *naturally* on the SRD curve needs ~26,000 total
 encounter XP for a party of four — roughly five times what one ~2-hour module
