@@ -198,3 +198,96 @@ export function night(c: CampaignState, cleared: number): RestResult {
   itemRecharge(c, cleared);
   return rest;
 }
+
+/**
+ * What a rest gave back, per hero, as a before-and-after.
+ *
+ * `RestResult` reports the party TOTAL — "+12 HP, 2 hit dice" — which is the
+ * right shape for a log line and the wrong one for a screen. A player watching
+ * a rest wants to see whose bar moved, and a number that only ever goes up
+ * cannot show that a lunch SPENDS something to do it.
+ *
+ * So this is a snapshot pair rather than a summary. Take one before the rest,
+ * one after, and the difference is the whole cut scene: bars that fill, hit-dice
+ * pips that grey out, slot pips that relight. It lives here rather than in the
+ * web app because it is a fact about the day, and because a headless test can
+ * then assert that a lunch debits and a night does not.
+ */
+export interface HeroRest {
+  name: string;
+  hp: { from: number; to: number; max: number };
+  hitDice: { from: number; to: number; max: number };
+  /** Remaining slots per level, index 0 = 1st. Empty for a non-caster. */
+  slots: { from: number[]; to: number[] };
+}
+
+export interface RestSnapshot {
+  name: string;
+  hp: number;
+  maxHp: number;
+  hitDice: number;
+  maxHitDice: number;
+  slots: number[];
+}
+
+/** The party's resources right now, for one side of a `restLedger`. */
+export function snapshotRest(c: CampaignState): RestSnapshot[] {
+  return buildCampaignParty(c).map((combatant, index) => ({
+    name: combatant.name,
+    hp: combatant.hp,
+    maxHp: combatant.maxHp,
+    hitDice: hitDiceLeft(c, index),
+    // A hit-dice pool is the character's level, which is what `longRest`
+    // restores it to.
+    maxHitDice: combatant.level,
+    slots: combatant.spellSlots.map((s) => s.current),
+  }));
+}
+
+/** Pair two snapshots into the per-hero rows a rest screen draws. */
+export function restLedger(before: RestSnapshot[], after: RestSnapshot[]): HeroRest[] {
+  return before.map((b, i) => {
+    const a = after[i] ?? b;
+    return {
+      name: b.name,
+      hp: { from: b.hp, to: a.hp, max: a.maxHp },
+      hitDice: { from: b.hitDice, to: a.hitDice, max: a.maxHitDice },
+      slots: { from: b.slots, to: a.slots },
+    };
+  });
+}
+
+/**
+ * One line, chosen by what actually happened.
+ *
+ * A line the player reads ten times a run has to be worth reading the tenth
+ * time, which rules out decoration: every branch here reports something true
+ * about the rest that just resolved — who got up, what it cost, who has nothing
+ * left to spend. The generic line is last and deliberately plain.
+ *
+ * Not the chorus. That is capped at one line per day and fires once per run per
+ * subject, because it exists to explain the arena's premise; a beat this
+ * frequent needs lines that may repeat, and would otherwise blow that budget or
+ * sit silent most of the time.
+ */
+export function restLine(kind: DayHalf | 'night', rows: HeroRest[], rest: RestResult): string {
+  const spent = rest.hitDiceSpent ?? 0;
+  const recovered = rest.recovered ?? [];
+  if (kind === 'night') {
+    const hurt = rows.filter((r) => r.hp.from < r.hp.max).length;
+    if (hurt >= 3) return 'A hard day. Sleep takes all of it back — the fights do not care.';
+    if (hurt === 0) return 'Nobody needed the night. Tomorrow will ask again.';
+    return 'Morning. Every slot, every die, every hit point — back where it started.';
+  }
+  if ((rest.revived ?? 0) > 0) {
+    const name = rows.find((r) => r.hp.from === 0)?.name;
+    return `${name ?? 'Somebody'} is back on their feet. The afternoon does not wait.`;
+  }
+  const dry = rows.filter((r) => r.hitDice.to === 0 && r.hitDice.from > 0);
+  if (dry.length > 0) return `${dry[0]!.name} has no dice left. What is left is what you fight with.`;
+  if (recovered.length > 0) {
+    return `${recovered[0]!.name} closes the book and finds something still in it.`;
+  }
+  if (spent === 0) return 'Bread, water, and nothing worth spending a die on.';
+  return `${spent} ${spent === 1 ? 'die' : 'dice'} spent. That is the day's healing, and there is no more.`;
+}

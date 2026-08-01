@@ -1391,6 +1391,65 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .mc-cost { display: block; font-size: .75rem; opacity: .75; font-weight: 400; }
 .move-confirm-no-out { margin: 0; color: var(--muted); font-size: .82rem; }
 
+/* The rest ledger: a rest shown as movement rather than as a total. Used
+   inline at lunch, on its own screen at daybreak, and on the defeat screen —
+   the night happens whether you won or not. */
+.rest-ledger { display: flex; flex-direction: column; gap: 6px; }
+/* Name and bar on the first line, pips and the deltas on the second.
+   The deltas used to share the first row and squeezed the name column until
+   "Morgan Le Fey" rendered as "Morgan Le ..." — abbreviating the hero on the
+   screen that is about the heroes. */
+.rest-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(90px, 1.4fr);
+  grid-template-areas: 'name bar' 'pips deltas';
+  align-items: center;
+  gap: 2px 8px;
+}
+.rest-name {
+  grid-area: name; font-size: .82rem; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rest-bar {
+  grid-area: bar; position: relative; display: block;
+  height: 14px; border-radius: 7px; background: #00000045; overflow: hidden;
+}
+.rest-bar-fill {
+  position: absolute; inset: 0 auto 0 0;
+  background: linear-gradient(90deg, #4c8f5a, #6fbf7f);
+  transition: width cubic-bezier(.2, .7, .3, 1);
+}
+.rest-bar-fill.full { background: linear-gradient(90deg, #4c8f5a, #8fd89b); }
+.rest-bar-text {
+  position: relative; display: block; text-align: center;
+  font-size: .7rem; line-height: 14px; color: #eaf3ea;
+  text-shadow: 0 1px 2px #000a;
+}
+.rest-deltas { grid-area: deltas; display: flex; gap: 6px; justify-content: flex-end; font-size: .78rem; white-space: nowrap; }
+.rest-pips { grid-area: pips; display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.rest-pip {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #ffffff1f; box-shadow: inset 0 0 0 1px #ffffff14;
+  transition: background .35s ease-out, box-shadow .35s ease-out;
+}
+.rest-pip.die.on { background: #d9a441; box-shadow: 0 0 4px #d9a44166; }
+.rest-pip.slot.on { background: #6aa2e8; box-shadow: 0 0 4px #6aa2e866; }
+.rest-pip-gap { width: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  /* The information is the numbers and the pip colours; the travel is garnish,
+     and this is a screen the player sees ten times a run. */
+  .rest-bar-fill, .rest-pip { transition: none; }
+}
+
+/* One line, and it says what happened rather than decorating it. */
+.rest-line { margin: 0; color: var(--muted); font-size: .86rem; font-style: italic; }
+
+/* Daybreak: the night gets its own screen, because "the day is over and
+   tomorrow is the same two fights" is the arena's whole shape. */
+.daybreak-sun { font-size: 2.4rem; line-height: 1; }
+.daybreak h2 { margin: 2px 0 0; }
+.daybreak .hint { margin-top: 2px; }
+
 /* ---- log ---- */
 .log {
   width: 100%;
