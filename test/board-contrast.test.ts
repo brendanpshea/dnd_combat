@@ -65,26 +65,89 @@ describe('board theme contrast', () => {
  * The rule the fix encodes: fills are for danger, patterns are for cost, relief
  * is for blocking, saturation belongs to the figures. This board had fills
  * doing all four jobs.
+ *
+ * ALL OF THAT WAS ALREADY TRUE OF THE STYLESHEET AND NONE OF IT REACHED THE
+ * SCREEN, which is what these tests are really for now. The hatch was declared
+ * on `.cell.terrain-difficult`; six themes then restyled the tile with the
+ * `background` SHORTHAND, which resets `background-image` and erased it. The
+ * old tests here passed throughout, because they read the declaration that got
+ * overridden rather than the one that won. Measured on a live graveyard board,
+ * the computed `background-image` of a difficult cell was a single flat
+ * `linear-gradient` — no hatch anywhere on the board.
+ *
+ * So these assert the CASCADE, not the intent: one rule paints this tile, it
+ * takes its colour from the theme's floor variable, and nothing uses the
+ * shorthand that ate it last time.
  */
+/** The arguments of the first `fn(` in `text`, to its own closing paren. */
+function balanced(text: string, open: string): string {
+  const start = text.indexOf(open);
+  if (start < 0) return '';
+  let depth = 0;
+  for (let i = start + open.length - 1; i < text.length; i++) {
+    if (text[i] === '(') depth++;
+    else if (text[i] === ')' && --depth === 0) return text.slice(start + open.length, i);
+  }
+  return '';
+}
+
 describe('difficult ground reads as slow, not deadly', () => {
   const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+
+  /** Every rule body whose selector mentions difficult ground and isn't a badge. */
+  const paintRules = [...css.matchAll(/^([^{}\n]*\.terrain-difficult[^{}\n]*)\{([^}]*)\}/gm)]
+    .map(([, selector, body]) => ({ selector: selector!.trim(), body: body! }))
+    .filter((r) => !r.selector.includes('::after'));
+
+  it('is painted by exactly one rule, so no theme can override it away', () => {
+    // The `.dark` companion sets only the checker's other floor colour.
+    expect(paintRules.map((r) => r.selector).sort()).toEqual([
+      '.board .cell.terrain-difficult',
+      '.board .cell.terrain-difficult.dark',
+    ]);
+  });
+
+  it('never uses the background shorthand, which is what erased the hatch', () => {
+    for (const r of paintRules) {
+      expect(r.body, `${r.selector} uses the \`background\` shorthand — it resets background-image`)
+        .not.toMatch(/(^|[;\s])background\s*:/);
+    }
+  });
+
+  it('takes its colour from the floor, so it is the same ground and not a hole', () => {
+    // Floor cells are translucent and let the painted backdrop through. The old
+    // difficult tile was opaque, so it was the one patch the art did not show
+    // through — which is what read as water you could not cross.
+    for (const r of paintRules) {
+      const colour = /background-color:\s*([^;]+)/.exec(r.body);
+      expect(colour, `${r.selector} sets no background-color`).not.toBeNull();
+      expect(colour![1], `${r.selector} paints a literal colour instead of the theme floor`)
+        .toMatch(/var\(--floor/);
+    }
+  });
 
   it('carries a pattern, so the affordance is not the colour', () => {
     // A hatch survives desaturation, colour-blindness and a 50px cell on a
     // phone. A hue shift survives none of them.
-    const base = css.slice(css.indexOf('\n.cell.terrain-difficult {'));
-    expect(base.slice(0, 260), 'the hatch is gone — difficult ground is back to colour alone')
+    const main = paintRules.find((r) => r.selector === '.board .cell.terrain-difficult')!;
+    expect(main.body, 'the hatch is gone — difficult ground is back to colour alone')
       .toContain('repeating-linear-gradient');
+    // Two-tone: a light-only stripe needs a dark floor, and village and ember
+    // do not have one — measured at 0.010 ABOVE the floor and 0.002 from it.
+    // A ridge plus its shadow carries contrast whatever the floor is worth.
+    // Balance the parens rather than matching to the next `);`. A lazy regex
+    // ran straight past the hatch into the darkening layer below it, which is
+    // rgba(0,0,0,…) — so deleting the dark stripe still "passed".
+    const hatch = balanced(main.body, 'repeating-linear-gradient(');
+    expect(hatch, 'a single pale stripe washes out on the light themes')
+      .toMatch(/rgba\(255,\s*255,\s*255[\s\S]*rgba\(0,\s*0,\s*0/);
   });
 
-  it('no longer glares out of any theme', () => {
+  it('no longer glares: no theme paints a bright pool on it', () => {
     // The bright radial "pooling water" highlights were what made a cost tile
-    // the brightest thing on the board. Every theme lost them.
-    for (const theme of ['stone', 'forest', 'graveyard', 'bog', 'ember', 'village']) {
-      const i = css.indexOf(`.board.theme-${theme} .cell.terrain-difficult {`);
-      expect(i, `no difficult rule for ${theme}`).toBeGreaterThan(-1);
-      const rule = css.slice(i, css.indexOf('}', i));
-      expect(rule, `${theme}'s difficult ground still has a bright pool highlight`)
+    // the brightest thing on the board.
+    for (const r of paintRules) {
+      expect(r.body, `${r.selector} still has a bright pool highlight`)
         .not.toContain('radial-gradient');
     }
   });

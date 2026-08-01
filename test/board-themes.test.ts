@@ -8,11 +8,15 @@
  * tile rendered as a lava pool in a forest, in a graveyard, in a market square
  * and in a swamp. Fire on grassland.
  *
- * `terrain-difficult` had the opposite history: four themes had been given a
- * fiction of their own (seepage between flagstones, boggy undergrowth,
- * grave-mist, the Black Ford) and two had not, so ember and village fell
- * through to the generic rule and drew a bright turquoise pool on scorched
- * volcanic rock and on cobblestones.
+ * `terrain-difficult` had the opposite history and now has the opposite RULE.
+ * It used to be six per-theme fictions (seepage between flagstones, boggy
+ * undergrowth, grave-mist, the Black Ford, ash, churned mud), each a block of
+ * colour, and every one of them wrote `background:` — the shorthand — which
+ * reset the shared hatch to nothing. Difficult ground is deliberately ONE rule
+ * now, taking its colour from the theme's own `--floor`: the same ground,
+ * darker and textured, rather than a different substance dropped onto it. So
+ * a per-theme difficult rule is a REGRESSION here, not a missing decision, and
+ * `board-contrast.test.ts` owns that shape. This file is about hazards.
  *
  * Both were invisible to `terrain-sheet.ts`, which compares one terrain against
  * another in a 4x2 patch. The question it cannot ask is whether the tiles look
@@ -44,11 +48,10 @@ const THEMES = Object.keys(BOARD_THEMES);
 const INHERITS: Record<string, string> = {
   'hazard:stone': 'A lava seam under a ruin is what the generic tile already draws.',
   'hazard:ember': 'Molten rock IS the ember theme — the generic tile was designed for it.',
-  'difficult:stone': 'Has its own rule; listed nowhere else.',
 };
 
 describe('board themes dress their own terrain', () => {
-  for (const terrain of ['hazard', 'difficult'] as const) {
+  for (const terrain of ['hazard'] as const) {
     it(`gives every theme a ${terrain} treatment`, () => {
       const missing = THEMES.filter((theme) =>
         // The RULE, not the badge override. `.includes` on the bare selector
@@ -59,7 +62,7 @@ describe('board themes dress their own terrain', () => {
         !INHERITS[`${terrain}:${theme}`]);
       expect(
         missing,
-        `these themes draw the GENERIC ${terrain} tile — ${terrain === 'hazard' ? 'a lava pool' : 'a turquoise pool'}`
+        `these themes draw the GENERIC ${terrain} tile — a lava pool`
           + ` — wherever it lands: ${missing.join(', ')}.\n`
           + `Give each one a rule in styles.css, or add it to INHERITS with a reason.`,
       ).toEqual([]);
@@ -73,7 +76,7 @@ describe('board themes dress their own terrain', () => {
       expect(why.length, `${key} needs a reason`).toBeGreaterThan(20);
       // A theme that has since been given its own rule should come off the
       // list, or the comment has stopped being true.
-      if (CSS.includes(`.board.theme-${theme} .cell.terrain-${terrain} {`) && key !== 'difficult:stone') {
+      if (CSS.includes(`.board.theme-${theme} .cell.terrain-${terrain} {`)) {
         throw new Error(`${key} has its own rule now — remove it from INHERITS`);
       }
     }
