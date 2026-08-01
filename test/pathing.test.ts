@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { step } from '../src/engine/actions.js';
-import { worstCaseWalkDamage } from '../src/engine/rules/movement.js';
+import { worstCaseWalkDamage, readWalk } from '../src/engine/rules/movement.js';
 import type { Position } from '../src/engine/types.js';
 import { cellAt } from '../src/engine/types.js';
 
@@ -130,5 +130,98 @@ describe('worst-case walk damage (the lethality veto\'s input)', () => {
     c.apply({ kind: 'disengage' });
     const rog = c.state.combatants['rog']!;
     expect(worstCaseWalkDamage(c.state, rog, { x: 3, y: 0 })).toBe(0);
+  });
+});
+
+/**
+ * The same walk, read as a sentence instead of a number.
+ *
+ * `worstCaseWalkDamage` answers "how much" — enough for the AI's lethality
+ * veto. A player needs "who": opportunity attacks are the one rule on this
+ * board that is invisible until it fires, so the UI names the creature that
+ * gets the free swing before the step is taken.
+ *
+ * The number is defined in terms of this read, so the two cannot disagree.
+ */
+describe('who gets a free swing (the confirm prompt\'s input)', () => {
+  const twoOnOne = () => new Combat({
+    seed: 5,
+    mapId: 'open',
+    combatants: [
+      pc('rogue', 'team1', { x: 3, y: 3 }, 'rog'),
+      pc('fighter', 'team2', { x: 3, y: 4 }, 'ftr'),
+      pc('fighter', 'team2', { x: 2, y: 3 }, 'ftr2'),
+    ],
+  });
+
+  it('names each hostile whose reach the walk leaves', () => {
+    const c = twoOnOne();
+    const walk = readWalk(c.state, c.state.combatants['rog']!, { x: 5, y: 0 });
+    expect(walk.provokers.map((p) => p.id).sort()).toEqual(['ftr', 'ftr2']);
+    // Longsword 1d8 + 3 Str: the same maximum the damage read charges.
+    expect(walk.provokers.every((p) => p.maxDamage === 11)).toBe(true);
+    expect(walk.provokers.every((p) => p.name.length > 0)).toBe(true);
+  });
+
+  it('is empty for a step that never leaves anybody\'s reach', () => {
+    const c = twoOnOne();
+    // Sidestepping within the first fighter's reach, still beside both.
+    const walk = readWalk(c.state, c.state.combatants['rog']!, { x: 2, y: 4 });
+    expect(walk.provokers).toEqual([]);
+  });
+
+  it('is empty after Disengage, so the prompt does not fire', () => {
+    const c = twoOnOne();
+    let guard = 0;
+    while (c.activeId !== 'rog' && guard++ < 20) c.apply({ kind: 'endTurn' });
+    c.apply({ kind: 'disengage' });
+    const walk = readWalk(c.state, c.state.combatants['rog']!, { x: 3, y: 0 });
+    expect(walk.provokers).toEqual([]);
+  });
+
+  it('agrees with the damage read on every reachable cell', () => {
+    // The guarantee that matters: one is written in terms of the other, so a
+    // walk the prompt calls free can never be one the AI thinks is lethal.
+    const c = new Combat({
+      seed: 5,
+      mapId: 'firepit',
+      combatants: [
+        pc('rogue', 'team1', { x: 3, y: 3 }, 'rog'),
+        pc('fighter', 'team2', { x: 3, y: 4 }, 'ftr'),
+      ],
+    });
+    const rog = c.state.combatants['rog']!;
+    let checked = 0;
+    for (let x = 0; x < c.state.grid.width; x++) {
+      for (let y = 0; y < c.state.grid.height; y++) {
+        const walk = readWalk(c.state, rog, { x, y });
+        const total = walk.provokers.reduce((n, p) => n + p.maxDamage, 0) + walk.hazardDamage;
+        expect(total, `disagreement at ${x},${y}`).toBe(worstCaseWalkDamage(c.state, rog, { x, y }));
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+  });
+
+  it('reports hazard damage separately from the free swings', () => {
+    // The prompt lists them as different lines, because they are different
+    // facts: one is a rule you cannot see, the other is painted on the floor.
+    const c = new Combat({
+      seed: 5,
+      mapId: 'firepit',
+      combatants: [
+        pc('rogue', 'team1', { x: 3, y: 3 }, 'rog'),
+        pc('fighter', 'team2', { x: 7, y: 7 }, 'ftr'),
+      ],
+    });
+    const rog = c.state.combatants['rog']!;
+    const cells: { x: number; y: number }[] = [];
+    for (let x = 0; x < c.state.grid.width; x++) {
+      for (let y = 0; y < c.state.grid.height; y++) cells.push({ x, y });
+    }
+    const burnt = cells.map((p) => readWalk(c.state, rog, p)).filter((w) => w.hazardDamage > 0);
+    expect(burnt.length, 'no walk on the fire pit crosses a hazard').toBeGreaterThan(0);
+    // Far from any enemy, so the whole cost is the floor, not a reaction.
+    expect(burnt.every((w) => w.provokers.length === 0)).toBe(true);
   });
 });

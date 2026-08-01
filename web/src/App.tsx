@@ -3,7 +3,7 @@ import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { coverReadAt, coverReadFor, type CoverRead } from '../../src/engine/rules/cover.js';
-import { worstCaseWalkDamage } from '../../src/engine/rules/movement.js';
+import { readWalk, type Provoker } from '../../src/engine/rules/movement.js';
 import { buildParty, DEFAULT_PARTY } from '../../src/builder/character.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
@@ -632,6 +632,22 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
    */
   const [armed, setArmed] = useState<MetamagicId | null>(null);
   const [chooser, setChooser] = useState<{ target: Combatant; options: TargetOption[] } | null>(null);
+  /**
+   * A move that would give somebody a free swing, held for confirmation.
+   *
+   * Opportunity attacks are the one rule on this board that is invisible until
+   * it fires. Hazards are painted on the floor and cover wears a badge; reach
+   * is not drawn at all, so a player walks out of melee, takes a hit from a
+   * creature that had already had its turn, and learns nothing from it. A young
+   * playtester never worked out where the damage was coming from.
+   *
+   * So the board stops and says who, by name, before the step is taken. This
+   * replaces the per-cell risk numbers, which carried the same fact at 7px on
+   * every reachable tile at once and were reported as unreadable.
+   */
+  const [moveConfirm, setMoveConfirm] = useState<
+    { action: Action; provokers: Provoker[]; hazardDamage: number } | null
+  >(null);
   /** Pack weapons revealed for this one chooser — reset every time it opens. */
   const [showStowed, setShowStowed] = useState(false);
   const [showLog, setShowLog] = useState(false);
@@ -917,30 +933,6 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
    * an enemy turn or mid-spell there is no move decision to inform, and the
    * badges would just be clutter over the thing you are actually looking at.
    */
-  /**
-   * Worst-case damage for each cell the hero could walk to.
-   *
-   * The engine has computed this since pathing was written — `worstCaseWalkDamage`
-   * walks the route the mover would actually take, adds every opportunity
-   * attack it provokes at maximum, and every hazard it crosses — and until now
-   * only the AI ever read it. The player, who is asked the same question every
-   * turn, was told nothing.
-   *
-   * Cheap enough to do per cell: each call is one BFS over an eighty-cell grid,
-   * and it runs for the forty-odd cells in range, memoised on the same
-   * dependencies as the cover read beside it.
-   */
-  const riskCells = useMemo(() => {
-    const m = new Map<string, number>();
-    if (!grouped || !active || targeting || !isHumanTurn) return m;
-    for (const k of grouped.moves.keys()) {
-      const [x, y] = k.split(',').map(Number);
-      const worst = worstCaseWalkDamage(state, active, { x: x!, y: y! });
-      if (worst > 0) m.set(k, worst);
-    }
-    return m;
-  }, [grouped, active, state, targeting, isHumanTurn]);
-
   const coverCells = useMemo(() => {
     const m = new Map<string, CoverRead>();
     if (!grouped || !active || targeting || !isHumanTurn) return m;
@@ -1002,7 +994,13 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       return;
     }
     const move = grouped.moves.get(key);
-    if (move) apply(move);
+    if (!move) return;
+    // Free walks go straight through. Only a step that hands somebody an attack
+    // is worth interrupting for — asking about every move would train the
+    // player to dismiss the question without reading it.
+    const walk = readWalk(state, active, pos);
+    if (walk.provokers.length === 0) { apply(move); return; }
+    setMoveConfirm({ action: move, provokers: walk.provokers, hazardDamage: walk.hazardDamage });
   }
 
   const winner = combat.winner();
@@ -1247,7 +1245,6 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         activeId={activeId ?? ''}
         highlights={highlights}
         coverCells={coverCells}
-        riskCells={riskCells}
         coverUnits={coverUnits}
         selectedId={activeId}
         multiCounts={multiCounts}
@@ -1471,6 +1468,82 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           </div>
         </div>
       )}
+
+      {moveConfirm && (() => {
+        // Disengage is the answer to this question, so it is offered here
+        // rather than named and left in the overflow menu. It costs the action,
+        // which the button says, because a player who does not know what an
+        // opportunity attack is also does not know what Disengage spends.
+        const disEntry = grouped?.bar.find((e) => e.id === 'disengage');
+        const dis = disEntry?.action;
+        // A rogue's Cunning Action (and a goblin's Nimble Escape) make this a
+        // BONUS action, which `groupActions` already resolved — the bar entry
+        // carries the note and the cheaper action. Reading it here is the
+        // difference between telling a rogue the truth and telling them their
+        // attack is about to disappear.
+        const disCost = disEntry?.note === 'Bonus' ? 'uses your bonus action' : 'uses your action';
+        const who = moveConfirm.provokers;
+        const worst = who.reduce((n, p) => n + p.maxDamage, 0) + moveConfirm.hazardDamage;
+        const lethal = worst >= (active?.hp ?? Infinity);
+        return (
+          <div className="chooser" onClick={() => setMoveConfirm(null)}>
+            <div className="chooser-box move-confirm" onClick={(e) => e.stopPropagation()}>
+              <h3>{who.length === 1 ? 'A free attack' : `${who.length} free attacks`}</h3>
+              <p className="move-confirm-why">
+                Stepping out of reach lets {who.length === 1 ? 'it' : 'them'} swing at you for free.
+              </p>
+              <ul className="move-confirm-who">
+                {who.map((prov) => {
+                  // The attacker's own team, not "the enemy" — in a hot-seat
+                  // match either side can be the one being walked away from.
+                  const c = state.combatants[prov.id];
+                  return (
+                    <li key={prov.id}>
+                      {c && <Portrait id={c.portraitId ?? c.classId} team={c.team} />}
+                      <span className="mc-name">{prov.name}</span>
+                      <span className="mc-dmg">up to {prov.maxDamage}</span>
+                    </li>
+                  );
+                })}
+                {moveConfirm.hazardDamage > 0 && (
+                  <li key="hazard">
+                    <span className="mc-glyph">🔥</span>
+                    <span className="mc-name">Crossing the hazard</span>
+                    <span className="mc-dmg">up to {moveConfirm.hazardDamage}</span>
+                  </li>
+                )}
+              </ul>
+              {lethal && <p className="move-confirm-lethal">☠ That is enough to drop you.</p>}
+              <button className="primary" onClick={() => { const a = moveConfirm.action; setMoveConfirm(null); apply(a); }}>
+                Move anyway
+              </button>
+              {dis && (
+                <button onClick={() => {
+                  // Disengage, then take the same step — now free. Two applies in
+                  // a row is what the action bar does anyway; the move's own
+                  // animation and narration land second and so win.
+                  const a = moveConfirm.action;
+                  setMoveConfirm(null);
+                  apply(dis);
+                  apply(a);
+                }}>
+                  🚪 Disengage first, then move <span className="mc-cost">{disCost}</span>
+                </button>
+              )}
+              {!dis && (
+                // Silently dropping the button teaches nothing: a player who
+                // was offered it last turn needs to know why it is gone, not
+                // wonder whether they imagined it.
+                <p className="move-confirm-no-out">
+                  Disengage would avoid this, but {active?.name ?? 'this hero'} has already used
+                  {' '}{active?.turn.actionUsed ? 'their action' : 'what it costs'} this turn.
+                </p>
+              )}
+              <button className="ghost" onClick={() => setMoveConfirm(null)}>Stay put</button>
+            </div>
+          </div>
+        );
+      })()}
 
       {chooser && (
         <div className="chooser" onClick={() => setChooser(null)}>

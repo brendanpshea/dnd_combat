@@ -348,28 +348,38 @@ describe('the board keeps its size across a turn change', () => {
  */
 describe('tile badges stay out of the way', () => {
   const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+  const board = readFileSync(fileURLToPath(new URL('../web/src/Board.tsx', import.meta.url)), 'utf8');
 
-  it('hides cover and non-lethal risk until the tile is considered', () => {
-    expect(css).toMatch(/\.cover-badge,\s*\n\.risk-badge:not\(\.lethal\) \{[^}]*opacity: 0/);
+  it('hides the cover shield until the tile is considered', () => {
+    expect(css).toMatch(/\.cover-badge \{[^}]*opacity: 0/);
   });
 
-  it('still shows them on hover and on keyboard focus', () => {
+  it('still shows it on hover and on keyboard focus', () => {
     expect(css).toContain('.cell:hover .cover-badge');
-    expect(css).toContain('.cell:focus-visible .risk-badge');
+    expect(css).toContain('.cell:focus-visible .cover-badge');
   });
 
-  it('never hides the lethal warning', () => {
-    // The one case that has to interrupt: this move can end with you on the
-    // floor. `:not(.lethal)` is what keeps it loud.
-    const at = css.indexOf('.risk-badge:not(.lethal) {');
-    expect(at, 'the lethal badge is no longer exempt').toBeGreaterThan(0);
+  it('hides with opacity, so a screen reader still reads it', () => {
+    // `display: none` would drop the aria-label the badge already carries.
+    // Two rules share this selector — the layout one legitimately sets
+    // `display: flex` — so find the one that does the hiding.
+    const hider = [...css.matchAll(/\.cover-badge \{([^}]*)\}/g)]
+      .map((m) => m[1]!)
+      .find((body) => /opacity:\s*0\s*;/.test(body));
+    expect(hider, 'nothing hides the cover badge any more').toBeDefined();
+    expect(hider).not.toContain('display');
   });
 
-  it('hides with opacity, so a screen reader still reads every one', () => {
-    // `display: none` would drop the aria-labels the badges already carry.
-    const at = css.indexOf('.risk-badge:not(.lethal) {');
-    const block = css.slice(at, css.indexOf('}', at));
-    expect(block).not.toContain('display');
+  it('does not put a damage number on every reachable cell', () => {
+    // The per-cell risk badge is gone on purpose. It annotated every tile the
+    // hero could reach; on a hazard map that is dozens of 7px numbers, and the
+    // lethal variant was always-on and pulsing, so a hurt hero lit up half the
+    // board. Reported from a session with a young player as tiny text covering
+    // everything. The opportunity attack — the only part a player cannot see
+    // coming — asks at the moment of the step instead.
+    expect(css, 'the per-cell risk badge is back').not.toContain('.risk-badge');
+    expect(board, 'the board is annotating cells with walk damage again')
+      .not.toContain('riskCells');
   });
 });
 
@@ -1203,5 +1213,43 @@ describe('the attack chooser', () => {
     expect(groups).toContain('actor?.equipped.ranged');
     expect(groups, 'unarmed must not be treated as a draw from the pack')
       .toContain("'unarmed-strike'");
+  });
+});
+
+/**
+ * The move prompt must not lie about what Disengage costs.
+ *
+ * A rogue's Cunning Action and a goblin's Nimble Escape make Disengage a BONUS
+ * action. `groupActions` already resolves that — it hands back the cheaper
+ * action and tags the entry `Bonus` — so a prompt that hard-codes "uses your
+ * action" tells a rogue their attack is about to disappear when it is not.
+ * That is the kind of wrong that teaches a new player the wrong rule.
+ */
+describe('the opportunity-attack prompt', () => {
+  const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+  const confirm = app.slice(app.indexOf('{moveConfirm && (()'), app.indexOf('{chooser && ('));
+
+  it('exists and offers a way out', () => {
+    expect(confirm.length, 'no move-confirm block in App.tsx').toBeGreaterThan(200);
+    expect(confirm).toContain('Move anyway');
+    expect(confirm).toContain('disengage');
+  });
+
+  it('reads the cost off the bar entry instead of hard-coding it', () => {
+    expect(confirm, 'the Disengage cost is hard-coded — a rogue pays a bonus action')
+      .toMatch(/note === 'Bonus'/);
+    expect(confirm).toContain('uses your bonus action');
+  });
+
+  it('says why when Disengage is not on offer', () => {
+    // The button vanishing with no explanation is how a player concludes the
+    // game is inconsistent rather than that they spent something.
+    expect(confirm).toMatch(/\{!dis &&/);
+  });
+
+  it('only interrupts for a walk that actually provokes', () => {
+    // Prompting on every move trains the player to dismiss it unread, which
+    // costs the feature its whole purpose.
+    expect(app).toMatch(/walk\.provokers\.length === 0[^\n]*apply\(move\)/);
   });
 });

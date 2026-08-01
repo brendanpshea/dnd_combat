@@ -44,7 +44,10 @@ const TIPS: TipDef[] = [
   },
   {
     id: 'opportunity', icon: '⚔️', title: 'Mind the reach',
-    body: 'Stepping straight out of an enemy\'s reach provokes a free "opportunity" attack. To leave safely, use Disengage (in the ⋯ menu); to just get somewhere fast, Dash doubles your movement.',
+    // The move prompt now names who gets the swing and offers Disengage as a
+    // button, so this no longer has to explain either — it points at Dash,
+    // which the prompt has no reason to mention.
+    body: 'That was an "opportunity" attack: leaving an enemy\'s reach gives it a free swing. The board asks before you do it. Disengage avoids it and costs your action; Dash just doubles your movement.',
     test: (e) => e.some((x) => x.type === 'attackRolled' && x.opportunity),
   },
   {

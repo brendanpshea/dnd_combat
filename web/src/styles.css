@@ -1371,6 +1371,26 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   max-width: 90vw;
 }
 
+/* The opportunity-attack confirm. Deliberately shaped like the attack chooser
+   — same scrim, same box — because it answers the same kind of question: here
+   is what is about to happen, and here is how to back out. */
+.move-confirm h3 { margin: 0; }
+.move-confirm-why { margin: 0; color: var(--muted); font-size: .9rem; }
+.move-confirm-who { list-style: none; margin: 4px 0 2px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.move-confirm-who li {
+  display: flex; align-items: center; gap: 8px;
+  background: #00000030; border-radius: 8px; padding: 4px 8px;
+}
+.move-confirm-who .portrait { width: 30px; height: 30px; flex: none; }
+.mc-glyph { width: 30px; text-align: center; flex: none; }
+.mc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-dmg { font-family: var(--display); color: #ffb4a4; white-space: nowrap; }
+.move-confirm-lethal { margin: 0; color: #ffd7dc; font-weight: 600; font-size: .9rem; }
+/* The cost rides on the button that spends it, so "uses your action" cannot be
+   read as applying to the move. */
+.mc-cost { display: block; font-size: .75rem; opacity: .75; font-weight: 400; }
+.move-confirm-no-out { margin: 0; color: var(--muted); font-size: .82rem; }
+
 /* ---- log ---- */
 .log {
   width: 100%;
@@ -3780,83 +3800,31 @@ button.category .count {
   z-index: 4;
 }
 
-/* XCOM's other tile badge: what the walk costs.
-   The cover shield sits in the middle of the cell, so this sits at the top and
-   in the opposite colour — a cell can be both good cover AND expensive to
-   reach, and those are two different facts a player weighs against each other.
-
-   DELIBERATELY QUIET. The first version wore a 💥 and the same weight as the
-   cover shield, and on the Fire Pit map that put nineteen loud badges on a
-   sixty-four-cell board, two of them on every lava tile (the risk number on top
-   and the terrain's own 🔥 underneath). The information was right and the board
-   was unreadable. A bare number in a thin red pill carries the same fact and
-   lets the terrain stay visible.
-
-   `lethal` is the one case worth interrupting for — the worst case is at least
-   your current hit points, so this move can end with you on the floor — and it
-   is the only one that gets a glyph, full contrast and motion. */
 /**
- * THE NUMBERS ARE THE CLUTTER, not the blue.
+ * THE COVER SHIELD IS HOVER-ONLY, and it is the only tile badge left.
  *
- * Every reachable cell with any risk at all wore a number, and every one with
- * any cover wore a shield — on a hazard map that is dozens of small figures
- * competing with the board they are drawn on. The rule now matches what this
- * file already says about the lethal case being "the one worth interrupting
- * for": the tile you are actually considering tells you everything, and the
- * board only speaks up unprompted for something that can drop you.
+ * There used to be a per-cell risk number beside it — worst-case damage for
+ * walking there. It was correct and it was unusable: on a hazard map every
+ * reachable cell wore one, the lethal variant was always-on and pulsing, and
+ * on a tablet a hurt hero could light up half the board at 7px. Reported from
+ * a session with a young player as "tiny text that takes up the whole board".
  *
- * Hidden with opacity rather than `display`, so the labels stay in the
- * accessibility tree and a screen reader still hears every one of them.
+ * The information was worth having; the moment was wrong. Opportunity attacks
+ * now ask before they happen (`MoveConfirm` in App.tsx), which is the one thing
+ * a player cannot see coming and the one place the warning changes a decision.
+ * Hazards need no badge at all — they are painted on the floor.
+ *
+ * Hidden with opacity rather than `display`, so the label stays in the
+ * accessibility tree and a screen reader still hears it.
  */
-.cover-badge,
-.risk-badge:not(.lethal) {
+.cover-badge {
   opacity: 0;
   transition: opacity .12s ease-out;
 }
 .cell:hover .cover-badge,
-.cell:hover .risk-badge,
-.cell:focus-visible .cover-badge,
-.cell:focus-visible .risk-badge { opacity: 1; }
+.cell:focus-visible .cover-badge { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .cover-badge, .risk-badge:not(.lethal) { transition: none; }
-}
-
-.risk-badge {
-  position: absolute;
-  left: 50%;
-  top: 8%;
-  transform: translateX(-50%);
-  padding: 0 3px;
-  border-radius: 6px;
-  background: #1c0f0fd0;
-  border: 1px solid #c76a5c99;
-  color: #ffb4a4;
-  font-size: clamp(7px, 1.9vmin, 10px);
-  line-height: 1.4;
-  pointer-events: none;
-  z-index: 3;
-  white-space: nowrap;
-}
-.risk-badge b { font-family: var(--display); font-weight: 600; }
-.risk-badge.lethal {
-  padding: 0 4px;
-  background: #3a0f14f2;
-  border-color: #ff5468;
-  color: #ffd7dc;
-  font-size: clamp(8px, 2.1vmin, 11px);
-  animation: riskPulse 1.1s ease-in-out infinite alternate;
-}
-.risk-badge.lethal::before { content: '☠'; margin-right: 2px; }
-@keyframes riskPulse {
-  from { box-shadow: 0 0 0 0 #ff546800; }
-  to   { box-shadow: 0 0 0 3px #ff546855; }
-}
-@media (prefers-reduced-motion: reduce) {
-  /* Keep the cue, drop the motion. On the Fire Pit map a hurt hero can have a
-     dozen lethal moves at once, which is a dozen things pulsing together —
-     exactly the case this media query exists for. The colour and the ☠ still
-     carry it. */
-  .risk-badge.lethal { animation: none; box-shadow: 0 0 0 2px #ff546877; }
+  .cover-badge { transition: none; }
 }
 
 /* Expert ability-score editor (AbilityEditor.tsx). Folded shut by default: the
