@@ -18,6 +18,8 @@ import {
   itemName, itemIcon, itemPrice, rarityOf, partyLevelOf, LEVEL_XP,
 } from '../../src/campaign/campaign.js';
 import { LevelUpModal } from './LevelUp.js';
+import { RestLedger } from './RestLedger.js';
+import type { HeroRest } from '../../src/arena/day.js';
 
 export interface LootProps {
   campaign: CampaignState;
@@ -40,6 +42,10 @@ export interface LootProps {
    * everything back — and a player who cannot tell them apart cannot learn to
    * hold anything in reserve.
    */
+  /** Per-hero before/after for the animated ledger (arena only). */
+  ledger?: HeroRest[];
+  /** The one line under it, chosen by what the rest actually did. */
+  restLine?: string;
   rested?: {
     totalHealed: number; hitDiceSpent?: number; revived?: number;
     /** Slots handed back by Arcane / Natural Recovery at the lunch break. */
@@ -75,7 +81,7 @@ function useCountUp(from: number, to: number, ms = 700): number {
   return n;
 }
 
-export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, chorus, onContinue }: LootProps) {
+export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveledFrom, onLevelChange, claimed, rested, ledger, restLine, chorus, onContinue }: LootProps) {
   // On a level-up, open the gains modal straight away — the gains are the point.
   const [showLevel, setShowLevel] = useState<boolean>(!!leveledTo);
   const level = partyLevelOf(campaign);
@@ -158,13 +164,22 @@ export function LootScreen({ campaign, gold, items, xpGained, leveledTo, leveled
             <span>{rested.hitDiceSpent ? '🍞 Lunch' : '🌙 Night'}</span>
             <b className="gain">+{rested.totalHealed} HP</b>
           </div>
-          <div className="loot-sub">
-            {rested.revived
-              ? `${rested.revived} back on their feet · ${rested.hitDiceSpent ?? 0} hit dice spent`
-              : rested.hitDiceSpent
-                ? `${rested.hitDiceSpent} hit dice spent`
-                : 'Everything back — hit points, slots, hit dice.'}
-          </div>
+          {/* The ledger replaces the summary line: whose bar moved, and what
+              it cost. `ledger` is absent on a save written before it existed,
+              so the old sentence stays as the fallback rather than the panel
+              going blank. */}
+          {ledger && ledger.length > 0
+            ? <RestLedger rows={ledger} kind={rested.hitDiceSpent ? 'lunch' : 'night'} />
+            : (
+              <div className="loot-sub">
+                {rested.revived
+                  ? `${rested.revived} back on their feet · ${rested.hitDiceSpent ?? 0} hit dice spent`
+                  : rested.hitDiceSpent
+                    ? `${rested.hitDiceSpent} hit dice spent`
+                    : 'Everything back — hit points, slots, hit dice.'}
+              </div>
+            )}
+          {restLine && <p className="rest-line">{restLine}</p>}
           {/* Recovery is the one thing lunch gives a caster, and it is the
               reason a wizard can still cast in the afternoon. Saying it here is
               what turns it from a hidden refund into something to plan the

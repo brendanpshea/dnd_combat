@@ -33,7 +33,10 @@ import { parseMap } from '../../src/data/maps.js';
 import {
   newArenaRun, advanceDay, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
-import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../../src/arena/day.js';
+import {
+  halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems,
+  snapshotRest, restLedger, restLine, type HeroRest,
+} from '../../src/arena/day.js';
 import {
   revivalCost, payRevival, isFirstDefeat, type RevivalBill,
 } from '../../src/arena/revival.js';
@@ -70,6 +73,7 @@ import { chorusLine, firstUnheard, type ChorusCue } from '../../src/arena/chorus
 import { ArtImage } from './ArtImage.js';
 import type { BattleProps } from './App.js';
 import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
+import { RestLedger } from './RestLedger.js';
 import { deployFoes } from '../../src/arena/deploy.js';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 
@@ -86,10 +90,23 @@ type Phase =
       claimed: Array<{ name: string; gold: number }>;
       /** Items a claimed bounty paid — named on the card before the fight. */
       won: Id[];
+      /** Per-hero before/after, for the animated rest ledger. */
+      ledger: HeroRest[];
+      /** The single line under it, chosen by what the rest did. */
+      restLine: string;
     }
+  /**
+   * DAYBREAK: the night, on its own screen.
+   *
+   * Lunch is shown in place on the loot screen — it happens after every won
+   * morning and a whole screen for it would be ten extra taps a run. The night
+   * is half as frequent and twice as much of an event: the day is over, and
+   * tomorrow is the same two fights with everything back. That earns a beat.
+   */
+  | { p: 'daybreak'; ledger: HeroRest[]; restLine: string; rested: RestResult }
   /** The premise, once, before a new party's first gate. */
   | { p: 'intro' }
-  | { p: 'defeat'; bill: RevivalBill }
+  | { p: 'defeat'; bill: RevivalBill; ledger?: HeroRest[]; restLine?: string }
   /**
    * The run is over, one way or the other — the finish line reached, or the
    * healers' bill unpayable. Every run ends here: a record you can be graded
@@ -410,13 +427,18 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       const nextRun = advanceDay(run, false, 0, {
         spellsUsed: spellsCastBy(combat.log, combat.state),
       });
-      night(c, nextRun.cleared);
+      // A defeat ends the day, so the night happens here too — and used to go
+      // entirely unmentioned. The defeat screen shows the same ledger rather
+      // than adding a second screen to a moment that is already bad news.
+      const lostBefore = snapshotRest(c);
+      const lostRest = night(c, nextRun.cleared);
+      const lostLedger = restLedger(lostBefore, snapshotRest(c));
       setRun(nextRun); setC({ ...c }); persist(c, nextRun);
       // The experience is earned whether or not the day was won, so a party
       // that crosses the line on a losing day has still crossed it.
       setPhase(runComplete(c.xp)
         ? { p: 'summary', summary: summarise(nextRun, c.xp), bill }
-        : { p: 'defeat', bill });
+        : { p: 'defeat', bill, ledger: lostLedger, restLine: restLine('night', lostLedger, lostRest) });
       return;
     }
     // Coin scales only with what actually carries a purse — a wolf pack hoards
@@ -461,7 +483,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     // difference between them is the whole feature: hit points, slots and
     // charges all cross the lunch break, and none of them cross the night.
     noteSpentItems(c, nextRun.cleared);
+    // Snapshot either side of the rest: the ledger is a before-and-after, and
+    // a total cannot show that a lunch spends dice to buy the hit points.
+    const before = snapshotRest(c);
     const rested = half === 'morning' ? lunch(c) : night(c, nextRun.cleared);
+    const ledger = restLedger(before, snapshotRest(c));
+    const line = restLine(half === 'morning' ? 'morning' : 'night', ledger, rested);
     setRun(nextRun); setC({ ...c }); persist(c, nextRun);
     setPhase({
       p: 'loot',
@@ -469,6 +496,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       claimed: claimed.map((b) => ({ name: b.name, gold: bountyGold(b, paid || wave.purse) })),
       won: prizes,
       rested,
+      ledger,
+      restLine: line,
       ...(result.leveledTo !== undefined ? { leveledTo: result.leveledTo } : {}),
       ...(result.leveledFrom !== undefined ? { leveledFrom: result.leveledFrom } : {}),
     });
@@ -532,8 +561,19 @@ export function ArenaScreen({ Battle, onExit }: Props) {
             : ['firstClear' as const]),
         )} />}
         onLevelChange={() => { refresh(); persist(c, run); }}
+        ledger={phase.ledger}
+        // The line belongs to whichever screen shows the rest, so a night's
+        // waits for the daybreak screen rather than being said twice.
+        {...(phase.rested.hitDiceSpent !== undefined ? { restLine: phase.restLine } : {})}
         onContinue={() => {
           if (runComplete(c.xp)) { setPhase({ p: 'summary', summary: summarise(run, c.xp) }); return; }
+          // A night gets its own screen; a lunch was shown inline above.
+          // `hitDiceSpent` is the honest signal for which this was — only a
+          // lunch reports it.
+          if (phase.rested.hitDiceSpent === undefined) {
+            setPhase({ p: 'daybreak', ledger: phase.ledger, restLine: phase.restLine, rested: phase.rested });
+            return;
+          }
           // Only after a night. `phase.rested.hitDiceSpent` is the honest
           // signal for which break this was — only lunch reports it — and
           // lunch keeps slots and charges, so nothing about the loadout has
@@ -687,6 +727,58 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     );
   }
 
+  /**
+   * DAYBREAK — the night, on its own screen.
+   *
+   * The one beat in the arena that earns a whole screen: the day is over, and
+   * tomorrow is the same two fights with everything back. Lunch is shown inline
+   * on the loot screen instead, because it happens after every won morning and
+   * a screen for it would be ten extra taps a run.
+   *
+   * Continue is live from the first frame. This is seen every day of a run, and
+   * gating it behind an animation the player has watched nine times would make
+   * a nice moment into a toll.
+   */
+  if (phase.p === 'daybreak') {
+    return (
+      <div className="adventure">
+        <div className="adv-stage">
+          {backdrop}
+          <div className="adv-content">
+            <div className="adv-scene centered">
+              <div className="adv-panel daybreak">
+                <div className="daybreak-sun">🌅</div>
+                <h2>Day {dayOf(run)}</h2>
+                <p className="rest-line">{phase.restLine}</p>
+                <RestLedger rows={phase.ledger} kind="night" />
+                <p className="hint">
+                  Two fights again today, at wave {run.wave}
+                  {run.dayLevel !== undefined && run.dayLevel < level
+                    ? ` — still set for level ${run.dayLevel}, and you are level ${level}`
+                    : ''}.
+                </p>
+                <div className="adv-choices">
+                  <button className="primary" onClick={() => {
+                    // The morning review belongs to whichever screen hands the
+                    // player back to the gate — it was the loot screen's job
+                    // until the night stopped ending there.
+                    const next = morningReview(phase.rested, c);
+                    if (next) {
+                      setNotice(next.note);
+                      if (next.open === 'gear') setPanel('gear');
+                      else setReview('spells');
+                    }
+                    setPhase({ p: 'brief' });
+                  }}>To the gate →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (phase.p === 'defeat') {
     return (
       <div className="adventure">
@@ -702,6 +794,26 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   are now — and everything you have learned, earned and bought
                   comes with you.
                 </p>
+                {/* The night happens on a lost day as well, and used to go
+                    unmentioned entirely — the party woke up whole with nothing
+                    saying so. Same component, no extra screen: this moment is
+                    already carrying bad news. */}
+                {phase.ledger && phase.ledger.length > 0 && (
+                  <>
+                    {phase.restLine && <p className="rest-line">{phase.restLine}</p>}
+                    <RestLedger rows={phase.ledger} kind="night" />
+                  </>
+                )}
+                {/* The night happens on a lost day too, and used to go
+                    unmentioned entirely — the party woke up whole with nothing
+                    saying so. Same component, no extra screen: this moment is
+                    already carrying bad news. */}
+                {phase.ledger && phase.ledger.length > 0 && (
+                  <>
+                    {phase.restLine && <p className="rest-line">{phase.restLine}</p>}
+                    <RestLedger rows={phase.ledger} kind="night" />
+                  </>
+                )}
                 <div className="revival-bill">
                   {phase.bill.cost === 0 ? (
                     <p className="adv-text quiet">

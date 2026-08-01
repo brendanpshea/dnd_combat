@@ -64,7 +64,10 @@ on the spot, against every monster in the game. It is structured as a series of
 **days**:
 
 - A day holds **two fights**, morning and afternoon. Between them the party
-  takes a lunch that spends hit dice; overnight, a full rest.
+  takes a lunch that spends hit dice; overnight, a full rest. Both are shown as
+  a ledger of what moved — bars filling, hit-dice pips going out at lunch and
+  relighting overnight — so the cost of a lunch is visible rather than implied.
+  The night gets its own daybreak screen; lunch is shown in place.
 - Each fight begins at **the gate**, where three **doors** are offered. A door
   names its map, its difficulty, the monsters behind it, and a **prize** with a
   condition attached — *"Catch three enemies in one spell"*, *"Use a potion,
@@ -99,7 +102,7 @@ two heavyweights, so headcount is chosen before any monster is.
 
 ```bash
 npm install
-npm test          # 2136 tests across 139 files
+npm test          # 2149 tests across 140 files
 npm run web       # the app at http://localhost:5173
 ```
 
