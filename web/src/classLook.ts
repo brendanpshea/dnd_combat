@@ -32,6 +32,13 @@ const LOOK: Record<string, Omit<ClassLook, 'name'>> = {
   // emoji for the wizard was 🧙, a whole figure, which at this size is a
   // coloured smudge — 🔮 keeps a shape. The others are already single objects.
   fighter: { glyph: '⚔️', color: '#e0685e' },
+  // Warlock and sorcerer were missing outright, and the failure was silent:
+  // `classLook` returns undefined for anything it does not know, so a warlock
+  // had no glyph, no accent and — because the status line renders the class tag
+  // only when there is a look — no class name either. The line just said "You".
+  // `class-look.test.ts` now holds this table to the class table.
+  warlock: { glyph: '👁️', color: '#a06ad0' },
+  sorcerer: { glyph: '🐉', color: '#e07f9a' },
   cleric: { glyph: '✨', color: '#e8c46a' },
   wizard: { glyph: '🔮', color: '#6aa2e8' },
   rogue: { glyph: '🗡️', color: '#b07fe0' },
@@ -49,4 +56,25 @@ export function classLook(classId: string | undefined): ClassLook | undefined {
   const cls = CLASSES[classId];
   if (!look || !cls) return undefined;
   return { ...look, name: cls.name };
+}
+
+/**
+ * The line under a character's name on the inspect sheet.
+ *
+ * A function rather than an expression at the call site because the battle
+ * sheet got this wrong for a long time and nothing noticed: it showed only
+ * "Your hero" / "Enemy" — the side, which the player already knows, having just
+ * tapped their own token — while the party screen's sheet had shown
+ * "Wizard · Level 3" all along. Portraits follow species, so a dwarf cleric and
+ * a dwarf fighter are the same picture and nothing else told them apart.
+ *
+ * A monster has no class (its `classId` is a monster id, so `classLook` returns
+ * undefined) and keeps the side on its own.
+ */
+export function sheetSubtitle(
+  c: { classId?: string; level: number },
+  side: string,
+): string {
+  const look = classLook(c.classId);
+  return look ? `${look.name} · Level ${c.level} · ${side}` : side;
 }
