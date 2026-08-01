@@ -99,7 +99,7 @@ two heavyweights, so headcount is chosen before any monster is.
 
 ```bash
 npm install
-npm test          # 2108 tests across 137 files
+npm test          # 2136 tests across 139 files
 npm run web       # the app at http://localhost:5173
 ```
 

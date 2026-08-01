@@ -116,7 +116,7 @@ function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
  */
 function canFrenzy(actor: Combatant, weaponId: Id): boolean {
   if (!actor.featureIds.includes('frenzy')) return false;
-  if (!actor.conditions.some((c) => c.id === 'raging')) return false;
+  if (!isRaging(actor)) return false;
   if (actor.equipped.mainHand !== weaponId) return false;
   const w = WEAPONS[weaponId];
   return !!w && w.melee && actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed;
@@ -158,13 +158,27 @@ function itemTargetsValid(state: GameState, actor: Combatant, itemId: Id, target
       distanceFeet(actor.position, foe.position) <= t.range.long &&
       hasLineOfSight(state.grid, actor.position, foe.position);
   }
-  // spell scroll: delegate to the spell's targeting rules
+  // Spell scroll: reading one IS casting the spell, so rage forbids it exactly
+  // as it forbids the spell. A potion is not a spell and stays drinkable.
+  if (isRaging(actor)) return false;
   const spell = SPELLS[t.spellId]!;
   return validSpellTargets(state, actor.id, spell, targets);
 }
 
+/** Rage suppresses spellcasting and concentration alike — see `spellAvailable`. */
+export function isRaging(actor: Combatant): boolean {
+  return actor.conditions.some((c) => c.id === 'raging');
+}
+
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
   if (!actor.spellIds.includes(spell.id)) return false;
+  // RAGE: "No Concentration or Spells. You can't maintain Concentration, and
+  // you can't cast spells." A pure barbarian has no spell list, which is why
+  // this never came up — but a tiefling barbarian has Poison Spray and Ray of
+  // Sickness from its ancestry, and was casting both mid-rage. The gate lives
+  // here rather than in one caller because every path to a spell runs through
+  // this function.
+  if (isRaging(actor)) return false;
   // Already concentrating on this exact spell? Recasting it would only drop and
   // re-establish the same effect — a wasted action and slot. Don't offer it
   // (Hunter's Mark, Faerie Fire, Bless…); a *different* concentration spell is

@@ -181,7 +181,8 @@ export const BACKGROUND_FEAT: Record<Id, Id> = {
   farmer: 'hardy',                    // SRD: Tough (renamed; PHB name)
   guard: 'alert',                     // SRD: Alert
   guide: 'magic-initiate-cleric',     // SRD: Magic Initiate (Druid) — cleric is the one built
-  hermit: 'magic-initiate-cleric',    // SRD: Healer — not modelled
+  hermit: 'hardy',                    // SRD: Healer — not modelled; Hardy is the nearest,
+                                      //   and it keeps Magic Initiate off two more classes
   merchant: 'fated',                  // SRD: Lucky (renamed; PHB name)
   noble: 'skilled',                   // SRD: Skilled
   sage: 'magic-initiate-cleric',      // SRD: Magic Initiate (Wizard) — cleric is the one built
