@@ -18,7 +18,7 @@ see `src/data/spells.ts`.
 | Spell | ID | Cast | Aimed at | Conc. | Upcast | Notes | Known by |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 🧪 Acid Splash | `acid-splash` | action | 2×2 burst within 60 ft | — | — | — | Wizard 1, Sorcerer 1, Aboleth |
-| 🟣 Eldritch Blast | `eldritch-blast` | action | 2 enemys within 120 ft | — | — | — | Warlock 1 |
+| 🟣 Eldritch Blast | `eldritch-blast` | action | 4 enemys within 120 ft | — | — | — | Warlock 1 |
 | 🔥 Fire Bolt | `fire-bolt` | action | 1 enemy within 120 ft | — | — | — | Wizard 1, Sorcerer 1, Kobold Emberling, Oni, Mage, Azer Forgecaller |
 | 🔮 Guidance | `guidance` | action | self (offered when it would reach someone) | yes | — | out of combat | Cleric 1, Druid 1 |
 | 🌫️ Minor Illusion | `minor-illusion` | action | an empty cell within 30 ft | — | — | — | Wizard 1, Warlock 1, Sorcerer 1, Bard 1, Gnome |

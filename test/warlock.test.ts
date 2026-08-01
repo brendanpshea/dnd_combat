@@ -27,7 +27,7 @@ import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
 import { CLASSES } from '../src/data/classes.js';
 import { FEATURES } from '../src/data/features.js';
-import { SPELLS, eldritchBeams } from '../src/data/spells.js';
+import { SPELLS, spellShots, eldritchBeams } from '../src/data/spells.js';
 import { legalActions, isLegalAction } from '../src/engine/actions.js';
 import { acOf } from '../src/data/armor.js';
 import { chooseAction } from '../src/ai/greedy.js';
@@ -121,12 +121,21 @@ describe('Eldritch Blast', () => {
     expect(eldritchBeams(5)).toBe(2);
     for (const level of [1, 4]) {
       const { c, meId } = fight(level, [{ x: 4, y: 3 }, { x: 5, y: 3 }]);
-      const events = c.apply({
+      void meId;
+      // A second target is now REFUSED rather than silently dropped. It used to
+      // be accepted and thrown away inside `cast`, which is what let the UI ask
+      // a level-1 warlock to pick two targets for its one beam — the picker was
+      // reading `targeting.count`, and the engine never contradicted it.
+      expect(() => c.apply({
         kind: 'castSpell', spellId: 'eldritch-blast', slotLevel: 0,
         targets: [{ combatantId: 'e0' }, { combatantId: 'e1' }],
+      }), `level ${level} accepted two targets for one beam`).toThrow();
+      const events = c.apply({
+        kind: 'castSpell', spellId: 'eldritch-blast', slotLevel: 0,
+        targets: [{ combatantId: 'e0' }],
       });
       const rolls = events.filter((e) => e.type === 'attackRolled').length;
-      expect(rolls, `level ${level} should fire one beam even when handed two targets`).toBe(1);
+      expect(rolls, `level ${level} should fire exactly one beam`).toBe(1);
     }
     const { c, meId } = fight(5, [{ x: 4, y: 3 }, { x: 5, y: 3 }]);
     void meId;
@@ -275,7 +284,9 @@ describe('multi-shot spells fire every shot', () => {
       const offered = legalActions(c.state, me.id)
         .find((a) => a.kind === 'castSpell' && a.spellId === id);
       if (!offered || offered.kind !== 'castSpell') continue;   // no slot for it
-      expect(offered.targets.length, `${id} against one enemy`).toBe(t.count);
+      // Every shot THIS CASTER has earned, not the spell's lifetime cap. A
+      // level-8 warlock has two Eldritch Blast beams; the cap is four.
+      expect(offered.targets.length, `${id} against one enemy`).toBe(spellShots(spell, me));
     }
   });
 });

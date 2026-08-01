@@ -5,7 +5,7 @@
  */
 import type { GameState, Id, Position, Combatant } from '../../src/engine/types.js';
 import type { Action, Target } from '../../src/engine/actions.js';
-import { SPELLS, validTarget, type SpellData } from '../../src/data/spells.js';
+import { SPELLS, validTarget, spellShots, type SpellData } from '../../src/data/spells.js';
 import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { FEATURES } from '../../src/data/features.js';
@@ -333,7 +333,15 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           // makes Scorching Ray's default set one target too, and firing that
           // single ray was the bug (it should fling all its rays like Magic
           // Missile). Multi-count spells take the accumulate-taps path below.
-          if (t.who === 'enemy' && t.count === 1 && a.targets.length === 1) {
+          //
+          // THE CASTER'S SHOTS, not the spell's cap. Both guards below key on
+          // it, which is what keeps them mutually exclusive and total: a
+          // level-1 warlock's Eldritch Blast declares `count: 2` but fires one
+          // beam, so it belongs on this single-tap path. Keying the first guard
+          // on `t.count` and the second on the real number made it fall between
+          // them and vanish from the chooser entirely.
+          const shots = spellShots(spell, actor!);
+          if (t.who === 'enemy' && shots === 1 && a.targets.length === 1) {
             pushTarget(first.combatantId, describeShort(a), a, spell.icon);
           }
           // ...and *every* creature-targeted spell gets a tray entry, because
@@ -348,8 +356,16 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
             );
             const multi: MultiTargetSpec = {
               spellId: a.spellId, slotLevel: a.slotLevel,
-              maxTargets: t.count,
-              allowRepeats: a.spellId === 'magic-missile' || a.spellId === 'scorching-ray',
+              // The caster's ACTUAL shots and the spell's OWN stacking flag.
+              // `targeting.count` is the cap a spell ever reaches, so a level-1
+              // warlock was asked for two Eldritch Blast targets before it had
+              // a second beam; and `allowRepeats` was a hard-coded list of two
+              // spell ids, so Eldritch Blast — which declares
+              // `stacksOnOneTarget` — could not put both beams on one enemy at
+              // 5th level. An id list is how this spell got missed the last two
+              // times; both values are read off the spell now.
+              maxTargets: shots,
+              allowRepeats: spell.stacksOnOneTarget === true,
               validIds,
               ...(a.metamagic ? { metamagic: a.metamagic } : {}),
             };
@@ -366,14 +382,18 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
             // pick the spell" gesture works for it too, not only the 🔮 tray.
             // Tapping the option *starts* the accumulate-taps flow with that
             // enemy pre-picked (its first ray/dart), then you pick the rest.
-            if (t.who === 'enemy' && t.count > 1) {
+            // `multi.maxTargets` is what this caster can actually fire, not the
+            // spell's cap — a level-1 warlock's Eldritch Blast is one beam, and
+            // the button said "(2 hits)" while the picker correctly asked for
+            // one. Both read the same number now.
+            if (t.who === 'enemy' && shots > 1) {
               const unit = a.spellId === 'scorching-ray' ? 'rays' : a.spellId === 'magic-missile' ? 'darts' : 'hits';
               for (const id of validIds) {
                 // Anchor the flow on the tapped enemy (its first ray/dart), then
                 // pick the rest; falls back to a single-target cast if applied.
                 const firstAction: Action = { kind: 'castSpell', spellId: a.spellId, slotLevel: a.slotLevel, targets: [{ combatantId: id }], ...(a.metamagic ? { metamagic: a.metamagic } : {}) };
                 const list = perTarget.get(id) ?? [];
-                list.push({ label: `${bentName(spell.name, a.metamagic)} (${t.count} ${unit})`, icon: spell.icon, action: firstAction, multi });
+                list.push({ label: `${bentName(spell.name, a.metamagic)} (${multi.maxTargets} ${unit})`, icon: spell.icon, action: firstAction, multi });
                 perTarget.set(id, list);
               }
             }
@@ -405,8 +425,10 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
               icon: scrollSpell.icon,
               multi: {
                 spellId: scrollSpell.id, slotLevel: scrollSpell.level, itemId: a.itemId,
-                maxTargets: st.count,
-                allowRepeats: scrollSpell.id === 'magic-missile' || scrollSpell.id === 'scorching-ray',
+                // Same two reads as the cast path above — a scroll of Magic
+                // Missile distributes its darts exactly as the spell does.
+                maxTargets: spellShots(scrollSpell, actor!),
+                allowRepeats: scrollSpell.stacksOnOneTarget === true,
                 validIds,
               },
             });
