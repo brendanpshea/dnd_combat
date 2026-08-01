@@ -170,6 +170,13 @@ export function expectedDamage(
     hits += runHits;
     pHit += runP;
     if (runHits > 0) hitDamage += dealt;
+    // An early-out for actions that deal no damage was tried here — a shove or
+    // Hunter's Mark otherwise costs fifteen full resolutions to confirm zero,
+    // and it was worth about 1.5ms of p90. It is not here because I could not
+    // demonstrate it was safe: the obvious form (no attack roll, no damage on
+    // run 0) measured WORSE on the accuracy harness, 0.3%/1.0% -> 1.0%/5.1%,
+    // and I could not reproduce which actions it was zeroing. A guard I cannot
+    // characterise is not worth 1.5ms.
   }
 
   /**

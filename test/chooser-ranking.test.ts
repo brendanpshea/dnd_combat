@@ -18,6 +18,7 @@ import { buildMonster } from '../src/data/monsters.js';
 import { groupActions, SHOWN_OPTIONS } from '../web/src/actionGroups.js';
 import { expectedDamage } from '../src/engine/rules/estimate.js';
 import { step } from '../src/engine/actions.js';
+import { WEAPONS } from '../src/data/weapons.js';
 import type { Combatant, Position, TeamId } from '../src/engine/types.js';
 
 function pc(classId: string, team: TeamId, position: Position, id: string, level = 5): Combatant {
@@ -73,18 +74,165 @@ describe('the chooser ranks by expected damage', () => {
     }
   });
 
-  it('sinks pack weapons below everything ready, whatever they would do', () => {
-    // Drawing a spear out of your bag is a deliberate act, not a default.
+  it('prefers something in hand only between near-equals', () => {
+    // This used to be absolute — pack weapons sank below everything ready,
+    // whatever they would do — and that hid a strictly better weapon. Drawing
+    // one is a free object interaction, so the pack is a tie-break, not a veto.
     const combat = new Combat({
       seed: 3,
       mapId: 'open',
       combatants: [pc('fighter', 'team1', { x: 3, y: 3 }, 'ftr'), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
     });
     const opts = optionsFor(combat, 'ftr', 'orc');
-    const firstStowed = opts.findIndex((o) => o.stowed);
-    if (firstStowed === -1) return; // this fighter carries nothing spare
-    expect(opts.slice(firstStowed).every((o) => o.stowed),
-      'a ready weapon is listed below a packed one').toBe(true);
+    const scores = opts.map((o) => expectedDamage(combat.state, 'ftr', o.action));
+    for (let i = 1; i < opts.length; i++) {
+      // A packed option may only sit above a ready one by being better.
+      if (opts[i - 1]!.stowed && !opts[i]!.stowed) {
+        expect(scores[i - 1]!, 'a pack weapon jumped a ready one without earning it')
+          .toBeGreaterThan(scores[i]! * (1 - 0.02));
+      }
+    }
+  });
+});
+
+/**
+ * A ranger standing in melee was offered its longbow first and its shortsword
+ * folded away at the bottom.
+ *
+ * Two faults at once. The bow swings at DISADVANTAGE with an enemy in reach —
+ * the engine had that right — so at level 1 the sword is worth 4.26 against the
+ * bow's 3.13, and it was ranked last anyway because a ranger's shortsword lives
+ * in the pack and pack weapons sank unconditionally.
+ *
+ * And even at level 5, where the bow really is the better play (6.59 to 5.67),
+ * burying the sword hides the answer to the situation the player is looking at.
+ * So the ordering is by damage, and a melee option is guaranteed a visible row
+ * whenever one exists — which is only when the target is in reach, so the
+ * option's existence is itself the test for "you are in melee".
+ */
+describe('a melee weapon is always on offer in melee', () => {
+  const rangerVsOrc = (level: number) => {
+    const c = new Combat({
+      seed: 3,
+      mapId: 'open',
+      combatants: [pc('ranger', 'team1', { x: 3, y: 3 }, 'rng', level), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'rng' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    return c;
+  };
+
+  it.each([1, 5])('keeps the shortsword visible at level %i', (level) => {
+    const c = rangerVsOrc(level);
+    const opts = groupActions(c.state, 'rng', c.legalActions()).perTarget.get('orc') ?? [];
+    const sword = opts.find((o) => /Shortsword/i.test(o.label));
+    expect(sword, 'the ranger has no shortsword — the fixture stopped testing anything').toBeDefined();
+    expect(sword!.folded, 'the melee weapon is folded away while standing in melee').toBeFalsy();
+  });
+
+  it('puts the shortsword FIRST at level 1, where it is simply better', () => {
+    const c = rangerVsOrc(1);
+    const opts = groupActions(c.state, 'rng', c.legalActions()).perTarget.get('orc') ?? [];
+    const sword = opts.findIndex((o) => /Shortsword/i.test(o.label));
+    const bow = opts.findIndex((o) => /Longbow/i.test(o.label));
+    expect(sword).toBeGreaterThan(-1);
+    expect(bow).toBeGreaterThan(-1);
+    expect(sword, 'the longbow still outranks the shortsword in melee').toBeLessThan(bow);
+  });
+
+  it('still lets the bow rank first at level 5, where it is', () => {
+    // The guarantee must not become "melee always wins" — that would be the
+    // same kind of wrong, pointed the other way.
+    const c = rangerVsOrc(5);
+    const opts = groupActions(c.state, 'rng', c.legalActions()).perTarget.get('orc') ?? [];
+    expect(opts[0]!.label, 'the guarantee has turned into a melee override').toMatch(/Longbow/i);
+  });
+
+  it('gives the bow disadvantage — the rule was never the problem', () => {
+    const c = rangerVsOrc(5);
+    const shot = c.legalActions().find((a) => a.kind === 'attack' && a.weaponId === 'longbow')!;
+    const roll = step(c.state, shot).events.find((e) => e.type === 'attackRolled');
+    expect(roll && 'disSources' in roll && roll.disSources).toContain('enemy adjacent');
+  });
+
+  it('shows a melee weapon even when six better options outrank it', () => {
+    // The ranger fixture above does NOT exercise the guarantee: with only two
+    // damaging options the shortsword is in the visible three on merit, so
+    // deleting the guarantee left those tests green. This is the fixture that
+    // actually fires it — a level-5 wizard beside an orc has its dagger 7th by
+    // damage (5.00, against Fire Bolt at 10.83) and it still has to be there.
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'wiz', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const opts = groupActions(c.state, 'wiz', c.legalActions()).perTarget.get('orc') ?? [];
+    const melee = (o: { action: { kind: string; weaponId?: string } }) =>
+      o.action.kind === 'attack' && WEAPONS[o.action.weaponId!]?.melee === true;
+    const meleeAt = opts.findIndex(melee);
+    expect(meleeAt, 'no melee weapon in the list — the fixture stopped testing anything')
+      .toBeGreaterThan(-1);
+    expect(meleeAt, 'this fixture no longer ranks the melee weapon outside the visible set')
+      .toBeGreaterThanOrEqual(SHOWN_OPTIONS);
+    expect(opts.filter((o) => !o.folded).some(melee),
+      'the melee weapon is folded away while standing in melee').toBe(true);
+  });
+
+  it('promotes a real weapon, not a fist', () => {
+    // An unarmed strike is technically a melee attack and would satisfy a
+    // careless version of the guarantee while teaching the player nothing.
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'wiz', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const opts = groupActions(c.state, 'wiz', c.legalActions()).perTarget.get('orc') ?? [];
+    const shownMelee = opts.filter((o) => !o.folded).filter(
+      (o) => o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee === true,
+    );
+    expect(shownMelee.length).toBeGreaterThan(0);
+    expect(shownMelee.some((o) => o.action.kind === 'attack' && o.action.weaponId !== 'unarmed-strike'),
+      'only a fist was promoted while a real weapon was available').toBe(true);
+  });
+
+  it('still keeps a free option visible — the two guarantees coexist', () => {
+    // Two promotions into three rows must not evict each other.
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'wiz', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const opts = groupActions(c.state, 'wiz', c.legalActions()).perTarget.get('orc') ?? [];
+    const free = (o: { action: { kind: string; slotLevel?: number } }) =>
+      o.action.kind !== 'castSpell' || o.action.slotLevel === 0;
+    const shown = opts.filter((o) => !o.folded);
+    expect(shown.some(free), 'every visible option costs a spell slot').toBe(true);
+    expect(shown.some((o) => o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee === true),
+      'the melee guarantee was evicted by the at-will one').toBe(true);
+  });
+
+  it('does not invent a melee row when nothing is in reach', () => {
+    // At range there is no melee option to protect, and a guarantee that fired
+    // anyway would push a real choice out of the visible set for nothing.
+    const c = new Combat({
+      seed: 3,
+      mapId: 'open',
+      combatants: [pc('ranger', 'team1', { x: 3, y: 3 }, 'rng', 5), mon('orc', 'team2', { x: 3, y: 7 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'rng' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const opts = groupActions(c.state, 'rng', c.legalActions()).perTarget.get('orc') ?? [];
+    expect(opts.length, 'nothing on offer at range at all').toBeGreaterThan(0);
+    for (const o of opts.filter((x) => !x.folded)) {
+      expect(o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee,
+        'a melee swing is offered against something out of reach').toBeFalsy();
+    }
   });
 });
 
@@ -174,6 +322,36 @@ describe('the damage estimate', () => {
     expectedDamage(c.state, 'ftr', action);
     expect(JSON.stringify(c.state), 'estimating an action changed the board').toBe(before);
   });
+
+  it('never scores a real damaging spell at exactly zero', () => {
+    // A short-circuit for zero-damage actions was tried and removed: it saved
+    // about 1.5ms of p90 and measured worse on the accuracy harness in a way I
+    // could not attribute. This is the property it would have had to preserve,
+    // kept because it is worth holding regardless of how the estimate is
+    // implemented — a spell that reliably deals damage must never read as 0.
+    // Across a spread of boards, because whether run 0's target saves is a
+    // property of the seed: one fixture can miss the path entirely.
+    let checked = 0;
+    for (const seed of [3, 7, 12, 19, 23, 31, 44, 57]) {
+      const c = new Combat({
+        seed,
+        mapId: 'open',
+        combatants: [pc('cleric', 'team1', { x: 3, y: 3 }, 'cle', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+      });
+      let guard = 0;
+      while (c.activeId !== 'cle' && guard++ < 40) c.apply({ kind: 'endTurn' });
+      for (const a of c.legalActions()) {
+        if (a.kind !== 'castSpell') continue;
+        // Ground truth says it deals damage; the shipped estimate must agree it
+        // deals SOMETHING, whatever one unlucky save did on the first run.
+        if (expectedDamage(c.state, 'cle', a, { samples: 200, salt: 4242 }) < 1) continue;
+        checked++;
+        expect(expectedDamage(c.state, 'cle', a),
+          `a real spell scored exactly zero: ${a.spellId} (seed ${seed})`).toBeGreaterThan(0);
+      }
+    }
+    expect(checked, 'no damaging spell in these fixtures to test').toBeGreaterThan(0);
+  }, 20_000);
 
   it('scores a non-damaging action at zero', () => {
     const c = combat();
@@ -292,5 +470,8 @@ describe('a melee cantrip outranks a ranged one in melee', () => {
           `a real option scored zero at level ${level}`).toBeGreaterThan(0);
       }
     }
-  });
+    // 400-sample ground truth for every legal action at three levels is
+    // genuinely expensive; this is the one test that needs longer than the
+    // default budget rather than being made less thorough.
+  }, 30_000);
 });

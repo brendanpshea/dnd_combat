@@ -534,10 +534,11 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
   return { moves, perTarget, bar };
 }
 
-/** At-will: costs no spell slot, so it can be done again next turn. */
-function isAtWill(o: TargetOption): boolean {
-  return o.action.kind !== 'castSpell' || o.action.slotLevel === 0;
+/** A swing with something held, as opposed to a shot or a spell. */
+function isMeleeWeapon(o: TargetOption): boolean {
+  return o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee === true;
 }
+
 
 /**
  * Best first, and the rest folded away.
@@ -579,19 +580,55 @@ export function rankOptions(state: GameState, actorId: Id, opts: TargetOption[])
   for (const o of opts) score.set(o, expectedDamage(state, actorId, o.action));
   const order = new Map(opts.map((o, i) => [o, i]));
   const ranked = [...opts].sort((a, b) => {
-    if (!!a.stowed !== !!b.stowed) return a.stowed ? 1 : -1;
     const d = score.get(b)! - score.get(a)!;
     // A hair of tolerance so two attacks that differ only by sampling noise
     // keep their original order instead of trading places between renders.
     if (Math.abs(d) > TIE * Math.max(score.get(a)!, score.get(b)!, 1)) return d;
+    // Only among near-equals: something already in hand beats something you
+    // would have to pull out of your bag. This used to be the FIRST comparison,
+    // ahead of damage entirely — "pack weapons sink, whatever they would do" —
+    // written when a fighter carrying four javelins flooded an unfolded list.
+    // Folding solved that, and the absolute rule then caused a worse bug: a
+    // ranger standing in melee was offered its longbow (at disadvantage, 3.13)
+    // while its shortsword (4.26) sat folded at the bottom, because the sword
+    // was in the pack. Drawing it is a free object interaction and obviously
+    // right. Damage decides; the pack only breaks ties.
+    if (!!a.stowed !== !!b.stowed) return a.stowed ? 1 : -1;
     return order.get(a)! - order.get(b)!;
   });
 
+  /**
+   * ONE GUARANTEE THAT OVERRIDES THE RANKING: in melee, a melee weapon is
+   * always on offer.
+   *
+   * Melee attacks only exist as options when the target is in reach, so the
+   * presence of one IS the test for "you are in melee" — no position maths
+   * needed. Reported for a ranger: longbow first, shortsword folded away, while
+   * the bow was swinging at disadvantage. Even when the bow really is the
+   * better play, burying the sword hides the answer to the situation the player
+   * is looking at.
+   *
+   * It costs the third visible row, not the first. The DISPLAYED order is
+   * `ranked` either way — `visible` is only the set that escapes folding — so a
+   * promoted option keeps its true position in the list and is not dressed up
+   * as the best thing available. What the choice of row decides is which option
+   * gets folded to make space: the weakest one that was already visible.
+   *
+   * There was a second guarantee here, protecting the best at-will option from
+   * a row full of slot-spenders. Measured across 2605 real chooser builds it
+   * fired ZERO times, against 97 for this one: with the ranking corrected, a
+   * levelled spell does not out-damage every cantrip by enough to take all
+   * three rows. It was deleted rather than kept as a branch nothing reaches.
+   * `chooser-ranking.test.ts` still asserts a free option stays visible — that
+   * outcome is now the ranking's job, and the test will say so if it stops
+   * being true.
+   */
   const visible = ranked.slice(0, SHOWN_OPTIONS);
-  if (!visible.some(isAtWill)) {
-    const bestAtWill = ranked.find(isAtWill);
-    if (bestAtWill) visible[visible.length - 1] = bestAtWill;
+  if (!visible.some(isMeleeWeapon)) {
+    const bestMelee = ranked.find(isMeleeWeapon);
+    if (bestMelee) visible[visible.length - 1] = bestMelee;
   }
+
   const shown = new Set(visible);
   return ranked.map((o) => (shown.has(o) ? o : { ...o, folded: true }));
 }
