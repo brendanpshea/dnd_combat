@@ -10,7 +10,7 @@ import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { FEATURES } from '../../src/data/features.js';
 import { METAMAGIC, type MetamagicId } from '../../src/engine/rules/metamagic.js';
-import { expectedDamage } from '../../src/engine/rules/estimate.js';
+import { expectedDamage, hinderedByAdjacency } from '../../src/engine/rules/estimate.js';
 
 export const posKey = (p: Position) => `${p.x},${p.y}`;
 
@@ -534,11 +534,6 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
   return { moves, perTarget, bar };
 }
 
-/** A swing with something held, as opposed to a shot or a spell. */
-function isMeleeWeapon(o: TargetOption): boolean {
-  return o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee === true;
-}
-
 
 /**
  * Best first, and the rest folded away.
@@ -598,35 +593,43 @@ export function rankOptions(state: GameState, actorId: Id, opts: TargetOption[])
   });
 
   /**
-   * ONE GUARANTEE THAT OVERRIDES THE RANKING: in melee, a melee weapon is
-   * always on offer.
+   * ONE GUARANTEE THAT OVERRIDES THE RANKING: while something is in your face,
+   * a play that actually works in your face is always on offer.
    *
-   * Melee attacks only exist as options when the target is in reach, so the
-   * presence of one IS the test for "you are in melee" — no position maths
-   * needed. Reported for a ranger: longbow first, shortsword folded away, while
-   * the bow was swinging at disadvantage. Even when the bow really is the
-   * better play, burying the sword hides the answer to the situation the player
-   * is looking at.
+   * Reported for a ranger: longbow first, shortsword folded away, while the bow
+   * was swinging at disadvantage. Even when the bow really is the better play,
+   * burying the sword hides the answer to the situation the player is looking
+   * at.
+   *
+   * The first version of this promoted a MELEE WEAPON, which was too blunt. A
+   * wizard's answer to an adjacent orc is Shocking Grasp — a touch spell, no
+   * disadvantage, and better than anything else it has — and the rule made it
+   * show its dagger instead, spending the third row on the worst thing in the
+   * list. So the test is what the player actually needs: an option that deals
+   * damage AND is not hindered by the adjacency. A melee weapon qualifies, so
+   * does a touch cantrip, so does a save-based spell; a bow does not, and
+   * neither does Hunter's Mark, which is unhindered but deals nothing.
+   *
+   * Self-limiting by construction: at range nothing is hindered, so the first
+   * damaging option satisfies it and nothing is ever promoted.
    *
    * It costs the third visible row, not the first. The DISPLAYED order is
    * `ranked` either way — `visible` is only the set that escapes folding — so a
-   * promoted option keeps its true position in the list and is not dressed up
-   * as the best thing available. What the choice of row decides is which option
-   * gets folded to make space: the weakest one that was already visible.
+   * promoted option keeps its true position and is not dressed up as the best
+   * thing available.
    *
    * There was a second guarantee here, protecting the best at-will option from
    * a row full of slot-spenders. Measured across 2605 real chooser builds it
-   * fired ZERO times, against 97 for this one: with the ranking corrected, a
-   * levelled spell does not out-damage every cantrip by enough to take all
-   * three rows. It was deleted rather than kept as a branch nothing reaches.
-   * `chooser-ranking.test.ts` still asserts a free option stays visible — that
-   * outcome is now the ranking's job, and the test will say so if it stops
-   * being true.
+   * fired ZERO times: with the ranking corrected, a levelled spell does not
+   * out-damage every cantrip by enough to take all three rows. It was deleted
+   * rather than kept as a branch nothing reaches.
    */
+  const worksInMelee = (o: TargetOption) =>
+    score.get(o)! > 0 && !hinderedByAdjacency(state, actorId, o.action);
   const visible = ranked.slice(0, SHOWN_OPTIONS);
-  if (!visible.some(isMeleeWeapon)) {
-    const bestMelee = ranked.find(isMeleeWeapon);
-    if (bestMelee) visible[visible.length - 1] = bestMelee;
+  if (!visible.some(worksInMelee)) {
+    const best = ranked.find(worksInMelee);
+    if (best) visible[visible.length - 1] = best;
   }
 
   const shown = new Set(visible);

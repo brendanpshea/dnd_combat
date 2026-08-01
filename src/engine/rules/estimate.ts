@@ -207,3 +207,29 @@ export function expectedDamage(
   }
   return total / samples;
 }
+
+/**
+ * Would this action be penalised for having an enemy in reach?
+ *
+ * A ranged attack made while something is next to you takes disadvantage; a
+ * melee swing, a touch spell and a save-based spell do not. That difference is
+ * what makes an option an answer to being in melee, and the engine already
+ * decides it — `collectAttackSources` tags the roll `enemy adjacent`. So this
+ * asks rather than restating the rule, the same way `expectedDamage` does.
+ *
+ * ONE resolution, not fifteen: whether the tag is applied depends on positions
+ * and conditions, not on the dice, so a single run answers it. An action that
+ * makes no attack roll at all is not penalised, which is correct — Sacred Flame
+ * is a saving throw and works fine with an orc breathing on you.
+ */
+export function hinderedByAdjacency(state: GameState, actorId: Id, action: Action): boolean {
+  if (!state.combatants[actorId]) return false;
+  try {
+    for (const e of step({ ...state, rng: seedRng(seedFor(0, 0)) }, action).events) {
+      if (e.type === 'attackRolled' && e.disSources.includes('enemy adjacent')) return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
