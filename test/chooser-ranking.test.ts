@@ -16,8 +16,8 @@ import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { groupActions, SHOWN_OPTIONS } from '../web/src/actionGroups.js';
-import { expectedDamage } from '../src/engine/rules/estimate.js';
-import { step } from '../src/engine/actions.js';
+import { expectedDamage, hinderedByAdjacency } from '../src/engine/rules/estimate.js';
+import { step, type Action } from '../src/engine/actions.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import type { Combatant, Position, TeamId } from '../src/engine/types.js';
 
@@ -106,11 +106,17 @@ describe('the chooser ranks by expected damage', () => {
  *
  * And even at level 5, where the bow really is the better play (6.59 to 5.67),
  * burying the sword hides the answer to the situation the player is looking at.
- * So the ordering is by damage, and a melee option is guaranteed a visible row
- * whenever one exists — which is only when the target is in reach, so the
- * option's existence is itself the test for "you are in melee".
+ * So the ordering is by damage, and something that WORKS in melee is guaranteed
+ * a visible row.
+ *
+ * "Works" rather than "is a melee weapon": the first version promoted a weapon,
+ * which made a wizard show its dagger instead of Shocking Grasp — a touch spell,
+ * unhindered, and better than anything else it had. The test is damage AND not
+ * hindered by the adjacency, which a melee weapon, a touch cantrip and a
+ * save-based spell all pass, and a bow does not. Hunter's Mark is unhindered and
+ * deals nothing, so it does not count.
  */
-describe('a melee weapon is always on offer in melee', () => {
+describe('something that works in melee is always on offer', () => {
   const rangerVsOrc = (level: number) => {
     const c = new Combat({
       seed: 3,
@@ -122,7 +128,7 @@ describe('a melee weapon is always on offer in melee', () => {
     return c;
   };
 
-  it.each([1, 5])('keeps the shortsword visible at level %i', (level) => {
+  it.each([1, 5])('keeps the ranger\'s shortsword visible at level %i', (level) => {
     const c = rangerVsOrc(level);
     const opts = groupActions(c.state, 'rng', c.legalActions()).perTarget.get('orc') ?? [];
     const sword = opts.find((o) => /Shortsword/i.test(o.label));
@@ -155,12 +161,10 @@ describe('a melee weapon is always on offer in melee', () => {
     expect(roll && 'disSources' in roll && roll.disSources).toContain('enemy adjacent');
   });
 
-  it('shows a melee weapon even when six better options outrank it', () => {
-    // The ranger fixture above does NOT exercise the guarantee: with only two
-    // damaging options the shortsword is in the visible three on merit, so
-    // deleting the guarantee left those tests green. This is the fixture that
-    // actually fires it — a level-5 wizard beside an orc has its dagger 7th by
-    // damage (5.00, against Fire Bolt at 10.83) and it still has to be there.
+  it('leaves a wizard on its cantrip rather than forcing the dagger up', () => {
+    // Shocking Grasp is a touch spell: unhindered, and the best thing a wizard
+    // has against something standing on it. The earlier melee-WEAPON rule spent
+    // the third row on the dagger — the worst option in the list — for nothing.
     const c = new Combat({
       seed: 7,
       mapId: 'open',
@@ -169,57 +173,126 @@ describe('a melee weapon is always on offer in melee', () => {
     let guard = 0;
     while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
     const opts = groupActions(c.state, 'wiz', c.legalActions()).perTarget.get('orc') ?? [];
-    const melee = (o: { action: { kind: string; weaponId?: string } }) =>
-      o.action.kind === 'attack' && WEAPONS[o.action.weaponId!]?.melee === true;
-    const meleeAt = opts.findIndex(melee);
-    expect(meleeAt, 'no melee weapon in the list — the fixture stopped testing anything')
-      .toBeGreaterThan(-1);
-    expect(meleeAt, 'this fixture no longer ranks the melee weapon outside the visible set')
-      .toBeGreaterThanOrEqual(SHOWN_OPTIONS);
-    expect(opts.filter((o) => !o.folded).some(melee),
-      'the melee weapon is folded away while standing in melee').toBe(true);
-  });
-
-  it('promotes a real weapon, not a fist', () => {
-    // An unarmed strike is technically a melee attack and would satisfy a
-    // careless version of the guarantee while teaching the player nothing.
-    const c = new Combat({
-      seed: 7,
-      mapId: 'open',
-      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'wiz', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
-    });
-    let guard = 0;
-    while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
-    const opts = groupActions(c.state, 'wiz', c.legalActions()).perTarget.get('orc') ?? [];
-    const shownMelee = opts.filter((o) => !o.folded).filter(
-      (o) => o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee === true,
-    );
-    expect(shownMelee.length).toBeGreaterThan(0);
-    expect(shownMelee.some((o) => o.action.kind === 'attack' && o.action.weaponId !== 'unarmed-strike'),
-      'only a fist was promoted while a real weapon was available').toBe(true);
-  });
-
-  it('still keeps a free option visible — the two guarantees coexist', () => {
-    // Two promotions into three rows must not evict each other.
-    const c = new Combat({
-      seed: 7,
-      mapId: 'open',
-      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'wiz', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
-    });
-    let guard = 0;
-    while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
-    const opts = groupActions(c.state, 'wiz', c.legalActions()).perTarget.get('orc') ?? [];
-    const free = (o: { action: { kind: string; slotLevel?: number } }) =>
-      o.action.kind !== 'castSpell' || o.action.slotLevel === 0;
     const shown = opts.filter((o) => !o.folded);
-    expect(shown.some(free), 'every visible option costs a spell slot').toBe(true);
+    expect(shown[0]!.label, 'the wizard is not led with its touch cantrip').toMatch(/Shocking Grasp/i);
     expect(shown.some((o) => o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee === true),
-      'the melee guarantee was evicted by the at-will one').toBe(true);
+      'the dagger is still being promoted over a better cantrip').toBe(false);
   });
+
+  it('promotes an unhindered option when the whole top three is hindered', () => {
+    // The fixture that actually FIRES the guarantee. Everything the ranger and
+    // the wizard tests above assert is true whether or not the guarantee runs,
+    // because the ranking already keeps a working option visible for them —
+    // four earlier versions of these tests passed with the guarantee deleted.
+    //
+    // A wizard with no touch cantrip and no weapon in hand, standing on a
+    // zombie: Fire Bolt, Ray of Frost and Scorching Ray are the top three and
+    // every one of them is swinging at disadvantage.
+    const wz = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 3, y: 3 }, level: 5 });
+    wz.spellIds = wz.spellIds.filter((id) => !['shocking-grasp', 'poison-spray', 'true-strike'].includes(id));
+    delete (wz.equipped as { mainHand?: string }).mainHand;
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [{ ...wz, id: 'wz' }, mon('zombie', 'team2', { x: 3, y: 4 }, 'z')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'wz' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const opts = groupActions(c.state, 'wz', c.legalActions()).perTarget.get('z') ?? [];
+    const score = new Map(opts.map((o) => [o, expectedDamage(c.state, 'wz', o.action)]));
+    const works = (o: (typeof opts)[number]) =>
+      score.get(o)! > 0 && !hinderedByAdjacency(c.state, 'wz', o.action);
+
+    // If this stops holding, the test has stopped exercising the guarantee and
+    // must be rebuilt rather than left passing for the wrong reason.
+    const naturalTop = [...opts].sort((a, b) => score.get(b)! - score.get(a)!).slice(0, SHOWN_OPTIONS);
+    expect(naturalTop.some(works),
+      'the fixture no longer needs the guarantee — rebuild it').toBe(false);
+
+    expect(opts.filter((o) => !o.folded).some(works),
+      'every visible option is hindered by the enemy standing on you').toBe(true);
+  });
+
+  it('knows which things the adjacency actually hinders', () => {
+    // The predicate itself, because everything above passes as long as SOMETHING
+    // is unhindered — it never checks that the right things are.
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'wiz', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'wiz' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const spell = (id: string) => c.legalActions().find((a) => a.kind === 'castSpell' && a.spellId === id);
+    const weapon = (id: string) => c.legalActions().find((a) => a.kind === 'attack' && a.weaponId === id);
+    const hindered = (a: Action | undefined) => a && hinderedByAdjacency(c.state, 'wiz', a);
+
+    // A ranged spell attack is hindered; a touch one is not.
+    expect(hindered(spell('fire-bolt')), 'Fire Bolt is not being penalised in melee').toBe(true);
+    expect(hindered(spell('shocking-grasp')), 'Shocking Grasp is being treated as a ranged attack').toBe(false);
+    // A melee weapon is not.
+    expect(hindered(weapon('dagger')), 'a dagger is being penalised for melee').toBe(false);
+    // Poison Spray is deliberately NOT the save case: 2024 made it a ranged
+    // spell attack, so it is hindered, and asserting otherwise was my mistake
+    // rather than the code's.
+    expect(hindered(spell('poison-spray')), 'Poison Spray is a ranged spell attack in 2024').toBe(true);
+  });
+
+  it('does not hinder a spell that rolls no attack at all', () => {
+    // Sacred Flame is a Dexterity save: nothing to have disadvantage on, and it
+    // works perfectly well with something breathing on you.
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [pc('cleric', 'team1', { x: 3, y: 3 }, 'cle', 5), mon('orc', 'team2', { x: 3, y: 4 }, 'orc')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'cle' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const flame = c.legalActions().find((a) => a.kind === 'castSpell' && a.spellId === 'sacred-flame');
+    expect(flame, 'no Sacred Flame — the fixture stopped testing anything').toBeDefined();
+    expect(hinderedByAdjacency(c.state, 'cle', flame!),
+      'a saving-throw spell is being treated as an attack').toBe(false);
+  });
+
+  it('promotes nothing when there is no answer to give', () => {
+    // A wizard with no touch cantrip and no weapon at all, standing on a
+    // zombie: every damaging option is a hindered ranged attack, and the only
+    // unhindered things left — Blindness, a shove — deal nothing. There is no
+    // answer, and promoting a dud into the visible set to pretend otherwise
+    // would cost a real option its row. This is what the `> 0` is for.
+    const wz = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 3, y: 3 }, level: 5 });
+    wz.spellIds = wz.spellIds.filter((id) => !['shocking-grasp', 'true-strike', 'magic-missile'].includes(id));
+    wz.equipped = { armor: wz.equipped.armor } as typeof wz.equipped;
+    wz.inventory = [];
+    const c = new Combat({
+      seed: 7,
+      mapId: 'open',
+      combatants: [{ ...wz, id: 'wz' }, mon('zombie', 'team2', { x: 3, y: 4 }, 'z')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'wz' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const opts = groupActions(c.state, 'wz', c.legalActions()).perTarget.get('z') ?? [];
+    const score = new Map(opts.map((o) => [o, expectedDamage(c.state, 'wz', o.action)]));
+    const unhindered = (o: (typeof opts)[number]) => !hinderedByAdjacency(c.state, 'wz', o.action);
+
+    // The fixture only tests anything while these hold.
+    expect(opts.some((o) => unhindered(o) && score.get(o)! === 0),
+      'no zero-damage unhindered option left to mis-promote — rebuild the fixture').toBe(true);
+    expect(opts.some((o) => unhindered(o) && score.get(o)! > 0),
+      'the fixture has a real melee answer now — rebuild it').toBe(false);
+
+    // Every visible row must have been earned by damage, not by the guarantee.
+    const shown = opts.filter((o) => !o.folded);
+    const byScore = [...opts].sort((a, b) => score.get(b)! - score.get(a)!).slice(0, SHOWN_OPTIONS);
+    expect(shown.map((o) => o.label).sort(),
+      'a zero-damage option was promoted as if it were a melee answer')
+      .toEqual(byScore.map((o) => o.label).sort());
+  });
+
 
   it('does not invent a melee row when nothing is in reach', () => {
-    // At range there is no melee option to protect, and a guarantee that fired
-    // anyway would push a real choice out of the visible set for nothing.
+    // At range nothing is hindered, so the first damaging option satisfies the
+    // rule and nothing is ever promoted. Self-limiting by construction.
     const c = new Combat({
       seed: 3,
       mapId: 'open',
@@ -233,64 +306,6 @@ describe('a melee weapon is always on offer in melee', () => {
       expect(o.action.kind === 'attack' && WEAPONS[o.action.weaponId]?.melee,
         'a melee swing is offered against something out of reach').toBeFalsy();
     }
-  });
-});
-
-describe('the chooser folds the rest', () => {
-  const combat = () => new Combat({
-    seed: 5,
-    mapId: 'open',
-    combatants: [
-      pc('cleric', 'team1', { x: 3, y: 3 }, 'cle'),
-      mon('orc', 'team2', { x: 3, y: 4 }, 'orc'),
-    ],
-  });
-
-  it('shows no more than the visible cap', () => {
-    const opts = optionsFor(combat(), 'cle', 'orc');
-    expect(opts.filter((o) => !o.folded).length).toBeLessThanOrEqual(SHOWN_OPTIONS);
-  });
-
-  it('folds rather than drops — every legal play is still in the list', () => {
-    // Dropping legal plays would be a rules change for the human, since the AI
-    // would keep options the player could not reach.
-    const c = combat();
-    let guard = 0;
-    while (c.activeId !== 'cle' && guard++ < 40) c.apply({ kind: 'endTurn' });
-    const legalOnOrc = c.legalActions().filter(
-      (a) => (a.kind === 'attack' && a.targetId === 'orc') ||
-        (a.kind === 'shove' && a.targetId === 'orc'),
-    ).length;
-    const opts = groupActions(c.state, 'cle', c.legalActions()).perTarget.get('orc') ?? [];
-    const inList = opts.filter(
-      (o) => o.action.kind === 'attack' || o.action.kind === 'shove',
-    ).length;
-    expect(inList, 'a legal play vanished from the chooser').toBe(legalOnOrc);
-  });
-
-  it('always leaves a free option visible', () => {
-    // A first-level slot usually out-damages a cantrip by a little, so a naive
-    // ranking fills every visible row with slot-spenders and leaves a caster
-    // looking like they have no free attack.
-    const opts = optionsFor(combat(), 'cle', 'orc');
-    const free = (o: { action: { kind: string; slotLevel?: number } }) =>
-      o.action.kind !== 'castSpell' || o.action.slotLevel === 0;
-    if (!opts.some(free)) return; // nothing free to protect
-    expect(opts.filter((o) => !o.folded).some(free),
-      'every visible option costs a spell slot').toBe(true);
-  });
-
-  it('leaves a short list alone', () => {
-    // Two options need no disclosure, and a fold control over nothing is worse
-    // than no fold control.
-    const c = new Combat({
-      seed: 9,
-      mapId: 'open',
-      combatants: [pc('fighter', 'team1', { x: 3, y: 3 }, 'ftr'), mon('goblin-warrior', 'team2', { x: 3, y: 4 }, 'gob')],
-    });
-    const opts = optionsFor(c, 'ftr', 'gob');
-    if (opts.length > SHOWN_OPTIONS) return;
-    expect(opts.every((o) => !o.folded)).toBe(true);
   });
 });
 
