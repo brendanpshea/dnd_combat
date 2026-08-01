@@ -147,7 +147,31 @@ export interface SpellData {
    * from the choosable/countable leveled pool.
    */
   ritual?: boolean;
+  /**
+   * How many shots this spell actually fires for a given caster, when that is
+   * fewer than `targeting.count`.
+   *
+   * `count` is a MAXIMUM — written at the cap so the legality check allows the
+   * most a caster could ever pick. Eldritch Blast earns its second beam at 5th
+   * level, so a level-1 warlock's `count` of 2 was a lie everywhere it was
+   * read: the UI asked for two distinct targets before there was a second beam
+   * to fire, and `cast` quietly threw the extra away.
+   *
+   * Declared here rather than derived from an id list somewhere, because an id
+   * list is exactly how Eldritch Blast got missed the last two times — see
+   * `stacksOnOneTarget`. A spell that scales says so itself.
+   */
+  shots?(caster: Combatant): number;
   cast(ctx: CastContext): GameEvent[];
+}
+
+/**
+ * How many shots `spell` fires for `caster` — its declared scaling, else the
+ * flat cap. The one place that answers this, so the legality check, the default
+ * target set and the UI's target picker cannot disagree about it.
+ */
+export function spellShots(spell: SpellData, caster: Combatant): number {
+  return spell.shots ? spell.shots(caster) : spell.targeting.kind === 'creature' ? spell.targeting.count : 1;
 }
 
 // --- shared helpers --------------------------------------------------------
@@ -767,15 +791,19 @@ export const SPELLS: Record<Id, SpellData> = {
    * warlock grows (a second at 5th), each its own attack roll, and the beams
    * may be split or stacked exactly like Magic Missile's darts.
    *
-   * `count` on the targeting is a MAXIMUM (see isLegalAction), so it is written
-   * at the cap and the beams the caster has actually earned are taken here. A
-   * level-3 warlock handed two targets fires one, at the first of them.
+   * `count` on the targeting is a MAXIMUM (see isLegalAction) and `shots` is
+   * what this caster has actually earned. The cap is 4 — the beams at 17th —
+   * and it was written at 2, which quietly capped every warlock above 10th:
+   * `cast` would have fired three, but the legality check rejected a third
+   * target and the default target set never built one. Caught by the invariant
+   * in `spell-shots.test.ts` that `shots` never exceeds `count`.
    */
   'eldritch-blast': {
     id: 'eldritch-blast', name: 'Eldritch Blast', level: 0, castingTime: 'action',
-    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 2 },
+    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 4 },
     concentration: false,
     stacksOnOneTarget: true,
+    shots: (caster) => eldritchBeams(caster.level),
     icon: '🟣',
     cast({ state, casterId, targetIds }) {
       const caster = state.combatants[casterId]!;
@@ -1201,6 +1229,10 @@ export const SPELLS: Record<Id, SpellData> = {
     // one entry per dart, repeats allowed.
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 3 },
     concentration: false,
+    // Darts may all land on one creature — the classic use, and the default
+    // `spellTargetSets` picks. The flag was missing even though the behaviour
+    // was not, so every reader of it had to special-case this spell by id.
+    stacksOnOneTarget: true,
     icon: '✨',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];

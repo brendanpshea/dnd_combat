@@ -10,7 +10,7 @@
 import type { GameState, Id, Position, Combatant } from './types.js';
 import { posEq, cellAt, isDown, isIncapacitated } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, SpellData, validTarget, directionFromDelta } from '../data/spells.js';
+import { SPELLS, SpellData, validTarget, directionFromDelta, spellShots } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS, isCharged, chargesLeft } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
@@ -200,7 +200,11 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
     return weapons.some((w) => canAttackWith(state, actor, w, tg.combatantId));
   }
   if (t.kind === 'creature') {
-    if (targets.length < 1 || targets.length > t.count) return false;
+    // The caster's ACTUAL shots, not the declared cap. `count` is written at
+    // the maximum a spell ever reaches, so a level-1 warlock was allowed — and
+    // by `spellTargetSets` below, asked — to pick two Eldritch Blast targets
+    // when it has one beam. `cast` then dropped the extra silently.
+    if (targets.length < 1 || targets.length > spellShots(spell, actor)) return false;
     // Multi-target creature spells: Bless requires distinct targets; Magic
     // Missile darts may repeat. Distinctness only matters when concentration
     // buffs stack conditions — enforced by the spell itself being idempotent.
@@ -436,7 +440,8 @@ export function spellTargetSets(
   } else if (t.kind === 'creature') {
     const pool = t.who === 'enemy' ? enemies : t.who === 'ally' ? allies : [...enemies, ...allies];
     const valid = pool.filter((c) => validTarget(state, actor.id, spell, c.id));
-    if (t.count === 1) {
+    const shots = spellShots(spell, actor);
+    if (shots === 1) {
       for (const v of valid) out.push({ targets: [{ combatantId: v.id }] });
     } else if (valid.length > 0) {
       // Default selection depends on whether the spell's "shots" can double up
@@ -455,10 +460,10 @@ export function spellTargetSets(
       const stackable = spell.stacksOnOneTarget === true;
       const targets: Target[] =
         spell.id === 'magic-missile'
-          ? Array.from({ length: t.count }, () => ({ combatantId: valid[0]!.id }))
+          ? Array.from({ length: shots }, () => ({ combatantId: valid[0]!.id }))
           : stackable
-            ? Array.from({ length: t.count }, (_, i) => ({ combatantId: valid[Math.min(i, valid.length - 1)]!.id }))
-            : valid.slice(0, t.count).map((c) => ({ combatantId: c.id }));
+            ? Array.from({ length: shots }, (_, i) => ({ combatantId: valid[Math.min(i, valid.length - 1)]!.id }))
+            : valid.slice(0, shots).map((c) => ({ combatantId: c.id }));
       out.push({ targets });
     }
   } else if (t.kind === 'self') {
