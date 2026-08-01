@@ -557,8 +557,21 @@ function isAtWill(o: TargetOption): boolean {
  *    attack. Promoting it costs the last visible row and stops the ordering
  *    quietly arguing for burning resources.
  */
-/** Within 5% is a tie, and a tie keeps the order it came in. */
-const TIE = 0.05;
+/**
+ * How close counts as a tie, where a tie keeps the order it came in.
+ *
+ * The band exists for stability — two near-equal attacks should not swap under
+ * the player's thumb. It was 5%, chosen when the estimate was far noisier than
+ * it is now, and at that width it was masking real differences: a level-1
+ * wizard beside an orc has Shocking Grasp at 4.48 against Fire Bolt at 3.85, a
+ * 16% gap, and the band held the weaker one in front because the ESTIMATES were
+ * only 3.7% apart. That is the ordering that was reported.
+ *
+ * 2%, because the band should be narrower than the differences worth ranking,
+ * not wider. Measured churn is unchanged by the narrowing — the stability came
+ * from the estimate being deterministic, not from the band.
+ */
+const TIE = 0.02;
 
 export function rankOptions(state: GameState, actorId: Id, opts: TargetOption[]): TargetOption[] {
   if (opts.length <= 1) return opts;
