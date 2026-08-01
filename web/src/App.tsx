@@ -34,7 +34,7 @@ import { completedModules } from './adventureProgress.js';
 import { moduleChains, chapterStates, currentChapter } from '../../src/adventure/chain.js';
 import { loadCampaignWeb, campaignLoadProblem } from './campaignStorage.js';
 import { loadArenaWeb, deleteArenaWeb, arenaLoadProblem } from './arenaStorage.js';
-import { classLook } from './classLook.js';
+import { classLook, sheetSubtitle } from './classLook.js';
 import { playableModules } from '../../src/data/modules/index.js';
 import type { Module } from '../../src/adventure/types.js';
 import type { AdventureState } from '../../src/adventure/runtime.js';
@@ -1353,9 +1353,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       {sheetFor && (
         <CharacterSheet
           c={sheetFor}
-          subtitle={youTeam
+          subtitle={sheetSubtitle(sheetFor, youTeam
             ? (sheetFor.team === youTeam ? 'Your hero' : 'Enemy')
-            : (sheetFor.team === 'team1' ? 'Blue team' : 'Red team')}
+            : (sheetFor.team === 'team1' ? 'Blue team' : 'Red team'))}
           onClose={() => setSheetFor(null)}
         />
       )}
