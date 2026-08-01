@@ -13,6 +13,7 @@
     "adventure": "tsx src/ui/cli/adventure.ts",
     "arena": "tsx scripts/arena.ts",
     "probe": "tsx scripts/probe.ts",
+    "chooser-load": "tsx scripts/chooser-load.ts",
     "prose": "tsx scripts/prose.ts",
     "board-sheet": "tsx scripts/board-sheet.ts",
     "species": "tsx scripts/species.ts",
