@@ -235,17 +235,51 @@ function maxHit(c: Combatant, weaponId: Id): number {
  * policy: the same question the player asks before stepping away.
  */
 export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Position): number {
+  const walk = readWalk(state, mover, to);
+  return walk.provokers.reduce((sum, p) => sum + p.maxDamage, 0) + walk.hazardDamage;
+}
+
+/** One hostile that gets a free swing at `mover` for walking out of its reach. */
+export interface Provoker {
+  id: Id;
+  name: string;
+  /** Biggest damage a normal (non-crit) hit from its melee weapon could do. */
+  maxDamage: number;
+}
+
+export interface WalkRead {
+  /** Everyone who would take an opportunity attack, in the order provoked. */
+  provokers: Provoker[];
+  /** Worst-case damage from hazard cells crossed on the way. */
+  hazardDamage: number;
+}
+
+/**
+ * WHO gets a free swing for this walk, not just how much it might cost.
+ *
+ * `worstCaseWalkDamage` is a number, and a number is what the AI needs. A
+ * player needs the sentence: *the gnoll gets a free attack if you step away*.
+ * Opportunity attacks are the one rule on this board that is invisible until
+ * it fires — hazards are painted on the floor, reach is not — and a young
+ * player will walk out of melee all day without ever learning why they got hit.
+ *
+ * Both reads walk the same path with the same rules because one is written in
+ * terms of the other. They cannot drift.
+ */
+export function readWalk(state: GameState, mover: Combatant, to: Position): WalkRead {
+  const empty: WalkRead = { provokers: [], hazardDamage: 0 };
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true);
   const path = pathTo(r, mover.position, to);
-  if (!path) return 0;
+  if (!path) return empty;
 
   const hazardMax = hazardMaxFor(mover, state.grid);
   const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
     .map((id) => state.combatants[id]!)
     .filter((h) => canTakeReaction(h));
 
-  let worst = 0;
+  const provokers: Provoker[] = [];
+  let hazardDamage = 0;
   // One reaction each, so a hostile can only ever land a single opportunity
   // attack over the whole walk, however many times you cross its reach.
   const spent = new Set<Id>();
@@ -257,13 +291,13 @@ export function worstCaseWalkDamage(state: GameState, mover: Combatant, to: Posi
       const weapon = meleeWeaponOf(h);
       if (!weapon) continue;
       if (reachesCell(h, from) && !reachesCell(h, step)) {
-        worst += maxHit(h, weapon);
+        provokers.push({ id: h.id, name: h.name, maxDamage: maxHit(h, weapon) });
         spent.add(h.id);
       }
     }
-    if (cellAt(state.grid, step)!.terrain === 'hazard') worst += hazardMax;
+    if (cellAt(state.grid, step)!.terrain === 'hazard') hazardDamage += hazardMax;
   }
-  return worst;
+  return { provokers, hazardDamage };
 }
 
 /**

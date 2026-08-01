@@ -29,17 +29,6 @@ export interface BoardProps {
    * entry means no cover, which keeps the board from having to reason about it.
    */
   coverCells?: Map<string, CoverRead> | undefined;
-  /**
-   * Worst-case damage for walking to each reachable cell — hazards crossed plus
-   * every opportunity attack the route provokes, landing for maximum.
-   *
-   * Only the cells that cost something are present; an absent entry means the
-   * walk is free, which keeps the board from having to reason about it. Same
-   * shape as `coverCells`, and shown under the same rule: only on ground the
-   * hero can actually reach, because a warning about a move you cannot make is
-   * information about a decision you are not making.
-   */
-  riskCells?: Map<string, number> | undefined;
   coverUnits?: Map<Id, CoverRead> | undefined;
   selectedId?: Id | undefined;
   multiCounts?: Map<Id, number> | undefined;
@@ -67,7 +56,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, coverCells, riskCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
+export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
   /**
@@ -131,12 +120,6 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
       // move is actually offered — a badge on ground you cannot reach would be
       // information about a decision you are not making.
       const coverHere = hl === 'move' ? coverCells?.get(key) : undefined;
-      // The other half of the same question. XCOM puts the shield and the
-      // exposure on the tile you are about to step onto; this game had the
-      // shield and not the exposure, even though the engine has computed the
-      // number for the AI since pathing was written.
-      const riskHere = hl === 'move' ? riskCells?.get(key) : undefined;
-      const lethal = riskHere !== undefined && riskHere >= (state.combatants[activeId]?.hp ?? Infinity);
       const classes = ['cell', `terrain-${cell.terrain}`];
       // Badge only the perimeter of an effect field (or a lone tile): a cell
       // whose terrain differs from any orthogonal neighbour, or sits on the
@@ -224,17 +207,6 @@ export function Board({ state, activeId, highlights, coverCells, riskCells, cove
               aria-label={`cover, +${coverHere.ac} armour class`}
             >
               <b>+{coverHere.ac}</b>
-            </span>
-          )}
-          {riskHere !== undefined && riskHere > 0 && (
-            <span
-              className={`risk-badge${lethal ? ' lethal' : ''}`}
-              title={lethal
-                ? `up to ${riskHere} damage walking here — enough to drop you`
-                : `up to ${riskHere} damage walking here`}
-              aria-label={`risk, up to ${riskHere} damage${lethal ? ', could drop you' : ''}`}
-            >
-              <b>{riskHere}</b>
             </span>
           )}
           {cellAreas.map((a) => (
