@@ -1,345 +1,237 @@
-# dnd_combat
+# The Free Company
 
-A grid-based D&D 5.5e (SRD 5.2.1) tactical combat game with a headless,
-deterministic rules engine, data-driven content, a greedy AI opponent, and two
-frontends: a terminal CLI and a mobile-friendly web app.
+A solo, browser-based tactical RPG built on the D&D SRD 5.2.1 — a headless,
+deterministic rules engine with data-driven content, an expected-value AI, and
+a mobile-first React front end.
 
-**▶ Play it now: https://brendanpshea.github.io/dnd_combat/** (installable as a
-phone app — Add to Home Screen; works offline).
+**▶ Play: https://brendanpshea.github.io/dnd_combat/** — free, no account,
+installable to a phone home screen, works offline.
 
-Two teams fight on a grid: the classic party of four (Fighter, Wizard, Cleric,
-Rogue — one of eight classes, levels 1–7, one subclass each) against a mirror
-party or an SRD monster encounter (goblins, wolves, undead, or an ogre). Real d20 rules:
-advantage/disadvantage, opportunity attacks, concentration, conditions, weapon
-masteries, spell slots, terrain, forced movement, and inventory (equipment
-slots, weapon swapping, healing potions, scrolls, alchemist's fire). A
-persistent campaign mode adds shops (with haggling and theft), random loot,
-gear progression, and eight combat-relevant species: Human, Dwarf, Wood Elf,
-Orc, Dragonborn, Abyssal Tiefling, Gnome, and Halfling.
+> This work includes material from the System Reference Document 5.2.1
+> ("SRD 5.2.1") by Wizards of the Coast LLC, available at
+> <https://www.dndbeyond.com/srd>, licensed under
+> [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
+> Not affiliated with or endorsed by Wizards of the Coast.
 
-Hide is a DC 15 Dexterity (Stealth) action available only outside every
-enemy's line of sight. A hidden creature cannot be directly targeted, gains
-advantage on its next attack, and becomes visible when it attacks or casts a
-spell. Enemies can reveal a hidden creature at the start of their turns when
-they can see it and their advantaged passive Perception beats its Hide result.
-Rogues and goblins can Hide as a bonus action.
+## What's in it
+
+| | |
+| --- | --- |
+| Classes | 12 (levels 1–9) |
+| Ancestries | 8 |
+| Spells | 94 — cantrips through 5th level |
+| Monsters | 146, of which 16 cast spells |
+| Authored encounters | 63 |
+| Weapons / items / features | 226 / 103 / 152 |
+| Maps | 11 hand-built across 6 themes, plus a generator |
+
+Those numbers come from `src/data/`; [docs/reference/](docs/reference/README.md)
+lists every one of them and is regenerated from the data rather than written by
+hand.
+
+Real d20 rules: advantage and disadvantage, opportunity attacks, cover,
+concentration and its Constitution saves, conditions, weapon masteries, spell
+slots and preparation, hit dice, terrain and hazards, forced movement, hiding,
+and an inventory with equipment slots and free-interaction weapon draws.
+
+## The three ways to play
+
+The app opens on three things, in this order.
+
+**Learn the basics.** A two-minute guided battle — move, attack, win. No setup,
+no party building.
+
+**The story campaign.** A three-chapter trilogy that takes one company from 1st
+to 5th, each chapter a complete evening with its own region and bestiary:
+
+1. **The Hollow Road** (1–3) — break the Ashfang raiders, through a village hub,
+   a marsh crossed node by node, and their den.
+2. **The Sunken Barrows** (3–4) — the victory's bill comes due: the Reedwife was
+   the Undercrypt's jailer, and the barrows are opening.
+3. **The Wyrmcalling** (4–5) — her sisters wake the Calling stone, and the hills
+   answer with wyrms, giants and elementals.
+
+Finishing a chapter offers **"Continue the company"** — the same party, XP, gold
+and gear walk into the next. Each also stands alone behind a cold-start level
+floor. Chapters thread combat with inline skill checks, branching choices that
+pay off in epilogues, a journal of quests and leads, explore maps that reveal as
+you push in, camps you can rest at (safely in town, at a risk in the wild), and
+shops. Tapping any item or spell opens an **ⓘ info card** — derived stats and a
+plain-English blurb.
+
+**The arena.** An endless run of fights generated on the spot, on maps generated
+on the spot, against every monster in the game. It is structured as a series of
+**days**:
+
+- A day holds **two fights**, morning and afternoon. Between them the party
+  takes a lunch that spends hit dice; overnight, a full rest.
+- Each fight begins at **the gate**, where three **doors** are offered. A door
+  names its map, its difficulty, the monsters behind it, and a **prize** with a
+  condition attached — *"Catch three enemies in one spell"*, *"Use a potion,
+  scroll or flask"* — so the choice is a plan, not a coin flip.
+- Before fighting you can walk the day's steps: **Spells** (prepare, and cast
+  the pre-fight buffs that belong before a fight rather than during one),
+  **Stall** (a level-appropriate shop, with haggling and theft), **Gear**, and
+  **Doors**.
+- Somebody can attempt a **lore check** on the roster, or the party can **creep
+  in** for position — both rolled by whoever is best at it.
+- **A defeat ends the day, not the run.** The party is picked up, the night
+  passes, and tomorrow holds the same two fights, frozen at the level they were
+  met at. The healers take a cut for it; the first defeat of a run is free.
+
+Difficulty is **measured, not guessed**: `EVEN_BUDGET` is the adjusted-XP figure
+at which a standard party wins about half its fights, found by simulating
+generated encounters against the AI. Waves open well under an even fight and
+cross it around wave six, so a run ends where the player finds its end.
+
+Two traps a naive budget check walks into, both handled. Raw XP understates a
+crowd — five creatures get five turns to the party's four — so fights are
+budgeted against 5e's headcount-adjusted XP and paid out at the raw sum. And
+drafting greedily by "biggest that still fits" collapses every fight into one or
+two heavyweights, so headcount is chosen before any monster is.
+
+> Two older modes — the 34-battle **Classic Ladder** and a configurable **Quick
+> Battle** — still exist and still pass their tests, but are reachable only in a
+> dev build. `import.meta.env.DEV` gates them, so the bundler drops them from the
+> shipped app entirely.
 
 ## Quick start
 
 ```bash
 npm install
-npm test          # 522 deterministic engine, campaign, AI, and UI tests
-npm run web       # web UI (mobile + desktop) at http://localhost:5173
-npm start         # terminal battle: hot-seat human vs human, random map
-npm run campaign  # terminal campaign: 34-battle ladder with XP, leveling, loot
+npm test          # 2108 tests across 137 files
+npm run web       # the app at http://localhost:5173
 ```
 
-## Web UI
+## Terminal front end
 
-React + Vite. The board and its terrain are CSS, layered over a generated
-painterly backdrop per map theme. Each of the six themes (stone, forest,
-graveyard, ember, village, bog) styles its own scenery — the impassable `#`
-walls become brick columns, mossy boulders, headstones, glowing basalt
-shards, striped market stalls, or wet hummocks, with a faint scatter of
-floor decals — so a map reads as a *place*, not a grey grid. Characters get
-generated art tokens/portraits with an emoji fallback per unit; plus an
-inline SVG icon and WebAudio-synthesized sound. Main menu offers **Campaign** (progress persists
-in localStorage) and **Single battle** (hot-seat / vs AI / AI spectate /
-monster encounters, with map/level/seed selection).
-Choose a species for each party member before a skirmish; player-versus-player
-and spectated mirror matches use the same lineup on both teams. Campaign
-mode begins with a dedicated party forge. Beginners tap a **Quick Start**
-prebuilt party (or "Surprise me" for random species) and play immediately;
-anyone who wants control taps an adventurer to expand a focused editor — name,
-class, species, portrait, and a Fighting Style — one member at a time. The
-selected portrait is used for the party card and the live battlefield token;
-all of that identity persists with the save. Campaigns keep one Fighter, Wizard,
-Cleric, and Rogue for a balanced starting kit, so choosing an occupied class
-swaps the two members' roles and standard gear.
-
-In battle, legal actions are painted onto the board: tap a tinted cell to
-move (tokens slide), a red-ringed enemy to attack (a confirm chooser always
-shows what you're committing to), green rings for heals. Area spells enter a
-pick-a-cell mode; Magic Missile-style spells accumulate target taps. Damage
-floats color-coded by type, death animations, sound effects (mutable 🔊), and
-an adjustable AI speed (🐢/🐇). The combat log tells the story in English.
-
-The campaign screen handles shopping, equipment management (proficiency-
-checked), giving items between characters, and the shop skill gambits:
-haggle via Persuasion/Intimidation/Deception, or steal with Stealth +
-Sleight of Hand — rolled by whoever in the party is best at it.
-
-`npm run web:build` produces a static bundle in `dist-web/`; pushes to `main`
-auto-deploy it to GitHub Pages via Actions (gated on the test suite).
-
-## Terminal CLI
+The same engine drives a terminal UI. It is a development and debugging tool
+rather than the product, but it is complete and it stays in the test suite.
 
 ```bash
+npm start                                  # hot-seat battle, random map
 npm start -- --p2 ai                       # you vs the AI
 npm start -- --p1 ai --p2 ai               # spectate an AI mirror match
-npm start -- --encounter goblins           # party vs monsters (AI-run)
-npm start -- --level 3 --encounter ogre    # level-3 party vs the boss fight
-npm start -- --species dwarf,elf,orc,human # Fighter, Wizard, Cleric, Rogue
-npm run campaign                           # campaign (saves to campaign-save.json)
+npm start -- --encounter goblins           # party vs monsters
+npm start -- --level 3 --encounter ogre    # a level-3 party vs the boss
+npm run campaign                           # the 34-battle ladder
+npm run adventure                          # a story module, headless
 ```
 
 | Flag | Values | Effect |
 | --- | --- | --- |
-| `--seed <n>` | any integer | Deterministic battle; same seed + same actions = same game |
-| `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` `village` `bog` | Battle map (random if omitted) |
-| `--level <n>` | `1`–`5` | Party level (both sides in PvP) |
-| `--species <ids>` | four comma-separated species IDs | Fighter, Wizard, Cleric, Rogue species; `human,human,human,human` by default |
-| `--encounter <id>` | `goblins` `wolves` `undead` `ogre` `giants` … (40+ rosters — beasts, undead, dragons, elementals; see `ENCOUNTERS` in `src/data/encounters.ts`) | Fight monsters instead of a mirror party |
-| `--p1 ai`, `--p2 ai` | | Let the greedy AI play that team |
-| `--new`, `--auto` | (campaign) | Restart the campaign / let the AI play the party |
+| `--seed <n>` | any integer | Deterministic: same seed + same actions = same game |
+| `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` `village` `grove` `thicket` `bog` `pass` `cliff` | Battle map (random if omitted) |
+| `--level <n>` | `1`–`5` | Party level (both sides in a mirror match) |
+| `--species <ids>` | four comma-separated ids | Species for Fighter, Wizard, Cleric, Rogue |
+| `--encounter <id>` | 63 rosters — see `ENCOUNTERS` in `src/data/encounters.ts` | Fight monsters instead of a mirror party |
+| `--p1 ai`, `--p2 ai` | | Let the AI play that team |
+| `--ai <level>` | `easy` `normal` `hard` | AI strength |
+| `--new`, `--auto` | (campaign only) | Restart / let the AI play the party |
 
-Encounters have suggested party levels (goblins/wolves 1, undead/bandits/spiders 2, ogre/crypt 3);
-the CLI warns on a mismatch.
+Cells are named chess-style (`c4`), and menus are generated from the engine's
+legal-action list, so an illegal move is never offered.
 
 ```
       a   b   c   d   e   f   g   h
    +---+---+---+---+---+---+---+---+
-  8 |   | F2| W2|   | C2|   | R2|   |    F/W/C/R = party (1 = team 1, 2 = team 2)
-  7 |   |###|   |~~~|   |^^^|   |   |    g/G/s/w/z/O = goblin/boss/skeleton/wolf/zombie/ogre
-                                          ### wall   ~~~ difficult   ^^^ fire hazard
+  8 |   | F2| W2|   | C2|   | R2|   |   F/W/C/R = party (1 = team 1, 2 = team 2)
+  7 |   |###|   |~~~|   |^^^|   |   |   ### wall  ~~~ difficult  ^^^ hazard
 ```
-
-Cells are named chess-style (`c4`). Menus are generated from the engine's
-legal-action list, so an illegal move is never offered.
-
-## Campaign mode
-
-A 34-battle ladder ordered easy → hard (Kobold Warren up to the twin-headed
-Giant finale), a tour of the bestiary — humanoids give way to beasts, undead,
-dragons, and finally elementals and giants.
-The party **earns XP and levels up** (1 → 5, on the SRD XP curve:
-300 / 900 / 2700 / 6500) as it goes — level is derived from accumulated XP,
-not fixed per stage, so progression is gradual (L2 by stage ~5, L5 just before
-the finale) and you can end up under-leveled for a tough fight (the UI warns
-you). **Treasure is generated
-from each encounter's XP**: gold scales with the fight, and bigger fights roll
-more items from higher rarity tiers (the finale guarantees a rare drop).
-The loot pool spans gemstones and jewelry (pure sell-value, ten of each,
-sized/valued from tiny quartz to a huge diamond), a wider mundane weapon
-selection, adamantine armor (immune to critical hits), a full line of +1
-weapons/armor/shields, a couple of silvered weapons that
-bypass resistance without a combat bonus, seven wearable **trinkets** (a
-fourth equipment slot — Gauntlets of Ogre Power, Headband of Intellect,
-Cloak of Protection, and more), resistance and giant-strength potions, and
-spell scrolls from cantrip up through 3rd level — averaging roughly 50 gp of
-value per character level per hoard.
-Drops land in a shared **Party Loot** stash on the shop screen; tap an item to
-hand it to a member, stash one back, or sell it straight from the pile.
-Between battles: shop (consumables, weapons, armor, +1 magic weapons — armor
-purchases are proficiency-gated), manage equipment, haggle or steal, then
-fight. Consumables spent in battle stay spent; weapon swaps, remaining HP, and
-**spell slots** all persist between battles and shop visits — casting Cure
-Wounds in the shop spends the same slot pool as casting it mid-fight. Rests
-follow 5e: a **short rest** auto-spends **hit dice** (a pool equal to level)
-to heal — each die rolls the class die + Con, spent advantageously so a hurt
-hero heals up without wasting a die on a trivial top-off — leaving spell slots
-untouched; a **long rest** fully restores HP and every spell slot and refreshes
-half the hit-dice pool. Hit dice and slots show as pips on the party card.
-Defeat ends the campaign and deletes the save (there's also a reset/delete
-option).
-Casters show their remaining slots as a compact row of pips (grouped by spell
-level) next to their HP, in battle and in the shop alike.
-Healing consumables and the cleric's **Cure Wounds** can also be used in the
-shop: inventory sources stay in the Pack, while store-usable spells appear in
-a separate Spells row, greyed out and labeled with their cost once a caster
-runs dry. Select the source, then select the party member to heal.
-Wizards can summon an owl with **Find Familiar** from the store Spells row — a
-ritual, so it costs no slot. Wizards can also cast **Mage Armor** in the store
-or combat (spending a slot); it sets AC to $13 + \text{Dexterity modifier}$
-while unarmored and remains active until the next long rest. The familiar
-persists through unconsciousness and rests, and grants advantage on the
-wizard's first melee or spell attack roll each combat round.
-Casters can **prepare spells**: a "📖 Prepare spells" button on the party
-card opens a checklist of everything they could have ready, capped at a
-level-scaled limit, with a one-tap "Use recommended" reset. It's entirely
-optional — a character who never opens the panel still gets a sensible
-default loadout, capped at the same limit. Wizards can also **learn new
-spells from scrolls**: a scroll of a spell not already in their book offers a "Copy into
-spellbook" option for a gold fee, permanently adding it to what they can
-prepare (the scroll is consumed either way, so it can still just be cast once
-without copying it).
-New campaigns begin at the party forge; names, species, class roles, and
-portrait choices are locked in when the campaign begins and travel with the
-party through every battle.
-Seeded runs are reproducible end to end — battles, skill checks, treasure, and
-XP alike.
-
-## Adventure mode
-
-Beyond the skirmish ladder, **adventure modules** are authored, story-driven
-campaigns played through the same combat engine. A module is plain, data-only
-content (a scene graph — story, dialogue, skill checks, shops, rests, explore
-maps, and battles) interpreted by a pure runtime, so authoring a scene is a
-data edit, never an engine change (see
-[docs/module-writing-guide.md](docs/module-writing-guide.md)).
-
-The flagship campaign is a **trilogy** that takes one company from level 1 to
-the level-5 cap, each part a complete evening with its own region and
-bestiary (docs/trilogy-plan.md):
-
-1. **The Hollow Road** (levels 1–3) — break the Ashfang raiders through a
-   village hub, a marsh you traverse node by node, and their den.
-2. **The Sunken Barrows** (levels 3–4) — your victory's bill comes due: the
-   Reedwife was the Undercrypt's jailer, and the barrows are opening.
-3. **The Wyrmcalling** (levels 4–5) — her sisters wake the Calling stone,
-   and the hills answer: wyrms, giants, and elementals.
-
-A victory ending offers **"Continue the company"** — the same party, XP,
-gold, and gear walk into the next part (each part also stands alone, with a
-cold-start level floor). Modules thread combat with inline skill checks,
-branching choices that pay off in epilogues, journals of quests and leads,
-and explore maps that reveal as you push deeper. You can camp to rest (safely
-in town, at a risk in the wild — an interrupted rest recovers nothing), shop,
-and manage gear between beats. A tap on any item or spell opens an **ⓘ info
-card** — derived stats plus a plain-English blurb — in camp, the shop, and
-the spell tray.
-
-## Arena mode
-
-An endless run of **procedurally generated fights** against a rising XP
-budget, on **procedurally generated maps** — the ladder without the hand
-authoring. The roster is read from `MONSTERS` directly rather than from a
-curated list, so a monster added to the game turns up in the arena the same
-day; the opt-out is `ARENA_EXCLUDED`, not an opt-in.
-
-Difficulty is **measured, not guessed**. `EVEN_BUDGET` is the adjusted-XP
-figure at which a standard party wins about half its fights, taken by
-simulating generated encounters against the AI. Waves open well under an even
-fight, cross it around wave six, and keep climbing, so a run has a natural end
-found by the player rather than a wave cap.
-
-Two things it does differently from the campaign:
-
-- **A defeat retries the same wave.** Waves are seeded from the run seed and
-  the wave number, so a retry rebuilds the identical fight — a tactical
-  problem to solve, not a slot machine to reroll until something easy turns
-  up.
-- **It scores first-try clears.** With unlimited retries a plain win rate
-  climbs to 100% and stops meaning anything.
-
-Between waves the party takes a **full rest** — the arena is a tactics test,
-not an attrition one, and it keeps each wave an honest measure of the fight
-itself — and can visit a **level-appropriate stall**. Monsters award XP and
-roll treasure exactly as the ladder does, and the run persists to
-localStorage.
-
-Generation is careful about two traps that a naive budget check walks into:
-
-- **Raw XP understates a crowd.** Five creatures get five turns to the party's
-  four, so the same XP across more bodies hits far harder. Fights are budgeted
-  against 5e's headcount-adjusted XP and paid out at the raw sum.
-- **Headcount is chosen before any monster is picked.** Drafting greedily by
-  "biggest that still fits" collapses every fight into one or two
-  heavyweights, because the first draw eats the budget.
-
-> **Naming note:** `npm run arena` is an unrelated *AI benchmarking* tool
-> (seeded mirror matches, see [Working on the AI](#working-on-the-ai)). The
-> game mode lives in `src/arena/`.
 
 ## Project layout
 
 ```
 src/
-  data/      # all content: classes, spells, features, weapons, armor, items,
-             #   monsters (the bestiary), encounters (authored fights), maps
-  engine/    # pure rules engine: grid, dice, turn loop, actions, combat events
-  builder/   # class + level + gear -> combatant construction
-  ai/        # greedy expected-value player (same Action API as both UIs)
-  arena/     # generated encounters + generated maps + run/wave state
-  campaign/  # meta-game: party, stages, shop, loot, skill checks, save parsing
-  adventure/ # story modules: pure runtime, scene types, validator, headless runner
-  ui/cli/    # terminal renderer, battle loop, campaign loop
-web/         # React app: board, battle screen, campaign screens, effects, sound
-test/        # vitest suites, including full AI-vs-AI battle completion tests
-docs/SPEC.md      # design document
-docs/reference/   # generated content reference (npm run reference)
-.github/     # CI: test + build + deploy to GitHub Pages on push to main
+  data/       all content: classes, spells, features, weapons, armor, items,
+              monsters, encounters, maps, adventure modules
+  engine/     pure rules engine: grid, dice, turn loop, actions, events,
+              rules/ (attack, movement, cover, saves, hide, estimate…)
+  builder/    class + level + gear -> combatant
+  ai/         greedy expected-value player, plus a sampling policy
+  arena/      generated encounters, generated maps, run and day state
+  campaign/   party, stages, shop, loot, skill checks, save parsing
+  adventure/  story modules: pure runtime, scene types, validator, headless runner
+  ui/cli/     terminal renderer and loops
+web/          React app: board, battle, camp, shop, arena, adventure screens
+test/         vitest suites, including full AI-vs-AI completion runs
+docs/         SPEC.md (architecture and rules scope), reference/ (generated),
+              module-writing-guide.md
+art/          the image pipeline (Python): framing, silhouettes, token fill
+scripts/      measurement and generation tools (see below)
 ```
 
-The engine is fully headless and deterministic: a `(seed, actions[])` pair
-replays a battle exactly. Both frontends and the AI drive it through the same
-`legalActions`/`step` contract. See [docs/SPEC.md](docs/SPEC.md) for the
-architecture and rules scope.
+The engine is headless and deterministic: a `(seed, actions[])` pair replays a
+battle exactly. Every driver — both front ends and both AIs — goes through the
+same `legalActions` / `step` contract. See [docs/SPEC.md](docs/SPEC.md) for the
+architecture and the rules scope.
+
+## Derived, not hand-kept
+
+Several things here are generated from a source of truth and checked in CI,
+because a hand-kept list beside the thing it describes drifts silently in both
+directions — a declared id with no file draws a broken image, and a file nobody
+declares ships in the bundle and is never shown.
+
+```bash
+npm run reference             # docs/reference/*.md    <- src/data/
+npm run art-registry          # web/src/art-registry.ts <- web/public/art/
+python3 art/token_fill.py     # web/src/token-fill.ts   <- the token images
+```
+
+Each takes `--check` and fails when stale, and the suite runs them that way, so
+adding a monster and forgetting to regenerate is a test failure rather than a
+quiet inconsistency. Dropping `portrait-<id>.webp` and `token-<id>.webp` into
+`web/public/art` and regenerating makes an id live; there is nothing else to
+edit.
 
 ## Rules source
 
-The full SRD text is vendored at [`SRD_CC_v5.2.1.txt`](SRD_CC_v5.2.1.txt) (1.4 MB,
-plain text) — the authority for every rule, spell and stat block implemented
-here. Check against it rather than from memory: two spells were wrong in ways
-that read as balance choices (Ice Storm hailed 2d8 where the book says 2d10;
-Spiritual Guardians neither scaled with its slot nor halved Speed in the aura).
-
-> This work includes material from the System Reference Document 5.2.1
-> ("SRD 5.2.1") by Wizards of the Coast LLC, available at
-> <https://www.dndbeyond.com/srd>. The SRD 5.2.1 is licensed under the Creative
-> Commons Attribution 4.0 International License, available at
-> <https://creativecommons.org/licenses/by/4.0/legalcode>.
-
-## Content reference
-
-[docs/reference/](docs/reference/README.md) lists everything the game actually
-implements — every monster, spell, class, feature, weapon and map — printed
-straight from `src/data/`, never written by hand.
-
-```bash
-npm run reference             # rewrite docs/reference/*.md
-npm run reference -- --check  # fail if they are stale (the test suite does this)
-```
-
-Adding content and forgetting to regenerate is a test failure, so the reference
-cannot drift from the data the way a hand-kept list does.
-
-The same applies to art. Which ids have generated art is a fact about
-`web/public/art`, so `web/src/art-registry.ts` is derived from that directory
-rather than hand-kept — a list beside a directory of files drifts silently in
-both directions (a declared id with no file draws a broken image; a file nobody
-declares ships in the bundle and is never shown).
-
-```bash
-npm run art-registry             # rewrite web/src/art-registry.ts
-npm run art-registry -- --check  # fail if it is stale
-```
-
-Drop a `portrait-<id>.webp` and a `token-<id>.webp` into `web/public/art`,
-regenerate, and the id is live — nothing else to edit.
+The full SRD is vendored at [`SRD_CC_v5.2.1.txt`](SRD_CC_v5.2.1.txt) (1.4 MB of
+plain text) and is the authority for every rule, spell and stat block here.
+Check against it rather than from memory — two spells were once wrong in ways
+that read as deliberate balance choices (Ice Storm hailed 2d8 where the book
+says 2d10; Spirit Guardians neither scaled with its slot nor halved Speed).
 
 ## Development
 
 ```bash
-npm test               # run all tests
+npm test               # everything
 npm run test:watch     # watch mode
 npm run typecheck      # engine + CLI
 npm run web:typecheck  # web app
-npm run web:build      # production bundle
+npm run web:build      # production bundle into dist-web/
 ```
 
-Content is data-driven: adding a monster, spell, weapon, item, or map is a
-data-file edit (`src/data/`), never an engine change — followed by
-`npm run reference` to refresh [docs/reference/](docs/reference/README.md).
+Pushes to `main` deploy to GitHub Pages via Actions, gated on the suite.
 
-### Working on the AI
+Content is data-driven: adding a monster, spell, weapon, item, map or story
+scene is a data edit, never an engine change. Story modules in particular are
+pure data interpreted by a pure runtime — see
+[docs/module-writing-guide.md](docs/module-writing-guide.md).
 
-Two tools, answering different questions. Use both — neither substitutes for the
-other, and skipping the slow one is how a 9-point regression nearly shipped.
+### Measuring instead of guessing
+
+Design questions here get answered with numbers, and the tools that produce them
+are checked in so the answers can be re-derived rather than remembered.
 
 ```bash
-npm run probe                          # ~3s: does it still play sensibly?
-npm run arena -- 80                    # ~30s: is it stronger? (160 games)
-npm run arena -- 80 hard --samples 8   # sweep a preset without editing it
-npm run arena -- 20 normal --serial    # in-process, for debugging one game
+npm run probe           # ~3s: does the AI still play sensibly?
+npm run arena -- 80     # ~30s: is it stronger? (160 seeded mirror matches)
+npm run chooser-load    # what the action chooser really offers, over 60 battles
+npm run arena-even      # the XP budget at which a party wins half its fights
+npm run board-sheet     # render every map theme to one page
 ```
 
+The two AI tools answer different questions and neither substitutes for the
+other; skipping the slow one is how a nine-point regression nearly shipped.
 `probe` runs tactical set-pieces with an obvious right answer and prints what
 the AI did — instant, deterministic, and it tells you *why* something changed.
-`arena` plays seeded mirror matches against the greedy policy and is the
-authority on strength, sharded across cores.
+`arena` plays seeded mirror matches and is the authority on strength.
 
 **Mind the noise.** A win rate off N games carries a standard error of about
-`sqrt(0.25/N)` — ±7 points at 50 games, ±4 at 160 — and the arena prints it.
-Two readings inside ~2 SE are the same reading. Before believing an improvement,
-re-run it on more games, paired against baseline on the same seeds.
+`sqrt(0.25/N)` — ±7 points at 50 games, ±4 at 160 — and the arena prints it. Two
+readings inside about 2 SE are the same reading.
+
+> **Naming note:** `npm run arena` is the *AI benchmarking* tool, unrelated to
+> the arena game mode, which lives in `src/arena/`.

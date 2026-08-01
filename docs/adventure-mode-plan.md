@@ -1,5 +1,10 @@
 # Implementation Plan: Adventure Mode (story, exploration, skills)
 
+> **Status: delivered.** Every phase below shipped; this is kept as the record
+> of why adventure mode is shaped the way it is, not as a to-do list. For how
+> to write a module today see [module-writing-guide.md](module-writing-guide.md);
+> for what actually exists see [SPEC.md](SPEC.md) §7c.
+
 Turn the campaign from a ladder of battles into a playable **module**: block
 text and NPC dialogue the party reacts to, explorable locations, real skill
 checks, and combat as the centerpiece it already is. The end state is the

@@ -1,5 +1,10 @@
 # Implementation Plan: Ranger (Hunter) and Paladin (Devotion)
 
+> **Status: delivered.** Both classes shipped, and the "mostly data now" bet
+> held well enough that six more classes followed the same way — twelve ship
+> today. Kept as the record of the four signature mechanics (Hunter's Mark,
+> Colossus Slayer, Lay on Hands, Divine Smite) and the engine hooks they use.
+
 Classes five and six, levels 1–5, following the SPEC's "mostly data now" bet.
 The bet holds: both classes are `ClassData` entries reusing existing spells,
 fighting styles, and the choice-point system. What's genuinely new is four
