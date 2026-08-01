@@ -1191,21 +1191,28 @@ describe('the attack chooser', () => {
   const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
   const groups = readFileSync(fileURLToPath(new URL('../web/src/actionGroups.ts', import.meta.url)), 'utf8');
 
-  it('folds pack weapons instead of dropping them', () => {
-    expect(app, 'the chooser is flat again').toContain('o.stowed || showStowed');
+  it('folds low-ranked options instead of dropping them', () => {
+    expect(app, 'the chooser is flat again').toContain('o.folded || showAllOptions');
     // The CONDITION, not just the handler. Replacing the reveal button's guard
-    // with `false` left `setShowStowed(true)` in a dead branch and this
-    // assertion green, while every pack weapon became unreachable — which is
+    // with `false` once left `setShowAllOptions(true)` in a dead branch and this
+    // assertion green, while every folded option became unreachable — which is
     // precisely the rules change this describe block exists to prevent.
-    expect(app, 'no way to reach a pack weapon at all — that is a rules change')
-      .toMatch(/!showStowed && chooser\.options\.some\(\(o\) => o\.stowed\) && \(/);
-    expect(app).toContain('setShowStowed(true)');
+    expect(app, 'no way to reach a folded option at all — that is a rules change')
+      .toMatch(/!showAllOptions && chooser\.options\.some\(\(o\) => o\.folded\) && \(/);
+    expect(app).toContain('setShowAllOptions(true)');
+  });
+
+  it('says how many it folded, and how many of those are in the pack', () => {
+    // "More" is a shrug. A count is a reason to tap or not to — and the pack
+    // split matters because drawing a weapon is a different kind of act.
+    expect(app).toContain('hidden.length');
+    expect(app).toContain('from the pack');
   });
 
   it('reopens folded, not left open from last time', () => {
     const at = app.indexOf('setChooser({ target: occ');
     expect(app.slice(Math.max(0, at - 200), at), 'the fold sticks open between targets')
-      .toContain('setShowStowed(false)');
+      .toContain('setShowAllOptions(false)');
   });
 
   it('counts the ranged marker as ready', () => {

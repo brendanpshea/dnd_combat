@@ -648,8 +648,8 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [moveConfirm, setMoveConfirm] = useState<
     { action: Action; provokers: Provoker[]; hazardDamage: number } | null
   >(null);
-  /** Pack weapons revealed for this one chooser — reset every time it opens. */
-  const [showStowed, setShowStowed] = useState(false);
+  /** Lower-ranked options revealed for this one chooser — reset each time it opens. */
+  const [showAllOptions, setShowAllOptions] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [floats, setFloats] = useState<FloatEffect[]>([]);
   const [corpses, setCorpses] = useState<CorpseEffect[]>([]);
@@ -989,7 +989,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     if (occ && grouped.perTarget.has(occ.id)) {
       // Always confirm via the chooser — even a single option — so the player
       // sees what they're about to do and can back out.
-      setShowStowed(false);
+      setShowAllOptions(false);
       setChooser({ target: occ, options: grouped.perTarget.get(occ.id)! });
       return;
     }
@@ -1566,7 +1566,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               in hand or marked in the `ranged` slot — which is the entire point
               of that marker.
             */}
-            {chooser.options.filter((o) => !o.stowed || showStowed).map((o, i) => (
+            {chooser.options.filter((o) => !o.folded || showAllOptions).map((o, i) => (
               <button key={i} onClick={() => {
                 // A multi-target spell tapped off an enemy starts the
                 // accumulate-taps flow with that enemy pre-picked as its first
@@ -1589,11 +1589,18 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
                 {o.label}
               </button>
             ))}
-            {!showStowed && chooser.options.some((o) => o.stowed) && (
-              <button className="ghost draw-more" onClick={() => setShowStowed(true)}>
-                ⋯ Draw from the pack ({chooser.options.filter((o) => o.stowed).length})
-              </button>
-            )}
+            {!showAllOptions && chooser.options.some((o) => o.folded) && (() => {
+              // Say what is behind it. "More" is a shrug; "3 more, incl. 2 from
+              // the pack" is a reason to tap or not to.
+              const hidden = chooser.options.filter((o) => o.folded);
+              const packed = hidden.filter((o) => o.stowed).length;
+              return (
+                <button className="ghost draw-more" onClick={() => setShowAllOptions(true)}>
+                  ⋯ {hidden.length} more
+                  {packed > 0 && ` (${packed} from the pack)`}
+                </button>
+              );
+            })()}
             <button className="ghost" onClick={() => setChooser(null)}>Cancel</button>
           </div>
         </div>

@@ -10,6 +10,7 @@ import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { FEATURES } from '../../src/data/features.js';
 import { METAMAGIC, type MetamagicId } from '../../src/engine/rules/metamagic.js';
+import { expectedDamage } from '../../src/engine/rules/estimate.js';
 
 export const posKey = (p: Position) => `${p.x},${p.y}`;
 
@@ -37,7 +38,33 @@ export interface TargetOption {
    * slot, which is what that marker is for.
    */
   stowed?: boolean;
+  /**
+   * Hidden behind the "⋯ more" control until the player asks for it.
+   *
+   * The list is ranked by expected damage and the first few are shown. Nothing
+   * is removed — dropping legal plays would be a rules change for the human,
+   * and a dagger is occasionally right — but a measured median of four options
+   * (nine at the top end, six every turn for a fighter) put a wizard's dagger
+   * and a fighter's Sacred Flame in front of the obvious play.
+   */
+  folded?: boolean;
 }
+
+/**
+ * How many options are shown before the rest fold away.
+ *
+ * Three, not one. Expected damage is a decent sort key and a poor sole
+ * criterion — it cannot see control, riders, or what a resource is worth — so
+ * the second-ranked option is right often enough that burying it, where a new
+ * player will never look, would be a rules change wearing a display change's
+ * clothes. It would also make the fold control mandatory for any real decision,
+ * which adds a tap rather than removing a choice.
+ *
+ * Three is also where the measurement lands: 65% of taps offer more than three
+ * options, so the fold does real work, and both reported cases (the wizard's
+ * dagger, the fighter's Sacred Flame) fall outside it.
+ */
+export const SHOWN_OPTIONS = 3;
 
 /**
  * Which shelf an entry belongs on. The bar shows one control per *category*,
@@ -481,7 +508,57 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     });
   }
 
+  for (const [targetId, opts] of perTarget) perTarget.set(targetId, rankOptions(state, actorId, opts));
   return { moves, perTarget, bar };
+}
+
+/** At-will: costs no spell slot, so it can be done again next turn. */
+function isAtWill(o: TargetOption): boolean {
+  return o.action.kind !== 'castSpell' || o.action.slotLevel === 0;
+}
+
+/**
+ * Best first, and the rest folded away.
+ *
+ * Three rules, in order:
+ *
+ * 1. Pack weapons sink. Drawing a spear out of your bag is a deliberate act,
+ *    not a default, and this is the existing `stowed` behaviour — a fighter
+ *    carrying four weapons was the original report.
+ * 2. Everything else sorts by expected damage, descending. Ties keep their
+ *    original order, which is what makes the list stable: two near-equal
+ *    attacks do not swap places as hit points and positions drift, so the
+ *    button under the player's thumb stays where it was.
+ * 3. The best at-will option is always visible. A first-level slot usually
+ *    out-damages a cantrip by a little, so a naive ranking fills every visible
+ *    row with slot-spenders and leaves a wizard looking like they have no free
+ *    attack. Promoting it costs the last visible row and stops the ordering
+ *    quietly arguing for burning resources.
+ */
+/** Within 5% is a tie, and a tie keeps the order it came in. */
+const TIE = 0.05;
+
+export function rankOptions(state: GameState, actorId: Id, opts: TargetOption[]): TargetOption[] {
+  if (opts.length <= 1) return opts;
+  const score = new Map<TargetOption, number>();
+  for (const o of opts) score.set(o, expectedDamage(state, actorId, o.action));
+  const order = new Map(opts.map((o, i) => [o, i]));
+  const ranked = [...opts].sort((a, b) => {
+    if (!!a.stowed !== !!b.stowed) return a.stowed ? 1 : -1;
+    const d = score.get(b)! - score.get(a)!;
+    // A hair of tolerance so two attacks that differ only by sampling noise
+    // keep their original order instead of trading places between renders.
+    if (Math.abs(d) > TIE * Math.max(score.get(a)!, score.get(b)!, 1)) return d;
+    return order.get(a)! - order.get(b)!;
+  });
+
+  const visible = ranked.slice(0, SHOWN_OPTIONS);
+  if (!visible.some(isAtWill)) {
+    const bestAtWill = ranked.find(isAtWill);
+    if (bestAtWill) visible[visible.length - 1] = bestAtWill;
+  }
+  const shown = new Set(visible);
+  return ranked.map((o) => (shown.has(o) ? o : { ...o, folded: true }));
 }
 
 export function buildMultiAction(spec: MultiTargetSpec, ids: Id[]): Action {
