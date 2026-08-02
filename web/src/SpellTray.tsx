@@ -17,6 +17,7 @@ import {
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellInfoDot } from './InfoCard.js';
 import { byTier, TIER_NAME } from './spellTiers.js';
+import { spellRow } from './spellRow.js';
 
 /**
  * One pickable spell. The ⓘ button sits BESIDE the label, never inside it — a
@@ -32,6 +33,56 @@ function Option(
       <label className={`prepare-option${checked ? ' checked' : ''}`}>
         <input type="checkbox" checked={checked} disabled={disabled} onChange={onToggle} />
         <span className="prepare-option-name">{SPELLS[id]?.icon} {SPELLS[id]?.name ?? id}</span>
+      </label>
+      <SpellInfoDot spellId={id} />
+    </div>
+  );
+}
+
+/**
+ * One spell with BOTH of a wizard's decisions on it: is it in the book, and is
+ * it prepared today.
+ *
+ * The tray used to draw those as two grids, so a wizard's spellbook and their
+ * prepared list showed the same names twice — the single largest thing on the
+ * screen, and the reason a level-up scrolled for pages. Two ticks on one row
+ * says the same thing once, and says the dependency out loud: preparing is
+ * disabled until the book tick is on, which the stacked version could only
+ * express by silently omitting the row from the list below.
+ *
+ * The name lives in the BOOK label because that is the gating choice. `fixed`
+ * is for a scribed scroll: known for good, so there is nothing to untick.
+ */
+function DualOption(
+  { id, known, prepared, knownDisabled, prepareDisabled, fixed, onKnown, onPrepare }: {
+    id: Id; known: boolean; prepared: boolean;
+    knownDisabled: boolean; prepareDisabled: boolean; fixed?: boolean;
+    onKnown: () => void; onPrepare: () => void;
+  },
+) {
+  const name = SPELLS[id]?.name ?? id;
+  return (
+    <div className="prepare-option-row">
+      <label className={`prepare-option${known ? ' checked' : ''}${fixed ? ' scribed' : ''}`}>
+        {fixed
+          ? <span className="prepare-fixed" aria-label={`${name}, copied from a scroll`}>📜</span>
+          : <input
+              type="checkbox" checked={known} disabled={knownDisabled} onChange={onKnown}
+              aria-label={`${name} — in the spellbook`}
+            />}
+        <span className="prepare-option-name">{SPELLS[id]?.icon} {name}</span>
+      </label>
+      {/* A second tick, not a second row. `title` because the control is an
+          emoji: the tooltip and the aria-label are the only text it has. */}
+      <label
+        className={`prepare-prep${prepared ? ' on' : ''}`}
+        title={prepared ? `${name} is prepared` : `Prepare ${name}`}
+      >
+        <input
+          type="checkbox" checked={prepared} disabled={prepareDisabled} onChange={onPrepare}
+          aria-label={`${name} — prepared`}
+        />
+        <span aria-hidden="true">✨</span>
       </label>
       <SpellInfoDot spellId={id} />
     </div>
@@ -80,6 +131,13 @@ export function SpellTray(
    * "I tried scribing web and the spellbook didn't update".
    */
   const leveledPool = usesBook ? [...spellbookDraft, ...scribed] : preparableSpells(c, idx);
+  /**
+   * Every spell a wizard may put a tick against: the class pool plus anything
+   * scribed in. Scribed spells are not in `bookPool` — they were bought, not
+   * chosen — so without this a copied scroll would vanish from the merged grid
+   * the same way it once vanished from the prepared list.
+   */
+  const mergedPool = [...bookPool, ...scribed.filter((id) => !bookPool.includes(id))];
   const isDefault = ch.prepared === undefined && ch.cantrips === undefined && ch.spellbook === undefined;
   const cAtCap = cantripDraft.length >= cCap;
   const bookAtCap = usesBook && spellbookDraft.length >= (bookCap ?? 0);
@@ -148,33 +206,27 @@ export function SpellTray(
               ))}
             </div>
           ) : (
+            /* ONE grid, two ticks. See `DualOption` — the book and the prepared
+               list are the same spells, and drawing them twice was the biggest
+               single thing on this screen. */
             <div className="sheet-row">
-              <span className="sheet-label">Spellbook ({spellbookDraft.length}/{bookCap}) — spells known</span>
+              <span className="sheet-label">
+                Spellbook — ☑️ known ({spellbookDraft.length}/{bookCap})
+                {' · '}✨ prepared ({prepareDraft.length}/{cap})
+              </span>
               <div className="prepare-grid">
-                {scribed.length > 0 && (
-                  <>
-                    <span className="prepare-tier">Copied from scrolls</span>
-                    {scribed.map((id) => (
-                      <div key={id} className="prepare-option-row">
-                        <label className="prepare-option checked scribed">
-                          <span className="prepare-option-name">
-                            📜 {SPELLS[id]?.name ?? id}
-                          </span>
-                        </label>
-                        <SpellInfoDot spellId={id} />
-                      </div>
-                    ))}
-                  </>
-                )}
-                {byTier(bookPool).map(([lv, ids]) => (
+                {byTier(mergedPool).map(([lv, ids]) => (
                   <Fragment key={lv}>
                     <span className="prepare-tier">{TIER_NAME[lv] ?? `L${lv}`} level</span>
                     {ids.map((id) => (
-                      <Option
+                      <DualOption
                         key={id} id={id}
-                        checked={spellbookDraft.includes(id)}
-                        disabled={!spellbookDraft.includes(id) && bookAtCap}
-                        onToggle={() => toggleBook(id)}
+                        {...spellRow(id, {
+                          book: spellbookDraft, prepared: prepareDraft, scribed,
+                          bookCap: bookCap ?? 0, prepCap: cap,
+                        })}
+                        onKnown={() => toggleBook(id)}
+                        onPrepare={() => togglePrepare(id)}
                       />
                     ))}
                   </Fragment>
@@ -183,25 +235,29 @@ export function SpellTray(
             </div>
           )
         )}
-        <div className="sheet-row">
-          <span className="sheet-label">Prepared ({prepareDraft.length}/{cap})</span>
-          <div className="prepare-grid">
-            {byTier(leveledPool).map(([lv, ids]) => (
-              <Fragment key={lv}>
-                <span className="prepare-tier">{TIER_NAME[lv] ?? `L${lv}`} level</span>
-                {ids.map((id) => (
-                  <Option
-                    key={id} id={id}
-                    checked={prepareDraft.includes(id)}
-                    disabled={!prepareDraft.includes(id) && atCap}
-                    onToggle={() => togglePrepare(id)}
-                  />
-                ))}
-              </Fragment>
-            ))}
-            {leveledPool.length === 0 && <span className="muted">Pick spellbook spells above first.</span>}
+        {/* A knows-all caster (cleric) has no book to merge, so preparing stays
+            a list of its own. */}
+        {(!usesBook || locked) && (
+          <div className="sheet-row">
+            <span className="sheet-label">Prepared ({prepareDraft.length}/{cap})</span>
+            <div className="prepare-grid">
+              {byTier(leveledPool).map(([lv, ids]) => (
+                <Fragment key={lv}>
+                  <span className="prepare-tier">{TIER_NAME[lv] ?? `L${lv}`} level</span>
+                  {ids.map((id) => (
+                    <Option
+                      key={id} id={id}
+                      checked={prepareDraft.includes(id)}
+                      disabled={!prepareDraft.includes(id) && atCap}
+                      onToggle={() => togglePrepare(id)}
+                    />
+                  ))}
+                </Fragment>
+              ))}
+              {leveledPool.length === 0 && <span className="muted">Pick spellbook spells above first.</span>}
+            </div>
           </div>
-        </div>
+        )}
         {rituals.length > 0 && (
           <div className="sheet-row">
             <span className="sheet-label">Rituals (always ready)</span>

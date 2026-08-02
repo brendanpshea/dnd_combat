@@ -716,6 +716,30 @@ describe('the spell tray', () => {
       .toMatch(/background:/);
   });
 
+  it('lists a wizard\'s spells once, with both ticks on the row', () => {
+    // The spellbook and the prepared list were two grids over the same names.
+    // The merged row is `DualOption`; the plain `Option` survives for cantrips
+    // and for a knows-all caster, which genuinely has one decision per spell.
+    expect(tray, 'the merged row is gone — the two grids are back').toContain('DualOption');
+    expect(rule('.prepare-prep'), 'the second tick has no style').toContain('width');
+    // The second grid may only render for a caster with no book to merge into.
+    const second = tray.indexOf('Prepared ({prepareDraft.length}/{cap})');
+    expect(second, 'no standalone prepared list at all — a cleric has nothing to pick from')
+      .toBeGreaterThan(-1);
+    expect(tray.slice(Math.max(0, second - 400), second),
+      'the standalone prepared list is not gated on the caster having no spellbook')
+      .toMatch(/!usesBook \|\| locked/);
+  });
+
+  it('keeps the second tick a real tap target', () => {
+    // It is one emoji wide, which is exactly how a control ends up at 16px.
+    expect(rule('.prepare-prep')).toContain('min-height: 34px');
+    // Hidden by size, not by `display: none` — a removed input cannot be
+    // focused, and the pad around it is the only thing a keyboard can reach.
+    expect(rule('.prepare-prep input'), 'the checkbox was removed from the tab order')
+      .not.toMatch(/display:\s*none/);
+  });
+
   it('keeps the close button in the corner, not adrift in the title', () => {
     // The tally used to sit inline between the name and the ✕, wrapping the
     // header to four lines and pushing the only way out of a long sheet into

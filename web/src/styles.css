@@ -2308,6 +2308,32 @@ button.category .count {
   background: #2a2540;
 }
 .prepare-option.checked { background: #3a3260; }
+/* The second tick on a merged row. Square and narrow — it is one glyph, and
+   the width it does not take is width the spell name does. */
+.prepare-prep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 34px;
+  min-height: 34px;
+  border-radius: 6px;
+  background: #2a2540;
+  cursor: pointer;
+  /* Off reads as off at a glance: the ✨ is there so the row's shape never
+     changes, but it is plainly not lit. */
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+.prepare-prep.on { background: #4a3f22; opacity: 1; filter: none; }
+/* The checkbox itself is invisible; the whole pad is the target. A `display:
+   none` input cannot be focused, so it is hidden by size rather than removed. */
+.prepare-prep input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.prepare-prep:has(input:focus-visible) { outline: 2px solid var(--accent); }
+.prepare-prep:has(input[disabled]) { cursor: not-allowed; opacity: 0.15; }
+/* A scribed spell's book "tick" — known for good, so it is a mark, not a
+   control. Sized like the checkbox it stands in for so rows stay aligned. */
+.prepare-fixed { width: 13px; text-align: center; font-size: 11px; }
 .prepare-option input[disabled] { cursor: not-allowed; }
 .prepare-option input[disabled] ~ * { opacity: 0.5; }
 
