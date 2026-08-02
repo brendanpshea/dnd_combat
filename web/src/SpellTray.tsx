@@ -96,7 +96,7 @@ export function SpellTray(
 
   return (
     <div className="tray-backdrop" onClick={onClose}>
-      <div className="tray" onClick={(e) => e.stopPropagation()}>
+      <div className="tray tray-prepare" onClick={(e) => e.stopPropagation()}>
         {/* Title and tally on separate lines. Run together they wrapped into
             four ragged lines on a 390px phone, and the ✕ — the only way out of
             a sheet this long — floated off beside the middle of the name. */}
