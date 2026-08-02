@@ -504,7 +504,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
   return (
     <div className="setup">
       <h1>⚔️ D&D Grid Combat</h1>
-      <label>
+      <label className="setup-field">
         Mode
         <select value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
           <option value="hotseat">Hot-seat (2 players)</option>
@@ -514,7 +514,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
         </select>
       </label>
       {mode === 'encounter' && (
-        <label>
+        <label className="setup-field">
           Encounter
           <select value={encounterId} onChange={(e) => setEncounterId(e.target.value)}>
             {Object.values(ENCOUNTERS).map((enc) => (
@@ -523,13 +523,13 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           </select>
         </label>
       )}
-      <label>
+      <label className="setup-field">
         Map
         <select value={mapId} onChange={(e) => setMapId(e.target.value)}>
           {MAP_IDS.map((id) => <option key={id} value={id}>{MAPS[id]!.name}</option>)}
         </select>
       </label>
-      <label>
+      <label className="setup-field">
         Party level
         <select value={level} onChange={(e) => setLevel(Number(e.target.value))}>
           {/* The campaign reaches 8, and several classes only become themselves
@@ -540,7 +540,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
         </select>
       </label>
       {mode !== 'hotseat' && (
-        <label>
+        <label className="setup-field">
           AI difficulty
           <select value={aiLevel} onChange={(e) => setAiLevel(e.target.value as AiLevel)}>
             <option value="easy">Easy</option>
@@ -550,7 +550,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
         </label>
       )}
       {classIds.map((classId, index) => (
-        <label key={index} className="setup-hero">
+        <label key={index} className="setup-field setup-hero">
           {`Hero ${index + 1}`}
           <span className="setup-hero-pair">
             <select
@@ -572,7 +572,7 @@ function Setup({ onStart }: { onStart(c: SetupConfig): void }) {
           </span>
         </label>
       ))}
-      <label>
+      <label className="setup-field">
         Seed
         <input
           type="number"

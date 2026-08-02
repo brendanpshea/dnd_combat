@@ -82,7 +82,18 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   gap: 16px;
 }
 .setup h1 { text-align: center; margin-bottom: 12px; }
-.setup label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
+/* A FIELD label in the setup form — caption above its control.
+ *
+ * Scoped to `.setup-field` rather than every `label` under `.setup`, because
+ * the broad version leaked. The spell tray opens inside this screen, and every
+ * one of its checkboxes is a `<label>`: they inherited `flex-direction: column`
+ * and stacked the tick ABOVE the spell name, turning a 34px row into 77px and
+ * roughly doubling the height of a screen that is nothing but rows. Reported as
+ * the level-up spell screen wasting space.
+ *
+ * A descendant selector on a bare element name reaches everything a screen ever
+ * renders, including components it knows nothing about. */
+.setup .setup-field { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
 .setup select, .setup input {
   font: inherit;
   color: var(--text);
@@ -1780,6 +1791,14 @@ button.category .count {
 }
 @keyframes tray-up { from { transform: translateY(12px); opacity: 0.6; } to { transform: none; opacity: 1; } }
 
+/* The spell-preparation tray is a GRID of short rows, not a list of long ones,
+   so the 560px that suits every other tray costs it real screen: on a 1250px
+   tablet the track resolved to `265px 265px` and the sheet scrolled for three
+   more screens with half the viewport left empty either side. Widening it is
+   free — `auto-fill` turns the extra width into columns rather than into
+   stretched rows. Only this tray; the others are lists and read worse wide. */
+.tray-prepare { width: min(1000px, 100%); }
+
 .tray-head {
   display: flex;
   align-items: center;
@@ -2267,6 +2286,11 @@ button.category .count {
 .prepare-option-row .prepare-option { flex: 1; }
 .prepare-option {
   display: flex;
+  /* Declared, not inherited. This label renders inside the party forge, where
+     a `.setup label` rule used to turn it into a column and stack the tick above
+     the name. A component that can be mounted anywhere must state its own
+     layout rather than trust the container's. */
+  flex-direction: row;
   align-items: center;
   gap: 6px;
   padding: 5px 8px;
@@ -2277,6 +2301,11 @@ button.category .count {
      because the ⓘ beside it was accidentally stretching the row to 40. */
   min-height: 34px;
   min-width: 0;
+  /* Every option gets a tile, not only the ticked ones. Unticked rows used to
+     be bare text on the panel, so a grid of them read as ragged columns of
+     words with no row boundaries — most of why the screen looked like wasted
+     space rather than a dense list. */
+  background: #2a2540;
 }
 .prepare-option.checked { background: #3a3260; }
 .prepare-option input[disabled] { cursor: not-allowed; }
@@ -3843,7 +3872,10 @@ button.category .count {
 
 /* Quick-battle hero rows: class and species side by side, so four heroes read
    as four rows rather than eight stacked dropdowns. */
-.setup-hero { display: block; }
+/* A caption over a pair of dropdowns — `.setup-field` supplies the column, so
+   this only tightens the gap. It used to say `display: block` for the sole
+   purpose of escaping a `.setup label` rule that no longer exists. */
+.setup-hero { gap: 4px; }
 .setup-hero-pair {
   display: flex;
   gap: 6px;

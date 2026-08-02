@@ -662,6 +662,60 @@ describe('the spell tray', () => {
     expect(rule('.prepare-tier')).toContain('grid-column: 1 / -1');
   });
 
+  it('does not let the setup screen restyle every label inside it', () => {
+    // The reported fault — "the level up spell screen wastes a lot of space" —
+    // was `.setup label { flex-direction: column }`, a rule written for the
+    // party forge's own captioned fields. The tray renders inside `.setup`, so
+    // every spell checkbox inherited it, stacking the tick above the name and
+    // turning a 34px row into 77px. Measured: 77 -> 54.
+    //
+    // The hazard is the SHAPE — a bare element descendant of a screen-level
+    // class — but only for properties that decide layout. `.setup select` is a
+    // form-control skin (font, colour, border) and is meant to reach every
+    // control on the screen; that one is fine and stays. Laying out somebody
+    // else's element is what is banned.
+    const leaks: string[] = [];
+    for (const m of css.matchAll(/^\.setup\s+([a-z]+)[^{]*\{([^}]*)\}/gm)) {
+      if (/(^|[\s;])(display|flex-direction|grid-template|position)\s*:/.test(m[2]!)) {
+        leaks.push(m[1]!);
+      }
+    }
+    expect(leaks, `.setup lays out bare <${leaks[0]}> elements — it will reach components mounted inside it`)
+      .toEqual([]);
+  });
+
+  it('makes each option state its own direction rather than trust the screen', () => {
+    // The other half of the fix: a component that can be mounted anywhere has
+    // to declare the layout it needs, not inherit one.
+    expect(rule('.prepare-option'), 'the option relies on its container for a row again')
+      .toContain('flex-direction: row');
+  });
+
+  it('turns a wide screen into more columns rather than more scrolling', () => {
+    // `.tray` is 560px because most trays are lists. This one is a GRID of
+    // short rows, so on a 1250px tablet the 560px cap resolved to two 265px
+    // tracks and the sheet scrolled for three more screens with half the
+    // viewport empty. Measured at 1250x2000: four columns, 1222px -> 679px.
+    const wide = rule('.tray-prepare').match(/min\((\d+)px/);
+    const base = rule('.tray').match(/width:\s*min\((\d+)px/);
+    expect(wide, 'the prepare tray lost its own width').toBeTruthy();
+    expect(base, 'the tray lost its width').toBeTruthy();
+    expect(Number(wide![1]), 'the prepare tray is back to a list-width column')
+      .toBeGreaterThan(Number(base![1]));
+    // Only useful if the grid actually spends the width on tracks.
+    expect(rule('.prepare-grid'), 'a fixed column count would waste the extra width')
+      .toContain('auto-fill');
+    expect(tray, 'the tray is no longer marked as the prepare variant')
+      .toContain('tray-prepare');
+  });
+
+  it('draws every option as a tile, not only the ticked ones', () => {
+    // Unticked rows were bare text on the panel, so a multi-column grid read as
+    // ragged columns of words with no row boundaries.
+    expect(rule('.prepare-option'), 'unticked options have no tile again')
+      .toMatch(/background:/);
+  });
+
   it('keeps the close button in the corner, not adrift in the title', () => {
     // The tally used to sit inline between the name and the ✕, wrapping the
     // header to four lines and pushing the only way out of a long sheet into
