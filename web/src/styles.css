@@ -1103,10 +1103,54 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   background: var(--c, #c084fc);
   box-shadow: 0 0 8px 3px var(--c, #c084fc);
 }
+/* An arrow is not a magic missile. The spell bolt is a glowing ball with a
+   coloured halo, which on a longbow shot read as "the archer cast something" —
+   so this is a plain pale shaft with no bloom, turned to face its flight. */
+.fx-arrow { --c: #e6dcc8; }
+.projectile.fx-arrow::before {
+  width: 52%;
+  height: 10%;
+  border-radius: 2px;
+  box-shadow: none;
+  /* A flat taper rather than a drawn arrowhead: at token size the head is two
+     pixels, and the taper is what actually reads as "pointy end forward". */
+  background: linear-gradient(to right, #8a7a5e 0%, var(--c) 55%, #fff 100%);
+  transform: rotate(var(--rot, 0deg));
+}
 @keyframes projectile {
   0%   { transform: translate(var(--fx), var(--fy)); opacity: 0; }
   15%  { opacity: 1; }
   100% { transform: translate(var(--tx), var(--ty)); opacity: 1; }
+}
+
+/* ---- the swing (weapon attacker lunge) ----
+   A spell pulsed its caster and flew a bolt; a sword did nothing at all, so
+   everything a weapon attack showed happened on the person being hit. This is
+   the attacker's half. Direction arrives as --lx/--ly (screen space, already
+   flipped for the board's inverted y) so one rule covers all eight facings.
+
+   On `.token`, NOT `.token-slot`: the slot owns the position transform and
+   transitions it, so animating there would fight the walk animation. */
+.token.striking {
+  animation: lunge 0.3s ease-out;
+  animation-delay: var(--l-delay, 0ms);
+}
+@keyframes lunge {
+  0%   { transform: translate(0, 0); }
+  /* The apex is at 50% of 300ms = 150ms, which is MELEE_LEAD_MS in strike.ts —
+     the moment effects.ts releases the damage number. Change one and the number
+     stops landing on the blow. */
+  50%  { transform: translate(var(--lx, 0), var(--ly, 0)); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Same bargain the summon strike already struck: keep the cue, drop the
+     travel. A flash still says "this one acted". */
+  .token.striking { animation: lunge-flash 0.3s ease-out; animation-delay: var(--l-delay, 0ms); }
+  @keyframes lunge-flash {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.7); }
+  }
 }
 
 /* ---- spell wind-up (caster pulse) ---- */

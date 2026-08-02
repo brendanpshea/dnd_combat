@@ -9,6 +9,7 @@
 import type { GameState, Id } from '../../src/engine/types.js';
 import type { GameEvent } from '../../src/engine/events.js';
 import { SPELLS } from '../../src/data/spells.js';
+import { SHOT_LEAD_MS } from './strike.js';
 
 /**
  * How long to hold the board still *after* an action, so its result can be read.
@@ -59,6 +60,21 @@ export function beatFor(events: GameEvent[]): number {
   // Each affected creature beyond the first buys a little more dwell, capped so
   // a crowded blast never becomes a screensaver.
   if (results > 1) beat += Math.min((results - 1) * 120, 600);
+  /*
+   * Weapon attacks now open with a swing (see `strike.ts`), and `effects.ts`
+   * holds the damage number behind it so the number lands ON the blow. That
+   * pushes every result later by the lead time, and this beat is a MAX measured
+   * from the start of the batch — so without adding it back, the swing eats the
+   * number's dwell rather than preceding it. An Extra Attack turn stacks three
+   * leads, so this counts them rather than adding one.
+   *
+   * `SHOT_LEAD_MS` for all of them: telling a shot from a swing needs positions
+   * and reach, which this module deliberately does not have, and the two differ
+   * by 50ms. Erring long only ever holds the board still slightly too long.
+   */
+  const swings = events.filter((e) =>
+    e.type === 'attackRolled' && e.weaponId !== 'spell' && !e.via).length;
+  beat += swings * SHOT_LEAD_MS;
   return beat;
 }
 
