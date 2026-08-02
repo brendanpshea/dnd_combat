@@ -5,6 +5,7 @@ import { acOf } from '../../src/data/armor.js';
 import type { CoverRead } from '../../src/engine/rules/cover.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
+import { type StrikeEffect, shotAngleDeg } from './strike.js';
 import { ArtImage } from './ArtImage.js';
 import {
   hasArt, tokenUrl, tokenScale, boardBgUrl, HAS_BOARD_BG, hasSpellIcon, spellIconUrl,
@@ -37,6 +38,9 @@ export interface BoardProps {
   bursts?: BurstEffect[];
   areas?: AreaEffect[];
   projectiles?: ProjectileEffect[];
+  /** Attackers mid-swing. At most one lunge per token per batch — a second
+   *  attack restarts nothing, the same way a target hit twice shakes once. */
+  strikes?: StrikeEffect[];
   castingId?: Id | undefined;
   hitIds?: Set<Id>;
   /** Summon tokens mid-strike, keyed `casterId:kind` — briefly lunges them. */
@@ -56,7 +60,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
+export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, strikes, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
   /**
@@ -236,6 +240,12 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
     }
   }
 
+  // First strike per attacker: an Extra Attack turn produces several, and
+  // restarting a CSS animation mid-flight needs a remount, which would drop the
+  // token's loaded art. The staggered damage numbers carry the repetition.
+  const strikeOf = new Map<Id, StrikeEffect>();
+  for (const s of strikes ?? []) if (!strikeOf.has(s.attackerId)) strikeOf.set(s.attackerId, s);
+
   const tokens = Object.values(state.combatants)
     .filter((c) => c.alive)
     .map((c) => {
@@ -271,6 +281,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
               c.id === activeId ? 'active' : '',
               c.id === selectedId ? 'selected' : '',
               hitIds?.has(c.id) ? 'hit' : '',
+              strikeOf.has(c.id) ? 'striking' : '',
               c.id === castingId ? 'casting' : '',
               c.conditions.some((condition) => condition.id === 'hidden') ? 'hidden' : '',
               tint ? `tint-${tint}` : '',
@@ -303,6 +314,14 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
               reachCells(c) > 1 ? 'has-reach' : '',
               c.flying ? 'flying' : '',
             ].join(' ')}
+            style={strikeOf.has(c.id) ? {
+              // Direction and timing as custom properties so one keyframe rule
+              // serves every angle — the alternative is eight canned animations
+              // and a diagonal that lunges sideways.
+              ['--lx' as string]: `${strikeOf.get(c.id)!.dx * 100}%`,
+              ['--ly' as string]: `${strikeOf.get(c.id)!.dy * 100}%`,
+              ['--l-delay' as string]: `${strikeOf.get(c.id)!.delayMs}ms`,
+            } : undefined}
           >
             {c.id === activeId && <div className="turn-arrow" />}
             <div className="base" />
@@ -424,6 +443,9 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
           height: `${100 / height}%`,
           ['--fx' as string]: `${fx}%`, ['--fy' as string]: `${fy}%`,
           ['--tx' as string]: `${tx}%`, ['--ty' as string]: `${ty}%`,
+          // Only a shaft needs a facing; a glowing orb is the same from every
+          // angle, which is why the spell bolt never carried one.
+          ['--rot' as string]: `${shotAngleDeg(p.from, p.to)}deg`,
           animationDelay: `${p.delayMs}ms`,
         }}
       />

@@ -22,6 +22,7 @@ import { Board, CellHighlight, tooltipFor } from './Board.js';
 import { groupActions, buildMultiAction, bendTray, posKey, describeShort, MultiTargetSpec, type BarEntry, type BarGroup, type TargetOption } from './actionGroups.js';
 import { affordableMetamagic, type MetamagicId } from '../../src/engine/rules/metamagic.js';
 import { effectsFor, FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
+import { type StrikeEffect, LUNGE_MS } from './strike.js';
 import { beatFor, narrate } from './pacing.js';
 import { initAudio, isMuted, setMuted } from './sound.js';
 import { detectTips, seenTips, markTipSeen, tipsOff, setTipsOff, type Tip } from './tips.js';
@@ -656,6 +657,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   const [bursts, setBursts] = useState<BurstEffect[]>([]);
   const [areas, setAreas] = useState<AreaEffect[]>([]);
   const [projectiles, setProjectiles] = useState<ProjectileEffect[]>([]);
+  const [strikes, setStrikes] = useState<StrikeEffect[]>([]);
   const [castingId, setCastingId] = useState<Id | undefined>(undefined);
   const [critFlash, setCritFlash] = useState(false);
   const [hitIds, setHitIds] = useState<Set<Id>>(new Set());
@@ -751,6 +753,14 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         setProjectiles((p) => [...p, ...fx.projectiles]);
         const ids = new Set(fx.projectiles.map((p) => p.id));
         fxTimeout(() => setProjectiles((p) => p.filter((x) => !ids.has(x.id))), 450);
+      }
+      if (fx.strikes.length > 0) {
+        setStrikes((p) => [...p, ...fx.strikes]);
+        const ids = new Set(fx.strikes.map((s) => s.id));
+        // Outlive the last lunge: each carries its own delay, so the batch is
+        // only done when the latest one has finished running.
+        const last = Math.max(...fx.strikes.map((s) => s.delayMs)) + LUNGE_MS + 40;
+        fxTimeout(() => setStrikes((p) => p.filter((x) => !ids.has(x.id))), last);
       }
       if (fx.casterId !== undefined) {
         const id = fx.casterId;
@@ -1254,6 +1264,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         bursts={bursts}
         areas={areas}
         projectiles={projectiles}
+        strikes={strikes}
         castingId={castingId}
         corpses={corpses}
         hitIds={hitIds}

@@ -8,6 +8,10 @@ import { WEAPONS } from '../../src/data/weapons.js';
 import { sfx, Sfx } from './sound.js';
 import { posKey } from './actionGroups.js';
 import { CONDITION_META } from './conditions.js';
+import { reachCells } from '../../src/engine/rules/reach.js';
+import {
+  type StrikeEffect, isShot, cellDistance, lungeVector, attackLeadMs,
+} from './strike.js';
 
 export interface FloatEffect {
   id: number;
@@ -56,6 +60,8 @@ export interface EffectBatch {
   bursts: BurstEffect[];
   areas: AreaEffect[];
   projectiles: ProjectileEffect[];
+  /** Attackers mid-swing — see `strike.ts` for why weapons needed this. */
+  strikes: StrikeEffect[];
   /** Token ids to shake briefly. */
   hits: Id[];
   /** Summon tokens that struck this batch, keyed `casterId:kind` (the Board's
@@ -100,6 +106,7 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
   const bursts: BurstEffect[] = [];
   const areas: AreaEffect[] = [];
   const projectiles: ProjectileEffect[] = [];
+  const strikes: StrikeEffect[] = [];
   const hits: Id[] = [];
   const summonStrikes: string[] = [];
   let casterId: Id | undefined;
@@ -154,13 +161,44 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         pendingCrit = e.hit && e.crit;
         // Flash the conjuration, hit or miss — the swing is the thing to see.
         if (e.via) summonStrikes.push(`${e.attackerId}:${e.via}`);
+        /*
+         * The swing itself. A spell attack is excluded: `spellCast` has already
+         * pulsed the caster and flown its own bolt, and doing both would show
+         * one action twice. A summon's swing is likewise already covered by
+         * `summonStrikes` — and the lunge would move the CASTER, who did not
+         * move at all.
+         */
+        const attacker = state.combatants[e.attackerId];
+        const target = state.combatants[e.targetId];
+        if (e.weaponId !== 'spell' && !e.via && attacker && target) {
+          const shot = isShot({
+            canMelee: WEAPONS[e.weaponId]?.melee !== false,
+            reach: reachCells(attacker),
+            distance: cellDistance(attacker.position, target.position),
+          });
+          if (shot) {
+            // Reuses the spell bolt's machinery wholesale; only the colour
+            // differs, so an arrow does not read as a magic missile.
+            projectiles.push({
+              id: nextId++, from: attacker.position, to: target.position,
+              kind: 'arrow', delayMs: stagger,
+            });
+            sound('ranged', stagger);
+          } else {
+            const { dx, dy } = lungeVector(attacker.position, target.position);
+            strikes.push({ id: nextId++, attackerId: e.attackerId, dx, dy, delayMs: stagger });
+          }
+          // Hold the result behind the swing. Without this the damage number
+          // draws while the arm is still moving and the animation reads as
+          // decoration rather than as the cause. `pacing.ts` adds the same lead
+          // to its beat so the number still gets its full dwell.
+          stagger += attackLeadMs(shot);
+        }
         if (!e.hit) {
           const cell = cellOf(e.targetId);
           if (cell) floats.push({ id: nextId++, cellKey: cell, text: 'miss', cls: 'miss', delayMs: stagger });
           sound('miss', stagger);
           stagger += 150;
-        } else if (e.weaponId !== 'spell' && WEAPONS[e.weaponId]?.melee === false) {
-          sound('ranged', stagger);
         }
         break;
       }
@@ -308,6 +346,6 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         break;
     }
   }
-  return { floats, corpses, bursts, areas, projectiles, hits, summonStrikes, critFlash, ...(casterId !== undefined ? { casterId } : {}) };
+  return { floats, corpses, bursts, areas, projectiles, strikes, hits, summonStrikes, critFlash, ...(casterId !== undefined ? { casterId } : {}) };
 }
 
