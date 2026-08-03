@@ -31,6 +31,7 @@ import { FeaturePips } from './FeaturePips.js';
 import { InfoDot } from './InfoCard.js';
 import { infoFor, spellSheet } from './gameInfo.js';
 import { hasArt } from './art.js';
+import { ItemIcon } from './ItemIcon.js';
 
 function label(itemId: string): string {
   return itemId.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
@@ -265,7 +266,11 @@ export function PartyScreen(
                     title={held ? itemName(held) : `${SLOT_LABEL[slot]} — empty`}
                     onClick={() => setPicked(sel ? null : { kind: 'slot', charIdx: idx, slot })}
                   >
-                    <span className="gear-slot-icon">{held ? itemIcon(held) : SLOT_GLYPH[slot]}</span>
+                    <span className="gear-slot-icon">
+                      {held
+                        ? <ItemIcon itemId={held} fallback={itemIcon(held)} size={36} />
+                        : SLOT_GLYPH[slot]}
+                    </span>
                     <small>{SLOT_LABEL[slot]}</small>
                   </button>
                 );
@@ -314,7 +319,7 @@ export function PartyScreen(
                         `${ch.name} ${slot === 'ranged' ? 'keeps' : 'equips'} ${itemName(id)}`,
                       )}
                     >
-                      <span>{itemIcon(id)} {itemName(id)}</span>
+                      <span><ItemIcon itemId={id} fallback={itemIcon(id)} size={26} /> {itemName(id)}</span>
                       {why && <small>{why}</small>}
                     </button>
                   ))}

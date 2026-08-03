@@ -3429,7 +3429,13 @@ button.category .count {
 }
 .arena-buy:hover:not(:disabled) { border-color: var(--blue); }
 .arena-buy:disabled { opacity: .42; cursor: default; }
-.arena-buy-icon { font-size: 1.25rem; }
+/* Emoji or a drawn icon, same box either way — a shop list whose rows changed
+   height depending on which items were in stock would ripple as you scroll. */
+.arena-buy-icon {
+  font-size: 1.25rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex: none;
+}
 .arena-buy-name { font-weight: 600; }
 .arena-buy-price { margin-left: auto; color: var(--gold); font-weight: 700; }
 
@@ -4227,9 +4233,19 @@ button.category .count {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 6px 2px; border-radius: 10px;
   border: 1px dashed #4a4270; background: transparent;
-  color: inherit; font: inherit; cursor: pointer; min-height: 52px;
+  color: inherit; font: inherit; cursor: pointer; min-height: 58px;
 }
-.gear-slot .gear-slot-icon { font-size: 1.15rem; line-height: 1; opacity: .35; }
+/* The slot's icon is an emoji OR a drawn SVG, and the two need the same box or
+   a row of gear jumps by a few pixels depending on which items are equipped. */
+.gear-slot .gear-slot-icon {
+  font-size: 1.15rem; line-height: 1; opacity: .35;
+  display: flex; align-items: center; justify-content: center;
+  height: 36px;
+}
+/* Each icon already carries its own drop-shadow filter, so adding a CSS one
+   would double it. Alignment is all that is needed here: an <img> sits on the
+   text baseline and the emoji it replaces does not. */
+.item-ico.art { display: inline-block; vertical-align: -0.28em; }
 .gear-slot small { font-size: .58rem; color: var(--muted); letter-spacing: .02em; }
 /* Filled reads as solid, empty as an outline waiting for something. */
 .gear-slot.filled { border-style: solid; border-color: #453d63; background: var(--panel); }

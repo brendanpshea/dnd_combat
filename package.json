@@ -22,6 +22,7 @@
     "web:typecheck": "tsc -p web/tsconfig.json",
     "reference": "tsx scripts/reference.ts",
     "art-registry": "tsx scripts/art-registry.ts",
+    "svg-frame": "tsx scripts/svg-item-frame.ts",
     "art-backlog": "tsx scripts/art-backlog.ts",
     "token-silhouettes": "python3 art/generate_svg_tokens.py",
     "token-sheet": "tsx scripts/token-sheet.ts",
