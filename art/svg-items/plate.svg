@@ -147,20 +147,31 @@
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>
-  <!-- SPEAR (100% Transparent Background) -->
-  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
-    <rect x="249" y="160" width="14" height="280" rx="2" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="4.5"/>
-    <polygon points="249,440 263,440 260,460 252,460" fill="#4e6278" stroke="#2a2333" stroke-width="3"/>
-    <g fill="#4a2818" stroke="#2a2333" stroke-width="3">
-      <rect x="248" y="280" width="16" height="60" rx="1"/>
-      <line x1="248" y1="295" x2="264" y2="295" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="310" x2="264" y2="310" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="325" x2="264" y2="325" stroke="#f0b869" stroke-width="2"/>
+  <!-- FULL PLATE ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Layered Massive Pauldrons (Shoulder Guards) -->
+    <path d="M 105,170 C 130,95 200,105 210,140 L 190,230 L 120,230 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M 407,170 C 382,95 312,105 302,140 L 322,230 L 392,230 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M 115,190 L 195,195 L 185,240 L 125,235 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="4.5"/>
+    <path d="M 397,190 L 317,195 L 327,240 L 387,235 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="4.5"/>
+
+    <!-- Gorget / High Neck Collar -->
+    <path d="M 195,115 C 220,145 292,145 317,115 L 302,150 C 275,170 237,170 210,150 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+
+    <!-- Main Knightly Breastplate -->
+    <path d="M 190,145 Q 256,160 322,145 C 360,200 345,280 330,335 C 310,405 285,435 256,445 C 227,435 202,405 182,335 C 167,280 152,200 190,145 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M 256,160 L 190,145 C 152,200 167,280 182,335 C 202,405 227,435 256,445 Z" fill="url(#blade-light)" opacity="0.55"/>
+    <line x1="256" y1="160" x2="256" y2="445" stroke="#ffffff" stroke-width="4.5"/>
+    <line x1="256" y1="160" x2="256" y2="445" stroke="#2a2333" stroke-width="2.5"/>
+
+    <!-- Gold Filigree & Knight Crest -->
+    <path d="M 190,145 Q 256,170 322,145" stroke="url(#gold-grad)" stroke-width="7" fill="none"/>
+    <path d="M 190,145 Q 256,170 322,145" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <g transform="translate(256, 240)">
+      <polygon points="0,-25 22,0 0,25 -22,0" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="0" cy="0" r="8" fill="#9be2ff" stroke="#2a2333" stroke-width="2.5"/>
     </g>
-    <polygon points="245,150 267,150 262,170 250,170" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 256,150 Z" fill="url(#blade-light)"/>
-    <path d="M 256,40 Q 282,100 267,150 L 256,150 Z" fill="url(#blade-dark)"/>
-    <line x1="256" y1="45" x2="256" y2="150" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 267,150 Q 282,100 256,40 Z" fill="none" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Flared Tassets / Belt Guard -->
+    <path d="M 182,335 Q 256,355 330,335 L 340,365 Q 256,385 172,365 Z" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
   </g>
 </svg>

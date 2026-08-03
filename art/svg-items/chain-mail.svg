@@ -147,20 +147,19 @@
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>
-  <!-- SPEAR (100% Transparent Background) -->
-  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
-    <rect x="249" y="160" width="14" height="280" rx="2" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="4.5"/>
-    <polygon points="249,440 263,440 260,460 252,460" fill="#4e6278" stroke="#2a2333" stroke-width="3"/>
-    <g fill="#4a2818" stroke="#2a2333" stroke-width="3">
-      <rect x="248" y="280" width="16" height="60" rx="1"/>
-      <line x1="248" y1="295" x2="264" y2="295" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="310" x2="264" y2="310" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="325" x2="264" y2="325" stroke="#f0b869" stroke-width="2"/>
+  <!-- CHAIN MAIL (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Full Heavy Chainmail Hauberk Body with Long Sleeves -->
+    <path d="M 170,110 Q 256,125 342,110 L 435,175 L 375,250 L 325,200 L 325,435 Q 256,450 187,435 L 187,200 L 137,250 L 77,175 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Interlocked Chain Ring Shading Overlay -->
+    <g fill="none" stroke="#4e6278" stroke-width="3" opacity="0.6">
+      <path d="M 110,165 Q 256,190 402,165 M 100,195 Q 256,220 412,195 M 187,225 Q 256,245 325,225 M 187,255 Q 256,275 325,255 M 187,285 Q 256,305 325,285 M 187,315 Q 256,335 325,315 M 187,345 Q 256,365 325,345 M 187,375 Q 256,395 325,375 M 187,405 Q 256,425 325,405"/>
     </g>
-    <polygon points="245,150 267,150 262,170 250,170" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 256,150 Z" fill="url(#blade-light)"/>
-    <path d="M 256,40 Q 282,100 267,150 L 256,150 Z" fill="url(#blade-dark)"/>
-    <line x1="256" y1="45" x2="256" y2="150" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 267,150 Q 282,100 256,40 Z" fill="none" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Coif / Draped Mail Hood Collar -->
+    <path d="M 195,110 C 210,160 302,160 317,110 C 340,150 172,150 195,110 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Heavy Waist Belt with Steel Buckle -->
+    <path d="M 187,320 Q 256,335 325,320" stroke="url(#leather-grad)" stroke-width="14" fill="none"/>
+    <rect x="238" y="312" width="36" height="26" rx="4" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <circle cx="256" cy="325" r="4" fill="#2a2333"/>
   </g>
 </svg>

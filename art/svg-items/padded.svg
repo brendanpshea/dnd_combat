@@ -147,20 +147,21 @@
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>
-  <!-- SPEAR (100% Transparent Background) -->
-  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
-    <rect x="249" y="160" width="14" height="280" rx="2" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="4.5"/>
-    <polygon points="249,440 263,440 260,460 252,460" fill="#4e6278" stroke="#2a2333" stroke-width="3"/>
-    <g fill="#4a2818" stroke="#2a2333" stroke-width="3">
-      <rect x="248" y="280" width="16" height="60" rx="1"/>
-      <line x1="248" y1="295" x2="264" y2="295" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="310" x2="264" y2="310" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="325" x2="264" y2="325" stroke="#f0b869" stroke-width="2"/>
-    </g>
-    <polygon points="245,150 267,150 262,170 250,170" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 256,150 Z" fill="url(#blade-light)"/>
-    <path d="M 256,40 Q 282,100 267,150 L 256,150 Z" fill="url(#blade-dark)"/>
-    <line x1="256" y1="45" x2="256" y2="150" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 267,150 Q 282,100 256,40 Z" fill="none" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+  <!-- PADDED ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Main Quilted Tunic Body -->
+    <path d="M 170,120 Q 256,135 342,120 L 390,190 L 350,225 L 330,200 L 330,420 Q 256,435 182,420 L 182,200 L 162,225 L 122,190 Z" fill="url(#cloth-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Collar & Neck Trim -->
+    <path d="M 210,120 C 220,150 292,150 302,120 L 256,155 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="4"/>
+    <!-- Quilt Cross-Hatching Lines -->
+    <path d="M 182,220 L 330,340 M 182,270 L 330,390 M 182,170 L 330,290 M 182,320 L 300,420" stroke="#241108" stroke-width="3" stroke-dasharray="6,4" opacity="0.6"/>
+    <path d="M 330,220 L 182,340 M 330,270 L 182,390 M 330,170 L 182,290 M 330,320 L 212,420" stroke="#241108" stroke-width="3" stroke-dasharray="6,4" opacity="0.6"/>
+    <!-- Center Placket & Brass Buttons -->
+    <line x1="256" y1="155" x2="256" y2="425" stroke="#2a2333" stroke-width="4.5"/>
+    <circle cx="256" cy="180" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="230" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="280" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="330" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="380" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
   </g>
 </svg>

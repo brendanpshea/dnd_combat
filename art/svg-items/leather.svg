@@ -147,20 +147,22 @@
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>
-  <!-- SPEAR (100% Transparent Background) -->
-  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
-    <rect x="249" y="160" width="14" height="280" rx="2" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="4.5"/>
-    <polygon points="249,440 263,440 260,460 252,460" fill="#4e6278" stroke="#2a2333" stroke-width="3"/>
-    <g fill="#4a2818" stroke="#2a2333" stroke-width="3">
-      <rect x="248" y="280" width="16" height="60" rx="1"/>
-      <line x1="248" y1="295" x2="264" y2="295" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="310" x2="264" y2="310" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="325" x2="264" y2="325" stroke="#f0b869" stroke-width="2"/>
-    </g>
-    <polygon points="245,150 267,150 262,170 250,170" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 256,150 Z" fill="url(#blade-light)"/>
-    <path d="M 256,40 Q 282,100 267,150 L 256,150 Z" fill="url(#blade-dark)"/>
-    <line x1="256" y1="45" x2="256" y2="150" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 267,150 Q 282,100 256,40 Z" fill="none" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+  <!-- LEATHER ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Leather Vest Body -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,420 C 290,430 222,430 187,420 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Padded Leather Pauldrons -->
+    <path d="M 175,115 C 140,110 120,140 125,185 L 167,205 Z" fill="url(#leather-light)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M 337,115 C 372,110 392,140 387,185 L 345,205 Z" fill="url(#leather-light)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Double Chest Harness Straps with Buckles -->
+    <path d="M 150,150 L 340,240" stroke="url(#leather-dark)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 150,150 L 340,240" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <path d="M 340,150 L 150,240" stroke="url(#leather-dark)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 340,150 L 150,240" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <rect x="238" y="180" width="36" height="26" rx="4" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
+    <circle cx="256" cy="193" r="4" fill="#2a2333"/>
+    <!-- Center Stitch Line & Waist Trim -->
+    <line x1="256" y1="210" x2="256" y2="420" stroke="#f5b324" stroke-width="3.5" stroke-dasharray="8,5"/>
+    <path d="M 187,360 Q 256,375 325,360" stroke="#2a2333" stroke-width="4.5" fill="none"/>
   </g>
 </svg>

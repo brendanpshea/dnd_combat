@@ -55,6 +55,28 @@ COMMON_DEFS = """  <defs>
       <stop offset="100%" stop-color="#241108"/>
     </linearGradient>
 
+    <linearGradient id="leather-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8a5238"/>
+      <stop offset="100%" stop-color="#5c3422"/>
+    </linearGradient>
+
+    <linearGradient id="leather-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b2014"/>
+      <stop offset="100%" stop-color="#1c0d06"/>
+    </linearGradient>
+
+    <linearGradient id="cloth-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d9b88f"/>
+      <stop offset="50%" stop-color="#ab875a"/>
+      <stop offset="100%" stop-color="#6e502c"/>
+    </linearGradient>
+
+    <linearGradient id="fur-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0d7cd"/>
+      <stop offset="60%" stop-color="#998777"/>
+      <stop offset="100%" stop-color="#4d4136"/>
+    </linearGradient>
+
     <linearGradient id="poison-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#76ff03"/>
       <stop offset="100%" stop-color="#33691e"/>
@@ -471,9 +493,255 @@ def generate_warhammer():
   </g>"""
     return wrap_svg(content)
 
-# Map all 22 items to their generator functions
+def generate_padded_armor():
+    content = """  <!-- PADDED ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Main Quilted Tunic Body -->
+    <path d="M 170,120 Q 256,135 342,120 L 390,190 L 350,225 L 330,200 L 330,420 Q 256,435 182,420 L 182,200 L 162,225 L 122,190 Z" fill="url(#cloth-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Collar & Neck Trim -->
+    <path d="M 210,120 C 220,150 292,150 302,120 L 256,155 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="4"/>
+    <!-- Quilt Cross-Hatching Lines -->
+    <path d="M 182,220 L 330,340 M 182,270 L 330,390 M 182,170 L 330,290 M 182,320 L 300,420" stroke="#241108" stroke-width="3" stroke-dasharray="6,4" opacity="0.6"/>
+    <path d="M 330,220 L 182,340 M 330,270 L 182,390 M 330,170 L 182,290 M 330,320 L 212,420" stroke="#241108" stroke-width="3" stroke-dasharray="6,4" opacity="0.6"/>
+    <!-- Center Placket & Brass Buttons -->
+    <line x1="256" y1="155" x2="256" y2="425" stroke="#2a2333" stroke-width="4.5"/>
+    <circle cx="256" cy="180" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="230" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="280" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="330" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+    <circle cx="256" cy="380" r="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_leather_armor():
+    content = """  <!-- LEATHER ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Leather Vest Body -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,420 C 290,430 222,430 187,420 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Padded Leather Pauldrons -->
+    <path d="M 175,115 C 140,110 120,140 125,185 L 167,205 Z" fill="url(#leather-light)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M 337,115 C 372,110 392,140 387,185 L 345,205 Z" fill="url(#leather-light)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Double Chest Harness Straps with Buckles -->
+    <path d="M 150,150 L 340,240" stroke="url(#leather-dark)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 150,150 L 340,240" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <path d="M 340,150 L 150,240" stroke="url(#leather-dark)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 340,150 L 150,240" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <rect x="238" y="180" width="36" height="26" rx="4" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
+    <circle cx="256" cy="193" r="4" fill="#2a2333"/>
+    <!-- Center Stitch Line & Waist Trim -->
+    <line x1="256" y1="210" x2="256" y2="420" stroke="#f5b324" stroke-width="3.5" stroke-dasharray="8,5"/>
+    <path d="M 187,360 Q 256,375 325,360" stroke="#2a2333" stroke-width="4.5" fill="none"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_studded_leather_armor():
+    content = """  <!-- STUDDED LEATHER ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Dark Studded Leather Body -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,425 Q 256,440 187,425 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Reinforced Steel Collar & Shoulder Trim -->
+    <path d="M 175,115 Q 256,145 337,115 L 330,145 Q 256,165 182,145 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 125,180 L 187,195 L 187,240 L 135,220 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 387,180 L 325,195 L 325,240 L 377,220 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <!-- Grid of Brass Studs/Rivets -->
+    <g fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2">
+      <circle cx="215" cy="180" r="5.5"/><circle cx="256" cy="180" r="5.5"/><circle cx="297" cy="180" r="5.5"/>
+      <circle cx="200" cy="225" r="5.5"/><circle cx="237" cy="225" r="5.5"/><circle cx="275" cy="225" r="5.5"/><circle cx="312" cy="225" r="5.5"/>
+      <circle cx="215" cy="270" r="5.5"/><circle cx="256" cy="270" r="5.5"/><circle cx="297" cy="270" r="5.5"/>
+      <circle cx="200" cy="315" r="5.5"/><circle cx="237" cy="315" r="5.5"/><circle cx="275" cy="315" r="5.5"/><circle cx="312" cy="315" r="5.5"/>
+      <circle cx="215" cy="360" r="5.5"/><circle cx="256" cy="360" r="5.5"/><circle cx="297" cy="360" r="5.5"/>
+      <circle cx="237" cy="400" r="5.5"/><circle cx="275" cy="400" r="5.5"/>
+    </g>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_hide_armor():
+    content = """  <!-- HIDE ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Jagged Raw Leather Body -->
+    <path d="M 170,120 Q 256,135 342,120 L 390,180 L 350,225 L 325,195 L 330,410 L 300,435 L 270,415 L 240,440 L 210,415 L 182,430 L 187,195 L 162,225 L 122,180 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Fur Mantle Collar -->
+    <path d="M 155,120 C 130,90 200,60 256,90 C 312,60 382,90 357,120 C 390,155 350,195 325,170 C 300,200 212,200 187,170 C 162,195 122,155 155,120 Z" fill="url(#fur-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Raw Horn Fastener Buttons -->
+    <polygon points="215,160 235,145 225,175" fill="url(#horn-grad)" stroke="#2a2333" stroke-width="3"/>
+    <polygon points="297,160 277,145 287,175" fill="url(#horn-grad)" stroke="#2a2333" stroke-width="3"/>
+    <!-- Heavy Leather Cross-Stitches -->
+    <path d="M 210,240 L 230,260 M 230,240 L 210,260" stroke="#f5b324" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 282,240 L 302,260 M 302,240 L 282,260" stroke="#f5b324" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 246,310 L 266,330 M 266,310 L 246,330" stroke="#f5b324" stroke-width="4.5" stroke-linecap="round"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_chain_shirt():
+    content = """  <!-- CHAIN SHIRT (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Metallic Chainmail Shirt Body -->
+    <path d="M 175,115 Q 256,130 337,115 L 405,185 L 355,235 L 325,195 L 325,415 Q 256,430 187,415 L 187,195 L 157,235 L 107,185 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Chain Ring Mesh Rows Pattern -->
+    <g fill="none" stroke="#354457" stroke-width="3" opacity="0.65">
+      <path d="M 140,165 Q 256,190 372,165 M 130,195 Q 256,220 382,195 M 187,225 Q 256,245 325,225 M 187,255 Q 256,275 325,255 M 187,285 Q 256,305 325,285 M 187,315 Q 256,335 325,315 M 187,345 Q 256,365 325,345 M 187,375 Q 256,395 325,375"/>
+    </g>
+    <!-- Leather Trim Edges -->
+    <path d="M 175,115 Q 256,140 337,115 L 330,135 Q 256,155 182,135 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 187,400 Q 256,415 325,400 L 325,415 Q 256,430 187,415 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="4"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_scale_mail():
+    content = """  <!-- SCALE MAIL (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Leather Backing Vest -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,425 Q 256,440 187,425 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Overlapping Metallic Scale Rows -->
+    <g stroke="#2a2333" stroke-width="3" stroke-linejoin="round">
+      <path d="M 195,160 Q 210,180 225,160 M 225,160 Q 240,180 255,160 M 255,160 Q 270,180 285,160 M 285,160 Q 300,180 315,160" fill="url(#steel-rim)"/>
+      <path d="M 185,200 Q 200,225 215,200 M 215,200 Q 230,225 245,200 M 245,200 Q 260,225 275,200 M 275,200 Q 290,225 305,200 M 305,200 Q 320,225 335,200" fill="url(#blade-light)"/>
+      <path d="M 195,245 Q 210,270 225,245 M 225,245 Q 240,270 255,245 M 255,245 Q 270,270 285,245 M 285,245 Q 300,270 315,245" fill="url(#steel-rim)"/>
+      <path d="M 185,290 Q 200,315 215,290 M 215,290 Q 230,315 245,290 M 245,290 Q 260,315 275,290 M 275,290 Q 290,315 305,290 M 305,290 Q 320,315 335,290" fill="url(#blade-light)"/>
+      <path d="M 195,335 Q 210,360 225,335 M 225,335 Q 240,360 255,335 M 255,335 Q 270,360 285,335 M 285,335 Q 300,360 315,335" fill="url(#steel-rim)"/>
+      <path d="M 205,380 Q 220,405 235,380 M 235,380 Q 250,405 265,380 M 265,380 Q 280,405 295,380 M 295,380 Q 310,405 325,380" fill="url(#blade-light)"/>
+    </g>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_breastplate():
+    content = """  <!-- BREASTPLATE (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Main Polished Steel Cuirass -->
+    <path d="M 180,120 Q 256,135 332,120 C 375,160 355,250 340,310 C 320,390 290,430 256,440 C 222,430 192,390 172,310 C 157,250 137,160 180,120 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M 256,135 L 180,120 C 137,160 157,250 172,310 C 192,390 222,430 256,440 Z" fill="url(#blade-light)" opacity="0.6"/>
+    <!-- Prominent Center Median Ridge -->
+    <path d="M 256,135 L 256,440" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 256,135 L 256,440" stroke="#2a2333" stroke-width="2" stroke-linecap="round"/>
+    <!-- Gold / Brass Trim & Embellishments -->
+    <path d="M 180,120 Q 256,145 332,120" stroke="url(#gold-grad)" stroke-width="7" fill="none"/>
+    <path d="M 180,120 Q 256,145 332,120" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <path d="M 172,310 Q 256,335 340,310" stroke="url(#gold-grad)" stroke-width="6" fill="none"/>
+    <!-- Shoulder Leather Straps -->
+    <rect x="150" y="110" width="30" height="40" rx="3" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="4" transform="rotate(-20 165 130)"/>
+    <rect x="332" y="110" width="30" height="40" rx="3" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="4" transform="rotate(20 347 130)"/>
+    <circle cx="168" cy="135" r="4" fill="url(#brass-grad)"/>
+    <circle cx="344" cy="135" r="4" fill="url(#brass-grad)"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_half_plate():
+    content = """  <!-- HALF PLATE (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Under-garment Dark Leather Armor -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,430 Q 256,445 187,430 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-dark)" stroke="#2a2333" stroke-width="5"/>
+    <!-- Heavy Layered Pauldrons (Shoulders) -->
+    <path d="M 115,170 Q 140,110 190,120 L 180,210 L 130,215 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M 397,170 Q 372,110 322,120 L 332,210 L 382,215 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Steel Cuirass (Chestplate) -->
+    <path d="M 190,135 Q 256,150 322,135 Q 340,240 325,320 Q 256,345 187,320 Q 172,240 190,135 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M 256,150 L 190,135 Q 172,240 187,320 Q 256,345 256,345 Z" fill="url(#blade-light)" opacity="0.5"/>
+    <line x1="256" y1="150" x2="256" y2="340" stroke="#2a2333" stroke-width="3"/>
+    <!-- Faulds / Tassets (Thigh Guard Plates) -->
+    <path d="M 190,335 L 245,345 L 235,420 L 185,400 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M 322,335 L 267,345 L 277,420 L 327,400 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Brass Crest Medallion -->
+    <circle cx="256" cy="235" r="16" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    <polygon points="256,223 261,235 256,247 251,235" fill="#2a2333"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_ring_mail():
+    content = """  <!-- RING MAIL (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Heavy Leather Tunic -->
+    <path d="M 175,115 Q 256,130 337,115 L 405,185 L 355,235 L 325,195 L 325,425 Q 256,440 187,425 L 187,195 L 157,235 L 107,185 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Large Sewn Metallic Rings -->
+    <g fill="none" stroke="url(#steel-rim)" stroke-width="4.5" filter="drop-shadow(0px 2px 2px #2a2333)">
+      <circle cx="215" cy="175" r="14"/><circle cx="256" cy="175" r="14"/><circle cx="297" cy="175" r="14"/>
+      <circle cx="200" cy="220" r="14"/><circle cx="237" cy="220" r="14"/><circle cx="275" cy="220" r="14"/><circle cx="312" cy="220" r="14"/>
+      <circle cx="215" cy="265" r="14"/><circle cx="256" cy="265" r="14"/><circle cx="297" cy="265" r="14"/>
+      <circle cx="200" cy="310" r="14"/><circle cx="237" cy="310" r="14"/><circle cx="275" cy="310" r="14"/><circle cx="312" cy="310" r="14"/>
+      <circle cx="215" cy="355" r="14"/><circle cx="256" cy="355" r="14"/><circle cx="297" cy="355" r="14"/>
+      <circle cx="237" cy="395" r="14"/><circle cx="275" cy="395" r="14"/>
+    </g>
+    <!-- Heavy Belt & Buckle -->
+    <path d="M 187,315 Q 256,330 325,315" stroke="url(#leather-dark)" stroke-width="14" fill="none"/>
+    <rect x="238" y="307" width="36" height="26" rx="4" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_chain_mail():
+    content = """  <!-- CHAIN MAIL (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Full Heavy Chainmail Hauberk Body with Long Sleeves -->
+    <path d="M 170,110 Q 256,125 342,110 L 435,175 L 375,250 L 325,200 L 325,435 Q 256,450 187,435 L 187,200 L 137,250 L 77,175 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Interlocked Chain Ring Shading Overlay -->
+    <g fill="none" stroke="#4e6278" stroke-width="3" opacity="0.6">
+      <path d="M 110,165 Q 256,190 402,165 M 100,195 Q 256,220 412,195 M 187,225 Q 256,245 325,225 M 187,255 Q 256,275 325,255 M 187,285 Q 256,305 325,285 M 187,315 Q 256,335 325,315 M 187,345 Q 256,365 325,345 M 187,375 Q 256,395 325,375 M 187,405 Q 256,425 325,405"/>
+    </g>
+    <!-- Coif / Draped Mail Hood Collar -->
+    <path d="M 195,110 C 210,160 302,160 317,110 C 340,150 172,150 195,110 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Heavy Waist Belt with Steel Buckle -->
+    <path d="M 187,320 Q 256,335 325,320" stroke="url(#leather-grad)" stroke-width="14" fill="none"/>
+    <rect x="238" y="312" width="36" height="26" rx="4" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <circle cx="256" cy="325" r="4" fill="#2a2333"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_splint_armor():
+    content = """  <!-- SPLINT ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Heavy Leather Foundation Tunic -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,430 Q 256,445 187,430 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-dark)" stroke="#2a2333" stroke-width="5"/>
+    <!-- Vertical Steel Splint Slats (Torso) -->
+    <g fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4" stroke-linejoin="round">
+      <rect x="192" y="160" width="20" height="250" rx="3"/>
+      <rect x="218" y="165" width="20" height="250" rx="3"/>
+      <rect x="246" y="170" width="20" height="250" rx="3"/>
+      <rect x="274" y="165" width="20" height="250" rx="3"/>
+      <rect x="300" y="160" width="20" height="250" rx="3"/>
+    </g>
+    <!-- Horizontal Cross-Straps & Rivets -->
+    <path d="M 187,220 Q 256,235 325,220 M 187,320 Q 256,335 325,320" stroke="url(#leather-grad)" stroke-width="8" stroke-linecap="round"/>
+    <g fill="url(#brass-grad)" stroke="#2a2333" stroke-width="1.5">
+      <circle cx="202" cy="220" r="3.5"/><circle cx="228" cy="222" r="3.5"/><circle cx="256" cy="223" r="3.5"/><circle cx="284" cy="222" r="3.5"/><circle cx="310" cy="220" r="3.5"/>
+      <circle cx="202" cy="320" r="3.5"/><circle cx="228" cy="322" r="3.5"/><circle cx="256" cy="323" r="3.5"/><circle cx="284" cy="322" r="3.5"/><circle cx="310" cy="320" r="3.5"/>
+    </g>
+    <!-- Steel Pauldrons -->
+    <path d="M 120,180 L 185,190 L 175,130 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M 392,180 L 327,190 L 337,130 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_plate_armor():
+    content = """  <!-- FULL PLATE ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Layered Massive Pauldrons (Shoulder Guards) -->
+    <path d="M 105,170 C 130,95 200,105 210,140 L 190,230 L 120,230 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M 407,170 C 382,95 312,105 302,140 L 322,230 L 392,230 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M 115,190 L 195,195 L 185,240 L 125,235 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="4.5"/>
+    <path d="M 397,190 L 317,195 L 327,240 L 387,235 Z" fill="url(#blade-light)" stroke="#2a2333" stroke-width="4.5"/>
+
+    <!-- Gorget / High Neck Collar -->
+    <path d="M 195,115 C 220,145 292,145 317,115 L 302,150 C 275,170 237,170 210,150 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+
+    <!-- Main Knightly Breastplate -->
+    <path d="M 190,145 Q 256,160 322,145 C 360,200 345,280 330,335 C 310,405 285,435 256,445 C 227,435 202,405 182,335 C 167,280 152,200 190,145 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M 256,160 L 190,145 C 152,200 167,280 182,335 C 202,405 227,435 256,445 Z" fill="url(#blade-light)" opacity="0.55"/>
+    <line x1="256" y1="160" x2="256" y2="445" stroke="#ffffff" stroke-width="4.5"/>
+    <line x1="256" y1="160" x2="256" y2="445" stroke="#2a2333" stroke-width="2.5"/>
+
+    <!-- Gold Filigree & Knight Crest -->
+    <path d="M 190,145 Q 256,170 322,145" stroke="url(#gold-grad)" stroke-width="7" fill="none"/>
+    <path d="M 190,145 Q 256,170 322,145" stroke="#2a2333" stroke-width="3" fill="none"/>
+    <g transform="translate(256, 240)">
+      <polygon points="0,-25 22,0 0,25 -22,0" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="0" cy="0" r="8" fill="#9be2ff" stroke="#2a2333" stroke-width="2.5"/>
+    </g>
+    <!-- Flared Tassets / Belt Guard -->
+    <path d="M 182,335 Q 256,355 330,335 L 340,365 Q 256,385 172,365 Z" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
+  </g>"""
+    return wrap_svg(content)
+
+# Map all items to their generator functions
 ITEMS = {
-    # Swords (5)
+    # Swords (6)
     "dagger": lambda: generate_sword("dagger", blade_top=130, blade_bot=280, blade_w=24, hilt_h=35, guard_type="swept", gem_color="#00e676"),
     "shortsword": lambda: generate_sword("shortsword", blade_top=90, blade_bot=300, blade_w=32, hilt_h=42, guard_type="straight"),
     "longsword": lambda: generate_sword("longsword", blade_top=40, blade_bot=300, blade_w=36, hilt_h=60, guard_type="swept"),
@@ -492,14 +760,28 @@ ITEMS = {
     "mace": generate_mace,
     "warhammer": generate_warhammer,
 
-    # Ranged & Thrown (3)
+    # Ranged & Thrown (4)
     "javelin": generate_javelin,
     "shortbow": generate_shortbow,
     "longbow": generate_longbow,
     "light-crossbow": generate_light_crossbow,
 
-    # Armor & Magic (5)
+    # Armor (13)
     "shield": generate_shield,
+    "padded": generate_padded_armor,
+    "leather": generate_leather_armor,
+    "studded-leather": generate_studded_leather_armor,
+    "hide": generate_hide_armor,
+    "chain-shirt": generate_chain_shirt,
+    "scale-mail": generate_scale_mail,
+    "breastplate": generate_breastplate,
+    "half-plate": generate_half_plate,
+    "ring-mail": generate_ring_mail,
+    "chain-mail": generate_chain_mail,
+    "splint": generate_splint_armor,
+    "plate": generate_plate_armor,
+
+    # Consumables & Magic (4)
     "potion-healing": generate_potion_healing,
     "potion-greater-healing": generate_potion_greater_healing,
     "alchemists-fire": generate_alchemists_fire,

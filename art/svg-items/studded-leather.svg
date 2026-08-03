@@ -147,20 +147,22 @@
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>
-  <!-- SPEAR (100% Transparent Background) -->
-  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
-    <rect x="249" y="160" width="14" height="280" rx="2" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="4.5"/>
-    <polygon points="249,440 263,440 260,460 252,460" fill="#4e6278" stroke="#2a2333" stroke-width="3"/>
-    <g fill="#4a2818" stroke="#2a2333" stroke-width="3">
-      <rect x="248" y="280" width="16" height="60" rx="1"/>
-      <line x1="248" y1="295" x2="264" y2="295" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="310" x2="264" y2="310" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="325" x2="264" y2="325" stroke="#f0b869" stroke-width="2"/>
+  <!-- STUDDED LEATHER ARMOR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Dark Studded Leather Body -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,425 Q 256,440 187,425 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Reinforced Steel Collar & Shoulder Trim -->
+    <path d="M 175,115 Q 256,145 337,115 L 330,145 Q 256,165 182,145 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 125,180 L 187,195 L 187,240 L 135,220 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 387,180 L 325,195 L 325,240 L 377,220 Z" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="4"/>
+    <!-- Grid of Brass Studs/Rivets -->
+    <g fill="url(#brass-grad)" stroke="#2a2333" stroke-width="2">
+      <circle cx="215" cy="180" r="5.5"/><circle cx="256" cy="180" r="5.5"/><circle cx="297" cy="180" r="5.5"/>
+      <circle cx="200" cy="225" r="5.5"/><circle cx="237" cy="225" r="5.5"/><circle cx="275" cy="225" r="5.5"/><circle cx="312" cy="225" r="5.5"/>
+      <circle cx="215" cy="270" r="5.5"/><circle cx="256" cy="270" r="5.5"/><circle cx="297" cy="270" r="5.5"/>
+      <circle cx="200" cy="315" r="5.5"/><circle cx="237" cy="315" r="5.5"/><circle cx="275" cy="315" r="5.5"/><circle cx="312" cy="315" r="5.5"/>
+      <circle cx="215" cy="360" r="5.5"/><circle cx="256" cy="360" r="5.5"/><circle cx="297" cy="360" r="5.5"/>
+      <circle cx="237" cy="400" r="5.5"/><circle cx="275" cy="400" r="5.5"/>
     </g>
-    <polygon points="245,150 267,150 262,170 250,170" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 256,150 Z" fill="url(#blade-light)"/>
-    <path d="M 256,40 Q 282,100 267,150 L 256,150 Z" fill="url(#blade-dark)"/>
-    <line x1="256" y1="45" x2="256" y2="150" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 267,150 Q 282,100 256,40 Z" fill="none" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
   </g>
 </svg>

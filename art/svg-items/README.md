@@ -3,7 +3,7 @@
 High-quality, vector SVG icons crafted for D&D combat weapons, armor, potions, and magic items on **100% transparent backgrounds**.
 
 ## Generator Script
-All 22 SVGs in this directory are procedurally defined and built by [`art/generate_svg_items.py`](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/generate_svg_items.py).
+All 34 SVGs in this directory are procedurally defined and built by [`art/generate_svg_items.py`](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/generate_svg_items.py).
 To regenerate all SVGs and update PNG previews, run:
 ```bash
 python art/generate_svg_items.py
@@ -19,7 +19,7 @@ python art/generate_svg_items.py
   - `scimitar`: Curved single-edged blade, brass knuckle guard.
   - `rapier`: Slender needle blade, wire cup basket guard.
 
-## Available Item SVGs (22 Icons)
+## Available Item SVGs (34 Icons)
 
 | Item ID | Item Name | File Link | Category | Specs |
 | :--- | :--- | :--- | :--- | :--- |
@@ -40,7 +40,19 @@ python art/generate_svg_items.py
 | `shortbow` | Shortbow | [shortbow.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/shortbow.svg) | Simple Weapon | Recurved wood stave, horn nocks, drawn string, and fitted flight arrow |
 | `longbow` | Longbow | [longbow.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/longbow.svg) | Martial Weapon | Tall recurved wood stave, horn nocks, drawn string, leather grip |
 | `light-crossbow` | Light Crossbow | [light-crossbow.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/light-crossbow.svg) | Simple Weapon | Hardwood tiller stock, steel bow arms, brass bridle, and loaded bolt |
-| `shield` | Shield | [shield.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/shield.svg) | Armor / Guard | Heater shield with steel rim & rivets, blue/red field, and gold sunburst crest |
+| `shield` | Shield | [shield.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/shield.svg) | Shield | Heater shield with steel rim & rivets, blue/red field, and gold sunburst crest |
+| `padded` | Padded Armor | [padded.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/padded.svg) | Light Armor | Quilted cloth tunic, leather collar trim, cross-hatch stitching, brass buttons |
+| `leather` | Leather Armor | [leather.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/leather.svg) | Light Armor | Warm-brown leather cuirass, pauldrons, double chest harness with brass buckles |
+| `studded-leather` | Studded Leather | [studded-leather.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/studded-leather.svg) | Light Armor | Dark leather jacket, reinforced steel trim, and grid of brass rivets/studs |
+| `hide` | Hide Armor | [hide.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/hide.svg) | Medium Armor | Jagged raw beast hide cuirass, fur mantle collar, horn fasteners, cross-stitches |
+| `chain-shirt` | Chain Shirt | [chain-shirt.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/chain-shirt.svg) | Medium Armor | Interwoven steel chainmail shirt, leather collar and hem trim |
+| `scale-mail` | Scale Mail | [scale-mail.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/scale-mail.svg) | Medium Armor | Overlapping rows of metallic scale plates on dark leather backing |
+| `breastplate` | Breastplate | [breastplate.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/breastplate.svg) | Medium Armor | Polished steel breastplate, median ridge, gold trim, shoulder straps |
+| `half-plate` | Half Plate | [half-plate.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/half-plate.svg) | Medium Armor | Steel chestplate, heavy layered shoulder pauldrons, thigh tassets, gold medallion |
+| `ring-mail` | Ring Mail | [ring-mail.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/ring-mail.svg) | Heavy Armor | Heavy leather tunic with large iron rings sewn on, brass buckle belt |
+| `chain-mail` | Chain Mail | [chain-mail.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/chain-mail.svg) | Heavy Armor | Full heavy chainmail hauberk with long sleeves, draped coif hood, waist belt |
+| `splint` | Splint Armor | [splint.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/splint.svg) | Heavy Armor | Vertical steel splint slats riveted onto leather backing, cross-straps, pauldrons |
+| `plate` | Full Plate | [plate.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/plate.svg) | Heavy Armor | Full suit of knightly plate armor, massive pauldrons, gorget, gold filigree, gem crest |
 | `potion-healing` | Potion of Healing | [potion-healing.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/potion-healing.svg) | Consumable | Glass flask, cork stopper, glowing ruby liquid, bubbles, and gold cross |
 | `potion-greater-healing` | Potion of Greater Healing | [potion-greater-healing.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/potion-greater-healing.svg) | Consumable | Faceted crystal flask, gold filigree cage, glowing ruby core, and sapphire plug |
 | `alchemists-fire` | Alchemist's Fire | [alchemists-fire.svg](file:///c:/Users/brend/OneDrive/Documents/Github/dnd_combat/art/svg-items/alchemists-fire.svg) | Consumable | Hexagonal flask in brass cage, bubbling lava-orange fire liquid, and sparks |

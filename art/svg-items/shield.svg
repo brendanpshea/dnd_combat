@@ -43,6 +43,28 @@
       <stop offset="100%" stop-color="#241108"/>
     </linearGradient>
 
+    <linearGradient id="leather-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8a5238"/>
+      <stop offset="100%" stop-color="#5c3422"/>
+    </linearGradient>
+
+    <linearGradient id="leather-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b2014"/>
+      <stop offset="100%" stop-color="#1c0d06"/>
+    </linearGradient>
+
+    <linearGradient id="cloth-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d9b88f"/>
+      <stop offset="50%" stop-color="#ab875a"/>
+      <stop offset="100%" stop-color="#6e502c"/>
+    </linearGradient>
+
+    <linearGradient id="fur-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0d7cd"/>
+      <stop offset="60%" stop-color="#998777"/>
+      <stop offset="100%" stop-color="#4d4136"/>
+    </linearGradient>
+
     <linearGradient id="poison-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#76ff03"/>
       <stop offset="100%" stop-color="#33691e"/>

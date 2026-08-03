@@ -147,20 +147,18 @@
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>
-  <!-- SPEAR (100% Transparent Background) -->
-  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
-    <rect x="249" y="160" width="14" height="280" rx="2" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="4.5"/>
-    <polygon points="249,440 263,440 260,460 252,460" fill="#4e6278" stroke="#2a2333" stroke-width="3"/>
-    <g fill="#4a2818" stroke="#2a2333" stroke-width="3">
-      <rect x="248" y="280" width="16" height="60" rx="1"/>
-      <line x1="248" y1="295" x2="264" y2="295" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="310" x2="264" y2="310" stroke="#f0b869" stroke-width="2"/>
-      <line x1="248" y1="325" x2="264" y2="325" stroke="#f0b869" stroke-width="2"/>
+  <!-- SCALE MAIL (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Leather Backing Vest -->
+    <path d="M 175,115 Q 256,130 337,115 L 395,185 L 345,220 L 325,190 L 325,425 Q 256,440 187,425 L 187,190 L 167,220 L 117,185 Z" fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Overlapping Metallic Scale Rows -->
+    <g stroke="#2a2333" stroke-width="3" stroke-linejoin="round">
+      <path d="M 195,160 Q 210,180 225,160 M 225,160 Q 240,180 255,160 M 255,160 Q 270,180 285,160 M 285,160 Q 300,180 315,160" fill="url(#steel-rim)"/>
+      <path d="M 185,200 Q 200,225 215,200 M 215,200 Q 230,225 245,200 M 245,200 Q 260,225 275,200 M 275,200 Q 290,225 305,200 M 305,200 Q 320,225 335,200" fill="url(#blade-light)"/>
+      <path d="M 195,245 Q 210,270 225,245 M 225,245 Q 240,270 255,245 M 255,245 Q 270,270 285,245 M 285,245 Q 300,270 315,245" fill="url(#steel-rim)"/>
+      <path d="M 185,290 Q 200,315 215,290 M 215,290 Q 230,315 245,290 M 245,290 Q 260,315 275,290 M 275,290 Q 290,315 305,290 M 305,290 Q 320,315 335,290" fill="url(#blade-light)"/>
+      <path d="M 195,335 Q 210,360 225,335 M 225,335 Q 240,360 255,335 M 255,335 Q 270,360 285,335 M 285,335 Q 300,360 315,335" fill="url(#steel-rim)"/>
+      <path d="M 205,380 Q 220,405 235,380 M 235,380 Q 250,405 265,380 M 265,380 Q 280,405 295,380 M 295,380 Q 310,405 325,380" fill="url(#blade-light)"/>
     </g>
-    <polygon points="245,150 267,150 262,170 250,170" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 256,150 Z" fill="url(#blade-light)"/>
-    <path d="M 256,40 Q 282,100 267,150 L 256,150 Z" fill="url(#blade-dark)"/>
-    <line x1="256" y1="45" x2="256" y2="150" stroke="#2a2333" stroke-width="4"/>
-    <path d="M 256,40 Q 230,100 245,150 L 267,150 Q 282,100 256,40 Z" fill="none" stroke="#2a2333" stroke-width="4.5" stroke-linejoin="round"/>
   </g>
 </svg>
