@@ -25,7 +25,11 @@ import { bandedScale } from '../src/data/token-size.js';
 import { MONSTERS } from '../src/data/monsters.js';
 import type { CreatureSize } from '../src/engine/types.js';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { HAS_ART } from '../web/src/art-registry.js';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 /**
  * What a player actually sees, as an AREA: the CSS scale squared times the ink
@@ -62,6 +66,40 @@ describe('the fill table is real', () => {
       expect(f).toBeLessThanOrEqual(1);
     }
   });
+
+  /**
+   * Every drawn monster, not "most of them".
+   *
+   * `> 120` is what this file used to ask for, and a batch of new art walked
+   * straight past it: eighteen monsters arrived with tokens and no fill entry,
+   * the table still had 125, and nothing failed. An id that is missing here
+   * silently takes `correction = 1` — so a Rust Monster drew 15% too small and
+   * an Aboleth 10% too big, for a reason no player could ever discover. That is
+   * precisely the failure this whole file exists to prevent, arriving through
+   * the one door it left open.
+   */
+  it('has a measurement for every monster that has a token', () => {
+    const missing = Object.values(MONSTERS)
+      // `HAS_ART` (the derived registry) rather than `hasArt()` from art.ts:
+      // that module reads `import.meta.env`, which does not exist outside Vite
+      // and breaks the repo-wide typecheck. The registry is the same fact as
+      // plain data.
+      .filter((m) => HAS_ART.has(m.id) && TOKEN_FILL[m.id] === undefined)
+      .map((m) => m.id);
+    expect(missing, `these have token art but no measured fill, so they draw uncorrected: ${missing.join(', ')}`)
+      .toEqual([]);
+  });
+
+  it('is up to date with its generator', () => {
+    // The standing rule for every derived file in this repo. `art-registry`,
+    // the reference docs, the SVG terrain and the silhouettes all had this;
+    // `token-fill.ts` was the one generated file with no `--check` in the
+    // suite, which is why it could go stale unnoticed in the first place.
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const run = () => execFileSync(pythonCmd, ['art/token_fill.py', '--check'],
+      { cwd: ROOT, encoding: 'utf8' });
+    expect(run).not.toThrow();
+  }, 60000);
 });
 
 describe('the correction is applied where it does something', () => {

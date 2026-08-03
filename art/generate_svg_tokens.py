@@ -253,17 +253,33 @@ def module() -> str:
     return HEADER.format(box=BOX) + body + "};\n"
 
 
+def read_or_none(path: Path) -> str | None:
+    """The file's text, or None if it is missing or not valid UTF-8."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except (FileNotFoundError, UnicodeDecodeError):
+        return None
+
+
 def main() -> int:
     check = "--check" in sys.argv
     want = module()
-    current = TS_OUT.read_text() if TS_OUT.exists() else None
+    # Read as UTF-8 EXPLICITLY, and treat an unreadable file as absent.
+    #
+    # Both halves matter, and both came from one real breakage. `read_text()` /
+    # `write_text()` use the platform default encoding, so this generator wrote
+    # UTF-8 on Linux and cp1252 on Windows — the em dash in the header became a
+    # lone 0x97 and every later run on Linux died reading its own output. A
+    # generator that cannot survive a corrupt copy of the file it generates is
+    # the one thing it must not be: regenerating IS the fix.
+    current = read_or_none(TS_OUT)
     if check:
         if current != want:
-            print("web/src/silhouettes.ts is stale; run: python3 art/generate_svg_tokens.py")
+            print("web/src/silhouettes.ts is stale or not UTF-8; run: python3 art/generate_svg_tokens.py")
             return 1
         print(f"{len(shapes())} token silhouettes are up to date.")
         return 0
-    TS_OUT.write_text(want)
+    TS_OUT.write_text(want, encoding="utf-8")
     total = sum(len(p) for p in shapes().values())
     n = len(shapes())
     print(f"{n} silhouettes, {total} bytes of path data ({total // n} avg) -> {TS_OUT}")

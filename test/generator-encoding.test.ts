@@ -1,0 +1,119 @@
+/**
+ * The Python generators must name their encoding, because this machine cannot
+ * tell you when they don't.
+ *
+ * WHAT HAPPENED
+ *
+ * `art/generate_svg_tokens.py` wrote `web/src/silhouettes.ts` with
+ * `Path.write_text(...)`, which uses the PLATFORM DEFAULT encoding. On Linux
+ * that is UTF-8 and everything was fine for as long as the file was only ever
+ * generated here. Regenerated on Windows, the em dash in the header came out as
+ * a lone 0x97 (cp1252), and every later run on Linux died reading its own
+ * output — `UnicodeDecodeError` from inside the generator, on a file the
+ * generator had written.
+ *
+ * WHY A SOURCE CHECK, WHICH IS NORMALLY THE WEAK KIND
+ *
+ * Because the behaviour cannot be reproduced where the tests run. On Linux the
+ * default IS UTF-8, so a functional test of "does it round-trip" passes whether
+ * or not the encoding is pinned — it would be a test that can only ever agree
+ * with itself. The bug lives in the difference between two machines, so what
+ * can be checked here is that the difference has been closed.
+ *
+ * The second half is the one that turns an annoyance into a wall: a generator
+ * that CRASHES on a corrupt copy of its own output cannot be used to repair it.
+ * Regenerating is supposed to be the fix.
+ */
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+
+/** Every generator that writes a text file the repo keeps under version control. */
+const GENERATORS = [
+  'art/generate_svg_tokens.py',   // web/src/silhouettes.ts
+  'art/make_thumbs.py',           // web/src/art-lqip.ts
+  'art/token_fill.py',            // web/src/token-fill.ts
+];
+
+/**
+ * Every checked-in module written by a tool rather than a person.
+ *
+ * The last two are written by Node, which always emits UTF-8, so they cannot
+ * suffer the bug above — but they are the same KIND of file, and a list that
+ * covers "the ones that broke" rather than "the ones that are generated" is the
+ * list that misses the next one.
+ */
+const DERIVED = [
+  'web/src/silhouettes.ts',
+  'web/src/art-lqip.ts',
+  'web/src/token-fill.ts',
+  'web/src/art-registry.ts',
+];
+
+const source = (p: string) => readFileSync(join(ROOT, p), 'utf8');
+
+describe('generators that write TypeScript', () => {
+  it.each(GENERATORS)('%s names an encoding on every text read and write', (path) => {
+    // Comments stripped first: the very fix these files carry EXPLAINS the
+    // hazard in prose, so a naive scan flags the explanation as the bug.
+    const src = source(path).replace(/#.*$/gm, '').replace(/"""[\s\S]*?"""/g, '');
+    // `Image.open` and friends are binary and irrelevant; only the text calls
+    // that produce or compare the checked-in module matter.
+    const bare: string[] = [];
+    for (const m of src.matchAll(/\b(read_text|write_text)\(([^)]*)\)/g)) {
+      if (!m[2]!.includes('encoding=')) bare.push(m[0]!);
+    }
+    for (const m of src.matchAll(/\bopen\((OUT|TS_OUT|LQIP_TS)[^)]*\)/g)) {
+      if (!m[0]!.includes('encoding=')) bare.push(m[0]!);
+    }
+    expect(bare, `${path} uses the platform default here, which is cp1252 on Windows: ${bare.join(', ')}`)
+      .toEqual([]);
+  });
+
+  it.each(GENERATORS)('%s treats an unreadable output file as absent', (path) => {
+    // Otherwise the one command that repairs the file is the one command that
+    // cannot run while it is broken.
+    expect(source(path), `${path} will crash rather than regenerate over a corrupt file`)
+      .toMatch(/UnicodeDecodeError/);
+  });
+});
+
+describe('the files they produce', () => {
+  it.each(DERIVED)('%s is valid UTF-8', (path) => {
+    // The symptom itself, checked directly: cheap, and it names the file rather
+    // than surfacing as a stack trace out of a Python subprocess.
+    const bytes = readFileSync(join(ROOT, path));
+    expect(() => new TextDecoder('utf-8', { fatal: true }).decode(bytes),
+      `${path} is not UTF-8 — regenerate it on a machine with the encoding fix`).not.toThrow();
+  });
+
+  it('checks every generated module, not a list that drifts', () => {
+    // A file added to `web/src` by a generator and forgotten here would be
+    // exactly the gap this suite just found in `token-fill.ts`.
+    const generated = readdirSync(join(ROOT, 'web/src'))
+      .filter((f) => f.endsWith('.ts'))
+      // Every generated module says so in its header. Matched on the words
+      // alone — an earlier version of this looked for "DERIVED - do not edit"
+      // with the dash, and the em dash read as latin1 is THREE characters, so
+      // it silently missed `token-fill.ts`: the detector had the same class of
+      // bug as the thing it was detecting.
+      //
+      // latin1 so that a file carrying the very encoding fault under test can
+      // still be scanned rather than throwing.
+      .filter((f) => /\bGENERATED\b|\bDERIVED\b|[Dd]o not edit by hand|generated by `art\//.test(
+        readFileSync(join(ROOT, 'web/src', f), 'latin1').slice(0, 600)))
+      .map((f) => `web/src/${f}`);
+    // Both directions. The detector must find everything already listed (or it
+    // has quietly stopped working), and everything it finds must be listed (or
+    // a new generated file is going unchecked).
+    for (const d of DERIVED) {
+      expect(generated, `${d} is listed as generated but its header no longer says so`).toContain(d);
+    }
+    for (const g of generated) {
+      expect(DERIVED, `${g} says it is generated but is not checked for encoding`).toContain(g);
+    }
+  });
+});

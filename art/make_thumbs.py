@@ -165,12 +165,19 @@ def main() -> int:
         stale.extend(orphans)
 
     module = lqip_module()
-    current = LQIP_TS.read_text() if LQIP_TS.exists() else None
+    # Explicit UTF-8, and a corrupt file counts as absent so that running the
+    # generator REPAIRS it. `write_text` defaulted to the platform encoding,
+    # which silently wrote cp1252 on Windows and broke every later run on Linux
+    # — see the same fix in art/generate_svg_tokens.py.
+    try:
+        current = LQIP_TS.read_text(encoding="utf-8") if LQIP_TS.exists() else None
+    except UnicodeDecodeError:
+        current = None
     if current != module:
         if check:
             stale.append("web/src/art-lqip.ts")
         else:
-            LQIP_TS.write_text(module)
+            LQIP_TS.write_text(module, encoding="utf-8")
 
     if check and stale:
         print("art/thumb is stale; run: python3 art/make_thumbs.py")

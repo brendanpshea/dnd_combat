@@ -745,51 +745,6 @@ broken image.
 
 | Monster | ID | Type | XP | Fallback | Size |
 | --- | --- | --- | --- | --- | --- |
-| --- | --- | --- | --- | --- | --- |
-| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | large |
-| Wererat | `wererat` | monstrosity | 450 | 🐀 | medium |
-| Scarecrow | `scarecrow` | construct | 200 | 🎃 | medium |
-| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | medium |
-| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
-| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
-| --- | --- | --- | --- | --- | --- |
-| Aboleth | `aboleth` | aberration | 5900 | 🐙 | large |
-| Stone Golem | `stone-golem` | construct | 5900 | 🗿 | large |
-| Shield Guardian | `shield-guardian` | construct | 2900 | 🗿 | large |
-| Flesh Golem | `flesh-golem` | construct | 1800 | 🧟 | medium |
-| Otyugh | `otyugh` | aberration | 1800 | 🦑 | large |
-| Roper | `roper` | aberration | 1800 | 🪱 | large |
-| Black Pudding | `black-pudding` | ooze | 1100 | ⬛ | large |
-| Winter Wolf | `winter-wolf` | monstrosity | 700 | 🐺 | large |
-| Ettercap | `ettercap` | monstrosity | 450 | 🕸️ | medium |
-| Gelatinous Cube | `gelatinous-cube` | ooze | 450 | 🧊 | large |
-| Griffon | `griffon` | monstrosity | 450 | 🦅 | large |
-| Ochre Jelly | `ochre-jelly` | ooze | 450 | 🟡 | large |
-| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | large |
-| Wererat | `wererat` | monstrosity | 450 | 🐀 | medium |
-| Scarecrow | `scarecrow` | construct | 200 | 🎃 | medium |
-| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | medium |
-| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
-| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
-| --- | --- | --- | --- | --- | --- |
-| Aboleth | `aboleth` | aberration | 5900 | 🐙 | large |
-| Stone Golem | `stone-golem` | construct | 5900 | 🗿 | large |
-| Shield Guardian | `shield-guardian` | construct | 2900 | 🗿 | large |
-| Flesh Golem | `flesh-golem` | construct | 1800 | 🧟 | medium |
-| Otyugh | `otyugh` | aberration | 1800 | 🦑 | large |
-| Roper | `roper` | aberration | 1800 | 🪱 | large |
-| Black Pudding | `black-pudding` | ooze | 1100 | ⬛ | large |
-| Winter Wolf | `winter-wolf` | monstrosity | 700 | 🐺 | large |
-| Ettercap | `ettercap` | monstrosity | 450 | 🕸️ | medium |
-| Gelatinous Cube | `gelatinous-cube` | ooze | 450 | 🧊 | large |
-| Griffon | `griffon` | monstrosity | 450 | 🦅 | large |
-| Ochre Jelly | `ochre-jelly` | ooze | 450 | 🟡 | large |
-| Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | large |
-| Wererat | `wererat` | monstrosity | 450 | 🐀 | medium |
-| Scarecrow | `scarecrow` | construct | 200 | 🎃 | medium |
-| Gray Ooze | `gray-ooze` | ooze | 100 | 🫧 | medium |
-| Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
-| Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
 
 ## 13. Already drawn — the prompts that produced the shipped art (85)
 
@@ -1092,9 +1047,5 @@ start from the line that produced the original.
 
 **Gray Ooze** (`gray-ooze`) — SIZE M
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a gray ooze, a slick puddle of metallic-grey slime with a wet sheen and a couple of dim eye-glints, blobby and formless. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a low spreading grey slime blob with a raised pseudopod, reads from above as a shiny puddle. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. wet metallic grey, slate, and oily blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
----
-
----
 
 ---
