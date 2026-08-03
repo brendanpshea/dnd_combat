@@ -108,7 +108,8 @@ describe('token silhouettes', () => {
     // Same standing rule as the art registry, the reference docs and the SVG
     // terrain: the derived file is a function of its source, and a test is what
     // stops the two drifting.
-    const run = () => execFileSync('python3', ['art/generate_svg_tokens.py', '--check'],
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const run = () => execFileSync(pythonCmd, ['art/generate_svg_tokens.py', '--check'],
       { cwd: ROOT, encoding: 'utf8' });
     expect(run).not.toThrow();
   });

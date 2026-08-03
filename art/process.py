@@ -583,14 +583,14 @@ for kind, bucket in (("token", have_token), ("portrait", have_portrait)):
         if not os.path.exists(src):
             continue
         im = Image.open(src).convert("RGBA")
-        if kind == "portrait":
-            im, was_stacked = crop_stacked_portrait(im)
-            if was_stacked:
-                unstacked.append(f"{kind}-{cid}")
         im, top_cap = strip_top_caption(im)
         im, caption = strip_caption(im)
         if caption or top_cap:
             captioned.append(f"{kind}-{cid} ({caption or top_cap}px)")
+        if kind == "portrait":
+            im, was_stacked = crop_stacked_portrait(im)
+            if was_stacked:
+                unstacked.append(f"{kind}-{cid}")
         # Curtains run for everything. A keying hairline is invisible against
         # the old dark board but shows as a vertical seam the moment a token
         # is composited on anything lighter — the landing page's arena line-up

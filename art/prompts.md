@@ -20,7 +20,7 @@ reuses this doc's style bible verbatim.
 `web/src/art.ts`) · ⬜ needed (still on the emoji fallback). **§5 has the
 full status by category and the per-monster list.** In short: every hero,
 species, and species×role portrait is ✅ and the forge matrix is fully
-covered; **137 of the 143 monsters are ✅, and the remaining 6 have
+covered; **143 of the 143 monsters are ✅, and the remaining 0 have
 prompts ready to generate in §8.**
 
 ---
@@ -149,7 +149,7 @@ ogre towers over a kobold on the board):
 
 Two things are fully done and enforced by tests: the **player-character art**
 (§6) and the **species × class forge matrix**. The open work is **monsters** —
-58 of 132 have art; the other 74 have ready-to-generate prompts in §8.
+All 132 core monsters have generated art and are fully wired in the engine.
 
 **Monsters by creature type:**
 
@@ -232,14 +232,14 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Will-o'-Wisp | `will-o-wisp` | undead | ✅ |
 | Wolf | `wolf` | beast | ✅ |
 | Zombie | `zombie` | undead | ✅ |
-| Aboleth | `aboleth` | aberration | ⬜ |
-| Animated Flying Sword | `flying-sword` | construct | ⬜ |
-| Animated Rug of Smothering | `rug-of-smothering` | construct | ⬜ |
+| Aboleth | `aboleth` | aberration | ✅ |
+| Animated Flying Sword | `flying-sword` | construct | ✅ |
+| Animated Rug of Smothering | `rug-of-smothering` | construct | ✅ |
 | Assassin | `assassin` | humanoid | ✅ |
 | Azer Sentinel | `azer` | elemental | ✅ |
 | Banshee | `banshee` | undead | ✅ |
 | Barbed Devil | `barbed-devil` | fiend | ✅ |
-| Basilisk | `basilisk` | monstrosity | ⬜ |
+| Basilisk | `basilisk` | monstrosity | ✅ |
 | Bearded Devil | `bearded-devil` | fiend | ✅ |
 | Berserker | `berserker` | humanoid | ✅ |
 | Black Pudding | `black-pudding` | ooze | ✅ |
@@ -253,7 +253,7 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Fire Giant | `fire-giant` | giant | ✅ |
 | Flesh Golem | `flesh-golem` | construct | ✅ |
 | Frost Giant | `frost-giant` | giant | ✅ |
-| Gelatinous Cube | `gelatinous-cube` | ooze | ⬜ |
+| Gelatinous Cube | `gelatinous-cube` | ooze | ✅ |
 | Ghast | `ghast` | undead | ✅ |
 | Ghost | `ghost` | undead | ✅ |
 | Giant Ape | `giant-ape` | beast | ✅ |
@@ -261,13 +261,13 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Giant Scorpion | `giant-scorpion` | beast | ✅ |
 | Glabrezu | `glabrezu` | fiend | ✅ |
 | Gladiator | `gladiator` | humanoid | ✅ |
-| Gray Ooze | `gray-ooze` | ooze | ⬜ |
-| Griffon | `griffon` | monstrosity | ⬜ |
+| Gray Ooze | `gray-ooze` | ooze | ✅ |
+| Griffon | `griffon` | monstrosity | ✅ |
 | Hell Hound | `hell-hound` | fiend | ✅ |
 | Hezrou | `hezrou` | fiend | ✅ |
 | Hill Giant | `hill-giant` | giant | ✅ |
 | Horned Devil | `horned-devil` | fiend | ✅ |
-| Hydra | `hydra` | monstrosity | ⬜ |
+| Hydra | `hydra` | monstrosity | ✅ |
 | Ice Mephit | `ice-mephit` | elemental | ✅ |
 | Imp | `imp` | fiend | ✅ |
 | Invisible Stalker | `invisible-stalker` | elemental | ✅ |
@@ -277,34 +277,34 @@ Two things are fully done and enforced by tests: the **player-character art**
 | Mammoth | `mammoth` | beast | ✅ |
 | Mud Mephit | `mud-mephit` | elemental | ✅ |
 | Night Hag | `night-hag` | fiend | ✅ |
-| Ochre Jelly | `ochre-jelly` | ooze | ⬜ |
-| Otyugh | `otyugh` | aberration | ⬜ |
+| Ochre Jelly | `ochre-jelly` | ooze | ✅ |
+| Otyugh | `otyugh` | aberration | ✅ |
 | Quasit | `quasit` | fiend | ✅ |
-| Remorhaz | `remorhaz` | monstrosity | ⬜ |
-| Roper | `roper` | aberration | ⬜ |
-| Rust Monster | `rust-monster` | monstrosity | ⬜ |
+| Remorhaz | `remorhaz` | monstrosity | ✅ |
+| Roper | `roper` | aberration | ✅ |
+| Rust Monster | `rust-monster` | monstrosity | ✅ |
 | Salamander | `salamander` | elemental | ✅ |
-| Scarecrow | `scarecrow` | construct | ⬜ |
+| Scarecrow | `scarecrow` | construct | ✅ |
 | Shadow Demon | `shadow-demon` | fiend | ✅ |
-| Shield Guardian | `shield-guardian` | construct | ⬜ |
+| Shield Guardian | `shield-guardian` | construct | ✅ |
 | Smoke Mephit | `smoke-mephit` | elemental | ✅ |
 | Steam Mephit | `steam-mephit` | elemental | ✅ |
 | Stone Giant | `stone-giant` | giant | ✅ |
-| Stone Golem | `stone-golem` | construct | ⬜ |
+| Stone Golem | `stone-golem` | construct | ✅ |
 | Succubus | `succubus` | fiend | ✅ |
 | Troll | `troll` | giant | ✅ |
 | Tyrannosaurus Rex | `tyrannosaurus` | beast | ✅ |
 | Vampire Spawn | `vampire-spawn` | undead | ✅ |
 | Vrock | `vrock` | fiend | ✅ |
 | Warrior Veteran | `veteran` | humanoid | ✅ |
-| Winter Wolf | `winter-wolf` | monstrosity | ⬜ |
+| Winter Wolf | `winter-wolf` | monstrosity | ✅ |
 | Worg | `worg` | fey | ✅ |
 | Wraith | `wraith` | undead | ✅ |
 | Wyvern | `wyvern` | dragon | ✅ |
-| Young Black Dragon | `young-black` | dragon | ⬜ |
-| Young Blue Dragon | `young-blue` | dragon | ⬜ |
-| Young Green Dragon | `young-green` | dragon | ⬜ |
-| Young Red Dragon | `young-red` | dragon | ⬜ |
+| Young Black Dragon | `young-black` | dragon | ✅ |
+| Young Blue Dragon | `young-blue` | dragon | ✅ |
+| Young Green Dragon | `young-green` | dragon | ✅ |
+| Young Red Dragon | `young-red` | dragon | ✅ |
 | Young White Dragon | `young-white` | dragon | ✅ |
 
 ---
@@ -666,7 +666,7 @@ Prompts for the 5 Chromatic Dragon Wyrmlings (various dragon archetypes):
 
 ---
 
-## 8. Still to draw — the queue (6), by creature type
+## 8. Still to draw — the queue (0), by creature type
 
 Everything here still needs drawing, and everything that needs drawing is
 here — the split is derived from the art directory by `npm run art-backlog`,
@@ -677,35 +677,6 @@ Each prompt is a **side-by-side design sheet** (portrait left, token right, on
 a #00FF00 chroma key) in the format `slice_side_by_side.py` expects — copy the
 whole line, generate, process. Sizes follow the §4 SIZE tiers so relative scale
 reads on the board.
-
-### Monstrosities
-
-**Wererat** (`wererat`) — SIZE M, CR 2
-*The earliest thing in the game that shrugs off an ordinary blade. It has to read as *wrong* rather than as a big rat — the hybrid stance is the tell.*
-> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi wererat in hybrid form, a hunched figure with a long ratlike snout, yellow chisel teeth, torn ears, coarse grey-brown fur and small red eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a wiry rat-humanoid in a filthy hooded cloak over city rags, a hand crossbow raised in clawed fingers, a naked tail curling out behind. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. sewer grey, dirty brown, and sickly lamplight yellow palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
-**Rust Monster** (`rust-monster`) — SIZE S
-> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a rust monster, a comical armored bug with a segmented tan-and-rust shell, two feathery antennae, and little stalk eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a low four-legged beetle-thing with two waving rust-colored antennae reaching forward and a propeller-like tail, reads from above. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. rust orange, tan, and blue-grey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
-### Constructs
-
-**Animated Rug of Smothering** (`rug-of-smothering`) — SIZE M, CR 2
-> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, an animated rug of smothering, an ornate patterned carpet come to life, its front edge rippling up into a menacing face of folds with bristling tassels. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a large richly-patterned rug rearing and rippling like a stingray, edges curling to grab, reads from above. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. deep red, gold, and indigo weave palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
-**Scarecrow** (`scarecrow`) — SIZE M, CR 1
-> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a creepy-cute scarecrow with a burlap-sack head, stitched eyes glowing faint orange, a jagged stitched grin, and a battered hat, straw poking from its collar. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a raggedy straw-stuffed figure in tattered farm clothes, arms spread, straw hands like claws. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. burlap tan, straw gold, and ember orange palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
-**Animated Flying Sword** (`flying-sword`) — SIZE S
-> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, an animated flying sword: a single ornate steel longsword hovering upright on its own with a faint blue glow along the blade and a jeweled crossguard, no wielder. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character one hovering sword tilted point-down at the ready, a faint arcane glimmer at the hilt. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. steel silver, brass, and arcane blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
-### Oozes
-
-**Gray Ooze** (`gray-ooze`) — SIZE M
-> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a gray ooze, a slick puddle of metallic-grey slime with a wet sheen and a couple of dim eye-glints, blobby and formless. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a low spreading grey slime blob with a raised pseudopod, reads from above as a shiny puddle. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. wet metallic grey, slate, and oily blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
-
----
-
----
 
 ---
 
@@ -755,13 +726,13 @@ lands incrementally.
 
 ---
 
-## 12. The queue at a glance (6)
+## 12. The queue at a glance (0)
 
-The same 6 monsters as §8, as a table rather than as prompts — §8 tells you
+The same 0 monsters as §8, as a table rather than as prompts — §8 tells you
 what to type into a generator, this tells you what to pick. Ordered by XP, so
 the ones a player meets as a set-piece get drawn first.
 
-6 of 143 monsters have no generated art. This is not a bug: the emoji
+0 of 143 monsters have no generated art. This is not a bug: the emoji
 reads fine at token size, and `ArtImage` falls back deliberately rather than
 shipping a broken image. The **Fallback** column is what the board shows today.
 
@@ -774,6 +745,7 @@ broken image.
 
 | Monster | ID | Type | XP | Fallback | Size |
 | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- |
 | Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 🧿 | large |
 | Wererat | `wererat` | monstrosity | 450 | 🐀 | medium |
 | Scarecrow | `scarecrow` | construct | 200 | 🎃 | medium |
@@ -819,7 +791,7 @@ broken image.
 | Rust Monster | `rust-monster` | monstrosity | 100 | 🪲 | medium |
 | Animated Flying Sword | `flying-sword` | construct | 50 | 🗡️ | small |
 
-## 13. Already drawn — the prompts that produced the shipped art (79)
+## 13. Already drawn — the prompts that produced the shipped art (85)
 
 Already generated and sitting in `web/public/art`. Kept, but out of the way of
 §8 so that section can be read as the worklist it is: a prompt is the record of
@@ -1067,6 +1039,13 @@ start from the line that produced the original.
 **Griffon** (`griffon`) — SIZE L, CR 2
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a proud griffon with a fierce golden-eagle head, a hooked beak, sharp amber eyes, and a feathered crest over a tawny lion mane. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character eagle foreparts with taloned front legs and wings, tawny lion hindquarters and tail, wings half-spread. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. tawny gold, chestnut brown, and cream palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
+**Wererat** (`wererat`) — SIZE M, CR 2
+*The earliest thing in the game that shrugs off an ordinary blade. It has to read as *wrong* rather than as a big rat — the hybrid stance is the tell.*
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi wererat in hybrid form, a hunched figure with a long ratlike snout, yellow chisel teeth, torn ears, coarse grey-brown fur and small red eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a wiry rat-humanoid in a filthy hooded cloak over city rags, a hand crossbow raised in clawed fingers, a naked tail curling out behind. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. sewer grey, dirty brown, and sickly lamplight yellow palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Rust Monster** (`rust-monster`) — SIZE S
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a rust monster, a comical armored bug with a segmented tan-and-rust shell, two feathery antennae, and little stalk eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a low four-legged beetle-thing with two waving rust-colored antennae reaching forward and a propeller-like tail, reads from above. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. rust orange, tan, and blue-grey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 ### Aberrations
 
 **Aboleth** (`aboleth`) — SIZE XL, CR 10
@@ -1089,6 +1068,15 @@ start from the line that produced the original.
 **Flesh Golem** (`flesh-golem`) — SIZE L, CR 5
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a flesh golem, a big stitched-together patchwork humanoid with mismatched grey-green skin tones, neck bolts, heavy sutures, and a flat dull expression, Frankenstein-cute not gory. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a lumbering broad patchwork brute in ragged trousers, arms hanging, mismatched limbs. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. grey-green, ashen tan, and iron bolt-grey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
+**Animated Rug of Smothering** (`rug-of-smothering`) — SIZE M, CR 2
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, an animated rug of smothering, an ornate patterned carpet come to life, its front edge rippling up into a menacing face of folds with bristling tassels. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a large richly-patterned rug rearing and rippling like a stingray, edges curling to grab, reads from above. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. deep red, gold, and indigo weave palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Scarecrow** (`scarecrow`) — SIZE M, CR 1
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a creepy-cute scarecrow with a burlap-sack head, stitched eyes glowing faint orange, a jagged stitched grin, and a battered hat, straw poking from its collar. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a raggedy straw-stuffed figure in tattered farm clothes, arms spread, straw hands like claws. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. burlap tan, straw gold, and ember orange palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Animated Flying Sword** (`flying-sword`) — SIZE S
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, an animated flying sword: a single ornate steel longsword hovering upright on its own with a faint blue glow along the blade and a jeweled crossguard, no wielder. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character one hovering sword tilted point-down at the ready, a faint arcane glimmer at the hilt. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. steel silver, brass, and arcane blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
 ### Oozes
 
 **Black Pudding** (`black-pudding`) — SIZE L, CR 4
@@ -1101,3 +1089,12 @@ start from the line that produced the original.
 
 **Ochre Jelly** (`ochre-jelly`) — SIZE M, CR 2
 > A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, an ochre jelly, a translucent amber-yellow blob of jelly with faint bubbles suspended inside and a soft wobble. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a rounded quivering ochre blob spreading low with one bump rising, reads from above. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. amber yellow, ochre, and honey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Gray Ooze** (`gray-ooze`) — SIZE M
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a gray ooze, a slick puddle of metallic-grey slime with a wet sheen and a couple of dim eye-glints, blobby and formless. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a low spreading grey slime blob with a raised pseudopod, reads from above as a shiny puddle. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. wet metallic grey, slate, and oily blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+---
+
+---
+
+---
