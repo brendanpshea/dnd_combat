@@ -76,6 +76,7 @@ import { saveArenaWeb, loadArenaWeb, deleteArenaWeb } from './arenaStorage.js';
 import { RestLedger } from './RestLedger.js';
 import { deployFoes } from '../../src/arena/deploy.js';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
+import { ItemIcon } from './ItemIcon.js';
 
 type Phase =
   | { p: 'forge' }
@@ -1496,7 +1497,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                               disabled={!afford}
                               onClick={() => setPendingBuy(confirming ? null : id)}
                             >
-                              <span className="arena-buy-icon">{itemIcon(id)}</span>
+                              <span className="arena-buy-icon">
+                                <ItemIcon itemId={id} fallback={itemIcon(id)} size={30} />
+                              </span>
                               <span className="arena-buy-name">
                                 {itemName(id)}
                                 {/* Whether it suits the hero you are buying for.
@@ -1561,7 +1564,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                 onClick={() => setPendingSell(confirming ? null : key)}
                               >
                                 <span className="arena-buy-icon">
-                                  {from === 'loot' ? '🎁' : itemIcon(stack.itemId)}
+                                  {from === 'loot'
+                                    ? '🎁'
+                                    : <ItemIcon itemId={stack.itemId} fallback={itemIcon(stack.itemId)} size={30} />}
                                 </span>
                                 <span className="arena-buy-name">
                                   {itemName(stack.itemId)}{stack.qty > 1 ? ` ×${stack.qty}` : ''}

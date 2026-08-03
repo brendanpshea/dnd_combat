@@ -24,6 +24,7 @@
  *   icon-<id>.webp          -> HAS_SPELL_ICON  (spell / feature icon)
  *   bg-<theme>.webp         -> HAS_BOARD_BG    (arena backdrop)
  *   terrain/terrain-<kind>-<theme>-<variant>.svg -> HAS_TERRAIN_ART
+ *   items/<id>.svg                               -> HAS_ITEM_ART
  *   portrait-<id> AND token-<id> -> HAS_ART    (needs both: the board shows the
  *                                               token, the sheet the portrait)
  *
@@ -47,6 +48,8 @@ interface Registry {
   bg: string[];
   /** Themes with a full set of drawn blocking props. */
   terrain: string[];
+  /** Gear icons: `items/<id>.svg`, drawn vector like the terrain props. */
+  item: string[];
 }
 
 function scan(): Registry {
@@ -85,6 +88,13 @@ function scan(): Registry {
   const terrain = [...themes].filter((t) => (['wall', 'cover'] as const)
     .every((kind) => (['a', 'b'] as const).every((v) => seen.has(`terrain-${kind}-${t}-${v}`))));
 
+  // Gear icons. Vector like the terrain props and for the same reason — they
+  // are drawn rather than generated — but flat, one file per item id, so there
+  // is no completeness rule to apply: whatever is there is offered.
+  const itemDir = join(ART, 'items');
+  const item = (existsSync(itemDir) ? readdirSync(itemDir) : [])
+    .filter((f) => f.endsWith('.svg')).map((f) => f.slice(0, -4));
+
   const npc = [...portraits].filter((id) => id.startsWith('npc-'));
   const token = [...tokens].filter((id) => id.startsWith('tok-'));
   const paired = [...portraits].filter((id) => !id.startsWith('npc-') && tokens.has(id));
@@ -106,6 +116,7 @@ function scan(): Registry {
   return {
     art: sort(paired), npc: sort(npc), scene: sort([...scenes]), token: sort(token),
     icon: sort([...icons]), bg: sort([...bgs]), terrain: sort(terrain),
+    item: sort(item),
   };
 }
 
@@ -172,6 +183,19 @@ function render(r: Registry): string {
         ' */',
       ].join('\n'),
       r.terrain,
+    ),
+    block(
+      'HAS_ITEM_ART',
+      [
+        '/**',
+        ' * Gear with a drawn icon (`items/<id>.svg`).',
+        ' *',
+        ' * Keyed by the BASE shape, not by inventory id — see `itemArtId` in',
+        ' * `web/src/itemArt.ts`. A +1 longsword, a silvered longsword and a',
+        ' * longsword are one picture.',
+        ' */',
+      ].join('\n'),
+      r.item,
     ),
   ].join('\n');
 }

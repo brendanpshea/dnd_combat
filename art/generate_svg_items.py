@@ -1,5 +1,7 @@
 import os
+import re
 import subprocess
+from pathlib import Path
 
 # Output directories
 SVG_DIR = os.path.abspath("art/svg-items")
@@ -7,8 +9,34 @@ PREVIEW_DIR = os.path.abspath("art/svg-items/preview")
 os.makedirs(SVG_DIR, exist_ok=True)
 os.makedirs(PREVIEW_DIR, exist_ok=True)
 
-# Edge binary location for rendering PNG previews
-EDGE_PATH = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+# Browser used to render the PNG previews.
+#
+# Was a hard-coded Windows Edge path, which meant the generator could only be
+# run on one machine -- and it `check=True`d the subprocess, so on any other
+# machine it wrote all 34 SVGs correctly and then died on the first preview.
+# The SVGs are the artefact; previews are a convenience. Any Chromium will do,
+# and if none is found the previews are skipped with a note rather than taking
+# the whole run down.
+PREVIEW_BROWSERS = [
+    os.environ.get("CHROME_PATH", ""),
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome",
+]
+
+
+def find_browser():
+    for path in PREVIEW_BROWSERS:
+        if path and os.path.exists(path):
+            return path
+    # Whatever Playwright downloaded for this repo's tests.
+    base = "/opt/pw-browsers"
+    if os.path.isdir(base):
+        for name in sorted(os.listdir(base)):
+            if name.startswith("chromium-"):
+                exe = os.path.join(base, name, "chrome-linux", "chrome")
+                if os.path.exists(exe):
+                    return exe
+    return None
 
 # Reusable SVG Defs (Gradients & Filters)
 COMMON_DEFS = """  <defs>
@@ -159,6 +187,46 @@ COMMON_DEFS = """  <defs>
       <stop offset="100%" stop-color="#880e4f"/>
     </linearGradient>
   </defs>"""
+
+def tighten(svg: str, item_id: str) -> str:
+    """Drop the defs this icon does not use, and namespace the ones it does.
+
+    TWO PROBLEMS, ONE PASS.
+
+    Every icon was emitted with the whole shared `COMMON_DEFS` block, so each
+    file defined 26 gradients and filters and referenced four to six of them:
+    across the set, 732 of 884 definitions -- 83% -- were dead weight in a file
+    whose entire job is to be small.
+
+    Worse, all 34 files therefore declared the SAME ids. SVG ids are document
+    scoped, so as separate `<img>` files that is harmless, but the moment two of
+    them are inlined into one page (a sprite sheet, a React component, a docs
+    build) the last `blade-light` wins and every icon before it silently repaints
+    in another icon's colours. Prefixing with the item id makes that impossible
+    rather than merely unlikely.
+    """
+    used = set(re.findall(r'url\(#([^)]+)\)', svg))
+    used |= set(re.findall(r'href="#([^"]+)"', svg))
+
+    # Keep a definition only if something points at it. Matched as whole
+    # elements so a gradient's <stop> children go with it.
+    def keep(m: "re.Match[str]") -> str:
+        return m.group(0) if m.group(2) in used else ''
+    body = re.sub(r'<(linearGradient|radialGradient|filter|clipPath|pattern)\b[^>]*id="([^"]+)"[\s\S]*?</\1>',
+                  keep, svg)
+
+    # Namespace what survived. Both halves in one substitution so a definition
+    # and its references cannot fall out of step.
+    for name in sorted(used, key=len, reverse=True):
+        body = body.replace(f'id="{name}"', f'id="{item_id}-{name}"')
+        body = body.replace(f'url(#{name})', f'url(#{item_id}-{name})')
+        body = body.replace(f'href="#{name}"', f'href="#{item_id}-{name}"')
+
+    # An empty <defs> left behind by the filtering is just noise.
+    body = re.sub(r'<defs>\s*</defs>\n?', '', body)
+    # ...and so are the blank lines the removals leave.
+    return re.sub(r'\n\s*\n(\s*\n)+', '\n\n', body)
+
 
 def wrap_svg(content):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
@@ -791,27 +859,40 @@ ITEMS = {
 def main():
     print(f"Generating {len(ITEMS)} 100% transparent SVG items...")
     for item_id, gen_fn in ITEMS.items():
-        svg_content = gen_fn()
+        svg_content = tighten(gen_fn(), item_id)
         out_path = os.path.join(SVG_DIR, f"{item_id}.svg")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(svg_content)
         print(f"  Wrote {item_id}.svg (100% Transparent)")
 
+    print("\nNEXT: run `npm run svg-frame` to crop each viewBox to its drawing.")
+    print("      Without it every icon keeps the full 512 canvas and a rapier")
+    print("      uses 4% of it. See scripts/svg-item-frame.ts.")
+
+    browser = find_browser()
+    if not browser:
+        print("\nNo Chromium found; skipping PNG previews (the SVGs are written).")
+        return
     print("\nBatch rendering PNG previews...")
     for item_id in ITEMS.keys():
         svg_abs = os.path.join(SVG_DIR, f"{item_id}.svg")
         png_abs = os.path.join(PREVIEW_DIR, f"{item_id}.png")
         cmd = [
-            EDGE_PATH,
-            "--headless",
-            "--disable-gpu",
-            "--hide-scrollbars",
-            "--window-size=512,512",
-            f"--screenshot={png_abs}",
-            f"file:///{svg_abs}"
+            # `--no-sandbox` because this also runs inside containers, where the
+            # Chromium sandbox cannot start and the browser exits 1 on every file.
+            browser, "--headless", "--disable-gpu", "--hide-scrollbars", "--no-sandbox",
+            # `pathlib.as_uri()` rather than f"file:///{abs}": on POSIX the path
+            # already begins with a slash, so the literal produced `file:////home/...`
+            # and Chromium refused it.
+            "--window-size=512,512", f"--screenshot={png_abs}", Path(svg_abs).as_uri(),
         ]
-        subprocess.run(cmd, check=True)
-        print(f"  Rendered {item_id}.png")
+        # Not `check=True`: a preview that fails to render is a stale PNG, not
+        # a failed generation. The claim above -- "the SVGs are the artefact" --
+        # has to be true of the error path too.
+        if subprocess.run(cmd).returncode == 0:
+            print(f"  Rendered {item_id}.png")
+        else:
+            print(f"  (preview failed for {item_id}; SVG is written)")
 
 if __name__ == "__main__":
     main()

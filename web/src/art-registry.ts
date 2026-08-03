@@ -97,3 +97,20 @@ export const HAS_BOARD_BG = new Set<string>([
 export const HAS_TERRAIN_ART = new Set<string>([
   'bog', 'ember', 'forest', 'graveyard', 'stone', 'village'
 ]);
+
+/**
+ * Gear with a drawn icon (`items/<id>.svg`).
+ *
+ * Keyed by the BASE shape, not by inventory id — see `itemArtId` in
+ * `web/src/itemArt.ts`. A +1 longsword, a silvered longsword and a
+ * longsword are one picture.
+ */
+export const HAS_ITEM_ART = new Set<string>([
+  'alchemists-fire', 'battleaxe', 'breastplate', 'chain-mail', 'chain-shirt',
+  'dagger', 'greataxe', 'greatsword', 'half-plate', 'handaxe', 'hide',
+  'javelin', 'leather', 'light-crossbow', 'longbow', 'longsword', 'mace',
+  'padded', 'plate', 'potion-greater-healing', 'potion-healing',
+  'quarterstaff', 'rapier', 'ring-mail', 'scale-mail', 'scimitar', 'scroll',
+  'shield', 'shortbow', 'shortsword', 'spear', 'splint', 'studded-leather',
+  'warhammer'
+]);

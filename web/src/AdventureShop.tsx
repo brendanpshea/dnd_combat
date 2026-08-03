@@ -25,6 +25,7 @@ import { Portrait } from './Portrait.js';
 import { ItemInfoDot } from './InfoCard.js';
 import { hasArt } from './art.js';
 import { artEmoji } from '../../src/data/adventure-art.js';
+import { ItemIcon } from './ItemIcon.js';
 
 type ShopScene = Extract<Scene, { kind: 'shop' }>;
 
@@ -179,7 +180,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                   onClick={() => setPickBuy(picking ? null : id)}
                 >
                   <span>
-                    {itemIcon(id)} {itemName(id)}
+                    <ItemIcon itemId={id} fallback={itemIcon(id)} size={30} /> {itemName(id)}
                     {/* Equip hint for the focused hero: ✓ fits, ⚠ can't use. */}
                     {typeof focus === 'number' && (() => {
                       const fit = itemFitFor(campaign, focus, id);
@@ -252,7 +253,7 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
                 <div className="shop-row-head">
                 <button className={`shop-row ${confirming ? 'confirming' : ''}`}
                   onClick={() => setPickSell(confirming ? null : key)}>
-                  <span>{itemIcon(itemId)} {itemName(itemId)} <em className="shop-owner">· {label}</em></span>
+                  <span><ItemIcon itemId={itemId} fallback={itemIcon(itemId)} size={30} /> {itemName(itemId)} <em className="shop-owner">· {label}</em></span>
                   <span className="shop-price sell">+💰 {resale}</span>
                 </button>
                 <ItemInfoDot itemId={itemId} />
