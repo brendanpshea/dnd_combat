@@ -83,12 +83,17 @@ def render(table: dict[str, float]) -> str:
 def main() -> int:
     text = render(fills())
     if "--check" in sys.argv:
-        current = open(OUT).read() if os.path.exists(OUT) else ""
+        # Explicit UTF-8, and a corrupt file counts as absent so the
+        # generator repairs rather than crashes — see generate_svg_tokens.py.
+        try:
+            current = open(OUT, encoding="utf-8").read() if os.path.exists(OUT) else ""
+        except UnicodeDecodeError:
+            current = ""
         if current != text:
             print("web/src/token-fill.ts is stale; run: python art/token_fill.py")
             return 1
         return 0
-    with open(OUT, "w") as fh:
+    with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(text)
     print(f"wrote {OUT}")
     return 0
