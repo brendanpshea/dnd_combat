@@ -745,6 +745,7 @@ broken image.
 
 | Monster | ID | Type | XP | Fallback | Size |
 | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- |
 
 ## 13. Already drawn — the prompts that produced the shipped art (85)
 
