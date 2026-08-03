@@ -243,14 +243,11 @@ describe('one picture stands in for a family', () => {
     expect(itemArtId('ring-mail'), 'a suit of ring mail was drawn as a ring').toBe('ring-mail');
   });
 
-  it('refuses to stand in for something genuinely different', () => {
-    // A Sun Blade drawn as a longsword would say the wrong thing about the one
-    // weapon in the shop worth saving for. The NAMED magic weapons keep their
-    // emoji for that reason — unlike wands and figurines, which are now drawn,
-    // because what a wand does is written on it rather than visible in it.
+  it('gives named magic weapons their own dedicated art', () => {
+    // Each named magic weapon (Sun Blade, Dragon Slayer, etc.) has its own unique SVG.
     for (const id of ['sun-blade', 'dragon-slayer', 'mace-of-disruption',
       'berserker-axe', 'sword-of-wounding']) {
-      expect(itemArtId(id), `${id} was given somebody else's picture`).toBeUndefined();
+      expect(itemArtId(id), `${id} has its own dedicated SVG icon`).toBe(id);
     }
   });
 
@@ -263,24 +260,13 @@ describe('one picture stands in for a family', () => {
     }
   });
 
-  it('covers nearly everything a player can own', () => {
-    // The number that decided this was worth doing: 31 without the aliasing,
-    // 159 with it, 181 once the wands, staves, rings, figurines and elemental
-    // vessels were drawn. Anything well below that means the mapping broke.
+  it('covers every item a player can own', () => {
     const covered = ownable.filter((id) => itemArtId(id) !== undefined);
-    expect(covered.length, `only ${covered.length}/${ownable.length} ownable items have an icon`)
-      .toBeGreaterThanOrEqual(175);
+    expect(covered.length).toBe(ownable.length);
   });
 
-  it('leaves exactly the things that have no honest picture', () => {
-    // Named magic weapons, and the unarmed strike, which is not an object at
-    // all. Naming them makes the emoji fallback a decision rather than a gap:
-    // anything NEW turning up here is an icon somebody forgot to draw.
+  it('leaves zero ownable items on emoji fallbacks', () => {
     const bare = ownable.filter((id) => itemArtId(id) === undefined).sort();
-    expect(bare).toEqual([
-      'berserker-axe', 'dragon-slayer', 'giant-slayer', 'mace-of-disruption',
-      'mace-of-smiting', 'mace-of-terror', 'sun-blade', 'sword-of-life-stealing',
-      'sword-of-wounding', 'unarmed-strike',
-    ]);
+    expect(bare).toEqual([]);
   });
 });

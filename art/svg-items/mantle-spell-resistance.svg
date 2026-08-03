@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 62 336 336" data-ink="300" width="100%" height="100%">
+  <defs>
+    <filter id="mantle-spell-resistance-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="mantle-spell-resistance-archmage-violet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8e24aa"/>
+      <stop offset="50%" stop-color="#4a148c"/>
+      <stop offset="100%" stop-color="#1a0033"/>
+    </linearGradient>
+    <linearGradient id="mantle-spell-resistance-rune-gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fff59d"/>
+      <stop offset="100%" stop-color="#fbc02d"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#mantle-spell-resistance-shadow)">
+    <!-- High Archmage Collar & Mantle -->
+    <path d="M 170,140 L 210,80 L 256,110 L 302,80 L 342,140 L 380,380 L 132,380 Z" fill="url(#mantle-spell-resistance-archmage-violet)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- High Standing Wings Collar -->
+    <path d="M 170,140 L 210,80 L 256,130 L 302,80 L 342,140 L 256,180 Z" fill="url(#mantle-spell-resistance-rune-gold)" stroke="#2a2333" stroke-width="5"/>
+    
+    <!-- Runic Arc Trim -->
+    <circle cx="256" cy="270" r="50" fill="none" stroke="url(#mantle-spell-resistance-rune-gold)" stroke-width="5" stroke-dasharray="14,8"/>
+    <polygon points="256,230 270,265 256,300 242,265" fill="url(#mantle-spell-resistance-rune-gold)" stroke="#2a2333" stroke-width="3"/>
+  </g>
+</svg>

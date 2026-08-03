@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="99.2 83.2 313.6 313.6" data-ink="280" width="100%" height="100%">
+  <defs>
+    <filter id="bracers-archery-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="bracers-archery-leather" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8d6e63"/>
+      <stop offset="50%" stop-color="#5d4037"/>
+      <stop offset="100%" stop-color="#3e2723"/>
+    </linearGradient>
+    <linearGradient id="bracers-archery-gold-accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="100%" stop-color="#f5b324"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#bracers-archery-shadow)">
+    <!-- Leather Forearm Guard -->
+    <path d="M 160,100 L 352,100 L 320,380 L 192,380 Z" fill="url(#bracers-archery-leather)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- Stitched Edge Straps -->
+    <line x1="180" y1="130" x2="332" y2="130" stroke="#3e2723" stroke-width="4" stroke-dasharray="10,6"/>
+    <line x1="195" y1="350" x2="317" y2="350" stroke="#3e2723" stroke-width="4" stroke-dasharray="10,6"/>
+
+    <!-- Hawk / Arrow Emblem -->
+    <polygon points="256,160 290,260 256,235 222,260" fill="url(#bracers-archery-gold-accent)" stroke="#2a2333" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Crossed Bow & Arrow engraving -->
+    <path d="M 220,290 Q 256,320 292,290" fill="none" stroke="url(#bracers-archery-gold-accent)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="256" y1="260" x2="256" y2="330" stroke="url(#bracers-archery-gold-accent)" stroke-width="4"/>
+    <polygon points="256,250 250,265 262,265" fill="url(#bracers-archery-gold-accent)"/>
+  </g>
+</svg>

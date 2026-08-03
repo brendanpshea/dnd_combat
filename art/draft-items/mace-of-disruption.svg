@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="mace-of-disruption-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="mace-of-disruption-holy-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <linearGradient id="mace-of-disruption-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#fff176"/>
+      <stop offset="80%" stop-color="#f5b324"/>
+      <stop offset="100%" stop-color="#b76e00"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#mace-of-disruption-shadow)" transform="rotate(-45 256 256)">
+    <!-- Handle Shaft -->
+    <rect x="245" y="160" width="22" height="260" rx="5" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <rect x="242" y="320" width="28" height="80" rx="4" fill="#3e2723" stroke="#2a2333" stroke-width="4"/>
+    
+    <!-- Flanged Sunburst Star Head -->
+    <g filter="url(#mace-of-disruption-holy-glow)">
+      <circle cx="256" cy="120" r="45" fill="#ffffff"/>
+      <circle cx="256" cy="120" r="35" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    </g>
+    <!-- Flange Spikes -->
+    <path d="M 256,50 L 268,90 L 244,90 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 256,190 L 268,150 L 244,150 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 186,120 L 226,132 L 226,108 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    <path d="M 326,120 L 286,132 L 286,108 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    
+    <path d="M 206,70 L 235,100 L 220,112 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="3"/>
+    <path d="M 306,70 L 277,100 L 292,112 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="3"/>
+    <path d="M 206,170 L 235,140 L 220,128 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="3"/>
+    <path d="M 306,170 L 277,140 L 292,128 Z" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="3"/>
+
+    <!-- Pommel Star -->
+    <circle cx="256" cy="430" r="18" fill="url(#mace-of-disruption-gold-grad)" stroke="#2a2333" stroke-width="4"/>
+    <circle cx="256" cy="430" r="8" fill="#ffffff"/>
+  </g>
+</svg>

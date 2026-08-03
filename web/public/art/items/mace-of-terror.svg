@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -12.5 520 520" data-ink="415" width="100%" height="100%">
+  <defs>
+    <filter id="mace-of-terror-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="mace-of-terror-necro-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <linearGradient id="mace-of-terror-dark-iron" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#424242"/>
+      <stop offset="60%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <linearGradient id="mace-of-terror-purple-aura" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea80fc"/>
+      <stop offset="50%" stop-color="#aa00ff"/>
+      <stop offset="100%" stop-color="#4a148c"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#mace-of-terror-shadow)" transform="rotate(-45 256 256)">
+    <!-- Dark Iron Shaft -->
+    <rect x="244" y="160" width="24" height="260" rx="4" fill="url(#mace-of-terror-dark-iron)" stroke="#2a2333" stroke-width="5"/>
+
+    <!-- Skull Head -->
+    <g filter="url(#mace-of-terror-necro-glow)">
+      <path d="M 220,100 C 220,60 292,60 292,100 C 292,125 280,140 275,150 L 237,150 C 232,140 220,125 220,100 Z" fill="url(#mace-of-terror-dark-iron)" stroke="#2a2333" stroke-width="5"/>
+      <!-- Eyes & Nose -->
+      <circle cx="238" cy="95" r="9" fill="url(#mace-of-terror-purple-aura)"/>
+      <circle cx="274" cy="95" r="9" fill="url(#mace-of-terror-purple-aura)"/>
+      <polygon points="256,110 250,120 262,120" fill="url(#mace-of-terror-purple-aura)"/>
+    </g>
+    <!-- Skull Teeth -->
+    <rect x="242" y="145" width="6" height="12" fill="#e0e0e0" stroke="#2a2333" stroke-width="2"/>
+    <rect x="253" y="145" width="6" height="12" fill="#e0e0e0" stroke="#2a2333" stroke-width="2"/>
+    <rect x="264" y="145" width="6" height="12" fill="#e0e0e0" stroke="#2a2333" stroke-width="2"/>
+
+    <!-- Spikes out of Skull -->
+    <polygon points="256,40 264,65 248,65" fill="url(#mace-of-terror-purple-aura)" stroke="#2a2333" stroke-width="3"/>
+    <polygon points="205,90 225,95 220,80" fill="url(#mace-of-terror-purple-aura)" stroke="#2a2333" stroke-width="3"/>
+    <polygon points="307,90 287,95 292,80" fill="url(#mace-of-terror-purple-aura)" stroke="#2a2333" stroke-width="3"/>
+
+    <!-- Bone Pommel -->
+    <path d="M 240,420 C 230,440 240,455 256,455 C 272,455 282,440 272,420 Z" fill="#e0e0e0" stroke="#2a2333" stroke-width="4"/>
+  </g>
+</svg>

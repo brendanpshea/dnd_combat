@@ -87,6 +87,15 @@ const SHORTEST_WEAPON = 0.62;
 
 /** The browser Playwright already downloaded for this repo's tests. */
 function chromePath(): string | undefined {
+  const candidates = [
+    process.env.CHROME_PATH,
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    '/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome',
+  ];
+  for (const p of candidates) {
+    if (p && existsSync(p)) return p;
+  }
   const base = '/opt/pw-browsers';
   try {
     const dir = readdirSync(base).find((d) => d.startsWith('chromium-'));

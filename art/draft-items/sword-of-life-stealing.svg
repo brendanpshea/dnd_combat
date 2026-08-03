@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="sword-of-life-stealing-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="sword-of-life-stealing-vamp-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#37474f"/>
+      <stop offset="60%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <linearGradient id="sword-of-life-stealing-blood-red" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff1744"/>
+      <stop offset="50%" stop-color="#d50000"/>
+      <stop offset="100%" stop-color="#4a0000"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#sword-of-life-stealing-shadow)" transform="rotate(-45 256 256)">
+    <!-- Vampiric Blade -->
+    <polygon points="256,35 274,250 256,265" fill="url(#sword-of-life-stealing-vamp-dark)"/>
+    <polygon points="256,35 238,250 256,265" fill="url(#sword-of-life-stealing-vamp-dark)"/>
+    <!-- Crimson Edge & Runes -->
+    <path d="M 256,35 L 274,250 L 268,250 L 256,55 Z" fill="url(#sword-of-life-stealing-blood-red)"/>
+    <path d="M 256,35 L 238,250 L 244,250 L 256,55 Z" fill="url(#sword-of-life-stealing-blood-red)"/>
+    <line x1="256" y1="70" x2="256" y2="245" stroke="url(#sword-of-life-stealing-blood-red)" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Bat Wing Crossguard -->
+    <path d="M 256,260 C 220,250 170,230 140,255 C 160,270 190,285 225,280 L 256,290 L 287,280 C 322,285 352,270 372,255 C 342,230 292,250 256,260 Z" fill="url(#sword-of-life-stealing-vamp-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="256" cy="272" r="8" fill="url(#sword-of-life-stealing-blood-red)" stroke="#2a2333" stroke-width="2"/>
+
+    <!-- Grip -->
+    <rect x="245" y="290" width="22" height="100" rx="4" fill="#1c0d06" stroke="#2a2333" stroke-width="5"/>
+    <line x1="245" y1="315" x2="267" y2="315" stroke="#d50000" stroke-width="2.5"/>
+    <line x1="245" y1="345" x2="267" y2="345" stroke="#d50000" stroke-width="2.5"/>
+    <line x1="245" y1="375" x2="267" y2="375" stroke="#d50000" stroke-width="2.5"/>
+
+    <!-- Soul Gem Pommel -->
+    <polygon points="256,395 276,420 256,445 236,420" fill="url(#sword-of-life-stealing-blood-red)" stroke="#2a2333" stroke-width="5"/>
+    <circle cx="253" cy="417" r="3" fill="#ffffff"/>
+  </g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="mace-of-smiting-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="mace-of-smiting-gold-bright" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff59d"/>
+      <stop offset="50%" stop-color="#fbc02d"/>
+      <stop offset="100%" stop-color="#f57f17"/>
+    </linearGradient>
+    <linearGradient id="mace-of-smiting-lightning-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0f7fa"/>
+      <stop offset="50%" stop-color="#00b0ff"/>
+      <stop offset="100%" stop-color="#2979ff"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#mace-of-smiting-shadow)" transform="rotate(-45 256 256)">
+    <!-- Heavy Octagonal Shaft -->
+    <rect x="244" y="150" width="24" height="270" rx="4" fill="url(#mace-of-smiting-gold-bright)" stroke="#2a2333" stroke-width="5"/>
+    
+    <!-- Heavy War Hammer / Smite Head -->
+    <rect x="180" y="80" width="152" height="70" rx="8" fill="url(#mace-of-smiting-gold-bright)" stroke="#2a2333" stroke-width="5"/>
+    
+    <!-- Lightning Gem Center -->
+    <circle cx="256" cy="115" r="22" fill="url(#mace-of-smiting-lightning-blue)" stroke="#2a2333" stroke-width="4"/>
+    <polygon points="256,98 262,112 256,126 250,112" fill="#ffffff"/>
+
+    <!-- Left & Right Striking Faces -->
+    <rect x="165" y="75" width="20" height="80" rx="4" fill="#fff59d" stroke="#2a2333" stroke-width="4"/>
+    <rect x="327" y="75" width="20" height="80" rx="4" fill="#fff59d" stroke="#2a2333" stroke-width="4"/>
+
+    <!-- Grip -->
+    <rect x="240" y="310" width="32" height="90" rx="4" fill="#37474f" stroke="#2a2333" stroke-width="4"/>
+    <line x1="240" y1="335" x2="272" y2="335" stroke="#fbc02d" stroke-width="3"/>
+    <line x1="240" y1="365" x2="272" y2="365" stroke="#fbc02d" stroke-width="3"/>
+
+    <!-- Heavy Pommel -->
+    <rect x="236" y="420" width="40" height="30" rx="6" fill="url(#mace-of-smiting-gold-bright)" stroke="#2a2333" stroke-width="5"/>
+  </g>
+</svg>

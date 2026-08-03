@@ -106,12 +106,20 @@ export const HAS_TERRAIN_ART = new Set<string>([
  * longsword are one picture.
  */
 export const HAS_ITEM_ART = new Set<string>([
-  'alchemists-fire', 'battleaxe', 'breastplate', 'chain-mail', 'chain-shirt',
-  'dagger', 'elemental-focus', 'figurine', 'greataxe', 'greatsword',
-  'half-plate', 'hand-crossbow', 'handaxe', 'hide', 'javelin', 'leather',
-  'light-crossbow', 'longbow', 'longsword', 'mace', 'morningstar', 'padded',
-  'plate', 'potion-greater-healing', 'potion-healing', 'quarterstaff',
-  'rapier', 'ring', 'ring-mail', 'scale-mail', 'scimitar', 'scroll',
-  'shield', 'shortbow', 'shortsword', 'spear', 'splint', 'staff',
-  'studded-leather', 'wand', 'warhammer'
+  'alchemists-fire', 'amulet-health', 'battleaxe',
+  'belt-giant-strength-hill', 'berserker-axe', 'boots-winterlands',
+  'bracers-archery', 'bracers-defense', 'breastplate', 'brooch-shielding',
+  'chain-mail', 'chain-shirt', 'cloak-displacement', 'cloak-protection',
+  'dagger', 'dragon-slayer', 'elemental-focus', 'figurine',
+  'gauntlets-ogre-power', 'giant-slayer', 'gloves-thievery', 'greataxe',
+  'greatsword', 'half-plate', 'hand-crossbow', 'handaxe',
+  'headband-intellect', 'hide', 'javelin', 'leather', 'light-crossbow',
+  'longbow', 'longsword', 'mace', 'mace-of-disruption', 'mace-of-smiting',
+  'mace-of-terror', 'mantle-spell-resistance', 'morningstar',
+  'necklace-prayer-beads', 'padded', 'plate', 'potion-greater-healing',
+  'potion-healing', 'quarterstaff', 'rapier', 'ring', 'ring-mail',
+  'scale-mail', 'scimitar', 'scroll', 'shield', 'shortbow', 'shortsword',
+  'spear', 'splint', 'staff', 'studded-leather', 'sun-blade',
+  'sword-of-life-stealing', 'sword-of-wounding', 'unarmed-strike', 'wand',
+  'warhammer'
 ]);

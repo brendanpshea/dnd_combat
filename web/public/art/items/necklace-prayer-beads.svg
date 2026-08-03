@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="103.7 72.7 304.6 304.6" data-ink="272" width="100%" height="100%">
+  <defs>
+    <filter id="necklace-prayer-beads-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="necklace-prayer-beads-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe082"/>
+      <stop offset="50%" stop-color="#ffb300"/>
+      <stop offset="100%" stop-color="#ff6f00"/>
+    </linearGradient>
+    <linearGradient id="necklace-prayer-beads-holy-cross" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#fff176"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#necklace-prayer-beads-shadow)">
+    <!-- Rosary Bead String Strand -->
+    <path d="M 120,90 Q 256,360 392,90" fill="none" stroke="#42220f" stroke-width="5"/>
+    
+    <!-- Prayer Beads -->
+    <circle cx="140" cy="115" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="170" cy="160" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="205" cy="205" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="240" cy="240" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="272" cy="240" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="307" cy="205" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="342" cy="160" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+    <circle cx="372" cy="115" r="14" fill="url(#necklace-prayer-beads-amber)" stroke="#2a2333" stroke-width="3"/>
+
+    <!-- Holy Relic Pendant -->
+    <rect x="246" y="270" width="20" height="90" rx="4" fill="url(#necklace-prayer-beads-holy-cross)" stroke="#2a2333" stroke-width="5"/>
+    <rect x="221" y="295" width="70" height="20" rx="4" fill="url(#necklace-prayer-beads-holy-cross)" stroke="#2a2333" stroke-width="5"/>
+  </g>
+</svg>

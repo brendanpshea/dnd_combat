@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -20 520 520" data-ink="400" width="100%" height="100%">
+  <defs>
+    <filter id="dragon-slayer-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="dragon-slayer-steel-light" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#cfd8dc"/>
+      <stop offset="60%" stop-color="#90a4ae"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <linearGradient id="dragon-slayer-steel-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#607d8b"/>
+      <stop offset="100%" stop-color="#37474f"/>
+    </linearGradient>
+    <linearGradient id="dragon-slayer-fire-runes" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffeb3b"/>
+      <stop offset="50%" stop-color="#ff5722"/>
+      <stop offset="100%" stop-color="#b71c1c"/>
+    </linearGradient>
+    <linearGradient id="dragon-slayer-scale-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d32f2f"/>
+      <stop offset="50%" stop-color="#8e0000"/>
+      <stop offset="100%" stop-color="#4a0000"/>
+    </linearGradient>
+    <linearGradient id="dragon-slayer-bone-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8e1"/>
+      <stop offset="100%" stop-color="#d7ccc8"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#dragon-slayer-shadow)" transform="rotate(-45 256 256)">
+    <!-- Heavy Jagged Broadsword Blade -->
+    <polygon points="256,40 280,240 256,260" fill="url(#dragon-slayer-steel-light)"/>
+    <polygon points="256,40 232,240 256,260" fill="url(#dragon-slayer-steel-dark)"/>
+    <!-- Blade Fuller & Fiery Dragon Runes -->
+    <line x1="256" y1="80" x2="256" y2="240" stroke="url(#dragon-slayer-fire-runes)" stroke-width="6" stroke-linecap="round"/>
+    
+    <!-- Dragon Wing Crossguard -->
+    <path d="M 256,255 C 220,240 160,220 130,240 C 145,260 175,275 210,270 C 230,268 245,275 256,280 C 267,275 282,268 302,270 C 337,275 367,260 382,240 C 352,220 292,240 256,255 Z" fill="url(#dragon-slayer-scale-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="256" cy="265" r="10" fill="url(#dragon-slayer-fire-runes)" stroke="#2a2333" stroke-width="3"/>
+
+    <!-- Handle -->
+    <rect x="245" y="280" width="22" height="100" rx="5" fill="#212121" stroke="#2a2333" stroke-width="5"/>
+    <line x1="245" y1="300" x2="267" y2="300" stroke="#d32f2f" stroke-width="3"/>
+    <line x1="245" y1="330" x2="267" y2="330" stroke="#d32f2f" stroke-width="3"/>
+    <line x1="245" y1="360" x2="267" y2="360" stroke="#d32f2f" stroke-width="3"/>
+
+    <!-- Dragon Fang Pommel -->
+    <path d="M 242,380 L 270,380 L 256,440 Z" fill="url(#dragon-slayer-bone-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    
+    <!-- Outer Blade Stroke -->
+    <polygon points="256,40 280,240 256,260 232,240" fill="none" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="boots-winterlands-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="boots-winterlands-boot-leather" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6d4c41"/>
+      <stop offset="50%" stop-color="#4e342e"/>
+      <stop offset="100%" stop-color="#271b17"/>
+    </linearGradient>
+    <linearGradient id="boots-winterlands-fur-trim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cfd8dc"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#boots-winterlands-shadow)">
+    <!-- Adventurer Fur-Lined Boot -->
+    <path d="M 180,140 L 310,140 L 300,280 L 380,310 C 410,330 420,380 390,400 L 170,400 C 150,400 150,330 170,280 Z" fill="url(#boots-winterlands-boot-leather)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- White Fur Cuff -->
+    <rect x="165" y="110" width="160" height="45" rx="10" fill="url(#boots-winterlands-fur-trim)" stroke="#2a2333" stroke-width="5"/>
+
+    <!-- Heel & Heavy Tread Sole -->
+    <rect x="160" y="400" width="240" height="25" rx="5" fill="#212121" stroke="#2a2333" stroke-width="5"/>
+    
+    <!-- Snowflake Buckle -->
+    <circle cx="230" cy="270" r="16" fill="url(#boots-winterlands-fur-trim)" stroke="#2a2333" stroke-width="3"/>
+    <line x1="230" y1="250" x2="230" y2="290" stroke="#00e5ff" stroke-width="3"/>
+    <line x1="210" y1="270" x2="250" y2="270" stroke="#00e5ff" stroke-width="3"/>
+  </g>
+</svg>

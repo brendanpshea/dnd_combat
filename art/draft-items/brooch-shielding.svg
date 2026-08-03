@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="brooch-shielding-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="brooch-shielding-silver-plate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <linearGradient id="brooch-shielding-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b9f6ca"/>
+      <stop offset="50%" stop-color="#00e676"/>
+      <stop offset="100%" stop-color="#00695c"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#brooch-shielding-shadow)">
+    <!-- Ornate Shield Brooch Body -->
+    <polygon points="256,120 360,180 340,340 256,420 172,340 152,180" fill="url(#brooch-shielding-silver-plate)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- Inner Rim -->
+    <polygon points="256,145 338,195 322,325 256,390 190,325 174,195" fill="none" stroke="#37474f" stroke-width="4"/>
+
+    <!-- Central Emerald Gem -->
+    <polygon points="256,210 296,250 256,310 216,250" fill="url(#brooch-shielding-emerald)" stroke="#2a2333" stroke-width="5"/>
+    <polygon points="256,225 280,250 256,290 232,250" fill="#ffffff" opacity="0.6"/>
+  </g>
+</svg>

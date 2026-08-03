@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="unarmed-strike-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="unarmed-strike-impact-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <linearGradient id="unarmed-strike-fist-skin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe0b2"/>
+      <stop offset="50%" stop-color="#ffb74d"/>
+      <stop offset="100%" stop-color="#f57c00"/>
+    </linearGradient>
+    <linearGradient id="unarmed-strike-wrap-leather" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#efebe9"/>
+      <stop offset="50%" stop-color="#d7ccc8"/>
+      <stop offset="100%" stop-color="#a1887f"/>
+    </linearGradient>
+    <linearGradient id="unarmed-strike-energy-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffff8d"/>
+      <stop offset="50%" stop-color="#ffd600"/>
+      <stop offset="100%" stop-color="#ff6d00"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#unarmed-strike-shadow)">
+    <!-- Impact Burst Lines Background -->
+    <g filter="url(#unarmed-strike-impact-glow)">
+      <path d="M 256,70 L 256,30" stroke="url(#unarmed-strike-energy-orange)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M 170,100 L 140,70" stroke="url(#unarmed-strike-energy-orange)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M 342,100 L 372,70" stroke="url(#unarmed-strike-energy-orange)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M 120,170 L 80,160" stroke="url(#unarmed-strike-energy-orange)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M 392,170 L 432,160" stroke="url(#unarmed-strike-energy-orange)" stroke-width="8" stroke-linecap="round"/>
+      <!-- Shockwave Star -->
+      <polygon points="256,90 270,130 310,130 280,155 290,195 256,170 222,195 232,155 202,130 242,130" fill="url(#unarmed-strike-energy-orange)" opacity="0.8"/>
+    </g>
+
+    <!-- Clenched Warrior Fist -->
+    <!-- Forearm Wrist -->
+    <rect x="210" y="310" width="92" height="150" rx="10" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="6"/>
+    <!-- Wrist Wraps -->
+    <rect x="200" y="340" width="112" height="25" rx="4" fill="url(#unarmed-strike-wrap-leather)" stroke="#2a2333" stroke-width="5" transform="rotate(-5 256 352)"/>
+    <rect x="200" y="380" width="112" height="25" rx="4" fill="url(#unarmed-strike-wrap-leather)" stroke="#2a2333" stroke-width="5" transform="rotate(5 256 392)"/>
+
+    <!-- Clenched Knuckles & Fingers -->
+    <!-- Main Hand Block -->
+    <path d="M 180,170 C 180,140 332,140 332,170 L 332,320 C 332,340 180,340 180,320 Z" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- Finger Segment Knuckles -->
+    <rect x="188" y="160" width="30" height="70" rx="8" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="4"/>
+    <rect x="223" y="145" width="32" height="85" rx="8" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="4"/>
+    <rect x="259" y="145" width="32" height="85" rx="8" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="4"/>
+    <rect x="294" y="160" width="30" height="70" rx="8" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="4"/>
+
+    <!-- Thumb Wrapped Across Knuckles -->
+    <path d="M 175,230 Q 256,290 320,240 Q 330,220 310,210 Q 256,250 185,205 Z" fill="url(#unarmed-strike-fist-skin)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+</svg>

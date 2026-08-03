@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <filter id="bracers-defense-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+    <filter id="bracers-defense-magic-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <linearGradient id="bracers-defense-mithril" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#b2ebf2"/>
+      <stop offset="100%" stop-color="#00838f"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#bracers-defense-shadow)">
+    <!-- Runic Bracer Body -->
+    <path d="M 160,100 L 352,100 L 320,380 L 192,380 Z" fill="url(#bracers-defense-mithril)" stroke="#2a2333" stroke-width="6" stroke-linejoin="round"/>
+    
+    <!-- Glowing Defense Shield Rune -->
+    <g filter="url(#bracers-defense-magic-glow)">
+      <polygon points="256,160 300,200 300,270 256,310 212,270 212,200" fill="none" stroke="#00e5ff" stroke-width="6"/>
+      <circle cx="256" cy="235" r="25" fill="#e0f7fa" stroke="#00e5ff" stroke-width="4"/>
+    </g>
+
+    <!-- Trim bands -->
+    <rect x="165" y="100" width="182" height="20" rx="4" fill="#ffffff" opacity="0.6"/>
+    <rect x="187" y="360" width="138" height="20" rx="4" fill="#ffffff" opacity="0.6"/>
+  </g>
+</svg>
