@@ -360,35 +360,74 @@ def strip_caption(im):
     a = im.split()[3].load()
     noise = max(2, int(w * CAPTION_NOISE_ROW))
     rows = [sum(1 for x in range(w) if a[x, y] > 40) > noise for y in range(h)]
-    if not any(rows):
+    if any(rows):
+        band_top = int(h * (1 - CAPTION_BAND))
+        last = max(y for y in range(h) if rows[y])
+        y = last
+        while y > 0 and rows[y]:
+            y -= 1
+        run_top = y + 1
+        if run_top >= band_top:
+            band_h = last - run_top + 1
+            if h * CAPTION_MIN_HEIGHT <= band_h <= h * CAPTION_MAX_HEIGHT:
+                gap = 0
+                yy = y
+                while yy > 0 and not rows[yy]:
+                    gap += 1
+                    yy -= 1
+                if gap >= CAPTION_MIN_GAP:
+                    out = im.copy()
+                    px = out.load()
+                    for r_y in range(run_top, last + 1):
+                        for r_x in range(w):
+                            px[r_x, r_y] = (0, 0, 0, 0)
+                    return out, last - run_top + 1
+
+    # Fallback: blob-based caption removal for captions sharing y-rows with side elements (e.g. feet)
+    label = [[0] * w for _ in range(h)]
+    blobs = []
+    cur = 0
+    for sy in range(h):
+        for sx in range(w):
+            if a[sx, sy] <= 40 or label[sy][sx]:
+                continue
+            cur += 1
+            stack = [(sx, sy)]
+            label[sy][sx] = cur
+            pixels = []
+            while stack:
+                x, y = stack.pop()
+                pixels.append((x, y))
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < w and 0 <= ny < h and not label[ny][nx] and a[nx, ny] > 40:
+                        label[ny][nx] = cur
+                        stack.append((nx, ny))
+            blobs.append(pixels)
+
+    if not blobs:
         return im, 0
-    band_top = int(h * (1 - CAPTION_BAND))
-    # Walk up from the bottom: the caption is the last run of ink, and what
-    # marks it as a caption rather than the figure's feet is the gap above it.
-    last = max(y for y in range(h) if rows[y])
-    y = last
-    while y > 0 and rows[y]:
-        y -= 1
-    run_top = y + 1
-    if run_top < band_top:
-        return im, 0                      # the ink reaches up out of the band
-    band_h = last - run_top + 1
-    if band_h > h * CAPTION_MAX_HEIGHT:
-        return im, 0                      # too tall to be a line of type
-    if band_h < h * CAPTION_MIN_HEIGHT:
-        return im, 0                      # a hairline: a shadow or a base, not type
-    gap = 0
-    while y > 0 and not rows[y]:
-        gap += 1
-        y -= 1
-    if gap < CAPTION_MIN_GAP:
-        return im, 0                      # attached to the figure
+    biggest = max(len(b) for b in blobs)
+
+    caption_blobs = []
+    for b in blobs:
+        if len(b) == biggest:
+            continue
+        ys = [p[1] for p in b]
+        xs = [p[0] for p in b]
+        bh = max(ys) - min(ys) + 1
+        if min(ys) >= h * (1 - CAPTION_BAND) and h * CAPTION_MIN_HEIGHT <= bh <= h * CAPTION_MAX_HEIGHT and min(xs) >= w * 0.15 and max(xs) <= w * 0.85:
+            caption_blobs.append(b)
+
+    if not caption_blobs:
+        return im, 0
+
     out = im.copy()
     px = out.load()
-    for yy in range(run_top, last + 1):
-        for xx in range(w):
-            px[xx, yy] = (0, 0, 0, 0)
-    return out, last - run_top + 1
+    for b in caption_blobs:
+        for x, y in b:
+            px[x, y] = (0, 0, 0, 0)
+    return out, len(caption_blobs)
 
 
 def normalize_framing(im, kind, cid):
