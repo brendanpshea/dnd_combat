@@ -35,6 +35,24 @@ const PUB = join(ROOT, 'web/public/art/items');
 const names = readdirSync(SRC).filter((f) => f.endsWith('.svg')).map((f) => f.slice(0, -4)).sort();
 const text = (dir: string, n: string) => readFileSync(join(dir, `${n}.svg`), 'utf8');
 
+/** The side of the square viewBox an icon is framed in. */
+const side = (n: string) =>
+  Number(text(SRC, n).match(/viewBox="([^"]+)"/)![1]!.trim().split(/\s+/)[2]);
+
+/**
+ * How much of its slot an icon's drawing actually fills, 0..1.
+ *
+ * Uses `data-ink`, which `svg-item-frame.ts` writes alongside the viewBox. It
+ * has to: once a weapon is framed against a LONGER weapon, its box is wider
+ * than its drawing by an amount that depends on where the floor clipped, and
+ * the viewBox alone cannot be inverted to recover the drawing's size. Measuring
+ * it here instead would mean launching Chromium on every test run.
+ */
+const renders = (n: string) => {
+  const ink = Number(text(SRC, n).match(/data-ink="([\d.]+)"/)![1]);
+  return ink / side(n);
+};
+
 /** Everything a player can own — the honest denominator. */
 const ownable = [
   ...Object.values(WEAPONS), ...Object.values(ARMOR), ...Object.values(ITEMS),
@@ -75,15 +93,57 @@ describe('the icons are framed', () => {
     }
   });
 
-  it('actually shrinks the box for most icons', () => {
+  it('actually shrinks the box for the things framed against themselves', () => {
     // The point of the exercise, stated as a number. Per-icon bounds cannot say
     // this: an unframed set would pass every one of them individually while
     // being exactly as illegible as before.
-    const sides = names.map((n) =>
-      Number(text(SRC, n).match(/viewBox="([^"]+)"/)![1]!.trim().split(/\s+/)[2]));
-    const tightened = sides.filter((w) => w < 512 * 0.85).length;
-    expect(tightened, `only ${tightened}/${names.length} icons were meaningfully cropped`)
-      .toBeGreaterThanOrEqual(Math.floor(names.length * 0.8));
+    //
+    // Weapons are excluded because they are deliberately NOT framed against
+    // themselves — see the size-ladder test below — so a large box is correct
+    // for them and would make this assertion say the opposite of what it means.
+    const loose = names.filter((n) => !(n in WEAPONS));
+    const tightened = loose.filter((n) => side(n) < 512 * 0.85).length;
+    expect(tightened, `only ${tightened}/${loose.length} non-weapon icons were meaningfully cropped`)
+      .toBeGreaterThanOrEqual(Math.floor(loose.length * 0.8));
+  });
+
+  it('draws a dagger visibly shorter than a greatsword', () => {
+    /*
+     * The cue that cropping each icon to itself threw away.
+     *
+     * At 36px a dagger, a longsword and a greatsword are the same silhouette —
+     * a blade on a diagonal — and length was the only thing separating them.
+     * Framing every weapon against its own drawing made all three fill the slot
+     * identically, which is why they became indistinguishable.
+     *
+     * `renders()` is the fraction of the slot the drawing actually occupies:
+     * its own tight extent over the box it is framed in.
+     */
+    const ladder = ['dagger', 'shortsword', 'longsword', 'greatsword'];
+    const sizes = ladder.map(renders);
+    for (let i = 1; i < sizes.length; i++) {
+      expect(sizes[i]!, `${ladder[i]} does not render larger than ${ladder[i - 1]}`)
+        .toBeGreaterThan(sizes[i - 1]!);
+    }
+    expect(sizes[0]! / sizes.at(-1)!, 'a dagger and a greatsword still render the same size')
+      .toBeLessThan(0.9);
+  });
+
+  it('does not shrink the smallest weapon into a speck', () => {
+    // The other half of the trade. True proportion would put a dagger at 0.53
+    // of a longbow and draw 19px of blade inside a 36px slot — one illegibility
+    // swapped for another.
+    const weapons = names.filter((n) => n in WEAPONS);
+    const smallest = Math.min(...weapons.map(renders));
+    expect(smallest, 'the shortest weapon renders too small to read').toBeGreaterThan(0.55);
+  });
+
+  it('frames non-weapons against themselves', () => {
+    // A shield is not "shorter" than a breastplate. Sharing the weapon scale
+    // would just make all the armour small for no information gained.
+    for (const n of names.filter((x) => !(x in WEAPONS))) {
+      expect(renders(n), `${n} is not framed to its own drawing`).toBeGreaterThan(0.85);
+    }
   });
 });
 
@@ -160,11 +220,35 @@ describe('one picture stands in for a family', () => {
     expect(itemArtId('potion-greater-healing')).toBe('potion-greater-healing');
   });
 
+  it('draws every wand as a wand and every staff as a staff', () => {
+    expect(itemArtId('wand-fireballs')).toBe('wand');
+    expect(itemArtId('wand-paralysis')).toBe('wand');
+    expect(itemArtId('staff-healing')).toBe('staff');
+    expect(itemArtId('figurine-golden-lion')).toBe('figurine');
+    expect(itemArtId('ring-of-the-ram')).toBe('ring');
+  });
+
+  it('gives the four elemental vessels one vessel', () => {
+    for (const id of ['brazier-fire-elemental', 'bowl-water-elemental',
+      'censer-air-elemental', 'stone-earth-elemental']) {
+      expect(itemArtId(id), `${id} has no icon`).toBe('elemental-focus');
+    }
+  });
+
+  it('does not mistake ring mail for jewellery', () => {
+    // `ring-mail` is ARMOUR — a tunic sewn with iron rings — and it has an icon
+    // of its own. A `^ring-` prefix match would have swapped a suit of armour
+    // for a piece of jewellery, and it would have looked deliberate.
+    expect(itemArtId('ring-mail'), 'a suit of ring mail was drawn as a ring').toBe('ring-mail');
+  });
+
   it('refuses to stand in for something genuinely different', () => {
     // A Sun Blade drawn as a longsword would say the wrong thing about the one
-    // weapon in the shop worth saving for. These keep their emoji.
-    for (const id of ['sun-blade', 'dragon-slayer', 'wand-fireballs', 'staff-healing',
-      'ring-of-the-ram', 'figurine-golden-lion']) {
+    // weapon in the shop worth saving for. The NAMED magic weapons keep their
+    // emoji for that reason — unlike wands and figurines, which are now drawn,
+    // because what a wand does is written on it rather than visible in it.
+    for (const id of ['sun-blade', 'dragon-slayer', 'mace-of-disruption',
+      'berserker-axe', 'sword-of-wounding']) {
       expect(itemArtId(id), `${id} was given somebody else's picture`).toBeUndefined();
     }
   });
@@ -178,11 +262,24 @@ describe('one picture stands in for a family', () => {
     }
   });
 
-  it('covers most of what a player can own', () => {
+  it('covers nearly everything a player can own', () => {
     // The number that decided this was worth doing: 31 without the aliasing,
-    // 159 with it. Anything near the lower figure means the mapping broke.
+    // 159 with it, 181 once the wands, staves, rings, figurines and elemental
+    // vessels were drawn. Anything well below that means the mapping broke.
     const covered = ownable.filter((id) => itemArtId(id) !== undefined);
     expect(covered.length, `only ${covered.length}/${ownable.length} ownable items have an icon`)
-      .toBeGreaterThanOrEqual(150);
+      .toBeGreaterThanOrEqual(175);
+  });
+
+  it('leaves exactly the things that have no honest picture', () => {
+    // Named magic weapons, and the unarmed strike, which is not an object at
+    // all. Naming them makes the emoji fallback a decision rather than a gap:
+    // anything NEW turning up here is an icon somebody forgot to draw.
+    const bare = ownable.filter((id) => itemArtId(id) === undefined).sort();
+    expect(bare).toEqual([
+      'berserker-axe', 'dragon-slayer', 'giant-slayer', 'mace-of-disruption',
+      'mace-of-smiting', 'mace-of-terror', 'sun-blade', 'sword-of-life-stealing',
+      'sword-of-wounding', 'unarmed-strike',
+    ]);
   });
 });

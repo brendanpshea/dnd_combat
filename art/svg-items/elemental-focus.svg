@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105.9 119.9 300.2 300.2" data-ink="268" width="100%" height="100%">
+  <defs>
+    <filter id="elemental-focus-drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+
+    <filter id="elemental-focus-glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <linearGradient id="elemental-focus-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="50%" stop-color="#f5b324"/>
+      <stop offset="100%" stop-color="#945f21"/>
+    </linearGradient>
+
+    <linearGradient id="elemental-focus-brass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe875"/>
+      <stop offset="100%" stop-color="#b8780e"/>
+    </linearGradient>
+
+    <!-- Liquid Gradients -->
+
+  </defs>
+  <!-- ELEMENTAL FOCUS (100% Transparent Background) -->
+  <g filter="url(#elemental-focus-drop-shadow)">
+    <polygon points="196,404 168,340 186,336 206,398" fill="url(#elemental-focus-brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="316,404 344,340 326,336 306,398" fill="url(#elemental-focus-brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,404 256,320 276,320 268,404" fill="url(#elemental-focus-brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="220" y="270" width="72" height="56" rx="8" fill="url(#elemental-focus-brass-grad)" stroke="#2a2333" stroke-width="5"/>
+    <path d="M 176 270 Q 256 320 336 270 Q 336 236 256 226 Q 176 236 176 270 Z"
+      fill="url(#elemental-focus-brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <ellipse cx="256" cy="246" rx="70" ry="20" fill="url(#elemental-focus-gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <g filter="url(#elemental-focus-glow-purple)">
+      <path d="M 256 244 Q 226 200 246 160 Q 250 190 264 176 Q 258 210 286 190 Q 272 224 296 214 Q 270 250 256 244 Z"
+        fill="#b56bff" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+      <circle cx="256" cy="150" r="14" fill="#e6ccff" stroke="#2a2333" stroke-width="5"/>
+    </g>
+  </g>
+</svg>

@@ -42,6 +42,7 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, existsSync
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
+import { WEAPONS } from '../src/data/weapons.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIR = join(ROOT, 'art/svg-items');
@@ -64,6 +65,25 @@ const PUBLIC = join(ROOT, 'web/public/art/items');
  * looks wedged into the frame — every other icon in the app has margin.
  */
 const PAD = 0.06;
+
+/**
+ * How small the shortest weapon may render beside the longest, as a fraction.
+ *
+ * Cropping each icon to its own drawing made every one of them fill its slot,
+ * which is right for a breastplate and wrong for a dagger: it threw away the
+ * one cue that survives at 36px. A dagger, a longsword and a greatsword are the
+ * same silhouette at that size — a blade on a diagonal — and LENGTH was all
+ * that told them apart.
+ *
+ * So weapons are framed against the longest weapon rather than against
+ * themselves. Full proportion would put the dagger at 0.53 and draw 19px of
+ * blade inside a 36px slot, trading one illegibility for another; the floor
+ * keeps the ladder without the bottom rung vanishing.
+ *
+ * Only weapons. A shield is not "shorter" than a breastplate, and framing
+ * armour against a longbow would just make all of it small.
+ */
+const SHORTEST_WEAPON = 0.62;
 
 /** The browser Playwright already downloaded for this repo's tests. */
 function chromePath(): string | undefined {
@@ -111,6 +131,20 @@ async function measure(names: string[]): Promise<Map<string, Box>> {
 }
 
 /**
+ * The box side an icon is framed against.
+ *
+ * Weapons share a scale so their lengths stay comparable; everything else is
+ * framed against itself. Membership comes from `WEAPONS` — the game's own data
+ * — rather than from a list kept here, or from a drawing detail like "does it
+ * rotate 45 degrees", either of which would silently drop a new icon out of the
+ * family.
+ */
+export function sideFor(name: string, tight: number, weaponMax: number): number {
+  if (!(name in WEAPONS)) return tight;
+  return Math.min(weaponMax, tight / SHORTEST_WEAPON);
+}
+
+/**
  * The viewBox that crops to `box`, kept SQUARE.
  *
  * Square because the app lays icons out in square slots. A tight non-square
@@ -118,10 +152,12 @@ async function measure(names: string[]): Promise<Map<string, Box>> {
  * rapier's box is roughly 1:4, and stretched into a square slot it would be the
  * only icon in the game that is not to scale.
  */
-export function frameFor(box: Box, pad = PAD): { x: number; y: number; size: number } {
-  const side = Math.max(box.w, box.h);
-  const grown = side * (1 + pad * 2);
+export function frameFor(box: Box, pad = PAD, side?: number): { x: number; y: number; size: number } {
+  const grown = (side ?? Math.max(box.w, box.h)) * (1 + pad * 2);
   return {
+    // Centred on the DRAWING, not on the original canvas: a dagger framed
+    // against a longbow has room to spare, and it belongs evenly around the
+    // blade rather than all on one side.
     x: box.x + box.w / 2 - grown / 2,
     y: box.y + box.h / 2 - grown / 2,
     size: grown,
@@ -130,11 +166,23 @@ export function frameFor(box: Box, pad = PAD): { x: number; y: number; size: num
 
 const round = (n: number) => Math.round(n * 10) / 10;
 
-/** The file's text with its viewBox replaced. */
-export function reframe(svg: string, box: Box): string {
-  const f = frameFor(box);
-  return svg.replace(/viewBox="[^"]*"/,
-    `viewBox="${round(f.x)} ${round(f.y)} ${round(f.size)} ${round(f.size)}"`);
+/**
+ * The file's text with its viewBox replaced, and the measurement recorded.
+ *
+ * `data-ink` is the drawing's own longest side, which the viewBox alone cannot
+ * tell you once a weapon has been framed against a longer weapon: the box is
+ * then wider than the drawing by an amount that depends on where the floor
+ * clipped, and there is no way to invert it. Writing the measurement down keeps
+ * "how much of its slot does this fill" answerable — by a test, and by anyone
+ * wondering why one sword draws smaller than another.
+ */
+export function reframe(svg: string, box: Box, side?: number): string {
+  const f = frameFor(box, PAD, side);
+  const ink = round(Math.max(box.w, box.h));
+  return svg
+    .replace(/ data-ink="[^"]*"/, '')
+    .replace(/viewBox="[^"]*"/,
+      `viewBox="${round(f.x)} ${round(f.y)} ${round(f.size)} ${round(f.size)}" data-ink="${ink}"`);
 }
 
 async function main(): Promise<number> {
@@ -145,11 +193,18 @@ async function main(): Promise<number> {
     return 1;
   }
   const boxes = await measure(names);
+  // The longest weapon sets the scale every other weapon is framed against.
+  const weaponMax = Math.max(...names
+    .filter((n) => n in WEAPONS)
+    .map((n) => Math.max(boxes.get(n)!.w, boxes.get(n)!.h)));
+  const sideOf = (n: string) =>
+    sideFor(n, Math.max(boxes.get(n)!.w, boxes.get(n)!.h), weaponMax);
+
   const stale: string[] = [];
   for (const name of names) {
     const path = join(DIR, `${name}.svg`);
     const current = readFileSync(path, 'utf8');
-    const want = reframe(current, boxes.get(name)!);
+    const want = reframe(current, boxes.get(name)!, sideOf(name));
     if (current === want) continue;
     if (check) stale.push(name);
     else writeFileSync(path, want, 'utf8');
@@ -164,7 +219,7 @@ async function main(): Promise<number> {
   const outOfDate = names.filter((n) => {
     const dst = join(PUBLIC, `${n}.svg`);
     if (!existsSync(dst)) return true;
-    const src = reframe(readFileSync(join(DIR, `${n}.svg`), 'utf8'), boxes.get(n)!);
+    const src = reframe(readFileSync(join(DIR, `${n}.svg`), 'utf8'), boxes.get(n)!, sideOf(n));
     return readFileSync(dst, 'utf8') !== src;
   });
   if (check) {
@@ -188,7 +243,7 @@ async function main(): Promise<number> {
   // Report the improvement, because "it ran" is not the same as "it helped".
   const gain = names.map((n) => {
     const b = boxes.get(n)!;
-    return (b.w * b.h) / (frameFor(b).size ** 2);
+    return (b.w * b.h) / (frameFor(b, PAD, sideOf(n)).size ** 2);
   });
   const mean = gain.reduce((a, c) => a + c, 0) / gain.length;
   console.log(`framed ${names.length} item SVGs -> ${PUBLIC}; mean box coverage now ${(mean * 100).toFixed(0)}%`);

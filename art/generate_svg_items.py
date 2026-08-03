@@ -808,6 +808,126 @@ def generate_plate_armor():
     return wrap_svg(content)
 
 # Map all items to their generator functions
+
+# ==============================================================================
+# ADDED ICONS — the gear that was still falling back to an emoji.
+# ==============================================================================
+def generate_morningstar():
+    content = """  <!-- MORNINGSTAR (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
+    <rect x="247" y="180" width="18" height="250" rx="3" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5"/>
+    <circle cx="256" cy="150" r="54" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5"/>
+    <polygon points="256,150 256,86 268,150" fill="url(#blade-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 256,214 244,150" fill="url(#blade-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 192,150 256,138" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 320,150 256,162" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 211,105 267,138" fill="url(#blade-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 301,195 245,162" fill="url(#blade-dark)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 301,105 267,162" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,150 211,195 245,138" fill="url(#blade-light)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="240" y="196" width="32" height="20" rx="4" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_ring():
+    content = """  <!-- RING -->
+  <g filter="url(#drop-shadow)">
+    <ellipse cx="256" cy="320" rx="130" ry="70" fill="none" stroke="url(#gold-grad)" stroke-width="34"/>
+    <ellipse cx="256" cy="320" rx="130" ry="70" fill="none" stroke="#2a2333" stroke-width="5"/>
+    <ellipse cx="256" cy="320" rx="95" ry="42" fill="none" stroke="#2a2333" stroke-width="5"/>
+    <g filter="url(#glow-purple)">
+      <polygon points="256,150 320,220 300,290 212,290 192,220" fill="url(#liquid-ruby)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    </g>
+    <polygon points="256,150 320,220 256,240 192,220" fill="url(#glass-shine)" opacity="0.6"/>
+    <path d="M 226,208 L 256,240 L 216,225 Z" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M 286,208 L 256,240 L 296,225 Z" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="4" stroke-linejoin="round"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_figurine():
+    content = """  <!-- FIGURINE OF WONDROUS POWER (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <rect x="166" y="378" width="180" height="34" rx="6" fill="#3a3040" stroke="#2a2333" stroke-width="5"/>
+    <rect x="182" y="352" width="148" height="30" rx="5" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5"/>
+    <ellipse cx="242" cy="330" rx="72" ry="40" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <path d="M 176 322 Q 138 300 148 254 Q 158 262 168 258 Q 160 280 190 300 Z"
+      fill="url(#gold-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="316" cy="290" r="54" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <polygon points="278,254 292,214 308,252" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="316,248 330,208 346,250" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="332" cy="284" r="7" fill="#2a2333"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_elemental_focus():
+    content = """  <!-- ELEMENTAL FOCUS (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <polygon points="196,404 168,340 186,336 206,398" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="316,404 344,340 326,336 306,398" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="256,404 256,320 276,320 268,404" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="220" y="270" width="72" height="56" rx="8" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5"/>
+    <path d="M 176 270 Q 256 320 336 270 Q 336 236 256 226 Q 176 236 176 270 Z"
+      fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <ellipse cx="256" cy="246" rx="70" ry="20" fill="url(#gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <g filter="url(#glow-purple)">
+      <path d="M 256 244 Q 226 200 246 160 Q 250 190 264 176 Q 258 210 286 190 Q 272 224 296 214 Q 270 250 256 244 Z"
+        fill="#b56bff" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+      <circle cx="256" cy="150" r="14" fill="#e6ccff" stroke="#2a2333" stroke-width="5"/>
+    </g>
+  </g>"""
+    return wrap_svg(content)
+def generate_hand_crossbow():
+    content = """  <!-- HAND CROSSBOW (100% Transparent Background) -->
+  <g filter="url(#drop-shadow)">
+    <!-- Bow limbs: thin springy arcs, outline drawn first then a slim coloured limb on top -->
+    <path d="M 256 176 C 224 158 190 148 158 156" fill="none" stroke="#2a2333" stroke-width="20" stroke-linecap="round"/>
+    <path d="M 256 176 C 288 158 322 148 354 156" fill="none" stroke="#2a2333" stroke-width="20" stroke-linecap="round"/>
+    <path d="M 256 176 C 224 158 190 148 158 156" fill="none" stroke="url(#blade-light)" stroke-width="11" stroke-linecap="round"/>
+    <path d="M 256 176 C 288 158 322 148 354 156" fill="none" stroke="url(#blade-dark)" stroke-width="11" stroke-linecap="round"/>
+    <!-- Stock, running straight down and perpendicular to the bow -->
+    <rect x="243" y="172" width="26" height="118" rx="4" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5"/>
+    <!-- Pistol grip -->
+    <path d="M 256 286 L 256 340 Q 256 358 274 358 L 288 358 L 288 334 L 274 334 L 274 286 Z"
+          fill="url(#leather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Trigger guard -->
+    <path d="M 288 300 Q 314 300 314 322 Q 314 340 294 340 L 288 340 L 288 328 L 296 328 Q 302 328 302 322 Q 302 312 288 312 Z"
+          fill="url(#brass-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Bowstring, dipping to the nock point -->
+    <path d="M 158 156 Q 256 208 354 156" fill="none" stroke="#e8e0cf" stroke-width="4"/>
+    <!-- Loaded bolt, nocked on the string and lying along the stock -->
+    <line x1="256" y1="286" x2="256" y2="118" stroke="#5a3d1c" stroke-width="7" stroke-linecap="round"/>
+    <polygon points="256,98 272,124 240,124" fill="url(#steel-rim)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="243,262 256,232 269,262 256,250" fill="url(#feather-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_wand():
+    content = """  <!-- WAND -->
+  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
+    <rect x="245" y="220" width="22" height="150" rx="8" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5"/>
+    <rect x="240" y="345" width="32" height="20" rx="6" fill="url(#brass-grad)" stroke="#2a2333" stroke-width="4"/>
+    <circle cx="256" cy="200" r="34" fill="#c026d3" filter="url(#glow-purple)"/>
+    <circle cx="256" cy="200" r="22" fill="url(#liquid-ruby)" stroke="#2a2333" stroke-width="5"/>
+    <line x1="240" y1="188" x2="272" y2="212" stroke="#2a2333" stroke-width="3" opacity="0.6"/>
+  </g>"""
+    return wrap_svg(content)
+
+def generate_staff():
+    content = """  <!-- STAFF -->
+  <g filter="url(#drop-shadow)" transform="rotate(-45 256 256)">
+    <rect x="236" y="200" width="40" height="260" rx="12" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5"/>
+    <path d="M 236,235 Q 256,250 276,235" stroke="#2a2333" stroke-width="4" fill="none" opacity="0.5"/>
+    <path d="M 236,290 Q 256,305 276,290" stroke="#2a2333" stroke-width="4" fill="none" opacity="0.5"/>
+    <path d="M 236,345 Q 256,360 276,345" stroke="#2a2333" stroke-width="4" fill="none" opacity="0.5"/>
+    <path d="M 226,205 Q 175,190 168,140 Q 158,105 190,90 Q 178,120 200,145 Q 220,165 244,175 Z" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M 286,205 Q 337,190 344,140 Q 354,105 322,90 Q 334,120 312,145 Q 292,165 268,175 Z" fill="url(#wood-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="256" cy="140" r="46" fill="#c026d3" filter="url(#glow-purple)"/>
+    <circle cx="256" cy="140" r="34" fill="url(#liquid-ruby)" stroke="#2a2333" stroke-width="5"/>
+    <line x1="230" y1="122" x2="282" y2="158" stroke="#2a2333" stroke-width="3" opacity="0.6"/>
+    <line x1="282" y1="122" x2="230" y2="158" stroke="#2a2333" stroke-width="3" opacity="0.6"/>
+  </g>"""
+    return wrap_svg(content)
+
 ITEMS = {
     # Swords (6)
     "dagger": lambda: generate_sword("dagger", blade_top=130, blade_bot=280, blade_w=24, hilt_h=35, guard_type="swept", gem_color="#00e676"),
@@ -848,6 +968,15 @@ ITEMS = {
     "chain-mail": generate_chain_mail,
     "splint": generate_splint_armor,
     "plate": generate_plate_armor,
+
+    # Magic items and implements — the gear that used to fall back to an emoji.
+    "morningstar": generate_morningstar,
+    "hand-crossbow": generate_hand_crossbow,
+    "wand": generate_wand,
+    "staff": generate_staff,
+    "ring": generate_ring,
+    "figurine": generate_figurine,
+    "elemental-focus": generate_elemental_focus,
 
     # Consumables & Magic (4)
     "potion-healing": generate_potion_healing,

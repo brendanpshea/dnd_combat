@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="132.5 184.5 251 251" data-ink="224.1" width="100%" height="100%">
+  <defs>
+    <filter id="figurine-drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#120c1f" flood-opacity="0.5"/>
+    </filter>
+
+    <linearGradient id="figurine-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="50%" stop-color="#f5b324"/>
+      <stop offset="100%" stop-color="#945f21"/>
+    </linearGradient>
+
+    <linearGradient id="figurine-brass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe875"/>
+      <stop offset="100%" stop-color="#b8780e"/>
+    </linearGradient>
+
+    <!-- Liquid Gradients -->
+
+  </defs>
+  <!-- FIGURINE OF WONDROUS POWER (100% Transparent Background) -->
+  <g filter="url(#figurine-drop-shadow)">
+    <rect x="166" y="378" width="180" height="34" rx="6" fill="#3a3040" stroke="#2a2333" stroke-width="5"/>
+    <rect x="182" y="352" width="148" height="30" rx="5" fill="url(#figurine-brass-grad)" stroke="#2a2333" stroke-width="5"/>
+    <ellipse cx="242" cy="330" rx="72" ry="40" fill="url(#figurine-gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <path d="M 176 322 Q 138 300 148 254 Q 158 262 168 258 Q 160 280 190 300 Z"
+      fill="url(#figurine-gold-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="316" cy="290" r="54" fill="url(#figurine-gold-grad)" stroke="#2a2333" stroke-width="5"/>
+    <polygon points="278,254 292,214 308,252" fill="url(#figurine-gold-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="316,248 330,208 346,250" fill="url(#figurine-gold-grad)" stroke="#2a2333" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="332" cy="284" r="7" fill="#2a2333"/>
+  </g>
+</svg>
