@@ -78,7 +78,7 @@ export const TOKEN_FILL: Record<string, number> = {
   'goblin-hexer': 0.4815,
   'goblin-warrior': 0.4753,
   gorgon: 0.4969,
-  'gray-ooze': 0.5806,
+  'gray-ooze': 0.3241,
   'green-hag': 0.5402,
   'green-wyrmling': 0.4969,
   griffon: 0.6878,
