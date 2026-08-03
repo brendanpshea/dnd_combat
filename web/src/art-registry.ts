@@ -107,10 +107,11 @@ export const HAS_TERRAIN_ART = new Set<string>([
  */
 export const HAS_ITEM_ART = new Set<string>([
   'alchemists-fire', 'battleaxe', 'breastplate', 'chain-mail', 'chain-shirt',
-  'dagger', 'greataxe', 'greatsword', 'half-plate', 'handaxe', 'hide',
-  'javelin', 'leather', 'light-crossbow', 'longbow', 'longsword', 'mace',
-  'padded', 'plate', 'potion-greater-healing', 'potion-healing',
-  'quarterstaff', 'rapier', 'ring-mail', 'scale-mail', 'scimitar', 'scroll',
-  'shield', 'shortbow', 'shortsword', 'spear', 'splint', 'studded-leather',
-  'warhammer'
+  'dagger', 'elemental-focus', 'figurine', 'greataxe', 'greatsword',
+  'half-plate', 'hand-crossbow', 'handaxe', 'hide', 'javelin', 'leather',
+  'light-crossbow', 'longbow', 'longsword', 'mace', 'morningstar', 'padded',
+  'plate', 'potion-greater-healing', 'potion-healing', 'quarterstaff',
+  'rapier', 'ring', 'ring-mail', 'scale-mail', 'scimitar', 'scroll',
+  'shield', 'shortbow', 'shortsword', 'spear', 'splint', 'staff',
+  'studded-leather', 'wand', 'warhammer'
 ]);

@@ -15,11 +15,17 @@ npm run svg-frame                  # crop each viewBox, then publish
 
 The second step is not optional. `generate_svg_items.py` draws everything inside
 a 512x512 canvas and most icons use very little of it — a rapier covered **4%**
-of its own box, and at inventory size a dagger, a longsword and a greatsword
-were three identical slivers. `npm run svg-frame` measures each drawing's real
-bounding box in a headless browser and crops the viewBox to it, which roughly
-doubles how large every icon renders in a fixed slot. It then copies the result
-into `web/public/art/items/`.
+of its own box. `npm run svg-frame` measures each drawing's real bounding box in
+a headless browser and crops the viewBox to it, which roughly doubles how large
+every icon renders in a fixed slot. It then copies the result into
+`web/public/art/items/`.
+
+Weapons are cropped against the LONGEST weapon rather than against themselves,
+so a dagger still draws visibly shorter than a greatsword — at 36px that length
+difference is the only thing separating two blades on a diagonal. A floor stops
+the shortest weapon shrinking into a speck. Everything else is cropped to its
+own drawing: a shield is not "shorter" than a breastplate. The measured extent
+is written back as `data-ink` so the ratio stays inspectable.
 
 Both steps are checked by the test suite (`npm test`), so a forgotten framing
 pass fails rather than shipping.
@@ -28,12 +34,20 @@ pass fails rather than shipping.
 
 `web/src/itemArt.ts` maps an inventory id onto the shape it is: `+1`, `silvered`
 and `vicious` variants resolve to the plain weapon, every `scroll-*` to one
-scroll, and the resistance potions to a potion. That is how 34 pictures cover
-**159 of the 191** things a player can own.
+scroll, every `wand-*` to one wand, the four elemental vessels to one brazier,
+and the resistance potions to a potion. That is how 41 pictures cover **181 of
+the 191** things a player can own.
 
-The rest — wands, staves, rings, figurines and the named magic blades — keep
-their emoji on purpose. Drawing a Sun Blade as an ordinary longsword would say
-the wrong thing about the one weapon in the shop worth saving for.
+Note `^ring-of-` rather than `^ring-`: `ring-mail` is armour with an icon of its
+own, and a prefix match would have quietly swapped a suit of mail for a piece of
+jewellery.
+
+The ten that remain on emoji are the NAMED magic weapons (Sun Blade, Dragon
+Slayer, Berserker Axe...) and the unarmed strike. That is deliberate: drawing a
+Sun Blade as an ordinary longsword would say the wrong thing about the one
+weapon in the shop worth saving for, and `itemIcon` already gives magic weapons
+a 🌙 and bane weapons a 🗡️. `test/item-art.test.ts` pins the list, so a new item
+falling through shows up as a failure rather than as a silent gap.
 
 `web/src/ItemIcon.tsx` draws them only where the icon gets 40px or more (gear
 slots, gear picker, shop rows). Below roughly 28px these lose to the emoji, so

@@ -47,6 +47,21 @@ export function itemArtId(itemId: string): string | undefined {
   // its own icon, because it is the one potion whose art was drawn to differ.
   if (/^potion-(fire|cold|acid|poison)-resistance$/.test(base)) base = 'potion-healing';
   if (base.startsWith('potion-giant-strength')) base = 'potion-healing';
+  // Magic implements: what a wand does is written on it, not visible in it.
+  if (base.startsWith('wand-')) base = 'wand';
+  if (base.startsWith('staff-')) base = 'staff';
+  if (base.startsWith('figurine-')) base = 'figurine';
+  /*
+   * `^ring-of-`, NOT `^ring-`.
+   *
+   * `ring-mail` is ARMOUR — a tunic sewn with iron rings — and it has an icon
+   * of its own. A prefix match would have quietly replaced a suit of armour
+   * with a piece of jewellery, and it would have looked deliberate.
+   */
+  if (base.startsWith('ring-of-')) base = 'ring';
+  // Brazier, bowl, censer and stone: four vessels that each summon an
+  // elemental. One vessel is enough — the element is in the name.
+  if (base.endsWith('-elemental')) base = 'elemental-focus';
   return HAS_ITEM_ART.has(base) ? base : undefined;
 }
 
