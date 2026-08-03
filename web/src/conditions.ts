@@ -21,21 +21,35 @@ export interface ConditionMeta {
   hidden?: boolean;
 }
 
+/*
+ * EVERY LABEL CARRIES ITS OWN EXPLANATION, after an em dash.
+ *
+ * Seven of these were a bare word — "Prone", "Blessed" — from when the only way
+ * to read one was to tap its badge, and the tap handler fell back to "A status
+ * effect on this creature." when there was nothing after the dash. So the shrug
+ * was already there; the badge just hid it. The chooser now prints these in
+ * full, which made the gap visible.
+ *
+ * The wording states what THIS ENGINE does, not what the rulebook says. The
+ * 5e frightened creature also cannot move closer to what scared it; this one
+ * only attacks at disadvantage (see rules/attack.ts), and promising the rest
+ * would be worse than saying less.
+ */
 export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   charmed:        { icon: '💗', label: 'Charmed — can’t attack whoever charmed it', kind: 'control' },
   lured:          { icon: '🎶', label: 'Lured — drawn toward the singer, and can’t act', kind: 'control', tint: 'fear' },
   fleeing:        { icon: '🏃', label: 'Fleeing — runs for the edge each turn, and is gone when it gets there', kind: 'control', tint: 'fear' },
   paralyzed:      { icon: '😵', label: 'Paralyzed — can’t move or act', kind: 'control', tint: 'frozen' },
   stunned:        { icon: '💫', label: 'Stunned — can’t move or act, and easier to hit', kind: 'control', tint: 'frozen' },
-  unconscious:    { icon: '💤', label: 'Unconscious', kind: 'control' },
+  unconscious:    { icon: '💤', label: 'Unconscious — attacks against it have advantage, and a melee hit is always a crit', kind: 'control' },
   restrained:     { icon: '⛓️', label: 'Restrained — speed 0, easier to hit', kind: 'control', tint: 'bound' },
   commanded:      { icon: '🫵', label: 'Commanded — loses its next action', kind: 'control' },
   incapacitated:  { icon: '💫', label: 'Incapacitated — can’t take actions', kind: 'control' },
-  frightened:     { icon: '😱', label: 'Frightened', kind: 'debuff', tint: 'fear' },
+  frightened:     { icon: '😱', label: 'Frightened — its own attacks have disadvantage', kind: 'debuff', tint: 'fear' },
   poisoned:       { icon: '🤢', label: 'Poisoned — disadvantage on attacks', kind: 'debuff', tint: 'poison' },
-  blinded:        { icon: '🌫️', label: 'Blinded', kind: 'debuff' },
-  prone:          { icon: '🔻', label: 'Prone', kind: 'debuff' },
-  slowed:         { icon: '🐌', label: 'Slowed', kind: 'debuff' },
+  blinded:        { icon: '🌫️', label: 'Blinded — its attacks have disadvantage, and attacks against it have advantage', kind: 'debuff' },
+  prone:          { icon: '🔻', label: 'Prone — easier to hit up close, harder to hit at range, and its own attacks have disadvantage', kind: 'debuff' },
+  slowed:         { icon: '🐌', label: 'Slowed — 10 feet slower until its next turn', kind: 'debuff' },
   sapped:         { icon: '😩', label: 'Sapped — disadvantage on next attack', kind: 'debuff' },
   guided:         { icon: '🎯', label: 'Marked — next attack against it has advantage', kind: 'debuff' },
   outlined:       { icon: '🔆', label: 'Outlined — easier to hit, can’t hide', kind: 'debuff' },
@@ -43,8 +57,8 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   // what the board needs to show is that this creature is easier to hit, and
   // that is true whichever side of it you are on.
   reckless:       { icon: '💢', label: 'Reckless — hits harder, and is easier to hit', kind: 'debuff' },
-  vexed:          { icon: '❗', label: 'Vexed', kind: 'debuff' },
-  blessed:        { icon: '✨', label: 'Blessed', kind: 'buff' },
+  vexed:          { icon: '❗', label: 'Vexed — the next attack against it has advantage', kind: 'debuff' },
+  blessed:        { icon: '✨', label: 'Blessed — +1d4 on its attack rolls and saving throws', kind: 'buff' },
   inspiring:      { icon: '🎵', label: 'Bardic Inspiration — +1d6 on the next attack or save', kind: 'buff' },
   shillelagh:     { icon: '🌳', label: 'Shillelagh — the staff strikes on Wisdom, at a bigger die', kind: 'buff' },
   sanctuary:      { icon: '⛪', label: 'Sanctuary — attackers must save to target it', kind: 'buff' },
@@ -95,4 +109,29 @@ export function conditionBadges(ids: ConditionId[]): ConditionMeta[] {
 /** The tint that should wash the token, if any — first by badge priority. */
 export function conditionTint(ids: ConditionId[]): ConditionMeta['tint'] | undefined {
   return conditionBadges(ids).find((m) => m.tint)?.tint;
+}
+
+/**
+ * What the token shows: the worst condition, and how many others there are.
+ *
+ * THE TOKEN USED TO SHOW UP TO FOUR STACKED BADGES.
+ *
+ * Measured on a 390px phone, where a token is 46x46: four badges came to
+ * 14x59px — TALLER than the creature they belong to. They covered 29% of it,
+ * they were the only `pointer-events: auto` thing in a layer that is otherwise
+ * transparent to taps, and the fourth one's centre landed on a NEIGHBOURING
+ * SQUARE. Nothing clipped it; both the slot and the token are `overflow:
+ * visible`.
+ *
+ * So a webbed, prone, poisoned enemy — exactly the one worth attacking — was
+ * the hardest one to attack, and missing meant a glossary card instead of a
+ * swing.
+ *
+ * One chip is 14x14. The count keeps the information that something else is
+ * going on; the chooser that opens when you tap the creature spells it out.
+ */
+export function conditionChip(ids: ConditionId[]): { meta: ConditionMeta; extra: number } | undefined {
+  const all = conditionBadges(ids);
+  const worst = all[0];
+  return worst ? { meta: worst, extra: all.length - 1 } : undefined;
 }
