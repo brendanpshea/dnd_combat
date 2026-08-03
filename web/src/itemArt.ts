@@ -58,7 +58,7 @@ export function itemArtId(itemId: string): string | undefined {
    * of its own. A prefix match would have quietly replaced a suit of armour
    * with a piece of jewellery, and it would have looked deliberate.
    */
-  if (base.startsWith('ring-of-')) base = 'ring';
+  if (base.startsWith('ring-') && base !== 'ring-mail') base = 'ring';
   // Brazier, bowl, censer and stone: four vessels that each summon an
   // elemental. One vessel is enough — the element is in the name.
   if (base.endsWith('-elemental')) base = 'elemental-focus';

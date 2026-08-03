@@ -226,6 +226,7 @@ describe('one picture stands in for a family', () => {
     expect(itemArtId('staff-healing')).toBe('staff');
     expect(itemArtId('figurine-golden-lion')).toBe('figurine');
     expect(itemArtId('ring-of-the-ram')).toBe('ring');
+    expect(itemArtId('ring-resistance-fire')).toBe('ring');
   });
 
   it('gives the four elemental vessels one vessel', () => {
