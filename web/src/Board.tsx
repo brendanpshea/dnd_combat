@@ -12,7 +12,7 @@ import {
   HAS_TERRAIN_ART, terrainUrl, backdropLayers,
 } from './art.js';
 import { reachCells } from '../../src/engine/rules/reach.js';
-import { conditionBadges, conditionTint } from './conditions.js';
+import { conditionBadges, conditionChip, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
 import { classLook } from './classLook.js';
 import type { MapTheme } from '../../src/data/maps.js';
@@ -49,9 +49,6 @@ export interface BoardProps {
   /** Map visual theme — styles the whole board as a place. */
   theme?: string | undefined;
   onCellTap(pos: Position, occupant?: Combatant): void;
-  /** Tapping a condition badge asks for an explanation (mobile has no hover
-   *  tooltip). Absent = badges stay hover-only. */
-  onCondition?: ((label: string, icon: string) => void) | undefined;
 }
 
 /**
@@ -60,7 +57,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, strikes, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap, onCondition }: BoardProps) {
+export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, strikes, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
   /**
@@ -258,6 +255,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
       // monster id) get nothing and the pip stays a "this one is yours" mark.
       const look = classLook(c.classId);
       const badges = conditionBadges(condIds);
+      const chip = conditionChip(condIds);
       const tint = conditionTint(condIds);
       return (
         <div
@@ -368,22 +366,31 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
               <div className="hpfill" style={{ width: `${Math.round((c.hp / c.maxHp) * 100)}%` }} />
             </div>
             {count ? <span className="multi-count">{count}</span> : null}
-            {badges.length > 0 && (
-              <div className="cond-badges">
-                {badges.slice(0, 3).map((m, i) => (
-                  <span
-                    key={i} className={`cond-badge ${m.kind}`} title={m.label}
-                    onClick={onCondition ? (e) => { e.stopPropagation(); onCondition(m.label, m.icon); } : undefined}
-                  >{m.icon}</span>
-                ))}
-                {badges.length > 3 && (
-                  <span
-                    className="cond-badge more" title={badges.slice(3).map((m) => m.label).join('\n')}
-                    onClick={onCondition ? (e) => { e.stopPropagation(); onCondition(badges.slice(3).map((m) => m.label).join(' · '), '🏷️'); } : undefined}
-                  >
-                    +{badges.length - 3}
-                  </span>
-                )}
+            {/*
+                ONE CHIP, AND IT DOES NOT TAKE TAPS.
+
+                This was up to four stacked badges, each of them clickable. On a
+                390px phone that column measured 14x59 against a 46x46 token —
+                taller than the creature — covering 29% of it, and the fourth
+                badge's centre sat on the NEXT SQUARE ALONG. Since `.token-layer`
+                is `pointer-events: none`, those badges were the only things in
+                it that took taps: holes punched over the cell grid, which is
+                what a player is actually aiming at.
+
+                The tap they stole is the attack. So the more conditions on an
+                enemy — webbed, prone, poisoned, i.e. the enemy most worth
+                hitting — the harder it became to hit, and a miss opened a
+                glossary card instead of swinging.
+
+                The chip still says "something is wrong with this one" at a
+                glance, which is the job. What each condition DOES is spelled
+                out in the chooser that opens when you tap the creature — the
+                panel you were already heading for.
+            */}
+            {chip && (
+              <div className="cond-badges" title={badges.map((m) => m.label).join('\n')}>
+                <span className={`cond-badge ${chip.meta.kind}`}>{chip.meta.icon}</span>
+                {chip.extra > 0 && <span className="cond-badge more">+{chip.extra}</span>}
               </div>
             )}
           </div>

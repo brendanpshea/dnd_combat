@@ -45,6 +45,7 @@ import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
 import { FeaturePips } from './FeaturePips.js';
 import { CharacterSheet } from './CharacterSheet.js';
+import { conditionBadges } from './conditions.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -197,14 +198,6 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
         </p>
       </header>
 
-      {/* The tutorial, first. It sat fifth, 1,769px down — you reached
-          "New to this?" only after scrolling past three chapters and the
-          arena, which is to say after you had already answered it. */}
-      <button className="landing-learn" onClick={() => { initAudio(); onPick({ view: 'training' }); }}>
-        🎓 New to this? Learn the basics
-        <small>A quick guided battle — move, attack, win. Two minutes, no setup.</small>
-      </button>
-
       <div className="landing-section">
         <span className="landing-section-label">The story campaign</span>
         {storyChain.length > 0 && (() => {
@@ -327,6 +320,28 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
             <button className="landing-alt" onClick={() => onPick({ view: 'skirmish-setup' })}>
               ⚔️ Quick Battle
               <small>One custom fight, your party vs. anything.</small>
+            </button>
+            {/*
+              THE TRAINING YARD, PARKED.
+                
+              It was the first thing on the landing page and it did not work:
+              the coach banner covered the board it was talking about, and the
+              kobolds killed a hero about half the time — in the screen whose
+              whole job is to say "this is manageable".
+                
+              Teaching now happens where a player already is. The "How to play"
+              card opens on their FIRST combat, whichever mode that is, and the
+              just-in-time tips (see tips.ts) fire the first time each mechanic
+              actually happens. Both beat a separate battle you have to be sent
+              to, because neither asks the player to go anywhere.
+                
+              Kept rather than deleted: the coach script is a decent skeleton if
+              it is ever rebuilt, and none of the reasons above are reasons the
+              CODE is wrong.
+            */}
+            <button className="landing-alt" onClick={() => { initAudio(); onPick({ view: 'training' }); }}>
+              🎓 Training Yard
+              <small>The old guided battle. Coach banner covers the board.</small>
             </button>
             </>)}
             {loose.map((m) => (
@@ -1270,12 +1285,6 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         hitIds={hitIds}
         strikingSummons={strikingSummons}
         onCellTap={onCellTap}
-        onCondition={(label, icon) => {
-          // A badge tap explains the condition through the same toast card. The
-          // label is "Name — what it does"; split on the em dash for the title.
-          const [name, ...rest] = label.split(' — ');
-          setTip({ id: 'cond-lookup', icon, title: name!, body: rest.join(' — ') || 'A status effect on this creature.' });
-        }}
       />
 
       {/* Directly under the board: a fixed place to read what just happened,
@@ -1564,6 +1573,34 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               <h3>{chooser.target.name}</h3>
             </div>
             {/*
+              WHAT IS WRONG WITH THIS ONE, IN WORDS.
+
+              The token used to carry up to four tappable badges, and on a phone
+              they covered a third of a 46px creature and stole the tap that
+              attacks it. They are decoration now, so the explanation has to
+              live somewhere — and this is the right somewhere: it is the panel
+              that tapping the creature already opens, it has room for the full
+              sentence, and it is read at the moment the information matters,
+              which is while choosing what to do about it.
+            */}
+            {(() => {
+              const metas = conditionBadges(chooser.target.conditions.map((k) => k.id));
+              if (metas.length === 0) return null;
+              return (
+                <ul className="chooser-conditions">
+                  {metas.map((m, i) => {
+                    const [name, ...rest] = m.label.split(' — ');
+                    return (
+                      <li key={i} className={m.kind}>
+                        <span className="cc-icon" aria-hidden="true">{m.icon}</span>
+                        <span className="cc-text"><b>{name}</b>{rest.length > 0 && <> — {rest.join(' — ')}</>}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            })()}
+            {/*
               READY FIRST, THE PACK BEHIND A CONTROL.
 
               `attackableWeapons` includes every stowed weapon while the free
@@ -1641,14 +1678,31 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         <div className="overlay" onClick={dismissTutorial}>
           <div className="overlay-box tutorial" onClick={(e) => e.stopPropagation()}>
             <h2>⚔️ How to play</h2>
+            {/*
+              THIS IS THE TUTORIAL NOW.
+                
+              It opens on a player's FIRST combat, in whichever mode they
+              started, so it costs them no detour — the standalone Training Yard
+              is gone from the landing page for the opposite reason. Which means
+              this list has to carry a turn on its own.
+                
+              Ordered as a turn is actually taken — whose go, move, attack, the
+              action bar, end turn — rather than by topic, because it is read
+              once, quickly, with the board already waiting underneath.
+                
+              The status-badge line is gone: badges are decoration now, and what
+              a condition does is printed in the panel that tapping the creature
+              opens. See conditions.ts.
+            */}
             <ul className="tut-list">
               <li>🔽 The <b>bobbing gold arrow</b> shows whose turn it is.</li>
               <li>🟦 Tap a <b>blue tile</b> to move your hero there.</li>
-              <li>🟥 Tap a <b>red-ringed enemy</b> to attack it.</li>
-              <li>✨ Use spells, potions, and abilities from the <b>action bar</b> at the bottom.</li>
+              <li>🟥 Tap a <b>red-ringed enemy</b> to attack it — you'll get to pick the weapon, and see what's already wrong with it.</li>
+              <li>🔮 Casters have a <b>spell bar</b>. Cantrips are free and unlimited; the pips under a name are the spell slots that power the big ones.</li>
+              <li>✨ Potions, abilities and everything else live in the <b>action bar</b> at the bottom.</li>
+              <li>💚 Keep the party standing — <b>healing a hero</b> wins more fights than one extra swing.</li>
               <li>💡 Stuck? Tap <b>Hint</b> for a suggested move.</li>
               <li>🎓 <b>Learning tips</b> pop up the first time something new happens — tap the 💡 in the top bar to turn them off once you know the ropes.</li>
-              <li>🏷️ Tap a <b>status badge</b> on a token to see what that condition does.</li>
               <li>➤ Done? Tap <b>End turn</b>. Defeat all enemies to win!</li>
             </ul>
             <button className="primary" onClick={dismissTutorial}>Got it!</button>

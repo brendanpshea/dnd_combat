@@ -888,15 +888,19 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   align-items: center;
   justify-content: center;
 }
+/* One chip and an optional count, side by side.
+   COLUMN was the bug: four stacked badges came to 59px against a 46px token on
+   a phone, so the bottom one sat over the next square along. A row of at most
+   two can never be taller than one badge. */
 .cond-badges {
   position: absolute;
   z-index: 4;
   top: 2%;
   left: 4%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 2px;
-  align-items: flex-start;
+  align-items: center;
   pointer-events: none;
 }
 .cond-badge {
@@ -911,7 +915,11 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   background: #14101fcc;
   border: 1.5px solid #000a;
   box-shadow: 0 1px 2px #000a;
-  pointer-events: auto;
+  /* Decoration, NOT a control. `.token-layer` is `pointer-events: none`, so an
+     `auto` here punches a hole straight through to the cell grid underneath —
+     which is the thing the player is aiming at. What each condition does is
+     spelled out in the chooser that tapping the creature opens. */
+  pointer-events: none;
   cursor: help;
 }
 /* A hairline colour rim keys the badge to whether it helps or hurts. */
@@ -1297,6 +1305,25 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .portrait-sil svg { width: 76%; height: 76%; display: block; }
 .chooser-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .chooser-head h3 { margin: 0; }
+/* The conditions on the creature you are about to act against, spelled out.
+   Colour-coded the same way the token chip is, so the one thing you glanced at
+   on the board and the sentence explaining it agree. */
+.chooser-conditions { list-style: none; margin: 2px 0 6px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.chooser-conditions li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12px; line-height: 1.35; color: var(--muted);
+  padding: 5px 8px; border-radius: 8px;
+  background: var(--panel2); border-left: 3px solid #6b6390;
+}
+.chooser-conditions li.control { border-left-color: #ff6a6a; }
+.chooser-conditions li.debuff  { border-left-color: #ffb08a; }
+.chooser-conditions li.buff    { border-left-color: #7be0a0; }
+.chooser-conditions .cc-icon { font-size: 15px; line-height: 1.1; flex: none; }
+/* `min-width: 0` because a flex item refuses to shrink below its content by
+   default, and these sentences are long enough to push the row wider than the
+   panel on a phone. */
+.chooser-conditions .cc-text { min-width: 0; }
+.chooser-conditions b { color: var(--text); font-weight: 700; }
 
 .targeting-banner {
   background: #4a3a1f;
@@ -1388,7 +1415,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 /* Tutorial overlay */
 .tutorial { text-align: left; max-width: 340px; }
 .tut-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 4px 0 8px; }
-.tut-list li { font-size: 15px; line-height: 1.35; }
+/* Left, not centred. The card inherits the overlay's centring, which was fine
+   for one-line bullets and is not for these: a ragged-both-edges paragraph is
+   measurably slower to read, and this is read once with a turn waiting. */
+.tut-list li { font-size: 15px; line-height: 1.35; text-align: left; }
 .tutorial .primary { align-self: center; min-width: 140px; }
 
 /* Difficulty picker (forge) */
@@ -3269,14 +3299,6 @@ button.category .count {
 .landing-alt:hover { border-color: var(--muted); }
 .landing-alt small { color: var(--muted); font-weight: 400; font-size: .82rem; }
 .landing-about-link { align-self: center; font-size: .85rem; }
-.landing-learn {
-  display: flex; flex-direction: column; gap: 3px; text-align: left;
-  padding: 13px 16px; border-radius: 12px; cursor: pointer; font-weight: 700;
-  color: #eaf2ff; background: linear-gradient(#2c4a6e, #223a58);
-  border: 1px solid #4a78ad; transition: filter .12s;
-}
-.landing-learn:hover { filter: brightness(1.12); }
-.landing-learn small { color: #b9d0ea; font-weight: 400; font-size: .82rem; }
 
 /* Training Yard coach banner — a persistent, prominent step prompt. */
 .coach-banner {
