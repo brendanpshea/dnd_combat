@@ -341,7 +341,23 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           // on `t.count` and the second on the real number made it fall between
           // them and vanish from the chooser entirely.
           const shots = spellShots(spell, actor!);
-          if (t.who === 'enemy' && shots === 1 && a.targets.length === 1) {
+          /*
+           * CANTRIPS ONLY on the tapped-enemy chooser.
+           *
+           * Tapping an enemy is the attack gesture — the thing you do every
+           * turn, for free, forever. A levelled spell is a resource decision:
+           * which slot, and is this the fight to spend it on. Those belong in
+           * the Spells tray, where the slot pips are, and every one of them is
+           * still there — this drops nothing from the game, only from the
+           * three-row list behind a creature.
+           *
+           * Measured on a level-5 wizard standing next to an ogre: the chooser
+           * held fourteen options, four of them levelled, and two of those
+           * (Suggestion, Blindness) deal no damage at all and so sorted to the
+           * bottom next to Shove. They were pure noise in the one list that has
+           * to stay quick.
+           */
+          if (t.who === 'enemy' && shots === 1 && a.targets.length === 1 && spell.level === 0) {
             pushTarget(first.combatantId, describeShort(a), a, spell.icon);
           }
           // ...and *every* creature-targeted spell gets a tray entry, because
@@ -386,7 +402,10 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
             // spell's cap — a level-1 warlock's Eldritch Blast is one beam, and
             // the button said "(2 hits)" while the picker correctly asked for
             // one. Both read the same number now.
-            if (t.who === 'enemy' && shots > 1) {
+            // Multi-target enemy spells hang off each tappable enemy too — but
+            // only the cantrips, for the same reason. Eldritch Blast belongs
+            // behind the goblin; Scorching Ray belongs in the tray with its slot.
+            if (t.who === 'enemy' && shots > 1 && spell.level === 0) {
               const unit = a.spellId === 'scorching-ray' ? 'rays' : a.spellId === 'magic-missile' ? 'darts' : 'hits';
               for (const id of validIds) {
                 // Anchor the flow on the tapped enemy (its first ray/dart), then
@@ -530,7 +549,9 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
     });
   }
 
-  for (const [targetId, opts] of perTarget) perTarget.set(targetId, rankOptions(state, actorId, opts));
+  for (const [targetId, opts] of perTarget) {
+    perTarget.set(targetId, rankOptions(state, actorId, oneRowPerWeapon(state, actorId, opts)));
+  }
   return { moves, perTarget, bar };
 }
 
@@ -568,6 +589,48 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
  * from the estimate being deterministic, not from the band.
  */
 const TIE = 0.02;
+
+/**
+ * One row per weapon, not two.
+ *
+ * True Strike is cast THROUGH a weapon, so a wizard holding a dagger gets both
+ * "Dagger" and "True Strike (Dagger)" in the list behind a tapped enemy — two
+ * buttons that swing the same dagger, differing only in which ability rolls it
+ * and, from level five, one extra die. With three visible rows that is a third
+ * of the chooser spent saying the same thing twice.
+ *
+ * Measured on a level-1 wizard next to an ogre, it was worse than a third: the
+ * visible rows were True Strike (Quarterstaff), Dagger, True Strike (Dagger) —
+ * the same two weapons, three ways, and not one attack cantrip on screen. Its
+ * Shocking Grasp, Fire Bolt, Ray of Frost and Poison Spray were all folded away
+ * behind them.
+ *
+ * So the pair collapses to whichever actually hits harder, which is a real
+ * question rather than a fixed answer: True Strike rolls on the caster's
+ * spellcasting ability, so it wins for a wizard with Intelligence above its
+ * Dexterity and loses for a bard who has been raising Dexterity.
+ */
+function oneRowPerWeapon(state: GameState, actorId: Id, opts: TargetOption[]): TargetOption[] {
+  /** The weapon an option swings, whether it swings it plainly or as a spell. */
+  const weaponOf = (o: TargetOption): Id | undefined =>
+    o.action.kind === 'attack' ? o.action.weaponId
+      : o.action.kind === 'castSpell' ? o.action.weaponId
+      : undefined;
+
+  const best = new Map<Id, TargetOption>();
+  for (const o of opts) {
+    const w = weaponOf(o);
+    if (w === undefined) continue;
+    const held = best.get(w);
+    if (!held || expectedDamage(state, actorId, o.action) > expectedDamage(state, actorId, held.action)) {
+      best.set(w, o);
+    }
+  }
+  return opts.filter((o) => {
+    const w = weaponOf(o);
+    return w === undefined || best.get(w) === o;
+  });
+}
 
 export function rankOptions(state: GameState, actorId: Id, opts: TargetOption[]): TargetOption[] {
   if (opts.length <= 1) return opts;

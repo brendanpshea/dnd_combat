@@ -63,7 +63,7 @@ describe('web action grouping', () => {
     expect(events.filter((e) => e.type === 'damageDealt')).toHaveLength(3);
   });
 
-  it('a multi-target enemy spell also hangs off a tapped enemy, anchored on it', () => {
+  it('a multi-target enemy spell keeps its picker, and casts a spread from it', () => {
     // A fresh fight per spell so a spent action/slot never confounds the next.
     for (const spellId of ['magic-missile', 'scorching-ray']) {
       // Two foes on the board, so the multi spell carries >1 target (its default
@@ -81,8 +81,17 @@ describe('web action grouping', () => {
       until(c, 'wiz');
       const grouped = groupActions(c.state, 'wiz', c.legalActions());
 
-      const opt = (grouped.perTarget.get('foeA') ?? []).find((o) => o.multi?.spellId === spellId);
-      expect(opt, `${spellId} should be tappable off an enemy`).toBeDefined();
+      /*
+       * From the tray rather than from a tapped enemy. Both of these are
+       * levelled, and levelled spells no longer hang off a creature: tapping is
+       * the attack gesture, and choosing to burn a slot belongs on the screen
+       * with the slot pips. The picker and the spread it builds are untouched,
+       * and those are what this test is for.
+       */
+      // `group: 'spell'` matters: this wizard also carries a SCROLL of Magic
+      // Missile, whose tray entry names the same spell and builds a `useItem`.
+      const opt = grouped.bar.find((b) => b.group === 'spell' && b.multi?.spellId === spellId);
+      expect(opt, `${spellId} should still offer its picker`).toBeDefined();
       expect(opt!.multi!.maxTargets).toBe(3);
       // Anchored on the tapped enemy: starting with it pre-picked and adding the
       // other foe casts a spread the engine accepts.
