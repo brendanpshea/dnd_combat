@@ -4302,3 +4302,21 @@ button.category .count {
    legal attack while the free interaction is unspent, so a fighter carrying
    four of them met four buttons before the one they wanted. */
 .chooser-box .draw-more { font-size: .85rem; opacity: .8; }
+
+/* ---- a turn with nothing in it ----
+   A paralyzed hero's turn used to render an empty action bar and a dead board
+   with no explanation anywhere. This takes the space the categories would have
+   filled, so the answer is exactly where the player is already looking. */
+.turn-blocked {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 10px;
+  background: #3a2436; border: 1px solid #7a4a63;
+  font-size: 12px; line-height: 1.3; color: var(--muted);
+}
+.turn-blocked .tb-icon { font-size: 18px; line-height: 1; flex: none; }
+.turn-blocked .tb-text { min-width: 0; }
+.turn-blocked b { color: var(--text); font-weight: 700; }
+.turn-blocked em { font-style: normal; color: #c9a0b8; }
+/* When it is the only thing you can do, it should look like it. */
+.endturn.only { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }

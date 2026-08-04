@@ -401,7 +401,26 @@ export interface Combatant {
     bonusActionUsed: boolean;
     reactionUsed: boolean;
     movementUsed: number;   // feet
-    movementMax: number;    // feet; speed, doubled by Dash
+    movementMax: number;    // feet; this turn's speed, plus any Dash
+    /**
+     * What one Dash is worth this turn, in feet.
+     *
+     * Dash used to add `combatant.speed` — the BASE speed — which undid every
+     * modifier `startTurn` had applied. A RESTRAINED creature has speed 0 for
+     * the turn and could Dash for 30, walking out of the web that was holding
+     * it (measured: 62 move destinations). Slowed got the full 30 instead of
+     * 20, Spirit Guardians and prone got full instead of half, and a hasted
+     * creature was under-granted 30 against its doubled speed of 60.
+     *
+     * Stored rather than recomputed from `movementMax`, because two Dashes in
+     * a turn would otherwise compound off each other — 30, 60, 120 — instead
+     * of adding 30 three times.
+     *
+     * NOT simply `movementMax`'s starting value: standing up from prone costs
+     * MOVEMENT, not Speed, so a hero who stood this turn still Dashes for full.
+     * See `startTurn`.
+     */
+    dashSpeed: number;
     disengaged: boolean;    // no opportunity attacks provoked this turn
     attackedThisTurn: boolean; // gates the off-hand bonus attack
     attacksLeft: number;    // extra attacks remaining within the Attack action

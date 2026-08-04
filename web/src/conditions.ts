@@ -135,3 +135,39 @@ export function conditionChip(ids: ConditionId[]): { meta: ConditionMeta; extra:
   const worst = all[0];
   return worst ? { meta: worst, extra: all.length - 1 } : undefined;
 }
+
+/**
+ * Why this creature's turn has nothing in it, if that is the case.
+ *
+ * A paralyzed hero's turn used to arrive as an EMPTY ACTION BAR: every category
+ * filtered to zero entries, the board offered no blue tiles and no red rings,
+ * and nothing anywhere said why. The player is left looking at their own turn
+ * wondering what they are supposed to tap.
+ *
+ * The caller decides WHETHER the turn is dead — by asking whether the engine
+ * offered anything — and this only answers WHICH condition to blame. Deriving
+ * "can they act" from the condition list here would be a second implementation
+ * of a rule the engine already owns, free to disagree with it.
+ *
+ * The first match in `BLOCKING` wins, so a creature caught by two things names
+ * the one that matters most.
+ */
+const BLOCKING: readonly ConditionId[] = [
+  // Ordered by what a player most needs told. A creature that is both
+  // paralyzed and restrained should hear about the paralysis.
+  'unconscious', 'paralyzed', 'stunned', 'incapacitated',
+  'commanded', 'confused', 'lured', 'fleeing', 'restrained',
+];
+
+/*
+ * `restrained` earns its place at the bottom even though it never empties a
+ * turn by itself — measured: a restrained level-5 hero still has four attacks.
+ * It is the right words for the creature that is pinned AND has nothing in
+ * reach, where "speed 0" is exactly what the player needs to hear.
+ */
+
+export function blockedReason(ids: ConditionId[]): ConditionMeta | undefined {
+  const held = new Set(ids);
+  const id = BLOCKING.find((k) => held.has(k));
+  return id ? CONDITION_META[id] : undefined;
+}
