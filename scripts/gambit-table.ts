@@ -156,106 +156,110 @@ export interface Gambit {
   failure: Outcome;
 }
 
+/**
+ * The side-switch, shared by every social skill that can cause one.
+ *
+ * Defined once rather than three times so the three gates cannot drift into
+ * three slightly different effects — and so the run fights it once.
+ */
+const RECRUIT_US: Outcome = {
+  name: 'weakest creature joins US', side: 'us', apply: (p, f, m) => {
+    const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0);
+    if (r) p.push(r);
+  },
+};
+const RECRUIT_THEM: Outcome = {
+  name: 'weakest creature joins THEM', side: 'them', apply: (p, f, m) => {
+    const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID, 0);
+    if (r) f.push(r);
+  },
+};
+
 export const GAMBITS: Gambit[] = [
+  /*
+   * The design table, one entry per skill, on one baseline.
+   *
+   * Several skills share a payload on purpose — a mercenary, a war-beast and a
+   * curious fey are one mechanic behind three gates — so the OUTCOMES list
+   * below is deduplicated by name and each distinct effect is fought once.
+   */
   {
-    skill: 'Stealth', flavour: 'creep in',
-    success: { name: 'surprise them', side: 'us', apply: () => {}, surprise: 'team2' },
-    failure: { name: 'surprise us', side: 'them', apply: () => {}, surprise: 'team1' },
+    skill: 'Persuasion', flavour: 'talk one of them round',
+    success: RECRUIT_US, failure: RECRUIT_THEM,
   },
   {
-    skill: 'Religion', flavour: 'appease the local gods',
-    success: { name: 'party blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
-    failure: { name: 'party baned', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'baned')) },
+    skill: 'Animal Hand.', flavour: 'the animals can be talked round',
+    success: RECRUIT_US, failure: RECRUIT_THEM,
   },
   {
-    skill: 'Intimidate', flavour: 'cow them / enrage them — HALF',
+    skill: 'Perform', flavour: 'give them something to listen to',
+    success: RECRUIT_US, failure: RECRUIT_THEM,
+  },
+  {
+    skill: 'Intimidate', flavour: 'explain what a bad idea this is',
     success: { name: 'half foes frightened', side: 'us', apply: (_p, f) => half(f).forEach((c) => cond(c, 'frightened')) },
     failure: { name: 'half foes blessed', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'blessed')) },
   },
   {
-    skill: 'Perception', flavour: 'spot them / lose them',
-    success: { name: 'foes outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
-    failure: { name: 'foes hidden @15', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 15)) },
+    skill: 'Religion', flavour: 'address the older thing',
+    success: { name: 'party blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
+    failure: { name: 'party baned', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'baned')) },
   },
   {
-    skill: 'Arcana', flavour: 'a hasted ally / a hasted enemy',
-    success: { name: 'party hasted', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'hasted')) },
-    failure: { name: 'foes hasted', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'hasted')) },
-  },
-  {
-    skill: 'Arcana', flavour: 'hasted — ONE only',
-    success: { name: 'champion of ours hasted', side: 'us', apply: (p) => { if (p[0]) cond(p[0], 'hasted'); } },
-    failure: { name: 'their champion hasted', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'hasted')) },
-  },
-  /*
-   * AC IS TESTED WITH `warded`, NOT `shielded`.
-   *
-   * Shield is a REACTION and `turn.ts` lists it as self-clearing: it is stripped
-   * at the start of the holder's own turn, so a copy applied before the fight
-   * never survives to stop an attack. Measured at +/-0.3 across 750 fights —
-   * almost no flipped pairs at all, which is the signature of a condition that
-   * is not there rather than one that does not matter.
-   *
-   * Shield of Faith is +2 rather than +5 and has a duration, so it is the
-   * honest way to ask whether durable AC moves a fight.
-   */
-  {
-    skill: 'Investigation', flavour: 'braced / caught out (+2 AC, lasting)',
+    skill: 'Investigation', flavour: 'find the seams before they find you',
     success: { name: 'party warded', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'warded')) },
     failure: { name: 'foes warded', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'warded')) },
   },
   {
-    skill: 'Investigation', flavour: '+2 AC — HALF only',
-    success: { name: 'half party warded', side: 'us', apply: (p) => p.slice(0, 2).forEach((c) => cond(c, 'warded')) },
-    failure: { name: 'half foes warded', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'warded')) },
-  },
-  {
-    skill: 'Animal Hand.', flavour: 'median creature joins you / them',
-    success: { name: 'recruit(med) joins US', side: 'us', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0.5);
-      if (r) p.push(r);
-    } },
-    failure: { name: 'recruit(med) joins THEM', side: 'them', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID, 0.5);
-      if (r) f.push(r);
-    } },
-  },
-  {
-    // The median creature swung 47 points. The weakest is the same idea at the
-    // smallest size the wave can offer, which is the only dial this outcome has.
-    skill: 'Animal Hand.', flavour: 'WEAKEST creature joins you / them',
-    success: { name: 'recruit(min) joins US', side: 'us', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0);
-      if (r) p.push(r);
-    } },
-    failure: { name: 'recruit(min) joins THEM', side: 'them', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID, 0);
-      if (r) f.push(r);
-    } },
-  },
-  {
-    // Haste on the SMALLEST thing on the field, rather than the champion (+10 /
-    // -14) or everyone (+18 / -34). The one setting of haste not yet measured,
-    // and the only one with any chance of landing in the usable band.
-    skill: 'Perform', flavour: 'the weakest is quickened — for you / for them',
-    success: { name: 'our recruit hasted', side: 'us', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0);
-      if (r) { cond(r, 'hasted'); p.push(r); }
-    } },
-    failure: { name: 'weakest foe hasted', side: 'them', apply: (_p, f) => {
-      const w = weakest(f, 1)[0];
-      if (w) cond(w, 'hasted');
-    } },
-  },
-  {
-    skill: 'Medicine', flavour: 'the strange herbs',
+    skill: 'Medicine', flavour: 'the grey mushrooms',
     success: { name: 'party +20% max as temp', side: 'us', apply: (p) => p.forEach(dose) },
     failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
   },
+  {
+    skill: 'Deception', flavour: 'arrive as something other than an enemy',
+    success: { name: '2 weakest foes frightened', side: 'us', apply: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')) },
+    failure: { name: 'their champion blessed', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')) },
+  },
+  {
+    skill: 'Athletics', flavour: 'make the ground worse',
+    success: { name: 'party +10 temp HP', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }) },
+    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
+  },
+  {
+    skill: 'Acrobatics', flavour: 'pick your footing first',
+    success: { name: 'foes outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
+    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
+  },
+  {
+    skill: 'Survival', flavour: 'read what came through here',
+    success: { name: 'foes sapped', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'sapped')) },
+    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
+  },
+  {
+    skill: 'Perception', flavour: 'take a proper look first',
+    success: { name: 'foes outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
+    failure: { name: 'party sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
+  },
+  {
+    // Kept for the record, not for the design: three runs put this at a swing
+    // of 2, and initiative.ts already measured the ceiling on turn order at
+    // about five points for the whole party going first in every fight.
+    skill: 'Stealth', flavour: 'get close before the alarm (FLAVOUR ONLY)',
+    success: { name: 'surprise them', side: 'us', apply: () => {}, surprise: 'team2' },
+    failure: { name: 'surprise us', side: 'them', apply: () => {}, surprise: 'team1' },
+  },
 ];
 
+/**
+ * Every distinct effect, fought once.
+ *
+ * Deduplicated by name because the table deliberately reuses payloads across
+ * skills — three social skills share the side-switch, and three more share the
+ * same wound as their failure. Fighting each of those five times would have
+ * cost half the run and produced five identical numbers.
+ */
 export const OUTCOMES: Outcome[] = [
-  ...GAMBITS.flatMap((g) => [g.success, g.failure]),
+  ...new Map(GAMBITS.flatMap((g) => [g.success, g.failure]).map((o) => [o.name, o])).values(),
 ];
 
 /**
