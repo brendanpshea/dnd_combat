@@ -30,7 +30,9 @@ import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { parseMap } from '../src/data/maps.js';
-import type { Combatant, TeamId } from '../src/engine/types.js';
+import { cellAt } from '../src/engine/types.js';
+import { blocksMovement } from '../src/engine/grid.js';
+import type { Combatant, TeamId, Id, Position, GridState } from '../src/engine/types.js';
 
 const SAMPLES = Number(process.argv[2] ?? 120);
 const LEVELS = [3, 5, 7];
@@ -42,8 +44,15 @@ interface Outcome {
   name: string;
   /** Which side it is meant to help — for reading the sign of the delta. */
   side: 'us' | 'them';
-  /** Mutates the built combatants in place, before the fight starts. */
-  apply(party: Combatant[], foes: Combatant[]): void;
+  /**
+   * Mutates the built combatants in place, before the fight starts.
+   *
+   * `members` is the wave's monster ids, so an outcome that RECRUITS something
+   * can build a creature scaled to this fight rather than a fixed one. Pushing
+   * onto either array adds a combatant — the harness spreads both after this
+   * runs.
+   */
+  apply(party: Combatant[], foes: Combatant[], members: readonly Id[]): void;
   /** Some outcomes are setup-level rather than combatant-level. */
   surprise?: TeamId;
 }
@@ -77,6 +86,55 @@ const bleed = (c: Combatant) => { c.hp = Math.max(1, c.hp - Math.floor(c.maxHp *
 /** Taken well: a fifth of maximum, as temporary hit points. */
 const dose = (c: Combatant) => { c.tempHp = (c.tempHp ?? 0) + Math.floor(c.maxHp * 0.2); };
 
+/**
+ * A free, walkable square on or near `row`, avoiding everyone already placed.
+ *
+ * A recruit dropped onto a wall or onto somebody else makes `startCombat`
+ * throw, and the wave generator picks its own board every sample, so the spot
+ * has to be found rather than hardcoded.
+ */
+function freeCell(grid: GridState, taken: Combatant[], rows: number[]): Position | undefined {
+  for (const y of rows) {
+    for (const x of [3, 4, 2, 5, 1, 6, 0, 7]) {
+      const cell = cellAt(grid, { x, y });
+      // `cover` is a barricade and blocks movement exactly as a wall does —
+      // startCombat throws on both, and checking only for walls put a stone
+      // giant inside a barricade on the first sample.
+      if (!cell || blocksMovement(cell.terrain)) continue;
+      if (taken.some((c) => c.position.x === x && c.position.y === y)) continue;
+      return { x, y };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * The creature that could have gone either way.
+ *
+ * Scaled to the wave by copying its MEDIAN member — a fixed monster would be a
+ * rounding error at level 7 and the whole fight at level 1. Success puts it on
+ * your side, failure adds a second one to theirs, which is the same creature
+ * either way and so the only honestly symmetric version of "it fights for you
+ * or against you".
+ */
+function recruit(
+  members: readonly Id[], team: TeamId, party: Combatant[], foes: Combatant[], grid: GridState,
+): Combatant | undefined {
+  const sorted = [...foes].sort((a, b) => a.maxHp - b.maxHp);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  if (!median) return undefined;
+  const idx = foes.indexOf(median);
+  const monsterId = members[idx];
+  if (!monsterId) return undefined;
+  const all = [...party, ...foes];
+  const rows = team === 'team1'
+    ? [1, 2, 0, 3]
+    : [grid.height - 3, grid.height - 2, grid.height - 4, grid.height - 1];
+  const at = freeCell(grid, all, rows);
+  if (!at) return undefined;
+  return buildMonster(monsterId, team, at, `recruit-${team}`);
+}
+
 const half = (foes: Combatant[]) => weakest(foes, Math.max(1, Math.ceil(foes.length / 2)));
 
 /**
@@ -99,24 +157,9 @@ const GAMBITS: Gambit[] = [
     failure: { name: 'surprise us', side: 'them', apply: () => {}, surprise: 'team1' },
   },
   {
-    skill: 'Stealth', flavour: 'start hidden (check 15)',
-    success: { name: 'party hidden @15', side: 'us', apply: (p) => p.forEach((c) => hide(c, 15)) },
-    failure: { name: 'foes hidden @15', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 15)) },
-  },
-  {
-    skill: 'Stealth', flavour: 'start hidden (check 20)',
-    success: { name: 'party hidden @20', side: 'us', apply: (p) => p.forEach((c) => hide(c, 20)) },
-    failure: { name: 'foes hidden @20', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 20)) },
-  },
-  {
     skill: 'Religion', flavour: 'appease the local gods',
     success: { name: 'party blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
     failure: { name: 'party baned', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'baned')) },
-  },
-  {
-    skill: 'Intimidate', flavour: 'cow them / enrage them — ALL',
-    success: { name: 'all foes frightened', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'frightened')) },
-    failure: { name: 'all foes blessed', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'blessed')) },
   },
   {
     skill: 'Intimidate', flavour: 'cow them / enrage them — HALF',
@@ -129,6 +172,37 @@ const GAMBITS: Gambit[] = [
     failure: { name: 'foes hidden @15', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 15)) },
   },
   {
+    skill: 'Arcana', flavour: 'a hasted ally / a hasted enemy',
+    success: { name: 'party hasted', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'hasted')) },
+    failure: { name: 'foes hasted', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'hasted')) },
+  },
+  {
+    skill: 'Arcana', flavour: 'hasted — ONE only',
+    success: { name: 'champion of ours hasted', side: 'us', apply: (p) => { if (p[0]) cond(p[0], 'hasted'); } },
+    failure: { name: 'their champion hasted', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'hasted')) },
+  },
+  {
+    skill: 'Investigation', flavour: 'a warded guard / a warded foe (+5 AC)',
+    success: { name: 'party shielded', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'shielded')) },
+    failure: { name: 'foes shielded', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'shielded')) },
+  },
+  {
+    skill: 'Investigation', flavour: 'shielded — HALF only',
+    success: { name: 'half party shielded', side: 'us', apply: (p) => p.slice(0, 2).forEach((c) => cond(c, 'shielded')) },
+    failure: { name: 'half foes shielded', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'shielded')) },
+  },
+  {
+    skill: 'Animal Hand.', flavour: 'it fights for you / it fights for them',
+    success: { name: 'recruit joins US', side: 'us', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID);
+      if (r) p.push(r);
+    } },
+    failure: { name: 'recruit joins THEM', side: 'them', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID);
+      if (r) f.push(r);
+    } },
+  },
+  {
     skill: 'Medicine', flavour: 'the strange herbs',
     success: { name: 'party +20% max as temp', side: 'us', apply: (p) => p.forEach(dose) },
     failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
@@ -138,6 +212,15 @@ const GAMBITS: Gambit[] = [
 const OUTCOMES: Outcome[] = [
   ...GAMBITS.flatMap((g) => [g.success, g.failure]),
 ];
+
+/**
+ * The board for the sample being built.
+ *
+ * A module-level handoff rather than another `apply` parameter: only the
+ * recruiting outcomes need it, and threading a grid through every entry in the
+ * table to serve two of them is worse than one clearly-scoped variable.
+ */
+let CURRENT_GRID: GridState | undefined;
 
 function partyAt(level: number, seed: number): Combatant[] {
   const c = newCampaign(seed);
@@ -169,7 +252,8 @@ function outcomes(level: number, outcome: Outcome | undefined): boolean[] {
     const foes = e.value.members.map((id, i) =>
       buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: grid.height - 2 }, String(i + 1)));
     const party = partyAt(level, s);
-    outcome?.apply(party, foes);
+    CURRENT_GRID = grid;
+    outcome?.apply(party, foes, e.value.members);
     const combat = new Combat({
       combatants: [...party, ...foes],
       map,
