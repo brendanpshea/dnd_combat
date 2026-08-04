@@ -20,6 +20,8 @@ import { expectedDamage, hinderedByAdjacency } from '../src/engine/rules/estimat
 import { step, type Action } from '../src/engine/actions.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { SPELLS } from '../src/data/spells.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { Combatant, Position, TeamId } from '../src/engine/types.js';
 
 function pc(classId: string, team: TeamId, position: Position, id: string, level = 5): Combatant {
@@ -615,5 +617,122 @@ describe('one row per weapon', () => {
       o.action.kind === 'castSpell' && weaponOf(o.action) === undefined && SPELLS[o.action.spellId]?.level === 0);
     expect(cantrips.length, `no attack cantrip visible: ${shown.map((o) => o.label).join(' | ')}`)
       .toBeGreaterThan(0);
+  });
+});
+
+describe('what an option does besides damage', () => {
+  /**
+   * The reason to cast Shocking Grasp instead of Fire Bolt is that the target
+   * cannot take reactions, so you can walk away from the thing standing on you.
+   * The reason for Ray of Frost is ten feet of speed. Neither reason is damage,
+   * and the chooser ranks on damage — so on a level-1 wizard both sorted below
+   * a Dexterity-16 dagger and folded out of sight together, with nothing on
+   * screen hinting that two of the folded four did something the others did not.
+   *
+   * The riders are read off the ENGINE rather than declared beside the spells:
+   * every one lives inside an imperative `cast` closure, a hand-kept list would
+   * drift the first time one changed, and weapon MASTERIES ride along the same
+   * way — a fighter's longsword saps and its javelin slows, and both were
+   * equally invisible.
+   */
+  it('sees the rider on a touch cantrip, and on a weapon mastery', () => {
+    const wiz = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'hero', 5), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    const sg = optionsFor(wiz, 'hero', 'foe').find((o) => o.label === 'Shocking Grasp');
+    expect(sg, 'Shocking Grasp is not on offer at all').toBeDefined();
+    expect(sg!.riders, 'the one reason to cast it is not recorded').toContain('noReactions');
+
+    const ftr = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('fighter', 'team1', { x: 3, y: 3 }, 'hero', 5), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    const sword = optionsFor(ftr, 'hero', 'foe').find((o) => o.label === 'Longsword');
+    expect(sword?.riders, 'a weapon mastery rider is invisible').toBeTruthy();
+    expect(sword!.riders!.length).toBeGreaterThan(0);
+  });
+
+  it('reports nothing for an option that only deals damage', () => {
+    // Otherwise every row grows a tag and the ones that matter stop standing out.
+    const c = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'hero', 5), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    const plain = optionsFor(c, 'hero', 'foe').find((o) => o.label === 'Fire Bolt');
+    expect(plain, 'Fire Bolt is not on offer').toBeDefined();
+    expect(plain!.riders ?? [], 'Fire Bolt claims a rider it does not have').toEqual([]);
+  });
+
+  it('never reports something the caster does to ITSELF', () => {
+    // A paladin readying its own Smite is not a reason to pick one swing over
+    // another, and it must not show up as something happening to the target.
+    const c = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('paladin', 'team1', { x: 3, y: 3 }, 'hero', 5), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    for (const o of optionsFor(c, 'hero', 'foe')) {
+      for (const r of o.riders ?? []) {
+        expect(['smiting', 'blessed', 'raging', 'hasted', 'inspired'],
+          `"${o.label}" reports ${r}, which happens to the caster`).not.toContain(r);
+      }
+    }
+  });
+
+  it.each(['wizard', 'sorcerer', 'fighter', 'rogue', 'cleric', 'druid', 'bard'])(
+    'keeps a rider option visible for %s', (classId) => {
+      for (const level of [1, 5]) {
+        const c = new Combat({
+          seed: 7, mapId: 'open',
+          combatants: [pc(classId, 'team1', { x: 3, y: 3 }, 'hero', level), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+        });
+        const opts = optionsFor(c, 'hero', 'foe');
+        const anyRider = opts.some((o) => (o.riders?.length ?? 0) > 0);
+        if (!anyRider) continue;   // nothing to guarantee
+        const shown = opts.filter((o) => !o.folded);
+        expect(shown.some((o) => (o.riders?.length ?? 0) > 0),
+          `${classId} L${level}: every option that does something is folded — ${shown.map((o) => o.label).join(' | ')}`)
+          .toBe(true);
+      }
+    });
+
+  it('does not buy that guarantee with the one about melee', () => {
+    /*
+     * Two guarantees, three rows. Whether an option WORKS in your face outranks
+     * whether it is interesting, so the rider promotion must never take the last
+     * unhindered option off the screen.
+     *
+     * SWEPT WIDE ON PURPOSE. A first version checked five classes at two levels
+     * and passed with the protection deleted — the conflict simply does not
+     * arise in a handful of hand-picked fixtures, and I could not construct one
+     * by hand that did. Twelve classes, four levels and three foes does reach
+     * it. An invariant I cannot trigger deliberately still has to be defended
+     * by a net wide enough to land on it.
+     */
+    for (const classId of ['wizard', 'sorcerer', 'warlock', 'druid', 'cleric', 'bard',
+      'fighter', 'rogue', 'ranger', 'paladin', 'barbarian', 'monk']) {
+      for (const level of [1, 3, 5, 8]) {
+        for (const foeId of ['ogre', 'skeleton', 'zombie']) {
+          const c = new Combat({
+            seed: 7, mapId: 'open',
+            combatants: [pc(classId, 'team1', { x: 3, y: 3 }, 'hero', level), mon(foeId, 'team2', { x: 3, y: 4 }, 'foe')],
+          });
+          const opts = optionsFor(c, 'hero', 'foe');
+          const works = (o: (typeof opts)[number]) =>
+            expectedDamage(c.state, 'hero', o.action) > 0 && !hinderedByAdjacency(c.state, 'hero', o.action);
+          if (!opts.some(works)) continue;
+          expect(opts.filter((o) => !o.folded).some(works),
+            `${classId} L${level} vs ${foeId}: nothing on screen works in melee`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('shows the rider on the button, in the shared condition wording', () => {
+    const app = readFileSync(fileURLToPath(new URL('../web/src/App.tsx', import.meta.url)), 'utf8');
+    expect(app, 'the chooser button never renders riders').toMatch(/o\.riders\?\.length/);
+    expect(app, 'the rider wording is not coming from CONDITION_META').toMatch(/CONDITION_META\[id\]\.label/);
+    const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+    expect(css, '.opt-rider has no rule, so the tag renders unstyled').toContain('\n.opt-rider {');
   });
 });
