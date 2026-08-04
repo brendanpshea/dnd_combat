@@ -64,7 +64,7 @@ import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
 import {
-  loreTargets, dossierFor, loreKey, studyFor, bestLens,
+  dossierFor, passiveKnown,
 } from '../../src/arena/lore.js';
 import {
   stallVisitOf, stallPrice, stallResale, stallWillBuy, type StallVisit,
@@ -307,15 +307,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * only saw behind the door you had already chosen would arrive too late.
    */
   const allFoes = gates.flatMap((g) => g.wave.encounter.members);
-  const study = studyFor(run.lore, dayOf(run), half);
   // The creep, and what it means for the door currently selected. A gamble
   // taken at one gate does not carry to another: different monsters, different
   // eyes, and shopping for the easiest DC would be the whole exploit.
-  // One lens, not four. Which knowledge skill to use was never a real choice —
-  // you cannot swap a wizard for a cleric between fights, so the answer is
-  // always "whichever of ours is best". The decision worth keeping is whether
-  // to study at all, and that survives being one button.
-  const lens = bestLens(allFoes, (skill) => bestAtSkill(c, skill).bonus);
   const prep = prepOptions(c);
 
   /*
@@ -333,10 +327,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const gambitTaken = attemptFor(run.gambit, dayOf(run), half);
   /** Built party, for the slot counts the camp-buff buttons quote. */
   const party = buildCampaignParty(c);
-  /** Creatures this run has successfully placed, by id. */
-  const known = new Set<Id>(
-    study?.success ? loreTargets(allFoes, study.skill) : [],
-  );
+  /**
+   * Creatures the party recognises on sight — 10 + its best relevant knowledge
+   * bonus against each creature's own DC. No roll, no button: see lore.ts.
+   */
+  const known = passiveKnown(allFoes, (skill) => bestAtSkill(c, skill).bonus);
 
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
   const setVisit = (next: StallVisit) => {
@@ -477,9 +472,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       spellsUsedBefore: new Set(run.spellsUsed),
       rounds: combat.state.round,
       foes: wave.encounter.members.length,
-      // Whether the study landed for THIS fight. `studyFor` is keyed to the day
-      // and half, so yesterday's success cannot pay for today's bounty.
-      studied: studyFor(run.lore, dayOf(run), half)?.success === true,
+      // Keyed to the day and half, so yesterday's gamble cannot pay for
+      // today's bounty.
+      // Taking the gate's gamble, not winning it — see bounties.ts.
+      gambled: attemptFor(run.gambit, dayOf(run), half) !== undefined,
     });
     // The purse is the day's pay, handed over when the day is done — winning
     // the morning buys you the afternoon, not a wage.
@@ -1050,9 +1046,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                         <b>{gateOffers[g.door]!.bounty!.blurb}</b>
                       </span>
                     )}
-                    {/* What the study turned up about what is behind THIS door.
-                        Left on the card rather than shown in a modal: the whole
-                        point is the choice you make after reading it. */}
+                    {/* What your party already knows about what is behind THIS
+                        door. On the card rather than in a modal, because the
+                        whole point is the choice you make after reading it —
+                        and passive now, so it is simply there. */}
                     {known.size > 0 && (() => {
                       const seen = [...new Set(g.wave.encounter.members)]
                         .filter((id) => known.has(id))
@@ -1100,44 +1097,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 ))}
               </div>
 
-              {/* One study, before you choose. Which lens is the question when a
-                  wave is mixed; the numbers are on the buttons so the choice is
-                  made with them in view. */}
-              {/* The pre-fight buffs used to sit here, beside the knowledge
-                  check, on the reasoning that these are the two things you do
-                  with the door card in view. But they spend spell slots and
-                  potions, which is what the Spells step is about — and here the
-                  cost was never shown at all. Moved, with a price on it. */}
               <div className="lore-row">
-                {study ? (
-                  <span className={study.success ? 'lore-known' : 'lore-blind'}>
-                    {study.success
-                      ? `🎓 ${c.characters[study.by]?.name} placed them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}`
-                      : `🎓 ${c.characters[study.by]?.name} could not place them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}. You go in blind.`}
-                  </span>
-                ) : !lens ? (
-                  <span className="lore-blind">Nothing out there resembles anything anyone knows.</span>
-                ) : (
-                  <SkillGambit
-                    campaign={c}
-                    skill={lens.skill}
-                    dc={lens.dc}
-                    note={`${lens.targets.length} of them`}
-                    onRoll={() => {
-                      const roll = partySkillCheck(c, lens.skill, lens.dc);
-                      const nextRun = {
-                        ...run,
-                        lore: {
-                          key: loreKey(dayOf(run), half),
-                          skill: lens.skill, by: roll.by, natural: roll.natural,
-                          total: roll.total, dc: roll.dc, success: roll.success,
-                        },
-                      };
-                      setRun(nextRun); persist(c, nextRun);
-                      return roll;
-                    }}
-                  />
-                )}
                 {/* THE PRE-FIGHT GAMBIT.
                     One check, drawn from what this door's roster and ground
                     license, offered once. It replaces the creep-in, which was a

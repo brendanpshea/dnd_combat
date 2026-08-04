@@ -18,7 +18,6 @@
 import type { MapData } from '../data/maps.js';
 import type { Id } from '../engine/types.js';
 import type { StallVisit } from './stall.js';
-import type { LoreStudy } from './lore.js';
 import type { GambitAttempt } from './gambit.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
@@ -315,11 +314,6 @@ export interface ArenaRunState {
    * haggle. Absent = nobody has been to market yet.
    */
   stall?: StallVisit;
-  /**
-   * The one study made before this fight (see lore.ts). Keyed by day and half,
-   * so switching doors neither rerolls it nor loses it.
-   */
-  lore?: LoreStudy;
   /**
    * The one pre-fight skill check offered for this fight (see gambit.ts).
    *

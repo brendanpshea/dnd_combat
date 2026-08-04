@@ -54,7 +54,7 @@ function ctx(events: GameEvent[], state: GameState, over: Partial<BountyContext>
     spellsUsedBefore: new Set(),
     rounds: 99,
     foes: 3,
-    studied: false,
+    gambled: false,
     ...over,
   };
 }
@@ -405,10 +405,10 @@ describe('the always-available bounties', () => {
       'a goblin drinking is not your achievement').toBe(false);
   });
 
-  it('Read the Room pays only when the study landed for this fight', () => {
+  it('Take the Chance pays for taking the gate gamble, not for winning it', () => {
     const s = scene(OPEN, party, ['goblin-warrior']);
-    expect(byId('read-the-room').earned(ctx([], s, { studied: true }))).toBe(true);
-    expect(byId('read-the-room').earned(ctx([], s, { studied: false }))).toBe(false);
+    expect(byId('read-the-room').earned(ctx([], s, { gambled: true }))).toBe(true);
+    expect(byId('read-the-room').earned(ctx([], s, { gambled: false }))).toBe(false);
   });
 
   it('Two Birds wants them inside one round, not merely two dead', () => {

@@ -59,9 +59,15 @@ export interface BountyContext {
   rounds: number;
   /** Enemies the wave started with. */
   foes: number;
-  /** Did the pre-fight study land? The one fact a bounty needs that the fight
-   *  itself cannot report — it happened at the gate, before any event. */
-  studied: boolean;
+  /**
+   * Did the party take the pre-fight gamble? The one fact a bounty needs that
+   * the fight itself cannot report — it happened at the gate, before any event.
+   *
+   * Whether it LANDED is deliberately not asked. Success already pays, in the
+   * effect it applies; rewarding it twice would make the bounty a tax on bad
+   * luck. What is worth paying for is taking the risk at all.
+   */
+  gambled: boolean;
 }
 
 export interface Bounty {
@@ -278,20 +284,23 @@ export const BOUNTIES: Bounty[] = [
   },
   {
     /**
-     * Pays off the study. The knowledge check tells you armour class, hit
-     * points and what a thing shrugs off — and then nothing ever asked whether
-     * you used it. This does: land the study, then win the fight it was about.
+     * Pays for taking the pre-fight gamble at all.
      *
-     * Always eligible, because the study is always offered; the cost is the tap
-     * and the risk of failing the roll, which is the decision it exists to
-     * sharpen.
+     * This used to pay for landing the knowledge study, which was a check that
+     * cost nothing to fail — so the bounty was really paying for pressing a
+     * button, and then for getting lucky. The study is passive now (lore.ts)
+     * and the gamble that replaced it has a real downside, which is what makes
+     * "did you take it" worth a share.
+     *
+     * Always eligible, because some check is offered for nearly every fight.
+     * The cost is the risk, and the risk is the decision it exists to sharpen.
      */
     id: 'read-the-room',
-    name: 'Read the Room',
-    blurb: 'Study them before the fight, then win it.',
+    name: 'Take the Chance',
+    blurb: 'Risk the check at the gate, then win the fight.',
     share: 0.3,
     eligible: () => true,
-    earned: (ctx) => ctx.studied,
+    earned: (ctx) => ctx.gambled,
   },
   {
     /**

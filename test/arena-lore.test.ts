@@ -1,15 +1,16 @@
 /**
  * Knowing what you are about to fight.
  *
- * Four of the twelve skills the arena never used exist precisely to answer
- * "what IS that thing", and the gate screen was the obvious place to ask. What
- * these tests defend is the shape that keeps it a decision: every creature type
- * has a lens, one study covers all three doors, and it cannot be rerolled.
+ * This was a rolled check whose own documentation admitted that failing cost
+ * nothing — a button with no reason not to press it. It is passive now: 10 plus
+ * the party's best relevant bonus, per creature, against that creature's own
+ * DC. What these tests defend is what going passive bought: every creature type
+ * still has a lens, knowledge is granular rather than all-or-nothing per wave,
+ * and a better-read party visibly knows more.
  */
 import { describe, it, expect } from 'vitest';
 import {
-  LORE_SKILL, loreSkillsFor, loreTargets, loreDc, dossierFor, loreKey, studyFor,
-  type LoreStudy,
+  LORE_SKILL, loreSkillsFor, loreTargets, loreDc, dossierFor, passiveKnown,
 } from '../src/arena/lore.js';
 import { MONSTERS } from '../src/data/monsters.js';
 import { SKILL_ABILITY, SKILL_LABEL, type SkillId } from '../src/data/classes.js';
@@ -81,19 +82,52 @@ describe('what a lens shows', () => {
   });
 });
 
-describe('how hard it is to place them', () => {
-  it('scales with the most dangerous thing, not with the party', () => {
-    const easy = loreDc(['skeleton'], 'religion');
-    const hard = loreDc(['skeleton', 'vampire-spawn'], 'religion');
-    expect(hard).toBeGreaterThan(easy);
+describe('how hard one creature is to place', () => {
+  it('scales with the creature, not with the party', () => {
+    expect(loreDc('vampire-spawn')).toBeGreaterThan(loreDc('skeleton'));
   });
 
-  it('is never free and never hopeless', () => {
+  it('is never free', () => {
     for (const m of Object.values(MONSTERS)) {
-      const dc = loreDc([m.id], LORE_SKILL[m.creatureType]);
-      expect(dc, m.id).toBeGreaterThanOrEqual(10);
-      expect(dc, m.id).toBeLessThanOrEqual(20);
+      expect(loreDc(m.id), m.id).toBeGreaterThanOrEqual(10);
     }
+  });
+
+  it('asks about each creature separately, not about the worst one present', () => {
+    // The whole gain from going passive. The rolled version took the hardest
+    // thing on the field and gated the entire wave behind it, so a scholar who
+    // could name every goblin was told nothing about any of them because an
+    // ogre happened to be standing there.
+    const scholar = () => 9;   // passive 19: places a lot, but not everything
+    const known = passiveKnown(['skeleton', 'vampire-spawn'], scholar);
+    expect(known.has('skeleton'), 'the easy one went unrecognised').toBe(true);
+  });
+});
+
+describe('what the party knows without being asked', () => {
+  it('recognises more as the party gets better read', () => {
+    const foes = Object.values(MONSTERS).slice(0, 40).map((m) => m.id);
+    const dim = passiveKnown(foes, () => 0).size;
+    const sharp = passiveKnown(foes, () => 8).size;
+    expect(sharp, 'a better-read party knows no more than a worse one').toBeGreaterThan(dim);
+  });
+
+  it('uses the right lens per creature, so two specialists know more than one', () => {
+    // A party with a wizard AND a cleric should simply know more, rather than
+    // having to pick one lens and eat the other — which is what the rolled
+    // version forced.
+    const foes: Id[] = ['skeleton', 'wolf'];
+    const priest = passiveKnown(foes, (s) => (s === 'religion' ? 10 : -5));
+    const druid = passiveKnown(foes, (s) => (s === 'nature' ? 10 : -5));
+    const both = passiveKnown(foes, () => 10);
+    expect(priest.has('skeleton')).toBe(true);
+    expect(priest.has('wolf')).toBe(false);
+    expect(druid.has('wolf')).toBe(true);
+    expect(both.size, 'knowing both lenses did not know more').toBe(2);
+  });
+
+  it('knows nothing about something that is not a monster', () => {
+    expect(passiveKnown(['not-a-monster'], () => 99).size).toBe(0);
   });
 });
 
@@ -122,39 +156,6 @@ describe('the dossier', () => {
 
   it('returns nothing for something that is not a monster', () => {
     expect(dossierFor('not-a-monster')).toBeUndefined();
-  });
-});
-
-describe('one study per fight', () => {
-  const study = (key: string): LoreStudy => ({
-    key, skill: 'arcana', by: 0, natural: 12, total: 17, dc: 13, success: true,
-  });
-
-  it('holds for the fight it was made in', () => {
-    const s = study(loreKey(3, 'morning'));
-    expect(studyFor(s, 3, 'morning')).toBe(s);
-  });
-
-  it('does not carry into the afternoon, which is a different line-up', () => {
-    expect(studyFor(study(loreKey(3, 'morning')), 3, 'afternoon')).toBeUndefined();
-  });
-
-  it('does not carry into tomorrow', () => {
-    expect(studyFor(study(loreKey(3, 'morning')), 4, 'morning')).toBeUndefined();
-  });
-
-  it('CANNOT be rerolled by switching doors', () => {
-    // The load-bearing one. The key has no door in it, so a study made while
-    // looking at door 1 is the same study when you look at door 3 — otherwise
-    // you could study three times a fight and take the best answer, which is
-    // not a check at all.
-    const s = study(loreKey(2, 'morning'));
-    expect(studyFor(s, 2, 'morning')).toBe(s);
-    expect(loreKey(2, 'morning')).not.toContain('door');
-  });
-
-  it('treats a run that has never studied as unstudied', () => {
-    expect(studyFor(undefined, 1, 'morning')).toBeUndefined();
   });
 });
 
