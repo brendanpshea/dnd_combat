@@ -69,7 +69,17 @@ const OUTCOMES: Outcome[] = [
   { name: 'foes: all outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
   { name: 'foes: all poisoned', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'poisoned')) },
   { name: 'foes: all slowed', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'slowed')) },
-  { name: 'foes: champion vexed', side: 'us', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'vexed')) },
+  /*
+   * Vex is DIRECTED and sits on the attacker: `attack.ts` looks for a `vexed`
+   * whose `sourceId` is the creature being attacked, and grants advantage
+   * against that one creature. An undirected `{ id: 'vexed' }` matches nothing,
+   * which is why the first run of this table reported it at exactly 0.0 +/-0.0
+   * — zero flipped fights out of 1200, a number too clean to be a finding.
+   */
+  { name: 'us:   vex on the champion', side: 'us', apply: (p, f) => {
+    const boss = champion(f)[0];
+    if (boss) for (const c of p) c.conditions.push({ id: 'vexed', sourceId: boss.id });
+  } },
   { name: 'us:   blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
   { name: 'us:   +5 temp HP each', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 5; }) },
   { name: 'us:   +10 temp HP each', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }) },
