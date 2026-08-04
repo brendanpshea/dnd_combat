@@ -57,7 +57,21 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   // what the board needs to show is that this creature is easier to hit, and
   // that is true whichever side of it you are on.
   reckless:       { icon: '💢', label: 'Reckless — hits harder, and is easier to hit', kind: 'debuff' },
-  vexed:          { icon: '❗', label: 'Vexed — the next attack against it has advantage', kind: 'debuff' },
+  /*
+   * VEX SITS ON THE ATTACKER, AND IT IS A BUFF.
+   *
+   * `rules/attack.ts` looks for a `vexed` whose `sourceId` is the creature
+   * being attacked and grants ADVANTAGE to whoever holds it; `ai/evaluate.ts`
+   * prices it at +0.04, under its "buffs" heading, beside `inspired`. This
+   * entry said the opposite — "the next attack against it has advantage",
+   * filed as a debuff — so a fighter who had just landed a vex hit wore a red
+   * badge saying they were easier to kill, and the badge sorted ahead of
+   * things that were actually happening to them.
+   *
+   * Called "Vex" rather than "Vexed" for the same reason: the past participle
+   * reads as something done TO the wearer, which is exactly backwards.
+   */
+  vexed:          { icon: '🗡️', label: 'Vex — advantage on its next attack against the foe it just hit', kind: 'buff' },
   blessed:        { icon: '✨', label: 'Blessed — +1d4 on its attack rolls and saving throws', kind: 'buff' },
   inspiring:      { icon: '🎵', label: 'Bardic Inspiration — +1d6 on the next attack or save', kind: 'buff' },
   shillelagh:     { icon: '🌳', label: 'Shillelagh — the staff strikes on Wisdom, at a bigger die', kind: 'buff' },
