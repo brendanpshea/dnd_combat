@@ -3,19 +3,26 @@
  * board taps (moves, per-target attacks) and action-bar entries
  * (stances, features, self items, spells that need a targeting mode).
  */
-import type { GameState, Id, Position, Combatant } from '../../src/engine/types.js';
+import type { GameState, Id, Position, Combatant, ConditionId } from '../../src/engine/types.js';
 import type { Action, Target } from '../../src/engine/actions.js';
 import { SPELLS, validTarget, spellShots, type SpellData } from '../../src/data/spells.js';
 import { ITEMS } from '../../src/data/items.js';
 import { WEAPONS } from '../../src/data/weapons.js';
 import { FEATURES } from '../../src/data/features.js';
 import { METAMAGIC, type MetamagicId } from '../../src/engine/rules/metamagic.js';
-import { expectedDamage, hinderedByAdjacency } from '../../src/engine/rules/estimate.js';
+import { expectedDamage, hinderedByAdjacency, ridersOf } from '../../src/engine/rules/estimate.js';
 
 export const posKey = (p: Position) => `${p.x},${p.y}`;
 
 export interface TargetOption {
   label: string;
+  /**
+   * What this would do to them BESIDES damage — the reason to cast Shocking
+   * Grasp rather than Fire Bolt. Read off the engine (see `ridersOf`), not off
+   * a table beside the spells, because every rider lives inside an imperative
+   * `cast` closure and weapon masteries ride along the same way.
+   */
+  riders?: ConditionId[];
   /** Glyph, so a chooser of three weapon names says which is which at a glance. */
   icon?: string;
   action: Action;
@@ -550,7 +557,11 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
   }
 
   for (const [targetId, opts] of perTarget) {
-    perTarget.set(targetId, rankOptions(state, actorId, oneRowPerWeapon(state, actorId, opts)));
+    const kept = oneRowPerWeapon(state, actorId, opts).map((o) => {
+      const riders = ridersOf(state, actorId, o.action);
+      return riders.length > 0 ? { ...o, riders } : o;
+    });
+    perTarget.set(targetId, rankOptions(state, actorId, kept));
   }
   return { moves, perTarget, bar };
 }
@@ -693,6 +704,43 @@ export function rankOptions(state: GameState, actorId: Id, opts: TargetOption[])
   if (!visible.some(worksInMelee)) {
     const best = ranked.find(worksInMelee);
     if (best) visible[visible.length - 1] = best;
+  }
+
+  /**
+   * A SECOND GUARANTEE: something that DOES something is always on offer.
+   *
+   * The ranking is expected damage, and the reason to cast Shocking Grasp is
+   * not damage — it is that the target cannot take reactions, so the wizard can
+   * walk away from the thing standing on it. Ray of Frost is ten feet of speed.
+   * Ranked on damage alone both sort below a Dexterity-16 wizard's dagger, and
+   * on a level-1 wizard both were folded out of sight together: the three
+   * visible rows were True Strike (Quarterstaff), Dagger and Poison Spray, and
+   * nothing anywhere hinted that two of the folded four did something the
+   * others did not.
+   *
+   * So one row is kept for the best option carrying a rider, if none of the
+   * ranked three already does. Taken from the END, and never at the cost of the
+   * melee guarantee above — that one is about whether an option WORKS at all,
+   * which outranks whether it is interesting.
+   *
+   * Self-limiting: most choosers already show a rider (a fighter's longsword
+   * topples, a druid's Starry Wisp outlines) and promote nothing.
+   */
+  const hasRider = (o: TargetOption) => (o.riders?.length ?? 0) > 0;
+  if (!visible.some(hasRider)) {
+    const best = ranked.find(hasRider);
+    if (best) {
+      const meleeHeld = visible.some(worksInMelee);
+      for (let i = visible.length - 1; i >= 0; i--) {
+        const swapped = [...visible];
+        swapped[i] = best;
+        // Do not trade away the guarantee that something works in your face.
+        if (!meleeHeld || swapped.some(worksInMelee)) {
+          visible.splice(0, visible.length, ...swapped);
+          break;
+        }
+      }
+    }
   }
 
   const shown = new Set(visible);

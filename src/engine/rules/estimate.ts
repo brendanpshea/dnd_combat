@@ -44,7 +44,7 @@
  * Nothing is hidden by it — the UI folds rather than drops, and says how many —
  * but a better key would price a failed save on a caster.
  */
-import type { GameState, Id } from '../types.js';
+import type { GameState, Id, ConditionId } from '../types.js';
 import { seedRng } from '../rng.js';
 import { step, type Action } from '../actions.js';
 
@@ -222,6 +222,49 @@ export function expectedDamage(
  * makes no attack roll at all is not penalised, which is correct — Sacred Flame
  * is a saving throw and works fine with an orc breathing on you.
  */
+/**
+ * What this action would do to an enemy BESIDES damage.
+ *
+ * The reason to cast Shocking Grasp instead of Fire Bolt is that the target
+ * cannot take reactions, so you can walk away from it; the reason to cast Ray
+ * of Frost is that it is ten feet slower. Neither reason is damage, and the
+ * chooser ranks on damage — so both cantrips sorted below the wizard's dagger
+ * and folded out of sight, and nothing on screen ever said what they were for.
+ *
+ * Asked of the engine rather than declared on the spell. `SpellData` has no
+ * field for this: every rider lives inside an imperative `cast` closure, and a
+ * hand-kept list beside them would drift the first time one changed. It is also
+ * not only spells — weapon MASTERIES ride along the same way, so a fighter's
+ * longsword topples and its javelin slows, and those were equally invisible.
+ *
+ * SEVERAL RUNS, because most riders land only on a hit and a single unlucky
+ * resolution would report a clean miss as "this does nothing". Six is enough to
+ * see a rider through any hit chance the chooser will show; the cost sits
+ * beside `expectedDamage`'s fifteen and is small next to it.
+ */
+export function ridersOf(state: GameState, actorId: Id, action: Action): ConditionId[] {
+  const actor = state.combatants[actorId];
+  if (!actor) return [];
+  const found = new Set<ConditionId>();
+  for (let run = 0; run < 6; run++) {
+    try {
+      const probe: GameState = { ...state, rng: seedRng(seedFor(run, 0x5bd1e995)) };
+      for (const e of step(probe, action).events) {
+        if (e.type !== 'conditionApplied') continue;
+        // Only what happens to THEM. A paladin's own Smite readying itself is
+        // not a reason to pick one attack over another.
+        const victim = probe.combatants[e.combatantId];
+        if (victim && victim.team !== actor.team) found.add(e.condition);
+      }
+    } catch {
+      // Illegal in this probe; the caller passes a list the engine produced, so
+      // this is a guard against divergence rather than an expected path.
+      return [];
+    }
+  }
+  return [...found];
+}
+
 export function hinderedByAdjacency(state: GameState, actorId: Id, action: Action): boolean {
   if (!state.combatants[actorId]) return false;
   try {

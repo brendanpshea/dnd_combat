@@ -3644,6 +3644,15 @@ button.category .count {
    paragraph the player has to parse. */
 .dossier-row { display: block; line-height: 1.35; }
 .dossier .vuln { color: #ffd76e; }
+/* What an option does besides damage, on the button that does it. The chooser
+   ranks on expected damage, so without this the one reason to pick Shocking
+   Grasp over Fire Bolt is invisible. */
+.opt-riders { display: inline-flex; gap: 4px; margin-left: 6px; flex-wrap: wrap; }
+.opt-rider {
+  font-size: 10px; line-height: 1.6; padding: 0 5px; border-radius: 7px;
+  background: rgba(255, 255, 255, 0.09); color: var(--muted); white-space: nowrap;
+}
+
 .lore-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 /* The pre-fight gambit: the offer in words, then the button that takes it.
    Full width so the sentence never has to compete with the button for the row,

@@ -45,7 +45,7 @@ import { Portrait } from './Portrait.js';
 import { SlotPips } from './SlotPips.js';
 import { FeaturePips } from './FeaturePips.js';
 import { CharacterSheet } from './CharacterSheet.js';
-import { conditionBadges } from './conditions.js';
+import { conditionBadges, CONDITION_META } from './conditions.js';
 import { blockedReason } from './conditions.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
@@ -1671,6 +1671,24 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               }}>
                 <span className="opt-ico">{actionIcon(o.icon, o.action.kind === 'castSpell' ? `spell:${o.action.spellId}` : undefined)}</span>
                 {o.label}
+                {/*
+                  WHAT IT DOES BESIDES DAMAGE.
+
+                  The button used to be an icon and a name, so Shocking Grasp
+                  read as a weaker Fire Bolt and a fighter's longsword never
+                  mentioned that it saps. The whole reason to pick those is the
+                  rider, and the wording comes from the same condition table the
+                  board and the chooser's own status list already use.
+                */}
+                {o.riders?.length ? (
+                  <span className="opt-riders">
+                    {o.riders.map((id) => (
+                      <span key={id} className="opt-rider">
+                        {CONDITION_META[id].label.split(' — ')[0]}
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
               </button>
             ))}
             {!showAllOptions && chooser.options.some((o) => o.folded) && (() => {
