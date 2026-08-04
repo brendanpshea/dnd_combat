@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -31,11 +33,12 @@ import { fileURLToPath } from 'node:url';
  *     for the coordinator (one was too few) and uses a reporter that doesn't
  *     redraw a 1900-test tree on every update.
  */
+const root = new URL('../', import.meta.url);
+const read = (p: string) => readFileSync(fileURLToPath(new URL(p, root)), 'utf8');
+const deploy = read('.github/workflows/deploy.yml');
+
 describe('the CI test runner', () => {
-  const root = new URL('../', import.meta.url);
-  const read = (p: string) => readFileSync(fileURLToPath(new URL(p, root)), 'utf8');
   const cfg = read('vitest.config.ts');
-  const deploy = read('.github/workflows/deploy.yml');
   const sims = read('.github/workflows/sims.yml');
 
   it('leaves cores for the process that answers the workers', () => {
@@ -71,5 +74,95 @@ describe('the CI test runner', () => {
     expect(sims, 'and on demand').toContain('workflow_dispatch');
     // Deliberately NOT triggered by push — that is the whole point.
     expect(sims).not.toMatch(/^\s*push:/m);
+  });
+});
+
+/**
+ * A test that shells out to Python needs that Python's packages ON THE RUNNER.
+ *
+ * THE SECOND TIME THE DEPLOY WENT RED WHILE EVERY TEST PASSED.
+ *
+ * `token_fill.py --check` guards the table that sizes every monster token, and
+ * it measures images, so it imports PIL. The runner installs node and nothing
+ * else, so the check died as
+ *
+ *     ModuleNotFoundError: No module named 'PIL'
+ *
+ * inside a subprocess — red on every merge, green on every laptop that happens
+ * to have Pillow. `art-thumbs.test.ts` had already met this and dodged it by
+ * checking the filesystem "rather than a run of the generator, deliberately —
+ * Python"; the lesson was in a comment rather than in a test, so the next
+ * Python-invoking test walked straight into it.
+ *
+ * DERIVED, NOT LISTED. The scripts are found by scanning the tests for what
+ * they actually execute, and their third-party imports by asking Python which
+ * of their imports are outside the standard library. A hand-kept list here
+ * would go stale exactly as silently as the thing it is guarding.
+ */
+describe('CI can run the checks the tests invoke', () => {
+  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+
+  /** Python scripts the suite runs as a subprocess. */
+  const invoked = (): string[] => {
+    const out = new Set<string>();
+    // `root` is the repo root, so the tests are one level in. Getting this
+    // wrong scans an empty directory and every assertion below passes on
+    // nothing, which is why the count is checked separately.
+    const dir = fileURLToPath(new URL('./test/', root));
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.test.ts')) continue;
+      const src = readFileSync(join(dir, f), 'utf8');
+      for (const m of src.matchAll(/execFileSync\(\s*pythonCmd\s*,\s*\[\s*'([^']+\.py)'/g)) {
+        out.add(m[1]!);
+      }
+    }
+    return [...out].sort();
+  };
+
+  /** Imports of `script` that are not in the Python standard library. */
+  const thirdParty = (script: string): string[] => {
+    const code = [
+      'import ast,sys',
+      `t=ast.parse(open(${JSON.stringify(script)},encoding="utf-8").read())`,
+      'm=set()',
+      'for n in ast.walk(t):',
+      '  if isinstance(n,ast.Import):',
+      '    m|={a.name.split(".")[0] for a in n.names}',
+      '  elif isinstance(n,ast.ImportFrom) and n.level==0 and n.module:',
+      '    m.add(n.module.split(".")[0])',
+      'print(" ".join(sorted(x for x in m if x not in sys.stdlib_module_names)))',
+    ].join('\n');
+    return execFileSync(pythonCmd, ['-c', code], { cwd: fileURLToPath(root), encoding: 'utf8' })
+      .trim().split(/\s+/).filter(Boolean);
+  };
+
+  /** Import name -> the package that provides it. */
+  const PACKAGE: Record<string, string> = { PIL: 'pillow' };
+
+  it('finds the Python the suite actually runs', () => {
+    // Guards the guard: if the scan breaks, everything below passes vacuously.
+    expect(invoked().length, 'no test appears to invoke Python — the scan is broken')
+      .toBeGreaterThan(0);
+  });
+
+  it.each(invoked())('installs what %s imports', (script) => {
+    for (const mod of thirdParty(script)) {
+      const pkg = PACKAGE[mod];
+      expect(pkg, `${script} imports ${mod}; add it to PACKAGE in this test and to deploy.yml`)
+        .toBeDefined();
+      expect(deploy, `the deploy never installs ${pkg}, which ${script} needs — it will die as ModuleNotFoundError inside a subprocess`)
+        .toContain(pkg!);
+    }
+  });
+
+  it('installs nothing it does not need', () => {
+    // The other direction. A `pip install` left behind after its test is gone
+    // is a slower deploy for no reason, and reads as a dependency that matters.
+    const needed = new Set(invoked().flatMap(thirdParty).map((m) => PACKAGE[m]).filter(Boolean));
+    for (const pkg of Object.values(PACKAGE)) {
+      if (deploy.includes(pkg) && !needed.has(pkg)) {
+        throw new Error(`deploy.yml installs ${pkg}, but no test invokes a script that imports it`);
+      }
+    }
   });
 });
