@@ -423,7 +423,9 @@ export function resolveAttack(
   // disengage flag a Disengage action sets, because "does not provoke" is
   // exactly what that flag already means to executeMove.
   if (crit && attacker.featureIds.includes('remarkable-athlete') && attacker.alive) {
-    attacker.turn.movementMax += Math.floor(attacker.speed / 2);
+    // This turn's Speed, not the base one — a restrained fighter who crits
+    // does not get half a move out of the web. Same reason Dash reads it.
+    attacker.turn.movementMax += Math.floor(attacker.turn.dashSpeed / 2);
     attacker.turn.disengaged = true;
   }
 

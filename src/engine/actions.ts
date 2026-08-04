@@ -1033,7 +1033,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
     }
     case 'dash':
       actor.turn.actionUsed = true;
-      actor.turn.movementMax += actor.speed;
+      actor.turn.movementMax += actor.turn.dashSpeed;
       events.push({ type: 'dashed', combatantId: actorId });
       break;
     case 'disengage':

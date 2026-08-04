@@ -46,6 +46,7 @@ import { SlotPips } from './SlotPips.js';
 import { FeaturePips } from './FeaturePips.js';
 import { CharacterSheet } from './CharacterSheet.js';
 import { conditionBadges } from './conditions.js';
+import { blockedReason } from './conditions.js';
 
 type Mode = 'hotseat' | 'vs-ai' | 'spectate' | 'encounter';
 export type AiLevel = 'easy' | 'normal' | 'hard';
@@ -1409,8 +1410,31 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         </div>
       )}
 
-      {isHumanTurn && grouped && !targeting && (
+      {isHumanTurn && grouped && !targeting && (() => {
+        /*
+         * A TURN WITH NOTHING IN IT HAS TO SAY SO.
+         *
+         * A paralyzed hero's turn arrived as an EMPTY action bar: every
+         * category filtered to zero entries, the board offered no blue tiles
+         * and no red rings, and nothing anywhere said why. The player sits
+         * looking at their own turn wondering what they are meant to tap.
+         *
+         * The trigger is what the ENGINE offered, not a second reading of the
+         * condition list — `legalActions` owns that rule, and re-deriving it
+         * here would be free to disagree with it. `blockedReason` only supplies
+         * the words once the bar is already empty.
+         */
+        const nothingToDo = grouped.bar.length === 0
+          && grouped.moves.size === 0
+          && grouped.perTarget.size === 0;
+        const why = nothingToDo && active ? blockedReason(active.conditions.map((k) => k.id)) : undefined;
+        const [whyName, ...whyRest] = (why?.label ?? '').split(' — ');
+        return (
         <div className="actionbar">
+          {/* Hint asks the AI for a suggested move, and when the only legal
+              action is End turn it can only suggest ending the turn. Offering
+              it there reads as "there is something to find". */}
+          {!nothingToDo && (
           <button
             className="hint-btn"
             title="Ask for a suggested move"
@@ -1418,6 +1442,17 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           >
             💡 Hint
           </button>
+          )}
+          {nothingToDo && (
+            <div className="turn-blocked">
+              <span className="tb-icon" aria-hidden="true">{why?.icon ?? '⏳'}</span>
+              <span className="tb-text">
+                <b>{active?.name} {why ? `is ${whyName}` : 'can’t act'}</b>
+                {whyRest.length > 0 && <> — {whyRest.join(' — ')}.</>}
+                {why && <em> Nothing to do but end the turn.</em>}
+              </span>
+            </div>
+          )}
           {CATEGORIES.map(({ group, icon, name }) => {
             const entries = grouped.bar.filter((b) => b.group === group);
             if (entries.length === 0) return null;
@@ -1438,9 +1473,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
               </button>
             );
           })}
-          <button className="endturn" onClick={() => apply({ kind: 'endTurn' })}>End turn ➤</button>
+          <button className={`endturn${nothingToDo ? ' only' : ''}`} onClick={() => apply({ kind: 'endTurn' })}>End turn ➤</button>
         </div>
-      )}
+        );
+      })()}
       </div>
 
       {/* The tray: where a growing spell list lives, so the bar can't grow with

@@ -552,7 +552,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     hasActed: false,
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
-      movementUsed: 0, movementMax: 30, disengaged: false,
+      movementUsed: 0, movementMax: 30, dashSpeed: 30, disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
       colossusUsed: false, savageUsed: false,
       leveledSpellCast: false,

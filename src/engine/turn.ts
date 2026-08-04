@@ -215,29 +215,44 @@ export function startTurn(state: GameState): GameEvent[] {
   const helpless = c.conditions.some(
     (k) => k.id === 'unconscious' || k.id === 'paralyzed' || k.id === 'stunned');
   let speed = helpless ? 0 : c.speed;
+  /*
+   * What a Dash is worth this turn, tracked in parallel.
+   *
+   * Every modifier below applies to BOTH — except standing up from prone,
+   * which is a cost paid out of this turn's movement rather than a change to
+   * Speed. Dash grants extra movement equal to your Speed, so a hero who spent
+   * half their movement getting up still dashes for the full amount.
+   *
+   * Dash used to add the creature's BASE speed, which undid all of this: a
+   * restrained creature (speed 0) dashed for 30 and walked out of the web.
+   */
+  let dashSpeed = speed;
   // Haste: double speed (before prone/restrained/slowed apply their own
   // reductions on top, same as any other speed-affecting condition would).
-  if (!helpless && c.conditions.some((k) => k.id === 'hasted')) speed *= 2;
+  if (!helpless && c.conditions.some((k) => k.id === 'hasted')) { speed *= 2; dashSpeed *= 2; }
   // Command: the target grovels — drops prone and loses this whole turn (the
   // `commanded` condition blocks its actions, then clears at end of turn). It
   // stays on the ground; standing up waits for its following turn.
   if (c.conditions.some((k) => k.id === 'commanded')) {
     speed = 0;
+    dashSpeed = 0;   // grovelling; the condition blocks acting anyway
     if (!c.conditions.some((k) => k.id === 'prone')) {
       c.conditions.push({ id: 'prone', sourceId: c.id });
       events.push({ type: 'conditionApplied', combatantId: c.id, condition: 'prone', sourceId: c.id });
     }
   } else if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'prone');
+    // `speed` only: standing is a movement cost, and `dashSpeed` is a Speed.
     speed = Math.floor(speed / 2);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
   }
-  // Web: a restrained creature can't move at all this turn.
-  if (c.conditions.some((k) => k.id === 'restrained')) speed = 0;
+  // Web: a restrained creature can't move at all this turn — and cannot Dash
+  // its way out either, which is exactly what it used to do.
+  if (c.conditions.some((k) => k.id === 'restrained')) { speed = 0; dashSpeed = 0; }
   // Incapacitated (e.g. the first stage of Sleep): takes no actions and no
   // movement — it just stands there until its end-of-turn save. Without this it
   // kept full speed and the AI would walk it around before rolling to wake.
-  if (c.conditions.some((k) => k.id === 'incapacitated')) speed = 0;
+  if (c.conditions.some((k) => k.id === 'incapacitated')) { speed = 0; dashSpeed = 0; }
   // Spirit Guardians halves the Speed of anyone else standing in it — half
   // of what the spell does, and it was missing entirely. Applied here rather
   // than as a condition because the aura is a place, not a status: walking out
@@ -249,6 +264,7 @@ export function startTurn(state: GameState): GameEvent[] {
       if (!other.spiritualGuardians || !other.alive || other.team === c.team) continue;
       if (distanceFeet(c.position, other.position) > 15) continue;
       speed = Math.floor(speed / 2);
+      dashSpeed = Math.floor(dashSpeed / 2);
       break; // two overlapping auras do not quarter you
     }
   }
@@ -257,6 +273,7 @@ export function startTurn(state: GameState): GameEvent[] {
   if (c.conditions.some((k) => k.id === 'slowed')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'slowed');
     speed = Math.max(0, speed - 10);
+    dashSpeed = Math.max(0, dashSpeed - 10);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'slowed' });
   }
 
@@ -266,6 +283,7 @@ export function startTurn(state: GameState): GameEvent[] {
     reactionUsed: false,
     movementUsed: 0,
     movementMax: speed,
+    dashSpeed,
     disengaged: false,
     attackedThisTurn: false,
     attacksLeft: 0,

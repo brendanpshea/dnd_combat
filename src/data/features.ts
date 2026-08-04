@@ -328,7 +328,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     uses: { count: 'proficiency', per: 'encounter' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
-      c.turn.movementMax += c.speed;
+      c.turn.movementMax += c.turn.dashSpeed;
       c.tempHp = Math.max(c.tempHp ?? 0, proficiencyBonus(c.level));
       return [{ type: 'dashed', combatantId: actorId }];
     },
@@ -691,7 +691,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'cunning-dash', name: 'Cunning Action: Dash', trigger: 'bonus', bonusVerb: 'dash',
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
-      c.turn.movementMax += c.speed;
+      c.turn.movementMax += c.turn.dashSpeed;
       return [{ type: 'dashed', combatantId: actorId }];
     },
   },
@@ -1763,7 +1763,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       const me = state.combatants[actorId]!;
       if (me.turn.disengaged || !spendFocus(me)) return [];
       me.turn.disengaged = true;
-      me.turn.movementMax += me.speed;   // Dash
+      me.turn.movementMax += me.turn.dashSpeed;   // Dash
       return [];
     },
   },
