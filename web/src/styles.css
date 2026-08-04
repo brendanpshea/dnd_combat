@@ -3645,6 +3645,15 @@ button.category .count {
 .dossier-row { display: block; line-height: 1.35; }
 .dossier .vuln { color: #ffd76e; }
 .lore-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+/* The pre-fight gambit: the offer in words, then the button that takes it.
+   Full width so the sentence never has to compete with the button for the row,
+   which on a 390px phone it always loses. */
+.gambit-offer { flex: 1 0 100%; display: flex; flex-direction: column; gap: 5px; }
+.gambit-offer .go-setup {
+  margin: 0; font-size: 12px; line-height: 1.45; color: var(--text);
+  border-left: 2px solid var(--gold); padding-left: 8px;
+}
+.gambit-offer .skill-gambit { align-self: flex-start; }
 .lore-known { font-size: 11px; color: #8fe3a0; }
 .lore-blind { font-size: 11px; color: var(--muted); }
 

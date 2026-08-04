@@ -42,7 +42,6 @@ import {
 import { ARMOR as ARMOR_TABLE, armorClass } from '../src/data/armor.js';
 import { next } from '../src/engine/rng.js';
 import { newArenaRun, buildWave, advanceDay, type ArenaRunState } from '../src/arena/run.js';
-import { ambushDc, canCreepIn, creepKey, surprisedTeam } from '../src/arena/ambush.js';
 import { parseMap } from '../src/data/maps.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
@@ -133,25 +132,25 @@ const VARIETY = flag('--variety', -1);
  */
 const RANDOM_PREP = process.argv.includes('--random-prep');
 /**
- * Let the party SPEND its gold, and let it try to creep in.
+ * Let the party SPEND its gold.
  *
- * Both were listed at the top of this file as things the harness does not do,
- * and both turned out to bias specific classes rather than everything evenly.
+ * This was listed at the top of the file as something the harness does not do,
+ * and it turned out to bias one class rather than everything evenly: the
+ * fighter starts in scale mail and, with no shopping, is still wearing it at
+ * level 8 while plate sits on a shelf -- four points of armour class missing
+ * from the class that measured as taking the most damage in the game.
  *
- * The fighter starts in scale mail and, with no shopping, is still wearing it
- * at level 8 while plate sits on a shelf -- four points of armour class missing
- * from the class that measured as taking the most damage in the game. And
- * surprise, which the arena has had since `ambush.ts`, is worth more to a rogue
- * than to anyone: a free round with advantage is a free Sneak Attack. The rogue
- * measured as the top damage dealer AND the worst finisher, which is exactly
- * what you would expect from a class whose best round never happens.
+ * Off by default so old numbers stay comparable; on, the run is a closer model
+ * of a played campaign.
  *
- * So the two classes that looked anomalous were the two this harness
- * under-served. Off by default so old numbers stay comparable; on, the run is
- * a closer model of a played campaign.
+ * There was a `--creep` flag beside this one, modelling the pre-fight Stealth
+ * gamble. That mechanic is gone: measured three times, surprise moved the win
+ * rate by two points, because the 2024 rule is disadvantage on one initiative
+ * roll. It is replaced by the pre-fight gambit (arena/gambit.ts), which the
+ * harness does not yet model — a party here never takes one, so these runs
+ * measure the fight without it.
  */
 const SHOPPING = process.argv.includes('--shop');
-const CREEPING = process.argv.includes('--creep');
 /**
  * Start runs at this level instead of at 1.
  *
@@ -236,8 +235,6 @@ const itemUses = new Map<Id, number>();
 let counterspells = 0;
 /** Creep attempts and how many bought a surprise round. */
 const shoves = new Map<string, number>();
-let creeps = 0;
-let creepWins = 0;
 const speciesRuns = new Map<Id, { runs: number; finished: number }>();
 
 /**
@@ -369,27 +366,6 @@ function playOne(seed: number, collect: boolean): Outcome {
     // Shop between fights, which is when a player does it. Before the party is
     // built, so the armour bought is the armour worn into this fight.
     if (SHOPPING) shopForArmor(c);
-    /**
-     * Creep in, when there is cover to creep behind.
-     *
-     * Always attempted rather than judged, because the harness has no read on
-     * whether the gamble is worth it and inventing one would be measuring my
-     * guess instead of the mechanic. A failed creep surprises the PARTY, so
-     * this is not free — which is the design, and taking both ends of it is the
-     * honest way to measure it.
-     */
-    let surprised: 'team1' | 'team2' | undefined;
-    if (CREEPING) {
-      if (canCreepIn(parseMap(wave.map))) {
-        const dc = ambushDc(wave.encounter.members);
-        const group = groupSkillCheck(c, 'stealth', dc);
-        surprised = surprisedTeam({
-          key: creepKey(dayOf(run), half), door: run.gate ?? 0,
-          success: group.success, by: 0, total: 0, dc,
-        }, run.gate ?? 0);
-        if (collect) { creeps++; if (group.success) creepWins++; }
-      }
-    }
     const party = buildCampaignParty(c);
     /**
      * Deployed the way the game deploys them.
@@ -426,12 +402,10 @@ function playOne(seed: number, collect: boolean): Outcome {
        * only the measurements were of somewhere else.
        *
        * Everything terrain-shaped was therefore invisible here: cover, the map
-       * generator, the hazard tiles, and the creep check that reads
-       * `canCreepIn(wave.map)` for a board nobody then fought on.
+       * generator and the hazard tiles.
        */
       map: wave.map,
       combatants: [...party, ...foes], seed: seed * 31 + run.wave * 101 + run.attempts,
-      ...(surprised ? { surprisedTeam: surprised } : {}),
     });
 
     // Who is who, so an event carrying only an id can be attributed to a class.
@@ -780,12 +754,6 @@ const never = [...everPlayable]
   .filter((id) => (spellCasts.get(id)?.total ?? 0) === 0 && SPELLS[id]?.castingTime !== 'reaction').sort();
 console.log(`\n--- never cast (${never.length} of ${everPlayable.size} playable combat spells)`);
 for (const id of never) console.log(`  ${pad(SPELLS[id]?.name ?? id, 22)} L${SPELLS[id]?.level}`);
-
-if (CREEPING) {
-  console.log(`\n--- creeping in (${creeps} attempts where there was cover)`);
-  console.log(`  surprised the enemy ${pct(creepWins, creeps)} of the time;` +
-    ` the other ${pct(creeps - creepWins, creeps)} surprised the party`);
-}
 
 if (shoves.size > 0) {
   console.log('\n--- shoves');
