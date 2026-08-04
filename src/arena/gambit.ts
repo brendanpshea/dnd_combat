@@ -153,9 +153,25 @@ function freeCell(grid: GridState, taken: Combatant[], rows: number[]): Position
  * swings 22, which is the top of the usable band and no more.
  *
  * Success puts a copy on your side, failure adds one to theirs. That is the
- * only honestly symmetric form of "it fights for you or against you": the same
- * creature either way, which is why it is the evenest pair in the table at a
- * tilt of -1 while everything else had to be tuned.
+ * only honestly symmetric form of "it fights for you or against you" — the same
+ * creature either way — and it is why this is the evenest pair in the table
+ * while everything else had to be tuned.
+ *
+ * IT ARRIVES FRIGHTENED, AND THAT IS THE ONLY DIAL THIS OUTCOME HAS.
+ *
+ * At full strength the pair swung 22 points, the loudest entry in a table whose
+ * next-largest is 16 — and three skills use it. There is no smaller creature
+ * than the weakest, so size is not available. Two ways down were measured:
+ *
+ *   success REMOVES one of theirs      +11 / -11, swing 22 — no smaller at all.
+ *                                      Losing an enemy is worth exactly what
+ *                                      gaining an ally is, which is not what I
+ *                                      expected and is why it was measured.
+ *   the newcomer arrives frightened     +9 /  -9, swing 18, tilt 0.
+ *
+ * So it comes over, and it attacks at disadvantage until it settles. Which is
+ * also the better story: nobody changes sides mid-battle with their whole heart
+ * in it.
  */
 function recruitOnto(
   team: TeamId, party: Combatant[], foes: Combatant[], grid: GridState, members: readonly Id[],
@@ -168,7 +184,9 @@ function recruitOnto(
   const rows = team === 'team1' ? [1, 2, 0, 3] : [grid.height - 3, grid.height - 2, grid.height - 4];
   const at = freeCell(grid, [...party, ...foes], rows);
   if (!at) return undefined;
-  return buildMonster(monsterId, team, at, `gambit-${team}`);
+  const c = buildMonster(monsterId, team, at, `gambit-${team}`);
+  cond(c, 'frightened');
+  return c;
 }
 
 const RECRUIT_US: GambitEffect = (p, f, grid, m) => {
@@ -202,8 +220,8 @@ export const GAMBITS: GambitDef[] = [
   {
     skill: 'persuasion',
     setup: 'Not everyone out there looks committed to this. You could try talking to one of them before the shouting starts.',
-    won: 'One of them decides your side is the better offer.',
-    lost: 'Word gets passed along, and someone else comes over to see what you are up to.',
+    won: 'One of them takes the offer and comes over, looking far from happy about it.',
+    lost: 'Word gets passed along, and someone else is sent over to see what you are up to.',
     eligible: (w) => any(w.types, 'humanoid', 'celestial'),
     onSuccess: RECRUIT_US,     // +10
     onFailure: RECRUIT_THEM,   // -11
@@ -211,7 +229,7 @@ export const GAMBITS: GambitDef[] = [
   {
     skill: 'animal-handling', label: 'Animal Handling',
     setup: 'There are animals out there, and animals can sometimes be talked round. You could try, if you know how.',
-    won: 'One of them decides it would rather be over here.',
+    won: 'One of them comes over to your side, wary of everyone including you.',
     lost: 'You get its attention, and it brings company.',
     eligible: (w) => w.types.has('beast'),
     onSuccess: RECRUIT_US,
@@ -220,7 +238,7 @@ export const GAMBITS: GambitDef[] = [
   {
     skill: 'performance', label: 'Perform',
     setup: 'Some of them out there have ears and nothing to listen to. You could give them something.',
-    won: 'One drifts over to hear the rest of it and forgets what it was doing.',
+    won: 'One drifts over to hear the rest of it, and stays — though its heart is not in the fight.',
     lost: 'The noise carries, and something else comes to find out what is making it.',
     eligible: (w) => any(w.types, 'fey', 'humanoid'),
     onSuccess: RECRUIT_US,
@@ -285,11 +303,11 @@ export const GAMBITS: GambitDef[] = [
   {
     skill: 'acrobatics',
     setup: 'There are more of them than there is space. You could pick your route through now, while there still is one.',
-    won: 'You go through the gaps and leave their line open.',
+    won: 'You come through the gap, and the nearest of them flinch.',
     lost: 'You misjudge it and finish up surrounded.',
     eligible: (w) => w.count >= 5,
-    onSuccess: (_p, f) => f.forEach((c) => cond(c, 'outlined')),   // +6
-    onFailure: bleed,                                             // -5
+    onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
+    onFailure: bleed,                                                           // -5
   },
   {
     skill: 'survival',
@@ -305,11 +323,19 @@ export const GAMBITS: GambitDef[] = [
   {
     skill: 'perception',
     setup: 'There is very little cover out here, which cuts both ways. You could take a proper look before committing.',
-    won: 'You pick them out early. Nobody has to guess.',
+    won: 'You see them coming, and their first swings arrive telegraphed.',
     lost: 'You call it wrong twice, and nobody trusts the third time.',
     eligible: (w) => w.cover <= 2,
-    onSuccess: (_p, f) => f.forEach((c) => cond(c, 'outlined')),   // +6
-    onFailure: (p) => p.forEach((c) => cond(c, 'sapped')),         // -4
+    /*
+     * `outlined` was the obvious fit and had to go: measured +8 / +9 / +2 across
+     * levels 3, 5 and 7, so it faded to nothing exactly where the rest of the
+     * table holds flat, and it dragged both this and Acrobatics down with it.
+     * Two same-sized replacements were measured and both hold: `sapped` at
+     * +8 / +4 / +4 and two-weakest-frightened at +8 / +7 / +5. Split between
+     * the two skills by which one the fiction actually describes.
+     */
+    onSuccess: (_p, f) => f.forEach((c) => cond(c, 'sapped')),   // +5
+    onFailure: (p) => p.forEach((c) => cond(c, 'sapped')),       // -4
   },
 ];
 

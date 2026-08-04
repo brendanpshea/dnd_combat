@@ -177,76 +177,69 @@ const RECRUIT_THEM: Outcome = {
 
 export const GAMBITS: Gambit[] = [
   /*
-   * The design table, one entry per skill, on one baseline.
+   * ROUND TWO: the two rows the shipped table left open.
    *
-   * Several skills share a payload on purpose — a mercenary, a war-beast and a
-   * curious fey are one mechanic behind three gates — so the OUTCOMES list
-   * below is deduplicated by name and each distinct effect is fought once.
+   * The side-switch swings 22 — the loudest entry, and three of the thirteen
+   * skills use it. There is no smaller creature than the weakest, so the dial
+   * has to be something other than size: either the newcomer arrives
+   * half-hearted, or success REMOVES one of theirs instead of gaining one of
+   * yours, which should be smaller because an ally both deals damage and soaks
+   * it while a departure only stops the damage.
+   *
+   * And `foes outlined` decays badly with level (+8 / +9 / +2), which drags
+   * Acrobatics and Perception down at level 7 while everything else holds flat.
+   * It needs a replacement of about the same size that does not.
    */
   {
-    skill: 'Persuasion', flavour: 'talk one of them round',
+    skill: 'SideSwitch', flavour: 'A. as shipped — joins you / joins them',
     success: RECRUIT_US, failure: RECRUIT_THEM,
   },
   {
-    skill: 'Animal Hand.', flavour: 'the animals can be talked round',
-    success: RECRUIT_US, failure: RECRUIT_THEM,
+    skill: 'SideSwitch', flavour: 'B. it slips away / one more arrives',
+    // Removing the weakest of theirs rather than gaining one of ours.
+    success: { name: 'weakest foe LEAVES', side: 'us', apply: (_p, f) => {
+      const w = weakest(f, 1)[0];
+      if (w && f.length > 1) f.splice(f.indexOf(w), 1);
+    } },
+    failure: RECRUIT_THEM,
   },
   {
-    skill: 'Perform', flavour: 'give them something to listen to',
-    success: RECRUIT_US, failure: RECRUIT_THEM,
+    skill: 'SideSwitch', flavour: 'C. joins you unwillingly / joins them unwillingly',
+    success: { name: 'recruit joins US, frightened', side: 'us', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0);
+      if (r) { cond(r, 'frightened'); p.push(r); }
+    } },
+    failure: { name: 'recruit joins THEM, frightened', side: 'them', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID, 0);
+      if (r) { cond(r, 'frightened'); f.push(r); }
+    } },
   },
+
+  // Candidates to replace `foes outlined`, which is the anchor here.
   {
-    skill: 'Intimidate', flavour: 'explain what a bad idea this is',
-    success: { name: 'half foes frightened', side: 'us', apply: (_p, f) => half(f).forEach((c) => cond(c, 'frightened')) },
-    failure: { name: 'half foes blessed', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'blessed')) },
-  },
-  {
-    skill: 'Religion', flavour: 'address the older thing',
-    success: { name: 'party blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
-    failure: { name: 'party baned', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'baned')) },
-  },
-  {
-    skill: 'Investigation', flavour: 'find the seams before they find you',
-    success: { name: 'party warded', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'warded')) },
-    failure: { name: 'foes warded', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'warded')) },
-  },
-  {
-    skill: 'Medicine', flavour: 'the grey mushrooms',
-    success: { name: 'party +20% max as temp', side: 'us', apply: (p) => p.forEach(dose) },
-    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
-  },
-  {
-    skill: 'Deception', flavour: 'arrive as something other than an enemy',
-    success: { name: '2 weakest foes frightened', side: 'us', apply: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')) },
-    failure: { name: 'their champion blessed', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')) },
-  },
-  {
-    skill: 'Athletics', flavour: 'make the ground worse',
-    success: { name: 'party +10 temp HP', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }) },
-    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
-  },
-  {
-    skill: 'Acrobatics', flavour: 'pick your footing first',
-    success: { name: 'foes outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
-    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
-  },
-  {
-    skill: 'Survival', flavour: 'read what came through here',
-    success: { name: 'foes sapped', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'sapped')) },
-    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
-  },
-  {
-    skill: 'Perception', flavour: 'take a proper look first',
+    skill: 'Outlined?', flavour: 'the incumbent — foes outlined',
     success: { name: 'foes outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
     failure: { name: 'party sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
   },
   {
-    // Kept for the record, not for the design: three runs put this at a swing
-    // of 2, and initiative.ts already measured the ceiling on turn order at
-    // about five points for the whole party going first in every fight.
-    skill: 'Stealth', flavour: 'get close before the alarm (FLAVOUR ONLY)',
-    success: { name: 'surprise them', side: 'us', apply: () => {}, surprise: 'team2' },
-    failure: { name: 'surprise us', side: 'them', apply: () => {}, surprise: 'team1' },
+    skill: 'Outlined?', flavour: 'A. two weakest frightened',
+    success: { name: '2 weakest foes frightened', side: 'us', apply: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')) },
+    failure: { name: 'party sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
+  },
+  {
+    skill: 'Outlined?', flavour: 'B. all foes sapped',
+    success: { name: 'foes sapped', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'sapped')) },
+    failure: { name: 'party sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
+  },
+  {
+    skill: 'Outlined?', flavour: 'C. half foes poisoned',
+    success: { name: 'half foes poisoned', side: 'us', apply: (_p, f) => half(f).forEach((c) => cond(c, 'poisoned')) },
+    failure: { name: 'party sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
+  },
+  {
+    skill: 'Outlined?', flavour: 'D. half foes outlined',
+    success: { name: 'half foes outlined', side: 'us', apply: (_p, f) => half(f).forEach((c) => cond(c, 'outlined')) },
+    failure: { name: 'party sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
   },
 ];
 

@@ -27,6 +27,8 @@ import { makeCombatant } from './helpers.js';
 import { Combat } from '../src/engine/combat.js';
 import { SKILL_ABILITY } from '../src/data/classes.js';
 import { blocksMovement } from '../src/engine/grid.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { Combatant } from '../src/engine/types.js';
 
 /** A spread of real generated waves, the thing the rules actually run against. */
@@ -179,6 +181,26 @@ describe('the writing promises only what the gate guarantees', () => {
     }
   });
 
+  it('keeps `outlined` out of the table, because it fades with level', () => {
+    /*
+     * Every other payload holds roughly flat from level 3 to 7. `outlined` does
+     * not: +8 / +9 / +2, measured at n=400 per level. It was the obvious fit for
+     * both Perception and Acrobatics and it quietly took both of them to nearly
+     * nothing at the top of the range, which is the one place the arena is
+     * hardest.
+     *
+     * Checked at the source rather than by re-simulating, because the finding is
+     * about a curve and re-measuring it costs three minutes per run. Two
+     * same-sized replacements were measured and both hold flat: `sapped` at
+     * +8 / +4 / +4 and two-weakest-frightened at +8 / +7 / +5.
+     */
+    const src = readFileSync(fileURLToPath(new URL('../src/arena/gambit.ts', import.meta.url)), 'utf8');
+    const uses = [...src.matchAll(/cond\((?:c|[a-z]+), 'outlined'\)/g)];
+    expect(uses.length,
+      'a gambit pays out in `outlined` again — measured +8/+9/+2, it is worth almost nothing by level 7')
+      .toBe(0);
+  });
+
   it('uses skills that exist, with no duplicates', () => {
     const skills = GAMBITS.map((g) => g.skill);
     expect(new Set(skills).size, 'two gambits share a skill').toBe(skills.length);
@@ -259,6 +281,39 @@ describe('applying the outcome', () => {
     applyGambit(attempt('persuasion', false), 0, lost.party, lost.foes, lost.w.grid, lost.w.members);
     expect(lost.foes.length, 'nothing came to help them').toBe(foesBefore + 1);
     expect(lost.party.length).toBe(4);
+  });
+
+  it('brings the newcomer in unwilling, whichever side it lands on', () => {
+    /*
+     * The only dial this outcome has. At full strength the pair swung 22 points
+     * against a table whose next-largest is 16, and three skills use it — there
+     * is no smaller creature than the weakest, so size was not available.
+     * Removing one of theirs instead was measured and came out identical (+11
+     * / -11, swing 22); arriving frightened brought it to 18 with a tilt of
+     * zero. Drop the condition and the loudest entry in the game gets louder.
+     */
+    const won = fight();
+    applyGambit(attempt('persuasion', true), 0, won.party, won.foes, won.w.grid, won.w.members);
+    const ally = won.party[won.party.length - 1]!;
+    expect(ally.team).toBe('team1');
+    expect(ally.conditions.some((k) => k.id === 'frightened'),
+      'the recruit arrived at full strength').toBe(true);
+
+    const lost = fight();
+    applyGambit(attempt('persuasion', false), 0, lost.party, lost.foes, lost.w.grid, lost.w.members);
+    const enemy = lost.foes[lost.foes.length - 1]!;
+    expect(enemy.conditions.some((k) => k.id === 'frightened'),
+      'the pair is only even because BOTH newcomers are half-hearted').toBe(true);
+  });
+
+  it('leaves the creatures that were already there alone', () => {
+    // The frightened flag belongs to the newcomer, not to the wave.
+    const { w, party, foes } = fight();
+    const before = foes.length;
+    applyGambit(attempt('persuasion', false), 0, party, foes, w.grid, w.members);
+    for (const f of foes.slice(0, before)) {
+      expect(f.conditions.some((k) => k.id === 'frightened'), `${f.id} was scared by proxy`).toBe(false);
+    }
   });
 
   it('places the newcomer somewhere a fight can actually start', () => {
