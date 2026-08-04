@@ -119,13 +119,17 @@ function freeCell(grid: GridState, taken: Combatant[], rows: number[]): Position
  * either way and so the only honestly symmetric version of "it fights for you
  * or against you".
  */
+let WHICH_RECRUIT = 0.5;
+
 function recruit(
   members: readonly Id[], team: TeamId, party: Combatant[], foes: Combatant[], grid: GridState,
+  which = 0.5,
 ): Combatant | undefined {
+  WHICH_RECRUIT = which;
   const sorted = [...foes].sort((a, b) => a.maxHp - b.maxHp);
-  const median = sorted[Math.floor(sorted.length / 2)];
-  if (!median) return undefined;
-  const idx = foes.indexOf(median);
+  const pick = sorted[Math.floor(sorted.length * WHICH_RECRUIT)];
+  if (!pick) return undefined;
+  const idx = foes.indexOf(pick);
   const monsterId = members[idx];
   if (!monsterId) return undefined;
   const all = [...party, ...foes];
@@ -183,24 +187,49 @@ export const GAMBITS: Gambit[] = [
     success: { name: 'champion of ours hasted', side: 'us', apply: (p) => { if (p[0]) cond(p[0], 'hasted'); } },
     failure: { name: 'their champion hasted', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'hasted')) },
   },
+  /*
+   * AC IS TESTED WITH `warded`, NOT `shielded`.
+   *
+   * Shield is a REACTION and `turn.ts` lists it as self-clearing: it is stripped
+   * at the start of the holder's own turn, so a copy applied before the fight
+   * never survives to stop an attack. Measured at +/-0.3 across 750 fights —
+   * almost no flipped pairs at all, which is the signature of a condition that
+   * is not there rather than one that does not matter.
+   *
+   * Shield of Faith is +2 rather than +5 and has a duration, so it is the
+   * honest way to ask whether durable AC moves a fight.
+   */
   {
-    skill: 'Investigation', flavour: 'a warded guard / a warded foe (+5 AC)',
-    success: { name: 'party shielded', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'shielded')) },
-    failure: { name: 'foes shielded', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'shielded')) },
+    skill: 'Investigation', flavour: 'braced / caught out (+2 AC, lasting)',
+    success: { name: 'party warded', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'warded')) },
+    failure: { name: 'foes warded', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'warded')) },
   },
   {
-    skill: 'Investigation', flavour: 'shielded — HALF only',
-    success: { name: 'half party shielded', side: 'us', apply: (p) => p.slice(0, 2).forEach((c) => cond(c, 'shielded')) },
-    failure: { name: 'half foes shielded', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'shielded')) },
+    skill: 'Investigation', flavour: '+2 AC — HALF only',
+    success: { name: 'half party warded', side: 'us', apply: (p) => p.slice(0, 2).forEach((c) => cond(c, 'warded')) },
+    failure: { name: 'half foes warded', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'warded')) },
   },
   {
-    skill: 'Animal Hand.', flavour: 'it fights for you / it fights for them',
-    success: { name: 'recruit joins US', side: 'us', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID);
+    skill: 'Animal Hand.', flavour: 'median creature joins you / them',
+    success: { name: 'recruit(med) joins US', side: 'us', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0.5);
       if (r) p.push(r);
     } },
-    failure: { name: 'recruit joins THEM', side: 'them', apply: (p, f, m) => {
-      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID);
+    failure: { name: 'recruit(med) joins THEM', side: 'them', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID, 0.5);
+      if (r) f.push(r);
+    } },
+  },
+  {
+    // The median creature swung 47 points. The weakest is the same idea at the
+    // smallest size the wave can offer, which is the only dial this outcome has.
+    skill: 'Animal Hand.', flavour: 'WEAKEST creature joins you / them',
+    success: { name: 'recruit(min) joins US', side: 'us', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0);
+      if (r) p.push(r);
+    } },
+    failure: { name: 'recruit(min) joins THEM', side: 'them', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team2', p, f, CURRENT_GRID, 0);
       if (r) f.push(r);
     } },
   },
