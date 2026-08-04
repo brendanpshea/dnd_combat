@@ -1,141 +1,84 @@
 /**
  * What is a pre-fight gambit actually worth, in fights won and lost?
  *
- * The design says success makes the fight somewhat easier and failure somewhat
- * harder, and that the two should be priced to match — that is the whole reason
- * 50% odds is the line where taking the gamble stops being obvious. None of
- * which means anything until the outcomes are measured, because "starts
- * frightened" and "starts surprised" are not remotely the same size, and a
- * table of outcomes that swings from two points to thirty is a lottery wearing
- * a skill check's clothes.
+ * The table itself lives in gambit-table.ts; this runs it and reports.
  *
- * So: the same wave, fought with and without each candidate outcome, greedy on
- * both sides. The number that matters is the win-rate DELTA against an
- * untouched fight.
+ *   npx tsx scripts/gambit-price.ts [samplesPerLevel] [--serial]
  *
- * WHAT COUNTS AS THE RIGHT SIZE
+ * WHY IT SHARDS
  *
- * Big enough that the player can feel it, small enough that no single roll
- * decides the fight. The arena's own even-fight target is about 50%, so an
- * outcome worth ten points moves a coin flip to 60/40 — noticeable, survivable.
- * Anything past twenty is doing more than the fight is.
+ * A run is samples x levels x outcomes fights, each up to 600 greedy decisions
+ * — twenty-odd thousand fights, which took a quarter of an hour on one core
+ * while the other three sat idle.
  *
- *   npx tsx scripts/gambit-price.ts [samplesPerPoint]
+ * Sharding by SEED rather than by outcome is what makes the merge exact: every
+ * shard fights its own slice against both the baseline and every outcome, so a
+ * baseline entry and an outcome entry always describe the same fight, and
+ * concatenating the shards reproduces the serial result rather than
+ * approximating it.
+ *
+ * Sharding by outcome would have been simpler and wrong twice over: every
+ * worker would re-fight the whole baseline, and the pairing would depend on
+ * each having computed the same one — the one thing a merged tally cannot
+ * check.
+ *
+ * Seeds are dealt round-robin, not in blocks. Fight length varies enormously —
+ * a stalemate runs to the 600-step cap — so contiguous blocks let one shard
+ * draw all the long games and leave three cores waiting on it.
  */
-import { newCampaign, buildCampaignParty, partyLevelOf } from '../src/campaign/campaign.js';
-import { memberCapFor, maxCountFor, EVEN_BUDGET } from '../src/arena/run.js';
-import { generateEncounter } from '../src/arena/encounter.js';
-import { generateArenaMap } from '../src/arena/map.js';
-import { buildMonster } from '../src/data/monsters.js';
-import { Combat } from '../src/engine/combat.js';
-import { chooseAction } from '../src/ai/greedy.js';
-import { parseMap } from '../src/data/maps.js';
-import type { Combatant, TeamId } from '../src/engine/types.js';
+import { spawn } from 'node:child_process';
+import { cpus } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { LEVELS, OUTCOMES, GAMBITS } from './gambit-table.js';
 
 const SAMPLES = Number(process.argv[2] ?? 120);
-const LEVELS = [3, 5, 7];
+const SERIAL = process.argv.includes('--serial');
 
-/** How far a measured rate can sit from the truth, at this sample size. */
+/** How far a single measured win rate can sit from the truth, at this n. */
 const MARGIN = 100 * 1.96 * Math.sqrt(0.25 / SAMPLES);
 
-interface Outcome {
-  name: string;
-  /** Which side it is meant to help — for reading the sign of the delta. */
-  side: 'us' | 'them';
-  /** Mutates the built combatants in place, before the fight starts. */
-  apply(party: Combatant[], foes: Combatant[]): void;
-  /** Some outcomes are setup-level rather than combatant-level. */
-  surprise?: TeamId;
-}
+type Shard = Record<string, Record<number, string>>;
 
-const cond = (c: Combatant, id: Parameters<typeof String>[0] extends never ? never : string) =>
-  c.conditions.push({ id: id as never });
-
-/** The weakest N foes, by hit points — who a scare would land on. */
-const weakest = (foes: Combatant[], n: number) =>
-  [...foes].sort((a, b) => a.hp - b.hp).slice(0, n);
-/** The one that headlines the wave. */
-const champion = (foes: Combatant[]) =>
-  [...foes].sort((a, b) => b.hp - a.hp).slice(0, 1);
-
-const OUTCOMES: Outcome[] = [
-  // The two that already ship, as the yardstick everything else is read against.
-  { name: 'SURPRISE them (creep success)', side: 'us', apply: () => {}, surprise: 'team2' },
-  { name: 'SURPRISE us  (creep failure)', side: 'them', apply: () => {}, surprise: 'team1' },
-
-  { name: 'foes: 2 weakest frightened', side: 'us', apply: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')) },
-  { name: 'foes: all frightened', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'frightened')) },
-  { name: 'foes: all sapped', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'sapped')) },
-  { name: 'foes: all outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
-  { name: 'foes: all poisoned', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'poisoned')) },
-  { name: 'foes: all slowed', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'slowed')) },
-  /*
-   * Vex is DIRECTED and sits on the attacker: `attack.ts` looks for a `vexed`
-   * whose `sourceId` is the creature being attacked, and grants advantage
-   * against that one creature. An undirected `{ id: 'vexed' }` matches nothing,
-   * which is why the first run of this table reported it at exactly 0.0 +/-0.0
-   * — zero flipped fights out of 1200, a number too clean to be a finding.
-   */
-  { name: 'us:   vex on the champion', side: 'us', apply: (p, f) => {
-    const boss = champion(f)[0];
-    if (boss) for (const c of p) c.conditions.push({ id: 'vexed', sourceId: boss.id });
-  } },
-  { name: 'us:   blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
-  { name: 'us:   +5 temp HP each', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 5; }) },
-  { name: 'us:   +10 temp HP each', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }) },
-
-  { name: 'us:   all sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
-  { name: 'us:   all outlined', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'outlined')) },
-  { name: 'us:   all slowed', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'slowed')) },
-  { name: 'us:   all frightened', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'frightened')) },
-  { name: 'us:   all prone', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'prone')) },
-  { name: 'foes: champion blessed', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')) },
-  { name: 'foes: all blessed', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'blessed')) },
-  { name: 'foes: +5 temp HP each', side: 'them', apply: (_p, f) => f.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 5; }) },
-];
-
-function partyAt(level: number, seed: number): Combatant[] {
-  const c = newCampaign(seed);
-  c.xp = 0;
-  while (partyLevelOf(c) < level) c.xp += 100;
-  return buildCampaignParty(c);
-}
-
-/**
- * Win rate over the same set of generated waves, with one outcome applied.
- *
- * The wave, the party and the combat seed are all functions of the sample
- * index only, so every column of the table fights EXACTLY the same fights. A
- * delta is then a difference in outcome rather than a difference in draw, which
- * at these sample sizes is most of the noise removed.
- */
-function outcomes(level: number, outcome: Outcome | undefined): boolean[] {
-  const won: boolean[] = [];
-  for (let s = 1; s <= SAMPLES; s++) {
-    // The arena's own even-fight budget, so the baseline sits near 50% and an
-    // outcome worth ten points has room to show. Measured on a wave that is
-    // already a rout in either direction, every outcome reads as zero.
-    const e = generateEncounter(
-      { budget: EVEN_BUDGET[level - 1]!, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level), partyLevel: level },
-      (s * 2654435761 + level) >>> 0,
+function runShard(seeds: number[]): Promise<Shard> {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      process.execPath,
+      ['--import', 'tsx', path.join(here, 'gambit-shard.ts'), seeds.join(',')],
+      { stdio: ['ignore', 'pipe', 'inherit'] },
     );
-    const map = generateArenaMap({}, (s * 40503 + level) >>> 0).value.map;
-    const grid = parseMap(map);
-    const foes = e.value.members.map((id, i) =>
-      buildMonster(id, 'team2', { x: [3, 1, 5, 2, 6, 0, 7, 4][i % 8]!, y: grid.height - 2 }, String(i + 1)));
-    const party = partyAt(level, s);
-    outcome?.apply(party, foes);
-    const combat = new Combat({
-      combatants: [...party, ...foes],
-      map,
-      seed: s * 7 + level,
-      ...(outcome?.surprise ? { surprisedTeam: outcome.surprise } : {}),
-    });
-    let steps = 0;
-    while (!combat.state.winner && steps++ < 600) combat.apply(chooseAction(combat.state, combat.activeId!));
-    won.push(combat.state.winner === 'team1');
+    let out = '';
+    child.stdout.on('data', (d) => (out += d));
+    child.on('error', reject);
+    child.on('close', (code) =>
+      code === 0 ? resolve(JSON.parse(out) as Shard) : reject(new Error(`shard exited ${code}`)),
+    );
+  });
+}
+
+const allSeeds = Array.from({ length: SAMPLES }, (_, i) => i + 1);
+// At least eight seeds per worker: below that the tsx startup cost per process
+// is a bigger share of the run than the work it saves.
+const workers = SERIAL ? 1 : Math.max(1, Math.min(cpus().length, Math.ceil(SAMPLES / 8)));
+const shards: number[][] = Array.from({ length: workers }, () => []);
+allSeeds.forEach((s, i) => shards[i % workers]!.push(s));
+
+console.log(`n=${SAMPLES} per level, ${OUTCOMES.length} outcomes, ${LEVELS.length} levels, ` +
+  `${workers} process${workers > 1 ? 'es' : ''}.`);
+console.log(`A single win rate is +/-${MARGIN.toFixed(0)} points; deltas are paired ` +
+  `(same waves, same party, same seed), so they are tighter than that.\n`);
+
+const t0 = Date.now();
+const parts = await Promise.all(shards.map(runShard));
+
+/** Every shard's bits for one key, concatenated in shard order. */
+function joined(key: string, level: number): boolean[] {
+  const bits: boolean[] = [];
+  for (const part of parts) {
+    for (const ch of part[key]?.[level] ?? '') bits.push(ch === '1');
   }
-  return won;
+  return bits;
 }
 
 const rate = (won: boolean[]) => (100 * won.filter(Boolean).length) / won.length;
@@ -143,16 +86,16 @@ const rate = (won: boolean[]) => (100 * won.filter(Boolean).length) / won.length
 /**
  * The paired delta, and how much of it is signal.
  *
- * Every column fights the same fights, so the only samples carrying any
- * information about an outcome are the ones it FLIPPED. Reading two independent
- * win rates and subtracting throws that away and reports a confidence interval
- * twice as wide as the experiment actually earned — at n=400 that is +/-5
- * points against +/-2, which is the difference between "these two outcomes are
- * the same size" being a finding and being unmeasurable.
+ * Every column fights the same fights, so the only samples carrying information
+ * about an outcome are the ones it FLIPPED. Reading two independent win rates
+ * and subtracting throws that away and reports a confidence interval twice as
+ * wide as the experiment earned — at n=250 that is +/-6 points against +/-2,
+ * the difference between "these two outcomes are the same size" being a finding
+ * and being unmeasurable.
  *
  * b = the outcome lost a fight the baseline won; c = it won one the baseline
- * lost. The delta is (c - b)/n and its standard error is sqrt(b + c)/n — the
- * McNemar form, which cares only about the discordant pairs.
+ * lost. The delta is (c - b)/n, its standard error sqrt(b + c)/n — the McNemar
+ * form, which cares only about the discordant pairs.
  */
 function paired(base: boolean[], test: boolean[]): { delta: number; se: number } {
   let b = 0;
@@ -165,22 +108,36 @@ function paired(base: boolean[], test: boolean[]): { delta: number; se: number }
   return { delta: (100 * (c - b)) / n, se: (100 * Math.sqrt(b + c)) / n };
 }
 
-console.log(`n=${SAMPLES} per cell. A single win rate is +/-${MARGIN.toFixed(0)} points;`);
-console.log('deltas are paired (same waves, same party, same seed), so they are tighter than that.\n');
-
-const base = new Map<number, boolean[]>();
-for (const level of LEVELS) base.set(level, outcomes(level, undefined));
-console.log(`baseline win rate   ${LEVELS.map((l) => `L${l} ${rate(base.get(l)!).toFixed(0)}%`).join('   ')}\n`);
-
 const sign = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(0)}`;
 
-console.log(`${'outcome'.padEnd(32)} ${LEVELS.map((l) => `L${l}`.padStart(9)).join('')}      mean +/-95%`);
-console.log('-'.repeat(32 + 9 * LEVELS.length + 18));
+console.log(`baseline win rate   ${LEVELS.map((l) => `L${l} ${rate(joined('', l)).toFixed(0)}%`).join('   ')}\n`);
+
+const measured = new Map<string, { delta: number; se: number }>();
 for (const o of OUTCOMES) {
-  const ps = LEVELS.map((l) => paired(base.get(l)!, outcomes(l, o)));
-  const mean = ps.reduce((a, p) => a + p.delta, 0) / ps.length;
-  // Independent levels, so the mean's variance is the average of theirs over k.
+  const ps = LEVELS.map((l) => paired(joined('', l), joined(o.name, l)));
+  const delta = ps.reduce((a, p) => a + p.delta, 0) / ps.length;
   const se = Math.sqrt(ps.reduce((a, p) => a + p.se * p.se, 0)) / ps.length;
-  const cells = ps.map((p) => sign(p.delta).padStart(9)).join('');
-  console.log(`${o.name.padEnd(32)} ${cells}   ${sign(mean).padStart(6)} +/-${(1.96 * se).toFixed(1)}`);
+  measured.set(o.name, { delta, se });
+  console.log(`  ${o.name.padEnd(26)} ${sign(delta).padStart(5)} +/-${(1.96 * se).toFixed(1)}   ` +
+    ps.map((x, k) => `L${LEVELS[k]} ${sign(x.delta)}`).join('  '));
 }
+
+/*
+ * The pair table.
+ *
+ * SWING is what the gamble is worth: the distance between winning the roll and
+ * losing it, which is the number a player feels. TILT is how lopsided it is — a
+ * success worth +20 beside a failure worth -3 is not a gamble, it is a button
+ * you always press, however dramatic the dice look.
+ */
+console.log(`\n${'skill'.padEnd(14)} ${'gambit'.padEnd(38)} ${'success'.padStart(8)} ${'failure'.padStart(8)} ${'swing'.padStart(7)} ${'tilt'.padStart(6)}`);
+console.log('-'.repeat(85));
+for (const g of GAMBITS) {
+  const s1 = measured.get(g.success.name)!;
+  const f1 = measured.get(g.failure.name)!;
+  console.log(
+    `${g.skill.padEnd(14)} ${g.flavour.padEnd(38)} ${sign(s1.delta).padStart(8)} ${sign(f1.delta).padStart(8)} ` +
+    `${(s1.delta - f1.delta).toFixed(0).padStart(7)} ${sign(s1.delta + f1.delta).padStart(6)}`,
+  );
+}
+console.log(`\n${((Date.now() - t0) / 1000).toFixed(0)}s`);

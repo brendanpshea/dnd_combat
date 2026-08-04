@@ -18,8 +18,7 @@
 import type { MapData } from '../data/maps.js';
 import type { Id } from '../engine/types.js';
 import type { StallVisit } from './stall.js';
-import type { LoreStudy } from './lore.js';
-import type { CreepAttempt } from './ambush.js';
+import type { GambitAttempt } from './gambit.js';
 import type { RngState } from '../engine/rng.js';
 import { generateEncounter, type GeneratedEncounter } from './encounter.js';
 import { generateArenaMap, type LayoutName } from './map.js';
@@ -316,15 +315,14 @@ export interface ArenaRunState {
    */
   stall?: StallVisit;
   /**
-   * The one study made before this fight (see lore.ts). Keyed by day and half,
-   * so switching doors neither rerolls it nor loses it.
+   * The one pre-fight skill check offered for this fight (see gambit.ts).
+   *
+   * Records its door for the same reason `creep` does: three gates hold three
+   * rosters, so each draws its own question, and an attempt made at one gate
+   * must not follow you through another. Without that, opening each door in
+   * turn is a way to shop for a skill the party happens to be good at.
    */
-  lore?: LoreStudy;
-  /**
-   * The one attempt to creep into this fight (see ambush.ts). Records the door
-   * it was made at, so a gamble taken at one gate cannot be cashed at another.
-   */
-  creep?: CreepAttempt;
+  gambit?: GambitAttempt;
   /**
    * Which of the wave's three doors is selected (see gates.ts). Optional so a
    * save written before gates existed loads and simply starts on door 0.

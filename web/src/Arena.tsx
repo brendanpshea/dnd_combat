@@ -57,15 +57,15 @@ import { classLook } from './classLook.js';
 import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers } from './art.js';
 import { gearTasks, morningReview, spellTasks } from '../../src/arena/morning.js';
 import { prepOptions } from '../../src/arena/prep.js';
+import {
+  gambitContext, drawGambit, gambitDc, applyGambit, gambitKey, attemptFor, GAMBITS,
+} from '../../src/arena/gambit.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
 import {
-  loreTargets, dossierFor, loreKey, studyFor, bestLens,
+  dossierFor, passiveKnown,
 } from '../../src/arena/lore.js';
-import {
-  ambushDc, canCreepIn, creepKey, creepFor, surprisedTeam,
-} from '../../src/arena/ambush.js';
 import {
   stallVisitOf, stallPrice, stallResale, stallWillBuy, type StallVisit,
 } from '../../src/arena/stall.js';
@@ -133,9 +133,7 @@ interface Props {
 const revealConfirm = (el: HTMLDivElement | null) =>
   el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
-function makeCombat(
-  c: CampaignState, run: ArenaRunState, wave: ArenaWave, surprised?: 'team1' | 'team2',
-): Combat {
+function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Combat {
   const grid = parseMap(wave.map);
   // Where they start is part of the wave, seeded off it, so a retry is the same
   // fight rather than a reroll of the layout.
@@ -143,14 +141,21 @@ function makeCombat(
   const foes = wave.encounter.members.map((mid, i) =>
     buildMonster(mid, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
       wave.encounter.members.length > 1 ? String(i + 1) : ''));
+  const party = buildCampaignParty(c);
+  /*
+   * The pre-fight skill check, if one was taken and taken at THIS door.
+   *
+   * Applied here rather than after `startCombat` because two of the outcomes
+   * add a combatant to the field, and the roster has to be settled before the
+   * engine places anyone. `applyGambit` is a no-op when nothing was attempted,
+   * which is the common case.
+   */
+  applyGambit(attemptFor(run.gambit, dayOf(run), run.half ?? 'morning'), run.gate ?? 0,
+    party, foes, grid, wave.encounter.members);
   return new Combat({
     seed: (run.seed ^ (wave.wave * 7919)) >>> 0,
     map: wave.map,
-    combatants: [...buildCampaignParty(c), ...foes],
-    // A creep that landed, or one that did not — see arena/ambush.ts. The
-    // engine has supported this since it was written; the arena simply never
-    // had a way to earn it or to suffer it.
-    ...(surprised ? { surprisedTeam: surprised } : {}),
+    combatants: [...party, ...foes],
   });
 }
 
@@ -302,24 +307,31 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * only saw behind the door you had already chosen would arrive too late.
    */
   const allFoes = gates.flatMap((g) => g.wave.encounter.members);
-  const study = studyFor(run.lore, dayOf(run), half);
   // The creep, and what it means for the door currently selected. A gamble
   // taken at one gate does not carry to another: different monsters, different
   // eyes, and shopping for the easiest DC would be the whole exploit.
-  const creep = creepFor(run.creep, dayOf(run), half);
-  const surprised = surprisedTeam(creep, run.gate ?? 0);
-  // One lens, not four. Which knowledge skill to use was never a real choice —
-  // you cannot swap a wizard for a cleric between fights, so the answer is
-  // always "whichever of ours is best". The decision worth keeping is whether
-  // to study at all, and that survives being one button.
-  const lens = bestLens(allFoes, (skill) => bestAtSkill(c, skill).bonus);
   const prep = prepOptions(c);
+
+  /*
+   * The pre-fight gambit for the door currently selected.
+   *
+   * Drawn from what THIS door's roster and ground license, so the question
+   * always relates to the fight on the card. Medicine is the one entry gated on
+   * the party rather than the wave, so it needs to know whether anyone is hurt.
+   */
+  const gambitCtx = gambitContext(
+    wave.encounter.members, parseMap(wave.map),
+    buildCampaignParty(c).some((x) => x.hp < x.maxHp),
+  );
+  const gambit = drawGambit(run.seed, dayOf(run), half, run.gate ?? 0, gambitCtx);
+  const gambitTaken = attemptFor(run.gambit, dayOf(run), half);
   /** Built party, for the slot counts the camp-buff buttons quote. */
   const party = buildCampaignParty(c);
-  /** Creatures this run has successfully placed, by id. */
-  const known = new Set<Id>(
-    study?.success ? loreTargets(allFoes, study.skill) : [],
-  );
+  /**
+   * Creatures the party recognises on sight — 10 + its best relevant knowledge
+   * bonus against each creature's own DC. No roll, no button: see lore.ts.
+   */
+  const known = passiveKnown(allFoes, (skill) => bestAtSkill(c, skill).bonus);
 
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
   const setVisit = (next: StallVisit) => {
@@ -460,9 +472,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       spellsUsedBefore: new Set(run.spellsUsed),
       rounds: combat.state.round,
       foes: wave.encounter.members.length,
-      // Whether the study landed for THIS fight. `studyFor` is keyed to the day
-      // and half, so yesterday's success cannot pay for today's bounty.
-      studied: studyFor(run.lore, dayOf(run), half)?.success === true,
+      // Keyed to the day and half, so yesterday's gamble cannot pay for
+      // today's bounty.
+      // Taking the gate's gamble, not winning it — see bounties.ts.
+      gambled: attemptFor(run.gambit, dayOf(run), half) !== undefined,
     });
     // The purse is the day's pay, handed over when the day is done — winning
     // the morning buys you the afternoon, not a wage.
@@ -1033,9 +1046,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                         <b>{gateOffers[g.door]!.bounty!.blurb}</b>
                       </span>
                     )}
-                    {/* What the study turned up about what is behind THIS door.
-                        Left on the card rather than shown in a modal: the whole
-                        point is the choice you make after reading it. */}
+                    {/* What your party already knows about what is behind THIS
+                        door. On the card rather than in a modal, because the
+                        whole point is the choice you make after reading it —
+                        and passive now, so it is simply there. */}
                     {known.size > 0 && (() => {
                       const seen = [...new Set(g.wave.encounter.members)]
                         .filter((id) => known.has(id))
@@ -1083,92 +1097,51 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 ))}
               </div>
 
-              {/* One study, before you choose. Which lens is the question when a
-                  wave is mixed; the numbers are on the buttons so the choice is
-                  made with them in view. */}
-              {/* The pre-fight buffs used to sit here, beside the knowledge
-                  check, on the reasoning that these are the two things you do
-                  with the door card in view. But they spend spell slots and
-                  potions, which is what the Spells step is about — and here the
-                  cost was never shown at all. Moved, with a price on it. */}
               <div className="lore-row">
-                {study ? (
-                  <span className={study.success ? 'lore-known' : 'lore-blind'}>
-                    {study.success
-                      ? `🎓 ${c.characters[study.by]?.name} placed them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}`
-                      : `🎓 ${c.characters[study.by]?.name} could not place them — ${SKILL_LABEL[study.skill]} ${study.total} vs DC ${study.dc}. You go in blind.`}
+                {/* THE PRE-FIGHT GAMBIT.
+                    One check, drawn from what this door's roster and ground
+                    license, offered once. It replaces the creep-in, which was a
+                    real gamble on paper and worth a swing of two points in
+                    play — surprise is the 2024 rule, disadvantage on a single
+                    initiative roll. See arena/gambit.ts for the measurements. */}
+                {gambitTaken ? (
+                  <span className={gambitTaken.success ? 'lore-known' : 'lore-blind'}>
+                    {gambitTaken.success ? '🎲 ' : '🎲 '}
+                    {GAMBITS.find((g) => g.skill === gambitTaken.skill)?.[gambitTaken.success ? 'won' : 'lost']}
+                    {' '}({SKILL_LABEL[gambitTaken.skill]} {gambitTaken.total} vs DC {gambitTaken.dc})
+                    {gambitTaken.door !== (run.gate ?? 0) && ' You tried that at another gate; this one you walk into.'}
                   </span>
-                ) : !lens ? (
-                  <span className="lore-blind">Nothing out there resembles anything anyone knows.</span>
-                ) : (
-                  <SkillGambit
+                ) : !gambit ? null : (
+                  /* The DM's line goes ON SCREEN, not in the button's tooltip.
+                     It was a `title` first, which is a hover — so on a phone,
+                     where most of this game is played, the one sentence
+                     explaining what you are being offered was invisible and the
+                     button read as a bare skill name and a number. */
+                  <div className="gambit-offer">
+                    <p className="go-setup">{gambit.setup}</p>
+                    <SkillGambit
                     campaign={c}
-                    skill={lens.skill}
-                    dc={lens.dc}
-                    note={`${lens.targets.length} of them`}
+                    skill={gambit.skill}
+                    dc={gambitDc(wave.encounter.members)}
+                    {...(gambit.label ? { label: gambit.label } : {})}
                     onRoll={() => {
-                      const roll = partySkillCheck(c, lens.skill, lens.dc);
+                      const dc = gambitDc(wave.encounter.members);
+                      const roll = partySkillCheck(c, gambit.skill, dc);
                       const nextRun = {
                         ...run,
-                        lore: {
-                          key: loreKey(dayOf(run), half),
-                          skill: lens.skill, by: roll.by, natural: roll.natural,
-                          total: roll.total, dc: roll.dc, success: roll.success,
+                        gambit: {
+                          key: gambitKey(dayOf(run), half),
+                          door: run.gate ?? 0,
+                          skill: gambit.skill, by: roll.by, natural: roll.natural,
+                          total: roll.total, dc, success: roll.success,
                         },
                       };
                       setRun(nextRun); persist(c, nextRun);
                       return roll;
                     }}
-                  />
-                )}
-                {/* Creeping in. Offered only where there is something to creep
-                    behind — you cannot sneak across open ground — and only
-                    before the first attempt, since the second time through they
-                    know you are coming. */}
-                {creep ? (
-                  <span className={creep.success ? 'lore-known' : 'lore-blind'}>
-                    {/* The tally, not a name. A group check succeeds or fails on
-                        how many got through; crediting or blaming one hero told
-                        the player the wrong thing about what to change. */}
-                    {creep.success
-                      ? `🤫 ${creep.passed ?? '—'} of ${creep.of ?? '—'} got in unseen — they lose the first round.`
-                      : `🤫 Only ${creep.passed ?? 0} of ${creep.of ?? '—'} got past, against DC ${creep.dc}. They are waiting for you.`}
-                    {creep.door !== (run.gate ?? 0) && ' You crept at another gate; this one you walk into.'}
-                  </span>
-                ) : locked || !canCreepIn(grid) ? null : (() => {
-                  const dc = ambushDc(wave.encounter.members);
-                  return (
-                    <SkillGambit
-                      campaign={c}
-                      skill="stealth"
-                      dc={dc}
-                      label="Creep in"
-                      group
-                      note="failure surprises YOU"
-                      onRollGroup={() => {
-                        const group = groupSkillCheck(c, 'stealth', dc);
-                        // `by`/`total` are kept for older saves that stored one
-                        // roll; the tally is what the card now reads from.
-                        const shown = group.success
-                          ? group.rolls.reduce((a, b) => (b.total > a.total ? b : a))
-                          : group.rolls.reduce((a, b) => (b.total < a.total ? b : a));
-                        const nextRun = {
-                          ...run,
-                          creep: {
-                            key: creepKey(dayOf(run), half),
-                            door: run.gate ?? 0,
-                            success: group.success,
-                            by: shown.by, total: shown.total, dc,
-                            passed: group.rolls.filter((r) => r.success).length,
-                            of: group.rolls.length,
-                          },
-                        };
-                        setRun(nextRun); persist(c, nextRun);
-                        return group;
-                      }}
                     />
-                  );
-                })()}
+                  </div>
+                )}
               </div>
 
 
@@ -1657,7 +1630,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   offers the fight itself.
                 */}
                 {panel === 'none' ? (
-                  <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave, surprised) })}>
+                  <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
                     ⚔️ Fight — {gate.name}
                   </button>
                 ) : (

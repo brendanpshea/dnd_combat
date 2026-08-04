@@ -6,29 +6,26 @@
  * twelve of the game's eighteen skills did nothing in the arena at all, among
  * them the four that exist precisely to answer "what IS that thing".
  *
- * So: one study before the fight. Pick a lens — Arcana, Nature, Religion or
- * History — and what you know about is laid open across ALL THREE doors: armour
- * class, hit points, and what it shrugs off. Pathfinder and Solasta both do
- * this, and it turns the door choice from a guess into a read.
+ * So: what your party ALREADY KNOWS is laid open on every door card — armour
+ * class, hit points, and what the thing shrugs off.
  *
- * WHY IT LOOKS AT EVERY DOOR
+ * WHY THIS IS PASSIVE, AND WAS NOT
  *
- * Because the point is to inform the choice of door, and a check that only saw
- * behind the door you had already picked would arrive too late to matter. It
- * also closes the reroll hole: if the study were per-door you could study one,
- * dislike the answer, and study the next — three checks a fight, and the best
- * of three is not a check at all.
+ * It used to be a rolled check: pick a lens, roll it once, see everything that
+ * lens covers. Its own documentation admitted that failing cost nothing but the
+ * study — which makes it a button with no reason not to press it, and a button
+ * with no reason not to press it is a rule wearing a costume.
  *
- * WHY YOU ONLY GET ONE
+ * As a passive it is strictly better in three ways. Knowledge becomes granular:
+ * 10 + your best relevant bonus against `10 + CR` per creature, so you place
+ * the small things and not the big one, and the gap is obviously about the
+ * MONSTER rather than about a die. The lens question disappears — a party with
+ * both a wizard and a cleric simply knows more, instead of having to pick one
+ * and eat the other. And it turns into a progression readout: raise an
+ * Intelligence score or pick up a proficiency and the door cards visibly tell
+ * you more than they did last level.
  *
- * A wizard and a cleric between them cover eight creature types, and letting
- * both roll every fight would make the lens irrelevant — you would simply take
- * all of them. One study per fight makes "which lens" a real question when a
- * wave is mixed, and it is the same once-a-visit rule the stall's haggling uses.
- *
- * Failure costs nothing but the study: you go in as blind as you would have
- * been anyway. The cost is the opportunity, not a penalty — the arena has
- * enough ways to lose money already.
+ * The gamble that used to sit here is now arena/gambit.ts, which has stakes.
  */
 import type { Id } from '../engine/types.js';
 import type { SkillId } from '../data/classes.js';
@@ -83,17 +80,38 @@ export function loreTargets(members: readonly Id[], skill: SkillId): Id[] {
 }
 
 /**
- * How hard this line-up is to place.
+ * How hard ONE creature is to place.
  *
- * Scales with the most dangerous thing on the field rather than with the party,
- * because that is what the question is actually about: a goblin is a goblin at
- * any level, and nobody has to think hard about it. Floored at 10 so the check
- * is never free and capped at 20 so a late wave is never hopeless.
+ * Per creature rather than per line-up, which is what going passive bought: the
+ * old rolled version took the hardest thing present and gated the whole wave
+ * behind it, so a wizard who could name every goblin on the field was told
+ * nothing about any of them because an ogre was standing there too.
+ *
+ * Scales with the creature and not with the party, because that is what the
+ * question is about: a goblin is a goblin at any level. Floored at 10 so
+ * nothing is free.
  */
-export function loreDc(members: readonly Id[], skill: SkillId): number {
-  const seen = loreTargets(members, skill);
-  const hardest = seen.reduce((cr, id) => Math.max(cr, MONSTERS[id]?.cr ?? 0), 0);
-  return Math.max(10, Math.min(20, 10 + Math.ceil(hardest)));
+export function loreDc(monsterId: Id): number {
+  return Math.max(10, 10 + Math.ceil(MONSTERS[monsterId]?.cr ?? 0));
+}
+
+/**
+ * What the party recognises without being asked: 10 + its best relevant bonus.
+ *
+ * The 5e passive rule, and the reason this can be free — a passive check is not
+ * a decision, it is a description of who you brought. `bonusFor` is passed in
+ * rather than computed here so this file stays free of the campaign layer.
+ */
+export function passiveKnown(
+  members: readonly Id[], bonusFor: (skill: SkillId) => number,
+): Set<Id> {
+  const known = new Set<Id>();
+  for (const id of new Set(members)) {
+    const type = MONSTERS[id]?.creatureType;
+    if (!type) continue;
+    if (10 + bonusFor(LORE_SKILL[type]) >= loreDc(id)) known.add(id);
+  }
+  return known;
 }
 
 /** What a successful study tells you about one creature. */
@@ -122,73 +140,4 @@ export function dossierFor(monsterId: Id): Dossier | undefined {
     monsterId, name: m.name, creatureType: m.creatureType,
     ac: m.ac, hp: m.hp, notes,
   };
-}
-
-/**
- * The study already made for this fight, if any.
- *
- * Keyed by day and half rather than by door, so switching doors neither
- * re-rolls it nor loses it — one study, all three doors, exactly once.
- */
-export interface LoreStudy {
-  key: string;
-  skill: SkillId;
-  /** Index of the hero who recognised them, for the name on the card. */
-  by: number;
-  natural: number;
-  total: number;
-  dc: number;
-  success: boolean;
-}
-
-export function loreKey(day: number, half: 'morning' | 'afternoon'): string {
-  return `${day}:${half}`;
-}
-
-/** The study for this fight, or undefined if nobody has looked yet. */
-export function studyFor(
-  stored: LoreStudy | undefined, day: number, half: 'morning' | 'afternoon',
-): LoreStudy | undefined {
-  return stored && stored.key === loreKey(day, half) ? stored : undefined;
-}
-
-/**
- * The one lens worth offering, of the ones that see anything.
- *
- * Four buttons for four lenses was four decisions the player had no basis for
- * making. The lens is not the interesting choice — you cannot swap your wizard
- * for a cleric between fights, so "which of my party's four knowledge skills"
- * is answered the same way every time, by whichever is best. What is
- * interesting is whether to spend the study at all, and that survives being one
- * button.
- *
- * "Best" is expected coverage: the chance the party's sharpest head clears the
- * DC, times how many of the enemy that lens would place. A lens that sees five
- * creatures at a DC you will miss is worth less than one that sees two at a DC
- * you will make, and a straight "sees the most" rule cannot tell them apart.
- *
- * Ties break toward coverage, then alphabetically, so the same wave always
- * offers the same lens — a suggestion that flickers between renders is worse
- * than a wrong one.
- */
-export function bestLens(
-  members: readonly Id[],
-  bonusFor: (skill: SkillId) => number,
-): { skill: SkillId; dc: number; targets: Id[] } | undefined {
-  let best: { skill: SkillId; dc: number; targets: Id[]; value: number } | undefined;
-  for (const skill of loreSkillsFor(members)) {
-    const targets = loreTargets(members, skill);
-    if (targets.length === 0) continue;
-    const dc = loreDc(members, skill);
-    // A d20 needs `dc - bonus` or better; 1 always fails and 20 always makes it,
-    // so the odds live between 5% and 95% however lopsided the numbers get.
-    const need = dc - bonusFor(skill);
-    const p = Math.max(0.05, Math.min(0.95, (21 - need) / 20));
-    const value = p * targets.length;
-    if (!best || value > best.value
-      || (value === best.value && targets.length > best.targets.length)) {
-      best = { skill, dc, targets, value };
-    }
-  }
-  return best ? { skill: best.skill, dc: best.dc, targets: best.targets } : undefined;
 }

@@ -157,14 +157,51 @@ export function armorClass(armorId: Id | undefined, dexMod: number, shieldAc: nu
   return base + dex + shieldAc;
 }
 
-/** A combatant's current AC: stat-block override (monsters) or derived from equipment. */
+/**
+ * A combatant's current AC: stat-block override (monsters) or derived from
+ * equipment — and in EITHER case, whatever is currently buffing or ruining it.
+ *
+ * THE OVERRIDE USED TO RETURN IMMEDIATELY, WHICH MEANT NO MONSTER'S AC COULD
+ * EVER CHANGE.
+ *
+ * Every AC effect in the game silently did nothing to anything with a stat
+ * block: Shield of Faith (+2), the Shield reaction (+5), Haste's +2, Warding
+ * Bond (+1), trinkets, and armour corrosion. Measured by applying Shield of
+ * Faith to whole enemy lines across 750 fights: 0.0 +/-0.0 — not a small
+ * effect, an absent one, and the third condition this session found to be
+ * wired at one end only.
+ *
+ * Two things were paying for it. `tryAutoShield` spends a spell SLOT and the
+ * reaction to set `shielded` on the one monster that carries Shield (the
+ * control caster in monsters.ts), and bought nothing at all. And weapons with
+ * `corrodes` increment `corroded` on metal-armoured monsters — which
+ * `buildMonster` deliberately equips with chain mail so the rider can find
+ * them — and that number was read by nobody.
+ *
+ * WHAT THE OVERRIDE STILL MEANS
+ *
+ * The stat block's number is the BASE, replacing the armour-and-Dex
+ * calculation, not a final answer. So the derived armour bonus is still not
+ * added — `buildMonster`'s own comment is explicit that the chain mail is there
+ * for the Shocking Grasp rider and "their AC stays the stat-block override" —
+ * and neither is a wielded shield, which a stat block's AC already accounts
+ * for. Only the modifiers that stack on top of any AC are applied.
+ */
 export function acOf(c: Combatant): number {
-  if (c.acOverride !== undefined) return c.acOverride;
   // Rust never takes armour below no armour at all: the plates are pitted, not
   // gone, and a corroded knight should not end up worse off than a naked one.
   const rust = c.corroded ?? 0;
+  /** Modifiers that stack on ANY base AC, however that base was arrived at. */
+  const bonuses = trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+  if (c.acOverride !== undefined) {
+    const buffed = c.acOverride + bonuses;
+    // The same floor the armoured branch uses, so a rusted stat block bottoms
+    // out where an unarmoured creature of its Dexterity would.
+    const bare = 10 + abilityMod(c.abilities.dex);
+    return Math.max(buffed - rust, Math.min(buffed, bare));
+  }
   const shield = shieldBonus(c.equipped.offHand);
-  const extras = () => shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+  const extras = () => shield + bonuses;
   // Draconic Resilience: 10 + Dex + Cha while unarmoured. It shares the branch
   // with Mage Armor rather than sitting below it because a draconic sorcerer
   // has Mage Armor on its own spell list and will happily cast it — and at
@@ -193,14 +230,14 @@ export function acOf(c: Combatant): number {
       : undefined
     : undefined;
   if (unarmored) {
-    return 10 + abilityMod(c.abilities.dex) + abilityMod(c.abilities[unarmored])
-      + shield + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+    return 10 + abilityMod(c.abilities.dex) + abilityMod(c.abilities[unarmored]) + extras();
   }
   const base = armorClass(c.equipped.armor, abilityMod(c.abilities.dex), shield);
   // Fighting Style: Defense — +1 AC while wearing any armor.
   const defense = c.equipped.armor !== undefined && c.featureIds.includes('defense') ? 1 : 0;
   const floor = 10 + abilityMod(c.abilities.dex);
-  const armored = base + defense + trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+  // `bonuses`, not `extras()`: the shield is already inside `base` here.
+  const armored = base + defense + bonuses;
   return Math.max(armored - rust, Math.min(armored, floor));
 }
 
