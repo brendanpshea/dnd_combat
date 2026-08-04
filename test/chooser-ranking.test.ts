@@ -19,6 +19,7 @@ import { groupActions, SHOWN_OPTIONS } from '../web/src/actionGroups.js';
 import { expectedDamage, hinderedByAdjacency } from '../src/engine/rules/estimate.js';
 import { step, type Action } from '../src/engine/actions.js';
 import { WEAPONS } from '../src/data/weapons.js';
+import { SPELLS } from '../src/data/spells.js';
 import type { Combatant, Position, TeamId } from '../src/engine/types.js';
 
 function pc(classId: string, team: TeamId, position: Position, id: string, level = 5): Combatant {
@@ -185,12 +186,20 @@ describe('something that works in melee is always on offer', () => {
     // because the ranking already keeps a working option visible for them —
     // four earlier versions of these tests passed with the guarantee deleted.
     //
-    // A wizard with no touch cantrip and no weapon in hand, standing on a
-    // zombie: Fire Bolt, Ray of Frost and Scorching Ray are the top three and
-    // every one of them is swinging at disadvantage.
+    // A wizard with no touch cantrip, a crossbow in hand and a dagger in the
+    // pack, standing on a zombie: Fire Bolt, Ray of Frost and the crossbow are
+    // the top three and every one of them is swinging at disadvantage.
+    //
+    // It used to reach that top three via Scorching Ray. Levelled spells no
+    // longer hang off a tapped enemy — tapping is the attack gesture, and a
+    // slot is a resource decision that belongs in the tray — so the third
+    // hindered option is a crossbow now. The shape of the fixture is what
+    // matters, and the file already said to rebuild rather than let this pass
+    // for the wrong reason.
     const wz = buildCharacter({ classId: 'wizard', team: 'team1', position: { x: 3, y: 3 }, level: 5 });
     wz.spellIds = wz.spellIds.filter((id) => !['shocking-grasp', 'poison-spray', 'true-strike'].includes(id));
-    delete (wz.equipped as { mainHand?: string }).mainHand;
+    wz.equipped = { mainHand: 'light-crossbow' };
+    wz.inventory = [{ itemId: 'dagger', qty: 1 }];
     const c = new Combat({
       seed: 7,
       mapId: 'open',
@@ -489,4 +498,122 @@ describe('a melee cantrip outranks a ranged one in melee', () => {
     // genuinely expensive; this is the one test that needs longer than the
     // default budget rather than being made less thorough.
   }, 30_000);
+});
+
+describe('tapping an enemy is the attack gesture, not the spellbook', () => {
+  /**
+   * A levelled spell is a resource decision — which slot, and is this the fight
+   * to spend it on. Tapping a creature is the thing you do every turn, for
+   * free, forever. Mixing the two put Suggestion and Blindness in the list
+   * behind an ogre, where they sorted to the bottom beside Shove because they
+   * deal no damage at all.
+   *
+   * Nothing is removed from the game by this: every levelled spell is still in
+   * the tray, with its slot pips beside it, which is the screen that can answer
+   * "should I spend this".
+   */
+  const CASTERS = ['wizard', 'sorcerer', 'warlock', 'druid', 'cleric', 'bard'];
+
+  it.each(CASTERS)('offers %s no levelled spell behind a tapped enemy', (classId) => {
+    for (const level of [1, 3, 5, 8]) {
+      const c = new Combat({
+        seed: 7, mapId: 'open',
+        combatants: [pc(classId, 'team1', { x: 3, y: 3 }, 'hero', level), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+      });
+      for (const o of optionsFor(c, 'hero', 'foe')) {
+        if (o.action.kind !== 'castSpell') continue;
+        const spell = SPELLS[o.action.spellId];
+        expect(spell?.level, `${classId} L${level} is offered ${o.label} (level ${spell?.level}) behind an enemy`).toBe(0);
+      }
+    }
+  });
+
+  it('still keeps every levelled spell reachable in the tray', () => {
+    // The other half. Dropping them from the chooser is only acceptable because
+    // the tray is complete — otherwise this hides spells rather than tidying.
+    const c = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'hero', 5), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    let guard = 0;
+    while (c.activeId !== 'hero' && guard++ < 40) c.apply({ kind: 'endTurn' });
+    const g = groupActions(c.state, 'hero', c.legalActions());
+    const castable = new Set(
+      c.legalActions().filter((a): a is Extract<Action, { kind: 'castSpell' }> => a.kind === 'castSpell')
+        .filter((a) => (SPELLS[a.spellId]?.level ?? 0) > 0)
+        .map((a) => a.spellId),
+    );
+    expect(castable.size, 'the fixture has no levelled spell to lose').toBeGreaterThan(0);
+    const inTray = new Set(g.bar.filter((b) => b.group === 'spell').map((b) => b.id));
+    for (const id of castable) {
+      expect([...inTray].some((k) => k.includes(id)), `${id} is castable but reachable from nowhere`).toBe(true);
+    }
+  });
+});
+
+describe('one row per weapon', () => {
+  /**
+   * True Strike is cast THROUGH a weapon, so a caster holding a dagger gets
+   * both "Dagger" and "True Strike (Dagger)" — two buttons swinging the same
+   * dagger, differing only in which ability rolls it.
+   *
+   * Measured on a level-1 wizard beside an ogre, the three visible rows were
+   * True Strike (Quarterstaff), Dagger, True Strike (Dagger): two weapons,
+   * three ways, and not one attack cantrip on screen. Shocking Grasp, Fire
+   * Bolt, Ray of Frost and Poison Spray were all folded behind them.
+   */
+  const weaponOf = (a: Action): string | undefined =>
+    a.kind === 'attack' ? a.weaponId : a.kind === 'castSpell' ? a.weaponId : undefined;
+
+  it.each(['wizard', 'sorcerer', 'bard', 'cleric', 'druid', 'warlock', 'fighter', 'rogue'])(
+    'never offers %s the same weapon twice', (classId) => {
+      for (const level of [1, 3, 5, 8]) {
+        const c = new Combat({
+          seed: 7, mapId: 'open',
+          combatants: [pc(classId, 'team1', { x: 3, y: 3 }, 'hero', level), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+        });
+        const seen = new Map<string, string>();
+        for (const o of optionsFor(c, 'hero', 'foe')) {
+          const w = weaponOf(o.action);
+          if (w === undefined) continue;
+          expect(seen.has(w), `${classId} L${level}: "${seen.get(w)}" and "${o.label}" both swing the ${w}`).toBe(false);
+          seen.set(w, o.label);
+        }
+      }
+    });
+
+  it('keeps whichever version actually hits harder', () => {
+    // Not a fixed preference for the spell: True Strike rolls on the caster's
+    // spellcasting ability, so it wins for a wizard whose Intelligence beats
+    // its Dexterity and loses for someone who has been raising Dexterity.
+    const c = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'hero', 1), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    const opts = optionsFor(c, 'hero', 'foe');
+    const dagger = opts.find((o) => weaponOf(o.action) === 'dagger');
+    expect(dagger, 'the dagger vanished entirely').toBeDefined();
+    const kept = expectedDamage(c.state, 'hero', dagger!.action);
+    // Whatever survived must be at least as good as the version that did not.
+    const alternatives = c.legalActions().filter((a) => weaponOf(a) === 'dagger');
+    expect(alternatives.length, 'the fixture no longer has two ways to use the dagger').toBeGreaterThan(1);
+    for (const a of alternatives) {
+      expect(kept + 0.01, 'the chooser kept the weaker of the two').toBeGreaterThanOrEqual(
+        expectedDamage(c.state, 'hero', a));
+    }
+  });
+
+  it('frees the row for a cantrip that was being crowded out', () => {
+    // The symptom that started this: a level-1 wizard whose three visible rows
+    // were all weapon swings, with every attack cantrip folded away.
+    const c = new Combat({
+      seed: 7, mapId: 'open',
+      combatants: [pc('wizard', 'team1', { x: 3, y: 3 }, 'hero', 1), mon('ogre', 'team2', { x: 3, y: 4 }, 'foe')],
+    });
+    const shown = optionsFor(c, 'hero', 'foe').filter((o) => !o.folded);
+    const cantrips = shown.filter((o) =>
+      o.action.kind === 'castSpell' && weaponOf(o.action) === undefined && SPELLS[o.action.spellId]?.level === 0);
+    expect(cantrips.length, `no attack cantrip visible: ${shown.map((o) => o.label).join(' | ')}`)
+      .toBeGreaterThan(0);
+  });
 });

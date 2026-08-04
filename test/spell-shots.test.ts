@@ -137,8 +137,13 @@ describe('the chooser offers Eldritch Blast the way it actually casts', () => {
     });
     let guard = 0;
     while (c.activeId !== 'wz' && guard++ < 40) c.apply({ kind: 'endTurn' });
-    const opts = groupActions(c.state, 'wz', c.legalActions()).perTarget.get('foe0') ?? [];
-    const mm = opts.find((o) => o.label.startsWith('Magic Missile'));
+    // Read from the TRAY, not from the tapped enemy. Magic Missile is a
+    // levelled spell and levelled spells no longer hang off a creature —
+    // tapping is the attack gesture, and spending a slot is a decision that
+    // belongs beside the slot pips. The dart picker itself is unchanged, which
+    // is what this is really about.
+    const mm = groupActions(c.state, 'wz', c.legalActions()).bar
+      .find((b) => b.multi?.spellId === 'magic-missile');
     expect(mm?.multi, 'Magic Missile has no dart picker').toBeDefined();
     expect(mm!.multi!.allowRepeats, 'the darts can no longer all go to one creature').toBe(true);
     expect(mm!.multi!.maxTargets).toBe(3);
