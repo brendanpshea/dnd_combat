@@ -25,6 +25,23 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Pillow, because two of the derived-file checks are Python and one of
+      # them measures images. `token_fill.py --check` guards the table that
+      # sizes every monster token, and without PIL it does not fail loudly — it
+      # fails as `ModuleNotFoundError` inside a subprocess, which is how nine
+      # deploys in a row went red while every test passed locally.
+      #
+      # `actions/setup-python` rather than the runner's system python3: a
+      # system interpreter can be PEP 668 "externally managed", where a plain
+      # `pip install` refuses outright. This gives an interpreter pip can
+      # install into, and it is the same `python3` the tests then invoke.
+      #
+      # See `test/ci-config.test.ts`, which derives this package list from the
+      # scripts the tests actually run rather than trusting this comment.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install --quiet pillow
       # Correctness gate only. The balance/sim harnesses (caster-variants,
       # arena, sim-ai) are slow, CPU-bound, and not what "can we ship" asks;
       # SKIP_SIMS leaves them out (see vitest.config.ts). They run nightly in
