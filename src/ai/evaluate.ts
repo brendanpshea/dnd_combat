@@ -89,8 +89,15 @@ export function unitWorth(c: Combatant): number {
   return c.maxHp + 4 * c.level + 1.5 * damageProxy(c);
 }
 
-/** Fraction of a unit's effectiveness a condition removes (or adds). */
-const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
+/**
+ * Fraction of a unit's effectiveness a condition removes (or adds).
+ *
+ * Exported so the badge metadata can be checked against it. The sign here is
+ * the AI's opinion of who a condition is good for, arrived at independently of
+ * anything the UI says, which makes it the one honest second opinion available
+ * — see test/condition-sign.test.ts.
+ */
+export const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // loses actions entirely (and helpless conditions invite auto-crits)
   paralyzed: -0.55,
   unconscious: -0.55,
