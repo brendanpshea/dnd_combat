@@ -234,6 +234,20 @@ export const GAMBITS: Gambit[] = [
     } },
   },
   {
+    // Haste on the SMALLEST thing on the field, rather than the champion (+10 /
+    // -14) or everyone (+18 / -34). The one setting of haste not yet measured,
+    // and the only one with any chance of landing in the usable band.
+    skill: 'Perform', flavour: 'the weakest is quickened — for you / for them',
+    success: { name: 'our recruit hasted', side: 'us', apply: (p, f, m) => {
+      const r = CURRENT_GRID && recruit(m, 'team1', p, f, CURRENT_GRID, 0);
+      if (r) { cond(r, 'hasted'); p.push(r); }
+    } },
+    failure: { name: 'weakest foe hasted', side: 'them', apply: (_p, f) => {
+      const w = weakest(f, 1)[0];
+      if (w) cond(w, 'hasted');
+    } },
+  },
+  {
     skill: 'Medicine', flavour: 'the strange herbs',
     success: { name: 'party +20% max as temp', side: 'us', apply: (p) => p.forEach(dose) },
     failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
