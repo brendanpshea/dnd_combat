@@ -58,40 +58,85 @@ const weakest = (foes: Combatant[], n: number) =>
 const champion = (foes: Combatant[]) =>
   [...foes].sort((a, b) => b.hp - a.hp).slice(0, 1);
 
+/**
+ * Hiding needs a NUMBER, not just the condition.
+ *
+ * `discoverHidden` skips any `hidden` whose `hideCheck` is undefined, so a bare
+ * `{ id: 'hidden' }` can never be found — permanently invisible, which is not a
+ * gambit, it is a win button. The value is the Stealth total that earned it, so
+ * it is measured at two: 15, about what a proficient scout rolls, and 20, a
+ * good roll. Monsters spot with 15 + Wis + proficiency, so the gap between
+ * those two is most of the difference between "seen on their first turn" and
+ * "seen never".
+ */
+const hide = (c: Combatant, hideCheck: number) =>
+  c.conditions.push({ id: 'hidden', sourceId: c.id, hideCheck });
+
+/** Strange herbs, taken badly: a fifth of everyone's health, never fatal. */
+const bleed = (c: Combatant) => { c.hp = Math.max(1, c.hp - Math.floor(c.maxHp * 0.2)); };
+/** Taken well: a fifth of maximum, as temporary hit points. */
+const dose = (c: Combatant) => { c.tempHp = (c.tempHp ?? 0) + Math.floor(c.maxHp * 0.2); };
+
+const half = (foes: Combatant[]) => weakest(foes, Math.max(1, Math.ceil(foes.length / 2)));
+
+/**
+ * The gambits as PAIRS, because a pair is the thing being designed.
+ *
+ * A success worth +20 next to a failure worth -3 is not a gamble, it is a
+ * button you always press; the two numbers only mean anything side by side.
+ */
+interface Gambit {
+  skill: string;
+  flavour: string;
+  success: Outcome;
+  failure: Outcome;
+}
+
+const GAMBITS: Gambit[] = [
+  {
+    skill: 'Stealth', flavour: 'creep in',
+    success: { name: 'surprise them', side: 'us', apply: () => {}, surprise: 'team2' },
+    failure: { name: 'surprise us', side: 'them', apply: () => {}, surprise: 'team1' },
+  },
+  {
+    skill: 'Stealth', flavour: 'start hidden (check 15)',
+    success: { name: 'party hidden @15', side: 'us', apply: (p) => p.forEach((c) => hide(c, 15)) },
+    failure: { name: 'foes hidden @15', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 15)) },
+  },
+  {
+    skill: 'Stealth', flavour: 'start hidden (check 20)',
+    success: { name: 'party hidden @20', side: 'us', apply: (p) => p.forEach((c) => hide(c, 20)) },
+    failure: { name: 'foes hidden @20', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 20)) },
+  },
+  {
+    skill: 'Religion', flavour: 'appease the local gods',
+    success: { name: 'party blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
+    failure: { name: 'party baned', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'baned')) },
+  },
+  {
+    skill: 'Intimidate', flavour: 'cow them / enrage them — ALL',
+    success: { name: 'all foes frightened', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'frightened')) },
+    failure: { name: 'all foes blessed', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'blessed')) },
+  },
+  {
+    skill: 'Intimidate', flavour: 'cow them / enrage them — HALF',
+    success: { name: 'half foes frightened', side: 'us', apply: (_p, f) => half(f).forEach((c) => cond(c, 'frightened')) },
+    failure: { name: 'half foes blessed', side: 'them', apply: (_p, f) => half(f).forEach((c) => cond(c, 'blessed')) },
+  },
+  {
+    skill: 'Perception', flavour: 'spot them / lose them',
+    success: { name: 'foes outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
+    failure: { name: 'foes hidden @15', side: 'them', apply: (_p, f) => f.forEach((c) => hide(c, 15)) },
+  },
+  {
+    skill: 'Medicine', flavour: 'the strange herbs',
+    success: { name: 'party +20% max as temp', side: 'us', apply: (p) => p.forEach(dose) },
+    failure: { name: 'party -20% of max HP', side: 'them', apply: (p) => p.forEach(bleed) },
+  },
+];
+
 const OUTCOMES: Outcome[] = [
-  // The two that already ship, as the yardstick everything else is read against.
-  { name: 'SURPRISE them (creep success)', side: 'us', apply: () => {}, surprise: 'team2' },
-  { name: 'SURPRISE us  (creep failure)', side: 'them', apply: () => {}, surprise: 'team1' },
-
-  { name: 'foes: 2 weakest frightened', side: 'us', apply: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')) },
-  { name: 'foes: all frightened', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'frightened')) },
-  { name: 'foes: all sapped', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'sapped')) },
-  { name: 'foes: all outlined', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'outlined')) },
-  { name: 'foes: all poisoned', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'poisoned')) },
-  { name: 'foes: all slowed', side: 'us', apply: (_p, f) => f.forEach((c) => cond(c, 'slowed')) },
-  /*
-   * Vex is DIRECTED and sits on the attacker: `attack.ts` looks for a `vexed`
-   * whose `sourceId` is the creature being attacked, and grants advantage
-   * against that one creature. An undirected `{ id: 'vexed' }` matches nothing,
-   * which is why the first run of this table reported it at exactly 0.0 +/-0.0
-   * — zero flipped fights out of 1200, a number too clean to be a finding.
-   */
-  { name: 'us:   vex on the champion', side: 'us', apply: (p, f) => {
-    const boss = champion(f)[0];
-    if (boss) for (const c of p) c.conditions.push({ id: 'vexed', sourceId: boss.id });
-  } },
-  { name: 'us:   blessed', side: 'us', apply: (p) => p.forEach((c) => cond(c, 'blessed')) },
-  { name: 'us:   +5 temp HP each', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 5; }) },
-  { name: 'us:   +10 temp HP each', side: 'us', apply: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }) },
-
-  { name: 'us:   all sapped', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'sapped')) },
-  { name: 'us:   all outlined', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'outlined')) },
-  { name: 'us:   all slowed', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'slowed')) },
-  { name: 'us:   all frightened', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'frightened')) },
-  { name: 'us:   all prone', side: 'them', apply: (p) => p.forEach((c) => cond(c, 'prone')) },
-  { name: 'foes: champion blessed', side: 'them', apply: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')) },
-  { name: 'foes: all blessed', side: 'them', apply: (_p, f) => f.forEach((c) => cond(c, 'blessed')) },
-  { name: 'foes: +5 temp HP each', side: 'them', apply: (_p, f) => f.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 5; }) },
+  ...GAMBITS.flatMap((g) => [g.success, g.failure]),
 ];
 
 function partyAt(level: number, seed: number): Combatant[] {
@@ -174,13 +219,33 @@ console.log(`baseline win rate   ${LEVELS.map((l) => `L${l} ${rate(base.get(l)!)
 
 const sign = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(0)}`;
 
-console.log(`${'outcome'.padEnd(32)} ${LEVELS.map((l) => `L${l}`.padStart(9)).join('')}      mean +/-95%`);
-console.log('-'.repeat(32 + 9 * LEVELS.length + 18));
+const measured = new Map<string, { delta: number; se: number }>();
 for (const o of OUTCOMES) {
   const ps = LEVELS.map((l) => paired(base.get(l)!, outcomes(l, o)));
-  const mean = ps.reduce((a, p) => a + p.delta, 0) / ps.length;
-  // Independent levels, so the mean's variance is the average of theirs over k.
+  const delta = ps.reduce((a, p) => a + p.delta, 0) / ps.length;
   const se = Math.sqrt(ps.reduce((a, p) => a + p.se * p.se, 0)) / ps.length;
-  const cells = ps.map((p) => sign(p.delta).padStart(9)).join('');
-  console.log(`${o.name.padEnd(32)} ${cells}   ${sign(mean).padStart(6)} +/-${(1.96 * se).toFixed(1)}`);
+  measured.set(o.name, { delta, se });
+  console.log(`  ${o.name.padEnd(26)} ${sign(delta).padStart(5)} +/-${(1.96 * se).toFixed(1)}   ` +
+    ps.map((x, k) => `L${LEVELS[k]} ${sign(x.delta)}`).join('  '));
+}
+
+/*
+ * The pair table.
+ *
+ * SWING is what the gamble is actually worth: the distance between winning the
+ * roll and losing it, which is the number a player feels. TILT is how lopsided
+ * it is — a success worth +20 beside a failure worth -3 is not a gamble, it is
+ * a button you always press, however dramatic the dice look.
+ */
+console.log(`\n${'skill'.padEnd(12)} ${'gambit'.padEnd(30)} ${'success'.padStart(8)} ${'failure'.padStart(8)} ${'swing'.padStart(7)} ${'tilt'.padStart(7)}`);
+console.log('-'.repeat(78));
+for (const g of GAMBITS) {
+  const s1 = measured.get(g.success.name)!;
+  const f1 = measured.get(g.failure.name)!;
+  const swing = s1.delta - f1.delta;
+  const tilt = s1.delta + f1.delta;   // zero means evenly matched
+  console.log(
+    `${g.skill.padEnd(12)} ${g.flavour.padEnd(30)} ${sign(s1.delta).padStart(8)} ${sign(f1.delta).padStart(8)} ` +
+    `${swing.toFixed(0).padStart(7)} ${sign(tilt).padStart(7)}`,
+  );
 }
