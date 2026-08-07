@@ -3653,6 +3653,11 @@ button.category .count {
   background: rgba(255, 255, 255, 0.09); color: var(--muted); white-space: nowrap;
 }
 
+/* The pre-fight check, on its own screen. */
+.arena-check { display: flex; flex-direction: column; gap: 12px; }
+.arena-check .check-known { display: flex; flex-direction: column; gap: 4px; }
+.arena-check .check-known h4 { margin: 4px 0 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+
 .lore-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 /* The pre-fight gambit: the offer in words, then the button that takes it.
    Full width so the sentence never has to compete with the button for the row,

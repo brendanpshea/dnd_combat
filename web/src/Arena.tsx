@@ -14,7 +14,7 @@
  *  - It reports first-try clears as the score. With unlimited retries a plain
  *    win rate climbs to 100% and stops meaning anything.
  */
-import { useState, useEffect, useMemo, type ComponentType } from 'react';
+import { useState, useEffect, useMemo, useRef, type ComponentType } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Id, TeamId, ItemStack } from '../../src/engine/types.js';
 import {
@@ -59,6 +59,7 @@ import { gearTasks, morningReview, spellTasks } from '../../src/arena/morning.js
 import { prepOptions } from '../../src/arena/prep.js';
 import {
   gambitContext, drawGambit, gambitDc, applyGambit, gambitKey, attemptFor, GAMBITS,
+  type GambitAttempt,
 } from '../../src/arena/gambit.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
@@ -200,7 +201,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [c, setC] = useState<CampaignState>(() => saved?.campaign ?? newCampaign(Date.now() & 0xffff));
   const [run, setRun] = useState<ArenaRunState>(() => saved?.run ?? newArenaRun(Date.now() & 0xffff));
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
-  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear'>('none');
+  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear' | 'check'>('none');
+  /** Rolled but not yet watched — see the SkillGambit on the Check step. */
+  const pendingGambit = useRef<GambitAttempt | null>(null);
   /**
    * The party screen — packs, worn gear, camp buffs, camp spellcasting.
    *
@@ -1046,29 +1049,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                         <b>{gateOffers[g.door]!.bounty!.blurb}</b>
                       </span>
                     )}
-                    {/* What your party already knows about what is behind THIS
-                        door. On the card rather than in a modal, because the
-                        whole point is the choice you make after reading it —
-                        and passive now, so it is simply there. */}
-                    {known.size > 0 && (() => {
-                      const seen = [...new Set(g.wave.encounter.members)]
-                        .filter((id) => known.has(id))
-                        .map(dossierFor)
-                        .filter((d): d is NonNullable<typeof d> => d !== undefined);
-                      if (seen.length === 0) return null;
-                      return (
-                        <span className="dossier">
-                          {seen.map((d) => (
-                            <span key={d.monsterId} className="dossier-row">
-                              <b>{d.name}</b> AC {d.ac} · {d.hp} HP
-                              {d.notes.map((n) => (
-                                <span key={n} className={n.startsWith('VULNERABLE') ? 'vuln' : ''}> · {n}</span>
-                              ))}
-                            </span>
-                          ))}
-                        </span>
-                      );
-                    })()}
+                    {/* No stat block here. The card used to carry armour
+                        class, hit points and every immunity for each creature
+                        the party could place — three cards of it, above a row
+                        of portraits that named the same monsters again. What
+                        the doors screen is for is choosing a door; the numbers
+                        moved to the Check step, where you are already reading
+                        about what is through it. */}
                   </button>
                 ))}
               </div>
@@ -1097,52 +1084,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 ))}
               </div>
 
-              <div className="lore-row">
-                {/* THE PRE-FIGHT GAMBIT.
-                    One check, drawn from what this door's roster and ground
-                    license, offered once. It replaces the creep-in, which was a
-                    real gamble on paper and worth a swing of two points in
-                    play — surprise is the 2024 rule, disadvantage on a single
-                    initiative roll. See arena/gambit.ts for the measurements. */}
-                {gambitTaken ? (
-                  <span className={gambitTaken.success ? 'lore-known' : 'lore-blind'}>
-                    {gambitTaken.success ? '🎲 ' : '🎲 '}
-                    {GAMBITS.find((g) => g.skill === gambitTaken.skill)?.[gambitTaken.success ? 'won' : 'lost']}
-                    {' '}({SKILL_LABEL[gambitTaken.skill]} {gambitTaken.total} vs DC {gambitTaken.dc})
-                    {gambitTaken.door !== (run.gate ?? 0) && ' You tried that at another gate; this one you walk into.'}
-                  </span>
-                ) : !gambit ? null : (
-                  /* The DM's line goes ON SCREEN, not in the button's tooltip.
-                     It was a `title` first, which is a hover — so on a phone,
-                     where most of this game is played, the one sentence
-                     explaining what you are being offered was invisible and the
-                     button read as a bare skill name and a number. */
-                  <div className="gambit-offer">
-                    <p className="go-setup">{gambit.setup}</p>
-                    <SkillGambit
-                    campaign={c}
-                    skill={gambit.skill}
-                    dc={gambitDc(wave.encounter.members)}
-                    {...(gambit.label ? { label: gambit.label } : {})}
-                    onRoll={() => {
-                      const dc = gambitDc(wave.encounter.members);
-                      const roll = partySkillCheck(c, gambit.skill, dc);
-                      const nextRun = {
-                        ...run,
-                        gambit: {
-                          key: gambitKey(dayOf(run), half),
-                          door: run.gate ?? 0,
-                          skill: gambit.skill, by: roll.by, natural: roll.natural,
-                          total: roll.total, dc, success: roll.success,
-                        },
-                      };
-                      setRun(nextRun); persist(c, nextRun);
-                      return roll;
-                    }}
-                    />
-                  </div>
-                )}
-              </div>
 
 
               <p className="hint">
@@ -1157,7 +1098,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 >
                   {chorusOn ? '🗣️' : '🔇'}
                 </button>
-                {grid.width}×{grid.height} {wave.map.theme}
+                {/* The board's dimensions were printed here every visit and
+                    never changed anything a player could act on — 8x10 is 8x10
+                    whichever door you take. The theme names the place, which is
+                    the half that varies. */}
+                {wave.map.theme}
                 {locked && ` · attempt ${run.attempts + 1}, this door is committed`}
               </p>
               {/* The afternoon is the same wave as the morning, fought by a
@@ -1175,11 +1120,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   {run.dayLevel}, so these fights — and their rewards — are pitched below you.
                 </p>
               )}
-              <p className="hint">
-                {half === 'morning'
-                  ? 'Two fights today — what you spend now is gone until tonight.'
-                  : 'Second fight of the day. No rest until the day is done.'}
-              </p>
 
               {/* The quasit, on the way in. Ordered most-interesting-first:
                   several of these can be true at once and he gets one. */}
@@ -1210,6 +1150,111 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               </div>{/* /gate content */}
 
               {notice && <div className="notice">{notice}</div>}
+
+              {/*
+                THE CHECK, ON ITS OWN SCREEN.
+
+                It used to be a row wedged under the door cards, between the
+                monster portraits and a line about board size — a d20 gamble
+                with real stakes, sharing a screen with the decision it is
+                about. It gets the screen now: what you know about what is
+                through the door, then the one thing you can try about it.
+              */}
+              {panel === 'check' && (
+                <div className="arena-check">
+            <div className="lore-row">
+              {/* THE PRE-FIGHT GAMBIT.
+                  One check, drawn from what this door's roster and ground
+                  license, offered once. It replaces the creep-in, which was a
+                  real gamble on paper and worth a swing of two points in
+                  play — surprise is the 2024 rule, disadvantage on a single
+                  initiative roll. See arena/gambit.ts for the measurements. */}
+              {gambitTaken ? (
+                <span className={gambitTaken.success ? 'lore-known' : 'lore-blind'}>
+                  {gambitTaken.success ? '🎲 ' : '🎲 '}
+                  {GAMBITS.find((g) => g.skill === gambitTaken.skill)?.[gambitTaken.success ? 'won' : 'lost']}
+                  {' '}({SKILL_LABEL[gambitTaken.skill]} {gambitTaken.total} vs DC {gambitTaken.dc})
+                  {gambitTaken.door !== (run.gate ?? 0) && ' You tried that at another gate; this one you walk into.'}
+                </span>
+              ) : !gambit ? null : (
+                /* The DM's line goes ON SCREEN, not in the button's tooltip.
+                   It was a `title` first, which is a hover — so on a phone,
+                   where most of this game is played, the one sentence
+                   explaining what you are being offered was invisible and the
+                   button read as a bare skill name and a number. */
+                <div className="gambit-offer">
+                  <p className="go-setup">{gambit.setup}</p>
+                  <SkillGambit
+                  campaign={c}
+                  skill={gambit.skill}
+                  dc={gambitDc(wave.encounter.members)}
+                  {...(gambit.label ? { label: gambit.label } : {})}
+                  /*
+                    THE RESULT IS COMMITTED WHEN THE DICE HAVE BEEN WATCHED,
+                    NOT WHEN THEY ARE THROWN.
+
+                    Recording it in `onRoll` set `run.gambit`, which made
+                    `gambitTaken` truthy, which swapped this whole branch for
+                    the one-line result — unmounting SkillGambit, and with it
+                    the DiceCheck overlay it had just opened. The d20 was
+                    rolled, resolved and applied without ever being shown.
+                    Measured in the browser: the scrim rendered zero times.
+
+                    So the roll is held until `onResolved` fires, which is what
+                    DiceCheck calls once the player has seen it land.
+                  */
+                  onRoll={() => {
+                    const dc = gambitDc(wave.encounter.members);
+                    const roll = partySkillCheck(c, gambit.skill, dc);
+                    pendingGambit.current = {
+                      key: gambitKey(dayOf(run), half),
+                      door: run.gate ?? 0,
+                      skill: gambit.skill, by: roll.by, natural: roll.natural,
+                      total: roll.total, dc, success: roll.success,
+                    };
+                    return roll;
+                  }}
+                  onResolved={() => {
+                    const attempt = pendingGambit.current;
+                    if (!attempt) return;
+                    pendingGambit.current = null;
+                    const nextRun = { ...run, gambit: attempt };
+                    setRun(nextRun); persist(c, nextRun);
+                  }}
+                  />
+                </div>
+              )}
+
+                  </div>
+
+                  {/* What the party already knows, moved off the door cards.
+                      Three stat blocks above a row of portraits naming the same
+                      creatures was the single biggest block of text on the
+                      doors screen; here it is what you are reading anyway. */}
+                  {(() => {
+                    const seen = [...new Set(wave.encounter.members)]
+                      .filter((id) => known.has(id))
+                      .map(dossierFor)
+                      .filter((d): d is NonNullable<typeof d> => d !== undefined);
+                    if (seen.length === 0) {
+                      return <p className="hint">Nothing through that door is familiar to anyone here.</p>;
+                    }
+                    return (
+                      <div className="check-known">
+                        <h4>What you know</h4>
+                        {seen.map((d) => (
+                          <div key={d.monsterId} className="dossier-row">
+                            <b>{d.name}</b> AC {d.ac} · {d.hp} HP
+                            {d.notes.map((n) => (
+                              <span key={n} className={n.startsWith('VULNERABLE') ? 'vuln' : ''}> · {n}</span>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               {panel === 'gear' && (
                 <div className="arena-shop">
@@ -1717,6 +1762,21 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       <span className="prep-badge" title="Better gear is sitting in a pack">
                         {gearTodo}
                       </span>
+                    )}
+                  </button>
+                  {/* The pre-fight check gets a step of its own. It is a d20
+                      with real stakes on both sides, and it spent its life as a
+                      row wedged between the door cards and a line about board
+                      size. The badge is the one thing a player must not walk
+                      past: an offer still open. */}
+                  <button
+                    className={panel === 'check' ? 'on' : ''}
+                    onClick={() => { setPanel('check'); setNotice(null); }}
+                    title="One skill check before the fight — take it or leave it"
+                  >
+                    🎲<small>Check</small>
+                    {!gambitTaken && gambit && (
+                      <span className="prep-badge" title="A check is on offer for this door">1</span>
                     )}
                   </button>
                   <button
