@@ -901,13 +901,30 @@ describe('the arena gate', () => {
   });
 
   it('puts the roster with the doors it belongs to', () => {
-    const gates = arena.indexOf('<div className="gates">');
-    const foes = arena.indexOf('<div className="arena-foes">');
-    const checks = arena.indexOf('lore-row');
-    expect(gates).toBeGreaterThan(-1);
-    expect(foes, 'the roster is back below the buffs and checks').toBeGreaterThan(gates);
-    expect(foes, 'the buffs and checks are between the doors and their roster again')
-      .toBeLessThan(checks);
+    /*
+     * The roster is the one thing on the screen that CHANGES when you pick a
+     * different door, so it sits directly under the cards.
+     *
+     * This used to compare the roster's position against the check row, which
+     * was the thing that had been wedged between them. That comparison stopped
+     * meaning anything when the check moved to a phase of its own: a phase is
+     * declared EARLIER in the file than the gate markup, so the old assertion
+     * failed while the layout it cared about was better than ever. Scoped to
+     * the doors screen now, and asked directly.
+     */
+    const doorsStart = arena.indexOf("<div className={panel === 'none' ? '' : 'hidden'}>");
+    const doorsEnd = arena.indexOf("{panel === 'gear' && (", doorsStart);
+    expect(doorsStart, 'the doors screen is gone').toBeGreaterThan(-1);
+    const doors = arena.slice(doorsStart, doorsEnd);
+
+    const gates = doors.indexOf('<div className="gates">');
+    const foes = doors.indexOf('<div className="arena-foes">');
+    expect(gates, 'no door cards on the doors screen').toBeGreaterThan(-1);
+    expect(foes, 'the roster is not on the doors screen at all').toBeGreaterThan(gates);
+    // Nothing between the cards and the faces they belong to.
+    const between = doors.slice(doors.indexOf('</div>', gates), foes);
+    expect(between.includes('SkillGambit'), 'a check is wedged between the doors and their roster')
+      .toBe(false);
   });
 
   it('gives the outgrown-day warning its own weight', () => {
