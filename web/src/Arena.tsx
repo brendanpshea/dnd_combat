@@ -205,6 +205,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   /** Rolled but not yet watched — see the SkillGambit on the Check step. */
   const pendingGambit = useRef<GambitAttempt | null>(null);
   /**
+   * Checks this visit has declined, keyed by the fight and door they belong to.
+   *
+   * Deliberately NOT persisted. A declined check is a decision about this look
+   * at this door, and a reload — or coming back after buying a potion — is a
+   * fair moment to be asked again. Persisting it would mean the one screen the
+   * player asked to be shown could be permanently dismissed by one stray tap.
+   */
+  const [declined, setDeclined] = useState<Set<string>>(new Set());
+  /**
    * The party screen — packs, worn gear, camp buffs, camp spellcasting.
    *
    * The arena had none of this: you could buy a Mace +1 and never wield it,
@@ -328,6 +337,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   );
   const gambit = drawGambit(run.seed, dayOf(run), half, run.gate ?? 0, gambitCtx);
   const gambitTaken = attemptFor(run.gambit, dayOf(run), half);
+  /** This look at this door, for remembering a declined check. */
+  const checkKey = `${gambitKey(dayOf(run), half)}:${run.gate ?? 0}`;
+  const skippedCheck = declined.has(checkKey);
   /** Built party, for the slot counts the camp-buff buttons quote. */
   const party = buildCampaignParty(c);
   /**
@@ -1227,6 +1239,12 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
                   </div>
 
+                  {!gambitTaken && gambit && (
+                    <button className="ghost" onClick={() => setDeclined(new Set([...declined, checkKey]))}>
+                      Go in without it
+                    </button>
+                  )}
+
                   {/* What the party already knows, moved off the door cards.
                       Three stat blocks above a row of portraits naming the same
                       creatures was the single biggest block of text on the
@@ -1674,7 +1692,28 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   that you see what you are agreeing to. Only the Doors step
                   offers the fight itself.
                 */}
-                {panel === 'none' ? (
+                {/*
+                  A CHECK ON OFFER IS WALKED THROUGH, NOT WALKED PAST.
+
+                  Giving it a screen of its own made it optional in the worst
+                  way: reported as "I don't see the gambits at all now, I click
+                  combat and it immediately starts". It was on the step bar with
+                  a badge, and that is not enough — the fight button is the one
+                  thing on the screen a player is aiming at.
+
+                  So the fight sends you to the check first, once, and the check
+                  screen carries its own way in. Declining is a tap, and it is
+                  remembered for this door, so the second press fights.
+                */}
+                {panel === 'none' && gambit && !gambitTaken && !skippedCheck ? (
+                  <button className="primary" onClick={() => { setPanel('check'); setNotice(null); }}>
+                    🎲 One check first — {gate.name}
+                  </button>
+                ) : panel === 'none' ? (
+                  <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
+                    ⚔️ Fight — {gate.name}
+                  </button>
+                ) : panel === 'check' ? (
                   <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
                     ⚔️ Fight — {gate.name}
                   </button>
