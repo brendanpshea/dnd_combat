@@ -1,10 +1,10 @@
 /**
- * The gate screen, and the check that used to be wedged into it.
+ * The gate screen, and the check that sits between it and the board.
  *
  * These read the component source rather than rendering it: every web test in
- * this repo runs without a DOM, and the two things worth defending here are
- * both structural — what the doors screen no longer carries, and the order in
- * which the check commits its result.
+ * this repo runs without a DOM, and what is worth defending here is structural
+ * — what the doors screen no longer carries, when the check is offered, and the
+ * order in which it commits its result.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
@@ -14,7 +14,7 @@ const read = (p: string) => readFileSync(fileURLToPath(new URL(`../${p}`, import
 const ARENA = read('web/src/Arena.tsx');
 const CSS = read('web/src/styles.css');
 
-/** The JSX between two markers, so a rule can be scoped to one screen. */
+/** The source between two markers, so a rule can be scoped to one screen. */
 function section(from: string, to: string): string {
   const a = ARENA.indexOf(from);
   expect(a, `marker not found: ${from}`).toBeGreaterThan(-1);
@@ -23,76 +23,78 @@ function section(from: string, to: string): string {
   return ARENA.slice(a, b);
 }
 
-describe('the check has a screen of its own', () => {
-  it('is a step, with a badge while the offer is still open', () => {
-    expect(ARENA, 'no Check step in the step bar').toContain("setPanel('check')");
-    expect(ARENA, 'the step never tells you an offer is waiting')
-      .toMatch(/!gambitTaken && gambit && \(\s*<span className="prep-badge"/);
-    expect(CSS, '.arena-check has no rule').toContain('\n.arena-check {');
+/*
+ * The doors screen ONLY. A first version ran to the end of the scroll area,
+ * which swallowed the stall panel — and the stall's haggle and pickpocket
+ * controls are SkillGambits too, so "the check is not on the doors screen"
+ * failed against a completely unrelated one.
+ */
+const doorsScreen = () => section("<div className={panel === 'none' ? '' : 'hidden'}>", "{panel === 'gear' && (");
+const checkScreen = () => section("if (phase.p === 'check') {", "if (phase.p === 'summary') {");
+
+describe('the check is offered between the door and the board', () => {
+  /**
+   * It had a step of its own, which made it optional in the worst way —
+   * reported as "I don't see the gambits at all now, I click combat and it
+   * immediately starts". It also let a player browse the three doors to see
+   * which check each would offer and pick a door for its check: the offer is
+   * drawn per door BECAUSE it is about that roster, so showing it before you
+   * commit turned that into a shopping trip.
+   */
+  it('is a phase, not a step', () => {
+    expect(ARENA, 'no check phase').toContain("p: 'check'");
+    expect(ARENA.includes("setPanel('check')"), 'the check is a browsable step again').toBe(false);
+    expect(ARENA.includes('🎲<small>Check</small>'), 'the Check tab is back in the step bar').toBe(false);
   });
 
-  it('does not leave the check on the doors screen as well', () => {
-    // The whole point of the move. Two copies would both be live, and taking
-    // one would silently change the other.
-    const doors = section("<div className={panel === 'none' ? '' : 'hidden'}>", "{panel === 'check' &&");
-    expect(doors.includes('SkillGambit'), 'the doors screen still carries the check').toBe(false);
+  it('is reached by pressing the fight, and only while one is untaken', () => {
+    const actions = section('THE CHECK SITS BETWEEN THE DOOR AND THE BOARD', "THE DAY'S STEPS");
+    expect(actions, 'the fight does not route through the check')
+      .toMatch(/gambit && !gambitTaken\s*\?\s*setPhase\(\{ p: 'check' \}\)/);
+    expect(actions, 'there is no way into the fight at all')
+      .toMatch(/setPhase\(\{ p: 'battle', combat: makeCombat/);
   });
-});
 
-describe('the doors screen is for choosing a door', () => {
-  const doors = () => section("<div className={panel === 'none' ? '' : 'hidden'}>", "{panel === 'check' &&");
+  it('is silent when the fight licenses nothing', () => {
+    // 0.5% of waves offer no skill. An interstitial saying so is a tap for
+    // nothing, so the same button goes straight to the board.
+    const actions = section('THE CHECK SITS BETWEEN THE DOOR AND THE BOARD', "THE DAY'S STEPS");
+    expect(actions, 'a wave with no eligible check still stops the player')
+      .toMatch(/:\s*setPhase\(\{ p: 'battle'/);
+  });
 
-  it('carries no stat blocks — and neither does anything else', () => {
+  it('does not ask again on a retry', () => {
     /*
-     * These were armour class, hit points and every immunity for each creature
-     * the party could place, on three cards at once, directly above a row of
-     * portraits naming the same monsters again. They moved to the Check step
-     * and then off the game entirely.
-     *
-     * Asserted across the whole app rather than on the doors screen, because
-     * the point is that the feature is gone: `lore.ts` went with it, and a
-     * half-removed feature is a module nothing imports.
+     * `attemptFor` is keyed to the day and half, and a defeat keeps `run.gambit`
+     * while `gateLocked` pins the door — so the recorded attempt is still
+     * live and `gambitTaken` is truthy. That is what stops a player rerolling a
+     * bad check by losing the fight, and it is the same rule the wave itself
+     * follows: a lost wave is a tactical problem, not a slot machine.
      */
-    expect(ARENA.includes('dossierFor'), 'stat blocks are back somewhere in the arena').toBe(false);
-    expect(ARENA.includes('passiveKnown'), 'the knowledge plumbing is back').toBe(false);
-    expect(existsSync(fileURLToPath(new URL('../src/arena/lore.ts', import.meta.url))),
-      'lore.ts is back, but nothing renders a dossier').toBe(false);
+    expect(ARENA, 'the attempt is no longer read back for this fight')
+      .toContain('attemptFor(run.gambit, dayOf(run), half)');
   });
 
-  it('still shows who is behind the selected door', () => {
-    // Decluttering must not take the faces and names with it — that is the one
-    // thing on the screen that changes when you pick a different door.
-    expect(doors(), 'the foe portraits are gone').toContain('arena-foes');
-    expect(doors(), 'the foes are no longer named').toContain('MONSTERS[id]?.name');
-  });
-
-  it('does not print the size of the board', () => {
-    // 8x10 is 8x10 whichever door you take, and it was on screen every visit.
-    expect(doors().includes('grid.width'), 'the board dimensions are back').toBe(false);
-    expect(doors(), 'the map theme went with them').toContain('wave.map.theme');
-  });
-
-  it('says the day has two fights once, not twice', () => {
-    const twice = ARENA.split('what you spend now is gone').length - 1;
-    expect(twice, 'the two-fights reminder is duplicated').toBeLessThanOrEqual(1);
+  it('carries its own way past, and its own way in', () => {
+    const screen = checkScreen();
+    expect(screen, 'no way to decline').toContain('Go in without it');
+    expect(screen, 'no way into the fight from the check').toContain('makeCombat(c, run, wave)');
+    // The decline bookkeeping the step version needed is gone with it: if the
+    // check appears ON the fight press, declining simply starts the fight.
+    expect(ARENA.includes('setDeclined('), 'the declined-set bookkeeping is back').toBe(false);
   });
 });
 
 describe('the dice are watched before the result is kept', () => {
   /**
-   * THE BUG THIS EXISTS FOR.
-   *
    * Recording the attempt inside `onRoll` set `run.gambit`, which made
-   * `gambitTaken` truthy, which swapped the whole branch for the one-line
-   * result — unmounting SkillGambit and with it the DiceCheck overlay it had
-   * just opened. The d20 was rolled, resolved and applied without ever being
-   * shown. Measured in a browser at 390px: the scrim rendered zero times before
-   * the fix and once after.
+   * `gambitTaken` truthy, which swapped the branch for the one-line result —
+   * unmounting SkillGambit and with it the DiceCheck overlay it had just
+   * opened. The d20 was rolled, resolved and applied without ever being shown.
+   * Measured in a browser: the scrim rendered zero times before the fix.
    */
-  const gambitProps = () => section('onRoll={() => {\n                    const dc = gambitDc', 'onResolved={');
-
   it('does not persist the run while rolling', () => {
-    const rolling = gambitProps();
+    const rolling = section('onRoll={() => {', 'onResolved={');
     expect(rolling.includes('setRun('), 'onRoll commits the run and unmounts its own dice').toBe(false);
     expect(rolling.includes('persist('), 'onRoll persists and unmounts its own dice').toBe(false);
     expect(rolling, 'the roll is not being held anywhere').toContain('pendingGambit.current =');
@@ -106,12 +108,65 @@ describe('the dice are watched before the result is kept', () => {
       .toContain('pendingGambit.current = null');
   });
 
+  it('does not launch the fight in the same tick as the roll', () => {
+    /*
+     * The attempt is committed in `onResolved` and `makeCombat` reads it back
+     * through `applyGambit`. React state is async, so launching automatically
+     * would build the combat from the pre-commit `run` and the outcome would
+     * silently do nothing. The tap is also the beat that lets the player read
+     * what happened.
+     */
+    const resolved = section('onResolved={() => {', '/>');
+    expect(resolved.includes("p: 'battle'"), 'the fight launches inside onResolved').toBe(false);
+    expect(checkScreen(), 'nothing takes the player onward after the dice')
+      .toMatch(/<button className="primary" onClick=\{goIn\}/);
+  });
+
   it('uses the same dice ritual the adventure does', () => {
-    // Not a bespoke arena animation: DiceCheck is what adventure scenes have
-    // used since they were written, and a d20 should look the same everywhere.
     const sg = read('web/src/SkillGambit.tsx');
     expect(sg, 'SkillGambit no longer shows DiceCheck').toContain('<DiceCheck');
     expect(sg, 'the overlay it renders into is gone').toContain('adv-dice-scrim');
+  });
+});
+
+describe('the doors screen is for choosing a door', () => {
+  it('carries no stat blocks — and neither does anything else', () => {
+    /*
+     * Armour class, hit points and every immunity for each creature the party
+     * could place, on three cards at once, above a row of portraits naming the
+     * same monsters again. Asserted across the whole app rather than on one
+     * screen, because the point is that the feature is gone: `lore.ts` went
+     * with it, and a half-removed feature is a module nothing imports.
+     */
+    expect(ARENA.includes('dossierFor'), 'stat blocks are back somewhere in the arena').toBe(false);
+    expect(ARENA.includes('passiveKnown'), 'the knowledge plumbing is back').toBe(false);
+    expect(existsSync(fileURLToPath(new URL('../src/arena/lore.ts', import.meta.url))),
+      'lore.ts is back, but nothing renders a dossier').toBe(false);
+  });
+
+  it('still shows who is behind the selected door', () => {
+    // Decluttering must not take the faces and names with it — that is the one
+    // thing on the screen that changes when you pick a different door.
+    expect(doorsScreen(), 'the foe portraits are gone').toContain('arena-foes');
+    expect(doorsScreen(), 'the foes are no longer named').toContain('MONSTERS[id]?.name');
+  });
+
+  it('does not print the size of the board', () => {
+    // 8x10 is 8x10 whichever door you take, and it was on screen every visit.
+    expect(doorsScreen().includes('grid.width'), 'the board dimensions are back').toBe(false);
+    expect(doorsScreen(), 'the map theme went with them').toContain('wave.map.theme');
+  });
+
+  it('says the day has two fights once, not twice', () => {
+    const twice = ARENA.split('what you spend now is gone').length - 1;
+    expect(twice, 'the two-fights reminder is duplicated').toBeLessThanOrEqual(1);
+  });
+
+  it('does not show the check before the door is committed', () => {
+    // The shopping trip: three doors, three offers, pick the door whose check
+    // your party happens to be good at.
+    expect(doorsScreen().includes('SkillGambit'), 'the check is browsable from the doors again').toBe(false);
+    expect(doorsScreen().includes('go-setup'), 'the offer is being previewed on the doors screen').toBe(false);
   });
 });
 
@@ -121,9 +176,6 @@ describe('the check screen is sized for a phone', () => {
    * row wedged between other rows. On a screen of its own that is fine print —
    * reported as "on a phone it is tiny" — and it is the only thing on the
    * screen: one sentence, one button, one decision.
-   *
-   * Sizes are asserted as numbers rather than as the exact declarations,
-   * because the point is legibility and not a particular pixel.
    */
   const sizeOf = (selector: string): number => {
     const i = CSS.indexOf(`\n${selector} {`);
@@ -147,57 +199,16 @@ describe('the check screen is sized for a phone', () => {
      * so `.arena-check .go-setup` — equally specific — lost silently. Measured
      * in a browser: the button grew and the text stayed at 12px.
      */
-    const scoped = CSS.indexOf('.arena-check .gambit-offer .go-setup {');
-    const inline = CSS.indexOf('.gambit-offer .go-setup {');
-    expect(scoped, 'the scoped rule is gone').toBeGreaterThan(-1);
-    expect(scoped < inline || CSS.slice(scoped).includes('.arena-check .gambit-offer .go-setup'),
-      'the override is no more specific than the rule it must beat').toBe(true);
+    expect(CSS, 'the override is no more specific than the rule it must beat')
+      .toContain('.arena-check .gambit-offer .go-setup {');
   });
 
-  it('leaves the stall\'s inline checks alone', () => {
+  it("leaves the stall's inline checks alone", () => {
     // The same component is the haggle and pickpocket control, which sit beside
     // prices and should stay small. Every enlargement is scoped.
     const block = CSS.slice(CSS.indexOf('.arena-check {'), CSS.indexOf('.lore-row {'));
     const unscoped = block.split('\n').filter((l) =>
       /^\.(skill-gambit|sg-title|sg-math|go-setup)/.test(l.trim()));
     expect(unscoped, `these grow the stall's controls too: ${unscoped.join(' ')}`).toEqual([]);
-  });
-});
-
-describe('a check on offer cannot be walked past', () => {
-  /**
-   * Giving the check a screen of its own made it optional in the worst way.
-   * Reported as "I don't see the gambits at all now, I click combat and it
-   * immediately starts". It WAS on the step bar, with a badge — and that is not
-   * enough, because the fight button is the one thing on the screen a player is
-   * aiming at, and it went straight past.
-   */
-  it('sends the fight button to the check while one is untaken', () => {
-    const actions = section('THE PRIMARY BUTTON BELONGS TO THE STEP YOU ARE ON', 'THE DAY\'S STEPS');
-    expect(actions, 'the fight never routes through the check')
-      .toMatch(/gambit && !gambitTaken && !skippedCheck[\s\S]{0,200}setPanel\('check'\)/);
-    expect(actions, 'the check screen has no way into the fight')
-      .toMatch(/panel === 'check'[\s\S]{0,200}setPhase\(\{ p: 'battle'/);
-  });
-
-  it('lets the player decline, and remembers it for that door', () => {
-    // Otherwise the detour is a wall rather than an offer.
-    expect(ARENA, 'there is no way to go in without the check').toMatch(/Go in without it/);
-    expect(ARENA, 'declining is not recorded').toContain('setDeclined(');
-    // Keyed to the fight AND the door: three gates hold three rosters, and
-    // declining at one must not silently decline at the next.
-    expect(ARENA, 'the decline is not scoped to a door')
-      .toMatch(/const checkKey = `\$\{gambitKey\(dayOf\(run\), half\)\}:\$\{run\.gate \?\? 0\}`/);
-  });
-
-  it('does not persist the decline', () => {
-    /*
-     * A declined check is a decision about this look at this door. Persisting
-     * it would mean the one screen the player asked to be shown could be put
-     * away permanently by a stray tap — which is the bug this whole change is
-     * fixing, wearing a different hat.
-     */
-    const decl = section('const [declined, setDeclined]', 'const gates');
-    expect(decl.includes('persist('), 'the decline is written to the save').toBe(false);
   });
 });

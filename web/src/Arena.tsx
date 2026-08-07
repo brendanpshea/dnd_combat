@@ -80,6 +80,8 @@ type Phase =
   | { p: 'forge' }
   | { p: 'brief' }
   | { p: 'battle'; combat: Combat }
+  /** The one pre-fight check, between committing to a door and the board. */
+  | { p: 'check' }
   | {
       p: 'loot'; gold: number; items: ItemStack[]; xpGained: number;
       leveledTo?: number; leveledFrom?: number;
@@ -198,18 +200,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [c, setC] = useState<CampaignState>(() => saved?.campaign ?? newCampaign(Date.now() & 0xffff));
   const [run, setRun] = useState<ArenaRunState>(() => saved?.run ?? newArenaRun(Date.now() & 0xffff));
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
-  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear' | 'check'>('none');
+  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear'>('none');
   /** Rolled but not yet watched — see the SkillGambit on the Check step. */
   const pendingGambit = useRef<GambitAttempt | null>(null);
-  /**
-   * Checks this visit has declined, keyed by the fight and door they belong to.
-   *
-   * Deliberately NOT persisted. A declined check is a decision about this look
-   * at this door, and a reload — or coming back after buying a potion — is a
-   * fair moment to be asked again. Persisting it would mean the one screen the
-   * player asked to be shown could be permanently dismissed by one stray tap.
-   */
-  const [declined, setDeclined] = useState<Set<string>>(new Set());
   /**
    * The party screen — packs, worn gear, camp buffs, camp spellcasting.
    *
@@ -328,16 +321,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   );
   const gambit = drawGambit(run.seed, dayOf(run), half, run.gate ?? 0, gambitCtx);
   const gambitTaken = attemptFor(run.gambit, dayOf(run), half);
-  /** This look at this door, for remembering a declined check. */
-  const checkKey = `${gambitKey(dayOf(run), half)}:${run.gate ?? 0}`;
-  const skippedCheck = declined.has(checkKey);
   /** Built party, for the slot counts the camp-buff buttons quote. */
   const party = buildCampaignParty(c);
-  /**
-   * Creatures the party recognises on sight — 10 + its best relevant knowledge
-   * bonus against each creature's own DC. No roll, no button: see lore.ts.
-   */
-
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
   const setVisit = (next: StallVisit) => {
     const nextRun = { ...run, stall: next };
@@ -647,6 +632,105 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <div className="adv-choices">
                   <button className="primary" onClick={() => setPhase({ p: 'brief' })}>
                     Step out onto the sand
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase.p === 'check') {
+    const goIn = () => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) });
+    return (
+      <div className="adventure">
+        <div className="adv-stage">
+          {backdrop}
+          <div className="adv-content">
+            <div className="adv-scene centered">
+              <div className="adv-panel arena-check">
+                <h2>{gate.name}</h2>
+        <div className="lore-row">
+          {/* THE PRE-FIGHT GAMBIT.
+              One check, drawn from what this door's roster and ground
+              license, offered once. It replaces the creep-in, which was a
+              real gamble on paper and worth a swing of two points in
+              play — surprise is the 2024 rule, disadvantage on a single
+              initiative roll. See arena/gambit.ts for the measurements. */}
+          {gambitTaken ? (
+            <span className={gambitTaken.success ? 'lore-known' : 'lore-blind'}>
+              {gambitTaken.success ? '🎲 ' : '🎲 '}
+              {GAMBITS.find((g) => g.skill === gambitTaken.skill)?.[gambitTaken.success ? 'won' : 'lost']}
+              {' '}({SKILL_LABEL[gambitTaken.skill]} {gambitTaken.total} vs DC {gambitTaken.dc})
+              {gambitTaken.door !== (run.gate ?? 0) && ' You tried that at another gate; this one you walk into.'}
+            </span>
+          ) : !gambit ? null : (
+            /* The DM's line goes ON SCREEN, not in the button's tooltip.
+               It was a `title` first, which is a hover — so on a phone,
+               where most of this game is played, the one sentence
+               explaining what you are being offered was invisible and the
+               button read as a bare skill name and a number. */
+            <div className="gambit-offer">
+              <p className="go-setup">{gambit.setup}</p>
+              <SkillGambit
+              campaign={c}
+              skill={gambit.skill}
+              dc={gambitDc(wave.encounter.members)}
+              {...(gambit.label ? { label: gambit.label } : {})}
+              /*
+                THE RESULT IS COMMITTED WHEN THE DICE HAVE BEEN WATCHED,
+                NOT WHEN THEY ARE THROWN.
+
+                Recording it in `onRoll` set `run.gambit`, which made
+                `gambitTaken` truthy, which swapped this whole branch for
+                the one-line result — unmounting SkillGambit, and with it
+                the DiceCheck overlay it had just opened. The d20 was
+                rolled, resolved and applied without ever being shown.
+                Measured in the browser: the scrim rendered zero times.
+
+                So the roll is held until `onResolved` fires, which is what
+                DiceCheck calls once the player has seen it land.
+              */
+              onRoll={() => {
+                const dc = gambitDc(wave.encounter.members);
+                const roll = partySkillCheck(c, gambit.skill, dc);
+                pendingGambit.current = {
+                  key: gambitKey(dayOf(run), half),
+                  door: run.gate ?? 0,
+                  skill: gambit.skill, by: roll.by, natural: roll.natural,
+                  total: roll.total, dc, success: roll.success,
+                };
+                return roll;
+              }}
+              onResolved={() => {
+                const attempt = pendingGambit.current;
+                if (!attempt) return;
+                pendingGambit.current = null;
+                const nextRun = { ...run, gambit: attempt };
+                setRun(nextRun); persist(c, nextRun);
+              }}
+              />
+            </div>
+          )}
+
+              </div>
+
+
+                {/*
+                  ONE TAP INTO THE FIGHT, NOT AN AUTOMATIC LAUNCH.
+
+                  The attempt is committed in `onResolved`, and `makeCombat`
+                  reads it back through `applyGambit`. React state is async, so
+                  launching in the same tick would build the combat from the
+                  pre-commit `run` and the outcome would silently do nothing.
+                  The tap is also the beat that lets the player read what just
+                  happened.
+                */}
+                <div className="adv-choices">
+                  <button className="primary" onClick={goIn}>
+                    {gambitTaken ? `\u2694\uFE0F Fight — ${gate.name}` : 'Go in without it'}
                   </button>
                 </div>
               </div>
@@ -1153,91 +1237,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
               {notice && <div className="notice">{notice}</div>}
 
-              {/*
-                THE CHECK, ON ITS OWN SCREEN.
-
-                It used to be a row wedged under the door cards, between the
-                monster portraits and a line about board size — a d20 gamble
-                with real stakes, sharing a screen with the decision it is
-                about. It gets the screen now: what you know about what is
-                through the door, then the one thing you can try about it.
-              */}
-              {panel === 'check' && (
-                <div className="arena-check">
-            <div className="lore-row">
-              {/* THE PRE-FIGHT GAMBIT.
-                  One check, drawn from what this door's roster and ground
-                  license, offered once. It replaces the creep-in, which was a
-                  real gamble on paper and worth a swing of two points in
-                  play — surprise is the 2024 rule, disadvantage on a single
-                  initiative roll. See arena/gambit.ts for the measurements. */}
-              {gambitTaken ? (
-                <span className={gambitTaken.success ? 'lore-known' : 'lore-blind'}>
-                  {gambitTaken.success ? '🎲 ' : '🎲 '}
-                  {GAMBITS.find((g) => g.skill === gambitTaken.skill)?.[gambitTaken.success ? 'won' : 'lost']}
-                  {' '}({SKILL_LABEL[gambitTaken.skill]} {gambitTaken.total} vs DC {gambitTaken.dc})
-                  {gambitTaken.door !== (run.gate ?? 0) && ' You tried that at another gate; this one you walk into.'}
-                </span>
-              ) : !gambit ? null : (
-                /* The DM's line goes ON SCREEN, not in the button's tooltip.
-                   It was a `title` first, which is a hover — so on a phone,
-                   where most of this game is played, the one sentence
-                   explaining what you are being offered was invisible and the
-                   button read as a bare skill name and a number. */
-                <div className="gambit-offer">
-                  <p className="go-setup">{gambit.setup}</p>
-                  <SkillGambit
-                  campaign={c}
-                  skill={gambit.skill}
-                  dc={gambitDc(wave.encounter.members)}
-                  {...(gambit.label ? { label: gambit.label } : {})}
-                  /*
-                    THE RESULT IS COMMITTED WHEN THE DICE HAVE BEEN WATCHED,
-                    NOT WHEN THEY ARE THROWN.
-
-                    Recording it in `onRoll` set `run.gambit`, which made
-                    `gambitTaken` truthy, which swapped this whole branch for
-                    the one-line result — unmounting SkillGambit, and with it
-                    the DiceCheck overlay it had just opened. The d20 was
-                    rolled, resolved and applied without ever being shown.
-                    Measured in the browser: the scrim rendered zero times.
-
-                    So the roll is held until `onResolved` fires, which is what
-                    DiceCheck calls once the player has seen it land.
-                  */
-                  onRoll={() => {
-                    const dc = gambitDc(wave.encounter.members);
-                    const roll = partySkillCheck(c, gambit.skill, dc);
-                    pendingGambit.current = {
-                      key: gambitKey(dayOf(run), half),
-                      door: run.gate ?? 0,
-                      skill: gambit.skill, by: roll.by, natural: roll.natural,
-                      total: roll.total, dc, success: roll.success,
-                    };
-                    return roll;
-                  }}
-                  onResolved={() => {
-                    const attempt = pendingGambit.current;
-                    if (!attempt) return;
-                    pendingGambit.current = null;
-                    const nextRun = { ...run, gambit: attempt };
-                    setRun(nextRun); persist(c, nextRun);
-                  }}
-                  />
-                </div>
-              )}
-
-                  </div>
-
-                  {!gambitTaken && gambit && (
-                    <button className="ghost" onClick={() => setDeclined(new Set([...declined, checkKey]))}>
-                      Go in without it
-                    </button>
-                  )}
-
-                </div>
-              )}
-
               {panel === 'gear' && (
                 <div className="arena-shop">
                   {/* The gear screen as a STEP, not a modal over everything.
@@ -1669,16 +1668,34 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   screen carries its own way in. Declining is a tap, and it is
                   remembered for this door, so the second press fights.
                 */}
-                {panel === 'none' && gambit && !gambitTaken && !skippedCheck ? (
-                  <button className="primary" onClick={() => { setPanel('check'); setNotice(null); }}>
-                    🎲 One check first — {gate.name}
-                  </button>
-                ) : panel === 'none' ? (
-                  <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
-                    ⚔️ Fight — {gate.name}
-                  </button>
-                ) : panel === 'check' ? (
-                  <button className="primary" onClick={() => setPhase({ p: 'battle', combat: makeCombat(c, run, wave) })}>
+                {/*
+                  THE CHECK SITS BETWEEN THE DOOR AND THE BOARD.
+
+                  It had a step of its own, which made it optional in the worst
+                  way — reported as "I don't see the gambits at all now, I click
+                  combat and it immediately starts" — and it also let a player
+                  browse the three doors to see which check each would offer and
+                  choose a door for its check. The offer is drawn per door
+                  BECAUSE it is about that roster; showing it before you commit
+                  turned that into a shopping trip.
+
+                  So: press the fight, and if this door has a check nobody has
+                  taken yet, that is the next screen. On a retry the attempt is
+                  still recorded — a lost wave keeps its result and the gate is
+                  locked — so it does not ask twice, and there is no rerolling a
+                  bad check by losing.
+
+                  Silent when the fight licenses nothing: 0.5% of waves offer no
+                  skill at all, and an interstitial saying so is a tap for
+                  nothing.
+                */}
+                {panel === 'none' ? (
+                  <button
+                    className="primary"
+                    onClick={() => (gambit && !gambitTaken
+                      ? setPhase({ p: 'check' })
+                      : setPhase({ p: 'battle', combat: makeCombat(c, run, wave) }))}
+                  >
                     ⚔️ Fight — {gate.name}
                   </button>
                 ) : (
@@ -1765,21 +1782,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       <span className="prep-badge" title="Better gear is sitting in a pack">
                         {gearTodo}
                       </span>
-                    )}
-                  </button>
-                  {/* The pre-fight check gets a step of its own. It is a d20
-                      with real stakes on both sides, and it spent its life as a
-                      row wedged between the door cards and a line about board
-                      size. The badge is the one thing a player must not walk
-                      past: an offer still open. */}
-                  <button
-                    className={panel === 'check' ? 'on' : ''}
-                    onClick={() => { setPanel('check'); setNotice(null); }}
-                    title="One skill check before the fight — take it or leave it"
-                  >
-                    🎲<small>Check</small>
-                    {!gambitTaken && gambit && (
-                      <span className="prep-badge" title="A check is on offer for this door">1</span>
                     )}
                   </button>
                   <button
