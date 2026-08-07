@@ -3653,10 +3653,53 @@ button.category .count {
   background: rgba(255, 255, 255, 0.09); color: var(--muted); white-space: nowrap;
 }
 
-/* The pre-fight check, on its own screen. */
-.arena-check { display: flex; flex-direction: column; gap: 12px; }
-.arena-check .check-known { display: flex; flex-direction: column; gap: 4px; }
-.arena-check .check-known h4 { margin: 4px 0 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+/* ---- the pre-fight check, on its own screen ------------------------------
+   SIZED FOR A PHONE, AND SIZED LIKE THE POINT OF THE SCREEN.
+
+   These styles started life inline on the gate card, where 11-12px was right
+   for a row wedged between other rows. On a screen of its own that reads as
+   fine print — reported as "on a phone it is tiny" — and it is the only thing
+   on the screen: one sentence of setup, one button, one decision.
+
+   Everything here is scoped to `.arena-check`, because `.skill-gambit` is also
+   the stall's haggle and pickpocket controls, which sit inline beside prices
+   and should stay small. */
+.arena-check { display: flex; flex-direction: column; gap: 16px; }
+
+/* `.arena-check .gambit-offer ...` rather than `.arena-check .go-setup`: the
+   inline rules below carry two classes too and come later in the file, so an
+   equally specific override silently lost. Measured — the text stayed at 12px
+   while the button correctly grew. */
+.arena-check .gambit-offer { gap: 14px; }
+.arena-check .gambit-offer .go-setup {
+  font-size: 19px;
+  line-height: 1.45;
+  border-left-width: 3px;
+  padding-left: 12px;
+}
+
+/* The button is the decision, so it is a target rather than a chip: full
+   width, and comfortably over the 44px a thumb wants. */
+.arena-check .gambit-offer .skill-gambit {
+  align-self: stretch;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border-color: var(--gold);
+  font-size: 15px;
+  min-height: 44px;
+}
+.arena-check .gambit-offer .sg-title { font-size: 20px; }
+.arena-check .gambit-offer .sg-math { font-size: 14px; }
+
+/* The result, once the dice have landed: the answer to the only question the
+   screen asked, so it is not 11px grey either. */
+.arena-check .lore-known,
+.arena-check .lore-blind { font-size: 16px; line-height: 1.45; }
+
+.arena-check .ghost { align-self: flex-start; font-size: 14px; padding: 8px 14px; }
 
 .lore-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 /* The pre-fight gambit: the offer in words, then the button that takes it.

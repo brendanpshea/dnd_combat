@@ -7,7 +7,7 @@
  * which the check commits its result.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const read = (p: string) => readFileSync(fileURLToPath(new URL(`../${p}`, import.meta.url)), 'utf8');
@@ -42,10 +42,21 @@ describe('the check has a screen of its own', () => {
 describe('the doors screen is for choosing a door', () => {
   const doors = () => section("<div className={panel === 'none' ? '' : 'hidden'}>", "{panel === 'check' &&");
 
-  it('carries no stat blocks', () => {
-    // Armour class, hit points and every immunity for each creature, on three
-    // cards at once, above a row of portraits naming the same monsters again.
-    expect(doors().includes('dossierFor'), 'the door cards still print stat blocks').toBe(false);
+  it('carries no stat blocks — and neither does anything else', () => {
+    /*
+     * These were armour class, hit points and every immunity for each creature
+     * the party could place, on three cards at once, directly above a row of
+     * portraits naming the same monsters again. They moved to the Check step
+     * and then off the game entirely.
+     *
+     * Asserted across the whole app rather than on the doors screen, because
+     * the point is that the feature is gone: `lore.ts` went with it, and a
+     * half-removed feature is a module nothing imports.
+     */
+    expect(ARENA.includes('dossierFor'), 'stat blocks are back somewhere in the arena').toBe(false);
+    expect(ARENA.includes('passiveKnown'), 'the knowledge plumbing is back').toBe(false);
+    expect(existsSync(fileURLToPath(new URL('../src/arena/lore.ts', import.meta.url))),
+      'lore.ts is back, but nothing renders a dossier').toBe(false);
   });
 
   it('still shows who is behind the selected door', () => {
@@ -101,6 +112,55 @@ describe('the dice are watched before the result is kept', () => {
     const sg = read('web/src/SkillGambit.tsx');
     expect(sg, 'SkillGambit no longer shows DiceCheck').toContain('<DiceCheck');
     expect(sg, 'the overlay it renders into is gone').toContain('adv-dice-scrim');
+  });
+});
+
+describe('the check screen is sized for a phone', () => {
+  /**
+   * These styles began inline on the gate card, where 11-12px was right for a
+   * row wedged between other rows. On a screen of its own that is fine print —
+   * reported as "on a phone it is tiny" — and it is the only thing on the
+   * screen: one sentence, one button, one decision.
+   *
+   * Sizes are asserted as numbers rather than as the exact declarations,
+   * because the point is legibility and not a particular pixel.
+   */
+  const sizeOf = (selector: string): number => {
+    const i = CSS.indexOf(`\n${selector} {`);
+    expect(i, `no rule for ${selector}`).toBeGreaterThan(-1);
+    const body = CSS.slice(i, CSS.indexOf('}', i));
+    const m = /font-size:\s*(\d+)px/.exec(body);
+    expect(m, `${selector} sets no font-size`).not.toBeNull();
+    return Number(m![1]);
+  };
+
+  it('gives the setup line and the button real type', () => {
+    expect(sizeOf('.arena-check .gambit-offer .go-setup'),
+      'the sentence the whole screen exists to ask is still fine print').toBeGreaterThanOrEqual(17);
+    expect(sizeOf('.arena-check .gambit-offer .sg-title'),
+      'the skill being rolled is still a chip label').toBeGreaterThanOrEqual(17);
+  });
+
+  it('beats the inline rules it has to override', () => {
+    /*
+     * `.gambit-offer .go-setup` carries two classes and sits later in the file,
+     * so `.arena-check .go-setup` — equally specific — lost silently. Measured
+     * in a browser: the button grew and the text stayed at 12px.
+     */
+    const scoped = CSS.indexOf('.arena-check .gambit-offer .go-setup {');
+    const inline = CSS.indexOf('.gambit-offer .go-setup {');
+    expect(scoped, 'the scoped rule is gone').toBeGreaterThan(-1);
+    expect(scoped < inline || CSS.slice(scoped).includes('.arena-check .gambit-offer .go-setup'),
+      'the override is no more specific than the rule it must beat').toBe(true);
+  });
+
+  it('leaves the stall\'s inline checks alone', () => {
+    // The same component is the haggle and pickpocket control, which sit beside
+    // prices and should stay small. Every enlargement is scoped.
+    const block = CSS.slice(CSS.indexOf('.arena-check {'), CSS.indexOf('.lore-row {'));
+    const unscoped = block.split('\n').filter((l) =>
+      /^\.(skill-gambit|sg-title|sg-math|go-setup)/.test(l.trim()));
+    expect(unscoped, `these grow the stall's controls too: ${unscoped.join(' ')}`).toEqual([]);
   });
 });
 

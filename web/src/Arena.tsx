@@ -65,9 +65,6 @@ import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
 import { SkillGambit } from './SkillGambit.js';
 import {
-  dossierFor, passiveKnown,
-} from '../../src/arena/lore.js';
-import {
   stallVisitOf, stallPrice, stallResale, stallWillBuy, type StallVisit,
 } from '../../src/arena/stall.js';
 import { chorusLine, firstUnheard, type ChorusCue } from '../../src/arena/chorus.js';
@@ -313,12 +310,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // the stall at dawn. See arena/stall.ts.
   const visit = stallVisitOf(run.stall, dayOf(run));
 
-  /**
-   * Every creature behind any of the three doors — the study looks at all of
-   * them, because the point is to inform which door you take, and a check that
-   * only saw behind the door you had already chosen would arrive too late.
-   */
-  const allFoes = gates.flatMap((g) => g.wave.encounter.members);
   // The creep, and what it means for the door currently selected. A gamble
   // taken at one gate does not carry to another: different monsters, different
   // eyes, and shopping for the easiest DC would be the whole exploit.
@@ -346,7 +337,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * Creatures the party recognises on sight — 10 + its best relevant knowledge
    * bonus against each creature's own DC. No roll, no button: see lore.ts.
    */
-  const known = passiveKnown(allFoes, (skill) => bestAtSkill(c, skill).bonus);
 
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
   const setVisit = (next: StallVisit) => {
@@ -1245,32 +1235,6 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     </button>
                   )}
 
-                  {/* What the party already knows, moved off the door cards.
-                      Three stat blocks above a row of portraits naming the same
-                      creatures was the single biggest block of text on the
-                      doors screen; here it is what you are reading anyway. */}
-                  {(() => {
-                    const seen = [...new Set(wave.encounter.members)]
-                      .filter((id) => known.has(id))
-                      .map(dossierFor)
-                      .filter((d): d is NonNullable<typeof d> => d !== undefined);
-                    if (seen.length === 0) {
-                      return <p className="hint">Nothing through that door is familiar to anyone here.</p>;
-                    }
-                    return (
-                      <div className="check-known">
-                        <h4>What you know</h4>
-                        {seen.map((d) => (
-                          <div key={d.monsterId} className="dossier-row">
-                            <b>{d.name}</b> AC {d.ac} · {d.hp} HP
-                            {d.notes.map((n) => (
-                              <span key={n} className={n.startsWith('VULNERABLE') ? 'vuln' : ''}> · {n}</span>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
                 </div>
               )}
 
