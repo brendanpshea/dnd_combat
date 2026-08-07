@@ -103,3 +103,41 @@ describe('the dice are watched before the result is kept', () => {
     expect(sg, 'the overlay it renders into is gone').toContain('adv-dice-scrim');
   });
 });
+
+describe('a check on offer cannot be walked past', () => {
+  /**
+   * Giving the check a screen of its own made it optional in the worst way.
+   * Reported as "I don't see the gambits at all now, I click combat and it
+   * immediately starts". It WAS on the step bar, with a badge — and that is not
+   * enough, because the fight button is the one thing on the screen a player is
+   * aiming at, and it went straight past.
+   */
+  it('sends the fight button to the check while one is untaken', () => {
+    const actions = section('THE PRIMARY BUTTON BELONGS TO THE STEP YOU ARE ON', 'THE DAY\'S STEPS');
+    expect(actions, 'the fight never routes through the check')
+      .toMatch(/gambit && !gambitTaken && !skippedCheck[\s\S]{0,200}setPanel\('check'\)/);
+    expect(actions, 'the check screen has no way into the fight')
+      .toMatch(/panel === 'check'[\s\S]{0,200}setPhase\(\{ p: 'battle'/);
+  });
+
+  it('lets the player decline, and remembers it for that door', () => {
+    // Otherwise the detour is a wall rather than an offer.
+    expect(ARENA, 'there is no way to go in without the check').toMatch(/Go in without it/);
+    expect(ARENA, 'declining is not recorded').toContain('setDeclined(');
+    // Keyed to the fight AND the door: three gates hold three rosters, and
+    // declining at one must not silently decline at the next.
+    expect(ARENA, 'the decline is not scoped to a door')
+      .toMatch(/const checkKey = `\$\{gambitKey\(dayOf\(run\), half\)\}:\$\{run\.gate \?\? 0\}`/);
+  });
+
+  it('does not persist the decline', () => {
+    /*
+     * A declined check is a decision about this look at this door. Persisting
+     * it would mean the one screen the player asked to be shown could be put
+     * away permanently by a stray tap — which is the bug this whole change is
+     * fixing, wearing a different hat.
+     */
+    const decl = section('const [declined, setDeclined]', 'const gates');
+    expect(decl.includes('persist('), 'the decline is written to the save').toBe(false);
+  });
+});
