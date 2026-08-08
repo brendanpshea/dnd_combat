@@ -157,6 +157,21 @@ export function moveDestinations(state: GameState, mover: Combatant): Position[]
  */
 const PROVOKE_DANGER = 4;    // one opportunity attack, at roughly even odds
 
+/**
+ * How far out of its way a walk will go to avoid getting hit: one square.
+ *
+ * A `move` names a destination and the engine picks the route, so a route that
+ * would only ever take the shortest way walks people through fire whenever the
+ * clean way round is a single step longer — which, on an 8x8 grid with a seam
+ * of lava down it, is most of the time. One square is enough to round a corner
+ * or step outside a reach; it is not enough to cross the board the long way.
+ *
+ * Read by `readWalk` and `executeMove` from this one constant on purpose. If
+ * the preview and the walk disagreed about the slack, the board would warn about
+ * a route nobody takes and stay quiet about the one it does.
+ */
+const DANGER_SLACK_FEET = 5;
+
 /** Average of a dice expression: what a hazard costs to step in, per step. */
 function avgOf(expr: string): number {
   const d = parseDice(expr);
@@ -269,7 +284,7 @@ export interface WalkRead {
 export function readWalk(state: GameState, mover: Combatant, to: Position): WalkRead {
   const empty: WalkRead = { provokers: [], hazardDamage: 0 };
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true);
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET);
   const path = pathTo(r, mover.position, to);
   if (!path) return empty;
 
@@ -309,7 +324,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const events: GameEvent[] = [];
   const mover = state.combatants[moverId]!;
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true);
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET);
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   // Reachable is not the same as free to stand on: `reachable` deliberately

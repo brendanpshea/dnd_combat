@@ -4,6 +4,7 @@ import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js'
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { coverReadAt, coverReadFor, type CoverRead } from '../../src/engine/rules/cover.js';
 import { readWalk, type Provoker } from '../../src/engine/rules/movement.js';
+import { moveRisks, type MoveRisk } from './moveRisk.js';
 import { buildParty, DEFAULT_PARTY } from '../../src/builder/character.js';
 import { CLASSES } from '../../src/data/classes.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
@@ -970,6 +971,17 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     return m;
   }, [grouped, active, state, targeting, isHumanTurn]);
 
+  /**
+   * What each reachable square would cost to walk to. Same conditions as
+   * `coverCells` — a human's own turn, nothing else being aimed — because it
+   * answers the same question at the same moment, from the other direction:
+   * cover is what a square gives you, this is what getting there takes.
+   */
+  const riskCells = useMemo(() => {
+    if (!grouped || !active || targeting || !isHumanTurn) return new Map<string, MoveRisk>();
+    return moveRisks(state, active, grouped.moves.keys());
+  }, [grouped, active, state, targeting, isHumanTurn]);
+
   /** Everyone currently behind something, so the board's defensive shape reads
    *  at a glance rather than one hover at a time. */
   const coverUnits = useMemo(() => {
@@ -1021,11 +1033,17 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     }
     const move = grouped.moves.get(key);
     if (!move) return;
-    // Free walks go straight through. Only a step that hands somebody an attack
-    // is worth interrupting for — asking about every move would train the
-    // player to dismiss the question without reading it.
+    // Free walks go straight through. Only a step that COSTS something is worth
+    // interrupting for — asking about every move would train the player to
+    // dismiss the question without reading it.
+    //
+    // Hazards used to be exempt, on the grounds that fire is painted on the
+    // floor and an opportunity attack is invisible. But the route is not: a move
+    // names a destination and the engine picks the walk, so a player who can see
+    // the lava still has no way to know their path goes through it. Being walked
+    // into a fire pit without being asked is the more surprising of the two.
     const walk = readWalk(state, active, pos);
-    if (walk.provokers.length === 0) { apply(move); return; }
+    if (walk.provokers.length === 0 && walk.hazardDamage === 0) { apply(move); return; }
     setMoveConfirm({ action: move, provokers: walk.provokers, hazardDamage: walk.hazardDamage });
   }
 
@@ -1271,6 +1289,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         activeId={activeId ?? ''}
         highlights={highlights}
         coverCells={coverCells}
+        riskCells={riskCells}
         coverUnits={coverUnits}
         selectedId={activeId}
         multiCounts={multiCounts}
@@ -1530,7 +1549,13 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         // rather than named and left in the overflow menu. It costs the action,
         // which the button says, because a player who does not know what an
         // opportunity attack is also does not know what Disengage spends.
-        const disEntry = grouped?.bar.find((e) => e.id === 'disengage');
+        // ...but only when it is the answer. Disengage does nothing about lava,
+        // and offering it on a hazard-only route would teach a player that it is
+        // a general-purpose "walk safely" button, which is the opposite of the
+        // rule they need.
+        const disEntry = moveConfirm.provokers.length > 0
+          ? grouped?.bar.find((e) => e.id === 'disengage')
+          : undefined;
         const dis = disEntry?.action;
         // A rogue's Cunning Action (and a goblin's Nimble Escape) make this a
         // BONUS action, which `groupActions` already resolved — the bar entry
@@ -1544,9 +1569,17 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
         return (
           <div className="chooser" onClick={() => setMoveConfirm(null)}>
             <div className="chooser-box move-confirm" onClick={(e) => e.stopPropagation()}>
-              <h3>{who.length === 1 ? 'A free attack' : `${who.length} free attacks`}</h3>
+              <h3>
+                {who.length === 0 ? 'That route goes through the hazard'
+                  : who.length === 1 ? 'A free attack'
+                  : `${who.length} free attacks`}
+              </h3>
               <p className="move-confirm-why">
-                Stepping out of reach lets {who.length === 1 ? 'it' : 'them'} swing at you for free.
+                {who.length === 0
+                  // A move names a square, not a route, so "you can see the
+                  // fire" is not the same as "you know you are walking into it".
+                  ? 'There is no way round it from here that you can still afford.'
+                  : `Stepping out of reach lets ${who.length === 1 ? 'it' : 'them'} swing at you for free.`}
               </p>
               <ul className="move-confirm-who">
                 {who.map((prov) => {
@@ -1586,7 +1619,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
                   🚪 Disengage first, then move <span className="mc-cost">{disCost}</span>
                 </button>
               )}
-              {!dis && (
+              {!dis && who.length > 0 && (
                 // Silently dropping the button teaches nothing: a player who
                 // was offered it last turn needs to know why it is gone, not
                 // wonder whether they imagined it.

@@ -660,6 +660,14 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
 .hl-move { background: #4a9eff1c; }
 .hl-move-edge { box-shadow: inset 0 0 0 2px #4a9eff5c; }
 .hl-move:hover { background: #4a9eff3d; }
+/* Squares inside the region that cost something to reach. Amber for "this will
+   hurt", red for "this can kill you" — the same two steps the confirm dialog
+   uses, so the tile and the dialog agree before you tap. Two classes deep so
+   they beat the plain `.hl-move` wash (and its hover) without !important. */
+.cell.hl-move-risky { background: #ffb02440; }
+.cell.hl-move-risky:hover { background: #ffb02466; }
+.cell.hl-move-lethal { background: #ff3b3040; }
+.cell.hl-move-lethal:hover { background: #ff3b3070; }
 .hl-enemy { box-shadow: inset 0 0 0 3px var(--red); }
 .hl-ally { box-shadow: inset 0 0 0 3px var(--green); }
 .hl-cell-target { box-shadow: inset 0 0 0 3px var(--gold); background: #ffd16622; }
@@ -3805,6 +3813,30 @@ button.category .count {
   z-index: 3;
 }
 
+/* What walking here costs, on the square. Sits at the BOTTOM of the cell
+   because the cover badge owns the centre and the two appear together often —
+   a square behind a barrel is exactly the one worth stepping out of reach for. */
+.risk-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px 4px;
+  border-radius: 7px;
+  font-size: clamp(8px, 2.1vmin, 11px);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 3;
+}
+.risk-badge b { font-family: var(--display); }
+.risk-risky { background: #2a1c05e6; border: 1px solid #ffb024; color: #ffb024; }
+.risk-lethal { background: #2a0f0de6; border: 1px solid var(--red, #ff5b52); color: var(--red, #ff5b52); }
+.risk-lethal::before { content: '☠'; font-size: 0.95em; }
+
 /* What a door is paying, on the door. The three gates already differ by ground
    and by what is waiting behind them; the prize is the third axis, and it is
    the one that makes choosing a door a decision rather than a preference. */
@@ -4056,30 +4088,40 @@ button.category .count {
 }
 
 /**
- * THE COVER SHIELD IS HOVER-ONLY, and it is the only tile badge left.
+ * TILE BADGES ARE HOVER-ONLY. THE NUMBER WAITS; THE COLOUR DOES NOT.
  *
- * There used to be a per-cell risk number beside it — worst-case damage for
- * walking there. It was correct and it was unusable: on a hazard map every
- * reachable cell wore one, the lethal variant was always-on and pulsing, and
- * on a tablet a hurt hero could light up half the board at 7px. Reported from
- * a session with a young player as "tiny text that takes up the whole board".
+ * A per-cell risk number existed once and was removed, for good reasons that
+ * still hold: on a hazard map every reachable cell wore one, the lethal variant
+ * was always-on and pulsing, and on a tablet a hurt hero lit up half the board
+ * at 7px. Reported from a session with a young player as "tiny text that takes
+ * up the whole board".
  *
- * The information was worth having; the moment was wrong. Opportunity attacks
- * now ask before they happen (`MoveConfirm` in App.tsx), which is the one thing
- * a player cannot see coming and the one place the warning changes a decision.
- * Hazards need no badge at all — they are painted on the floor.
+ * What was wrong with it was the TEXT, not the warning. Forty numbers is forty
+ * things to read; a wash over the same forty squares is one shape, read at a
+ * glance and costing nothing — so the tint (`.hl-move-risky` / `-lethal`) is
+ * always on, and the number that says how much is behind the same hover as the
+ * cover shield. Nothing pulses.
  *
- * Hidden with opacity rather than `display`, so the label stays in the
- * accessibility tree and a screen reader still hears it.
+ * The badge is also only drawn where a walk actually costs something, which on
+ * most maps is a handful of squares rather than all of them.
+ *
+ * Hidden with opacity rather than `display`, so labels stay in the accessibility
+ * tree and a screen reader still hears them.
  */
 .cover-badge {
   opacity: 0;
   transition: opacity .12s ease-out;
 }
+.risk-badge {
+  opacity: 0;
+  transition: opacity .12s ease-out;
+}
 .cell:hover .cover-badge,
-.cell:focus-visible .cover-badge { opacity: 1; }
+.cell:focus-visible .cover-badge,
+.cell:hover .risk-badge,
+.cell:focus-visible .risk-badge { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .cover-badge { transition: none; }
+  .cover-badge, .risk-badge { transition: none; }
 }
 
 /* Expert ability-score editor (AbilityEditor.tsx). Folded shut by default: the
