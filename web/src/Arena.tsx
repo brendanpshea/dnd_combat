@@ -59,7 +59,7 @@ import { gearTasks, morningReview, spellTasks } from '../../src/arena/morning.js
 import { prepOptions } from '../../src/arena/prep.js';
 import {
   gambitContext, drawGambit, gambitDc, applyGambit, gambitKey, attemptFor, GAMBITS,
-  type GambitAttempt,
+  gambitLine, type GambitAttempt,
 } from '../../src/arena/gambit.js';
 import { ChorusBubble } from './Chorus.js';
 import { PartyScreen } from './PartyScreen.js';
@@ -662,7 +662,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
           {gambitTaken ? (
             <span className={gambitTaken.success ? 'lore-known' : 'lore-blind'}>
               {gambitTaken.success ? '🎲 ' : '🎲 '}
-              {GAMBITS.find((g) => g.skill === gambitTaken.skill)?.[gambitTaken.success ? 'won' : 'lost']}
+              {(() => {
+                const def = GAMBITS.find((g) => g.skill === gambitTaken.skill);
+                return def ? gambitLine(def, gambitTaken.success ? 'won' : 'lost', gambitCtx) : null;
+              })()}
               {' '}({SKILL_LABEL[gambitTaken.skill]} {gambitTaken.total} vs DC {gambitTaken.dc})
               {gambitTaken.door !== (run.gate ?? 0) && ' You tried that at another gate; this one you walk into.'}
             </span>
@@ -673,7 +676,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                explaining what you are being offered was invisible and the
                button read as a bare skill name and a number. */
             <div className="gambit-offer">
-              <p className="go-setup">{gambit.setup}</p>
+              <p className="go-setup">{gambitLine(gambit, 'setup', gambitCtx)}</p>
               <SkillGambit
               campaign={c}
               skill={gambit.skill}
