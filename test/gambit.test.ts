@@ -18,7 +18,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   GAMBITS, gambitContext, eligibleGambits, drawGambit, gambitDc, applyGambit,
-  gambitKey, attemptFor, type GambitAttempt,
+  gambitKey, attemptFor, gambitLine, pluralName, type GambitAttempt,
 } from '../src/arena/gambit.js';
 import { buildWave } from '../src/arena/run.js';
 import { parseMap } from '../src/data/maps.js';
@@ -166,39 +166,104 @@ describe('the draw', () => {
   });
 });
 
-describe('the writing promises only what the gate guarantees', () => {
-  it.each(GAMBITS.map((g) => [g.skill, g] as const))('%s', (_skill, g) => {
-    // The line is shown before the roll, on a wave that was generated, so
-    // anything specific in it is a claim that will eventually be false.
-    const banned = /\bwolf|wolves|goblin|orc|dragon|skeleton|zombie|uniform|chain|sergeant|dozen|\btwo\b|\bthree\b|\bfour\b/i;
-    expect(g.setup, `"${g.setup}" names something the gate does not promise`).not.toMatch(banned);
-    // It must read as an offer, not as something that already happened.
-    expect(g.setup, `"${g.setup}" does not offer the player anything to do`)
-      .toMatch(/you could|you can|there is time/i);
-    for (const line of [g.won, g.lost]) {
+describe('the writing', () => {
+  /**
+   * WHAT WAS WRONG WITH IT.
+   *
+   * Reported as stilted and Yoda-like. Counted across all 36 lines: ten of
+   * twelve setups opened with "There is/are..." or "Something...", the word
+   * `something` appeared ten times, `out there` five, and there was not a
+   * single contraction anywhere. Every setup ended "You could ..." — because a
+   * test asserted it did, to make each read as an offer. The rule worked and
+   * manufactured twelve sentences of identical shape.
+   *
+   * So the guards below check VARIETY and register rather than a phrase. A test
+   * that produces the tic it exists to prevent is worse than no test.
+   */
+  const linesOf = (g: (typeof GAMBITS)[number]) => [g.setup, g.won, g.lost];
+  const allLines = GAMBITS.flatMap(linesOf);
+
+  it.each(GAMBITS.map((g) => [g.skill, g] as const))('%s reads as an offer', (_skill, g) => {
+    // A question, or an imperative. Not one fixed phrase.
+    expect(g.setup, `"${g.setup}" does not invite the player to do anything`)
+      .toMatch(/\?$/);
+    for (const line of linesOf(g)) {
       expect(line.length, 'an outcome line is missing').toBeGreaterThan(10);
-      expect(line, `"${line}" names something the gate does not promise`).not.toMatch(banned);
+      expect(line.split(' ').length, `"${line}" is a paragraph, not a line`).toBeLessThan(22);
     }
   });
 
-  it('keeps `outlined` out of the table, because it fades with level', () => {
-    /*
-     * Every other payload holds roughly flat from level 3 to 7. `outlined` does
-     * not: +8 / +9 / +2, measured at n=400 per level. It was the obvious fit for
-     * both Perception and Acrobatics and it quietly took both of them to nearly
-     * nothing at the top of the range, which is the one place the arena is
-     * hardest.
-     *
-     * Checked at the source rather than by re-simulating, because the finding is
-     * about a curve and re-measuring it costs three minutes per run. Two
-     * same-sized replacements were measured and both hold flat: `sapped` at
-     * +8 / +4 / +4 and two-weakest-frightened at +8 / +7 / +5.
-     */
-    const src = readFileSync(fileURLToPath(new URL('../src/arena/gambit.ts', import.meta.url)), 'utf8');
-    const uses = [...src.matchAll(/cond\((?:c|[a-z]+), 'outlined'\)/g)];
-    expect(uses.length,
-      'a gambit pays out in `outlined` again — measured +8/+9/+2, it is worth almost nothing by level 7')
-      .toBe(0);
+  it('does not open ten of twelve setups the same way', () => {
+    const opener = (t: string) => t.split(' ')[0]!.toLowerCase().replace(/[^a-z{]/g, '');
+    const counts = new Map<string, number>();
+    for (const g of GAMBITS) counts.set(opener(g.setup), (counts.get(opener(g.setup)) ?? 0) + 1);
+    const worst = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]!;
+    expect(worst[1], `${worst[1]} of ${GAMBITS.length} setups open with "${worst[0]}"`)
+      .toBeLessThanOrEqual(Math.ceil(GAMBITS.length / 2));
+  });
+
+  it('sounds like somebody talking', () => {
+    // Zero contractions in 36 lines is most of what "stilted" meant.
+    const withContraction = allLines.filter((l) => /'(t|re|ll|ve|s|d) |'(t|re|ll|ve|s|d)$/.test(l));
+    expect(withContraction.length, 'not one line uses a contraction').toBeGreaterThan(5);
+    for (const line of allLines) {
+      expect(line, `"${line}" spells out a contraction`)
+        .not.toMatch(/\b(do not|does not|is not|are not|cannot|will not|you are|it is)\b/);
+    }
+  });
+
+  it('names things instead of gesturing at them', () => {
+    const vague = allLines.filter((l) => /\bout there\b/i.test(l));
+    expect(vague, `these still say "out there": ${vague.join(' / ')}`).toEqual([]);
+    const somethings = allLines.filter((l) => /\bsomething\b/i.test(l)).length;
+    expect(somethings, 'the text is back to being made of placeholders').toBeLessThanOrEqual(4);
+  });
+
+  it('gives every slot a subject to fill it', () => {
+    // A line with `{them}` and no `subject` renders the brace at the player.
+    for (const g of GAMBITS) {
+      const usesSlot = linesOf(g).some((l) => l.includes('{'));
+      if (usesSlot) {
+        expect(g.subject, `${g.skill} uses a slot but names no subject`).toBeDefined();
+      }
+    }
+  });
+
+  it('fills those slots on every wave that licenses them', () => {
+    // The subject has to be findable in the actual roster, not just declared.
+    for (const w of SAMPLE) {
+      const c = ctxOf(w, true);
+      for (const g of eligibleGambits(c)) {
+        for (const field of ['setup', 'won', 'lost'] as const) {
+          const line = gambitLine(g, field, c);
+          expect(line, `${g.skill} rendered an unfilled slot: ${line}`).not.toMatch(/[{}]/);
+          // Every sentence, not only the first: a slot after a full stop gave
+          // "Tracks in the mud. the Tyrannosaurus Rex came through here".
+          for (const m of line.matchAll(/(?:^|[.!?]\s+)([a-z])/g)) {
+            expect(m[1], `${g.skill} left a sentence in lower case: ${line}`).toBeUndefined();
+          }
+        }
+      }
+    }
+  });
+
+  it('agrees in number with what is actually behind the door', () => {
+    // "The Wolves are on a chain" is wrong when there is one wolf.
+    const def = GAMBITS.find((g) => g.skill === 'animal-handling')!;
+    const one = gambitContext(['wolf'], SAMPLE[0]!.grid, false);
+    const many = gambitContext(['wolf', 'wolf', 'wolf'], SAMPLE[0]!.grid, false);
+    expect(gambitLine(def, 'setup', one), 'a lone creature is spoken of in the plural')
+      .toContain('the Wolf ');
+    expect(gambitLine(def, 'setup', many), 'a pack is spoken of in the singular')
+      .toContain('the Wolves');
+  });
+
+  it('pluralises the whole bestiary without producing nonsense', () => {
+    for (const m of Object.values(MONSTERS)) {
+      const p = pluralName(m.name);
+      expect(p, `${m.name} pluralised to itself`).not.toBe(m.name);
+      expect(p, `${m.name} -> ${p}`).not.toMatch(/(fs|ys|ss|xs|zs|chs|shs)$/);
+    }
   });
 
   it('uses skills that exist, with no duplicates', () => {

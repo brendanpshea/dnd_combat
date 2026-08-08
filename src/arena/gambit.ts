@@ -93,23 +93,105 @@ export interface GambitDef {
   /** Overrides the skill's own name on the button, where a verb reads better. */
   label?: string;
   /**
-   * What the player is being offered, in the DM's voice.
+   * What the player is being offered, and how it turned out — in the voice of
+   * somebody standing next to them, not a stage direction.
    *
-   * It must be true of EVERY wave that passes the gate, because it is shown
-   * before the roll and the wave is generated. No species, no counts, no
-   * uniforms — the gate promises "a beast is present", so the line can say
-   * "there are animals out there" and nothing more specific. And it has to read
-   * as an opportunity rather than an event, because declining is a real move.
+   * TWO SLOTS, FILLED FROM THE WAVE.
+   *
+   *   {them}  the creature this line is about: "the Wolf", "the Bandits"
+   *   {are}   the verb that agrees with it: "is" or "are"
+   *
+   * These exist because the first draft of this table had none, and the writing
+   * paid for it. The eligibility gate only promises "a beast is present", so
+   * every line was written around never naming anything: `something` appeared
+   * ten times across thirty-six lines, `out there` five, and ten of twelve
+   * setups opened with "There is/are..." or "Something...". Prose made of
+   * placeholders reads as stage description rather than as a person talking.
+   *
+   * The wave is right there when the line renders, so the placeholder can be
+   * the actual creature — derived, not hand-kept, like everything else here.
+   * `subject` says which one; a line with a slot must have one.
+   *
+   * The slots are count-aware because a wave may hold one wolf or six, and
+   * "the Wolves are on a chain" is wrong when there is one of them.
    */
   setup: string;
   won: string;
   lost: string;
+  /** The creature the lines name. Required if any of them uses a slot. */
+  subject?(w: GambitContext): Id | undefined;
   eligible(w: GambitContext): boolean;
   onSuccess: GambitEffect;
   onFailure: GambitEffect;
 }
 
 const any = <K,>(s: Set<K>, ...ks: K[]) => ks.some((k) => s.has(k));
+
+/**
+ * A monster's name in the plural.
+ *
+ * The bestiary is 145 names and only thirteen need anything but an "s":
+ * four end in -f or -fe (Wolf, Werewolf), five in a sibilant (Boss, Dretch,
+ * Remorhaz, Rex, Succubus) and four in consonant-y (Harpy, Jelly, Mummy, Spy).
+ * The ordinary English rules cover all of them, so there is no irregular list
+ * to keep in step with the data.
+ */
+export function pluralName(name: string): string {
+  const lower = name.toLowerCase();
+  if (/(?:^|[^aeiou])fe?$/.test(lower)) return name.replace(/fe?$/i, 'ves');
+  if (/(?:s|x|z|ch|sh)$/.test(lower)) return `${name}es`;
+  if (/[^aeiou]y$/.test(lower)) return `${name.slice(0, -1)}ies`;
+  return `${name}s`;
+}
+
+/**
+ * Fill a line's slots from the wave.
+ *
+ * `{them}` becomes "the Wolf" or "the Wolves" and `{are}` the verb that agrees
+ * with it, so one line reads correctly whether the door holds one of the thing
+ * or six. A line with no slots comes back untouched.
+ */
+export function gambitLine(
+  def: GambitDef, field: 'setup' | 'won' | 'lost', w: GambitContext,
+): string {
+  const text = def[field];
+  if (!text.includes('{')) return text;
+  const id = def.subject?.(w);
+  const m = id ? MONSTERS[id] : undefined;
+  if (!m) {
+    // A slot with nothing to put in it would render "{them}" at the player.
+    // Falling back to the plainest true noun keeps the sentence standing.
+    return text.replace(/\{them\}/g, 'they').replace(/\{are\}/g, 'are');
+  }
+  const count = w.members.filter((x) => x === id).length;
+  const one = count === 1;
+  const filled = text
+    .replace(/\{them\}/g, `the ${one ? m.name : pluralName(m.name)}`)
+    .replace(/\{are\}/g, one ? 'is' : 'are');
+  return capitalise(filled);
+}
+
+/**
+ * Sentence case, applied after the slots are filled.
+ *
+ * A line that opens on `{them}` becomes "the Bandit is fighting for pay", which
+ * is a sentence starting in lower case. Doing it here rather than by writing
+ * "The {them}" in the table keeps the same slot usable mid-sentence, where
+ * "Somebody built the Scarecrows" wants the article lower case.
+ *
+ * EVERY sentence, not just the first: "Tracks in the mud. {them} came through
+ * here" put the slot after a full stop, and capitalising only the opening
+ * character left "Tracks in the mud. the Tyrannosaurus Rex came through here".
+ */
+const capitalise = (t: string): string =>
+  t.replace(/(^|[.!?]\s+)([a-z])/g, (_m, lead: string, ch: string) => lead + ch.toUpperCase());
+
+/** The first member of the wave whose type is one of `types`. */
+const firstOf = (w: GambitContext, ...types: CreatureType[]): Id | undefined =>
+  w.members.find((id) => {
+    const t = MONSTERS[id]?.creatureType;
+    return t !== undefined && types.includes(t);
+  });
 const cond = (c: Combatant, id: Combatant['conditions'][number]['id']) => c.conditions.push({ id });
 const weakest = (foes: Combatant[], n: number) =>
   [...foes].sort((a, b) => a.maxHp - b.maxHp).slice(0, n);
@@ -219,63 +301,70 @@ const RECRUIT_THEM: GambitEffect = (p, f, grid, m) => {
 export const GAMBITS: GambitDef[] = [
   {
     skill: 'persuasion',
-    setup: 'Not everyone out there looks committed to this. You could try talking to one of them before the shouting starts.',
-    won: 'One of them takes the offer and comes over, looking far from happy about it.',
-    lost: 'Word gets passed along, and someone else is sent over to see what you are up to.',
+    setup: 'Pay is what keeps {them} here, not loyalty. Offer better?',
+    won: "One of them pockets it and turns their spear around. They don't look thrilled.",
+    lost: "Word spreads. Now somebody else is walking over to see what you're up to.",
+    subject: (w) => firstOf(w, 'humanoid', 'celestial'),
     eligible: (w) => any(w.types, 'humanoid', 'celestial'),
     onSuccess: RECRUIT_US,     // +10
     onFailure: RECRUIT_THEM,   // -11
   },
   {
     skill: 'animal-handling', label: 'Animal Handling',
-    setup: 'There are animals out there, and animals can sometimes be talked round. You could try, if you know how.',
-    won: 'One of them comes over to your side, wary of everyone including you.',
-    lost: 'You get its attention, and it brings company.',
+    setup: "Somebody's got {them} on a chain. Chains come off — want to try?",
+    won: 'One of them pads over to your side, wary of everyone. You included.',
+    lost: 'You get its attention. It brings a friend.',
+    subject: (w) => firstOf(w, 'beast'),
     eligible: (w) => w.types.has('beast'),
     onSuccess: RECRUIT_US,
     onFailure: RECRUIT_THEM,
   },
   {
     skill: 'performance', label: 'Perform',
-    setup: 'Some of them out there have ears and nothing to listen to. You could give them something.',
-    won: 'One drifts over to hear the rest of it, and stays — though its heart is not in the fight.',
-    lost: 'The noise carries, and something else comes to find out what is making it.',
+    setup: "You've got a tune, and {them} {are} bored. Play something?",
+    won: "One drifts over to hear the rest of it and forgets whose side it's on.",
+    lost: 'The song carries further than you meant. Something else comes to listen.',
+    subject: (w) => firstOf(w, 'fey', 'humanoid'),
     eligible: (w) => any(w.types, 'fey', 'humanoid'),
     onSuccess: RECRUIT_US,
     onFailure: RECRUIT_THEM,
   },
   {
     skill: 'intimidation', label: 'Intimidate',
-    setup: 'They can hear you from here. You could explain, in detail, what a bad idea this is.',
-    won: 'It lands. Several of them fight like people looking for the exit.',
-    lost: 'It does not. Several of them fight like people with something to prove.',
+    setup: '{them} can hear you from here. Tell them how this ends?',
+    won: 'It lands. Half of them start eyeing the exits.',
+    lost: 'Wrong call. Now half of them have something to prove.',
+    subject: (w) => firstOf(w, 'humanoid', 'giant', 'fey'),
     eligible: (w) => any(w.types, 'humanoid', 'giant', 'fey'),
     onSuccess: (_p, f) => half(f).forEach((c) => cond(c, 'frightened')),   // +10
     onFailure: (_p, f) => half(f).forEach((c) => cond(c, 'blessed')),      // -6
   },
   {
     skill: 'religion',
-    setup: 'Whatever is out there answers to something older than itself. You could try addressing that instead.',
-    won: 'You get the words right, and something takes your side of it.',
-    lost: 'You get the words wrong, and something takes theirs.',
+    setup: 'Older things than {them} are listening here. Say the words?',
+    won: "You get the words right, and whatever's listening takes your side.",
+    lost: "Wrong name. Whatever's listening takes theirs.",
+    subject: (w) => firstOf(w, 'undead', 'fiend', 'celestial', 'fey'),
     eligible: (w) => any(w.types, 'undead', 'fiend', 'celestial', 'fey'),
     onSuccess: (p) => p.forEach((c) => cond(c, 'blessed')),   // +7
     onFailure: (p) => p.forEach((c) => cond(c, 'baned')),     // -7
   },
   {
     skill: 'deception',
-    setup: 'They do not know what you look like yet. You could arrive as something other than an enemy.',
-    won: 'It holds long enough. The nearest of them hesitate.',
-    lost: 'It does not. The biggest one is expecting you now.',
+    setup: "Nobody's told {them} what you look like. Walk in like you belong?",
+    won: 'It holds. The two nearest hang back, unsure.',
+    lost: "It doesn't. The big one's watching for you now.",
+    subject: (w) => firstOf(w, 'humanoid', 'fiend', 'fey'),
     eligible: (w) => any(w.types, 'humanoid', 'fiend', 'fey'),
     onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
     onFailure: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')),        // -8
   },
   {
     skill: 'investigation',
-    setup: 'Whatever is animating those was made, or raised, by somebody. You could take a few minutes and work out how.',
-    won: 'You find the seams, and where it is safest to stand.',
-    lost: 'You learn nothing useful, and they spend the time getting ready.',
+    setup: 'Somebody built {them}, or raised them. Find the seams first?',
+    won: 'You spot the weak points, and which bits of floor not to stand on.',
+    lost: 'You turn up nothing, and they spend the time getting ready.',
+    subject: (w) => firstOf(w, 'construct', 'undead'),
     eligible: (w) => any(w.types, 'construct', 'undead'),
     // +8 / -5. Both halves of this were reading zero on the enemy side until
     // acOf was fixed to let a stat block's armour class change at all.
@@ -284,46 +373,48 @@ export const GAMBITS: GambitDef[] = [
   },
   {
     skill: 'athletics',
-    setup: 'Something out there is far too big for the ground it has to cross. You could make that ground worse.',
-    won: 'You get it set in time and dig in behind it.',
-    lost: 'It goes wrong, and you take the weight of it.',
+    setup: '{them} {are} coming across that ground. Make it worse first?',
+    won: 'You get it braced in time and dig in behind it.',
+    lost: "It goes over the wrong way, and you're under it.",
+    subject: (w) => firstOf(w, 'giant') ?? w.members.find((id) => MONSTERS[id]?.size === 'huge'),
     eligible: (w) => w.sizes.has('huge') || w.types.has('giant'),
     onSuccess: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }),   // +9
     onFailure: bleed,                                                          // -5
   },
   {
     skill: 'medicine',
-    setup: 'Some of you are in worse shape than you would like. There is time to do something about that, if you trust whoever is doing it.',
-    won: 'It works. Everyone starts steadier than they would have.',
-    lost: 'It does not. Everyone starts worse off.',
+    setup: "You're carrying wounds, and there's time to patch up. Trust the hands?",
+    won: 'It works. Everyone stands a little straighter.',
+    lost: "It doesn't. Everyone stands a little slower.",
     eligible: (w) => w.hurt,
     onSuccess: dose,     // +7
     onFailure: bleed,    // -5
   },
   {
     skill: 'acrobatics',
-    setup: 'There are more of them than there is space. You could pick your route through now, while there still is one.',
-    won: 'You come through the gap, and the nearest of them flinch.',
-    lost: 'You misjudge it and finish up surrounded.',
+    setup: 'Too many of them, not enough floor. Pick your line now?',
+    won: 'You come through the gap and the nearest ones flinch.',
+    lost: 'You misjudge it and end up surrounded.',
     eligible: (w) => w.count >= 5,
     onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
     onFailure: bleed,                                                           // -5
   },
   {
     skill: 'survival',
-    setup: 'Something came through here ahead of you, and it left signs. You could read them.',
-    won: 'You read them right and meet it on your terms.',
-    lost: 'You read them wrong and spend the time getting nowhere.',
+    setup: 'Tracks in the mud. {them} came through here — read them?',
+    won: 'You read them right, and meet it on your own terms.',
+    lost: 'You read them wrong, and spend the time going nowhere.',
     // Plant was in this gate and is cut: a creeping vine leaves no trail, and
     // the line above has to be true of every wave that reaches it.
+    subject: (w) => firstOf(w, 'beast', 'monstrosity'),
     eligible: (w) => any(w.types, 'beast', 'monstrosity'),
     onSuccess: (_p, f) => f.forEach((c) => cond(c, 'sapped')),   // +5
     onFailure: bleed,                                           // -5
   },
   {
     skill: 'perception',
-    setup: 'There is very little cover out here, which cuts both ways. You could take a proper look before committing.',
-    won: 'You see them coming, and their first swings arrive telegraphed.',
+    setup: 'Open ground, long sightlines. Take a proper look before you commit?',
+    won: 'You spot them early. Their first swings come telegraphed.',
     lost: 'You call it wrong twice, and nobody trusts the third time.',
     eligible: (w) => w.cover <= 2,
     /*
