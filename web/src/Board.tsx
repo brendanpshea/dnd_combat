@@ -3,6 +3,7 @@ import type { GameState, Position, Combatant, Id } from '../../src/engine/types.
 import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
 import type { CoverRead } from '../../src/engine/rules/cover.js';
+import type { MoveRisk } from './moveRisk.js';
 import { posKey } from './actionGroups.js';
 import type { FloatEffect, CorpseEffect, BurstEffect, AreaEffect, ProjectileEffect } from './effects.js';
 import { type StrikeEffect, shotAngleDeg } from './strike.js';
@@ -31,6 +32,12 @@ export interface BoardProps {
    */
   coverCells?: Map<string, CoverRead> | undefined;
   coverUnits?: Map<Id, CoverRead> | undefined;
+  /**
+   * Which reachable squares cost something to reach, and how much. Absent
+   * entries are free walks, which is nearly all of them — so the region keeps
+   * reading as one shape and only the expensive parts of it are marked.
+   */
+  riskCells?: Map<string, MoveRisk> | undefined;
   selectedId?: Id | undefined;
   multiCounts?: Map<Id, number> | undefined;
   floats?: FloatEffect[];
@@ -57,7 +64,7 @@ export interface BoardProps {
  * Tokens are keyed by combatant id and positioned with transforms, so a
  * position change slides them (CSS transition) instead of teleporting.
  */
-export function Board({ state, activeId, highlights, coverCells, coverUnits, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, strikes, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap }: BoardProps) {
+export function Board({ state, activeId, highlights, coverCells, coverUnits, riskCells, selectedId, multiCounts, floats, corpses, bursts, areas, projectiles, strikes, castingId, hitIds, strikingSummons, movePaths, theme, onCellTap }: BoardProps) {
   const { width, height } = state.grid;
   const slotRefs = useRef(new Map<Id, HTMLDivElement>());
   /**
@@ -121,6 +128,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
       // move is actually offered — a badge on ground you cannot reach would be
       // information about a decision you are not making.
       const coverHere = hl === 'move' ? coverCells?.get(key) : undefined;
+      const riskHere = hl === 'move' ? riskCells?.get(key) : undefined;
       const classes = ['cell', `terrain-${cell.terrain}`];
       // Badge only the perimeter of an effect field (or a lone tile): a cell
       // whose terrain differs from any orthogonal neighbour, or sits on the
@@ -179,6 +187,11 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
         const open = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const)
           .every(([dx, dy]) => highlights.get(posKey({ x: x + dx, y: y + dy })) === 'move');
         if (!open) classes.push('hl-move-edge');
+        // Deliberately NOT a different `hl-`: the region's edge is computed
+        // from `hl === 'move'`, so making risk a highlight kind would cut the
+        // reachable area into islands and ring each one. It is a wash on top of
+        // the same region, which is what it actually is.
+        if (riskHere) classes.push(`hl-move-${riskHere.level}`);
       }
       if ((x + y) % 2 === 0) classes.push('dark');
       const cellFloats = floats?.filter((f) => f.cellKey === key) ?? [];
@@ -194,7 +207,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
           data-y={y}
           /* Roving tabindex: exactly one cell is reachable by Tab. See `cursor`. */
           tabIndex={posKey(tabPos) === key ? 0 : -1}
-          aria-label={cellLabel(state, pos, cell.occupantId, hl)}
+          aria-label={cellLabel(state, pos, cell.occupantId, hl) + (riskHere ? `, ${riskHere.why}` : '')}
           style={{
             ...(webbed && hasSpellIcon('web') ? { ['--web-img' as string]: `url(${spellIconUrl('web')})` } : {}),
             ...(propUrl ? { ['--prop' as string]: `url(${propUrl})` } : {}),
@@ -208,6 +221,18 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, sel
               aria-label={`cover, +${coverHere.ac} armour class`}
             >
               <b>+{coverHere.ac}</b>
+            </span>
+          )}
+          {riskHere && (
+            // The number is the point. A player can tell "-7" against 9 hit
+            // points apart from "-7" against 40 at a glance, which is the whole
+            // decision, and no colour scale can carry it.
+            <span
+              className={`risk-badge risk-${riskHere.level}`}
+              title={riskHere.why}
+              aria-hidden="true"
+            >
+              <b>-{riskHere.damage}</b>
             </span>
           )}
           {cellAreas.map((a) => (

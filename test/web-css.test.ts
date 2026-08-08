@@ -370,16 +370,35 @@ describe('tile badges stay out of the way', () => {
     expect(hider).not.toContain('display');
   });
 
-  it('does not put a damage number on every reachable cell', () => {
-    // The per-cell risk badge is gone on purpose. It annotated every tile the
-    // hero could reach; on a hazard map that is dozens of 7px numbers, and the
-    // lethal variant was always-on and pulsing, so a hurt hero lit up half the
-    // board. Reported from a session with a young player as tiny text covering
-    // everything. The opportunity attack — the only part a player cannot see
-    // coming — asks at the moment of the step instead.
-    expect(css, 'the per-cell risk badge is back').not.toContain('.risk-badge');
-    expect(board, 'the board is annotating cells with walk damage again')
-      .not.toContain('riskCells');
+  /*
+   * The risk badge came back, and the rule that killed it still applies.
+   *
+   * It was removed for annotating every reachable tile with a 7px number, with
+   * an always-on pulsing lethal variant — "tiny text that takes up the whole
+   * board", from a session with a young player. What is back is the WASH, which
+   * is one shape rather than forty numbers; the number itself is behind the same
+   * hover as the cover shield, and nothing pulses.
+   *
+   * So these pin the constraints, not the absence.
+   */
+  it('keeps the per-cell damage number behind hover, like the cover shield', () => {
+    const hider = [...css.matchAll(/([^}]*)\{([^}]*opacity:\s*0\s*;[^}]*)\}/g)]
+      .find((m) => m[1]!.includes('.risk-badge'));
+    expect(hider, 'the risk badge is on-screen at rest again').toBeDefined();
+    expect(hider![2], 'hidden with display, which would drop it from the a11y tree')
+      .not.toContain('display');
+    expect(css).toContain('.cell:hover .risk-badge');
+    expect(css).toContain('.cell:focus-visible .risk-badge');
+  });
+
+  it('does not animate the danger tint', () => {
+    // The always-on pulse is the specific thing that made a hurt hero's board
+    // unreadable. The tint is a flat colour; if it ever gains an animation,
+    // that is the old bug returning under a new name.
+    for (const m of css.matchAll(/\.hl-move-(?:risky|lethal)[^{]*\{([^}]*)\}/g)) {
+      expect(m[1], 'the danger tint is animated again').not.toContain('animation');
+    }
+    expect(board, 'the risk read is no longer reaching the board').toContain('riskCells');
   });
 });
 
@@ -1349,9 +1368,29 @@ describe('the opportunity-attack prompt', () => {
     expect(confirm).toMatch(/\{!dis &&/);
   });
 
-  it('only interrupts for a walk that actually provokes', () => {
+  it('only interrupts for a walk that actually costs something', () => {
     // Prompting on every move trains the player to dismiss it unread, which
-    // costs the feature its whole purpose.
-    expect(app).toMatch(/walk\.provokers\.length === 0[^\n]*apply\(move\)/);
+    // costs the feature its whole purpose. Free walks must still go straight
+    // through — but "free" now means no free swings AND no hazard, because a
+    // move names a square and the engine picks the route: a player looking
+    // straight at the lava still cannot tell whether their path enters it.
+    expect(app).toMatch(
+      /walk\.provokers\.length === 0 && walk\.hazardDamage === 0[^\n]*apply\(move\)/,
+    );
+  });
+
+  it('does not offer Disengage against a hazard', () => {
+    // Disengage answers opportunity attacks and nothing else. Offering it on a
+    // hazard-only route would teach a player it is a general "walk safely"
+    // button, which is worse than not offering it at all.
+    expect(confirm).toMatch(/provokers\.length > 0[\s\S]{0,120}?'disengage'/);
+    expect(confirm, 'the no-Disengage explanation shows on hazard-only routes')
+      .toMatch(/\{!dis && who\.length > 0 &&/);
+  });
+
+  it('has words for the hazard-only case', () => {
+    // Reached with no provokers, the old copy read "0 free attacks" over
+    // "stepping out of reach lets them swing at you".
+    expect(confirm).toMatch(/who\.length === 0/);
   });
 });

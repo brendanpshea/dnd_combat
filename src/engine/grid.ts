@@ -272,6 +272,16 @@ export interface ReachResult {
   costs: Map<string, number>;
   /** Predecessor cell for path reconstruction, keyed 'x,y'. */
   prev: Map<string, Position>;
+  /**
+   * Full route for the destinations that took a safety detour, keyed 'x,y'.
+   *
+   * A detour is not expressible as a `prev` edge. `prev` holds ONE predecessor
+   * per cell, so a mixed answer — this cell by the safe route, its parent by the
+   * short one — reconstructs a path whose real cost is not the cost reported
+   * beside it, and `executeMove` charges movement from `costs` while walking
+   * `pathTo`. Storing the whole route keeps the two honest.
+   */
+  routes?: Map<string, Position[]>;
 }
 
 const key = (p: Position) => `${p.x},${p.y}`;
@@ -290,13 +300,24 @@ export type StepDanger = (from: Position, to: Position) => number;
  * Ending on an occupied cell is disallowed by the caller via `costs` +
  * occupancy check; this function reports raw reachability.
  *
- * `danger` breaks ties between routes of *equal length*, and never buys safety
- * with movement — a longer way round can strand a unit short of its target,
- * which is a worse problem than the one it solves. Distance stays the sole
- * primary objective; among the equally short paths, take the safe one.
+ * `danger` breaks ties between routes of *equal length*. `dangerSlack` lets it
+ * do a little more than that: a route may cost up to that many extra feet if
+ * the extra buys a strictly safer walk.
+ *
+ * THE SLACK IS PER DESTINATION, AND THAT IS THE WHOLE SAFETY ARGUMENT.
+ *
+ * The original rule was that danger must never buy safety with movement,
+ * because a longer way round can strand a unit short of its target — a worse
+ * problem than the one it solves. That is still true of an unbounded detour,
+ * and it stays impossible here: a cell's route is capped at both `budgetFeet`
+ * and its OWN shortest distance plus the slack, and the shortest route is
+ * always still admissible, so no destination is lost and none costs more than
+ * the slack extra. The unit that could reach a square before can still reach
+ * it; it may simply arrive with five feet less in hand, having gone round the
+ * fire instead of through it.
  *
  * Without `danger` the results are identical to a plain Dijkstra, edge for
- * edge: every risk is 0, so the tiebreak can never fire.
+ * edge: every risk is 0, so neither the tiebreak nor the detour can fire.
  */
 export function reachable(
   grid: GridState,
@@ -307,6 +328,8 @@ export function reachable(
   ignoreDifficult = false,
   /** Crosses barricades (never walls) — see terrainMoveCost. */
   flying = false,
+  /** Extra feet a route may spend to avoid damage. 0 keeps the old tiebreak. */
+  dangerSlack = 0,
 ): ReachResult {
   const costs = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, Position>();
@@ -355,12 +378,110 @@ export function reachable(
       }
     }
   }
-  return { costs, prev };
+  if (!danger || dangerSlack <= 0) return { costs, prev };
+  return withDetours(grid, start, budgetFeet, blockedBy, danger, ignoreDifficult, flying, dangerSlack, {
+    costs, prev, minCost: cost, at,
+  });
+}
+
+/**
+ * One route to a cell, and what it cost to get there. Held as a chain rather
+ * than a predecessor table because two labels for the same cell disagree about
+ * which way they came, which is exactly the thing a table cannot store.
+ */
+interface Label {
+  pos: Position;
+  cost: number;
+  risk: number;
+  from?: Label;
+}
+
+function routeOf(label: Label): Position[] {
+  const out: Position[] = [];
+  for (let l: Label | undefined = label; l; l = l.from) out.push(l.pos);
+  return out.reverse();
+}
+
+/**
+ * Re-run the search keeping every route that is within the slack of the
+ * shortest one, and hand each cell the safest of them.
+ *
+ * WHY THIS IS NOT JUST ANOTHER DIJKSTRA
+ *
+ * Ordering by risk and settling each cell once loses destinations: a cell
+ * settled on its safest route holds a label that may be too expensive to extend,
+ * and everything behind it falls outside the slack and vanishes. Movement here
+ * is a budget as well as a distance, which makes this a resource-constrained
+ * shortest path — cost and risk are genuinely two objectives, and the answer
+ * per cell is a small set of routes that beat each other on different ones.
+ *
+ * So: keep the non-dominated set per cell (nothing cheaper is also safer),
+ * bounded by the slack, and relax until it stops changing. The grids are 8x8
+ * and the slack is a square or two, so each set stays a handful of entries.
+ *
+ * The shortest route survives the bound by construction — every prefix of a
+ * shortest route is itself a shortest route — so this can only ever return the
+ * same cells the plain pass did.
+ */
+function withDetours(
+  grid: GridState,
+  start: Position,
+  budgetFeet: number,
+  blockedBy: Set<Id>,
+  danger: StepDanger,
+  ignoreDifficult: boolean,
+  flying: boolean,
+  dangerSlack: number,
+  plain: { costs: Map<string, number>; prev: Map<string, Position>; minCost: Float64Array; at: (p: Position) => number },
+): ReachResult {
+  const { minCost, at } = plain;
+  const fronts: Label[][] = Array.from({ length: grid.width * grid.height }, () => []);
+  const first: Label = { pos: start, cost: 0, risk: 0 };
+  fronts[at(start)]!.push(first);
+  const queue: Label[] = [first];
+
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    // Dropped from its front by something that beat it after it was queued.
+    if (!fronts[at(cur.pos)]!.includes(cur)) continue;
+    for (const n of neighbors(grid, cur.pos)) {
+      const cell = cellAt(grid, n)!;
+      if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
+      const i = at(n);
+      const cost = cur.cost + terrainMoveCost(cell, ignoreDifficult, undefined, flying);
+      if (cost > budgetFeet || cost > minCost[i]! + dangerSlack) continue;
+      const risk = cur.risk + danger(cur.pos, n);
+      const front = fronts[i]!;
+      if (front.some((l) => l.cost <= cost && l.risk <= risk)) continue;
+      const label: Label = { pos: n, cost, risk, from: cur };
+      fronts[i] = front.filter((l) => !(cost <= l.cost && risk <= l.risk));
+      fronts[i]!.push(label);
+      queue.push(label);
+    }
+  }
+
+  const costs = new Map(plain.costs);
+  const routes = new Map<string, Position[]>();
+  for (const front of fronts) {
+    // Safest first; among equally safe routes the cheapest, so a detour is only
+    // taken when it actually buys something.
+    let best: Label | undefined;
+    for (const l of front) {
+      if (!best || l.risk < best.risk || (l.risk === best.risk && l.cost < best.cost)) best = l;
+    }
+    if (!best || best.from === undefined) continue;
+    if (best.cost === minCost[at(best.pos)]) continue; // the short way was already the safe way
+    costs.set(key(best.pos), best.cost);
+    routes.set(key(best.pos), routeOf(best));
+  }
+  return { costs, prev: plain.prev, routes };
 }
 
 /** Reconstruct the path start→dest from a ReachResult (inclusive of both ends). */
 export function pathTo(result: ReachResult, start: Position, dest: Position): Position[] | undefined {
   if (!result.costs.has(key(dest))) return undefined;
+  const detour = result.routes?.get(key(dest));
+  if (detour) return detour;
   const path: Position[] = [dest];
   let cur = dest;
   while (!posEq(cur, start)) {
