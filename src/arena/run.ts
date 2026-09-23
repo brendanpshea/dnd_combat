@@ -328,6 +328,16 @@ export interface ArenaRunState {
    * save written before gates existed loads and simply starts on door 0.
    */
   gate?: number;
+  /**
+   * The door each half of the current wave is held to, once it is.
+   *
+   * A half is pinned by losing it (the door you failed is the wave you
+   * retry), and the morning is also pinned by winning it, so that a defeat
+   * in the afternoon sends the party back through the door it actually beat
+   * rather than door 0. Cleared with the wave. Absent on older saves, which
+   * simply start unpinned.
+   */
+  pinnedGates?: Partial<Record<DayHalf, number>>;
   /** Which half of the day is next. Absent = morning (and pre-day saves). */
   half?: DayHalf;
   /**
@@ -396,12 +406,15 @@ export function advanceDay(run: ArenaRunState, won: boolean, purse: number,
     // roughly half of all fights are mornings, the run reported a win rate near
     // a fifth of its real value. Nothing depended on the number at the time; a
     // medal graded on win rate does.
+    const pinnedGates = { ...run.pinnedGates, morning: run.gate ?? 0 };
     return {
       ...noteLearned(run, learned),
       fights: run.fights + 1,
       wins: run.wins + 1,
       half: 'afternoon',
-      gate: 0,
+      // An afternoon already lost at one door is retried at that door.
+      gate: pinnedGates.afternoon ?? 0,
+      pinnedGates,
     };
   }
   if (won) {
@@ -412,9 +425,16 @@ export function advanceDay(run: ArenaRunState, won: boolean, purse: number,
     const { dayLevel: _thawed, ...cleared } = next;
     return { ...cleared, half: 'morning', day: (run.day ?? 1) + 1 };
   }
-  // Lost. The day ends; tomorrow is the same day over again.
+  // Lost. The day ends; tomorrow is the same day over again — through the
+  // same doors. This used to reset to door 0, which locked the retry into a
+  // wave the party had never seen.
   const next = recordResult(run, false, 0, learned);
-  return { ...next, half: 'morning', day: (run.day ?? 1) + 1, gate: 0 };
+  const pinnedGates = { ...run.pinnedGates, [half]: run.gate ?? 0 };
+  return {
+    ...next, half: 'morning', day: (run.day ?? 1) + 1,
+    gate: pinnedGates.morning ?? 0,
+    pinnedGates,
+  };
 }
 
 /**
@@ -445,8 +465,10 @@ export function recordResult(
   if (!won) {
     return { ...run, fights, wins, attempts: run.attempts + 1 };
   }
+  // A cleared wave releases its doors along with the selection below.
+  const { pinnedGates: _released, ...rest } = run;
   return {
-    ...run,
+    ...rest,
     fights,
     wins,
     cleared: run.cleared + 1,

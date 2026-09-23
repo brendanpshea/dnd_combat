@@ -65,14 +65,14 @@ describe('the check is offered between the door and the board', () => {
 
   it('does not ask again on a retry', () => {
     /*
-     * `attemptFor` is keyed to the day and half, and a defeat keeps `run.gambit`
+     * `attemptFor` is keyed to the wave and half, and a defeat keeps `run.gambit`
      * while `gateLocked` pins the door — so the recorded attempt is still
      * live and `gambitTaken` is truthy. That is what stops a player rerolling a
      * bad check by losing the fight, and it is the same rule the wave itself
      * follows: a lost wave is a tactical problem, not a slot machine.
      */
     expect(ARENA, 'the attempt is no longer read back for this fight')
-      .toContain('attemptFor(run.gambit, dayOf(run), half)');
+      .toContain('attemptFor(run.gambit, run.wave, half)');
   });
 
   it('carries its own way past, and its own way in', () => {
@@ -93,10 +93,14 @@ describe('the dice are watched before the result is kept', () => {
    * opened. The d20 was rolled, resolved and applied without ever being shown.
    * Measured in a browser: the scrim rendered zero times before the fix.
    */
-  it('does not persist the run while rolling', () => {
+  it('does not commit the run to React state while rolling', () => {
     const rolling = section('onRoll={() => {', 'onResolved={');
     expect(rolling.includes('setRun('), 'onRoll commits the run and unmounts its own dice').toBe(false);
-    expect(rolling.includes('persist('), 'onRoll persists and unmounts its own dice').toBe(false);
+    // Saving to storage is fine, and wanted: `persist` touches no React state,
+    // so it unmounts nothing, and saving at the roll is what stops a reload
+    // from throwing away a result the player has already read.
+    expect(rolling, 'a reload before the dice settle rerolls the check')
+      .toContain('persist(c, { ...run, gambit: pendingGambit.current })');
     expect(rolling, 'the roll is not being held anywhere').toContain('pendingGambit.current =');
   });
 

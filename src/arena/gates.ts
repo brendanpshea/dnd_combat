@@ -129,6 +129,8 @@ export function gateFor(gates: Gate[], door: number | undefined): Gate {
  * follow — a defeat is a problem to solve, and walking back to take an easier
  * door would make it a reroll instead.
  */
-export function gateLocked(attempts: number): boolean {
-  return attempts > 0;
+export function gateLocked(
+  run: { pinnedGates?: Partial<Record<DayHalf, number>> }, half: DayHalf,
+): boolean {
+  return run.pinnedGates?.[half] !== undefined;
 }

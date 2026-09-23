@@ -45,6 +45,7 @@ import type { GameEvent } from '../engine/events.js';
 import { SPELLS } from '../data/spells.js';
 import { MONSTERS } from '../data/monsters.js';
 import { next, type RngState } from '../engine/rng.js';
+import type { DayHalf } from './run.js';
 
 export interface BountyContext {
   /** Everything that happened, in order. */
@@ -200,15 +201,18 @@ export const BOUNTIES: Bounty[] = [
         kind === 'cube15' || kind === 'line15';
     })),
     earned: (ctx) => {
-      // Enemies damaged in the window between one spellCast and the next.
-      let casting = false;
+      // Enemies the caster damaged between its spellCast and the end of that
+      // turn. Without the source and the turn boundary, a Fire Bolt followed
+      // by two rounds of sword hits counted as one spell catching three.
+      let caster: Id | undefined;
       let hit = new Set<Id>();
       for (const e of ctx.events) {
-        if (e.type === 'spellCast') {
+        if (e.type === 'spellCast' || e.type === 'turnEnded' || e.type === 'turnStarted') {
           if (hit.size >= 3) return true;
-          casting = isOurs(ctx, e.casterId);
+          caster = e.type === 'spellCast' && isOurs(ctx, e.casterId) ? e.casterId : undefined;
           hit = new Set();
-        } else if (casting && e.type === 'damageDealt' && !isOurs(ctx, e.targetId)) {
+        } else if (caster !== undefined && e.type === 'damageDealt' &&
+                   e.sourceId === caster && !isOurs(ctx, e.targetId)) {
           hit.add(e.targetId);
         }
       }
@@ -232,8 +236,11 @@ export const BOUNTIES: Bounty[] = [
     blurb: 'Win without anyone going down.',
     share: 0.4,
     eligible: () => true,
+    // The heroes, not whatever they brought: a summoned lion or a conjured
+    // spirit going down is the spell doing its job, not the party breaking.
     earned: (ctx) => !ctx.events.some((e) =>
-      (e.type === 'downed' || e.type === 'died') && isOurs(ctx, e.combatantId)),
+      (e.type === 'downed' || e.type === 'died') && isOurs(ctx, e.combatantId) &&
+      !ctx.state.combatants[e.combatantId]?.summonedBy),
   },
   {
     /**
@@ -423,9 +430,13 @@ export function roundsAllowed(foes: number): number {
  */
 export function bountiesFor(
   runSeed: number, wave: number, party: Combatant[], state: GameState, door = 0,
+  half: DayHalf = 'morning',
 ): Bounty[] {
   const pool = BOUNTIES.filter((b) => b.eligible(party, state));
-  let rng: RngState = (runSeed * 2654435761 + wave * 2246822519 + door * 40503) >>> 0;
+  // The half is in the seed as it is in the wave's: without it the afternoon's
+  // door N drew the morning's door N bounty again.
+  let rng: RngState = (runSeed * 2654435761 + wave * 2246822519 + door * 40503 +
+    (half === 'afternoon' ? 1013904223 : 0)) >>> 0;
   const picked: Bounty[] = [];
   const rest = [...pool];
   while (picked.length < 1 && rest.length > 0) {

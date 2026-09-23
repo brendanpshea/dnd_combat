@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { gatesFor, gateFor, gateLocked, GATE_COUNT } from '../src/arena/gates.js';
 import {
-  buildWave, waveDifficulty, GATE_TAX, newArenaRun, recordResult, type ArenaRunState,
+  buildWave, waveDifficulty, GATE_TAX, newArenaRun, recordResult, advanceDay, type ArenaRunState,
 } from '../src/arena/run.js';
 import { generateArenaMap } from '../src/arena/map.js';
 import { seedRng } from '../src/engine/rng.js';
@@ -92,8 +92,35 @@ describe('gates', () => {
   });
 
   it('locks the door once a wave has been attempted', () => {
-    expect(gateLocked(0), 'you may still compare').toBe(false);
-    expect(gateLocked(1), 'you lost — this is the wave you lost').toBe(true);
+    expect(gateLocked({}, 'morning'), 'you may still compare').toBe(false);
+    expect(gateLocked({ pinnedGates: { morning: 2 } }, 'morning'), 'you lost — this is the wave you lost').toBe(true);
+  });
+
+  it('retries a lost morning through the door that was lost, not door 0', () => {
+    let run: ArenaRunState = { ...newArenaRun(1), gate: 2 };
+    run = advanceDay(run, false, 0);
+    expect(run.gate).toBe(2);
+    expect(gateLocked(run, 'morning')).toBe(true);
+    // Winning the retried morning leaves the untried afternoon a free choice.
+    run = advanceDay(run, true, 0);
+    expect(run.half).toBe('afternoon');
+    expect(gateLocked(run, 'afternoon')).toBe(false);
+  });
+
+  it('sends a party beaten in the afternoon back through the door it beat that morning', () => {
+    let run: ArenaRunState = { ...newArenaRun(1), gate: 1 };
+    run = advanceDay(run, true, 0);          // morning won at door 1
+    run = { ...run, gate: 2 };
+    run = advanceDay(run, false, 0);         // afternoon lost at door 2
+    expect(run.half).toBe('morning');
+    expect(run.gate, 'the morning door it actually beat').toBe(1);
+    expect(gateLocked(run, 'morning')).toBe(true);
+    run = advanceDay(run, true, 0);
+    expect(run.gate, 'the afternoon door it lost at').toBe(2);
+    expect(gateLocked(run, 'afternoon')).toBe(true);
+    run = advanceDay(run, true, 0);          // wave cleared
+    expect(run.pinnedGates, 'a clear releases every door').toBeUndefined();
+    expect(gateLocked(run, 'morning')).toBe(false);
   });
 
   it('releases the door on a clear, so the next wave is a fresh choice', () => {

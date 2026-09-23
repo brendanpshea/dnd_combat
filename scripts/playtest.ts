@@ -429,7 +429,7 @@ function fight(
     });
     for (const [i, b] of claimed.entries()) {
       bump(T.bountiesClaimed, b.id);
-      const offer = spoilOffer(runSeed, day?.dayNumber ?? wave, half, i, level);
+      const offer = spoilOffer(runSeed, wave, half, i, level);
       if (offer.length === 0) { T.spoilsEmpty += 1; continue; }
       // A player takes the shiniest thing on the table. Not always right, but
       // it is the choice that needs no knowledge of the party, and it keeps the
