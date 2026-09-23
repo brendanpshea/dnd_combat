@@ -497,8 +497,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'wereboar-javelin', name: 'Javelin', damage: '3d6', damageType: 'piercing',
     properties: ['thrown'], range: { normal: 30, long: 120 }, melee: true,
   },
-  'weretiger-longbow': {
-    id: 'weretiger-longbow', name: 'Longbow', damage: '2d8', damageType: 'piercing',
+  'were-longbow': {
+    id: 'were-longbow', name: 'Longbow', damage: '2d8', damageType: 'piercing',
     properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false,
   },
   'dire-wolf-bite': {
@@ -510,7 +510,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true, extraDamage: { dice: '1d6', type: 'necrotic' },
   },
   'ghoul-claws': {
-    id: 'ghoul-claws', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    id: 'ghoul-claws', name: 'Claw', damage: '1d4', damageType: 'slashing',
     properties: ['finesse'], melee: true,
     onHitSave: { condition: 'paralyzed', ability: 'con', dc: 10 },
   },
@@ -518,7 +518,6 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'spider-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
     properties: ['finesse'], melee: true,
     extraDamage: { dice: '2d6', type: 'poison' },
-    onHitSave: { condition: 'poisoned', ability: 'con', dc: 11 },
   },
   sling: {
     id: 'sling', name: 'Sling', damage: '1d4', damageType: 'bludgeoning',
@@ -549,8 +548,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
   },
   'bear-claws': {
-    id: 'bear-claws', name: 'Claws', damage: '1d4', damageType: 'slashing',
-    properties: [], melee: true,
+    id: 'bear-claws', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   'minotaur-abyssal-glaive': {
     id: 'minotaur-abyssal-glaive', name: 'Abyssal Glaive', damage: '1d12', damageType: 'slashing',
@@ -562,15 +561,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'ettin-battleaxe': {
     id: 'ettin-battleaxe', name: 'Battleaxe', damage: '2d8', damageType: 'slashing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   'ettin-morningstar': {
     id: 'ettin-morningstar', name: 'Morningstar', damage: '2d8', damageType: 'piercing',
-    properties: [], melee: true,
-  },
-  'badger-claws': {
-    id: 'badger-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
-    properties: ['light'], melee: true,
+    properties: [], melee: true, onHitCondition: 'sapped',
   },
   'toad-bite': {
     id: 'toad-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
@@ -593,22 +588,17 @@ export const WEAPONS: Record<Id, WeaponData> = {
     // Grappled/restrained, but escapable: a Strength save at the end of each turn.
     onHitSave: { condition: 'restrained', ability: 'str', dc: 14 },
   },
-  'gargoyle-bite': {
-    id: 'gargoyle-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
-    properties: [], melee: true,
-  },
   'gargoyle-claws': {
-    id: 'gargoyle-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    id: 'gargoyle-claws', name: 'Claw', damage: '2d4', damageType: 'slashing',
     properties: ['light'], melee: true,
   },
   'fire-touch': {
-    id: 'fire-touch', name: 'Touch', damage: '2d6', damageType: 'fire',
+    id: 'fire-touch', name: 'Burn', damage: '2d6', damageType: 'fire',
     properties: [], melee: true,
-    extraDamage: { dice: '1d6', type: 'fire' },
   },
   'water-slam': {
     id: 'water-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   'earth-slam': {
     id: 'earth-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
@@ -624,20 +614,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
     // Sleep-poison arrow: a Constitution save or poisoned (save-ends).
     onHitSave: { condition: 'poisoned', ability: 'con', dc: 10 },
   },
-  'satyr-shortsword': {
-    id: 'satyr-shortsword', name: 'Shortsword', damage: '1d6', damageType: 'piercing',
-    properties: ['light'], melee: true,
-  },
-  'satyr-ram': {
-    id: 'satyr-ram', name: 'Ram', damage: '1d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
-  },
-  'dryad-club': {
-    id: 'dryad-club', name: 'Shillelagh Club', damage: '1d8', damageType: 'bludgeoning',
-    properties: [], melee: true,
-  },
   'hag-claws': {
-    id: 'hag-claws', name: 'Claws', damage: '1d8', damageType: 'slashing',
+    id: 'hag-claws', name: 'Claw', damage: '1d8', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '1d6', type: 'poison' },
   },
   /**
@@ -680,19 +658,15 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
   },
   'cockatrice-bite': {
-    id: 'cockatrice-bite', name: 'Bite', damage: '1d4', damageType: 'piercing',
+    id: 'cockatrice-bite', name: 'Petrifying Bite', damage: '1d4', damageType: 'piercing',
     properties: [], melee: true,
     // Petrification, approximated as restrained (turning to stone) — Con save,
     // save-ends, so a hit isn't a permanent lockout.
     onHitSave: { condition: 'restrained', ability: 'con', dc: 11 },
   },
   'harpy-claws': {
-    id: 'harpy-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    id: 'harpy-claws', name: 'Claw', damage: '2d4', damageType: 'slashing',
     properties: ['light'], melee: true,
-  },
-  'harpy-club': {
-    id: 'harpy-club', name: 'Club', damage: '1d4', damageType: 'bludgeoning',
-    properties: [], melee: true,
   },
   'manticore-spike': {
     id: 'manticore-spike', name: 'Tail Spike', damage: '1d8', damageType: 'piercing',
@@ -710,19 +684,15 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'gorgon-gore', name: 'Gore', damage: '2d12', damageType: 'piercing',
     properties: [], melee: true,
   },
-  'gorgon-hooves': {
-    id: 'gorgon-hooves', name: 'Hooves', damage: '2d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
-  },
   'shadow-drain': {
-    id: 'shadow-drain', name: 'Strength Drain', damage: '1d6', damageType: 'necrotic',
+    id: 'shadow-drain', name: 'Draining Swipe', damage: '1d6', damageType: 'necrotic',
     properties: [], melee: true,
     onHitSave: { dc: 10, ability: 'con', condition: 'sapped' },
   },
   'specter-drain': {
     id: 'specter-drain', name: 'Life Drain', damage: '2d6', damageType: 'necrotic',
     properties: [], melee: true,
-    onHitSave: { dc: 10, ability: 'con', condition: 'slowed' },
+    drainsMaxHp: { ability: 'con', dc: 10 },
   },
   'wisp-shock': {
     id: 'wisp-shock', name: 'Shock', damage: '2d8', damageType: 'lightning',
@@ -735,12 +705,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'wight-drain': {
     id: 'wight-drain', name: 'Life Drain', damage: '1d8', damageType: 'necrotic',
     properties: [], melee: true,
-    onHitSave: { dc: 11, ability: 'con', condition: 'slowed' },
+    drainsMaxHp: { ability: 'con', dc: 13 },
   },
   'mummy-fist': {
     id: 'mummy-fist', name: 'Rotting Fist', damage: '1d10', damageType: 'bludgeoning',
     properties: [], melee: true,
-    extraDamage: { dice: '3d6', type: 'necrotic' },
+    extraDamage: { dice: '3d6', type: 'necrotic' }, onHitCondition: 'wounded',
   },
   // Chromatic wyrmling Rends (SRD 5.2.1): slashing plus a splash of the
   // dragon's element. The ids still say "bite" -- the 2014 blocks bit, the
@@ -771,11 +741,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // its melee weapon; the AI free-swaps to whichever the range allows.
   'giant-greatclub': {
     id: 'giant-greatclub', name: 'Tree Club', damage: '3d8', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   'giant-rock': {
     id: 'giant-rock', name: 'Trash Lob', damage: '2d10', damageType: 'bludgeoning',
-    properties: ['thrown'], melee: true, range: { normal: 60, long: 240 },
+    properties: [], melee: false, range: { normal: 60, long: 240 },
   },
   'stone-giant-club': {
     id: 'stone-giant-club', name: 'Stone Club', damage: '3d10', damageType: 'bludgeoning',
@@ -783,17 +753,17 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'stone-giant-boulder': {
     id: 'stone-giant-boulder', name: 'Boulder', damage: '2d8', damageType: 'bludgeoning',
-    properties: ['thrown'], melee: true, range: { normal: 60, long: 240 },
+    properties: [], melee: false, range: { normal: 60, long: 240 }, onHitCondition: 'prone',
   },
   // The frost giant's ranged attack is a bow, not a rock: ranged only.
   'frost-giant-great-bow': {
     id: 'frost-giant-great-bow', name: 'Great Bow', damage: '2d10', damageType: 'piercing',
     properties: ['two-handed'], melee: false, range: { normal: 150, long: 600 },
-    extraDamage: { dice: '2d6', type: 'cold' },
+    extraDamage: { dice: '2d6', type: 'cold' }, onHitCondition: 'slowed',
   },
   'fire-giant-hammer-throw': {
     id: 'fire-giant-hammer-throw', name: 'Hammer Throw', damage: '3d10', damageType: 'bludgeoning',
-    properties: ['thrown'], melee: true, range: { normal: 60, long: 240 },
+    properties: [], melee: false, range: { normal: 60, long: 240 }, onHitCondition: 'sapped',
     extraDamage: { dice: '1d8', type: 'fire' },
   },
   'frost-giant-greataxe': {
@@ -808,19 +778,19 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // Small, and the elemental rider is most of what they do -- a mephit is a
   // damage type with legs.
   'mephit-claws-fire': {
-    id: 'mephit-claws-fire', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    id: 'mephit-claws-fire', name: 'Claw', damage: '1d4', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'fire' },
   },
   'magma-mephit-claws': {
-    id: 'magma-mephit-claws', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    id: 'magma-mephit-claws', name: 'Claw', damage: '1d4', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },
   },
   'mephit-claws-cold': {
-    id: 'mephit-claws-cold', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    id: 'mephit-claws-cold', name: 'Claw', damage: '1d4', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
   },
   'mephit-claws-dust': {
-    id: 'mephit-claws-dust', name: 'Claws', damage: '1d4', damageType: 'slashing',
+    id: 'mephit-claws-dust', name: 'Claw', damage: '1d4', damageType: 'slashing',
     properties: [], melee: true,
   },
   'mephit-claws-mud': {
@@ -834,7 +804,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: ['finesse'], melee: true,
   },
   'bearded-devil-glaive': {
-    id: 'bearded-devil-glaive', name: 'Glaive', damage: '1d10', damageType: 'slashing',
+    id: 'bearded-devil-glaive', name: 'Infernal Glaive', damage: '1d10', damageType: 'slashing',
     properties: ['two-handed'], melee: true,
   },
   'bearded-devil-beard': {
@@ -843,7 +813,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     onHitSave: { condition: 'poisoned', ability: 'con', dc: 12 },
   },
   'night-hag-claws': {
-    id: 'night-hag-claws', name: 'Claws', damage: '2d8', damageType: 'slashing',
+    id: 'night-hag-claws', name: 'Claw', damage: '2d8', damageType: 'slashing',
     properties: [], melee: true,
   },
   // Chains, so it pins. That's the devil's whole gameplan.
@@ -859,23 +829,15 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'glabrezu-pincer', name: 'Pincer', damage: '2d10', damageType: 'slashing',
     properties: [], melee: true, onHitCondition: 'restrained',
   },
-  'glabrezu-fist': {
-    id: 'glabrezu-fist', name: 'Fist', damage: '2d4', damageType: 'bludgeoning',
-    properties: [], melee: true,
-  },
   'horned-devil-fork': {
     id: 'horned-devil-fork', name: 'Searing Fork', damage: '2d8', damageType: 'piercing',
     properties: [], melee: true, extraDamage: { dice: '2d8', type: 'fire' },
-  },
-  'horned-devil-tail': {
-    id: 'horned-devil-tail', name: 'Tail', damage: '1d8', damageType: 'piercing',
-    properties: [], melee: true, extraDamage: { dice: '3d6', type: 'fire' },
   },
 
   // ---- monstrosities, mid and top ---------------------------------------
   'worg-bite': {
     id: 'worg-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
-    properties: [], melee: true, onHitCondition: 'prone',
+    properties: [], melee: true, onHitCondition: 'guided',
   },
   'rust-monster-antennae': {
     id: 'rust-monster-antennae', name: 'Antennae', damage: '1d8', damageType: 'piercing',
@@ -907,7 +869,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'winter-wolf-bite': {
     id: 'winter-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   'roper-tendril': {
     id: 'roper-tendril', name: 'Tendril', damage: '1d8', damageType: 'bludgeoning',
@@ -923,37 +885,32 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'remorhaz-bite': {
     id: 'remorhaz-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
-    properties: [], melee: true, extraDamage: { dice: '4d6', type: 'fire' },
+    properties: [], melee: true, onHitCondition: 'restrained', extraDamage: { dice: '4d6', type: 'fire' },
   },
   'otyugh-tentacle': {
     id: 'otyugh-tentacle', name: 'Tentacle', damage: '2d8', damageType: 'piercing',
-    properties: [], melee: true, onHitCondition: 'restrained',
-    onHitSave: { condition: 'poisoned', ability: 'con', dc: 13 },
+    properties: [], melee: true,
   },
   'otyugh-bite': {
     id: 'otyugh-bite', name: 'Bite', damage: '2d8', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'poisoned',
   },
   'aboleth-tentacle': {
     id: 'aboleth-tentacle', name: 'Tentacle', damage: '2d6', damageType: 'bludgeoning',
     properties: [], melee: true,
   },
-  'aboleth-tail': {
-    id: 'aboleth-tail', name: 'Tail', damage: '3d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
-  },
   'trex-bite': {
     id: 'trex-bite', name: 'Bite', damage: '4d12', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'restrained',
   },
   'trex-tail': {
     id: 'trex-tail', name: 'Tail', damage: '4d8', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitCondition: 'prone',
   },
 
   // ---- undead top end ---------------------------------------------------
   'ghast-claws': {
-    id: 'ghast-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
+    id: 'ghast-claws', name: 'Claw', damage: '2d6', damageType: 'slashing',
     properties: ['finesse'], melee: true,
     onHitSave: { condition: 'paralyzed', ability: 'con', dc: 10 },
   },
@@ -975,7 +932,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true, drainsMaxHp: { ability: 'con', dc: 14 },
   },
   'spawn-claws': {
-    id: 'spawn-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    id: 'spawn-claws', name: 'Claw', damage: '2d4', damageType: 'slashing',
     properties: ['finesse'], melee: true,
   },
   'spawn-bite': {
@@ -1003,10 +960,6 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'mammoth-gore': {
     id: 'mammoth-gore', name: 'Gore', damage: '2d10', damageType: 'piercing',
-    properties: [], melee: true,
-  },
-  'mammoth-stomp': {
-    id: 'mammoth-stomp', name: 'Stomp', damage: '4d10', damageType: 'bludgeoning',
     properties: [], melee: true,
   },
   'ape-fist': {
@@ -1046,12 +999,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'salamander-spear': {
     id: 'salamander-spear', name: 'Flame Spear', damage: '2d8', damageType: 'piercing',
-    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'fire' },
-  },
-  'salamander-tail': {
-    id: 'salamander-tail', name: 'Tail', damage: '2d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
-    extraDamage: { dice: '2d6', type: 'fire' }, onHitCondition: 'restrained',
+    properties: ['thrown'], melee: true, range: { normal: 20, long: 60 }, extraDamage: { dice: '2d6', type: 'fire' },
   },
   'stalker-slam': {
     id: 'stalker-slam', name: 'Wind Swipe', damage: '2d6', damageType: 'force',
@@ -1061,7 +1009,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // ---- humanoid top end -------------------------------------------------
   'gladiator-spear': {
     id: 'gladiator-spear', name: 'Spear', damage: '2d6', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: ['thrown'], melee: true, range: { normal: 20, long: 60 },
   },
 
   // ---- fiends -----------------------------------------------------------
@@ -1071,17 +1019,9 @@ export const WEAPONS: Record<Id, WeaponData> = {
     extraDamage: { dice: '2d6', type: 'poison', save: { ability: 'con', dc: 11 } },
   },
   'quasit-claw': {
-    id: 'quasit-claw', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    id: 'quasit-claw', name: 'Rend', damage: '1d4', damageType: 'slashing',
     properties: ['finesse'], melee: true,
     onHitSave: { condition: 'poisoned', ability: 'con', dc: 10 },
-  },
-  'dretch-bite': {
-    id: 'dretch-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
-    properties: [], melee: true,
-  },
-  'dretch-claws': {
-    id: 'dretch-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
-    properties: [], melee: true,
   },
   'hell-hound-bite': {
     id: 'hell-hound-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
@@ -1105,7 +1045,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // blocks make it all acid, which is what makes armour a poor answer to them.
   'gray-ooze-pseudopod': {
     id: 'gray-ooze-pseudopod', name: 'Pseudopod', damage: '2d8', damageType: 'acid',
-    properties: [], melee: true,
+    properties: [], melee: true, corrodes: { max: 3 },
   },
   'ochre-jelly-pseudopod': {
     id: 'ochre-jelly-pseudopod', name: 'Pseudopod', damage: '3d6', damageType: 'acid',
@@ -1117,12 +1057,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'black-pudding-pseudopod': {
     id: 'black-pudding-pseudopod', name: 'Dissolving Pseudopod', damage: '4d6', damageType: 'acid',
-    properties: [], melee: true,
+    properties: [], melee: true, corrodes: { max: 3 },
   },
 
   // ---- constructs -------------------------------------------------------
   'flying-sword-blade': {
-    id: 'flying-sword-blade', name: 'Longsword', damage: '1d8', damageType: 'slashing',
+    id: 'flying-sword-blade', name: 'Slash', damage: '1d8', damageType: 'slashing',
     properties: [], melee: true,
   },
   // The rug wins by pinning someone and holding them there; the damage is
@@ -1142,14 +1082,14 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'chimera-bite': {
     id: 'chimera-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, bonusDiceOnAdvantage: '2d6',
   },
   'chimera-horns': {
-    id: 'chimera-horns', name: 'Horns', damage: '1d12', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    id: 'chimera-horns', name: 'Ram', damage: '1d12', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'prone',
   },
   'chimera-claws': {
-    id: 'chimera-claws', name: 'Claws', damage: '1d6', damageType: 'slashing',
+    id: 'chimera-claws', name: 'Claw', damage: '1d6', damageType: 'slashing',
     properties: [], melee: true,
   },
   'wyvern-bite': {
@@ -1166,6 +1106,130 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'hydra-bite': {
     id: 'hydra-bite', name: 'Bite', damage: '1d10', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  // ---- SRD 5.2.1 attacks the bestiary was missing -----------------------
+  // Each is a stat-block attack as printed. Ranged "spell-like" attacks
+  // (Radiant Flame, Verdant Wisp, Force Bolt, Hurl Flame) are ranged weapons
+  // here, which is how every monster attack in this engine is delivered.
+  'bandit-captain-pistol': {
+    id: 'bandit-captain-pistol', name: 'Pistol', damage: '1d10', damageType: 'piercing',
+    properties: [], range: { normal: 30, long: 90 }, melee: false,
+  },
+  'acolyte-radiant-flame': {
+    id: 'acolyte-radiant-flame', name: 'Radiant Flame', damage: '2d6', damageType: 'radiant',
+    properties: [], range: { normal: 60, long: 60 }, melee: false,
+  },
+  'priest-radiant-flame': {
+    id: 'priest-radiant-flame', name: 'Radiant Flame', damage: '2d10', damageType: 'radiant',
+    properties: [], range: { normal: 60, long: 60 }, melee: false,
+  },
+  'cultist-pact-blade': {
+    id: 'cultist-pact-blade', name: 'Pact Blade', damage: '1d8', damageType: 'slashing',
+    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'necrotic' },
+  },
+  'knight-heavy-crossbow': {
+    id: 'knight-heavy-crossbow', name: 'Heavy Crossbow', damage: '2d10', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 100, long: 400 }, melee: false,
+    extraDamage: { dice: '1d8', type: 'radiant' },
+  },
+  'veteran-heavy-crossbow': {
+    id: 'veteran-heavy-crossbow', name: 'Heavy Crossbow', damage: '2d10', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 100, long: 400 }, melee: false,
+  },
+  'oni-nightmare-ray': {
+    id: 'oni-nightmare-ray', name: 'Nightmare Ray', damage: '2d6', damageType: 'psychic',
+    properties: [], range: { normal: 60, long: 60 }, melee: false,
+  },
+  'bugbear-grab': {
+    id: 'bugbear-grab', name: 'Grab', damage: '2d6', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'bugbear-light-hammer': {
+    id: 'bugbear-light-hammer', name: 'Light Hammer', damage: '3d4', damageType: 'bludgeoning',
+    properties: ['thrown'], range: { normal: 20, long: 60 }, melee: true,
+  },
+  'wererat-scratch': {
+    id: 'wererat-scratch', name: 'Scratch', damage: '1d6', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+  },
+  'wereboar-tusk': {
+    id: 'wereboar-tusk', name: 'Tusk', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'werebear-handaxe': {
+    id: 'werebear-handaxe', name: 'Handaxe', damage: '3d6', damageType: 'slashing',
+    properties: ['thrown'], range: { normal: 20, long: 60 }, melee: true,
+  },
+  'gnoll-rend': {
+    id: 'gnoll-rend', name: 'Rend', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'gnoll-bone-bow': {
+    id: 'gnoll-bone-bow', name: 'Bone Bow', damage: '1d10', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false,
+  },
+  'earth-rock-launch': {
+    id: 'earth-rock-launch', name: 'Rock Launch', damage: '1d6', damageType: 'bludgeoning',
+    properties: [], range: { normal: 60, long: 60 }, melee: false, onHitCondition: 'prone',
+  },
+  'sprite-needle-sword': {
+    id: 'sprite-needle-sword', name: 'Needle Sword', damage: '1d4', damageType: 'piercing',
+    properties: ['finesse'], melee: true,
+  },
+  'satyr-hooves': {
+    id: 'satyr-hooves', name: 'Hooves', damage: '1d4', damageType: 'bludgeoning',
+    properties: ['finesse'], melee: true,
+  },
+  'dryad-vine-lash': {
+    id: 'dryad-vine-lash', name: 'Vine Lash', damage: '1d8', damageType: 'slashing',
+    properties: ['finesse'], melee: true,
+  },
+  'dryad-thorn-burst': {
+    id: 'dryad-thorn-burst', name: 'Thorn Burst', damage: '1d6', damageType: 'piercing',
+    properties: [], range: { normal: 60, long: 60 }, melee: false,
+  },
+  'rust-monster-bite': {
+    id: 'rust-monster-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'horned-devil-hurl-flame': {
+    id: 'horned-devil-hurl-flame', name: 'Hurl Flame', damage: '5d8', damageType: 'fire',
+    properties: [], range: { normal: 150, long: 150 }, melee: false,
+  },
+  'barbed-devil-hurl-flame': {
+    id: 'barbed-devil-hurl-flame', name: 'Hurl Flame', damage: '5d6', damageType: 'fire',
+    properties: [], range: { normal: 150, long: 150 }, melee: false,
+  },
+  'crocodile-tail': {
+    id: 'crocodile-tail', name: 'Tail', damage: '3d8', damageType: 'bludgeoning',
+    properties: [], melee: true, onHitCondition: 'prone',
+  },
+  'druid-vine-staff': {
+    id: 'druid-vine-staff', name: 'Vine Staff', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '1d4', type: 'poison' },
+  },
+  'druid-verdant-wisp': {
+    id: 'druid-verdant-wisp', name: 'Verdant Wisp', damage: '3d6', damageType: 'radiant',
+    properties: [], range: { normal: 90, long: 90 }, melee: false,
+  },
+  // "Melee or Ranged Attack Roll ... reach 5 ft. or range 120 ft." Finesse so it
+  // runs off the mage's Dexterity rather than its Strength 9.
+  'mage-arcane-burst': {
+    id: 'mage-arcane-burst', name: 'Arcane Burst', damage: '3d8', damageType: 'force',
+    properties: ['finesse'], range: { normal: 120, long: 120 }, melee: true,
+  },
+  'stone-golem-force-bolt': {
+    id: 'stone-golem-force-bolt', name: 'Force Bolt', damage: '4d10', damageType: 'force',
+    properties: [], range: { normal: 120, long: 120 }, melee: false,
+  },
+  'wight-necrotic-bow': {
+    id: 'wight-necrotic-bow', name: 'Necrotic Bow', damage: '1d8', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false,
+    extraDamage: { dice: '1d8', type: 'necrotic' },
+  },
+  'dretch-rend': {
+    id: 'dretch-rend', name: 'Rend', damage: '1d6', damageType: 'slashing',
     properties: [], melee: true,
   },
   // Young chromatic dragons (SRD 5.2.1): three Rends a turn, each slashing plus
