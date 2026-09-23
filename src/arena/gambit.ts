@@ -464,25 +464,29 @@ export function eligibleGambits(w: GambitContext): GambitDef[] {
 /**
  * The one gambit on offer, drawn uniformly from the eligible pool.
  *
- * Seeded off the run, the day, the half AND the door, because the offer
+ * Seeded off the run, the wave, the half AND the door, because the offer
  * describes the roster behind that door. The attempt is then recorded with its
  * door (see `GambitAttempt`), which is what stops the player opening each gate
  * in turn to shop for a skill they are good at — the same rule the creep-in
  * used, for the same reason.
  */
 export function drawGambit(
-  runSeed: number, day: number, half: DayHalf, door: number, w: GambitContext,
+  runSeed: number, wave: number, half: DayHalf, door: number, w: GambitContext,
 ): GambitDef | undefined {
   const pool = eligibleGambits(w);
   if (pool.length === 0) return undefined;
-  const mix = (runSeed * 2654435761 + day * 40503 + door * 2246822519 +
+  const mix = (runSeed * 2654435761 + wave * 40503 + door * 2246822519 +
     (half === 'afternoon' ? 1013904223 : 0)) >>> 0;
   return pool[mix % pool.length];
 }
 
 /** The one attempt made for this fight, recorded so it cannot be repeated. */
 export interface GambitAttempt {
-  /** Day and half, so it belongs to exactly one fight. */
+  /**
+   * Wave and half, so it belongs to exactly one fight — and survives a
+   * defeat. Keyed on the calendar day it did not: a loss advances the day,
+   * so every retry was offered a fresh roll at the check.
+   */
   key: string;
   /** The door it was taken at — it only applies if you fight that one. */
   door: number;
@@ -494,15 +498,15 @@ export interface GambitAttempt {
   success: boolean;
 }
 
-export function gambitKey(day: number, half: DayHalf): string {
-  return `${day}:${half}`;
+export function gambitKey(wave: number, half: DayHalf): string {
+  return `${wave}:${half}`;
 }
 
 /** The attempt made for this fight, or undefined if nobody has tried. */
 export function attemptFor(
-  stored: GambitAttempt | undefined, day: number, half: DayHalf,
+  stored: GambitAttempt | undefined, wave: number, half: DayHalf,
 ): GambitAttempt | undefined {
-  return stored && stored.key === gambitKey(day, half) ? stored : undefined;
+  return stored && stored.key === gambitKey(wave, half) ? stored : undefined;
 }
 
 /**

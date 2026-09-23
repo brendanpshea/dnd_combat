@@ -767,6 +767,22 @@ export function isIncapacitated(c: Combatant): boolean {
   );
 }
 
+/**
+ * Free to take a reaction right now. Every reaction reads this one gate — an
+ * opportunity attack, Shield, Counterspell, Cutting Words, a monk's deflection
+ * — so a paralyzed wizard cannot cast Shield just because that one check had
+ * only been taught about death.
+ */
+export function canReact(c: Combatant): boolean {
+  return (
+    c.alive &&
+    !isDown(c) &&
+    !c.turn.reactionUsed &&
+    !isIncapacitated(c) &&
+    !c.conditions.some((k) => k.id === 'noReactions')
+  );
+}
+
 export function cellAt(grid: GridState, p: Position): Cell | undefined {
   if (p.x < 0 || p.y < 0 || p.x >= grid.width || p.y >= grid.height) return undefined;
   return grid.cells[p.y * grid.width + p.x];

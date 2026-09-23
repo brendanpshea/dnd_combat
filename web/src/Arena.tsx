@@ -150,7 +150,7 @@ function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Comb
    * engine places anyone. `applyGambit` is a no-op when nothing was attempted,
    * which is the common case.
    */
-  applyGambit(attemptFor(run.gambit, dayOf(run), run.half ?? 'morning'), run.gate ?? 0,
+  applyGambit(attemptFor(run.gambit, run.wave, run.half ?? 'morning'), run.gate ?? 0,
     party, foes, grid, wave.encounter.members);
   return new Combat({
     seed: (run.seed ^ (wave.wave * 7919)) >>> 0,
@@ -179,7 +179,7 @@ function offeredBounties(
 ): Bounty[] {
   const preview = makeCombat(c, run, wave);
   const party = Object.values(preview.state.combatants).filter((x) => x.team === 'team1');
-  return bountiesFor(run.seed, wave.wave, party, preview.state, door);
+  return bountiesFor(run.seed, wave.wave, party, preview.state, door, run.half ?? 'morning');
 }
 
 /** The roster, grouped — "3 Cockatrices, an Ogre" reads; a list of ids doesn't. */
@@ -267,7 +267,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * should not have to turn him off again every time they start over.
    */
   const [chorusOn, setChorusOn] = useState<boolean>(
-    () => localStorage.getItem('arena-chorus') !== 'off',
+    () => { try { return localStorage.getItem('arena-chorus') !== 'off'; } catch { return true; } },
   );
   const [, bump] = useState(0);
 
@@ -293,7 +293,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const gateOffers = useMemo(
     () => gates.map((g, door) => ({
       bounty: offeredBounties(c, run, g.wave, door)[0],
-      prize: spoilPrize(run.seed, dayOf(run), half, door, level),
+      prize: spoilPrize(run.seed, run.wave, half, door, level),
     })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gates, run.seed, run.gate, run.wave, dayOf(run), half, level],
@@ -319,8 +319,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     wave.encounter.members, parseMap(wave.map),
     buildCampaignParty(c).some((x) => x.hp < x.maxHp),
   );
-  const gambit = drawGambit(run.seed, dayOf(run), half, run.gate ?? 0, gambitCtx);
-  const gambitTaken = attemptFor(run.gambit, dayOf(run), half);
+  const gambit = drawGambit(run.seed, run.wave, half, run.gate ?? 0, gambitCtx);
+  const gambitTaken = attemptFor(run.gambit, run.wave, half);
   /** Built party, for the slot counts the camp-buff buttons quote. */
   const party = buildCampaignParty(c);
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
@@ -328,7 +328,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     const nextRun = { ...run, stall: next };
     setRun(nextRun); persist(c, nextRun);
   };
-  const locked = gateLocked(run.attempts);
+  const locked = gateLocked(run, half);
 
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
     saveArenaWeb({ campaign: nextC, run: nextRun });
@@ -465,7 +465,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       // Keyed to the day and half, so yesterday's gamble cannot pay for
       // today's bounty.
       // Taking the gate's gamble, not winning it — see bounties.ts.
-      gambled: attemptFor(run.gambit, dayOf(run), half) !== undefined,
+      gambled: attemptFor(run.gambit, run.wave, half) !== undefined,
     });
     // The purse is the day's pay, handed over when the day is done — winning
     // the morning buys you the afternoon, not a wage.
@@ -476,7 +476,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     // choose now — it simply goes in the pack. Seeded off the day and half and
     // never the attempt, so a retried day pays the same thing it promised.
     const prizes = claimed
-      .map(() => spoilPrize(run.seed, dayOf(run), half, run.gate ?? 0, level))
+      .map(() => spoilPrize(run.seed, run.wave, half, run.gate ?? 0, level))
       .filter((id): id is Id => id !== undefined);
     for (const id of prizes) addItem(c.characters[0]!.inventory, id);
     const nextRun = advanceDay(run, true, wave.purse, {
@@ -700,11 +700,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 const dc = gambitDc(wave.encounter.members);
                 const roll = partySkillCheck(c, gambit.skill, dc);
                 pendingGambit.current = {
-                  key: gambitKey(dayOf(run), half),
+                  key: gambitKey(run.wave, half),
                   door: run.gate ?? 0,
                   skill: gambit.skill, by: roll.by, natural: roll.natural,
                   total: roll.total, dc, success: roll.success,
                 };
+                // Saved now, shown later: the result is on screen before
+                // `onResolved`, so a save that waited for it let a reload
+                // throw away a failure the player had already read.
+                persist(c, { ...run, gambit: pendingGambit.current });
                 return roll;
               }}
               onResolved={() => {
@@ -1181,7 +1185,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   onClick={() => {
                     const next = !chorusOn;
                     setChorusOn(next);
-                    localStorage.setItem('arena-chorus', next ? 'on' : 'off');
+                    try { localStorage.setItem('arena-chorus', next ? 'on' : 'off'); } catch { /* blocked or full */ }
                   }}
                   title={chorusOn ? 'Silence the quasit' : 'Let the quasit talk'}
                 >

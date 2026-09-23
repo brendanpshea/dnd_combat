@@ -622,13 +622,20 @@ const TIE = 0.02;
  * Dexterity and loses for a bard who has been raising Dexterity.
  */
 function oneRowPerWeapon(state: GameState, actorId: Id, opts: TargetOption[]): TargetOption[] {
-  /** The weapon an option swings, whether it swings it plainly or as a spell. */
-  const weaponOf = (o: TargetOption): Id | undefined =>
-    o.action.kind === 'attack' ? o.action.weaponId
+  /**
+   * The weapon an option swings, whether it swings it plainly or as a spell —
+   * and which action pays for it. A bonus-action swing (Martial Arts, Frenzy,
+   * an off-hand) with the same weapon is a different button, not a duplicate:
+   * folded away, a monk's bonus Unarmed Strike vanished until its Extra Attack
+   * was spent.
+   */
+  const weaponOf = (o: TargetOption): string | undefined =>
+    o.action.kind === 'attack'
+      ? `${o.action.weaponId}${o.action.offhand || o.action.frenzy ? '|bonus' : ''}`
       : o.action.kind === 'castSpell' ? o.action.weaponId
       : undefined;
 
-  const best = new Map<Id, TargetOption>();
+  const best = new Map<string, TargetOption>();
   for (const o of opts) {
     const w = weaponOf(o);
     if (w === undefined) continue;

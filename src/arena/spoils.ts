@@ -140,15 +140,17 @@ export function spoilPool(tier: SpoilTier, level: number): Id[] {
  * bounty quietly paying nothing.
  */
 export function spoilOffer(
-  runSeed: number, day: number, half: 'morning' | 'afternoon',
+  runSeed: number, wave: number, half: 'morning' | 'afternoon',
   door: number, level: number,
 ): Id[] {
   const pool = spoilPool(spoilTierFor(level), level);
-  // The attempt number is deliberately absent: a retried day must offer the
-  // same three items, or losing on purpose becomes a way to reroll the prize.
+  // Seeded on the WAVE, not the calendar day, and without the attempt number:
+  // a retried day must offer the same items, or losing on purpose becomes a
+  // way to reroll the prize. A defeat advances the day, so a day-keyed seed
+  // drew a new prize on every retry.
   let rng: RngState = (
     runSeed * 2654435761 +
-    day * 40503 +
+    wave * 40503 +
     (half === 'afternoon' ? 1013904223 : 0) +
     door * 2246822519 +
     level * 374761393
@@ -182,10 +184,10 @@ export function spoilTierLabel(level: number): string {
  * anyone plays for. This is what turns the card into an objective.
  */
 export function spoilPrize(
-  runSeed: number, day: number, half: 'morning' | 'afternoon',
+  runSeed: number, wave: number, half: 'morning' | 'afternoon',
   door: number, level: number,
 ): Id | undefined {
-  return spoilOffer(runSeed, day, half, door, level)[0];
+  return spoilOffer(runSeed, wave, half, door, level)[0];
 }
 
 /** A short line for why this item is on the table, shown under its name. */

@@ -19,7 +19,7 @@ import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, LEVEL_XP, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
-  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest,
+  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
 } from '../campaign/campaign.js';
 import {
   HUB_REF,
@@ -237,6 +237,9 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       const before = levelForXp(c.xp);
       c.xp += eff.amount;
       const after = levelForXp(c.xp);
+      // Levels earned by a milestone grow spellbooks and cantrips the same way
+      // levels earned in a fight do.
+      if (after > before) growSpellsForLevel(c);
       events.push({ type: 'xp', amount: eff.amount, ...(after > before ? { leveledFrom: before, leveledTo: after } : {}) });
       break;
     }
@@ -249,6 +252,7 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       const gained = Math.max(0, target - c.xp);
       c.xp = Math.max(c.xp, target);
       const after = levelForXp(c.xp);
+      if (after > before) growSpellsForLevel(c);
       events.push({ type: 'xp', amount: gained, ...(after > before ? { leveledFrom: before, leveledTo: after } : {}) });
       break;
     }

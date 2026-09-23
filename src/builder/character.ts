@@ -9,7 +9,7 @@ import { backgroundSkills } from '../data/backgrounds.js';
 import type { SkillId } from '../data/classes.js';
 import { defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
-import { FEATURES } from '../data/features.js';
+import { FEATURES, ragesAt } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
@@ -359,6 +359,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
         // proficiency. It is the class's whole economy, so it gets its own kind
         // rather than an approximation.
         f.uses.count === 'level' ? level :
+        f.uses.count === 'rages' ? ragesAt(level) :
         f.uses.count;
       // Absent means full, the same convention HP, slots and wand charges use.
       const left = f.uses.per === 'encounter' ? undefined : opts.featureUsesOverride?.[fid];
@@ -453,7 +454,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
    * would not be wearing the leather. Only when the ward is actually better,
    * so a warlock who later buys half plate keeps it.
    */
-  const wornArmor = opts.equipped?.armor ?? kit.equipment.armor;
+  // `equipped` given means that IS what is worn — no armour included. Falling
+  // back to the kit on a missing `armor` kept a paladin who took off their
+  // chain mail slowed by it.
+  const wornArmor = opts.equipped ? opts.equipped.armor : kit.equipment.armor;
   const shedForWard = featureIds.includes('armor-of-shadows') && wornArmor !== undefined &&
     armorClass(wornArmor, abilityMod(abilities.dex), 0) < 13 + abilityMod(abilities.dex);
 
@@ -504,7 +508,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       // Fast Movement (Barbarian 5): +10 ft, on the same terms as Roving — the
       // heavy-armour penalty below applies to both.
       + (featureIds.includes('fast-movement') ? 10 : 0) -
-      armorSpeedPenalty(opts.equipped?.armor ?? kit.equipment.armor, abilities.str),
+      armorSpeedPenalty(wornArmor, abilities.str),
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],

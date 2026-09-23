@@ -51,7 +51,7 @@ export interface FeatureData {
    * even from an old save.
    */
   uses?: {
-    count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod' | 'level';
+    count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod' | 'level' | 'rages';
     per: 'encounter' | 'shortRest' | 'longRest';
   };
   /**
@@ -149,7 +149,7 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   'breath-lightning-young': { shape: 'line', length: 12, save: 'dex', damageType: 'lightning', dice: '10d10' },
   'breath-poison-young':    { shape: 'cone',            save: 'con', damageType: 'poison',    dice: '12d6' },
   'breath-fire-young':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '16d6' },
-  'breath-cold-young':      { shape: 'cone',            save: 'con', damageType: 'cold',      dice: '8d8' },
+  'breath-cold-young':      { shape: 'cone',            save: 'con', damageType: 'cold',      dice: '9d8' },
   // The chimera's goat head breathes fire on the same recharge, at its own
   // (lower) CR 6 scale — it is not a dragon and shouldn't hit like one.
   'breath-fire-chimera':    { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d8' },
@@ -311,6 +311,12 @@ function bestAdjacentFoe(state: GameState, me: Combatant): Combatant | undefined
     if (!best || c.hp < best.hp) best = c;
   }
   return best;
+}
+
+/** The Barbarian's Rages column (SRD 5.2.1), indexed by level - 1. */
+const RAGES_BY_LEVEL = [2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6];
+export function ragesAt(level: number): number {
+  return RAGES_BY_LEVEL[Math.min(Math.max(level, 1), 20) - 1]!;
 }
 
 export const FEATURES: Record<Id, FeatureData> = {
@@ -1364,7 +1370,9 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   rage: {
     id: 'rage', name: 'Rage', trigger: 'bonus',
-    uses: { count: 'proficiency', per: 'longRest' },
+    // The class table's Rages column, not proficiency: the two part at levels
+    // 3-4 and 6-8, where proficiency ran a rage short.
+    uses: { count: 'rages', per: 'longRest' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       if (c.conditions.some((k) => k.id === 'raging')) return [];
@@ -1791,7 +1799,10 @@ export const FEATURES: Record<Id, FeatureData> = {
       if (!save.success) {
         // Until the end of its NEXT turn, so a stun taken before its turn costs
         // it that turn — which is the whole point of spending a point on it.
-        target.conditions.push({ id: 'stunned', sourceId: actorId, expiresAtRound: state.round + 1 });
+        // Expiry is read at the start of the target's own turns, so a target
+        // still to act this round must expire THIS round, or it loses two.
+        const actsLater = state.initiativeOrder.indexOf(target.id) > state.turnIndex;
+        target.conditions.push({ id: 'stunned', sourceId: actorId, expiresAtRound: actsLater ? state.round : state.round + 1 });
         events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'stunned', sourceId: actorId });
       }
       return events;

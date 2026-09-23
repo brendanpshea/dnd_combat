@@ -731,7 +731,7 @@ STR 14 (+2), DEX 3 (-4), CON 20 (+5), INT 1 (-5), WIS 6 (-2), CHA 1 (-5)
 
 - **Attacks:** Pseudopod 3d6 acid
 - **Features:** Engulf
-- **Immunities:** poison
+- **Immunities:** acid
 - **Hold damage:** 3d6 acid to whoever it has restrained
 
 ### Ghast
@@ -740,7 +740,7 @@ STR 14 (+2), DEX 3 (-4), CON 20 (+5), INT 1 (-5), WIS 6 (-2), CHA 1 (-5)
 
 STR 16 (+3), DEX 17 (+3), CON 10 (+0), INT 11 (+0), WIS 10 (+0), CHA 8 (-1)
 
-- **Attacks:** Claws 2d4 slashing, CON DC 12 or paralyzed; Bite 2d6 piercing
+- **Attacks:** Claws 2d6 slashing, CON DC 10 or paralyzed; Bite 1d8 piercing, +2d8 necrotic
 - **Resistances:** necrotic
 - **Immunities:** poison
 
@@ -759,7 +759,7 @@ STR 17 (+3), DEX 10 (+0), CON 16 (+3), INT 2 (-4), WIS 7 (-2), CHA 5 (-3)
 
 STR 19 (+4), DEX 14 (+2), CON 12 (+1), INT 1 (-5), WIS 10 (+0), CHA 3 (-4)
 
-- **Attacks:** Constrict 2d8 bludgeoning, STR DC 14 or restrained; Bite 1d6 piercing
+- **Attacks:** Constrict 2d8 bludgeoning, STR DC 14 or restrained; Bite 2d6 piercing
 
 ### Gnoll Packcaller
 
@@ -1054,7 +1054,7 @@ STR 10 (+0), DEX 12 (+1), CON 13 (+1), INT 12 (+1), WIS 16 (+3), CHA 11 (+0)
 
 STR 22 (+6), DEX 9 (-1), CON 17 (+3), INT 3 (-4), WIS 11 (+0), CHA 6 (-2)
 
-- **Attacks:** Gore 4d8 piercing
+- **Attacks:** Gore 2d8 piercing
 - **Features:** Trampling Charge
 
 ### Ettin
@@ -1151,7 +1151,7 @@ STR 19 (+4), DEX 11 (+0), CON 21 (+5), INT 2 (-4), WIS 10 (+0), CHA 5 (-3)
 
 STR 20 (+5), DEX 8 (-1), CON 20 (+5), INT 5 (-3), WIS 10 (+0), CHA 5 (-3)
 
-- **Attacks:** Slam 2d10 bludgeoning
+- **Attacks:** Slam 2d8 bludgeoning
 - **Features:** Earth Glide
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
@@ -1300,7 +1300,7 @@ STR 18 (+4), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 10 (+0), CHA 8 (-1)
 
 STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 11 (+0), WIS 12 (+1), CHA 12 (+1)
 
-- **Attacks:** Bite 2d12 piercing; Rend 2d10 slashing
+- **Attacks:** Bite 2d12 piercing; Rend 2d8 slashing
 
 ### Wraith
 
@@ -1309,9 +1309,9 @@ STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 11 (+0), WIS 12 (+1), CHA 12 (+1)
 STR 6 (-2), DEX 16 (+3), CON 16 (+3), INT 12 (+1), WIS 14 (+2), CHA 15 (+2)
 
 - **Attacks:** Life Drain 4d8 necrotic
-- **Resistances:** acid, cold, fire, lightning, necrotic
+- **Resistances:** acid, cold, fire, lightning
 - **Resists nonmagical:** bludgeoning, piercing, slashing
-- **Immunities:** poison
+- **Immunities:** necrotic, poison
 
 ### Chimera
 
@@ -1547,7 +1547,7 @@ STR 21 (+5), DEX 9 (-1), CON 15 (+2), INT 18 (+4), WIS 15 (+2), CHA 18 (+4)
 - **Saving throws:** CON, INT, WIS
 - **Attacks:** Tentacle 2d6 bludgeoning, +2d6 psychic; Tail 3d6 bludgeoning
 - **Features:** Magic Resistance
-- **Spellcasting:** INT, slots 4×L1 3×L2
+- **Spellcasting:** INT, slots 4×L1 3×L2 2×L3
 - **Spells:** Acid Splash, Ray of Sickness, Hold Person, Blindness, Fear
 
 ### Stone Golem
@@ -1589,5 +1589,5 @@ STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 18 (+4)
 
 STR 24 (+7), DEX 13 (+1), CON 21 (+5), INT 4 (-3), WIS 10 (+0), CHA 5 (-3)
 
-- **Attacks:** Bite 6d10 piercing, +6d6 fire
+- **Attacks:** Bite 6d10 piercing, +4d6 fire
 - **Immunities:** cold, fire

@@ -458,6 +458,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     // Entangle: value each enemy the patch would catch, weighted by its odds of
     // failing the Strength save — the same shape as Web, whose vines these are.
     case 'entangle': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       const anchor = (a.targets[0] as { position: Position }).position;
       let v = 0;
       for (const pos of sphere5x5(anchor)) {
@@ -566,6 +568,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'searing-smite':
     case 'shining-smite':
     case 'ensnaring-strike': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       // Only worth arming if there is something to hit this turn — the slot is
       // spent at cast time, so loading up with no enemy in reach throws it away.
       //
@@ -656,6 +660,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return damageValue(hitProb(bonus, acOf(t), 'flat') * (avgDice(w.damage) + castMod), t);
     }
     case 'sleep': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       const anchor = (a.targets[0] as { position: Position }).position;
       let v = 0;
       for (const pos of sphere2x2(anchor)) {
@@ -827,6 +833,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
      */
     case 'summon-dragon':
     case 'animate-objects': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       const already = Object.values(state.combatants).some(
         (c) => c.alive && c.summonedBy === actor.id && c.summonSpell === a.spellId);
       if (already) return 0;
@@ -986,6 +994,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) - slotCost;
     }
     case 'suggestion': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       // Removing an enemy from the fight is worth roughly killing it.
       return saveFailProb(state, t, 'wis', dc) * damageValue(t.hp, t) - slotCost;
@@ -1034,6 +1044,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return v - slotCost;
     }
     case 'spiritual-weapon': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       // One hammer at a time; recasting the same summon buys nothing.
       if (actor.summons?.some((s) => s.kind === 'spiritual-weapon')) return 0;
       // Placed beside an enemy it strikes immediately, then keeps attacking on
@@ -1419,6 +1431,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return v - slotCost;
     }
     case 'confusion': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       const center = (a.targets[0] as { position: Position }).position;
       let v = 0;
       for (const pos of sphere2x2(center)) {
@@ -1445,6 +1459,8 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return v - slotCost;
     }
     case 'greater-invisibility': {
+      // Would silently drop whatever is already held, and nothing here prices that.
+      if (actor.concentratingOn) return 0;
       // Worth it on whoever is going to swing next and is in reach of something
       // — advantage on every attack, and nothing can target them back.
       const tid = (a.targets[0] as { combatantId: Id }).combatantId;
@@ -2118,6 +2134,13 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   return 0;
 }
 
+/** What the healing items restore, for pricing them. Cure Wounds for the staff. */
+const HEALING_ITEM_DICE: Record<Id, string> = {
+  'potion-healing': '2d4+2',
+  'potion-greater-healing': '4d4+4',
+  'staff-healing': '2d8+3',
+};
+
 function scoreItem(state: GameState, actor: Combatant, a: Action & { kind: 'useItem' }): number {
   const item = ITEMS[a.itemId];
   if (!item) return 0;
@@ -2137,12 +2160,16 @@ function scoreItem(state: GameState, actor: Combatant, a: Action & { kind: 'useI
   switch (item.targeting.kind) {
     case 'ally':
     case 'self': {
-      // Healing potions: value by urgency, like Cure Wounds.
+      // Healing potions: value by urgency, like Cure Wounds. Only the items
+      // that actually heal — this used to price every self/ally item as a
+      // potion, so a hero on 3 HP would drink fire resistance to save itself.
+      const dice = HEALING_ITEM_DICE[a.itemId];
+      if (!dice) return 0;
       const tid = targets[0] && 'combatantId' in targets[0] ? targets[0].combatantId : actor.id;
       const t = state.combatants[tid]!;
       const missing = t.maxHp - t.hp;
       if (missing < t.maxHp / 2) return 0;
-      const heal = Math.min(avgDice(a.itemId === 'potion-greater-healing' ? '4d4+4' : '2d4+2'), missing);
+      const heal = Math.min(avgDice(dice), missing);
       return heal * 1.2;
     }
     case 'thrown': {

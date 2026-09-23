@@ -183,7 +183,9 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     stamp: (put, mid, roll, height) => {
       const step = 3;
       for (let y = 2; y <= height - 3; y += step) {
-        const off = (y / step) % 2 === 0 ? 1 : 3;
+        // Alternate rows by index: `y / step` is never whole for y = 2, 5, 8,
+        // so reading it directly put every row on the same columns.
+        const off = Math.floor(y / step) % 2 === 0 ? 1 : 3;
         for (let x = off; x < WIDTH; x += 3) put(x, y, roll() < 0.3 ? '+' : '#');
       }
     },

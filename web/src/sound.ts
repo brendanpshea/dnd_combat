@@ -12,7 +12,11 @@ export type Sfx =
   | 'coin' | 'item' | 'levelup' | 'page' | 'secret';
 
 let ctx: AudioContext | undefined;
-let muted = localStorage.getItem('dnd-muted') === '1';
+// Read at import, before any error boundary exists: storage that throws here
+// (blocked cookies, a sandboxed frame) would leave a blank page.
+let muted = (() => {
+  try { return localStorage.getItem('dnd-muted') === '1'; } catch { return false; }
+})();
 
 export function initAudio(): void {
   if (!ctx) {
@@ -31,7 +35,7 @@ export function isMuted(): boolean {
 
 export function setMuted(m: boolean): void {
   muted = m;
-  localStorage.setItem('dnd-muted', m ? '1' : '0');
+  try { localStorage.setItem('dnd-muted', m ? '1' : '0'); } catch { /* blocked or full */ }
 }
 
 interface Note {

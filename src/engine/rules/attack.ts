@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, ignoresHalfCover } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
@@ -429,23 +429,15 @@ export function resolveAttack(
     attacker.turn.disengaged = true;
   }
 
-  // Fighting Style: Great Weapon Fighting — reroll each 1 or 2 on a two-handed
-  // melee weapon's damage dice once, keeping the new roll.
+  // Fighting Style: Great Weapon Fighting — SRD 5.2.1 treats each 1 or 2 on a
+  // two-handed melee weapon's damage dice as a 3 (the 2014 reroll is gone).
   if (
     attacker.featureIds.includes('great-weapon-fighting') &&
     isMeleeAttack &&
     weapon.properties.includes('two-handed')
   ) {
-    const faces = weapon.damage.match(/d(\d+)/)?.[1];
-    if (faces) {
-      rolls = rolls.map((r) => {
-        if (r > 2) return r;
-        const rr = rollDice(state.rng, `1d${faces}`);
-        state.rng = rr.state;
-        return rr.total;
-      });
-      tags.push('Great Weapon Fighting');
-    }
+    rolls = rolls.map((r) => (r <= 2 ? 3 : r));
+    tags.push('Great Weapon Fighting');
   }
 
   /**
@@ -758,7 +750,10 @@ export function resolveAttack(
     } else if (
       target.hp > 0 &&
       attacker.featureIds.includes('divine-smite') &&
-      !attacker.turn.bonusActionUsed
+      !attacker.turn.bonusActionUsed &&
+      // A bonus action is only spendable on your own turn; an opportunity
+      // attack reads last turn's leftover flag, which startTurn resets anyway.
+      state.initiativeOrder[state.turnIndex] === attackerId
     ) {
       // Auto-fire on the two moments a paladin would never *not* smite:
       //
@@ -1067,7 +1062,7 @@ export function applyDamage(
   // sees the number before it lands — and gated on the reaction, so it is once
   // a round and competes with everything else a monk might react with.
   if (opts.melee && target.featureIds.includes('deflect-attacks') &&
-      !target.turn.reactionUsed && !isIncapacitated(target) && amount > 0) {
+      canReact(target) && amount > 0) {
     target.turn.reactionUsed = true;
     amount = Math.ceil(amount / 2);
     deflected = true;
@@ -1164,7 +1159,9 @@ export function applyDamage(
   // Damage ends the Sleep effect at either stage: the stage-1 magical
   // Incapacitated (identified by its repeat save) and the escalated
   // Unconscious both wake on any damage.
-  if (target.hp > 0) {
+  // Only damage actually taken counts: an immune sleeper sleeps on, and an
+  // immune concentrator has nothing to hold its focus against.
+  if (target.hp > 0 && amount > 0) {
     const asleep = (c: (typeof target.conditions)[number]) =>
       c.id === 'unconscious' || (c.id === 'incapacitated' && c.repeatSave !== undefined);
     for (const c of target.conditions) {
@@ -1173,9 +1170,9 @@ export function applyDamage(
     target.conditions = target.conditions.filter((c) => !asleep(c));
   }
 
-  // Concentration save: DC max(10, floor(damage/2)).
-  if (target.hp > 0 && target.concentratingOn) {
-    const dc = Math.max(10, Math.floor(amount / 2));
+  // Concentration save: DC max(10, floor(damage/2)), capped at 30.
+  if (target.hp > 0 && amount > 0 && target.concentratingOn) {
+    const dc = Math.min(30, Math.max(10, Math.floor(amount / 2)));
     const save = savingThrow(state, targetId, 'con', dc);
     events.push(save.event);
     if (!save.success) {
@@ -1227,8 +1224,8 @@ export function tryCuttingWords(
 ): { amount: number; event: GameEvent } | undefined {
   if (margin > 5) return undefined;
   const bard = Object.values(state.combatants).find(
-    (c) => c.alive && !isDown(c) && c.team === target.team &&
-      c.featureIds.includes('cutting-words') && !c.turn.reactionUsed &&
+    (c) => canReact(c) && c.team === target.team &&
+      c.featureIds.includes('cutting-words') &&
       (c.featureUses['bardic-inspiration']?.current ?? 0) > 0 &&
       distanceFeet(c.position, target.position) <= 60,
   );
@@ -1245,8 +1242,8 @@ export function tryCuttingWords(
 
 export function tryAutoShield(state: GameState, targetId: Id): boolean {
   const t = state.combatants[targetId];
-  if (!t || !t.alive || !t.spellIds.includes('shield')) return false;
-  if (t.turn.reactionUsed || t.conditions.some((c) => c.id === 'shielded')) return false;
+  if (!t || !canReact(t) || !t.spellIds.includes('shield')) return false;
+  if (t.conditions.some((c) => c.id === 'shielded')) return false;
   const slot = t.spellSlots.find((s) => s.current > 0);
   if (!slot) return false;
   slot.current -= 1;
@@ -1279,8 +1276,8 @@ export function tryCounterspell(state: GameState, casterId: Id, spellLevel: numb
   const caster = state.combatants[casterId];
   if (!caster) return undefined;
   for (const c of Object.values(state.combatants)) {
-    if (c.team === caster.team || !c.alive || isDown(c) || isIncapacitated(c)) continue;
-    if (!c.spellIds.includes('counterspell') || c.turn.reactionUsed) continue;
+    if (c.team === caster.team || !canReact(c)) continue;
+    if (!c.spellIds.includes('counterspell')) continue;
     // 60 feet and line of sight: you cannot stop what you cannot see.
     if (distanceFeet(c.position, caster.position) > 60) continue;
     if (!hasLineOfSight(state.grid, c.position, caster.position)) continue;
