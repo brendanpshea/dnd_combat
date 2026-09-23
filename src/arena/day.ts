@@ -29,7 +29,7 @@
 import type { Id } from '../engine/types.js';
 import { ITEMS } from '../data/items.js';
 import {
-  type CampaignState, type RestResult, longRest, shortRest, buildCampaignParty, hitDiceLeft,
+  type CampaignState, type RestResult, longRest, shortRest, buildCampaignParty, hitDiceLeft, patchResources,
 } from '../campaign/campaign.js';
 import { CLASSES } from '../data/classes.js';
 import { rollDie } from '../engine/rng.js';
@@ -102,14 +102,8 @@ export function itemRecharge(c: CampaignState, cleared: number): void {
       if (cleared >= readyAt) delete charges[itemId];   // absent = full
       else still[itemId] = readyAt;
     }
-    // Rebuilt rather than spread-over: "absent means full" is the convention
-    // every resource here uses, so an emptied map has to actually go away.
-    const { itemCharges: _c, itemCooldowns: _d, ...rest } = ch.resources!;
-    ch.resources = {
-      ...rest,
-      ...(Object.keys(charges).length > 0 ? { itemCharges: charges } : {}),
-      ...(Object.keys(still).length > 0 ? { itemCooldowns: still } : {}),
-    };
+    // patchResources drops an emptied map: absent means full.
+    patchResources(ch, { itemCharges: charges, itemCooldowns: still });
   }
 }
 
@@ -133,7 +127,7 @@ export function noteSpentItems(c: CampaignState, cleared: number): void {
       // its own due date further out every time it is used.
       if (due[itemId] === undefined) { due[itemId] = cleared + days; changed = true; }
     }
-    if (changed) ch.resources = { ...ch.resources!, itemCooldowns: due };
+    if (changed) patchResources(ch, { itemCooldowns: due });
   }
 }
 
@@ -162,18 +156,17 @@ export function lunch(c: CampaignState): RestResult {
       // a single hit point: the arena will not start a fight with an
       // unconscious hero, and a party that cannot raise its casualties is
       // punished quite enough by having to fight around them.
-      ch.resources = { ...ch.resources, hp: 1 };
+      patchResources(ch, { hp: 1 });
       continue;
     }
     const die = CLASSES[ch.classId]?.hitDie ?? 8;
     const roll = rollDie(c.rng, die);
     c.rng = roll.state;
     const conMod = abilityMod(combatant.abilities.con);
-    ch.resources = {
-      ...ch.resources,
+    patchResources(ch, {
       hp: Math.min(combatant.maxHp, Math.max(1, roll.value + conMod)),
       hitDice: left - 1,
-    };
+    });
     revived += 1;
     spent += 1;
   }

@@ -40,9 +40,16 @@ export interface PartyCharacter {
   speciesId: Id;
   name: string;
   portraitId: Id;
-  /** Mutable adventuring state. Missing means a fully rested legacy save. */
+  /**
+   * Mutable adventuring state. Missing means fully rested, and so does every
+   * missing field inside it — HP included. Write it only through
+   * `patchResources`, which keeps that rule: rebuilding the object by hand is
+   * how hit dice, cooldowns and a wizard's spent slots kept being refilled for
+   * free by whichever code path forgot to copy them across.
+   */
   resources?: {
-    hp: number;
+    /** Absent = full. */
+    hp?: number;
     /** Remaining spell slots, index 0 = 1st-level. Absent = full — a fresh
      *  save, a non-caster, or a caster since their last long rest. */
     slots?: number[];
@@ -143,6 +150,63 @@ export interface PartyCharacter {
   /** Background id — grants two skill proficiencies (see data/backgrounds.ts).
    *  Absent = none (legacy saves, skirmish parties). */
   backgroundId?: Id;
+}
+
+type PartyResources = NonNullable<PartyCharacter['resources']>;
+type CampEffects = NonNullable<PartyResources['effects']>;
+
+/**
+ * Change some of a character's resources and leave the rest alone.
+ *
+ * A field given as `undefined` is removed — which, since absent means full, is
+ * how a rest refills it — and so is an emptied map. If nothing is left the whole
+ * `resources` goes, which is a fully rested hero.
+ */
+export function patchResources(
+  ch: PartyCharacter,
+  patch: { [K in keyof PartyResources]?: PartyResources[K] | undefined },
+): void {
+  const next: Record<string, unknown> = { ...ch.resources };
+  for (const [key, value] of Object.entries(patch)) {
+    const empty = value === undefined ||
+      (typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length === 0);
+    if (empty) delete next[key];
+    else next[key] = value;
+  }
+  if (Object.keys(next).length === 0) delete ch.resources;
+  else ch.resources = next as PartyResources;
+}
+
+/**
+ * When each camp effect ends. One table, typed over every effect, so a new one
+ * cannot be added without saying — its lifetime used to be spread over the
+ * rest functions, the fight read-back and the camp-buff clearer, and False Life
+ * went unlisted in the read-back and was handed out again every fight.
+ *
+ * Each ends at its own event and at every bigger one: a short rest also ends
+ * what a fight would have, and a long rest ends both.
+ */
+export const EFFECT_ENDS: Record<keyof CampEffects, 'fight' | 'shortRest' | 'longRest' | 'never'> = {
+  familiar: 'never',            // the owl stays until dismissed
+  mageArmor: 'longRest',        // eight hours
+  giantStrength: 'shortRest',   // a one-hour potion
+  resistances: 'shortRest',     // a one-hour potion
+  passWithoutTrace: 'shortRest',
+  aid: 'shortRest',
+  falseLife: 'fight',           // spent by the fight it was cast for
+  campConcentration: 'fight',   // Haste lasts a minute: about a fight
+};
+const END_ORDER = ['fight', 'shortRest', 'longRest', 'never'] as const;
+
+/** End every camp effect whose time is up at `at`. */
+export function endEffects(ch: PartyCharacter, at: 'fight' | 'shortRest' | 'longRest'): void {
+  const effects = ch.resources?.effects;
+  if (!effects) return;
+  const rank = END_ORDER.indexOf(at);
+  const kept = Object.fromEntries(Object.entries(effects).filter(
+    ([key]) => END_ORDER.indexOf(EFFECT_ENDS[key as keyof CampEffects]) > rank,
+  ));
+  patchResources(ch, { effects: kept });
 }
 
 export interface CampaignState {
@@ -1605,7 +1669,7 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
 }
 
 function setCampaignHp(ch: PartyCharacter, hp: number): void {
-  ch.resources = { ...ch.resources, hp };
+  patchResources(ch, { hp });
 }
 
 /**
@@ -1620,7 +1684,7 @@ function spendSlot(ch: PartyCharacter, caster: Combatant, slotLevelIdx: number):
   const current = caster.spellSlots[slotLevelIdx]?.current ?? 0;
   if (current <= 0) return false;
   const slots = caster.spellSlots.map((p, i) => (i === slotLevelIdx ? p.current - 1 : p.current));
-  ch.resources = { ...ch.resources, hp: ch.resources?.hp ?? caster.hp, slots };
+  patchResources(ch, { slots });
   return true;
 }
 
@@ -1734,7 +1798,7 @@ function recoverSlotsOnShortRest(c: CampaignState, idx: number, caster: Combatan
       for (let n = p.current; n < p.max; n++) recovered.push(i + 1);
     });
     if (recovered.length === 0) return [];
-    ch.resources = { ...ch.resources, hp: ch.resources?.hp ?? caster.hp, slots };
+    patchResources(ch, { slots });
     return recovered;
   }
   const featureId = caster.featureIds.includes('arcane-recovery') ? 'arcane-recovery'
@@ -1760,12 +1824,7 @@ function recoverSlotsOnShortRest(c: CampaignState, idx: number, caster: Combatan
     }
   }
   if (recovered.length === 0) return [];
-  ch.resources = {
-    ...ch.resources,
-    hp: ch.resources?.hp ?? caster.hp,
-    slots,
-    featureUses: { ...ch.resources?.featureUses, [featureId]: 0 },
-  };
+  patchResources(ch, { slots, featureUses: { ...ch.resources?.featureUses, [featureId]: 0 } });
   return recovered;
 }
 
@@ -1791,15 +1850,13 @@ function restoreSorceryPoints(ch: PartyCharacter, caster: Combatant): number {
   if (!pool) return 0;
   const back = Math.min(Math.floor(caster.level / 2), pool.max - pool.current);
   if (back <= 0) return 0;
-  ch.resources = {
-    ...ch.resources,
-    hp: ch.resources?.hp ?? caster.hp,
+  patchResources(ch, {
     featureUses: {
       ...ch.resources?.featureUses,
       'font-of-magic': pool.current + back,
       'sorcerous-restoration': 0,
     },
-  };
+  });
   return back;
 }
 
@@ -1809,11 +1866,7 @@ function refillShortRestFeatures(ch: PartyCharacter): void {
   const kept = Object.fromEntries(
     Object.entries(left).filter(([id]) => FEATURES[id]?.uses?.per === 'longRest'),
   );
-  if (Object.keys(kept).length > 0) ch.resources = { ...ch.resources!, featureUses: kept };
-  else {
-    const { featureUses: _f, ...rest } = ch.resources!;
-    ch.resources = rest;
-  }
+  patchResources(ch, { featureUses: kept });
 }
 
 export function shortRest(c: CampaignState): RestResult {
@@ -1839,7 +1892,7 @@ export function shortRest(c: CampaignState): RestResult {
       hitDiceSpent += 1;
     }
     totalHealed += hp - combatant.hp;
-    ch.resources = { ...ch.resources, hp, hitDice: left };
+    patchResources(ch, { hp, hitDice: left });
     // Second Wind, Action Surge, Channel Divinity and Wild Shape come back
     // here; Lay on Hands and Bardic Inspiration are the day's budget and do not.
     refillShortRestFeatures(ch);
@@ -1851,7 +1904,7 @@ export function shortRest(c: CampaignState): RestResult {
     if (points > 0) pointsRestored.push({ name: ch.name, points });
     // A short rest ends the 1-hour camp buff potions (giant strength,
     // resistances); familiar/mageArmor keep their own longer clocks.
-    clearCampBuffs(ch);
+    endEffects(ch, 'shortRest');
   }
   return {
     totalHealed, hitDiceSpent,
@@ -1860,47 +1913,27 @@ export function shortRest(c: CampaignState): RestResult {
   };
 }
 
-/** Drop the camp-drunk buff-potion effects (giant strength, resistances) from
- *  a character's resources, deleting `effects` entirely if nothing else is in
- *  it. A no-op if none are set. */
-function clearCampBuffs(ch: PartyCharacter): void {
-  const eff = ch.resources?.effects;
-  if (!eff || (eff.giantStrength === undefined && eff.resistances === undefined &&
-      eff.passWithoutTrace === undefined && eff.falseLife === undefined &&
-      eff.aid === undefined && eff.campConcentration === undefined)) return;
-  // False Life is an hour, Haste is a minute, Aid is eight — all of them are
-  // over by the time the party has rested, and a buff that survived a rest
-  // would be a buff you cast once and never again.
-  const { giantStrength: _s, resistances: _r, passWithoutTrace: _p,
-    falseLife: _f, aid: _a, campConcentration: _cc, ...rest } = eff;
-  if (Object.keys(rest).length) ch.resources = { ...ch.resources!, effects: rest };
-  else { const { effects: _e, ...noEffects } = ch.resources!; ch.resources = noEffects; }
-}
-
 /**
- * Testing-friendly long rest: each hero recovers all missing HP and every
- * spell slot (rebuilding `resources` from scratch drops any `slots` field,
- * and its absence means fully rested). Mage Armor also lapses on a long rest
- * in 5e, so it's dropped the same way; a familiar persists.
+ * A long rest: each hero recovers all missing HP, every spell slot, every hit
+ * die and every feature pool, and the camp effects that end with it lapse
+ * (Mage Armor does; a familiar persists — see EFFECT_ENDS).
  */
 export function longRest(c: CampaignState): RestResult {
   let totalHealed = 0;
   const party = buildCampaignParty(c);
-  const max = hitDiceMax(c);
   for (const [index, combatant] of party.entries()) {
     totalHealed += combatant.maxHp - combatant.hp;
     const character = c.characters[index]!;
-    // SRD 5.2.1: a long rest restores ALL spent hit dice — the 2024 rule, not
-    // the 2014 half-your-total one. That is what keeps hit dice a *within-day*
-    // currency (the arena's lunch break) instead of a slow bleed across a run
-    // that a player cannot see coming. `restored` stays a name rather than a
-    // literal because the field below is only written when the pool is short.
-    const restored = max;
-    // Charges on anything slower than a nightly clock do NOT come back here. A
-    // long rest rebuilds `resources` from scratch, and "absent means full" is
-    // what refills a wand — so anything that must stay spent has to be carried
-    // across by hand. `refills: 'never'` never returns; `{ days: n }` returns
-    // when `itemRecharge` says so, which is why its pending record rides along.
+    // What a long rest resets, and nothing else. Absent means full, so each
+    // `undefined` below is a refill:
+    //  - hit points and every spell slot;
+    //  - ALL spent hit dice (SRD 5.2.1 — the 2024 rule, not 2014's half), which
+    //    keeps them a within-day currency (the arena's lunch) rather than a slow
+    //    bleed across a run;
+    //  - every feature pool, short-rest and long-rest alike;
+    //  - wand charges on the nightly clock. Anything slower stays spent:
+    //    `refills: 'never'` never returns, and `{ days: n }` returns when
+    //    `itemRecharge` says so — its pending `itemCooldowns` are left alone.
     const keptCharges = Object.fromEntries(
       Object.entries(character.resources?.itemCharges ?? {})
         .filter(([itemId]) => {
@@ -1908,14 +1941,11 @@ export function longRest(c: CampaignState): RestResult {
           return refills !== undefined && refills !== 'rest';
         }),
     );
-    const keptCooldowns = character.resources?.itemCooldowns;
-    character.resources = {
-      hp: combatant.maxHp,
-      ...(restored < max ? { hitDice: restored } : {}),
-      ...(Object.keys(keptCharges).length > 0 ? { itemCharges: keptCharges } : {}),
-      ...(keptCooldowns && Object.keys(keptCooldowns).length > 0 ? { itemCooldowns: keptCooldowns } : {}),
-      ...(character.resources?.effects?.familiar ? { effects: { familiar: { kind: 'owl' } } } : {}),
-    };
+    patchResources(character, {
+      hp: undefined, slots: undefined, hitDice: undefined, featureUses: undefined,
+      itemCharges: keptCharges,
+    });
+    endEffects(character, 'longRest');
   }
   return { totalHealed };
 }
@@ -2001,7 +2031,7 @@ export function drinkCampBuffPotion(c: CampaignState, charIdx: number, itemId: I
   if (spec.resistance) {
     effects.resistances = [...new Set([...(effects.resistances ?? []), spec.resistance])];
   }
-  ch.resources = { ...ch.resources, hp: ch.resources?.hp ?? buildCampaignParty(c)[charIdx]!.maxHp, effects };
+  patchResources(ch, { effects });
   return `${ch.name} is ${spec.label} (until the next rest).`;
 }
 
@@ -2094,16 +2124,15 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
   if (action.targeting !== 'self' && !PARTY_SPELLS.has(spellId)) return false;
   if (spellId === 'find-familiar') {
     // A ritual in 5e: a wizard can cast it without spending a slot.
-    user.resources = {
-      hp: user.resources?.hp ?? caster.hp,
-      effects: { ...user.resources?.effects, familiar: { kind: 'owl' } },
-    };
+    // Patched, not rebuilt: rebuilding kept only HP, so a camp-cast familiar
+    // handed back the wizard's spent slots and hit dice.
+    patchResources(user, { effects: { ...user.resources?.effects, familiar: { kind: 'owl' } } });
     return true;
   }
   if (spellId === 'mage-armor') {
     const slotLevelIdx = SPELLS[spellId]!.level - 1;
     if (!spendSlot(user, caster, slotLevelIdx)) return false;
-    user.resources = { ...user.resources, hp: user.resources?.hp ?? caster.hp, effects: { ...user.resources?.effects, mageArmor: true } };
+    patchResources(user, { effects: { ...user.resources?.effects, mageArmor: true } });
     return true;
   }
   if (spellId === 'false-life') {
@@ -2113,10 +2142,7 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     // button whose value silently varies invites re-clicking it. (It cannot be
     // re-clicked for a better number here — the slot is already gone — but the
     // next person to add a camp spell should not learn the wrong lesson.)
-    user.resources = {
-      ...user.resources, hp: user.resources?.hp ?? caster.hp,
-      effects: { ...user.resources?.effects, falseLife: 9 },
-    };
+    patchResources(user, { effects: { ...user.resources?.effects, falseLife: 9 } });
     return true;
   }
   if (spellId === 'aid') {
@@ -2130,10 +2156,7 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     c.characters.forEach((ch, i) => {
       if (i === userIdx) return;
       const already = (ch.resources?.effects?.aid ?? 0) > 0;
-      ch.resources = {
-        ...ch.resources, hp: built[i]!.hp + (already ? 0 : 5),
-        effects: { ...ch.resources?.effects, aid: 5 },
-      };
+      patchResources(ch, { hp: built[i]!.hp + (already ? 0 : 5), effects: { ...ch.resources?.effects, aid: 5 } });
     });
     return true;
   }
@@ -2148,24 +2171,16 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     const target = c.characters.findIndex((ch, i) => i !== userIdx && !ch.resources?.effects?.campConcentration);
     if (target < 0) return false;
     if (!spendSlot(user, caster, slotLevelIdx)) return false;
-    const built = buildCampaignParty(c);
     const ch = c.characters[target]!;
-    ch.resources = {
-      ...ch.resources, hp: ch.resources?.hp ?? built[target]!.hp,
-      effects: { ...ch.resources?.effects, campConcentration: { spellId, casterIdx: userIdx } },
-    };
+    patchResources(ch, { effects: { ...ch.resources?.effects, campConcentration: { spellId, casterIdx: userIdx } } });
     return true;
   }
   if (spellId === 'pass-without-trace') {
     // The whole party, not the caster — the check it exists for is a group one.
     const slotLevelIdx = SPELLS[spellId]!.level - 1;
     if (!spendSlot(user, caster, slotLevelIdx)) return false;
-    for (const [i, ch] of c.characters.entries()) {
-      ch.resources = {
-        ...ch.resources,
-        hp: ch.resources?.hp ?? buildCampaignParty(c)[i]!.hp,
-        effects: { ...ch.resources?.effects, passWithoutTrace: true },
-      };
+    for (const ch of c.characters) {
+      patchResources(ch, { effects: { ...ch.resources?.effects, passWithoutTrace: true } });
     }
     return true;
   }
@@ -3043,49 +3058,29 @@ export function readBackSurvivors(
     if (!fought) continue;
     ch.inventory = fought.inventory.map((s) => ({ ...s }));
     ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
-    const before = ch.resources;
-    ch.resources = {
+    // Patched: only what a fight can change is written. Hit dice, cooldowns
+    // and anything added later pass straight through untouched — a rebuild
+    // here once dropped them, refilling hit dice after every won fight.
+    const spentCharges = Object.entries(fought.itemUses ?? {})
+      .filter(([, pool]) => pool.current < pool.max);
+    // Encounter pools are filtered out rather than merely ignored on the way
+    // back in: persisting one would persist a thing whose whole definition is
+    // that it doesn't.
+    const spentFeatures = Object.entries(fought.featureUses ?? {})
+      .filter(([id, pool]) => pool.current < pool.max && restScoped(id));
+    patchResources(ch, {
       hp: opts.downedAtZero ? Math.max(0, fought.hp) : Math.max(1, fought.hp),
-      ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
-      // Nothing in a fight touches these, so they pass straight through. They
-      // were dropped, which refilled hit dice after every won fight and wiped
-      // a spent figurine's multi-day cooldown so it never came back.
-      ...(before?.hitDice !== undefined ? { hitDice: before.hitDice } : {}),
-      ...(before?.itemCooldowns !== undefined ? { itemCooldowns: { ...before.itemCooldowns } } : {}),
-      // Wand charges carry out of the fight the same way slots do. Written only
-      // when something has actually been spent, so a full wand leaves no field
-      // and "absent means full" keeps meaning that.
-      ...(() => {
-        const spent = Object.entries(fought.itemUses ?? {})
-          .filter(([, pool]) => pool.current < pool.max);
-        return spent.length > 0
-          ? { itemCharges: Object.fromEntries(spent.map(([id, pool]) => [id, pool.current])) }
-          : {};
-      })(),
-      // Rest-scoped feature pools carry out the same way. Encounter pools are
-      // filtered out rather than merely ignored on the way back in: writing one
-      // here would persist a thing whose whole definition is that it doesn't.
-      ...(() => {
-        const spent = Object.entries(fought.featureUses ?? {}).filter(
-          ([id, pool]) => pool.current < pool.max && restScoped(id),
-        );
-        return spent.length > 0
-          ? { featureUses: Object.fromEntries(spent.map(([id, pool]) => [id, pool.current])) }
-          : {};
-      })(),
-      ...(() => {
-        // False Life's temporary hit points and a camp-cast concentration buff
-        // are spent by the fight they were cast for. Kept, they were handed
-        // out again at the start of every fight until the next rest.
-        const { falseLife: _spent, campConcentration: _held, ...kept } = before?.effects ?? {};
-        const effects = {
-          ...kept,
-          ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
-          ...(fought.mageArmor ? { mageArmor: true as const } : {}),
-        };
-        return Object.keys(effects).length > 0 ? { effects } : {};
-      })(),
-    };
+      slots: fought.spellSlots.length > 0 ? fought.spellSlots.map((p) => p.current) : undefined,
+      // Written only when something was spent, so a full wand leaves no field.
+      itemCharges: Object.fromEntries(spentCharges.map(([id, pool]) => [id, pool.current])),
+      featureUses: Object.fromEntries(spentFeatures.map(([id, pool]) => [id, pool.current])),
+      effects: {
+        ...ch.resources?.effects,
+        ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
+        ...(fought.mageArmor ? { mageArmor: true as const } : {}),
+      },
+    });
+    endEffects(ch, 'fight');
   }
 }
 
