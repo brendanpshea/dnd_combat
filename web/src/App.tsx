@@ -699,7 +699,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   // account of the fight. Story mode additionally slows the beats down.
   const [narrationOn, setNarrationOn] = useState(true);
   const [hint, setHint] = useState<Action | null>(null);
-  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem('dnd-tutorial-seen'));
+  // Storage can throw (blocked cookies, a sandboxed frame); a page that cannot
+  // remember the tutorial should still open, and still let it be closed.
+  const [showTutorial, setShowTutorial] = useState(() => {
+    try { return !localStorage.getItem('dnd-tutorial-seen'); } catch { return true; }
+  });
   // Just-in-time coaching: a one-time tip surfaces the first time a mechanic
   // actually happens (an ally goes down, a slot is spent, …). See tips.ts.
   const [tip, setTip] = useState<Tip | null>(null);
@@ -839,7 +843,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   }
 
   function dismissTutorial() {
-    localStorage.setItem('dnd-tutorial-seen', '1');
+    try { localStorage.setItem('dnd-tutorial-seen', '1'); } catch { /* blocked or full */ }
     setShowTutorial(false);
   }
 
@@ -1578,7 +1582,9 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
                 {who.length === 0
                   // A move names a square, not a route, so "you can see the
                   // fire" is not the same as "you know you are walking into it".
-                  ? 'There is no way round it from here that you can still afford.'
+                  // Nor is the router's short detour the only one: a longer
+                  // way round may still be in reach, one square at a time.
+                  ? 'The quickest route crosses it. To go round, tap a square beside it first.'
                   : `Stepping out of reach lets ${who.length === 1 ? 'it' : 'them'} swing at you for free.`}
               </p>
               <ul className="move-confirm-who">

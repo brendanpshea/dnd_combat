@@ -12,12 +12,17 @@ import { wrap, unwrap, loadProblem } from './saveEnvelope.js';
 
 const KEY = 'dnd-campaign-save';
 
+/** The raw save, or null when there is none — or when storage is blocked. */
+function readKey(): string | null {
+  try { return localStorage.getItem(KEY); } catch { return null; }
+}
+
 export function saveCampaignWeb(c: CampaignState): void {
   try { localStorage.setItem(KEY, wrap(c)); } catch { /* quota */ }
 }
 
 export function loadCampaignWeb(): CampaignState | undefined {
-  const u = unwrap(localStorage.getItem(KEY));
+  const u = unwrap(readKey());
   return u.kind === 'ok' ? parseCampaign(u.raw) : undefined;
 }
 
@@ -26,7 +31,7 @@ export function loadCampaignWeb(): CampaignState | undefined {
  * when there was nothing to open, which needs no words.
  */
 export function campaignLoadProblem(): string | undefined {
-  const raw = localStorage.getItem(KEY);
+  const raw = readKey();
   const u = unwrap(raw);
   if (u.kind === 'ok' && !parseCampaign(u.raw)) {
     return 'A saved campaign was found but could not be read. Starting fresh will replace it.';
@@ -35,5 +40,5 @@ export function campaignLoadProblem(): string | undefined {
 }
 
 export function deleteCampaignWeb(): void {
-  localStorage.removeItem(KEY);
+  try { localStorage.removeItem(KEY); } catch { /* blocked */ }
 }

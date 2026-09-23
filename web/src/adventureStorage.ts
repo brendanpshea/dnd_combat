@@ -5,22 +5,27 @@ import { serializeAdventure, parseAdventure, savedModuleId } from '../../src/adv
 
 const KEY = 'dnd-adventure-save';
 
+/** The raw save, or null when there is none — or when storage is blocked. */
+function readKey(): string | null {
+  try { return localStorage.getItem(KEY); } catch { return null; }
+}
+
 export function saveAdventureWeb(state: AdventureState): void {
   try { localStorage.setItem(KEY, serializeAdventure(state)); } catch { /* quota */ }
 }
 
 /** Resume a saved run for `module`, or undefined if none/invalid. */
 export function loadAdventureWeb(module: Module): AdventureState | undefined {
-  const raw = localStorage.getItem(KEY);
+  const raw = readKey();
   return raw ? parseAdventure(raw, module) : undefined;
 }
 
 /** The module id of the current save (to show "Resume" on the right card). */
 export function savedAdventureModule(): string | undefined {
-  const raw = localStorage.getItem(KEY);
+  const raw = readKey();
   return raw ? savedModuleId(raw) : undefined;
 }
 
 export function deleteAdventureWeb(): void {
-  localStorage.removeItem(KEY);
+  try { localStorage.removeItem(KEY); } catch { /* blocked */ }
 }

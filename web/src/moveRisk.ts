@@ -46,7 +46,8 @@ export function riskOfWalk(state: GameState, mover: Combatant, to: Position): Mo
   }
   if (walk.hazardDamage > 0) parts.push('the route crosses a hazard');
   return {
-    level: damage >= mover.hp ? 'lethal' : 'risky',
+    // Temporary hit points go first, so they stand between this and a drop.
+    level: damage >= mover.hp + (mover.tempHp ?? 0) ? 'lethal' : 'risky',
     damage,
     why: `${parts.join(', and ')} — up to ${damage} damage`,
   };

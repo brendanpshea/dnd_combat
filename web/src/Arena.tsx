@@ -267,7 +267,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    * should not have to turn him off again every time they start over.
    */
   const [chorusOn, setChorusOn] = useState<boolean>(
-    () => localStorage.getItem('arena-chorus') !== 'off',
+    () => { try { return localStorage.getItem('arena-chorus') !== 'off'; } catch { return true; } },
   );
   const [, bump] = useState(0);
 
@@ -1185,7 +1185,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   onClick={() => {
                     const next = !chorusOn;
                     setChorusOn(next);
-                    localStorage.setItem('arena-chorus', next ? 'on' : 'off');
+                    try { localStorage.setItem('arena-chorus', next ? 'on' : 'off'); } catch { /* blocked or full */ }
                   }}
                   title={chorusOn ? 'Silence the quasit' : 'Let the quasit talk'}
                 >

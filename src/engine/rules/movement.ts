@@ -302,7 +302,8 @@ export function readWalk(state: GameState, mover: Combatant, to: Position): Walk
         spent.add(h.id);
       }
     }
-    if (cellAt(state.grid, step)!.terrain === 'hazard') hazardDamage += hazardMax;
+    // A flier passes over the hazard, as enterHazard and stepDanger know.
+    if (!mover.flying && cellAt(state.grid, step)!.terrain === 'hazard') hazardDamage += hazardMax;
   }
   return { provokers, hazardDamage };
 }
