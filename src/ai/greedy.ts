@@ -492,7 +492,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       if (actor.concentratingOn) return 0;
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       if (!wearsMetal(t)) return 0;
-      const dmg = avgDice(`${2 + Math.max(0, a.slotLevel - 2)}d8`);
+      const dmg = avgDice(spellDice('heat-metal', a.slotLevel, actor.level));
       // No attack roll and no save on the damage: all of it lands.
       return damageValue(dmg, t) + saveFailProb(state, t, 'con', dc) * 2 - slotCost;
     }
@@ -509,7 +509,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!t.alive || isDown(t)) continue;
         if (t.team === actor.team) return 0;
         const fail = saveFailProb(state, t, 'con', dc);
-        const dmg = avgDice(`${2 + Math.max(0, a.slotLevel - 2)}d10`) * (fail + (1 - fail) * 0.5);
+        const dmg = avgDice(spellDice('moonbeam', a.slotLevel, actor.level)) * (fail + (1 - fail) * 0.5);
         v += damageValue(dmg, t);
       }
       return v * 1.4 - slotCost;
@@ -527,7 +527,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!t.alive || isDown(t)) continue;
         if (t.team === actor.team) return 0;
         const fail = saveFailProb(state, t, 'dex', dc);
-        const dmg = avgDice(`${3 + Math.max(0, a.slotLevel - 3)}d10`) * (fail + (1 - fail) * 0.5);
+        const dmg = avgDice(spellDice('call-lightning', a.slotLevel, actor.level)) * (fail + (1 - fail) * 0.5);
         v += damageValue(dmg, t);
       }
       return v * 1.5 - slotCost;   // ×1.5 for the bolts still to come
@@ -800,7 +800,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'cone-of-cold': {
       const dir = directionFromDelta(actor.position, (a.targets[0] as { position: Position }).position);
       const sculpt = actor.featureIds.includes('sculpt-spells');
-      const dice = avgDice(`${8 + Math.max(0, a.slotLevel - 5)}d8`);
+      const dice = avgDice(spellDice('cone-of-cold', a.slotLevel, actor.level));
       let v = 0;
       for (const pos of cone15(actor.position, dir)) {
         const occ = cellAt(state.grid, pos)?.occupantId;
@@ -822,7 +822,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       // Both halves, and both scale — the fire half can be resisted and the
       // radiant half essentially never is, but `damageValue` already reads the
       // target's resistances, so the two are summed and priced per creature.
-      const dice = 2 * avgDice(`${5 + Math.max(0, a.slotLevel - 5)}d6`);
+      const dice = 2 * avgDice(spellDice('flame-strike', a.slotLevel, actor.level));
       let v = 0;
       for (const pos of sphere5x5(center)) {
         const occ = cellAt(state.grid, pos)?.occupantId;
@@ -910,7 +910,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
        */
       if (actor.concentratingOn) return 0;
       const center = (a.targets[0] as { position: Position }).position;
-      const dice = avgDice(`${8 + Math.max(0, a.slotLevel - 5)}d8`);
+      const dice = avgDice(spellDice('conjure-elemental', a.slotLevel, actor.level));
       let best = 0;
       for (const t of Object.values(state.combatants)) {
         if (!t.alive || isDown(t) || t.team === actor.team) continue;
@@ -942,7 +942,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
        * than across one arena fight.
        */
       const center = (a.targets[0] as { position: Position }).position;
-      const dice = avgDice(`${4 + Math.max(0, a.slotLevel - 5)}d10`);
+      const dice = avgDice(spellDice('insect-plague', a.slotLevel, actor.level));
       let v = 0;
       for (const pos of sphere2x2(center)) {
         const occ = cellAt(state.grid, pos)?.occupantId;
@@ -965,7 +965,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
         const missing = t.maxHp - t.hp;
         if (missing <= 0) continue;
-        const heal = Math.min(avgDice(`${5 + Math.max(0, a.slotLevel - 5)}d8`) + castMod, missing);
+        const heal = Math.min(avgDice(spellDice('mass-cure-wounds', a.slotLevel, actor.level)) + castMod, missing);
         v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4);
       }
       return v - slotCost;
@@ -1026,7 +1026,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'dissonant-whispers': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const fail = saveFailProb(state, t, 'wis', dc);
-      const dice = avgDice(`${2 + a.slotLevel}d6`);
+      const dice = avgDice(spellDice('dissonant-whispers', a.slotLevel, actor.level));
       // Half damage on a save, so the expected damage is the weighted mix.
       const dmg = dice * (fail + (1 - fail) * 0.5);
       const flees = isMeleeFighter(t) || attackableWeapons(t).every((id) => WEAPONS[id]?.melee);
@@ -1086,7 +1086,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!e.alive || e.team === actor.team) continue;
         if (distanceFeet(e.position, actor.position) > 15) continue;
         // Real damage, every round anything stands in it.
-        v += damageValue(saveFailProb(state, e, 'wis', dc) * avgDice('3d8') * 0.6, e);
+        v += damageValue(saveFailProb(state, e, 'wis', dc) * avgDice(spellDice('spiritual-guardians', a.slotLevel, actor.level)) * 0.6, e);
       }
       return v - slotCost;
     }
@@ -1435,7 +1435,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         const t = state.combatants[occ]!;
         if (!t.alive) continue;
         const pFail = saveFailProb(state, t, 'dex', dc);
-        const ev = avgDice('5d8') * (pFail + (1 - pFail) * 0.5);
+        const ev = avgDice(spellDice('wall-of-fire', a.slotLevel, actor.level)) * (pFail + (1 - pFail) * 0.5);
         // The wall burns everyone, so an ally standing in it is a real cost —
         // heavier than Fireball's, because the wall stays there.
         v += t.team === actor.team ? -3 * ev : damageValue(ev, t);
@@ -1519,7 +1519,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'ice-storm': {
       const center = (a.targets[0] as { position: Position }).position;
       const sculpt = actor.featureIds.includes('sculpt-spells');
-      const dice = avgDice(`${2 + Math.max(0, a.slotLevel - 4)}d10`) + avgDice('4d6');
+      const dice = avgDice(spellDice('ice-storm', a.slotLevel, actor.level)) + avgDice('4d6');
       let v = 0;
       let caught = 0;
       for (const pos of sphere5x5(center)) {
@@ -1541,7 +1541,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'shatter': {
       const center = (a.targets[0] as { position: Position }).position;
       const sculpt = actor.featureIds.includes('sculpt-spells');
-      const dice = avgDice(`${3 + Math.max(0, a.slotLevel - 2)}d8`);
+      const dice = avgDice(spellDice('shatter', a.slotLevel, actor.level));
       let v = 0;
       for (const pos of sphere2x2(center)) {
         const occ = cellAt(state.grid, pos)?.occupantId;
@@ -1561,7 +1561,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'blight': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const pFail = saveFailProb(state, t, 'con', dc);
-      const ev = avgDice(`${8 + Math.max(0, a.slotLevel - 4)}d8`) * (pFail + (1 - pFail) * 0.5);
+      const ev = avgDice(spellDice('blight', a.slotLevel, actor.level)) * (pFail + (1 - pFail) * 0.5);
       return damageValue(ev, t) - slotCost;
     }
     // Banishment: Suggestion's shape — a creature removed from the fight is
@@ -1579,7 +1579,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'phantasmal-killer': {
       if (actor.concentratingOn) return 0;
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      const dmg = avgDice(`${4 + Math.max(0, a.slotLevel - 4)}d10`);
+      const dmg = avgDice(spellDice('phantasmal-killer', a.slotLevel, actor.level));
       const fear = t.conditions.some((k) => k.id === 'frightened')
         ? 0 : saveFailProb(state, t, 'wis', dc) * 4;
       return damageValue(dmg, t) + fear - slotCost;
@@ -1706,7 +1706,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'conjure-animals': {
       if (actor.concentratingOn) return 0;
       const anchor = (a.targets[0] as { position: Position }).position;
-      const dice = avgDice(`${3 + Math.max(0, a.slotLevel - 3)}d10`);
+      const dice = avgDice(spellDice('conjure-animals', a.slotLevel, actor.level));
       let v = 0;
       for (const t of Object.values(state.combatants)) {
         if (!t.alive || isDown(t)) continue;
