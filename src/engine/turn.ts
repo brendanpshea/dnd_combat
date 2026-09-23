@@ -21,6 +21,7 @@ import { attackableWeapons } from './rules/equipment.js';
 import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
+import { applyCondition } from './rules/conditions.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -237,8 +238,7 @@ export function startTurn(state: GameState): GameEvent[] {
     speed = 0;
     dashSpeed = 0;   // grovelling; the condition blocks acting anyway
     if (!c.conditions.some((k) => k.id === 'prone')) {
-      c.conditions.push({ id: 'prone', sourceId: c.id });
-      events.push({ type: 'conditionApplied', combatantId: c.id, condition: 'prone', sourceId: c.id });
+      events.push(...applyCondition(state, c.id, { id: 'prone', sourceId: c.id }, { magical: true }));
     }
   } else if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'prone');

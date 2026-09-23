@@ -8,6 +8,7 @@ import { CLASSES } from '../../data/classes.js';
 import { FEATURES } from '../../data/features.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
+import { applyCondition } from './conditions.js';
 
 export function hiddenCondition(c: Combatant) {
   return c.conditions.find((condition) => condition.id === 'hidden');
@@ -69,8 +70,7 @@ export function attemptHide(state: GameState, actorId: Id): GameEvent[] {
   const success = total >= 15;
   const events: GameEvent[] = [{ type: 'hideCheck', combatantId: actorId, natural: d20.natural, total, success }];
   if (success) {
-    actor.conditions.push({ id: 'hidden', sourceId: actorId, hideCheck: total });
-    events.push({ type: 'conditionApplied', combatantId: actorId, condition: 'hidden', sourceId: actorId });
+    events.push(...applyCondition(state, actorId, { id: 'hidden', sourceId: actorId, hideCheck: total }, { magical: false }));
   }
   return events;
 }

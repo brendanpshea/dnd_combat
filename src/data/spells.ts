@@ -8,7 +8,7 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, immuneToCondition } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
@@ -44,6 +44,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
 import { acOf, ARMOR, isShield } from './armor.js';
 import { WEAPONS, weaponCategory } from './weapons.js';
+import { applyCondition } from '../engine/rules/conditions.js';
 
 export type SpellTargeting =
   | {
@@ -371,8 +372,7 @@ function armSmite({ state, casterId, slotLevel }: CastContext, spellId: Id): Gam
   // is what makes arming one a real choice rather than a free rider.
   if (SPELLS[spellId]?.concentration) c.concentratingOn = { spellId, targetIds: [] };
   if (c.conditions.some((k) => k.id === 'smiting')) return [];
-  c.conditions.push({ id: 'smiting', sourceId: casterId });
-  return [{ type: 'conditionApplied', combatantId: casterId, condition: 'smiting', sourceId: casterId }];
+  return applyCondition(state, casterId, { id: 'smiting', sourceId: casterId }, { magical: true });
 }
 
 /**
@@ -669,8 +669,7 @@ export function catchInSpirit(state: GameState, casterId: Id, onlyId?: Id): Game
     const t = state.combatants[tid];
     if (!t?.alive || isDown(t)) continue;
     if (!wardedAgainstMagicalBinding(t, 'restrained')) {
-      t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true });
-      events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
+      events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true }, { magical: true }));
       spirit.restrainedId = tid;
     }
     break;                                                 // it only has one grip
@@ -914,8 +913,7 @@ export const SPELLS: Record<Id, SpellData> = {
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'lightning', dmg.rolls));
         if (target.alive) {
-          target.conditions.push({ id: 'noReactions', sourceId: casterId });
-          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'noReactions', sourceId: casterId });
+          events.push(...applyCondition(state, targetId, { id: 'noReactions', sourceId: casterId }, { magical: true }));
         }
       }
       return events;
@@ -967,8 +965,7 @@ export const SPELLS: Record<Id, SpellData> = {
       events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'radiant', dmg.rolls));
       const t = state.combatants[targetId]!;
       if (t.alive && !isDown(t) && !t.conditions.some((k) => k.id === 'outlined')) {
-        t.conditions.push({ id: 'outlined', sourceId: casterId, expiresAtRound: state.round + 1 });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'outlined', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'outlined', sourceId: casterId, expiresAtRound: state.round + 1 }, { magical: true }));
       }
       return events;
     },
@@ -992,8 +989,7 @@ export const SPELLS: Record<Id, SpellData> = {
     cast({ state, casterId }) {
       const me = state.combatants[casterId]!;
       if (me.conditions.some((k) => k.id === 'shillelagh')) return [];
-      me.conditions.push({ id: 'shillelagh', sourceId: casterId });
-      return [{ type: 'conditionApplied', combatantId: casterId, condition: 'shillelagh', sourceId: casterId }];
+      return applyCondition(state, casterId, { id: 'shillelagh', sourceId: casterId }, { magical: true });
     },
   },
 
@@ -1022,8 +1018,7 @@ export const SPELLS: Record<Id, SpellData> = {
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'psychic', dmg.rolls));
       if (target.alive && !target.conditions.some((c) => c.id === 'sapped')) {
-        target.conditions.push({ id: 'sapped', sourceId: casterId });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'sapped', sourceId: casterId }, { magical: true }));
       }
       return events;
     },
@@ -1122,14 +1117,13 @@ export const SPELLS: Record<Id, SpellData> = {
       const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`, atk.crit);
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       const target = state.combatants[targetId]!;
-      if (target.alive && !immuneToCondition(target, 'poisoned')) {
+      if (target.alive) {
         // No save: the SRD applies Poisoned on a hit, full stop -- the attack
         // roll IS the contest. And it lasts "until the end of your next turn",
         // one round, rather than until a Constitution save shakes it off.
-        target.conditions.push({
+        events.push(...applyCondition(state, targetId, {
           id: 'poisoned', sourceId: casterId, expiresAtRound: state.round + 1,
-        });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'poisoned', sourceId: casterId });
+        }, { magical: true }));
       }
       return events;
     },
@@ -1226,8 +1220,7 @@ export const SPELLS: Record<Id, SpellData> = {
       for (const tid of targetIds) {
         const t = state.combatants[tid]!;
         if (!t.conditions.some((c) => c.id === 'blessed')) {
-          t.conditions.push({ id: 'blessed', sourceId: casterId, concentration: true });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'blessed', sourceId: casterId });
+          events.push(...applyCondition(state, tid, { id: 'blessed', sourceId: casterId, concentration: true }, { magical: true }));
         }
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'bless', targetIds: [...targetIds] };
@@ -1288,11 +1281,10 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {
-          t.conditions.push({
+          events.push(...applyCondition(state, tid, {
             id: 'incapacitated', sourceId: casterId,
             repeatSave: { ability: 'wis', dc, magical: true },
-          });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'incapacitated', sourceId: casterId });
+          }, { magical: true }));
         }
       }
       // Concentration is the *cost* half of the rule and the half that matters
@@ -1405,8 +1397,10 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🛡️',
     cast({ state, casterId }) {
       const c = state.combatants[casterId]!;
-      if (!c.conditions.some((k) => k.id === 'shielded')) c.conditions.push({ id: 'shielded', sourceId: casterId });
-      return [{ type: 'conditionApplied', combatantId: casterId, condition: 'shielded', sourceId: casterId }];
+      if (c.conditions.some((k) => k.id === 'shielded')) {
+        return [{ type: 'conditionApplied', combatantId: casterId, condition: 'shielded', sourceId: casterId }];
+      }
+      return applyCondition(state, casterId, { id: 'shielded', sourceId: casterId }, { magical: true });
     },
   },
 
@@ -1450,8 +1444,7 @@ export const SPELLS: Record<Id, SpellData> = {
         // `concentration: true` on the condition is what makes it droppable:
         // breakConcentration sweeps every condition it is sustaining, so the
         // flight ends the moment the caster is hit hard enough.
-        state.combatants[targetId]!.conditions.push({ id: 'fleeing', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'fleeing', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'fleeing', sourceId: casterId, concentration: true }, { magical: true }));
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'suggestion', targetIds: [targetId] };
       return events;
@@ -1472,8 +1465,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
       const events: GameEvent[] = [save.event];
       if (!save.success && !state.combatants[targetId]!.conditions.some((c) => c.id === 'commanded')) {
-        state.combatants[targetId]!.conditions.push({ id: 'commanded', sourceId: casterId });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'commanded', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'commanded', sourceId: casterId }, { magical: true }));
       }
       return events;
     },
@@ -1512,8 +1504,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         if (!save.success) {
           if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
-          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc, magical: true } });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
+          events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc, magical: true } }, { magical: true }));
           caught.push(tid);
         }
       }
@@ -1559,8 +1550,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         if (!save.success) {
           if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
-          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc, magical: true } });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
+          events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc, magical: true } }, { magical: true }));
           caught.push(tid);
         }
       }
@@ -1603,8 +1593,7 @@ export const SPELLS: Record<Id, SpellData> = {
           // The SRD makes them drop the object; there is no dropped-weapon
           // state here, so the pain shows up where it would anyway — they
           // cannot grip it properly and swing badly.
-          target.conditions.push({ id: 'sapped', sourceId: casterId });
-          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: casterId });
+          events.push(...applyCondition(state, targetId, { id: 'sapped', sourceId: casterId }, { magical: true }));
         }
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'heat-metal', targetIds: [targetId] };
@@ -1830,8 +1819,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {
-          t.conditions.push({ id: 'frightened', sourceId: casterId, concentration: true, repeatSave: { ability: 'wis', dc, magical: true } });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'frightened', sourceId: casterId });
+          events.push(...applyCondition(state, tid, { id: 'frightened', sourceId: casterId, concentration: true, repeatSave: { ability: 'wis', dc, magical: true } }, { magical: true }));
           // …and it RUNS. The SRD is explicit that a creature frightened by
           // this spell must Dash away from the caster each turn, which is the
           // whole difference between Fear and a cone of disadvantage — and
@@ -1842,8 +1830,7 @@ export const SPELLS: Record<Id, SpellData> = {
           // a creature that had shaken off the fear still sprinting for the
           // door. The save lives on `frightened`, and dropping it drops this
           // with it — see `runEndOfTurnSaves`.
-          t.conditions.push({ id: 'fleeing', sourceId: casterId, concentration: true });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'fleeing', sourceId: casterId });
+          events.push(...applyCondition(state, tid, { id: 'fleeing', sourceId: casterId, concentration: true }, { magical: true }));
           caught.push(tid);
         }
       }
@@ -1908,8 +1895,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'radiant', dmg.rolls));
         const t = state.combatants[targetId]!;
         if (t.alive && !t.conditions.some((c) => c.id === 'guided')) {
-          t.conditions.push({ id: 'guided', sourceId: casterId });
-          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'guided', sourceId: casterId });
+          events.push(...applyCondition(state, targetId, { id: 'guided', sourceId: casterId }, { magical: true }));
         }
       }
       return events;
@@ -2042,8 +2028,7 @@ export const SPELLS: Record<Id, SpellData> = {
         // Outlined: attacks against it have advantage until the light fades, and
         // it can't melt back into hiding. Reveal it now if it already had.
         t.conditions = t.conditions.filter((c) => c.id !== 'hidden');
-        t.conditions.push({ id: 'outlined', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: tid, condition: 'outlined', sourceId: casterId });
+        events.push(...applyCondition(state, tid, { id: 'outlined', sourceId: casterId, concentration: true }, { magical: true }));
         lit.push(tid);
       }
       // Concentration holds the light on everyone it caught.
@@ -2107,11 +2092,10 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [save.event];
       if (!save.success && !wardedAgainstMagicalBinding(state.combatants[targetId]!, 'paralyzed')) {
         const t = state.combatants[targetId]!;
-        t.conditions.push({
+        events.push(...applyCondition(state, targetId, {
           id: 'paralyzed', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
-        });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: casterId });
+        }, { magical: true }));
         state.combatants[casterId]!.concentratingOn = { spellId: 'hold-person', targetIds: [targetId] };
       }
       return events;
@@ -2157,8 +2141,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'cold', dmg.rolls));
         const target = state.combatants[targetId]!;
         if (target.alive && !target.conditions.some((c) => c.id === 'slowed')) {
-          target.conditions.push({ id: 'slowed', sourceId: casterId });
-          events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'slowed', sourceId: casterId });
+          events.push(...applyCondition(state, targetId, { id: 'slowed', sourceId: casterId }, { magical: true }));
         }
       }
       return events;
@@ -2223,8 +2206,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'con', dc);
         events.push(save.event);
         if (!save.success) {
-          t.conditions.push({ id: 'blinded', sourceId: casterId });
-          events.push({ type: 'conditionApplied', combatantId: tid, condition: 'blinded', sourceId: casterId });
+          events.push(...applyCondition(state, tid, { id: 'blinded', sourceId: casterId }, { magical: true }));
         }
       }
       return events;
@@ -2303,8 +2285,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [save.event];
       if (!save.success) {
         const t = state.combatants[targetId]!;
-        t.conditions.push({ id: 'blinded', sourceId: casterId, repeatSave: { ability: 'con', dc, magical: true } });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'blinded', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'blinded', sourceId: casterId, repeatSave: { ability: 'con', dc, magical: true } }, { magical: true }));
       }
       return events;
     },
@@ -2326,8 +2307,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
       if (!t.conditions.some((c) => c.id === 'hidden')) {
-        t.conditions.push({ id: 'hidden', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'hidden', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'hidden', sourceId: casterId, concentration: true }, { magical: true }));
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'invisibility', targetIds: [targetId] };
       return events;
@@ -2404,8 +2384,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!save.success) {
           const t = state.combatants[tid]!;
           if (!t.conditions.some((c) => c.id === 'baned')) {
-            t.conditions.push({ id: 'baned', sourceId: casterId, concentration: true });
-            events.push({ type: 'conditionApplied', combatantId: tid, condition: 'baned', sourceId: casterId });
+            events.push(...applyCondition(state, tid, { id: 'baned', sourceId: casterId, concentration: true }, { magical: true }));
           }
           caught.push(tid);
         }
@@ -2430,8 +2409,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
       if (!t.conditions.some((c) => c.id === 'warded')) {
-        t.conditions.push({ id: 'warded', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'warded', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'warded', sourceId: casterId, concentration: true }, { magical: true }));
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'shield-of-faith', targetIds: [targetId] };
       return events;
@@ -2457,8 +2435,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const t = state.combatants[targetId]!;
       if (t.conditions.some((c) => c.id === 'sanctuary')) return [];
-      t.conditions.push({ id: 'sanctuary', sourceId: casterId, dc: spellDc(state, casterId) });
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'sanctuary', sourceId: casterId }];
+      return applyCondition(state, targetId, { id: 'sanctuary', sourceId: casterId, dc: spellDc(state, casterId) }, { magical: true });
     },
   },
 
@@ -2483,8 +2460,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
       if (!t.conditions.some((c) => c.id === 'protected')) {
-        t.conditions.push({ id: 'protected', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'protected', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'protected', sourceId: casterId, concentration: true }, { magical: true }));
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'protection-from-evil-and-good', targetIds: [targetId] };
       return events;
@@ -2512,8 +2488,7 @@ export const SPELLS: Record<Id, SpellData> = {
       if (targetId === casterId) return [];
       const t = state.combatants[targetId]!;
       if (t.conditions.some((c) => c.id === 'bonded')) return [];
-      t.conditions.push({ id: 'bonded', sourceId: casterId });
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'bonded', sourceId: casterId }];
+      return applyCondition(state, targetId, { id: 'bonded', sourceId: casterId }, { magical: true });
     },
   },
 
@@ -2542,8 +2517,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const damageType = threateningElement(state, t);
       const events: GameEvent[] = [];
       t.conditions = t.conditions.filter((c) => c.id !== 'energyWarded');
-      t.conditions.push({ id: 'energyWarded', sourceId: casterId, concentration: true, damageType });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'energyWarded', sourceId: casterId });
+      events.push(...applyCondition(state, targetId, { id: 'energyWarded', sourceId: casterId, concentration: true, damageType }, { magical: true }));
       state.combatants[casterId]!.concentratingOn = { spellId: 'protection-from-energy', targetIds: [targetId] };
       return events;
     },
@@ -2572,8 +2546,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const { success, event } = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
       const events: GameEvent[] = [event];
       if (!success && !t.conditions.some((c) => c.id === 'cursed')) {
-        t.conditions.push({ id: 'cursed', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'cursed', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'cursed', sourceId: casterId, concentration: true }, { magical: true }));
         state.combatants[casterId]!.concentratingOn = { spellId: 'bestow-curse', targetIds: [targetId] };
       }
       return events;
@@ -2598,8 +2571,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
       if (!t.conditions.some((c) => c.id === 'hasted')) {
-        t.conditions.push({ id: 'hasted', sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'hasted', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'hasted', sourceId: casterId, concentration: true }, { magical: true }));
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'haste', targetIds: [targetId] };
       return events;
@@ -2706,9 +2678,8 @@ export const SPELLS: Record<Id, SpellData> = {
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const target = state.combatants[targetId]!;
-      target.conditions.push({ id: 'hexed', sourceId: casterId, concentration: true });
       state.combatants[casterId]!.concentratingOn = { spellId: 'hex', targetIds: [targetId] };
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'hexed', sourceId: casterId }];
+      return applyCondition(state, targetId, { id: 'hexed', sourceId: casterId, concentration: true }, { magical: true });
     },
   },
   'hunters-mark': {
@@ -2719,9 +2690,8 @@ export const SPELLS: Record<Id, SpellData> = {
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
       const target = state.combatants[targetId]!;
-      target.conditions.push({ id: 'marked', sourceId: casterId, concentration: true });
       state.combatants[casterId]!.concentratingOn = { spellId: 'hunters-mark', targetIds: [targetId] };
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'marked', sourceId: casterId }];
+      return applyCondition(state, targetId, { id: 'marked', sourceId: casterId, concentration: true }, { magical: true });
     },
   },
 
@@ -2901,12 +2871,11 @@ export const SPELLS: Record<Id, SpellData> = {
       const dmg = rollDice(state.rng, `${4 + Math.max(0, slotLevel - 4)}d10`);
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'psychic', dmg.rolls));
-      if (!save.success && target.alive && !immuneToCharmAndFear(target)) {
-        target.conditions.push({
+      if (!save.success && target.alive) {
+        events.push(...applyCondition(state, targetId, {
           id: 'frightened', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
-        });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'frightened', sourceId: casterId });
+        }, { magical: true }));
         state.combatants[casterId]!.concentratingOn = { spellId: 'phantasmal-killer', targetIds: [targetId] };
       }
       return events;
@@ -2932,8 +2901,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [];
       for (const id of ['hidden', 'veiled'] as const) {
         if (t.conditions.some((c) => c.id === id)) continue;
-        t.conditions.push({ id, sourceId: casterId, concentration: true });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: id, sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id, sourceId: casterId, concentration: true }, { magical: true }));
       }
       state.combatants[casterId]!.concentratingOn = { spellId: 'greater-invisibility', targetIds: [targetId] };
       return events;
@@ -3058,11 +3026,10 @@ export const SPELLS: Record<Id, SpellData> = {
         // creature from the fight and never once turned it on its friends,
         // which is the entire reason to cast Confusion. `startTurn` rolls the
         // d10 that decides what a confused creature does with its turn.
-        t.conditions.push({
+        events.push(...applyCondition(state, tid, {
           id: 'confused', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
-        });
-        events.push({ type: 'conditionApplied', combatantId: tid, condition: 'confused', sourceId: casterId });
+        }, { magical: true }));
         caught.push(tid);
       }
       caster.concentratingOn = { spellId: 'confusion', targetIds: caught };
@@ -3091,8 +3058,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
       if (!t.conditions.some((k) => k.id === 'unbound')) {
-        t.conditions.push({ id: 'unbound', sourceId: casterId });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'unbound', sourceId: casterId });
+        events.push(...applyCondition(state, targetId, { id: 'unbound', sourceId: casterId }, { magical: true }));
       }
       // And it frees whatever already has hold of them, which is most of why
       // anyone casts it mid-fight.
@@ -3125,8 +3091,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const t = state.combatants[targetId]!;
       if (t.conditions.some((k) => k.id === 'deathWarded')) return [];
-      t.conditions.push({ id: 'deathWarded', sourceId: casterId });
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'deathWarded', sourceId: casterId }];
+      return applyCondition(state, targetId, { id: 'deathWarded', sourceId: casterId }, { magical: true });
     },
   },
 
@@ -3515,11 +3480,10 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [save.event];
       if (!save.success && !wardedAgainstMagicalBinding(state.combatants[targetId]!, 'paralyzed')) {
         const t = state.combatants[targetId]!;
-        t.conditions.push({
+        events.push(...applyCondition(state, targetId, {
           id: 'paralyzed', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
-        });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: casterId });
+        }, { magical: true }));
         state.combatants[casterId]!.concentratingOn = { spellId: 'hold-monster', targetIds: [targetId] };
       }
       return events;

@@ -13,6 +13,7 @@ import type { GameEvent } from '../events.js';
 import { hazardFor, DEFAULT_HAZARD } from '../../data/hazards.js';
 import { catchInSpirit } from '../../data/spells.js';
 import type { MapTheme } from '../../data/maps.js';
+import { applyCondition } from './conditions.js';
 
 /**
  * What a hazard does is now a property of the MAP, not a constant.
@@ -86,10 +87,9 @@ export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
   if (save.success) return events;
   if (victim.conditions.some((k) => k.id === kind.rider!.condition)) return events;
   if (wardedAgainstMagicalBinding(victim, kind.rider.condition)) return events;
-  victim.conditions.push({
+  events.push(...applyCondition(state, victimId, {
     id: kind.rider.condition, repeatSave: { ability: kind.rider.ability, dc: kind.rider.dc },
-  });
-  events.push({ type: 'conditionApplied', combatantId: victimId, condition: kind.rider.condition });
+  }, { magical: false }));
   return events;
 }
 
@@ -484,14 +484,19 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         const save = savingThrow(state, moverId, ability, web.dc, { magical: true });
         events.push(save.event);
         if (!save.success) {
-          if (!wardedAgainstMagicalBinding(mover, 'restrained')) {
-            mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc, magical: true } });
-          }
-          events.push({ type: 'conditionApplied', combatantId: moverId, condition: 'restrained', sourceId: web.sourceId });
+          const caught = applyCondition(state, moverId, {
+            id: 'restrained', sourceId: web.sourceId, concentration: true,
+            repeatSave: { ability, dc: web.dc, magical: true },
+          }, { magical: true });
           // Caught: the mover stops here rather than walking on through the web
           // — on the last cell it can actually stand on, which may not be this
-          // one if the strands caught it mid-stride over an ally.
-          return halt();
+          // one if the strands caught it mid-stride over an ally. Warded
+          // (Freedom of Movement, a Ring of Free Action) it walks on: this used
+          // to report the restraint and stop them anyway.
+          if (caught.length > 0) {
+            events.push(...caught);
+            return halt();
+          }
         }
       }
     }

@@ -10,13 +10,14 @@ import { MONSTERS } from './monsters.js';
 import { attemptHide } from '../engine/rules/hide.js';
 import { rollDice } from '../engine/dice.js';
 import { applyHealing } from '../engine/rules/heal.js';
-import { savingThrow, saveForHalf, charmWarded, immuneToCharmAndFear } from '../engine/rules/saves.js';
+import { savingThrow, saveForHalf } from '../engine/rules/saves.js';
 import { applyDamage, kill, dropToZero, resolveAttack, breakConcentration } from '../engine/rules/attack.js';
 import { pushCreature } from '../engine/rules/movement.js';
 import { SORCERY_POINTS } from '../engine/rules/metamagic.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
+import { applyCondition } from '../engine/rules/conditions.js';
 
 export interface FeatureContext {
   state: GameState;
@@ -199,13 +200,10 @@ function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
   if (!target) return [];
   const { success, event } = savingThrow(state, target.id, 'wis', dc, { magical: true });
   const events: GameEvent[] = [event];
-  // Aura of Devotion: charm does not land inside a devoted paladin's aura at
-  // all, so the ward is checked before the condition rather than after.
-  if (!success && !charmWarded(state, target) &&
+  // Aura of Devotion and Mindless Rage are checked by applyCondition.
+  if (!success &&
       !target.conditions.some((k) => k.id === 'charmed' && k.sourceId === me.id)) {
-    if (immuneToCharmAndFear(target)) return [];
-    target.conditions.push({ id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } });
-    events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'charmed', sourceId: me.id });
+    events.push(...applyCondition(state, target.id, { id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } }, { magical: true }));
   }
   return events;
 }
@@ -325,8 +323,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     uses: { count: 1, per: 'encounter' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
-      c.conditions.push({ id: 'inspired', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'inspired', sourceId: actorId }];
+      return applyCondition(state, actorId, { id: 'inspired', sourceId: actorId }, { magical: false });
     },
   },
   'adrenaline-rush': {
@@ -533,8 +530,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       // spent (rather than to zero) keeps `movementUsed <= movementMax` true,
       // which the movement rules rely on.
       c.turn.movementMax = c.turn.movementUsed;
-      c.conditions.push({ id: 'aiming', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'aiming', sourceId: actorId }];
+      return applyCondition(state, actorId, { id: 'aiming', sourceId: actorId }, { magical: false });
     },
   },
   /**
@@ -761,8 +757,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: true });
         events.push(event);
         if (!success) {
-          t.conditions.push({ id: 'fleeing', sourceId: actorId });
-          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: actorId });
+          events.push(...applyCondition(state, t.id, { id: 'fleeing', sourceId: actorId }, { magical: true }));
         }
         if (state.winner) break;
       }
@@ -848,8 +843,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         .slice(0, 3);
       for (const a of allies) {
         if (a.conditions.some((k) => k.id === 'blessed')) continue;
-        a.conditions.push({ id: 'blessed', sourceId: actorId });
-        events.push({ type: 'conditionApplied', combatantId: a.id, condition: 'blessed', sourceId: actorId });
+        events.push(...applyCondition(state, a.id, { id: 'blessed', sourceId: actorId }, { magical: true }));
       }
       return events;
     },
@@ -876,8 +870,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const save = savingThrow(state, t.id, 'wis', 15, { magical: true });
         events.push(save.event);
         if (save.success) continue;
-        t.conditions.push({ id: 'fleeing', sourceId: actorId, repeatSave: { ability: 'wis', dc: 15, magical: true } });
-        events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: actorId });
+        events.push(...applyCondition(state, t.id, { id: 'fleeing', sourceId: actorId, repeatSave: { ability: 'wis', dc: 15, magical: true } }, { magical: true }));
       }
       return events;
     },
@@ -932,8 +925,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const { success, event } = savingThrow(state, t.id, 'str', dc, { magical: false });
         events.push(event);
         if (!success) {
-          t.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } });
-          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'restrained', sourceId: actorId });
+          events.push(...applyCondition(state, t.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } }, { magical: false }));
         }
       }
       return events;
@@ -967,8 +959,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       const { success, event } = savingThrow(state, target.id, 'dex', dc, { magical: false });
       const events: GameEvent[] = [event];
       if (!success) {
-        target.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } });
-        events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'restrained', sourceId: actorId });
+        events.push(...applyCondition(state, target.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } }, { magical: false }));
         const dmg = rollDice(state.rng, '3d6');
         state.rng = dmg.state;
         events.push(...applyDamage(state, target.id, actorId, dmg.total, 'acid', dmg.rolls, { magical: false }));
@@ -1013,8 +1004,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       if (me.conditions.some((c) => c.id === 'hidden')) return [];
-      me.conditions.push({ id: 'hidden', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'hidden', sourceId: actorId }];
+      return applyCondition(state, actorId, { id: 'hidden', sourceId: actorId }, { magical: false });
     },
   },
   // Fey Charm (Dryad): the nearest enemy within 30 ft makes a Wisdom save or is
@@ -1044,11 +1034,10 @@ export const FEATURES: Record<Id, FeatureData> = {
       for (const t of foes) {
         const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: true });
         events.push(event);
-        // The harpy's song is this game's other charm; the same ward stops it.
-        if (!success && !charmWarded(state, t) && !t.conditions.some((k) => k.id === 'lured')) {
-          if (immuneToCharmAndFear(t)) continue;
-          t.conditions.push({ id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } });
-          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'lured', sourceId: me.id });
+        // The harpy's song is this game's other charm; applyCondition applies
+        // the same wards to it.
+        if (!success && !t.conditions.some((k) => k.id === 'lured')) {
+          events.push(...applyCondition(state, t.id, { id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } }, { magical: true }));
         }
       }
       return events;
@@ -1070,8 +1059,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const { success, event } = savingThrow(state, t.id, 'con', dc, { magical: false });
         events.push(event);
         if (!success) {
-          t.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'con', dc } });
-          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'restrained', sourceId: actorId });
+          events.push(...applyCondition(state, t.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'con', dc } }, { magical: false }));
         }
       }
       return events;
@@ -1125,8 +1113,11 @@ export const FEATURES: Record<Id, FeatureData> = {
         // Failing by 5 or more escalates fright to full paralysis.
         const bigFail = event.type === 'savingThrow' && event.total <= dc - 5;
         const condition = bigFail ? 'paralyzed' : 'frightened';
-        target.conditions.push({ id: condition, sourceId: actorId, repeatSave: { ability: 'wis', dc } });
-        events.push({ type: 'conditionApplied', combatantId: target.id, condition, sourceId: actorId });
+        // Through the applier, so Mindless Rage turns the glare's fear aside —
+        // this was one of the two fear sources that forgot to ask.
+        events.push(...applyCondition(state, target.id, {
+          id: condition, sourceId: actorId, repeatSave: { ability: 'wis', dc },
+        }, { magical: false }));
       }
       return events;
     },
@@ -1215,8 +1206,7 @@ export const FEATURES: Record<Id, FeatureData> = {
           !c.conditions.some((k) => k.id === 'inspiring'))
         .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
       if (!target) return [];
-      target.conditions.push({ id: 'inspiring', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: target.id, condition: 'inspiring', sourceId: actorId }];
+      return applyCondition(state, target.id, { id: 'inspiring', sourceId: actorId }, { magical: false });
     },
   },
   /**
@@ -1247,9 +1237,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: false });
         events.push(event);
         if (!success) {
-          if (immuneToCharmAndFear(t)) continue;
-          t.conditions.push({ id: 'frightened', sourceId: actorId, repeatSave: { ability: 'wis', dc } });
-          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'frightened', sourceId: actorId });
+          events.push(...applyCondition(state, t.id, { id: 'frightened', sourceId: actorId, repeatSave: { ability: 'wis', dc } }, { magical: false }));
         }
       }
       return events;
@@ -1344,8 +1332,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     uses: { count: 1, per: 'shortRest' },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
-      c.conditions.push({ id: 'sacredWeapon', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'sacredWeapon', sourceId: actorId }];
+      return applyCondition(state, actorId, { id: 'sacredWeapon', sourceId: actorId }, { magical: true });
     },
   },
   // --- barbarian -----------------------------------------------------------
@@ -1376,10 +1363,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       if (c.conditions.some((k) => k.id === 'raging')) return [];
-      c.conditions.push({ id: 'raging', sourceId: actorId });
-      const events: GameEvent[] = [
-        { type: 'conditionApplied', combatantId: actorId, condition: 'raging', sourceId: actorId },
-      ];
+      const events: GameEvent[] = applyCondition(state, actorId, { id: 'raging', sourceId: actorId }, { magical: false });
       // "No Concentration or Spells." The spell half is enforced in
       // `spellAvailable`; this is the concentration half. A barbarian who has
       // been handed a concentration effect — a scroll read before raging, an
@@ -1417,8 +1401,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       if (c.conditions.some((k) => k.id === 'reckless')) return [];
-      c.conditions.push({ id: 'reckless', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'reckless', sourceId: actorId }];
+      return applyCondition(state, actorId, { id: 'reckless', sourceId: actorId }, { magical: false });
     },
   },
   /** Danger Sense: advantage on Dexterity saves — read by `savingThrow`. */
@@ -1585,10 +1568,9 @@ export const FEATURES: Record<Id, FeatureData> = {
                (c.featureUses[SORCERY_POINTS]?.current ?? 0) >= 2) {
         c.featureUses[SORCERY_POINTS]!.current -= 2;
       } else return [];
-      c.conditions.push({
+      return applyCondition(state, actorId, {
         id: 'innateSorcery', sourceId: actorId, expiresAtRound: state.round + 10,
-      });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'innateSorcery', sourceId: actorId }];
+      }, { magical: true });
     },
   },
   /**
@@ -1745,8 +1727,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const t = state.combatants[target.id]!;
         if (me.featureIds.includes('open-hand-technique') && t.alive && t.hp < before &&
             !t.conditions.some((k) => k.id === 'prone')) {
-          t.conditions.push({ id: 'prone', sourceId: actorId });
-          events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'prone', sourceId: actorId });
+          events.push(...applyCondition(state, t.id, { id: 'prone', sourceId: actorId }, { magical: false }));
         }
       }
       return events;
@@ -1759,8 +1740,7 @@ export const FEATURES: Record<Id, FeatureData> = {
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       if (me.conditions.some((k) => k.id === 'dodging') || !spendFocus(me)) return [];
-      me.conditions.push({ id: 'dodging', sourceId: actorId });
-      return [{ type: 'conditionApplied', combatantId: actorId, condition: 'dodging', sourceId: actorId }];
+      return applyCondition(state, actorId, { id: 'dodging', sourceId: actorId }, { magical: false });
     },
   },
   /** Step of the Wind: a focus point to Disengage AND Dash as a bonus action. */
@@ -1802,8 +1782,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         // Expiry is read at the start of the target's own turns, so a target
         // still to act this round must expire THIS round, or it loses two.
         const actsLater = state.initiativeOrder.indexOf(target.id) > state.turnIndex;
-        target.conditions.push({ id: 'stunned', sourceId: actorId, expiresAtRound: actsLater ? state.round : state.round + 1 });
-        events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'stunned', sourceId: actorId });
+        events.push(...applyCondition(state, target.id, { id: 'stunned', sourceId: actorId, expiresAtRound: actsLater ? state.round : state.round + 1 }, { magical: false }));
       }
       return events;
     },

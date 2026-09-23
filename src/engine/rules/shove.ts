@@ -55,6 +55,7 @@ import { withinReach } from './reach.js';
 import { contest, skillMod } from './skills.js';
 import { pushCreature } from './movement.js';
 import type { GameEvent } from '../events.js';
+import { applyCondition } from './conditions.js';
 
 export type ShoveMode = 'push' | 'prone';
 
@@ -122,8 +123,7 @@ export function resolveShove(
   events.push({ type: 'shoved', shoverId, targetId, mode, success: true, contest: detail });
   if (mode === 'prone') {
     if (!target.conditions.some((k) => k.id === 'prone')) {
-      target.conditions.push({ id: 'prone', sourceId: shoverId });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: shoverId });
+      events.push(...applyCondition(state, targetId, { id: 'prone', sourceId: shoverId }, { magical: false }));
     }
     return events;
   }
