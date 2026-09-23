@@ -199,6 +199,14 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const saved = loadArenaWeb();
   const [c, setC] = useState<CampaignState>(() => saved?.campaign ?? newCampaign(Date.now() & 0xffff));
   const [run, setRun] = useState<ArenaRunState>(() => saved?.run ?? newArenaRun(Date.now() & 0xffff));
+  /**
+   * The run as of the latest change, not as of this render. A handler that
+   * changed the run and then saved `run` from its closure saved the OLD one —
+   * the stall's steal did exactly that, and a reload let the player steal
+   * again. `commit` reads and writes this, so changes in one tick compose.
+   */
+  const runRef = useRef(run);
+  runRef.current = run;
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
   const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear'>('none');
   /** Rolled but not yet watched — see the SkillGambit on the Check step. */
@@ -324,15 +332,26 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   /** Built party, for the slot counts the camp-buff buttons quote. */
   const party = buildCampaignParty(c);
   /** Persist a change to this morning's visit (a haggle made, a pocket picked). */
-  const setVisit = (next: StallVisit) => {
-    const nextRun = { ...run, stall: next };
-    setRun(nextRun); persist(c, nextRun);
-  };
+  const setVisit = (next: StallVisit) => commit((r) => ({ ...r, stall: next }));
   const locked = gateLocked(run, half);
 
   const persist = (nextC: CampaignState, nextRun: ArenaRunState) =>
     saveArenaWeb({ campaign: nextC, run: nextRun });
   const refresh = () => { setC({ ...c }); bump((v) => v + 1); };
+  /**
+   * The one way a change lands: apply `change` to the latest run (if given),
+   * show it, and save it with the campaign — which handlers mutate in place.
+   * Pairing setRun with persist by hand at twenty sites is how the stall
+   * came to save a stale run over a fresh one.
+   */
+  const commit = (change?: (r: ArenaRunState) => ArenaRunState) => {
+    if (change) {
+      runRef.current = change(runRef.current);
+      setRun(runRef.current);
+    }
+    refresh();
+    persist(c, runRef.current);
+  };
 
   /**
    * Pin the day's difficulty the first time the player looks at it.
@@ -344,6 +363,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
    */
   if (run.dayLevel === undefined && phase.p === 'brief') {
     const pinned = { ...run, dayLevel: level };
+    runRef.current = pinned;
     setRun(pinned); persist(c, pinned);
   }
 
@@ -360,9 +380,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   }
 
   function markHeard(cue: ChorusCue) {
-    if (!chorusOn || (run.heard ?? []).includes(cue)) return;
-    const nextRun = { ...run, heard: [...(run.heard ?? []), cue] };
-    setRun(nextRun); persist(c, nextRun);
+    // Read off the latest run: two lines shown in one render each marked
+    // themselves heard against the same stale list, and the first was lost.
+    if (!chorusOn || (runRef.current.heard ?? []).includes(cue)) return;
+    commit((r) => ({ ...r, heard: [...(r.heard ?? []), cue] }));
   }
 
   /** Render a cue if there is one, and remember it was said. */
@@ -378,8 +399,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   /** Take a door. Free until the first attempt; after that the wave is fixed. */
   function chooseGate(door: number) {
     if (locked || door === (run.gate ?? 0)) return;
-    const nextRun = { ...run, gate: door };
-    setRun(nextRun); persist(c, nextRun); setNotice(null);
+    commit((r) => ({ ...r, gate: door }));
+    setNotice(null);
   }
 
   /** Wipe the save and go back to the forge — a new party, a new ladder. */
@@ -422,7 +443,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       const bill = payRevival(c, isFirstDefeat(run) ? 0 : revivalCost(dayLevel, run.wave));
       if (bill.insolvent) {
         // Nothing was sold and nothing was taken: the run simply ends here.
-        setC({ ...c }); persist(c, run);
+        commit();
         setPhase({ p: 'summary', summary: summarise(run, c.xp), bill });
         return;
       }
@@ -436,7 +457,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       const lostBefore = snapshotRest(c);
       const lostRest = night(c, nextRun.cleared);
       const lostLedger = restLedger(lostBefore, snapshotRest(c));
-      setRun(nextRun); setC({ ...c }); persist(c, nextRun);
+      commit(() => nextRun);
       // The experience is earned whether or not the day was won, so a party
       // that crosses the line on a losing day has still crossed it.
       setPhase(runComplete(c.xp)
@@ -493,7 +514,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     const rested = half === 'morning' ? lunch(c) : night(c, nextRun.cleared);
     const ledger = restLedger(before, snapshotRest(c));
     const line = restLine(half === 'morning' ? 'morning' : 'night', ledger, rested);
-    setRun(nextRun); setC({ ...c }); persist(c, nextRun);
+    commit(() => nextRun);
     setPhase({
       p: 'loot',
       gold: result.gold + paid + bonus, items: result.items, xpGained: result.xpGained,
@@ -515,7 +536,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
         onExit={onExit}
         onBegin={() => {
           c.partyReady = true;
-          persist(c, run);
+          commit();
           setPhase({ p: 'intro' });
         }}
       />
@@ -564,7 +585,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
             ? ['firstLunch' as const]
             : ['firstClear' as const]),
         )} />}
-        onLevelChange={() => { refresh(); persist(c, run); }}
+        onLevelChange={() => { commit(); }}
         ledger={phase.ledger}
         // The line belongs to whichever screen shows the rest, so a night's
         // waits for the daybreak screen rather than being said twice.
@@ -708,7 +729,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 // Saved now, shown later: the result is on screen before
                 // `onResolved`, so a save that waited for it let a reload
                 // throw away a failure the player had already read.
-                persist(c, { ...run, gambit: pendingGambit.current });
+                persist(c, { ...runRef.current, gambit: pendingGambit.current });
                 return roll;
               }}
               onResolved={() => {
@@ -716,7 +737,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 if (!attempt) return;
                 pendingGambit.current = null;
                 const nextRun = { ...run, gambit: attempt };
-                setRun(nextRun); persist(c, nextRun);
+                commit(() => nextRun);
               }}
               />
             </div>
@@ -1040,7 +1061,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
       idx={prepareFor}
       mode="prepare"
       onClose={() => setPrepareFor(null)}
-      onSaved={(msg) => { setPrepareFor(null); setNotice(msg); refresh(); persist(c, run); }}
+      onSaved={(msg) => { setPrepareFor(null); setNotice(msg); commit(); }}
     />
   );
 
@@ -1237,7 +1258,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   pick one. */}
 
                 <div className="arena-exit">
-                  <button className="ghost" onClick={() => { persist(c, run); onExit(); }}>Leave the arena</button>
+                  <button className="ghost" onClick={() => { commit(); onExit(); }}>Leave the arena</button>
                   {restartButton}
                 </div>
               </div>{/* /gate content */}
@@ -1257,7 +1278,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     camp={null}
                     frame="panel"
                     onRest={() => { /* the arena rests on its own clock */ }}
-                    onChange={() => { persist(c, run); refresh(); }}
+                    onChange={() => commit()}
                     onClose={() => setPanel('none')}
                   />
                 </div>
@@ -1353,7 +1374,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                 ? drinkCampBuffPotion(c, o.who, o.id)
                                 : (useStoreSpell(c, o.who, o.id)
                                   ? `${o.name} casts ${SPELLS[o.id]?.name ?? o.id}.` : null);
-                              if (done) { setNotice(done); refresh(); persist(c, run); }
+                              if (done) { setNotice(done); commit(); }
                             }}
                           >
                             <span className="camp-buff-what">
@@ -1387,7 +1408,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                             onClick={() => {
                               if (learnSpellFromScroll(c, sc.charIdx, sc.itemId)) {
                                 setNotice(`${who?.name} scribes ${itemName(sc.itemId)} into their spellbook (−${sc.fee}g).`);
-                                refresh(); persist(c, run);
+                                commit();
                               }
                             }}
                           >
@@ -1531,7 +1552,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                   onClick={() => {
                                     if (buyItem(c, buyFor, id, price)) {
                                       setNotice(`${itemName(id)} → ${c.characters[buyFor]?.name}`);
-                                      refresh(); persist(c, run);
+                                      commit();
                                     }
                                     setPendingBuy(null);
                                   }}
@@ -1593,7 +1614,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                         : sellItem(c, buyFor, stack.itemId);
                                       if (sold) {
                                         setNotice(`Sold ${itemName(stack.itemId)} (+${paid}g).`);
-                                        refresh(); persist(c, run);
+                                        commit();
                                       }
                                       setPendingSell(null);
                                     }}
@@ -1618,7 +1639,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                                         onClick={() => {
                                           if (learnSpellFromScroll(c, buyFor, stack.itemId)) {
                                             setNotice(`${c.characters[buyFor]?.name} scribes ${itemName(stack.itemId)} into their spellbook (−${learn.fee}g).`);
-                                            refresh(); persist(c, run);
+                                            commit();
                                           }
                                           setPendingSell(null);
                                         }}
