@@ -88,8 +88,17 @@ describe('caster variants', () => {
   // long enough to tell the difference.
   for (const [tier, cast] of [['tier 1', TIER1], ['tier 2', TIER2]] as const) {
     it(`the AI actually casts what ${tier} was given`, () => {
+      // Leveled spells AIMED AT SOMEONE ELSE — see below for why both.
+      const given = new Set(cast.flatMap((v) => MONSTERS[v]!.spellcasting!.spellIds));
+      const wanted = [...given].filter((id) => {
+        const spell = SPELLS[id]!;
+        return spell.level >= 1 && spell.targeting.kind !== 'self';
+      });
       const seen = new Set<string>();
-      for (let seed = 1; seed <= 32; seed++) {
+      // Stops once every wanted spell has been seen: the 32 seeds are the
+      // budget for finding a rare one, not a quota. Tier 2 has them all by
+      // seed 4, and playing out the other 28 fights was 40s of the nightly.
+      for (let seed = 1; seed <= 32 && !wanted.every((id) => seen.has(id)); seed++) {
         const m = generateArenaMap({}, (seed * 2654435761) >>> 0);
         const grid = parseMap(m.value.map);
         const spots = deployFoes(grid, cast.length, seed);
@@ -119,11 +128,7 @@ describe('caster variants', () => {
       // unrelated change made the party slightly stronger and the fights
       // slightly shorter. Measured at 3 casts in 60 fights: rare, not dead.
       // Self-buffs get the deterministic test below instead.
-      const given = new Set(cast.flatMap((v) => MONSTERS[v]!.spellcasting!.spellIds));
-      const never = [...given].filter((id) => {
-        const spell = SPELLS[id]!;
-        return spell.level >= 1 && spell.targeting.kind !== 'self' && !seen.has(id);
-      });
+      const never = wanted.filter((id) => !seen.has(id));
       expect(never, `leveled spells given but never cast: ${never.join(', ')}`).toEqual([]);
     }, 90000);
   }

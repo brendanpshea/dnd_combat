@@ -42,7 +42,11 @@ describe('the AI can see what conditions do', () => {
     // A druid and a ranger, whose signature control is Entangle and Ensnaring
     // Strike. Both were dead data before: the AI never once chose either.
     const cast = new Set<string>();
-    for (let seed = 1; seed <= 10; seed++) {
+    const restrains = (s: string) => s === 'entangle' || s === 'ensnaring-strike';
+    // Stops at the first restraining cast: that is all the assertion asks, and
+    // it lands in the first fight, so playing out all ten cost ~20s of CI for
+    // nothing. A failure still plays every fight before reporting.
+    fights: for (let seed = 1; seed <= 10; seed++) {
       const m = generateArenaMap({}, (seed * 2654435761) >>> 0);
       const grid = parseMap(m.value.map);
       const party = ['druid', 'ranger', 'wizard', 'cleric'].map((classId, i) => ({
@@ -58,16 +62,14 @@ describe('the AI can see what conditions do', () => {
         const a = chooseActionSim(c.state, c.activeId, SIM_PRESETS.normal);
         if (a.kind === 'castSpell' && c.state.combatants[c.activeId]!.team === 'team1') cast.add(a.spellId);
         c.apply(a);
+        if ([...cast].some(restrains)) break fights;
       }
     }
-    const restrainers = ['entangle', 'ensnaring-strike'].filter((s) => cast.has(s));
+    const restrainers = [...cast].filter(restrains);
     expect(restrainers.length, `no restraining spell was ever cast; saw ${[...cast].join(', ')}`)
       .toBeGreaterThan(0);
-    // 60s, not 30s. This drives ten whole fights through the *simulated* AI
-    // (beam search, three samples per candidate) and sat at ~21s — 70% of a
-    // 30s budget — before spell variety was added. Variety costs it about 8%
-    // more, which is enough to tip it over under full-suite parallel load while
-    // passing comfortably on its own. The honest fix is a budget with headroom,
-    // not pretending the 8% is free.
+    // 60s: a passing run stops in the first fight, but a failing one plays all
+    // ten through the simulated AI (beam search, three samples per candidate),
+    // which is ~20s alone and more under full-suite parallel load.
   }, 60000);
 });

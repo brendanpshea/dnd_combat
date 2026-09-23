@@ -50,7 +50,10 @@ jobs:
       - run: npm test
         env:
           SKIP_SIMS: '1'
-      - run: npm run typecheck
+      # `src`, `scripts` and `test` are typechecked inside `npm test`
+      # (test/typecheck.test.ts, tsconfig.all.json). The web app is not in that
+      # config, and vite builds without typechecking, so this is its only check.
+      - run: npm run web:typecheck
       - run: npm run web:build
       - uses: actions/upload-pages-artifact@v3
         with:
