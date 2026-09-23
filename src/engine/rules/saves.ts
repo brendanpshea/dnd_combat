@@ -8,6 +8,7 @@ import { rollD20, rollDice } from '../dice.js';
 import { FEATURES } from '../../data/features.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
+import { removeConditions } from './conditions.js';
 
 /**
  * Countercharm (Bard 7), simplified: the bard and allies within 30 ft roll
@@ -182,7 +183,8 @@ export function savingThrow(
     const d6 = rollDice(state.rng, '1d6');
     state.rng = d6.state;
     total += d6.total;
-    c.conditions = c.conditions.filter((k) => k.id !== 'inspiring');
+    // Silent: a save returns one event, and the roll it modified is that event.
+    removeConditions(c, 'inspiring', { silent: true });
   }
   /**
    * Ring of Evasion: a reaction that turns a failed Dexterity save into a

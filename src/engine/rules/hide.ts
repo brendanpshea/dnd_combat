@@ -8,7 +8,7 @@ import { CLASSES } from '../../data/classes.js';
 import { FEATURES } from '../../data/features.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
-import { applyCondition } from './conditions.js';
+import { applyCondition, removeConditions } from './conditions.js';
 
 export function hiddenCondition(c: Combatant) {
   return c.conditions.find((condition) => condition.id === 'hidden');
@@ -82,8 +82,7 @@ export function endHide(c: Combatant): GameEvent[] {
   // call site, because every call site means "you just did something loud".
   if (c.conditions.some((k) => k.id === 'veiled')) return [];
   if (!isHidden(c)) return [];
-  c.conditions = c.conditions.filter((condition) => condition.id !== 'hidden');
-  return [{ type: 'conditionRemoved', combatantId: c.id, condition: 'hidden' }];
+  return removeConditions(c, 'hidden');
 }
 
 /** Passive Perception with advantage: 10 + Wisdom modifier + 5. */

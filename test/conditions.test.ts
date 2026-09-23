@@ -48,7 +48,7 @@ describe('applyCondition', () => {
   });
 });
 
-describe('the applier is the only way on', () => {
+describe('the applier is the only way on, and off', () => {
   it('has no direct condition pushes left in the engine or the data', async () => {
     const { readdirSync, readFileSync, statSync } = await import('node:fs');
     const { join } = await import('node:path');
@@ -64,12 +64,15 @@ describe('the applier is the only way on', () => {
         const rel = path.slice(root.length).replace(/^engine\//, '');
         if (allowed.has(rel)) continue;
         readFileSync(path, 'utf8').split('\n').forEach((line, i) => {
-          if (/\.conditions\.push\(/.test(line)) offenders.push(`${rel}:${i + 1}`);
+          if (/\.conditions\.push\(/.test(line)) offenders.push(`${rel}:${i + 1} push`);
+          // And off: a hand-rolled filter decides for itself whether anyone is
+          // told, which is how removals and the badges came to disagree.
+          if (/\.conditions = .*\.conditions\.filter\(/.test(line)) offenders.push(`${rel}:${i + 1} filter`);
         });
       }
     };
     walk(root);
-    expect(offenders, 'push through applyCondition so every immunity is checked').toEqual([]);
+    expect(offenders, 'use applyCondition / removeConditions').toEqual([]);
   });
 });
 

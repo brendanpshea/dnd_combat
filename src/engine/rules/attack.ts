@@ -18,7 +18,7 @@ import { pushCreature } from './movement.js';
 import { downCombatant } from './heal.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
-import { applyCondition } from './conditions.js';
+import { applyCondition, removeConditions } from './conditions.js';
 
 /** Which ability powers an attack with this weapon. */
 export function attackAbility(attacker: Combatant, weapon: WeaponData): 'str' | 'dex' {
@@ -207,12 +207,13 @@ export function consumeFamiliarHelp(state: GameState, attacker: Combatant): void
 
 /** Remove one-shot roll markers after an attack roll is made. */
 function consumeRollMarkers(attacker: Combatant, target: Combatant): void {
-  attacker.conditions = attacker.conditions.filter(
-    (c) => c.id !== 'sapped' && c.id !== 'inspired' && c.id !== 'aiming' &&
-      !(c.id === 'vexed' && c.sourceId === target.id),
-  );
+  // Silent: the attack roll that spent them already names them as its sources.
+  removeConditions(attacker,
+    (c) => c.id === 'sapped' || c.id === 'inspired' || c.id === 'aiming' ||
+      (c.id === 'vexed' && c.sourceId === target.id),
+    { silent: true });
   // Guiding Bolt's advantage is spent by whoever attacks the target next.
-  target.conditions = target.conditions.filter((c) => c.id !== 'guided');
+  removeConditions(target, 'guided', { silent: true });
 }
 
 /** Paralyzed/unconscious targets crit automatically when hit from melee range. */
@@ -252,7 +253,8 @@ export function resolveAttack(
   // Attacking is what breaks your own Sanctuary. The SRD ends it on a harmful
   // spell too; this engine has no other way to be aggressive, so an attack is
   // the whole of it.
-  attacker.conditions = attacker.conditions.filter((c) => c.id !== 'sanctuary');
+  // Announced: Sanctuary breaking is news, and it used to vanish silently.
+  events.push(...removeConditions(attacker, 'sanctuary'));
 
   const { adv, dis } = collectAttackSources(state, attacker, target, weapon, isMeleeAttack);
   // Escape the Horde (Hunter, Ranger 7). Read here rather than inside
@@ -303,8 +305,7 @@ export function resolveAttack(
     const d6 = rollDice(state.rng, '1d6');
     state.rng = d6.state;
     total += d6.total;
-    attacker.conditions = attacker.conditions.filter((c) => c.id !== 'inspiring');
-    events.push({ type: 'conditionRemoved', combatantId: attackerId, condition: 'inspiring' });
+    events.push(...removeConditions(attacker, 'inspiring'));
   }
 
   // Champion widens the crit range to 19-20.
@@ -976,7 +977,8 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   const armed = attacker.armedSmite;
   if (!armed) return [];
   delete attacker.armedSmite;
-  attacker.conditions = attacker.conditions.filter((k) => k.id !== 'smiting');
+  // Silent: the discharge itself is the event.
+  removeConditions(attacker, 'smiting', { silent: true });
   const spec = SMITE_SPECS[armed.spellId];
   if (!spec) return [];
 
@@ -1107,8 +1109,7 @@ export function applyDamage(
   if (bond) {
     const caster = bond.sourceId !== undefined ? state.combatants[bond.sourceId] : undefined;
     if (!caster || !caster.alive || isDown(caster)) {
-      target.conditions = target.conditions.filter((k) => k !== bond);
-      events.push({ type: 'conditionRemoved', combatantId: targetId, condition: 'bonded' });
+      events.push(...removeConditions(target, (k) => k === bond));
       bond = undefined;
     }
   }
@@ -1177,10 +1178,7 @@ export function applyDamage(
   if (target.hp > 0 && amount > 0) {
     const asleep = (c: (typeof target.conditions)[number]) =>
       c.id === 'unconscious' || (c.id === 'incapacitated' && c.repeatSave !== undefined);
-    for (const c of target.conditions) {
-      if (asleep(c)) events.push({ type: 'conditionRemoved', combatantId: targetId, condition: c.id });
-    }
-    target.conditions = target.conditions.filter((c) => !asleep(c));
+    events.push(...removeConditions(target, asleep));
   }
 
   // Concentration save: DC max(10, floor(damage/2)), capped at 30.
@@ -1373,25 +1371,15 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
       events.push({ type: 'webCleared', sourceId: combatantId, cells: [...cleared, ...burnt, ...hushed] });
     }
     for (const other of Object.values(state.combatants)) {
-      const held = other.conditions.some((k) => k.sourceId === combatantId && k.concentration && k.id === 'restrained');
-      if (held) {
-        events.push({ type: 'conditionRemoved', combatantId: other.id, condition: 'restrained' });
-        other.conditions = other.conditions.filter((k) => !(k.sourceId === combatantId && k.concentration && k.id === 'restrained'));
-      }
+      events.push(...removeConditions(other,
+        (k) => k.sourceId === combatantId && k.concentration === true && k.id === 'restrained'));
     }
   }
   // Remove conditions this concentration was sustaining on its targets.
   for (const tid of targetIds) {
     const t = state.combatants[tid];
     if (!t) continue;
-    for (const cond of t.conditions) {
-      if (cond.sourceId === combatantId && cond.concentration) {
-        events.push({ type: 'conditionRemoved', combatantId: tid, condition: cond.id });
-      }
-    }
-    t.conditions = t.conditions.filter(
-      (cond) => !(cond.sourceId === combatantId && cond.concentration),
-    );
+    events.push(...removeConditions(t, (cond) => cond.sourceId === combatantId && cond.concentration === true));
   }
   return events;
 }
@@ -1439,7 +1427,7 @@ function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
     if (!next) continue; // no quarry left — the fight is over anyway
     // Lift the mark off the fallen (a killed body loses all conditions anyway,
     // but a *downed* hero keeps his — without this the stale mark lingers there).
-    fallen.conditions = fallen.conditions.filter((k) => !(k.id === rider.condition && k.sourceId === caster.id));
+    events.push(...removeConditions(fallen, (k) => k.id === rider.condition && k.sourceId === caster.id, { silent: true }));
     if (!next.conditions.some((k) => k.id === rider.condition && k.sourceId === caster.id)) {
       events.push(...applyCondition(state, next.id, { id: rider.condition, sourceId: caster.id, concentration: true }, { magical: true }));
     }
@@ -1469,10 +1457,10 @@ export function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
   const ward = state.combatants[combatantId]?.conditions.find((k) => k.id === 'deathWarded');
   if (ward) {
     const c = state.combatants[combatantId]!;
-    c.conditions = c.conditions.filter((k) => k !== ward);
+    const spent = removeConditions(c, (k) => k === ward);
     c.hp = 1;
     return [
-      { type: 'conditionRemoved', combatantId, condition: 'deathWarded' },
+      ...spent,
       { type: 'healed', targetId: combatantId, sourceId: ward.sourceId ?? combatantId, amount: 1 },
     ];
   }
@@ -1641,10 +1629,7 @@ export function deathBurst(state: GameState, c: Combatant): GameEvent[] {
 export function releaseCharmedBy(state: GameState, sourceId: Id): GameEvent[] {
   const events: GameEvent[] = [];
   for (const c of Object.values(state.combatants)) {
-    const held = c.conditions.filter((k) => (k.id === 'charmed' || k.id === 'lured') && k.sourceId === sourceId);
-    if (held.length === 0) continue;
-    c.conditions = c.conditions.filter((k) => !held.includes(k));
-    for (const k of held) events.push({ type: 'conditionRemoved', combatantId: c.id, condition: k.id });
+    events.push(...removeConditions(c, (k) => (k.id === 'charmed' || k.id === 'lured') && k.sourceId === sourceId));
   }
   return events;
 }

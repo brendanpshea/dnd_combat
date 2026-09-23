@@ -44,7 +44,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
 import { acOf, ARMOR, isShield } from './armor.js';
 import { WEAPONS, weaponCategory } from './weapons.js';
-import { applyCondition } from '../engine/rules/conditions.js';
+import { applyCondition, removeConditions } from '../engine/rules/conditions.js';
 
 export type SpellTargeting =
   | {
@@ -721,7 +721,7 @@ function halfDice(expr: string): string {
 function releaseSpirit(state: GameState, victimId: Id): void {
   const v = state.combatants[victimId];
   if (!v) return;
-  v.conditions = v.conditions.filter((k) => !(k.id === 'restrained' && k.concentration));
+  removeConditions(v, (k) => k.id === 'restrained' && k.concentration === true, { silent: true });
 }
 
 /**
@@ -2072,7 +2072,8 @@ export const SPELLS: Record<Id, SpellData> = {
         if (save.success) continue;
         // Outlined: attacks against it have advantage until the light fades, and
         // it can't melt back into hiding. Reveal it now if it already had.
-        t.conditions = t.conditions.filter((c) => c.id !== 'hidden');
+        // Announced: being revealed is news to the player who was hiding.
+        events.push(...removeConditions(t, 'hidden'));
         events.push(...applyCondition(state, tid, { id: 'outlined', sourceId: casterId, concentration: true }, { magical: true }));
         lit.push(tid);
       }
@@ -2373,9 +2374,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const CURABLE: ConditionId[] = ['blinded', 'paralyzed', 'poisoned'];
       const targetId = targetIds[0]!;
       const t = state.combatants[targetId]!;
-      const removed = t.conditions.filter((c) => CURABLE.includes(c.id));
-      t.conditions = t.conditions.filter((c) => !CURABLE.includes(c.id));
-      return removed.map((c) => ({ type: 'conditionRemoved' as const, combatantId: targetId, condition: c.id }));
+      return removeConditions(t, (c) => CURABLE.includes(c.id));
     },
   },
 
@@ -2396,11 +2395,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
-      const held = t.conditions.filter((c) => c.concentration);
-      if (held.length > 0) {
-        t.conditions = t.conditions.filter((c) => !c.concentration);
-        for (const c of held) events.push({ type: 'conditionRemoved', combatantId: targetId, condition: c.id });
-      }
+      events.push(...removeConditions(t, (c) => c.concentration === true));
       events.push(...breakConcentration(state, targetId));
       return events;
     },
@@ -2561,7 +2556,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const damageType = threateningElement(state, t);
       const events: GameEvent[] = [];
-      t.conditions = t.conditions.filter((c) => c.id !== 'energyWarded');
+      removeConditions(t, 'energyWarded', { silent: true });   // replaced just below
       events.push(...applyCondition(state, targetId, { id: 'energyWarded', sourceId: casterId, concentration: true, damageType }, { magical: true }));
       state.combatants[casterId]!.concentratingOn = { spellId: 'protection-from-energy', targetIds: [targetId] };
       return events;
@@ -3108,9 +3103,7 @@ export const SPELLS: Record<Id, SpellData> = {
       // And it frees whatever already has hold of them, which is most of why
       // anyone casts it mid-fight.
       for (const id of ['restrained', 'paralyzed'] as const) {
-        if (!t.conditions.some((k) => k.id === id)) continue;
-        t.conditions = t.conditions.filter((k) => k.id !== id);
-        events.push({ type: 'conditionRemoved', combatantId: targetId, condition: id });
+        events.push(...removeConditions(t, id));
       }
       return events;
     },
