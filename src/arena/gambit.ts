@@ -51,6 +51,7 @@ import { blocksMovement } from '../engine/grid.js';
 import { MONSTERS, buildMonster } from '../data/monsters.js';
 import type { SkillId } from '../data/classes.js';
 import type { DayHalf } from './run.js';
+import { offerSeed } from './seed.js';
 
 /** What the fight looks like, for deciding which skills it licenses. */
 export interface GambitContext {
@@ -475,9 +476,7 @@ export function drawGambit(
 ): GambitDef | undefined {
   const pool = eligibleGambits(w);
   if (pool.length === 0) return undefined;
-  const mix = (runSeed * 2654435761 + wave * 40503 + door * 2246822519 +
-    (half === 'afternoon' ? 1013904223 : 0)) >>> 0;
-  return pool[mix % pool.length];
+  return pool[offerSeed('gambit', { runSeed, wave, half, door }) % pool.length];
 }
 
 /** The one attempt made for this fight, recorded so it cannot be repeated. */

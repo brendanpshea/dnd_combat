@@ -273,7 +273,9 @@ describe('Abyssal Tiefling', () => {
         // spell, and then hang the condition off the generic save-ends
         // mechanism, which made it last far longer than a round when it landed.
         expect(poison.repeatSave).toBeUndefined();
-        expect(poison.expiresAtRound).toBe(after.round + 1);
+        // "Until the end of your next turn": timed off the caster, and cast on
+        // its own turn, so the end of THIS turn is passed over.
+        expect(poison.endsAtTurnEndOf).toEqual({ id: 'ftr', skip: true });
         return;
       }
     }

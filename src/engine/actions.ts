@@ -19,6 +19,7 @@ import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphe
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
+import { applyCondition } from './rules/conditions.js';
 import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
@@ -1050,7 +1051,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       break;
     case 'dodge':
       actor.turn.actionUsed = true;
-      actor.conditions.push({ id: 'dodging' });
+      applyCondition(draft, actorId, { id: 'dodging' }, { magical: false, silent: true });
       events.push({ type: 'dodging', combatantId: actorId });
       break;
     case 'hide':

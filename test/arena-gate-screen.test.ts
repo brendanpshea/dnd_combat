@@ -95,19 +95,20 @@ describe('the dice are watched before the result is kept', () => {
    */
   it('does not commit the run to React state while rolling', () => {
     const rolling = section('onRoll={() => {', 'onResolved={');
-    expect(rolling.includes('setRun('), 'onRoll commits the run and unmounts its own dice').toBe(false);
+    expect(rolling.includes('setRun(') || rolling.includes('commit('),
+      'onRoll commits the run and unmounts its own dice').toBe(false);
     // Saving to storage is fine, and wanted: `persist` touches no React state,
     // so it unmounts nothing, and saving at the roll is what stops a reload
     // from throwing away a result the player has already read.
     expect(rolling, 'a reload before the dice settle rerolls the check')
-      .toContain('persist(c, { ...run, gambit: pendingGambit.current })');
+      .toContain('persist(c, { ...runRef.current, gambit: pendingGambit.current })');
     expect(rolling, 'the roll is not being held anywhere').toContain('pendingGambit.current =');
   });
 
   it('persists once the player has seen it land', () => {
     const resolved = section('onResolved={() => {', '/>');
-    expect(resolved, 'onResolved never commits the attempt').toContain('setRun(nextRun)');
-    expect(resolved, 'the attempt is not persisted').toContain('persist(c, nextRun)');
+    // `commit` sets the run AND saves it — see its note in Arena.tsx.
+    expect(resolved, 'onResolved never commits the attempt').toContain('commit(() => nextRun)');
     expect(resolved, 'the held roll is never cleared, so a second check reuses it')
       .toContain('pendingGambit.current = null');
   });

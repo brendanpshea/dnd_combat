@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, ignoresHalfCover } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
@@ -18,6 +18,7 @@ import { pushCreature } from './movement.js';
 import { downCombatant } from './heal.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
+import { applyCondition } from './conditions.js';
 
 /** Which ability powers an attack with this weapon. */
 export function attackAbility(attacker: Combatant, weapon: WeaponData): 'str' | 'dex' {
@@ -522,6 +523,9 @@ export function resolveAttack(
   // trampling gore use the same lunge.
   const charged =
     isMeleeAttack &&
+    // The lunge is this turn's: on an opportunity attack movementUsed is
+    // what the attacker walked on its own last turn.
+    isTurnOf(state, attackerId) &&
     attacker.turn.movementUsed >= 15 &&
     (attacker.featureIds.includes('charge') ||
       attacker.featureIds.includes('unicorn-charge') ||
@@ -753,7 +757,7 @@ export function resolveAttack(
       !attacker.turn.bonusActionUsed &&
       // A bonus action is only spendable on your own turn; an opportunity
       // attack reads last turn's leftover flag, which startTurn resets anyway.
-      state.initiativeOrder[state.turnIndex] === attackerId
+      isTurnOf(state, attackerId)
     ) {
       // Auto-fire on the two moments a paladin would never *not* smite:
       //
@@ -780,10 +784,9 @@ export function resolveAttack(
     }
   }
 
-  if (weapon.onHitCondition && target.alive && !immuneToCondition(target, weapon.onHitCondition) &&
+  if (weapon.onHitCondition && target.alive &&
       !target.conditions.some((c) => c.id === weapon.onHitCondition)) {
-    target.conditions.push({ id: weapon.onHitCondition, sourceId: attackerId });
-    events.push({ type: 'conditionApplied', combatantId: targetId, condition: weapon.onHitCondition, sourceId: attackerId });
+    events.push(...applyCondition(state, targetId, { id: weapon.onHitCondition, sourceId: attackerId }, { magical: isMagicWeapon(weapon) }));
   }
 
   // Save-or-suffer rider (ghoul paralysis, spider poison): save-ends, so it
@@ -795,25 +798,31 @@ export function resolveAttack(
     const save = savingThrow(state, targetId, ability, dc, { magical: isMagicWeapon(weapon) });
     events.push(save.event);
     if (!save.success) {
-      target.conditions.push({ id: condition, sourceId: attackerId, repeatSave: { ability, dc, magical: isMagicWeapon(weapon) } });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition, sourceId: attackerId });
+      events.push(...applyCondition(state, targetId, {
+        id: condition, sourceId: attackerId, repeatSave: { ability, dc, magical: isMagicWeapon(weapon) },
+      }, { magical: isMagicWeapon(weapon) }));
     }
   }
 
   // Weapon mastery riders, only for wielders trained in this weapon's mastery.
   if (weapon.mastery && attacker.weaponMasteries.includes(weapon.id) && target.alive) {
     if (weapon.mastery === 'sap' && !target.conditions.some((c) => c.id === 'sapped')) {
-      target.conditions.push({ id: 'sapped', sourceId: attackerId });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'sapped', sourceId: attackerId });
+      // "Before the start of your next turn" — it used to wait for an attack
+      // however long that took.
+      events.push(...applyCondition(state, targetId, {
+        id: 'sapped', sourceId: attackerId, endsAtTurnStartOf: attackerId,
+      }, { magical: false }));
     } else if (weapon.mastery === 'vex' || weapon.mastery === 'nick') {
       // Nick is modeled with Vex's mechanic (a quick nick opens the follow-up).
       if (!attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === targetId)) {
-        attacker.conditions.push({ id: 'vexed', sourceId: targetId });
-        events.push({ type: 'conditionApplied', combatantId: attackerId, condition: 'vexed', sourceId: targetId });
+        // "Before the end of your next turn."
+        events.push(...applyCondition(state, attackerId, {
+          id: 'vexed', sourceId: targetId,
+          endsAtTurnEndOf: { id: attackerId, skip: isTurnOf(state, attackerId) },
+        }, { magical: false }));
       }
     } else if (weapon.mastery === 'slow' && !target.conditions.some((c) => c.id === 'slowed')) {
-      target.conditions.push({ id: 'slowed', sourceId: attackerId });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'slowed', sourceId: attackerId });
+      events.push(...applyCondition(state, targetId, { id: 'slowed', sourceId: attackerId }, { magical: false }));
     } else if (weapon.mastery === 'push') {
       // Shove the target 10 ft (2 cells) straight away from the attacker.
       const dir = {
@@ -827,8 +836,7 @@ export function resolveAttack(
       const save = savingThrow(state, targetId, 'con', dc, { magical: false });
       events.push(save.event);
       if (!save.success) {
-        target.conditions.push({ id: 'prone', sourceId: attackerId });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: attackerId });
+        events.push(...applyCondition(state, targetId, { id: 'prone', sourceId: attackerId }, { magical: false }));
       }
     }
   }
@@ -841,8 +849,7 @@ export function resolveAttack(
     const save = savingThrow(state, targetId, 'str', dc, { magical: false });
     events.push(save.event);
     if (!save.success) {
-      target.conditions.push({ id: 'prone', sourceId: attackerId });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'prone', sourceId: attackerId });
+      events.push(...applyCondition(state, targetId, { id: 'prone', sourceId: attackerId }, { magical: false }));
     }
   }
 
@@ -907,8 +914,9 @@ export const SMITE_SPECS: Record<string, {
     rider(state, attackerId, targetId, dc) {
       const t = state.combatants[targetId]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'burning')) return [];
-      t.conditions.push({ id: 'burning', sourceId: attackerId, repeatSave: { ability: 'con', dc, magical: true } });
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'burning', sourceId: attackerId }];
+      return applyCondition(state, targetId, {
+        id: 'burning', sourceId: attackerId, repeatSave: { ability: 'con', dc, magical: true },
+      }, { magical: true });
     },
   },
   /**
@@ -922,8 +930,7 @@ export const SMITE_SPECS: Record<string, {
     rider(state, attackerId, targetId) {
       const t = state.combatants[targetId]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'outlined')) return [];
-      t.conditions.push({ id: 'outlined', sourceId: attackerId });
-      return [{ type: 'conditionApplied', combatantId: targetId, condition: 'outlined', sourceId: attackerId }];
+      return applyCondition(state, targetId, { id: 'outlined', sourceId: attackerId }, { magical: true });
     },
   },
   /**
@@ -943,8 +950,7 @@ export const SMITE_SPECS: Record<string, {
       const save = savingThrow(state, targetId, 'str', dc, { magical: true });
       events.push(save.event);
       if (save.success) return events;
-      t.conditions.push({ id: 'restrained', sourceId: attackerId, repeatSave: { ability: 'str', dc, magical: true } });
-      events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'restrained', sourceId: attackerId });
+      events.push(...applyCondition(state, targetId, { id: 'restrained', sourceId: attackerId, repeatSave: { ability: 'str', dc, magical: true } }, { magical: true }));
       state.combatants[attackerId]!.holdDamage = { dice: '1d6', type: 'piercing' };
       return events;
     },
@@ -1255,7 +1261,7 @@ export function tryAutoShield(state: GameState, targetId: Id): boolean {
   if (!slot) return false;
   slot.current -= 1;
   t.turn.reactionUsed = true;
-  t.conditions.push({ id: 'shielded', sourceId: targetId });
+  applyCondition(state, targetId, { id: 'shielded', sourceId: targetId }, { magical: true, silent: true });
   return true;
 }
 
@@ -1435,8 +1441,7 @@ function transferHuntersMark(state: GameState, fallenId: Id): GameEvent[] {
     // but a *downed* hero keeps his — without this the stale mark lingers there).
     fallen.conditions = fallen.conditions.filter((k) => !(k.id === rider.condition && k.sourceId === caster.id));
     if (!next.conditions.some((k) => k.id === rider.condition && k.sourceId === caster.id)) {
-      next.conditions.push({ id: rider.condition, sourceId: caster.id, concentration: true });
-      events.push({ type: 'conditionApplied', combatantId: next.id, condition: rider.condition, sourceId: caster.id });
+      events.push(...applyCondition(state, next.id, { id: rider.condition, sourceId: caster.id, concentration: true }, { magical: true }));
     }
     caster.concentratingOn = { spellId: rider.spellId, targetIds: [next.id] };
   }

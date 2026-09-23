@@ -38,6 +38,7 @@ import { ITEMS } from '../data/items.js';
 import { rarityOf, isMagicalWare, isPermanentMagic, SHOP_STOCK, MAGIC_SPOILS } from '../campaign/campaign.js';
 import { SILVERED_WEAPONS } from '../data/weapons.js';
 import { next, type RngState } from '../engine/rng.js';
+import { offerSeed } from './seed.js';
 
 /**
  * How many items an award puts on the table.
@@ -148,13 +149,7 @@ export function spoilOffer(
   // a retried day must offer the same items, or losing on purpose becomes a
   // way to reroll the prize. A defeat advances the day, so a day-keyed seed
   // drew a new prize on every retry.
-  let rng: RngState = (
-    runSeed * 2654435761 +
-    wave * 40503 +
-    (half === 'afternoon' ? 1013904223 : 0) +
-    door * 2246822519 +
-    level * 374761393
-  ) >>> 0;
+  let rng: RngState = offerSeed('spoil', { runSeed, wave, half, door }, level);
   const rest = [...pool];
   const picked: Id[] = [];
   while (picked.length < SPOIL_CHOICES && rest.length > 0) {

@@ -4,7 +4,6 @@
  * a data concern later.
  */
 import type { GameState, Id, DamageType } from '../engine/types.js';
-import { wardedAgainstMagicalBinding } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { rollDice, rollD20, resolveRollMode } from '../engine/dice.js';
 import { applyDamage, collectAttackSources } from '../engine/rules/attack.js';
@@ -18,6 +17,7 @@ import { SPELLS } from './spells.js';
 import { acOf, Rarity } from './armor.js';
 import { CLASSES, classScrollPool } from './classes.js';
 import type { GameEvent } from '../engine/events.js';
+import { applyCondition } from '../engine/rules/conditions.js';
 
 export interface UseContext {
   state: GameState;
@@ -384,9 +384,8 @@ export const ITEMS: Record<Id, ConsumableData> = {
       const t = state.combatants[targetId]!;
       // Free Action is the counter, exactly as it is for Hold Person: this is
       // magic causing the Paralyzed condition, which is what the ring refuses.
-      if (!save.success && !wardedAgainstMagicalBinding(t, 'paralyzed')) {
-        t.conditions.push({ id: 'paralyzed', sourceId: userId, repeatSave: { ability: 'con', dc: 15 } });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: userId });
+      if (!save.success) {
+        events.push(...applyCondition(state, targetId, { id: 'paralyzed', sourceId: userId, repeatSave: { ability: 'con', dc: 15 } }, { magical: true }));
       }
       return events;
     },
@@ -448,8 +447,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
         const save = savingThrow(state, t.id, 'wis', 15, { magical: true });
         events.push(save.event);
         if (save.success) continue;
-        t.conditions.push({ id: 'fleeing', sourceId: userId, repeatSave: { ability: 'wis', dc: 15 } });
-        events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: userId });
+        events.push(...applyCondition(state, t.id, { id: 'fleeing', sourceId: userId, repeatSave: { ability: 'wis', dc: 15 } }, { magical: true }));
       }
       return events;
     },
@@ -465,9 +463,8 @@ export const ITEMS: Record<Id, ConsumableData> = {
       const save = savingThrow(state, targetId, 'str', 17, { magical: true });
       const events: GameEvent[] = [save.event];
       const t = state.combatants[targetId]!;
-      if (!save.success && !wardedAgainstMagicalBinding(t, 'restrained')) {
-        t.conditions.push({ id: 'restrained', sourceId: userId, repeatSave: { ability: 'str', dc: 17 } });
-        events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'restrained', sourceId: userId });
+      if (!save.success) {
+        events.push(...applyCondition(state, targetId, { id: 'restrained', sourceId: userId, repeatSave: { ability: 'str', dc: 17 } }, { magical: true }));
       }
       return events;
     },

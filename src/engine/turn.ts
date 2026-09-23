@@ -21,6 +21,7 @@ import { attackableWeapons } from './rules/equipment.js';
 import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
+import { applyCondition } from './rules/conditions.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -207,6 +208,16 @@ export function startTurn(state: GameState): GameEvent[] {
     (k) => k.expiresAtRound === undefined || state.round <= k.expiresAtRound,
   );
 
+  // Conditions timed off THIS creature's turn, on whoever holds them: a
+  // Stunning Strike ends when the monk's next turn starts, however the
+  // target's own turns fall around it.
+  for (const holder of Object.values(state.combatants)) {
+    const over = holder.conditions.filter((k) => k.endsAtTurnStartOf === c.id);
+    if (over.length === 0) continue;
+    holder.conditions = holder.conditions.filter((k) => k.endsAtTurnStartOf !== c.id);
+    for (const k of over) events.push({ type: 'conditionRemoved', combatantId: holder.id, condition: k.id });
+  }
+
   c.hasActed = true;
 
   // Stand up from prone automatically for half speed — unless you're in no
@@ -237,8 +248,7 @@ export function startTurn(state: GameState): GameEvent[] {
     speed = 0;
     dashSpeed = 0;   // grovelling; the condition blocks acting anyway
     if (!c.conditions.some((k) => k.id === 'prone')) {
-      c.conditions.push({ id: 'prone', sourceId: c.id });
-      events.push({ type: 'conditionApplied', combatantId: c.id, condition: 'prone', sourceId: c.id });
+      events.push(...applyCondition(state, c.id, { id: 'prone', sourceId: c.id }, { magical: true }));
     }
   } else if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
     c.conditions = c.conditions.filter((k) => k.id !== 'prone');
@@ -277,6 +287,15 @@ export function startTurn(state: GameState): GameEvent[] {
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'slowed' });
   }
 
+  // "Once per turn" is once per ANY turn — Sneak Attack, Savage Attacker and
+  // Colossus Slayer can each fire again on someone else's turn (an opportunity
+  // attack) even after being used on the owner's own. So these three reset
+  // for everyone whenever a turn starts, not just for the creature taking it.
+  for (const other of Object.values(state.combatants)) {
+    other.turn.sneakAttackUsed = false;
+    other.turn.colossusUsed = false;
+    other.turn.savageUsed = false;
+  }
   c.turn = {
     actionUsed: false,
     bonusActionUsed: false,
@@ -546,6 +565,19 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   const events: GameEvent[] = [];
   const ending = currentCombatant(state);
   events.push(...runRepeatSaves(state, ending.id));
+  // "Until the end of your next turn": those whose turn this was end now —
+  // except any applied during this very turn, which wait for the next one.
+  for (const holder of Object.values(state.combatants)) {
+    const over = holder.conditions.filter(
+      (k) => k.endsAtTurnEndOf?.id === ending.id && !k.endsAtTurnEndOf.skip);
+    if (over.length > 0) {
+      holder.conditions = holder.conditions.filter((k) => !over.includes(k));
+      for (const k of over) events.push({ type: 'conditionRemoved', combatantId: holder.id, condition: k.id });
+    }
+    for (const k of holder.conditions) {
+      if (k.endsAtTurnEndOf?.id === ending.id) k.endsAtTurnEndOf = { id: ending.id, skip: false };
+    }
+  }
   // Command lasts exactly the one turn it stole; clear it now (the target keeps
   // its prone until it stands on a later turn).
   if (ending.conditions.some((k) => k.id === 'commanded')) {
