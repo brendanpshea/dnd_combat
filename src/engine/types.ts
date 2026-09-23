@@ -770,6 +770,19 @@ export function isIncapacitated(c: Combatant): boolean {
 }
 
 /**
+ * Cannot be given this condition at all.
+ *
+ * The stat blocks carry damage immunities but no condition immunities, and in
+ * the SRD the two travel together for poison: every creature immune to poison
+ * damage is also immune to the Poisoned condition. So that one is read off the
+ * damage list rather than duplicated onto 48 monsters. Skeletons were being
+ * poisoned by Ray of Sickness and spider bites.
+ */
+export function immuneToCondition(c: Combatant, id: ConditionId): boolean {
+  return id === 'poisoned' && c.immunities.includes('poison');
+}
+
+/**
  * Free to take a reaction right now. Every reaction reads this one gate — an
  * opportunity attack, Shield, Counterspell, Cutting Words, a monk's deflection
  * — so a paralyzed wizard cannot cast Shield just because that one check had

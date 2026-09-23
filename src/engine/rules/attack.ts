@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, ignoresHalfCover } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
@@ -780,7 +780,7 @@ export function resolveAttack(
     }
   }
 
-  if (weapon.onHitCondition && target.alive &&
+  if (weapon.onHitCondition && target.alive && !immuneToCondition(target, weapon.onHitCondition) &&
       !target.conditions.some((c) => c.id === weapon.onHitCondition)) {
     target.conditions.push({ id: weapon.onHitCondition, sourceId: attackerId });
     events.push({ type: 'conditionApplied', combatantId: targetId, condition: weapon.onHitCondition, sourceId: attackerId });
@@ -789,6 +789,7 @@ export function resolveAttack(
   // Save-or-suffer rider (ghoul paralysis, spider poison): save-ends, so it
   // repeats at the end of the victim's turns via runEndOfTurnSaves.
   if (weapon.onHitSave && target.alive &&
+      !immuneToCondition(target, weapon.onHitSave.condition) &&
       !target.conditions.some((c) => c.id === weapon.onHitSave!.condition)) {
     const { condition, ability, dc } = weapon.onHitSave;
     const save = savingThrow(state, targetId, ability, dc, { magical: isMagicWeapon(weapon) });

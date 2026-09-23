@@ -37,3 +37,15 @@ describe('spells are magical', () => {
     expect(meanNatural(['magic-resistance']) - meanNatural([])).toBeGreaterThan(2);
   });
 });
+
+describe('condition immunity', () => {
+  it('does not poison a creature immune to poison', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const caster = makeCombatant({ id: 'wiz', team: 'team1', position: { x: 0, y: 0 } });
+      const skel = makeCombatant({ id: 's', team: 'team2', position: { x: 3, y: 0 }, immunities: ['poison'] });
+      const c = new Combat({ seed, mapId: 'open', combatants: [caster, skel] });
+      SPELLS['ray-of-sickness']!.cast({ state: c.state, casterId: 'wiz', slotLevel: 1, targetIds: ['s'], positions: [] });
+      expect(c.state.combatants['s']!.conditions.some((k) => k.id === 'poisoned'), `seed ${seed}`).toBe(false);
+    }
+  });
+});

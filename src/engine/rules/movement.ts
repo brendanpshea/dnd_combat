@@ -2,7 +2,7 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
-import { cellAt, posEq, abilityMod, isDown, isIncapacitated, canReact, wardedAgainstMagicalBinding } from '../types.js';
+import { cellAt, posEq, abilityMod, isDown, isIncapacitated, canReact, immuneToCondition, wardedAgainstMagicalBinding } from '../types.js';
 import { blocksMovement, reachable, pathTo, adjacent, sphere2x2, popIllusion, type StepDanger } from '../grid.js';
 import { reachesCell } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
@@ -78,6 +78,7 @@ export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
   events.push(...applyDamage(state, victimId, victimId, dmg.total, kind.damageType, dmg.rolls, { magical: false, tags: ['Hazard'] }));
   const victim = state.combatants[victimId]!;
   if (!kind.rider || !victim.alive || isDown(victim)) return events;
+  if (immuneToCondition(victim, kind.rider.condition)) return events;
   // The save is only ever for the CONDITION. You always get burned; you might
   // get caught.
   const save = savingThrow(state, victimId, kind.rider.ability, kind.rider.dc, { magical: false });

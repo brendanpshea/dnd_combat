@@ -8,7 +8,7 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, immuneToCondition } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
@@ -1122,7 +1122,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`, atk.crit);
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       const target = state.combatants[targetId]!;
-      if (target.alive) {
+      if (target.alive && !immuneToCondition(target, 'poisoned')) {
         // No save: the SRD applies Poisoned on a hit, full stop -- the attack
         // roll IS the contest. And it lasts "until the end of your next turn",
         // one round, rather than until a Constitution save shakes it off.
