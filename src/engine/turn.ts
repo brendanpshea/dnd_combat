@@ -351,7 +351,10 @@ export function startTurn(state: GameState): GameEvent[] {
       const dest = fleeDestination(state, c, speed);
       if (dest) {
         events.push(...executeMove(state, c.id, dest));
-      } else {
+      } else if (speed > 0) {
+        // (Held still — restrained, grappled — is not cornered: the fear
+        // outlasts the hold, and it runs the moment it can.)
+        //
         // Nowhere to run: walled in, or somebody is standing in the only gap.
         // A cornered creature turns and fights rather than shuffling on the
         // spot for the rest of the battle — which is what it did while this

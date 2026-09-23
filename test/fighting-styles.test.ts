@@ -54,15 +54,22 @@ describe('Fighting Style: Archery', () => {
 });
 
 describe('Fighting Style: Great Weapon Fighting', () => {
-  it('rerolls 1s and 2s on a two-handed weapon so average damage rises', () => {
-    let withSum = 0, withoutSum = 0;
+  it('treats 1s and 2s on a two-handed weapon as 3s, as SRD 5.2.1 has it', () => {
+    let withSum = 0, withoutSum = 0, lifted = 0;
     const trials = 120;
     for (let seed = 1; seed <= trials; seed++) {
-      withSum += damage(seed, ['great-weapon-fighting'], 'greatsword', { x: 4, y: 3 });
-      withoutSum += damage(seed, [], 'greatsword', { x: 4, y: 3 });
+      const w = damage(seed, ['great-weapon-fighting'], 'greatsword', { x: 4, y: 3 });
+      const wo = damage(seed, [], 'greatsword', { x: 4, y: 3 });
+      // Same seed, same dice: the style can only ever raise a hit, never
+      // reroll it into something lower.
+      expect(w).toBeGreaterThanOrEqual(wo);
+      if (w > wo) lifted++;
+      withSum += w;
+      withoutSum += wo;
     }
-    // Rerolling 1s/2s on 2d6 lifts the mean by ~1.7/die; comfortably positive.
-    expect(withSum).toBeGreaterThan(withoutSum + trials);
+    // A 1 or 2 lands on a third of d6s, so on 2d6 roughly half the hits lift.
+    expect(lifted).toBeGreaterThan(trials / 6);
+    expect(withSum).toBeGreaterThan(withoutSum);
   });
 });
 

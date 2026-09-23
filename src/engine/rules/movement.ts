@@ -2,7 +2,7 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
-import { cellAt, posEq, abilityMod, isDown, isIncapacitated, wardedAgainstMagicalBinding } from '../types.js';
+import { cellAt, posEq, abilityMod, isDown, isIncapacitated, canReact, wardedAgainstMagicalBinding } from '../types.js';
 import { blocksMovement, reachable, pathTo, adjacent, sphere2x2, popIllusion, type StepDanger } from '../grid.js';
 import { reachesCell } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
@@ -218,15 +218,7 @@ function meleeWeaponOf(c: Combatant): Id | undefined {
   return hands.find((w): w is Id => !!w && w !== 'shield' && (WEAPONS[w]?.melee ?? false));
 }
 
-function canTakeReaction(c: Combatant): boolean {
-  return (
-    c.alive &&
-    !isDown(c) &&
-    !c.turn.reactionUsed &&
-    !isIncapacitated(c) &&
-    !c.conditions.some((k) => k.id === 'noReactions')
-  );
-}
+const canTakeReaction = canReact;
 
 /** Biggest damage roll `c` could land with `weaponId` on a normal hit. */
 function maxHit(c: Combatant, weaponId: Id): number {
@@ -372,6 +364,26 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     }
   };
 
+  /**
+   * End the walk early: stand on the last free cell, pay for the ground
+   * actually covered, and report the walk that happened. Every interruption
+   * goes through here so none of them can forget a part — a burn that dropped
+   * the mover used to leave no `moved` event at all, and a restraint left the
+   * rest of the movement on the table for a second walk out of the web.
+   */
+  const halt = (): GameEvent[] => {
+    const reached = walked[walked.length - 1]!;
+    stopShort();
+    mover.turn.movementUsed += r.costs.get(`${reached.x},${reached.y}`) ?? 0;
+    // Caught (web, brambles, a spirit's grip): speed is zero from here, the
+    // same as it will be at the start of the next turn.
+    if (mover.conditions.some((k) => k.id === 'restrained')) {
+      mover.turn.movementMax = Math.min(mover.turn.movementMax, mover.turn.movementUsed);
+    }
+    events.unshift({ type: 'moved', combatantId: moverId, path: walked });
+    return events;
+  };
+
   const walked: Position[] = [path[0]!];
   for (let i = 1; i < path.length; i++) {
     const from = path[i - 1]!;
@@ -398,9 +410,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
             // Killed or dropped to 0 (unconscious): the mover stops where it
             // fell rather than walking on to claim the destination cell. A
             // kill clears occupancy; a downed body still occupies its cell.
-            stopShort();
-            events.unshift({ type: 'moved', combatantId: moverId, path: walked });
-            return events;
+            return halt();
           }
         }
       }
@@ -421,9 +431,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       // Restrained by brambles ends the walk as surely as dropping does: speed
       // is zero from here.
       if (!mover.alive || isDown(mover) || mover.conditions.some((k) => k.id === 'restrained')) {
-        stopShort();
-        events.unshift({ type: 'moved', combatantId: moverId, path: walked });
-        return events;
+        return halt();
       }
     }
 
@@ -445,7 +453,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         state, moverId, fire.sourceId, amount, fire.damageType ?? 'fire', roll.rolls,
         { tags: [fire.label ?? 'Wall of Fire'] },
       ));
-      if (!mover.alive || isDown(mover)) { stopShort(); return events; }
+      if (!mover.alive || isDown(mover)) return halt();
     }
 
     // Walking into the elemental spirit's space. The SRD triggers on entering
@@ -458,10 +466,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       if (!sphere2x2(spirit.position).some((p) => posEq(p, step))) continue;
       events.push(...catchInSpirit(state, other.id, moverId));
       if (!mover.alive || isDown(mover) || mover.conditions.some((k) => k.id === 'restrained')) {
-        stopShort();
-        mover.turn.movementUsed += r.costs.get(`${step.x},${step.y}`) ?? cost;
-        events.unshift({ type: 'moved', combatantId: moverId, path: walked });
-        return events;
+        return halt();
       }
     }
 
@@ -484,10 +489,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
           // Caught: the mover stops here rather than walking on through the web
           // — on the last cell it can actually stand on, which may not be this
           // one if the strands caught it mid-stride over an ally.
-          stopShort();
-          mover.turn.movementUsed += r.costs.get(`${step.x},${step.y}`) ?? cost;
-          events.unshift({ type: 'moved', combatantId: moverId, path: walked });
-          return events;
+          return halt();
         }
       }
     }

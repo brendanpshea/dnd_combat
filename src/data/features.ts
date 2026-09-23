@@ -1791,7 +1791,10 @@ export const FEATURES: Record<Id, FeatureData> = {
       if (!save.success) {
         // Until the end of its NEXT turn, so a stun taken before its turn costs
         // it that turn — which is the whole point of spending a point on it.
-        target.conditions.push({ id: 'stunned', sourceId: actorId, expiresAtRound: state.round + 1 });
+        // Expiry is read at the start of the target's own turns, so a target
+        // still to act this round must expire THIS round, or it loses two.
+        const actsLater = state.initiativeOrder.indexOf(target.id) > state.turnIndex;
+        target.conditions.push({ id: 'stunned', sourceId: actorId, expiresAtRound: actsLater ? state.round : state.round + 1 });
         events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'stunned', sourceId: actorId });
       }
       return events;

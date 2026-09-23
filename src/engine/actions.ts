@@ -899,7 +899,10 @@ export function step(state: GameState, action: Action): { state: GameState; even
         actor.turn.actionUsed = true;
         actor.turn.attackedThisTurn = true;
         const hasteBonus = actor.conditions.some((c) => c.id === 'hasted') ? 1 : 0;
-        actor.turn.attacksLeft = actor.attacksPerAction - 1 + hasteBonus;
+        // Added, not assigned: an Action Surge taken between swings frees the
+        // action again, and the unspent Extra Attack from the first one must
+        // not be written over by the second.
+        actor.turn.attacksLeft += actor.attacksPerAction - 1 + hasteBonus;
       } else {
         actor.turn.attacksLeft -= 1;
       }
@@ -1033,7 +1036,11 @@ export function step(state: GameState, action: Action): { state: GameState; even
     }
     case 'dash':
       actor.turn.actionUsed = true;
-      actor.turn.movementMax += actor.turn.dashSpeed;
+      // Caught mid-walk this turn (a web, brambles): startTurn priced the dash
+      // before the restraint landed, so it has to be re-read here.
+      if (!actor.conditions.some((k) => k.id === 'restrained')) {
+        actor.turn.movementMax += actor.turn.dashSpeed;
+      }
       events.push({ type: 'dashed', combatantId: actorId });
       break;
     case 'disengage':
@@ -1085,15 +1092,19 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
   const c = state.combatants[id]!;
   if (!c.alive) return [];
   const events: GameEvent[] = [];
-  const keep: typeof c.conditions = [];
-  for (const cond of c.conditions) {
-    if (!cond.repeatSave) {
-      keep.push(cond);
-      continue;
-    }
+  // Edits are recorded against the live list rather than rebuilt from a
+  // snapshot: the burn below can drop the creature (which replaces its
+  // conditions with unconscious + prone) or break a concentration that held
+  // one of them, and a snapshot written back afterwards would undo both.
+  const drop = new Set<(typeof c.conditions)[number]>();
+  const add: typeof c.conditions = [];
+  for (const cond of [...c.conditions]) {
+    if (!cond.repeatSave) continue;
+    if (!c.conditions.includes(cond)) continue; // already gone this loop
     const save = savingThrow(state, id, cond.repeatSave.ability, cond.repeatSave.dc);
     events.push(save.event);
     if (save.success) {
+      drop.add(cond);
       events.push({ type: 'conditionRemoved', combatantId: id, condition: cond.id });
       // Shaking off the fear stops the running too.
       //
@@ -1118,24 +1129,29 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
       state.rng = burn.state;
       events.push(...applyDamage(state, id, cond.sourceId ?? id, burn.total, 'fire', burn.rolls,
         { tags: ['Searing Smite'] }));
-      if (state.combatants[id]!.alive) keep.push(cond);
+      // Dropped or killed: that already rewrote the conditions, and nothing
+      // else on a creature that is down gets a save worth rolling.
+      if (!c.alive || isDown(c)) return events;
     } else if (cond.id === 'incapacitated') {
       const esc = {
         id: 'unconscious' as const,
         expiresAtRound: state.round + 10, // 1 minute
         ...(cond.sourceId !== undefined ? { sourceId: cond.sourceId } : {}),
       };
-      keep.push(esc);
+      drop.add(cond);
+      add.push(esc);
       events.push({ type: 'conditionRemoved', combatantId: id, condition: 'incapacitated' });
       events.push({ type: 'conditionApplied', combatantId: id, condition: 'unconscious', ...(cond.sourceId !== undefined ? { sourceId: cond.sourceId } : {}) });
-    } else {
-      keep.push(cond); // failed but no escalation: condition persists
     }
+    // Anything else failed with no escalation: the condition persists.
   }
   // Applied after the loop so a companion dropped above cannot be re-kept by
   // its own iteration.
   const shed = new Set(events.flatMap((e) =>
     e.type === 'conditionRemoved' && e.combatantId === id ? [e.condition] : []));
-  c.conditions = keep.filter((k) => !(k.id === 'fleeing' && shed.has('fleeing')));
+  c.conditions = [
+    ...c.conditions.filter((k) => !drop.has(k) && !(k.id === 'fleeing' && shed.has('fleeing'))),
+    ...add,
+  ];
   return events;
 }

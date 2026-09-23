@@ -2,7 +2,7 @@
  * Saving throws, including the Bless d4. Mutates draft state (rng).
  */
 import type { GameState, Id, Ability, Combatant } from '../types.js';
-import { abilityMod, proficiencyBonus, isDown } from '../types.js';
+import { abilityMod, proficiencyBonus, isDown, isIncapacitated, canReact } from '../types.js';
 import { distanceFeet } from '../grid.js';
 import { rollD20, rollDice } from '../dice.js';
 import { FEATURES } from '../../data/features.js';
@@ -27,7 +27,7 @@ function countercharmed(state: GameState, c: Combatant, ability: Ability): boole
   for (const other of Object.values(state.combatants)) {
     if (other.team !== c.team || !other.alive || isDown(other)) continue;
     if (!other.featureIds.includes('countercharm')) continue;
-    if (other.conditions.some((k) => k.id === 'incapacitated')) continue;
+    if (isIncapacitated(other)) continue;
     if (distanceFeet(other.position, c.position) <= 30) return true;
   }
   return false;
@@ -60,7 +60,7 @@ export function charmWarded(state: GameState, c: Combatant): boolean {
   for (const other of Object.values(state.combatants)) {
     if (other.team !== c.team || !other.alive || isDown(other)) continue;
     if (!other.featureIds.includes('aura-of-devotion')) continue;
-    if (other.conditions.some((k) => k.id === 'incapacitated')) continue;
+    if (isIncapacitated(other)) continue;
     if (distanceFeet(other.position, c.position) <= 10) return true;
   }
   return false;
@@ -104,7 +104,7 @@ function auraOfProtection(state: GameState, c: Combatant): number {
   for (const other of Object.values(state.combatants)) {
     if (other.team !== c.team || !other.alive || isDown(other)) continue;
     if (!other.featureIds.includes('aura-of-protection')) continue;
-    if (other.conditions.some((k) => k.id === 'incapacitated')) continue;
+    if (isIncapacitated(other)) continue;
     if (distanceFeet(other.position, c.position) > 10) continue;
     best = Math.max(best, Math.max(1, abilityMod(other.abilities.cha)));
   }
@@ -208,7 +208,7 @@ export function savingThrow(
       success = total >= dc;
     }
   }
-  if (!success && ability === 'dex' && !c.turn.reactionUsed) {
+  if (!success && ability === 'dex' && canReact(c)) {
     const pool = c.featureUses['ring-evasion'];
     if (pool && pool.current > 0) {
       pool.current -= 1;
