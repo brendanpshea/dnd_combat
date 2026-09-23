@@ -10,7 +10,7 @@ import { parseDice } from '../engine/dice.js';
 import { next } from '../engine/rng.js';
 import { buildMonster } from '../data/monsters.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, spellDc, cantripDice, eldritchBeams, wearsMetal, canBePutToSleep } from '../data/spells.js';
+import { SPELLS, spellDc, cantripDice, spellDice, eldritchBeams, wearsMetal, canBePutToSleep } from '../data/spells.js';
 import { heightenedTarget } from '../engine/rules/metamagic.js';
 import { shoveDc } from '../engine/rules/shove.js';
 import { hazardMaxFor } from '../engine/rules/movement.js';
@@ -420,8 +420,14 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
   const dc = spellDc(state, actor.id);
   const castMod = abilityMod(actor.abilities[actor.spellcastingAbility ?? 'int']);
   const spellAtkBonus = castMod + proficiencyBonus(actor.level);
-  // Preserve limited slots a little: leveled spells carry a small cost.
-  const slotCost = spell.level >= 1 ? 2 : 0;
+  // Preserve limited slots a little: leveled spells carry a small cost, and
+  // each level a spell is cast ABOVE its own costs that much again. Flat, it
+  // made every slot the same price, so a spell whose value does not grow with
+  // the slot (Guiding Bolt priced at 4d6) was upcast into a 5th-level slot at
+  // random; now an upcast has to buy its keep in extra dice.
+  const slotCost = spell.level >= 1
+    ? SLOT_COST * (1 + Math.max(0, a.slotLevel - spell.level))
+    : 0;
 
   switch (a.spellId) {
     /**
@@ -436,7 +442,10 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
      * summed over the entries rather than multiplied by a count.
      */
     case 'eldritch-blast': {
-      const agonizing = actor.featureIds.includes('eldritch-invocations')
+      // The invocation itself, as the engine reads it: 'eldritch-invocations'
+      // is the feature every warlock has, so this priced Agonizing Blast into
+      // warlocks who picked a different invocation.
+      const agonizing = actor.featureIds.includes('agonizing-blast')
         ? Math.max(0, abilityMod(actor.abilities.cha)) : 0;
       const beams = eldritchBeams(actor.level);
       let v = 0;
@@ -449,11 +458,11 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     }
     case 'fire-bolt': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d10'), t);
+      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice(spellDice('fire-bolt', a.slotLevel, actor.level)), t);
     }
     case 'shocking-grasp': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('1d8'), t) + 1; // reaction denial
+      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice(spellDice('shocking-grasp', a.slotLevel, actor.level)), t) + 1; // reaction denial
     }
     // Entangle: value each enemy the patch would catch, weighted by its odds of
     // failing the Strength save — the same shape as Web, whose vines these are.
@@ -535,7 +544,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     }
     case 'sacred-flame': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(saveFailProb(state, t, 'dex', dc) * avgDice('1d8'), t);
+      return damageValue(saveFailProb(state, t, 'dex', dc) * avgDice(spellDice('sacred-flame', a.slotLevel, actor.level)), t);
     }
     case 'magic-missile': {
       const v = a.targets.length * avgDice('1d4+1');
@@ -545,7 +554,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'cure-wounds': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const missing = t.maxHp - t.hp;
-      const heal = Math.min(avgDice('2d8') + castMod + (actor.featureIds.includes('disciple-of-life') ? 3 : 0), missing);
+      const heal = Math.min(avgDice(spellDice('cure-wounds', a.slotLevel, actor.level)) + castMod + (actor.featureIds.includes('disciple-of-life') ? 3 : 0), missing);
       // Healing matters most when the ally is badly hurt.
       const urgency = missing >= t.maxHp / 2 ? 1.4 : 0.5;
       return heal * urgency - slotCost;
@@ -686,7 +695,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'guiding-bolt': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const p = hitProb(spellAtkBonus, acOf(t), 'flat');
-      return damageValue(p * avgDice('4d6'), t) + p * 2 - slotCost; // rider bonus
+      return damageValue(p * avgDice(spellDice('guiding-bolt', a.slotLevel, actor.level)), t) + p * 2 - slotCost; // rider bonus
     }
     /**
      * Ray of Sickness: a spell attack for (2+slot)d8 poison, then a Con save or
@@ -704,7 +713,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'ray-of-sickness': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const hit = hitProb(spellAtkBonus, acOf(t), 'flat');
-      const dmg = damageValue(hit * avgDice(`${1 + a.slotLevel}d8`), t);
+      const dmg = damageValue(hit * avgDice(spellDice('ray-of-sickness', a.slotLevel, actor.level)), t);
       // The rider lands whenever the ray does — there is no save — and lasts
       // one round. Disadvantage is worth roughly a quarter of what it is
       // rolling for, so this is a quarter of a round of the target's output.
@@ -730,7 +739,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!c.alive) continue;
         if (sculpt && c.team === actor.team) continue;
         const pFail = saveFailProb(state, c, 'con', dc);
-        const ev = avgDice('2d8') * (pFail + (1 - pFail) * 0.5) + pFail * 2; // push value
+        const ev = avgDice(spellDice('thunderwave', a.slotLevel, actor.level)) * (pFail + (1 - pFail) * 0.5) + pFail * 2; // push value
         v += c.team === actor.team ? -1.5 * ev : damageValue(ev, c);
       }
       return v - slotCost;
@@ -769,7 +778,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         const t = state.combatants[occ]!;
         if (!t.alive) continue;
         const pFail = saveFailProb(state, t, 'dex', dc);
-        const ev = avgDice('3d6') * (pFail + (1 - pFail) * 0.5);
+        const ev = avgDice(spellDice('burning-hands', a.slotLevel, actor.level)) * (pFail + (1 - pFail) * 0.5);
         v += t.team === actor.team ? -1.5 * ev : damageValue(ev, t);
       }
       return v - slotCost;
@@ -972,7 +981,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!t.alive) continue;
         if (sculpt && t.team === actor.team) continue;
         const pFail = saveFailProb(state, t, 'dex', dc);
-        const ev = avgDice('8d6') * (pFail + (1 - pFail) * 0.5);
+        const ev = avgDice(spellDice('fireball', a.slotLevel, actor.level)) * (pFail + (1 - pFail) * 0.5);
         // Allies caught in the blast are a heavy penalty (unless Sculpt spared them).
         v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
       }
@@ -993,7 +1002,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const missing = t.maxHp - t.hp;
       if (missing <= 0) return -slotCost;
-      const heal = Math.min(avgDice('2d4') + castMod, missing);
+      const heal = Math.min(avgDice(spellDice('healing-word', a.slotLevel, actor.level)) + castMod, missing);
       return heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) - slotCost;
     }
     case 'suggestion': {
@@ -1092,7 +1101,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!t.alive) continue;
         if (sculpt && t.team === actor.team) continue;
         const pFail = saveFailProb(state, t, 'dex', dc);
-        const ev = avgDice('8d6') * (pFail + (1 - pFail) * 0.5);
+        const ev = avgDice(spellDice('lightning-bolt', a.slotLevel, actor.level)) * (pFail + (1 - pFail) * 0.5);
         v += t.team === actor.team ? -2 * ev : damageValue(ev, t);
       }
       return v - slotCost;
@@ -1171,7 +1180,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       // Small kiting bonus: slowing a melee-only target buys the caster
       // another turn of distance before it can close again.
       const kiteBonus = t.equipped.mainHand && WEAPONS[t.equipped.mainHand]?.melee !== false ? 1 : 0.3;
-      return damageValue(p * avgDice('1d8'), t) + p * kiteBonus;
+      return damageValue(p * avgDice(spellDice('ray-of-frost', a.slotLevel, actor.level)), t) + p * kiteBonus;
     }
     // Poison Spray had no case at all, so every caster holding it treated it as
     // worth nothing — a wizard or druid would sooner swing a staff. It is a
@@ -1220,7 +1229,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         if (!occ) continue;
         const t = state.combatants[occ]!;
         if (!t.alive || t.team === actor.team) continue;
-        v += damageValue(saveFailProb(state, t, 'dex', dc) * avgDice('1d6'), t);
+        v += damageValue(saveFailProb(state, t, 'dex', dc) * avgDice(spellDice('acid-splash', a.slotLevel, actor.level)), t);
       }
       return v;
     }
@@ -1249,7 +1258,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     }
     case 'inflict-wounds': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice('2d10'), t) - slotCost;
+      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice(spellDice('inflict-wounds', a.slotLevel, actor.level)), t) - slotCost;
     }
     case 'blindness': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;

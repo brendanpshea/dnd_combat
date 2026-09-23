@@ -397,6 +397,39 @@ export function cantripDice(base: string, level: number): string {
 }
 
 /**
+ * The dice a spell rolls, at a slot level and a caster level — one expression
+ * that the spell's `cast` rolls and the AI prices.
+ *
+ * Written twice, they drifted: the AI priced Fireball at 8d6 in a 5th-level
+ * slot, Guiding Bolt at 4d6 however high it was cast, and Fire Bolt at 1d10 for
+ * a level-9 wizard rolling 2d10 — so it could not tell an upcast from a waste,
+ * or a cantrip from a better one. Same idea as SMITE_SPECS.
+ */
+export const SPELL_DICE: Record<Id, (slotLevel: number, casterLevel: number) => string> = {
+  fireball: (slot) => `${8 + (slot - 3)}d6`,          // 8d6 at 3rd, +1d6 per slot above
+  'lightning-bolt': (slot) => `${8 + (slot - 3)}d6`,
+  'burning-hands': (slot) => `${2 + slot}d6`,         // 3d6 at 1st
+  thunderwave: (slot) => `${1 + slot}d8`,             // 2d8 at 1st
+  'guiding-bolt': (slot) => `${3 + slot}d6`,          // 4d6 at 1st
+  'inflict-wounds': (slot) => `${1 + slot}d10`,       // 2d10 at 1st
+  'ray-of-sickness': (slot) => `${1 + slot}d8`,       // 2d8 at 1st
+  'cure-wounds': (slot) => `${2 * slot}d8`,           // 2024: 2d8 at 1st, +2d8 per slot
+  'healing-word': (slot) => `${2 * slot}d4`,          // 2024: 2d4 at 1st, +2d4 per slot
+  'fire-bolt': (_slot, level) => cantripDice('1d10', level),
+  'shocking-grasp': (_slot, level) => cantripDice('1d8', level),
+  'sacred-flame': (_slot, level) => cantripDice('1d8', level),
+  'ray-of-frost': (_slot, level) => cantripDice('1d8', level),
+  'acid-splash': (_slot, level) => cantripDice('1d6', level),
+};
+
+export function spellDice(spellId: Id, slotLevel: number, casterLevel: number): string {
+  // An innate cast arrives at slot 0 (no slot spent), but it is cast at the
+  // spell's own level: an innate Guiding Bolt is 4d6, not 3d6.
+  const slot = Math.max(slotLevel, SPELLS[spellId]?.level ?? 0);
+  return SPELL_DICE[spellId]!(slot, casterLevel);
+}
+
+/**
  * Enhanced Cantrip (Evoker, level 3): a simplified model of the 2024 Evocation
  * line — the evoker adds its Intelligence modifier to the damage of its
  * damaging cantrips. Returns 0 for casters without the feature.
@@ -861,7 +894,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollSpellDice(state, casterId, cantripDice('1d10', state.combatants[casterId]!.level), atk.crit, 'fire');
+        const dmg = rollSpellDice(state, casterId, spellDice('fire-bolt', 0, state.combatants[casterId]!.level), atk.crit, 'fire');
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'fire', dmg.rolls));
       }
@@ -909,7 +942,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: true });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
+        const dmg = rollDice(state.rng, spellDice('shocking-grasp', 0, state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'lightning', dmg.rolls));
         if (target.alive) {
@@ -1121,7 +1154,7 @@ export const SPELLS: Record<Id, SpellData> = {
       // casting and the wizard's `learnableExtra`; adding it to the sorcerer's
       // list made it the second most-cast leveled spell in a 40-run arena, at
       // a third more damage than it is entitled to.
-      const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`, atk.crit);
+      const dmg = rollSpellDice(state, casterId, spellDice('ray-of-sickness', slotLevel, state.combatants[casterId]!.level), atk.crit);
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       const target = state.combatants[targetId]!;
       if (target.alive) {
@@ -1148,7 +1181,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'dex', dc);
       const events: GameEvent[] = [save.event];
       if (!save.success) {
-        const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level));
+        const dmg = rollDice(state.rng, spellDice('sacred-flame', 0, state.combatants[casterId]!.level));
         state.rng = dmg.state;
         // The one damaging cantrip that was not reading the caster bonus, and the
         // cleric's only one — so Potent Spellcasting would have been wholly inert
@@ -1184,7 +1217,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '💚',
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
-      const roll = rollDice(state.rng, `${2 * slotLevel}d8`);
+      const roll = rollDice(state.rng, spellDice('cure-wounds', slotLevel, state.combatants[casterId]!.level));
       state.rng = roll.state;
       const amount = roll.total + spellMod(state, casterId) + discipleOfLifeBonus(state, casterId, slotLevel);
       return heal(state, targetId, casterId, amount);
@@ -1315,7 +1348,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dir = directionFromDelta(caster.position, positions[0]!);
       const events: GameEvent[] = [];
       const dc = spellDc(state, casterId);
-      const dice = `${2 + slotLevel}d6`; // 3d6 at slot 1, +1d6 per level above
+      const dice = spellDice('burning-hands', slotLevel, state.combatants[casterId]!.level); // 3d6 at slot 1, +1d6 per level above
       for (const pos of cone15(caster.position, dir)) {
         const cell = cellAt(state.grid, pos);
         const tid = cell?.occupantId;
@@ -1350,7 +1383,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const caster = state.combatants[casterId]!;
       const sculpt = caster.featureIds.includes('sculpt-spells');
       const dc = spellDc(state, casterId);
-      const dice = `${8 + (slotLevel - 3)}d6`; // 8d6 at 3rd, +1d6 per higher slot
+      const dice = spellDice('fireball', slotLevel, state.combatants[casterId]!.level); // 8d6 at 3rd, +1d6 per higher slot
       const events: GameEvent[] = [];
       for (const pos of sphere5x5(positions[0]!)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
@@ -1421,7 +1454,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🩹',
     cast({ state, casterId, slotLevel, targetIds }) {
       const mod = spellMod(state, casterId);
-      const heal = rollDice(state.rng, `${2 * slotLevel}d4`); // 2024: 2d4 at 1st, +2d4 per higher slot
+      const heal = rollDice(state.rng, spellDice('healing-word', slotLevel, state.combatants[casterId]!.level)); // 2024: 2d4 at 1st, +2d4 per higher slot
       state.rng = heal.state;
       return applyHealing(state, targetIds[0]!, casterId, heal.total + mod);
     },
@@ -1784,7 +1817,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const sculpt = caster.featureIds.includes('sculpt-spells');
       const dir = directionFromDelta(caster.position, positions[0]!);
       const dc = spellDc(state, casterId);
-      const dice = `${8 + (slotLevel - 3)}d6`;
+      const dice = spellDice('lightning-bolt', slotLevel, state.combatants[casterId]!.level);
       const events: GameEvent[] = [];
       for (const pos of line15(caster.position, dir)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
@@ -1898,7 +1931,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, `${3 + slotLevel}d6`, atk.crit); // 4d6 at slot 1
+        const dmg = rollDice(state.rng, spellDice('guiding-bolt', slotLevel, state.combatants[casterId]!.level), atk.crit); // 4d6 at slot 1
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'radiant', dmg.rolls));
         const t = state.combatants[targetId]!;
@@ -1934,7 +1967,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (sculpt && t.team === caster.team) continue;
         const save = savingThrow(state, t.id, 'con', dc);
         events.push(save.event);
-        const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`); // 2d8 at slot 1
+        const dmg = rollSpellDice(state, casterId, spellDice('thunderwave', slotLevel, state.combatants[casterId]!.level)); // 2d8 at slot 1
         const amount = saveForHalf(state.combatants[t.id]!, 'con', dmg.total, save.success);
         if (amount > 0) events.push(...applyDamage(state, t.id, casterId, amount, 'thunder', dmg.rolls));
         if (!save.success && t.alive) {
@@ -2148,7 +2181,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
+        const dmg = rollDice(state.rng, spellDice('ray-of-frost', 0, state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'cold', dmg.rolls));
         const target = state.combatants[targetId]!;
@@ -2185,7 +2218,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'dex', dc);
         events.push(save.event);
         if (!save.success) {
-          const dmg = rollDice(state.rng, cantripDice('1d6', caster.level));
+          const dmg = rollDice(state.rng, spellDice('acid-splash', 0, caster.level));
           state.rng = dmg.state;
           events.push(...applyDamage(state, tid, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'acid', dmg.rolls));
         }
@@ -2270,7 +2303,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const atk = spellAttack(state, casterId, targetId, { melee: true });
       const events: GameEvent[] = [atk.event];
       if (atk.hit) {
-        const dmg = rollDice(state.rng, `${1 + slotLevel}d10`, atk.crit); // 2d10 at slot 1
+        const dmg = rollDice(state.rng, spellDice('inflict-wounds', slotLevel, state.combatants[casterId]!.level), atk.crit); // 2d10 at slot 1
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'necrotic', dmg.rolls));
       }
