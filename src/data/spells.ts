@@ -8,7 +8,7 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
@@ -965,7 +965,10 @@ export const SPELLS: Record<Id, SpellData> = {
       events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'radiant', dmg.rolls));
       const t = state.combatants[targetId]!;
       if (t.alive && !isDown(t) && !t.conditions.some((k) => k.id === 'outlined')) {
-        events.push(...applyCondition(state, targetId, { id: 'outlined', sourceId: casterId, expiresAtRound: state.round + 1 }, { magical: true }));
+        events.push(...applyCondition(state, targetId, {
+          id: 'outlined', sourceId: casterId,
+          endsAtTurnEndOf: { id: casterId, skip: isTurnOf(state, casterId) },
+        }, { magical: true }));
       }
       return events;
     },
@@ -1018,7 +1021,11 @@ export const SPELLS: Record<Id, SpellData> = {
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'psychic', dmg.rolls));
       if (target.alive && !target.conditions.some((c) => c.id === 'sapped')) {
-        events.push(...applyCondition(state, targetId, { id: 'sapped', sourceId: casterId }, { magical: true }));
+        // "Before the end of ITS next turn" — the target's.
+        events.push(...applyCondition(state, targetId, {
+          id: 'sapped', sourceId: casterId,
+          endsAtTurnEndOf: { id: targetId, skip: isTurnOf(state, targetId) },
+        }, { magical: true }));
       }
       return events;
     },
@@ -1122,7 +1129,8 @@ export const SPELLS: Record<Id, SpellData> = {
         // roll IS the contest. And it lasts "until the end of your next turn",
         // one round, rather than until a Constitution save shakes it off.
         events.push(...applyCondition(state, targetId, {
-          id: 'poisoned', sourceId: casterId, expiresAtRound: state.round + 1,
+          id: 'poisoned', sourceId: casterId,
+          endsAtTurnEndOf: { id: casterId, skip: isTurnOf(state, casterId) },
         }, { magical: true }));
       }
       return events;
@@ -1895,7 +1903,11 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(...applyDamage(state, targetId, casterId, dmg.total, 'radiant', dmg.rolls));
         const t = state.combatants[targetId]!;
         if (t.alive && !t.conditions.some((c) => c.id === 'guided')) {
-          events.push(...applyCondition(state, targetId, { id: 'guided', sourceId: casterId }, { magical: true }));
+          // "Before the end of your next turn" — the caster's.
+          events.push(...applyCondition(state, targetId, {
+            id: 'guided', sourceId: casterId,
+            endsAtTurnEndOf: { id: casterId, skip: isTurnOf(state, casterId) },
+          }, { magical: true }));
         }
       }
       return events;

@@ -72,3 +72,38 @@ describe('the applier is the only way on', () => {
     expect(offenders, 'push through applyCondition so every immunity is checked').toEqual([]);
   });
 });
+
+describe('conditions timed off a turn', () => {
+  function duel() {
+    const a = makeCombatant({ id: 'a', team: 'team1', position: { x: 0, y: 0 } });
+    const b = makeCombatant({ id: 'b', team: 'team2', position: { x: 5, y: 5 } });
+    const c = new Combat({ seed: 1, mapId: 'open', combatants: [a, b] });
+    for (let g = 0; c.activeId !== 'a' && g < 4; g++) c.apply({ kind: 'endTurn' });
+    return c;
+  }
+  const has = (c: Combat, who: string, id: string) =>
+    c.state.combatants[who]!.conditions.some((k) => k.id === id);
+
+  it('lifts Sap at the start of the attacker\'s next turn, used or not', () => {
+    // It used to wait for the sapped creature's next attack, however long.
+    const c = duel();
+    applyCondition(c.state, 'b', { id: 'sapped', sourceId: 'a', endsAtTurnStartOf: 'a' }, { magical: false });
+    c.apply({ kind: 'endTurn' });            // b's turn: still sapped
+    expect(has(c, 'b', 'sapped')).toBe(true);
+    c.apply({ kind: 'endTurn' });            // a's next turn starts
+    expect(has(c, 'b', 'sapped')).toBe(false);
+  });
+
+  it('keeps "until the end of your next turn" through this turn and the next', () => {
+    const c = duel();
+    applyCondition(c.state, 'b', {
+      id: 'guided', sourceId: 'a', endsAtTurnEndOf: { id: 'a', skip: true },
+    }, { magical: true });
+    c.apply({ kind: 'endTurn' });            // end of a's current turn: not "next"
+    expect(has(c, 'b', 'guided')).toBe(true);
+    c.apply({ kind: 'endTurn' });            // b's turn ends
+    expect(has(c, 'b', 'guided')).toBe(true);
+    c.apply({ kind: 'endTurn' });            // end of a's NEXT turn
+    expect(has(c, 'b', 'guided')).toBe(false);
+  });
+});

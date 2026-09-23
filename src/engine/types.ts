@@ -191,8 +191,20 @@ export interface ActiveCondition {
   sourceId?: Id;
   /** Sustained by the source's concentration; removed when it breaks. */
   concentration?: boolean;
-  /** Round number after which the condition expires; undefined = until removed. */
+  /**
+   * Round number after which the condition expires, checked at the start of
+   * the HOLDER's turns; undefined = until removed. Right for "one minute"; wrong
+   * for anything timed off the source's turn — use the two below for those.
+   */
   expiresAtRound?: number;
+  /** Ends when this creature's next turn starts ("until the start of your next turn"). */
+  endsAtTurnStartOf?: Id;
+  /**
+   * Ends when this creature's turn ends ("until the end of your next turn").
+   * `skip` passes over the turn under way when it was applied: cast on your own
+   * turn, "your next turn" is the one after this.
+   */
+  endsAtTurnEndOf?: { id: Id; skip: boolean };
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
   /** `magical` when a spell or magical effect imposed it, so Magic Resistance
    *  gives advantage on the repeat save as it did on the first. */
@@ -767,6 +779,17 @@ export function isIncapacitated(c: Combatant): boolean {
     (k) => k.id === 'incapacitated' || k.id === 'unconscious' ||
            k.id === 'paralyzed' || k.id === 'stunned',
   );
+}
+
+/**
+ * Whether it is `id`'s own turn. `combatant.turn` holds the budget of the
+ * owner's MOST RECENT turn, so anything read off it on someone else's turn (an
+ * opportunity attack, a reaction) is stale: a boar that charged on its turn
+ * added the charge die to a later opportunity attack, and a paladin smited
+ * with last turn's bonus action.
+ */
+export function isTurnOf(state: GameState, id: Id): boolean {
+  return state.initiativeOrder[state.turnIndex] === id;
 }
 
 /**

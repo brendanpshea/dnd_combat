@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, ignoresHalfCover } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover } from '../types.js';
 import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
@@ -523,6 +523,9 @@ export function resolveAttack(
   // trampling gore use the same lunge.
   const charged =
     isMeleeAttack &&
+    // The lunge is this turn's: on an opportunity attack movementUsed is
+    // what the attacker walked on its own last turn.
+    isTurnOf(state, attackerId) &&
     attacker.turn.movementUsed >= 15 &&
     (attacker.featureIds.includes('charge') ||
       attacker.featureIds.includes('unicorn-charge') ||
@@ -754,7 +757,7 @@ export function resolveAttack(
       !attacker.turn.bonusActionUsed &&
       // A bonus action is only spendable on your own turn; an opportunity
       // attack reads last turn's leftover flag, which startTurn resets anyway.
-      state.initiativeOrder[state.turnIndex] === attackerId
+      isTurnOf(state, attackerId)
     ) {
       // Auto-fire on the two moments a paladin would never *not* smite:
       //
@@ -804,11 +807,19 @@ export function resolveAttack(
   // Weapon mastery riders, only for wielders trained in this weapon's mastery.
   if (weapon.mastery && attacker.weaponMasteries.includes(weapon.id) && target.alive) {
     if (weapon.mastery === 'sap' && !target.conditions.some((c) => c.id === 'sapped')) {
-      events.push(...applyCondition(state, targetId, { id: 'sapped', sourceId: attackerId }, { magical: false }));
+      // "Before the start of your next turn" — it used to wait for an attack
+      // however long that took.
+      events.push(...applyCondition(state, targetId, {
+        id: 'sapped', sourceId: attackerId, endsAtTurnStartOf: attackerId,
+      }, { magical: false }));
     } else if (weapon.mastery === 'vex' || weapon.mastery === 'nick') {
       // Nick is modeled with Vex's mechanic (a quick nick opens the follow-up).
       if (!attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === targetId)) {
-        events.push(...applyCondition(state, attackerId, { id: 'vexed', sourceId: targetId }, { magical: false }));
+        // "Before the end of your next turn."
+        events.push(...applyCondition(state, attackerId, {
+          id: 'vexed', sourceId: targetId,
+          endsAtTurnEndOf: { id: attackerId, skip: isTurnOf(state, attackerId) },
+        }, { magical: false }));
       }
     } else if (weapon.mastery === 'slow' && !target.conditions.some((c) => c.id === 'slowed')) {
       events.push(...applyCondition(state, targetId, { id: 'slowed', sourceId: attackerId }, { magical: false }));
