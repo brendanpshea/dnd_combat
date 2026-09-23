@@ -21,7 +21,7 @@ import { attackableWeapons } from './rules/equipment.js';
 import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
-import { applyCondition } from './rules/conditions.js';
+import { applyCondition, removeConditions } from './rules/conditions.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -193,29 +193,16 @@ export function startTurn(state: GameState): GameEvent[] {
     k.id === 'dodging' || k.id === 'noReactions' || k.id === 'shielded' ||
     k.id === 'reckless' ||
     (k.id === 'blinded' && !k.repeatSave);
-  for (const cond of c.conditions) {
-    if (selfClearing(cond)) events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });
-  }
-  c.conditions = c.conditions.filter((k) => !selfClearing(k));
+  events.push(...removeConditions(c, selfClearing));
 
   // Expire round-limited conditions (e.g. Unconscious's 1-minute cap).
-  for (const cond of c.conditions) {
-    if (cond.expiresAtRound !== undefined && state.round > cond.expiresAtRound) {
-      events.push({ type: 'conditionRemoved', combatantId: c.id, condition: cond.id });
-    }
-  }
-  c.conditions = c.conditions.filter(
-    (k) => k.expiresAtRound === undefined || state.round <= k.expiresAtRound,
-  );
+  events.push(...removeConditions(c, (k) => k.expiresAtRound !== undefined && state.round > k.expiresAtRound));
 
   // Conditions timed off THIS creature's turn, on whoever holds them: a
   // Stunning Strike ends when the monk's next turn starts, however the
   // target's own turns fall around it.
   for (const holder of Object.values(state.combatants)) {
-    const over = holder.conditions.filter((k) => k.endsAtTurnStartOf === c.id);
-    if (over.length === 0) continue;
-    holder.conditions = holder.conditions.filter((k) => k.endsAtTurnStartOf !== c.id);
-    for (const k of over) events.push({ type: 'conditionRemoved', combatantId: holder.id, condition: k.id });
+    events.push(...removeConditions(holder, (k) => k.endsAtTurnStartOf === c.id));
   }
 
   c.hasActed = true;
@@ -251,7 +238,8 @@ export function startTurn(state: GameState): GameEvent[] {
       events.push(...applyCondition(state, c.id, { id: 'prone', sourceId: c.id }, { magical: true }));
     }
   } else if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
-    c.conditions = c.conditions.filter((k) => k.id !== 'prone');
+    // Silent, as standing up always has been: the halved move is the tell.
+    removeConditions(c, 'prone', { silent: true });
     // `speed` only: standing is a movement cost, and `dashSpeed` is a Speed.
     speed = Math.floor(speed / 2);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
@@ -281,7 +269,7 @@ export function startTurn(state: GameState): GameEvent[] {
   // Slow mastery: -10 ft this turn, then it clears (lasts to the start of the
   // slowed creature's next turn).
   if (c.conditions.some((k) => k.id === 'slowed')) {
-    c.conditions = c.conditions.filter((k) => k.id !== 'slowed');
+    removeConditions(c, 'slowed', { silent: true });
     speed = Math.max(0, speed - 10);
     dashSpeed = Math.max(0, dashSpeed - 10);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'slowed' });
@@ -383,8 +371,7 @@ export function startTurn(state: GameState): GameEvent[] {
         // It also makes blocking the exit a real thing to do. Turn Undead buys
         // you the horde walking away; standing in the doorway is how the party
         // chooses to keep one and kill it instead.
-        c.conditions = c.conditions.filter((k) => k !== flee);
-        events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'fleeing' });
+        events.push(...removeConditions(c, (k) => k === flee));
       }
       // Reaching the edge mid-move ends the flight now rather than costing it
       // another full round standing in the open.
@@ -568,22 +555,15 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   // "Until the end of your next turn": those whose turn this was end now —
   // except any applied during this very turn, which wait for the next one.
   for (const holder of Object.values(state.combatants)) {
-    const over = holder.conditions.filter(
-      (k) => k.endsAtTurnEndOf?.id === ending.id && !k.endsAtTurnEndOf.skip);
-    if (over.length > 0) {
-      holder.conditions = holder.conditions.filter((k) => !over.includes(k));
-      for (const k of over) events.push({ type: 'conditionRemoved', combatantId: holder.id, condition: k.id });
-    }
+    events.push(...removeConditions(holder,
+      (k) => k.endsAtTurnEndOf?.id === ending.id && !k.endsAtTurnEndOf.skip));
     for (const k of holder.conditions) {
       if (k.endsAtTurnEndOf?.id === ending.id) k.endsAtTurnEndOf = { id: ending.id, skip: false };
     }
   }
   // Command lasts exactly the one turn it stole; clear it now (the target keeps
   // its prone until it stands on a later turn).
-  if (ending.conditions.some((k) => k.id === 'commanded')) {
-    ending.conditions = ending.conditions.filter((k) => k.id !== 'commanded');
-    events.push({ type: 'conditionRemoved', combatantId: ending.id, condition: 'commanded' });
-  }
+  events.push(...removeConditions(ending, 'commanded'));
   events.push({ type: 'turnEnded', combatantId: ending.id });
 
   if (state.winner) return events;

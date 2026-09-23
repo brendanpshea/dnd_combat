@@ -1,5 +1,5 @@
 /**
- * The one way a condition goes on.
+ * The one way a condition goes on, and the one way it comes off.
  *
  * Conditions used to be pushed straight onto `combatant.conditions` from some
  * eighty places, each doing its own subset of the immunity checks and each
@@ -65,4 +65,30 @@ export function applyCondition(
     type: 'conditionApplied', combatantId: targetId, condition: cond.id,
     ...(cond.sourceId !== undefined ? { sourceId: cond.sourceId } : {}),
   }];
+}
+
+/**
+ * Take every condition matching `which` off `target`, reporting each one
+ * unless `silent`. `which` is an id, or a predicate for the finer cuts (only
+ * this source's, only those held by concentration, one particular condition).
+ *
+ * The one way a condition comes off, as `applyCondition` is the one way on:
+ * removals were thirty-odd hand-written filters, each deciding for itself
+ * whether to tell anyone, and the badges and the log could not agree.
+ * `silent` is kept for the per-roll markers (a Sap or an Inspiration spent by
+ * the roll it modified), which the roll itself already reports. It takes the
+ * combatant rather than the state because nothing about removal can be
+ * refused, and some callers (a saving throw) only have the creature.
+ */
+export function removeConditions(
+  target: Combatant,
+  which: ConditionId | ((k: ActiveCondition) => boolean),
+  opts: { silent?: boolean } = {},
+): GameEvent[] {
+  const match = typeof which === 'string' ? (k: ActiveCondition) => k.id === which : which;
+  const gone = target.conditions.filter(match);
+  if (gone.length === 0) return [];
+  target.conditions = target.conditions.filter((k) => !match(k));
+  if (opts.silent) return [];
+  return gone.map((k) => ({ type: 'conditionRemoved' as const, combatantId: target.id, condition: k.id }));
 }

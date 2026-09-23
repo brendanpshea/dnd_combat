@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
-import { SPELLS } from '../src/data/spells.js';
+import { SPELLS, spellDice } from '../src/data/spells.js';
 import { evaluate } from '../src/ai/evaluate.js';
 import { step } from '../src/engine/actions.js';
 import type { Action } from '../src/engine/actions.js';
@@ -216,9 +216,10 @@ describe('Ice Storm leaves ground behind, and takes it back', () => {
 describe('against the SRD text', () => {
   it('Ice Storm hails 2d10, not 2d8', () => {
     // SRD: "2d10 Bludgeoning damage and 4d6 Cold damage", +1d10 per level above 4.
+    expect(spellDice('ice-storm', 4, 9)).toBe('2d10');
+    expect(spellDice('ice-storm', 5, 9)).toBe('3d10');
     const src = readFileSync(new URL('../src/data/spells.ts', import.meta.url), 'utf8');
     const body = src.slice(src.indexOf("'ice-storm': {"), src.indexOf("'ice-storm': {") + 1200);
-    expect(body).toContain('d10`');
     expect(body).toContain("'4d6'");
   });
 

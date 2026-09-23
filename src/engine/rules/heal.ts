@@ -9,6 +9,7 @@
  */
 import type { GameState, Id } from '../types.js';
 import type { GameEvent } from '../events.js';
+import { removeConditions } from './conditions.js';
 
 /**
  * Restore up to `amount` HP, and stand a downed creature back up.
@@ -38,12 +39,7 @@ export function applyHealing(state: GameState, targetId: Id, sourceId: Id, amoun
 
   const events: GameEvent[] = [{ type: 'healed', targetId, sourceId, amount: healed }];
   if (wasDowned && t.hp > 0) {
-    for (const c of t.conditions) {
-      if (c.id === 'unconscious' || c.id === 'prone') {
-        events.push({ type: 'conditionRemoved', combatantId: targetId, condition: c.id });
-      }
-    }
-    t.conditions = t.conditions.filter((c) => c.id !== 'unconscious' && c.id !== 'prone');
+    events.push(...removeConditions(t, (c) => c.id === 'unconscious' || c.id === 'prone'));
     events.push({ type: 'revived', combatantId: targetId, hp: t.hp });
   }
   return events;

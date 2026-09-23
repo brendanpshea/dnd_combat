@@ -19,7 +19,7 @@ import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphe
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
-import { applyCondition } from './rules/conditions.js';
+import { applyCondition, removeConditions } from './rules/conditions.js';
 import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
@@ -933,7 +933,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       // Sacred Flame all day.
       if (spell.targeting.kind !== 'self' &&
           !(spell.targeting.kind === 'creature' && spell.targeting.who === 'ally')) {
-        actor.conditions = actor.conditions.filter((k) => k.id !== 'sanctuary');
+        events.push(...removeConditions(actor, 'sanctuary'));
       }
       events.push(...endHide(actor));
       const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
@@ -1061,14 +1061,13 @@ export function step(state: GameState, action: Action): { state: GameState; even
     case 'shakeAwake': {
       actor.turn.actionUsed = true;
       const t = draft.combatants[action.targetId]!;
-      t.conditions = t.conditions.filter((c) => c.id !== 'unconscious');
-      events.push({ type: 'conditionRemoved', combatantId: t.id, condition: 'unconscious' });
+      events.push(...removeConditions(t, 'unconscious'));
       break;
     }
     case 'shove':
       actor.turn.actionUsed = true;
       // Shoving is hostile: it breaks a Sanctuary exactly as an attack does.
-      actor.conditions = actor.conditions.filter((k) => k.id !== 'sanctuary');
+      events.push(...removeConditions(actor, 'sanctuary'));
       events.push(...endHide(actor));
       events.push(...resolveShove(draft, actorId, action.targetId, action.mode));
       break;

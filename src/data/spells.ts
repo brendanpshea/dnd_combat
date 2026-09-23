@@ -44,7 +44,7 @@ import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
 import { acOf, ARMOR, isShield } from './armor.js';
 import { WEAPONS, weaponCategory } from './weapons.js';
-import { applyCondition } from '../engine/rules/conditions.js';
+import { applyCondition, removeConditions } from '../engine/rules/conditions.js';
 
 export type SpellTargeting =
   | {
@@ -420,6 +420,24 @@ export const SPELL_DICE: Record<Id, (slotLevel: number, casterLevel: number) => 
   'sacred-flame': (_slot, level) => cantripDice('1d8', level),
   'ray-of-frost': (_slot, level) => cantripDice('1d8', level),
   'acid-splash': (_slot, level) => cantripDice('1d6', level),
+  // Higher levels: the same expressions the casts wrote out, rebased on the
+  // slot (spellDice floors it at the spell's own level).
+  'dissonant-whispers': (slot) => `${2 + slot}d6`,
+  'heat-metal': (slot) => `${slot}d8`,
+  'call-lightning': (slot) => `${slot}d10`,
+  moonbeam: (slot) => `${slot}d10`,
+  'conjure-animals': (slot) => `${slot}d10`,
+  'spiritual-guardians': (slot) => `${slot}d8`,
+  blight: (slot) => `${4 + slot}d8`,
+  'ice-storm': (slot) => `${slot - 2}d10`,
+  'phantasmal-killer': (slot) => `${slot}d10`,
+  'wall-of-fire': (slot) => `${1 + slot}d8`,
+  shatter: (slot) => `${1 + slot}d8`,
+  'conjure-elemental': (slot) => `${3 + slot}d8`,
+  'insect-plague': (slot) => `${slot - 1}d10`,
+  'mass-cure-wounds': (slot) => `${slot}d8`,
+  'cone-of-cold': (slot) => `${3 + slot}d8`,
+  'flame-strike': (slot) => `${slot}d6`,
 };
 
 export function spellDice(spellId: Id, slotLevel: number, casterLevel: number): string {
@@ -721,7 +739,7 @@ function halfDice(expr: string): string {
 function releaseSpirit(state: GameState, victimId: Id): void {
   const v = state.combatants[victimId];
   if (!v) return;
-  v.conditions = v.conditions.filter((k) => !(k.id === 'restrained' && k.concentration));
+  removeConditions(v, (k) => k.id === 'restrained' && k.concentration === true, { silent: true });
 }
 
 /**
@@ -1115,7 +1133,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [save.event];
       // 3d6 at 1st, +1d6 per slot above. Through `rollSpellDice` so a sorcerer
       // could empower it if it ever joined that list — see EMPOWERABLE.
-      const dmg = rollSpellDice(state, casterId, `${2 + slotLevel}d6`);
+      const dmg = rollSpellDice(state, casterId, spellDice('dissonant-whispers', slotLevel, state.combatants[casterId]!.level));
       const amount = saveForHalf(state.combatants[targetId]!, 'wis', dmg.total, save.success);
       if (amount > 0) {
         events.push(...applyDamage(state, targetId, casterId, amount, 'psychic', dmg.rolls));
@@ -1623,7 +1641,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const target = state.combatants[targetId]!;
       const events: GameEvent[] = [];
       if (!wearsMetal(target)) return events;   // nothing to heat
-      const dice = `${2 + Math.max(0, slotLevel - 2)}d8`;
+      const dice = spellDice('heat-metal', slotLevel, state.combatants[casterId]!.level);
       const dmg = rollDice(state.rng, dice);
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'fire', dmg.rolls));
@@ -1659,7 +1677,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '⚡',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
-      const dice = `${3 + Math.max(0, slotLevel - 3)}d10`;
+      const dice = spellDice('call-lightning', slotLevel, state.combatants[casterId]!.level);
       caster.stormCloud = { dice, dc: spellDc(state, casterId) };
       caster.concentratingOn = { spellId: 'call-lightning', targetIds: [] };
       return strikeLightning(state, casterId, positions[0]!);
@@ -1685,7 +1703,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🌙',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
-      const dice = `${2 + Math.max(0, slotLevel - 2)}d10`;
+      const dice = spellDice('moonbeam', slotLevel, state.combatants[casterId]!.level);
       caster.moonbeam = { position: { ...positions[0]! }, dice, dc: spellDc(state, casterId) };
       caster.concentratingOn = { spellId: 'moonbeam', targetIds: [] };
       return burnInMoonbeam(state, casterId);
@@ -1757,7 +1775,7 @@ export const SPELLS: Record<Id, SpellData> = {
         position: { ...positions[0]! },
         // 3d10 at 3rd, +1d10 per level above. Carried on the pack rather than
         // on the caster because the pack roams away from whoever called it.
-        dice: `${3 + Math.max(0, slotLevel - 3)}d10`,
+        dice: spellDice('conjure-animals', slotLevel, state.combatants[casterId]!.level),
       });
     },
   },
@@ -1793,7 +1811,7 @@ export const SPELLS: Record<Id, SpellData> = {
         dc: spellDc(state, casterId),
         mod: spellMod(state, casterId),
         // SRD: 3d8, +1d8 per slot level above 3.
-        dice: `${3 + Math.max(0, slotLevel - 3)}d8`,
+        dice: spellDice('spiritual-guardians', slotLevel, state.combatants[casterId]!.level),
       };
       caster.concentratingOn = { spellId: 'spiritual-guardians', targetIds: [] };
       return []; // silent until an enemy starts its turn in the aura
@@ -2072,7 +2090,8 @@ export const SPELLS: Record<Id, SpellData> = {
         if (save.success) continue;
         // Outlined: attacks against it have advantage until the light fades, and
         // it can't melt back into hiding. Reveal it now if it already had.
-        t.conditions = t.conditions.filter((c) => c.id !== 'hidden');
+        // Announced: being revealed is news to the player who was hiding.
+        events.push(...removeConditions(t, 'hidden'));
         events.push(...applyCondition(state, tid, { id: 'outlined', sourceId: casterId, concentration: true }, { magical: true }));
         lit.push(tid);
       }
@@ -2373,9 +2392,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const CURABLE: ConditionId[] = ['blinded', 'paralyzed', 'poisoned'];
       const targetId = targetIds[0]!;
       const t = state.combatants[targetId]!;
-      const removed = t.conditions.filter((c) => CURABLE.includes(c.id));
-      t.conditions = t.conditions.filter((c) => !CURABLE.includes(c.id));
-      return removed.map((c) => ({ type: 'conditionRemoved' as const, combatantId: targetId, condition: c.id }));
+      return removeConditions(t, (c) => CURABLE.includes(c.id));
     },
   },
 
@@ -2396,11 +2413,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const t = state.combatants[targetId]!;
       const events: GameEvent[] = [];
-      const held = t.conditions.filter((c) => c.concentration);
-      if (held.length > 0) {
-        t.conditions = t.conditions.filter((c) => !c.concentration);
-        for (const c of held) events.push({ type: 'conditionRemoved', combatantId: targetId, condition: c.id });
-      }
+      events.push(...removeConditions(t, (c) => c.concentration === true));
       events.push(...breakConcentration(state, targetId));
       return events;
     },
@@ -2561,7 +2574,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const t = state.combatants[targetId]!;
       const damageType = threateningElement(state, t);
       const events: GameEvent[] = [];
-      t.conditions = t.conditions.filter((c) => c.id !== 'energyWarded');
+      removeConditions(t, 'energyWarded', { silent: true });   // replaced just below
       events.push(...applyCondition(state, targetId, { id: 'energyWarded', sourceId: casterId, concentration: true, damageType }, { magical: true }));
       state.combatants[casterId]!.concentratingOn = { spellId: 'protection-from-energy', targetIds: [targetId] };
       return events;
@@ -2757,7 +2770,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const dc = spellDc(state, casterId);
       const save = savingThrow(state, targetId, 'con', dc);
-      const dice = `${8 + Math.max(0, slotLevel - 4)}d8`;
+      const dice = spellDice('blight', slotLevel, state.combatants[casterId]!.level);
       const dmg = rollSpellDice(state, casterId, dice);
       const amount = saveForHalf(state.combatants[targetId]!, 'con', dmg.total, save.success);
       return [save.event, ...applyDamage(state, targetId, casterId, amount, 'necrotic', dmg.rolls)];
@@ -2775,7 +2788,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const events: GameEvent[] = [];
       // SRD: 2d10 Bludgeoning + 4d6 Cold, +1d10 per slot level above 4.
-      const hail = `${2 + Math.max(0, slotLevel - 4)}d10`;
+      const hail = spellDice('ice-storm', slotLevel, state.combatants[casterId]!.level);
       for (const pos of sphere5x5(positions[0]!)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (tid) {
@@ -2913,7 +2926,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const save = savingThrow(state, targetId, 'wis', dc);
       const events: GameEvent[] = [save.event];
-      const dmg = rollDice(state.rng, `${4 + Math.max(0, slotLevel - 4)}d10`);
+      const dmg = rollDice(state.rng, spellDice('phantasmal-killer', slotLevel, state.combatants[casterId]!.level));
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'psychic', dmg.rolls));
       if (!save.success && target.alive) {
@@ -3013,7 +3026,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🔥',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
-      const dice = `${5 + Math.max(0, slotLevel - 4)}d8`;
+      const dice = spellDice('wall-of-fire', slotLevel, state.combatants[casterId]!.level);
       const events: GameEvent[] = [];
       const lit: Position[] = [];
       for (const pos of sphere2x2(positions[0]!)) {
@@ -3108,9 +3121,7 @@ export const SPELLS: Record<Id, SpellData> = {
       // And it frees whatever already has hold of them, which is most of why
       // anyone casts it mid-fight.
       for (const id of ['restrained', 'paralyzed'] as const) {
-        if (!t.conditions.some((k) => k.id === id)) continue;
-        t.conditions = t.conditions.filter((k) => k.id !== id);
-        events.push({ type: 'conditionRemoved', combatantId: targetId, condition: id });
+        events.push(...removeConditions(t, id));
       }
       return events;
     },
@@ -3158,7 +3169,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const caster = state.combatants[casterId]!;
       const sculpt = caster.featureIds.includes('sculpt-spells');
       const dc = spellDc(state, casterId);
-      const dice = `${3 + Math.max(0, slotLevel - 2)}d8`;
+      const dice = spellDice('shatter', slotLevel, state.combatants[casterId]!.level);
       const events: GameEvent[] = [];
       for (const pos of sphere2x2(positions[0]!)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
@@ -3296,7 +3307,7 @@ export const SPELLS: Record<Id, SpellData> = {
         {
           kind: 'conjure-elemental',
           position: { ...positions[0]! },
-          dice: `${8 + Math.max(0, slotLevel - 5)}d8`,
+          dice: spellDice('conjure-elemental', slotLevel, state.combatants[casterId]!.level),
           dc: spellDc(state, casterId),
         },
       ];
@@ -3563,7 +3574,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '\u{1F997}',
     cast({ state, casterId, slotLevel, positions }) {
       const caster = state.combatants[casterId]!;
-      const dice = `${4 + Math.max(0, slotLevel - 5)}d10`;
+      const dice = spellDice('insect-plague', slotLevel, state.combatants[casterId]!.level);
       const dc = spellDc(state, casterId);
       const events: GameEvent[] = [];
       const filled: Position[] = [];
@@ -3612,7 +3623,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '💖',
     cast({ state, casterId, slotLevel, targetIds }) {
       const mod = spellMod(state, casterId);
-      const dice = `${5 + Math.max(0, slotLevel - 5)}d8`; // 5d8 at 5th, +1d8 per higher slot
+      const dice = spellDice('mass-cure-wounds', slotLevel, state.combatants[casterId]!.level); // 5d8 at 5th, +1d8 per higher slot
       const events: GameEvent[] = [];
       for (const tid of new Set(targetIds)) {
         const heal = rollDice(state.rng, dice);
@@ -3655,7 +3666,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const caster = state.combatants[casterId]!;
       const sculpt = caster.featureIds.includes('sculpt-spells');
       const dc = spellDc(state, casterId);
-      const dice = `${8 + Math.max(0, slotLevel - 5)}d8`;
+      const dice = spellDice('cone-of-cold', slotLevel, state.combatants[casterId]!.level);
       const events: GameEvent[] = [];
       for (const pos of positions) {
         const tid = cellAt(state.grid, pos)?.occupantId;
@@ -3699,7 +3710,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       // The SRD raises BOTH halves by a d6 per slot above 5th, so both dice
       // expressions scale — checked against the entry rather than assumed.
-      const dice = `${5 + Math.max(0, slotLevel - 5)}d6`;
+      const dice = spellDice('flame-strike', slotLevel, state.combatants[casterId]!.level);
       const events: GameEvent[] = [];
       for (const pos of sphere5x5(positions[0]!)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
