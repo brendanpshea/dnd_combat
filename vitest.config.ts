@@ -54,6 +54,12 @@ const forks = Math.max(1, (cpus().length || 2) - 2);
 export default defineConfig({
   test: {
     reporters: ci ? ['dot'] : ['default'],
+    // One module graph per worker, not per file. Every test file imports the
+    // whole data layer (spells, monsters, maps), and re-importing it for each of
+    // 150 files was a third of the deploy's test step: 55s -> 30s on a 4-core
+    // runner. Safe because no test mutates the shared tables; the suite passes
+    // in shuffled file order this way (`--sequence.shuffle`).
+    isolate: false,
     poolOptions: {
       forks: { maxForks: ci ? forks : undefined },
       threads: { maxThreads: ci ? forks : undefined },
