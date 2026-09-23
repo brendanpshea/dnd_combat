@@ -247,7 +247,7 @@ describe('damage breaks concentration', () => {
         me.concentratingOn = { spellId: 'bless', targetIds: [] };
         // Well clear of 0, so this measures the save and not the drop.
         me.hp = 500; me.maxHp = 500;
-        applyDamage(c.state, cl.id, 'f', damage, 'slashing', []);
+        applyDamage(c.state, cl.id, 'f', damage, 'slashing', [], { magical: false });
         if (!c.state.combatants[cl.id]!.concentratingOn) broke++;
       }
       return broke / N;

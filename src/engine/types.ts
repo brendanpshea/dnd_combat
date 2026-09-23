@@ -194,7 +194,9 @@ export interface ActiveCondition {
   /** Round number after which the condition expires; undefined = until removed. */
   expiresAtRound?: number;
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
-  repeatSave?: { ability: Ability; dc: number };
+  /** `magical` when a spell or magical effect imposed it, so Magic Resistance
+   *  gives advantage on the repeat save as it did on the first. */
+  repeatSave?: { ability: Ability; dc: number; magical?: boolean };
   /** The Dexterity (Stealth) result that observers must beat to reveal Hide. */
   hideCheck?: number;
   /**

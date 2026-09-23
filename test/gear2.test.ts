@@ -119,9 +119,9 @@ describe('Trinkets', () => {
 
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [cloaked, makeCombatant({ id: 'foe', team: 'team2', position: { x: 7, y: 7 } })] });
     // Same seed, same natural roll — the only difference is the +1.
-    const withCloak = savingThrow(c.state, 'c', 'wis', 10);
+    const withCloak = savingThrow(c.state, 'c', 'wis', 10, { magical: false });
     const c2 = new Combat({ seed: 1, mapId: 'open', combatants: [bare, makeCombatant({ id: 'foe2', team: 'team2', position: { x: 7, y: 7 } })] });
-    const without = savingThrow(c2.state, 'b', 'wis', 10);
+    const without = savingThrow(c2.state, 'b', 'wis', 10, { magical: false });
     if (withCloak.event.type === 'savingThrow' && without.event.type === 'savingThrow') {
       expect(withCloak.event.total).toBe(without.event.total + 1);
     } else throw new Error();

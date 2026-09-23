@@ -520,7 +520,7 @@ describe('troll regeneration', () => {
     for (const type of ['fire', 'acid'] as const) {
       const { c, id } = trollFight();
       c.state.combatants[id]!.hp = 40;
-      applyDamage(c.state, id, id, 5, type);
+      applyDamage(c.state, id, id, 5, type, [], { magical: false });
       expect(hp(c, id)).toBe(35);
       nextTurnOf(c, id);
       expect(hp(c, id), `${type} should have stopped the heal`).toBe(35);
@@ -533,7 +533,7 @@ describe('troll regeneration', () => {
   it('slashing damage does not suppress it', () => {
     const { c, id } = trollFight();
     c.state.combatants[id]!.hp = 40;
-    applyDamage(c.state, id, id, 5, 'slashing');
+    applyDamage(c.state, id, id, 5, 'slashing', [], { magical: false });
     nextTurnOf(c, id);
     expect(hp(c, id)).toBe(45);
   });
@@ -542,7 +542,7 @@ describe('troll regeneration', () => {
     const { c, id } = trollFight();
     c.state.combatants[id]!.hp = 40;
     c.state.combatants[id]!.tempHp = 20;
-    applyDamage(c.state, id, id, 5, 'fire');
+    applyDamage(c.state, id, id, 5, 'fire', [], { magical: false });
     expect(hp(c, id), 'temp HP should have absorbed it').toBe(40);
     nextTurnOf(c, id);
     expect(hp(c, id)).toBe(40);
@@ -553,7 +553,7 @@ describe('troll regeneration', () => {
     const { c, id: a } = trollFight([b]);
     c.state.combatants[a]!.hp = 40;
     c.state.combatants[b.id]!.hp = 40;
-    applyDamage(c.state, a, a, 5, 'fire');
+    applyDamage(c.state, a, a, 5, 'fire', [], { magical: false });
     nextTurnOf(c, a);
     expect(hp(c, a), 'burned troll').toBe(35);
     // b's turn may come round more than once while we wait; what matters is
@@ -565,7 +565,7 @@ describe('troll regeneration', () => {
 
   it('does not resurrect a dead troll', () => {
     const { c, id } = trollFight();
-    applyDamage(c.state, id, id, 999, 'slashing');
+    applyDamage(c.state, id, id, 999, 'slashing', [], { magical: false });
     expect(c.state.combatants[id]!.alive).toBe(false);
     expect(hp(c, id)).toBe(0);
   });
@@ -631,9 +631,9 @@ describe('fiends, oozes and constructs', () => {
     const jelly = buildMonster('ochre-jelly', 'team2', { x: 0, y: 0 });
     const c = new Combat({ seed: 1, mapId: 'ruins', combatants: [...buildParty('team1', 0, 3), jelly] });
     const before = c.state.combatants[jelly.id]!.hp;
-    applyDamage(c.state, jelly.id, jelly.id, 12, 'slashing');
+    applyDamage(c.state, jelly.id, jelly.id, 12, 'slashing', [], { magical: false });
     expect(c.state.combatants[jelly.id]!.hp, 'slashing should be ignored').toBe(before);
-    applyDamage(c.state, jelly.id, jelly.id, 12, 'bludgeoning');
+    applyDamage(c.state, jelly.id, jelly.id, 12, 'bludgeoning', [], { magical: false });
     expect(c.state.combatants[jelly.id]!.hp).toBe(before - 12);
   });
 
@@ -948,7 +948,7 @@ describe('signature abilities', () => {
       .map((x) => x.id);
     expect(adjacent.length, 'nobody stood near enough to test').toBeGreaterThan(0);
     const before = new Map(Object.values(c.state.combatants).map((x) => [x.id, x.hp] as const));
-    applyDamage(c.state, near.id, 'nobody', 500, 'slashing');
+    applyDamage(c.state, near.id, 'nobody', 500, 'slashing', [], { magical: false });
     for (const id of adjacent) {
       expect(c.state.combatants[id]!.hp, `${id} should have been caught`).toBeLessThan(before.get(id)!);
     }

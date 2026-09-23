@@ -126,7 +126,7 @@ describe('Wild Shape', () => {
     const d = c.state.combatants['dru']!;
     const hp = d.hp;
     const temp = d.tempHp!;
-    applyDamage(c.state, 'dru', 'nobody', temp, 'slashing');
+    applyDamage(c.state, 'dru', 'nobody', temp, 'slashing', [], { magical: false });
     expect(c.state.combatants['dru']!.hp, 'the beast’s hide took all of it').toBe(hp);
     expect(c.state.combatants['dru']!.tempHp ?? 0).toBe(0);
   });

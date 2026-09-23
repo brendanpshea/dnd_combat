@@ -75,12 +75,12 @@ export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
   // Tagged so the log can name it and an arena bounty can see it: driving
   // something into the fire is a play, and nothing could tell it apart from any
   // other fire damage.
-  events.push(...applyDamage(state, victimId, victimId, dmg.total, kind.damageType, dmg.rolls, { tags: ['Hazard'] }));
+  events.push(...applyDamage(state, victimId, victimId, dmg.total, kind.damageType, dmg.rolls, { magical: false, tags: ['Hazard'] }));
   const victim = state.combatants[victimId]!;
   if (!kind.rider || !victim.alive || isDown(victim)) return events;
   // The save is only ever for the CONDITION. You always get burned; you might
   // get caught.
-  const save = savingThrow(state, victimId, kind.rider.ability, kind.rider.dc);
+  const save = savingThrow(state, victimId, kind.rider.ability, kind.rider.dc, { magical: false });
   events.push(save.event);
   if (save.success) return events;
   if (victim.conditions.some((k) => k.id === kind.rider!.condition)) return events;
@@ -447,12 +447,12 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       // Wall of Fire's Dexterity 15 unless the hazard named its own — Insect
       // Plague is a Constitution save against the caster's DC.
       const ability = fire.save?.ability ?? 'dex';
-      const save = savingThrow(state, moverId, ability, fire.save?.dc ?? 15);
+      const save = savingThrow(state, moverId, ability, fire.save?.dc ?? 15, { magical: true });
       events.push(save.event);
       const amount = saveForHalf(mover, ability, roll.total, save.success);
       events.push(...applyDamage(
         state, moverId, fire.sourceId, amount, fire.damageType ?? 'fire', roll.rolls,
-        { tags: [fire.label ?? 'Wall of Fire'] },
+        { magical: true, tags: [fire.label ?? 'Wall of Fire'] },
       ));
       if (!mover.alive || isDown(mover)) return halt();
     }
@@ -480,11 +480,11 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       const alreadyStuck = mover.conditions.some((k) => k.id === 'restrained');
       if (source && source.team !== mover.team && !alreadyStuck) {
         const ability = web.ability ?? 'dex';
-        const save = savingThrow(state, moverId, ability, web.dc);
+        const save = savingThrow(state, moverId, ability, web.dc, { magical: true });
         events.push(save.event);
         if (!save.success) {
           if (!wardedAgainstMagicalBinding(mover, 'restrained')) {
-            mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc } });
+            mover.conditions.push({ id: 'restrained', sourceId: web.sourceId, concentration: true, repeatSave: { ability, dc: web.dc, magical: true } });
           }
           events.push({ type: 'conditionApplied', combatantId: moverId, condition: 'restrained', sourceId: web.sourceId });
           // Caught: the mover stops here rather than walking on through the web

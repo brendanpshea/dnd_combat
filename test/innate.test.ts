@@ -145,7 +145,7 @@ describe('Dragonborn', () => {
     const db = born('fighter', { x: 0, y: 0 }, 'db');
     expect(db.resistances).toContain('fire');
     const c = new Combat({ seed: 3, mapId: 'open', combatants: [db, goblin({ x: 7, y: 7 }, 'g')] });
-    applyDamage(c.state, 'db', 'g', 10, 'fire');
+    applyDamage(c.state, 'db', 'g', 10, 'fire', [], { magical: false });
     expect(db.maxHp - c.state.combatants['db']!.hp).toBe(5);   // halved
   });
 
@@ -195,7 +195,7 @@ describe('Abyssal Tiefling', () => {
     expect(tf.resistances).toContain('poison');
     expect(tf.resistances).not.toContain('fire');
     const c = new Combat({ seed: 3, mapId: 'open', combatants: [tf, goblin({ x: 7, y: 7 }, 'g')] });
-    applyDamage(c.state, 'tf', 'g', 10, 'poison');
+    applyDamage(c.state, 'tf', 'g', 10, 'poison', [], { magical: false });
     expect(tf.maxHp - c.state.combatants['tf']!.hp).toBe(5);   // halved
   });
 
@@ -312,11 +312,11 @@ describe('Gnome', () => {
         g.abilities = { ...g.abilities, wis: 10 };
         g.savingThrowProfs = [];
         const state = new Combat({ seed, mapId: 'open', combatants: [g, goblin({ x: 7, y: 7 }, 'foe')] }).state;
-        if (savingThrow(state, 'g', 'wis', dc).success) advPasses++;
+        if (savingThrow(state, 'g', 'wis', dc, { magical: false }).success) advPasses++;
 
         const h = { ...g, featureIds: [] };   // same stats, no Gnomish Cunning
         const flatState = new Combat({ seed, mapId: 'open', combatants: [h, goblin({ x: 7, y: 7 }, 'foe')] }).state;
-        if (savingThrow(flatState, 'g', 'wis', dc).success) flatPasses++;
+        if (savingThrow(flatState, 'g', 'wis', dc, { magical: false }).success) flatPasses++;
       }
       expect(advPasses).toBeGreaterThan(flatPasses + 15);
     });
@@ -518,7 +518,7 @@ describe('Halfling', () => {
         const h = hin('fighter', { x: 0, y: 0 }, 'h');
         const c = new Combat({ seed, mapId: 'open', combatants: [h] });
         if (rollD20(c.state.rng, 'flat').natural !== 1) continue;
-        const result = savingThrow(c.state, 'h', 'dex', 15);
+        const result = savingThrow(c.state, 'h', 'dex', 15, { magical: false });
         expect(result.event.type === 'savingThrow' && result.event.natural).not.toBe(1);
         return;
       }

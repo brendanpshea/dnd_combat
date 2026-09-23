@@ -53,9 +53,9 @@ describe('monster mechanics', () => {
     const draft = structuredClone(c.state);
     const skel = Object.values(draft.combatants).find((x) => x.classId === 'skeleton')!;
     const hp = skel.hp;
-    applyDamage(draft, skel.id, 'a', 4, 'bludgeoning');
+    applyDamage(draft, skel.id, 'a', 4, 'bludgeoning', [], { magical: false });
     expect(skel.hp).toBe(hp - 8);
-    applyDamage(draft, skel.id, 'a', 4, 'poison');
+    applyDamage(draft, skel.id, 'a', 4, 'poison', [], { magical: false });
     expect(skel.hp).toBe(hp - 8); // unchanged
   });
 
@@ -73,7 +73,7 @@ describe('monster mechanics', () => {
       const draft = structuredClone(c.state);
       const z = Object.values(draft.combatants).find((x) => x.classId === 'zombie')!;
       z.hp = 1;
-      const events = applyDamage(draft, z.id, 'a', 2, 'slashing');
+      const events = applyDamage(draft, z.id, 'a', 2, 'slashing', [], { magical: false });
       if (z.alive && z.hp === 1) {
         survived++;
         expect(events.some((e) => e.type === 'savingThrow' && e.success)).toBe(true);
@@ -92,7 +92,7 @@ describe('monster mechanics', () => {
     const draft = structuredClone(c.state);
     const z = Object.values(draft.combatants).find((x) => x.classId === 'zombie')!;
     z.hp = 1;
-    const events = applyDamage(draft, z.id, 'a', 2, 'radiant');
+    const events = applyDamage(draft, z.id, 'a', 2, 'radiant', [], { magical: false });
     expect(z.alive).toBe(false);
     expect(events.some((e) => e.type === 'savingThrow')).toBe(false);
   });

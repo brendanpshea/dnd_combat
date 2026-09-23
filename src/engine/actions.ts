@@ -1101,7 +1101,8 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
   for (const cond of [...c.conditions]) {
     if (!cond.repeatSave) continue;
     if (!c.conditions.includes(cond)) continue; // already gone this loop
-    const save = savingThrow(state, id, cond.repeatSave.ability, cond.repeatSave.dc);
+    const save = savingThrow(state, id, cond.repeatSave.ability, cond.repeatSave.dc,
+      { magical: cond.repeatSave.magical === true });
     events.push(save.event);
     if (save.success) {
       drop.add(cond);
@@ -1128,7 +1129,7 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
       const burn = rollDice(state.rng, '1d6');
       state.rng = burn.state;
       events.push(...applyDamage(state, id, cond.sourceId ?? id, burn.total, 'fire', burn.rolls,
-        { tags: ['Searing Smite'] }));
+        { magical: true, tags: ['Searing Smite'] }));
       // Dropped or killed: that already rewrote the conditions, and nothing
       // else on a creature that is down gets a save worth rolling.
       if (!c.alive || isDown(c)) return events;

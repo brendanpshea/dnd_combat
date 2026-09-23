@@ -404,7 +404,7 @@ export function resolveAttack(
     if ((weapon.mastery === 'graze' || weapon.mastery === 'cleave') &&
         attacker.weaponMasteries.includes(weaponId) &&
         target.alive && mod > 0) {
-      events.push(...applyDamage(state, targetId, attackerId, mod, weapon.damageType, []));
+      events.push(...applyDamage(state, targetId, attackerId, mod, weapon.damageType, [], { magical: isMagicWeapon(weapon) }));
     }
     return events;
   }
@@ -647,11 +647,11 @@ export function resolveAttack(
     let amount = extra.total;
     const rider = weapon.extraDamage.save;
     if (rider) {
-      const save = savingThrow(state, targetId, rider.ability, rider.dc);
+      const save = savingThrow(state, targetId, rider.ability, rider.dc, { magical: isMagicWeapon(weapon) });
       events.push(save.event);
       if (save.success) amount = Math.floor(amount / 2);
     }
-    events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { crit }));
+    events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { magical: isMagicWeapon(weapon), crit }));
   }
 
   // Sword of Life Stealing: a natural 20 tears something loose. Flat 15 per the
@@ -715,7 +715,7 @@ export function resolveAttack(
     );
     if (dealt > 0) {
       const { ability, dc } = weapon.drainsMaxHp;
-      const save = savingThrow(state, targetId, ability, dc);
+      const save = savingThrow(state, targetId, ability, dc, { magical: isMagicWeapon(weapon) });
       events.push(save.event);
       if (!save.success) {
         const before = target.maxHp;
@@ -791,10 +791,10 @@ export function resolveAttack(
   if (weapon.onHitSave && target.alive &&
       !target.conditions.some((c) => c.id === weapon.onHitSave!.condition)) {
     const { condition, ability, dc } = weapon.onHitSave;
-    const save = savingThrow(state, targetId, ability, dc);
+    const save = savingThrow(state, targetId, ability, dc, { magical: isMagicWeapon(weapon) });
     events.push(save.event);
     if (!save.success) {
-      target.conditions.push({ id: condition, sourceId: attackerId, repeatSave: { ability, dc } });
+      target.conditions.push({ id: condition, sourceId: attackerId, repeatSave: { ability, dc, magical: isMagicWeapon(weapon) } });
       events.push({ type: 'conditionApplied', combatantId: targetId, condition, sourceId: attackerId });
     }
   }
@@ -823,7 +823,7 @@ export function resolveAttack(
     } else if (weapon.mastery === 'topple' && !target.conditions.some((c) => c.id === 'prone')) {
       // Con save vs the attacker's weapon DC or fall prone.
       const dc = 8 + proficiencyBonus(attacker.level) + mod;
-      const save = savingThrow(state, targetId, 'con', dc);
+      const save = savingThrow(state, targetId, 'con', dc, { magical: false });
       events.push(save.event);
       if (!save.success) {
         target.conditions.push({ id: 'prone', sourceId: attackerId });
@@ -837,7 +837,7 @@ export function resolveAttack(
   if (charged && attacker.featureIds.includes('trampling-charge') && target.alive &&
       !target.conditions.some((c) => c.id === 'prone')) {
     const dc = 8 + proficiencyBonus(attacker.level) + abilityMod(attacker.abilities.str);
-    const save = savingThrow(state, targetId, 'str', dc);
+    const save = savingThrow(state, targetId, 'str', dc, { magical: false });
     events.push(save.event);
     if (!save.success) {
       target.conditions.push({ id: 'prone', sourceId: attackerId });
@@ -850,7 +850,7 @@ export function resolveAttack(
   if (target.alive && target.featureIds.includes('fire-form') && isMeleeAttack && attacker.alive) {
     const burn = rollDice(state.rng, '1d10');
     state.rng = burn.state;
-    events.push(...applyDamage(state, attackerId, targetId, burn.total, 'fire', burn.rolls, { tags: ['Fire Form'] }));
+    events.push(...applyDamage(state, attackerId, targetId, burn.total, 'fire', burn.rolls, { magical: false, tags: ['Fire Form'] }));
   }
 
   // Rampage (Gnoll/Giant Hyena): dropping a foe with a melee hit grants one
@@ -906,7 +906,7 @@ export const SMITE_SPECS: Record<string, {
     rider(state, attackerId, targetId, dc) {
       const t = state.combatants[targetId]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'burning')) return [];
-      t.conditions.push({ id: 'burning', sourceId: attackerId, repeatSave: { ability: 'con', dc } });
+      t.conditions.push({ id: 'burning', sourceId: attackerId, repeatSave: { ability: 'con', dc, magical: true } });
       return [{ type: 'conditionApplied', combatantId: targetId, condition: 'burning', sourceId: attackerId }];
     },
   },
@@ -939,10 +939,10 @@ export const SMITE_SPECS: Record<string, {
       const t = state.combatants[targetId]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'restrained')) return [];
       const events: GameEvent[] = [];
-      const save = savingThrow(state, targetId, 'str', dc);
+      const save = savingThrow(state, targetId, 'str', dc, { magical: true });
       events.push(save.event);
       if (save.success) return events;
-      t.conditions.push({ id: 'restrained', sourceId: attackerId, repeatSave: { ability: 'str', dc } });
+      t.conditions.push({ id: 'restrained', sourceId: attackerId, repeatSave: { ability: 'str', dc, magical: true } });
       events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'restrained', sourceId: attackerId });
       state.combatants[attackerId]!.holdDamage = { dice: '1d6', type: 'piercing' };
       return events;
@@ -986,7 +986,7 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   }, { type: 'conditionRemoved', combatantId: attackerId, condition: 'smiting' }];
   if (!spec.damageless) {
     events.push(...applyDamage(state, targetId, attackerId, roll.total, spec.damageType, roll.rolls,
-      { crit, tags: [spec.name] }));
+      { magical: true, crit, tags: [spec.name] }));
   }
   if (spec.rider) {
     events.push(...spec.rider(state, attackerId, targetId, 8 + proficiencyBonus(attacker.level) +
@@ -1035,12 +1035,18 @@ export function applyDamage(
   sourceId: Id,
   amount: number,
   damageType: DamageType,
-  rolls: number[] = [],
+  rolls: number[],
+  /**
+   * `magical` is required for the same reason as savingThrow's: it decides
+   * whether "resistant to nonmagical" halves the blow, and an optional flag was
+   * forgotten by every spell that deals physical damage.
+   */
   opts: {
-    crit?: boolean; tags?: string[]; magical?: boolean; via?: string; shared?: boolean;
+    magical: boolean;
+    crit?: boolean; tags?: string[]; via?: string; shared?: boolean;
     /** A weapon swing in reach — the only thing Deflect Attacks can catch. */
     melee?: boolean;
-  } = {},
+  },
 ): GameEvent[] {
   const events: GameEvent[] = [];
   const target = state.combatants[targetId]!;
@@ -1134,7 +1140,7 @@ export function applyDamage(
   });
 
   if (bond?.sourceId && mirrored > 0) {
-    events.push(...applyDamage(state, bond.sourceId, sourceId, mirrored, damageType, [], {
+    events.push(...applyDamage(state, bond.sourceId, sourceId, mirrored, damageType, [], { magical: opts.magical,
       tags: ['Warding Bond'], shared: true,
     }));
   }
@@ -1151,7 +1157,7 @@ export function applyDamage(
     target.hp === 0 && target.featureIds.includes('undead-fortitude') &&
     damageType !== 'radiant' && !opts.crit
   ) {
-    const save = savingThrow(state, targetId, 'con', 5 + amount);
+    const save = savingThrow(state, targetId, 'con', 5 + amount, { magical: false });
     events.push(save.event);
     if (save.success) target.hp = 1;
   }
@@ -1173,7 +1179,7 @@ export function applyDamage(
   // Concentration save: DC max(10, floor(damage/2)), capped at 30.
   if (target.hp > 0 && amount > 0 && target.concentratingOn) {
     const dc = Math.min(30, Math.max(10, Math.floor(amount / 2)));
-    const save = savingThrow(state, targetId, 'con', dc);
+    const save = savingThrow(state, targetId, 'con', dc, { magical: false });
     events.push(save.event);
     if (!save.success) {
       events.push(...breakConcentration(state, targetId));
@@ -1615,10 +1621,10 @@ export function deathBurst(state: GameState, c: Combatant): GameEvent[] {
   const roll = rollDice(state.rng, burst.dice);
   state.rng = roll.state;
   for (const t of caught) {
-    const save = savingThrow(state, t.id, burst.save.ability, burst.save.dc);
+    const save = savingThrow(state, t.id, burst.save.ability, burst.save.dc, { magical: false });
     events.push(save.event);
     const amount = save.success ? Math.floor(roll.total / 2) : roll.total;
-    if (amount > 0) events.push(...applyDamage(state, t.id, c.id, amount, burst.type, roll.rolls, { tags: ['Death Burst'] }));
+    if (amount > 0) events.push(...applyDamage(state, t.id, c.id, amount, burst.type, roll.rolls, { magical: false, tags: ['Death Burst'] }));
   }
   return events;
 }

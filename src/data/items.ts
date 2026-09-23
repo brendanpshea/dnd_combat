@@ -164,7 +164,7 @@ export const ITEMS: Record<Id, ConsumableData> = {
       if (hit) {
         const dmg = rollDice(state.rng, '1d4');
         state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, userId, dmg.total, 'fire', dmg.rolls));
+        events.push(...applyDamage(state, targetId, userId, dmg.total, 'fire', dmg.rolls, { magical: false }));
       }
       return events;
     },

@@ -90,7 +90,7 @@ describe('Mantle of Spell Resistance', () => {
       const wearer = pc('fighter', 5, { x: 0, y: 0 }, 'w', { featureIds });
       const foe = makeCombatant({ id: 'foe', team: 'team2', position: { x: 5, y: 5 } });
       const c = new Combat({ seed, mapId: 'open', combatants: [wearer, foe] });
-      const r = savingThrow(c.state, 'w', 'wis', 12, magical ? { magical: true } : {});
+      const r = savingThrow(c.state, 'w', 'wis', 12, { magical });
       if (r.event.type !== 'savingThrow') throw new Error();
       total += r.event.natural;
     }
@@ -129,7 +129,7 @@ describe('Cloak of Displacement', () => {
 
   it('goes down the moment something lands, and comes back on the wearer\'s turn', () => {
     const { c } = wearerAndFoe();
-    applyDamage(c.state, 'w', 'foe', 3, 'slashing');
+    applyDamage(c.state, 'w', 'foe', 3, 'slashing', [], { magical: false });
     expect(c.state.combatants['w']!.displacementBroken).toBe(true);
     const after = collectAttackSources(
       c.state, c.state.combatants['foe']!, c.state.combatants['w']!, WEAPONS['longsword']!, true);
@@ -145,7 +145,7 @@ describe('Cloak of Displacement', () => {
     // the other way would make a cleric's temp HP quietly protect the cloak.
     const { c } = wearerAndFoe();
     c.state.combatants['w']!.tempHp = 50;
-    applyDamage(c.state, 'w', 'foe', 4, 'slashing');
+    applyDamage(c.state, 'w', 'foe', 4, 'slashing', [], { magical: false });
     expect(c.state.combatants['w']!.hp).toBe(c.state.combatants['w']!.maxHp);
     expect(c.state.combatants['w']!.displacementBroken).toBe(true);
   });

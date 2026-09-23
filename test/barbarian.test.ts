@@ -136,12 +136,12 @@ describe('Barbarian: Rage', () => {
     // where the enemies start carrying magic.
     const { c, me } = arena();
     const hp0 = c.state.combatants[me.id]!.hp;
-    applyDamage(c.state, me.id, 'd1', 10, 'slashing', [10]);
+    applyDamage(c.state, me.id, 'd1', 10, 'slashing', [10], { magical: false });
     expect(hp0 - c.state.combatants[me.id]!.hp).toBe(10);
 
     c.state.combatants[me.id]!.hp = hp0;
     c.state.combatants[me.id]!.conditions.push({ id: 'raging', sourceId: me.id });
-    applyDamage(c.state, me.id, 'd1', 10, 'slashing', [10]);
+    applyDamage(c.state, me.id, 'd1', 10, 'slashing', [10], { magical: false });
     expect(hp0 - c.state.combatants[me.id]!.hp, 'raging halves slashing').toBe(5);
 
     c.state.combatants[me.id]!.hp = hp0;
@@ -156,7 +156,7 @@ describe('Barbarian: Rage', () => {
     const { c, me } = arena();
     const hp0 = c.state.combatants[me.id]!.hp;
     c.state.combatants[me.id]!.conditions.push({ id: 'raging', sourceId: me.id });
-    applyDamage(c.state, me.id, 'd1', 10, 'fire', [10]);
+    applyDamage(c.state, me.id, 'd1', 10, 'fire', [10], { magical: false });
     expect(hp0 - c.state.combatants[me.id]!.hp).toBe(10);
   });
 
