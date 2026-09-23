@@ -46,6 +46,7 @@ import { SPELLS } from '../data/spells.js';
 import { MONSTERS } from '../data/monsters.js';
 import { next, type RngState } from '../engine/rng.js';
 import type { DayHalf } from './run.js';
+import { offerSeed } from './seed.js';
 
 export interface BountyContext {
   /** Everything that happened, in order. */
@@ -433,10 +434,7 @@ export function bountiesFor(
   half: DayHalf = 'morning',
 ): Bounty[] {
   const pool = BOUNTIES.filter((b) => b.eligible(party, state));
-  // The half is in the seed as it is in the wave's: without it the afternoon's
-  // door N drew the morning's door N bounty again.
-  let rng: RngState = (runSeed * 2654435761 + wave * 2246822519 + door * 40503 +
-    (half === 'afternoon' ? 1013904223 : 0)) >>> 0;
+  let rng: RngState = offerSeed('bounty', { runSeed, wave, half, door });
   const picked: Bounty[] = [];
   const rest = [...pool];
   while (picked.length < 1 && rest.length > 0) {
