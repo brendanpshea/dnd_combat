@@ -238,8 +238,9 @@ STR 12 (+1), DEX 11 (+0), CON 12 (+1), INT 5 (-3), WIS 8 (-1), CHA 3 (-4)
 
 STR 13 (+1), DEX 10 (+0), CON 17 (+3), INT 2 (-4), WIS 12 (+1), CHA 5 (-3)
 
-- **Attacks:** Bite 1d6 piercing; Claws 2d4 slashing
+- **Attacks:** Bite 2d4 piercing; Claws 2d4 slashing
 - **Features:** Burrow
+- **Resistances:** poison
 
 ### Goblin Warrior
 
@@ -267,7 +268,7 @@ STR 7 (-2), DEX 15 (+2), CON 9 (-1), INT 8 (-1), WIS 8 (-1), CHA 14 (+2)
 
 STR 14 (+2), DEX 10 (+0), CON 12 (+1), INT 10 (+0), WIS 14 (+2), CHA 11 (+0)
 
-- **Attacks:** Mace 1d6 bludgeoning
+- **Attacks:** Mace 1d6 bludgeoning, +1d4 radiant
 - **Spellcasting:** WIS, slots 3×L1
 - **Spells:** Sacred Flame, Cure Wounds, Bless, Healing Word, Command
 
@@ -299,7 +300,7 @@ STR 5 (-3), DEX 11 (+0), CON 10 (+0), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 - **Attacks:** Claws 1d4 slashing, +1d4 fire
 - **Features:** Fire Breath
 - **Immunities:** fire, poison
-- **Death burst:** 2d6 fire, DEX DC 10, 10 ft
+- **Death burst:** 2d4 fire, DEX DC 10, 10 ft
 
 ### Wolf
 
@@ -316,7 +317,7 @@ STR 14 (+2), DEX 15 (+2), CON 12 (+1), INT 3 (-4), WIS 12 (+1), CHA 6 (-2)
 
 STR 13 (+1), DEX 6 (-2), CON 16 (+3), INT 3 (-4), WIS 6 (-2), CHA 5 (-3)
 
-- **Attacks:** Slam 1d6 bludgeoning
+- **Attacks:** Slam 1d8 bludgeoning
 - **Features:** Undead Fortitude
 - **Immunities:** poison
 
@@ -336,6 +337,7 @@ STR 5 (-3), DEX 14 (+2), CON 10 (+0), INT 9 (-1), WIS 11 (+0), CHA 10 (+0)
 
 - **Attacks:** Claws 1d4 slashing
 - **Immunities:** poison
+- **Vulnerabilities:** fire
 - **Death burst:** 2d4 bludgeoning, DEX DC 10, 10 ft
 
 ### Gnoll Warrior
@@ -364,9 +366,8 @@ STR 8 (-1), DEX 14 (+2), CON 10 (+0), INT 10 (+0), WIS 10 (+0), CHA 14 (+2)
 
 STR 12 (+1), DEX 6 (-2), CON 16 (+3), INT 1 (-5), WIS 6 (-2), CHA 2 (-4)
 
-- **Attacks:** Pseudopod 1d6 bludgeoning, +2d6 acid
+- **Attacks:** Pseudopod 2d8 acid
 - **Resistances:** acid, cold, fire
-- **Immunities:** poison
 
 ### Ice Mephit
 
@@ -377,7 +378,7 @@ STR 7 (-2), DEX 13 (+1), CON 10 (+0), INT 9 (-1), WIS 11 (+0), CHA 12 (+1)
 - **Attacks:** Claws 1d4 slashing, +1d4 cold
 - **Features:** Frost Breath
 - **Immunities:** cold, poison
-- **Vulnerabilities:** fire, bludgeoning
+- **Vulnerabilities:** fire
 - **Death burst:** 2d4 cold, DEX DC 10, 10 ft
 
 ### Lizardfolk Skirmisher
@@ -394,7 +395,7 @@ STR 15 (+2), DEX 10 (+0), CON 13 (+1), INT 7 (-2), WIS 12 (+1), CHA 7 (-2)
 
 STR 8 (-1), DEX 12 (+1), CON 12 (+1), INT 7 (-2), WIS 10 (+0), CHA 10 (+0)
 
-- **Attacks:** Claws 1d4 slashing, +1d4 fire
+- **Attacks:** Claws 1d4 slashing, +1d6 fire
 - **Features:** Fire Breath
 - **Immunities:** fire, poison
 - **Vulnerabilities:** cold
@@ -406,9 +407,8 @@ STR 8 (-1), DEX 12 (+1), CON 12 (+1), INT 7 (-2), WIS 10 (+0), CHA 10 (+0)
 
 STR 7 (-2), DEX 15 (+2), CON 12 (+1), INT 8 (-1), WIS 11 (+0), CHA 10 (+0)
 
-- **Attacks:** Touch 2d6 fire
+- **Attacks:** Touch 2d4 fire
 - **Immunities:** fire
-- **Vulnerabilities:** cold
 - **Death burst:** 2d6 fire, DEX DC 11, 10 ft
 
 ### Orc Raider
@@ -452,7 +452,7 @@ STR 11 (+0), DEX 14 (+2), CON 12 (+1), INT 11 (+0), WIS 13 (+1), CHA 11 (+0)
 STR 6 (-2), DEX 14 (+2), CON 13 (+1), INT 6 (-2), WIS 10 (+0), CHA 8 (-1)
 
 - **Attacks:** Strength Drain 1d6 necrotic, CON DC 10 or sapped
-- **Resistances:** acid, fire, lightning, thunder
+- **Resistances:** acid, cold, fire, lightning, thunder
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
 - **Vulnerabilities:** radiant
@@ -463,7 +463,7 @@ STR 6 (-2), DEX 14 (+2), CON 13 (+1), INT 6 (-2), WIS 10 (+0), CHA 8 (-1)
 
 STR 16 (+3), DEX 13 (+1), CON 13 (+1), INT 7 (-2), WIS 11 (+0), CHA 8 (-1)
 
-- **Attacks:** Bite 2d6 piercing, on hit: prone
+- **Attacks:** Bite 1d8 piercing, on hit: prone
 - **Features:** Pack Tactics
 
 ### Animated Armor
@@ -491,7 +491,7 @@ STR 9 (-1), DEX 14 (+2), CON 12 (+1), INT 15 (+2), WIS 11 (+0), CHA 10 (+0)
 
 STR 17 (+3), DEX 12 (+1), CON 15 (+2), INT 2 (-4), WIS 13 (+1), CHA 7 (-2)
 
-- **Attacks:** Claws 2d6 slashing; Bite 1d8 piercing
+- **Attacks:** Claws 1d4 slashing; Bite 1d8 piercing
 
 ### Bugbear Warrior
 
@@ -508,7 +508,7 @@ STR 15 (+2), DEX 14 (+2), CON 13 (+1), INT 8 (-1), WIS 11 (+0), CHA 9 (-1)
 
 STR 17 (+3), DEX 15 (+2), CON 15 (+2), INT 3 (-4), WIS 12 (+1), CHA 7 (-2)
 
-- **Attacks:** Bite 2d6 piercing, on hit: prone
+- **Attacks:** Bite 1d10 piercing, on hit: prone
 - **Features:** Pack Tactics
 
 ### Dryad
@@ -528,7 +528,7 @@ STR 10 (+0), DEX 12 (+1), CON 11 (+0), INT 14 (+2), WIS 15 (+2), CHA 18 (+4)
 
 STR 13 (+1), DEX 15 (+2), CON 10 (+0), INT 7 (-2), WIS 10 (+0), CHA 6 (-2)
 
-- **Attacks:** Claws 2d4 slashing, CON DC 10 or paralyzed; Bite 2d6 piercing
+- **Attacks:** Claws 1d4 slashing, CON DC 10 or paralyzed; Bite 1d6 piercing, +1d6 necrotic
 - **Immunities:** poison
 
 ### Giant Hyena
@@ -546,7 +546,7 @@ STR 16 (+3), DEX 14 (+2), CON 14 (+2), INT 2 (-4), WIS 12 (+1), CHA 7 (-2)
 
 STR 14 (+2), DEX 16 (+3), CON 12 (+1), INT 2 (-4), WIS 11 (+0), CHA 4 (-3)
 
-- **Attacks:** Bite 1d8 piercing, CON DC 11 or poisoned, +1d6 poison
+- **Attacks:** Bite 1d8 piercing, CON DC 11 or poisoned, +2d6 poison
 
 ### Giant Toad
 
@@ -554,7 +554,7 @@ STR 14 (+2), DEX 16 (+3), CON 12 (+1), INT 2 (-4), WIS 11 (+0), CHA 4 (-3)
 
 STR 15 (+2), DEX 13 (+1), CON 13 (+1), INT 2 (-4), WIS 10 (+0), CHA 3 (-4)
 
-- **Attacks:** Bite 1d10 piercing, STR DC 13 or restrained, +1d10 poison
+- **Attacks:** Bite 1d6 piercing, STR DC 13 or restrained, +2d4 poison
 
 ### Goblin Boss
 
@@ -581,7 +581,7 @@ STR 12 (+1), DEX 13 (+1), CON 12 (+1), INT 7 (-2), WIS 10 (+0), CHA 13 (+1)
 
 STR 6 (-2), DEX 17 (+3), CON 13 (+1), INT 11 (+0), WIS 12 (+1), CHA 14 (+2)
 
-- **Attacks:** Sting 1d4 piercing, +3d6 poison
+- **Attacks:** Sting 1d6 piercing, +2d6 poison
 - **Features:** Magic Resistance
 - **Resistances:** cold
 - **Immunities:** fire, poison
@@ -634,8 +634,8 @@ STR 10 (+0), DEX 14 (+2), CON 15 (+2), INT 6 (-2), WIS 14 (+2), CHA 8 (-1)
 
 STR 1 (-5), DEX 14 (+2), CON 11 (+0), INT 10 (+0), WIS 10 (+0), CHA 11 (+0)
 
-- **Attacks:** Life Drain 3d6 necrotic, CON DC 10 or slowed
-- **Resistances:** acid, fire, lightning, thunder
+- **Attacks:** Life Drain 2d6 necrotic, CON DC 10 or slowed
+- **Resistances:** acid, cold, fire, lightning, thunder
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
 
@@ -645,7 +645,7 @@ STR 1 (-5), DEX 14 (+2), CON 11 (+0), INT 10 (+0), WIS 10 (+0), CHA 11 (+0)
 
 STR 10 (+0), DEX 15 (+2), CON 10 (+0), INT 12 (+1), WIS 14 (+2), CHA 16 (+3)
 
-- **Attacks:** Shortsword 1d6 piercing; Hand Crossbow 1d6 piercing, 30/120 ft
+- **Attacks:** Shortsword 1d6 piercing, +2d6 poison; Hand Crossbow 1d6 piercing, 30/120 ft, +2d6 poison
 - **Features:** Sneak Attack
 
 ### Animated Rug of Smothering
@@ -664,7 +664,7 @@ STR 17 (+3), DEX 14 (+2), CON 10 (+0), INT 1 (-5), WIS 3 (-4), CHA 1 (-5)
 STR 17 (+3), DEX 12 (+1), CON 15 (+2), INT 12 (+1), WIS 13 (+1), CHA 10 (+0)
 
 - **Saving throws:** CON
-- **Attacks:** Warhammer 1d8 bludgeoning, +1d6 fire
+- **Attacks:** Burning Hammer 1d10 bludgeoning, +1d6 fire
 - **Immunities:** fire, poison
 - **Metal armor:** yes (Shocking Grasp rider)
 
@@ -692,7 +692,7 @@ STR 16 (+3), DEX 12 (+1), CON 17 (+3), INT 9 (-1), WIS 11 (+0), CHA 9 (-1)
 
 STR 15 (+2), DEX 14 (+2), CON 13 (+1), INT 10 (+0), WIS 11 (+0), CHA 13 (+1)
 
-- **Attacks:** Bite 1d8 piercing, +1d4 acid
+- **Attacks:** Rend 1d6 slashing, +1d4 acid
 - **Features:** Acid Breath
 - **Immunities:** acid
 
@@ -712,7 +712,7 @@ STR 11 (+0), DEX 14 (+2), CON 12 (+1), INT 10 (+0), WIS 13 (+1), CHA 14 (+2)
 
 STR 14 (+2), DEX 15 (+2), CON 13 (+1), INT 7 (-2), WIS 12 (+1), CHA 8 (-1)
 
-- **Attacks:** Bite 1d8 piercing, CON DC 11 or poisoned; Claws 2d4 slashing
+- **Attacks:** Bite 1d6 piercing, CON DC 11 or poisoned, +1d4 poison; Claws 2d4 slashing
 
 ### Gargoyle
 
@@ -720,8 +720,9 @@ STR 14 (+2), DEX 15 (+2), CON 13 (+1), INT 7 (-2), WIS 12 (+1), CHA 8 (-1)
 
 STR 15 (+2), DEX 11 (+0), CON 16 (+3), INT 6 (-2), WIS 11 (+0), CHA 7 (-2)
 
-- **Attacks:** Bite 1d6 piercing; Claws 1d6 slashing
+- **Attacks:** Bite 1d6 piercing; Claws 2d4 slashing
 - **Resists nonmagical:** bludgeoning, piercing, slashing
+- **Immunities:** poison
 
 ### Gelatinous Cube
 
@@ -750,7 +751,7 @@ STR 16 (+3), DEX 17 (+3), CON 10 (+0), INT 11 (+0), WIS 10 (+0), CHA 8 (-1)
 
 STR 17 (+3), DEX 10 (+0), CON 16 (+3), INT 2 (-4), WIS 7 (-2), CHA 5 (-3)
 
-- **Attacks:** Tusk 2d6 slashing
+- **Attacks:** Gore 2d6 piercing
 - **Features:** Charge, Relentless Endurance
 
 ### Giant Constrictor Snake
@@ -778,7 +779,7 @@ STR 12 (+1), DEX 13 (+1), CON 11 (+0), INT 8 (-1), WIS 10 (+0), CHA 15 (+2)
 
 STR 15 (+2), DEX 12 (+1), CON 13 (+1), INT 14 (+2), WIS 11 (+0), CHA 13 (+1)
 
-- **Attacks:** Bite 1d8 piercing, +1d4 poison
+- **Attacks:** Rend 1d10 slashing, +1d6 poison
 - **Features:** Poison Breath
 - **Immunities:** poison
 
@@ -788,7 +789,7 @@ STR 15 (+2), DEX 12 (+1), CON 13 (+1), INT 14 (+2), WIS 11 (+0), CHA 13 (+1)
 
 STR 18 (+4), DEX 15 (+2), CON 16 (+3), INT 2 (-4), WIS 13 (+1), CHA 8 (-1)
 
-- **Attacks:** Claws 2d6 slashing; Beak 1d8 piercing
+- **Attacks:** Rend 1d8 piercing
 
 ### Ochre Jelly
 
@@ -796,9 +797,9 @@ STR 18 (+4), DEX 15 (+2), CON 16 (+3), INT 2 (-4), WIS 13 (+1), CHA 8 (-1)
 
 STR 15 (+2), DEX 6 (-2), CON 14 (+2), INT 2 (-4), WIS 6 (-2), CHA 1 (-5)
 
-- **Attacks:** Pseudopod 2d6 bludgeoning, +1d6 acid
+- **Attacks:** Pseudopod 3d6 acid
 - **Resistances:** acid
-- **Immunities:** lightning, slashing, poison
+- **Immunities:** lightning, slashing
 
 ### Ogre
 
@@ -815,7 +816,7 @@ STR 19 (+4), DEX 8 (-1), CON 16 (+3), INT 5 (-3), WIS 7 (-2), CHA 7 (-2)
 STR 16 (+3), DEX 10 (+0), CON 12 (+1), INT 13 (+1), WIS 16 (+3), CHA 13 (+1)
 
 - **Saving throws:** WIS
-- **Attacks:** Mace 1d6 bludgeoning
+- **Attacks:** Mace 1d6 bludgeoning, +2d4 radiant
 - **Spellcasting:** WIS, slots 4×L1 3×L2 2×L3
 - **Spells:** Sacred Flame, Cure Wounds, Guiding Bolt, Healing Word, Command, Spiritual Weapon, Spirit Guardians, Bless
 - **Metal armor:** yes (Shocking Grasp rider)
@@ -834,7 +835,7 @@ STR 10 (+0), DEX 16 (+3), CON 12 (+1), INT 11 (+0), WIS 10 (+0), CHA 8 (-1)
 
 STR 14 (+2), DEX 10 (+0), CON 14 (+2), INT 5 (-3), WIS 10 (+0), CHA 11 (+0)
 
-- **Attacks:** Bite 1d8 piercing, +1d4 cold
+- **Attacks:** Rend 1d8 slashing, +1d4 cold
 - **Features:** Cold Breath
 - **Immunities:** cold
 
@@ -846,7 +847,7 @@ STR 1 (-5), DEX 28 (+9), CON 10 (+0), INT 13 (+1), WIS 14 (+2), CHA 11 (+0)
 
 - **Attacks:** Shock 2d8 lightning
 - **Features:** Consume Life
-- **Resistances:** acid, fire, necrotic, thunder
+- **Resistances:** acid, cold, fire, necrotic
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** lightning, poison
 
@@ -877,7 +878,7 @@ STR 16 (+3), DEX 15 (+2), CON 15 (+2), INT 9 (-1), WIS 11 (+0), CHA 14 (+2)
 
 STR 17 (+3), DEX 10 (+0), CON 15 (+2), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 
-- **Attacks:** Bite 1d8 piercing, +1d4 lightning
+- **Attacks:** Rend 1d10 slashing, +1d6 lightning
 - **Features:** Lightning Breath
 - **Immunities:** lightning
 
@@ -897,7 +898,7 @@ STR 12 (+1), DEX 15 (+2), CON 13 (+1), INT 9 (-1), WIS 16 (+3), CHA 10 (+0)
 
 STR 16 (+3), DEX 13 (+1), CON 15 (+2), INT 1 (-5), WIS 9 (-1), CHA 3 (-4)
 
-- **Attacks:** Sting 1d10 piercing, +3d10 poison; Claw 1d8 bludgeoning, on hit: restrained
+- **Attacks:** Sting 1d8 piercing, +2d10 poison; Claw 1d6 bludgeoning, on hit: restrained
 
 ### Green Hag
 
@@ -905,7 +906,7 @@ STR 16 (+3), DEX 13 (+1), CON 15 (+2), INT 1 (-5), WIS 9 (-1), CHA 3 (-4)
 
 STR 18 (+4), DEX 12 (+1), CON 16 (+3), INT 13 (+1), WIS 14 (+2), CHA 14 (+2)
 
-- **Attacks:** Claws 2d8 slashing
+- **Attacks:** Claws 1d8 slashing, +1d6 poison
 - **Features:** Fey Invisibility
 
 ### Hell Hound
@@ -925,7 +926,7 @@ STR 17 (+3), DEX 12 (+1), CON 14 (+2), INT 6 (-2), WIS 13 (+1), CHA 6 (-2)
 STR 16 (+3), DEX 11 (+0), CON 14 (+2), INT 11 (+0), WIS 11 (+0), CHA 15 (+2)
 
 - **Saving throws:** CON, WIS
-- **Attacks:** Greatsword 2d6 slashing; Light Crossbow 1d8 piercing, 80/320 ft
+- **Attacks:** Greatsword 2d6 slashing, +1d8 radiant; Light Crossbow 1d8 piercing, 80/320 ft
 - **Metal armor:** yes (Shocking Grasp rider)
 
 ### Manticore
@@ -934,7 +935,7 @@ STR 16 (+3), DEX 11 (+0), CON 14 (+2), INT 11 (+0), WIS 11 (+0), CHA 15 (+2)
 
 STR 17 (+3), DEX 16 (+3), CON 17 (+3), INT 7 (-2), WIS 12 (+1), CHA 8 (-1)
 
-- **Attacks:** Tail Spike 1d8 piercing, 100/200 ft; Bite 1d8 piercing; Claws 1d6 slashing
+- **Attacks:** Tail Spike 1d8 piercing, 100/200 ft; Rend 1d8 slashing
 
 ### Minotaur of Baphomet
 
@@ -942,7 +943,7 @@ STR 17 (+3), DEX 16 (+3), CON 17 (+3), INT 7 (-2), WIS 12 (+1), CHA 8 (-1)
 
 STR 18 (+4), DEX 11 (+0), CON 16 (+3), INT 6 (-2), WIS 16 (+3), CHA 9 (-1)
 
-- **Attacks:** Greataxe 2d12 slashing; Gore 2d8 piercing
+- **Attacks:** Abyssal Glaive 1d12 slashing, +3d6 necrotic; Gore 4d6 piercing
 
 ### Mummy
 
@@ -950,7 +951,7 @@ STR 18 (+4), DEX 11 (+0), CON 16 (+3), INT 6 (-2), WIS 16 (+3), CHA 9 (-1)
 
 STR 16 (+3), DEX 8 (-1), CON 15 (+2), INT 6 (-2), WIS 12 (+1), CHA 12 (+1)
 
-- **Attacks:** Rotting Fist 2d6 bludgeoning, +3d6 necrotic
+- **Attacks:** Rotting Fist 1d10 bludgeoning, +3d6 necrotic
 - **Features:** Dreadful Glare
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
@@ -962,7 +963,7 @@ STR 16 (+3), DEX 8 (-1), CON 15 (+2), INT 6 (-2), WIS 12 (+1), CHA 12 (+1)
 
 STR 20 (+5), DEX 12 (+1), CON 17 (+3), INT 3 (-4), WIS 12 (+1), CHA 7 (-2)
 
-- **Attacks:** Beak 1d10 piercing; Claws 2d8 slashing
+- **Attacks:** Rend 2d8 slashing
 
 ### Warrior Veteran
 
@@ -988,7 +989,7 @@ STR 16 (+3), DEX 14 (+2), CON 14 (+2), INT 10 (+0), WIS 11 (+0), CHA 10 (+0)
 
 STR 15 (+2), DEX 14 (+2), CON 16 (+3), INT 10 (+0), WIS 13 (+1), CHA 15 (+2)
 
-- **Attacks:** Longsword 1d8 slashing; Life Drain 1d6 piercing, CON DC 11 or slowed, +1d6 necrotic
+- **Attacks:** Necrotic Sword 1d8 slashing, +1d8 necrotic; Life Drain 1d8 necrotic, CON DC 11 or slowed
 - **Resistances:** necrotic
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
@@ -1035,8 +1036,8 @@ STR 1 (-5), DEX 14 (+2), CON 10 (+0), INT 12 (+1), WIS 11 (+0), CHA 17 (+3)
 
 STR 16 (+3), DEX 5 (-3), CON 16 (+3), INT 1 (-5), WIS 6 (-2), CHA 1 (-5)
 
-- **Attacks:** Pseudopod 1d6 bludgeoning, +4d8 acid
-- **Immunities:** acid, cold, lightning, slashing, poison
+- **Attacks:** Dissolving Pseudopod 4d6 acid
+- **Immunities:** acid, cold, lightning, slashing
 
 ### Druid
 
@@ -1071,8 +1072,8 @@ STR 21 (+5), DEX 8 (-1), CON 17 (+3), INT 6 (-2), WIS 10 (+0), CHA 8 (-1)
 
 STR 7 (-2), DEX 13 (+1), CON 10 (+0), INT 10 (+0), WIS 12 (+1), CHA 17 (+3)
 
-- **Attacks:** Withering Touch 4d6 necrotic
-- **Resistances:** acid, cold, fire, lightning
+- **Attacks:** Withering Touch 3d10 necrotic
+- **Resistances:** acid, cold, fire, lightning, thunder
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
 
@@ -1082,7 +1083,7 @@ STR 7 (-2), DEX 13 (+1), CON 10 (+0), INT 10 (+0), WIS 12 (+1), CHA 17 (+3)
 
 STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 
-- **Attacks:** Bite 1d10 piercing, +1d4 fire
+- **Attacks:** Rend 1d10 slashing, +1d6 fire
 - **Features:** Fire Breath
 - **Immunities:** fire
 
@@ -1092,9 +1093,9 @@ STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 
 STR 8 (-1), DEX 17 (+3), CON 13 (+1), INT 15 (+2), WIS 12 (+1), CHA 20 (+5)
 
-- **Attacks:** Claws 1d6 slashing, +3d6 psychic
+- **Attacks:** Fiendish Touch 2d10 psychic
 - **Features:** Charm
-- **Resistances:** cold, fire, lightning, poison
+- **Resistances:** cold, fire, poison, psychic
 
 ### Wereboar
 
@@ -1102,7 +1103,7 @@ STR 8 (-1), DEX 17 (+3), CON 13 (+1), INT 15 (+2), WIS 12 (+1), CHA 20 (+5)
 
 STR 17 (+3), DEX 10 (+0), CON 15 (+2), INT 10 (+0), WIS 11 (+0), CHA 8 (-1)
 
-- **Attacks:** Gore 2d8 piercing; Javelin 1d6 piercing, 30/120 ft
+- **Attacks:** Gore 2d8 piercing; Javelin 3d6 piercing, 30/120 ft
 
 ### Weretiger
 
@@ -1110,7 +1111,7 @@ STR 17 (+3), DEX 10 (+0), CON 15 (+2), INT 10 (+0), WIS 11 (+0), CHA 8 (-1)
 
 STR 17 (+3), DEX 15 (+2), CON 16 (+3), INT 10 (+0), WIS 13 (+1), CHA 11 (+0)
 
-- **Attacks:** Bite 2d8 piercing; Longbow 1d8 piercing, 150/600 ft
+- **Attacks:** Bite 2d8 piercing; Longbow 2d8 piercing, 150/600 ft
 
 ### Air Elemental
 
@@ -1118,11 +1119,11 @@ STR 17 (+3), DEX 15 (+2), CON 16 (+3), INT 10 (+0), WIS 13 (+1), CHA 11 (+0)
 
 STR 14 (+2), DEX 20 (+5), CON 14 (+2), INT 6 (-2), WIS 10 (+0), CHA 6 (-2)
 
-- **Attacks:** Slam 2d8 bludgeoning
+- **Attacks:** Thunderous Slam 2d8 thunder
 - **Features:** Whirlwind
 - **Resistances:** lightning
 - **Resists nonmagical:** bludgeoning, piercing, slashing
-- **Immunities:** poison
+- **Immunities:** poison, thunder
 
 ### Barbed Devil
 
@@ -1131,7 +1132,7 @@ STR 14 (+2), DEX 20 (+5), CON 14 (+2), INT 6 (-2), WIS 10 (+0), CHA 6 (-2)
 STR 16 (+3), DEX 17 (+3), CON 18 (+4), INT 12 (+1), WIS 14 (+2), CHA 14 (+2)
 
 - **Saving throws:** STR, CON, WIS, CHA
-- **Attacks:** Tail 2d6 piercing; Claw 1d6 piercing
+- **Attacks:** Tail 2d10 slashing; Claws 2d6 piercing
 - **Features:** Magic Resistance
 - **Resistances:** cold
 - **Immunities:** fire, poison
@@ -1142,7 +1143,7 @@ STR 16 (+3), DEX 17 (+3), CON 18 (+4), INT 12 (+1), WIS 14 (+2), CHA 14 (+2)
 
 STR 19 (+4), DEX 11 (+0), CON 21 (+5), INT 2 (-4), WIS 10 (+0), CHA 5 (-3)
 
-- **Attacks:** Bite 4d12 piercing
+- **Attacks:** Bite 2d12 piercing
 - **Features:** Charge
 
 ### Earth Elemental
@@ -1155,6 +1156,7 @@ STR 20 (+5), DEX 8 (-1), CON 20 (+5), INT 5 (-3), WIS 10 (+0), CHA 5 (-3)
 - **Features:** Earth Glide
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
+- **Vulnerabilities:** thunder
 
 ### Fire Elemental
 
@@ -1173,7 +1175,7 @@ STR 10 (+0), DEX 17 (+3), CON 16 (+3), INT 6 (-2), WIS 10 (+0), CHA 7 (-2)
 
 STR 19 (+4), DEX 9 (-1), CON 18 (+4), INT 6 (-2), WIS 10 (+0), CHA 5 (-3)
 
-- **Attacks:** Slam 2d8 bludgeoning
+- **Attacks:** Slam 2d8 bludgeoning, +1d8 lightning
 - **Immunities:** lightning, poison
 
 ### Giant Crocodile
@@ -1210,7 +1212,7 @@ STR 20 (+5), DEX 11 (+0), CON 18 (+4), INT 2 (-4), WIS 12 (+1), CHA 7 (-2)
 
 STR 21 (+5), DEX 8 (-1), CON 19 (+4), INT 5 (-3), WIS 9 (-1), CHA 6 (-2)
 
-- **Attacks:** Greatclub 3d8 bludgeoning; Rock 3d10 bludgeoning, 60/240 ft
+- **Attacks:** Tree Club 3d8 bludgeoning; Trash Lob 2d10 bludgeoning, 60/240 ft
 
 ### Night Hag
 
@@ -1221,7 +1223,6 @@ STR 18 (+4), DEX 15 (+2), CON 16 (+3), INT 16 (+3), WIS 14 (+2), CHA 16 (+3)
 - **Attacks:** Claws 2d8 slashing
 - **Features:** Magic Resistance
 - **Resistances:** cold, fire
-- **Immunities:** poison
 - **Spellcasting:** INT, slots 4×L1 3×L2
 - **Spells:** Poison Spray, Ray of Sickness, Magic Missile, Sleep, Hold Person, Invisibility
 
@@ -1232,7 +1233,7 @@ STR 18 (+4), DEX 15 (+2), CON 16 (+3), INT 16 (+3), WIS 14 (+2), CHA 16 (+3)
 STR 16 (+3), DEX 11 (+0), CON 19 (+4), INT 6 (-2), WIS 13 (+1), CHA 6 (-2)
 
 - **Saving throws:** CON
-- **Attacks:** Tentacle 1d8 bludgeoning, on hit: restrained, CON DC 13 or poisoned; Bite 2d8 piercing
+- **Attacks:** Tentacle 2d8 piercing, on hit: restrained, CON DC 13 or poisoned; Bite 2d8 piercing
 
 ### Roper
 
@@ -1240,7 +1241,7 @@ STR 16 (+3), DEX 11 (+0), CON 19 (+4), INT 6 (-2), WIS 13 (+1), CHA 6 (-2)
 
 STR 18 (+4), DEX 8 (-1), CON 17 (+3), INT 7 (-2), WIS 16 (+3), CHA 6 (-2)
 
-- **Attacks:** Tendril 1d8 bludgeoning, on hit: restrained; Bite 4d8 piercing
+- **Attacks:** Tendril 1d8 bludgeoning, on hit: restrained; Bite 3d8 piercing
 
 ### Salamander
 
@@ -1248,7 +1249,7 @@ STR 18 (+4), DEX 8 (-1), CON 17 (+3), INT 7 (-2), WIS 16 (+3), CHA 6 (-2)
 
 STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 
-- **Attacks:** Spear 2d6 piercing, +1d6 fire; Tail 2d6 bludgeoning, on hit: restrained, +2d6 fire
+- **Attacks:** Flame Spear 2d8 piercing, +2d6 fire; Tail 2d6 bludgeoning, on hit: restrained, +2d6 fire
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** fire
 - **Vulnerabilities:** cold
@@ -1259,7 +1260,7 @@ STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 
 STR 18 (+4), DEX 13 (+1), CON 20 (+5), INT 7 (-2), WIS 9 (-1), CHA 7 (-2)
 
-- **Attacks:** Claw 2d6 slashing; Bite 1d6 piercing
+- **Attacks:** Rend 2d6 slashing
 - **Regeneration:** 10/turn, stopped by acid/fire
 
 ### Unicorn
@@ -1268,8 +1269,9 @@ STR 18 (+4), DEX 13 (+1), CON 20 (+5), INT 7 (-2), WIS 9 (-1), CHA 7 (-2)
 
 STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 17 (+3), CHA 16 (+3)
 
-- **Attacks:** Horn 1d8 piercing, +2d8 radiant; Hooves 2d6 bludgeoning
+- **Attacks:** Radiant Horn 1d10 radiant; Hooves 2d6 bludgeoning
 - **Features:** Horn Charge, Magic Resistance
+- **Immunities:** poison
 
 ### Vampire Spawn
 
@@ -1278,7 +1280,7 @@ STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 17 (+3), CHA 16 (+3)
 STR 16 (+3), DEX 16 (+3), CON 16 (+3), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 
 - **Saving throws:** DEX, WIS
-- **Attacks:** Claws 2d4 slashing; Bite 1d6 piercing, +2d6 necrotic
+- **Attacks:** Claws 2d4 slashing; Bite 1d4 piercing, +3d6 necrotic
 - **Resistances:** necrotic
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 
@@ -1290,7 +1292,7 @@ STR 18 (+4), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 10 (+0), CHA 8 (-1)
 
 - **Attacks:** Slam 2d8 bludgeoning
 - **Features:** Whelm
-- **Resistances:** acid
+- **Resistances:** acid, fire
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
 
@@ -1309,7 +1311,7 @@ STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 11 (+0), WIS 12 (+1), CHA 12 (+1)
 STR 6 (-2), DEX 16 (+3), CON 16 (+3), INT 12 (+1), WIS 14 (+2), CHA 15 (+2)
 
 - **Attacks:** Life Drain 4d8 necrotic
-- **Resistances:** acid, cold, fire, lightning
+- **Resistances:** acid, cold, fire
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
 
@@ -1319,7 +1321,7 @@ STR 6 (-2), DEX 16 (+3), CON 16 (+3), INT 12 (+1), WIS 14 (+2), CHA 15 (+2)
 
 STR 19 (+4), DEX 11 (+0), CON 19 (+4), INT 3 (-4), WIS 14 (+2), CHA 10 (+0)
 
-- **Attacks:** Bite 2d6 piercing; Horns 1d12 bludgeoning; Claws 2d6 slashing
+- **Attacks:** Bite 2d6 piercing; Horns 1d12 bludgeoning; Claws 1d6 slashing
 - **Features:** Fire Breath
 
 ### Invisible Stalker
@@ -1328,8 +1330,9 @@ STR 19 (+4), DEX 11 (+0), CON 19 (+4), INT 3 (-4), WIS 14 (+2), CHA 10 (+0)
 
 STR 16 (+3), DEX 19 (+4), CON 14 (+2), INT 10 (+0), WIS 15 (+2), CHA 11 (+0)
 
-- **Attacks:** Slam 2d8 bludgeoning
+- **Attacks:** Wind Swipe 2d6 force
 - **Features:** Fey Invisibility
+- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
 
 ### Mage
@@ -1349,7 +1352,7 @@ STR 9 (-1), DEX 14 (+2), CON 11 (+0), INT 17 (+3), WIS 12 (+1), CHA 11 (+0)
 
 STR 24 (+7), DEX 9 (-1), CON 21 (+5), INT 3 (-4), WIS 11 (+0), CHA 6 (-2)
 
-- **Attacks:** Gore 4d8 piercing; Stomp 4d10 bludgeoning
+- **Attacks:** Gore 2d10 piercing; Stomp 4d10 bludgeoning
 - **Features:** Trampling Charge
 
 ### Vrock
@@ -1359,7 +1362,7 @@ STR 24 (+7), DEX 9 (-1), CON 21 (+5), INT 3 (-4), WIS 11 (+0), CHA 6 (-2)
 STR 17 (+3), DEX 15 (+2), CON 18 (+4), INT 8 (-1), WIS 13 (+1), CHA 8 (-1)
 
 - **Saving throws:** DEX, WIS, CHA
-- **Attacks:** Talons 2d10 slashing; Beak 2d6 piercing
+- **Attacks:** Shred 2d6 piercing, +3d6 poison
 - **Features:** Magic Resistance
 - **Resistances:** cold, fire, lightning
 - **Immunities:** poison
@@ -1370,7 +1373,7 @@ STR 17 (+3), DEX 15 (+2), CON 18 (+4), INT 8 (-1), WIS 13 (+1), CHA 8 (-1)
 
 STR 19 (+4), DEX 10 (+0), CON 16 (+3), INT 5 (-3), WIS 12 (+1), CHA 6 (-2)
 
-- **Attacks:** Stinger 2d6 piercing, CON DC 15 or poisoned, +4d6 poison; Bite 2d6 piercing
+- **Attacks:** Stinger 2d6 piercing, CON DC 15 or poisoned, +7d6 poison; Bite 2d8 piercing
 
 ### Young White Dragon
 
@@ -1379,7 +1382,7 @@ STR 19 (+4), DEX 10 (+0), CON 16 (+3), INT 5 (-3), WIS 12 (+1), CHA 6 (-2)
 STR 18 (+4), DEX 10 (+0), CON 18 (+4), INT 6 (-2), WIS 11 (+0), CHA 12 (+1)
 
 - **Saving throws:** DEX, CON, WIS, CHA
-- **Attacks:** Bite 2d10 piercing, +1d4 cold; Claws 2d6 slashing
+- **Attacks:** Rend 2d4 slashing, +1d4 cold
 - **Features:** Cold Breath
 - **Immunities:** cold
 
@@ -1398,7 +1401,8 @@ STR 23 (+6), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 12 (+1), CHA 7 (-2)
 STR 19 (+4), DEX 11 (+0), CON 16 (+3), INT 14 (+2), WIS 12 (+1), CHA 15 (+2)
 
 - **Saving throws:** CON, INT
-- **Attacks:** Greatclub 2d8 bludgeoning
+- **Attacks:** Claw 1d12 slashing, +2d8 necrotic
+- **Resistances:** cold
 - **Spellcasting:** INT, slots 4×L1 3×L2 2×L3
 - **Spells:** Fire Bolt, Magic Missile, Web, Fireball
 
@@ -1408,7 +1412,7 @@ STR 19 (+4), DEX 11 (+0), CON 16 (+3), INT 14 (+2), WIS 12 (+1), CHA 15 (+2)
 
 STR 18 (+4), DEX 8 (-1), CON 18 (+4), INT 7 (-2), WIS 10 (+0), CHA 3 (-4)
 
-- **Attacks:** Fist 2d6 bludgeoning
+- **Attacks:** Fist 2d6 bludgeoning, +2d6 force
 - **Immunities:** poison
 
 ### Stone Giant
@@ -1418,7 +1422,7 @@ STR 18 (+4), DEX 8 (-1), CON 18 (+4), INT 7 (-2), WIS 10 (+0), CHA 3 (-4)
 STR 23 (+6), DEX 15 (+2), CON 20 (+5), INT 10 (+0), WIS 12 (+1), CHA 9 (-1)
 
 - **Saving throws:** DEX, CON, WIS
-- **Attacks:** Greatclub 3d8 bludgeoning; Rock 4d10 bludgeoning, 60/240 ft
+- **Attacks:** Stone Club 3d10 bludgeoning; Boulder 2d8 bludgeoning, 60/240 ft
 
 ### Young Black Dragon
 
@@ -1427,7 +1431,7 @@ STR 23 (+6), DEX 15 (+2), CON 20 (+5), INT 10 (+0), WIS 12 (+1), CHA 9 (-1)
 STR 19 (+4), DEX 14 (+2), CON 17 (+3), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 
 - **Saving throws:** DEX, CON, WIS, CHA
-- **Attacks:** Bite 2d10 piercing, +1d8 acid; Claws 2d6 slashing
+- **Attacks:** Rend 2d4 slashing, +1d6 acid
 - **Features:** Acid Breath
 - **Immunities:** acid
 
@@ -1438,8 +1442,9 @@ STR 19 (+4), DEX 14 (+2), CON 17 (+3), INT 12 (+1), WIS 11 (+0), CHA 15 (+2)
 STR 11 (+0), DEX 18 (+4), CON 14 (+2), INT 16 (+3), WIS 11 (+0), CHA 10 (+0)
 
 - **Saving throws:** DEX, INT
-- **Attacks:** Shortsword 1d6 piercing; Light Crossbow 1d8 piercing, 80/320 ft
+- **Attacks:** Shortsword 1d6 piercing, +5d6 poison; Light Crossbow 1d8 piercing, 80/320 ft, +6d6 poison
 - **Features:** Sneak Attack, Assassinate, Cunning Action: Hide, Cunning Action: Disengage
+- **Resistances:** poison
 
 ### Chain Devil
 
@@ -1451,6 +1456,7 @@ STR 18 (+4), DEX 15 (+2), CON 18 (+4), INT 11 (+0), WIS 12 (+1), CHA 14 (+2)
 - **Attacks:** Chain 2d6 slashing, on hit: restrained
 - **Features:** Magic Resistance
 - **Resistances:** cold
+- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** fire, poison
 
 ### Frost Giant
@@ -1460,7 +1466,7 @@ STR 18 (+4), DEX 15 (+2), CON 18 (+4), INT 11 (+0), WIS 12 (+1), CHA 14 (+2)
 STR 23 (+6), DEX 9 (-1), CON 21 (+5), INT 9 (-1), WIS 10 (+0), CHA 12 (+1)
 
 - **Saving throws:** CON, WIS, CHA
-- **Attacks:** Greataxe 3d12 slashing; Rock 4d10 bludgeoning, 60/240 ft
+- **Attacks:** Frost Axe 2d12 slashing, +2d8 cold; Great Bow 2d10 piercing, 150/600 ft, +2d6 cold
 - **Immunities:** cold
 - **Metal armor:** yes (Shocking Grasp rider)
 
@@ -1471,7 +1477,7 @@ STR 23 (+6), DEX 9 (-1), CON 21 (+5), INT 9 (-1), WIS 10 (+0), CHA 12 (+1)
 STR 19 (+4), DEX 17 (+3), CON 20 (+5), INT 5 (-3), WIS 12 (+1), CHA 13 (+1)
 
 - **Saving throws:** STR, CON, WIS
-- **Attacks:** Bite 2d10 piercing; Claws 2d6 slashing
+- **Attacks:** Rend 1d4 slashing, +2d8 poison
 - **Features:** Magic Resistance
 - **Resistances:** cold, fire, lightning
 - **Immunities:** poison
@@ -1491,7 +1497,7 @@ STR 20 (+5), DEX 12 (+1), CON 20 (+5), INT 2 (-4), WIS 10 (+0), CHA 7 (-2)
 
 STR 25 (+7), DEX 10 (+0), CON 19 (+4), INT 2 (-4), WIS 12 (+1), CHA 9 (-1)
 
-- **Attacks:** Bite 4d12 piercing; Tail 3d8 bludgeoning
+- **Attacks:** Bite 4d12 piercing; Tail 4d8 bludgeoning
 
 ### Young Green Dragon
 
@@ -1500,7 +1506,7 @@ STR 25 (+7), DEX 10 (+0), CON 19 (+4), INT 2 (-4), WIS 12 (+1), CHA 9 (-1)
 STR 19 (+4), DEX 12 (+1), CON 17 (+3), INT 16 (+3), WIS 13 (+1), CHA 15 (+2)
 
 - **Saving throws:** DEX, CON, WIS, CHA
-- **Attacks:** Bite 2d10 piercing, +2d6 poison; Claws 2d6 slashing
+- **Attacks:** Rend 2d6 slashing, +2d6 poison
 - **Features:** Poison Breath
 - **Immunities:** poison
 
@@ -1511,7 +1517,7 @@ STR 19 (+4), DEX 12 (+1), CON 17 (+3), INT 16 (+3), WIS 13 (+1), CHA 15 (+2)
 STR 25 (+7), DEX 9 (-1), CON 23 (+6), INT 10 (+0), WIS 14 (+2), CHA 13 (+1)
 
 - **Saving throws:** DEX, CON, CHA
-- **Attacks:** Greatsword 6d6 slashing; Rock 4d10 bludgeoning, 60/240 ft
+- **Attacks:** Flame Sword 4d6 slashing, +3d6 fire; Hammer Throw 3d10 bludgeoning, 60/240 ft, +1d8 fire
 - **Immunities:** fire
 - **Metal armor:** yes (Shocking Grasp rider)
 
@@ -1522,7 +1528,7 @@ STR 25 (+7), DEX 9 (-1), CON 23 (+6), INT 10 (+0), WIS 14 (+2), CHA 13 (+1)
 STR 20 (+5), DEX 15 (+2), CON 21 (+5), INT 19 (+4), WIS 17 (+3), CHA 16 (+3)
 
 - **Saving throws:** STR, CON, WIS, CHA
-- **Attacks:** Pincer 2d10 bludgeoning, on hit: restrained; Fist 2d4 bludgeoning
+- **Attacks:** Pincer 2d10 slashing, on hit: restrained; Fist 2d4 bludgeoning
 - **Features:** Magic Resistance
 - **Resistances:** cold, fire, lightning
 - **Immunities:** poison
@@ -1534,7 +1540,7 @@ STR 20 (+5), DEX 15 (+2), CON 21 (+5), INT 19 (+4), WIS 17 (+3), CHA 16 (+3)
 STR 21 (+5), DEX 10 (+0), CON 19 (+4), INT 14 (+2), WIS 13 (+1), CHA 17 (+3)
 
 - **Saving throws:** DEX, CON, WIS, CHA
-- **Attacks:** Bite 2d10 piercing, +1d10 lightning; Claws 2d6 slashing
+- **Attacks:** Rend 2d6 slashing, +1d10 lightning
 - **Features:** Lightning Breath
 - **Immunities:** lightning
 
@@ -1545,7 +1551,7 @@ STR 21 (+5), DEX 10 (+0), CON 19 (+4), INT 14 (+2), WIS 13 (+1), CHA 17 (+3)
 STR 21 (+5), DEX 9 (-1), CON 15 (+2), INT 18 (+4), WIS 15 (+2), CHA 18 (+4)
 
 - **Saving throws:** CON, INT, WIS
-- **Attacks:** Tentacle 2d6 bludgeoning, +2d6 psychic; Tail 3d6 bludgeoning
+- **Attacks:** Tentacle 2d6 bludgeoning; Tail 3d6 bludgeoning
 - **Features:** Magic Resistance
 - **Spellcasting:** INT, slots 4×L1 3×L2 2×L3
 - **Spells:** Acid Splash, Ray of Sickness, Hold Person, Blindness, Fear
@@ -1556,7 +1562,7 @@ STR 21 (+5), DEX 9 (-1), CON 15 (+2), INT 18 (+4), WIS 15 (+2), CHA 18 (+4)
 
 STR 22 (+6), DEX 9 (-1), CON 20 (+5), INT 3 (-4), WIS 11 (+0), CHA 1 (-5)
 
-- **Attacks:** Slam 3d8 bludgeoning
+- **Attacks:** Slam 2d8 bludgeoning, +2d8 force
 - **Features:** Magic Resistance
 - **Immunities:** poison, psychic
 
@@ -1567,7 +1573,7 @@ STR 22 (+6), DEX 9 (-1), CON 20 (+5), INT 3 (-4), WIS 11 (+0), CHA 1 (-5)
 STR 23 (+6), DEX 10 (+0), CON 21 (+5), INT 14 (+2), WIS 11 (+0), CHA 19 (+4)
 
 - **Saving throws:** DEX, CON, WIS, CHA
-- **Attacks:** Bite 2d10 piercing, +1d6 fire; Claws 2d6 slashing
+- **Attacks:** Rend 2d6 slashing, +1d6 fire
 - **Features:** Fire Breath
 - **Immunities:** fire
 
@@ -1578,7 +1584,7 @@ STR 23 (+6), DEX 10 (+0), CON 21 (+5), INT 14 (+2), WIS 11 (+0), CHA 19 (+4)
 STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 18 (+4)
 
 - **Saving throws:** STR, DEX, WIS, CHA
-- **Attacks:** Fork 2d8 piercing; Tail 1d8 piercing, +3d6 fire
+- **Attacks:** Searing Fork 2d8 piercing, +2d8 fire; Tail 1d8 piercing, +3d6 fire
 - **Features:** Magic Resistance
 - **Resistances:** cold
 - **Immunities:** fire, poison
@@ -1589,5 +1595,5 @@ STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 18 (+4)
 
 STR 24 (+7), DEX 13 (+1), CON 21 (+5), INT 4 (-3), WIS 10 (+0), CHA 5 (-3)
 
-- **Attacks:** Bite 6d10 piercing, +4d6 fire
+- **Attacks:** Bite 2d10 piercing, +4d6 fire
 - **Immunities:** cold, fire

@@ -146,7 +146,7 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   // Young dragons, one age category up. A wyrmling's breath is a strong hit; a
   // young dragon's is the reason the fight is about positioning, so the line
   // ones reach further as well as hitting harder.
-  'breath-acid-young':      { shape: 'line', length: 6, save: 'dex', damageType: 'acid',      dice: '11d8' },
+  'breath-acid-young':      { shape: 'line', length: 6, save: 'dex', damageType: 'acid',      dice: '14d6' },
   'breath-lightning-young': { shape: 'line', length: 12, save: 'dex', damageType: 'lightning', dice: '10d10' },
   'breath-poison-young':    { shape: 'cone',            save: 'con', damageType: 'poison',    dice: '12d6' },
   'breath-fire-young':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '16d6' },
@@ -156,7 +156,9 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   'breath-fire-chimera':    { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '7d8' },
   // The hell hound's is a CR 3 cone — a pack of them is the threat, not any
   // one breath.
-  'breath-fire-hound':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '6d6' },
+  'breath-fire-hound':      { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '5d6' },
+  // The winter wolf's: the white wyrmling's cone at a smaller die (4d8, not 5d8).
+  'breath-cold-winter-wolf': { shape: 'cone',           save: 'con', damageType: 'cold',      dice: '4d8' },
   // Mephit breath, at CR 1/2 scale. Their SRD versions also blind or slow;
   // a breath spec carries damage only, so those riders are left off rather
   // than faked with the wrong condition.
@@ -1292,6 +1294,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   'breath-cold-young':      { id: 'breath-cold-young',      name: 'Cold Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-cold-young') },
   'breath-fire-chimera':    { id: 'breath-fire-chimera',    name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-chimera') },
   'breath-fire-hound':      { id: 'breath-fire-hound',      name: 'Fire Breath',      trigger: 'action', recharge: 5, apply: breathApply('breath-fire-hound') },
+  'breath-cold-winter-wolf': { id: 'breath-cold-winter-wolf', name: 'Cold Breath',     trigger: 'action', recharge: 5, apply: breathApply('breath-cold-winter-wolf') },
   'breath-mephit-fire':     { id: 'breath-mephit-fire',     name: 'Fire Breath',      trigger: 'action', recharge: 6, apply: breathApply('breath-mephit-fire') },
   'breath-mephit-cold':     { id: 'breath-mephit-cold',     name: 'Frost Breath',     trigger: 'action', recharge: 6, apply: breathApply('breath-mephit-cold') },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a

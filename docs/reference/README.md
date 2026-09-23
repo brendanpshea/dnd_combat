@@ -7,8 +7,8 @@ Everything the game implements, printed from the data modules.
 
 **146** monsters · **94** spells ·
 **12** classes (levels 1–7) ·
-**8** species · **152** features ·
-**228** weapons · **103** consumables ·
+**8** species · **153** features ·
+**239** weapons · **103** consumables ·
 **63** encounters · **11** maps
 
 | File | Contents |

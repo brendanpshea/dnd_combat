@@ -183,7 +183,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 13, dex: 6, con: 16, int: 3, wis: 6, cha: 5 },
     featureIds: ['undead-fortitude'],
-    weaponIds: ['slam'],
+    weaponIds: ['zombie-slam'],
     immunities: ['poison'],
   },
   ogre: {
@@ -245,7 +245,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'humanoid',
     size: 'medium',
     abilities: { str: 14, dex: 10, con: 12, int: 10, wis: 14, cha: 11 },
-    weaponIds: ['mace'],
+    weaponIds: ['acolyte-mace'],
     spellcasting: { ability: 'wis', slots: [3], spellIds: ['sacred-flame', 'cure-wounds', 'bless', 'healing-word', 'command'] },
   },
   kobold: {
@@ -341,7 +341,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 16, dex: 11, con: 14, int: 11, wis: 11, cha: 15 },
     savingThrowProfs: ['con', 'wis'],
-    weaponIds: ['greatsword', 'light-crossbow'],
+    weaponIds: ['knight-greatsword', 'light-crossbow'],
     metalArmor: true,
     attacksPerAction: 2,
   },
@@ -351,7 +351,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 18, dex: 11, con: 16, int: 6, wis: 16, cha: 9 },
-    weaponIds: ['minotaur-greataxe', 'minotaur-gore'],
+    weaponIds: ['minotaur-abyssal-glaive', 'minotaur-gore'],
     // One brutal chop a turn — the Reckless-charger shape, not a flurry.
   },
   ettin: {
@@ -372,7 +372,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 16, dex: 10, con: 12, int: 13, wis: 16, cha: 13 },
     savingThrowProfs: ['wis'],
-    weaponIds: ['mace'],
+    weaponIds: ['priest-mace'],
     metalArmor: true,
     // Wis +3, PB +2 → spell DC 13 (SRD Priest). A support/control caster.
     spellcasting: {
@@ -387,8 +387,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'large',
     abilities: { str: 19, dex: 11, con: 16, int: 14, wis: 12, cha: 15 },
     savingThrowProfs: ['con', 'int'],
-    weaponIds: ['ogre-greatclub'],
-    // An arcane brute: it blasts and controls, and can wade in with the club.
+    resistances: ['cold'],
+    weaponIds: ['oni-claw'],
+    // An arcane brute: it blasts and controls, and can wade in with its claws.
     spellcasting: {
       ability: 'int', slots: [4, 3, 2],
       spellIds: ['fire-bolt', 'magic-missile', 'web', 'fireball'],
@@ -471,7 +472,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 17, dex: 10, con: 15, int: 10, wis: 11, cha: 8 },
     shapechanger: true,
-    weaponIds: ['were-bite-boar', 'javelin'],
+    weaponIds: ['were-bite-boar', 'wereboar-javelin'],
     attacksPerAction: 2,
   },
   weretiger: {
@@ -481,7 +482,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 17, dex: 15, con: 16, int: 10, wis: 13, cha: 11 },
     shapechanger: true,
-    weaponIds: ['were-bite-tiger', 'longbow'],
+    weaponIds: ['were-bite-tiger', 'weretiger-longbow'],
     attacksPerAction: 2,
   },
   werebear: {
@@ -535,7 +536,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 10, dex: 15, con: 10, int: 12, wis: 14, cha: 16 },
     featureIds: ['sneak-attack'],
-    weaponIds: ['shortsword', 'hand-crossbow'],
+    weaponIds: ['spy-shortsword', 'spy-hand-crossbow'],
     attacksPerAction: 2,
   },
 
@@ -546,8 +547,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 13, dex: 10, con: 17, int: 2, wis: 12, cha: 5 },
     featureIds: ['burrow'],
-    weaponIds: ['bite', 'badger-claws'],
+    weaponIds: ['giant-badger-bite', 'badger-claws'],
     attacksPerAction: 2,
+    resistances: ['poison'],
   },
   'giant-toad': {
     id: 'giant-toad', name: 'Giant Toad',
@@ -594,6 +596,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['gargoyle-bite', 'gargoyle-claws'],
     attacksPerAction: 2,
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    immunities: ['poison'],
   },
   'fire-elemental': {
     id: 'fire-elemental', name: 'Fire Elemental',
@@ -617,7 +620,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['water-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
-    resistances: ['acid'],
+    resistances: ['acid', 'fire'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'earth-elemental': {
@@ -630,6 +633,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['earth-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
+    vulnerabilities: ['thunder'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'air-elemental': {
@@ -641,7 +645,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['whirlwind'],
     weaponIds: ['air-slam'],
     attacksPerAction: 2,
-    immunities: ['poison'],
+    immunities: ['poison', 'thunder'],
     resistances: ['lightning'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
@@ -754,6 +758,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['unicorn-charge', 'magic-resistance'],
     weaponIds: ['unicorn-horn', 'unicorn-hooves'],
     attacksPerAction: 2,
+    immunities: ['poison'],
   },
 
   cockatrice: {
@@ -795,7 +800,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'huge',
     abilities: { str: 23, dex: 15, con: 20, int: 10, wis: 12, cha: 9 },
     savingThrowProfs: ['dex', 'con', 'wis'],
-    weaponIds: ['giant-greatclub', 'greater-giant-rock'],
+    weaponIds: ['stone-giant-club', 'stone-giant-boulder'],
     attacksPerAction: 2,
   },
   'frost-giant': {
@@ -805,7 +810,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'huge',
     abilities: { str: 23, dex: 9, con: 21, int: 9, wis: 10, cha: 12 },
     savingThrowProfs: ['con', 'wis', 'cha'],
-    weaponIds: ['frost-giant-greataxe', 'greater-giant-rock'],
+    weaponIds: ['frost-giant-greataxe', 'frost-giant-great-bow'],
     metalArmor: true, // patchwork plate
     attacksPerAction: 2,
     immunities: ['cold'],
@@ -817,7 +822,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'huge',
     abilities: { str: 25, dex: 9, con: 23, int: 10, wis: 14, cha: 13 },
     savingThrowProfs: ['dex', 'con', 'cha'],
-    weaponIds: ['fire-giant-greatsword', 'greater-giant-rock'],
+    weaponIds: ['fire-giant-greatsword', 'fire-giant-hammer-throw'],
     metalArmor: true,
     attacksPerAction: 2,
     immunities: ['fire'],
@@ -835,6 +840,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 5, dex: 14, con: 10, int: 9, wis: 11, cha: 10 },
     weaponIds: ['mephit-claws-dust'],
     immunities: ['poison'],
+    vulnerabilities: ['fire'],
   },
   'ice-mephit': {
     id: 'ice-mephit', fly: true, name: 'Ice Mephit',
@@ -846,7 +852,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['breath-mephit-cold'],
     weaponIds: ['mephit-claws-cold'],
     immunities: ['cold', 'poison'],
-    vulnerabilities: ['fire', 'bludgeoning'],
+    vulnerabilities: ['fire'],
   },
   'magma-mephit': {
     id: 'magma-mephit', fly: true, name: 'Magma Mephit',
@@ -856,13 +862,13 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'small',
     abilities: { str: 8, dex: 12, con: 12, int: 7, wis: 10, cha: 10 },
     featureIds: ['breath-mephit-fire'],
-    weaponIds: ['mephit-claws-fire'],
+    weaponIds: ['magma-mephit-claws'],
     immunities: ['fire', 'poison'],
     vulnerabilities: ['cold'],
   },
   'steam-mephit': {
     id: 'steam-mephit', fly: true, name: 'Steam Mephit',
-    deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 10 }, radius: 10 },
+    deathBurst: { dice: '2d4', type: 'fire', save: { ability: 'dex', dc: 10 }, radius: 10 },
     ac: 10, hp: 17, speed: 30,
     creatureType: 'elemental',
     size: 'small',
@@ -883,7 +889,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 8, dex: 17, con: 13, int: 15, wis: 12, cha: 20 },
     featureIds: ['charm'],
     weaponIds: ['succubus-claws'],
-    resistances: ['cold', 'fire', 'lightning', 'poison'],
+    resistances: ['cold', 'fire', 'poison', 'psychic'],
   },
   'bearded-devil': {
     id: 'bearded-devil', name: 'Bearded Devil',
@@ -907,7 +913,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 18, dex: 15, con: 16, int: 16, wis: 14, cha: 16 },
     weaponIds: ['night-hag-claws'],
     resistances: ['cold', 'fire'],
-    immunities: ['poison'],
     spellcasting: {
       ability: 'int', slots: [4, 3],
       spellIds: ['poison-spray', 'ray-of-sickness', 'magic-missile', 'sleep', 'hold-person', 'invisibility'],
@@ -924,6 +929,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['chain-devil-chain'],
     attacksPerAction: 2,
     resistances: ['cold'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['fire', 'poison'],
   },
   hezrou: {
@@ -934,7 +940,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 19, dex: 17, con: 20, int: 5, wis: 12, cha: 13 },
     savingThrowProfs: ['str', 'con', 'wis'],
     featureIds: ['magic-resistance'],
-    weaponIds: ['hezrou-bite', 'hezrou-claws'],
+    weaponIds: ['hezrou-rend'],
     attacksPerAction: 3,
     resistances: ['cold', 'fire', 'lightning'],
     immunities: ['poison'],
@@ -993,7 +999,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 18, dex: 15, con: 16, int: 2, wis: 13, cha: 8 },
-    weaponIds: ['griffon-claws', 'griffon-beak'],
+    weaponIds: ['griffon-rend'],
     attacksPerAction: 2,
   },
   ettercap: {
@@ -1014,7 +1020,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 12, dex: 15, con: 13, int: 9, wis: 16, cha: 10 },
-    weaponIds: ['ettercap-bite'],
+    weaponIds: ['ettercap-snarecaller-bite'],
     // Entangle restrains, which the AI could not see the point of until the
     // condition was priced — see test/ai-conditions.test.ts. Web alongside it
     // rather than the Bestow Curse this originally carried: the curse was cast
@@ -1041,7 +1047,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 18, dex: 13, con: 14, int: 7, wis: 12, cha: 8 },
-    featureIds: ['pack-tactics', 'breath-cold'],
+    featureIds: ['pack-tactics', 'breath-cold-winter-wolf'],
     weaponIds: ['winter-wolf-bite'],
     immunities: ['cold'],
   },
@@ -1155,7 +1161,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 7, dex: 13, con: 10, int: 10, wis: 12, cha: 17 },
     weaponIds: ['ghost-touch'],
-    resistances: ['acid', 'cold', 'fire', 'lightning'],
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'thunder'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['necrotic', 'poison'],
   },
@@ -1166,7 +1172,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 6, dex: 16, con: 16, int: 12, wis: 14, cha: 15 },
     weaponIds: ['wraith-touch'],
-    resistances: ['acid', 'cold', 'fire', 'lightning'],
+    resistances: ['acid', 'cold', 'fire'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['necrotic', 'poison'],
   },
@@ -1329,8 +1335,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 11, dex: 18, con: 14, int: 16, wis: 11, cha: 10 },
     savingThrowProfs: ['dex', 'int'],
     featureIds: ['sneak-attack', 'assassinate', 'cunning-hide', 'cunning-disengage'],
-    weaponIds: ['shortsword', 'light-crossbow'],
+    weaponIds: ['assassin-shortsword', 'assassin-light-crossbow'],
     attacksPerAction: 2,
+    resistances: ['poison'],
   },
 
   // Constructs stopped at the flesh golem.
@@ -1378,7 +1385,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 7, dex: 15, con: 12, int: 8, wis: 11, cha: 10 },
     weaponIds: ['magmin-touch'],
     immunities: ['fire'],
-    vulnerabilities: ['cold'],
   },
   azer: {
     id: 'azer', name: 'Azer Sentinel',
@@ -1387,7 +1393,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 17, dex: 12, con: 15, int: 12, wis: 13, cha: 10 },
     savingThrowProfs: ['con'],
-    weaponIds: ['azer-hammer'],
+    weaponIds: ['azer-burning-hammer'],
     metalArmor: true,
     immunities: ['fire', 'poison'],
   },
@@ -1428,6 +1434,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['stalker-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
+    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
 
   // ---- fiends -----------------------------------------------------------
@@ -1499,7 +1506,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 17, dex: 15, con: 18, int: 8, wis: 13, cha: 8 },
     savingThrowProfs: ['dex', 'wis', 'cha'],
     featureIds: ['magic-resistance'],
-    weaponIds: ['vrock-talons', 'vrock-beak'],
+    weaponIds: ['vrock-shred'],
     attacksPerAction: 2,
     resistances: ['cold', 'fire', 'lightning'],
     immunities: ['poison'],
@@ -1517,7 +1524,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 12, dex: 6, con: 16, int: 1, wis: 6, cha: 2 },
     weaponIds: ['gray-ooze-pseudopod'],
     resistances: ['acid', 'cold', 'fire'],
-    immunities: ['poison'],
   },
   'ochre-jelly': {
     id: 'ochre-jelly', name: 'Ochre Jelly',
@@ -1527,7 +1533,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 15, dex: 6, con: 14, int: 2, wis: 6, cha: 1 },
     weaponIds: ['ochre-jelly-pseudopod'],
     resistances: ['acid'],
-    immunities: ['lightning', 'slashing', 'poison'],
+    immunities: ['lightning', 'slashing'],
   },
   'gelatinous-cube': {
     id: 'gelatinous-cube', name: 'Gelatinous Cube',
@@ -1547,7 +1553,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'large',
     abilities: { str: 16, dex: 5, con: 16, int: 1, wis: 6, cha: 1 },
     weaponIds: ['black-pudding-pseudopod'],
-    immunities: ['acid', 'cold', 'lightning', 'slashing', 'poison'],
+    immunities: ['acid', 'cold', 'lightning', 'slashing'],
   },
 
   // ---- constructs -------------------------------------------------------
@@ -1591,8 +1597,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'giant',
     size: 'large',
     abilities: { str: 18, dex: 13, con: 20, int: 7, wis: 9, cha: 7 },
-    weaponIds: ['troll-claw', 'troll-bite'],
-    attacksPerAction: 3, // bite and two claws
+    weaponIds: ['troll-rend'],
+    attacksPerAction: 3, // three Rends
     regeneration: { amount: 10, stoppedBy: ['acid', 'fire'] },
   },
   chimera: {
@@ -1627,7 +1633,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 5,
   },
   // Young dragons: the wyrmlings one age category on. Same shape as the
-  // wyrmling blocks, with the heavier breath spec and a claw routine.
+  // wyrmling blocks, with the heavier breath spec and three Rends a turn.
   'young-white': {
     id: 'young-white', name: 'Young White Dragon',
     ac: 17, cr: 6, hp: 123, speed: 40,
@@ -1636,7 +1642,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 18, dex: 10, con: 18, int: 6, wis: 11, cha: 12 },
     savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
     featureIds: ['breath-cold-young'],
-    weaponIds: ['young-white-bite', 'young-dragon-claws'],
+    weaponIds: ['young-white-bite'],
     attacksPerAction: 3,
     immunities: ['cold'],
   },
@@ -1648,7 +1654,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 19, dex: 14, con: 17, int: 12, wis: 11, cha: 15 },
     savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
     featureIds: ['breath-acid-young'],
-    weaponIds: ['young-black-bite', 'young-dragon-claws'],
+    weaponIds: ['young-black-bite'],
     attacksPerAction: 3,
     immunities: ['acid'],
   },
@@ -1660,7 +1666,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 19, dex: 12, con: 17, int: 16, wis: 13, cha: 15 },
     savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
     featureIds: ['breath-poison-young'],
-    weaponIds: ['young-green-bite', 'young-dragon-claws'],
+    weaponIds: ['young-green-bite'],
     attacksPerAction: 3,
     immunities: ['poison'],
   },
@@ -1672,7 +1678,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 21, dex: 10, con: 19, int: 14, wis: 13, cha: 17 },
     savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
     featureIds: ['breath-lightning-young'],
-    weaponIds: ['young-blue-bite', 'young-dragon-claws'],
+    weaponIds: ['young-blue-bite'],
     attacksPerAction: 3,
     immunities: ['lightning'],
   },
@@ -1684,7 +1690,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 23, dex: 10, con: 21, int: 14, wis: 11, cha: 19 },
     savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
     featureIds: ['breath-fire-young'],
-    weaponIds: ['young-red-bite', 'young-dragon-claws'],
+    weaponIds: ['young-red-bite'],
     attacksPerAction: 3,
     immunities: ['fire'],
   },
@@ -1694,7 +1700,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 17, dex: 16, con: 17, int: 7, wis: 12, cha: 8 },
-    weaponIds: ['manticore-spike', 'manticore-bite', 'manticore-claws'],
+    weaponIds: ['manticore-spike', 'manticore-rend'],
     attacksPerAction: 3,
   },
   owlbear: {
@@ -1703,7 +1709,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 20, dex: 12, con: 17, int: 3, wis: 12, cha: 7 },
-    weaponIds: ['owlbear-beak', 'owlbear-claws'],
+    weaponIds: ['owlbear-rend'],
     attacksPerAction: 2,
   },
   gorgon: {
@@ -1726,7 +1732,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['shadow-drain'],
     vulnerabilities: ['radiant'],
     immunities: ['necrotic', 'poison'],
-    resistances: ['acid', 'fire', 'lightning', 'thunder'],
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'thunder'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   specter: {
@@ -1737,7 +1743,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 1, dex: 14, con: 11, int: 10, wis: 10, cha: 11 },
     weaponIds: ['specter-drain'],
     immunities: ['necrotic', 'poison'],
-    resistances: ['acid', 'fire', 'lightning', 'thunder'],
+    resistances: ['acid', 'cold', 'fire', 'lightning', 'thunder'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'will-o-wisp': {
@@ -1749,7 +1755,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['consume-life'],
     weaponIds: ['wisp-shock'],
     immunities: ['lightning', 'poison'],
-    resistances: ['acid', 'fire', 'necrotic', 'thunder'],
+    resistances: ['acid', 'cold', 'fire', 'necrotic'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   wight: {
