@@ -568,8 +568,11 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     case 'searing-smite':
     case 'shining-smite':
     case 'ensnaring-strike': {
-      // Would silently drop whatever is already held, and nothing here prices that.
-      if (actor.concentratingOn) return 0;
+      // Would silently drop whatever is already held, and nothing here prices
+      // that. Read off the spell: Divine and Searing Smite share this case and
+      // are not concentration, so a flat guard stopped a paladin holding Bless
+      // from ever smiting by choice.
+      if (spell.concentration && actor.concentratingOn) return 0;
       // Only worth arming if there is something to hit this turn — the slot is
       // spent at cast time, so loading up with no enemy in reach throws it away.
       //
