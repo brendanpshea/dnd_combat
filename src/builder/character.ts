@@ -453,7 +453,10 @@ export function buildCharacter(opts: BuildOptions): Combatant {
    * would not be wearing the leather. Only when the ward is actually better,
    * so a warlock who later buys half plate keeps it.
    */
-  const wornArmor = opts.equipped?.armor ?? kit.equipment.armor;
+  // `equipped` given means that IS what is worn — no armour included. Falling
+  // back to the kit on a missing `armor` kept a paladin who took off their
+  // chain mail slowed by it.
+  const wornArmor = opts.equipped ? opts.equipped.armor : kit.equipment.armor;
   const shedForWard = featureIds.includes('armor-of-shadows') && wornArmor !== undefined &&
     armorClass(wornArmor, abilityMod(abilities.dex), 0) < 13 + abilityMod(abilities.dex);
 
@@ -504,7 +507,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       // Fast Movement (Barbarian 5): +10 ft, on the same terms as Roving — the
       // heavy-armour penalty below applies to both.
       + (featureIds.includes('fast-movement') ? 10 : 0) -
-      armorSpeedPenalty(opts.equipped?.armor ?? kit.equipment.armor, abilities.str),
+      armorSpeedPenalty(wornArmor, abilities.str),
     position: opts.position,
     initiative: 0,
     savingThrowProfs: [...cls.savingThrows],

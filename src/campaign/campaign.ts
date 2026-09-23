@@ -1019,6 +1019,12 @@ function fitCharacter(
   if (spec.style) ch.choices = { 'fighting-style': spec.style };
   else delete ch.choices;
   delete ch.scribedSpells;
+  // Everything picked for the slot's previous class goes with it, as in
+  // setPartyClass.
+  delete ch.prepared;
+  delete ch.cantrips;
+  delete ch.spellbook;
+  delete ch.feats;
   ch.inventory = equipment.inventory.map((stack) => ({ ...stack }));
   ch.equipped = {
     mainHand: equipment.mainHand,
@@ -1146,6 +1152,13 @@ export function setPartyClass(c: CampaignState, charIdx: number, classId: Id): b
     // class — so a hand-picked feat outliving the class it was picked for would
     // be the one thing that did not move.
     delete target.feats;
+    // Spell picks are the old class's list too. Kept, a cleric's prepared list
+    // became a wizard's — every id filtered out by the builder, so the wizard
+    // fought with no leveled spells while the picker reported it full.
+    delete target.prepared;
+    delete target.cantrips;
+    delete target.spellbook;
+    delete target.scribedSpells;
     target.inventory = equipment.inventory.map((stack) => ({ ...stack }));
     target.equipped = {
       mainHand: equipment.mainHand,
@@ -1403,6 +1416,13 @@ function buildAtLevel(c: CampaignState, idx: number, level: number): Combatant {
     position: { x: 0, y: 0 },
     equipped: { ...ch.equipped },
     ...(ch.choices ? { choices: { ...ch.choices } } : {}),
+    // The same build inputs buildCampaignParty passes, or the summary diffs a
+    // different character from the one that fights (a Hardy feat's hit
+    // points, a hand-bought Constitution) and misreports the gain.
+    ...(ch.kitId ? { kitId: ch.kitId } : {}),
+    featIds: featsOf(ch),
+    ...(ch.backgroundId ? { backgroundId: ch.backgroundId } : {}),
+    statBuild: statBuildOf(ch),
     ...(ch.scribedSpells ? { spellbookExtra: ch.scribedSpells } : {}),
   });
 }
@@ -1549,10 +1569,18 @@ export function buildCampaignParty(c: CampaignState, team: TeamId = 'team1'): Co
     }
     // Aid raises the hit point maximum, and the hit points with it — the same
     // shape the in-combat spell has, where the extra points arrive as healing.
+    //
+    // The extra points were added HERE, on every build — and a party is built
+    // for every fight and every camp screen, so a hurt hero under Aid healed 5
+    // each time. They are added once, when the spell is cast (see castCampSpell);
+    // here only the maximum rises, and the stored hit points are read against it.
     const aid = ch.resources?.effects?.aid;
     if (typeof aid === 'number' && aid > 0) {
       combatant.maxHp += aid;
-      combatant.hp = Math.min(combatant.maxHp, combatant.hp + aid);
+      const stored = ch.resources?.hp;
+      combatant.hp = typeof stored === 'number' && Number.isFinite(stored)
+        ? Math.max(0, Math.min(stored, combatant.maxHp))
+        : combatant.maxHp;
     }
     const temp = ch.resources?.effects?.falseLife;
     if (typeof temp === 'number' && temp > 0) combatant.tempHp = Math.max(combatant.tempHp ?? 0, temp);
@@ -2097,12 +2125,14 @@ export function useStoreSpell(c: CampaignState, userIdx: number, spellId: Id): b
     // SRD Aid reaches three creatures; this party is four. Three of four is a
     // choice the shop screen has no way to ask about, so it goes to everyone
     // ELSE and not the caster — the one split that needs no question asked.
+    // Aid does not stack with itself: a hero already under it gains nothing.
     const built = buildCampaignParty(c);
     c.characters.forEach((ch, i) => {
       if (i === userIdx) return;
+      const already = (ch.resources?.effects?.aid ?? 0) > 0;
       ch.resources = {
-        ...ch.resources, hp: ch.resources?.hp ?? built[i]!.hp,
-        effects: { ...ch.resources?.effects, aid: (ch.resources?.effects?.aid ?? 0) + 5 },
+        ...ch.resources, hp: built[i]!.hp + (already ? 0 : 5),
+        effects: { ...ch.resources?.effects, aid: 5 },
       };
     });
     return true;
@@ -3013,9 +3043,15 @@ export function readBackSurvivors(
     if (!fought) continue;
     ch.inventory = fought.inventory.map((s) => ({ ...s }));
     ch.equipped = { ...fought.equipped } as PartyCharacter['equipped'];
+    const before = ch.resources;
     ch.resources = {
       hp: opts.downedAtZero ? Math.max(0, fought.hp) : Math.max(1, fought.hp),
       ...(fought.spellSlots.length > 0 ? { slots: fought.spellSlots.map((p) => p.current) } : {}),
+      // Nothing in a fight touches these, so they pass straight through. They
+      // were dropped, which refilled hit dice after every won fight and wiped
+      // a spent figurine's multi-day cooldown so it never came back.
+      ...(before?.hitDice !== undefined ? { hitDice: before.hitDice } : {}),
+      ...(before?.itemCooldowns !== undefined ? { itemCooldowns: { ...before.itemCooldowns } } : {}),
       // Wand charges carry out of the fight the same way slots do. Written only
       // when something has actually been spent, so a full wand leaves no field
       // and "absent means full" keeps meaning that.
@@ -3037,15 +3073,18 @@ export function readBackSurvivors(
           ? { featureUses: Object.fromEntries(spent.map(([id, pool]) => [id, pool.current])) }
           : {};
       })(),
-      ...(fought.familiar || fought.mageArmor || ch.resources?.effects
-        ? {
-            effects: {
-              ...ch.resources?.effects,
-              ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
-              ...(fought.mageArmor ? { mageArmor: true as const } : {}),
-            },
-          }
-        : {}),
+      ...(() => {
+        // False Life's temporary hit points and a camp-cast concentration buff
+        // are spent by the fight they were cast for. Kept, they were handed
+        // out again at the start of every fight until the next rest.
+        const { falseLife: _spent, campConcentration: _held, ...kept } = before?.effects ?? {};
+        const effects = {
+          ...kept,
+          ...(fought.familiar ? { familiar: { kind: 'owl' as const } } : {}),
+          ...(fought.mageArmor ? { mageArmor: true as const } : {}),
+        };
+        return Object.keys(effects).length > 0 ? { effects } : {};
+      })(),
     };
   }
 }
