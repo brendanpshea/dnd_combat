@@ -11,7 +11,7 @@
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize } from '../engine/types.js';
 import { proficiencyBonus, abilityMod } from '../engine/types.js';
-import { FEATURES } from './features.js';
+import { FEATURES, ragesAt } from './features.js';
 import { WEAPONS } from './weapons.js';
 
 export interface MonsterData {
@@ -582,7 +582,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'beast',
     size: 'huge',
     abilities: { str: 19, dex: 14, con: 12, int: 1, wis: 10, cha: 3 },
-    weaponIds: ['snake-constrict', 'bite'],
+    weaponIds: ['snake-constrict', 'constrictor-bite'],
   },
 
   gargoyle: {
@@ -1099,7 +1099,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['aboleth-tentacle', 'aboleth-tail'],
     attacksPerAction: 3,
     spellcasting: {
-      ability: 'int', slots: [4, 3],
+      // A 3rd-level slot, or Fear (3rd level) can never be cast.
+      ability: 'int', slots: [4, 3, 2],
       spellIds: ['acid-splash', 'ray-of-sickness', 'hold-person', 'blindness', 'fear'],
     },
   },
@@ -1129,7 +1130,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     creatureType: 'undead',
     size: 'medium',
     abilities: { str: 16, dex: 17, con: 10, int: 11, wis: 10, cha: 8 },
-    weaponIds: ['ghast-claws', 'ghoul-bite'],
+    weaponIds: ['ghast-claws', 'ghast-bite'],
     attacksPerAction: 2,
     resistances: ['necrotic'],
     immunities: ['poison'],
@@ -1165,9 +1166,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'medium',
     abilities: { str: 6, dex: 16, con: 16, int: 12, wis: 14, cha: 15 },
     weaponIds: ['wraith-touch'],
-    resistances: ['acid', 'cold', 'fire', 'lightning', 'necrotic'],
+    resistances: ['acid', 'cold', 'fire', 'lightning'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
-    immunities: ['poison'],
+    immunities: ['necrotic', 'poison'],
   },
   'vampire-spawn': {
     id: 'vampire-spawn', name: 'Vampire Spawn',
@@ -1537,7 +1538,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['cube-pseudopod'],
     featureIds: ['engulf'],
     holdDamage: { dice: '3d6', type: 'acid' },
-    immunities: ['poison'],
+    immunities: ['acid'],
   },
   'black-pudding': {
     id: 'black-pudding', name: 'Black Pudding',
@@ -1862,6 +1863,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
         // one per level, so the two builders cannot disagree about a feature
         // that ends up on both.
         f.uses.count === 'level' ? level :
+        f.uses.count === 'rages' ? ragesAt(level) :
         f.uses.count;
       featureUses[fid] = { current: count, max: count };
     } else if (f?.recharge) {

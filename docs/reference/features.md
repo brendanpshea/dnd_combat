@@ -40,7 +40,7 @@ something else) or `passive` (always on).
 | Cloak of Displacement | `cloak-displacement` | passive | — | — | read by the rules, no action of its own |
 | Cloak of Protection | `cloak-protection` | passive | — | — | read by the rules, no action of its own |
 | Cold Breath | `breath-cold` | action | recharge 5–6 | — | 15 ft cone, 5d8 cold, CON save |
-| Cold Breath | `breath-cold-young` | action | recharge 5–6 | — | 15 ft cone, 8d8 cold, CON save |
+| Cold Breath | `breath-cold-young` | action | recharge 5–6 | — | 15 ft cone, 9d8 cold, CON save |
 | Consume Life | `consume-life` | bonus | 1/fight | — | — |
 | Countercharm | `countercharm` | passive | — | — | read by the rules, no action of its own |
 | Cunning Action: Dash | `cunning-dash` | bonus | — | — | — |
@@ -132,7 +132,7 @@ something else) or `passive` (always on).
 | Potent Cantrip (Evoker) | `enhanced-cantrip` | passive | — | — | read by the rules, no action of its own |
 | Potent Spellcasting | `potent-spellcasting` | passive | — | — | read by the rules, no action of its own |
 | Prayer Bead: Bless | `prayer-bead-bless` | bonus | 1/fight | — | — |
-| Rage | `rage` | bonus | proficiency/long rest | — | — |
+| Rage | `rage` | bonus | rages/long rest | — | — |
 | Rampage | `rampage` | passive | — | — | read by the rules, no action of its own |
 | Reckless Attack | `reckless-attack` | free | — | — | — |
 | Relentless Endurance | `relentless-endurance` | passive | 1/fight | — | read by the rules, no action of its own |

@@ -391,7 +391,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: ['finesse'], melee: true,
   },
   'were-rend': {
-    id: 'were-rend', name: 'Rend', damage: '2d10', damageType: 'slashing',
+    id: 'were-rend', name: 'Rend', damage: '2d8', damageType: 'slashing',
     properties: [], melee: true,
   },
   'goblin-scimitar': {
@@ -405,6 +405,10 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   bite: {
     id: 'bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'constrictor-bite': {
+    id: 'constrictor-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
     properties: [], melee: true,
   },
   'wolf-bite': {
@@ -551,7 +555,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
   },
   'earth-slam': {
-    id: 'earth-slam', name: 'Slam', damage: '2d10', damageType: 'bludgeoning',
+    id: 'earth-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
     properties: [], melee: true,
   },
   'air-slam': {
@@ -854,7 +858,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'remorhaz-bite': {
     id: 'remorhaz-bite', name: 'Bite', damage: '6d10', damageType: 'piercing',
-    properties: [], melee: true, extraDamage: { dice: '6d6', type: 'fire' },
+    properties: [], melee: true, extraDamage: { dice: '4d6', type: 'fire' },
   },
   'otyugh-tentacle': {
     id: 'otyugh-tentacle', name: 'Tentacle', damage: '1d8', damageType: 'bludgeoning',
@@ -884,9 +888,14 @@ export const WEAPONS: Record<Id, WeaponData> = {
 
   // ---- undead top end ---------------------------------------------------
   'ghast-claws': {
-    id: 'ghast-claws', name: 'Claws', damage: '2d4', damageType: 'slashing',
+    id: 'ghast-claws', name: 'Claws', damage: '2d6', damageType: 'slashing',
     properties: ['finesse'], melee: true,
-    onHitSave: { condition: 'paralyzed', ability: 'con', dc: 12 },
+    onHitSave: { condition: 'paralyzed', ability: 'con', dc: 10 },
+  },
+  'ghast-bite': {
+    id: 'ghast-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+    extraDamage: { dice: '2d8', type: 'necrotic' },
   },
   'banshee-touch': {
     id: 'banshee-touch', name: 'Corrupting Touch', damage: '3d6', damageType: 'necrotic',
@@ -920,7 +929,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
     extraDamage: { dice: '3d10', type: 'poison', save: { ability: 'con', dc: 12 } },
   },
   'elephant-gore': {
-    id: 'elephant-gore', name: 'Gore', damage: '4d8', damageType: 'piercing',
+    id: 'elephant-gore', name: 'Gore', damage: '2d8', damageType: 'piercing',
     properties: [], melee: true,
   },
   'crocodile-bite': {
