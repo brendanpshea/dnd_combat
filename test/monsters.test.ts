@@ -22,12 +22,12 @@ describe('stat blocks', () => {
   it('the new caster stat blocks build with their spell kits', () => {
     const priest = buildMonster('priest', 'team2', { x: 0, y: 0 });
     expect(priest.spellcastingAbility).toBe('wis');
-    expect(priest.spellIds).toEqual(expect.arrayContaining(['spiritual-guardians', 'command', 'healing-word']));
-    expect(priest.spellSlots.map((s) => s.max)).toEqual([4, 3, 2]);
+    expect(priest.spellIds).toEqual(expect.arrayContaining(['spiritual-guardians', 'lesser-restoration', 'healing-word']));
+    expect(priest.spellSlots.map((s) => s.max)).toEqual([2, 1, 1]);
 
     const oni = buildMonster('ogre-mage', 'team2', { x: 0, y: 0 });
-    expect(oni.spellcastingAbility).toBe('int');
-    expect(oni.spellIds).toEqual(expect.arrayContaining(['fireball', 'web', 'magic-missile', 'fire-bolt']));
+    expect(oni.spellcastingAbility).toBe('cha');
+    expect(oni.spellIds).toEqual(expect.arrayContaining(['sleep', 'invisibility', 'fire-bolt']));
     expect(oni.acOverride).toBe(17); // natural armor
   });
 

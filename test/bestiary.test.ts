@@ -36,8 +36,9 @@ describe('new monster stat blocks', () => {
   it('acolyte is a caster with slots and cleric spells', () => {
     const a = buildMonster('acolyte', 'team2', { x: 0, y: 0 });
     expect(a.spellcastingAbility).toBe('wis');
-    expect(a.spellSlots).toEqual([{ current: 3, max: 3 }]);
-    expect(a.spellIds).toEqual(expect.arrayContaining(['sacred-flame', 'cure-wounds', 'bless']));
+    // SRD 5.2.1: Divine Aid (1/Day) -- Bless, Healing Word or Sanctuary.
+    expect(a.spellSlots).toEqual([{ current: 1, max: 1 }]);
+    expect(a.spellIds).toEqual(expect.arrayContaining(['sacred-flame', 'bless', 'sanctuary']));
   });
 
   it('every monster the arena can field has an XP entry (guards the parallel XP map from drift)', () => {
@@ -83,9 +84,11 @@ describe('on-hit save riders', () => {
       if (!dmg || !save) continue; // missed
       if (save.type === 'savingThrow' && !save.success) {
         expect(c.state.combatants['pc']!.conditions.some((k) => k.id === 'paralyzed')).toBe(true);
-        // Paralyzed does NOT wake on damage (unlike sleep).
-        until(c, ghoul.id);
-        c.apply({ kind: 'attack', weaponId: 'ghoul-bite', targetId: 'pc' });
+        // Paralyzed does NOT wake on damage (unlike sleep). Damage is dealt
+        // directly, in the same turn: the ghoul drew its claws with this turn's
+        // free swap, so it cannot go back to the bite until next turn -- by
+        // which time the target has had its end-of-turn save.
+        applyDamage(c.state, 'pc', ghoul.id, 5, 'piercing', [], { magical: false });
         if (c.state.combatants['pc']!.alive) {
           expect(c.state.combatants['pc']!.conditions.some((k) => k.id === 'paralyzed')).toBe(true);
         }
@@ -121,7 +124,9 @@ describe('on-hit save riders', () => {
     expect(verified).toBe(true);
   });
 
-  it('giant spider bite deals bonus poison damage and can poison', () => {
+  // SRD 5.2.1: the bite's rider is 2d6 poison damage and nothing else -- the
+  // 2014 Constitution save against the Poisoned condition is gone.
+  it('giant spider bite deals bonus poison damage and does not poison', () => {
     let sawPoisonDmg = false;
     let sawPoisoned = false;
     for (let seed = 1; seed <= 60 && !(sawPoisonDmg && sawPoisoned); seed++) {
@@ -140,7 +145,7 @@ describe('on-hit save riders', () => {
       if (c.state.combatants['pc']!.conditions.some((k) => k.id === 'poisoned')) sawPoisoned = true;
     }
     expect(sawPoisonDmg).toBe(true);
-    expect(sawPoisoned).toBe(true);
+    expect(sawPoisoned).toBe(false);
   });
 
   it('poisoned imposes disadvantage on the victim\'s attacks', () => {
@@ -169,7 +174,8 @@ describe('second monster batch', () => {
 
     const fanatic = buildMonster('cult-fanatic', 'team2', { x: 0, y: 0 });
     expect(fanatic.spellcastingAbility).toBe('wis');
-    expect(fanatic.spellSlots).toEqual([{ current: 4, max: 4 }, { current: 2, max: 2 }]);
+    // SRD 5.2.1: Command 2/Day; Hold Person 1/Day and Spiritual Weapon 2/Day.
+    expect(fanatic.spellSlots).toEqual([{ current: 2, max: 2 }, { current: 3, max: 3 }]);
     expect(fanatic.spellIds).toContain('hold-person');
   });
 
@@ -505,7 +511,7 @@ describe('troll regeneration', () => {
     const { c, id } = trollFight();
     c.state.combatants[id]!.hp = 40;
     nextTurnOf(c, id);
-    expect(hp(c, id)).toBe(50);
+    expect(hp(c, id)).toBe(55); // SRD 5.2.1 troll: Regeneration 15
   });
 
   it('does not heal past its maximum', () => {
@@ -526,7 +532,7 @@ describe('troll regeneration', () => {
       expect(hp(c, id), `${type} should have stopped the heal`).toBe(35);
       // Nothing burns it again, so the next turn regenerates normally.
       nextTurnOf(c, id);
-      expect(hp(c, id), `${type} suppression should last one turn only`).toBe(45);
+      expect(hp(c, id), `${type} suppression should last one turn only`).toBe(50);
     }
   });
 
@@ -535,7 +541,7 @@ describe('troll regeneration', () => {
     c.state.combatants[id]!.hp = 40;
     applyDamage(c.state, id, id, 5, 'slashing', [], { magical: false });
     nextTurnOf(c, id);
-    expect(hp(c, id)).toBe(45);
+    expect(hp(c, id)).toBe(50);
   });
 
   it('a fire hit soaked entirely by temp HP still stops it', () => {
@@ -712,14 +718,16 @@ describe('creature type ceilings', () => {
   it('the mage is a real caster, not a dagger with a hat', () => {
     const m = buildMonster('mage', 'team2', { x: 0, y: 0 });
     expect(m.spellcastingAbility).toBe('int');
-    expect(m.spellIds).toEqual(expect.arrayContaining(['fireball', 'web', 'magic-missile']));
+    expect(m.spellIds).toEqual(expect.arrayContaining(['fireball', 'cone-of-cold', 'fire-bolt']));
     // Every spell it knows has to exist, or casting throws mid-fight.
     for (const sid of m.spellIds) expect(SPELLS[sid], sid).toBeDefined();
   });
 
   it('the assassin brings its rogue kit', () => {
     const a = MONSTERS['assassin']!;
-    expect(a.featureIds).toEqual(expect.arrayContaining(['sneak-attack', 'assassinate']));
+    // SRD 5.2.1: Evasion and Cunning Action. The 2014 Sneak Attack and
+    // Assassinate are gone -- the poison on every hit is the 2024 payload.
+    expect(a.featureIds).toEqual(expect.arrayContaining(['evasion', 'cunning-dash', 'cunning-disengage', 'cunning-hide']));
   });
 
   it('each resolves into a finished fight', () => {

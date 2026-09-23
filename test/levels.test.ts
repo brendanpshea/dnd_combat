@@ -75,7 +75,12 @@ describe('subclass features', () => {
       const c = new Combat({
         seed,
         combatants: [
-          { ...buildMonster('assassin', 'team1', { x: 3, y: 3 }), id: 'ass' },
+          // The SRD 5.2.1 Assassin stat block no longer has Assassinate; the
+          // feature is granted here so the rule itself is still exercised.
+          (() => {
+            const m = buildMonster('assassin', 'team1', { x: 3, y: 3 });
+            return { ...m, id: 'ass', featureIds: [...m.featureIds, 'assassinate'] };
+          })(),
           makeCombatant({ id: 'pc', team: 'team2', position: { x: 3, y: 4 }, hp: 1000, maxHp: 1000 }),
         ],
       });
