@@ -587,7 +587,7 @@ describe('Luring Song', () => {
 
   it('ends when the singer dies', () => {
     const { c, harpy, victim } = firstHit();
-    applyDamage(c.state, harpy.id, victim!.id, 500, 'slashing');
+    applyDamage(c.state, harpy.id, victim!.id, 500, 'slashing', [], { magical: false });
     expect(c.state.combatants[victim!.id]!.conditions.some((k) => k.id === 'lured')).toBe(false);
   });
 });

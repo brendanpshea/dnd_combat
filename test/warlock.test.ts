@@ -219,7 +219,7 @@ describe("Dark One's Blessing", () => {
     // Straight through the damage rule, which is the one place that knows both
     // that a creature reached zero AND who put it there — `kill` takes only the
     // body, which is why the hook cannot live there.
-    applyDamage(c.state, 'e0', me.id, 5, 'force', [5]);
+    applyDamage(c.state, 'e0', me.id, 5, 'force', [5], { magical: false });
     expect(c.state.combatants.e0!.alive).toBe(false);
     expect(c.state.combatants[me.id]!.tempHp ?? 0).toBeGreaterThan(before);
   });
@@ -230,7 +230,7 @@ describe("Dark One's Blessing", () => {
     const c = new Combat({ combatants: [me, friend, { ...buildMonster('orc', 'team2', { x: 6, y: 6 }), id: 'e9' }], seed: 4 });
     c.state.combatants.a0!.hp = 1;
     const before = c.state.combatants[me.id]!.tempHp ?? 0;
-    applyDamage(c.state, 'a0', me.id, 50, 'force', [50]);
+    applyDamage(c.state, 'a0', me.id, 50, 'force', [50], { magical: false });
     expect(c.state.combatants[me.id]!.tempHp ?? 0).toBe(before);
   });
 });
@@ -364,7 +364,7 @@ describe('Hex', () => {
     const c = new Combat({ combatants: [me, a, b], seed: 3 });
     c.state.combatants.e0!.conditions.push({ id: 'hexed', sourceId: me.id, concentration: true });
     c.state.combatants[me.id]!.concentratingOn = { spellId: 'hex', targetIds: ['e0'] };
-    applyDamage(c.state, 'e0', me.id, 20, 'necrotic', [20]);
+    applyDamage(c.state, 'e0', me.id, 20, 'necrotic', [20], { magical: false });
     expect(c.state.combatants.e1!.conditions.some((k) => k.id === 'hexed' && k.sourceId === me.id)).toBe(true);
     expect(c.state.combatants[me.id]!.concentratingOn?.targetIds).toEqual(['e1']);
   });
@@ -491,12 +491,12 @@ describe('what the invocations actually do', () => {
     const foe = { ...buildMonster('orc', 'team2', { x: 6, y: 6 }), id: 'e9' };
     const c = new Combat({ combatants: [me, friend, foe], seed: 3 });
     c.state.combatants.a0!.hp = 4;
-    applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40]);
+    applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40], { magical: false });
     expect(c.state.combatants.a0!.hp, 'the ally should be left on 1').toBe(1);
     expect(c.state.combatants.a0!.conditions.some((k) => k.id === 'unconscious')).toBe(false);
     // Spent: the next ally to fall gets no such courtesy.
     c.state.combatants.a0!.hp = 4;
-    applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40]);
+    applyDamage(c.state, 'a0', 'e9', 40, 'slashing', [40], { magical: false });
     expect(c.state.combatants.a0!.hp).toBe(0);
   });
 });

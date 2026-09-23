@@ -263,7 +263,7 @@ describe("Dark One's Own Luck", () => {
         // Refill each round so the pool is not the variable under test.
         const pool = state.combatants[me.id]!.featureUses['dark-ones-own-luck'];
         if (pool) pool.current = pool.max;
-        if (!savingThrow(state, me.id, 'str', 25).success) failed += 1;
+        if (!savingThrow(state, me.id, 'str', 25, { magical: false }).success) failed += 1;
       }
       return failed;
     };
@@ -276,14 +276,14 @@ describe("Dark One's Own Luck", () => {
     const me = warlock(6);
     const state = bench(me, 3);
     const full = me.featureUses['dark-ones-own-luck']!.current;
-    for (let i = 0; i < 10; i++) expect(savingThrow(state, me.id, 'str', 1).success).toBe(true);
+    for (let i = 0; i < 10; i++) expect(savingThrow(state, me.id, 'str', 1, { magical: false }).success).toBe(true);
     expect(me.featureUses['dark-ones-own-luck']!.current, 'burned on a certain success').toBe(full);
   });
 
   it('drains, rather than firing forever', () => {
     const me = warlock(6);
     const state = bench(me, 3);
-    for (let i = 0; i < 20; i++) savingThrow(state, me.id, 'str', 30);
+    for (let i = 0; i < 20; i++) savingThrow(state, me.id, 'str', 30, { magical: false });
     expect(me.featureUses['dark-ones-own-luck']!.current).toBe(0);
   });
 });

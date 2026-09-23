@@ -161,17 +161,17 @@ describe('Monk: the rest of the kit', () => {
     const { c, me, live } = fight(3);
     expect(live().featureIds).toContain('deflect-attacks');
     const hp0 = live().hp;
-    applyDamage(c.state, me.id, 'd1', 10, 'bludgeoning', [10], { melee: true });
+    applyDamage(c.state, me.id, 'd1', 10, 'bludgeoning', [10], { magical: false, melee: true });
     expect(hp0 - live().hp, 'a caught blow is halved').toBe(5);
     // The reaction is spent, so the next one lands whole.
-    applyDamage(c.state, me.id, 'd1', 10, 'bludgeoning', [10], { melee: true });
+    applyDamage(c.state, me.id, 'd1', 10, 'bludgeoning', [10], { magical: false, melee: true });
     expect(live().hp).toBe(hp0 - 5 - 10);
   });
 
   it('does not deflect what it cannot reach', () => {
     const { c, me, live } = fight(3);
     const hp0 = live().hp;
-    applyDamage(c.state, me.id, 'd1', 10, 'fire', [10]);
+    applyDamage(c.state, me.id, 'd1', 10, 'fire', [10], { magical: false });
     expect(hp0 - live().hp, 'a fireball is not caught in the hand').toBe(10);
   });
 

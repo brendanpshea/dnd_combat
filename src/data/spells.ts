@@ -8,14 +8,14 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, immuneToCondition } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
+import { applyDamage as rawApplyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { BREATH_WEAPONS } from './features.js';
@@ -24,9 +24,21 @@ import { savingThrow as rawSavingThrow, saveForHalf, immuneToCharmAndFear } from
 
 // Every saving throw a spell forces is a save against magic, so Magic
 // Resistance (Satyr, Unicorn) grants advantage here without each spell needing
-// to opt in.
+// to opt in. (It said so for a long time while passing nothing, which is why
+// `magical` is now required on the engine's side.)
 function savingThrow(state: GameState, combatantId: Id, ability: Ability, dc: number) {
-  return rawSavingThrow(state, combatantId, ability, dc);
+  return rawSavingThrow(state, combatantId, ability, dc, { magical: true });
+}
+
+// And every blow a spell lands is magical, so "resistant to nonmagical
+// bludgeoning, piercing and slashing" does not halve a conjured wolf's bite or
+// the insect swarm.
+function applyDamage(
+  state: GameState, targetId: Id, sourceId: Id, amount: number, damageType: DamageType,
+  rolls: number[] = [],
+  opts: Omit<Parameters<typeof rawApplyDamage>[6], 'magical'> = {},
+): GameEvent[] {
+  return rawApplyDamage(state, targetId, sourceId, amount, damageType, rolls, { ...opts, magical: true });
 }
 import { applyHealing } from '../engine/rules/heal.js';
 import type { GameEvent } from '../engine/events.js';
@@ -1110,7 +1122,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const dmg = rollSpellDice(state, casterId, `${1 + slotLevel}d8`, atk.crit);
       events.push(...applyDamage(state, targetId, casterId, dmg.total, 'poison', dmg.rolls));
       const target = state.combatants[targetId]!;
-      if (target.alive) {
+      if (target.alive && !immuneToCondition(target, 'poisoned')) {
         // No save: the SRD applies Poisoned on a hit, full stop -- the attack
         // roll IS the contest. And it lasts "until the end of your next turn",
         // one round, rather than until a Constitution save shakes it off.
@@ -1278,7 +1290,7 @@ export const SPELLS: Record<Id, SpellData> = {
         if (!save.success) {
           t.conditions.push({
             id: 'incapacitated', sourceId: casterId,
-            repeatSave: { ability: 'wis', dc },
+            repeatSave: { ability: 'wis', dc, magical: true },
           });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'incapacitated', sourceId: casterId });
         }
@@ -1500,7 +1512,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         if (!save.success) {
           if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
-          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc } });
+          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc, magical: true } });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
           caught.push(tid);
         }
@@ -1547,7 +1559,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         if (!save.success) {
           if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
-          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc } });
+          t.conditions.push({ id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc, magical: true } });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'restrained', sourceId: casterId });
           caught.push(tid);
         }
@@ -1818,7 +1830,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {
-          t.conditions.push({ id: 'frightened', sourceId: casterId, concentration: true, repeatSave: { ability: 'wis', dc } });
+          t.conditions.push({ id: 'frightened', sourceId: casterId, concentration: true, repeatSave: { ability: 'wis', dc, magical: true } });
           events.push({ type: 'conditionApplied', combatantId: tid, condition: 'frightened', sourceId: casterId });
           // …and it RUNS. The SRD is explicit that a creature frightened by
           // this spell must Dash away from the caster each turn, which is the
@@ -2097,7 +2109,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const t = state.combatants[targetId]!;
         t.conditions.push({
           id: 'paralyzed', sourceId: casterId, concentration: true,
-          repeatSave: { ability: 'wis', dc },
+          repeatSave: { ability: 'wis', dc, magical: true },
         });
         events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: casterId });
         state.combatants[casterId]!.concentratingOn = { spellId: 'hold-person', targetIds: [targetId] };
@@ -2291,7 +2303,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const events: GameEvent[] = [save.event];
       if (!save.success) {
         const t = state.combatants[targetId]!;
-        t.conditions.push({ id: 'blinded', sourceId: casterId, repeatSave: { ability: 'con', dc } });
+        t.conditions.push({ id: 'blinded', sourceId: casterId, repeatSave: { ability: 'con', dc, magical: true } });
         events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'blinded', sourceId: casterId });
       }
       return events;
@@ -2892,7 +2904,7 @@ export const SPELLS: Record<Id, SpellData> = {
       if (!save.success && target.alive && !immuneToCharmAndFear(target)) {
         target.conditions.push({
           id: 'frightened', sourceId: casterId, concentration: true,
-          repeatSave: { ability: 'wis', dc },
+          repeatSave: { ability: 'wis', dc, magical: true },
         });
         events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'frightened', sourceId: casterId });
         state.combatants[casterId]!.concentratingOn = { spellId: 'phantasmal-killer', targetIds: [targetId] };
@@ -3048,7 +3060,7 @@ export const SPELLS: Record<Id, SpellData> = {
         // d10 that decides what a confused creature does with its turn.
         t.conditions.push({
           id: 'confused', sourceId: casterId, concentration: true,
-          repeatSave: { ability: 'wis', dc },
+          repeatSave: { ability: 'wis', dc, magical: true },
         });
         events.push({ type: 'conditionApplied', combatantId: tid, condition: 'confused', sourceId: casterId });
         caught.push(tid);
@@ -3505,7 +3517,7 @@ export const SPELLS: Record<Id, SpellData> = {
         const t = state.combatants[targetId]!;
         t.conditions.push({
           id: 'paralyzed', sourceId: casterId, concentration: true,
-          repeatSave: { ability: 'wis', dc },
+          repeatSave: { ability: 'wis', dc, magical: true },
         });
         events.push({ type: 'conditionApplied', combatantId: targetId, condition: 'paralyzed', sourceId: casterId });
         state.combatants[casterId]!.concentratingOn = { spellId: 'hold-monster', targetIds: [targetId] };

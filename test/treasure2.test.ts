@@ -33,7 +33,7 @@ describe('magical damage and the two kinds of resistance', () => {
     const resistant = makeCombatant({ id: 'r2', team: 'team2', position: { x: 4, y: 3 }, resistNonmagical: ['piercing'] });
     const src = makeCombatant({ id: 'src3', team: 'team1', position: { x: 3, y: 3 } });
     const c = new Combat({ seed: 1, mapId: 'open', combatants: [src, resistant] });
-    applyDamage(c.state, 'r2', 'src3', 10, 'piercing', [], {});
+    applyDamage(c.state, 'r2', 'src3', 10, 'piercing', [], { magical: false });
     expect(c.state.combatants['r2']!.hp).toBe(8); // 13 - 5 (halved)
   });
 

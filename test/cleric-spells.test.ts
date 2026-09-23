@@ -134,7 +134,7 @@ describe('Warding Bond', () => {
     cast(c, 'warding-bond', 'cle', ['fig']);
     const figBefore = c.state.combatants['fig']!.hp;
     const cleBefore = c.state.combatants['cle']!.hp;
-    applyDamage(c.state, 'fig', 'nobody', 20, 'slashing');
+    applyDamage(c.state, 'fig', 'nobody', 20, 'slashing', [], { magical: false });
     expect(figBefore - c.state.combatants['fig']!.hp, 'the ally takes half').toBe(10);
     expect(cleBefore - c.state.combatants['cle']!.hp, 'the cleric takes the rest').toBe(10);
   });
@@ -148,9 +148,9 @@ describe('Warding Bond', () => {
     cast(c, 'warding-bond', 'cle', ['fig']);
     expect(acOf(c.state.combatants['fig']!)).toBe(acBefore + 1);
     // Same seed, same roll: the bonded save must come out one higher.
-    const bonded = savingThrow(c.state, 'fig', 'wis', 15);
+    const bonded = savingThrow(c.state, 'fig', 'wis', 15, { magical: false });
     c.state.combatants['fig']!.conditions = [];
-    const plain = savingThrow({ ...c.state, rng: c.state.rng }, 'fig', 'wis', 15);
+    const plain = savingThrow({ ...c.state, rng: c.state.rng }, 'fig', 'wis', 15, { magical: false });
     expect(bonded.event.type === 'savingThrow' && plain.event.type === 'savingThrow' &&
       bonded.event.total - bonded.event.natural).toBe(
       plain.event.type === 'savingThrow' ? plain.event.total - plain.event.natural + 1 : NaN);
@@ -166,7 +166,7 @@ describe('Warding Bond', () => {
     cast(c, 'warding-bond', 'b', ['a']);
     const total = () => c.state.combatants['a']!.hp + c.state.combatants['b']!.hp;
     const before = total();
-    applyDamage(c.state, 'b', 'nobody', 20, 'slashing');
+    applyDamage(c.state, 'b', 'nobody', 20, 'slashing', [], { magical: false });
     expect(before - total(), 'a mutual bond must not multiply or erase damage').toBe(20);
   });
 
@@ -176,9 +176,9 @@ describe('Warding Bond', () => {
       combatants: [pc('cleric', 5, { x: 1, y: 1 }, 'cle'), pc('fighter', 5, { x: 2, y: 2 }, 'fig')],
     });
     cast(c, 'warding-bond', 'cle', ['fig']);
-    applyDamage(c.state, 'cle', 'nobody', 999, 'slashing');   // the cleric drops
+    applyDamage(c.state, 'cle', 'nobody', 999, 'slashing', [], { magical: false });   // the cleric drops
     const figBefore = c.state.combatants['fig']!.hp;
-    applyDamage(c.state, 'fig', 'nobody', 20, 'slashing');
+    applyDamage(c.state, 'fig', 'nobody', 20, 'slashing', [], { magical: false });
     expect(figBefore - c.state.combatants['fig']!.hp, 'nobody is carrying them any more').toBe(20);
     expect(c.state.combatants['fig']!.conditions.some((k) => k.id === 'bonded')).toBe(false);
   });
@@ -194,10 +194,10 @@ describe('Protection from Energy', () => {
     const ward = c.state.combatants['fig']!.conditions.find((k) => k.id === 'energyWarded');
     expect(ward?.damageType, 'a white dragon breathes cold, so that is what it should ward').toBe('cold');
     let hp = c.state.combatants['fig']!.hp;
-    applyDamage(c.state, 'fig', 'drg', 20, 'cold');
+    applyDamage(c.state, 'fig', 'drg', 20, 'cold', [], { magical: false });
     expect(hp - c.state.combatants['fig']!.hp).toBe(10);
     hp = c.state.combatants['fig']!.hp;
-    applyDamage(c.state, 'fig', 'drg', 20, 'fire');
+    applyDamage(c.state, 'fig', 'drg', 20, 'fire', [], { magical: false });
     expect(hp - c.state.combatants['fig']!.hp, 'it wards one element, not all of them').toBe(20);
   });
 
@@ -236,10 +236,10 @@ describe('Bestow Curse', () => {
 
     // And the save side: over many rolls the cursed creature does worse.
     let cursedPasses = 0;
-    for (let i = 0; i < 60; i++) if (savingThrow(c.state, 'ogre', 'con', 12).success) cursedPasses += 1;
+    for (let i = 0; i < 60; i++) if (savingThrow(c.state, 'ogre', 'con', 12, { magical: false }).success) cursedPasses += 1;
     c.state.combatants['ogre']!.conditions = [];
     let freePasses = 0;
-    for (let i = 0; i < 60; i++) if (savingThrow(c.state, 'ogre', 'con', 12).success) freePasses += 1;
+    for (let i = 0; i < 60; i++) if (savingThrow(c.state, 'ogre', 'con', 12, { magical: false }).success) freePasses += 1;
     expect(cursedPasses, 'disadvantage has to show up in the saves too').toBeLessThan(freePasses);
   });
 });

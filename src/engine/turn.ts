@@ -464,7 +464,7 @@ export function startTurn(state: GameState): GameEvent[] {
       if (!other.conditions.some((k) => k.id === 'restrained' && k.sourceId === c.id)) continue;
       const dmg = rollDice(state.rng, c.holdDamage.dice);
       state.rng = dmg.state;
-      events.push(...applyDamage(state, other.id, c.id, dmg.total, c.holdDamage.type, dmg.rolls));
+      events.push(...applyDamage(state, other.id, c.id, dmg.total, c.holdDamage.type, dmg.rolls, { magical: false }));
     }
   }
 
@@ -517,12 +517,12 @@ export function startTurn(state: GameState): GameEvent[] {
   for (const other of Object.values(state.combatants)) {
     if (!other.spiritualGuardians || !other.alive || other.team === c.team) continue;
     if (distanceFeet(c.position, other.position) > 15) continue;
-    const save = savingThrow(state, c.id, 'wis', other.spiritualGuardians.dc);
+    const save = savingThrow(state, c.id, 'wis', other.spiritualGuardians.dc, { magical: true });
     events.push(save.event);
     const dmg = rollDice(state.rng, other.spiritualGuardians.dice);
     state.rng = dmg.state;
     const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
-    if (amount > 0) events.push(...applyDamage(state, c.id, other.id, amount, 'radiant', dmg.rolls));
+    if (amount > 0) events.push(...applyDamage(state, c.id, other.id, amount, 'radiant', dmg.rolls, { magical: true }));
     if (!c.alive) break;
   }
 

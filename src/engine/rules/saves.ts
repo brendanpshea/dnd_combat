@@ -116,7 +116,13 @@ export function savingThrow(
   combatantId: Id,
   ability: Ability,
   dc: number,
-  opts: { magical?: boolean } = {},
+  /**
+   * Required, with no default. Magic Resistance gives advantage only against
+   * magic, and while this was optional every spell save silently left it out
+   * (the spells' own wrapper dropped it), so the feature did nothing against
+   * the one thing it exists for. Now every caller has to say.
+   */
+  opts: { magical: boolean },
 ): { success: boolean; event: GameEvent } {
   const c = state.combatants[combatantId]!;
 

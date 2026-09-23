@@ -181,7 +181,9 @@ describe('lunch and the night', () => {
     const camp = newCampaign(3);
     camp.characters[0]!.resources = { hp: 0 };
     night(camp, 0);
-    expect(camp.characters[0]!.resources!.hp).toBeGreaterThan(0);
+    // Read through the builder: a fully rested hero stores no resources at
+    // all, since absent means full.
+    expect(buildCampaignParty(camp)[0]!.hp).toBe(buildCampaignParty(camp)[0]!.maxHp);
   });
 
   it('keeps a downed hero at zero only when the arena asks for it', () => {

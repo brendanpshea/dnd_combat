@@ -23,7 +23,7 @@ const N = 1000;
 const NOISE = 0.06;
 const rate = (c: Combat, id: string, ability: 'wis' | 'dex') => {
   let pass = 0;
-  for (let i = 0; i < N; i++) if (savingThrow(c.state, id, ability, 14).success) pass++;
+  for (let i = 0; i < N; i++) if (savingThrow(c.state, id, ability, 14, { magical: false }).success) pass++;
   return pass / N;
 };
 

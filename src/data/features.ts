@@ -197,14 +197,14 @@ function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
     .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position));
   const target = foes[0];
   if (!target) return [];
-  const { success, event } = savingThrow(state, target.id, 'wis', dc);
+  const { success, event } = savingThrow(state, target.id, 'wis', dc, { magical: true });
   const events: GameEvent[] = [event];
   // Aura of Devotion: charm does not land inside a devoted paladin's aura at
   // all, so the ward is checked before the condition rather than after.
   if (!success && !charmWarded(state, target) &&
       !target.conditions.some((k) => k.id === 'charmed' && k.sourceId === me.id)) {
     if (immuneToCharmAndFear(target)) return [];
-    target.conditions.push({ id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
+    target.conditions.push({ id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } });
     events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'charmed', sourceId: me.id });
   }
   return events;
@@ -224,12 +224,12 @@ function breathApply(featureId: Id) {
       if (!tid) continue;
       const t = state.combatants[tid]!;
       if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
-      const { success, event } = savingThrow(state, t.id, spec.save, dc);
+      const { success, event } = savingThrow(state, t.id, spec.save, dc, { magical: false });
       events.push(event);
       const roll = rollDice(state.rng, spec.dice);
       state.rng = roll.state;
       const amount = saveForHalf(t, spec.save, roll.total, success);
-      if (amount > 0) events.push(...applyDamage(state, t.id, actorId, amount, spec.damageType, roll.rolls));
+      if (amount > 0) events.push(...applyDamage(state, t.id, actorId, amount, spec.damageType, roll.rolls, { magical: false }));
     }
     return events;
   };
@@ -453,11 +453,11 @@ export const FEATURES: Record<Id, FeatureData> = {
 
       for (const t of inSphere) {
         if (t.team === me.team) continue;
-        const { success, event } = savingThrow(state, t.id, 'con', dc);
+        const { success, event } = savingThrow(state, t.id, 'con', dc, { magical: true });
         events.push(event);
         const roll = rollDice(state.rng, '2d6');
         state.rng = roll.state;
-        events.push(...applyDamage(state, t.id, actorId, saveForHalf(t, 'con', roll.total, success), 'necrotic', roll.rolls));
+        events.push(...applyDamage(state, t.id, actorId, saveForHalf(t, 'con', roll.total, success), 'necrotic', roll.rolls, { magical: true }));
       }
       // …and the life-giving half, on whichever ally in the sphere needs it most.
       const hurt = inSphere
@@ -758,7 +758,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       );
       const events: GameEvent[] = [{ type: 'turnedUndead', combatantId: actorId, dc }];
       for (const t of targets) {
-        const { success, event } = savingThrow(state, t.id, 'wis', dc);
+        const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: true });
         events.push(event);
         if (!success) {
           t.conditions.push({ id: 'fleeing', sourceId: actorId });
@@ -876,7 +876,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         const save = savingThrow(state, t.id, 'wis', 15, { magical: true });
         events.push(save.event);
         if (save.success) continue;
-        t.conditions.push({ id: 'fleeing', sourceId: actorId, repeatSave: { ability: 'wis', dc: 15 } });
+        t.conditions.push({ id: 'fleeing', sourceId: actorId, repeatSave: { ability: 'wis', dc: 15, magical: true } });
         events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'fleeing', sourceId: actorId });
       }
       return events;
@@ -929,7 +929,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
         if (distanceFeet(me.position, t.position) > 5) continue;
         if (t.conditions.some((c) => c.id === 'restrained')) continue;
-        const { success, event } = savingThrow(state, t.id, 'str', dc);
+        const { success, event } = savingThrow(state, t.id, 'str', dc, { magical: false });
         events.push(event);
         if (!success) {
           t.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } });
@@ -964,14 +964,14 @@ export const FEATURES: Record<Id, FeatureData> = {
           !c.conditions.some((k) => k.id === 'restrained'))
         .sort((a, b) => a.hp - b.hp)[0];
       if (!target) return [];
-      const { success, event } = savingThrow(state, target.id, 'dex', dc);
+      const { success, event } = savingThrow(state, target.id, 'dex', dc, { magical: false });
       const events: GameEvent[] = [event];
       if (!success) {
         target.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } });
         events.push({ type: 'conditionApplied', combatantId: target.id, condition: 'restrained', sourceId: actorId });
         const dmg = rollDice(state.rng, '3d6');
         state.rng = dmg.state;
-        events.push(...applyDamage(state, target.id, actorId, dmg.total, 'acid', dmg.rolls));
+        events.push(...applyDamage(state, target.id, actorId, dmg.total, 'acid', dmg.rolls, { magical: false }));
       }
       return events;
     },
@@ -988,12 +988,12 @@ export const FEATURES: Record<Id, FeatureData> = {
       for (const t of Object.values(state.combatants)) {
         if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
         if (distanceFeet(me.position, t.position) > 5) continue;
-        const { success, event } = savingThrow(state, t.id, 'str', dc);
+        const { success, event } = savingThrow(state, t.id, 'str', dc, { magical: false });
         events.push(event);
         const dmg = rollDice(state.rng, '3d8');
         state.rng = dmg.state;
         const amount = saveForHalf(t, 'str', dmg.total, success);
-        events.push(...applyDamage(state, t.id, actorId, amount, 'bludgeoning', dmg.rolls));
+        events.push(...applyDamage(state, t.id, actorId, amount, 'bludgeoning', dmg.rolls, { magical: false }));
         if (!success && state.combatants[t.id]!.alive) {
           const dir = {
             x: Math.sign(t.position.x - me.position.x),
@@ -1042,12 +1042,12 @@ export const FEATURES: Record<Id, FeatureData> = {
           distanceFeet(me.position, c.position) <= 30,
       );
       for (const t of foes) {
-        const { success, event } = savingThrow(state, t.id, 'wis', dc);
+        const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: true });
         events.push(event);
         // The harpy's song is this game's other charm; the same ward stops it.
         if (!success && !charmWarded(state, t) && !t.conditions.some((k) => k.id === 'lured')) {
           if (immuneToCharmAndFear(t)) continue;
-          t.conditions.push({ id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc } });
+          t.conditions.push({ id: 'lured', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } });
           events.push({ type: 'conditionApplied', combatantId: t.id, condition: 'lured', sourceId: me.id });
         }
       }
@@ -1067,7 +1067,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
         if (distanceFeet(me.position, t.position) > 15) continue;
         if (t.conditions.some((c) => c.id === 'restrained')) continue;
-        const { success, event } = savingThrow(state, t.id, 'con', dc);
+        const { success, event } = savingThrow(state, t.id, 'con', dc, { magical: false });
         events.push(event);
         if (!success) {
           t.conditions.push({ id: 'restrained', sourceId: actorId, repeatSave: { ability: 'con', dc } });
@@ -1092,12 +1092,12 @@ export const FEATURES: Record<Id, FeatureData> = {
         .filter((c) => c.alive && c.hp > 0 && c.team !== me.team && distanceFeet(me.position, c.position) <= 5)
         .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
       if (!target) return [];
-      const { success, event } = savingThrow(state, target.id, 'con', dc);
+      const { success, event } = savingThrow(state, target.id, 'con', dc, { magical: false });
       const events: GameEvent[] = [event];
       const roll = rollDice(state.rng, '3d8');
       state.rng = roll.state;
       const dealt = saveForHalf(target, 'con', roll.total, success);
-      events.push(...applyDamage(state, target.id, actorId, dealt, 'necrotic', roll.rolls));
+      events.push(...applyDamage(state, target.id, actorId, dealt, 'necrotic', roll.rolls, { magical: false }));
       // Drain what it dealt back into itself (capped by the target's real loss
       // and the wisp's own maximum, both handled by applyHealing).
       if (dealt > 0) events.push(...applyHealing(state, actorId, actorId, dealt));
@@ -1119,7 +1119,7 @@ export const FEATURES: Record<Id, FeatureData> = {
           !c.conditions.some((k) => k.id === 'frightened' || k.id === 'paralyzed'))
         .sort((a, b) => distanceFeet(me.position, a.position) - distanceFeet(me.position, b.position))[0];
       if (!target) return [];
-      const { success, event } = savingThrow(state, target.id, 'wis', dc);
+      const { success, event } = savingThrow(state, target.id, 'wis', dc, { magical: false });
       const events: GameEvent[] = [event];
       if (!success) {
         // Failing by 5 or more escalates fright to full paralysis.
@@ -1244,7 +1244,7 @@ export const FEATURES: Record<Id, FeatureData> = {
         if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
         if (distanceFeet(me.position, t.position) > 60) continue;
         if (t.conditions.some((k) => k.id === 'frightened')) continue;
-        const { success, event } = savingThrow(state, t.id, 'wis', dc);
+        const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: false });
         events.push(event);
         if (!success) {
           if (immuneToCharmAndFear(t)) continue;
@@ -1274,11 +1274,11 @@ export const FEATURES: Record<Id, FeatureData> = {
         if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
         if (t.creatureType === 'construct' || t.creatureType === 'undead') continue;
         if (distanceFeet(me.position, t.position) > 30) continue;
-        const { success, event } = savingThrow(state, t.id, 'con', dc);
+        const { success, event } = savingThrow(state, t.id, 'con', dc, { magical: false });
         events.push(event);
         if (success) {
           const roll = rollDice(state.rng, '3d6');
-          events.push(...applyDamage(state, t.id, actorId, roll.total, 'psychic', roll.rolls));
+          events.push(...applyDamage(state, t.id, actorId, roll.total, 'psychic', roll.rolls, { magical: false }));
         } else if (t.unconsciousAtZero) {
           events.push(...dropToZero(state, t.id));
         } else {
@@ -1794,7 +1794,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       if (!target) return [];
       const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.wis);
       if (!spendFocus(me)) return [];
-      const save = savingThrow(state, target.id, 'con', dc);
+      const save = savingThrow(state, target.id, 'con', dc, { magical: false });
       const events: GameEvent[] = [save.event];
       if (!save.success) {
         // Until the end of its NEXT turn, so a stun taken before its turn costs

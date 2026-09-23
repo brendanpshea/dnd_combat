@@ -22,7 +22,7 @@ describe('species traits', () => {
     const enemy = character('fighter', 'human', 'team2', 7, 7);
     const combat = new Combat({ seed: 1, combatants: [dwarf, enemy] });
 
-    applyDamage(combat.state, dwarf.id, enemy.id, 5, 'poison');
+    applyDamage(combat.state, dwarf.id, enemy.id, 5, 'poison', [], { magical: false });
     expect(combat.state.combatants[dwarf.id]!.hp).toBe(dwarf.maxHp - 2);
   });
 
@@ -50,7 +50,7 @@ describe('species traits', () => {
     expect(combat.state.combatants[orc.id]!.turn.bonusActionUsed).toBe(true);
     expect(combat.state.combatants[orc.id]!.turn.movementMax).toBe(60);
     expect(combat.state.combatants[orc.id]!.tempHp).toBe(2);
-    applyDamage(combat.state, orc.id, enemy.id, 3, 'slashing');
+    applyDamage(combat.state, orc.id, enemy.id, 3, 'slashing', [], { magical: false });
     expect(combat.state.combatants[orc.id]!.tempHp).toBe(0);
     expect(combat.state.combatants[orc.id]!.hp).toBe(orc.maxHp - 1);
   });
@@ -60,14 +60,14 @@ describe('species traits', () => {
     const enemy = character('fighter', 'human', 'team2', 7, 7);
     const combat = new Combat({ seed: 4, combatants: [orc, enemy] });
 
-    applyDamage(combat.state, orc.id, enemy.id, orc.maxHp, 'slashing');
+    applyDamage(combat.state, orc.id, enemy.id, orc.maxHp, 'slashing', [], { magical: false });
     expect(combat.state.combatants[orc.id]!.hp).toBe(1);
     expect(combat.state.combatants[orc.id]!.alive).toBe(true);
     expect(combat.state.combatants[orc.id]!.featureUses['relentless-endurance']).toEqual({ current: 0, max: 1 });
     // Once it's spent, the next hit takes the orc to 0 — but this orc is a
     // player character, and characters drop unconscious there rather than dying.
     // Relentless Endurance buys one more moment on its feet, not immortality.
-    applyDamage(combat.state, orc.id, enemy.id, 1, 'slashing');
+    applyDamage(combat.state, orc.id, enemy.id, 1, 'slashing', [], { magical: false });
     const downed = combat.state.combatants[orc.id]!;
     expect(downed.alive).toBe(true);
     expect(downed.hp).toBe(0);

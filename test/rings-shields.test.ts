@@ -156,7 +156,7 @@ describe('Ring of Evasion', () => {
     let saved = 0;
     for (let i = 0; i < 6; i++) {
       c.state.combatants['w']!.turn.reactionUsed = false;
-      if (savingThrow(c.state, 'w', 'dex', 99).success) saved++;
+      if (savingThrow(c.state, 'w', 'dex', 99, { magical: false }).success) saved++;
     }
     expect(saved, 'exactly the three charges, and no more').toBe(3);
     expect(c.state.combatants['w']!.featureUses['ring-evasion']!.current).toBe(0);
@@ -167,7 +167,7 @@ describe('Ring of Evasion', () => {
     const foe = buildCharacter({ classId: 'fighter', team: 'team2', level: 5, position: { x: 5, y: 4 } });
     const c = new Combat({ seed: 9, map: board(OPEN), combatants: [w, { ...foe, id: 'f' }] });
     c.state.combatants['w']!.turn.reactionUsed = false;
-    expect(savingThrow(c.state, 'w', 'con', 99).success).toBe(false);
+    expect(savingThrow(c.state, 'w', 'con', 99, { magical: false }).success).toBe(false);
     expect(c.state.combatants['w']!.featureUses['ring-evasion']!.current, 'no charge spent').toBe(3);
   });
 
@@ -176,7 +176,7 @@ describe('Ring of Evasion', () => {
     const foe = buildCharacter({ classId: 'fighter', team: 'team2', level: 5, position: { x: 5, y: 4 } });
     const c = new Combat({ seed: 9, map: board(OPEN), combatants: [w, { ...foe, id: 'f' }] });
     c.state.combatants['w']!.turn.reactionUsed = true;
-    expect(savingThrow(c.state, 'w', 'dex', 99).success).toBe(false);
+    expect(savingThrow(c.state, 'w', 'dex', 99, { magical: false }).success).toBe(false);
     expect(c.state.combatants['w']!.featureUses['ring-evasion']!.current).toBe(3);
   });
 });

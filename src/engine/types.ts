@@ -194,7 +194,9 @@ export interface ActiveCondition {
   /** Round number after which the condition expires; undefined = until removed. */
   expiresAtRound?: number;
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
-  repeatSave?: { ability: Ability; dc: number };
+  /** `magical` when a spell or magical effect imposed it, so Magic Resistance
+   *  gives advantage on the repeat save as it did on the first. */
+  repeatSave?: { ability: Ability; dc: number; magical?: boolean };
   /** The Dexterity (Stealth) result that observers must beat to reveal Hide. */
   hideCheck?: number;
   /**
@@ -765,6 +767,19 @@ export function isIncapacitated(c: Combatant): boolean {
     (k) => k.id === 'incapacitated' || k.id === 'unconscious' ||
            k.id === 'paralyzed' || k.id === 'stunned',
   );
+}
+
+/**
+ * Cannot be given this condition at all.
+ *
+ * The stat blocks carry damage immunities but no condition immunities, and in
+ * the SRD the two travel together for poison: every creature immune to poison
+ * damage is also immune to the Poisoned condition. So that one is read off the
+ * damage list rather than duplicated onto 48 monsters. Skeletons were being
+ * poisoned by Ray of Sickness and spider bites.
+ */
+export function immuneToCondition(c: Combatant, id: ConditionId): boolean {
+  return id === 'poisoned' && c.immunities.includes('poison');
 }
 
 /**

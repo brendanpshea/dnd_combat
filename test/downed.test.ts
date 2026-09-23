@@ -18,7 +18,7 @@ const fight = (...units: Combatant[]) => new Combat({ seed: 4, mapId: 'open', co
 describe('heroes drop, monsters die', () => {
   it('a hero at 0 HP is unconscious, not dead, and still on the board', () => {
     const c = fight(pc('fighter', 'team1', { x: 0, y: 0 }, 'ftr'), pc('wizard', 'team2', { x: 7, y: 7 }, 'foe'));
-    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing');
+    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing', [], { magical: false });
     const ftr = c.state.combatants['ftr']!;
     expect(ftr.alive).toBe(true);
     expect(ftr.hp).toBe(0);
@@ -30,15 +30,15 @@ describe('heroes drop, monsters die', () => {
   it('a monster at 0 HP dies and leaves, as before', () => {
     const goblin = { ...buildMonster('goblin-warrior', 'team2', { x: 7, y: 7 }), id: 'gob' };
     const c = fight(pc('fighter', 'team1', { x: 0, y: 0 }, 'ftr'), goblin);
-    applyDamage(c.state, 'gob', 'ftr', 999, 'slashing');
+    applyDamage(c.state, 'gob', 'ftr', 999, 'slashing', [], { magical: false });
     expect(c.state.combatants['gob']!.alive).toBe(false);
     expect(isDown(c.state.combatants['gob']!)).toBe(false);
   });
 
   it('cannot be finished off: more damage finds it already at 0', () => {
     const c = fight(pc('fighter', 'team1', { x: 0, y: 0 }, 'ftr'), pc('wizard', 'team2', { x: 7, y: 7 }, 'foe'));
-    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing');
-    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing');
+    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing', [], { magical: false });
+    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing', [], { magical: false });
     expect(c.state.combatants['ftr']!.alive).toBe(true);
     expect(c.state.combatants['ftr']!.hp).toBe(0);
   });
@@ -51,7 +51,7 @@ describe('a downed hero is out of the fight', () => {
       pc('cleric', 'team1', { x: 4, y: 3 }, 'cle'),
       pc('rogue', 'team2', { x: 3, y: 4 }, 'foe'),
     );
-    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing');
+    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing', [], { magical: false });
     return c;
   };
   const turnOf = (c: Combat, id: string) => {
@@ -98,7 +98,7 @@ describe('a downed hero is out of the fight', () => {
 describe('healing brings them back', () => {
   it('stands a downed hero up, whatever the source', () => {
     const c = fight(pc('fighter', 'team1', { x: 3, y: 3 }, 'ftr'), pc('cleric', 'team1', { x: 4, y: 3 }, 'cle'));
-    applyDamage(c.state, 'ftr', 'cle', 999, 'slashing');
+    applyDamage(c.state, 'ftr', 'cle', 999, 'slashing', [], { magical: false });
     applyHealing(c.state, 'ftr', 'cle', 6);
     const ftr = c.state.combatants['ftr']!;
     expect(ftr.hp).toBe(6);
@@ -119,7 +119,7 @@ describe('healing brings them back', () => {
   it('never resurrects the dead', () => {
     const goblin = { ...buildMonster('goblin-warrior', 'team2', { x: 4, y: 4 }), id: 'gob' };
     const c = fight(pc('cleric', 'team1', { x: 3, y: 3 }, 'cle'), goblin);
-    applyDamage(c.state, 'gob', 'cle', 999, 'slashing');
+    applyDamage(c.state, 'gob', 'cle', 999, 'slashing', [], { magical: false });
     expect(applyHealing(c.state, 'gob', 'cle', 10)).toEqual([]);
     expect(c.state.combatants['gob']!.hp).toBe(0);
   });
@@ -133,7 +133,7 @@ describe('winning and losing', () => {
 
   it('a party that is all down has lost', () => {
     const c = duel();
-    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing');
+    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing', [], { magical: false });
     expect(c.state.winner).toBe('team2');
   });
 
@@ -144,7 +144,7 @@ describe('winning and losing', () => {
     // with the whole party wiped out.
     const c = duel();
     c.state.combatants['ftr']!.conditions.push({ id: 'unconscious', sourceId: 'foe' });
-    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing');
+    applyDamage(c.state, 'ftr', 'foe', 999, 'slashing', [], { magical: false });
     expect(c.state.winner).toBe('team2');
   });
 
@@ -201,7 +201,7 @@ describe('what a downed caster leaves behind', () => {
     cl.concentratingOn = { spellId: 'spiritual-guardians', targetIds: [] };
     cl.spiritualGuardians = { dc: 14, mod: 3, dice: '3d8' };
 
-    applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning');
+    applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning', [], { magical: false });
 
     expect(isDown(c.state.combatants['cle']!)).toBe(true);
     expect(c.state.combatants['cle']!.spiritualGuardians).toBeUndefined();
@@ -223,7 +223,7 @@ describe('what a downed caster leaves behind', () => {
     c.state.combatants['cle']!.summons = [
       { kind: 'spiritual-weapon', position: { x: 2, y: 2 }, expiresAtRound: c.state.round },
     ];
-    applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning');
+    applyDamage(c.state, 'cle', 'foe', 99, 'bludgeoning', [], { magical: false });
     expect(isDown(c.state.combatants['cle']!)).toBe(true);
 
     // Everyone simply ends their turn, so the only thing that can clear the

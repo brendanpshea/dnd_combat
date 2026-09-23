@@ -68,8 +68,8 @@ describe('Bardic Inspiration', () => {
     const fighter = pc('fighter', 5, { x: 2, y: 2 }, 'fig');
     const c = new Combat({ seed: 4, mapId: 'open', combatants: [bard, fighter] });
     FEATURES['bardic-inspiration']!.apply!({ state: c.state, actorId: 'bard' });
-    const inspired = savingThrow(c.state, 'fig', 'wis', 15);
-    const plain = savingThrow(c.state, 'fig', 'wis', 15);
+    const inspired = savingThrow(c.state, 'fig', 'wis', 15, { magical: false });
+    const plain = savingThrow(c.state, 'fig', 'wis', 15, { magical: false });
     const mod = (e: typeof inspired.event) => (e.type === 'savingThrow' ? e.total - e.natural : NaN);
     expect(mod(inspired.event), 'the inspired roll carries the extra die')
       .toBeGreaterThan(mod(plain.event));
