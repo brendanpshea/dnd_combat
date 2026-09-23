@@ -1473,7 +1473,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                         setNotice(r.success
                           ? `Pocketed ${itemName(r.itemId!)}. Nobody saw a thing.`
                           : `Caught. ${r.fine}g gone in fines.`);
-                        refresh(); persist(c, run);
+                        // No second save: setVisit already wrote the new run
+                        // with the updated campaign. Saving `run` here (this
+                        // render's, without stealUsed) overwrote it, and a
+                        // reload let the player steal again.
+                        refresh();
                         // Two rolls are made (Stealth AND Sleight of Hand); show
                         // the one that decided it — the first failure, or the
                         // sleight roll that actually lifted the goods.

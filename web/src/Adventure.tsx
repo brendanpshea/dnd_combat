@@ -281,6 +281,12 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
    *  NPC, not the scene the runtime has already advanced to; the result beat
    *  then follows the roll. */
   function process(events: AdventureEvent[], from: Scene) {
+    // Saved on every action, not only when the scene changes: a failed
+    // approach stays in the same scene but spends the approach, applies its
+    // damage and advances the dice, and a reload used to undo all of it — a
+    // free reroll. (An ending is left to the scene effect, which decides what
+    // the slot becomes.)
+    if (module.scenes[state.sceneId]?.kind !== 'ending') saveAdventureWeb(state);
     markRevisit(events);
     const { overlays, banner } = presentFeedback(events);
     const check = [...events].reverse().find((e): e is DiceOverlay => e.type === 'check');
