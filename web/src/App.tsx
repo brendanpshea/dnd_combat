@@ -729,6 +729,10 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
 
   function apply(action: Action) {
     initAudio();
+    // A tip lasts until the player's next move, not until they find the ✕: a
+    // playtest on a phone found one sitting over the board — and once over the
+    // Hint button — for as long as nobody closed it.
+    if (!runsItself(combat.state.combatants[combat.activeId])) { setTip(null); setHint(null); }
     try {
       const events = combat.apply(action);
       setLog((l) => [...l, ...logLinesFor(combat.state, events)]);
@@ -1429,6 +1433,11 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
       {isHumanTurn && hint && !targeting && (
         <div className="hint-banner">
           💡 Suggestion: <b>{hint.kind === 'endTurn' ? 'end your turn' : describeShort(hint)}</b>
+          {/* The suggestion, taken. The highlighted square is not always
+              where the action lives — a levelled heal on a downed ally is in
+              the Spells tray, not behind the ally — so a playtest found the
+              Hint naming things a player could not find. This does them. */}
+          <button className="mini" onClick={() => { const a = hint; setHint(null); apply(a); }}>Do it</button>
           <button className="mini" onClick={() => setHint(null)}>Dismiss</button>
         </div>
       )}

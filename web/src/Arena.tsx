@@ -728,6 +728,11 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                button read as a bare skill name and a number. */
             <div className="gambit-offer">
               <p className="go-setup">{gambitLine(gambit, 'setup', gambitCtx)}</p>
+              {/* The stakes, before the roll: what it buys and what it costs. */}
+              <p className="go-stakes">
+                <span className="go-win">Success: {gambit.stakes.win}.</span>{' '}
+                <span className="go-lose">Failure: {gambit.stakes.lose}.</span>
+              </p>
               <SkillGambit
               campaign={c}
               skill={gambit.skill}

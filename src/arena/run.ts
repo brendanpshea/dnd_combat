@@ -243,6 +243,17 @@ export function wavePurse(level: number, wave: number): number {
  */
 export type DayHalf = 'morning' | 'afternoon';
 
+/**
+ * The afternoon's share of the wave budget.
+ *
+ * Depletion is still the ramp — the party arrives with the morning's slots and
+ * hit points spent — but at an even budget it ramped too hard: a playtest of 30
+ * persistent runs won 66% of mornings and 32% of afternoons, so 58% of lost days
+ * were lost after winning the morning. The purse is untouched; only the fight
+ * is smaller.
+ */
+export const AFTERNOON_SHARE = 0.8;
+
 export interface ArenaWave {
   wave: number;
   encounter: GeneratedEncounter;
@@ -267,7 +278,7 @@ export function buildWave(
   let rng: RngState =
     (runSeed * 2654435761 + wave * 40503 + door * 2246822519 +
       (half === 'afternoon' ? 1013904223 : 0)) >>> 0;
-  const budget = waveBudget(level, wave);
+  const budget = Math.round(waveBudget(level, wave) * (half === 'afternoon' ? AFTERNOON_SHARE : 1));
   const e = generateEncounter(
     { budget, maxMemberXp: memberCapFor(level), maxCount: maxCountFor(level), partyLevel: level },
     rng,

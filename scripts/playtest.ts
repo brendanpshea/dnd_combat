@@ -515,7 +515,13 @@ function equipUpgrades(c: CampaignState): void {
   }
 }
 
-function shop(c: CampaignState, level: number, key: string): void {
+/**
+ * `reserve`: gold the shopper will not spend. The day mode keeps back one
+ * revival bill, which is what a player who has been billed once does — the
+ * harness used to spend to zero every visit, and then 11 of 30 persistent runs
+ * "went broke" on a bill a player would simply have kept the money for.
+ */
+function shop(c: CampaignState, level: number, key: string, reserve = 0): void {
   T.shopVisits += 1;
   const shelf = shopOffering(SHOP_STOCK, level, key);
   const priced = (id: Id) => itemPrice(id) ?? Infinity;
@@ -526,7 +532,7 @@ function shop(c: CampaignState, level: number, key: string): void {
     if (held && held.qty > 0) continue;
     const potion = shelf.filter((id) => RESTOCK.includes(id) && priced(id) <= c.gold)
       .sort((a, b) => priced(a) - priced(b))[0];
-    if (potion && buyItem(c, i, potion)) bump(T.itemsBought, potion);
+    if (potion && priced(potion) <= c.gold - reserve && buyItem(c, i, potion)) bump(T.itemsBought, potion);
   }
 
   let guard = 0;
@@ -534,7 +540,7 @@ function shop(c: CampaignState, level: number, key: string): void {
     if (guard++ > 40) break;
     const affordable = shelf
       .map((id) => ({ id, price: priced(id) }))
-      .filter((x) => x.price <= c.gold)
+      .filter((x) => x.price <= c.gold - reserve)
       .sort((a, b) => b.price - a.price);
     if (affordable.length === 0) break;
     const pick = affordable[0]!;
@@ -638,7 +644,7 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
         if (partyLevelOf(c) > levelAtFirstTry) T.day.rescuedByLevel += 1;
       }
       retries = 0;
-      shop(c, partyLevelOf(c), `${seed}:${run.wave}`);
+      shop(c, partyLevelOf(c), `${seed}:${run.wave}`, revivalCost(dayLevelOf(run, partyLevelOf(c)), run.wave));
     } else {
       retries += 1;
       // A player who has lost the same day three times has learned what the

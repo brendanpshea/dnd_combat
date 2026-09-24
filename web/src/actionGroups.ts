@@ -132,11 +132,18 @@ export function describeShort(a: Action): string {
     }
     case 'shove': return a.mode === 'prone' ? 'Shove prone' : a.mode === 'grapple' ? 'Grapple' : 'Shove back';
     case 'useItem': return ITEMS[a.itemId]?.name ?? a.itemId;
-    case 'useFeature':
+    case 'useFeature': {
+      // Cunning Action and its kin sit on the bar under their verb ("Dash",
+      // marked Bonus), not under the feature's name — so that is what anything
+      // pointing at them has to call them. The Hint said "Cunning Action:
+      // Dash" about a button labelled "Dash".
+      const verb = FEATURES[a.featureId]?.bonusVerb;
+      if (verb) return describeShort({ kind: verb } as Action);
       // Drop the "Channel Divinity: " / "Fighting Style: " prefixes so a class
       // power fits a bar button ("Turn Undead", not the full ritual name).
       return (FEATURES[a.featureId]?.name ?? a.featureId)
         .replace(/^Channel Divinity: /, '').replace(/^Fighting Style: /, '');
+    }
     case 'shakeAwake': return 'Shake awake';
     case 'escape': return a.condition === 'grappled' ? 'Break free of the grip' : `Break free (${a.condition})`;
     case 'dash': return 'Dash';

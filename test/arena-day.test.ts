@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  newArenaRun, advanceDay, buildWave, type ArenaRunState,
+  newArenaRun, advanceDay, buildWave, AFTERNOON_SHARE, type ArenaRunState,
 } from '../src/arena/run.js';
 import { gatesFor } from '../src/arena/gates.js';
 import {
@@ -122,8 +122,10 @@ describe('the day is frozen at the level you met it', () => {
     const afternoon = gatesFor(5, 3, 8, 'afternoon');
     expect(afternoon.map((g) => g.wave.encounter.members.join(',')))
       .not.toEqual(morning.map((g) => g.wave.encounter.members.join(',')));
-    expect(afternoon[0]!.wave.budget, 'at the same budget, though')
-      .toBe(morning[0]!.wave.budget);
+    // A share of the morning's budget (AFTERNOON_SHARE), and the same purse.
+    expect(afternoon[0]!.wave.budget)
+      .toBe(Math.round(morning[0]!.wave.budget * AFTERNOON_SHARE));
+    expect(afternoon[0]!.wave.purse).toBe(morning[0]!.wave.purse);
   });
 });
 
