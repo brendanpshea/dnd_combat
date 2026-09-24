@@ -29,7 +29,7 @@
 | Bite | `ghoul-bite` | 1d6 | piercing | — | yes | — | — | +1d6 necrotic |
 | Bite | `spider-bite` | 1d8 | piercing | — | yes | — | finesse | +2d6 poison |
 | Bite | `bear-bite` | 1d8 | piercing | — | yes | — | — | — |
-| Bite | `toad-bite` | 1d6 | piercing | — | yes | — | — | STR DC 13 or restrained; +2d4 poison |
+| Bite | `toad-bite` | 1d6 | piercing | — | yes | — | — | +2d4 poison |
 | Bite | `hyena-bite` | 2d6 | piercing | — | yes | — | — | — |
 | Bite | `worg-bite` | 1d8 | piercing | — | yes | — | — | on hit: guided |
 | Bite | `ettercap-bite` | 1d6 | piercing | — | yes | — | — | CON DC 11 or poisoned; +1d4 poison |
@@ -38,12 +38,12 @@
 | Bite | `winter-wolf-bite` | 2d6 | piercing | — | yes | — | — | on hit: prone |
 | Bite | `roper-bite` | 3d8 | piercing | — | yes | — | — | — |
 | Bite | `bulette-bite` | 2d12 | piercing | — | yes | — | — | — |
-| Bite | `remorhaz-bite` | 2d10 | piercing | — | yes | — | — | on hit: restrained; +4d6 fire |
+| Bite | `remorhaz-bite` | 2d10 | piercing | — | yes | — | — | +4d6 fire |
 | Bite | `otyugh-bite` | 2d8 | piercing | — | yes | — | — | on hit: poisoned |
-| Bite | `trex-bite` | 4d12 | piercing | — | yes | — | — | on hit: restrained |
+| Bite | `trex-bite` | 4d12 | piercing | — | yes | — | — | — |
 | Bite | `ghast-bite` | 1d8 | piercing | — | yes | — | — | +2d8 necrotic |
 | Bite | `spawn-bite` | 1d4 | piercing | — | yes | — | finesse | +3d6 necrotic |
-| Bite | `crocodile-bite` | 3d10 | piercing | — | yes | — | — | on hit: restrained |
+| Bite | `crocodile-bite` | 3d10 | piercing | — | yes | — | — | — |
 | Bite | `hell-hound-bite` | 1d8 | piercing | — | yes | — | — | +1d6 fire |
 | Bite | `chimera-bite` | 2d6 | piercing | — | yes | — | — | +2d6 with advantage |
 | Bite | `wyvern-bite` | 2d8 | piercing | — | yes | — | — | — |
@@ -53,7 +53,7 @@
 | Boulder | `stone-giant-boulder` | 2d8 | bludgeoning | 60/240 ft | — | — | — | on hit: prone |
 | Burn | `fire-touch` | 2d6 | fire | — | yes | — | — | — |
 | Burning Hammer | `azer-burning-hammer` | 1d10 | bludgeoning | — | yes | — | — | +1d6 fire |
-| Chain | `chain-devil-chain` | 2d6 | slashing | — | yes | — | — | on hit: restrained |
+| Chain | `chain-devil-chain` | 2d6 | slashing | — | yes | — | — | — |
 | Claw | `oni-claw` | 1d12 | slashing | — | yes | — | — | +2d8 necrotic |
 | Claw | `ghoul-claws` | 1d4 | slashing | — | yes | — | finesse | CON DC 10 or paralyzed |
 | Claw | `bear-claws` | 1d4 | slashing | — | yes | — | — | on hit: prone |
@@ -67,12 +67,12 @@
 | Claw | `night-hag-claws` | 2d8 | slashing | — | yes | — | — | — |
 | Claw | `ghast-claws` | 2d6 | slashing | — | yes | — | finesse | CON DC 10 or paralyzed |
 | Claw | `spawn-claws` | 2d4 | slashing | — | yes | — | finesse | — |
-| Claw | `scorpion-claw` | 1d6 | bludgeoning | — | yes | — | — | on hit: restrained |
+| Claw | `scorpion-claw` | 1d6 | bludgeoning | — | yes | — | — | — |
 | Claw | `scarecrow-claw` | 2d4 | slashing | — | yes | — | — | WIS DC 11 or frightened |
 | Claw | `chimera-claws` | 1d6 | slashing | — | yes | — | — | — |
 | Claws | `ettercap-claws` | 2d4 | slashing | — | yes | — | — | — |
 | Claws | `barbed-devil-claw` | 2d6 | piercing | — | yes | — | — | — |
-| Constrict | `snake-constrict` | 2d8 | bludgeoning | — | yes | — | — | STR DC 14 or restrained |
+| Constrict | `snake-constrict` | 2d8 | bludgeoning | — | yes | — | — | — |
 | Corrupting Touch | `banshee-touch` | 3d6 | necrotic | — | yes | — | — | — |
 | Dagger | `dagger` | 1d4 | piercing | 20/60 ft | yes | nick | finesse, light, thrown | — |
 | Dagger +1 | `dagger-plus1` | 1d4 | piercing | 20/60 ft | yes | nick | finesse, light, thrown | +1/+1 |
@@ -147,7 +147,7 @@
 | Nightmare Ray | `oni-nightmare-ray` | 2d6 | psychic | 60/60 ft | — | — | — | — |
 | Pact Blade | `cultist-pact-blade` | 1d8 | slashing | — | yes | — | — | +2d6 necrotic |
 | Petrifying Bite | `cockatrice-bite` | 1d4 | piercing | — | yes | — | — | CON DC 11 or restrained |
-| Pincer | `glabrezu-pincer` | 2d10 | slashing | — | yes | — | — | on hit: restrained |
+| Pincer | `glabrezu-pincer` | 2d10 | slashing | — | yes | — | — | — |
 | Pistol | `bandit-captain-pistol` | 1d10 | piercing | 30/90 ft | — | — | — | — |
 | Pseudopod | `gray-ooze-pseudopod` | 2d8 | acid | — | yes | — | — | — |
 | Pseudopod | `ochre-jelly-pseudopod` | 3d6 | acid | — | yes | — | — | — |
@@ -222,7 +222,7 @@
 | Slam | `golem-slam` | 2d8 | bludgeoning | — | yes | — | — | +1d8 lightning |
 | Slash | `flying-sword-blade` | 1d8 | slashing | — | yes | — | — | — |
 | Sling | `sling` | 1d4 | bludgeoning | 30/120 ft | — | — | — | — |
-| Smother | `rug-smother` | 2d6 | bludgeoning | — | yes | — | — | on hit: restrained |
+| Smother | `rug-smother` | 2d6 | bludgeoning | — | yes | — | — | — |
 | Spear | `spear` | 1d6 | piercing | 20/60 ft | yes | sap | thrown, versatile | — |
 | Spear | `gladiator-spear` | 2d6 | piercing | 20/60 ft | yes | — | thrown | — |
 | Spear +1 | `spear-plus1` | 1d6 | piercing | 20/60 ft | yes | sap | thrown, versatile | +1/+1 |
@@ -237,7 +237,7 @@
 | Tail | `barbed-devil-tail` | 2d10 | slashing | — | yes | — | — | — |
 | Tail | `crocodile-tail` | 3d8 | bludgeoning | — | yes | — | — | on hit: prone |
 | Tail Spike | `manticore-spike` | 1d8 | piercing | 100/200 ft | — | — | — | — |
-| Tendril | `roper-tendril` | 1d8 | bludgeoning | — | yes | — | — | on hit: restrained |
+| Tendril | `roper-tendril` | 1d8 | bludgeoning | — | yes | — | — | — |
 | Tentacle | `otyugh-tentacle` | 2d8 | piercing | — | yes | — | — | — |
 | Tentacle | `aboleth-tentacle` | 2d6 | bludgeoning | — | yes | — | — | — |
 | Thorn Burst | `dryad-thorn-burst` | 1d6 | piercing | 60/60 ft | — | — | — | — |

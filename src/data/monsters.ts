@@ -621,6 +621,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'large',
     abilities: { str: 18, dex: 14, con: 18, int: 5, wis: 10, cha: 8 },
     featureIds: ['whelm'],
+    // Whelm's "2d8 Bludgeoning damage at the start of each of the elemental's
+    // turns" to whoever it is holding.
+    holdDamage: { dice: '2d8', type: 'bludgeoning' },
     weaponIds: ['water-slam'],
     attacksPerAction: 2,
     immunities: ['poison'],
@@ -1592,6 +1595,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'large',
     abilities: { str: 17, dex: 14, con: 10, int: 1, wis: 3, cha: 1 },
     weaponIds: ['rug-smother'],
+    // "Takes 10 (2d6 + 3) Bludgeoning damage at the start of each of its
+    // turns" while smothered -- ticked at the start of the rug's turn instead.
+    holdDamage: { dice: '2d6+3', type: 'bludgeoning' },
     immunities: ['poison', 'psychic'],
   },
   'flesh-golem': {

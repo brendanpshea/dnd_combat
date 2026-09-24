@@ -17,7 +17,7 @@ import { SORCERY_POINTS } from '../engine/rules/metamagic.js';
 import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } from '../engine/grid.js';
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
-import { applyCondition } from '../engine/rules/conditions.js';
+import { applyCondition, grapple } from '../engine/rules/conditions.js';
 
 export interface FeatureContext {
   state: GameState;
@@ -912,23 +912,40 @@ export const FEATURES: Record<Id, FeatureData> = {
   // Trampling Charge (Gorgon): charge + knock prone on a failed Str save.
   'trampling-charge': { id: 'trampling-charge', name: 'Trampling Charge', trigger: 'passive' },
 
-  // Whelm (Water Elemental): each adjacent enemy makes a Strength save or is
-  // restrained (save ends).
+  // Whelm (Water Elemental, SRD 5.2.1): each adjacent enemy makes a Strength
+  // save. Failure: 4d8 + Str bludgeoning, and a Large or smaller target is
+  // grappled (escape DC 14) and Restrained until the grapple ends, taking 2d8
+  // at the start of each of the elemental's turns (its holdDamage). Success:
+  // half damage only. It holds at most two creatures at once.
+  //
+  // "Each creature in the elemental's space" is read as adjacent, since this
+  // engine has no shared squares; and the SRD's one-Large-or-two-Medium limit
+  // is simplified to two of any size it can hold.
   whelm: {
     id: 'whelm', name: 'Whelm', trigger: 'action', uses: { count: 1, per: 'encounter' },
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.str);
+      const SIZES = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'];
+      const holding = () => Object.values(state.combatants).filter((c) => c.conditions.some(
+        (k) => k.id === 'grappled' && k.sourceId === actorId && k.grapple?.via === 'whelm')).length;
       const events: GameEvent[] = [];
       for (const t of Object.values(state.combatants)) {
         if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
         if (distanceFeet(me.position, t.position) > 5) continue;
-        if (t.conditions.some((c) => c.id === 'restrained')) continue;
+        if (t.conditions.some((c) => c.id === 'grappled' && c.sourceId === actorId)) continue;
         const { success, event } = savingThrow(state, t.id, 'str', dc, { magical: false });
         events.push(event);
-        if (!success) {
-          events.push(...applyCondition(state, t.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } }, { magical: false }));
+        const dmg = rollDice(state.rng, '4d8');
+        state.rng = dmg.state;
+        const amount = saveForHalf(t, 'str', dmg.total + abilityMod(me.abilities.str), success);
+        events.push(...applyDamage(state, t.id, actorId, amount, 'bludgeoning', dmg.rolls, { magical: false }));
+        const victim = state.combatants[t.id]!;
+        if (!success && victim.alive && !isDown(victim) &&
+            SIZES.indexOf(victim.size ?? 'medium') <= SIZES.indexOf('large') && holding() < 2) {
+          events.push(...grapple(state, actorId, t.id, { dc: 14, via: 'whelm', range: 5, restrains: true }));
         }
+        if (state.winner) break;
       }
       return events;
     },
@@ -946,7 +963,9 @@ export const FEATURES: Record<Id, FeatureData> = {
   // place while it digests you, and that is the part the fight is about.
   //
   // No use limit: a cube that engulfs once and then politely stops is not a
-  // cube. The Dex save (repeated, save-ends) is the pressure valve instead.
+  // cube. Getting out is the pressure valve instead: per SRD 5.2.1 an engulfed
+  // creature escapes with an action and a Strength (Athletics) check against
+  // the cube's DC (12), not with a repeated save.
   engulf: {
     id: 'engulf', name: 'Engulf', trigger: 'action',
     apply({ state, actorId }) {
@@ -961,7 +980,7 @@ export const FEATURES: Record<Id, FeatureData> = {
       const { success, event } = savingThrow(state, target.id, 'dex', dc, { magical: false });
       const events: GameEvent[] = [event];
       if (!success) {
-        events.push(...applyCondition(state, target.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'str', dc } }, { magical: false }));
+        events.push(...applyCondition(state, target.id, { id: 'restrained', sourceId: actorId, escape: { dc, skills: ['athletics'] } }, { magical: false }));
         const dmg = rollDice(state.rng, '3d6');
         state.rng = dmg.state;
         events.push(...applyDamage(state, target.id, actorId, dmg.total, 'acid', dmg.rolls, { magical: false }));

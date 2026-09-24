@@ -556,7 +556,7 @@ STR 14 (+2), DEX 16 (+3), CON 12 (+1), INT 2 (-4), WIS 11 (+0), CHA 4 (-3)
 
 STR 15 (+2), DEX 13 (+1), CON 13 (+1), INT 2 (-4), WIS 10 (+0), CHA 3 (-4)
 
-- **Attacks:** Bite 1d6 piercing, STR DC 13 or restrained, +2d4 poison
+- **Attacks:** Bite 1d6 piercing, +2d4 poison
 
 ### Goblin Boss
 
@@ -656,8 +656,9 @@ STR 10 (+0), DEX 15 (+2), CON 10 (+0), INT 12 (+1), WIS 14 (+2), CHA 16 (+3)
 
 STR 17 (+3), DEX 14 (+2), CON 10 (+0), INT 1 (-5), WIS 3 (-4), CHA 1 (-5)
 
-- **Attacks:** Smother 2d6 bludgeoning, on hit: restrained
+- **Attacks:** Smother 2d6 bludgeoning
 - **Immunities:** poison, psychic
+- **Hold damage:** 2d6+3 bludgeoning to whoever it has restrained
 
 ### Azer Sentinel
 
@@ -761,7 +762,7 @@ STR 17 (+3), DEX 10 (+0), CON 16 (+3), INT 2 (-4), WIS 7 (-2), CHA 5 (-3)
 
 STR 19 (+4), DEX 14 (+2), CON 12 (+1), INT 1 (-5), WIS 10 (+0), CHA 3 (-4)
 
-- **Attacks:** Bite 2d6 piercing; Constrict 2d8 bludgeoning, STR DC 14 or restrained
+- **Attacks:** Bite 2d6 piercing; Constrict 2d8 bludgeoning
 
 ### Gnoll Packcaller
 
@@ -899,7 +900,7 @@ STR 12 (+1), DEX 15 (+2), CON 13 (+1), INT 9 (-1), WIS 16 (+3), CHA 10 (+0)
 
 STR 16 (+3), DEX 13 (+1), CON 15 (+2), INT 1 (-5), WIS 9 (-1), CHA 3 (-4)
 
-- **Attacks:** Sting 1d8 piercing, +2d10 poison; Claw 1d6 bludgeoning, on hit: restrained
+- **Attacks:** Sting 1d8 piercing, +2d10 poison; Claw 1d6 bludgeoning
 
 ### Green Hag
 
@@ -1188,7 +1189,7 @@ STR 19 (+4), DEX 9 (-1), CON 18 (+4), INT 6 (-2), WIS 10 (+0), CHA 5 (-3)
 
 STR 21 (+5), DEX 9 (-1), CON 17 (+3), INT 2 (-4), WIS 10 (+0), CHA 7 (-2)
 
-- **Attacks:** Bite 3d10 piercing, on hit: restrained; Tail 3d8 bludgeoning, on hit: prone
+- **Attacks:** Bite 3d10 piercing; Tail 3d8 bludgeoning, on hit: prone
 
 ### Gladiator
 
@@ -1245,7 +1246,7 @@ STR 16 (+3), DEX 11 (+0), CON 19 (+4), INT 6 (-2), WIS 13 (+1), CHA 6 (-2)
 
 STR 18 (+4), DEX 8 (-1), CON 17 (+3), INT 7 (-2), WIS 16 (+3), CHA 6 (-2)
 
-- **Attacks:** Tendril 1d8 bludgeoning, on hit: restrained; Bite 3d8 piercing
+- **Attacks:** Tendril 1d8 bludgeoning; Bite 3d8 piercing
 
 ### Salamander
 
@@ -1301,6 +1302,7 @@ STR 18 (+4), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 10 (+0), CHA 8 (-1)
 - **Resistances:** acid, fire
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
+- **Hold damage:** 2d8 bludgeoning to whoever it has restrained
 
 ### Werebear
 
@@ -1463,7 +1465,7 @@ STR 11 (+0), DEX 18 (+4), CON 14 (+2), INT 16 (+3), WIS 11 (+0), CHA 10 (+0)
 STR 18 (+4), DEX 15 (+2), CON 18 (+4), INT 11 (+0), WIS 12 (+1), CHA 14 (+2)
 
 - **Saving throws:** CON, WIS, CHA
-- **Attacks:** Chain 2d6 slashing, on hit: restrained
+- **Attacks:** Chain 2d6 slashing
 - **Features:** Magic Resistance, Long-Limbed
 - **Resistances:** cold
 - **Resists nonmagical:** bludgeoning, piercing, slashing
@@ -1507,7 +1509,7 @@ STR 20 (+5), DEX 12 (+1), CON 20 (+5), INT 2 (-4), WIS 10 (+0), CHA 7 (-2)
 
 STR 25 (+7), DEX 10 (+0), CON 19 (+4), INT 2 (-4), WIS 12 (+1), CHA 9 (-1)
 
-- **Attacks:** Bite 4d12 piercing, on hit: restrained; Tail 4d8 bludgeoning, on hit: prone
+- **Attacks:** Bite 4d12 piercing; Tail 4d8 bludgeoning, on hit: prone
 
 ### Young Green Dragon
 
@@ -1538,7 +1540,7 @@ STR 25 (+7), DEX 9 (-1), CON 23 (+6), INT 10 (+0), WIS 14 (+2), CHA 13 (+1)
 STR 20 (+5), DEX 15 (+2), CON 21 (+5), INT 19 (+4), WIS 17 (+3), CHA 16 (+3)
 
 - **Saving throws:** STR, CON, WIS, CHA
-- **Attacks:** Pincer 2d10 slashing, on hit: restrained
+- **Attacks:** Pincer 2d10 slashing
 - **Features:** Magic Resistance, Long-Limbed
 - **Resistances:** cold, fire, lightning
 - **Immunities:** poison
@@ -1605,5 +1607,5 @@ STR 22 (+6), DEX 17 (+3), CON 21 (+5), INT 12 (+1), WIS 16 (+3), CHA 18 (+4)
 
 STR 24 (+7), DEX 13 (+1), CON 21 (+5), INT 4 (-3), WIS 10 (+0), CHA 5 (-3)
 
-- **Attacks:** Bite 2d10 piercing, on hit: restrained, +4d6 fire
+- **Attacks:** Bite 2d10 piercing, +4d6 fire
 - **Immunities:** cold, fire

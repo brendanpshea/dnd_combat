@@ -26,7 +26,7 @@ export interface WeaponData {
    * rather than a fight.
    */
   bonusDiceVsShapechanger?: string;
-  /** Condition applied automatically on a hit (wolf bite → prone, snake constrict → restrained). */
+  /** Condition applied automatically on a hit (wolf bite → prone, T. rex tail → prone). */
   onHitCondition?: ConditionId;
   /**
    * "If the target is [size] or smaller, it has the Grappled condition (escape
@@ -579,8 +579,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'toad-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
     properties: [], melee: true,
     extraDamage: { dice: '2d4', type: 'poison' },
-    // Swallow: the bite grabs its prey — a Strength save or restrained (save-ends).
-    onHitSave: { condition: 'restrained', ability: 'str', dc: 13 },
+    // The bite grabs its prey. Swallow, which would follow, is not modelled.
+    onHitGrapple: { dc: 12, maxSize: 'medium' },
   },
   'hyena-bite': {
     id: 'hyena-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
@@ -593,8 +593,10 @@ export const WEAPONS: Record<Id, WeaponData> = {
   'snake-constrict': {
     id: 'snake-constrict', name: 'Constrict', damage: '2d8', damageType: 'bludgeoning',
     properties: [], melee: true,
-    // Grappled/restrained, but escapable: a Strength save at the end of each turn.
-    onHitSave: { condition: 'restrained', ability: 'str', dc: 14 },
+    // SRD 5.2.1 Constrict is a Strength save (DC 14) rather than an attack
+    // roll; this engine delivers every monster weapon as an attack, so only
+    // the grapple it leaves is taken from the 2024 text.
+    onHitGrapple: { dc: 14, maxSize: 'large' },
   },
   'gargoyle-claws': {
     id: 'gargoyle-claws', name: 'Claw', damage: '2d4', damageType: 'slashing',
@@ -827,7 +829,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // Chains, so it pins. That's the devil's whole gameplan.
   'chain-devil-chain': {
     id: 'chain-devil-chain', name: 'Chain', damage: '2d6', damageType: 'slashing',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 14, restrains: true, maxSize: 'large' },
   },
   'hezrou-rend': {
     id: 'hezrou-rend', name: 'Rend', damage: '1d4', damageType: 'slashing',
@@ -835,7 +837,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'glabrezu-pincer': {
     id: 'glabrezu-pincer', name: 'Pincer', damage: '2d10', damageType: 'slashing',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 15, maxSize: 'medium' },
   },
   'horned-devil-fork': {
     id: 'horned-devil-fork', name: 'Searing Fork', damage: '2d8', damageType: 'piercing',
@@ -853,7 +855,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'griffon-rend': {
     id: 'griffon-rend', name: 'Rend', damage: '1d8', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitGrapple: { dc: 14, maxSize: 'medium' },
   },
   'ettercap-bite': {
     id: 'ettercap-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
@@ -879,9 +881,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'winter-wolf-bite', name: 'Bite', damage: '2d6', damageType: 'piercing',
     properties: [], melee: true, onHitCondition: 'prone',
   },
+  // SRD 5.2.1 Tentacle: reach 60 ft, no damage, and Poisoned until the grapple
+  // ends. The engine has no per-weapon reach and nothing but Restrained can
+  // ride a grapple, so the tendril keeps a damage die and the plain grapple.
   'roper-tendril': {
     id: 'roper-tendril', name: 'Tendril', damage: '1d8', damageType: 'bludgeoning',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 14 },
   },
   'roper-bite': {
     id: 'roper-bite', name: 'Bite', damage: '3d8', damageType: 'piercing',
@@ -893,11 +898,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'remorhaz-bite': {
     id: 'remorhaz-bite', name: 'Bite', damage: '2d10', damageType: 'piercing',
-    properties: [], melee: true, onHitCondition: 'restrained', extraDamage: { dice: '4d6', type: 'fire' },
+    properties: [], melee: true, onHitGrapple: { dc: 17, restrains: true, maxSize: 'large' }, extraDamage: { dice: '4d6', type: 'fire' },
   },
   'otyugh-tentacle': {
     id: 'otyugh-tentacle', name: 'Tentacle', damage: '2d8', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitGrapple: { dc: 13, maxSize: 'medium' },
   },
   'otyugh-bite': {
     id: 'otyugh-bite', name: 'Bite', damage: '2d8', damageType: 'piercing',
@@ -905,11 +910,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'aboleth-tentacle': {
     id: 'aboleth-tentacle', name: 'Tentacle', damage: '2d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitGrapple: { dc: 14, maxSize: 'large' },
   },
   'trex-bite': {
     id: 'trex-bite', name: 'Bite', damage: '4d12', damageType: 'piercing',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 17, restrains: true, maxSize: 'large' },
   },
   'trex-tail': {
     id: 'trex-tail', name: 'Tail', damage: '4d8', damageType: 'bludgeoning',
@@ -941,7 +946,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'spawn-claws': {
     id: 'spawn-claws', name: 'Claw', damage: '2d4', damageType: 'slashing',
-    properties: ['finesse'], melee: true,
+    properties: ['finesse'], melee: true, onHitGrapple: { dc: 13, maxSize: 'medium' },
   },
   'spawn-bite': {
     id: 'spawn-bite', name: 'Bite', damage: '1d4', damageType: 'piercing',
@@ -951,7 +956,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // ---- beast top end ----------------------------------------------------
   'scorpion-claw': {
     id: 'scorpion-claw', name: 'Claw', damage: '1d6', damageType: 'bludgeoning',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 13, maxSize: 'large' },
   },
   'scorpion-sting': {
     id: 'scorpion-sting', name: 'Sting', damage: '1d8', damageType: 'piercing',
@@ -964,7 +969,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'crocodile-bite': {
     id: 'crocodile-bite', name: 'Bite', damage: '3d10', damageType: 'piercing',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 15, restrains: true, maxSize: 'large' },
   },
   'mammoth-gore': {
     id: 'mammoth-gore', name: 'Gore', damage: '2d10', damageType: 'piercing',
@@ -1037,7 +1042,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'barbed-devil-claw': {
     id: 'barbed-devil-claw', name: 'Claws', damage: '2d6', damageType: 'piercing',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitGrapple: { dc: 13, maxSize: 'large' },
   },
   'barbed-devil-tail': {
     id: 'barbed-devil-tail', name: 'Tail', damage: '2d10', damageType: 'slashing',
@@ -1074,10 +1079,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
     properties: [], melee: true,
   },
   // The rug wins by pinning someone and holding them there; the damage is
-  // almost beside the point.
+  // almost beside the point. SRD 5.2.1 gives the grapple *instead of* the
+  // damage and adds Blinded; this engine's on-hit grapple rides on a damaging
+  // hit and carries Restrained only.
   'rug-smother': {
     id: 'rug-smother', name: 'Smother', damage: '2d6', damageType: 'bludgeoning',
-    properties: [], melee: true, onHitCondition: 'restrained',
+    properties: [], melee: true, onHitGrapple: { dc: 13, restrains: true, maxSize: 'medium' },
   },
   'golem-slam': {
     id: 'golem-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
@@ -1151,7 +1158,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'bugbear-grab': {
     id: 'bugbear-grab', name: 'Grab', damage: '2d6', damageType: 'bludgeoning',
-    properties: [], melee: true,
+    properties: [], melee: true, onHitGrapple: { dc: 12, maxSize: 'medium' },
   },
   'bugbear-light-hammer': {
     id: 'bugbear-light-hammer', name: 'Light Hammer', damage: '3d4', damageType: 'bludgeoning',
