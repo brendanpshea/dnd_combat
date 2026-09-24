@@ -897,7 +897,7 @@ if (DAYS) {
   console.log(`  days entered ${d.entered}, cleared ${d.cleared} (${pct(d.cleared, d.entered)}), abandoned ${d.abandoned}`);
   console.log(`  morning   ${pct(d.morning.wins, d.morning.fights)} of ${d.morning.fights}`);
   console.log(`  afternoon ${pct(d.afternoon.wins, d.afternoon.fights)} of ${d.afternoon.fights}` +
-    '   (same wave budget — the gap is depletion)');
+    '   (the afternoon is AFTERNOON_SHARE of the budget — the rest of the gap is depletion)');
   const gap = (d.morning.fights && d.afternoon.fights)
     ? Math.round((d.morning.wins / d.morning.fights - d.afternoon.wins / d.afternoon.fights) * 100)
     : 0;

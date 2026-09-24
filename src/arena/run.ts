@@ -249,8 +249,9 @@ export type DayHalf = 'morning' | 'afternoon';
  * Depletion is still the ramp — the party arrives with the morning's slots and
  * hit points spent — but at an even budget it ramped too hard: a playtest of 30
  * persistent runs won 66% of mornings and 32% of afternoons, so 58% of lost days
- * were lost after winning the morning. The purse is untouched; only the fight
- * is smaller.
+ * were lost after winning the morning. At 0.8 the same measurement reads 62%
+ * and 45%, and losses split evenly between the halves. The purse is untouched;
+ * only the fight is smaller.
  */
 export const AFTERNOON_SHARE = 0.8;
 
