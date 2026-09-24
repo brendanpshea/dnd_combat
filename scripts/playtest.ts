@@ -370,6 +370,12 @@ function fight(
     if (action.kind === 'attack' || action.kind === 'castSpell' ||
         action.kind === 'useFeature' || action.kind === 'useItem') actedThisTurn = true;
     const events = combat.apply(action);
+    // Reactions cast themselves (Hellish Rebuke, Counterspell) and are never a
+    // chosen action, so they are counted from what happened instead.
+    for (const e of events) {
+      if (e.type === 'spellCast' && SPELLS[e.spellId]?.castingTime === 'reaction') bump(T.spellsCast, e.spellId);
+      if (e.type === 'counterspelled') bump(T.spellsCast, 'counterspell');
+    }
     for (const e of events) {
       if (e.type === 'damageDealt') {
         const cls = classOf.get(e.sourceId);
