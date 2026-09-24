@@ -907,6 +907,12 @@ export const FEATURES: Record<Id, FeatureData> = {
   'fire-form': { id: 'fire-form', name: 'Fire Form', trigger: 'passive' },
   // Magic Resistance (Satyr/Unicorn): advantage on saves vs spells — saves.ts.
   'magic-resistance': { id: 'magic-resistance', name: 'Magic Resistance', trigger: 'passive' },
+  // Legendary Resistance (Unicorn/Aboleth): a failed save becomes a success,
+  // three times a day — saves.ts.
+  'legendary-resistance': {
+    id: 'legendary-resistance', name: 'Legendary Resistance', trigger: 'passive',
+    uses: { count: 3, per: 'longRest' },
+  },
   // Horn Charge (Unicorn): extra weapon die after moving 15+ ft — resolveAttack.
   'unicorn-charge': { id: 'unicorn-charge', name: 'Horn Charge', trigger: 'passive' },
   // Trampling Charge (Gorgon): charge + knock prone on a failed Str save.

@@ -139,6 +139,14 @@ function monstersDoc(): string {
       add('Vulnerabilities', m.vulnerabilities);
       if (m.regeneration) add('Regeneration', `${m.regeneration.amount}/turn, stopped by ${m.regeneration.stoppedBy.join('/')}`);
       if (m.holdDamage) add('Hold damage', `${m.holdDamage.dice} ${m.holdDamage.type} to whoever it has restrained`);
+      if (m.auras) add('Auras', m.auras.map((a) => [
+        `${a.name} ${a.radius} ft`,
+        a.when === 'ownerTurnEnd' ? 'end of its turn' : 'start of target\'s turn',
+        ...(a.save ? [`${a.save.ability.toUpperCase()} DC ${a.save.dc}`] : []),
+        ...(a.damage ? [`${a.damage.dice} ${a.damage.type}`] : []),
+        ...(a.condition ? [a.condition] : []),
+        ...(a.choice ? ['enemies only'] : []),
+      ].join(', ')).join('; '));
       if (m.deathBurst) add('Death burst', `${m.deathBurst.dice} ${m.deathBurst.type}, ${m.deathBurst.save.ability.toUpperCase()} DC ${m.deathBurst.save.dc}, ${m.deathBurst.radius} ft`);
       if (m.spellcasting) {
         const slots = m.spellcasting.slots.map((n, i) => `${n}×L${i + 1}`).join(' ');

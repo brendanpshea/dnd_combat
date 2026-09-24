@@ -669,6 +669,7 @@ STR 17 (+3), DEX 12 (+1), CON 15 (+2), INT 12 (+1), WIS 13 (+1), CHA 10 (+0)
 - **Saving throws:** CON
 - **Attacks:** Burning Hammer 1d10 bludgeoning, +1d6 fire
 - **Immunities:** fire, poison
+- **Auras:** Fire Aura 5 ft, end of its turn, 1d10 fire, enemies only
 - **Metal armor:** yes (Shocking Grasp rider)
 
 ### Bandit Captain
@@ -746,6 +747,7 @@ STR 16 (+3), DEX 17 (+3), CON 10 (+0), INT 11 (+0), WIS 10 (+0), CHA 8 (-1)
 - **Attacks:** Claw 2d6 slashing, CON DC 10 or paralyzed; Bite 1d8 piercing, +2d8 necrotic
 - **Resistances:** necrotic
 - **Immunities:** poison
+- **Auras:** Stench 5 ft, start of target's turn, CON DC 10, poisoned
 
 ### Giant Boar
 
@@ -1173,6 +1175,7 @@ STR 10 (+0), DEX 17 (+3), CON 16 (+3), INT 6 (-2), WIS 10 (+0), CHA 7 (-2)
 - **Features:** Fire Form
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** fire, poison
+- **Auras:** Fire Aura 10 ft, end of its turn, 1d10 fire
 
 ### Flesh Golem
 
@@ -1258,6 +1261,7 @@ STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 - **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** fire
 - **Vulnerabilities:** cold
+- **Auras:** Fire Aura 5 ft, end of its turn, 2d6 fire, enemies only
 
 ### Troll
 
@@ -1276,7 +1280,7 @@ STR 18 (+4), DEX 13 (+1), CON 20 (+5), INT 7 (-2), WIS 9 (-1), CHA 7 (-2)
 STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 17 (+3), CHA 16 (+3)
 
 - **Attacks:** Radiant Horn 1d10 radiant; Hooves 2d6 bludgeoning
-- **Features:** Magic Resistance
+- **Features:** Magic Resistance, Legendary Resistance
 - **Immunities:** poison
 
 ### Vampire Spawn
@@ -1493,6 +1497,7 @@ STR 19 (+4), DEX 17 (+3), CON 20 (+5), INT 5 (-3), WIS 12 (+1), CHA 13 (+1)
 - **Features:** Magic Resistance
 - **Resistances:** cold, fire, lightning
 - **Immunities:** poison
+- **Auras:** Stench 10 ft, start of target's turn, CON DC 16, poisoned
 
 ### Hydra
 
@@ -1564,7 +1569,7 @@ STR 21 (+5), DEX 9 (-1), CON 15 (+2), INT 18 (+4), WIS 15 (+2), CHA 18 (+4)
 
 - **Saving throws:** CON, INT, WIS
 - **Attacks:** Tentacle 2d6 bludgeoning
-- **Features:** Magic Resistance, Long-Limbed, Charm
+- **Features:** Magic Resistance, Long-Limbed, Charm, Legendary Resistance
 - **Spellcasting:** INT, slots none
 - **Spells:** Acid Splash
 
@@ -1609,3 +1614,4 @@ STR 24 (+7), DEX 13 (+1), CON 21 (+5), INT 4 (-3), WIS 10 (+0), CHA 5 (-3)
 
 - **Attacks:** Bite 2d10 piercing, +4d6 fire
 - **Immunities:** cold, fire
+- **Auras:** Heat Aura 5 ft, end of its turn, 3d10 fire

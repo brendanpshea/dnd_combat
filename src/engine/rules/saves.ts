@@ -224,14 +224,34 @@ export function savingThrow(
       success = true;
     }
   }
+  /**
+   * Legendary Resistance (unicorn, aboleth): "if it fails a saving throw, it
+   * can choose to succeed instead", three times a day.
+   *
+   * Spent on the first failed save, whatever it was. The stat block leaves the
+   * choice to the creature, and a smarter spender would hold it for a Hold
+   * Monster rather than a Fireball — but a monster lives one fight here, the
+   * pool is small, and the saves that reach a 150-HP aboleth are mostly the
+   * ones meant to end it. Last in line, so a cheaper rescue goes first.
+   */
+  let legendary = false;
+  if (!success) {
+    const pool = c.featureUses['legendary-resistance'];
+    if (pool && pool.current > 0) {
+      pool.current -= 1;
+      success = true;
+      legendary = true;
+    }
+  }
+  const luck = [d20.luck, legendary ? 'Legendary Resistance' : undefined].filter(Boolean).join('; ');
   return {
     success,
     event: {
       type: 'savingThrow', combatantId, ability, dc,
       natural: d20.natural, total, success,
-      // Halfling Luck or Fated rerolled this. Reported so a saved life is
-      // attributable to the feat that saved it.
-      ...(d20.luck ? { luck: d20.luck } : {}),
+      // Halfling Luck or Fated rerolled this, or Legendary Resistance turned it.
+      // Reported so a saved life is attributable to what saved it.
+      ...(luck ? { luck } : {}),
     },
   };
 }
