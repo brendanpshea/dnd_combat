@@ -113,15 +113,16 @@ describe('Ring of Free Action', () => {
   });
 
   /**
-   * MAGIC is the operative word in the SRD text. A roper's tendril is not magic
-   * and still binds you — reading the ring as a flat immunity would quietly
+   * MAGIC is the operative word in the SRD text. A crocodile's jaws are not
+   * magic and still bind you — reading the ring as a flat immunity would quietly
    * make it an answer to half the bestiary's melee as well.
    */
   it('does not stop a monster\'s physical grapple', () => {
     const w = { ...wearer(), position: { x: 1, y: 1 } };
-    // A roper's tendril restrains by main force. (A giant spider's bite only
-    // poisons — the restraining monsters are the ones that grab.)
-    const spider = { ...buildMonster('roper', 'team2', { x: 2, y: 1 }), id: 'sp' };
+    // A giant crocodile's bite grapples, and restrains until the grapple ends
+    // (SRD 5.2.1). A roper's tendril used to be the example; in 2024 it only
+    // grapples, which never restrains at all.
+    const spider = { ...buildMonster('giant-crocodile', 'team2', { x: 2, y: 1 }), id: 'sp' };
     const c = new Combat({ seed: 1, map: board(OPEN), combatants: [w, spider] });
     for (let i = 0; i < 30 && c.activeId !== 'sp'; i++) c.apply({ kind: 'endTurn' });
     const tendril = c.state.combatants['sp']!.equipped.mainHand!;
@@ -131,7 +132,7 @@ describe('Ring of Free Action', () => {
       restrained = evs.some((e) => e.type === 'conditionApplied' && e.condition === 'restrained') ||
         c.state.combatants['w']!.conditions.some((k) => k.id === 'restrained');
     }
-    expect(restrained, 'a roper should still be able to bind you').toBe(true);
+    expect(restrained, 'a crocodile should still be able to bind you').toBe(true);
   });
 
   it('ignores difficult terrain, like the Boots do', () => {

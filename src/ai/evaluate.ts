@@ -117,6 +117,9 @@ export const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   // separate things applied it — Web, Entangle, Ensnaring Strike, the giant
   // spider and the roper — so the AI could not see the point of any of them.
   restrained: -0.25,
+  // Grappled: speed 0 and disadvantage against anyone but the holder — the
+  // immobility half of restrained, without the advantage it hands attackers.
+  grappled: -0.12,
   // Bestow Curse: disadvantage on every attack it makes, and it fails saves
   // more often (saves.ts). The same shape as blinded from the attacker's side.
   cursed: -0.2,

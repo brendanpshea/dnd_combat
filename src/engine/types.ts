@@ -148,6 +148,7 @@ export type ConditionId =
   | 'sapped'       // disadvantage on next attack roll
   | 'slowed'       // Slow mastery: speed cut by 10 ft until this creature's next turn
   | 'restrained'   // Web: speed 0, disadvantage to attack, advantage to be hit
+  | 'grappled'     // held: speed 0, disadvantage attacking anyone but the grappler
   | 'commanded'    // Command: prone and loses its next action
   | 'charmed'      // can't attack or harm whoever charmed it
   | 'lured'        // charmed *and* incapacitated, and drawn toward the charmer
@@ -205,6 +206,20 @@ export interface ActiveCondition {
    * turn, "your next turn" is the one after this.
    */
   endsAtTurnEndOf?: { id: Id; skip: boolean };
+  /**
+   * Broken by spending an action on an ability check against `dc` — the 2024
+   * way out of a grapple, a web, Entangle's vines or Ensnaring Strike. The
+   * creature rolls the better of the listed skills. See the `escape` action.
+   */
+  escape?: { dc: number; skills: Array<'athletics' | 'acrobatics'> };
+  /**
+   * On a `grappled` condition: what holds it (`via` — a weapon id, or
+   * 'unarmed') and how far the hold reaches, in feet. The grapple ends when the
+   * grappler is out of that range or incapacitated (rules/conditions.ts).
+   */
+  grapple?: { via: Id; range: number };
+  /** Ends when the grapple by this creature ends ("Restrained until the grapple ends"). */
+  whileGrappledBy?: Id;
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
   /** `magical` when a spell or magical effect imposed it, so Magic Resistance
    *  gives advantage on the repeat save as it did on the first. */
@@ -368,6 +383,8 @@ export interface Combatant {
   shapechanger?: boolean;
   vulnerabilities: DamageType[];
   immunities: DamageType[];
+  /** Conditions this creature cannot be given (a ghost cannot be grappled). */
+  conditionImmunities?: ConditionId[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
   /**
@@ -792,6 +809,11 @@ export function isTurnOf(state: GameState, id: Id): boolean {
   return state.initiativeOrder[state.turnIndex] === id;
 }
 
+/** Speed 0 and no way to raise it: restrained, or held in a grapple. */
+export function heldInPlace(c: Combatant): boolean {
+  return c.conditions.some((k) => k.id === 'restrained' || k.id === 'grappled');
+}
+
 /**
  * Cannot be given this condition at all.
  *
@@ -802,7 +824,15 @@ export function isTurnOf(state: GameState, id: Id): boolean {
  * poisoned by Ray of Sickness and spider bites.
  */
 export function immuneToCondition(c: Combatant, id: ConditionId): boolean {
-  return id === 'poisoned' && c.immunities.includes('poison');
+  if (id === 'poisoned' && c.immunities.includes('poison')) return true;
+  const list = c.conditionImmunities;
+  if (!list) return false;
+  if (list.includes(id)) return true;
+  // The game's own conditions that are a named SRD one underneath: the
+  // harpy's lure is a charm, and a creature fleeing in fear is frightened.
+  if (id === 'lured' && list.includes('charmed')) return true;
+  if (id === 'fleeing' && list.includes('frightened')) return true;
+  return false;
 }
 
 /**

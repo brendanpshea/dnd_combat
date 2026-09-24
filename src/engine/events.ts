@@ -88,11 +88,16 @@ export type GameEvent =
   | { type: 'equipped'; combatantId: Id; weaponId: Id }
   | { type: 'itemUsed'; combatantId: Id; itemId: Id; targetId?: Id }
   | { type: 'dashed'; combatantId: Id }
+  /** An Escape action: an ability check against a grapple's or a web's DC. */
+  | {
+      type: 'escapeAttempt'; combatantId: Id; condition: ConditionId; fromId?: Id;
+      skill: 'athletics' | 'acrobatics'; total: number; dc: number; success: boolean;
+    }
   | { type: 'recharged'; combatantId: Id; featureId: Id }
   /** An Unarmed Strike's Shove: pushed five feet, or knocked prone. `success`
    *  is false when the target made its save and nothing happened. */
   | {
-      type: 'shoved'; shoverId: Id; targetId: Id; mode: 'push' | 'prone'; success: boolean;
+      type: 'shoved'; shoverId: Id; targetId: Id; mode: 'push' | 'prone' | 'grapple'; success: boolean;
       /**
        * The contest, when there was one: Athletics against the defender's better
        * of Athletics and Acrobatics. Optional so an older replay without it

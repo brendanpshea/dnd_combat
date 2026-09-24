@@ -7,8 +7,8 @@
  * actions for menus/AI, using sensible default targets for multi-target
  * spells; drivers may customize targets and step() re-validates.
  */
-import type { GameState, Id, Position, Combatant } from './types.js';
-import { posEq, cellAt, isDown, isIncapacitated } from './types.js';
+import type { GameState, Id, Position, Combatant, ConditionId } from './types.js';
+import { posEq, cellAt, isDown, isIncapacitated, heldInPlace } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, SpellData, validTarget, directionFromDelta, spellShots } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
@@ -19,7 +19,8 @@ import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphe
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
-import { applyCondition, removeConditions } from './rules/conditions.js';
+import { applyCondition, removeConditions, endGrapple, releaseBrokenGrapples } from './rules/conditions.js';
+import { bestSkill, rollSkill } from './rules/skills.js';
 import { rollDice } from './dice.js';
 import { savingThrow } from './rules/saves.js';
 import { moveDestinations, executeMove } from './rules/movement.js';
@@ -72,6 +73,13 @@ export type Action =
    * or put them on the floor for the melee line.
    */
   | { kind: 'shove'; targetId: Id; mode: ShoveMode }
+  /**
+   * Break free: an action spent on an ability check against the DC of a
+   * grapple, a web, Entangle's vines or Ensnaring Strike — the 2024 way out
+   * of each. Names the condition by its id and source, since a creature can be
+   * both webbed and held.
+   */
+  | { kind: 'escape'; condition: ConditionId; fromId?: Id }
   | { kind: 'endTurn' };
 
 /** Weapons True Strike can guide: anything currently attackable (in hand or a
@@ -424,12 +432,16 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
         adjacent(actor.position, t.position) &&
         t.conditions.some((c) => c.id === 'unconscious');
     }
+    case 'escape': {
+      if (incap || actor.turn.actionUsed) return false;
+      return actor.conditions.some((k) => k.escape && k.id === action.condition && k.sourceId === action.fromId);
+    }
     case 'shove': {
       if (incap || actor.turn.actionUsed) return false;
       const t = state.combatants[action.targetId];
       // Hostiles only. Shoving an ally out of a fire is a lovely idea and a
       // different feature; offering it here would double every tray entry.
-      return !!t && t.team !== actor.team && !isHidden(t) && canShove(actor, t);
+      return !!t && t.team !== actor.team && !isHidden(t) && canShove(actor, t, action.mode);
     }
   }
 }
@@ -822,10 +834,16 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   // the floor for the melee line — so both are offered rather than the engine
   // guessing which one was meant.
   for (const t of enemies) {
-    for (const mode of ['push', 'prone'] as const) {
+    for (const mode of ['push', 'prone', 'grapple'] as const) {
       const a: Action = { kind: 'shove', targetId: t.id, mode };
       if (isLegalAction(state, actorId, a)) actions.push(a);
     }
+  }
+
+  for (const k of actor.conditions) {
+    if (!k.escape) continue;
+    const a: Action = { kind: 'escape', condition: k.id, ...(k.sourceId !== undefined ? { fromId: k.sourceId } : {}) };
+    if (isLegalAction(state, actorId, a)) actions.push(a);
   }
 
   actions.push({ kind: 'endTurn' });
@@ -1039,7 +1057,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       actor.turn.actionUsed = true;
       // Caught mid-walk this turn (a web, brambles): startTurn priced the dash
       // before the restraint landed, so it has to be re-read here.
-      if (!actor.conditions.some((k) => k.id === 'restrained')) {
+      if (!heldInPlace(actor)) {
         actor.turn.movementMax += actor.turn.dashSpeed;
       }
       events.push({ type: 'dashed', combatantId: actorId });
@@ -1071,10 +1089,33 @@ export function step(state: GameState, action: Action): { state: GameState; even
       events.push(...endHide(actor));
       events.push(...resolveShove(draft, actorId, action.targetId, action.mode));
       break;
+    case 'escape': {
+      actor.turn.actionUsed = true;
+      const cond = actor.conditions.find(
+        (k) => k.escape && k.id === action.condition && k.sourceId === action.fromId)!;
+      const skill = bestSkill(actor, cond.escape!.skills);
+      const roll = rollSkill(draft, actorId, skill);
+      const success = roll.total >= cond.escape!.dc;
+      events.push({
+        type: 'escapeAttempt', combatantId: actorId, condition: cond.id,
+        ...(cond.sourceId !== undefined ? { fromId: cond.sourceId } : {}),
+        skill: skill as 'athletics' | 'acrobatics', total: roll.total, dc: cond.escape!.dc, success,
+      });
+      if (success) {
+        events.push(...(cond.id === 'grappled' && cond.sourceId !== undefined
+          ? endGrapple(actor, cond.sourceId)
+          : removeConditions(actor, (k) => k === cond)));
+      }
+      break;
+    }
     case 'endTurn':
       events.push(...endTurn(draft, runEndOfTurnSaves));
       break;
   }
+
+  // Grapples the rules say have ended — a grappler that walked off, fell or
+  // was stunned. After every action, so no path has to remember to check.
+  events.push(...releaseBrokenGrapples(draft));
 
   // If the current actor died to an opportunity attack, hand the turn on.
   if (!draft.winner && !draft.combatants[currentCombatant(draft).id]!.alive) {

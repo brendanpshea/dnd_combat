@@ -233,6 +233,11 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     }
     case 'dashed':
       return `${nm(e.combatantId)} dashes.`;
+    case 'escapeAttempt': {
+      const what = e.condition === 'grappled' && e.fromId ? `${nm(e.fromId)}'s grip` : conditionName(e.condition);
+      const how = ` [${e.skill} ${e.total} vs DC ${e.dc}]`;
+      return (e.success ? `${nm(e.combatantId)} breaks free of ${what}.` : `${nm(e.combatantId)} strains against ${what}, and it holds.`) + how;
+    }
     case 'shoved': {
       const who = `${nm(e.shoverId)} shoves ${nm(e.targetId)}`;
       /**
@@ -244,6 +249,7 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
       const how = c ? ` [${c.attackerTotal} vs ${c.defenderTotal} ${c.defenderSkill}` +
         `${c.luck?.length ? `, ${c.luck.join('; ')}` : ''}]` : '';
       if (!e.success) return `${who} — ${nm(e.targetId)} holds its ground.${how}`;
+      if (e.mode === 'grapple') return `${nm(e.shoverId)} grabs hold of ${nm(e.targetId)}!${how}`;
       return (e.mode === 'prone' ? `${who} to the ground!` : `${who} back!`) + how;
     }
     case 'initiativeSwapped':
@@ -334,7 +340,10 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
 export function describeAction(state: GameState, a: Action): string {
   switch (a.kind) {
     case 'move': return `Move to ${cellName(a.to)}`;
+    case 'escape':
+      return a.condition === 'grappled' && a.fromId ? `Break free of ${name(state, a.fromId)}` : `Break free (${conditionName(a.condition)})`;
     case 'shove':
+      if (a.mode === 'grapple') return `Grapple ${name(state, a.targetId)}`;
       return `Shove ${name(state, a.targetId)} ${a.mode === 'prone' ? 'prone' : 'back'}`;
     case 'attack': {
       const w = WEAPONS[a.weaponId]?.name ?? a.weaponId;

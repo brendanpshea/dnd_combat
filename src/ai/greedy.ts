@@ -13,6 +13,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, spellDc, cantripDice, spellDice, eldritchBeams, wearsMetal, canBePutToSleep } from '../data/spells.js';
 import { heightenedTarget } from '../engine/rules/metamagic.js';
 import { shoveDc } from '../engine/rules/shove.js';
+import { skillMod, bestSkill } from '../engine/rules/skills.js';
 import { hazardMaxFor } from '../engine/rules/movement.js';
 import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
@@ -2301,6 +2302,21 @@ function scoreShove(state: GameState, actor: Combatant, a: Action & { kind: 'sho
   if (!t) return 0;
   const fail = saveFailProb(state, t, abilityMod(t.abilities.dex) > abilityMod(t.abilities.str) ? 'dex' : 'str',
     shoveDc(actor));
+  if (a.mode === 'grapple') {
+    /**
+     * A hold is speed 0 for the target, and disadvantage on anyone but the
+     * holder. Against a brute already toe-to-toe that buys nearly nothing — it
+     * was going to stand there and hit the holder anyway. Against something
+     * that wants to get away or get past (a caster, an archer, a skirmisher
+     * heading for the back line) it is most of its next turn. Priced small on
+     * purpose: the shove's prone mode was once priced over attacking and a pack
+     * of monsters spent whole fights knocking heroes down instead of hitting
+     * them. A grapple costs the action that would have been a swing.
+     */
+    if (t.conditions.some((k) => k.id === 'grappled' && k.sourceId === actor.id)) return 0;
+    const pins = isMeleeFighter(t) ? 0.05 : 0.3;
+    return denialValue(state, t, fail, 1) * pins;
+  }
   if (a.mode === 'prone') {
     // Prone is wasted on something already down there.
     if (t.conditions.some((k) => k.id === 'prone')) return 0;
@@ -2344,6 +2360,27 @@ function scoreShove(state: GameState, actor: Combatant, a: Action & { kind: 'sho
   // Bare ground still costs them a step back toward whoever they were hitting.
   const stepBack = denialValue(state, t, 1, 1) * 0.12;
   return (intoFire + intoWeb + stepBack) * fail;
+}
+
+/**
+ * Breaking free, priced against what the action would otherwise have bought.
+ *
+ * Restrained is the expensive one to sit in — every attack against you at
+ * advantage, every one of yours at disadvantage, and no movement — so it is
+ * worth most of a round of output to shed. A grapple costs only speed and
+ * disadvantage against anyone but the holder, so it is worth little to a
+ * fighter already next to the holder and a lot to anyone who needed to move:
+ * the archer grabbed by the bugbear, the caster held away from cover.
+ */
+function scoreEscape(actor: Combatant, a: Action & { kind: 'escape' }): number {
+  const cond = actor.conditions.find((k) => k.id === a.condition && k.sourceId === a.fromId && k.escape);
+  if (!cond?.escape) return 0;
+  const mod = skillMod(actor, bestSkill(actor, cond.escape.skills));
+  const pass = Math.max(0.05, Math.min(0.95, (21 - (cond.escape.dc - mod)) / 20));
+  const restrained = cond.id === 'restrained' ||
+    actor.conditions.some((k) => k.whileGrappledBy !== undefined && k.whileGrappledBy === a.fromId);
+  const worth = restrained ? 0.6 : isMeleeFighter(actor) ? 0.1 : 0.5;
+  return pass * outputPerRound(actor) * worth * 1.5;
 }
 
 /** Exported for tests only — see `scoreCastForTest`. */
@@ -2401,6 +2438,7 @@ export function chooseAction(state: GameState, actorId: Id): Action {
         break;
       case 'shakeAwake': s = 2; break;
       case 'shove': s = scoreShove(state, actor, a); break;
+      case 'escape': s = scoreEscape(actor, a); break;
       case 'endTurn': continue;
     }
     if (s > bestScore) {

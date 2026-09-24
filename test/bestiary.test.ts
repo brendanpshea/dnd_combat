@@ -196,7 +196,8 @@ describe('second monster batch', () => {
     expect(roll?.type === 'attackRolled' && roll.advSources.includes('pack tactics')).toBe(true);
   });
 
-  it('snake constrict weapon applies restrained condition on hit', () => {
+  // SRD 5.2.1: Constrict grapples (escape DC 14); it no longer restrains.
+  it('snake constrict weapon grapples on hit', () => {
     let verified = false;
     for (let seed = 1; seed <= 50 && !verified; seed++) {
       const c = new Combat({
@@ -208,10 +209,11 @@ describe('second monster batch', () => {
       });
       until(c, 'team2-giant-constrictor-snake1');
       const events = c.apply({ kind: 'attack', weaponId: 'snake-constrict', targetId: 'pc' });
-      const applied = events.find((e) => e.type === 'conditionApplied' && e.condition === 'restrained');
+      const applied = events.find((e) => e.type === 'conditionApplied' && e.condition === 'grappled');
       if (applied) {
         const pc = c.state.combatants['pc']!;
-        expect(pc.conditions.some((cond) => cond.id === 'restrained')).toBe(true);
+        expect(pc.conditions.find((cond) => cond.id === 'grappled')?.escape?.dc).toBe(14);
+        expect(pc.conditions.some((cond) => cond.id === 'restrained')).toBe(false);
         verified = true;
       }
     }
@@ -650,7 +652,9 @@ describe('fiends, oozes and constructs', () => {
   });
 
   it('the rug pins what it hits', () => {
-    expect(WEAPONS[MONSTERS['rug-of-smothering']!.weaponIds[0]!]!.onHitCondition).toBe('restrained');
+    // SRD 5.2.1: grappled (escape DC 13) and Restrained until the grapple ends.
+    expect(WEAPONS[MONSTERS['rug-of-smothering']!.weaponIds[0]!]!.onHitGrapple)
+      .toEqual({ dc: 13, restrains: true, maxSize: 'medium' });
   });
 
   it('each resolves into a finished fight', () => {

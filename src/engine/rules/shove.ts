@@ -50,14 +50,39 @@
  * make happen.
  */
 import type { GameState, Id, Combatant, CreatureSize } from '../types.js';
-import { isDown, isIncapacitated } from '../types.js';
-import { withinReach } from './reach.js';
+import { isDown, isIncapacitated, abilityMod, proficiencyBonus, immuneToCondition } from '../types.js';
+import { withinReach, reachFeet } from './reach.js';
+import { WEAPONS } from '../../data/weapons.js';
 import { contest, skillMod } from './skills.js';
 import { pushCreature } from './movement.js';
 import type { GameEvent } from '../events.js';
-import { applyCondition } from './conditions.js';
+import { applyCondition, grapple, heldWith, endGrapple as removeGrip } from './conditions.js';
 
-export type ShoveMode = 'push' | 'prone';
+/**
+ * The Unarmed Strike's non-damage options. `grapple` is the third the SRD
+ * gives, and it is resolved exactly as a shove is — the same contest, for the
+ * same reason (see the note above) — and then holds on: `rules/conditions.ts`
+ * owns what a grapple does and how it ends.
+ */
+export type ShoveMode = 'push' | 'prone' | 'grapple';
+
+/**
+ * "…and if you have a hand free to grab it." Nothing in the off hand, and not
+ * two-handing the main weapon. One unarmed hold at a time: the other hand is
+ * the one swinging the weapon.
+ */
+export function hasFreeHand(c: Combatant): boolean {
+  if (c.equipped.offHand) return false;
+  const main = c.equipped.mainHand;
+  return !(main && WEAPONS[main]?.properties.includes('two-handed'));
+}
+
+/** The escape DC of `c`'s grapple: 8 + Strength + proficiency (Dexterity for a monk's Martial Arts). */
+export function grappleDc(c: Combatant): number {
+  const str = abilityMod(c.abilities.str);
+  const dex = c.featureIds.includes('martial-arts') ? abilityMod(c.abilities.dex) : str;
+  return 8 + Math.max(str, dex) + proficiencyBonus(c.level);
+}
 
 /** Size order, for "no more than one size larger than you". */
 const SIZES: CreatureSize[] = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'];
@@ -86,7 +111,7 @@ export const SHOVE_DEFENCES = ['athletics', 'acrobatics'] as const;
  * the same way it owns it for an attack. This is the rule's own conditions:
  * reach, and the size clause.
  */
-export function canShove(shover: Combatant, target: Combatant): boolean {
+export function canShove(shover: Combatant, target: Combatant, mode: ShoveMode = 'push'): boolean {
   if (!shover.alive || isDown(shover) || isIncapacitated(shover)) return false;
   if (!target.alive || isDown(target)) return false;
   if (shover.id === target.id) return false;
@@ -94,7 +119,16 @@ export function canShove(shover: Combatant, target: Combatant): boolean {
   // it hits with. See rules/reach.ts.
   if (!withinReach(shover, target)) return false;
   // "no more than one size larger than you"
-  return rank(target) - rank(shover) <= 1;
+  if (rank(target) - rank(shover) > 1) return false;
+  // Not offered where it cannot land: a ghost cannot be grabbed, an ooze
+  // cannot be knocked down.
+  if (mode === 'grapple' && immuneToCondition(target, 'grappled')) return false;
+  if (mode === 'prone' && immuneToCondition(target, 'prone')) return false;
+  if (mode === 'grapple') {
+    if (!hasFreeHand(shover)) return false;
+    if (target.conditions.some((k) => k.id === 'grappled' && k.sourceId === shover.id)) return false;
+  }
+  return true;
 }
 
 /**
@@ -121,6 +155,15 @@ export function resolveShove(
     return events;
   }
   events.push({ type: 'shoved', shoverId, targetId, mode, success: true, contest: detail });
+  if (mode === 'grapple') {
+    // One unarmed hold: taking a new one lets go of the old.
+    const already = heldWith(state, shoverId, 'unarmed');
+    if (already) events.push(...removeGrip(already, shoverId));
+    events.push(...grapple(state, shoverId, targetId, {
+      dc: grappleDc(shover), via: 'unarmed', range: reachFeet(shover),
+    }));
+    return events;
+  }
   if (mode === 'prone') {
     if (!target.conditions.some((k) => k.id === 'prone')) {
       events.push(...applyCondition(state, targetId, { id: 'prone', sourceId: shoverId }, { magical: false }));

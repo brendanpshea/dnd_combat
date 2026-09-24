@@ -130,7 +130,7 @@ export function describeShort(a: Action): string {
       const bent = bentName(name, a.metamagic);
       return a.weaponId ? `${bent} (${WEAPONS[a.weaponId]?.name ?? a.weaponId})` : bent;
     }
-    case 'shove': return a.mode === 'prone' ? 'Shove prone' : 'Shove back';
+    case 'shove': return a.mode === 'prone' ? 'Shove prone' : a.mode === 'grapple' ? 'Grapple' : 'Shove back';
     case 'useItem': return ITEMS[a.itemId]?.name ?? a.itemId;
     case 'useFeature':
       // Drop the "Channel Divinity: " / "Fighting Style: " prefixes so a class
@@ -138,6 +138,7 @@ export function describeShort(a: Action): string {
       return (FEATURES[a.featureId]?.name ?? a.featureId)
         .replace(/^Channel Divinity: /, '').replace(/^Fighting Style: /, '');
     case 'shakeAwake': return 'Shake awake';
+    case 'escape': return a.condition === 'grappled' ? 'Break free of the grip' : `Break free (${a.condition})`;
     case 'dash': return 'Dash';
     case 'disengage': return 'Disengage';
     case 'dodge': return 'Dodge';
@@ -281,7 +282,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
       // somebody standing next to you, and the tray is for things that need a
       // target picked.
       case 'shove':
-        pushTarget(a.targetId, describeShort(a), a, a.mode === 'prone' ? '🤸' : '🫸');
+        pushTarget(a.targetId, describeShort(a), a, a.mode === 'prone' ? '🤸' : a.mode === 'grapple' ? '🤼' : '🫸');
         break;
       case 'castSpell': {
         const first = a.targets[0];
@@ -507,6 +508,13 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         });
         break;
       }
+      case 'escape':
+        // On the bar, not behind a target: breaking free is about you.
+        bar.push({
+          id: `escape:${a.condition}:${a.fromId ?? ''}`, label: describeShort(a),
+          icon: '🤼', group: 'basic', action: a,
+        });
+        break;
       case 'endTurn':
         break; // rendered separately
     }

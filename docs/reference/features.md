@@ -186,6 +186,7 @@ What the engine can put on a combatant, and what the log calls it.
 | `energyWarded` | warded against an element |
 | `fleeing` | fleeing |
 | `frightened` | frightened |
+| `grappled` | grappled |
 | `guided` | marked by light |
 | `hasted` | hasted |
 | `hexed` | hexed |
