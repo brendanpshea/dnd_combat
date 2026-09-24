@@ -1396,6 +1396,10 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   animation: tipIn .22s ease-out;
 }
 @keyframes tipIn { from { opacity: 0; } to { opacity: 1; } }
+/* Taps go through a tip to whatever is under it — a token, a tile, the Hint
+   button — so reading one never stops you playing. Only its ✕ catches them. */
+.tip-toast { pointer-events: none; }
+.tip-toast .tip-close { pointer-events: auto; }
 .tip-icon { font-size: 1.5rem; line-height: 1.1; flex: 0 0 auto; }
 .tip-text { flex: 1; min-width: 0; }
 .tip-text strong { color: #cfe0ff; font-size: .92rem; }
@@ -4476,3 +4480,7 @@ button.category .count {
   position: absolute; left: 2px; bottom: 1px; z-index: 1;
   font-size: clamp(9px, 2.4vmin, 13px); line-height: 1; opacity: .8; pointer-events: none;
 }
+/* The check's stakes, under the DM's line (see Arena.tsx). */
+.gambit-offer .go-stakes { margin: 0 0 8px; font-size: .85rem; line-height: 1.4; }
+.gambit-offer .go-win { color: #8fd48f; }
+.gambit-offer .go-lose { color: #e59a8f; }

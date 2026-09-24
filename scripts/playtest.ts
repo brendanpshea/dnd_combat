@@ -370,6 +370,12 @@ function fight(
     if (action.kind === 'attack' || action.kind === 'castSpell' ||
         action.kind === 'useFeature' || action.kind === 'useItem') actedThisTurn = true;
     const events = combat.apply(action);
+    // Reactions cast themselves (Hellish Rebuke, Counterspell) and are never a
+    // chosen action, so they are counted from what happened instead.
+    for (const e of events) {
+      if (e.type === 'spellCast' && SPELLS[e.spellId]?.castingTime === 'reaction') bump(T.spellsCast, e.spellId);
+      if (e.type === 'counterspelled') bump(T.spellsCast, 'counterspell');
+    }
     for (const e of events) {
       if (e.type === 'damageDealt') {
         const cls = classOf.get(e.sourceId);
@@ -509,7 +515,13 @@ function equipUpgrades(c: CampaignState): void {
   }
 }
 
-function shop(c: CampaignState, level: number, key: string): void {
+/**
+ * `reserve`: gold the shopper will not spend. The day mode keeps back one
+ * revival bill, which is what a player who has been billed once does — the
+ * harness used to spend to zero every visit, and then 11 of 30 persistent runs
+ * "went broke" on a bill a player would simply have kept the money for.
+ */
+function shop(c: CampaignState, level: number, key: string, reserve = 0): void {
   T.shopVisits += 1;
   const shelf = shopOffering(SHOP_STOCK, level, key);
   const priced = (id: Id) => itemPrice(id) ?? Infinity;
@@ -520,7 +532,7 @@ function shop(c: CampaignState, level: number, key: string): void {
     if (held && held.qty > 0) continue;
     const potion = shelf.filter((id) => RESTOCK.includes(id) && priced(id) <= c.gold)
       .sort((a, b) => priced(a) - priced(b))[0];
-    if (potion && buyItem(c, i, potion)) bump(T.itemsBought, potion);
+    if (potion && priced(potion) <= c.gold - reserve && buyItem(c, i, potion)) bump(T.itemsBought, potion);
   }
 
   let guard = 0;
@@ -528,7 +540,7 @@ function shop(c: CampaignState, level: number, key: string): void {
     if (guard++ > 40) break;
     const affordable = shelf
       .map((id) => ({ id, price: priced(id) }))
-      .filter((x) => x.price <= c.gold)
+      .filter((x) => x.price <= c.gold - reserve)
       .sort((a, b) => b.price - a.price);
     if (affordable.length === 0) break;
     const pick = affordable[0]!;
@@ -632,7 +644,7 @@ function playDays(c: CampaignState, seed: number, seenLevels: Set<number>): numb
         if (partyLevelOf(c) > levelAtFirstTry) T.day.rescuedByLevel += 1;
       }
       retries = 0;
-      shop(c, partyLevelOf(c), `${seed}:${run.wave}`);
+      shop(c, partyLevelOf(c), `${seed}:${run.wave}`, revivalCost(dayLevelOf(run, partyLevelOf(c)), run.wave));
     } else {
       retries += 1;
       // A player who has lost the same day three times has learned what the
@@ -885,7 +897,7 @@ if (DAYS) {
   console.log(`  days entered ${d.entered}, cleared ${d.cleared} (${pct(d.cleared, d.entered)}), abandoned ${d.abandoned}`);
   console.log(`  morning   ${pct(d.morning.wins, d.morning.fights)} of ${d.morning.fights}`);
   console.log(`  afternoon ${pct(d.afternoon.wins, d.afternoon.fights)} of ${d.afternoon.fights}` +
-    '   (same wave budget — the gap is depletion)');
+    '   (the afternoon is AFTERNOON_SHARE of the budget — the rest of the gap is depletion)');
   const gap = (d.morning.fights && d.afternoon.fights)
     ? Math.round((d.morning.wins / d.morning.fights - d.afternoon.wins / d.afternoon.fights) * 100)
     : 0;

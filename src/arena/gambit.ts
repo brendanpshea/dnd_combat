@@ -119,6 +119,14 @@ export interface GambitDef {
   setup: string;
   won: string;
   lost: string;
+  /**
+   * What success and failure actually DO, in plain words, shown beside the
+   * roll. The three lines above are the DM talking; this is the rulebook. A
+   * playtest found the check screen offering "+3 vs 13, say the words?" with
+   * nothing saying what the words were for — odds with no stakes is not a
+   * decision. Kept beside the effects below so the two are edited together.
+   */
+  stakes: { win: string; lose: string };
   /** The creature the lines name. Required if any of them uses a slot. */
   subject?(w: GambitContext): Id | undefined;
   eligible(w: GambitContext): boolean;
@@ -309,6 +317,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'humanoid', 'celestial'),
     onSuccess: RECRUIT_US,     // +10
     onFailure: RECRUIT_THEM,   // -11
+    stakes: { win: 'another of their weakest fights for you', lose: 'another of their weakest joins them' },
   },
   {
     skill: 'animal-handling', label: 'Animal Handling',
@@ -319,6 +328,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => w.types.has('beast'),
     onSuccess: RECRUIT_US,
     onFailure: RECRUIT_THEM,
+    stakes: { win: 'another of their weakest fights for you', lose: 'another of their weakest joins them' },
   },
   {
     skill: 'performance', label: 'Perform',
@@ -329,6 +339,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'fey', 'humanoid'),
     onSuccess: RECRUIT_US,
     onFailure: RECRUIT_THEM,
+    stakes: { win: 'another of their weakest fights for you', lose: 'another of their weakest joins them' },
   },
   {
     skill: 'intimidation', label: 'Intimidate',
@@ -339,6 +350,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'humanoid', 'giant', 'fey'),
     onSuccess: (_p, f) => half(f).forEach((c) => cond(c, 'frightened')),   // +10
     onFailure: (_p, f) => half(f).forEach((c) => cond(c, 'blessed')),      // -6
+    stakes: { win: 'half of them start frightened', lose: 'half of them start blessed' },
   },
   {
     skill: 'religion',
@@ -349,6 +361,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'undead', 'fiend', 'celestial', 'fey'),
     onSuccess: (p) => p.forEach((c) => cond(c, 'blessed')),   // +7
     onFailure: (p) => p.forEach((c) => cond(c, 'baned')),     // -7
+    stakes: { win: 'your party starts blessed', lose: 'your party starts baned' },
   },
   {
     skill: 'deception',
@@ -359,6 +372,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'humanoid', 'fiend', 'fey'),
     onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
     onFailure: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')),        // -8
+    stakes: { win: 'their two weakest start frightened', lose: 'their strongest starts blessed' },
   },
   {
     skill: 'investigation',
@@ -371,6 +385,7 @@ export const GAMBITS: GambitDef[] = [
     // acOf was fixed to let a stat block's armour class change at all.
     onSuccess: (p) => p.forEach((c) => cond(c, 'warded')),
     onFailure: (_p, f) => f.forEach((c) => cond(c, 'warded')),
+    stakes: { win: 'your party starts with +2 AC', lose: 'they start with +2 AC' },
   },
   {
     skill: 'athletics',
@@ -381,6 +396,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => w.sizes.has('huge') || w.types.has('giant'),
     onSuccess: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }),   // +9
     onFailure: bleed,                                                          // -5
+    stakes: { win: '10 temporary hit points each', lose: 'everyone starts a fifth of their hit points down' },
   },
   {
     skill: 'medicine',
@@ -390,6 +406,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => w.hurt,
     onSuccess: dose,     // +7
     onFailure: bleed,    // -5
+    stakes: { win: 'a fifth of your hit points again, as temporary ones', lose: 'everyone starts a fifth of their hit points down' },
   },
   {
     skill: 'acrobatics',
@@ -399,6 +416,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => w.count >= 5,
     onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
     onFailure: bleed,                                                           // -5
+    stakes: { win: 'their two weakest start frightened', lose: 'everyone starts a fifth of their hit points down' },
   },
   {
     skill: 'survival',
@@ -411,6 +429,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'beast', 'monstrosity'),
     onSuccess: (_p, f) => f.forEach((c) => cond(c, 'sapped')),   // +5
     onFailure: bleed,                                           // -5
+    stakes: { win: 'their first swings are at disadvantage', lose: 'everyone starts a fifth of their hit points down' },
   },
   {
     skill: 'perception',
@@ -428,6 +447,7 @@ export const GAMBITS: GambitDef[] = [
      */
     onSuccess: (_p, f) => f.forEach((c) => cond(c, 'sapped')),   // +5
     onFailure: (p) => p.forEach((c) => cond(c, 'sapped')),       // -4
+    stakes: { win: 'their first swings are at disadvantage', lose: 'your first swings are at disadvantage' },
   },
 ];
 
