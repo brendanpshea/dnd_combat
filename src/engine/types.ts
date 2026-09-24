@@ -383,6 +383,8 @@ export interface Combatant {
   shapechanger?: boolean;
   vulnerabilities: DamageType[];
   immunities: DamageType[];
+  /** Conditions this creature cannot be given (a ghost cannot be grappled). */
+  conditionImmunities?: ConditionId[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
   /**
@@ -822,7 +824,15 @@ export function heldInPlace(c: Combatant): boolean {
  * poisoned by Ray of Sickness and spider bites.
  */
 export function immuneToCondition(c: Combatant, id: ConditionId): boolean {
-  return id === 'poisoned' && c.immunities.includes('poison');
+  if (id === 'poisoned' && c.immunities.includes('poison')) return true;
+  const list = c.conditionImmunities;
+  if (!list) return false;
+  if (list.includes(id)) return true;
+  // The game's own conditions that are a named SRD one underneath: the
+  // harpy's lure is a charm, and a creature fleeing in fear is frightened.
+  if (id === 'lured' && list.includes('charmed')) return true;
+  if (id === 'fleeing' && list.includes('frightened')) return true;
+  return false;
 }
 
 /**

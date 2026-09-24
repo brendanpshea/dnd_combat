@@ -120,3 +120,16 @@ describe('restraints you break with an action', () => {
     expect(k?.repeatSave).toBeUndefined();
   });
 });
+
+describe('condition immunities from the stat block', () => {
+  it('a ghost cannot be grappled, and the option is not offered', async () => {
+    const { buildMonster } = await import('../src/data/monsters.js');
+    const c = fight();
+    const ghost = { ...buildMonster('ghost', 'team2', { x: 2, y: 3 }), id: 'gh' };
+    c.state.combatants['gh'] = ghost;
+    cellAt(c.state.grid, ghost.position)!.occupantId = 'gh';
+    expect(ghost.conditionImmunities).toContain('grappled');
+    expect(grapple(c.state, 'g', 'gh', { dc: 15, via: 'unarmed', range: 5 })).toEqual([]);
+    expect(legalActions(c.state, 'g').some((a) => a.kind === 'shove' && a.targetId === 'gh' && a.mode === 'grapple')).toBe(false);
+  });
+});

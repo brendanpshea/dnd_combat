@@ -50,7 +50,7 @@
  * make happen.
  */
 import type { GameState, Id, Combatant, CreatureSize } from '../types.js';
-import { isDown, isIncapacitated, abilityMod, proficiencyBonus } from '../types.js';
+import { isDown, isIncapacitated, abilityMod, proficiencyBonus, immuneToCondition } from '../types.js';
 import { withinReach, reachFeet } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { contest, skillMod } from './skills.js';
@@ -120,6 +120,10 @@ export function canShove(shover: Combatant, target: Combatant, mode: ShoveMode =
   if (!withinReach(shover, target)) return false;
   // "no more than one size larger than you"
   if (rank(target) - rank(shover) > 1) return false;
+  // Not offered where it cannot land: a ghost cannot be grabbed, an ooze
+  // cannot be knocked down.
+  if (mode === 'grapple' && immuneToCondition(target, 'grappled')) return false;
+  if (mode === 'prone' && immuneToCondition(target, 'prone')) return false;
   if (mode === 'grapple') {
     if (!hasFreeHand(shover)) return false;
     if (target.conditions.some((k) => k.id === 'grappled' && k.sourceId === shover.id)) return false;
