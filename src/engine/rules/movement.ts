@@ -2,7 +2,7 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
-import { cellAt, posEq, abilityMod, isDown, isIncapacitated, canReact, immuneToCondition, wardedAgainstMagicalBinding } from '../types.js';
+import { cellAt, posEq, abilityMod, isDown, isIncapacitated, canReact, immuneToCondition, heldInPlace, wardedAgainstMagicalBinding } from '../types.js';
 import { blocksMovement, reachable, pathTo, adjacent, sphere2x2, popIllusion, type StepDanger } from '../grid.js';
 import { reachesCell } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
@@ -379,7 +379,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     mover.turn.movementUsed += r.costs.get(`${reached.x},${reached.y}`) ?? 0;
     // Caught (web, brambles, a spirit's grip): speed is zero from here, the
     // same as it will be at the start of the next turn.
-    if (mover.conditions.some((k) => k.id === 'restrained')) {
+    if (heldInPlace(mover)) {
       mover.turn.movementMax = Math.min(mover.turn.movementMax, mover.turn.movementUsed);
     }
     events.unshift({ type: 'moved', combatantId: moverId, path: walked });
@@ -408,10 +408,11 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         if (reachesCell(h, from) && !reachesCell(h, step)) {
           h.turn.reactionUsed = true;
           events.push(...resolveAttack(state, hid, moverId, weapon, { opportunity: true }));
-          if (!mover.alive || isDown(mover)) {
+          if (!mover.alive || isDown(mover) || heldInPlace(mover)) {
             // Killed or dropped to 0 (unconscious): the mover stops where it
             // fell rather than walking on to claim the destination cell. A
             // kill clears occupancy; a downed body still occupies its cell.
+            // Grabbed by the swing (a monster's grappling attack) stops it too.
             return halt();
           }
         }
@@ -432,7 +433,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       events.push(...enterHazard(state, moverId));
       // Restrained by brambles ends the walk as surely as dropping does: speed
       // is zero from here.
-      if (!mover.alive || isDown(mover) || mover.conditions.some((k) => k.id === 'restrained')) {
+      if (!mover.alive || isDown(mover) || heldInPlace(mover)) {
         return halt();
       }
     }
@@ -467,7 +468,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
       if (!spirit || spirit.restrainedId !== undefined) continue;
       if (!sphere2x2(spirit.position).some((p) => posEq(p, step))) continue;
       events.push(...catchInSpirit(state, other.id, moverId));
-      if (!mover.alive || isDown(mover) || mover.conditions.some((k) => k.id === 'restrained')) {
+      if (!mover.alive || isDown(mover) || heldInPlace(mover)) {
         return halt();
       }
     }
@@ -486,7 +487,9 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
         if (!save.success) {
           const caught = applyCondition(state, moverId, {
             id: 'restrained', sourceId: web.sourceId, concentration: true,
-            repeatSave: { ability, dc: web.dc, magical: true },
+            // 2024: an action and a Strength (Athletics) check to tear free,
+            // not a save every turn.
+            escape: { dc: web.dc, skills: ['athletics'] },
           }, { magical: true });
           // Caught: the mover stops here rather than walking on through the web
           // — on the last cell it can actually stand on, which may not be this

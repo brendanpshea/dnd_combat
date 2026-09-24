@@ -10,7 +10,7 @@ import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
 import { dismissSummonedBy, dismissSummonsOfSpell } from './summon.js';
-import { withinReach, reachesCell } from './reach.js';
+import { withinReach, reachesCell, reachFeet } from './reach.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -18,7 +18,7 @@ import { pushCreature } from './movement.js';
 import { downCombatant } from './heal.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
-import { applyCondition, removeConditions } from './conditions.js';
+import { applyCondition, removeConditions, grapple, heldWith } from './conditions.js';
 
 /** Which ability powers an attack with this weapon. */
 export function attackAbility(attacker: Combatant, weapon: WeaponData): 'str' | 'dex' {
@@ -42,6 +42,10 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   if (!w || !t || !t.alive || t.team === actor.team) return false;
   if (isDown(t)) return false;   // already out of the fight; nothing to gain
   if (isHidden(t)) return false;
+  // "Whatever part a grappler uses, it can grapple only one creature at a time
+  // with that part, and can't use that part to target another creature."
+  const held = heldWith(state, actor.id, weaponId);
+  if (held && held.id !== targetId) return false;
   // Charm's actual rule: you cannot attack whoever charmed you. Everyone else
   // is still fair game — which is what makes it a redirection rather than a
   // removal, and why it does not need to end the fight to be worth casting.
@@ -183,6 +187,10 @@ export function collectAttackSources(
   // disadvantage.
   if (target.conditions.some((c) => c.id === 'restrained')) adv.push('target restrained');
   if (attacker.conditions.some((c) => c.id === 'restrained')) dis.push('attacker restrained');
+  // Grappled: disadvantage on attacks against anyone other than the grappler.
+  if (attacker.conditions.some((c) => c.id === 'grappled' && c.sourceId !== target.id)) {
+    dis.push('attacker grappled');
+  }
   if (attacker.conditions.some((c) => c.id === 'frightened')) dis.push('attacker frightened');
 
   return { adv, dis };
@@ -785,6 +793,17 @@ export function resolveAttack(
     }
   }
 
+  if (weapon.onHitGrapple && target.alive && !isDown(target)) {
+    const g = weapon.onHitGrapple;
+    const SIZES = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'];
+    const fits = !g.maxSize || SIZES.indexOf(target.size ?? 'medium') <= SIZES.indexOf(g.maxSize);
+    if (fits && !heldWith(state, attackerId, weapon.id)) {
+      events.push(...grapple(state, attackerId, targetId, {
+        dc: g.dc, via: weapon.id, range: reachFeet(attacker), ...(g.restrains ? { restrains: true } : {}),
+      }));
+    }
+  }
+
   if (weapon.onHitCondition && target.alive &&
       !target.conditions.some((c) => c.id === weapon.onHitCondition)) {
     events.push(...applyCondition(state, targetId, { id: weapon.onHitCondition, sourceId: attackerId }, { magical: isMagicWeapon(weapon) }));
@@ -951,7 +970,7 @@ export const SMITE_SPECS: Record<string, {
       const save = savingThrow(state, targetId, 'str', dc, { magical: true });
       events.push(save.event);
       if (save.success) return events;
-      events.push(...applyCondition(state, targetId, { id: 'restrained', sourceId: attackerId, repeatSave: { ability: 'str', dc, magical: true } }, { magical: true }));
+      events.push(...applyCondition(state, targetId, { id: 'restrained', sourceId: attackerId, escape: { dc, skills: ['athletics'] } }, { magical: true }));
       state.combatants[attackerId]!.holdDamage = { dice: '1d6', type: 'piercing' };
       return events;
     },

@@ -4,7 +4,7 @@
  */
 import type { GameState, Combatant, Id, TeamId, GridState } from './types.js';
 import { cellAt } from './types.js';
-import { abilityMod, proficiencyBonus, isDown } from './types.js';
+import { abilityMod, proficiencyBonus, isDown, heldInPlace } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollD20 } from './dice.js';
 import { rollDice } from './dice.js';
@@ -21,7 +21,7 @@ import { attackableWeapons } from './rules/equipment.js';
 import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
-import { applyCondition, removeConditions } from './rules/conditions.js';
+import { applyCondition, removeConditions, releaseBrokenGrapples } from './rules/conditions.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -205,6 +205,11 @@ export function startTurn(state: GameState): GameEvent[] {
     events.push(...removeConditions(holder, (k) => k.endsAtTurnStartOf === c.id));
   }
 
+  // A grappler stunned or paralysed on someone else's turn has lost its grip
+  // by now; so has one pushed out of range. Settled before speed is priced,
+  // since a grapple is one of the things that zeroes it.
+  events.push(...releaseBrokenGrapples(state));
+
   c.hasActed = true;
 
   // Stand up from prone automatically for half speed — unless you're in no
@@ -245,8 +250,9 @@ export function startTurn(state: GameState): GameEvent[] {
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
   }
   // Web: a restrained creature can't move at all this turn — and cannot Dash
-  // its way out either, which is exactly what it used to do.
-  if (c.conditions.some((k) => k.id === 'restrained')) { speed = 0; dashSpeed = 0; }
+  // its way out either, which is exactly what it used to do. A grappled one
+  // likewise: "Speed 0 and can't increase".
+  if (heldInPlace(c)) { speed = 0; dashSpeed = 0; }
   // Incapacitated (e.g. the first stage of Sleep): takes no actions and no
   // movement — it just stands there until its end-of-turn save. Without this it
   // kept full speed and the AI would walk it around before rolling to wake.

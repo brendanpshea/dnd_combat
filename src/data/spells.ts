@@ -1563,7 +1563,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         if (!save.success) {
           if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
-          events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'dex', dc, magical: true } }, { magical: true }));
+          events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true, escape: { dc, skills: ['athletics'] } }, { magical: true }));
           caught.push(tid);
         }
       }
@@ -1609,7 +1609,7 @@ export const SPELLS: Record<Id, SpellData> = {
         events.push(save.event);
         if (!save.success) {
           if (wardedAgainstMagicalBinding(t, 'restrained')) continue;
-          events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true, repeatSave: { ability: 'str', dc, magical: true } }, { magical: true }));
+          events.push(...applyCondition(state, tid, { id: 'restrained', sourceId: casterId, concentration: true, escape: { dc, skills: ['athletics'] } }, { magical: true }));
           caught.push(tid);
         }
       }

@@ -18,7 +18,8 @@
  * effect that could be refused would need to call `conditionBlocked`.
  */
 import type { ActiveCondition, Combatant, ConditionId, GameState, Id } from '../types.js';
-import { immuneToCondition, wardedAgainstMagicalBinding } from '../types.js';
+import { immuneToCondition, wardedAgainstMagicalBinding, isDown, isIncapacitated } from '../types.js';
+import { distanceFeet } from '../grid.js';
 import { immuneToCharmAndFear, charmWarded } from './saves.js';
 import type { GameEvent } from '../events.js';
 
@@ -91,4 +92,78 @@ export function removeConditions(
   target.conditions = target.conditions.filter((k) => !match(k));
   if (opts.silent) return [];
   return gone.map((k) => ({ type: 'conditionRemoved' as const, combatantId: target.id, condition: k.id }));
+}
+
+/**
+ * Grappling (SRD 5.2.1).
+ *
+ * A grapple is a `grappled` condition carrying who holds it, with what part and
+ * at what range, and its escape DC. The rules that follow from it live in one
+ * place each: speed 0 in startTurn, the disadvantage in collectAttackSources,
+ * the Escape action in actions.ts, and the ways it ends below.
+ *
+ * Not modelled: dragging. The SRD lets a grappler haul its catch along at half
+ * speed; here a grappler that walks out of range simply lets go. The AI gains
+ * nothing by walking away from something it is holding, so this bites rarely,
+ * and doing it properly means moving two creatures through one path.
+ */
+export interface GrappleSpec {
+  /** Escape DC. */
+  dc: number;
+  /** The weapon id doing the holding, or 'unarmed'. One creature per part. */
+  via: Id;
+  /** Range in feet; the grapple ends beyond it. */
+  range: number;
+  /** "…and has the Restrained condition until the grapple ends." */
+  restrains?: boolean;
+}
+
+/** Grapple `targetId`. Returns the events (none if it cannot be held). */
+export function grapple(
+  state: GameState, grapplerId: Id, targetId: Id, spec: GrappleSpec,
+): GameEvent[] {
+  const target = state.combatants[targetId];
+  if (!target || target.conditions.some((k) => k.id === 'grappled' && k.sourceId === grapplerId)) return [];
+  const events = applyCondition(state, targetId, {
+    id: 'grappled', sourceId: grapplerId,
+    escape: { dc: spec.dc, skills: ['athletics', 'acrobatics'] },
+    grapple: { via: spec.via, range: spec.range },
+  }, { magical: false });
+  if (events.length > 0 && spec.restrains) {
+    events.push(...applyCondition(state, targetId, {
+      id: 'restrained', sourceId: grapplerId, whileGrappledBy: grapplerId,
+    }, { magical: false }));
+  }
+  return events;
+}
+
+/** End the grapple `grapplerId` has on `target`, and anything that rode on it. */
+export function endGrapple(target: Combatant, grapplerId: Id): GameEvent[] {
+  return removeConditions(target, (k) =>
+    (k.id === 'grappled' && k.sourceId === grapplerId) || k.whileGrappledBy === grapplerId);
+}
+
+/** Who `grapplerId` is holding with `via`, if anyone. */
+export function heldWith(state: GameState, grapplerId: Id, via: Id): Combatant | undefined {
+  return Object.values(state.combatants).find((c) => c.conditions.some(
+    (k) => k.id === 'grappled' && k.sourceId === grapplerId && k.grapple?.via === via));
+}
+
+/**
+ * Let go of every grapple the rules say has ended: the grappler is gone, down
+ * or incapacitated, or the two are further apart than the hold reaches.
+ * Called after every action and at the start of every turn, so no path that
+ * moves or disables a creature has to remember to.
+ */
+export function releaseBrokenGrapples(state: GameState): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const held of Object.values(state.combatants)) {
+    for (const k of held.conditions.filter((x) => x.id === 'grappled')) {
+      const by = k.sourceId !== undefined ? state.combatants[k.sourceId] : undefined;
+      const broken = !by || !by.alive || isDown(by) || isIncapacitated(by) || !held.alive ||
+        distanceFeet(by.position, held.position) > (k.grapple?.range ?? 5);
+      if (broken) events.push(...endGrapple(held, k.sourceId ?? ''));
+    }
+  }
+  return events;
 }

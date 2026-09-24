@@ -1,7 +1,7 @@
 /**
  * Weapon data. Adding a weapon is an entry here — never an engine edit.
  */
-import type { Id, DamageType, Ability, ConditionId, WeaponProfs, CreatureType } from '../engine/types.js';
+import type { Id, DamageType, Ability, ConditionId, WeaponProfs, CreatureType, CreatureSize } from '../engine/types.js';
 
 export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
 export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze' | 'nick' | 'cleave';
@@ -28,6 +28,14 @@ export interface WeaponData {
   bonusDiceVsShapechanger?: string;
   /** Condition applied automatically on a hit (wolf bite → prone, snake constrict → restrained). */
   onHitCondition?: ConditionId;
+  /**
+   * "If the target is [size] or smaller, it has the Grappled condition (escape
+   * DC n)" — the 2024 monster grapple, on a hit and with no save. `restrains`
+   * adds "and has the Restrained condition until the grapple ends". The limb
+   * then holds that one creature, and cannot attack another while it does
+   * (rules/conditions.ts, canAttackWith).
+   */
+  onHitGrapple?: { dc: number; restrains?: boolean; maxSize?: CreatureSize };
   /**
    * On a hit, the target makes a save or gains a save-ends condition
    * (ghoul claws → paralyzed, giant spider bite → poisoned).

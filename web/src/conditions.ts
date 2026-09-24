@@ -43,6 +43,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   stunned:        { icon: '💫', label: 'Stunned — can’t move or act, and easier to hit', kind: 'control', tint: 'frozen' },
   unconscious:    { icon: '💤', label: 'Unconscious — attacks against it have advantage, and a melee hit is always a crit', kind: 'control' },
   restrained:     { icon: '⛓️', label: 'Restrained — speed 0, easier to hit', kind: 'control', tint: 'bound' },
+  grappled:       { icon: '🤼', label: 'Grappled — speed 0; attacks anyone but its grappler at disadvantage. Its action can try to break free.', kind: 'control', tint: 'bound' },
   commanded:      { icon: '🫵', label: 'Commanded — loses its next action', kind: 'control' },
   incapacitated:  { icon: '💫', label: 'Incapacitated — can’t take actions', kind: 'control' },
   frightened:     { icon: '😱', label: 'Frightened — its own attacks have disadvantage', kind: 'debuff', tint: 'fear' },
@@ -170,7 +171,7 @@ const BLOCKING: readonly ConditionId[] = [
   // Ordered by what a player most needs told. A creature that is both
   // paralyzed and restrained should hear about the paralysis.
   'unconscious', 'paralyzed', 'stunned', 'incapacitated',
-  'commanded', 'confused', 'lured', 'fleeing', 'restrained',
+  'commanded', 'confused', 'lured', 'fleeing', 'restrained', 'grappled',
 ];
 
 /*
