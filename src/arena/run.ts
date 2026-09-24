@@ -77,10 +77,12 @@ import { generateArenaMap, type LayoutName } from './map.js';
 // budget became an easier fight — 66% against a bound of "roughly even". This
 // is the re-measurement the calibration test asks for by name when it fires,
 // not a difficulty decision taken for its own sake.
+// Level 6, 20000 -> 19000, when the monster auras landed (Fire Aura, Stench,
+// Legendary Resistance): the tripwire read 30% at 20000, on its floor.
 // Level 9's 34000 is extrapolated, NOT measured: it continues the +5000 step
 // the last two rungs take. The calibration test will say so when a run reaches
 // level 9 often enough to measure, and this comment is what it is arguing with.
-export const EVEN_BUDGET = [1650, 2900, 6200, 8000, 14000, 20000, 23000, 28000, 34000];
+export const EVEN_BUDGET = [1650, 2900, 6200, 8000, 14000, 19000, 23000, 28000, 34000];
 
 export function evenBudgetFor(level: number): number {
   const i = Math.min(Math.max(level, 1), EVEN_BUDGET.length) - 1;

@@ -9,7 +9,7 @@
  * looks at ENCOUNTERS, so a file that held both was two things in a trench
  * coat — and the bestiary is the half that keeps growing.
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura } from '../engine/types.js';
 import { proficiencyBonus, abilityMod } from '../engine/types.js';
 import { FEATURES, ragesAt } from './features.js';
 import { WEAPONS } from './weapons.js';
@@ -54,6 +54,8 @@ export interface MonsterData {
    * of a condition respects it (rules/conditions.ts).
    */
   conditionImmunities?: ConditionId[];
+  /** Always-on emanations (Fire Aura, Stench) — see rules/aura.ts. */
+  auras?: MonsterAura[];
   /** Caster monsters reuse the spell system (acolyte, cult fanatic, ...). */
   spellcasting?: { ability: Ability; slots: number[]; spellIds: Id[] };
   /** SRD creature type. Beast is the load-bearing one today -- Animal
@@ -625,6 +627,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['fire-form'],
     weaponIds: ['fire-touch'],
     attacksPerAction: 2,
+    // Its burning rider is not modelled: there is no burning condition.
+    auras: [{ name: 'Fire Aura', radius: 10, when: 'ownerTurnEnd', damage: { dice: '1d10', type: 'fire' } }],
     immunities: ['fire', 'poison'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
@@ -785,7 +789,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'large',
     abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 17, cha: 16 },
     conditionImmunities: ['charmed', 'paralyzed', 'poisoned'],
-    featureIds: ['magic-resistance'],
+    featureIds: ['magic-resistance', 'legendary-resistance'],
     weaponIds: ['unicorn-horn', 'unicorn-hooves'],
     attacksPerAction: 2,
     immunities: ['poison'],
@@ -977,6 +981,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['magic-resistance'],
     weaponIds: ['hezrou-rend'],
     attacksPerAction: 3,
+    auras: [{
+      name: 'Stench', radius: 10, when: 'targetTurnStart',
+      save: { ability: 'con', dc: 16 }, condition: 'poisoned',
+    }],
     resistances: ['cold', 'fire', 'lightning'],
     immunities: ['poison'],
   },
@@ -1117,6 +1125,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 24, dex: 13, con: 21, int: 4, wis: 10, cha: 5 },
     weaponIds: ['remorhaz-bite'],
     immunities: ['cold', 'fire'],
+    auras: [{ name: 'Heat Aura', radius: 5, when: 'ownerTurnEnd', damage: { dice: '3d10', type: 'fire' } }],
   },
 
   // ---- aberrations ------------------------------------------------------
@@ -1141,7 +1150,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     size: 'large',
     abilities: { str: 21, dex: 9, con: 15, int: 18, wis: 15, cha: 18 },
     savingThrowProfs: ['con', 'int', 'wis'],
-    featureIds: ['magic-resistance', 'long-limbed', 'charm'],
+    // Mucus Cloud is not modelled: it works only underwater.
+    featureIds: ['magic-resistance', 'long-limbed', 'charm', 'legendary-resistance'],
     weaponIds: ['aboleth-tentacle'],
     attacksPerAction: 2,
     // The 2024 aboleth has no Spellcasting action: Dominate Mind is the Charm
@@ -1177,6 +1187,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 16, dex: 17, con: 10, int: 11, wis: 10, cha: 8 },
     conditionImmunities: ['charmed', 'poisoned'],
     weaponIds: ['ghast-claws', 'ghast-bite'],
+    auras: [{
+      name: 'Stench', radius: 5, when: 'targetTurnStart',
+      save: { ability: 'con', dc: 10 }, condition: 'poisoned', immuneOnSuccess: true,
+    }],
     resistances: ['necrotic'],
     immunities: ['poison'],
   },
@@ -1450,6 +1464,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     savingThrowProfs: ['con'],
     weaponIds: ['azer-burning-hammer'],
     metalArmor: true,
+    auras: [{
+      name: 'Fire Aura', radius: 5, when: 'ownerTurnEnd', choice: true, stopsWhenIncapacitated: true,
+      damage: { dice: '1d10', type: 'fire' },
+    }],
     immunities: ['fire', 'poison'],
   },
   'azer-forgecaller': {
@@ -1475,6 +1493,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 18, dex: 14, con: 15, int: 11, wis: 10, cha: 12 },
     weaponIds: ['salamander-spear'],
     attacksPerAction: 2,
+    auras: [{
+      name: 'Fire Aura', radius: 5, when: 'ownerTurnEnd', choice: true,
+      damage: { dice: '2d6', type: 'fire' },
+    }],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['fire'],
     vulnerabilities: ['cold'],
@@ -2017,6 +2039,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     vulnerabilities: [...(m.vulnerabilities ?? [])],
     immunities: [...(m.immunities ?? [])],
     ...(m.conditionImmunities ? { conditionImmunities: [...m.conditionImmunities] } : {}),
+    ...(m.auras ? { auras: m.auras.map((a) => ({ ...a })) } : {}),
     conditions: [],
     hasActed: false,
     turn: {

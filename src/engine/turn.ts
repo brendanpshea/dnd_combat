@@ -22,6 +22,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
 import { applyCondition, removeConditions, releaseBrokenGrapples } from './rules/conditions.js';
+import { ownerTurnEndAuras, turnStartAuras } from './rules/aura.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -537,6 +538,8 @@ export function startTurn(state: GameState): GameEvent[] {
     if (amount > 0) events.push(...applyDamage(state, c.id, other.id, amount, 'radiant', dmg.rolls, { magical: true }));
     if (!c.alive) break;
   }
+  // A monster's Stench, which works the same way without a spell behind it.
+  if (c.alive) events.push(...turnStartAuras(state, c.id));
 
   events.push({ type: 'turnStarted', combatantId: c.id, round: state.round });
   return events;
@@ -558,6 +561,8 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   const events: GameEvent[] = [];
   const ending = currentCombatant(state);
   events.push(...runRepeatSaves(state, ending.id));
+  // Fire Aura and its kin burn whoever is close as their owner's turn ends.
+  events.push(...ownerTurnEndAuras(state, ending.id));
   // "Until the end of your next turn": those whose turn this was end now —
   // except any applied during this very turn, which wait for the next one.
   for (const holder of Object.values(state.combatants)) {

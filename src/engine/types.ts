@@ -385,6 +385,10 @@ export interface Combatant {
   immunities: DamageType[];
   /** Conditions this creature cannot be given (a ghost cannot be grappled). */
   conditionImmunities?: ConditionId[];
+  /** A stat block's always-on emanations (Fire Aura, Stench) — see rules/aura.ts. */
+  auras?: MonsterAura[];
+  /** The creatures whose Stench this one has shrugged off, and is now immune to. */
+  auraImmuneTo?: Id[];
   conditions: ActiveCondition[];
   concentratingOn?: { spellId: Id; targetIds: Id[] };
   /**
@@ -823,6 +827,32 @@ export function heldInPlace(c: Combatant): boolean {
  * damage list rather than duplicated onto 48 monsters. Skeletons were being
  * poisoned by Ray of Sickness and spider bites.
  */
+/**
+ * A stat block's emanation (SRD 5.2.1): Fire Aura, Heat Aura, Stench.
+ *
+ * Two shapes cover every one in the bestiary. `ownerTurnEnd` burns each
+ * creature near the owner as its turn ends (the fire elemental, the azer, the
+ * salamander, the remorhaz); `targetTurnStart` asks a save of each creature
+ * that starts its turn near the owner (the hezrou's and the ghast's Stench).
+ */
+export interface MonsterAura {
+  name: string;
+  /** Emanation size in feet. */
+  radius: number;
+  when: 'ownerTurnEnd' | 'targetTurnStart';
+  /** "Each creature of the X's choice": only its enemies. Otherwise everyone
+   *  in range, allies included. */
+  choice?: boolean;
+  /** The azer's: nothing while the owner is Incapacitated. */
+  stopsWhenIncapacitated?: boolean;
+  damage?: { dice: string; type: DamageType };
+  save?: { ability: Ability; dc: number };
+  /** On a failed save, until the start of the target's next turn. */
+  condition?: ConditionId;
+  /** The ghast's: a success makes the target immune to this owner's aura. */
+  immuneOnSuccess?: boolean;
+}
+
 export function immuneToCondition(c: Combatant, id: ConditionId): boolean {
   if (id === 'poisoned' && c.immunities.includes('poison')) return true;
   const list = c.conditionImmunities;
