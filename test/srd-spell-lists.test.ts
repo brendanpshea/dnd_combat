@@ -157,7 +157,11 @@ const SRD: Record<string, string[]> = {
     'darkness', 'enthrall', 'hold-person', 'invisibility', 'mind-spike', 'mirror-image',
     'misty-step', 'ray-of-enfeeblement', 'spider-climb', 'suggestion',
     // 3rd
-    'counterspell', 'dispel-magic', 'fear', 'fly',
+    // The SRD's table breaks across a page after Fly; the rest of it was left
+    // off this transcription until Hypnotic Pattern and Vampiric Touch were
+    // given to the warlock and the check refused them.
+    'counterspell', 'dispel-magic', 'fear', 'fly', 'gaseous-form', 'hypnotic-pattern',
+    'magic-circle', 'major-image', 'remove-curse', 'tongues', 'vampiric-touch',
     // 4th
     'banishment', 'blight', 'charm-monster', 'dimension-door', 'hallucinatory-terrain',
     // 5th

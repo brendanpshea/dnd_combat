@@ -10,12 +10,12 @@
 import type { GameState, Id, Position, Combatant, ConditionId } from './types.js';
 import { posEq, cellAt, isDown, isIncapacitated, heldInPlace } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, SpellData, validTarget, directionFromDelta, spellShots } from '../data/spells.js';
+import { SPELLS, SpellData, validTarget, directionFromDelta, spellShots, damageReactions } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS, isCharged, chargesLeft } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
-import { blocksMovement, distanceFeet, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
+import { blocksMovement, distanceFeet, distanceCells, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
@@ -179,6 +179,17 @@ export function isRaging(actor: Combatant): boolean {
   return actor.conditions.some((c) => c.id === 'raging');
 }
 
+/**
+ * Whether casting `spell` now would be its free repeat rather than a new cast:
+ * it repeats while held (`repeatWhileHeld`), and the actor is holding it.
+ * Vampiric Touch — "you can make the attack again on each of your turns as a
+ * Magic action". That is an action, not a casting: no slot, no Counterspell,
+ * and the concentration it runs on is kept rather than dropped and retaken.
+ */
+function repeatingHeld(actor: Combatant, spell: SpellData): boolean {
+  return spell.repeatWhileHeld === true && actor.concentratingOn?.spellId === spell.id;
+}
+
 function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): boolean {
   if (!actor.spellIds.includes(spell.id)) return false;
   // RAGE: "No Concentration or Spells. You can't maintain Concentration, and
@@ -192,7 +203,13 @@ function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): 
   // re-establish the same effect — a wasted action and slot. Don't offer it
   // (Hunter's Mark, Faerie Fire, Bless…); a *different* concentration spell is
   // still fine and correctly replaces this one.
-  if (spell.concentration && actor.concentratingOn?.spellId === spell.id) return false;
+  //
+  // Except a spell whose effect IS repeating itself while held (Vampiric
+  // Touch): that one is offered again, free, as its own repeat — see
+  // `repeatingHeld`.
+  if (spell.concentration && actor.concentratingOn?.spellId === spell.id) {
+    return repeatingHeld(actor, spell) && slotLevel === 0;
+  }
   // A one-per-caster summon (Spiritual Weapon, Flaming Sphere) that's already on
   // the board — recasting just re-places the same conjuration. Its kind is the
   // spell id, so match on that.
@@ -228,6 +245,16 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
     // by `spellTargetSets` below, asked — to pick two Eldritch Blast targets
     // when it has one beam. `cast` then dropped the extra silently.
     if (targets.length < 1 || targets.length > spellShots(spell, actor)) return false;
+    // All inside one cube of this size (Slow's 40 feet): no two targets further
+    // apart, on either axis, than the cube is wide.
+    if (t.cluster !== undefined) {
+      const at = targets.flatMap((tg) => ('combatantId' in tg ? [state.combatants[tg.combatantId]?.position] : []));
+      if (at.some((p) => !p)) return false;
+      const xs = at.map((p) => p!.x);
+      const ys = at.map((p) => p!.y);
+      const span = t.cluster / 5;
+      if (Math.max(...xs) - Math.min(...xs) >= span || Math.max(...ys) - Math.min(...ys) >= span) return false;
+    }
     // Multi-target creature spells: Bless requires distinct targets; Magic
     // Missile darts may repeat. Distinctness only matters when concentration
     // buffs stack conditions — enforced by the spell itself being idempotent.
@@ -428,9 +455,10 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       // Shaking rouses a *sleeper*. It does nothing for a hero at 0 HP —
       // only healing gets them up — and allowing it stripped the unconscious
       // while leaving them at 0, an awake body that still couldn't act.
+      // A Hypnotic Pattern's stupor is shaken off the same way.
       return !!t && t.alive && !isDown(t) && t.team === actor.team && t.id !== actorId &&
         adjacent(actor.position, t.position) &&
-        t.conditions.some((c) => c.id === 'unconscious');
+        t.conditions.some((c) => c.id === 'unconscious' || c.endsOnDamage === true);
     }
     case 'escape': {
       if (incap || actor.turn.actionUsed) return false;
@@ -485,6 +513,32 @@ export function spellTargetSets(
       // Ray, so Eldritch Blast — added later, same shape — quietly fired one
       // beam at a lone enemy however many it had earned.
       const stackable = spell.stacksOnOneTarget === true;
+      if (t.cluster !== undefined) {
+        // One set per enemy, of the nearest others that fit in the cube with
+        // it — a spell that reaches six creatures in a cube is aimed at a
+        // knot of them, not at the six nearest the caster.
+        const span = t.cluster / 5;
+        const seen = new Set<string>();
+        for (const anchor of valid) {
+          const group = valid
+            .filter((v) => Math.abs(v.position.x - anchor.position.x) < span &&
+              Math.abs(v.position.y - anchor.position.y) < span)
+            .sort((a, b) => distanceCells(a.position, anchor.position) - distanceCells(b.position, anchor.position));
+          const picked: Combatant[] = [];
+          for (const g of group) {
+            if (picked.length >= shots) break;
+            const all = [...picked, g];
+            const xs = all.map((p) => p.position.x);
+            const ys = all.map((p) => p.position.y);
+            if (Math.max(...xs) - Math.min(...xs) < span && Math.max(...ys) - Math.min(...ys) < span) picked.push(g);
+          }
+          const key = picked.map((p) => p.id).sort().join('|');
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push({ targets: picked.map((p) => ({ combatantId: p.id })) });
+        }
+        return out;
+      }
       const targets: Target[] =
         spell.id === 'magic-missile'
           ? Array.from({ length: shots }, () => ({ combatantId: valid[0]!.id }))
@@ -630,7 +684,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     if (spell.castingTime === 'reaction' || spell.outOfCombat) continue; // Shield autocasts; Guidance is shop-only
     // Innate spells cast at slotLevel 0 (no slot); everything else at its base
     // level. spellAvailable enforces the right resource for whichever this is.
-    const baseLevel = actor.innateSpells[sid] ? 0 : spell.level;
+    const baseLevel = actor.innateSpells[sid] || repeatingHeld(actor, spell) ? 0 : spell.level;
     // Upcasting is offered where it is a real decision and nowhere else. For a
     // smite that is the whole point of a paladin's turn — how much of the tank
     // to spend on this swing. For the spells flagged `upcast` it is a bigger
@@ -921,7 +975,10 @@ export function step(state: GameState, action: Action): { state: GameState; even
         // Added, not assigned: an Action Surge taken between swings frees the
         // action again, and the unspent Extra Attack from the first one must
         // not be written over by the second.
-        actor.turn.attacksLeft += actor.attacksPerAction - 1 + hasteBonus;
+        // Slowed: "it can make only one attack if it takes the Attack action".
+        if (!actor.conditions.some((c) => c.id === 'lethargic')) {
+          actor.turn.attacksLeft += actor.attacksPerAction - 1 + hasteBonus;
+        }
       } else {
         actor.turn.attacksLeft -= 1;
       }
@@ -939,6 +996,19 @@ export function step(state: GameState, action: Action): { state: GameState; even
       }
       if (spell.castingTime === 'action' && action.metamagic !== 'quickened') actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
+      // A held spell's repeat is an action, not a casting — nothing below it
+      // applies: no slot, no concentration dropped, nothing to counter.
+      if (repeatingHeld(actor, spell)) {
+        events.push(...removeConditions(actor, 'sanctuary'));
+        events.push(...endHide(actor));
+        const targetIds = action.targets.flatMap((t) => ('combatantId' in t ? [t.combatantId] : []));
+        events.push({
+          type: 'spellCast', casterId: actorId, spellId: action.spellId,
+          origin: actor.position, cells: spellFootprint(draft, actor, spell, action.targets),
+        });
+        events.push(...spell.cast({ state: draft, casterId: actorId, slotLevel: 0, targetIds, positions: [] }));
+        break;
+      }
       if (spell.level >= 1) {
         actor.turn.leveledSpellCast = true;
         if (action.metamagic === 'quickened') actor.turn.quickenedThisTurn = true;
@@ -1079,7 +1149,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
     case 'shakeAwake': {
       actor.turn.actionUsed = true;
       const t = draft.combatants[action.targetId]!;
-      events.push(...removeConditions(t, 'unconscious'));
+      events.push(...removeConditions(t, (k) => k.id === 'unconscious' || k.endsOnDamage === true));
       break;
     }
     case 'shove':
@@ -1111,6 +1181,18 @@ export function step(state: GameState, action: Action): { state: GameState; even
     case 'endTurn':
       events.push(...endTurn(draft, runEndOfTurnSaves));
       break;
+  }
+
+  // Reactions to being hurt (Hellish Rebuke), after the action has resolved:
+  // every path that deals damage ends here, so none has to remember them.
+  events.push(...damageReactions(draft, events));
+
+  // The Slow spell: an action or a bonus action on its turn, never both.
+  const acted = draft.combatants[actorId];
+  if (acted?.conditions.some((k) => k.id === 'lethargic') &&
+      (acted.turn.actionUsed || acted.turn.bonusActionUsed)) {
+    acted.turn.actionUsed = true;
+    acted.turn.bonusActionUsed = true;
   }
 
   // Grapples the rules say have ended — a grappler that walked off, fell or
@@ -1174,7 +1256,7 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
       // Dropped or killed: that already rewrote the conditions, and nothing
       // else on a creature that is down gets a save worth rolling.
       if (!c.alive || isDown(c)) return events;
-    } else if (cond.id === 'incapacitated') {
+    } else if (cond.id === 'incapacitated' && !cond.saveOnDamage) {
       const esc = {
         id: 'unconscious' as const,
         expiresAtRound: state.round + 10, // 1 minute

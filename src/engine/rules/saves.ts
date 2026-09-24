@@ -123,7 +123,11 @@ export function savingThrow(
    * (the spells' own wrapper dropped it), so the feature did nothing against
    * the one thing it exists for. Now every caller has to say.
    */
-  opts: { magical: boolean },
+  opts: {
+    magical: boolean;
+    /** The effect itself grants advantage (Hideous Laughter's save on being hurt). */
+    advantage?: boolean;
+  },
 ): { success: boolean; event: GameEvent } {
   const c = state.combatants[combatantId]!;
 
@@ -140,6 +144,7 @@ export function savingThrow(
   // Gnomish Cunning and the like: advantage on saves of a listed ability.
   // Magic Resistance (Satyr/Unicorn): advantage on saves against spells.
   const hasAdvantage =
+    opts.advantage === true ||
     c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
     // Rage: advantage on Strength saves. A condition rather than a feature, so
     // it cannot ride on `saveAdvantage` — that list is unconditional.
@@ -167,6 +172,7 @@ export function savingThrow(
     (c.savingThrowProfs.includes(ability) ? proficiencyBonus(c.level) : 0) +
     (c.featureIds.includes('cloak-protection') ? 1 : 0) + // Cloak of Protection
     (c.conditions.some((k) => k.id === 'bonded') ? 1 : 0) + // Warding Bond
+    (ability === 'dex' && c.conditions.some((k) => k.id === 'lethargic') ? -2 : 0) + // Slow
     auraOfProtection(state, c);
   if (c.conditions.some((k) => k.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');

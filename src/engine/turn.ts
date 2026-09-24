@@ -234,6 +234,11 @@ export function startTurn(state: GameState): GameEvent[] {
   // Haste: double speed (before prone/restrained/slowed apply their own
   // reductions on top, same as any other speed-affecting condition would).
   if (!helpless && c.conditions.some((k) => k.id === 'hasted')) { speed *= 2; dashSpeed *= 2; }
+  // The Slow spell halves it. Haste and Slow on one creature simply cancel.
+  if (c.conditions.some((k) => k.id === 'lethargic')) {
+    speed = Math.floor(speed / 10) * 5;
+    dashSpeed = Math.floor(dashSpeed / 10) * 5;
+  }
   // Command: the target grovels — drops prone and loses this whole turn (the
   // `commanded` condition blocks its actions, then clears at end of turn). It
   // stays on the ground; standing up waits for its following turn.
@@ -243,7 +248,10 @@ export function startTurn(state: GameState): GameEvent[] {
     if (!c.conditions.some((k) => k.id === 'prone')) {
       events.push(...applyCondition(state, c.id, { id: 'prone', sourceId: c.id }, { magical: true }));
     }
-  } else if (!helpless && c.conditions.some((k) => k.id === 'prone')) {
+  } else if (!helpless && c.conditions.some((k) => k.id === 'prone') &&
+    // Incapacitated cannot get up either: Hideous Laughter's victim "can't
+    // end the Prone condition on itself", and nor can anyone who cannot act.
+    !c.conditions.some((k) => k.id === 'incapacitated')) {
     // Silent, as standing up always has been: the halved move is the tell.
     removeConditions(c, 'prone', { silent: true });
     // `speed` only: standing is a movement cost, and `dashSpeed` is a Speed.

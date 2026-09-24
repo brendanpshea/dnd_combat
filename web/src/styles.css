@@ -4464,3 +4464,15 @@ button.category .count {
 .town-card-row small { opacity: .8; }
 /* The town's NPCs say a whole sentence, so it wraps rather than truncating. */
 .town-greeting { font-style: italic; margin: 0; font-size: .9rem; color: var(--muted); }
+
+/* A spell's standing hazard, or a Silence, on the board (see Board.tsx). A
+   tint and a corner glyph: the ground and the token still read through. */
+.cell.zoned { box-shadow: inset 0 0 0 1px #ffffff22; }
+.cell.zone-fire { background-color: #ff6a2a2e; }
+.cell.zone-spikes { background-color: #6fae4a2e; }
+.cell.zone-swarm { background-color: #b0a03a2e; }
+.cell.zone-silence { background-color: #7a86b02e; }
+.zone-glyph {
+  position: absolute; left: 2px; bottom: 1px; z-index: 1;
+  font-size: clamp(9px, 2.4vmin, 13px); line-height: 1; opacity: .8; pointer-events: none;
+}

@@ -457,13 +457,14 @@ export const CLASSES: Record<Id, ClassData> = {
           // the sensible auto-default: the first 6 non-ritual are the default
           // spellbook, the first 4 the default prepared).
           'fire-bolt', 'ray-of-frost', 'shocking-grasp', 'poison-spray', 'true-strike', 'acid-splash', 'minor-illusion',
-          'magic-missile', 'sleep', 'burning-hands', 'shield', 'mage-armor', 'color-spray', 'false-life',
+          'magic-missile', 'sleep', 'burning-hands', 'shield', 'mage-armor', 'hideous-laughter', 'color-spray', 'false-life',
           'find-familiar', // ritual: always known, never counts against the spellbook
         ],
         2: ['thunderwave'],
         3: ['suggestion', 'mirror-image', 'shatter', 'web', 'scorching-ray', 'invisibility',
                'flaming-sphere', 'blindness', 'misty-step'],
-        5: ['fireball', 'counterspell', 'fear', 'lightning-bolt', 'dispel-magic', 'haste'], // 3rd-level slot arrives here
+        5: ['fireball', 'hypnotic-pattern', 'counterspell', 'fear', 'lightning-bolt', 'haste', 'slow',
+            'dispel-magic', 'vampiric-touch'], // 3rd-level slot arrives here
         7: ['ice-storm', 'wall-of-fire', 'banishment', 'confusion', 'polymorph', 'blight',
                'greater-invisibility', 'phantasmal-killer', 'dimension-door'],   // 4th-level slot arrives here
         // 5th-level slot arrives here.
@@ -582,10 +583,10 @@ export const CLASSES: Record<Id, ClassData> = {
       spellsByLevel: {
         // Hex first: it is the warlock's damage plan, and the SRD itself
         // recommends it as one of the two spells a warlock starts with.
-        1: ['eldritch-blast', 'hex', 'poison-spray', 'true-strike', 'minor-illusion',
-            'bane', 'protection-from-evil-and-good'],
+        1: ['eldritch-blast', 'hex', 'hellish-rebuke', 'hideous-laughter', 'poison-spray', 'true-strike',
+            'minor-illusion', 'bane', 'protection-from-evil-and-good'],
         3: ['suggestion', 'mirror-image', 'invisibility', 'misty-step', 'hold-person'],
-        5: ['fear', 'counterspell', 'dispel-magic'],   // 3rd-level slots
+        5: ['hypnotic-pattern', 'fear', 'vampiric-touch', 'counterspell', 'dispel-magic'],   // 3rd-level slots
         7: ['banishment', 'blight', 'dimension-door'],
         // The pact slot becomes a 5th-level one here. Hold Monster is the only
         // combat spell on the warlock's SRD 5th-level list.
@@ -724,8 +725,8 @@ export const CLASSES: Record<Id, ClassData> = {
                'ray-of-sickness', 'burning-hands', 'false-life', 'magic-missile', 'color-spray'],
         3: ['shatter', 'mirror-image', 'suggestion', 'web', 'scorching-ray',
                'invisibility', 'flaming-sphere', 'blindness', 'misty-step', 'hold-person'],
-        5: ['fireball', 'counterspell', 'lightning-bolt', 'fear', 'haste', 'protection-from-energy',
-               'dispel-magic'],
+        5: ['fireball', 'hypnotic-pattern', 'counterspell', 'lightning-bolt', 'fear', 'haste', 'slow',
+               'protection-from-energy', 'vampiric-touch', 'dispel-magic'],
         7: ['ice-storm', 'wall-of-fire', 'banishment', 'confusion', 'polymorph', 'blight',
                'greater-invisibility', 'dimension-door'],
         // 5th-level slot arrives here.
@@ -780,11 +781,11 @@ export const CLASSES: Record<Id, ClassData> = {
       spellsByLevel: {
         // Strongest first within each level — see spellsByLevel's note.
         1: ['vicious-mockery', 'starry-wisp', 'minor-illusion', 'true-strike', 'sleep',
-               'dissonant-whispers', 'healing-word', 'thunderwave', 'faerie-fire', 'cure-wounds',
+               'dissonant-whispers', 'healing-word', 'hideous-laughter', 'thunderwave', 'faerie-fire', 'cure-wounds',
                'command', 'bane', 'color-spray', 'animal-friendship'],
         3: ['suggestion', 'mirror-image', 'shatter', 'invisibility', 'silence',
                'blindness', 'aid', 'lesser-restoration', 'hold-person'],
-        5: ['fear', 'mass-healing-word', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
+        5: ['hypnotic-pattern', 'fear', 'mass-healing-word', 'slow', 'bestow-curse', 'dispel-magic'], // 3rd-level slots
         // Magical Discoveries (6): two spells from off the bard's own list.
         // Written here rather than through new machinery because this table is
         // already "what this class can have, and when".
@@ -858,7 +859,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // with Wild Shape itself — a ritual is always known and costs no slot,
         // which is the same "free, once you have it" shape.
         2: ['find-familiar'],
-        3: ['moonbeam', 'pass-without-trace', 'hold-person', 'heat-metal', 'flaming-sphere', 'aid',
+        3: ['moonbeam', 'spike-growth', 'pass-without-trace', 'hold-person', 'heat-metal', 'flaming-sphere', 'aid',
                'lesser-restoration'],
         5: ['call-lightning', 'conjure-animals', 'protection-from-energy', 'dispel-magic'], // 3rd-level slots
         7: ['ice-storm', 'wall-of-fire', 'confusion', 'polymorph', 'blight', 'freedom-of-movement'],
@@ -908,7 +909,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // and Ensnaring Strike (which is on the list, and is the ranger's own
         // signature opener) takes over as the interesting thing to spend a
         // slot on.
-        5: ['aid', 'lesser-restoration'], // 2nd-level slot arrives here
+        5: ['spike-growth', 'aid', 'lesser-restoration'], // 2nd-level slot arrives here
       },
     },
     featuresByLevel: {

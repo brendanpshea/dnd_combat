@@ -79,7 +79,7 @@ export interface MetamagicData {
  */
 const SAVE_OR_SUCK = new Set([
   'hold-person', 'banishment', 'blindness', 'fear', 'confusion', 'suggestion',
-  'phantasmal-killer', 'sleep', 'command', 'bane',
+  'phantasmal-killer', 'sleep', 'command', 'bane', 'hideous-laughter',
 ]);
 /*
  * Two entries were removed from that list after the chip row was opened in a

@@ -66,9 +66,9 @@ Spellcasting ability: **CHA**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Dissonant Whispers, Healing Word, Thunderwave, Faerie Fire, Cure Wounds, Command, Bane, Color Spray, Animal Friendship |
+| 1 | Vicious Mockery, Starry Wisp, Minor Illusion, True Strike, Sleep, Dissonant Whispers, Healing Word, Hideous Laughter, Thunderwave, Faerie Fire, Cure Wounds, Command, Bane, Color Spray, Animal Friendship |
 | 3 | Suggestion, Mirror Image, Shatter, Invisibility, Silence, Blindness, Aid, Lesser Restoration, Hold Person |
-| 5 | Fear, Mass Healing Word, Bestow Curse, Dispel Magic |
+| 5 | Hypnotic Pattern, Fear, Mass Healing Word, Slow, Bestow Curse, Dispel Magic |
 | 6 | Fireball, Spiritual Weapon |
 | 7 | Confusion, Greater Invisibility, Phantasmal Killer, Dimension Door, Freedom of Movement |
 | 9 | Animate Objects, Hold Monster, Mass Cure Wounds |
@@ -161,7 +161,7 @@ Spellcasting ability: **WIS**.
 | --- | --- |
 | 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Thunderwave, Faerie Fire, Healing Word, Protection from Evil and Good, Animal Friendship |
 | 2 | Find Familiar |
-| 3 | Moonbeam, Pass without Trace, Hold Person, Heat Metal, Flaming Sphere, Aid, Lesser Restoration |
+| 3 | Moonbeam, Spike Growth, Pass without Trace, Hold Person, Heat Metal, Flaming Sphere, Aid, Lesser Restoration |
 | 5 | Call Lightning, Conjure Animals, Protection from Energy, Dispel Magic |
 | 7 | Ice Storm, Wall of Fire, Confusion, Polymorph, Blight, Freedom of Movement |
 | 9 | Cone of Cold, Insect Plague, Conjure Elemental, Mass Cure Wounds |
@@ -382,7 +382,7 @@ Spellcasting ability: **WIS**.
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
 | 1 | Hunter's Mark, Cure Wounds, Animal Friendship, Ensnaring Strike |
-| 5 | Aid, Lesser Restoration |
+| 5 | Spike Growth, Aid, Lesser Restoration |
 
 ### Choice: Fighting Style (level 2)
 
@@ -456,7 +456,7 @@ Spellcasting ability: **CHA**.
 | --- | --- |
 | 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, Acid Splash, True Strike, Minor Illusion, Sleep, Thunderwave, Shield, Mage Armor, Ray of Sickness, Burning Hands, False Life, Magic Missile, Color Spray |
 | 3 | Shatter, Mirror Image, Suggestion, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step, Hold Person |
-| 5 | Fireball, Counterspell, Lightning Bolt, Fear, Haste, Protection from Energy, Dispel Magic |
+| 5 | Fireball, Hypnotic Pattern, Counterspell, Lightning Bolt, Fear, Haste, Slow, Protection from Energy, Vampiric Touch, Dispel Magic |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Dimension Door |
 | 9 | Animate Objects, Cone of Cold, Insect Plague, Hold Monster |
 
@@ -499,9 +499,9 @@ Spellcasting ability: **CHA**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Eldritch Blast, Hex, Poison Spray, True Strike, Minor Illusion, Bane, Protection from Evil and Good |
+| 1 | Eldritch Blast, Hex, Hellish Rebuke, Hideous Laughter, Poison Spray, True Strike, Minor Illusion, Bane, Protection from Evil and Good |
 | 3 | Suggestion, Mirror Image, Invisibility, Misty Step, Hold Person |
-| 5 | Fear, Counterspell, Dispel Magic |
+| 5 | Hypnotic Pattern, Fear, Vampiric Touch, Counterspell, Dispel Magic |
 | 7 | Banishment, Blight, Dimension Door |
 | 9 | Hold Monster |
 
@@ -575,10 +575,10 @@ Spellcasting ability: **INT**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, True Strike, Acid Splash, Minor Illusion, Magic Missile, Sleep, Burning Hands, Shield, Mage Armor, Color Spray, False Life, Find Familiar |
+| 1 | Fire Bolt, Ray of Frost, Shocking Grasp, Poison Spray, True Strike, Acid Splash, Minor Illusion, Magic Missile, Sleep, Burning Hands, Shield, Mage Armor, Hideous Laughter, Color Spray, False Life, Find Familiar |
 | 2 | Thunderwave |
 | 3 | Suggestion, Mirror Image, Shatter, Web, Scorching Ray, Invisibility, Flaming Sphere, Blindness, Misty Step |
-| 5 | Fireball, Counterspell, Fear, Lightning Bolt, Dispel Magic, Haste |
+| 5 | Fireball, Hypnotic Pattern, Counterspell, Fear, Lightning Bolt, Haste, Slow, Dispel Magic, Vampiric Touch |
 | 7 | Ice Storm, Wall of Fire, Banishment, Confusion, Polymorph, Blight, Greater Invisibility, Phantasmal Killer, Dimension Door |
 | 9 | Summon Dragon, Cone of Cold, Conjure Elemental, Hold Monster, Animate Objects |
 
