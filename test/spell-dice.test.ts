@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { SPELL_DICE, spellDice } from '../src/data/spells.js';
+import { SPELL_DICE, SPELLS, spellDice } from '../src/data/spells.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
@@ -15,7 +15,11 @@ const GREEDY = readFileSync(new URL('../src/ai/greedy.ts', import.meta.url), 'ut
  */
 describe('one source for spell dice', () => {
   it('prices every tabled spell through the table', () => {
-    const copied = Object.keys(SPELL_DICE).filter((id) => !GREEDY.includes(`spellDice('${id}'`));
+    // Reactions are never priced by the AI — they cast themselves (Hellish
+    // Rebuke), so there is no second copy of their dice to drift.
+    const copied = Object.keys(SPELL_DICE)
+      .filter((id) => SPELLS[id]?.castingTime !== 'reaction')
+      .filter((id) => !GREEDY.includes(`spellDice('${id}'`));
     expect(copied, 'the AI has its own copy of these spells\' dice').toEqual([]);
   });
 

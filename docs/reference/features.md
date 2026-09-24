@@ -196,6 +196,7 @@ What the engine can put on a combatant, and what the log calls it.
 | `innateSorcery` | burning with innate sorcery |
 | `inspired` | inspired |
 | `inspiring` | holding an inspiration die |
+| `lethargic` | slowed by magic |
 | `lured` | spellbound |
 | `marked` | marked by the hunter |
 | `noReactions` | unable to react |

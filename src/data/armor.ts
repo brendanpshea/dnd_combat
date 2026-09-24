@@ -192,7 +192,7 @@ export function acOf(c: Combatant): number {
   // gone, and a corroded knight should not end up worse off than a naked one.
   const rust = c.corroded ?? 0;
   /** Modifiers that stack on ANY base AC, however that base was arrived at. */
-  const bonuses = trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c);
+  const bonuses = trinketAc(c) + shieldedAc(c) + wardedAc(c) + hastedAc(c) + bondedAc(c) - slowedAc(c);
   if (c.acOverride !== undefined) {
     const buffed = c.acOverride + bonuses;
     // The same floor the armoured branch uses, so a rusted stat block bottoms
@@ -273,6 +273,11 @@ function wardedAc(c: Combatant): number {
 /** Haste: +2 AC (on top of the speed/extra-attack pieces read elsewhere). */
 function hastedAc(c: Combatant): number {
   return c.conditions.some((k) => k.id === 'hasted') ? 2 : 0;
+}
+
+/** The Slow spell: -2 AC. */
+function slowedAc(c: Combatant): number {
+  return c.conditions.some((k) => k.id === 'lethargic') ? 2 : 0;
 }
 
 /** Is the combatant wearing metal armor (Shocking Grasp rider)? */

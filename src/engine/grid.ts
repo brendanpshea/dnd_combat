@@ -56,7 +56,9 @@ export function neighbors(grid: GridState, p: Position): Position[] {
 function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number, flying = false): number {
   if (flying && cell.terrain === 'cover') return CELL_FEET;
   // Ice underfoot costs what difficult ground costs, without being it.
-  const iced = cell.chilled !== undefined && (round === undefined || round <= cell.chilled.expiresAtRound);
+  // So do Spike Growth's thorns.
+  const iced = (cell.chilled !== undefined && (round === undefined || round <= cell.chilled.expiresAtRound)) ||
+    cell.fire?.difficult === true;
   switch (cell.terrain) {
     case 'open': return iced && !ignoreDifficult ? CELL_FEET * 2 : CELL_FEET;
     case 'difficult': return ignoreDifficult ? CELL_FEET : CELL_FEET * 2;
@@ -178,6 +180,7 @@ export function webCell(
 export function hazardCell(
   grid: GridState, p: Position, sourceId: Id, dice: string,
   damageType?: DamageType, save?: { ability: Ability; dc: number }, label?: string,
+  extra: { unsaved?: boolean; difficult?: boolean } = {},
 ): boolean {
   const cell = cellAt(grid, p);
   if (!cell || blocksMovement(cell.terrain)) return false;
@@ -186,6 +189,8 @@ export function hazardCell(
     ...(damageType ? { damageType } : {}),
     ...(save ? { save } : {}),
     ...(label ? { label } : {}),
+    ...(extra.unsaved ? { unsaved: true } : {}),
+    ...(extra.difficult ? { difficult: true } : {}),
   };
   return true;
 }

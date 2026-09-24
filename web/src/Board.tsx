@@ -167,6 +167,16 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
       // the CSS strand hatching.
       const webbed = !!cell.web;
       if (webbed) classes.push(hasSpellIcon('web') ? 'webbed webbed-art' : 'webbed');
+      // A spell's standing hazard (Wall of Fire, Insect Plague, Spike Growth)
+      // and a Silence: overlays too, and until now drawn nowhere — the board
+      // showed a web you could route around and a wall of fire you could not
+      // see. A tint and a corner glyph, so the ground still reads beneath.
+      const zone = cell.fire
+        ? (cell.fire.label === 'Spike Growth' ? { cls: 'zone-spikes', glyph: '🌵' }
+          : cell.fire.label === 'Insect Plague' ? { cls: 'zone-swarm', glyph: '🦗' }
+          : { cls: 'zone-fire', glyph: '🔥' })
+        : cell.silent ? { cls: 'zone-silence', glyph: '🔇' } : undefined;
+      if (zone) classes.push('zoned', zone.cls);
       if (hl) classes.push(`hl-${hl}`);
       /**
        * Where you can walk is ONE REGION, not forty-eight boxes.
@@ -207,13 +217,16 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
           data-y={y}
           /* Roving tabindex: exactly one cell is reachable by Tab. See `cursor`. */
           tabIndex={posKey(tabPos) === key ? 0 : -1}
-          aria-label={cellLabel(state, pos, cell.occupantId, hl) + (riskHere ? `, ${riskHere.why}` : '')}
+          aria-label={cellLabel(state, pos, cell.occupantId, hl) +
+            (cell.fire ? `, ${cell.fire.label ?? 'Wall of Fire'}` : cell.silent ? ', Silence' : '') +
+            (riskHere ? `, ${riskHere.why}` : '')}
           style={{
             ...(webbed && hasSpellIcon('web') ? { ['--web-img' as string]: `url(${spellIconUrl('web')})` } : {}),
             ...(propUrl ? { ['--prop' as string]: `url(${propUrl})` } : {}),
           }}
           onClick={() => onCellTap(pos, cell.occupantId ? state.combatants[cell.occupantId] : undefined)}
         >
+          {zone && <span className="zone-glyph" aria-hidden="true">{zone.glyph}</span>}
           {coverHere && (
             <span
               className="cover-badge"

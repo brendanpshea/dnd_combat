@@ -8,7 +8,7 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
@@ -62,6 +62,11 @@ export type SpellTargeting =
        * what can actually be talked to.
        */
       creatureTypes?: CreatureType[];
+      /**
+       * Every target must fit inside one cube this many feet on a side (Slow:
+       * "up to six creatures of your choice in a 40-foot Cube").
+       */
+      cluster?: number;
     }
   /**
    * Anything you could hit with the weapon in your hand — True Strike.
@@ -175,6 +180,12 @@ export interface SpellData {
    * `stacksOnOneTarget`. A spell that scales says so itself.
    */
   shots?(caster: Combatant): number;
+  /**
+   * While the caster concentrates on it, casting it again is its free repeat:
+   * no slot, no new concentration — Vampiric Touch's "make the attack again on
+   * each of your turns as a Magic action". `cast` is handed slot 0 for those.
+   */
+  repeatWhileHeld?: boolean;
   cast(ctx: CastContext): GameEvent[];
 }
 
@@ -438,6 +449,8 @@ export const SPELL_DICE: Record<Id, (slotLevel: number, casterLevel: number) => 
   'mass-cure-wounds': (slot) => `${slot}d8`,
   'cone-of-cold': (slot) => `${3 + slot}d8`,
   'flame-strike': (slot) => `${slot}d6`,
+  'hellish-rebuke': (slot) => `${1 + slot}d10`,   // 2d10 at 1st
+  'vampiric-touch': (slot) => `${slot}d6`,        // 3d6 at 3rd
 };
 
 export function spellDice(spellId: Id, slotLevel: number, casterLevel: number): string {
@@ -3738,7 +3751,245 @@ export const SPELLS: Record<Id, SpellData> = {
     },
   },
 
+  /**
+   * Hypnotic Pattern: a knot of creatures stops dead, charmed and
+   * incapacitated, until something hurts them or a friend shakes them out of
+   * it. No repeat save — which is what makes it the strongest control at its
+   * level, and what makes hitting a sleeper a real decision.
+   *
+   * The 30-foot cube is drawn as the game's 25-foot square (`sphere5x5`), the
+   * same template Web's 20-foot cube uses. It catches EVERY creature that can
+   * see it, the caster's own side included, so it has to be aimed.
+   */
+  'hypnotic-pattern': {
+    id: 'hypnotic-pattern', name: 'Hypnotic Pattern', level: 3, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 120 },
+    concentration: true,
+    icon: '🌀',
+    cast({ state, casterId, positions }) {
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const held: Id[] = [];
+      for (const pos of sphere5x5(positions[0]!)) {
+        const tid = cellAt(state.grid, pos)?.occupantId;
+        if (!tid || tid === casterId) continue;
+        const t = state.combatants[tid]!;
+        // "Each creature in the area who can see the pattern."
+        if (!t.alive || isDown(t) || t.conditions.some((k) => k.id === 'blinded')) continue;
+        const save = savingThrow(state, tid, 'wis', dc);
+        events.push(save.event);
+        if (save.success) continue;
+        const charmed = applyCondition(state, tid, {
+          id: 'charmed', sourceId: casterId, concentration: true, endsOnDamage: true,
+        }, { magical: true });
+        // Immune to being charmed is immune to the whole spell: the stupor is
+        // what the charm does, not a second effect beside it.
+        if (charmed.length === 0) continue;
+        events.push(...charmed);
+        events.push(...applyCondition(state, tid, {
+          id: 'incapacitated', sourceId: casterId, concentration: true, endsOnDamage: true,
+        }, { magical: true }));
+        held.push(tid);
+      }
+      if (held.length > 0) state.combatants[casterId]!.concentratingOn = { spellId: 'hypnotic-pattern', targetIds: held };
+      return events;
+    },
+  },
+
+  /**
+   * Slow: up to six creatures in a 40-foot cube lose half their speed, 2 AC
+   * and 2 off Dexterity saves, their reactions, and half their turn — an
+   * action or a bonus action, and one attack. A Wisdom save at the end of each
+   * of their turns ends it.
+   *
+   * Not modelled: the 25 percent chance a slowed caster's somatic spell fails.
+   */
+  slow: {
+    id: 'slow', name: 'Slow', level: 3, castingTime: 'action',
+    targeting: { kind: 'creature', range: 120, who: 'enemy', count: 6, cluster: 40 },
+    concentration: true,
+    icon: '⏳',
+    cast({ state, casterId, targetIds }) {
+      const dc = spellDc(state, casterId);
+      const events: GameEvent[] = [];
+      const held: Id[] = [];
+      for (const tid of targetIds) {
+        const t = state.combatants[tid];
+        if (!t?.alive || t.conditions.some((k) => k.id === 'lethargic')) continue;
+        const save = savingThrow(state, tid, 'wis', dc);
+        events.push(save.event);
+        if (save.success) continue;
+        const slowed = applyCondition(state, tid, {
+          id: 'lethargic', sourceId: casterId, concentration: true,
+          repeatSave: { ability: 'wis', dc, magical: true },
+        }, { magical: true });
+        if (slowed.length > 0) held.push(tid);
+        events.push(...slowed);
+      }
+      if (held.length > 0) state.combatants[casterId]!.concentratingOn = { spellId: 'slow', targetIds: held };
+      return events;
+    },
+  },
+
+  /**
+   * Spike Growth: the ground sprouts thorns. Difficult terrain, and 2d4
+   * piercing for every five feet anyone travels through it — walking or
+   * shoved, either side, no save. Nothing happens to whoever is standing still,
+   * which is the point: it is a place, and the party decides who has to cross
+   * it.
+   *
+   * The 20-foot radius is drawn as the game's 25-foot square (`sphere5x5`),
+   * like Web and Fireball. The camouflage clause is not modelled: the AI
+   * routes around what it can see, and the thorns are drawn on the board.
+   */
+  'spike-growth': {
+    id: 'spike-growth', name: 'Spike Growth', level: 2, castingTime: 'action',
+    targeting: { kind: 'sphere5x5', range: 150 },
+    concentration: true,
+    icon: '🌵',
+    cast({ state, casterId, positions }) {
+      for (const pos of sphere5x5(positions[0]!)) {
+        hazardCell(state.grid, pos, casterId, '2d4', 'piercing', undefined, 'Spike Growth',
+          { unsaved: true, difficult: true });
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'spike-growth', targetIds: [] };
+      return [];
+    },
+  },
+
+  /**
+   * Hideous Laughter: one creature falls down laughing — prone and
+   * incapacitated, and it cannot get up. A Wisdom save at the end of each of
+   * its turns, and another (with advantage) every time it is hurt, ends it.
+   *
+   * The prone is its own condition: it fell over, and the laughter ending does
+   * not stand it back up. Not modelled: the extra target per slot level.
+   */
+  'hideous-laughter': {
+    id: 'hideous-laughter', name: 'Hideous Laughter', level: 1, castingTime: 'action',
+    targeting: { kind: 'creature', range: 30, who: 'enemy', count: 1 },
+    concentration: true,
+    icon: '🤣',
+    cast({ state, casterId, targetIds }) {
+      const targetId = targetIds[0]!;
+      const dc = spellDc(state, casterId);
+      const save = savingThrow(state, targetId, 'wis', dc);
+      const events: GameEvent[] = [save.event];
+      if (save.success) return events;
+      const laughing = applyCondition(state, targetId, {
+        id: 'incapacitated', sourceId: casterId, concentration: true, saveOnDamage: true,
+        repeatSave: { ability: 'wis', dc, magical: true },
+      }, { magical: true });
+      if (laughing.length === 0) return events;
+      events.push(...laughing);
+      if (!state.combatants[targetId]!.conditions.some((k) => k.id === 'prone')) {
+        events.push(...applyCondition(state, targetId, { id: 'prone', sourceId: casterId }, { magical: true }));
+      }
+      state.combatants[casterId]!.concentratingOn = { spellId: 'hideous-laughter', targetIds: [targetId] };
+      return events;
+    },
+  },
+
+  /**
+   * Hellish Rebuke: whoever hurt the warlock is wreathed in green flame — 2d10
+   * fire, a Dexterity save for half, +1d10 a slot level.
+   *
+   * A reaction, so it is never on the menu: `damageReactions` casts it after
+   * the action that did the damage has resolved, the way Shield and
+   * Counterspell fire on their own.
+   */
+  'hellish-rebuke': {
+    id: 'hellish-rebuke', name: 'Hellish Rebuke', level: 1, castingTime: 'reaction',
+    targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
+    concentration: false,
+    upcast: true,
+    icon: '😈',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const targetId = targetIds[0]!;
+      const save = savingThrow(state, targetId, 'dex', spellDc(state, casterId));
+      const roll = rollSpellDice(state, casterId,
+        spellDice('hellish-rebuke', slotLevel, state.combatants[casterId]!.level), false, 'fire');
+      const amount = saveForHalf(state.combatants[targetId]!, 'dex', roll.total, save.success);
+      return [save.event, ...applyDamage(state, targetId, casterId, amount, 'fire', roll.rolls, { tags: ['Hellish Rebuke'] })];
+    },
+  },
+
+  /**
+   * Vampiric Touch: a melee spell attack for 3d6 necrotic that heals the
+   * caster half of what it dealt — and, while held, the same touch again as
+   * the action on each later turn, at no further slot (`repeatWhileHeld`).
+   * The dice are fixed when it is cast, so an upcast keeps paying.
+   */
+  'vampiric-touch': {
+    id: 'vampiric-touch', name: 'Vampiric Touch', level: 3, castingTime: 'action',
+    targeting: { kind: 'creature', range: 0, who: 'enemy', count: 1 },
+    concentration: true,
+    upcast: true,
+    repeatWhileHeld: true,
+    icon: '🩸',
+    cast({ state, casterId, slotLevel, targetIds }) {
+      const caster = state.combatants[casterId]!;
+      const targetId = targetIds[0]!;
+      const repeat = slotLevel === 0 && caster.vampiricTouch !== undefined;
+      const dice = repeat ? caster.vampiricTouch!.dice : spellDice('vampiric-touch', slotLevel, caster.level);
+      if (!repeat) {
+        caster.vampiricTouch = { dice };
+        caster.concentratingOn = { spellId: 'vampiric-touch', targetIds: [] };
+      }
+      const atk = spellAttack(state, casterId, targetId, { melee: true });
+      const events: GameEvent[] = [atk.event];
+      if (!atk.hit) return events;
+      const roll = rollSpellDice(state, casterId, dice, atk.crit, 'necrotic');
+      const hurt = applyDamage(state, targetId, casterId, roll.total, 'necrotic', roll.rolls);
+      events.push(...hurt);
+      const dealt = hurt.find((e) => e.type === 'damageDealt' && e.targetId === targetId);
+      const drained = dealt?.type === 'damageDealt' ? Math.floor(dealt.amount / 2) : 0;
+      if (drained > 0 && caster.alive && !isDown(caster)) {
+        events.push(...applyHealing(state, casterId, casterId, drained));
+      }
+      return events;
+    },
+  },
+
 };
+
+/**
+ * Reactions to being hurt, cast after the action that did the hurting has
+ * resolved — Hellish Rebuke. Autocast like Shield and Counterspell: there is
+ * no interrupt prompt in the turn loop.
+ *
+ * THE GATE. A warlock's pact slots are few, and the same slot is its Hold
+ * Person or its Hypnotic Pattern. So the rebuke is spent only when the slot is
+ * not needed for that: another slot is left after it, or the warlock is
+ * already concentrating (the slot's big job is running), or the flames would
+ * probably finish the attacker. A sorcerer or wizard with a deeper pool rarely
+ * meets the gate at all.
+ */
+export function damageReactions(state: GameState, events: GameEvent[]): GameEvent[] {
+  const out: GameEvent[] = [];
+  for (const e of events) {
+    if (e.type !== 'damageDealt' || e.amount <= 0) continue;
+    const me = state.combatants[e.targetId];
+    const foe = state.combatants[e.sourceId];
+    if (!me || !foe || foe.team === me.team || !foe.alive || isDown(foe)) continue;
+    if (!me.spellIds.includes('hellish-rebuke') || !canReact(me) || me.wildShape) continue;
+    if (cellAt(state.grid, me.position)?.silent) continue;
+    if (distanceFeet(me.position, foe.position) > 60 || isHidden(foe) ||
+        !hasLineOfSight(state.grid, me.position, foe.position)) continue;
+    const idx = me.spellSlots.findIndex((s) => s.current > 0);
+    if (idx < 0) continue;
+    const slotLevel = idx + 1;
+    const slotsLeft = me.spellSlots.reduce((n, s) => n + s.current, 0);
+    const dice = parseDice(spellDice('hellish-rebuke', slotLevel, me.level));
+    const likelyKill = foe.hp <= dice.count * (dice.sides + 1) / 2 + dice.bonus;
+    if (slotsLeft < 2 && !me.concentratingOn && !likelyKill) continue;
+    me.spellSlots[idx]!.current -= 1;
+    me.turn.reactionUsed = true;
+    out.push({ type: 'spellCast', casterId: me.id, spellId: 'hellish-rebuke', origin: me.position, cells: [foe.position] });
+    out.push(...SPELLS['hellish-rebuke']!.cast({ state, casterId: me.id, slotLevel, targetIds: [foe.id], positions: [] }));
+  }
+  return out;
+}
 
 export function directionFromDelta(from: Position, to: Position): Direction8 {
 

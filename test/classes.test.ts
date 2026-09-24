@@ -46,8 +46,8 @@ describe('character builder', () => {
     expect(w.maxHp).toBe(7);
     expect(w.spellcastingAbility).toBe('int');
     // A direct (skirmish) build with no campaign selection knows its whole
-    // list: 7 cantrips + 7 leveled + Find Familiar (ritual) = 15.
-    expect(w.spellIds).toHaveLength(15);
+    // list: 7 cantrips + 8 leveled + Find Familiar (ritual) = 16.
+    expect(w.spellIds).toHaveLength(16);
     expect(w.spellIds).toContain('find-familiar');
     expect(w.spellIds).toContain('mage-armor');
     expect(w.spellIds).toContain('shield');

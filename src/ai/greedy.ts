@@ -15,6 +15,7 @@ import { heightenedTarget } from '../engine/rules/metamagic.js';
 import { shoveDc } from '../engine/rules/shove.js';
 import { skillMod, bestSkill } from '../engine/rules/skills.js';
 import { hazardMaxFor } from '../engine/rules/movement.js';
+import { conditionBlocked } from '../engine/rules/conditions.js';
 import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
 import { acOf } from '../data/armor.js';
@@ -358,7 +359,16 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
     dmg += 0.05 * avgDice('4d8');
     if (target.hp <= avgDice('2d8')) dmg += avgDice('2d8') * 0.5;
   }
-  return damageValue(hitProb(bonus, acOf(target), mode) * dmg, target);
+  const hit = hitProb(bonus, acOf(target), mode);
+  // Hitting a creature held by a Hypnotic Pattern wakes it. While anyone else
+  // is still up to be fought, that costs the rounds it would have stood there
+  // — unless the hit is likely to finish it.
+  if (target.conditions.some((c) => c.endsOnDamage) && dmg < target.hp &&
+      Object.values(state.combatants).some((c) => c.alive && !isDown(c) && c.team === target.team &&
+        !c.conditions.some((k) => k.endsOnDamage))) {
+    return damageValue(hit * dmg, target) - denialValue(state, target, hit, 2);
+  }
+  return damageValue(hit * dmg, target);
 }
 
 function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
@@ -783,6 +793,99 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         v += t.team === actor.team ? -1.5 * ev : damageValue(ev, t);
       }
       return v - slotCost;
+    }
+    /**
+     * Hypnotic Pattern: Sleep's pricing, on the bigger square. Out until
+     * something hurts it or a friend shakes it — no repeat save, but an enemy
+     * that is being fought will be woken by the fighting, so three rounds, as
+     * Sleep. An ally caught is its own front line on the floor.
+     */
+    case 'hypnotic-pattern': {
+      if (actor.concentratingOn) return 0;
+      const center = (a.targets[0] as { position: Position }).position;
+      let v = 0;
+      for (const pos of sphere5x5(center)) {
+        const occ = cellAt(state.grid, pos)?.occupantId;
+        if (!occ || occ === actor.id) continue;
+        const t = state.combatants[occ]!;
+        if (!t.alive || isDown(t) || isIncapacitated(t)) continue;
+        if (t.conditions.some((k) => k.id === 'blinded') || conditionBlocked(state, t, 'charmed', true)) continue;
+        const p = saveFailProb(state, t, 'wis', dc);
+        v += t.team === actor.team ? -denialValue(state, t, p, 3) * 1.5 : denialValue(state, t, p, 3);
+      }
+      return v - slotCost;
+    }
+    /**
+     * Slow: a share of each target's output for as long as it fails its saves.
+     * The share is what "one attack" takes from it — two thirds of a
+     * three-attack monster, nothing of a one-attack one — and never less than
+     * the speed, AC and reactions it loses regardless.
+     */
+    case 'slow': {
+      if (actor.concentratingOn) return 0;
+      let v = 0;
+      for (const tg of a.targets) {
+        const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
+        if (t.conditions.some((k) => k.id === 'lethargic')) continue;
+        const share = Math.max(0.3, 1 - 1 / Math.max(1, t.attacksPerAction));
+        v += denialValue(state, t, saveFailProb(state, t, 'wis', dc), 3) * share;
+      }
+      return v - slotCost;
+    }
+    /**
+     * Spike Growth: thorns under the enemy's feet. Worth what crossing them
+     * costs — about two squares' worth of 2d4 for anyone standing in them who
+     * still has to walk to a target, half that for those at the edge — and a
+     * little less for every ally who would have to walk out through them.
+     */
+    case 'spike-growth': {
+      if (actor.concentratingOn) return 0;
+      const area = sphere5x5((a.targets[0] as { position: Position }).position);
+      const inside = (p: Position) => area.some((q) => q.x === p.x && q.y === p.y);
+      const nearArea = (p: Position) => area.some((q) => distanceCells(p, q) <= 1);
+      let v = 0;
+      for (const t of Object.values(state.combatants)) {
+        if (!t.alive || isDown(t) || t.flying) continue;
+        if (t.team === actor.team) {
+          if (inside(t.position)) v -= 3;
+          continue;
+        }
+        // Already on top of the party: it does not need to walk anywhere.
+        const engaged = nearestEnemyDist(state, t.position, t.team) <= 1;
+        if (engaged) continue;
+        if (inside(t.position)) v += damageValue(avgDice('2d4') * 2, t);
+        else if (nearArea(t.position)) v += damageValue(avgDice('2d4') * 1, t) * 0.5;
+      }
+      return v - slotCost;
+    }
+    /**
+     * Hideous Laughter: Hold Person for a 1st-level slot, but every hit it
+     * takes buys it another save with advantage — so two rounds rather than
+     * four.
+     */
+    case 'hideous-laughter': {
+      if (actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      if (isIncapacitated(t) || conditionBlocked(state, t, 'incapacitated', true)) return 0;
+      return denialValue(state, t, saveFailProb(state, t, 'wis', dc), 2) - slotCost;
+    }
+    /**
+     * Vampiric Touch: a melee spell attack that heals half of what it deals,
+     * and the same touch free on every later turn while it is held. The first
+     * cast is priced with a couple more touches to come (a caster in melee
+     * tends to stay there); the repeats cost no slot.
+     */
+    case 'vampiric-touch': {
+      const repeat = a.slotLevel === 0 && actor.concentratingOn?.spellId === 'vampiric-touch';
+      if (!repeat && actor.concentratingOn) return 0;
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
+      const dice = repeat
+        ? actor.vampiricTouch?.dice ?? spellDice('vampiric-touch', 3, actor.level)
+        : spellDice('vampiric-touch', a.slotLevel, actor.level);
+      const dmg = hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice(dice);
+      const heal = Math.min(dmg / 2, actor.maxHp - actor.hp);
+      if (repeat) return damageValue(dmg, t) + heal * 0.5;
+      return damageValue(dmg * 2.5, t) + heal * 0.5 - slotCost;
     }
     /**
      * The 5th-level tier. Each one is priced with the same currency as its

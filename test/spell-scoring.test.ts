@@ -39,6 +39,7 @@ const DELIBERATELY_UNSCORED: Record<string, string> = {
   // chosen from the action list, so a score would be read by nothing.
   shield: 'reaction, autocast',
   counterspell: 'reaction, autocast',
+  'hellish-rebuke': 'reaction, autocast (damageReactions in spells.ts)',
   // Valuing a teleport means valuing a POSITION, and every cheap proxy makes a
   // caster that runs from fights it was winning.
   'dimension-door': 'cannot price a position',

@@ -1195,9 +1195,20 @@ export function applyDamage(
   // Only damage actually taken counts: an immune sleeper sleeps on, and an
   // immune concentrator has nothing to hold its focus against.
   if (target.hp > 0 && amount > 0) {
+    // Hypnotic Pattern's stupor (`endsOnDamage`) breaks the same way. Hideous
+    // Laughter's (`saveOnDamage`) does not: a hit only buys another save.
     const asleep = (c: (typeof target.conditions)[number]) =>
-      c.id === 'unconscious' || (c.id === 'incapacitated' && c.repeatSave !== undefined);
+      c.id === 'unconscious' || c.endsOnDamage === true ||
+      (c.id === 'incapacitated' && c.repeatSave !== undefined && !c.saveOnDamage);
     events.push(...removeConditions(target, asleep));
+    // "Each time it takes damage, it makes another Wisdom saving throw", with
+    // advantage — Hideous Laughter. A success ends that one condition.
+    for (const k of target.conditions.filter((x) => x.saveOnDamage && x.repeatSave)) {
+      const save = savingThrow(state, targetId, k.repeatSave!.ability, k.repeatSave!.dc,
+        { magical: k.repeatSave!.magical === true, advantage: true });
+      events.push(save.event);
+      if (save.success) events.push(...removeConditions(target, (x) => x === k));
+    }
   }
 
   // Concentration save: DC max(10, floor(damage/2)), capped at 30.
@@ -1328,6 +1339,7 @@ export function breakConcentration(state: GameState, combatantId: Id): GameEvent
   if (spellId === 'spiritual-guardians') delete c.spiritualGuardians; // dispel the aura
   if (spellId === 'call-lightning') delete c.stormCloud;      // the storm blows out
   if (spellId === 'moonbeam') delete c.moonbeam;              // the beam winks out
+  if (spellId === 'vampiric-touch') delete c.vampiricTouch;   // the hand goes back to being a hand
   const events: GameEvent[] = [
     { type: 'concentrationBroken', combatantId, spellId },
     // Conjured CREATURES held by this concentration — the dragon spirit, the

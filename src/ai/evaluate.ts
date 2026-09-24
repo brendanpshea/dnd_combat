@@ -148,6 +148,9 @@ export const CONDITION_WEIGHT: Partial<Record<ConditionId, number>> = {
   marked: -0.06,       // Hunter's Mark: the bearer takes extra damage
   burning: -0.04,      // Searing Smite: 1d6 a turn until a Con save ends it
   slowed: -0.03,       // -10 ft of speed for one turn
+  // The Slow spell: half a turn and most of a multiattack, -2 AC, no
+  // reactions, until a save. Haste's mirror, a little under its weight.
+  lethargic: -0.2,
   noReactions: -0.03,  // no opportunity attacks
   // buffs
   blessed: 0.08,

@@ -51,6 +51,7 @@ export const CONDITION_META: Record<ConditionId, ConditionMeta> = {
   blinded:        { icon: '🌫️', label: 'Blinded — its attacks have disadvantage, and attacks against it have advantage', kind: 'debuff' },
   prone:          { icon: '🔻', label: 'Prone — easier to hit up close, harder to hit at range, and its own attacks have disadvantage', kind: 'debuff' },
   slowed:         { icon: '🐌', label: 'Slowed — 10 feet slower until its next turn', kind: 'debuff' },
+  lethargic:      { icon: '⏳', label: 'Slow — half speed, -2 AC and Dex saves, no reactions, an action or a bonus action and one attack', kind: 'debuff' },
   sapped:         { icon: '😩', label: 'Sapped — disadvantage on next attack', kind: 'debuff' },
   guided:         { icon: '🎯', label: 'Marked — next attack against it has advantage', kind: 'debuff' },
   outlined:       { icon: '🔆', label: 'Outlined — easier to hit, can’t hide', kind: 'debuff' },

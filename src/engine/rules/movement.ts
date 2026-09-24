@@ -63,6 +63,35 @@ export function hazardMaxFor(c: Combatant, grid?: GridState): number {
  * exactly how a bramble ends up burning somebody on one route and not the
  * other.
  */
+export function enterSpellHazard(state: GameState, victimId: Id, at: Position): GameEvent[] {
+  const fire = cellAt(state.grid, at)?.fire;
+  const victim = state.combatants[victimId];
+  if (!fire || !victim) return [];
+  const events: GameEvent[] = [];
+  const roll = rollDice(state.rng, fire.dice);
+  state.rng = roll.state;
+  let amount = roll.total;
+  // Wall of Fire's Dexterity 15 unless the hazard named its own — Insect
+  // Plague is a Constitution save against the caster's DC, and Spike Growth's
+  // thorns allow none at all.
+  if (!fire.unsaved) {
+    const ability = fire.save?.ability ?? 'dex';
+    const save = savingThrow(state, victimId, ability, fire.save?.dc ?? 15, { magical: true });
+    events.push(save.event);
+    amount = saveForHalf(victim, ability, roll.total, save.success);
+  }
+  events.push(...applyDamage(
+    state, victimId, fire.sourceId, amount, fire.damageType ?? 'fire', roll.rolls,
+    { magical: true, tags: [fire.label ?? 'Wall of Fire'] },
+  ));
+  return events;
+}
+
+/**
+ * Walking (or being pushed) into a spell's standing hazard — Wall of Fire,
+ * Insect Plague, Spike Growth. One door for both, as `enterHazard` is for the
+ * map's own; a shove into a patch of thorns is most of what the spell is for.
+ */
 export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
   // A flier is above the lava, the brambles and the grave gas. This is the one
   // door both walking and being pushed go through, so the check belongs here and
@@ -209,6 +238,9 @@ function stepDanger(state: GameState, mover: Combatant): StepDanger {
       if (reachesCell(h, from) && !reachesCell(h, to)) danger += PROVOKE_DANGER;
     }
     if (!mover.flying && cellAt(state.grid, to)!.terrain === 'hazard') danger += hazardDanger;
+    // A spell's standing hazard is on the floor too, and priced the same way.
+    const spell = cellAt(state.grid, to)!.fire;
+    if (spell) danger += avgOf(spell.dice);
     return danger;
   };
 }
@@ -305,6 +337,8 @@ export function readWalk(state: GameState, mover: Combatant, to: Position): Walk
     }
     // A flier passes over the hazard, as enterHazard and stepDanger know.
     if (!mover.flying && cellAt(state.grid, step)!.terrain === 'hazard') hazardDamage += hazardMax;
+    const spell = cellAt(state.grid, step)!.fire;
+    if (spell) hazardDamage += maxOf(spell.dice);
   }
   return { provokers, hazardDamage };
 }
@@ -442,20 +476,8 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
     // the caster's own party included. A wall that only hurts the enemy is not
     // a wall, it is a damage aura, and placing it badly has to cost something
     // or there is no decision in where it goes.
-    const fire = cellAt(state.grid, step)!.fire;
-    if (fire) {
-      const roll = rollDice(state.rng, fire.dice);
-      state.rng = roll.state;
-      // Wall of Fire's Dexterity 15 unless the hazard named its own — Insect
-      // Plague is a Constitution save against the caster's DC.
-      const ability = fire.save?.ability ?? 'dex';
-      const save = savingThrow(state, moverId, ability, fire.save?.dc ?? 15, { magical: true });
-      events.push(save.event);
-      const amount = saveForHalf(mover, ability, roll.total, save.success);
-      events.push(...applyDamage(
-        state, moverId, fire.sourceId, amount, fire.damageType ?? 'fire', roll.rolls,
-        { magical: true, tags: [fire.label ?? 'Wall of Fire'] },
-      ));
+    if (cellAt(state.grid, step)!.fire) {
+      events.push(...enterSpellHazard(state, moverId, step));
       if (!mover.alive || isDown(mover)) return halt();
     }
 
@@ -537,6 +559,10 @@ export function pushCreature(
     walked.push(next);
     if (popIllusion(state.grid, next)) {
       events.push({ type: 'illusionPopped', position: next });
+    }
+    if (cell.fire) {
+      events.push(...enterSpellHazard(state, targetId, next));
+      if (!t.alive) break;
     }
     if (cell.terrain === 'hazard') {
       // The same door the walking path uses. Forced movement into a hazard is

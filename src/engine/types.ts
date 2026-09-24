@@ -85,7 +85,13 @@ export interface Cell {
    * locusts. `damageType` and `save` default to the wall's fire/Dex 15 when
    * absent, so every cell laid down before this field existed still burns.
    */
-  fire?: { sourceId: Id; dice: string; damageType?: DamageType; save?: { ability: Ability; dc: number }; label?: string };
+  fire?: {
+    sourceId: Id; dice: string; damageType?: DamageType; save?: { ability: Ability; dc: number }; label?: string;
+    /** No save at all — Spike Growth's thorns simply cut. */
+    unsaved?: boolean;
+    /** Difficult terrain as well as harmful (Spike Growth). */
+    difficult?: boolean;
+  };
   /**
    * Silence: no spell with a spoken word can be cast from this cell.
    *
@@ -185,6 +191,7 @@ export type ConditionId =
   | 'deathWarded'  // Death Ward: the next drop to 0 leaves you standing at 1 instead
   | 'unbound'      // Freedom of Movement: nothing magical holds you
   | 'innateSorcery' // Innate Sorcery: +1 spell save DC and advantage on spell attacks
+  | 'lethargic'    // the Slow spell: half speed, -2 AC and Dex saves, no reactions, one attack
   | 'silenced';    // standing in a Silence: no spell with a spoken word
 
 export interface ActiveCondition {
@@ -220,6 +227,19 @@ export interface ActiveCondition {
   grapple?: { via: Id; range: number };
   /** Ends when the grapple by this creature ends ("Restrained until the grapple ends"). */
   whileGrappledBy?: Id;
+  /**
+   * Ends the moment its bearer takes any damage (Hypnotic Pattern). Also
+   * something an ally can shake it out of, with the same action that rouses
+   * a sleeper.
+   */
+  endsOnDamage?: boolean;
+  /**
+   * Damage prompts another try at `repeatSave`, with advantage, as well as the
+   * end of each turn (Hideous Laughter). Marks it as NOT Sleep: a failed
+   * repeat save here does not deepen into unconsciousness, and a hit does not
+   * simply end it.
+   */
+  saveOnDamage?: boolean;
   /** For save-ends conditions (Sleep): repeat this save at end of turn. */
   /** `magical` when a spell or magical effect imposed it, so Magic Resistance
    *  gives advantage on the repeat save as it did on the first. */
@@ -583,6 +603,8 @@ export interface Combatant {
    * the druid, not the ground.
    */
   stormCloud?: { dice: string; dc: number };
+  /** Vampiric Touch, held: the dice each repeat touch rolls (the slot it was cast from). */
+  vampiricTouch?: { dice: string };
   /**
    * Moonbeam: a column of cold light standing on the board while the caster
    * concentrates. Anything hostile that starts its turn inside it is burned.
@@ -877,7 +899,7 @@ export function canReact(c: Combatant): boolean {
     !isDown(c) &&
     !c.turn.reactionUsed &&
     !isIncapacitated(c) &&
-    !c.conditions.some((k) => k.id === 'noReactions')
+    !c.conditions.some((k) => k.id === 'noReactions' || k.id === 'lethargic')
   );
 }
 
