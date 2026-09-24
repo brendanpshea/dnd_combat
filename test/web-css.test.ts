@@ -828,20 +828,33 @@ describe('unconscious creatures on the board', () => {
  */
 describe('the arena day steps', () => {
   const arena = readFileSync(fileURLToPath(new URL('../web/src/Arena.tsx', import.meta.url)), 'utf8');
-  // To the element's real end, not a guessed window: a short slice silently
-  // cut the Doors step off and the order assertion "passed" on -1s.
-  const barStart = arena.indexOf('className="arena-tools"');
-  const bar = arena.slice(barStart, arena.indexOf('\n                </div>', barStart));
+  // Two bars: the town's between days, and the arena's once through the gate.
+  // Each to the element's real end, not a guessed window: a short slice
+  // silently cut the Doors step off and the order assertion "passed" on -1s.
+  const barAt = (from: number) => {
+    const start = arena.indexOf('className="arena-tools"', from);
+    return { start, bar: arena.slice(start, arena.indexOf('\n                </div>', start)) };
+  };
+  const townBar = barAt(0);
+  const { bar } = barAt(townBar.start + 1);
 
   it('runs in the day\'s order, ending at the doors', () => {
     const at = (label: string) => bar.indexOf(`<small>${label}</small>`);
-    for (const l of ['Spells', 'Stall', 'Gear', 'Doors']) {
+    for (const l of ['Spells', 'Gear', 'Doors']) {
       expect(at(l), `no ${l} step`).toBeGreaterThan(-1);
     }
-    expect(at('Spells')).toBeLessThan(at('Stall'));
-    expect(at('Stall')).toBeLessThan(at('Gear'));
+    expect(at('Spells')).toBeLessThan(at('Gear'));
     expect(at('Gear'), 'the doors must come last — they are what the rest is for')
       .toBeLessThan(at('Doors'));
+  });
+
+  it('the town has its places, ending at the square', () => {
+    const at = (label: string) => townBar.bar.indexOf(`<small>${label}</small>`);
+    for (const l of ['Market', 'Inn', 'Temple', 'Square']) {
+      expect(at(l), `no ${l} step`).toBeGreaterThan(-1);
+    }
+    expect(at('Temple')).toBeLessThan(at('Square'));
+    expect(townBar.bar, 'the square step must clear whatever panel is open').toContain("toPanel('none')");
   });
 
   it('always offers a way back to the doors', () => {
@@ -856,25 +869,21 @@ describe('the arena day steps', () => {
   it('selects rather than toggles', () => {
     // A step bar's buttons name where you are going. `Close` made a button name
     // what it would do to itself, which is the mode it used to be.
-    expect(bar, 'the tools toggle themselves shut again').not.toContain("'none' : 'shop'");
-    expect(bar).not.toContain("'none' : 'prepare'");
-    // Every step's label is a fixed word. A `<small>{...}</small>` is the shape
-    // the old toggles had — the label changing to "Close" is how a button stops
-    // naming a place and starts naming a mode. (Matching the bare word "Close"
-    // is no good here: this file's own comments explain the fault.)
-    expect(bar, 'a step is labelled by what it does to itself again')
-      .not.toMatch(/<small>\{/);
+    for (const b of [bar, townBar.bar]) {
+      expect(b, 'the tools toggle themselves shut again').not.toContain("'none' : 'shop'");
+      expect(b).not.toContain("'none' : 'prepare'");
+      // Every step's label is a fixed word. A `<small>{...}</small>` is the
+      // shape the old toggles had — the label changing to "Close" is how a
+      // button stops naming a place and starts naming a mode.
+      expect(b, 'a step is labelled by what it does to itself again').not.toMatch(/<small>\{/);
+    }
   });
 
-  it('says a step is shut rather than hiding it', () => {
-    // The stall closes at noon. A step that vanishes half the time reads as a
-    // bug; one that says "Shut" teaches the day model.
-    // ...and it keeps its own name while saying so. Renaming the step to
-    // "Shut" made a lone verb sit in a row of places, reading as an
-    // instruction to shut something rather than as the stall being closed.
-    expect(bar, 'the stall step stops naming the stall').toContain('<small>Stall</small>');
-    expect(bar, 'nothing says the stall is closed').toContain('step-shut');
-    expect(bar).toContain('disabled');
+  it('keeps the market out of the arena', () => {
+    // The gate is one-way for the day: the market is in town, and what you
+    // carry through the gate is what you have.
+    expect(bar, 'a stall is back inside the arena').not.toContain("'shop'");
+    expect(townBar.bar).toContain("toPanel('shop')");
   });
 
   it('badges the steps with work waiting, gear included', () => {
@@ -885,6 +894,7 @@ describe('the arena day steps', () => {
     // still spelled the name.
     expect(bar, 'the gear badge no longer depends on there being work')
       .toMatch(/\{gearTodo > 0 && \(/);
+    expect(townBar.bar, 'the inn does not say it has work waiting').toContain('gearTodo > 0');
     expect(arena, 'the badge must come from the same helper the review uses')
       .toContain('gearTasks(c).length');
   });
@@ -1256,7 +1266,7 @@ describe('the gear screen', () => {
   it('is a step in the arena, not a modal over it', () => {
     expect(ps, 'the frame is not selectable').toContain("frame?: 'modal' | 'panel'");
     expect(arena, 'the arena is still opening it as a scrim').not.toContain('showParty');
-    expect(arena, 'gear is not a panel value').toMatch(/'none' \| 'shop' \| 'prepare' \| 'gear'/);
+    expect(arena, 'gear is not a panel value').toMatch(/'none' \| 'shop' \| 'inn' \| 'temple' \| 'prepare' \| 'gear'/);
     expect(arena).toContain('frame="panel"');
   });
 

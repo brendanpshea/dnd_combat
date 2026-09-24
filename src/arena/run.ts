@@ -343,6 +343,15 @@ export interface ArenaRunState {
   /** Which half of the day is next. Absent = morning (and pre-day saves). */
   half?: DayHalf;
   /**
+   * The party has gone through the arena gate today.
+   *
+   * Between days the party is in town (market, inn, temple); once through the
+   * gate it stays until the day is won or lost. Cleared whenever the day turns,
+   * so every morning starts in town. Absent = in town, which is where an older
+   * save wakes up.
+   */
+  inArena?: boolean;
+  /**
    * Days that have passed, failures included — the narrative clock. A defeat
    * ends the day and this advances: "come back tomorrow".
    *
@@ -377,6 +386,11 @@ export function newArenaRun(seed: number): ArenaRunState {
     gold: 0, spellsUsed: [], bounties: 0,
     half: 'morning', day: 1,
   };
+}
+
+/** Whether the party is in town: a morning, before it has gone through the gate. */
+export function inTown(run: ArenaRunState): boolean {
+  return (run.half ?? 'morning') === 'morning' && !run.inArena;
 }
 
 /**
@@ -424,13 +438,13 @@ export function advanceDay(run: ArenaRunState, won: boolean, purse: number,
     // The frozen level is *dropped*, not zeroed: tomorrow's fights generate at
     // whatever level the party is now, which is how the valve closes behind a
     // party that ground its way through.
-    const { dayLevel: _thawed, ...cleared } = next;
+    const { dayLevel: _thawed, inArena: _left, ...cleared } = next;
     return { ...cleared, half: 'morning', day: (run.day ?? 1) + 1 };
   }
   // Lost. The day ends; tomorrow is the same day over again — through the
   // same doors. This used to reset to door 0, which locked the retry into a
   // wave the party had never seen.
-  const next = recordResult(run, false, 0, learned);
+  const { inArena: _left, ...next } = recordResult(run, false, 0, learned);
   const pinnedGates = { ...run.pinnedGates, [half]: run.gate ?? 0 };
   return {
     ...next, half: 'morning', day: (run.day ?? 1) + 1,
