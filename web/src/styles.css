@@ -4428,3 +4428,39 @@ button.category .count {
 .turn-blocked em { font-style: normal; color: #c9a0b8; }
 /* When it is the only thing you can do, it should look like it. */
 .endturn.only { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+
+/* ---- the town between arena days: square, market, inn, temple ---- */
+.town-square { display: flex; flex-direction: column; gap: 10px; }
+.town-places {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+.town-place {
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; margin: 0;
+  border-radius: 10px;
+  border: 1px solid #453d63;
+  background: var(--panel);
+  color: inherit; font: inherit; text-align: left;
+  cursor: pointer;
+}
+.town-place > span:not(.town-icon):not(.prep-badge) { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.town-place small { font-size: .78rem; opacity: .8; }
+.town-place.arena { border-color: var(--gold); }
+.town-place .prep-badge { position: absolute; top: 6px; right: 8px; margin: 0; }
+.town-icon { font-size: 1.5rem; line-height: 1; }
+.town-card {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px dashed #453d63;
+  font-size: .88rem;
+}
+.town-card-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.town-card-row span { font-weight: 700; }
+.town-card-row small { opacity: .8; }
+/* The town's NPCs say a whole sentence, so it wraps rather than truncating. */
+.town-greeting { font-style: italic; margin: 0; font-size: .9rem; color: var(--muted); }

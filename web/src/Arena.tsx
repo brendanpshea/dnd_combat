@@ -31,8 +31,9 @@ import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import {
-  newArenaRun, advanceDay, type ArenaRunState, type ArenaWave,
+  newArenaRun, advanceDay, inTown, type ArenaRunState, type ArenaWave,
 } from '../../src/arena/run.js';
+import { artEmoji } from '../../src/data/adventure-art.js';
 import {
   halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems,
   snapshotRest, restLedger, restLine, type HeroRest,
@@ -54,7 +55,7 @@ import { PartyStrip } from './Adventure.js';
 import { LootScreen } from './Loot.js';
 import { Portrait } from './Portrait.js';
 import { classLook } from './classLook.js';
-import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers } from './art.js';
+import { boardBgUrl, HAS_BOARD_BG, hasArt, tokenUrl, backdropLayers, hasSceneArt, sceneArtUrl } from './art.js';
 import { gearTasks, morningReview, spellTasks } from '../../src/arena/morning.js';
 import { prepOptions } from '../../src/arena/prep.js';
 import {
@@ -195,6 +196,18 @@ function describeFoes(members: Id[]): string {
     .join(', ');
 }
 
+/** Who you are talking to in town: a portrait (or its glyph) and a name. */
+function NpcHead({ id, name }: { id: string; name: string }) {
+  return (
+    <div className="adv-npc compact">
+      {hasArt(id)
+        ? <Portrait id={id} team="team1" big />
+        : <span className="adv-npc-emoji">{artEmoji(id) ?? '💬'}</span>}
+      <span className="adv-npc-name">{name}</span>
+    </div>
+  );
+}
+
 export function ArenaScreen({ Battle, onExit }: Props) {
   const saved = loadArenaWeb();
   const [c, setC] = useState<CampaignState>(() => saved?.campaign ?? newCampaign(Date.now() & 0xffff));
@@ -208,7 +221,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const runRef = useRef(run);
   runRef.current = run;
   const [phase, setPhase] = useState<Phase>(() => (saved ? { p: 'brief' } : { p: 'forge' }));
-  const [panel, setPanel] = useState<'none' | 'shop' | 'prepare' | 'gear'>('none');
+  /**
+   * Which place on the day's screen is open. In town 'none' is the square and
+   * 'shop', 'inn' and 'temple' are its buildings; in the arena 'none' is the
+   * doors. 'prepare' and 'gear' are both: the inn's rooms in town, and the
+   * locker room once through the gate.
+   */
+  const [panel, setPanel] = useState<'none' | 'shop' | 'inn' | 'temple' | 'prepare' | 'gear'>('none');
   /** Rolled but not yet watched — see the SkillGambit on the Check step. */
   const pendingGambit = useRef<GambitAttempt | null>(null);
   /**
@@ -267,6 +286,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   const [buyFor, setBuyFor] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmRestart, setConfirmRestart] = useState(false);
+  /** The arena gate is one-way for the day, so going in asks once. */
+  const [confirmEnter, setConfirmEnter] = useState(false);
   /**
    * The commentary, on by default and switchable off for good.
    *
@@ -281,6 +302,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
 
   const level = partyLevelOf(c);
   const half = halfOf(run);
+  /** Between days the party is in town; once through the gate it stays until
+   *  the day is won or lost. See `inArena` in arena/run.ts. */
+  const town = inTown(run);
   // The day's fights are pinned to the level the party was when they first
   // walked into it, so a retry is the same puzzle and levelling up is a real
   // way through one. See `dayLevel` in arena/run.ts.
@@ -650,9 +674,15 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   you learned and everything you bought. Nothing here is
                   permanent except the record.
                 </p>
+                <p className="hint">
+                  Around the arena there is a town, of sorts: a market, an inn,
+                  and a temple where the healers work. You have the run of it
+                  between days. Once through the arena gate, though, you stay
+                  until the day is won or lost.
+                </p>
                 <div className="adv-choices">
                   <button className="primary" onClick={() => setPhase({ p: 'brief' })}>
-                    Step out onto the sand
+                    Walk into town
                   </button>
                 </div>
               </div>
@@ -900,7 +930,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       else setReview('spells');
                     }
                     setPhase({ p: 'brief' });
-                  }}>To the gate →</button>
+                  }}>Into town →</button>
                 </div>
               </div>
             </div>
@@ -918,24 +948,16 @@ export function ArenaScreen({ Battle, onExit }: Props) {
           <div className="adv-content">
             <div className="adv-scene centered">
               <div className="adv-panel">
-                <h2>The crowd roars. You are dragged out.</h2>
+                <h2>You wake in the temple.</h2>
+                <NpcHead id="npc-priest" name="The healers" />
                 <p className="adv-text">
-                  The healers do their work and the day is written off. Come back
+                  The crowd roared, and somebody dragged you out. The healers
+                  have done their work and the day is written off. Come back
                   tomorrow: the same two fights will be waiting, exactly as they
                   are now — and everything you have learned, earned and bought
                   comes with you.
                 </p>
                 {/* The night happens on a lost day as well, and used to go
-                    unmentioned entirely — the party woke up whole with nothing
-                    saying so. Same component, no extra screen: this moment is
-                    already carrying bad news. */}
-                {phase.ledger && phase.ledger.length > 0 && (
-                  <>
-                    {phase.restLine && <p className="rest-line">{phase.restLine}</p>}
-                    <RestLedger rows={phase.ledger} kind="night" />
-                  </>
-                )}
-                {/* The night happens on a lost day too, and used to go
                     unmentioned entirely — the party woke up whole with nothing
                     saying so. Same component, no extra screen: this moment is
                     already carrying bad news. */}
@@ -984,7 +1006,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     ` · this day is still set for level ${run.dayLevel}, and you are level ${level}`}
                 </p>
                 <div className="adv-choices">
-                  <button className="primary" onClick={() => setPhase({ p: 'brief' })}>Back to the gate</button>
+                  <button className="primary" onClick={() => { setPanel('none'); setPhase({ p: 'brief' }); }}>
+                    Out into the town →
+                  </button>
                   {restartButton}
                 </div>
               </div>
@@ -1065,10 +1089,25 @@ export function ArenaScreen({ Battle, onExit }: Props) {
     />
   );
 
+  // In town the backdrop is the place you are standing in.
+  const townArt = panel === 'shop' ? 'loc-market'
+    : panel === 'temple' ? 'loc-temple'
+      : panel === 'inn' || panel === 'gear' || panel === 'prepare' ? 'loc-tavern'
+        : 'loc-town';
+  const townInn = panel === 'inn' || panel === 'gear' || panel === 'prepare';
+  const revival = isFirstDefeat(run) ? 0 : revivalCost(dayLevel, run.wave);
+  const toPanel = (p: typeof panel) => { setPanel(p); setNotice(null); setConfirmEnter(false); };
+  const enterArena = () => {
+    setConfirmEnter(false); setPanel('none'); setNotice(null);
+    commit((r) => ({ ...r, inArena: true }));
+  };
+
   return (
     <div className="adventure">
       <div className="adv-stage">
-        {backdrop}
+        {town && hasSceneArt(townArt)
+          ? <div className="adv-backdrop" style={{ backgroundImage: backdropLayers(sceneArtUrl(townArt)) }} />
+          : backdrop}
         <div className="adv-content">
           <div className="adv-scene bottom">
             {/* One height, every step. The panel used to grow to 96% whenever a
@@ -1083,6 +1122,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   the stall used to open underneath, so buying a potion meant
                   scrolling past three door cards and five skill checks first,
                   and the screen measured 4.8 phone-fulls end to end. */}
+              {!town && (
               <div className={panel === 'none' ? '' : 'hidden'}>
               <div className="arena-head">
                 {/*
@@ -1258,10 +1298,75 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   pick one. */}
 
                 <div className="arena-exit">
-                  <button className="ghost" onClick={() => { commit(); onExit(); }}>Leave the arena</button>
+                  {/* Not a way back to town: the gate is one-way for the day.
+                      This only puts the game down, and picking it up again
+                      lands back here. */}
+                  <button className="ghost" onClick={() => { commit(); onExit(); }}>Save and quit</button>
                   {restartButton}
                 </div>
-              </div>{/* /gate content */}
+              </div>
+              )}{/* /gate content */}
+
+              {/* The town square: where the party is between days. */}
+              {town && panel === 'none' && (
+                <div className="town-square">
+                  <div className="arena-head">
+                    <h2 className="arena-when morning">
+                      <span className="when-mark">🌅</span>
+                      Day {dayOf(run)} · In town
+                      <small>slots, abilities and hit dice all back</small>
+                    </h2>
+                    <span className="arena-score">
+                      wave {run.wave} · {run.cleared} cleared · {c.gold}g
+                    </span>
+                  </div>
+                  <div className="town-places">
+                    <button className="town-place" onClick={() => toPanel('shop')}>
+                      <span className="town-icon">🛒</span>
+                      <span><b>The market</b><small>Buy and sell before you go in</small></span>
+                    </button>
+                    <button className="town-place" onClick={() => toPanel('inn')}>
+                      <span className="town-icon">🍺</span>
+                      <span><b>The inn</b><small>Gear, packs and spells</small></span>
+                      {(gearTodo > 0 || withRoom.length > 0 || scribable.length > 0) && (
+                        <span className="prep-badge" title="Something at the inn wants your attention">!</span>
+                      )}
+                    </button>
+                    <button className="town-place" onClick={() => toPanel('temple')}>
+                      <span className="town-icon">⛩️</span>
+                      <span><b>The temple</b>
+                        <small>{revival === 0 ? 'Your first revival is free' : `Revival costs ${revival}g if you fall`}</small>
+                      </span>
+                    </button>
+                    <button className="town-place arena" onClick={() => setConfirmEnter(true)}>
+                      <span className="town-icon">🏟️</span>
+                      <span><b>The arena</b><small>Wave {run.wave} · two fights today</small></span>
+                    </button>
+                  </div>
+                  {/* What is on at the gate, so the market is shopped for the
+                      fight rather than blind. Picking the door happens inside. */}
+                  <div className="town-card">
+                    <b>Posted at the gate today</b>
+                    {(locked ? [gate] : gates).map((g) => (
+                      <div key={g.door} className="town-card-row">
+                        <span>{g.name}</span>
+                        <small>{describeFoes(g.wave.encounter.members)}</small>
+                      </div>
+                    ))}
+                    {locked && <small className="quiet">You are held to this door until you beat it.</small>}
+                  </div>
+                  {run.dayLevel !== undefined && run.dayLevel < level && (
+                    <p className="arena-warn">
+                      ⚠️ <b>You have outgrown this day.</b> It is still set for level{' '}
+                      {run.dayLevel}, so these fights — and their rewards — are pitched below you.
+                    </p>
+                  )}
+                  <div className="arena-exit">
+                    <button className="ghost" onClick={() => { commit(); onExit(); }}>Leave the arena</button>
+                    {restartButton}
+                  </div>
+                </div>
+              )}
 
               {notice && <div className="notice">{notice}</div>}
 
@@ -1279,7 +1384,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     frame="panel"
                     onRest={() => { /* the arena rests on its own clock */ }}
                     onChange={() => commit()}
-                    onClose={() => setPanel('none')}
+                    onClose={() => setPanel(town ? 'inn' : 'none')}
                   />
                 </div>
               )}
@@ -1425,7 +1530,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
               {panel === 'shop' && (
                 <div className="arena-shop">
                   <div className="arena-shop-head">
-                    <b>The armourer's stall</b>
+                    <NpcHead id="npc-merchant" name="The armourer's stall" />
                     {/* No portrait row here. The party strip along the bottom
                         of the screen is already a row of faces, and adding a
                         second one to choose a buyer meant two identical rows
@@ -1666,6 +1771,59 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 </div>
               )}
 
+              {panel === 'inn' && (
+                <div className="arena-shop">
+                  <NpcHead id="npc-innkeeper" name="The innkeeper" />
+                  <p className="adv-text town-greeting">
+                    &ldquo;Your things are upstairs where you left them. Take your time — the
+                    sand is not going anywhere.&rdquo;
+                  </p>
+                  <div className="town-places">
+                    <button className="town-place" onClick={() => toPanel('gear')}>
+                      <span className="town-icon">🎒</span>
+                      <span><b>Gear and packs</b>
+                        <small>{gearTodo > 0
+                          ? `Better gear is sitting in a pack (${gearTodo})`
+                          : 'Equip, swap and share out'}</small>
+                      </span>
+                    </button>
+                    {casters.length > 0 && (
+                      <button className="town-place" onClick={() => toPanel('prepare')}>
+                        <span className="town-icon">📖</span>
+                        <span><b>Study your spells</b>
+                          <small>{scribable.length > 0
+                            ? 'A scroll can be copied into a spellbook'
+                            : withRoom.length > 0
+                              ? 'Spare prepared slots going unused'
+                              : 'Change what is prepared'}</small>
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              {panel === 'temple' && (
+                <div className="arena-shop">
+                  <NpcHead id="npc-priest" name="The healers" />
+                  <p className="adv-text town-greeting">
+                    {revival === 0
+                      ? <>&ldquo;Fall today and we will put you back together. The first time is on us.&rdquo;</>
+                      : <>&ldquo;Fall today and we will put you back together — for {revival} gold.&rdquo;</>}
+                  </p>
+                  <div className="loot-line">
+                    <span>⚕️ If the day is lost</span>
+                    <b>{revival === 0 ? 'free' : `${revival}g`}</b>
+                  </div>
+                  <p className="hint">
+                    {revival === 0
+                      ? 'A lost day costs you the day and nothing more — this once.'
+                      : c.gold >= revival
+                      ? `You have ${c.gold}g. A lost day costs the day, and this.`
+                      : `You have ${c.gold}g. The rest would come from selling what is in your packs — never what you wear — and if the packs cannot cover it, the run is over.`}
+                  </p>
+                </div>
+              )}
+
               </div>{/* /arena-scroll */}
 
               {/* Pinned. Every action used to sit at the bottom of a two-screen
@@ -1721,7 +1879,22 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   skill at all, and an interstitial saying so is a tap for
                   nothing.
                 */}
-                {panel === 'none' ? (
+                {town ? (
+                  confirmEnter ? (
+                    <div className="arena-confirm">
+                      <span>
+                        Once through the gate you stay until today&rsquo;s fights are won or
+                        lost. The market, the inn and the temple will wait for tomorrow.
+                      </span>
+                      <button className="primary" onClick={enterArena}>Go in</button>
+                      <button className="ghost" onClick={() => setConfirmEnter(false)}>Not yet</button>
+                    </div>
+                  ) : panel === 'none' ? (
+                    <button className="primary" onClick={() => setConfirmEnter(true)}>🏟️ Enter the arena</button>
+                  ) : (
+                    <button className="primary" onClick={() => toPanel('none')}>← The square</button>
+                  )
+                ) : panel === 'none' ? (
                   <button
                     className="primary"
                     onClick={() => (gambit && !gambitTaken
@@ -1759,6 +1932,25 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   to earn its height, and stacking would pin 280px of a 900px
                   phone. Labels are short for the same reason: what a step opens
                   is on the step's own screen. */}
+                {town ? (
+                  <div className="arena-tools">
+                    <button className={panel === 'shop' ? 'on' : ''} onClick={() => toPanel('shop')}>
+                      🛒<small>Market</small>
+                    </button>
+                    <button className={townInn ? 'on' : ''} onClick={() => toPanel('inn')}>
+                      🍺<small>Inn</small>
+                      {!townInn && (gearTodo > 0 || withRoom.length > 0 || scribable.length > 0) && (
+                        <span className="prep-badge" title="Something at the inn wants your attention">!</span>
+                      )}
+                    </button>
+                    <button className={panel === 'temple' ? 'on' : ''} onClick={() => toPanel('temple')}>
+                      ⛩️<small>Temple</small>
+                    </button>
+                    <button className={panel === 'none' ? 'on' : ''} onClick={() => toPanel('none')}>
+                      🏘️<small>Square</small>
+                    </button>
+                  </div>
+                ) : (
                 <div className="arena-tools">
                   {casters.length > 0 && (
                     <button
@@ -1778,28 +1970,10 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       )}
                     </button>
                   )}
-                  {/* The market keeps daylight hours. Two breaks with different
-                      characters: the night is where you re-equip and re-prepare,
-                      lunch is only a rest — which is what makes what you carry
-                      into the morning a decision rather than a shopping list. */}
-                  {half === 'morning' ? (
-                    <button
-                      className={panel === 'shop' ? 'on' : ''}
-                      onClick={() => { setPanel('shop'); setNotice(null); }}
-                    >
-                      {/* Selects, never toggles. A step bar's buttons name where
-                          you are going; "Close" made this one name what it would
-                          do to itself, which is the mode it used to be. */}
-                      🛒<small>Stall</small>
-                    </button>
-                  ) : (
-                    <button disabled title="The stalls shut at noon — you buy in the morning">
-                      {/* Named for the place, not its state: every other step
-                          is a destination, and a lone verb in the row read as
-                          an instruction to shut something. */}
-                      🛒<small>Stall <span className="step-shut">closed</span></small>
-                    </button>
-                  )}
+                  {/* No stall in here: the market is in town, and the gate is
+                      one-way for the day. What you carry through it is what
+                      you have — which is what makes the morning's shopping a
+                      decision rather than a list. */}
                   {/* Gear carried the day's only silent step: the morning
                       review names upgradeable kit once and is then gone, so a
                       Mace +1 sat in a pack with nothing on screen saying so.
@@ -1824,6 +1998,7 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     ⚔️<small>Doors</small>
                   </button>
                 </div>
+                )}
               </div>
             </div>
           </div>
