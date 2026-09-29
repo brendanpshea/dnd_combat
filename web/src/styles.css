@@ -4484,3 +4484,30 @@ button.category .count {
 .gambit-offer .go-stakes { margin: 0 0 8px; font-size: .85rem; line-height: 1.4; }
 .gambit-offer .go-win { color: #8fd48f; }
 .gambit-offer .go-lose { color: #e59a8f; }
+
+/* After a lost adventure fight: go back to the checkpoint at its door. */
+.adv-retry {
+  position: absolute; left: 50%; top: 56px; transform: translateX(-50%); z-index: 20;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;
+  width: min(94vw, 520px); padding: 8px 10px; border-radius: 10px;
+  background: var(--panel); border: 1px solid #a5584a; box-shadow: 0 6px 20px #0008;
+  font-size: .88rem;
+}
+
+/* Adventure save slots, above the story card (see App.tsx). */
+.slot-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+.slot {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0;
+  margin: 0; padding: 7px 9px; border-radius: 10px; text-align: left;
+  border: 1px solid #453d63; background: var(--panel); color: inherit; font: inherit;
+}
+.slot.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.slot b { font-size: .85rem; }
+.slot small { font-size: .74rem; opacity: .8; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot.empty small { font-style: italic; }
+
+/* The choices at a fight's door (Adventure.tsx BattleIntro). */
+.adv-choice-note { display: block; margin-top: 2px; font-size: .76rem; font-weight: 400; opacity: .8; }
+.adv-surprise { margin: 4px 0 8px; font-size: .88rem; }
+.adv-surprise.enemies { color: #8fd48f; }
+.adv-surprise.party { color: #e59a8f; }

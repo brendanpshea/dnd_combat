@@ -31,7 +31,9 @@ import { makeTrainingCombat, TRAINING_COACH, type CoachStep } from './training.j
 import { CampaignScreen } from './Campaign.js';
 import { ArenaScreen } from './Arena.js';
 import { AdventureScreen } from './Adventure.js';
-import { savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
+import {
+  savedAdventureModule, loadAdventureWeb, deleteAdventureWeb, activeSlot, setActiveSlot, slotMeta, SLOT_COUNT,
+} from './adventureStorage.js';
 import { completedModules } from './adventureProgress.js';
 import { moduleChains, chapterStates, currentChapter } from '../../src/adventure/chain.js';
 import { loadCampaignWeb, campaignLoadProblem } from './campaignStorage.js';
@@ -118,7 +120,7 @@ type Screen =
   | { view: 'training' }
   | { view: 'campaign' }
   | { view: 'arena' }
-  | { view: 'adventure'; module: Module; resume?: AdventureState };
+  | { view: 'adventure'; module: Module; resume?: AdventureState; nonce?: number };
 
 export function App() {
   const [screen, setScreen] = useState<Screen>({ view: 'menu' });
@@ -148,7 +150,8 @@ export function App() {
           module={screen.module}
           {...(screen.resume ? { resume: screen.resume } : {})}
           onExit={() => setScreen({ view: 'menu' })}
-          onContinue={(module, resume) => setScreen({ view: 'adventure', module, resume })}
+          {...(screen.nonce !== undefined ? { nonce: screen.nonce } : {})}
+          onContinue={(module, resume) => setScreen({ view: 'adventure', module, resume, nonce: Date.now() })}
         />
       );
   }
@@ -160,6 +163,8 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
   const [about, setAbout] = useState(false);
   const [confirmWipe, setConfirmWipe] = useState<string | null>(null); // module id
   const [chaptersOpen, setChaptersOpen] = useState(false);
+  /** Which company the story card is showing — one of SLOT_COUNT save slots. */
+  const [slot, setSlot] = useState(activeSlot);
   const dev = typeof location !== 'undefined' && new URLSearchParams(location.search).has('dev');
   const modules = playableModules(dev);
   const savedId = savedAdventureModule();
@@ -171,7 +176,10 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
   const storyChain = chains.find((c) => c.length > 1) ?? chains[0] ?? [];
   const loose = chains.filter((c) => c !== storyChain).flat();
   const states = chapterStates(storyChain, completed, savedId);
-  const at = currentChapter(storyChain, completed, savedId);
+  // An empty slot is a new company, and a new company starts at the beginning
+  // whatever other companies have finished; the chapter list still lets it
+  // start later, cold.
+  const at = savedId ? currentChapter(storyChain, completed, savedId) : 0;
 
   // A save that cannot be opened used to read as no save at all: the screen
   // simply offered a fresh start and the player was never told their party had
@@ -202,6 +210,27 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
 
       <div className="landing-section">
         <span className="landing-section-label">The story campaign</span>
+        {/* Save slots: up to SLOT_COUNT companies on the go at once. Picking
+            one changes what the card below continues or begins; nothing is
+            written until you play. */}
+        <div className="slot-row" role="radiogroup" aria-label="Company">
+          {Array.from({ length: SLOT_COUNT }, (_, i) => {
+            const meta = slotMeta(i);
+            const title = meta ? modules.find((x) => x.id === meta.moduleId)?.title ?? meta.moduleId : undefined;
+            return (
+              <button
+                key={i}
+                role="radio"
+                aria-checked={i === slot}
+                className={`slot${i === slot ? ' on' : ''}${meta ? '' : ' empty'}`}
+                onClick={() => { setActiveSlot(i); setSlot(i); setConfirmWipe(null); }}
+              >
+                <b>Company {['I', 'II', 'III', 'IV', 'V'][i] ?? i + 1}</b>
+                <small>{meta ? `${title}${meta.level ? ` · L${meta.level}` : ''}` : 'Empty'}</small>
+              </button>
+            );
+          })}
+        </div>
         {storyChain.length > 0 && (() => {
           const m = storyChain[at]!;
           const resume = savedId === m.id ? loadAdventureWeb(m) : undefined;
@@ -232,7 +261,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
                   <strong>{m.title}</strong>
                   <span>{m.blurb}</span>
                   <span className="module-cta">
-                    {resume ? '▶ Continue your run' : done ? '▶ Play this chapter' : '▶ Begin the story'}
+                    {resume ? '▶ Continue your run' : done && at > 0 ? '▶ Play this chapter' : '▶ Begin the story'}
                   </span>
                 </div>
               </button>
@@ -243,7 +272,7 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
                     <>
                       <span className="muted">
                         {wouldOverwrite
-                          ? `Your company is saved at ${storyChain.find((x) => x.id === savedId)?.title}. Starting here abandons them and rolls a new level-1 party.`
+                          ? `This company is saved at ${storyChain.find((x) => x.id === savedId)?.title}. Starting here abandons them and rolls a new level-1 party — or pick an empty company above.`
                           : 'Erase your saved run and start fresh?'}
                       </span>
                       <button className="mini danger" onClick={() => { deleteAdventureWeb(); setConfirmWipe(null); play(true); }}>
@@ -635,10 +664,14 @@ export interface BattleProps {
   coach?: CoachStep[] | undefined;
   onExit(): void;
   onDone(winner: TeamId): void;
+  /** Breaking off the fight (adventure mode). Present = a Retreat button, which
+   *  confirms first; the caller takes the parting blows and moves the party. */
+  onRetreat?: (() => void) | undefined;
 }
 
-export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false, mapLabel, theme, doneLabel, coach, onExit, onDone }: BattleProps) {
+export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false, mapLabel, theme, doneLabel, coach, onExit, onDone, onRetreat }: BattleProps) {
   const [version, setVersion] = useState(0);
+  const [confirmRetreat, setConfirmRetreat] = useState(false);
   const [log, setLog] = useState<LogLine[]>(() => logLinesFor(combat.state, combat.log));
   const [targeting, setTargeting] = useState<Targeting | null>(null);
   /**
@@ -1262,8 +1295,25 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
           💡
         </button>
         <button className="ghost" title="How to play" onClick={() => setShowTutorial(true)}>❓</button>
+        {onRetreat && isHumanTurn && (
+          <button className="ghost" title="Break off the fight" onClick={() => setConfirmRetreat(true)}>🏃 Retreat</button>
+        )}
         </div>
       </header>
+      {confirmRetreat && onRetreat && (
+        <div className="overlay" onClick={() => setConfirmRetreat(false)}>
+          <div className="overlay-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Retreat?</h2>
+            <p>
+              The party breaks off and falls back. Every enemy with a hero in reach
+              gets a parting blow first. Nothing is won — the fight stays where it
+              is, and going back that way meets it again.
+            </p>
+            <button className="primary" onClick={() => { setConfirmRetreat(false); onRetreat(); }}>🏃 Fall back</button>
+            <button className="ghost" onClick={() => setConfirmRetreat(false)}>Keep fighting</button>
+          </div>
+        </div>
+      )}
 
       {/* Training Yard: the step-by-step coach banner. Persists per step until
           the player does the thing it asks; the last step rides to victory. */}

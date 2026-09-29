@@ -40,7 +40,10 @@ function refsOf(scene: Scene): Id[] {
       fromOutcome(scene.success); fromOutcome(scene.failure);
       scene.approaches.forEach((a) => { if (a.success) fromOutcome(a.success); if (a.failure) fromOutcome(a.failure); });
       break;
-    case 'battle': fromOutcome(scene.onWin); if (scene.onLoss) fromOutcome(scene.onLoss); break;
+    case 'battle':
+      fromOutcome(scene.onWin); if (scene.onLoss) fromOutcome(scene.onLoss);
+      if (scene.parley) { fromOutcome(scene.parley.success); if (scene.parley.failure) fromOutcome(scene.parley.failure); }
+      break;
     case 'shop': case 'rest': refs.push(scene.next); break;
     case 'explore':
       scene.map.nodes.forEach((n) => {
@@ -69,7 +72,9 @@ function effectsOf(scene: Scene): Effect[] {
       scene.approaches.forEach((a) => out.push(...(a.success?.effects ?? []), ...(a.failure?.effects ?? [])));
       break;
     case 'battle':
-      out.push(...(scene.onWin.effects ?? []), ...(scene.onLoss?.effects ?? [])); break;
+      out.push(...(scene.onWin.effects ?? []), ...(scene.onLoss?.effects ?? []),
+        ...(scene.parley?.success.effects ?? []), ...(scene.parley?.failure?.effects ?? []));
+      break;
     default: break;
   }
   return out;

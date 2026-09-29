@@ -28,9 +28,10 @@ import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
+  battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition,
-  type AdventureState, type AdventureEvent,
+  type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
 import type { BattleProps } from './App.js';
@@ -46,7 +47,8 @@ import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
 import { LootScreen } from './Loot.js';
 import { LevelUpModal } from './LevelUp.js';
-import { saveAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
+import { saveAdventureWeb, deleteAdventureWeb, saveCheckpointWeb, loadCheckpointWeb } from './adventureStorage.js';
+import { partingBlows } from '../../src/engine/rules/movement.js';
 import { markModuleCompleted } from './adventureProgress.js';
 import { moduleById } from '../../src/data/modules/index.js';
 
@@ -63,11 +65,13 @@ type DiceOverlay = Extract<AdventureEvent, { type: 'check' }>;
 
 /** Play a module the landing chose (resuming a save if one was handed in). */
 export function AdventureScreen(
-  { Battle, module, resume, onExit, onContinue }: Props & { module: Module; resume?: AdventureState },
+  { Battle, module, resume, onExit, onContinue, nonce }: Props & { module: Module; resume?: AdventureState; nonce?: number },
 ) {
   return (
     <AdventurePlayer
-      key={module.id + (resume ? '-resume' : '-new')}
+      // The nonce makes a second resume of the same module — a checkpoint
+      // taken back up — a fresh mount rather than a no-op.
+      key={module.id + (resume ? '-resume' : '-new') + (nonce ?? '')}
       Battle={Battle} module={module} {...(resume ? { resume } : {})} onExit={onExit} onContinue={onContinue}
     />
   );
@@ -126,6 +130,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   const rerender = () => setVersion((v) => v + 1);
   const [dice, setDice] = useState<DiceContext | null>(null);
   const [banner, setBanner] = useState<string[]>([]);
+  /** The fight just lost, while its checkpoint can still take it again. */
+  const [lostFight, setLostFight] = useState<string | null>(null);
   // The next chapter, already built and saved the moment this one was won.
   //
   // State rather than a ref, and that distinction is load-bearing: it is filled
@@ -205,6 +211,12 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       }
     } else {
       saveAdventureWeb(state);
+      // At the door of a fight: the checkpoint a lost fight can be taken
+      // again from. Taken here, as the intro opens, so it holds the party
+      // exactly as it walked up — before the dice, and before any parley.
+      if (scene.kind === 'battle') {
+        saveCheckpointWeb(state, ENCOUNTERS[scene.encounterId]?.name ?? 'a fight');
+      }
     }
     setShopFocus('all'); // a fresh shop starts on the whole party
     // A revisited scene opens fully revealed; a fresh one paces from beat 0.
@@ -337,20 +349,33 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   // --- Battle scene: a pre-fight intro, then the shared Battle component ---
   if (scene.kind === 'battle') {
     const enc = ENCOUNTERS[scene.encounterId];
-    if (armedBattle !== scene.id) {
+    // The door of the fight — unless a parley or a sneak is mid-roll, whose
+    // dice and result play over the backdrop below before the door returns.
+    if (armedBattle !== scene.id && !dice && overlays.length === 0) {
       return (
         <BattleIntro
           scene={scene}
+          options={battleOptions(state, module)}
+          surprise={battleSurpriseOf(state, module)}
           onFight={() => { sfx('melee'); setArmedBattle(scene.id); }}
+          onParley={() => process(parleyBattle(state, module), scene)}
+          onSneak={() => process(sneakBattle(state, module), scene)}
+          onFallBack={() => process(fleeBattle(state, module, false), scene)}
           onExit={onExit}
         />
       );
     }
+    // Otherwise, once armed: the fight itself. (Neither: fall through to the
+    // ordinary scene frame, which carries the parley or sneak dice.)
+    if (armedBattle === scene.id) {
+    const surprise = battleSurpriseOf(state, module);
+    const canRetreat = !!battleOptions(state, module).fallBack;
     const combat = new Combat({
       seed: battleSeed(state, scene.id),
       mapId: scene.mapId,
       combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))],
-      ...(scene.surprise ? { surprisedTeam: (scene.surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
+      // Authored ambush, or the result of sneaking up at the door.
+      ...(surprise ? { surprisedTeam: (surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
     });
     return (
       <Battle
@@ -362,6 +387,22 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         theme={MAPS[scene.mapId]?.theme ?? 'stone'}
         doneLabel="Continue"
         onExit={onExit}
+        onRetreat={canRetreat ? () => {
+          // The parting blows land on the live board, then the party's state
+          // is read back — gear, spent slots, and hit points (never below 1).
+          const blows = partingBlows(combat.state, 'team1');
+          const hurt = blows.filter((e) => e.type === 'damageDealt' && combat.state.combatants[e.targetId]?.team === 'team1');
+          readBackSurvivors(campaign, Object.values(combat.state.combatants).filter((x) => x.team === 'team1'));
+          setArmedBattle(null);
+          const events = fleeBattle(state, module, true);
+          if (hurt.length > 0) {
+            events.unshift({ type: 'text', paragraphs: [
+              `Parting blows as you go: ${hurt.map((e) => e.type === 'damageDealt'
+                ? `${combat.state.combatants[e.targetId]?.name} takes ${e.amount}` : '').join(', ')}.`,
+            ] });
+          }
+          process(events, scene);
+        } : undefined}
         onDone={(winner) => {
           const won = winner === 'team1';
           const battleScene = scene; // capture: resolveBattle advances state
@@ -379,6 +420,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
             }
           }
           setArmedBattle(null); // re-arm the intro if a later fight reuses this
+          setLostFight(won ? null : (ENCOUNTERS[battleScene.encounterId]?.name ?? 'the fight'));
           // Loot ceremony (won fights with rewards), then the onWin/onLoss beat.
           const outcome = resolveBattle(state, module, won);
           markRevisit(outcome);
@@ -400,6 +442,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         }}
       />
     );
+    }
   }
 
   // The place the player is looking at: while the dice roll, it's the scene they
@@ -495,6 +538,23 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         {banner.length > 0 && !dice && (
           <div className="adv-banner">{banner.map((b, i) => <span key={i}>{b}</span>)}</div>
         )}
+
+        {/* A lost fight can be taken again from the save made at its door —
+            offered once, on the scene the loss landed on, and gone the moment
+            the player does anything else. */}
+        {lostFight && !dice && onContinue && (() => {
+          const back = loadCheckpointWeb(module);
+          if (!back) return null;
+          return (
+            <div className="adv-retry">
+              <span>Lost to {lostFight}.</span>
+              <button className="mini" onClick={() => { setLostFight(null); onContinue(module, back); }}>
+                ↶ Take the fight again from before it
+              </button>
+              <button className="mini ghost" onClick={() => setLostFight(null)}>Carry on</button>
+            </div>
+          );
+        })()}
 
         {/* Dice roll as a modal over the frozen scene/NPC, not a replacement. */}
         {dice && (
@@ -596,7 +656,12 @@ function Backdrop({ artId, glyph }: { artId: string | undefined; glyph: string }
  *  reads as an encounter with *someone*, not a sudden grid. Reusable by any
  *  module — it derives everything from the encounter's roster. */
 function BattleIntro(
-  { scene, onFight, onExit }: { scene: Extract<Scene, { kind: 'battle' }>; onFight: () => void; onExit: () => void },
+  { scene, options, surprise, onFight, onParley, onSneak, onFallBack, onExit }: {
+    scene: Extract<Scene, { kind: 'battle' }>;
+    options: BattleOptions;
+    surprise: 'party' | 'enemies' | undefined;
+    onFight: () => void; onParley: () => void; onSneak: () => void; onFallBack: () => void; onExit: () => void;
+  },
 ) {
   const enc = ENCOUNTERS[scene.encounterId];
   // Distinct monster types in roster order, with how many of each.
@@ -629,10 +694,35 @@ function BattleIntro(
                   </div>
                 ))}
               </div>
+              {/* How the fight will open, once a sneak has been tried. */}
+              {surprise && (
+                <p className={`adv-surprise ${surprise}`}>
+                  {surprise === 'enemies' ? '🤫 They have not seen you — they lose their first round.'
+                    : '⚠️ They know you are here — the party loses its first round.'}
+                </p>
+              )}
+              {/* The Gold Box choice at the door: fight, talk, creep, or go. */}
               <div className="adv-choices">
                 <button className="adv-choice primary adv-fight" onClick={onFight}>
                   <span>⚔️ Fight!</span>
                 </button>
+                {options.parley && (
+                  <button className="adv-choice" onClick={onParley}>
+                    <span>🗣️ {options.parley.label}</span>
+                    <small className="adv-choice-note">{label(options.parley.skill)} · DC {options.parley.dc}</small>
+                  </button>
+                )}
+                {options.sneak && (
+                  <button className="adv-choice" onClick={onSneak}>
+                    <span>🤫 Sneak up on them</span>
+                    <small className="adv-choice-note">Group Stealth · DC {options.sneak.dc} — fail and they catch you</small>
+                  </button>
+                )}
+                {options.fallBack && (
+                  <button className="adv-choice adv-leave" onClick={onFallBack}>
+                    <span>↩ Fall back to {options.fallBack.title}</span>
+                  </button>
+                )}
                 <button className="adv-choice adv-leave" onClick={onExit}>
                   <span>✕ Menu</span>
                 </button>

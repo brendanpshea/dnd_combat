@@ -107,6 +107,22 @@ monsters off*. So:
   *actually fought* (the party is far stronger at L3 than the XP budget implies),
   and prefer a nastier mixed roster or a real single threat over more mooks.
 
+### At the door of a fight
+
+Every battle opens on an intro with **Fight**, **Sneak up** (a group Stealth
+check: success and the enemies lose their first round, failure and the party
+does) and **Fall back** (return to the location the party came from; the fight
+stays put). During the fight, **Retreat** does the same after a parting blow
+from every enemy in reach. Two optional fields shape this:
+
+- `parley: { skill, dc, label?, success, failure? }` — a way to talk the fight
+  down. Opt-in, because an avoided fight needs its own outcome: `onWin` prose
+  assumes a battle happened. Give `success` the same story effects `onWin`
+  carries (flags, milestone XP), just not the loot. Write it where talking is
+  plausible — mercenaries, a boss who can be bluffed — not for mindless foes.
+- `noFlee: true` — no Fall back or Retreat, for a fight the story cannot let the
+  party walk away from.
+
 ## Mechanics of prose in a scene
 
 - **Story/dialogue `text`/`lines`** unveil one beat per tap — write each entry as
