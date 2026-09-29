@@ -4,7 +4,7 @@ import { App } from './App.js';
 import { ErrorBoundary } from './ErrorBoundary.js';
 import { deleteCampaignWeb } from './campaignStorage.js';
 import { deleteArenaWeb } from './arenaStorage.js';
-import { deleteAdventureWeb } from './adventureStorage.js';
+import { deleteAllAdventureSaves } from './adventureStorage.js';
 import './styles.css';
 
 // Rounded display font (Baloo 2), loaded from public/ with the base-correct
@@ -40,7 +40,7 @@ createRoot(document.getElementById('root')!).render(
         // what makes the app throw, nothing inside the app can clear it.
         deleteCampaignWeb();
         deleteArenaWeb();
-        deleteAdventureWeb();
+        deleteAllAdventureSaves();
       }}
     >
       <App />

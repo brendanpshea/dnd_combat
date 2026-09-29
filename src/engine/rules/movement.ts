@@ -578,3 +578,25 @@ export function pushCreature(
   }
   return events;
 }
+
+/**
+ * Breaking off a fight: every enemy that has a hero in its reach, and its
+ * reaction to spend, takes one swing as the party goes — the opportunity
+ * attack that walking out of reach provokes, taken all at once. One each, as
+ * a reaction always is. Used by adventure mode's Retreat.
+ */
+export function partingBlows(state: GameState, team: Combatant['team']): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const hero of Object.values(state.combatants)) {
+    if (hero.team !== team || !hero.alive || isDown(hero)) continue;
+    for (const foe of Object.values(state.combatants)) {
+      if (foe.team === team || !foe.alive || isDown(foe) || !canReact(foe)) continue;
+      const weapon = meleeWeaponOf(foe);
+      if (!weapon || !reachesCell(foe, hero.position)) continue;
+      foe.turn.reactionUsed = true;
+      events.push(...resolveAttack(state, foe.id, hero.id, weapon, { opportunity: true }));
+      if (!hero.alive || isDown(hero)) break;
+    }
+  }
+  return events;
+}

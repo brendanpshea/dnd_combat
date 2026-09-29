@@ -14,6 +14,9 @@
  * from immutability). The event stream is the log/replay/render format.
  */
 import type { Id } from '../engine/types.js';
+import { abilityMod } from '../engine/types.js';
+import { ENCOUNTERS } from '../data/encounters.js';
+import { MONSTERS } from '../data/monsters.js';
 import { rollDie } from '../engine/rng.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
@@ -60,6 +63,9 @@ export interface AdventureState {
    *  retried fight rolls different dice (`battleSeed`). Optional: absent on
    *  older saves, back-filled to {} on load. */
   battleAttempts?: Record<Id, number>;
+  /** A sneak-up rolled at a fight's door: who is caught out when it starts.
+   *  Cleared once the fight is resolved or left. */
+  battleSurprise?: { sceneId: Id; side: 'party' | 'enemies' };
 }
 
 export interface ShopVisit {
@@ -667,6 +673,7 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   // Count the attempt (win or lose) so any refight of this scene — a loss
   // retry, a re-triggered camp ambush — draws a different battleSeed.
   (state.battleAttempts ??= {})[scene.id] = (state.battleAttempts[scene.id] ?? 0) + 1;
+  delete state.battleSurprise;
   if (won) return applyOutcome(state, module, scene.onWin);
   // Loss: an authored per-battle branch wins; else the module's defeat scene
   // (the party is dragged back, revived at half HP); else just retry the fight.
@@ -682,6 +689,127 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   // reads from the outside as "I pressed Continue and nothing happened".
   reviveParty(state.campaign);
   return enterScene(state, module, state.sceneId);
+}
+
+// --- At a fight's door: parley, sneak up, fall back -------------------------
+//
+// The Gold Box choice before every encounter. Fight is the default and needs
+// nothing here; the other three are what this adds.
+
+const doorKey = (sceneId: Id, what: 'parley' | 'sneak') => `${sceneId}:@${what}`;
+
+/** How hard the roster is to creep up on: its keenest passive Perception. */
+export function sneakDc(encounterId: Id): number {
+  const members = ENCOUNTERS[encounterId]?.members ?? [];
+  let best = 10;
+  for (const id of members) {
+    const m = MONSTERS[id];
+    if (m) best = Math.max(best, 10 + abilityMod(m.abilities.wis));
+  }
+  return best;
+}
+
+export interface BattleOptions {
+  /** Talking them down, if the fight offers it and it has not been tried. */
+  parley?: { label: string; skill: string; dc: number };
+  /** Creeping up on them, unless the fight is already an ambush either way. */
+  sneak?: { dc: number };
+  /** Falling back to the location the party came from, and its name. */
+  fallBack?: { title: string };
+}
+
+export function battleOptions(state: AdventureState, module: Module): BattleOptions {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'battle') return {};
+  const out: BattleOptions = {};
+  if (scene.parley && !state.consumedChoices.includes(doorKey(scene.id, 'parley'))) {
+    out.parley = {
+      label: scene.parley.label ?? 'Parley',
+      skill: scene.parley.skill ?? 'persuasion',
+      dc: scene.parley.dc,
+    };
+  }
+  if (!scene.surprise && !state.consumedChoices.includes(doorKey(scene.id, 'sneak'))) {
+    out.sneak = { dc: sneakDc(scene.encounterId) };
+  }
+  const hub = state.hub;
+  if (!scene.noFlee && hub && hub !== scene.id && module.scenes[hub]?.kind === 'explore') {
+    const map = module.scenes[hub];
+    out.fallBack = { title: map?.kind === 'explore' ? map.map.title : hub };
+  }
+  return out;
+}
+
+/** Try to talk them down. Success takes the authored way round the fight. */
+export function parleyBattle(state: AdventureState, module: Module, actorIdx?: number): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'battle' || !scene.parley) throw new Error('No parley here');
+  if (!battleOptions(state, module).parley) throw new Error('Parley already tried');
+  state.consumedChoices.push(doorKey(scene.id, 'parley'));
+  const p = scene.parley;
+  const skill = (p.skill ?? 'persuasion') as Parameters<typeof characterSkillCheck>[2];
+  const roller = p.roller ?? 'chosen';
+  const events: AdventureEvent[] = [];
+  const success = actorIdx !== undefined && roller === 'chosen'
+    ? rollChosen(state, skill, p.dc, actorIdx, events)
+    : rollFor(state, skill, p.dc, roller, events);
+  if (success) {
+    delete state.battleSurprise;
+    events.push(...applyOutcome(state, module, p.success));
+  } else if (p.failure) {
+    events.push(...applyOutcome(state, module, p.failure));
+  } else {
+    events.push({ type: 'text', paragraphs: ["They aren't interested in talking."] });
+  }
+  return events;
+}
+
+/**
+ * Creep up on them: a group Stealth check against their keenest ears. Get it
+ * right and they lose their first round; get it wrong and you do. Once per
+ * fight — falling back and trying again is not a second chance.
+ */
+export function sneakBattle(state: AdventureState, module: Module): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  const opt = battleOptions(state, module).sneak;
+  if (scene.kind !== 'battle' || !opt) throw new Error('No sneaking here');
+  state.consumedChoices.push(doorKey(scene.id, 'sneak'));
+  const events: AdventureEvent[] = [];
+  const success = rollFor(state, 'stealth', opt.dc, 'group', events);
+  state.battleSurprise = { sceneId: scene.id, side: success ? 'enemies' : 'party' };
+  events.push({
+    type: 'text',
+    paragraphs: [success
+      ? 'Nobody looks up. You are on them before they know it.'
+      : 'A boot scrapes stone. Every head turns your way.'],
+  });
+  return events;
+}
+
+/** Who is surprised when the current fight starts, from the scene or a sneak. */
+export function battleSurpriseOf(state: AdventureState, module: Module): 'party' | 'enemies' | undefined {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'battle') return undefined;
+  if (scene.surprise) return scene.surprise;
+  return state.battleSurprise?.sceneId === scene.id ? state.battleSurprise.side : undefined;
+}
+
+/**
+ * Fall back — before the fight, or out of it (a retreat). The party returns to
+ * the location it came from and the fight stays where it was: going back that
+ * way meets it again. Counted as an attempt, so a second go rolls fresh dice.
+ */
+export function fleeBattle(state: AdventureState, module: Module, retreated: boolean): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'battle' || !battleOptions(state, module).fallBack) throw new Error('No way back from here');
+  if (retreated) (state.battleAttempts ??= {})[scene.id] = (state.battleAttempts[scene.id] ?? 0) + 1;
+  delete state.battleSurprise;
+  return [
+    { type: 'text', paragraphs: [retreated
+      ? 'You break off and get clear. They let you go — this time.'
+      : 'You think better of it and fall back the way you came.'] },
+    ...enterScene(state, module, HUB_REF),
+  ];
 }
 
 /** After the driver's shop / rest interaction, advance to the scene's `next`. */

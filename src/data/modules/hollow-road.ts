@@ -281,6 +281,10 @@ const scenes: Record<string, Scene> = {
     id: 'spy-bolts', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
     intro: ['His crew shoulders out of the market crowd — a fixer and two hired knives, blades already low and level. No surprises left; just the work.'],
     onWin: { to: 'spy-caught', text: ['The last of the hired help drops his knife and his nerve together, and runs.'] },
+    parley: {
+      skill: 'deception', dc: 13, label: 'Tell the knives the watch is coming',
+      success: { to: 'spy-caught', text: ['"The reeve\'s men are two stalls behind us," you say, loud enough to carry, and glance past them as if you can see the pikes. The hired knives do the sums faster than their fixer does. They are gone into the crowd before he turns round — and then it is just him, alone, with nowhere to put his hands.'] },
+    },
   },
   'spy-ambush': {
     id: 'spy-ambush', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
@@ -307,6 +311,11 @@ const scenes: Record<string, Scene> = {
     // marsh, so the grant fires exactly once.
     onWin: { to: 'trail', text: ['The last of the pack breaks and vanishes into the reeds. Behind you Thornwick; ahead, the marsh swallows the road whole. You feel steadier on your feet than a week ago — hardened, and a shade deadlier.'],
       effects: [{ kind: 'xpToLevel', level: 2 }] },
+    parley: {
+      skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
+      success: { to: 'trail', text: ['You hold his eye and draw steel slow, and let him count your blades. The cackle dies in his throat. He barks something at his pack, and they melt back into the reeds as if they were never there. You feel steadier on your feet than a week ago — you have learned to make a fight end before it starts.'],
+        effects: [{ kind: 'xpToLevel', level: 2 }] },
+    },
   },
   trail: {
     id: 'trail', kind: 'explore',
@@ -550,6 +559,10 @@ const scenes: Record<string, Scene> = {
     intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks through the gateway. Behind him two gnolls come yammering that awful laughing bark. The narrow timber run hems all three in.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open — though the whole den is awake and shouting now.'],
       effects: [{ kind: 'setFlag', flag: 'loud-entry' }] },
+    parley: {
+      skill: 'deception', dc: 15, label: 'Pass yourselves off as new blood',
+      success: { to: 'inner', text: ['"Warlord sent for fighters," you growl, and shoulder past the horn like you own the place. The bugbear sniffs you, weighs you, and decides you are someone else\'s problem. The gnolls fall in laughing behind you — and the den stays asleep.'] },
+    },
   },
   // A traversal dungeon, laid out like the marsh: you enter at the muster yard
   // and the camp reveals itself node by node as you push deeper. The spine is

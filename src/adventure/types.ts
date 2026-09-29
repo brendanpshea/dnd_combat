@@ -212,6 +212,22 @@ export type Scene =
        *  read back). `{ bonusTier }` = full rewards plus a guaranteed extra drop
        *  of that rarity (a boss trophy). */
       loot?: false | { bonusTier?: 'common' | 'uncommon' | 'rare' };
+      /**
+       * Talking them down, offered on the fight's intro beside Fight, Sneak up
+       * and Fall back. Opt-in because a fight avoided needs its own story: the
+       * onWin text assumes a battle happened. One try per fight; a failure
+       * (unless it routes elsewhere) leaves the fight still to be had.
+       */
+      parley?: {
+        skill?: SkillId; dc: number; roller?: Roller;
+        /** The button: "Offer them the toll". Defaults to "Parley". */
+        label?: string;
+        success: Outcome;
+        failure?: Outcome;
+      };
+      /** No falling back or retreating from this one (a fight the story
+       *  cannot let you walk away from). Sneaking up is still allowed. */
+      noFlee?: boolean;
     }
   | {
       id: Id; kind: 'challenge'; intro: Paragraph[]; art?: SceneArt;
