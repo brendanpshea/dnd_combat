@@ -14,7 +14,9 @@
  * from immutability). The event stream is the log/replay/render format.
  */
 import type { Id } from '../engine/types.js';
-import { abilityMod } from '../engine/types.js';
+import { abilityMod, cellAt, type Combatant, type GridState, type Position } from '../engine/types.js';
+import { blocksMovement } from '../engine/grid.js';
+import { buildMonster } from '../data/monsters.js';
 import { ENCOUNTERS } from '../data/encounters.js';
 import { MONSTERS } from '../data/monsters.js';
 import { rollDie } from '../engine/rng.js';
@@ -66,6 +68,12 @@ export interface AdventureState {
   /** A sneak-up rolled at a fight's door: who is caught out when it starts.
    *  Cleared once the fight is resolved or left. */
   battleSurprise?: { sceneId: Id; side: 'party' | 'enemies' };
+  /**
+   * NPCs travelling with the party (Module.companions), in joining order.
+   * `hp` absent = unhurt, so a join needs no stat block to hand; a fight writes
+   * back what it cost them, and a long rest clears it again.
+   */
+  companions?: Array<{ id: Id; hp?: number }>;
 }
 
 export interface ShopVisit {
@@ -86,6 +94,7 @@ export type AdventureEvent =
   | { type: 'xp'; amount: number; leveledFrom?: number; leveledTo?: number }
   | { type: 'heal'; amount: number }
   | { type: 'journal'; entry: JournalEntry }
+  | { type: 'companion'; companionId: Id; joined: boolean }
   | { type: 'secretRevealed'; nodeId: Id }
   | { type: 'startBattle'; encounterId: Id; mapId: Id; sceneId: Id }
   | { type: 'enterShop'; next: Id }
@@ -181,6 +190,8 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     case 'classInParty': return c.characters.some((ch) => ch.classId === req.classId);
     case 'speciesInParty': return c.characters.some((ch) => ch.speciesId === req.speciesId);
     case 'visited': return state.visited.includes(req.scene);
+    case 'companion': return (state.companions ?? []).some((x) => x.id === req.companion);
+    case 'noCompanion': return !(state.companions ?? []).some((x) => x.id === req.companion);
   }
 }
 
@@ -197,6 +208,8 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'classInParty': return `Requires a ${unmet.classId} in the party`;
     case 'speciesInParty': return `Requires a ${unmet.speciesId} in the party`;
     case 'visited': return 'Requires exploring elsewhere first';
+    case 'companion': return 'Requires someone who isn\'t with you';
+    case 'noCompanion': return 'Not while they\'re with you';
   }
 }
 
@@ -271,7 +284,21 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       if (!state.journal.some((j) => j.id === eff.entry.id)) state.journal.push(eff.entry);
       events.push({ type: 'journal', entry: eff.entry });
       break;
+    case 'joinParty':
+      if (!(state.companions ?? []).some((x) => x.id === eff.companion)) {
+        (state.companions ??= []).push({ id: eff.companion });
+        events.push({ type: 'companion', companionId: eff.companion, joined: true });
+      }
+      break;
+    case 'leaveParty':
+      if ((state.companions ?? []).some((x) => x.id === eff.companion)) {
+        state.companions = (state.companions ?? []).filter((x) => x.id !== eff.companion);
+        events.push({ type: 'companion', companionId: eff.companion, joined: false });
+      }
+      break;
   }
+  // A full heal reaches whoever is travelling with the party too.
+  if (eff.kind === 'heal' && eff.amount === 'full') restCompanions(state, 'full');
 }
 
 function applyEffects(state: AdventureState, effects: Effect[] | undefined, events: AdventureEvent[]): void {
@@ -680,6 +707,7 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   if (scene.onLoss) return applyOutcome(state, module, scene.onLoss);
   if (module.defeatScene) {
     reviveParty(state.campaign);
+    restCompanions(state, 'revive', module);
     return enterScene(state, module, module.defeatScene);
   }
   // No authored loss beat and no defeat scene: the fight is simply offered
@@ -688,6 +716,7 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   // only thing on offer is the same fight again — a loop with no exit, which
   // reads from the outside as "I pressed Continue and nothing happened".
   reviveParty(state.campaign);
+  restCompanions(state, 'revive', module);
   return enterScene(state, module, state.sceneId);
 }
 
@@ -821,6 +850,7 @@ export function resolveShopOrRest(state: AdventureState, module: Module): Advent
   if (scene.kind === 'rest') {
     if (scene.variant === 'long') healParty(state.campaign, 'full');
     else shortRest(state.campaign);
+    restCompanions(state, scene.variant === 'long' ? 'full' : 'short', module);
   }
   return enterScene(state, module, scene.next);
 }
@@ -922,8 +952,81 @@ export function campRest(
     }
   }
   const { totalHealed } = variant === 'long' ? longRest(c) : shortRest(c);
+  restCompanions(state, variant === 'long' ? 'full' : 'short', module);
   events.push({ type: 'heal', amount: totalHealed });
   return events;
+}
+
+// --- Companions -------------------------------------------------------------
+
+/** A companion's full hit points, from their stat block. */
+function companionMaxHp(module: Module | undefined, id: Id): number | undefined {
+  const def = module?.companions?.[id];
+  return def ? MONSTERS[def.monsterId]?.hp : undefined;
+}
+
+/**
+ * Rest the party's companions alongside it: a long rest (or a full heal) makes
+ * them whole, a short one gives back half of their maximum, and being dragged
+ * off a lost field leaves them on half, as it leaves the party.
+ */
+export function restCompanions(
+  state: AdventureState, kind: 'full' | 'short' | 'revive', module?: Module,
+): void {
+  for (const x of state.companions ?? []) {
+    if (kind === 'full' || x.hp === undefined) { delete x.hp; continue; }
+    const max = companionMaxHp(module, x.id);
+    if (max === undefined) { delete x.hp; continue; }
+    x.hp = kind === 'short'
+      ? Math.min(max, x.hp + Math.ceil(max / 2))
+      : Math.max(x.hp, Math.ceil(max / 2));
+    if (x.hp >= max) delete x.hp;
+  }
+}
+
+/**
+ * The companions as combatants for a fight on `grid`, standing in the first
+ * open squares behind the party's front rank. Knocked out at 0 rather than
+ * killed, as the heroes are.
+ */
+export function companionCombatants(
+  state: AdventureState, module: Module, grid: GridState, taken: Position[],
+): Combatant[] {
+  const out: Combatant[] = [];
+  const used = new Set(taken.map((p) => `${p.x},${p.y}`));
+  const open: Position[] = [];
+  for (let y = 0; y < Math.min(grid.height, 3); y++) {
+    for (let x = 0; x < grid.width; x++) {
+      const cell = cellAt(grid, { x, y });
+      if (cell && !blocksMovement(cell.terrain) && !used.has(`${x},${y}`)) open.push({ x, y });
+    }
+  }
+  for (const x of state.companions ?? []) {
+    const def = module.companions?.[x.id];
+    const at = open.shift();
+    if (!def || !MONSTERS[def.monsterId] || !at) continue;
+    const c = buildMonster(def.monsterId, 'team1', at);
+    out.push({
+      ...c,
+      id: `companion-${def.id}`,
+      name: def.name,
+      ...(def.portraitId ? { portraitId: def.portraitId } : {}),
+      companion: true,
+      unconsciousAtZero: true,
+      hp: Math.max(1, Math.min(c.maxHp, x.hp ?? c.maxHp)),
+    });
+  }
+  return out;
+}
+
+/** After a fight (won, lost or fled): what it cost the companions, never below 1. */
+export function readBackCompanions(state: AdventureState, fought: Combatant[]): void {
+  for (const x of state.companions ?? []) {
+    const c = fought.find((f) => f.id === `companion-${x.id}`);
+    if (!c) continue;
+    const hp = Math.max(1, c.hp);
+    if (hp >= c.maxHp) delete x.hp; else x.hp = hp;
+  }
 }
 
 /** A seed for a battle scene: campaign rng + scene id + attempt count, so a

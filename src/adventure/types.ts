@@ -29,7 +29,9 @@ export type Requirement =
   | { kind: 'gold'; atLeast: number }
   | { kind: 'classInParty'; classId: Id }
   | { kind: 'speciesInParty'; speciesId: Id }
-  | { kind: 'visited'; scene: SceneRef };
+  | { kind: 'visited'; scene: SceneRef }
+  | { kind: 'companion'; companion: Id }                       // travelling with the party
+  | { kind: 'noCompanion'; companion: Id };
 
 /** A state mutation a choice/outcome applies. Deliberately tiny vocabulary. */
 export type Effect =
@@ -41,7 +43,9 @@ export type Effect =
   | { kind: 'xp'; amount: number }                              // party XP (levelForXp math)
   | { kind: 'xpToLevel'; level: number }                       // top XP up to the start of `level` (no-op if already past)
   | { kind: 'heal'; amount: number | 'full' }                  // spread across the party
-  | { kind: 'journal'; entry: JournalEntry };
+  | { kind: 'journal'; entry: JournalEntry }
+  | { kind: 'joinParty'; companion: Id }                        // an NPC comes along (Module.companions)
+  | { kind: 'leaveParty'; companion: Id };
 
 export interface JournalEntry {
   id: Id;
@@ -254,6 +258,23 @@ export type Scene =
   | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Paragraph[] }
   | { id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt };
 
+/**
+ * An NPC who can travel with the party — the Gold Box guide, prisoner or
+ * sellsword. A stat block rather than a character sheet: they fight beside
+ * the party, run by the AI, and are not the player's to level or equip.
+ * `joinParty` / `leaveParty` effects bring them in and send them off.
+ */
+export interface CompanionDef {
+  id: Id;
+  name: string;
+  /** The stat block they fight with (a MONSTERS id: 'scout', 'guard', 'priest'…). */
+  monsterId: Id;
+  portraitId?: Id;
+  emoji?: string;
+  /** One line for the party screen: who they are and why they are here. */
+  blurb: string;
+}
+
 export interface Module {
   id: Id;
   title: string;
@@ -282,4 +303,6 @@ export interface Module {
    *  continue button ("The Sunken Barrows · levels 3–4"). Purely informative —
    *  nothing gates on it. */
   levelBand?: { from: number; to: number };
+  /** The NPCs who may join the party in this module, by id. */
+  companions?: Record<Id, CompanionDef>;
 }

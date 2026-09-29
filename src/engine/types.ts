@@ -424,6 +424,13 @@ export interface Combatant {
    */
   summonedBy?: Id;
   /**
+   * An NPC travelling with the party (adventure mode): fights on its side,
+   * run by the AI, never part of the roster that is read back or rewarded, and
+   * — like a summon — not what decides whether the party has won or lost.
+   * Unlike a summon it answers to no one, so a hero dropping does not take it.
+   */
+  companion?: true;
+  /**
    * The spell slot a conjured ally was called with. The Otherworldly Steed
    * scales off it — AC, hit points and the size of its Healing Touch — and the
    * SRD writes every one of those as "the spell's level", so the level has to

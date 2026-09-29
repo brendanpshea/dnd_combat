@@ -38,7 +38,7 @@ import { blocksMovement } from '../grid.js';
  * driven by the AI while the player's own characters are not.
  */
 export function actsOnItsOwn(c: Combatant): boolean {
-  return c.summonedBy !== undefined;
+  return c.summonedBy !== undefined || c.companion === true;
 }
 
 /**
