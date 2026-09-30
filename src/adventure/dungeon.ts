@@ -77,14 +77,18 @@ function route(from: Cell, to: Cell, blocked: Set<string>, box: { c0: number; c1
   const best = new Map<string, number>();
   const prev = new Map<string, string | null>();
   const cellOf = new Map<string, Cell>();
-  let frontier: Array<{ c: Cell; d: number; cost: number; k: string }> = [];
+  // Costs are small whole numbers, so a bucket per cost is the priority queue.
+  const buckets: Array<Array<{ c: Cell; d: number; cost: number; k: string }>> = [];
+  const push = (x: { c: Cell; d: number; cost: number; k: string }) => { (buckets[x.cost] ??= []).push(x); };
   const startK = key(from, -1);
   best.set(startK, 0); prev.set(startK, null); cellOf.set(startK, from);
-  frontier.push({ c: from, d: -1, cost: 0, k: startK });
+  push({ c: from, d: -1, cost: 0, k: startK });
   const goal = ck(to);
-  while (frontier.length) {
-    frontier.sort((x, y) => x.cost - y.cost);
-    const cur = frontier.shift()!;
+  for (let b = 0; b < buckets.length; b++) {
+    const bucket = buckets[b];
+    if (!bucket) continue;
+    for (let i = 0; i < bucket.length; i++) {
+    const cur = bucket[i]!;
     if (cur.cost > (best.get(cur.k) ?? Infinity)) continue;
     if (ck(cur.c) === goal) {
       const path: Cell[] = [];
@@ -100,8 +104,9 @@ function route(from: Cell, to: Cell, blocked: Set<string>, box: { c0: number; c1
       const nk = key(n, d);
       if (cost >= (best.get(nk) ?? Infinity)) return;
       best.set(nk, cost); prev.set(nk, cur.k); cellOf.set(nk, n);
-      frontier.push({ c: n, d, cost, k: nk });
+      push({ c: n, d, cost, k: nk });
     });
+    }
   }
   return null;
 }
@@ -310,8 +315,23 @@ type Mode = 'open' | 'play' | 'proof';
  */
 interface Walk { room: Id; keys: Set<string>; cost: number }
 
-function explore(module: Module, d: Dungeon, from: Walk, mode: Mode): Walk[] {
-  const grants = new Map(d.rooms.map((r) => [r.id, roomGrants(module, r)]));
+type Grants = Map<Id, Set<string>>;
+/** Each room's keys — only the tokens some lock here asks for, since those are
+ *  all that can change where a party gets to (and every other token would make
+ *  the search track which rooms were visited, which grows exponentially). */
+function grantsOf(module: Module, d: Dungeon): Grants {
+  const wanted = new Set<string>();
+  for (const l of d.links) {
+    for (const r of l.door?.locked ?? []) {
+      if (r.kind === 'flag') wanted.add(`flag:${r.flag}`);
+      if (r.kind === 'item') wanted.add(`item:${r.itemId}`);
+      if (r.kind === 'visited') wanted.add(`visited:${r.scene}`);
+    }
+  }
+  return new Map(d.rooms.map((r) => [r.id, new Set([...roomGrants(module, r)].filter((t) => wanted.has(t)))]));
+}
+
+function explore(grants: Grants, d: Dungeon, from: Walk, mode: Mode): Walk[] {
   const stateKey = (w: Walk) => `${w.room}|${[...w.keys].sort().join(',')}`;
   const best = new Map<string, Walk>();
   const start: Walk = { ...from, keys: new Set([...from.keys, ...(grants.get(from.room) ?? [])]) };
@@ -338,7 +358,11 @@ function explore(module: Module, d: Dungeon, from: Walk, mode: Mode): Walk[] {
 
 /** The cheapest guaranteed walk from the entry to `goal`, or undefined. */
 export function goalCost(module: Module, d: Dungeon, goal: Id): number | undefined {
-  const walks = explore(module, d, { room: d.entry, keys: new Set(), cost: 0 }, 'proof').filter((w) => w.room === goal);
+  return goalCostWith(grantsOf(module, d), d, goal);
+}
+
+function goalCostWith(grants: Grants, d: Dungeon, goal: Id): number | undefined {
+  const walks = explore(grants, d, { room: d.entry, keys: new Set(), cost: 0 }, 'proof').filter((w) => w.room === goal);
   return walks.length ? Math.min(...walks.map((w) => w.cost)) : undefined;
 }
 
@@ -384,13 +408,14 @@ export function checkDungeon(module: Module, id: Id, d: Dungeon): string[] {
   const exits = d.rooms.filter((r) => r.exit).map((r) => r.id);
   if (goals.length === 0 && exits.length === 0) err('has neither a goal room nor an exit');
 
+  const grants = grantsOf(module, d);
   // 1. Every room can be reached, with every door open.
-  const open = new Set(explore(module, d, { room: d.entry, keys: new Set(), cost: 0 }, 'open').map((w) => w.room));
+  const open = new Set(explore(grants, d, { room: d.entry, keys: new Set(), cost: 0 }, 'open').map((w) => w.room));
   for (const r of d.rooms) if (!open.has(r.id)) err(`room '${r.id}' cannot be reached from the entry`);
 
   // 2. The goal can be reached with what the dungeon hands out, secrets unfound.
   for (const g of goals) {
-    const cost = goalCost(module, d, g);
+    const cost = goalCostWith(grants, d, g);
     if (cost === undefined) {
       err(`goal '${g}' cannot be reached without a secret door or a key the dungeon does not give`);
     } else if (d.torch && cost > d.torch.length) {
@@ -401,11 +426,11 @@ export function checkDungeon(module: Module, id: Id, d: Dungeon): string[] {
 
   // 4. No trap: from anywhere the party can get to, some way on or out remains.
   const outs = new Set([...goals, ...exits]);
-  const played = explore(module, d, { room: d.entry, keys: new Set(), cost: 0 }, 'play');
+  const played = explore(grants, d, { room: d.entry, keys: new Set(), cost: 0 }, 'play');
   const trapped = new Set<Id>();
   for (const w of played) {
     if (outs.has(w.room) || trapped.has(w.room)) continue;
-    const onward = explore(module, d, { ...w, cost: 0 }, 'play');
+    const onward = explore(grants, d, { ...w, cost: 0 }, 'play');
     if (!onward.some((x) => outs.has(x.room))) trapped.add(w.room);
   }
   for (const t of trapped) err(`a party in '${t}' can be left with no way on and no way out`);

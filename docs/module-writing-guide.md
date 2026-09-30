@@ -141,6 +141,56 @@ into a sequel, and — like a summon — do not decide whether the party has won
   right one shows.
 - **Make joining a choice, not a gift** — offer it beside sending them away.
 
+### Dungeons
+
+A dungeon is a scene of `kind: 'dungeon'`: **rooms and links, with no
+coordinates**. The game lays it out, draws it, and proves it works. Write the
+rooms, then look at it with
+
+    npm run dungeon:preview -- <module-id> <scene-id>
+
+which writes an SVG of the layout with every problem the validator finds
+printed across the top and the rooms it names outlined in red.
+
+A room (`DungeonRoom`) is a name and what happens there:
+
+- `fight` — a battle scene sprung on walking in, every time, until it is won.
+  Its `onWin` routes to `'@hub'` (back to the map, standing in the room).
+- `event: { scene, until? }` — a scene that plays on walking in: once, or on
+  every entry until `until` holds (Vex's fire plays until `met-vex`).
+- `search` — what the Search button turns up there, once (📦 on the map).
+- `exit: { to, label? }` — a way out; the only rooms fast travel works from.
+- `goal: true` — what the dungeon is for. The checks prove it is reachable.
+- `firstVisit` — the room's one piece of prose, shown the first time in.
+  **Keep it to a line or two, and leave it off most rooms.** The map is the
+  interface; the fight's intro or the event's scene says the rest.
+- `size` (`small` / `medium` / `large`) and `at: [col, row]` to pin a room if
+  the layout puts it somewhere odd.
+
+A link (`DungeonLink`) joins two rooms. `length` is torch spent walking it. Its
+`door` can be `locked` (requirements; `note` is what a tap on it says, `force`
+a one-try skill check), `secret` (found by passive Perception on arrival or by
+Search), `oneWay` (a to b only), or hold an `ambush` (a battle rolled once, the
+first time through).
+
+`torch: { length, out }` makes the light run out: each step spends a link's
+length, a search spends 1, and at 0 the party is sent to `out`. Walking back in
+from outside lights a fresh one. Leave it off anywhere lit — the den is.
+
+A battle with `mapId: '@room'` is fought on a board drawn for where the party
+stands: the dungeon's `theme`, a deeper board for a `large` room, a narrow one
+for a corridor ambush. Keep hand-drawn maps for set pieces (the pit, the hall).
+
+**The validator proves, for every dungeon:** every room can be reached; the
+goal can be reached with keys the dungeon itself hands out (a flag or item a
+room's scenes give) and without finding a secret door; no one-way drop or
+lock can leave the party with no way on and no way out; the torch lasts the
+proven route; and the layout is clean. A lock whose key lives outside the
+dungeon counts as shut — it can guard a side room, not the goal.
+
+`generateDelve(seed, { theme, size, level })` (src/adventure/dungeon-gen.ts)
+builds a whole playable module the same way, and is held to the same proofs.
+
 ## Mechanics of prose in a scene
 
 - **Story/dialogue `text`/`lines`** unveil one beat per tap — write each entry as

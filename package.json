@@ -28,7 +28,8 @@
     "token-sheet": "tsx scripts/token-sheet.ts",
     "arena-run": "tsx scripts/arena-run.ts",
     "arena-even": "tsx scripts/arena-even.ts",
-    "arena-eda": "tsx scripts/arena-eda.ts"
+    "arena-eda": "tsx scripts/arena-eda.ts",
+    "dungeon:preview": "tsx scripts/dungeon-preview.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
