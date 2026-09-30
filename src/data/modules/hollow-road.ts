@@ -749,6 +749,9 @@ const scenes: Record<string, Scene> = {
         effects: [{ kind: 'gold', amount: 50 }, { kind: 'setFlag', flag: 'got-scout' }] },
       { id: 'done', label: 'Raise a glass at the Wander-Inn', to: 'epilogue' },
     ],
+    // Back in Thornwick with the chief dead: there is no den to go back to,
+    // and walking into it would leave the ending behind for good.
+    noBack: true,
   },
 
   // A total party wipe lands here (revived at half HP), not a hard game over —
