@@ -24,7 +24,23 @@
  * *why* beasts, undead and lizardfolk fight for "bandits": chief Vargan sold his
  * people's marsh to the Reedwife, a green hag, for coin and monsters.
  */
-import type { Module, Scene } from '../../adventure/types.js';
+import type { Module, Scene, Effect } from '../../adventure/types.js';
+
+/** Learning whose the marsh-things are: the Reedwife reveal. */
+const HAG_LEARNED: Effect[] = [
+  { kind: 'setFlag', flag: 'know-hag' },
+  { kind: 'journal', entry: { id: 'c-hag', kind: 'clue', title: 'The Reedwife',
+    body: 'A green hag called the "Reedwife" owns and brands the marsh-creatures that serve the Ashfang. Chief Vargan sold his people\'s marsh to her. She gets caravans and captives. He gets coin and monsters. She waits at the den\'s fire beside him.' } },
+];
+
+/** What bringing Wren round buys, whether she goes home or comes along. */
+const WREN_SAVED: Effect[] = [
+  { kind: 'setFlag', flag: 'saved-scout' }, { kind: 'setFlag', flag: 'scout-met' }, { kind: 'setFlag', flag: 'know-vex' },
+  { kind: 'journal', entry: { id: 'npc-wren', kind: 'npc', title: 'Wren, the Scout', body: 'You pulled a reeve\'s scout, Wren, out from under a dead horse on the marsh road. She mapped the den for you.' } },
+  { kind: 'journal', entry: { id: 'lead-vex', kind: 'lead', resolvedBy: 'met-vex',
+    title: 'Vex, the Lieutenant', body: 'Wren named Vex, the Ashfang chief\'s resentful lieutenant. Seek out his fire inside the den — he may turn on the chief if offered a way out.' } },
+];
+
 
 // NPCs name a reusable archetype `portraitId` (src/data/adventure-art.ts) so
 // they share art with every other module's innkeeper / scout / captain; the
@@ -370,7 +386,13 @@ const scenes: Record<string, Scene> = {
   'hollow-quiet': {
     id: 'hollow-quiet', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌾' },
     text: ['The hollow lies quiet where you broke the Reedwife\'s ambush — only flattened reeds and still black water remain. The den\'s wooden wall waits ahead.'],
-    next: [{ id: 'ok', label: 'On to the den gate', to: 'gate' }], noBack: true,
+    // Wren parts at the tree line whichever way the party comes up to it.
+    next: [
+      { id: 'ok', label: 'On to the den gate', to: 'gate',
+        requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true },
+      { id: 'wren', label: 'On to the den gate', to: 'wren-parts',
+        requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true },
+    ], noBack: true,
   },
   ravine: {
     id: 'ravine', kind: 'challenge', art: { emoji: '🪨' },
@@ -420,11 +442,24 @@ const scenes: Record<string, Scene> = {
       'The horse comes off and the bleeding stops, and the scout lets out a breath she looks like she\'d been saving all week. "**Wren**," she offers, as if admitting to a name costs her something. She scratches the den\'s watch-posts into the mud, quick and exact. She really did count.',
       '"One thing more, and then I owe you twice over." She catches your wrist. "There\'s a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."',
     ],
-    next: [{ id: 'ok', label: 'Send Wren back to Thornwick', to: 'trail',
-      effects: [{ kind: 'setFlag', flag: 'saved-scout' }, { kind: 'setFlag', flag: 'scout-met' }, { kind: 'setFlag', flag: 'know-vex' },
-        { kind: 'journal', entry: { id: 'npc-wren', kind: 'npc', title: 'Wren, the Scout', body: 'You pulled a reeve\'s scout, Wren, out from under a dead horse on the marsh road. She mapped the den for you.' } },
-        { kind: 'journal', entry: { id: 'lead-vex', kind: 'lead', resolvedBy: 'met-vex',
-          title: 'Vex, the Lieutenant', body: 'Wren named Vex, the Ashfang chief\'s resentful lieutenant. Seek out his fire inside the den — he may turn on the chief if offered a way out.' } }] }],
+    next: [
+      { id: 'ok', label: 'Send Wren back to Thornwick', to: 'trail', effects: WREN_SAVED },
+      // The Gold Box guide: she knows the marsh, and she owes you twice over.
+      { id: 'come', label: 'Ask Wren to come with you through the marsh', to: 'wren-joins',
+        effects: [...WREN_SAVED, { kind: 'joinParty', companion: 'wren' }] },
+    ],
+  },
+  'wren-joins': {
+    id: 'wren-joins', kind: 'story', art: { emoji: '🧭' },
+    text: ['Wren tests the bound leg, winces, and decides it will do. "Someone has to keep you out of the sinkholes." She takes up her bow. "As far as their gate. Then I go for the reeve\'s men, and you had better still be alive when I get back."'],
+    next: [{ id: 'go', label: 'Into the marsh, four and one', to: 'trail' }],
+  },
+  // She came as far as she said she would.
+  'wren-parts': {
+    id: 'wren-parts', kind: 'story', art: { imageId: 'loc-camp', emoji: '🧭' },
+    text: ['At the tree line above the hollow Wren stops, and eases her weight off the leg. "This is as far as I said." She counts the watch-posts one last time, lips moving. "Reeve\'s men by nightfall, if I run. Leave me something to arrest."'],
+    next: [{ id: 'go', label: 'Let her go, and face the gate', to: 'gate',
+      effects: [{ kind: 'leaveParty', companion: 'wren' }] }],
   },
   'scout-fail': {
     id: 'scout-fail', kind: 'story', art: { emoji: '🩸' },
@@ -536,9 +571,11 @@ const scenes: Record<string, Scene> = {
       'Then a voice comes drifting across the water — old, and wet, and amused. "Vargan\'s little dogs, off their leash. No matter. Come up to the fire, sweetlings. The chief and his **Reedwife** have been expecting you." The reeds shiver, and go quiet. **So that is the Ashfang\'s secret: a green hag of the marsh, and a chief who sold his people\'s home to her for coin and cruelty.**',
     ],
     next: [{ id: 'ok', label: 'On to the den', to: 'gate',
-      effects: [{ kind: 'setFlag', flag: 'know-hag' },
-        { kind: 'journal', entry: { id: 'c-hag', kind: 'clue', title: 'The Reedwife',
-          body: 'A green hag called the "Reedwife" owns and brands the marsh-creatures that serve the Ashfang. Chief Vargan sold his people\'s marsh to her. She gets caravans and captives. He gets coin and monsters. She waits at the den\'s fire beside him.' } }] }],
+      requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true,
+      effects: HAG_LEARNED },
+    { id: 'wren', label: 'On to the den', to: 'wren-parts',
+      requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true,
+      effects: HAG_LEARNED }],
   },
 
   // === ACT 3 — THE ASHFANG DEN (dungeon) ================================
@@ -777,4 +814,10 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
   start: 'road', scenes, defeatScene: 'defeat', town: 'square',
+  companions: {
+    wren: {
+      id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',
+      blurb: 'The reeve\'s scout you pulled from under a dead horse. Guiding you through the marsh as far as the den\'s gate.',
+    },
+  },
 };

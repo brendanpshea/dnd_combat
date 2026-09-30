@@ -123,6 +123,24 @@ from every enemy in reach. Two optional fields shape this:
 - `noFlee: true` — no Fall back or Retreat, for a fight the story cannot let the
   party walk away from.
 
+### Companions
+
+An NPC can travel with the party — the Gold Box guide, prisoner or
+sellsword. Declare them on the module (`companions: { wren: { id, name,
+monsterId, portraitId?, emoji?, blurb } }`) and bring them in and out with
+`{ kind: 'joinParty', companion }` / `{ kind: 'leaveParty', companion }`
+effects. They fight with the stat block named by `monsterId`, run by the AI,
+and are knocked out rather than killed at 0 HP; their wounds carry between
+fights and mend with the party's rests. They take no XP or loot, never carry
+into a sequel, and — like a summon — do not decide whether the party has won.
+
+- **Give them a reason to leave.** A companion is a boost, so bound it: Wren
+  guides the party through the marsh and parts at the den's tree line. Every
+  route to the place they leave needs the `leaveParty` beat — gate choices
+  with `companion` / `noCompanion` requirements (`hideWhenBlocked`) so the
+  right one shows.
+- **Make joining a choice, not a gift** — offer it beside sending them away.
+
 ## Mechanics of prose in a scene
 
 - **Story/dialogue `text`/`lines`** unveil one beat per tap — write each entry as

@@ -22,13 +22,14 @@ import { SpellTray } from './SpellTray.js';
 import { spellSheet } from './gameInfo.js';
 import { MONSTERS } from '../../src/data/monsters.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
-import { MAPS, farRank } from '../../src/data/maps.js';
+import { MAPS, farRank, parseMap } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   legalApproaches, tryApproach,
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
+  companionCombatants, readBackCompanions,
   hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition,
   type AdventureState, type AdventureEvent, type BattleOptions,
@@ -260,6 +261,10 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       if (e.type === 'xp') { rewards.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`); sfx(e.leveledTo ? 'levelup' : 'item'); }
       if (e.type === 'heal' && e.amount > 0) { rewards.push(`Healed ${e.amount} HP`); sfx('heal'); }
       if (e.type === 'journal') { rewards.push(`📖 ${e.entry.title}`); sfx('page'); setJournalUnread(true); }
+      if (e.type === 'companion') {
+        const who = module.companions?.[e.companionId]?.name ?? label(e.companionId);
+        rewards.push(e.joined ? `🤝 ${who} joins the party` : `👋 ${who} goes their own way`);
+      }
     }
     return { paragraphs, rewards };
   }
@@ -373,7 +378,12 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
     const combat = new Combat({
       seed: battleSeed(state, scene.id),
       mapId: scene.mapId,
-      combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))],
+      combatants: (() => {
+        // The party, then whoever is travelling with it, then the enemy.
+        const heroes = buildCampaignParty(campaign);
+        const allies = companionCombatants(state, module, parseMap(MAPS[scene.mapId]!), heroes.map((h) => h.position));
+        return [...heroes, ...allies, ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))];
+      })(),
       // Authored ambush, or the result of sneaking up at the door.
       ...(surprise ? { surprisedTeam: (surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
     });
@@ -393,6 +403,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           const blows = partingBlows(combat.state, 'team1');
           const hurt = blows.filter((e) => e.type === 'damageDealt' && combat.state.combatants[e.targetId]?.team === 'team1');
           readBackSurvivors(campaign, Object.values(combat.state.combatants).filter((x) => x.team === 'team1'));
+          readBackCompanions(state, Object.values(combat.state.combatants));
           setArmedBattle(null);
           const events = fleeBattle(state, module, true);
           if (hurt.length > 0) {
@@ -419,6 +430,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
               );
             }
           }
+          readBackCompanions(state, Object.values(combat.state.combatants));
           setArmedBattle(null); // re-arm the intro if a later fight reuses this
           setLostFight(won ? null : (ENCOUNTERS[battleScene.encounterId]?.name ?? 'the fight'));
           // Loot ceremony (won fights with rewards), then the onWin/onLoss beat.
@@ -615,6 +627,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       {scene.kind !== 'ending' && !dice && (
         <PartyStrip
           campaign={campaign}
+          companions={companionsOf(state, module)}
           onJournal={() => { setJournalUnread(false); setJournalOpen(true); }}
           onCamp={() => { setCampOpen(true); if (!restTipDismissed) dismissRestTip(); }}
           journalCount={state.journal.length}
@@ -773,11 +786,29 @@ function hpBand(pct: number): string {
   return 'hp-ok';
 }
 
+/** Who is travelling with the party, as the strip shows them. */
+export interface StripCompanion { id: string; name: string; portraitId?: string; emoji?: string; hp: number; maxHp: number }
+
+function companionsOf(state: AdventureState, module: Module): StripCompanion[] {
+  return (state.companions ?? []).flatMap((x) => {
+    const def = module.companions?.[x.id];
+    const maxHp = def ? MONSTERS[def.monsterId]?.hp : undefined;
+    if (!def || maxHp === undefined) return [];
+    return [{
+      id: def.id, name: def.name, maxHp, hp: x.hp ?? maxHp,
+      ...(def.portraitId ? { portraitId: def.portraitId } : {}),
+      ...(def.emoji ? { emoji: def.emoji } : {}),
+    }];
+  });
+}
+
 export function PartyStrip(
-  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread, needsRest }: {
+  { campaign, active, onSelect, onJournal, onCamp, journalCount, journalUnread, needsRest, companions }: {
     campaign: CampaignState; active?: number; onSelect?: (i: number) => void;
     onJournal?: () => void; onCamp?: () => void; journalCount?: number; journalUnread?: boolean;
     needsRest?: boolean;
+    /** NPCs travelling with the party, shown after the heroes. */
+    companions?: StripCompanion[];
   },
 ) {
   const party = buildCampaignParty(campaign);
@@ -815,6 +846,23 @@ export function PartyStrip(
                 title={`${campaign.characters[i]?.name} — ${look?.name ?? ''}`}>{body}</button>
             : <div key={i} className={cls} style={style}
                 title={`${campaign.characters[i]?.name} — ${look?.name ?? ''}`}>{body}</div>;
+        })}
+        {/* Travelling with the party: shown, not selectable — they are the
+            AI's to play and nobody's to equip. */}
+        {(companions ?? []).map((cm) => {
+          const pct = Math.max(0, Math.round((cm.hp / cm.maxHp) * 100));
+          return (
+            <div key={cm.id} className="adv-party-member companion" title={`${cm.name} — travelling with you`}>
+              <span className="adv-party-face">
+                {cm.portraitId && hasArt(cm.portraitId)
+                  ? <Portrait id={cm.portraitId} team="team1" />
+                  : <span className="adv-party-emoji">{cm.emoji ?? '🧭'}</span>}
+                <span className="companion-pip on-portrait" aria-hidden="true">🤝</span>
+              </span>
+              <div className="adv-party-hpbar"><div className={hpBand(pct)} style={{ width: `${pct}%` }} /></div>
+              <span className="adv-party-hp">{cm.hp}/{cm.maxHp}</span>
+            </div>
+          );
         })}
       </div>
       {(onJournal || onCamp) && (

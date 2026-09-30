@@ -9,7 +9,7 @@ import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
-import { dismissSummonedBy, dismissSummonsOfSpell } from './summon.js';
+import { dismissSummonedBy, dismissSummonsOfSpell, actsOnItsOwn } from './summon.js';
 import { withinReach, reachesCell, reachFeet } from './reach.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
@@ -1709,7 +1709,7 @@ export function checkWinner(state: GameState): 'team1' | 'team2' | null {
   // face-down on the floor has lost even if its snake is still standing, and
   // leaving one in would hang exactly the way the both-sides-down case used to.
   const standing = Object.values(state.combatants)
-    .filter((c) => c.alive && c.hp > 0 && c.summonedBy === undefined);
+    .filter((c) => c.alive && c.hp > 0 && !actsOnItsOwn(c));
   const t1 = standing.some((c) => c.team === 'team1');
   const t2 = standing.some((c) => c.team === 'team2');
   if (t1 && !t2) return 'team1';

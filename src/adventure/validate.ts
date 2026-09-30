@@ -124,6 +124,12 @@ export function validateModule(module: Module): string[] {
     else if (townScene.kind !== 'explore') errors.push(`town '${module.town}' must be an explore scene, not ${townScene.kind}`);
   }
 
+  // Companions fight with a real stat block, keyed by their own id.
+  for (const [cid, def] of Object.entries(module.companions ?? {})) {
+    if (def.id !== cid) errors.push(`companion '${cid}' has id '${def.id}'`);
+    if (!MONSTERS[def.monsterId]) errors.push(`companion '${cid}' uses unknown stat block '${def.monsterId}'`);
+  }
+
   // Flag hygiene: every flag read somewhere must be written somewhere.
   const written = new Set<string>();
   const read = new Set<string>();
@@ -141,6 +147,9 @@ export function validateModule(module: Module): string[] {
       if (eff.kind === 'addItem' || eff.kind === 'removeItem') {
         if (!itemExists(eff.itemId)) at(id, `effect references unknown item '${eff.itemId}'`);
       }
+      if ((eff.kind === 'joinParty' || eff.kind === 'leaveParty') && !module.companions?.[eff.companion]) {
+        at(id, `effect names unknown companion '${eff.companion}'`);
+      }
       if (eff.kind === 'setFlag') written.add(eff.flag);
       if (eff.kind === 'clearFlag') written.add(eff.flag);
       if (eff.kind === 'journal' && eff.entry.kind === 'lead' && eff.entry.resolvedBy) {
@@ -152,6 +161,9 @@ export function validateModule(module: Module): string[] {
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);
       if (req.kind === 'visited' && !ids.has(req.scene)) at(id, `requires visiting unknown scene '${req.scene}'`);
+      if ((req.kind === 'companion' || req.kind === 'noCompanion') && !module.companions?.[req.companion]) {
+        at(id, `requires unknown companion '${req.companion}'`);
+      }
     }
     for (const skill of skillsOf(scene)) {
       if (!skillExists(skill)) at(id, `uses unknown skill '${skill}'`);

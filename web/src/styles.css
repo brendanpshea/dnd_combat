@@ -4511,3 +4511,8 @@ button.category .count {
 .adv-surprise { margin: 4px 0 8px; font-size: .88rem; }
 .adv-surprise.enemies { color: #8fd48f; }
 .adv-surprise.party { color: #e59a8f; }
+
+/* A companion on the adventure party strip: an ally, not a party member. */
+.adv-party-member.companion { opacity: .92; }
+.adv-party-member.companion .adv-party-face { outline: 1px dashed #8fd48f88; outline-offset: 1px; border-radius: 50%; }
+.companion-pip { position: absolute; right: -4px; bottom: -4px; font-size: .7rem; line-height: 1; }
