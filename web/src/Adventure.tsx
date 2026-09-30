@@ -16,18 +16,19 @@ import {
 // own module because the arena needs it too. Everything it used to import here
 // went with it.
 import { PartyScreen } from './PartyScreen.js';
+import { DungeonMap } from './DungeonMap.js';
 import { seenTips, markTipSeen } from './tips.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
 import { spellSheet } from './gameInfo.js';
 import { MONSTERS } from '../../src/data/monsters.js';
 import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
-import { MAPS, farRank, parseMap } from '../../src/data/maps.js';
+import { parseMap } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   legalApproaches, tryApproach,
-  exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
+  exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
   hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
@@ -95,6 +96,8 @@ type Overlay =
 /** The location backdrop art id for a scene (its own, or an explore map's). */
 function artIdOf(scene: Scene): string | undefined {
   if (scene.kind === 'explore') return scene.map.art?.imageId;
+  // A dungeon draws its own map over a dark floor; no painting behind it.
+  if (scene.kind === 'dungeon') return undefined;
   return 'art' in scene ? scene.art?.imageId : undefined;
 }
 
@@ -183,7 +186,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
 
   const scene = currentScene(state, module);
   const restTip = needsRest && !restTipDismissed && !campOpen &&
-    (scene.kind === 'explore' || scene.kind === 'story' || scene.kind === 'dialogue');
+    (scene.kind === 'explore' || scene.kind === 'dungeon' || scene.kind === 'story' || scene.kind === 'dialogue');
 
   // Persist the run on every scene change. At an ending the save slot becomes
   // whatever comes next: the sequel, carrying the company, or nothing.
@@ -256,6 +259,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
     const rewards: string[] = [];
     for (const e of events) {
       if (e.type === 'text') paragraphs.push(...e.paragraphs);
+      if (e.type === 'room' && e.firstVisit) paragraphs.push(...e.firstVisit);
+      if (e.type === 'doorFound') { rewards.push('🚪 A hidden door'); sfx('page'); }
       if (e.type === 'gold' && e.amount !== 0) { rewards.push(`${e.amount >= 0 ? '+' : ''}${e.amount} gold`); sfx('coin'); }
       if (e.type === 'item' && e.gained) { rewards.push(`Gained ${label(e.itemId)}`); sfx('item'); }
       if (e.type === 'xp') { rewards.push(`+${e.amount} XP${e.leveledTo ? ` — Level ${e.leveledTo}!` : ''}`); sfx(e.leveledTo ? 'levelup' : 'item'); }
@@ -277,7 +282,13 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
    *  choice) take the transient banner instead — no modal for walking in a door. */
   function presentFeedback(events: AdventureEvent[]): { overlays: Overlay[]; banner: string[] } {
     const sceneIdx = events.findIndex((e) => e.type === 'scene');
-    const outcome = sceneIdx >= 0 ? events.slice(0, sceneIdx) : events;
+    // A dungeon room's first-visit prose, and a door found on the way in,
+    // count wherever they fall: walking in from outside, they follow the
+    // dungeon's own scene event.
+    const arrival = sceneIdx >= 0
+      ? events.slice(sceneIdx).filter((e) => (e.type === 'room' && e.firstVisit) || e.type === 'doorFound')
+      : [];
+    const outcome = sceneIdx >= 0 ? [...events.slice(0, sceneIdx), ...arrival] : events;
     const { paragraphs, rewards } = feedback(outcome);
     const overlays: Overlay[] = [];
     if (paragraphs.length) overlays.push({ kind: 'result', paragraphs, rewards });
@@ -375,14 +386,16 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
     if (armedBattle === scene.id) {
     const surprise = battleSurpriseOf(state, module);
     const canRetreat = !!battleOptions(state, module).fallBack;
+    // A named map, or one drawn for the dungeon room the party stands in.
+    const board = battleMap(state, module);
     const combat = new Combat({
       seed: battleSeed(state, scene.id),
-      mapId: scene.mapId,
+      map: board,
       combatants: (() => {
         // The party, then whoever is travelling with it, then the enemy.
         const heroes = buildCampaignParty(campaign);
-        const allies = companionCombatants(state, module, parseMap(MAPS[scene.mapId]!), heroes.map((h) => h.position));
-        return [...heroes, ...allies, ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))];
+        const allies = companionCombatants(state, module, parseMap(board), heroes.map((h) => h.position));
+        return [...heroes, ...allies, ...buildEncounter(scene.encounterId, 'team2', board.rows.length - 1)];
       })(),
       // Authored ambush, or the result of sneaking up at the door.
       ...(surprise ? { surprisedTeam: (surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
@@ -393,8 +406,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         aiTeams={new Set<TeamId>(['team2'])}
         aiLevel={campaign.storyMode ? 'easy' : 'normal'}
         storyMode={campaign.storyMode}
-        mapLabel={`${enc?.name ?? scene.encounterId} — ${MAPS[scene.mapId]?.name ?? ''}`}
-        theme={MAPS[scene.mapId]?.theme ?? 'stone'}
+        mapLabel={`${enc?.name ?? scene.encounterId} — ${board.name}`}
+        theme={board.theme}
         doneLabel="Continue"
         onExit={onExit}
         onRetreat={canRetreat ? () => {
@@ -530,6 +543,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
               onApproach={onApproach}
               onLeave={onLeave}
               onNode={(nodeId) => process(enterNode(state, module, nodeId), scene)}
+              onEvents={(events) => { setBanner([]); process(events, scene); }}
+              onCamp={() => { setCampOpen(true); if (!restTipDismissed) dismissRestTip(); }}
               onTravel={(sceneId) => process(fastTravel(state, module, sceneId), scene)}
               onBlockedNode={(reason) => setBanner([reason])}
               onLeaveShop={() => process(resolveShopOrRest(state, module), scene)}
@@ -899,6 +914,7 @@ function sceneGlyph(scene: Scene): string {
     case 'dialogue': return '💬';
     case 'check': return '🎲';
     case 'explore': return '🗺️';
+    case 'dungeon': return '🕯️';
     case 'ending': return scene.outcome === 'victory' ? '🏆' : '☠️';
     default: return '📜';
   }
@@ -913,6 +929,9 @@ interface BodyProps {
   onApproach: (id: string, actorIdx?: number) => void;
   onLeave: () => void;
   onNode: (nodeId: string) => void;
+  /** Events from an action taken on a dungeon map. */
+  onEvents: (events: AdventureEvent[]) => void;
+  onCamp: () => void;
   onTravel: (sceneId: string) => void;
   onBlockedNode: (reason: string) => void;
   onLeaveShop: () => void;
@@ -929,7 +948,7 @@ interface BodyProps {
   carried?: { module: Module; state: AdventureState } | null;
 }
 
-function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue, carried }: BodyProps) {
+function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, onLeave, onNode, onEvents, onCamp, onTravel, onBlockedNode, onLeaveShop, onShopRoll, onShopChange, shopFocus, setShopFocus, beat, onAdvanceBeat, onExit, onContinue, carried }: BodyProps) {
   const campaign = state.campaign;
   // Overworld walk: the node the party pawn is mid-stride toward. Tapping a
   // marker sends the pawn walking there first; the scene opens when it arrives
@@ -1157,6 +1176,13 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
           </div>
         )}
       </div>
+    );
+  }
+
+  if (scene.kind === 'dungeon') {
+    return (
+      <DungeonMap scene={scene} state={state} module={module}
+        onAct={onEvents} onRest={onCamp} onTravel={onTravel} />
     );
   }
 

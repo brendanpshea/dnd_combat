@@ -7,7 +7,6 @@
  * selects another registered module, `--auto` plays it hands-off.
  */
 import * as readline from 'node:readline/promises';
-import { farRank } from '../../data/maps.js';
 import { Combat } from '../../engine/combat.js';
 import {
   newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
@@ -21,7 +20,8 @@ import { HOLLOW_ROAD_MODULE } from '../../data/modules/hollow-road.js';
 import {
   startAdventure, currentScene, enterScene, legalChoices, choose, rollSceneCheck,
   legalApproaches, tryApproach,
-  exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed,
+  exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
+  dungeonExits, dungeonProgress, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere, leaveDungeon,
   type AdventureState, type AdventureEvent,
 } from '../../adventure/runtime.js';
 import type { Module } from '../../adventure/types.js';
@@ -60,6 +60,11 @@ function render(events: AdventureEvent[], c: CampaignState): void {
       case 'heal': if (e.amount > 0) console.log(`   ❤️ Healed ${e.amount} HP`); break;
       case 'journal': console.log(`   📖 Journal: ${e.entry.title}`); break;
       case 'secretRevealed': console.log(`   🔍 You notice something hidden…`); break;
+      case 'room':
+        console.log(`\n📍 ${e.name}`);
+        for (const p of e.firstVisit ?? []) console.log(`\n${p}`);
+        break;
+      case 'doorFound': console.log('   🚪 A hidden door!'); break;
       default: break;
     }
   }
@@ -127,13 +132,30 @@ async function main() {
       const node = nodes[idx]!;
       if (node.blocked) { console.log('Locked.'); continue; }
       render(enterNode(state, module, node.node.id), campaign);
+    } else if (scene.kind === 'dungeon') {
+      const d = scene.dungeon;
+      const p = dungeonProgress(state, scene.id, d);
+      const name = (id: string) => d.rooms.find((r) => r.id === id)?.name ?? id;
+      console.log(`\n🗺️  ${d.title} — ${name(p.at)}${p.torch !== undefined ? ` (torch ${p.torch}/${d.torch!.length})` : ''}`);
+      const acts: Array<{ label: string; run: () => AdventureEvent[] }> = [];
+      for (const x of dungeonExits(state, module)) {
+        if (!x.blocked) acts.push({ label: `→ ${name(x.to)}`, run: () => walkTo(state, module, x.to) });
+        else if (x.force) acts.push({ label: `Force the door to ${name(x.to)} (${x.force.skill} DC ${x.force.dc})`, run: () => forceDoor(state, module, x.link) });
+        else acts.push({ label: `🔒 ${name(x.to)} — ${x.blocked}`, run: () => [] });
+      }
+      if (canSearch(state, module)) acts.push({ label: '🔍 Search', run: () => searchRoom(state, module) });
+      const exit = dungeonExitHere(state, module);
+      if (exit) acts.push({ label: `🚪 ${exit.label}`, run: () => leaveDungeon(state, module) });
+      const idx = await pickIndex(rl, acts.map((a) => a.label), auto);
+      render(acts[idx]!.run(), campaign);
     } else if (scene.kind === 'battle') {
       const enc = ENCOUNTERS[scene.encounterId];
       console.log(`\n⚔️  ${enc?.name ?? scene.encounterId} — fight!`);
+      const map = battleMap(state, module);
       const combat = new Combat({
         seed: battleSeed(state, scene.id),
-        mapId: scene.mapId,
-        combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', farRank(scene.mapId))],
+        map,
+        combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', map.rows.length - 1)],
       });
       const aiTeams = new Set<string>(['team2']);
       if (auto) aiTeams.add('team1');

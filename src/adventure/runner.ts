@@ -12,6 +12,7 @@ import {
   startAdventure, currentScene, enterScene, legalChoices, choose,
   rollSceneCheck, legalApproaches, tryApproach, exploreNodes, enterNode,
   resolveBattle, resolveShopOrRest,
+  dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere, leaveDungeon,
 } from './runtime.js';
 
 export interface RunPolicy {
@@ -94,6 +95,21 @@ export function runModule(
         if (nodes.length === 0) throw new Error(`Explore dead end at '${scene.id}'`);
         const pick = nodes[policy.pick(nodes.length, `node:${scene.id}`)]!;
         events.push(...enterNode(state, module, pick.node.id));
+        break;
+      }
+
+      case 'dungeon': {
+        // Every door that opens, every door that can be forced, a search if
+        // one is left, and the way out if this room has one.
+        const acts: Array<() => AdventureEvent[]> = [];
+        for (const x of dungeonExits(state, module)) {
+          if (!x.blocked) acts.push(() => walkTo(state, module, x.to));
+          else if (x.force) acts.push(() => forceDoor(state, module, x.link));
+        }
+        if (canSearch(state, module)) acts.push(() => searchRoom(state, module));
+        if (dungeonExitHere(state, module)) acts.push(() => leaveDungeon(state, module));
+        if (acts.length === 0) throw new Error(`Dungeon dead end at '${scene.id}'`);
+        events.push(...acts[policy.pick(acts.length, `room:${scene.id}`)]!());
         break;
       }
     }

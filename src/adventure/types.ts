@@ -12,6 +12,7 @@
  */
 import type { Id } from '../engine/types.js';
 import type { SkillId } from '../data/classes.js';
+import type { MapTheme } from '../data/maps.js';
 
 /** A run of prose. One entry = one paragraph/beat the UI reveals in turn. */
 export type Paragraph = string;
@@ -196,6 +197,85 @@ export interface ExploreMap {
   entry?: Id[];
 }
 
+// --- Dungeons ---------------------------------------------------------------
+
+/**
+ * A dungeon is a graph: rooms, and the links between them. Nothing here says
+ * where anything goes on screen — `layoutDungeon` works that out — so a
+ * dungeon can be written by hand, generated from a seed, or checked by a test
+ * without anyone drawing it. See src/adventure/dungeon.ts.
+ */
+export interface Dungeon {
+  title: string;
+  /** The look of the place, and of the boards its `@room` fights are fought on. */
+  theme: MapTheme;
+  art?: SceneArt;
+  /** Where the party stands on walking in (and on coming back from outside). */
+  entry: Id;
+  /**
+   * How far the light goes: every step spends a link's `length` of it, and a
+   * search spends 1. When it runs out the party is sent to `out`. Walking back
+   * in from outside lights a fresh one. Absent = the place is lit.
+   */
+  torch?: { length: number; out: SceneRef };
+  /** Present = the party may rest here (see CampRule). */
+  camp?: CampRule;
+  rooms: DungeonRoom[];
+  links: DungeonLink[];
+}
+
+export type RoomSize = 'small' | 'medium' | 'large';
+
+export interface DungeonRoom {
+  id: Id;
+  name: string;
+  /** How big it is drawn, and how deep its `@room` battle board is. */
+  size?: RoomSize;
+  /** The room's one piece of prose, shown the first time the party walks in. */
+  firstVisit?: Paragraph[];
+  /** A battle scene sprung on walking in, every time, until it is won. */
+  fight?: SceneRef;
+  /** A scene that plays on walking in (a conversation, a find): once, or on
+   *  every entry until `until` holds. After the fight, if there is one. */
+  event?: { scene: SceneRef; until?: Requirement[] };
+  /** What Search turns up here: a scene entered once, after any secret doors. */
+  search?: SceneRef;
+  /** A way out of the dungeon from this room. */
+  exit?: { to: SceneRef; label?: string };
+  /** What the dungeon is for. The checks prove it can be reached from the
+   *  entry with what the dungeon itself hands out. */
+  goal?: true;
+  /** Pin the room to a layout cell; unpinned rooms are placed around it. */
+  at?: [col: number, row: number];
+}
+
+export interface DungeonLink {
+  a: Id;
+  b: Id;
+  /** Torch spent walking it (default 1). */
+  length?: number;
+  door?: DungeonDoor;
+}
+
+export interface DungeonDoor {
+  /** Shut until these hold. Once walked through, it stays open. */
+  locked?: Requirement[];
+  /** Why it is shut, shown when the party tries it ("Barred from inside"). */
+  note?: string;
+  /** A locked door can be forced instead: one try, and its key still works. */
+  force?: { skill: SkillId; dc: number };
+  /** Unseen until found: by passive Perception on arrival, or by Search. */
+  secret?: { dc: number };
+  /** Only from `a` to `b` (a drop, a door that locks behind you). */
+  oneWay?: true;
+  /** Something waits in the dark along it: rolled once, the first time through. */
+  ambush?: { chance: number; battle: SceneRef };
+}
+
+/** A battle scene's `mapId` that means "a board drawn for the room the party
+ *  is standing in", generated from the dungeon's theme and the room's size. */
+export const ROOM_MAP_REF = '@room';
+
 export type Scene =
   // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
   // beat the player shouldn't be able to walk away from.
@@ -248,6 +328,7 @@ export type Scene =
       noBack?: boolean;
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
+  | { id: Id; kind: 'dungeon'; dungeon: Dungeon }
   | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];
       /** Per-location stock (item ids). Absent = the default SHOP_STOCK. */
       stock?: Id[]; title?: string;

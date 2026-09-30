@@ -20,6 +20,8 @@ import { buildMonster } from '../data/monsters.js';
 import { ENCOUNTERS } from '../data/encounters.js';
 import { MONSTERS } from '../data/monsters.js';
 import { rollDie } from '../engine/rng.js';
+import { MAPS, type MapData } from '../data/maps.js';
+import { generateArenaMap } from '../arena/map.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
   characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
@@ -27,10 +29,11 @@ import {
   attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
 } from '../campaign/campaign.js';
 import {
-  HUB_REF,
-  type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome,
+  HUB_REF, ROOM_MAP_REF,
+  type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
   type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach,
 } from './types.js';
+import { linkKey, linksFrom, roomOf } from './dungeon.js';
 
 export interface AdventureState {
   campaign: CampaignState;
@@ -74,6 +77,38 @@ export interface AdventureState {
    * back what it cost them, and a long rest clears it again.
    */
   companions?: Array<{ id: Id; hp?: number }>;
+  /** Where the party stands in each dungeon it has entered, and what it has
+   *  done there, by the dungeon scene's id. */
+  dungeons?: Record<Id, DungeonProgress>;
+}
+
+/** A party's progress through one dungeon. Links are named by `linkKey`. */
+export interface DungeonProgress {
+  /** The room the party is standing in. */
+  at: Id;
+  /** The room it walked in from: where falling back from a fight returns it. */
+  from?: Id;
+  /** Walked in, but the room has not had its say yet (a fight on the way, the
+   *  room's own fight still to win). Settled when the party comes back. */
+  pending?: true;
+  seen: Id[];
+  /** Rooms whose fight has been won. */
+  cleared: Id[];
+  /** Rooms whose once-only event has played. */
+  played: Id[];
+  searched: Id[];
+  /** Locked doors walked through or forced: they stay open. */
+  opened: string[];
+  forceTried: string[];
+  /** Secret doors found. */
+  revealed: string[];
+  /** Links whose ambush has been rolled. */
+  ambushRolled: string[];
+  /** Light left, when the dungeon has a torch. */
+  torch?: number;
+  /** Gone out (by a way out, or when the light failed): coming back in starts
+   *  at the entry again. */
+  outside?: true;
 }
 
 export interface ShopVisit {
@@ -96,6 +131,9 @@ export type AdventureEvent =
   | { type: 'journal'; entry: JournalEntry }
   | { type: 'companion'; companionId: Id; joined: boolean }
   | { type: 'secretRevealed'; nodeId: Id }
+  /** The party walked into a dungeon room; `firstVisit` is its prose, the first time. */
+  | { type: 'room'; roomId: Id; name: string; firstVisit?: string[] }
+  | { type: 'doorFound'; link: string }
   | { type: 'startBattle'; encounterId: Id; mapId: Id; sceneId: Id }
   | { type: 'enterShop'; next: Id }
   | { type: 'rest'; variant: 'short' | 'long'; next: Id }
@@ -316,7 +354,8 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
   state.sceneId = resolved;
   if (!revisit) state.visited.push(resolved);
   const scene = currentScene(state, module);
-  if (scene.kind === 'explore') state.hub = resolved; // this is now the location
+  const cameFrom = state.hub;
+  if (isHub(scene)) state.hub = resolved; // this is now the location
   const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind, revisit }];
 
   switch (scene.kind) {
@@ -343,8 +382,21 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
       events.push({ type: 'ending', outcome: scene.outcome });
       break;
     case 'explore': break; // the UI renders the node map; no auto text
+    case 'dungeon': events.push(...enterDungeon(state, module, scene, cameFrom !== resolved)); break;
   }
   return events;
+}
+
+/** The scenes that are places: a map the party stands on, and returns to. */
+export function isHub(scene: Scene | undefined): scene is Extract<Scene, { kind: 'explore' | 'dungeon' }> {
+  return scene?.kind === 'explore' || scene?.kind === 'dungeon';
+}
+
+/** A place's name. */
+export function hubTitleOf(scene: Scene | undefined): string | null {
+  if (scene?.kind === 'explore') return scene.map.title;
+  if (scene?.kind === 'dungeon') return scene.dungeon.title;
+  return null;
 }
 
 function applyOutcome(state: AdventureState, module: Module, outcome: Outcome): AdventureEvent[] {
@@ -496,6 +548,9 @@ export function hubReturn(state: AdventureState, module: Module): Id | null {
   const scene = currentScene(state, module);
   if (scene.kind !== 'story' && scene.kind !== 'dialogue' && scene.kind !== 'challenge') return null;
   if (scene.noBack || !state.hub || state.hub === scene.id) return null;
+  // Out of a dungeon: its map is behind the party, not somewhere to step back to.
+  const hub = module.scenes[state.hub];
+  if (hub?.kind === 'dungeon' && state.dungeons?.[hub.id]?.outside) return null;
   return state.hub;
 }
 
@@ -509,8 +564,7 @@ export function returnToHub(state: AdventureState, module: Module): AdventureEve
 export function hubReturnTitle(state: AdventureState, module: Module): string | null {
   const hub = hubReturn(state, module);
   if (!hub) return null;
-  const scene = module.scenes[hub];
-  return scene?.kind === 'explore' ? scene.map.title : null;
+  return hubTitleOf(module.scenes[hub]);
 }
 
 /** A place the party can fast-travel to from the location they're standing in.
@@ -528,13 +582,15 @@ export interface TravelDest { sceneId: Id; title: string; isTown: boolean }
  */
 export function travelDestinations(state: AdventureState, module: Module): TravelDest[] {
   const here = currentScene(state, module);
-  if (here.kind !== 'explore') return [];
+  if (!isHub(here)) return [];
+  // In a dungeon, only from a room with a way out.
+  if (here.kind === 'dungeon' && !roomOf(here.dungeon, dungeonProgress(state, here.id, here.dungeon).at)?.exit) return [];
   const dests: TravelDest[] = [];
   for (const sceneId of state.visited) {
     if (sceneId === state.sceneId) continue;
     const scene = module.scenes[sceneId];
-    if (scene?.kind !== 'explore') continue;
-    dests.push({ sceneId, title: scene.map.title, isTown: sceneId === module.town });
+    if (!isHub(scene)) continue;
+    dests.push({ sceneId, title: hubTitleOf(scene)!, isTown: sceneId === module.town });
   }
   return dests.sort((a, b) => Number(b.isTown) - Number(a.isTown) || a.title.localeCompare(b.title));
 }
@@ -691,6 +747,317 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
   return enterScene(state, module, redirect ? redirect.to : node.scene);
 }
 
+// --- Dungeons ---------------------------------------------------------------
+//
+// A dungeon scene is a map of rooms the party walks, one link at a time. The
+// map itself stays on screen; everything that happens in it — a room's fight,
+// its conversation, what a search turns up — is an ordinary scene entered from
+// here, and routing back to `@hub` returns to the room the party stands in.
+
+/** The dungeon the party is in (standing on its map or in one of its scenes). */
+function hubDungeon(state: AdventureState, module: Module): { id: Id; dungeon: Dungeon } | undefined {
+  const scene = state.hub ? module.scenes[state.hub] : undefined;
+  return scene?.kind === 'dungeon' ? { id: scene.id, dungeon: scene.dungeon } : undefined;
+}
+
+/** The party's progress through a dungeon, made on first use. A save from
+ *  before a room was renamed puts the party back at the entry. */
+export function dungeonProgress(state: AdventureState, sceneId: Id, d: Dungeon): DungeonProgress {
+  const all = (state.dungeons ??= {});
+  let p = all[sceneId];
+  if (!p) {
+    p = {
+      at: d.entry, seen: [], cleared: [], played: [], searched: [], opened: [], forceTried: [],
+      revealed: [], ambushRolled: [], pending: true,
+      ...(d.torch ? { torch: d.torch.length } : {}),
+    };
+    all[sceneId] = p;
+  }
+  if (!roomOf(d, p.at)) { p.at = d.entry; p.pending = true; delete p.from; }
+  return p;
+}
+
+function enterDungeon(
+  state: AdventureState, module: Module, scene: Extract<Scene, { kind: 'dungeon' }>, fromOutside: boolean,
+): AdventureEvent[] {
+  const d = scene.dungeon;
+  const p = dungeonProgress(state, scene.id, d);
+  if (fromOutside || p.outside) {
+    delete p.outside;
+    // Walking back in: at the door again, with a fresh torch.
+    p.at = d.entry;
+    delete p.from;
+    p.pending = true;
+    if (d.torch) p.torch = d.torch.length;
+  }
+  return p.pending ? arrive(state, module, scene.id, d, p) : [];
+}
+
+/**
+ * The party has walked into `p.at`: the room has its say. Its prose the first
+ * time; any secret door sharp eyes catch; its fight, until won; then its event.
+ * A fight leaves the arrival pending, so once it is won the event still plays.
+ */
+function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, p: DungeonProgress): AdventureEvent[] {
+  const room = roomOf(d, p.at)!;
+  const events: AdventureEvent[] = [];
+  const first = !p.seen.includes(room.id);
+  if (first) p.seen.push(room.id);
+  events.push({ type: 'room', roomId: room.id, name: room.name, ...(first && room.firstVisit ? { firstVisit: room.firstVisit } : {}) });
+
+  const passive = partyPassivePerception(state.campaign);
+  for (const { link } of allLinksAt(d, room.id)) {
+    const key = linkKey(link);
+    if (link.door?.secret && !p.revealed.includes(key) && passive >= link.door.secret.dc) {
+      p.revealed.push(key);
+      events.push({ type: 'doorFound', link: key });
+    }
+  }
+
+  if (room.fight && !p.cleared.includes(room.id)) {
+    p.pending = true;
+    events.push(...enterScene(state, module, room.fight));
+    return events;
+  }
+  delete p.pending;
+  if (room.event) {
+    const done = room.event.until
+      ? room.event.until.every((r) => requirementMet(state, r))
+      : p.played.includes(room.id);
+    if (!done) {
+      if (!room.event.until) p.played.push(room.id);
+      events.push(...enterScene(state, module, room.event.scene));
+    }
+  }
+  return events;
+}
+
+/** Every link touching a room, either way, one-way or not (for secrets). */
+function allLinksAt(d: Dungeon, roomId: Id): Array<{ link: DungeonLink; to: Id }> {
+  return d.links
+    .filter((l) => l.a === roomId || l.b === roomId)
+    .map((link) => ({ link, to: link.a === roomId ? link.b : link.a }));
+}
+
+/** Why a link cannot be walked from where the party stands now, or null. */
+function doorBlocked(state: AdventureState, p: DungeonProgress, link: DungeonLink): string | null {
+  const door = link.door;
+  if (!door?.locked || p.opened.includes(linkKey(link))) return null;
+  if (door.locked.every((r) => requirementMet(state, r))) return null;
+  return door.note ?? blockedReason(state, door.locked);
+}
+
+/** A door the party can see from the room it is in. */
+export interface DungeonExit {
+  to: Id;
+  link: string;
+  /** Why it will not open, or null. */
+  blocked: string | null;
+  /** It can be forced (once): the skill and DC. */
+  force?: { skill: string; dc: number };
+}
+
+/** The doors out of the room the party stands in: not the unfound secrets,
+ *  nor the far side of a one-way drop. */
+export function dungeonExits(state: AdventureState, module: Module): DungeonExit[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'dungeon') return [];
+  const d = scene.dungeon;
+  const p = dungeonProgress(state, scene.id, d);
+  const out: DungeonExit[] = [];
+  for (const { link, to } of linksFrom(d, p.at)) {
+    const key = linkKey(link);
+    if (link.door?.secret && !p.revealed.includes(key)) continue;
+    const blocked = doorBlocked(state, p, link);
+    const force = blocked && link.door?.force && !p.forceTried.includes(key) ? link.door.force : undefined;
+    out.push({ to, link: key, blocked, ...(force ? { force } : {}) });
+  }
+  return out;
+}
+
+/**
+ * The way to `target` through rooms already seen, one link at a time, or null.
+ * Tapping a room across the map walks the party there; anything still waiting
+ * in a room on the way stops it, since passing through a room is entering it.
+ */
+export function dungeonRoute(state: AdventureState, module: Module, target: Id): Id[] | null {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'dungeon') return null;
+  const d = scene.dungeon;
+  const p = dungeonProgress(state, scene.id, d);
+  if (target === p.at) return [];
+  const prev = new Map<Id, Id>([[p.at, p.at]]);
+  const q = [p.at];
+  while (q.length) {
+    const cur = q.shift()!;
+    for (const { link, to } of linksFrom(d, cur)) {
+      if (prev.has(to)) continue;
+      if (link.door?.secret && !p.revealed.includes(linkKey(link))) continue;
+      if (doorBlocked(state, p, link)) continue;
+      if (to !== target && !p.seen.includes(to)) continue;
+      prev.set(to, cur);
+      if (to === target) {
+        const path = [to];
+        let x = cur;
+        while (x !== p.at) { path.unshift(x); x = prev.get(x)!; }
+        return path;
+      }
+      q.push(to);
+    }
+  }
+  return null;
+}
+
+/** Walk to a room: next door, or across rooms already seen. Stops the moment
+ *  anything happens (a fight, a conversation, the torch). */
+export function walkTo(state: AdventureState, module: Module, target: Id): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'dungeon') throw new Error('walkTo outside a dungeon');
+  const path = dungeonRoute(state, module, target);
+  if (!path) throw new Error(`No way to '${target}' from here`);
+  const events: AdventureEvent[] = [];
+  for (const to of path) {
+    events.push(...step(state, module, scene.id, scene.dungeon, to));
+    if (state.sceneId !== scene.id) break;
+  }
+  return events;
+}
+
+function spendTorch(state: AdventureState, module: Module, d: Dungeon, p: DungeonProgress, amount: number): AdventureEvent[] | null {
+  if (!d.torch || p.torch === undefined) return null;
+  p.torch = Math.max(0, p.torch - amount);
+  if (p.torch > 0) return null;
+  p.outside = true;
+  return enterScene(state, module, d.torch.out);
+}
+
+function step(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, to: Id): AdventureEvent[] {
+  const p = dungeonProgress(state, sceneId, d);
+  const link = linksFrom(d, p.at).find((x) => x.to === to)?.link;
+  if (!link) throw new Error(`No door from '${p.at}' to '${to}'`);
+  const key = linkKey(link);
+  if (link.door?.secret && !p.revealed.includes(key)) throw new Error(`No door from '${p.at}' to '${to}'`);
+  if (doorBlocked(state, p, link)) throw new Error(`The door to '${to}' is shut`);
+  if (link.door?.locked && !p.opened.includes(key)) p.opened.push(key); // walked through: it stays open
+  p.from = p.at;
+  p.at = to;
+  p.pending = true;
+
+  const dark = spendTorch(state, module, d, p, link.length ?? 1);
+  if (dark) return dark;
+  const ambush = link.door?.ambush;
+  if (ambush && !p.ambushRolled.includes(key)) {
+    p.ambushRolled.push(key);
+    const c = state.campaign;
+    const r = rollDie(c.rng, 1000); c.rng = r.state;
+    if ((r.value - 1) / 1000 < ambush.chance) return enterScene(state, module, ambush.battle);
+  }
+  return arrive(state, module, sceneId, d, p);
+}
+
+/** Whether the room the party stands in can still be searched. */
+export function canSearch(state: AdventureState, module: Module): boolean {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'dungeon') return false;
+  const p = dungeonProgress(state, scene.id, scene.dungeon);
+  return !p.searched.includes(p.at);
+}
+
+/**
+ * Search the room, once: the party's best eye against any secret door in its
+ * walls, then whatever the room keeps for a search. Costs a little light.
+ */
+export function searchRoom(state: AdventureState, module: Module): AdventureEvent[] {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'dungeon' || !canSearch(state, module)) throw new Error('Nothing to search here');
+  const d = scene.dungeon;
+  const p = dungeonProgress(state, scene.id, d);
+  const room = roomOf(d, p.at)!;
+  p.searched.push(room.id);
+  const events: AdventureEvent[] = [];
+  const secrets = allLinksAt(d, room.id).filter(({ link }) => link.door?.secret && !p.revealed.includes(linkKey(link)));
+  let found = 0;
+  if (secrets.length > 0) {
+    const c = state.campaign;
+    const dc = Math.min(...secrets.map(({ link }) => link.door!.secret!.dc));
+    const guidanceKey = `${scene.id}#${room.id}`;
+    const roll = characterSkillCheck(c, bestAtSkill(c, 'investigation').idx, 'investigation', dc,
+      { noGuidance: state.guidanceSpent.includes(guidanceKey) });
+    state.guidanceSpent.push(guidanceKey);
+    events.push({ type: 'check', roll, success: roll.success });
+    for (const { link } of secrets) {
+      if (roll.total >= link.door!.secret!.dc) {
+        p.revealed.push(linkKey(link));
+        events.push({ type: 'doorFound', link: linkKey(link) });
+        found++;
+      }
+    }
+  }
+  const dark = spendTorch(state, module, d, p, 1);
+  if (dark) return [...events, ...dark];
+  if (room.search) events.push(...enterScene(state, module, room.search));
+  else if (found === 0) events.push({ type: 'text', paragraphs: ['Nothing turns up.'] });
+  return events;
+}
+
+/** Try to force a locked door next to the party, once. The key still works. */
+export function forceDoor(state: AdventureState, module: Module, link: string): AdventureEvent[] {
+  const exit = dungeonExits(state, module).find((x) => x.link === link);
+  const scene = currentScene(state, module);
+  if (!exit?.force || scene.kind !== 'dungeon') throw new Error('That door cannot be forced');
+  const p = dungeonProgress(state, scene.id, scene.dungeon);
+  p.forceTried.push(link);
+  const events: AdventureEvent[] = [];
+  const ok = rollFor(state, exit.force.skill as Parameters<typeof partySkillCheck>[1], exit.force.dc, 'best', events);
+  if (ok) p.opened.push(link);
+  events.push({ type: 'text', paragraphs: [ok ? 'It gives.' : 'It holds.'] });
+  return events;
+}
+
+/** The way out from the room the party stands in, if it has one. */
+export function dungeonExitHere(state: AdventureState, module: Module): { to: Id; label: string } | null {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'dungeon') return null;
+  const room = roomOf(scene.dungeon, dungeonProgress(state, scene.id, scene.dungeon).at);
+  if (!room?.exit) return null;
+  return { to: room.exit.to, label: room.exit.label ?? 'Leave' };
+}
+
+export function leaveDungeon(state: AdventureState, module: Module): AdventureEvent[] {
+  const exit = dungeonExitHere(state, module);
+  const scene = currentScene(state, module);
+  if (!exit || scene.kind !== 'dungeon') throw new Error('No way out from this room');
+  dungeonProgress(state, scene.id, scene.dungeon).outside = true;
+  return enterScene(state, module, exit.to);
+}
+
+/**
+ * The board a battle scene is fought on. A named map, or — for `@room` — one
+ * drawn for where the party stands: the dungeon's theme, deeper for a big
+ * room, a narrow run for a fight in a corridor. Seeded like the fight, so a
+ * retried fight redraws.
+ */
+export function battleMap(state: AdventureState, module: Module): MapData {
+  const scene = currentScene(state, module);
+  if (scene.kind !== 'battle') throw new Error(`battleMap on a ${scene.kind} scene`);
+  if (scene.mapId !== ROOM_MAP_REF) {
+    const map = MAPS[scene.mapId];
+    if (!map) throw new Error(`Unknown map: ${scene.mapId}`);
+    return map;
+  }
+  const d = hubDungeon(state, module);
+  const p = d ? dungeonProgress(state, d.id, d.dungeon) : undefined;
+  const room = d && p ? roomOf(d.dungeon, p.at) : undefined;
+  const inCorridor = !!p?.pending && room?.fight !== scene.id;
+  const { value } = generateArenaMap({
+    theme: d?.dungeon.theme ?? 'stone',
+    height: room?.size === 'large' && !inCorridor ? 12 : 10,
+    ...(inCorridor ? { layout: 'chokepoint' as const } : {}),
+  }, battleSeed(state, scene.id));
+  const where = d?.dungeon.title ?? 'A dungeon';
+  return { ...value.map, id: `room-${scene.id}`, name: inCorridor ? `${where}, in a corridor` : where };
+}
+
 // --- Driver callbacks (battle / shop / rest) --------------------------------
 
 /** After the driver runs the battle for the current `battle` scene. */
@@ -701,7 +1068,15 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   // retry, a re-triggered camp ambush — draws a different battleSeed.
   (state.battleAttempts ??= {})[scene.id] = (state.battleAttempts[scene.id] ?? 0) + 1;
   delete state.battleSurprise;
-  if (won) return applyOutcome(state, module, scene.onWin);
+  if (won) {
+    // A room's own fight, won: the room is cleared for good.
+    const d = hubDungeon(state, module);
+    if (d) {
+      const p = dungeonProgress(state, d.id, d.dungeon);
+      if (roomOf(d.dungeon, p.at)?.fight === scene.id && !p.cleared.includes(p.at)) p.cleared.push(p.at);
+    }
+    return applyOutcome(state, module, scene.onWin);
+  }
   // Loss: an authored per-battle branch wins; else the module's defeat scene
   // (the party is dragged back, revived at half HP); else just retry the fight.
   if (scene.onLoss) return applyOutcome(state, module, scene.onLoss);
@@ -762,9 +1137,8 @@ export function battleOptions(state: AdventureState, module: Module): BattleOpti
     out.sneak = { dc: sneakDc(scene.encounterId) };
   }
   const hub = state.hub;
-  if (!scene.noFlee && hub && hub !== scene.id && module.scenes[hub]?.kind === 'explore') {
-    const map = module.scenes[hub];
-    out.fallBack = { title: map?.kind === 'explore' ? map.map.title : hub };
+  if (!scene.noFlee && hub && hub !== scene.id && isHub(module.scenes[hub])) {
+    out.fallBack = { title: hubTitleOf(module.scenes[hub]) ?? hub };
   }
   return out;
 }
@@ -833,6 +1207,17 @@ export function fleeBattle(state: AdventureState, module: Module, retreated: boo
   if (scene.kind !== 'battle' || !battleOptions(state, module).fallBack) throw new Error('No way back from here');
   if (retreated) (state.battleAttempts ??= {})[scene.id] = (state.battleAttempts[scene.id] ?? 0) + 1;
   delete state.battleSurprise;
+  // In a dungeon, falling back from a room's fight or a corridor ambush puts
+  // the party back in the room it came from; the fight stays where it was.
+  const d = hubDungeon(state, module);
+  if (d) {
+    const p = dungeonProgress(state, d.id, d.dungeon);
+    if (p.pending || roomOf(d.dungeon, p.at)?.fight === scene.id) {
+      p.at = p.from ?? d.dungeon.entry;
+      delete p.from;
+      delete p.pending;
+    }
+  }
   return [
     { type: 'text', paragraphs: [retreated
       ? 'You break off and get clear. They let you go — this time.'
@@ -925,9 +1310,10 @@ export function shopSteal(state: AdventureState, module: Module): AdventureEvent
  *  party can't rest here (gear management is always allowed; sleeping isn't). */
 export function campRule(state: AdventureState, module: Module): CampRule | null {
   const scene = currentScene(state, module);
-  if (scene.kind === 'explore') return scene.map.camp ?? null;
-  const hub = state.hub ? module.scenes[state.hub] : undefined;
-  return hub && hub.kind === 'explore' ? (hub.map.camp ?? null) : null;
+  const place = isHub(scene) ? scene : state.hub ? module.scenes[state.hub] : undefined;
+  if (place?.kind === 'explore') return place.map.camp ?? null;
+  if (place?.kind === 'dungeon') return place.dungeon.camp ?? null;
+  return null;
 }
 
 /** Rest at a campable location. A long rest at a `risky` camp may be

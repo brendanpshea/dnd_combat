@@ -4516,3 +4516,53 @@ button.category .count {
 .adv-party-member.companion { opacity: .92; }
 .adv-party-member.companion .adv-party-face { outline: 1px dashed #8fd48f88; outline-offset: 1px; border-radius: 50%; }
 .companion-pip { position: absolute; right: -4px; bottom: -4px; font-size: .7rem; line-height: 1; }
+
+/* --- Dungeon map ------------------------------------------------------------
+   The map is the interface: rooms are tapped, not listed. A dark floor with a
+   warm light where the party stands; rooms glimpsed through a doorway are a
+   dashed outline with no name. */
+.dg {
+  position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column;
+  gap: 6px; padding: 6px 10px 8px;
+  background: radial-gradient(circle at 50% 55%, #2f2619 0%, #1f1a2b 55%, #15121e 100%);
+}
+.dg-head { display: flex; align-items: center; gap: 10px; min-height: 22px; }
+.dg-title { font-family: var(--display); font-weight: 700; font-size: .95rem; color: var(--muted); }
+.dg-torch { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: .9rem; }
+.dg-pips { display: flex; gap: 3px; }
+.dg-pips i { width: 12px; height: 7px; border-radius: 3px; background: #3a3352; }
+.dg-pips i.lit { background: #ffb45c; box-shadow: 0 0 6px #ff9a3c88; }
+.dg-map {
+  flex: 1; min-height: 0; position: relative; border-radius: 12px; overflow: hidden;
+  border: 1px solid #2d2640; background: #15121e55;
+}
+.dg-map svg { width: 100%; height: 100%; display: block; }
+.dg-corr { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.dg-corr.walked { stroke: #8a7a60; stroke-width: 10; }
+.dg-corr.glimpsed { stroke: #5a5070; stroke-width: 4; stroke-dasharray: 2 8; }
+.dg-corr.secret { stroke: #b49cff; stroke-width: 4; stroke-dasharray: 8 6; }
+.dg-corr-arrow { fill: none; stroke: none; }
+.dg-room { cursor: pointer; }
+.dg-room rect { fill: #2a2338; stroke: #8a7a60; stroke-width: 2; }
+.dg-room.glimpsed rect { fill: #1d1929; stroke: #4a4166; stroke-dasharray: 5 5; }
+.dg-room.glimpsed rect.fog { stroke: none; }
+.dg-room.here rect { fill: #3a2f22; stroke: var(--gold); stroke-width: 3.5; filter: drop-shadow(0 0 10px #ffb45c66); }
+.dg-room.noted rect { stroke: var(--red); }
+.dg-name { fill: var(--text); font-family: var(--display); font-weight: 700; font-size: 16px; pointer-events: none; }
+.dg-room.here .dg-name { fill: #fff3d6; }
+.dg-mark { font-size: 18px; cursor: pointer; }
+.dg-mark.small { font-size: 14px; pointer-events: none; }
+.dg-note {
+  position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 12px; border-radius: 10px; text-align: center; font-size: .86rem;
+  background: #15121ef0; border: 1px solid #caa46a; box-shadow: 0 6px 20px #000a;
+}
+.dg-bar { display: flex; align-items: center; gap: 8px; }
+.dg-here { flex: 1; min-width: 0; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dg-here b { font-family: var(--display); }
+.dg-act {
+  padding: 7px 11px; border-radius: 10px; border: 1px solid #453d63; background: #2c2640;
+  color: var(--text); font-size: .85rem; white-space: nowrap;
+}
+.dg-travel { display: flex; flex-wrap: wrap; gap: 6px; }

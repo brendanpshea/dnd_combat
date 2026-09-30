@@ -41,7 +41,8 @@ export function parseAdventure(json: string, module: Module): AdventureState | u
     if (!module.scenes[state.sceneId]) return undefined;
     // A hub the module no longer has would load fine and then throw on the
     // first "leave". Forget it instead; the next explore scene sets it again.
-    if (state.hub !== undefined && module.scenes[state.hub]?.kind !== 'explore') delete state.hub;
+    const hubKind = state.hub !== undefined ? module.scenes[state.hub]?.kind : undefined;
+    if (state.hub !== undefined && hubKind !== 'explore' && hubKind !== 'dungeon') delete state.hub;
 
     const campaign = parseCampaign(JSON.stringify(state.campaign));
     if (!campaign) return undefined;
