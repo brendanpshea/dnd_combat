@@ -13,7 +13,9 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, type Module, type Scene, type Choice, type Effect, type Requirement, type Outcome } from './types.js';
+import { HUB_REF, ROOM_MAP_REF, type Module } from './types.js';
+import { refsOf, effectsOf, requirementsOf, skillsOf } from './graph.js';
+import { checkDungeon } from './dungeon.js';
 
 function itemExists(id: Id): boolean {
   return !!(ITEMS[id] || WEAPONS[id] || ARMOR[id] || TRINKETS[id]);
@@ -23,88 +25,6 @@ function skillExists(id: string): boolean {
 }
 function encounterExists(id: Id): boolean {
   return !!(ENCOUNTERS[id] || MONSTERS[id]);
-}
-
-/** Collect every SceneRef a scene can route to. */
-function refsOf(scene: Scene): Id[] {
-  const refs: Id[] = [];
-  const fromChoice = (ch: Choice) => {
-    refs.push(ch.to);
-    if (ch.check) refs.push(ch.check.failTo);
-  };
-  const fromOutcome = (o: Outcome) => refs.push(o.to);
-  switch (scene.kind) {
-    case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
-    case 'check': fromOutcome(scene.success); fromOutcome(scene.failure); break;
-    case 'challenge':
-      fromOutcome(scene.success); fromOutcome(scene.failure);
-      scene.approaches.forEach((a) => { if (a.success) fromOutcome(a.success); if (a.failure) fromOutcome(a.failure); });
-      break;
-    case 'battle':
-      fromOutcome(scene.onWin); if (scene.onLoss) fromOutcome(scene.onLoss);
-      if (scene.parley) { fromOutcome(scene.parley.success); if (scene.parley.failure) fromOutcome(scene.parley.failure); }
-      break;
-    case 'shop': case 'rest': refs.push(scene.next); break;
-    case 'explore':
-      scene.map.nodes.forEach((n) => {
-        refs.push(n.scene);
-        if (n.wandering) refs.push(n.wandering.battleScene);
-        n.sceneWhen?.forEach((w) => refs.push(w.to));
-      });
-      if (scene.map.camp?.risky) refs.push(scene.map.camp.risky.battleScene);
-      break;
-    case 'ending': break;
-  }
-  return refs;
-}
-
-function effectsOf(scene: Scene): Effect[] {
-  const out: Effect[] = [];
-  const fromChoice = (ch: Choice) => {
-    out.push(...(ch.effects ?? []));
-    out.push(...(ch.check?.failEffects ?? []));
-  };
-  switch (scene.kind) {
-    case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
-    case 'check': out.push(...(scene.success.effects ?? []), ...(scene.failure.effects ?? [])); break;
-    case 'challenge':
-      out.push(...(scene.success.effects ?? []), ...(scene.failure.effects ?? []));
-      scene.approaches.forEach((a) => out.push(...(a.success?.effects ?? []), ...(a.failure?.effects ?? [])));
-      break;
-    case 'battle':
-      out.push(...(scene.onWin.effects ?? []), ...(scene.onLoss?.effects ?? []),
-        ...(scene.parley?.success.effects ?? []), ...(scene.parley?.failure?.effects ?? []));
-      break;
-    default: break;
-  }
-  return out;
-}
-
-function requirementsOf(scene: Scene): Requirement[] {
-  const out: Requirement[] = [];
-  const fromChoice = (ch: Choice) => out.push(...(ch.requires ?? []));
-  switch (scene.kind) {
-    case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
-    case 'challenge': scene.approaches.forEach((a) => out.push(...(a.requires ?? []))); break;
-    case 'explore': scene.map.nodes.forEach((n) => {
-      out.push(...(n.requires ?? []));
-      n.sceneWhen?.forEach((w) => out.push(...w.if));
-    }); break;
-    default: break;
-  }
-  return out;
-}
-
-function skillsOf(scene: Scene): string[] {
-  const out: string[] = [];
-  const fromChoice = (ch: Choice) => { if (ch.check) out.push(ch.check.skill); };
-  switch (scene.kind) {
-    case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
-    case 'check': out.push(scene.skill); break;
-    case 'challenge': scene.approaches.forEach((a) => out.push(a.skill)); break;
-    default: break;
-  }
-  return out;
 }
 
 /** Returns a list of problems; empty means the module is well-formed. */
@@ -136,6 +56,15 @@ export function validateModule(module: Module): string[] {
   // A journal lead resolves when its `resolvedBy` flag fires — track where each
   // is opened so a lead that can never close is caught as an authoring error.
   const leadResolvers = new Map<string, Id>();
+
+  // The battles fought where a dungeon room's board can be drawn.
+  const roomFights = new Set<Id>();
+  for (const scene of Object.values(module.scenes)) {
+    if (scene.kind !== 'dungeon') continue;
+    for (const r of scene.dungeon.rooms) if (r.fight) roomFights.add(r.fight);
+    for (const l of scene.dungeon.links) if (l.door?.ambush) roomFights.add(l.door.ambush.battle);
+    if (scene.dungeon.camp?.risky) roomFights.add(scene.dungeon.camp.risky.battleScene);
+  }
 
   for (const [id, scene] of Object.entries(module.scenes)) {
     if (scene.id !== id) at(id, `scene.id '${scene.id}' does not match its key`);
@@ -240,7 +169,16 @@ export function validateModule(module: Module): string[] {
     }
     if (scene.kind === 'battle') {
       if (!encounterExists(scene.encounterId)) at(id, `unknown encounter '${scene.encounterId}'`);
-      if (!MAPS[scene.mapId]) at(id, `unknown map '${scene.mapId}'`);
+      if (scene.mapId === ROOM_MAP_REF) {
+        // A board drawn for the room — so the fight has to happen in one.
+        if (!roomFights.has(id)) at(id, `map '${ROOM_MAP_REF}' is only for a fight in a dungeon room or corridor`);
+      } else if (!MAPS[scene.mapId]) at(id, `unknown map '${scene.mapId}'`);
+    }
+    if (scene.kind === 'dungeon') {
+      errors.push(...checkDungeon(module, id, scene.dungeon));
+      if (scene.dungeon.art?.imageId && !isLocationArt(scene.dungeon.art.imageId)) {
+        at(id, `dungeon art '${scene.dungeon.art.imageId}' is not a known location`);
+      }
     }
   }
 
