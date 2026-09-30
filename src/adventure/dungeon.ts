@@ -252,11 +252,11 @@ export function layoutDungeon(d: Dungeon): DungeonLayout {
   return { cells: out, corridors: outCorr, cols: b.c1 - b.c0 + 1, rows: b.r1 - b.r0 + 1, faults };
 }
 
-/** How much of a cell a room's box fills, by size (for drawing). */
+/** How much of a layout cell a room's box fills, by size (for drawing). */
 export const ROOM_BOX: Record<RoomSize, { w: number; h: number }> = {
-  small: { w: 0.5, h: 0.42 },
-  medium: { w: 0.62, h: 0.48 },
-  large: { w: 0.74, h: 0.56 },
+  small: { w: 0.6, h: 0.44 },
+  medium: { w: 0.72, h: 0.52 },
+  large: { w: 0.84, h: 0.6 },
 };
 
 // --- Keys --------------------------------------------------------------------

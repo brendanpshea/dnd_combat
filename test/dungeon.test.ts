@@ -290,13 +290,14 @@ describe('walking a dungeon', () => {
     walkTo(s, m, 'yard');
     walkTo(s, m, 'kennel');
     expect(s.sceneId).toBe('pit-fight');
-    expect(battleMap(s, m).name).toBe('A corridor');
+    expect(battleMap(s, m).name).toBe('The Den, in a corridor');
     resolveBattle(s, m, true);
     // The kennel's own fight is next.
     expect(s.sceneId).toBe('kennel-fight');
     const board = battleMap(s, m);
     expect(board.theme).toBe('ember');
-    expect(board.name).toBe('Kennels');
+    expect(board.name).toBe('The Den');
+    expect(board.rows.length).toBe(10);
     expect(() => parseMap(board)).not.toThrow();
   });
 

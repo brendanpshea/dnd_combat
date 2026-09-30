@@ -1054,7 +1054,8 @@ export function battleMap(state: AdventureState, module: Module): MapData {
     height: room?.size === 'large' && !inCorridor ? 12 : 10,
     ...(inCorridor ? { layout: 'chokepoint' as const } : {}),
   }, battleSeed(state, scene.id));
-  return { ...value.map, id: `room-${scene.id}`, name: inCorridor ? 'A corridor' : (room?.name ?? 'A room') };
+  const where = d?.dungeon.title ?? 'A dungeon';
+  return { ...value.map, id: `room-${scene.id}`, name: inCorridor ? `${where}, in a corridor` : where };
 }
 
 // --- Driver callbacks (battle / shop / rest) --------------------------------
