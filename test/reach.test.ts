@@ -128,3 +128,18 @@ describe('ending slides', () => {
     expect(validateModule(m)).toEqual([]);
   });
 });
+
+describe('one-way challenges', () => {
+  it('flags a perApproach challenge with no way back that a party can return to', () => {
+    const tinyMod = (back: boolean): Module => ({ id: 't', title: 'T', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'challenge', intro: ['Climb.'], retry: 'perApproach', noBack: true,
+        approaches: [{ id: 'x', label: 'Climb', skill: 'athletics', dc: 10 }],
+        success: { to: 'fight' }, failure: { to: 'won' } },
+      fight: { id: 'fight', kind: 'battle', encounterId: 'goblins', mapId: 'open', onWin: { to: 'won' },
+        ...(back ? { onLoss: { to: 'a' } } : { onLoss: { to: 'won' } }) },
+      won: { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] },
+    } });
+    expect(checkModuleReach(tinyMod(true)).errors.some((e) => e.startsWith('[a] a party can come back'))).toBe(true);
+    expect(checkModuleReach(tinyMod(false)).errors).toEqual([]);
+  });
+});

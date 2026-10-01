@@ -321,5 +321,40 @@ function searchModule(module: Module): ReachReport {
         + `${held.length ? ` (flags: ${held.join(', ')})` : ''}. One way there: ${shown.join(' → ')}`);
     }
   }
+  // A `perApproach` challenge spends every approach tried, for good. With no
+  // way back out (`noBack`), a party that comes back to it after trying it
+  // can arrive with nothing left to try. The search can't see spent
+  // approaches, so it looks for the shape instead: leave the challenge, and
+  // find a way to stand in front of it again.
+  const fwdOff = new Int32Array(N + 1);
+  for (const f of edgeFrom) fwdOff[f + 1]!++;
+  for (let i = 0; i < N; i++) fwdOff[i + 1]! += fwdOff[i]!;
+  const fwd = new Int32Array(edgeFrom.length);
+  const fill2 = fwdOff.slice(0, N);
+  for (let e = 0; e < edgeFrom.length; e++) fwd[fill2[edgeFrom[e]!]!++] = edgeTo[e]!;
+  ids.forEach((id, ci) => {
+    const sc = module.scenes[id];
+    if (sc?.kind !== 'challenge' || sc.retry !== 'perApproach' || !sc.noBack) return;
+    const seen = new Uint8Array(N);
+    const stack: number[] = [];
+    for (let n = 0; n < N; n++) {
+      if (sceneOf[n] !== ci) continue;
+      for (let i = fwdOff[n]!; i < fwdOff[n + 1]!; i++) {
+        const m = fwd[i]!;
+        if (sceneOf[m] !== ci && !seen[m]) { seen[m] = 1; stack.push(m); }
+      }
+    }
+    while (stack.length) {
+      const n = stack.pop()!;
+      if (sceneOf[n] === ci) {
+        errors.push(`[${id}] a party can come back to this challenge after trying it. Approaches already tried stay spent, and with noBack there may be nothing left to try. Route the way back past it (e.g. a sceneWhen on the flag its outcome sets).`);
+        return;
+      }
+      for (let i = fwdOff[n]!; i < fwdOff[n + 1]!; i++) {
+        const m = fwd[i]!;
+        if (!seen[m]) { seen[m] = 1; stack.push(m); }
+      }
+    }
+  });
   return { errors, states: N };
 }
