@@ -81,7 +81,10 @@ const AFTERMATH_CLAIMS: Choice[] = [
   { id: 'scout', label: 'Accept the scout\'s thanks, and the reeve\'s reward', to: 'claim-scout',
     requires: [{ kind: 'flag', flag: 'saved-scout' }, { kind: 'notFlag', flag: 'got-scout' }],
     effects: [{ kind: 'gold', amount: 50 }, { kind: 'setFlag', flag: 'got-scout' }] },
-  { id: 'done', label: 'Raise a glass at the Wander-Inn', to: 'epilogue' },
+  // `won`: every road to the victory ending runs through here, so the next
+  // chapters can tell a company that broke the Ashfang from a cold start.
+  { id: 'done', label: 'Raise a glass at the Wander-Inn', to: 'epilogue',
+    effects: [{ kind: 'setFlag', flag: 'won' }] },
 ];
 
 
@@ -903,7 +906,7 @@ const scenes: Record<string, Scene> = {
     id: 'den-pens', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: [
       'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
-      'The girl has one shoe. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "Are you the reeve\'s men?"',
+      'The girl has one shoe. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one lamb each midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
       'A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.',
     ],
     // Freeing them is never free: a quiet lock that may fail, or a loud one
@@ -1202,7 +1205,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'vex-turned' }],
         text: 'At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.' },
       { if: [{ kind: 'flag', flag: 'met-vex' }, { kind: 'notFlag', flag: 'vex-turned' }],
-        text: 'At dawn Vex walks into the reeve\'s hall alone and gives himself up. He asks for a cell with a window.' },
+        text: 'Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
       { if: [{ kind: 'flag', flag: 'saved-scout' }],
         text: 'At dawn Wren limps out ahead of the reeve\'s men, pleased to find you left her something to arrest.' },
       { if: [{ kind: 'flag', flag: 'mill-saved' }],
@@ -1247,11 +1250,11 @@ export const HOLLOW_ROAD_MODULE: Module = {
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
   ],
   // What the rest of the campaign remembers (read as 'hollow-road:saved-scout',
-  // …): whether Wren lived, whether the company met Vex at his fire and
-  // whether he took its offer, and whether it cut the captives out of the
+  // …): that the company won this chapter at all (`won`), whether Wren
+  // lived, whether the company met Vex at his fire and whether he took its offer, and whether it cut the captives out of the
   // pens (the last two are war assets at the Wyrmcalling's council), and
   // what became of Vargan if the company turned him on the hag and spared him.
-  carries: ['saved-scout', 'scout-met', 'scout-left', 'met-vex', 'vex-turned', 'chief-dead', 'captives-freed',
+  carries: ['won', 'saved-scout', 'scout-met', 'scout-left', 'met-vex', 'vex-turned', 'chief-dead', 'captives-freed',
     'vargan-jailed', 'vargan-freed'],
   companions: {
     wren: {

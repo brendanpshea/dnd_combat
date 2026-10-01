@@ -34,7 +34,10 @@
  * party's offer in Part 1) and `hollow-road:met-vex` (they met at his fire,
  * no deal); Wren's familiarity reads `hollow-road:saved-scout` (she owes you
  * a leg) or `sunken-barrows:met-wren` (she held the Barrow Gate for you).
- * Each has a version for a cold start, where the party knows nobody. A saved
+ * Wren also remembers a company that left her under the horse
+ * (`hollow-road:scout-left`). A cold start is still the company that broke
+ * the Ashfang and killed the Reedwife: Vex met it at his fire, Wren knows it
+ * by name, and nothing carried says how either parting went. A saved
  * Halden (`sunken-barrows:halden-saved`) opens an easier way to tear the
  * sisters loose. The endings' slides read these and the rest
  * (`hollow-road:chief-dead`, `sunken-barrows:seal-cracked`, what became of
@@ -74,7 +77,8 @@ const BRAM = { id: 'npc-bram', name: 'Bram, War-Quartermaster', portraitId: 'npc
 
 /** Into Vex's briefing: which version depends on what he did in Part 1 —
  *  took the party's offer, met them at his fire and didn't, or (a cold
- *  start) never met them at all. Exactly one holds in every mix. */
+ *  start) met them at his fire with nothing carried about a deal. Exactly
+ *  one holds in every mix. */
 const TO_BRIEFING: Choice[] = [
   { id: 'hear', label: 'Hear him out', to: 'vex-brief-turned',
     requires: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }], hideWhenBlocked: true },
@@ -148,6 +152,34 @@ const TO_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', 
 const TO_VIGIL_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue-vigil' }];
 
 /**
+ * The walk down the mountain: one short beat for each companion the war
+ * council sent down into the bowl, in a fixed order, then on to the camp.
+ * The ending slides say what became of them; these only say they came back.
+ */
+const ESCORTS = ['wren', 'halden', 'hask'] as const;
+const ESCORT_LINES: Record<(typeof ESCORTS)[number], string> = {
+  wren: 'Wren walks down beside you, counting the passes under her breath. At each one she stops and marks the map. "For the report," she says. She does not say she is glad you are all alive. She keeps checking that you are, though.',
+  halden: 'Brother Halden walks down with his prayer book shut under his arm. Halfway down he stops, holds out his hands, and looks at them. For the first time since the drowned chapel, they are not shaking.',
+  hask: 'Hask walks down at the back, the way a guard should, and says nothing the whole way. At the last bend he looks back up at the broken stone. "Vex owes me a drink," he says. "Maybe two."',
+};
+/** From the `from`th escort on: the first one still with the party, or `dest`. */
+const walkDown = (from: number, prefix: string, dest: string, label: string, effects?: Effect[]): Choice[] => {
+  const rest = ESCORTS.slice(from);
+  const fx = effects ? { effects } : {};
+  const gone = (c: string): Requirement => ({ kind: 'noCompanion', companion: c });
+  return [
+    ...rest.map((c, i): Choice => ({ id: `with-${c}`, label, to: `${prefix}-${c}`, hideWhenBlocked: true,
+      requires: [...rest.slice(0, i).map(gone), { kind: 'companion', companion: c }], ...fx })),
+    { id: 'on', label, to: dest, hideWhenBlocked: true, requires: rest.map(gone), ...fx },
+  ];
+};
+const walkDownScenes = (prefix: string, dest: string): Record<string, Scene> => Object.fromEntries(ESCORTS.map((c, i) => {
+  const id = `${prefix}-${c}`;
+  return [id, { id, kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '⛰️' },
+    text: [ESCORT_LINES[c]], next: walkDown(i + 1, prefix, dest, 'Walk on down') } satisfies Scene];
+}));
+
+/**
  * The brood on the rim is exactly the wyrmlings whose dens were left
  * standing — Vex's "one monster fewer on the day", kept to the letter. One
  * battle scene per combination (encounters `den-clutch-*`), picked by which
@@ -194,7 +226,7 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
  */
 const REPLIES = [
   { id: 'defiant', flag: 'answered-defiant', to: 'answer-defiant',
-    label: '"She fed on this valley for a hundred years. We owe you nothing."' },
+    label: '"She ate people out of a pen. We owe you nothing."' },
   { id: 'rueful', flag: 'answered-rueful', to: 'answer-rueful',
     label: '"Killing her broke the vigil. We know, and we are sorry for that part."' },
   { id: 'cold', flag: 'answered-cold', to: 'answer-cold',
@@ -321,6 +353,11 @@ const COUNCIL: Choice[] = [
   ...escortChoices(),
 ];
 
+/** The Reedwife's price, told once and the same way everywhere: one lamb a
+ *  winter kept the door. The people the Ashfang penned for her were her own
+ *  greed, not the door's price. */
+const FENFOLK_PRICE = '"My gran paid the Reedwife every midwinter," she says. "A lamb at the water\'s edge, and the dead slept sound. Nobody called it a bargain. It was just the price of living by the fen." She pulls a stitch tight. "Those poor souls the Ashfang penned up for her, that was her own greed. The door never asked for them. The sisters want the old price now, only bigger. They want the whole valley."';
+
 const MIRA_TOAST = 'Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She pours the first round on the house, and the second before anybody asks. With the third comes her observation that heroes drink no more carefully than anyone else. The reeve orders a plaque made. Wren corrects the geography on it.';
 
 type Slide = { if: Requirement[]; text: string };
@@ -328,9 +365,8 @@ type Slide = { if: Requirement[]; text: string };
 const SLIDES_HILLS: Slide[] = [
   { if: [{ kind: 'flag', flag: 'calling-peaked' }],
     text: 'The Calling peaked before you reached the stone. The camp held through the night of it, and the pikemen still talk about the sound the mountain made.' },
-  // Every company that played all three chapters met Vex at his fire and Wren
-  // in the fen, whatever became of the Ashfang chief.
-  { if: [{ kind: 'flag', flag: 'hollow-road:met-vex' }, { kind: 'flag', flag: 'sunken-barrows:met-wren' }],
+  // A company that won both earlier chapters.
+  { if: [{ kind: 'flag', flag: 'hollow-road:won' }, { kind: 'flag', flag: 'sunken-barrows:won' }],
     text: 'The same four names run through all three songs. You broke the Ashfang. You sealed the Undercrypt.' },
   { if: [{ kind: 'flag', flag: 'hollow-road:chief-dead' }],
     text: 'Nobody in the valley mourns Vargan. His mother\'s house is still under the water, but the reed-cutters are back in the shallows he sold, cutting reeds for a copper a bundle.' },
@@ -445,15 +481,17 @@ const scenes: Record<string, Scene> = {
     ],
     next: TO_BRIEFING,
   },
-  // A cold start: the party has never met him. Introduce him plainly.
+  // A cold start: still the company that broke the Ashfang, so they met him
+  // at his fire in the den. Nothing carried says whether they struck a deal.
   'vex-brief': {
     id: 'vex-brief', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     text: [
-      'This is **Vex**. He was the Ashfang\'s lieutenant once. When the chief made his last stand, Vex would not fight for him. He walked away and gave himself up to the reeve. Now Thornwick trusts him to run its war. "It took me too long to walk away," he says. "A slow learner still learns."',
+      'You know this man. It is **Vex**, once the Ashfang\'s lieutenant. You met him at his lone fire in the chief\'s den, the night your company broke the Ashfang. He kept out of the last fight. When it was over, he went to the reeve of his own accord. Now Thornwick trusts him to run its war.',
+      '"It took me too long to walk away from that den," he says. "A slow learner still learns."',
       ...BRIEF_PLAN,
     ],
     next: [{ id: 'on', label: 'Step out into the camp', to: 'warcamp',
-      effects: briefed('Vex was the Ashfang\'s lieutenant. He walked away from the chief\'s last fight and gave himself up. Now he runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the Calling peaks.') }],
+      effects: briefed('You met Vex at his fire in the Ashfang den. He kept out of the chief\'s last fight and went to the reeve. Now he runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the Calling peaks.') }],
   },
   // The party met him at his fire in the Ashfang den, and he did not take
   // their offer (or they never made one). He gave himself up anyway.
@@ -470,11 +508,12 @@ const scenes: Record<string, Scene> = {
   'vex-brief-turned': {
     id: 'vex-brief-turned', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     text: [
-      'You know this man. It is **Vex**, once the Ashfang\'s lieutenant. In the chief\'s den he took your offer and kept his guards out of the last fight. Now Thornwick trusts him to run its war. "No more burned barns," he says. "I like this side better."',
+      'You know this man. It is **Vex**, once the Ashfang\'s lieutenant. In the chief\'s den he took your offer and kept his guards out of the last fight. The last you heard, he had taken the road out of the valley, just as he said he would.',
+      '"I got as far as a hill inn," he says. "Then word came that the dead were walking. After that came fires in the passes. It turns out I cannot sit and drink while this valley burns twice." He shrugs. "So I walked back and offered the reeve my sword. He took it, which surprised us both. No more burned barns. I like this side better."',
       ...BRIEF_PLAN,
     ],
     next: [{ id: 'on', label: 'Step out into the camp', to: 'warcamp',
-      effects: briefed('Vex was the Ashfang\'s lieutenant until he took your offer in the chief\'s den. Now he runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the Calling peaks.') }],
+      effects: briefed('Vex was the Ashfang\'s lieutenant until he took your offer in the chief\'s den. He left the valley, then came back when the hills began to burn. Now he runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the Calling peaks.') }],
   },
   warcamp: {
     id: 'warcamp', kind: 'explore',
@@ -494,11 +533,14 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'briefed' }], to: 'command-done' }] },
         { id: 'stores', x: 50, y: 45, label: 'The War-Stores', icon: 'tok-market', scene: 'wc-stores' },
         // Wren knows you if you pulled her out from under a horse (Part 1) or
-        // walked the fen with her (Part 2); otherwise this is a first meeting.
+        // walked the fen with her (Part 2), and coolly if you left her under
+        // it; otherwise she knows you by name only.
         { id: 'scouts', x: 30, y: 70, label: 'The Scouts\' Fire', icon: 'tok-camp', scene: 'scouts-fire',
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'wren-brief' }], to: 'scouts-done' },
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'scouts-fire-saved' },
+            // Walked the fen with her since, but she remembers the horse first.
+            { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'scouts-fire-left' },
             { if: [{ kind: 'flag', flag: 'sunken-barrows:met-wren' }], to: 'scouts-fire-old' },
           ] },
         // War assets paid at the camp (see WAR ASSETS): the marker's scene is
@@ -532,7 +574,7 @@ const scenes: Record<string, Scene> = {
     id: 'fenfolk-fire', kind: 'story', art: { imageId: 'loc-camp', emoji: '🔥' },
     text: [
       'The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old woman with river-stones braided into her hair waves you over. She knits while she talks, and she does not look up.',
-      '"My gran paid the Reedwife every midwinter," she says. "A lamb at the water\'s edge, and the dead slept sound. Nobody called it a bargain. It was just the price of living by the fen. The sisters want the same price now, only bigger. They want the whole valley."',
+      FENFOLK_PRICE,
       '"And the stone sings into the ground as well as the sky. We feel it in our feet. The dead under the barrows are turning in their sleep." She pulls her yarn tight. "Break that stone before they wake up properly."',
     ],
     next: [{ id: 'ok', label: 'Back to the camp', to: 'warcamp' }],
@@ -541,7 +583,7 @@ const scenes: Record<string, Scene> = {
     id: 'fenfolk-fire-cracked', kind: 'story', art: { imageId: 'loc-camp', emoji: '🔥' },
     text: [
       'The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old woman with river-stones braided into her hair waves you over. She knits while she talks, and she does not look up.',
-      '"My gran paid the Reedwife every midwinter," she says. "A lamb at the water\'s edge, and the dead slept sound. Nobody called it a bargain. It was just the price of living by the fen. The sisters want the same price now, only bigger. They want the whole valley."',
+      FENFOLK_PRICE,
       '"You know the door under the barrows. You shut it, near enough. Well, it knocks now, every night the stone sings, and louder each time." She pulls her yarn tight. "If the Calling runs much longer, that crack in it will open. The sisters know it. I think they are counting on it."',
     ],
     next: [{ id: 'ok', label: 'Back to the camp', to: 'warcamp' }],
@@ -562,14 +604,27 @@ const scenes: Record<string, Scene> = {
       'spear', 'longbow', 'chain-mail',
     ],
     intro: ['Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more. Except my goods, because I am a patriot. Also the captain reads my books." He turns a crate around to face you. "There are big things up that hill. Buy accordingly."'] },
-  // A first meeting: a cold start, or a company that never met her.
+  // A cold start, or a company that never got her name: she knows them by
+  // reputation, and maybe from across a room, and nothing more is said.
   'scouts-fire': {
     id: 'scouts-fire', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
     lines: [
       'A young woman named **Wren** runs the scouts\' fire. Three riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She is young to be Chief of Scouts. She wears the title like a coat that fits her but embarrasses her anyway.',
-      '"You are the company the camp keeps talking about? Good. Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
+      '"I know who you are. Everyone in the valley does. I think I saw you once across Mira\'s taproom, but you were busy being famous." She jabs a finger at the map. "Right. Listen." ' + WREN_BEASTS,
       WREN_GORGON,
       'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I have no advice about that one." She hesitates. "Come back down the hill on your own feet," she adds, a little too fast.',
+    ],
+    next: TAKE_NOTES,
+  },
+  // The company stepped round her under the dead horse in Part 1. She does
+  // her job, and she does not pretend that day did not happen.
+  'scouts-fire-left': {
+    id: 'scouts-fire-left', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
+    lines: [
+      '**Wren** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She sees you, and her face goes flat. She has not forgotten the marsh road, or the dead horse you stepped round.',
+      '"The captain says you get my notes, so you get my notes." She jabs a finger at the map. ' + WREN_BEASTS,
+      WREN_GORGON,
+      'She looks up. ' + WREN_GIANTS + ' "And the streams are walking uphill. I have no advice about that one." She holds out the map-notes, and lets go a moment before you have them. "I don\'t need you to be sorry. I need this camp alive. Clear the hills."',
     ],
     next: TAKE_NOTES,
   },
@@ -1101,12 +1156,12 @@ const scenes: Record<string, Scene> = {
     text: ['The column digs in along the rim. Vex waits at the edge of the bowl, and the people who climbed up for you wait to hear what else you need.'],
     next: COUNCIL,
   },
-  // Nobody owes a cold-start company anything, and Vex says so.
+  // Nobody who owes the company came up the mountain: they are down in the valley.
   'war-council-cold': {
     id: 'war-council-cold', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '⚔️' },
     text: [
       'Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.',
-      '"We hold the ridge. You go down," he says. "I would send somebody down with you. But nobody in this valley owes you anything yet, and I need every soldier I have on this rim." He nods at the stone. "So it is you and them. Make the valley owe you."',
+      '"We hold the ridge. You go down," he says. "I would send somebody down with you. The people who owe your company are back down in the valley, and I need every soldier I have on this rim." He nods at the stone. "So it is you and them. You have done this before."',
     ],
     next: [{ id: 'down', label: 'Go down into the bowl', to: 'calling-approach', effects: [{ kind: 'setFlag', flag: 'rim-clear' }] }],
   },
@@ -1122,7 +1177,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'Down in the bowl, at the foot of the stone, the **sisters** are waiting. The two hags stand a head taller than any man. They have pushed their green fingers to the knuckle into the black rock. Old letters ring the base of the stone, cut deep and filled with lead, like the letters on the Warden\'s door under the fen.',
       'They are not commanding the stone. They are pouring themselves into it. Their hair has turned to river-weed and wire. Their faces are burning down like candles. They are spending two long lives to keep the Calling singing.',
-      '"Sister-killers," they say together, without turning around. "Our sister kept the door under the fen for a hundred years. She fed on the sleep of the dead, and the Warden slept with them. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."',
+      '"Sister-killers," they say together, without turning around. "Our sister kept the door under the fen for a hundred years. One lamb at the water\'s edge each midwinter, and the Warden slept. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."',
       '"So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time." The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far. Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
     ],
     // The level floor lands before the hardest fight, not after it: every
@@ -1131,7 +1186,7 @@ const scenes: Record<string, Scene> = {
   },
   'answer-defiant': {
     id: 'answer-defiant', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['The sisters laugh together, a sound like wind in dry reeds. "A hundred years," one says. "And in all those years, the dead never once walked. Ask your barrows what your hundred years bought you." Their hands sink deeper into the stone, and the burning ground creeps toward your boots.'],
+    text: ['The sisters laugh together, a sound like wind in dry reeds. "A few carters in a pen," one says. "She grew greedy at the end. We do not deny it. But for a hundred years she took one lamb a winter, and the dead never once walked. Ask your barrows what her death bought you." Their hands sink deeper into the stone, and the burning ground creeps toward your boots.'],
     next: TO_STONE, noBack: true,
   },
   'answer-rueful': {
@@ -1221,11 +1276,12 @@ const scenes: Record<string, Scene> = {
       '"The door under the fen still needs a keeper," you tell her. "We broke the vigil. A priest\'s book is a poor jailer. Your sister kept that door for a hundred years. Keep it for her."',
       'Sedge looks down at her own hands, sunk to the wrist in the stone. Then she pulls them out. The stone screams. Nettle screams with it, and Sedge takes her sister by both wrists and drags her free.',
       'With nobody feeding it, the Calling falters. The black fang cracks from top to bottom and goes quiet. The fire in the floor of the bowl sinks back into the rock.',
-      '"We will keep the door," Sedge says. "And we will eat what the keeping pays, as our sister did. Do not come into the deep fen again." Nettle says nothing. She only looks at you, the way you look at a debt you mean to collect.',
+      '"We will keep the door," Sedge says. "And we will eat what the keeping pays: one lamb at the water\'s edge each midwinter, as our sister did before she grew greedy. Do not come into the deep fen again." Nettle says nothing. She only looks at you, the way you look at a debt you mean to collect.',
     ],
-    next: [{ id: 'go', label: 'Watch them walk down the mountain toward the fen', to: 'vigil-aftermath',
-      effects: [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'setFlag', flag: 'vigil-kept' }, { kind: 'xp', amount: 1200 }] }],
+    next: walkDown(0, 'vigil-down-with', 'vigil-aftermath', 'Watch them walk down the mountain toward the fen',
+      [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'setFlag', flag: 'vigil-kept' }, { kind: 'xp', amount: 1200 }]),
   },
+  ...walkDownScenes('vigil-down-with', 'vigil-aftermath'),
   'vigil-refused': {
     id: 'vigil-refused', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
     text: ['Sedge listens to the end. Then she laughs, and it is not a kind laugh. "Starve in the dark for another hundred years, so that you can sleep soundly? No." Nettle hisses at her to hold still. The stone drinks deeper, and the burning ground creeps toward your boots.'],
@@ -1264,8 +1320,9 @@ const scenes: Record<string, Scene> = {
       'Below you, pass by pass, the hills go quiet. The song that pulled monsters toward the valley has stopped. Whatever was still walking down the slope stops, shakes its head, and turns back toward its own hills. The wingbeats fade off the wind.',
       'The valley is safe. Far down the slope, faint and disbelieving, the war-camp starts to cheer.',
     ],
-    next: [{ id: 'down', label: 'Come down the mountain', to: 'wc-aftermath' }],
+    next: walkDown(0, 'down-with', 'wc-aftermath', 'Come down the mountain'),
   },
+  ...walkDownScenes('down-with', 'wc-aftermath'),
   'wc-aftermath': {
     id: 'wc-aftermath', kind: 'story', art: { imageId: 'loc-camp', emoji: '🎉' },
     text: [
@@ -1305,7 +1362,7 @@ const scenes: Record<string, Scene> = {
     slides: [
       ...SLIDES_HILLS,
       { if: [{ kind: 'flag', flag: 'answered-defiant' }],
-        text: 'The valley still says what you told the sisters: she fed on us for a hundred years, so we owe her nothing.' },
+        text: 'The valley still says what you told the sisters: she ate people out of a pen, so we owe her nothing.' },
       { if: [{ kind: 'flag', flag: 'answered-rueful' }],
         text: 'Some nights you still think about the sisters, and about the vigil you ended without knowing it was one.' },
       { if: [{ kind: 'flag', flag: 'answered-cold' }],
@@ -1317,8 +1374,8 @@ const scenes: Record<string, Scene> = {
         text: 'The fen-folk carry their drowning-ropes home from the mountain and hang them over the widow\'s door at the edge of the fen. Everyone who walks past asks about them.' },
       { if: [{ kind: 'flag', flag: 'sunken-barrows:seal-cracked' }],
         text: 'Deep under the fen, the Undercrypt\'s door still holds, though on still nights the fen-folk swear they hear something knock.' },
-      // A company that played Part 2 always met Wren there; a clean seal.
-      { if: [{ kind: 'flag', flag: 'sunken-barrows:met-wren' }, { kind: 'notFlag', flag: 'sunken-barrows:seal-cracked' }],
+      // A company that won Part 2, with a clean seal.
+      { if: [{ kind: 'flag', flag: 'sunken-barrows:won' }, { kind: 'notFlag', flag: 'sunken-barrows:seal-cracked' }],
         text: 'Deep under the fen, the Undercrypt\'s door stays shut and silent, just as you left it.' },
     ],
   },

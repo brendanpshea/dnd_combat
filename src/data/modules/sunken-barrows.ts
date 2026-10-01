@@ -5,7 +5,7 @@
  *
  * The premise pays off Part 1's victory with its cost: the Reedwife was not
  * merely squatting in the marsh — she was the Undercrypt's jailer gone to
- * rot, feeding on the sleep of the dead to keep something older under. The
+ * rot, paid a lamb each midwinter to keep something older under. The
  * company killed her, so the barrows are opening, and the debt is theirs.
  * The Cult of the Worm arrives to finish what the broken ward began.
  *
@@ -41,7 +41,7 @@ const WREN_BRIEF = 'I\'ve scouted the near fen twice since the graves opened. Ev
 const CHAPEL_CLEARED: Effect[] = [
   { kind: 'setFlag', flag: 'chapel-cleared' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 },
   { kind: 'journal', entry: { id: 'c-rites', kind: 'clue', title: 'The Rites of Sealing',
-    body: 'Brother Halden\'s prayer book holds the old rites of sealing. The Reedwife was the jailer of the Warden of the Barrows. Her feeding kept him asleep, and her death broke his seal. Speak the rites at the Warden\'s door, deep in the great barrow, to shut him in again.' } },
+    body: 'Brother Halden\'s prayer book holds the old rites of sealing. The Reedwife was the jailer of the Warden of the Barrows. The fen-folk paid her a lamb each midwinter, and she kept him asleep. Her death broke his seal. Speak the rites at the Warden\'s door, deep in the great barrow, to shut him in again.' } },
 ];
 
 /** The words Halden said over Thornwick's dead, said back to him. */
@@ -50,6 +50,14 @@ const LITURGY = '*Lie down and be at peace. Your work is done. The bell will wak
 /** The cult, glimpsed in the fen before it shows itself at the Warden's door. */
 const WORM_CLUE: Effect = { kind: 'journal', entry: { id: 'c-worm', kind: 'clue', title: 'Robes the Colour of Worms',
   body: 'A stranger lay drowned among the corpse-lights, in long robes the colour of grave-worms. Nailed boots on the old road, black candles in the chapel, and now this. Someone living is helping the dead along.' } };
+
+/** Taking Aldous's commission, whether he has hired this company before or not. */
+const REEVE_TAKE = [{ id: 'take', label: 'Take the reeve\'s commission', to: 'town', once: true,
+  effects: [{ kind: 'setFlag' as const, flag: 'reeve-task' }, { kind: 'gold' as const, amount: 60 },
+    { kind: 'journal' as const, entry: { id: 'n-aldous', kind: 'npc' as const, title: 'Reeve Aldous',
+      body: 'Thornwick\'s reeve is proud and paying, and he takes this one personally. His grandfather\'s grave is among the opened. His orders are simple. Follow the dead into the fen and end what calls them.' } },
+    { kind: 'journal' as const, entry: { id: 'lead-fen', kind: 'lead' as const, resolvedBy: 'undercrypt-found',
+      title: 'Into the Deep Fen', body: 'The dead walk one way, into the barrow-country of the deep fen. The reeve\'s scout, Wren, waits at the fen road to guide you in. Find where the trails meet.' } }] }];
 
 const INN_CHOICES = [
   { id: 'room', label: 'Take a room for the night — 1 gold (long rest)', to: 'inn-rest',
@@ -70,7 +78,8 @@ const SB_CLAIMS = [
   { id: 'mira', label: 'Stand Mira\'s taproom a round (10 gold)', to: 'sb-claim-round',
     requires: [{ kind: 'gold' as const, atLeast: 10 }, { kind: 'notFlag' as const, flag: 'sb-round' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold' as const, amount: -10 }, { kind: 'setFlag' as const, flag: 'sb-round' }] },
-  { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue' },
+  // `won`: the one road to the victory ending, carried for the last chapter.
+  { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue', effects: [{ kind: 'setFlag' as const, flag: 'won' }] },
 ];
 
 const scenes: Record<string, Scene> = {
@@ -133,10 +142,14 @@ const scenes: Record<string, Scene> = {
       ],
       nodes: [
         { id: 'inn', x: 22, y: 32, label: 'The Wander-Inn', icon: 'tok-tavern', scene: 'inn',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'reeve-task' }], to: 'inn-later' }] },
+          // A company that broke the Ashfang in Part 1 gets a Mira who knows it.
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'reeve-task' }, { kind: 'flag', flag: 'hollow-road:won' }], to: 'inn-later-won' },
+            { if: [{ kind: 'flag', flag: 'reeve-task' }], to: 'inn-later' },
+            { if: [{ kind: 'flag', flag: 'hollow-road:won' }], to: 'inn-won' }] },
         { id: 'market', x: 44, y: 42, label: 'Market', icon: 'tok-market', scene: 'sb-market' },
         { id: 'reeve', x: 70, y: 30, label: 'The Reeve\'s Hall', icon: 'tok-house', scene: 'reeve-hall',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'reeve-task' }], to: 'reeve-done' }] },
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'reeve-task' }], to: 'reeve-done' },
+            { if: [{ kind: 'flag', flag: 'hollow-road:won' }], to: 'reeve-hall-won' }] },
         { id: 'graves', x: 30, y: 72, label: 'The Churchyard', icon: 'tok-temple', scene: 'grave-study',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'graves-read' }], to: 'graves-done' }] },
         // Wren waits here: an old friend if the company pulled her out from
@@ -171,6 +184,25 @@ const scenes: Record<string, Scene> = {
     ],
     next: INN_CHOICES,
   },
+  // The company that killed the Reedwife, home again: Mira says out loud
+  // what the rest of the taproom is thinking.
+  'inn-won': {
+    id: 'inn-won', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
+    lines: [
+      'The Wander-Inn is full, and nobody is in a hurry to leave. Nobody in Thornwick wants to be alone today, not with the churchyard standing open. **Mira** sets down a bowl in front of you unasked.',
+      '"So. The marsh sends us another bill." She says it flat, wiping the bar the way other people sharpen knives. "I\'ll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. The fen-folk say she kept something shut out there, and now nobody\'s minding it."',
+      '"I poured your first round on the house when you came back from that den, and I\'d do it again. But folk are starting to look at you sideways. Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
+    ],
+    next: INN_CHOICES,
+  },
+  'inn-later-won': {
+    id: 'inn-later-won', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
+    lines: [
+      'The Wander-Inn is as full as ever. Nobody in Thornwick wants to sleep alone while the dead are walking. **Mira** slides a bowl your way without asking.',
+      '"So Aldous hired you again. He paid you for the Ashfang, so he\'ll pay you for this. Slowly." She tops up your cup. "Finish what she left behind, and the town will stop looking at you sideways."',
+    ],
+    next: INN_CHOICES,
+  },
   'inn-rest': {
     id: 'inn-rest', kind: 'rest', variant: 'long', next: 'town',
     intro: ['A bolted door, a real bed, and the comfortable murmur of a crowded taproom below. Whatever walks the fen, it isn\'t walking in here. You sleep like the blessedly living.'],
@@ -193,12 +225,18 @@ const scenes: Record<string, Scene> = {
       '"Thornwick settles its debts," he says, without turning. "It appears the marsh does likewise. My grandfather\'s grave is open, and my grandfather has *gone somewhere*. We buried him in his chain of office. The twin of this one." He turns. He looks older than the ledgers. "You stood against the things in my churchyard last night. My watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, Wren, will meet you at the fen road. She asked for the job. Rather forcefully, for someone I employ."',
     ],
-    next: [{ id: 'take', label: 'Take the reeve\'s commission', to: 'town', once: true,
-      effects: [{ kind: 'setFlag', flag: 'reeve-task' }, { kind: 'gold', amount: 60 },
-        { kind: 'journal', entry: { id: 'n-aldous', kind: 'npc', title: 'Reeve Aldous',
-          body: 'Thornwick\'s reeve is proud and paying, and he takes this one personally. His grandfather\'s grave is among the opened. His orders are simple. Follow the dead into the fen and end what calls them.' } },
-        { kind: 'journal', entry: { id: 'lead-fen', kind: 'lead', resolvedBy: 'undercrypt-found',
-          title: 'Into the Deep Fen', body: 'The dead walk one way, into the barrow-country of the deep fen. The reeve\'s scout, Wren, waits at the fen road to guide you in. Find where the trails meet.' } }] }],
+    next: REEVE_TAKE,
+  },
+  // He paid this company for the Ashfang, and he is hiring it again.
+  'reeve-hall-won': {
+    id: 'reeve-hall-won', kind: 'dialogue', npc: REEVE, art: { emoji: '⚖️' },
+    lines: [
+      'The reeve\'s hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you. He watches the fen fog eat his water-meadows. He grips his chain of office in one fist, like a weapon he doesn\'t know how to use.',
+      '"You again," he says, without turning. "Last season you broke the Ashfang, and I paid you for it. Thornwick settles its debts. It appears the marsh does likewise. My grandfather\'s grave is open, and my grandfather has *gone somewhere*. We buried him in his chain of office. The twin of this one."',
+      'He turns. He looks older than the ledgers. "The fen-folk say the hag kept something shut out there, and that it got loose when you killed her. I don\'t know if that is true. I know you stood in my churchyard last night, and my watch did not. So I am paying you again. Follow my dead into the fen, find what calls them, and put it down."',
+      '"My scout, Wren, will meet you at the fen road. She asked for the job. Rather forcefully, for someone I employ."',
+    ],
+    next: REEVE_TAKE,
   },
   'reeve-done': {
     id: 'reeve-done', kind: 'story', art: { emoji: '⚖️' },
@@ -384,7 +422,7 @@ const scenes: Record<string, Scene> = {
     lines: [
       'Halden sits down hard on the altar steps. He is shaking, and he is himself again. He stares at his hands as if someone just gave them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water.',
       '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
-      '"The **Reedwife** was never just a hag. She was a jailer. Her feeding kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside."',
+      '"The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside."',
       'He taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That is the reed-woman\'s mark, the vigil\'s mark. The old builders cut it into the Barrow Gate. The gate\'s watchers know it."',
       '"The rites of sealing are in that book. Someone must say them at his door, in the great barrow past the Barrow Gate. Say them whole, or not at all. It will take nerve." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me."',
       'He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
@@ -397,10 +435,10 @@ const scenes: Record<string, Scene> = {
   'chapel-won': {
     id: 'chapel-won', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '📖' },
     text: [
-      'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in Halden\'s tidy hand. *The Reedwife kept the vigil. The vigil is ended. The Warden of the Barrows wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
+      'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in Halden\'s tidy hand. *The Reedwife kept the vigil, and the fen-folk paid her a lamb each midwinter for it. The vigil is ended. The Warden of the Barrows wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
       'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at the door. Not me. It will not let it be me."*',
       'On the flyleaf, someone has inked a mark of reeds and a reaching hand. Beside it, in the tidy hand: *The vigil\'s mark. The old builders cut it into the Barrow Gate, and its watchers know it.*',
-      'So the truth lands at last. The **Reedwife** was never just a hag. She was the jailer of the **Warden of the Barrows**, an ancient dead power under the fen. Her feeding kept him asleep. When she died, his seal broke with her. Now he wakes, and he calls the dead to open his door from the inside.',
+      'So the truth lands at last. The **Reedwife** was never just a hag. She was the jailer of the **Warden of the Barrows**, an ancient dead power under the fen. For one lamb a winter, she kept him asleep. When she died, his seal broke with her. Now he wakes, and he calls the dead to open his door from the inside.',
       'The book also gives you the fix. Take it to the great barrow, reach the Warden\'s door, and *speak the rites of sealing there*. That will shut him in again. Under the altar cloth you also find a healing potion that Halden never got to drink.',
       '"Nerve we\'ve got," Wren says, reading over your shoulder. She sounds almost sure of it. "The door\'s past the Barrow Gate." On the way out she sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."',
     ],
@@ -542,7 +580,7 @@ const scenes: Record<string, Scene> = {
     id: 'lychgate-won', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛩️' },
     text: [
       'Past the Barrow Gate the mounds rise in their dozens. At the field\'s heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.',
-      'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife\'s long feeding kept shut. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
+      'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut for a hundred years. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
     ],
     next: [
       { id: 'down', label: 'Leave Wren the gate, and go down', to: 'undercrypt',
@@ -979,11 +1017,12 @@ export const SUNKEN_BARROWS_MODULE: Module = {
   sequel: 'wyrmcalling',
   start: 'return', scenes, defeatScene: 'sb-defeat', town: 'town',
   // What the last chapter remembers (read there as 'sunken-barrows:<flag>'):
+  // that the company won this chapter (`won`),
   // whether the company knows Wren (set on every route to the fen), whether
   // Brother Halden lived, whether the Warden's door shut cracked, and whether
   // the company carried the old reeve home and the drowned folk's purses back
   // to their families. Those last two are owed back at the Wyrmcalling.
-  carries: ['met-wren', 'halden-saved', 'seal-cracked', 'grandfather-home', 'drowned-gold-home'],
+  carries: ['won', 'met-wren', 'halden-saved', 'seal-cracked', 'grandfather-home', 'drowned-gold-home'],
   companions: {
     wren: {
       id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',
