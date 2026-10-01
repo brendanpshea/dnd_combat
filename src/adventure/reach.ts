@@ -43,7 +43,7 @@ const MAX_FACTS = 31;
 const MAX_STATES = 3_000_000;
 
 interface Mask { has: number; not: number }
-interface Step { to: Id; req: Mask; set: number; clr: number; label: string }
+interface Step { to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true }
 
 export interface ReachReport {
   errors: string[];
@@ -263,7 +263,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   };
   const met = (m: Mask, f: number) => (f & m.has) === m.has && (f & m.not) === 0;
   const OPEN: Mask = { has: 0, not: 0 };
-  const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined): Step => ({ to, label, req, ...effects(eff) });
+  const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined): Step =>
+    ({ to, label, req, ...effects(eff), ...(eff?.some((e) => e.kind === 'passDay') ? { day: true as const } : {}) });
 
   // --- Each scene's ways out, compiled once ----------------------------------
   // `leave` marks the implicit way back to the hub; `when` the explore nodes,
@@ -393,7 +394,18 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const s = sceneOf[n]!, f = factsOf[n]!, hub = hubOf[n]!;
     const c = compiled[s]!;
     const here = ids[s]!;
-    for (const st of c.steps) if (met(st.req, f)) enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
+    // The next morning that matters, if any is still to come.
+    const next = dawnSteps.find((d) => !(f & d.bit));
+    for (const st of c.steps) {
+      if (!met(st.req, f)) continue;
+      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
+      // A day lost may bring that morning (or may not yet).
+      // The step's effects, then the morning's.
+      if (st.day && next) {
+        enter(n, st.to, (st.set & ~next.clr) | next.set | next.bit, st.clr | next.clr,
+          `${here}: ${st.label}, and loses a day to the morning of day ${next.day}`);
+      }
+    }
     for (const nd of c.nodes) {
       if (!met(nd.req, f)) continue;
       // First matching redirect wins; one that reads an untracked flag may or
@@ -412,7 +424,6 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     }
     // A night slept may bring the next morning that matters (or may not yet:
     // the nights between change nothing, and the walk has those already).
-    const next = dawnSteps.find((d) => !(f & d.bit));
     if (next) {
       const scene = module.scenes[here];
       const camp = isHubScene(scene) ? campAt(scene) : hub >= 0 && campAt(module.scenes[hubs[hub]!]);

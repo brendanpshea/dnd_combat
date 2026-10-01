@@ -194,6 +194,7 @@ export function validateModule(module: Module): string[] {
       if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
       if ((eff.kind === 'addItem' || eff.kind === 'removeItem') && !itemExists(eff.itemId)) errors.push(`dawn of day ${d.day} references unknown item '${eff.itemId}'`);
       if ((eff.kind === 'joinParty' || eff.kind === 'leaveParty') && !module.companions?.[eff.companion]) errors.push(`dawn of day ${d.day} names unknown companion '${eff.companion}'`);
+      if (eff.kind === 'passDay') errors.push(`dawn of day ${d.day} loses a day: a morning cannot pass another`);
     }
   }
 

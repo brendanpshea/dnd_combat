@@ -250,6 +250,10 @@ door shut, a fight harder, a person gone. Give a warning before a deadline:
 an earlier dawn with text only, or a line in the scene the deadline is about.
 A module with dawns shows the day on screen; one without has no clock.
 
+A failure can cost time too: `{ kind: 'passDay' }` loses a day without a
+rest (a long detour, a trail gone cold), and plays that morning's dawn. With
+a deadline on the clock, a failed check is pressure, not just a fight.
+
 The reach search knows a night can pass wherever a party can sleep, so a
 deadline that strands a party is reported like any other dead end, with
 `sleeps until the morning of day N` on the way there. Each dawn with effects

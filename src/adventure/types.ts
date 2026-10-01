@@ -46,7 +46,10 @@ export type Effect =
   | { kind: 'heal'; amount: number | 'full' }                  // spread across the party
   | { kind: 'journal'; entry: JournalEntry }
   | { kind: 'joinParty'; companion: Id }                        // an NPC comes along (Module.companions)
-  | { kind: 'leaveParty'; companion: Id };
+  | { kind: 'leaveParty'; companion: Id }
+  /** A day lost without rest (a long detour, a trail gone cold): the clock
+   *  moves on as if a night had passed, and that morning's dawn plays. */
+  | { kind: 'passDay' };
 
 export interface JournalEntry {
   id: Id;
