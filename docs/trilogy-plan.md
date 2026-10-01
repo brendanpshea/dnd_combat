@@ -104,14 +104,14 @@ campaign ends at the cap, fighting the biggest encounter in the data.)
 - `Module.sequel` + `Module.levelBand` — **shipped** (typed, menu badge,
   victory-ending "Continue the company" button, registry-link test).
 - Party continuation — **shipped**: `startAdventure(existingCampaign, sequel)`
-  carries party/XP/gold/gear; story flags deliberately do not carry (each
-  module owns its flag namespace; cross-part payoffs re-derive from the
-  carried campaign or are re-established in an opening beat).
+  carries party/XP/gold/gear. Story flags stay in their own module, except
+  the few a module names in `carries`: those arrive in later chapters named
+  after their origin (`hollow-road:saved-scout`), and a cold start has none.
 - Cold starts — **shipped** as an XP floor: each sequel's opening choice
   carries `xpToLevel` to its band's start (a no-op for continuing parties).
   Fresh parties keep starting gear + an early gold grant, and shop up in the
-  hub. Cross-part payoffs are re-established in opening beats (Wren, Vex, and
-  the sisters recur without needing carried flags).
+  hub. A scene that reads a carried flag always has a version without it
+  (Wren and Vex are met fresh, or greeted as the people the company knows).
 
 **Whole-arc measurement** (random-policy headless runs, fight-everything):
 20/20 companies complete all three modules in sequence, L1 → the L5 cap,

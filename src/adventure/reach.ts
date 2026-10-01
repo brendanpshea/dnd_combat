@@ -50,7 +50,25 @@ export interface ReachReport {
 
 const isHubScene = (s: Scene | undefined) => s?.kind === 'explore' || s?.kind === 'dungeon';
 
+/**
+ * Results by the module's exact contents. A module is plain data, so its JSON
+ * is its identity: an edited module is a different key, never a stale hit.
+ * The search takes a couple of seconds on the largest chapter, and the
+ * validator runs on the same unchanged modules many times over.
+ */
+const cache = new Map<string, ReachReport>();
+
 export function checkModuleReach(module: Module): ReachReport {
+  const key = JSON.stringify(module);
+  const hit = cache.get(key);
+  if (hit) return { ...hit, errors: [...hit.errors] };
+  const report = searchModule(module);
+  if (cache.size >= 64) cache.clear(); // generated delves would otherwise pile up
+  cache.set(key, report);
+  return { ...report, errors: [...report.errors] };
+}
+
+function searchModule(module: Module): ReachReport {
   const ids = Object.keys(module.scenes);
   const index = new Map(ids.map((id, i) => [id, i]));
   const hubs = ids.filter((id) => isHubScene(module.scenes[id]));
@@ -59,8 +77,24 @@ export function checkModuleReach(module: Module): ReachReport {
   // --- The facts worth tracking -------------------------------------------
   const facts = new Map<string, number>();
   const fact = (k: string) => { if (!facts.has(k)) facts.set(k, facts.size); };
+  // A "you've been here" beat: a map marker's conditional redirect to a scene
+  // that changes nothing and only leads back. The flag behind it can't change
+  // where a party gets to, so it needn't be tracked; the walk takes both the
+  // redirect and the original scene instead (an over-approximation).
+  const cosmetic = (to: Id, hub: Id): boolean => {
+    const t = module.scenes[to];
+    if (!t || (t.kind !== 'story' && t.kind !== 'dialogue')) return false;
+    return t.next.every((c) => !c.effects?.length && !c.check && !c.requires?.length && (c.to === HUB_REF || c.to === hub));
+  };
   for (const s of Object.values(module.scenes)) {
-    for (const r of requirementsOf(s)) {
+    // An ending's slides only colour the last screen: nothing they read can
+    // change where a party gets to, so tracking them would only multiply the
+    // states (each carried flag doubles them) for no answer.
+    if (s.kind === 'ending') continue;
+    const reads: Requirement[] = s.kind === 'explore'
+      ? s.map.nodes.flatMap((n) => [...(n.requires ?? []), ...(n.sceneWhen ?? []).filter((w) => !cosmetic(w.to, s.id)).flatMap((w) => w.if)])
+      : requirementsOf(s);
+    for (const r of reads) {
       if (r.kind === 'flag' || r.kind === 'notFlag') fact(`flag:${r.flag}`);
       if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
       if (r.kind === 'visited') fact(`visited:${r.scene}`);
@@ -71,6 +105,8 @@ export function checkModuleReach(module: Module): ReachReport {
     return { errors: [], states: 0, skipped: `${facts.size} facts to track; the search packs at most ${MAX_FACTS}` };
   }
   const bit = (k: string) => (facts.has(k) ? 1 << facts.get(k)! : 0);
+  const untracked = (r: Requirement) =>
+    (r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`);
   const factNames = [...facts.keys()];
 
   const mask = (reqs: Requirement[] | undefined): Mask => {
@@ -107,7 +143,7 @@ export function checkModuleReach(module: Module): ReachReport {
   interface Compiled {
     steps: Step[];
     leave: boolean;
-    nodes: Array<{ req: Mask; when: Array<{ req: Mask; to: Id }>; to: Id; label: string }>;
+    nodes: Array<{ req: Mask; when: Array<{ req: Mask; to: Id; maybe: boolean }>; to: Id; label: string }>;
     events: Array<{ until: Mask | null; to: Id; label: string }>;
     travel: boolean;
   }
@@ -147,7 +183,8 @@ export function checkModuleReach(module: Module): ReachReport {
       case 'shop': case 'rest': c.steps.push(step(s.next, 'moves on')); break;
       case 'explore':
         for (const n of s.map.nodes) {
-          c.nodes.push({ req: mask(n.requires), when: (n.sceneWhen ?? []).map((w) => ({ req: mask(w.if), to: w.to })), to: n.scene, label: `goes to ${n.label}` });
+          c.nodes.push({ req: mask(n.requires), to: n.scene, label: `goes to ${n.label}`,
+            when: (n.sceneWhen ?? []).map((w) => ({ req: mask(w.if), to: w.to, maybe: w.if.some(untracked) })) });
           if (n.wandering) c.steps.push(step(n.wandering.battleScene, `is jumped on the way to ${n.label}`, mask(n.requires)));
         }
         if (s.map.camp?.risky) c.steps.push(step(s.map.camp.risky.battleScene, 'is attacked in camp'));
@@ -229,8 +266,14 @@ export function checkModuleReach(module: Module): ReachReport {
     for (const st of c.steps) if (met(st.req, f)) enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
     for (const nd of c.nodes) {
       if (!met(nd.req, f)) continue;
-      const w = nd.when.find((x) => met(x.req, f));
-      enter(n, w ? w.to : nd.to, 0, 0, `${here}: ${nd.label}`);
+      // First matching redirect wins; one that reads an untracked flag may or
+      // may not apply, so it is taken and the search carries on past it too.
+      let to: Id = nd.to;
+      for (const w of nd.when) {
+        if (w.maybe) { enter(n, w.to, 0, 0, `${here}: ${nd.label}`); continue; }
+        if (met(w.req, f)) { to = w.to; break; }
+      }
+      enter(n, to, 0, 0, `${here}: ${nd.label}`);
     }
     for (const ev of c.events) if (!ev.until || !met(ev.until, f)) enter(n, ev.to, 0, 0, `${here}: ${ev.label}`);
     if (c.leave && hub >= 0 && hubs[hub] !== here) enter(n, HUB_REF, 0, 0, `${here}: goes back`);
@@ -278,5 +321,40 @@ export function checkModuleReach(module: Module): ReachReport {
         + `${held.length ? ` (flags: ${held.join(', ')})` : ''}. One way there: ${shown.join(' → ')}`);
     }
   }
+  // A `perApproach` challenge spends every approach tried, for good. With no
+  // way back out (`noBack`), a party that comes back to it after trying it
+  // can arrive with nothing left to try. The search can't see spent
+  // approaches, so it looks for the shape instead: leave the challenge, and
+  // find a way to stand in front of it again.
+  const fwdOff = new Int32Array(N + 1);
+  for (const f of edgeFrom) fwdOff[f + 1]!++;
+  for (let i = 0; i < N; i++) fwdOff[i + 1]! += fwdOff[i]!;
+  const fwd = new Int32Array(edgeFrom.length);
+  const fill2 = fwdOff.slice(0, N);
+  for (let e = 0; e < edgeFrom.length; e++) fwd[fill2[edgeFrom[e]!]!++] = edgeTo[e]!;
+  ids.forEach((id, ci) => {
+    const sc = module.scenes[id];
+    if (sc?.kind !== 'challenge' || sc.retry !== 'perApproach' || !sc.noBack) return;
+    const seen = new Uint8Array(N);
+    const stack: number[] = [];
+    for (let n = 0; n < N; n++) {
+      if (sceneOf[n] !== ci) continue;
+      for (let i = fwdOff[n]!; i < fwdOff[n + 1]!; i++) {
+        const m = fwd[i]!;
+        if (sceneOf[m] !== ci && !seen[m]) { seen[m] = 1; stack.push(m); }
+      }
+    }
+    while (stack.length) {
+      const n = stack.pop()!;
+      if (sceneOf[n] === ci) {
+        errors.push(`[${id}] a party can come back to this challenge after trying it. Approaches already tried stay spent, and with noBack there may be nothing left to try. Route the way back past it (e.g. a sceneWhen on the flag its outcome sets).`);
+        return;
+      }
+      for (let i = fwdOff[n]!; i < fwdOff[n + 1]!; i++) {
+        const m = fwd[i]!;
+        if (!seen[m]) { seen[m] = 1; stack.push(m); }
+      }
+    }
+  });
   return { errors, states: N };
 }

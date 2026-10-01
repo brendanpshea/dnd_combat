@@ -75,3 +75,71 @@ describe('what it catches', () => {
     expect(checkModuleReach(m).skipped).toMatch(/facts/);
   });
 });
+
+describe('campaign bugs found by the second read-through', () => {
+  it('the finale brood is exactly the wyrmlings whose dens were left standing', async () => {
+    const { ENCOUNTERS } = await import('../src/data/encounters.js');
+    const wc = byId('wyrmcalling');
+    const gate = wc.scenes['calling-gate'];
+    if (gate?.kind !== 'story') throw new Error();
+    // Green cleared, blue and red left: the only choice on offer leads to a blue+red brood.
+    const flags = new Set(['green-cleared']);
+    const open = gate.next.filter((c) => (c.requires ?? []).every((r) =>
+      r.kind === 'flag' ? flags.has(r.flag) : r.kind === 'notFlag' ? !flags.has(r.flag) : true));
+    expect(open).toHaveLength(1);
+    const fight = wc.scenes[open[0]!.to];
+    if (fight?.kind !== 'battle') throw new Error();
+    expect([...ENCOUNTERS[fight.encounterId]!.members].sort()).toEqual(['blue-wyrmling', 'red-wyrmling']);
+  });
+
+  it('camp ambushes pay nothing, so a risky camp cannot be farmed', () => {
+    for (const [mod, ids] of [['hollow-road', ['camp-ambush', 'den-camp-ambush']], ['sunken-barrows', ['fen-night', 'crypt-night']], ['wyrmcalling', ['hills-night']]] as const) {
+      for (const id of ids) {
+        const s = byId(mod).scenes[id];
+        expect(s?.kind === 'battle' && s.loot, `${mod}:${id}`).toBe(false);
+      }
+    }
+  });
+
+  it('the finale\'s level floor comes before the last fight, not after', () => {
+    const wc = byId('wyrmcalling');
+    const approach = wc.scenes['calling-approach'];
+    const battle = wc.scenes['calling-battle'];
+    if (approach?.kind !== 'story' || battle?.kind !== 'battle') throw new Error();
+    expect(approach.next[0]!.effects).toContainEqual({ kind: 'xpToLevel', level: 5 });
+    expect(battle.onWin.effects ?? []).not.toContainEqual({ kind: 'xpToLevel', level: 5 });
+  });
+});
+
+describe('ending slides', () => {
+  it('show only the lines whose requirements hold', async () => {
+    const { startAdventure, enterScene, endingText } = await import('../src/adventure/runtime.js');
+    const { newCampaign } = await import('../src/campaign/campaign.js');
+    const end: Scene = { id: 'end', kind: 'ending', outcome: 'victory', text: ['Done.'],
+      slides: [{ if: [{ kind: 'flag', flag: 'kind' }], text: 'You were kind.' }, { if: [{ kind: 'notFlag', flag: 'kind' }], text: 'You were not.' }] };
+    const m: Module = { id: 'slides', title: 'T', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], next: [{ id: 'k', label: 'Be kind', to: 'end', effects: [{ kind: 'setFlag', flag: 'kind' }] }, { id: 'n', label: 'Do not', to: 'end' }] },
+      end } };
+    const s = startAdventure(newCampaign(1), m);
+    s.flags.kind = true;
+    expect(endingText(s, end)).toEqual(['Done.', 'You were kind.']);
+    const ev = enterScene(s, m, 'end');
+    expect(ev.find((e) => e.type === 'text')).toMatchObject({ paragraphs: ['Done.', 'You were kind.'] });
+    expect(validateModule(m)).toEqual([]);
+  });
+});
+
+describe('one-way challenges', () => {
+  it('flags a perApproach challenge with no way back that a party can return to', () => {
+    const tinyMod = (back: boolean): Module => ({ id: 't', title: 'T', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'challenge', intro: ['Climb.'], retry: 'perApproach', noBack: true,
+        approaches: [{ id: 'x', label: 'Climb', skill: 'athletics', dc: 10 }],
+        success: { to: 'fight' }, failure: { to: 'won' } },
+      fight: { id: 'fight', kind: 'battle', encounterId: 'goblins', mapId: 'open', onWin: { to: 'won' },
+        ...(back ? { onLoss: { to: 'a' } } : { onLoss: { to: 'won' } }) },
+      won: { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] },
+    } });
+    expect(checkModuleReach(tinyMod(true)).errors.some((e) => e.startsWith('[a] a party can come back'))).toBe(true);
+    expect(checkModuleReach(tinyMod(false)).errors).toEqual([]);
+  });
+});

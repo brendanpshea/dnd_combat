@@ -83,6 +83,9 @@ export function requirementsOf(scene: Scene): Requirement[] {
       out.push(...(n.requires ?? []));
       n.sceneWhen?.forEach((w) => out.push(...w.if));
     }); break;
+    case 'ending':
+      for (const s of scene.slides ?? []) out.push(...s.if);
+      break;
     case 'dungeon':
       for (const r of scene.dungeon.rooms) out.push(...(r.event?.until ?? []));
       for (const l of scene.dungeon.links) out.push(...(l.door?.locked ?? []));
