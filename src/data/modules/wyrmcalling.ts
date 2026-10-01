@@ -13,7 +13,14 @@
  * out of the rock: fight them in person (`sisters-at-stone`), or, if every
  * approach fails, the cataclysm the stone spends them on. The mid fights are
  * genuinely optional; the dens have a mechanical payoff too (clear all three
- * and the chromatic clutch never masses at the gate).
+ * and the chromatic clutch never masses at the gate). Most threats can also be
+ * handled without a fight, as Wren's notes say: talk the manticore into
+ * collecting from the coven, time the stampede (or a druid calms it), lie the
+ * ogre-mage into raiding the ettin, set the ettin's heads on each other, or
+ * rob the gorgon's statues by stealth. A dragonborn can order the green
+ * wyrmling home; a wizard or warlock gets an extra way to tear the sisters
+ * loose. Everything dealt with ticks the camp's tally (TALLY), which the
+ * ending reads as the camp held or the camp bled.
  *
  * XP budget (trilogy-plan.md): required spine ≈ 9,450 (coven 750, the
  * flooded seam 1,800, the oni's hold 1,650, the giants' hall 1,650,
@@ -42,7 +49,7 @@
  * on first use, and abstractions give way to things a reader can see. See
  * docs/module-writing-guide.md.
  */
-import type { Choice, Effect, Module, Scene } from '../../adventure/types.js';
+import type { Choice, Effect, Module, Outcome, Scene } from '../../adventure/types.js';
 
 const VEX = { id: 'npc-vex', name: 'Captain Vex', portraitId: 'npc-captain', emoji: '🗡️' };
 const WREN = { id: 'npc-wren', name: 'Wren, Chief of Scouts', portraitId: 'npc-scout', emoji: '🏹' };
@@ -70,18 +77,51 @@ const briefed = (vexBody: string): Effect[] => [
     title: 'The Calling Stone', body: 'Somewhere past the ogre-mage\'s pass and the giants\' hall, the sisters are tending the stone that calls the hills down. Climb until you find it.' } },
 ];
 
-/** Wren's advice, the same whether she knows you or not. */
+/**
+ * Wren's advice, the same whether she knows you or not. Every tip points at a
+ * real option in the hills: the manticore's toll (`tollcliff`), timing the
+ * stampede (`boarruns`, easier with her notes), robbing the statues quietly
+ * (`gorgonvale-sneak`), and setting the ogre-mage and the ettin's two heads
+ * against each other (`onihold`, `steading`).
+ */
 const WREN_BEASTS =
-  '"The **manticore** on the toll-cliff talks. It will ask you for a toll. What it really wants is you. The **boar-runs** flood with a stampede twice a day, so either time it or fight through it."';
+  '"The **manticore** on the toll-cliff talks. It will ask you for a toll, and what it really wants is you. But it is greedy. Promise it a bigger meal somewhere else, and it might fly off. The **boar-runs** flood with a stampede twice a day. Watch the dust, and you can slip across between runs."';
 const WREN_GORGON =
-  '"There is a valley past the middle pass full of statues that are far too good. A **gorgon** made them. Its breath turns people to stone. Stay out, or go in with your blade drawn."';
+  '"There is a valley past the middle pass full of statues that are far too good. A **gorgon** made them. Its breath turns people to stone. The statues still wear their purses. Go in quietly, or go in with your blade drawn."';
+const WREN_GIANTS =
+  '"The ogre-mage and the ettin both want the valley, and neither one trusts the other. The ettin\'s two heads cannot even agree with each other. Use that."';
 
 const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warcamp',
   effects: [{ kind: 'setFlag', flag: 'wren-brief' }, { kind: 'xp', amount: 30 },
     { kind: 'journal', entry: { id: 'c-scoutnotes', kind: 'clue', title: 'Wren\'s Map-Notes',
-      body: 'Wren warned that the manticore on the toll-cliff talks, and what it wants is you. The boar-runs stampede twice a day. A gorgon made the statues in the valley past the middle pass. And the streams themselves are walking uphill.' } }] }];
+      body: 'Wren said the manticore on the toll-cliff is greedy, so promise it a bigger meal somewhere else. Watch the dust at the boar-runs and slip across between stampedes. The gorgon\'s statues still wear their purses, for anyone quiet enough. The ogre-mage and the ettin distrust each other, and the ettin\'s two heads never agree.' } }] }];
+
+/**
+ * The camp's tally: one tick for every threat dealt with before the stone,
+ * whether fought, talked down, paid off, or met on the rim. Six are on every
+ * road up (the flooded pass, the middle pass, the giants' hall and the three
+ * wyrmlings, in their dens or on the rim). The other three are the company's
+ * choice. The tally starts at minus THREAT_PAR, so the ending can read both
+ * sides of the line: `flag` (above zero) means more than THREAT_PAR threats
+ * were handled, `notFlag` means THREAT_PAR or fewer. Only ending slides read
+ * it, so it costs the reachability search nothing.
+ */
+const TALLY = 'threats-cleared';
+const THREAT_PAR = 7;
+const tally = (n = 1): Effect[] => Array.from({ length: n }, () => ({ kind: 'setFlag' as const, flag: TALLY }));
 
 /** Out of the aftermath to the one ending; its slides read the run back. */
+/** The herd got past without a fight: it lives, and it turns away. */
+const HERD_SPARED: Effect[] = [{ kind: 'setFlag', flag: 'boarruns-cleared' }, { kind: 'setFlag', flag: 'herd-spared' },
+  ...tally(), { kind: 'xp', amount: 150 }];
+
+const GORGON_WON = { to: 'hills', text: ['The gorgon crashes onto its side with a sound like a foundry falling downstairs, and the green vapour thins away to nothing. The statues keep their silent watch. But the collection is closed.'],
+  effects: [{ kind: 'setFlag', flag: 'gorgon-cleared' }, ...tally(), { kind: 'gold', amount: 100 }] } satisfies Outcome;
+
+/** The ettin talked into a fight with itself: the hall empties, no loot. */
+const STEADING_TALKED: Effect[] = [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'setFlag', flag: 'ettin-split' },
+  ...tally(), { kind: 'xp', amount: 300 }];
+
 const TO_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue' }];
 
 /**
@@ -112,7 +152,10 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
   return [id, {
     id, kind: 'battle', encounterId: `den-clutch-${k}`, mapId: 'open', intro: [intro],
     onWin: { to: 'calling-approach', text: ['The last wyrmling drops out of the bruised light and does not get up. The rim is yours, and the hollow below waits. The stone\'s note wavers, as if it has just counted how few voices are still answering it.'],
-      effects: [{ kind: 'setFlag', flag: 'clutch-beaten' }] },
+      // Each wyrmling killed on the rim is one that never reached the camp,
+      // and one that is no longer waiting in its den to be killed again.
+      effects: [{ kind: 'setFlag', flag: 'clutch-beaten' }, ...tally(k.length),
+        ...[...k].map((c) => ({ kind: 'setFlag' as const, flag: DENS[c as keyof typeof DENS].flag }))] },
   } satisfies Scene];
 }));
 
@@ -136,7 +179,20 @@ const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, t
     // answer is the one the valley remembers.
     ...REPLIES.filter((o) => o.id !== r.id).map((o) => ({ kind: 'clearFlag' as const, flag: o.flag })),
     { kind: 'setFlag', flag: r.flag }] }));
-const TO_STONE: Choice[] = [{ id: 'on', label: 'Tear them out of the stone', to: 'tear-loose' }];
+/**
+ * `tear-loose` spends every approach it tries, for good. So a company that
+ * loses the fight after it and climbs back must not walk into it again with
+ * nothing left to try. It goes straight back to whichever fight it earned.
+ */
+const LOOSE: Effect[] = [{ kind: 'setFlag', flag: 'sisters-loose' }];
+const TO_STONE: Choice[] = [
+  { id: 'on', label: 'Tear them out of the stone', to: 'tear-loose', hideWhenBlocked: true,
+    requires: [{ kind: 'notFlag', flag: 'sisters-loose' }, { kind: 'notFlag', flag: 'stone-spent' }] },
+  { id: 'loose', label: 'Face the sisters again', to: 'sisters-battle', hideWhenBlocked: true,
+    requires: [{ kind: 'flag', flag: 'sisters-loose' }] },
+  { id: 'spent', label: 'Face what the stone called up', to: 'calling-battle', hideWhenBlocked: true,
+    requires: [{ kind: 'flag', flag: 'stone-spent' }] },
+];
 
 const MIRA_TOAST = 'Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She pours the first round on the house, and the second before anybody asks. With the third comes her observation that heroes drink no more carefully than anyone else. The reeve orders a plaque made. Wren corrects the geography on it.';
 
@@ -154,6 +210,8 @@ const scenes: Record<string, Scene> = {
       // Cold-start floor: a fresh company begins the finale at 4th level
       // (no-op for a company continuing from The Sunken Barrows).
       effects: [{ kind: 'xpToLevel', level: 4 },
+        // The camp's tally starts below zero (see TALLY).
+        { kind: 'setFlag', flag: TALLY, value: -THREAT_PAR },
         { kind: 'journal', entry: { id: 'q-calling', kind: 'quest', title: 'Silence the Calling',
           body: 'The Reedwife\'s sisters have woken the Calling Stone in the high hills. Its song pulls wyrms, giants, and worse down on the valley. Climb the passes, kill what answers the call, and break the stone.' } }] }],
     noBack: true,
@@ -250,6 +308,14 @@ const scenes: Record<string, Scene> = {
   },
   'wc-stores': { id: 'wc-stores', kind: 'shop', title: 'The War-Stores', next: 'warcamp',
     npc: BRAM,
+    // A war camp's shelf: healing, answers to dragon breath and gorgon
+    // poison, a giant's strength in a bottle, and spears and bows for the pikes.
+    stock: [
+      'potion-healing', 'potion-greater-healing', 'alchemists-fire',
+      'potion-fire-resistance', 'potion-poison-resistance', 'potion-giant-strength-hill',
+      'scroll-cure-wounds', 'scroll-bless', 'scroll-protection-from-energy', 'scroll-haste',
+      'spear', 'longbow', 'chain-mail',
+    ],
     intro: ['Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more. Except my goods, because I am a patriot. Also the captain reads my books." He turns a crate around to face you. "There are big things up that hill. Buy accordingly."'] },
   // A first meeting: a cold start, or a company that never met her.
   'scouts-fire': {
@@ -258,7 +324,7 @@ const scenes: Record<string, Scene> = {
       'A young woman named **Wren** runs the scouts\' fire. Three riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She is young to be Chief of Scouts. She wears the title like a coat that fits her but embarrasses her anyway.',
       '"You are the company the camp keeps talking about? Good. Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
-      'She looks up. "And the streams are walking uphill. I have no advice about that one. I only know where they walk." She hesitates. "Come back down the hill on your own feet," she adds, a little too fast.',
+      'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I have no advice about that one." She hesitates. "Come back down the hill on your own feet," she adds, a little too fast.',
     ],
     next: TAKE_NOTES,
   },
@@ -269,7 +335,7 @@ const scenes: Record<string, Scene> = {
       '**Wren** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young. She wears the title like a coat that fits her but embarrasses her anyway.',
       '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
-      'She looks up. "And the streams are walking uphill. I have no advice about that one. I only know where they walk." She pauses. "So. Here we are again." She almost smiles. "Try to come down the hill on your own feet. We could make that a tradition."',
+      'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I have no advice about that one." She pauses. "So. Here we are again." She almost smiles. "Try to come down the hill on your own feet. We could make that a tradition."',
     ],
     next: TAKE_NOTES,
   },
@@ -317,7 +383,11 @@ const scenes: Record<string, Scene> = {
         { id: 'gorgonvale', x: 84, y: 78, label: 'The Valley of Statues', mystery: 'Statues that are too good…', icon: 'tok-mystery', scene: 'gorgonvale',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'gorgon-cleared' }], to: 'gorgonvale-done' }] },
         { id: 'steading', x: 88, y: 44, label: 'The Giants\' Hall', mystery: 'Smoke above the tree-line…', icon: 'tok-house', scene: 'steading',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'steading-cleared' }], to: 'steading-done' }] },
+          sceneWhen: [
+            { if: [{ kind: 'flag', flag: 'steading-cleared' }], to: 'steading-done' },
+            // The ogre-mage was lied into raiding the hall first.
+            { if: [{ kind: 'flag', flag: 'oni-tricked' }], to: 'steading-raided' },
+          ] },
         // The den-raiding payoff routes here: beat the clutch (or never let it
         // mass) and later visits cross a still ridge; clear all three dens and
         // the brood never masses at all. Falling back from the clutch fight
@@ -366,19 +436,34 @@ const scenes: Record<string, Scene> = {
       '"Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." Its grin widens by one tooth too many. "You will pay in meat. I have decided."',
     ],
     next: [
+      // Wren's tip: it is greedy, so point it at a bigger meal. One try.
+      { id: 'promise', label: '[Persuasion DC 14] Offer it the sisters\' promise instead', to: 'tollcliff-talked',
+        once: true, check: { skill: 'persuasion', dc: 14, failTo: 'tollcliff-fight' } },
       { id: 'fight', label: 'Pay it in steel', to: 'tollcliff-fight' },
       { id: 'leave', label: 'Leave it on its ledge', to: 'hills' },
     ],
+  },
+  // Talked down: the manticore flies off to collect from the coven instead.
+  'tollcliff-talked': {
+    id: 'tollcliff-talked', kind: 'story', art: { emoji: '🦁' },
+    text: [
+      'You tell it the truth, more or less. "The hags promised you a valley full of meat. They are up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord collects what he is owed. He does not wait on a ledge for scraps."',
+      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. Then it stretches, and its spiked tail rattles. "I believe I will go and collect." It drops off the ledge and beats away uphill, toward the Calling Stone. Its goblins look at each other and run the other way.',
+    ],
+    next: [{ id: 'ok', label: 'Walk the open trail', to: 'hills',
+      effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'setFlag', flag: 'manticore-sent' },
+        ...tally(), { kind: 'xp', amount: 200 }] }],
+    noBack: true,
   },
   'tollcliff-fight': {
     id: 'tollcliff-fight', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'cliff',
     intro: ['"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Two goblins scramble up from the rocks behind it with spears. They are probably the ones who paid in sheep, working off a debt.'],
     onWin: { to: 'hills', text: ['The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of payments, taken from frightened travellers.'],
-      effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'gold', amount: 110 }] },
+      effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, ...tally(), { kind: 'gold', amount: 110 }] },
   },
   'tollcliff-done': {
     id: 'tollcliff-done', kind: 'story', art: { emoji: '🦁' },
-    text: ['The overhang stands empty and its hoard is picked clean. The trail below is free to walk now. It may take the local shepherds a whole generation to believe it.'],
+    text: ['The overhang stands empty. The trail below is free to walk now. It may take the local shepherds a whole generation to believe it.'],
     next: [{ id: 'ok', label: 'Onward', to: 'hills' }], noBack: true,
   },
   boarruns: {
@@ -386,9 +471,20 @@ const scenes: Record<string, Scene> = {
     text: [
       'A dry gully crosses the trail here. Hooves have churned its floor to mud and left coarse hair all over it. These are the **boar-runs**, and the drumming under your boots says the herd is coming. These are not farm pigs. The hoofprints are as wide as wash-basins.',
       'Something has been driving the herd uphill, day after day. The Calling wants its beasts angry and moving.',
-      'You can leave the herd to its runs and turn back. Or you can meet the stampede where the gully narrows and break the herd for good.',
+      'You can meet the stampede where the gully narrows and break the herd for good. Or you can watch the dust, as Wren said, and slip across between runs.',
     ],
     next: [
+      // Timing it: easier with Wren's notes. A miss puts you in the narrows
+      // when the herd comes back.
+      { id: 'time-notes', label: '[Survival DC 11] Time the stampede by Wren\'s notes', to: 'boarruns-timed',
+        requires: [{ kind: 'flag', flag: 'wren-brief' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'survival', dc: 11, failTo: 'boarruns-fight' } },
+      { id: 'time', label: '[Survival DC 14] Time the stampede', to: 'boarruns-timed',
+        requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'survival', dc: 14, failTo: 'boarruns-fight' } },
+      { id: 'calm', label: '[Animal Handling DC 12] Kneel in the narrows and calm the leaders', to: 'boarruns-calmed',
+        requires: [{ kind: 'classInParty', classId: 'druid' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'animal-handling', dc: 12, failTo: 'boarruns-fight' } },
       { id: 'fight', label: 'Meet the stampede at the narrows', to: 'boarruns-fight' },
       { id: 'wait', label: 'Leave the herd to its runs', to: 'hills' },
     ],
@@ -397,21 +493,61 @@ const scenes: Record<string, Scene> = {
     id: 'boarruns-fight', kind: 'battle', encounterId: 'boar-stampede', mapId: 'pass',
     intro: ['The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Then you notice that the gully narrows behind you as well.'],
     onWin: { to: 'hills', text: ['The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. You have just saved the war-camp from a living battering ram.'],
-      effects: [{ kind: 'setFlag', flag: 'boarruns-cleared' }, { kind: 'gold', amount: 40 }] },
+      effects: [{ kind: 'setFlag', flag: 'boarruns-cleared' }, ...tally(), { kind: 'gold', amount: 40 }] },
+  },
+  // Timed, not fought: the herd lives, and turns away from the valley.
+  'boarruns-timed': {
+    id: 'boarruns-timed', kind: 'story', art: { emoji: '🐗' },
+    text: [
+      'You lie flat on the lip of the gully and watch the dust. The herd thunders past below you and away over the next rise. You count to twenty, and then you run.',
+      'On the far side you pile dry brush across the narrows and set it alight. When the herd comes back, it smells the smoke and swings away over the far ridge, away from the valley. Every boar lives, and not one of them will come near the camp.',
+    ],
+    next: [{ id: 'ok', label: 'Onward', to: 'hills', effects: HERD_SPARED }], noBack: true,
+  },
+  // A druid's way: the herd is frightened, not angry.
+  'boarruns-calmed': {
+    id: 'boarruns-calmed', kind: 'story', art: { emoji: '🐗' },
+    text: [
+      'Your druid walks out into the narrows alone and kneels in the mud. The lead boar skids to a stop, close enough to touch. It is not angry. It is afraid, and the song gives it no rest.',
+      'Your druid talks to it, low and slow, until its ears drop. Then it turns, and the whole herd follows it over the far ridge, away from the valley. The drumming fades to nothing.',
+    ],
+    next: [{ id: 'ok', label: 'Onward', to: 'hills', effects: HERD_SPARED }], noBack: true,
   },
   'boarruns-done': {
     id: 'boarruns-done', kind: 'story', art: { emoji: '🐗' },
     text: ['The boar-runs lie still, and grass is growing back over the churned earth. The herd keeps to the far side of the ridge now. It has learned what the narrows cost.'],
     next: [{ id: 'ok', label: 'Onward', to: 'hills' }], noBack: true,
   },
+  // The den's mouth: a dragonborn can order the wyrmling home in the dragon tongue.
   greenden: {
-    id: 'greenden', kind: 'battle', encounterId: 'green-dragon-den', mapId: 'marsh',
-    intro: [
+    id: 'greenden', kind: 'story', art: { emoji: '🐉' },
+    text: [
       'The thicket smells of cut grass gone bad, sharp and rotten at the same time. That smell means a **green wyrmling**. Its den is a tunnel dug through strangling briar, and the floor is a bed of picked bones. Everything in that pile mistook a young dragon for a safe one. Its kobolds are shrieking the alarm.',
       'The wyrmling slides out of the briar like an eel out of a wall. It is small. Its grin is still a dragon\'s grin. This is one more monster for the Calling, unless you stop it here.',
     ],
+    next: [
+      { id: 'roar', label: '[Intimidation DC 13] Order it home in the dragon tongue', to: 'greenden-cowed',
+        requires: [{ kind: 'speciesInParty', speciesId: 'dragonborn' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'intimidation', dc: 13, failTo: 'greenden-fight' } },
+      { id: 'fight', label: 'Go in after it', to: 'greenden-fight' },
+    ],
+  },
+  'greenden-fight': {
+    id: 'greenden-fight', kind: 'battle', encounterId: 'green-dragon-den', mapId: 'marsh',
+    intro: ['The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. The air turns sharp and green.'],
     onWin: { to: 'hills', text: ['The wyrmling drops in the middle of a hiss, and its poison breath fades to a harmless stink. That is one monster fewer for the Calling. The den\'s small hoard rides out in your packs.'],
-      effects: [{ kind: 'setFlag', flag: 'green-cleared' }, { kind: 'gold', amount: 75 }] },
+      effects: [{ kind: 'setFlag', flag: 'green-cleared' }, ...tally(), { kind: 'gold', amount: 75 }] },
+  },
+  'greenden-cowed': {
+    id: 'greenden-cowed', kind: 'story', art: { emoji: '🐉' },
+    text: [
+      'Your dragonborn steps forward and roars in the old tongue of dragons. The wyrmling knows every word. *This mountain has an older dragon than you. Go home before it finds you.*',
+      'The wyrmling drops flat on its bones and shivers. Then it bolts out the back of the briar and away over the far hills, and its kobolds run after it. It leaves its little hoard behind. It does not look back.',
+    ],
+    next: [{ id: 'ok', label: 'Onward', to: 'hills',
+      effects: [{ kind: 'setFlag', flag: 'green-cleared' }, { kind: 'setFlag', flag: 'green-sent' },
+        ...tally(), { kind: 'gold', amount: 75 }, { kind: 'xp', amount: 150 }] }],
+    noBack: true,
   },
   'greenden-done': {
     id: 'greenden-done', kind: 'story', art: { emoji: '🌿' },
@@ -430,7 +566,7 @@ const scenes: Record<string, Scene> = {
     id: 'seam-fight', kind: 'battle', encounterId: 'water-vortex', mapId: 'bog',
     intro: ['The pool stands up. Twelve feet of mountain water in the rough shape of a giant, cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is.'],
     onWin: { to: 'hills', text: ['The elemental loses its argument with gravity all at once. It collapses into a hundred gallons of ordinary water, which hurries away downhill as if embarrassed. The thin place behind it closes. The pass is open.'],
-      effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, { kind: 'gold', amount: 50 }] },
+      effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, ...tally(), { kind: 'gold', amount: 50 }] },
   },
   'seam-done': {
     id: 'seam-done', kind: 'story', art: { emoji: '💧' },
@@ -444,7 +580,7 @@ const scenes: Record<string, Scene> = {
       'The wyrmling uncoils along a broken wall, crackling with pride, and the air turns sharp and metallic. Someone has clearly told it that it will be enormous one day. Nobody has told it about you.',
     ],
     onWin: { to: 'hills', text: ['The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon\'s future. It pays for your present instead.'],
-      effects: [{ kind: 'setFlag', flag: 'blue-cleared' }, { kind: 'gold', amount: 95 }] },
+      effects: [{ kind: 'setFlag', flag: 'blue-cleared' }, ...tally(), { kind: 'gold', amount: 95 }] },
   },
   'blueden-done': {
     id: 'blueden-done', kind: 'story', art: { emoji: '⚡' },
@@ -461,9 +597,24 @@ const scenes: Record<string, Scene> = {
     next: [
       { id: 'pay', label: 'Pay the toll (150 gold)', to: 'onihold-paid',
         requires: [{ kind: 'gold', atLeast: 150 }],
-        effects: [{ kind: 'gold', amount: -150 }, { kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-paid' }] },
+        effects: [{ kind: 'gold', amount: -150 }, { kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-paid' }, ...tally()] },
+      // Wren's tip: set the two warbands on each other. One try.
+      { id: 'trick', label: '[Deception DC 15] Warn it the ettin is coming for the pass', to: 'onihold-tricked',
+        once: true, check: { skill: 'deception', dc: 15, failTo: 'onihold-fight' } },
       { id: 'fight', label: 'Try them', to: 'onihold-fight' },
     ],
+  },
+  // Lied to: the ogre-mage marches on the giants' hall (see `steading-raided`).
+  'onihold-tricked': {
+    id: 'onihold-tricked', kind: 'story', art: { imageId: 'loc-keep', emoji: '🏯' },
+    text: [
+      '"Keep your toll," you call up. "The ettin up the hill says it answered the stone first. It is coming down for your pass tonight. We only came to watch."',
+      'The ogre-mage\'s pleasant face goes very still. "Two heads," it says, "and not one honest thought between them." It blows the horn four times. By dusk its whole warband is marching uphill toward the giants\' hall. The gate behind them stands open.',
+    ],
+    next: [{ id: 'ok', label: 'Onward', to: 'hills',
+      effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-tricked' },
+        ...tally(), { kind: 'xp', amount: 300 }] }],
+    noBack: true,
   },
   // Bought off: the ogre-mage takes the gold and its warband leaves the mountain.
   'onihold-paid': {
@@ -475,7 +626,7 @@ const scenes: Record<string, Scene> = {
     id: 'onihold-fight', kind: 'battle', encounterId: 'oni', mapId: 'corridor',
     intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. An ogre in an iron collar marches out with its maul on its shoulder, like a drilled soldier. An orc veteran in stolen mail calls the step. Then the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
     onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate. The middle pass stands open, and beyond it lies the road to the giants\' hall and the stone. The fort\'s war-chest is yours, fair and square.'],
-      effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'gold', amount: 130 }] },
+      effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, ...tally(), { kind: 'gold', amount: 130 }] },
   },
   'onihold-done': {
     id: 'onihold-done', kind: 'story', art: { imageId: 'loc-keep', emoji: '🏯' },
@@ -489,7 +640,7 @@ const scenes: Record<string, Scene> = {
       'The wyrmling lies on the largest heap with one eye open. Red dragons are the proudest of a proud family, and the stone\'s song promised this one a war. It rises, burning with its own light, delighted that you have saved it the trip downhill.',
     ],
     onWin: { to: 'hills', text: ['The wyrmling\'s fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps. They are the honest kind, and Bram will weigh them twice and pay well.'],
-      effects: [{ kind: 'setFlag', flag: 'red-cleared' }, { kind: 'gold', amount: 120 }] },
+      effects: [{ kind: 'setFlag', flag: 'red-cleared' }, ...tally(), { kind: 'gold', amount: 120 }] },
   },
   'redden-done': {
     id: 'redden-done', kind: 'story', art: { emoji: '🔥' },
@@ -504,15 +655,41 @@ const scenes: Record<string, Scene> = {
       'It has not noticed you yet. The statues suggest that never lasts long.',
     ],
     next: [
+      // Wren's tip: the statues still wear their purses. One try, and the
+      // gorgon stays to be fought (or left) either way.
+      { id: 'rob', label: 'Rob the statues without waking it', to: 'gorgonvale-sneak', once: true },
       { id: 'fight', label: 'Go in blade-first', to: 'gorgonvale-fight' },
       { id: 'leave', label: 'Back away before it looks up', to: 'hills' },
     ],
   },
+  'gorgonvale-sneak': {
+    id: 'gorgonvale-sneak', kind: 'challenge', art: { emoji: '🗿' },
+    intro: [
+      'The statues stand in crooked rows, and the dead still carry their purses. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.',
+      'One wrong step on the loose rock, and you join the collection.',
+    ],
+    approaches: [
+      { id: 'creep', label: 'Creep from statue to statue', hint: 'Keep a stone body between you and it at every step.',
+        skill: 'stealth', dc: 14 },
+      { id: 'watch', label: 'Wait for it to doze', hint: 'Watch until its head droops, then walk in on its blind side.',
+        skill: 'perception', dc: 14 },
+    ],
+    success: { to: 'hills', text: [
+      'You work down the rows with soft hands. You lift a purse from a stone shepherd and a silver ring from a stone finger. A hired sword gives up his flask of healing without a word.',
+      'The gorgon chews on and never once looks up. You are back on the trail before your hands stop shaking.',
+    ], effects: [{ kind: 'gold', amount: 90 }, { kind: 'addItem', itemId: 'potion-greater-healing' }] },
+    failure: { to: 'gorgonvale-woken', text: ['A stone arm snaps off under your elbow and hits the rock like a dropped bell. Across the valley, the gorgon\'s head comes up.'] },
+  },
   'gorgonvale-fight': {
     id: 'gorgonvale-fight', kind: 'battle', encounterId: 'gorgon-maze', mapId: 'corridor',
     intro: ['The gorgon\'s head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering, and the valley becomes a maze of stone people with you inside it.'],
-    onWin: { to: 'hills', text: ['The gorgon crashes onto its side with a sound like a foundry falling downstairs, and the green vapour thins away to nothing. The statues keep their silent watch. But the collection is closed.'],
-      effects: [{ kind: 'setFlag', flag: 'gorgon-cleared' }, { kind: 'gold', amount: 100 }] },
+    onWin: GORGON_WON,
+  },
+  // Caught robbing the statues: the same fight, on the gorgon's terms.
+  'gorgonvale-woken': {
+    id: 'gorgonvale-woken', kind: 'battle', encounterId: 'gorgon-maze', mapId: 'corridor', surprise: 'party',
+    intro: ['The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues, and the maze closes in around you.'],
+    onWin: GORGON_WON,
   },
   'gorgonvale-done': {
     id: 'gorgonvale-done', kind: 'story', art: { emoji: '🗿' },
@@ -525,8 +702,35 @@ const scenes: Record<string, Scene> = {
       'Above the tree-line stands the giants\' hall, built from whole pine trunks and stone blocks as big as wagons. Something put it up in a single season and treated the work as simple stacking. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing on top of one enormous body. A shaggy ogre in a sheepskin stumbles out behind it, still chewing. A skinny orc runner trots at its heels.',
       '"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.',
     ],
-    onWin: { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was. The ogre and the orc runner lie beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, all of it bound for the war-camp below. Two loud voices on the mountain have stopped answering the stone.'],
-      effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'gold', amount: 140 }] },
+    onWin: { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was. The orc runner lies beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, all of it bound for the war-camp below. Two loud voices on the mountain have stopped answering the stone.'],
+      effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 140 }] },
+    // Wren's tip: the two heads never agree. Agree with both.
+    parley: {
+      skill: 'deception', dc: 14, label: 'Agree with both heads at once',
+      success: { to: 'hills', text: [
+        '"The valley is yours," you tell the left head. Then you turn to the right head. "And yours." Both heads hear you say it.',
+        'The ettin stands very still. Then it punches itself in the jaw. Its two heads brawl across the hall, through the back wall, and down the far side of the mountain. The ogre and the orc runner chase after it, shouting. The road to the stone stands open.',
+      ], effects: STEADING_TALKED },
+    },
+  },
+  // The ogre-mage took the bait: its warband hit the hall in the night. The
+  // same roster still stands (a lighter one would need its own encounter), but
+  // it is beaten up and quarrelling, so the parley comes cheaper.
+  'steading-raided': {
+    id: 'steading-raided', kind: 'battle', encounterId: 'giants-raided', mapId: 'ruins',
+    intro: [
+      'Above the tree-line stands the giants\' hall, and it has had a bad night. Fire has eaten half the roof. Dead orcs from the ogre-mage\'s warband lie in the yard, and the ettin\'s ogre lies among them. Of the ogre-mage itself there is only a trail of blue blood, leading down the far side of the mountain.',
+      'The **ettin** comes out at the first scrape of your boots, limping. "YOU let them in," roars the left head. "YOU were asleep," roars the right. A skinny orc runner stumbles out behind it. All three of them notice you at once.',
+    ],
+    onWin: { to: 'hills', text: ['The ettin goes down still blaming itself, one head at a time. The ogre and the orc runner lie beside it. The ogre-mage\'s warband left its war-chest in the yard, and the hall holds the ettin\'s tribute too. Two warbands on the mountain have stopped answering the stone.'],
+      effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 190 }] },
+    parley: {
+      skill: 'deception', dc: 11, label: 'Ask each head whose fault the raid was',
+      success: { to: 'hills', text: [
+        'You ask the left head whose fault the raid was. Then you ask the right head. That is all it takes.',
+        'The two heads fall to brawling across the yard, through what is left of the wall, and down the back of the mountain. The orc runner limps after it, shouting. The road to the stone stands open.',
+      ], effects: STEADING_TALKED },
+    },
   },
   'steading-done': {
     id: 'steading-done', kind: 'story', art: { emoji: '🏚️' },
@@ -618,14 +822,26 @@ const scenes: Record<string, Scene> = {
       { id: 'rites', label: 'Say Halden\'s rites over the stone', hint: 'Brother Halden taught you the old words for shutting a door.',
         skill: 'religion', dc: 11,
         requires: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }], hideWhenBlocked: true,
-        success: { to: 'sisters-battle', text: ['Halden\'s old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free, smoking and furious.'] },
+        success: { to: 'sisters-battle', effects: LOOSE, text: ['Halden\'s old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free, smoking and furious.'] },
         failure: { to: 'tear-loose', text: ['You lose the words halfway through. Halden always warned you to say them whole.'] } },
+      // A wizard can read the old letters cut into the stone.
+      { id: 'letters', label: 'Read the old letters cut into the stone', hint: 'Your wizard knows these marks. Find the line that holds the sisters, and scratch it out.',
+        skill: 'arcana', dc: 11,
+        requires: [{ kind: 'classInParty', classId: 'wizard' }], hideWhenBlocked: true,
+        success: { to: 'sisters-battle', effects: LOOSE, text: ['Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.'] },
+        failure: { to: 'tear-loose', text: ['The letters crawl and shift under your wizard\'s eyes. They will not hold still long enough to read.'] } },
+      // A warlock knows how a pact is built, and how one breaks.
+      { id: 'pact', label: 'Offer the stone a better bargain', hint: 'Your warlock knows how pacts work. Every pact has a way out.',
+        skill: 'deception', dc: 13,
+        requires: [{ kind: 'classInParty', classId: 'warlock' }], hideWhenBlocked: true,
+        success: { to: 'sisters-battle', effects: LOOSE, text: ['Your warlock speaks to the stone the way a patron speaks, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.'] },
+        failure: { to: 'tear-loose', text: ['The stone has heard better offers. It keeps the sisters and goes on drinking.'] } },
       { id: 'seam', label: 'Find where the stone is weakest', hint: 'Look for the seam the song leaks out of, and hit it hard.',
         skill: 'investigation', dc: 14,
         failure: { to: 'tear-loose', text: ['Every face of the stone looks the same to you, smooth and black and singing.'] } },
     ],
-    success: { to: 'sisters-battle', text: ['The stone gives a crack like a snapped bone and throws the sisters off. They land on their feet, smoking and furious. For the first time in a hundred years, the coven has to fight for itself.'] },
-    failure: { to: 'calling-battle', text: ['Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.'] },
+    success: { to: 'sisters-battle', effects: LOOSE, text: ['The stone gives a crack like a snapped bone and throws the sisters off. They land on their feet, smoking and furious. For the first time in a hundred years, the coven has to fight for itself.'] },
+    failure: { to: 'calling-battle', effects: [{ kind: 'setFlag', flag: 'stone-spent' }], text: ['Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.'] },
     noBack: true,
   },
   // Torn loose: the sisters fall fighting, beside the one elemental the stone
@@ -648,7 +864,8 @@ const scenes: Record<string, Scene> = {
     id: 'calling-won', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌅' },
     text: [
       'It is over. The **Calling Stone** lies cracked and silent, and the sisters are gone with it. Where they fell, a scatter of dry reeds lifts on the wind. The revenge they climbed all this way to take burned away in the taking. Your company has the mountain to itself.',
-      'Below you, pass by pass, the hills go still. The song that pulled monsters toward the valley has stopped, so the monsters stop with it. Whatever was walking toward the stone lies down where it stands, and the wingbeats fade off the wind. The valley is safe. Far down the slope, faint and disbelieving, the war-camp starts to cheer.',
+      'Below you, pass by pass, the hills go quiet. The song that pulled monsters toward the valley has stopped. Whatever was still walking down the slope stops, shakes its head, and turns back toward its own hills. The wingbeats fade off the wind.',
+      'The valley is safe. Far down the slope, faint and disbelieving, the war-camp starts to cheer.',
     ],
     next: [{ id: 'down', label: 'Come down the mountain', to: 'wc-aftermath' }],
   },
@@ -700,7 +917,24 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'notFlag', flag: 'oni-paid' }],
         text: 'The fort at the middle pass becomes Vex\'s lookout, and no warband holds that pass against the valley again.' },
       { if: [{ kind: 'flag', flag: 'clutch-skipped' }],
-        text: 'No dragon flies over the high pastures again, because you burned out every den on the way up.' },
+        text: 'No dragon flies over the high pastures again. You emptied every den on the way up.' },
+      { if: [{ kind: 'flag', flag: 'green-sent' }],
+        text: 'Somewhere past the far hills, a green dragon is growing up. It still flinches at the sound of the dragon tongue.' },
+      // The camp's tally (see TALLY): above zero means the hills were thinned.
+      { if: [{ kind: 'notFlag', flag: TALLY }],
+        text: 'On the night of the Calling, the beasts you left in the hills came down on the war-camp. The pikes held, but only just. Vex burned a long row of funeral fires the next morning, and he wrote down every name.' },
+      { if: [{ kind: 'flag', flag: TALLY, value: 1 }],
+        text: 'On the night of the Calling, the war-camp held. You had thinned the hills so well that Vex did not lose a single soldier.' },
+      { if: [{ kind: 'flag', flag: TALLY, value: 9 - THREAT_PAR }],
+        text: 'Not one beast reached the pikes that night. Bram still complains about all the arrows nobody needed.' },
+      { if: [{ kind: 'flag', flag: 'manticore-sent' }],
+        text: 'The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting about unpaid tolls.' },
+      { if: [{ kind: 'flag', flag: 'herd-spared' }],
+        text: 'The giant boars still run their gully twice a day. They run it away from the valley now.' },
+      { if: [{ kind: 'flag', flag: 'oni-tricked' }],
+        text: 'The ogre-mage limped off the mountain after its war with the ettin. It never did learn who started it.' },
+      { if: [{ kind: 'flag', flag: 'ettin-split' }],
+        text: 'Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.' },
       { if: [{ kind: 'flag', flag: 'clutch-beaten' }],
         text: 'The wyrmlings you left in their dens died on the rim instead, and the shepherds still give those dens a wide berth.' },
       { if: [{ kind: 'flag', flag: 'answered-defiant' }],

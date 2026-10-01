@@ -84,6 +84,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'giants', name: 'Giant\'s Stronghold', suggestedLevel: 5,
     members: ['ettin', 'ogre', 'orc'],
   },
+  // The same hall after the ogre-mage's warband raided it (the Wyrmcalling's
+  // tricked-oni route): the ogre died in the yard, so it's lighter.
+  'giants-raided': {
+    id: 'giants-raided', name: 'The Raided Hall', suggestedLevel: 5,
+    members: ['ettin', 'orc'],
+  },
   temple: {
     id: 'temple', name: 'Corrupt Temple', suggestedLevel: 3,
     members: ['priest', 'acolyte', 'acolyte', 'skeleton', 'skeleton'],
