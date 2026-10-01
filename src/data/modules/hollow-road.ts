@@ -47,7 +47,7 @@ const WREN_SAVED: Effect[] = [
 ];
 
 /** The chief and the hag go down together, in every version of the hall. */
-const BOSS_FALLS = 'The chief falls, and the **Reedwife** comes apart like wet reeds in a fist, her laughter curdling to a wail that sinks back into the marsh. The **Ashfang** are broken — root and branch.';
+const BOSS_FALLS = 'The chief falls, and the **Reedwife** comes apart like wet reeds in a fist, her laughter curdling to a wail that sinks back into the marsh. With the chief and the hag both dead, the **Ashfang** have nobody left to give them orders.';
 const BOSS_WON: Effect[] = [
   { kind: 'setFlag', flag: 'chief-dead' }, { kind: 'setFlag', flag: 'hag-dead' }, { kind: 'gold', amount: 100 },
 ];
@@ -171,7 +171,7 @@ const scenes: Record<string, Scene> = {
     id: 'tavern-meet', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
       'Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
-      '"Sellswords. Good. You read my note, then." **Mira** doesn\'t smile — you get the feeling she keeps it somewhere safe, for special occasions. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
+      '"Sellswords. Good. You read my note, then." **Mira** doesn\'t smile. Nobody in Thornwick has seen her do it since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
       '"The **Ashfang** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. But there\'s more — the kind folk won\'t say with the door open."',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
@@ -363,7 +363,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'His crew is gone, one way or another, and the peddler knows it. He folds like wet paper. "I only carried word! I never lifted a blade!"',
       SPY_LIST,
-      'Then, babbling, he gives up the rest. **He tells you the raiders\' gate-signal.** Nobody ran to warn the den, so the signal is still good. With it, you can walk up to the den like one of their own.',
+      'Then he gives up the rest, all in one breath. **He tells you the raiders\' gate-signal.** Nobody ran to warn the den, so the signal is still good. With it, you can walk up to the den like one of their own.',
     ],
     noBack: true,
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
@@ -490,7 +490,7 @@ const scenes: Record<string, Scene> = {
     // what dings the party to 2nd level, so the level-up lands on a fight it
     // earned rather than out of nowhere. road-out is on the one-way path into the
     // marsh, so the grant fires exactly once.
-    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds. Behind you Thornwick; ahead, the marsh swallows the road whole. You feel steadier on your feet than a week ago — hardened, and a shade deadlier.'],
+    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds. Behind you Thornwick; ahead, the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.'],
       effects: [{ kind: 'xpToLevel', level: 2 }] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
@@ -913,7 +913,7 @@ const scenes: Record<string, Scene> = {
     id: 'gate-caught', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
     surprise: 'party',
     intro: ['Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, the bugbear and two gnolls are already waiting at the foot of the wall.'],
-    onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open.'],
+    onWin: { to: 'inner', text: ['The bugbear goes down last, face-first in the mud at the foot of the wall. The path in is open.'],
       effects: [{ kind: 'setFlag', flag: 'den-entered' }] },
   },
   // The den as a dungeon: rooms and links, laid out by the game. The spine is
@@ -998,7 +998,7 @@ const scenes: Record<string, Scene> = {
     id: 'den-pens', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: [
       'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
-      'The girl has one shoe. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one lamb each midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
+      'The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one lamb each midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
       'A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.',
     ],
     // Freeing them is never free: a quiet lock that may fail, or a loud one
@@ -1054,7 +1054,7 @@ const scenes: Record<string, Scene> = {
     id: 'vex-parley', kind: 'dialogue', noBack: true, npc: LIEUTENANT, art: { emoji: '🗡️' },
     lines: [
       'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it like a man who\'d rather be leaning on it.',
-      '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. I notice he never kept one for me." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
+      '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven\'t seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
     ],
     next: [
       // Wren's tip (`know-vex`): the party knows what he wants before he says it.
@@ -1093,7 +1093,7 @@ const scenes: Record<string, Scene> = {
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
     text: [
-      'The chief\'s hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters — a child\'s shoe, a miller\'s ledger, a reeve\'s chain.',
+      'The chief\'s hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters: a miller\'s ledger, a reeve\'s chain, and a child\'s left shoe, small and still muddy.',
       '**Vargan** rises from a throne of lashed spears, a rag wound round his axe hand. And in the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **Reedwife**, the green hag of the marsh, come up out of her water to see how her investment fares.',
       '"I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. She offered me the whole valley for it, and I took it." He looks up at his trophies the way a farmer looks at a full barn. "My mother\'s house went under the water that spring. Fair price."',
       '"You\'ve been *busy*," the hag tells you, delighted. At a flick of her hand, she calls for the chief\'s guard. For a heartbeat the whole hall waits to see what you\'ll do.',

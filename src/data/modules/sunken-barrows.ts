@@ -133,7 +133,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead didn\'t wait for anyone to take them. They climbed out and left on their own.',
       'And they left together. The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way, straight as a drawn line: **into the deep fen**.',
-      'Every old headstone carries the same words, cut deep and green with moss. ' + LITURGY + ' Thornwick\'s priests have said them over every grave since the town had a name.',
+      'Every old headstone carries the same words, cut deep and green with moss. ' + LITURGY + ' Thornwick\'s priests have said them over every grave for three hundred winters.',
     ],
     next: [{ id: 'on', label: 'Take it to the town', to: 'town',
       effects: [{ kind: 'setFlag', flag: 'dead-walk' },
@@ -216,7 +216,7 @@ const scenes: Record<string, Scene> = {
     lines: [
       'The reeve\'s hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you. He watches the fen fog eat his water-meadows. He grips his chain of office in one fist, like a weapon he doesn\'t know how to use.',
       '"You again," he says, without turning. "Last season you broke the Ashfang. Thornwick settles its debts. It appears the marsh does likewise. My grandfather\'s grave is open, and my grandfather has *gone somewhere*. We buried him in his chain of office. The twin of this one."',
-      'He turns. He looks older than the ledgers. "The fen-folk say the hag kept something shut out there, and that it got loose when you killed her. I don\'t know if that is true. I know you stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
+      'He turns. He looks as if he has not slept since the bells. "The fen-folk say the hag kept something shut out there, and that it got loose when you killed her. I don\'t know if that is true. I know you stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, Wren, will meet you at the fen road. She asked for the job. Rather forcefully, for someone I employ."',
     ],
     next: REEVE_TAKE,
@@ -407,12 +407,10 @@ const scenes: Record<string, Scene> = {
   'chapel-saved': {
     id: 'chapel-saved', kind: 'dialogue', noBack: true, npc: HALDEN, art: { imageId: 'loc-temple', emoji: '📖' },
     lines: [
-      'Halden sits down hard on the altar steps. He is shaking, and he is himself again. He stares at his hands as if someone just gave them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water.',
-      '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
-      '"The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."',
-      'Halden taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. You know that mark. The hag burned it into the lizardfolk in the hollow below the Ashfang den. "That\'s the hag\'s brand," Wren says. "Every marsh-thing that ran with the Ashfang wore it."',
-      '"It was a keeper\'s mark first," Halden says. "The vigil\'s mark. The old builders cut it into the Barrow Gate, and the gate\'s watchers know it. She was the keeper, so it was hers to wear. Then she grew greedy and burned it into everything she owned. She made a keeper\'s mark into a slaver\'s brand." He turns the page. "The rites of sealing are in there too. Someone must say them at his door, in the great barrow past the gate. Say them whole, or not at all."',
-      '"It will take nerve." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me." He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
+      'Halden sits down hard on the altar steps, shaking, and himself again. He stares at his hands as if someone has just given them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water. "It came up through the floor," he says. "Through the *prayers*. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him."',
+      'He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."',
+      'Halden taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That\'s the hag\'s brand," Wren says. "Every marsh-thing that ran with the Ashfang wore it." Halden shakes his head. "It was a keeper\'s mark first. The vigil\'s mark. The old builders cut it into the Barrow Gate, and the gate\'s watchers know it. She grew greedy and burned it into everything she owned. She made a keeper\'s mark into a slaver\'s brand."',
+      '"The rites of sealing are in there too. Someone must say them at his door, in the great barrow past the gate, and say them whole. It will take nerve. I couldn\'t say them while it had me, but I\'ll follow you down and wait on the stair." He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
       effects: [...CHAPEL_CLEARED, { kind: 'setFlag', flag: 'halden-saved' },
@@ -592,7 +590,7 @@ const scenes: Record<string, Scene> = {
     id: 'lychgate-won', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛩️' },
     text: [
       'Past the Barrow Gate the mounds rise in their dozens. At the field\'s heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.',
-      'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since before Thornwick had a name. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
+      'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
     ],
     next: [
       { id: 'down', label: 'Leave Wren the gate, and go down', to: 'undercrypt',
@@ -807,7 +805,7 @@ const scenes: Record<string, Scene> = {
     intro: [
       'Old masons sealed the king\'s chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Within, a figure in grave-wrappings the colour of old honey stands before a wall carved with names.',
       'They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs. None of them stand anymore. These are the places the Warden swallowed the last time he woke.',
-      'The embalmed king turns. Whatever the Warden promised him, the Warden clearly paid in full. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.',
+      'The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.',
     ],
     onWin: { to: '@hub', text: ['The king crumbles. His grave-cloths sag around nothing but dust and old spice. His servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**. The Warden has already chosen his next village.', 'Behind the king\'s throne, a burial shaft drops into the dark. The chanting comes up out of it.'],
       effects: [{ kind: 'setFlag', flag: 'king-down' }, { kind: 'gold', amount: 60 }] },
@@ -815,11 +813,10 @@ const scenes: Record<string, Scene> = {
   'seal-approach': {
     id: 'seal-approach', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
     text: [
-      'The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it. The chanting you\'ve heard for an hour turns into words. Living voices speak them. The dead do not chant.',
-      'A congregation of the **living** kneels at the door. They wear robes the colour of grave-worms and hold candles of black tallow. This is the **Cult of the Worm**, come far and fast on the news of a failing seal.',
-      'Their leader stands at the door with a chisel of bone, prying the lead out one letter at a time. He is a thin grey man in a gravedigger\'s apron. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets.',
-      '"Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles. I dug graves at Saltmere for thirty years," he says. "Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves. Then I walked away and left them all in the cold."',
-      '"The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."',
+      'The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it.',
+      'The chanting you\'ve heard for an hour comes from the **living**. They kneel at the door in robes the colour of grave-worms, holding candles of black tallow. This is the **Cult of the Worm**. Their leader is a thin grey man in a gravedigger\'s apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.',
+      '"Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."',
+      '"I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves, and then I walked away and left them all in the cold. The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."',
     ],
     next: [
       // Marrow's own reasons, turned on him: the king's wall shows what the
@@ -970,7 +967,7 @@ const scenes: Record<string, Scene> = {
   // Each claim gets one line, then a short hub: the homecoming doesn't replay.
   'sb-claim-paid': {
     id: 'sb-claim-paid', kind: 'story', art: { imageId: 'loc-town', emoji: '💰' },
-    text: ['The reeve counts the purse into your hands himself, coin by coin. He loses count twice, and for once he almost smiles.'],
+    text: ['The reeve counts the purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.'],
     next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
   },
   'sb-claim-round': {
@@ -1027,7 +1024,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'halden-saved' }],
         text: 'Brother Halden keeps the vigil now, and he reads the rites a little louder than he needs to.' },
       { if: [{ kind: 'notFlag', flag: 'halden-saved' }],
-        text: 'Halden and his acolytes share a new grave by the chapel, and Mira won\'t say whose idea the white stone was.' },
+        text: 'Halden and his acolytes share a new grave by the chapel. Mira paid for the white headstone, and had his own burial words cut into it.' },
       { if: [{ kind: 'notFlag', flag: 'seal-cracked' }],
         text: 'Far below the barrow-field, the Warden\'s door stays shut and silent, the way a good door should.' },
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
@@ -1049,7 +1046,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'hollow-road:vargan-jailed' }],
         text: 'Out on the common land, Vargan stops cutting reeds when the bells ring, and does not start again until they stop.' },
       { if: [],
-        text: 'On the last night, at the fen\'s edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment. Then they looked at the town, the way you look at a house you mean to come back to. Then the reeds closed, and they were gone — for now. Debts, in the deep fen, have a way of *coming due*.' },
+        text: 'On the last night, at the fen\'s edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment. Then they looked at the town, the way you look at a house you mean to come back to. Then the reeds closed over them. Whatever the sisters came to look at, they meant to come back for it.' },
     ],
   },
 };
