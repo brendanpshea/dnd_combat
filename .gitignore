@@ -14,3 +14,7 @@ docs/terrain-sheet.png
 docs/board-sheet.html
 docs/board-sheet.png
 art/token-sheet.html
+
+# Default outputs of npm run module:map / dungeon:preview
+/module-map.svg
+/dungeon-preview.svg
