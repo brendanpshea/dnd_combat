@@ -77,6 +77,8 @@ export interface AdventureState {
    * back what it cost them, and a long rest clears it again.
    */
   companions?: Array<{ id: Id; hp?: number }>;
+  /** The chapter's day (Module.dawns): absent = day 1. Each long rest ends one. */
+  day?: number;
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
@@ -131,6 +133,8 @@ export type AdventureEvent =
   | { type: 'journal'; entry: JournalEntry }
   | { type: 'companion'; companionId: Id; joined: boolean }
   | { type: 'secretRevealed'; nodeId: Id }
+  /** A long rest ended the day: this is the morning of `day`. */
+  | { type: 'dawn'; day: number }
   /** The party walked into a dungeon room; `firstVisit` is its prose, the first time. */
   | { type: 'room'; roomId: Id; name: string; firstVisit?: string[] }
   | { type: 'doorFound'; link: string }
@@ -1265,12 +1269,14 @@ export function resolveShopOrRest(state: AdventureState, module: Module): Advent
   if (scene.kind !== 'shop' && scene.kind !== 'rest') {
     throw new Error(`resolveShopOrRest on a ${scene.kind} scene`);
   }
+  const events: AdventureEvent[] = [];
   if (scene.kind === 'rest') {
     if (scene.variant === 'long') healParty(state.campaign, 'full');
     else shortRest(state.campaign);
     restCompanions(state, scene.variant === 'long' ? 'full' : 'short', module);
+    if (scene.variant === 'long') events.push(...endDay(state, module));
   }
-  return enterScene(state, module, scene.next);
+  return [...events, ...enterScene(state, module, scene.next)];
 }
 
 // --- Shop (buy/sell live in the UI; gambits roll here) ----------------------
@@ -1373,6 +1379,26 @@ export function campRest(
   const { totalHealed } = variant === 'long' ? longRest(c) : shortRest(c);
   restCompanions(state, variant === 'long' ? 'full' : 'short', module);
   events.push({ type: 'heal', amount: totalHealed });
+  if (variant === 'long') events.push(...endDay(state, module));
+  return events;
+}
+
+/** The chapter's day: 1 until the first long rest. */
+export const dayOf = (state: AdventureState): number => state.day ?? 1;
+
+/**
+ * A night slept: the next morning begins, and any dawn the module set for it
+ * plays (its text, then its effects). See `Module.dawns`.
+ */
+export function endDay(state: AdventureState, module: Module): AdventureEvent[] {
+  const day = dayOf(state) + 1;
+  state.day = day;
+  const events: AdventureEvent[] = [{ type: 'dawn', day }];
+  for (const d of module.dawns ?? []) {
+    if (d.day !== day) continue;
+    events.push({ type: 'text', paragraphs: d.text });
+    applyEffects(state, d.effects, events);
+  }
   return events;
 }
 

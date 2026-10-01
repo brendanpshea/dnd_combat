@@ -59,7 +59,7 @@ export const HIDEOUT_MODULE: Module = {
       ],
     },
     'lookout-yield': {
-      id: 'lookout-yield', kind: 'story', art: { emoji: '🗝️' },
+      id: 'lookout-yield', kind: 'story', noBack: true, art: { emoji: '🗝️' },
       text: ['He swallows. "It\'s… \'red willow.\' Just don\'t tell the boss I told you."'],
       next: [{ id: 'ok', label: 'Return to the hollow', to: 'hollow',
         effects: [

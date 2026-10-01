@@ -392,6 +392,7 @@ export function collectModuleProse(mod: Module): ProsePassage[] {
   const add = (paras: Paragraph[] | undefined, where: string) => {
     for (const p of paras ?? []) out.push({ where, text: String(p) });
   };
+  for (const d of mod.dawns ?? []) add(d.text, `${mod.id}:dawn${d.day}`);
   for (const scene of Object.values(mod.scenes)) {
     const at = `${mod.id}:${scene.id}`;
     if ('text' in scene) add(scene.text, `${at}:text`);

@@ -51,7 +51,7 @@ describe('what it catches', () => {
         { id: 'x', label: 'Locked', to: 'b', requires: [{ kind: 'flag', flag: 'key' }] },
         { id: 'y', label: 'On', to: 'won' },
       ] },
-      b: { id: 'b', kind: 'story', text: ['B.'], next: [{ id: 'k', label: 'Take key', to: 'won', effects: [{ kind: 'setFlag', flag: 'key' }] }] },
+      b: { id: 'b', kind: 'story', text: ['B.'], noBack: true, next: [{ id: 'k', label: 'Take key', to: 'won', effects: [{ kind: 'setFlag', flag: 'key' }] }] },
       won,
     });
     expect(validateModule(m).some((e) => e.startsWith('[b] can never be reached'))).toBe(true);
@@ -141,5 +141,19 @@ describe('one-way challenges', () => {
     } });
     expect(checkModuleReach(tinyMod(true)).errors.some((e) => e.startsWith('[a] a party can come back'))).toBe(true);
     expect(checkModuleReach(tinyMod(false)).errors).toEqual([]);
+  });
+});
+
+describe('outcome scenes that could be left by the back door', () => {
+  it('must be one-way when every choice carries an effect', () => {
+    const m: Module = { id: 'o', title: 'T', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'Map', art: {}, nodes: [{ id: 'n', x: 1, y: 1, label: 'Fight', icon: 'x', scene: 'fight' }] } },
+      fight: { id: 'fight', kind: 'battle', encounterId: 'goblins', mapId: 'open', onWin: { to: 'spoils' } },
+      spoils: { id: 'spoils', kind: 'story', text: ['Loot.'], next: [{ id: 't', label: 'Take it', to: 'won', effects: [{ kind: 'gold', amount: 5 }] }] },
+      won: { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] },
+    } };
+    expect(validateModule(m).some((e) => e.startsWith('[spoils]') && e.includes('set noBack'))).toBe(true);
+    (m.scenes.spoils as { noBack?: boolean }).noBack = true;
+    expect(validateModule(m).filter((e) => e.includes('set noBack'))).toEqual([]);
   });
 });

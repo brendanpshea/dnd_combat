@@ -223,6 +223,30 @@ possible), nor are spent `once` choices or a dungeon's doors (which the
 dungeon checks prove). A state packs at most 31 facts; a module that tracks
 more is reported, not passed.
 
+### The clock
+
+A chapter starts on day 1, and every long rest ends a day: a night at a
+camp, or a long `rest` scene. (A camp broken up by a fight is not a night
+slept.) `Module.dawns` names the mornings that matter:
+
+```ts
+dawns: [
+  { day: 3, text: ['The pens behind the kennels are empty this morning.'],
+    effects: [{ kind: 'setFlag', flag: 'captives-moved' }] },
+],
+```
+
+The text plays when the party wakes, and the effects apply. Scenes then read
+the flag like any other, so time presses through things a player can see: a
+door shut, a fight harder, a person gone. Give a warning before a deadline:
+an earlier dawn with text only, or a line in the scene the deadline is about.
+A module with dawns shows the day on screen; one without has no clock.
+
+The reach search knows a night can pass wherever a party can sleep, so a
+deadline that strands a party is reported like any other dead end, with
+`sleeps until the morning of day N` on the way there. Each dawn with effects
+is one more fact for it to track.
+
 ## Mechanics of prose in a scene
 
 - **Story/dialogue `text`/`lines`** unveil one beat per tap — write each entry as

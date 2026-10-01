@@ -184,6 +184,19 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // The chapter's clock: mornings in order, after the first day.
+  let lastDawn = 1;
+  for (const d of module.dawns ?? []) {
+    if (!Number.isInteger(d.day) || d.day <= lastDawn) errors.push(`dawn of day ${d.day} must be a whole day after ${lastDawn}, in order`);
+    lastDawn = Math.max(lastDawn, d.day);
+    if (!d.text.length) errors.push(`dawn of day ${d.day} has no text: a player must see the morning that changed things`);
+    for (const eff of d.effects ?? []) {
+      if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
+      if ((eff.kind === 'addItem' || eff.kind === 'removeItem') && !itemExists(eff.itemId)) errors.push(`dawn of day ${d.day} references unknown item '${eff.itemId}'`);
+      if ((eff.kind === 'joinParty' || eff.kind === 'leaveParty') && !module.companions?.[eff.companion]) errors.push(`dawn of day ${d.day} names unknown companion '${eff.companion}'`);
+    }
+  }
+
   // A carried flag (`module:flag`) is set by an earlier chapter of the same
   // campaign, which must declare it in its `carries`.
   const ancestors: Module[] = [];
@@ -234,6 +247,34 @@ export function validateModule(module: Module): string[] {
   for (const [id, scene] of Object.entries(module.scenes)) {
     if (scene.kind === 'ending') continue;
     if (refsOf(scene).length === 0) at(id, 'is a dead end (no routes out and not an ending)');
+  }
+
+  // Scenes the party opens from a map (a marker, a dungeon room, the start)
+  // can be walked away from: they play again next time. A scene reached as
+  // the OUTCOME of something (a check, a fight, a choice) is different: if it
+  // offers "Back to <location>" while every one of its choices carries an
+  // effect, leaving skips the effects for good (a death undone, a deal
+  // re-rolled, a fight re-farmed). Such a scene must be one-way.
+  const entries = new Set<Id>([module.start, ...(module.defeatScene ? [module.defeatScene] : [])]);
+  for (const sc of Object.values(module.scenes)) {
+    if (sc.kind === 'explore') {
+      for (const n of sc.map.nodes) {
+        entries.add(n.scene);
+        for (const w of n.sceneWhen ?? []) entries.add(w.to);
+        if (n.wandering) entries.add(n.wandering.battleScene);
+      }
+    }
+    if (sc.kind === 'dungeon') {
+      for (const r of sc.dungeon.rooms) {
+        for (const t of [r.fight, r.event?.scene, r.search, r.exit?.to]) if (t) entries.add(t);
+      }
+    }
+  }
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    if (entries.has(id) || (sc.kind !== 'story' && sc.kind !== 'dialogue') || sc.noBack || sc.next.length === 0) continue;
+    if (sc.next.every((c) => (c.effects?.length ?? 0) > 0 || !!c.check)) {
+      at(id, 'is reached as an outcome and every choice carries an effect, but it offers a way back that skips them all: set noBack');
+    }
   }
 
   // With the shape sound, walk every state a party can get the module into:
