@@ -104,10 +104,11 @@ const briefed = (vexBody: string): Effect[] => [
 
 /**
  * Wren's advice, the same whether she knows you or not. Every tip points at a
- * real option in the hills: the manticore's toll (`tollcliff`), timing the
- * stampede (`boarruns`, easier with her notes), robbing the statues quietly
- * (`gorgonvale-sneak`), and setting the ogre-mage and the ettin's two heads
- * against each other (`onihold`, `steading`).
+ * real option in the hills, and each is easier with her notes (`wren-brief`):
+ * the manticore's toll (`tollcliff`), timing the stampede (`boarruns`),
+ * robbing the statues quietly (`gorgonvale-sneak`), and setting the ogre-mage
+ * and the ettin's two heads against each other (`onihold`, `steading-notes`).
+ * Each is a pair of choices on the flag, so only one version shows.
  */
 const WREN_BEASTS =
   '"The **manticore** on the toll-cliff talks. It\'ll ask you for a toll, and what it really wants is you. But it\'s greedy. Promise it a bigger meal somewhere else, and it might fly off. The **boar-runs** flood with a stampede twice a day. Watch the dust, and you can slip across between runs."';
@@ -126,14 +127,17 @@ const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warc
  * whether fought, talked down, paid off, or met on the rim. Six are on every
  * road up (the flooded pass, the middle pass, the giants' hall and the three
  * wyrmlings, in their dens or on the rim). The other three are the company's
- * choice. Thornwick's watch, if Reeve Aldous sends it (see WAR ASSETS),
- * counts for two more. The tally starts at minus THREAT_PAR, so the ending can read both
- * sides of the line: `flag` (above zero) means more than THREAT_PAR threats
- * were handled, `notFlag` means THREAT_PAR or fewer. Only ending slides read
- * it, so it costs the reachability search nothing.
+ * choice. A den burned out counts twice (DEN_TICKS), as Vex promised: its
+ * wyrmling never reaches the rim, and its kobolds never reach the camp.
+ * Thornwick's watch, if Reeve Aldous sends it (see WAR ASSETS), counts for
+ * two more. So the tally runs from 6 to 14. It starts at minus THREAT_PAR, so
+ * the ending can read both sides of the line: `flag` (above zero) means more
+ * than THREAT_PAR threats were handled, `notFlag` means THREAT_PAR or fewer.
+ * Only ending slides read it, so it costs the reachability search nothing.
  */
 const TALLY = 'threats-cleared';
 const THREAT_PAR = 7;
+const DEN_TICKS = 2;
 const tally = (n = 1): Effect[] => Array.from({ length: n }, () => ({ kind: 'setFlag' as const, flag: TALLY }));
 
 /** Out of the aftermath to the one ending; its slides read the run back. */
@@ -141,12 +145,27 @@ const tally = (n = 1): Effect[] => Array.from({ length: n }, () => ({ kind: 'set
 const HERD_SPARED: Effect[] = [{ kind: 'setFlag', flag: 'boarruns-cleared' }, { kind: 'setFlag', flag: 'herd-spared' },
   ...tally(), { kind: 'xp', amount: 150 }];
 
+/** A missed run across the boar-runs: a pack bursts under the herd. */
+const SCATTERED: Effect[] = [{ kind: 'gold', amount: -30 }];
+
 const GORGON_WON = { to: 'hills', text: ['The gorgon crashes onto its side with a sound like a foundry falling downstairs, and the green vapour thins away to nothing. The statues keep their silent watch. But the collection is closed.'],
   effects: [{ kind: 'setFlag', flag: 'gorgon-cleared' }, ...tally(), { kind: 'gold', amount: 100 }] } satisfies Outcome;
 
 /** The ettin talked into a fight with itself: the hall empties, no loot. */
 const STEADING_TALKED: Effect[] = [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'setFlag', flag: 'ettin-split' },
   ...tally(), { kind: 'xp', amount: 300 }];
+
+const STEADING_INTRO = [
+  'Above the tree-line stands the giants\' hall, built from whole pine trunks and stone blocks as big as wagons. Something put it up in a single season and treated the work as simple stacking. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing on top of one enormous body. A shaggy ogre in a sheepskin stumbles out behind it, still chewing. A skinny orc runner trots at its heels.',
+  '"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.',
+];
+const STEADING_WON = { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was. The orc runner lies beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, all of it bound for the war-camp below. Two loud voices on the mountain have stopped answering the stone.'],
+  effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 140 }] } satisfies Outcome;
+/** Wren's tip: the two heads never agree. Agree with both. */
+const STEADING_PARLEY = { to: 'hills', text: [
+  '"The valley is yours," you tell the left head. Then you turn to the right head. "And yours." Both heads hear you say it.',
+  'The ettin stands very still. Then it punches itself in the jaw. Its two heads brawl across the hall, through the back wall, and down the far side of the mountain. The ogre and the orc runner chase after it, shouting. The road to the stone stands open.',
+], effects: STEADING_TALKED } satisfies Outcome;
 
 const TO_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue' }];
 const TO_VIGIL_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue-vigil' }];
@@ -387,7 +406,7 @@ const SLIDES_HILLS: Slide[] = [
     text: 'On the night of the Calling, the beasts you left in the hills came down on the war-camp. The pikes held, but only just. Vex burned a long row of funeral fires the next morning, and he wrote down every name.' },
   { if: [{ kind: 'flag', flag: TALLY, value: 1 }],
     text: 'On the night of the Calling, the war-camp held. You had thinned the hills so well that Vex did not lose a single soldier.' },
-  { if: [{ kind: 'flag', flag: TALLY, value: 9 - THREAT_PAR }],
+  { if: [{ kind: 'flag', flag: TALLY, value: 10 - THREAT_PAR }],
     text: 'Bram still complains about all the arrows nobody needed.' },
   { if: [{ kind: 'flag', flag: 'manticore-sent' }],
     text: 'The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting about unpaid tolls.' },
@@ -745,6 +764,8 @@ const scenes: Record<string, Scene> = {
             { if: [{ kind: 'flag', flag: 'steading-cleared' }], to: 'steading-done' },
             // The ogre-mage was lied into raiding the hall first.
             { if: [{ kind: 'flag', flag: 'oni-tricked' }], to: 'steading-raided' },
+            // Wren's notes: the two heads never agree, so the parley comes cheaper.
+            { if: [{ kind: 'flag', flag: 'wren-brief' }], to: 'steading-notes' },
           ] },
         // The den-raiding payoff routes here: beat the clutch (or never let it
         // mass) and later visits cross a still ridge; clear all three dens and
@@ -799,9 +820,14 @@ const scenes: Record<string, Scene> = {
       '"Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." Its grin widens by one tooth too many. "You will pay in meat. I have decided."',
     ],
     next: [
-      // Wren's tip: it is greedy, so point it at a bigger meal. One try.
+      // Wren's tip: it is greedy, so point it at a bigger meal. One try, and
+      // easier with her notes. A miss gives it the first strike.
+      { id: 'promise-notes', label: '[Persuasion DC 11] Wren\'s tip: promise it a bigger meal up at the stone', to: 'tollcliff-talked',
+        requires: [{ kind: 'flag', flag: 'wren-brief' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'persuasion', dc: 11, failTo: 'tollcliff-stung' } },
       { id: 'promise', label: '[Persuasion DC 14] Offer it the sisters\' promise instead', to: 'tollcliff-talked',
-        once: true, check: { skill: 'persuasion', dc: 14, failTo: 'tollcliff-fight' } },
+        requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'persuasion', dc: 14, failTo: 'tollcliff-stung' } },
       { id: 'fight', label: 'Pay it in steel', to: 'tollcliff-fight' },
       { id: 'leave', label: 'Leave it on its ledge', to: 'hills' },
     ],
@@ -824,6 +850,14 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'hills', text: ['The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of payments, taken from frightened travellers.'],
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, ...tally(), { kind: 'gold', amount: 110 }] },
   },
+  // Talked at too long: its tail was cocked the whole time.
+  'tollcliff-stung': {
+    id: 'tollcliff-stung', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'cliff',
+    surprise: 'party',
+    intro: ['The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." It kept its tail cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and two goblins scramble up from the rocks behind it.'],
+    onWin: { to: 'hills', text: ['The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of payments, taken from frightened travellers.'],
+      effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, ...tally(), { kind: 'gold', amount: 110 }] },
+  },
   'tollcliff-done': {
     id: 'tollcliff-done', kind: 'story', art: { emoji: '🦁' },
     text: ['The overhang stands empty. The trail below is free to walk now. It may take the local shepherds a whole generation to believe it.'],
@@ -837,14 +871,14 @@ const scenes: Record<string, Scene> = {
       'You can meet the stampede where the gully narrows and break the herd for good. Or you can watch the dust, as Wren said, and slip across between runs.',
     ],
     next: [
-      // Timing it: easier with Wren's notes. A miss puts you in the narrows
-      // when the herd comes back.
+      // Timing it: easier with Wren's notes. A miss puts you in the open
+      // when the herd comes back, and a pack bursts under it.
       { id: 'time-notes', label: '[Survival DC 11] Time the stampede by Wren\'s notes', to: 'boarruns-timed',
         requires: [{ kind: 'flag', flag: 'wren-brief' }], hideWhenBlocked: true,
-        once: true, check: { skill: 'survival', dc: 11, failTo: 'boarruns-fight' } },
+        once: true, check: { skill: 'survival', dc: 11, failTo: 'boarruns-scattered', failEffects: SCATTERED } },
       { id: 'time', label: '[Survival DC 14] Time the stampede', to: 'boarruns-timed',
         requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true,
-        once: true, check: { skill: 'survival', dc: 14, failTo: 'boarruns-fight' } },
+        once: true, check: { skill: 'survival', dc: 14, failTo: 'boarruns-scattered', failEffects: SCATTERED } },
       { id: 'calm', label: '[Animal Handling DC 12] Kneel in the narrows and calm the leaders', to: 'boarruns-calmed',
         requires: [{ kind: 'classInParty', classId: 'druid' }], hideWhenBlocked: true,
         once: true, check: { skill: 'animal-handling', dc: 12, failTo: 'boarruns-fight' } },
@@ -857,6 +891,12 @@ const scenes: Record<string, Scene> = {
     intro: ['The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Then you notice that the gully narrows behind you as well.'],
     onWin: { to: 'hills', text: ['The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. You have just saved the war-camp from a living battering ram.'],
       effects: [{ kind: 'setFlag', flag: 'boarruns-cleared' }, ...tally(), { kind: 'gold', amount: 40 }] },
+  },
+  // Timed wrong: the herd catches the party in the open, and a pack bursts.
+  'boarruns-scattered': {
+    id: 'boarruns-scattered', kind: 'story', noBack: true, art: { emoji: '🐗' },
+    text: ['You run too soon. The herd comes back over the rise while you are still in the open, and you dive for the rocks. A boar\'s shoulder catches a pack as it goes by and bursts it. Thirty gold scatters across the gully, and the hooves grind it into the mud.'],
+    next: [{ id: 'on', label: 'Meet them at the narrows', to: 'boarruns-fight' }],
   },
   // Timed, not fought: the herd lives, and turns away from the valley.
   'boarruns-timed': {
@@ -900,7 +940,7 @@ const scenes: Record<string, Scene> = {
     intro: ['The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. The air turns sharp and green.'],
     onWin: { to: 'hills', text: ['The wyrmling drops in the middle of a hiss, and its poison breath fades to a harmless stink. That is one monster fewer for the Calling. The den\'s small hoard rides out in your packs.',
       'Up the mountain, the Calling\'s note bends. Two women\'s voices ride it down the wind, close as a whisper. "One fewer, little debtors. We have so many more."'],
-      effects: [{ kind: 'setFlag', flag: 'green-cleared' }, ...tally(), { kind: 'gold', amount: 75 }] },
+      effects: [{ kind: 'setFlag', flag: 'green-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 75 }] },
   },
   'greenden-cowed': {
     id: 'greenden-cowed', kind: 'story', art: { emoji: '🐉' },
@@ -911,7 +951,7 @@ const scenes: Record<string, Scene> = {
     // Sparing it costs the hoard: the fight pays, the mercy does not.
     next: [{ id: 'ok', label: 'Onward', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'green-cleared' }, { kind: 'setFlag', flag: 'green-sent' },
-        ...tally(), { kind: 'xp', amount: 150 }] }],
+        ...tally(DEN_TICKS), { kind: 'xp', amount: 150 }] }],
     noBack: true,
   },
   // The clock (see DAWNS): after the Calling peaks, a den left standing is
@@ -953,7 +993,7 @@ const scenes: Record<string, Scene> = {
       'The wyrmling uncoils along a broken wall, crackling with pride, and the air turns sharp and metallic. Someone has clearly told it that it will be enormous one day. Nobody has told it about you.',
     ],
     onWin: { to: 'hills', text: ['The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon\'s future. It pays for your present instead.'],
-      effects: [{ kind: 'setFlag', flag: 'blue-cleared' }, ...tally(), { kind: 'gold', amount: 95 }] },
+      effects: [{ kind: 'setFlag', flag: 'blue-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 95 }] },
   },
   'blueden-done': {
     id: 'blueden-done', kind: 'story', art: { emoji: '⚡' },
@@ -971,9 +1011,14 @@ const scenes: Record<string, Scene> = {
       { id: 'pay', label: 'Pay the toll (150 gold)', to: 'onihold-paid',
         requires: [{ kind: 'gold', atLeast: 150 }],
         effects: [{ kind: 'gold', amount: -150 }, { kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-paid' }, ...tally()] },
-      // Wren's tip: set the two warbands on each other. One try.
+      // Wren's tip: set the two warbands on each other. One try, and easier
+      // with her notes. A lie it sees through drives the party off the pass.
+      { id: 'trick-notes', label: '[Deception DC 12] Wren\'s tip: warn it the ettin is coming for the pass', to: 'onihold-tricked',
+        requires: [{ kind: 'flag', flag: 'wren-brief' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'deception', dc: 12, failTo: 'onihold-driven' } },
       { id: 'trick', label: '[Deception DC 15] Warn it the ettin is coming for the pass', to: 'onihold-tricked',
-        once: true, check: { skill: 'deception', dc: 15, failTo: 'onihold-fight' } },
+        requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'deception', dc: 15, failTo: 'onihold-driven' } },
       { id: 'fight', label: 'Try them', to: 'onihold-fight' },
     ],
   },
@@ -988,6 +1033,16 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-tricked' },
         ...tally(), { kind: 'xp', amount: 300 }] }],
     noBack: true,
+  },
+  // The lie seen through: the warband drives the party off the pass, and
+  // working back up to it costs a day. The fort is still there to be fought.
+  'onihold-driven': {
+    id: 'onihold-driven', kind: 'story', noBack: true, art: { imageId: 'loc-keep', emoji: '🏯' },
+    text: [
+      '"The ettin?" The ogre-mage laughs. "It has two heads and not one plan. It would never come down here." It blows the horn once, and the wall answers with rocks, then spears.',
+      'You run for the switchbacks and keep running. It takes the rest of the day and all of the night to work back up through the rocks. The whole time, the stone sings over your heads.',
+    ],
+    next: [{ id: 'on', label: 'Back on the trail, a day behind', to: 'hills', effects: [{ kind: 'passDay' }] }],
   },
   // Bought off: the ogre-mage takes the gold and its warband leaves the mountain.
   'onihold-paid': {
@@ -1014,7 +1069,7 @@ const scenes: Record<string, Scene> = {
     ],
     onWin: { to: 'hills', text: ['The wyrmling\'s fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps. They are the honest kind, and Bram will weigh them twice and pay well.',
       'The stone\'s song dips, and a voice comes down the wind with it. "That one was promised a war," says one of the sisters, almost fondly. "Never mind. Promises are cheap, and we have plenty left."'],
-      effects: [{ kind: 'setFlag', flag: 'red-cleared' }, ...tally(), { kind: 'gold', amount: 120 }] },
+      effects: [{ kind: 'setFlag', flag: 'red-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 120 }] },
   },
   'redden-done': {
     id: 'redden-done', kind: 'story', art: { emoji: '🔥' },
@@ -1043,8 +1098,10 @@ const scenes: Record<string, Scene> = {
       'One wrong step on the loose rock, and you join the collection.',
     ],
     approaches: [
+      { id: 'creep-notes', label: 'Creep in along Wren\'s line', hint: 'Wren\'s tip: go in quietly, and take only the purses at their feet.',
+        skill: 'stealth', dc: 11, requires: [{ kind: 'flag', flag: 'wren-brief' }], hideWhenBlocked: true },
       { id: 'creep', label: 'Creep from statue to statue', hint: 'Keep a stone body between you and it at every step.',
-        skill: 'stealth', dc: 14 },
+        skill: 'stealth', dc: 14, requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true },
       { id: 'watch', label: 'Wait for it to doze', hint: 'Watch until its head droops, then walk in on its blind side.',
         skill: 'perception', dc: 14 },
     ],
@@ -1072,20 +1129,14 @@ const scenes: Record<string, Scene> = {
   },
   steading: {
     id: 'steading', kind: 'battle', encounterId: 'giants', mapId: 'ruins',
-    intro: [
-      'Above the tree-line stands the giants\' hall, built from whole pine trunks and stone blocks as big as wagons. Something put it up in a single season and treated the work as simple stacking. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing on top of one enormous body. A shaggy ogre in a sheepskin stumbles out behind it, still chewing. A skinny orc runner trots at its heels.',
-      '"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.',
-    ],
-    onWin: { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was. The orc runner lies beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, all of it bound for the war-camp below. Two loud voices on the mountain have stopped answering the stone.'],
-      effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 140 }] },
-    // Wren's tip: the two heads never agree. Agree with both.
-    parley: {
-      skill: 'deception', dc: 14, label: 'Agree with both heads at once',
-      success: { to: 'hills', text: [
-        '"The valley is yours," you tell the left head. Then you turn to the right head. "And yours." Both heads hear you say it.',
-        'The ettin stands very still. Then it punches itself in the jaw. Its two heads brawl across the hall, through the back wall, and down the far side of the mountain. The ogre and the orc runner chase after it, shouting. The road to the stone stands open.',
-      ], effects: STEADING_TALKED },
-    },
+    intro: STEADING_INTRO, onWin: STEADING_WON,
+    parley: { skill: 'deception', dc: 14, label: 'Agree with both heads at once', success: STEADING_PARLEY },
+  },
+  // The same hall, with Wren's notes in hand.
+  'steading-notes': {
+    id: 'steading-notes', kind: 'battle', encounterId: 'giants', mapId: 'ruins',
+    intro: STEADING_INTRO, onWin: STEADING_WON,
+    parley: { skill: 'deception', dc: 11, label: 'Wren\'s tip: agree with both heads at once', success: STEADING_PARLEY },
   },
   // The ogre-mage took the bait: its warband hit the hall in the night. The
   // same roster still stands (a lighter one would need its own encounter), but
@@ -1222,8 +1273,13 @@ const scenes: Record<string, Scene> = {
     retry: 'perApproach',
     approaches: [
       { id: 'drag', label: 'Drag their hands out of the rock', hint: 'Grab a wrist each and pull, while the stone pulls back.',
-        skill: 'athletics', dc: 15,
+        skill: 'athletics', dc: 15, requires: [{ kind: 'noCompanion', companion: 'hask' }], hideWhenBlocked: true,
         failure: { to: 'tear-loose', text: ['The rock holds them fast. You let go with burned palms, and the stone keeps drinking.'] } },
+      // Hask's way: the same haul, on a sergeant's count.
+      { id: 'hask', label: '[Hask] Haul them out on Hask\'s count', hint: 'He has called the step for twenty years. Pull when he says pull, and not before.',
+        skill: 'athletics', dc: 11, requires: [{ kind: 'companion', companion: 'hask' }], hideWhenBlocked: true,
+        success: { to: 'sisters-battle', effects: LOOSE, text: ['Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go, and both sisters come free, smoking and furious.'] },
+        failure: { to: 'tear-loose', text: ['Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It\'s got better footing than we have."'] } },
       // The fen-folk's ropes, from the war council (`drowned-gold-home`).
       { id: 'ropes', label: 'Haul them out with the fen-folk\'s ropes', hint: 'Loop a drowning-rope round each sister and pull, the way the fen-folk pull the living out of deep water.',
         skill: 'athletics', dc: 11,
@@ -1236,9 +1292,14 @@ const scenes: Record<string, Scene> = {
       // Halden lived through the barrows, and he taught the company his rites.
       { id: 'rites', label: 'Say Halden\'s rites over the stone', hint: 'Brother Halden taught you the old words for shutting a door.',
         skill: 'religion', dc: 11,
-        requires: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }], hideWhenBlocked: true,
+        requires: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }, { kind: 'noCompanion', companion: 'halden' }], hideWhenBlocked: true,
         success: { to: 'sisters-battle', effects: LOOSE, text: ['Halden\'s old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free, smoking and furious.'] },
         failure: { to: 'tear-loose', text: ['You lose the words halfway through. Halden always warned you to say them whole.'] } },
+      // Halden came down into the bowl: he says his own rites at the stone.
+      { id: 'halden', label: '[Halden] Let Halden say his rites over the stone', hint: 'He climbed the whole mountain to say them here. Stand back and let him.',
+        skill: 'religion', dc: 8, requires: [{ kind: 'companion', companion: 'halden' }], hideWhenBlocked: true,
+        success: { to: 'sisters-battle', effects: LOOSE, text: ['Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters stagger free, smoking and furious.'] },
+        failure: { to: 'tear-loose', text: ['Halden gets halfway. Then the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It\'s too loud here."'] } },
       // A wizard can read the old letters cut into the stone.
       { id: 'letters', label: 'Read the old letters cut into the stone', hint: 'Your wizard knows these marks. Find the line that holds the sisters, and scratch it out.',
         skill: 'arcana', dc: 11,
@@ -1251,8 +1312,13 @@ const scenes: Record<string, Scene> = {
         requires: [{ kind: 'classInParty', classId: 'warlock' }], hideWhenBlocked: true,
         success: { to: 'sisters-battle', effects: LOOSE, text: ['Your warlock speaks to the stone the way a patron speaks, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.'] },
         failure: { to: 'tear-loose', text: ['The stone has heard better offers. It keeps the sisters and goes on drinking.'] } },
+      // Wren's way: a scout's eye finds the weak line for you.
+      { id: 'wren', label: '[Wren] Let Wren find the stone\'s weak seam', hint: 'She has found the weak spot in every wall on this mountain. Hit where she points.',
+        skill: 'investigation', dc: 10, requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true,
+        success: { to: 'sisters-battle', effects: LOOSE, text: ['Wren walks round the stone twice, slowly, the way she walks a pass. Then she lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out, smoking and furious.'] },
+        failure: { to: 'tear-loose', text: ['Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.'] } },
       { id: 'seam', label: 'Find where the stone is weakest', hint: 'Look for the seam the song leaks out of, and hit it hard.',
-        skill: 'investigation', dc: 14,
+        skill: 'investigation', dc: 14, requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true,
         failure: { to: 'tear-loose', text: ['Every face of the stone looks the same to you, smooth and black and singing.'] } },
     ],
     success: { to: 'sisters-battle', effects: LOOSE, text: ['The stone gives a crack like a snapped bone and throws the sisters off. They land on their feet, smoking and furious. For the first time in longer than anyone can remember, the coven has to fight for itself.'] },

@@ -65,6 +65,10 @@ const INN_CHOICES = [
   { id: 'leave', label: 'Back to the street', to: 'town' },
 ];
 
+/** The serpents beaten, however the fight began. */
+const POOL_WON = { to: 'fen', text: ['The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever paid here, from old coins to a sealed flask of potion. The pool is plain water now.'],
+  effects: [{ kind: 'setFlag' as const, flag: 'pool-cleared' }, { kind: 'gold' as const, amount: 85 }, { kind: 'addItem' as const, itemId: 'potion-greater-healing', qty: 1 }] };
+
 const POOL_CHOICES = [
   { id: 'fight', label: 'Wade in and settle the rent', to: 'pool-fight' },
   { id: 'leave', label: 'Leave the pool its privacy', to: 'fen' },
@@ -462,7 +466,7 @@ const scenes: Record<string, Scene> = {
       { id: 'ranger', label: '[Ranger] Follow the reeds that only grow on firm ground', to: 'lights-skirted',
         requires: [{ kind: 'classInParty', classId: 'ranger' }], hideWhenBlocked: true },
       { id: 'skirt', label: '[Survival DC 13] Find the dry way round the pools', to: 'lights-skirted',
-        once: true, check: { skill: 'survival', dc: 13, failTo: 'lights-call' } },
+        once: true, check: { skill: 'survival', dc: 13, failTo: 'lights-sunk' } },
       { id: 'leave', label: 'Back away from the water', to: 'fen' },
     ],
   },
@@ -480,6 +484,12 @@ const scenes: Record<string, Scene> = {
     id: 'lights-fight', kind: 'battle', encounterId: 'wisp-bog', mapId: 'bog',
     intro: ['Two of the lights come in low and fast over the water, crackling with stolen life. A cold shape rises between them. It is a specter trailing fen-mist, its mouth open on a scream the water drank years ago.'],
     onWin: { to: 'lights-won', text: ['The last wisp winks out, and the water goes dark for good. Somewhere under it, the fen\'s drowned can rest at last.'] },
+  },
+  // Missed the firm ground: in the water before the lights even sing.
+  'lights-sunk': {
+    id: 'lights-sunk', kind: 'story', noBack: true, art: { emoji: '💡' },
+    text: ['You think you have found the firm ground. Three steps later it is not there. You go in to the waist, and the lights come gliding over the water before anyone can pull you out. Wren said it: miss the firm ground, and the lights find you.'],
+    next: [{ id: 'on', label: 'Fight your way back to the mud', to: 'lights-lured' }],
   },
   // The same fight, caught waist-deep after the lights' pull won.
   'lights-lured': {
@@ -534,7 +544,11 @@ const scenes: Record<string, Scene> = {
       'North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been paying something here for generations. Then the surface moves once, with no wind to move it, in a line longer than a boat.',
       'Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody\'s fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "So it\'s hungry. Good to know."',
     ],
-    next: POOL_CHOICES,
+    next: [
+      { id: 'wren', label: '[Wren] Let Wren draw them out on the far bank', to: 'pool-drawn',
+        requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true },
+      ...POOL_CHOICES,
+    ],
   },
   'pool-alone': {
     id: 'pool-alone', kind: 'story', art: { emoji: '🐍' },
@@ -547,8 +561,15 @@ const scenes: Record<string, Scene> = {
   'pool-fight': {
     id: 'pool-fight', kind: 'battle', encounterId: 'snake-pit', mapId: 'marsh',
     intro: ['The pool empties itself at you. Two constrictors the girth of roof-beams pour out of the water in oiled coils. They are fen-serpents, grown old and vast on a century of offerings. And lately, on whatever walks past unwary.'],
-    onWin: { to: 'fen', text: ['The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever paid here, from old coins to a sealed flask of potion. The pool is plain water now.'],
-      effects: [{ kind: 'setFlag', flag: 'pool-cleared' }, { kind: 'gold', amount: 85 }, { kind: 'addItem', itemId: 'potion-greater-healing', qty: 1 }] },
+    onWin: POOL_WON,
+  },
+  // Wren's fen-craft: rattle the reeds on the far bank, and the serpents rise
+  // there with their backs to you.
+  'pool-drawn': {
+    id: 'pool-drawn', kind: 'battle', encounterId: 'snake-pit', mapId: 'marsh',
+    surprise: 'enemies',
+    intro: ['Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Two constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.'],
+    onWin: POOL_WON,
   },
   'pool-done': {
     id: 'pool-done', kind: 'story', art: { emoji: '💧' },
@@ -806,9 +827,19 @@ const scenes: Record<string, Scene> = {
       // Warden does with a village. Talked round, he fights half-hearted and
       // lives; what to do with him is the company's next choice.
       { id: 'wall', label: '[Persuasion DC 14] Tell Marrow what the king\'s wall says', to: 'seal-doubt', once: true,
-        check: { skill: 'persuasion', dc: 14, failTo: 'seal-battle' } },
+        check: { skill: 'persuasion', dc: 14, failTo: 'seal-scorned', failEffects: [{ kind: 'setFlag', flag: 'kneelers-scorned' }] } },
       { id: 'fight', label: 'Interrupt the service', to: 'seal-battle' },
     ],
+  },
+  // Marrow not swayed, in front of his whole congregation: they saw the
+  // company fail, and they will not chant for it at the door later.
+  'seal-scorned': {
+    id: 'seal-scorned', kind: 'story', noBack: true, art: { imageId: 'loc-dungeon', emoji: '🕯️' },
+    text: [
+      'You tell him about the wall in the king\'s chamber, and the villages with a line through every name. Marrow hears you out without stopping his chisel. "Then the Warden chose Thornwick," he says. "He chose well."',
+      'Behind him the kneelers laugh, all together, and lift their black candles higher. They watched you try to turn their gravedigger, and they watched you fail. Whatever you say at this door now, they will not listen.',
+    ],
+    next: [{ id: 'on', label: 'Interrupt the service', to: 'seal-battle' }],
   },
   'seal-doubt': {
     id: 'seal-doubt', kind: 'battle', encounterId: 'cult-wavering', mapId: 'firepit',
@@ -865,8 +896,9 @@ const scenes: Record<string, Scene> = {
         skill: 'arcana', dc: 14,
         success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.'] },
         failure: { to: 'resealing', text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark. Whatever the old masons built, it will not take orders from you.'] } },
+      // Closed for good if Marrow already laughed off the company in front of them.
       { id: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door. Make them chant the right thing.',
-        skill: 'persuasion', dc: 14,
+        skill: 'persuasion', dc: 14, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }],
         success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden\'s own faithful sing him back to sleep.'] },
         failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
       { id: 'wizard', label: '[Wizard] Pick the lock the old masons cut', hint: 'You know a ward when you see one. This one is only half-broken.',

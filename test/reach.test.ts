@@ -183,3 +183,40 @@ describe('campaign bugs found by the fourth read-through', () => {
     expect(lost?.kind === 'rest' && lost.next).toBe('seal-doubt');
   });
 });
+
+describe('carried choices', () => {
+  const won: Scene = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] };
+  // Part one: the party picks x or y, never both, and carries the pick.
+  const partA: Module = { id: 'pa', title: 'A', blurb: '', start: 'a', sequel: 'pb', carries: ['x', 'y'], scenes: {
+    a: { id: 'a', kind: 'story', text: ['Pick.'], next: [
+      { id: 'x', label: 'X', to: 'won', effects: [{ kind: 'setFlag', flag: 'x' }] },
+      { id: 'y', label: 'Y', to: 'won', effects: [{ kind: 'setFlag', flag: 'y' }] },
+    ] },
+    won,
+  } };
+  // Part two: strands a party that carries both (no such party exists).
+  const partB = (next: Module['scenes'][string]): Module => ({ id: 'pb', title: 'B', blurb: '', start: 'b', scenes: { b: next, won } });
+  const both = partB({ id: 'b', kind: 'story', text: ['Go.'], next: [
+    { id: 'p', label: 'P', to: 'won', requires: [{ kind: 'notFlag', flag: 'pa:x' }] },
+    { id: 'q', label: 'Q', to: 'won', requires: [{ kind: 'notFlag', flag: 'pa:y' }] },
+  ] });
+
+  it('says what a victory hands on', () => {
+    expect(checkModuleReach(partA, [partA, both]).carried).toEqual([['pa:x'], ['pa:y']]);
+  });
+
+  it('searches only the mixes the chapter before can hand on, plus a cold start', () => {
+    expect(checkModuleReach(both, [partA, both]).errors).toEqual([]);
+    // Alone, every mix is possible, and the impossible one strands.
+    expect(checkModuleReach(both, [both]).errors.some((e) => e.includes('stranded') && e.includes('carried in: pa:x, pa:y'))).toBe(true);
+  });
+
+  it('always searches a cold start', () => {
+    const coldStrands = partB({ id: 'b', kind: 'story', text: ['Go.'], next: [
+      { id: 'p', label: 'P', to: 'won', requires: [{ kind: 'flag', flag: 'pa:x' }] },
+      { id: 'q', label: 'Q', to: 'won', requires: [{ kind: 'flag', flag: 'pa:y' }] },
+    ] });
+    const errors = checkModuleReach(coldStrands, [partA, coldStrands]).errors;
+    expect(errors.some((e) => e.startsWith('[b]') && e.includes('stranded') && !e.includes('carried in'))).toBe(true);
+  });
+});

@@ -123,3 +123,41 @@ describe('the shipped clocks', () => {
     expect(m.dawns!.find((d) => d.effects?.length)!.effects).toEqual([{ kind: 'setFlag', flag: 'calling-peaked' }]);
   });
 });
+
+describe('losing a day', () => {
+  it('moves the clock without a rest, and plays the morning it brings', () => {
+    const m = clocked(true);
+    m.scenes.lost = { id: 'lost', kind: 'story', text: ['Lost.'], noBack: true, next: [{ id: 'on', label: 'Trudge back', to: 'camp', effects: [{ kind: 'passDay' }, { kind: 'passDay' }] }] };
+    const camp = m.scenes.camp;
+    if (camp?.kind !== 'explore') throw new Error();
+    camp.map.nodes.push({ id: 'bog', x: 3, y: 3, label: 'Bog', icon: 'x', scene: 'lost' });
+    expect(validateModule(m)).toEqual([]);
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'lost');
+    s.campaign.characters[0]!.resources = { hp: 1 }; // hurt: losing a day does not heal
+    const hp = s.campaign.characters.map((c) => c.resources?.hp);
+    const ev = choose(s, m, 'on');
+    expect(dayOf(s)).toBe(3);
+    expect(s.flags['gate-shut']).toBe(true);
+    expect(ev).toContainEqual({ type: 'text', paragraphs: ['The gate is barred.'] });
+    expect(s.campaign.characters.map((c) => c.resources?.hp)).toEqual(hp);
+  });
+
+  it('the reach search knows a lost day can shut a door', () => {
+    const m = clocked(false);
+    const gate = m.scenes.gate;
+    if (gate?.kind !== 'story') throw new Error();
+    m.scenes.lost = { id: 'lost', kind: 'story', text: ['Lost.'], noBack: true, next: [{ id: 'on', label: 'Trudge back', to: 'camp', effects: [{ kind: 'passDay' }] }] };
+    const camp = m.scenes.camp;
+    if (camp?.kind !== 'explore') throw new Error();
+    delete camp.map.camp; // no sleeping here: only the lost day moves the clock
+    camp.map.nodes.push({ id: 'bog', x: 3, y: 3, label: 'Bog', icon: 'x', scene: 'lost' });
+    expect(checkModuleReach(m).errors.some((e) => e.includes('loses a day to the morning of day 3'))).toBe(true);
+  });
+
+  it('a dawn cannot lose a day', () => {
+    const m = clocked(true);
+    m.dawns = [{ day: 2, text: ['x'], effects: [{ kind: 'passDay' }] }];
+    expect(validateModule(m).some((e) => e.includes('cannot pass another'))).toBe(true);
+  });
+});

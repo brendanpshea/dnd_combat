@@ -223,6 +223,14 @@ possible), nor are spent `once` choices or a dungeon's doors (which the
 dungeon checks prove). A state packs at most 31 facts; a module that tracks
 more is reported, not passed.
 
+Carried choices (`hollow-road:saved-scout`) are not facts. They never change
+once a chapter starts, so the walk runs once for each mix the chapter can be
+handed: whatever a victory in the chapter before can carry, found by
+searching that chapter, plus a cold start with none. A pairing no party can
+bring (a scout both saved and left behind) is never searched, and carried
+choices cost no facts. A chapter pays instead for what it hands on: each of
+its `carries` that a later chapter reads is one more fact.
+
 ### The clock
 
 A chapter starts on day 1, and every long rest ends a day: a night at a
@@ -241,6 +249,10 @@ the flag like any other, so time presses through things a player can see: a
 door shut, a fight harder, a person gone. Give a warning before a deadline:
 an earlier dawn with text only, or a line in the scene the deadline is about.
 A module with dawns shows the day on screen; one without has no clock.
+
+A failure can cost time too: `{ kind: 'passDay' }` loses a day without a
+rest (a long detour, a trail gone cold), and plays that morning's dawn. With
+a deadline on the clock, a failed check is pressure, not just a fight.
 
 The reach search knows a night can pass wherever a party can sleep, so a
 deadline that strands a party is reported like any other dead end, with

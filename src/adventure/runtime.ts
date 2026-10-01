@@ -275,7 +275,7 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
 
 // --- Effects ----------------------------------------------------------------
 
-function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[]): void {
+function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[], module?: Module): void {
   const c = state.campaign;
   switch (eff.kind) {
     case 'setFlag': {
@@ -356,13 +356,18 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
         events.push({ type: 'companion', companionId: eff.companion, joined: false });
       }
       break;
+    case 'passDay':
+      // A day lost, not a night slept: the clock moves, nobody rests.
+      if (module) events.push(...endDay(state, module));
+      else state.day = dayOf(state) + 1;
+      break;
   }
   // A full heal reaches whoever is travelling with the party too.
   if (eff.kind === 'heal' && eff.amount === 'full') restCompanions(state, 'full');
 }
 
-function applyEffects(state: AdventureState, effects: Effect[] | undefined, events: AdventureEvent[]): void {
-  for (const eff of effects ?? []) applyEffect(state, eff, events);
+function applyEffects(state: AdventureState, effects: Effect[] | undefined, events: AdventureEvent[], module?: Module): void {
+  for (const eff of effects ?? []) applyEffect(state, eff, events, module);
 }
 
 // --- Navigation -------------------------------------------------------------
@@ -432,7 +437,7 @@ export function hubTitleOf(scene: Scene | undefined): string | null {
 function applyOutcome(state: AdventureState, module: Module, outcome: Outcome): AdventureEvent[] {
   const events: AdventureEvent[] = [];
   if (outcome.text) events.push({ type: 'text', paragraphs: outcome.text });
-  applyEffects(state, outcome.effects, events);
+  applyEffects(state, outcome.effects, events, module);
   events.push(...enterScene(state, module, outcome.to));
   return events;
 }
@@ -548,7 +553,7 @@ export function tryApproach(
   // A `perApproach` failure: show this line's beat and stay — unless nothing
   // else is left to try, in which case the challenge fails for good.
   if (approach.failure?.text) events.push({ type: 'text', paragraphs: approach.failure.text });
-  applyEffects(state, approach.failure?.effects, events);
+  applyEffects(state, approach.failure?.effects, events, module);
   const anyLeft = legalApproaches(state, module).some((a) => !a.spent && !a.blocked);
   if (!anyLeft) events.push(...applyOutcome(state, module, scene.failure));
   return events;
@@ -648,7 +653,7 @@ export function choose(
   if (choice.once) state.consumedChoices.push(choiceKey(scene.id, choice.id));
 
   const events: AdventureEvent[] = [];
-  applyEffects(state, choice.effects, events);
+  applyEffects(state, choice.effects, events, module);
 
   if (choice.check) {
     const roller = choice.check.roller ?? 'best';
@@ -658,7 +663,7 @@ export function choose(
     if (success) {
       events.push(...enterScene(state, module, choice.to));
     } else {
-      applyEffects(state, choice.check.failEffects, events);
+      applyEffects(state, choice.check.failEffects, events, module);
       events.push(...enterScene(state, module, choice.check.failTo));
     }
     return events;
@@ -1397,7 +1402,7 @@ export function endDay(state: AdventureState, module: Module): AdventureEvent[] 
   for (const d of module.dawns ?? []) {
     if (d.day !== day) continue;
     events.push({ type: 'text', paragraphs: d.text });
-    applyEffects(state, d.effects, events);
+    applyEffects(state, d.effects, events, module);
   }
   return events;
 }
