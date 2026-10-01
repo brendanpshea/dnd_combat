@@ -82,6 +82,13 @@ const SB_CLAIMS = [
   { id: 'mira', label: 'Stand Mira\'s taproom a round (10 gold)', to: 'sb-claim-round',
     requires: [{ kind: 'gold' as const, atLeast: 10 }, { kind: 'notFlag' as const, flag: 'sb-round' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold' as const, amount: -10 }, { kind: 'setFlag' as const, flag: 'sb-round' }] },
+  // The good deeds from below, handed over in person, once each.
+  { id: 'grandfather', label: 'Lay the old reeve before Aldous', to: 'sb-claim-grandfather', once: true,
+    requires: [{ kind: 'flag' as const, flag: 'grandfather-home' }, { kind: 'notFlag' as const, flag: 'sb-grandfather' }], hideWhenBlocked: true,
+    effects: [{ kind: 'setFlag' as const, flag: 'sb-grandfather' }] },
+  { id: 'purses', label: 'Hand the drowned folk\'s purses to the fen-folk', to: 'sb-claim-purses', once: true,
+    requires: [{ kind: 'flag' as const, flag: 'drowned-gold-home' }, { kind: 'notFlag' as const, flag: 'sb-purses' }], hideWhenBlocked: true,
+    effects: [{ kind: 'setFlag' as const, flag: 'sb-purses' }] },
   // `won`: the one road to the victory ending, carried for the last chapter.
   { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue', effects: [{ kind: 'setFlag' as const, flag: 'won' }] },
 ];
@@ -222,11 +229,15 @@ const scenes: Record<string, Scene> = {
   'grave-study': {
     id: 'grave-study', kind: 'check', skill: 'medicine', dc: 12, art: { emoji: '🪦' },
     intro: ['The open graves wait for a steadier eye. The dead left in company — but bodies, even walking ones, tell their stories to anyone trained to listen.'],
-    success: { to: 'town', text: ['The story is in the turf. They didn\'t claw out in hunger. They *stepped* out in order, oldest graves first, called up in ranks. Whatever summons them has real authority. It is old enough to call the oldest first.'],
-      effects: [{ kind: 'setFlag', flag: 'graves-read' }, { kind: 'xp', amount: 30 },
+    // `graves-ranks`: the dead keep step, oldest first. Knowing it opens an
+    // easier way past the diggers in the Undercrypt. A failed read closes it.
+    success: { to: 'town', text: ['The story is in the turf. They didn\'t claw out in hunger. They *stepped* out in order, oldest graves first, called up in ranks. Whatever summons them has real authority. It is old enough to call the oldest first.',
+      'If you ever have to walk among them, you know how now. Keep the step, and keep to the back of the oldest rank.'],
+      effects: [{ kind: 'setFlag', flag: 'graves-read' }, { kind: 'setFlag', flag: 'graves-ranks' }, { kind: 'xp', amount: 30 },
         { kind: 'journal', entry: { id: 'c-muster', kind: 'clue', title: 'The Dead Marched in Ranks',
-          body: 'The dead left in neat rows, oldest graves first. They were not hungry. They were obeying orders. Something down there has the right to command graves, and it is using it.' } }] },
-    failure: { to: 'town', text: ['You get mud, turf, and the underside of a churchyard. Whatever the graves have to say, they aren\'t saying it to you. But the trails still point one way, into the fen, and that will have to do.'],
+          body: 'The dead left in neat rows, oldest graves first. They were not hungry. They were obeying orders. Something down there has the right to command graves, and it is using it. If you must pass among them, fall in at the back of the oldest rank.' } }] },
+    failure: { to: 'town', text: ['You get mud, turf, and the underside of a churchyard. You trample the edges of three graves, and whatever they had to say is gone under your boots. You will never know how the dead left, or in what order.',
+      'The trails still point one way, into the fen. Whatever order the dead keep, you will have to learn it down there, among them.'],
       effects: [{ kind: 'setFlag', flag: 'graves-read' }] },
   },
   'graves-done': {
@@ -434,10 +445,14 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'fight', label: 'Snuff them out', to: 'lights-call' },
-      { id: 'druid', label: '[Druid] Read the fen like a map, and walk round', to: 'lights-skirted',
-        requires: [{ kind: 'classInParty', classId: 'druid' }], hideWhenBlocked: true },
-      { id: 'ranger', label: '[Ranger] Follow the reeds that only grow on firm ground', to: 'lights-skirted',
-        requires: [{ kind: 'classInParty', classId: 'ranger' }], hideWhenBlocked: true },
+      // A druid or a ranger reads the firm ground easier, but it is still a
+      // roll, and a miss puts them in the water like anyone else.
+      { id: 'druid', label: '[Druid · Nature DC 10] Read the fen like a map, and walk round', to: 'lights-skirted',
+        requires: [{ kind: 'classInParty', classId: 'druid' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'nature', dc: 10, failTo: 'lights-sunk' } },
+      { id: 'ranger', label: '[Ranger · Survival DC 10] Follow the reeds that only grow on firm ground', to: 'lights-skirted',
+        requires: [{ kind: 'classInParty', classId: 'ranger' }], hideWhenBlocked: true,
+        once: true, check: { skill: 'survival', dc: 10, failTo: 'lights-sunk' } },
       { id: 'skirt', label: '[Survival DC 13] Find the dry way round the pools', to: 'lights-skirted',
         once: true, check: { skill: 'survival', dc: 13, failTo: 'lights-sunk' } },
       { id: 'leave', label: 'Back away from the water', to: 'fen' },
@@ -480,7 +495,7 @@ const scenes: Record<string, Scene> = {
       'She looks at the purses, then at you. "Those belonged to somebody\'s husband, somebody\'s gran. The families could use them. So could you. Your call."',
     ],
     next: [
-      { id: 'keep', label: 'Keep the purses. The living have bills too', to: 'fen',
+      { id: 'keep', label: 'Keep the purses. The living have bills too', to: 'lights-kept',
         effects: [{ kind: 'gold', amount: 55 }, { kind: 'setFlag', flag: 'lights-cleared' }, WORM_CLUE] },
       { id: 'home', label: 'Carry the purses home for the families', to: 'fen',
         effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'drowned-gold-home' }, WORM_CLUE,
@@ -488,6 +503,12 @@ const scenes: Record<string, Scene> = {
             body: 'You took the purses of the people the corpse-lights drowned. You mean to hand them to Reeve Aldous for their families.' } }] },
     ],
     noBack: true,
+  },
+  // The purses kept: Wren has one thing to say about it, and says it once.
+  'lights-kept': {
+    id: 'lights-kept', kind: 'story', noBack: true, art: { emoji: '💰' },
+    text: ['Wren watches you fill your pockets with the drowned folk\'s coin. She says nothing for a while. "Somebody\'s gran," she says at last, and walks on ahead.'],
+    next: [{ id: 'on', label: 'Follow her into the fen', to: 'fen' }],
   },
   // Round the pools on firm ground: the lights stay lit, and the purses stay
   // under the water, but nobody has to wade in.
@@ -707,17 +728,22 @@ const scenes: Record<string, Scene> = {
         skill: 'religion', dc: 13,
         success: { to: 'diggers-chain', text: ['You speak the old words, slow and plain. ' + LITURGY, 'One by one, the picks go quiet. The dead lie down in the cut in rows, as if they had only ever been asleep.'] },
         failure: { to: 'diggers', text: ['The words come out in the wrong order. A few of the dead pause. Then the call from below drowns you out, and the picks start again.'] } },
+      // The churchyard read (`graves-ranks`): you know the order they keep.
+      { id: 'step-ranks', label: 'Fall in at the back of the oldest rank', hint: 'The churchyard showed you their order: oldest first, in ranks. Keep it, and you are one more of them.',
+        skill: 'deception', dc: 10, requires: [{ kind: 'flag', flag: 'graves-ranks' }], hideWhenBlocked: true,
+        success: { to: 'diggers-chain', text: ['You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing, in time with the rest. The dead make room for you the way soldiers make room in a line. You walk out the far end, still swinging.'] },
+        failure: { to: 'diggers', text: ['You fall in a beat behind the rank, and the rank notices. The nearest digger stops and turns its empty face toward you. Then, slowly, it goes back to work.'] } },
       { id: 'step', label: 'Pick up a tool and fall into step', hint: 'Shuffle, swing, and look as dead as they do.',
-        skill: 'deception', dc: 13,
+        skill: 'deception', dc: 13, requires: [{ kind: 'notFlag', flag: 'graves-ranks' }], hideWhenBlocked: true,
         success: { to: 'diggers-chain', text: ['You take a pick from the pile and shuffle in among them. Swing, step, swing. Nobody looks twice at one more digger. You walk out the far end, still swinging.'] },
         failure: { to: 'diggers', text: ['You swing too fast. The living always do. The nearest digger stops and turns its empty face toward you, then slowly goes back to work.'] } },
       { id: 'cleric', label: '[Cleric] Raise your holy symbol and turn them aside', hint: 'The dead give way to the gods, when the gods are asked properly.',
-        skill: 'religion', dc: 8,
+        skill: 'religion', dc: 10,
         requires: [{ kind: 'classInParty', classId: 'cleric' }], hideWhenBlocked: true,
         success: { to: 'diggers-chain', text: ['You hold up your holy symbol, and a light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog. They press to the walls and leave you a road.'] },
         failure: { to: 'diggers', text: ['The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.'] } },
       { id: 'paladin', label: '[Paladin] Stand in their road and speak your oath', hint: 'An oath is a promise. The dead remember promises.',
-        skill: 'religion', dc: 8,
+        skill: 'religion', dc: 10,
         requires: [{ kind: 'classInParty', classId: 'paladin' }], hideWhenBlocked: true,
         success: { to: 'diggers-chain', text: ['You plant your feet and speak your oath aloud. The nearest dead stop digging. They step aside one by one, the way a crowd makes room for a funeral.'] },
         failure: { to: 'diggers', text: ['Your oath rings off the stone, and the dead do not hear it. The call from below is louder.'] } },
@@ -877,7 +903,7 @@ const scenes: Record<string, Scene> = {
         success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden\'s own faithful sing him back to sleep.'] },
         failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
       { id: 'wizard', label: '[Wizard] Pick the lock the old masons cut', hint: 'You know a ward when you see one. This one is only half-broken.',
-        skill: 'arcana', dc: 10,
+        skill: 'arcana', dc: 11,
         requires: [{ kind: 'classInParty', classId: 'wizard' }], hideWhenBlocked: true,
         success: { to: 'seal-clean', text: ['You have read wards like this in dusty books. This one is a lock, and the rites are its key. You find where the fanatic broke it, and mend each letter with the line that belongs to it. The lead glows, and sets hard.'] },
         failure: { to: 'resealing', text: ['The ward is older than any book you have read. You lose your place in it, and a letter spits hot lead at your hand.'] } },
@@ -950,6 +976,22 @@ const scenes: Record<string, Scene> = {
   'sb-claim-round': {
     id: 'sb-claim-round', kind: 'story', art: { imageId: 'loc-tavern', emoji: '🍺' },
     text: ['The taproom drinks to the company, then to the dead, then to Mira, who pretends not to hear it.'],
+    next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
+  },
+  'sb-claim-grandfather': {
+    id: 'sb-claim-grandfather', kind: 'story', art: { imageId: 'loc-town', emoji: '⛓️' },
+    text: [
+      'You carry the old man into the reeve\'s hall, still wrapped in your cloak, and lay him on the long table among the ledgers. Aldous lifts the edge of the cloak and looks for a long time.',
+      'Then he takes off his own chain of office and lays it beside his grandfather\'s. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window. He does not turn back while you are in the room.',
+    ],
+    next: [{ id: 'ok', label: 'Leave him with his grandfather', to: 'sb-aftermath-hub' }], noBack: true,
+  },
+  'sb-claim-purses': {
+    id: 'sb-claim-purses', kind: 'story', art: { imageId: 'loc-town', emoji: '💰' },
+    text: [
+      'The fen-folk have come in from the far pools for the reburials. You hand over the purses one by one, and they pass them along, name by name. Nobody counts the coins.',
+      'One widow opens hers and finds a carved bone button among the coins. She closes it again. "He always kept that," she says, and holds the purse against her chest. Wren tucks the last purse into her coat. It belongs to a widow at the far edge of the fen, and Wren says she will walk it out there herself.',
+    ],
     next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
   },
   'sb-aftermath-hub': {

@@ -10,6 +10,9 @@ import type { Module, Scene } from '../src/adventure/types.js';
 
 const byId = (id: string) => MODULES.find((m) => m.id === id)!;
 const clone = (m: Module): Module => JSON.parse(JSON.stringify(m)) as Module;
+/** A whole chapter takes a second or two to search, longer under a loaded
+ *  test run; the default 5 s is too close. */
+const SEARCH_TIMEOUT = 30_000;
 
 describe('shipped modules', () => {
   for (const m of MODULES) {
@@ -18,7 +21,7 @@ describe('shipped modules', () => {
       expect(r.skipped).toBeUndefined();
       expect(r.errors).toEqual([]);
       expect(r.states).toBeGreaterThan(0);
-    });
+    }, SEARCH_TIMEOUT);
   }
 });
 
@@ -28,7 +31,7 @@ describe('what it catches', () => {
     delete (m.scenes.aftermath as { noBack?: boolean }).noBack;
     const errors = checkModuleReach(m).errors;
     expect(errors.some((e) => e.includes('stranded') && e.includes('chief-dead'))).toBe(true);
-  });
+  }, SEARCH_TIMEOUT);
 
   it('Wyrmcalling: losing the opening fight and never being briefed', () => {
     const m = clone(byId('wyrmcalling'));
@@ -40,7 +43,7 @@ describe('what it catches', () => {
     const hit = errors.find((e) => e.includes('stranded'));
     expect(hit).toBeDefined();
     expect(hit).toContain('loses the fight'); // the way there is spelled out
-  });
+  }, SEARCH_TIMEOUT);
 
   const tiny = (scenes: Record<string, Scene>): Module => ({ id: 'tiny', title: 'T', blurb: '', start: 'a', scenes });
   const won: Scene = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] };

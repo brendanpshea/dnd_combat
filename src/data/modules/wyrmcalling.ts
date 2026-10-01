@@ -1314,9 +1314,10 @@ const scenes: Record<string, Scene> = {
         skill: 'religion', dc: 8, requires: [{ kind: 'companion', companion: 'halden' }], hideWhenBlocked: true,
         success: { to: 'sisters-battle', effects: LOOSE, text: ['Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters stagger free, smoking and furious.'] },
         failure: { to: 'tear-loose', text: ['Halden gets halfway. Then the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It\'s too loud here."'] } },
-      // A wizard can read the old letters cut into the stone.
+      // A wizard can read the old letters cut into the stone: easier than
+      // breaking the song (Arcana DC 15), but still a real roll at the climax.
       { id: 'letters', label: 'Read the old letters cut into the stone', hint: 'Your wizard knows these marks. Find the line that holds the sisters, and scratch it out.',
-        skill: 'arcana', dc: 11,
+        skill: 'arcana', dc: 12,
         requires: [{ kind: 'classInParty', classId: 'wizard' }], hideWhenBlocked: true,
         success: { to: 'sisters-battle', effects: LOOSE, text: ['Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.'] },
         failure: { to: 'tear-loose', text: ['The letters crawl and shift under your wizard\'s eyes. They will not hold still long enough to read.'] } },
