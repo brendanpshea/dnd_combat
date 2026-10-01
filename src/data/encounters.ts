@@ -156,6 +156,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'elemental-cataclysm', name: 'Elemental Cataclysm', suggestedLevel: 6,
     members: ['fire-elemental', 'earth-elemental'],
   },
+  // The Wyrmcalling's finale when the party tears the sisters out of the
+  // stone: they fight in person, with the one elemental the stone got out.
+  'sisters-at-stone': {
+    id: 'sisters-at-stone', name: 'The Sisters at the Stone', suggestedLevel: 5,
+    members: ['green-hag', 'green-hag', 'fire-elemental'],
+  },
   'sprite-glade': {
     id: 'sprite-glade', name: 'Sprite Glade', suggestedLevel: 1,
     members: ['sprite', 'sprite', 'sprite'],

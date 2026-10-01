@@ -50,7 +50,25 @@ export interface ReachReport {
 
 const isHubScene = (s: Scene | undefined) => s?.kind === 'explore' || s?.kind === 'dungeon';
 
+/**
+ * Results by the module's exact contents. A module is plain data, so its JSON
+ * is its identity: an edited module is a different key, never a stale hit.
+ * The search takes a couple of seconds on the largest chapter, and the
+ * validator runs on the same unchanged modules many times over.
+ */
+const cache = new Map<string, ReachReport>();
+
 export function checkModuleReach(module: Module): ReachReport {
+  const key = JSON.stringify(module);
+  const hit = cache.get(key);
+  if (hit) return { ...hit, errors: [...hit.errors] };
+  const report = searchModule(module);
+  if (cache.size >= 64) cache.clear(); // generated delves would otherwise pile up
+  cache.set(key, report);
+  return { ...report, errors: [...report.errors] };
+}
+
+function searchModule(module: Module): ReachReport {
   const ids = Object.keys(module.scenes);
   const index = new Map(ids.map((id, i) => [id, i]));
   const hubs = ids.filter((id) => isHubScene(module.scenes[id]));

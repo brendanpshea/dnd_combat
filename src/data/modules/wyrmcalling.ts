@@ -9,28 +9,32 @@
  * Shape: a war-camp hub (the valley raises its army at last) → the high
  * hills, an open traversal where the company PICKS ITS BATTLES — every den
  * raided and beast put down is one monster fewer when the Calling peaks — →
- * the stone itself. The mid fights are genuinely optional; the dens have a
- * mechanical payoff too (clear all three and the chromatic clutch never
- * masses at the gate).
+ * the stone itself, where the party answers the sisters and tries to tear them
+ * out of the rock: fight them in person (`sisters-at-stone`), or, if every
+ * approach fails, the cataclysm the stone spends them on. The mid fights are
+ * genuinely optional; the dens have a mechanical payoff too (clear all three
+ * and the chromatic clutch never masses at the gate).
  *
  * XP budget (trilogy-plan.md): required spine ≈ 9,450 (coven 750, the
  * flooded seam 1,800, the oni's hold 1,650, the giants' hall 1,650,
- * cataclysm finale 3,600); optional dens/beasts add up to ~6,000 more. A
- * continuing company (~3,050 XP from Part 2) that raids most of the hills
- * passes L5's 6,500 honestly; `xpToLevel: 5` on stepping up to the finale is the floor
+ * cataclysm finale 3,600, or 3,200 for the sisters in person); optional
+ * dens/beasts add up to ~6,000 more. A continuing company (~3,050 XP from
+ * Part 2) that raids most of the hills passes L5's 6,500 honestly; `xpToLevel: 5` on stepping up to the finale is the floor
  * for a fight-shy run (or one that buys its way past the ogre-mage). Cold
  * starts are floored to L4 by the opening choice.
  *
  * CARRIED CHOICES: Vex's history reads `hollow-road:vex-turned` (he took the
  * party's offer in Part 1); Wren's familiarity reads `hollow-road:saved-scout`
  * or `sunken-barrows:met-wren`. Each has a version for a cold start, where
- * the party knows nobody.
+ * the party knows nobody. A saved Halden (`sunken-barrows:halden-saved`) opens
+ * an easier way to tear the sisters loose. The one ending's slides read these
+ * and the rest (`hollow-road:chief-dead`, `sunken-barrows:seal-cracked`).
  *
  * MONSTER VARIETY: the top shelf, none of it fielded by Parts 1–2 — the hag
  * coven, harpies by night, a talking manticore, boar stampedes, three
  * chromatic wyrmlings (or their massed clutch), an ogre-mage's warband, an
- * ettin's hall, a gorgon, a water elemental, and the fire-and-earth
- * cataclysm at the stone.
+ * ettin's hall, a gorgon, a water elemental, and at the stone either the
+ * sisters themselves with a fire elemental, or the fire-and-earth cataclysm.
  *
  * VOICE: plain, concrete, Zelda-register. Every image resolves inside the
  * passage it appears in (no riddle-similes), a character speaks the stakes
@@ -77,16 +81,8 @@ const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warc
     { kind: 'journal', entry: { id: 'c-scoutnotes', kind: 'clue', title: 'Wren\'s Map-Notes',
       body: 'Wren warned that the manticore on the toll-cliff talks, and what it wants is you. The boar-runs stampede twice a day. A gorgon made the statues in the valley past the middle pass. And the streams themselves are walking uphill.' } }] }];
 
-/** Out of the aftermath to the right ending for Vex. */
-const TO_EPILOGUE: Choice[] = [
-  { id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue-turned',
-    requires: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }], hideWhenBlocked: true },
-  // A company that broke the Ashfang, whatever it did about Vex.
-  { id: 'done-veteran', label: 'Let the valley celebrate', to: 'wc-epilogue-veteran',
-    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }, { kind: 'flag', flag: 'hollow-road:chief-dead' }], hideWhenBlocked: true },
-  { id: 'done-new', label: 'Let the valley celebrate', to: 'wc-epilogue',
-    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }, { kind: 'notFlag', flag: 'hollow-road:chief-dead' }], hideWhenBlocked: true },
-];
+/** Out of the aftermath to the one ending; its slides read the run back. */
+const TO_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue' }];
 
 /**
  * The brood on the rim is exactly the wyrmlings whose dens were left
@@ -119,6 +115,28 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
       effects: [{ kind: 'setFlag', flag: 'clutch-beaten' }] },
   } satisfies Scene];
 }));
+
+/**
+ * The party's answer to the sisters at the stone. Each sets a flag the ending
+ * reads; none is the right one, and the sisters have a reply for each. The
+ * level floor rides on every answer, so it lands before whichever fight comes.
+ * Only the ending reads these flags, so they cost the reachability search nothing.
+ */
+const REPLIES = [
+  { id: 'defiant', flag: 'answered-defiant', to: 'answer-defiant',
+    label: '"She fed on this valley for a hundred years. We owe you nothing."' },
+  { id: 'rueful', flag: 'answered-rueful', to: 'answer-rueful',
+    label: '"Killing her broke the vigil. We know, and we are sorry for that part."' },
+  { id: 'cold', flag: 'answered-cold', to: 'answer-cold',
+    label: 'Say nothing. Draw your blade.' },
+] as const;
+const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, to: r.to,
+  effects: [{ kind: 'xpToLevel', level: 5 },
+    // A company that falls back and climbs again answers again; the last
+    // answer is the one the valley remembers.
+    ...REPLIES.filter((o) => o.id !== r.id).map((o) => ({ kind: 'clearFlag' as const, flag: o.flag })),
+    { kind: 'setFlag', flag: r.flag }] }));
+const TO_STONE: Choice[] = [{ id: 'on', label: 'Tear them out of the stone', to: 'tear-loose' }];
 
 const MIRA_TOAST = 'Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She pours the first round on the house, and the second before anybody asks. With the third comes her observation that heroes drink no more carefully than anyone else. The reeve orders a plaque made. Wren corrects the geography on it.';
 
@@ -443,7 +461,7 @@ const scenes: Record<string, Scene> = {
     next: [
       { id: 'pay', label: 'Pay the toll (150 gold)', to: 'onihold-paid',
         requires: [{ kind: 'gold', atLeast: 150 }],
-        effects: [{ kind: 'gold', amount: -150 }, { kind: 'setFlag', flag: 'oni-cleared' }] },
+        effects: [{ kind: 'gold', amount: -150 }, { kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-paid' }] },
       { id: 'fight', label: 'Try them', to: 'onihold-fight' },
     ],
   },
@@ -560,9 +578,64 @@ const scenes: Record<string, Scene> = {
       'They are not commanding the stone. They are pouring themselves into it. Their hair has turned to river-weed and wire. Their faces are burning down like candles. They are spending two long lives to keep the Calling singing.',
       '"Sister-killers," they say together, without turning around. "You cut her down in the chief\'s hall. So we woke the stone, and we called the hills down on everyone you saved." The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far. Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
     ],
-    // The level floor lands before the hardest fight, not after it.
-    next: [{ id: 'fight', label: 'Break the stone, and the sisters with it', to: 'calling-battle',
-      effects: [{ kind: 'xpToLevel', level: 5 }] }],
+    // The level floor lands before the hardest fight, not after it: every
+    // answer carries it (see REPLIES).
+    next: replyChoices,
+  },
+  'answer-defiant': {
+    id: 'answer-defiant', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['The sisters laugh together, a sound like wind in dry reeds. "A hundred years," one says. "And in all those years, the dead never once walked. Ask your barrows what your hundred years bought you." Their hands sink deeper into the stone, and the burning ground creeps toward your boots.'],
+    next: TO_STONE, noBack: true,
+  },
+  'answer-rueful': {
+    id: 'answer-rueful', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['For one breath, the song falters. A sister turns her burning face toward you. "Sorry," she says slowly, as if nobody has ever said the word to her before. "Sorry does not put the dead back to sleep. But we heard it." She turns back to the stone. "Now hold still."'],
+    next: TO_STONE, noBack: true,
+  },
+  'answer-cold': {
+    id: 'answer-cold', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['You say nothing. The ring of your blade leaving its sheath is your whole answer. The sisters go quiet, and for the first time they look a little afraid. "Then come and pull us out," they say together. "If you can."'],
+    next: TO_STONE, noBack: true,
+  },
+  // Face them, or let the stone spend them: a success means the sisters fight
+  // in person (`sisters-battle`); every approach failing means the stone
+  // throws its whole cataclysm at you instead (`calling-battle`).
+  'tear-loose': {
+    id: 'tear-loose', kind: 'challenge', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    intro: [
+      'The sisters have sunk their hands to the wrist in the black rock. The stone is drinking them down. A crack of fire opens across the floor of the bowl, and something huge is climbing up out of it.',
+      'All their power is in the stone now. Pull them out, and they must fight you with their own two hands. Leave them there, and the stone will spend every last drop of them at once.',
+    ],
+    retry: 'perApproach',
+    approaches: [
+      { id: 'drag', label: 'Drag their hands out of the rock', hint: 'Grab a wrist each and pull, while the stone pulls back.',
+        skill: 'athletics', dc: 15,
+        failure: { to: 'tear-loose', text: ['The rock holds them fast. You let go with burned palms, and the stone keeps drinking.'] } },
+      { id: 'song', label: 'Break the song', hint: 'Sing a wrong note into the Calling and knock it off its beat.',
+        skill: 'arcana', dc: 15,
+        failure: { to: 'tear-loose', text: ['Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.'] } },
+      // Halden lived through the barrows, and he taught the company his rites.
+      { id: 'rites', label: 'Say Halden\'s rites over the stone', hint: 'Brother Halden taught you the old words for shutting a door.',
+        skill: 'religion', dc: 11,
+        requires: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }], hideWhenBlocked: true,
+        success: { to: 'sisters-battle', text: ['Halden\'s old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free, smoking and furious.'] },
+        failure: { to: 'tear-loose', text: ['You lose the words halfway through. Halden always warned you to say them whole.'] } },
+      { id: 'seam', label: 'Find where the stone is weakest', hint: 'Look for the seam the song leaks out of, and hit it hard.',
+        skill: 'investigation', dc: 14,
+        failure: { to: 'tear-loose', text: ['Every face of the stone looks the same to you, smooth and black and singing.'] } },
+    ],
+    success: { to: 'sisters-battle', text: ['The stone gives a crack like a snapped bone and throws the sisters off. They land on their feet, smoking and furious. For the first time in a hundred years, the coven has to fight for itself.'] },
+    failure: { to: 'calling-battle', text: ['Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.'] },
+    noBack: true,
+  },
+  // Torn loose: the sisters fall fighting, beside the one elemental the stone
+  // still had the strength to raise.
+  'sisters-battle': {
+    id: 'sisters-battle', kind: 'battle', encounterId: 'sisters-at-stone', mapId: 'firepit',
+    loot: { bonusTier: 'rare' },
+    intro: ['The sisters come at you with green claws and burning faces. Behind them, the crack in the floor gives up the last thing the stone can pay for. A pillar of living fire climbs out and turns toward you. This time the sisters have to fight for themselves.'],
+    onWin: { to: 'calling-won', text: ['The first sister falls clawing at your boots. The second falls calling her dead sister\'s name, and then cursing yours. Both of them crumble into drifts of dry reeds. The fire gutters out of the air. The black fang has nobody left to spend, so it cracks from top to bottom and falls silent. The Calling ends with the huge, ringing quiet of a held note finally let go.'],
+      effects: [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
   },
   'calling-battle': {
     id: 'calling-battle', kind: 'battle', encounterId: 'elemental-cataclysm', mapId: 'firepit',
@@ -574,7 +647,7 @@ const scenes: Record<string, Scene> = {
   'calling-won': {
     id: 'calling-won', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌅' },
     text: [
-      'It is over. The **Calling Stone** lies cracked and silent, and the sisters spent themselves along with it. Where they stood, a scatter of dry reeds lifts on the wind. The revenge they climbed all this way to take burned away in the taking. Your company has the mountain to itself.',
+      'It is over. The **Calling Stone** lies cracked and silent, and the sisters are gone with it. Where they fell, a scatter of dry reeds lifts on the wind. The revenge they climbed all this way to take burned away in the taking. Your company has the mountain to itself.',
       'Below you, pass by pass, the hills go still. The song that pulled monsters toward the valley has stopped, so the monsters stop with it. Whatever was walking toward the stone lies down where it stands, and the wingbeats fade off the wind. The valley is safe. Far down the slope, faint and disbelieving, the war-camp starts to cheer.',
     ],
     next: [{ id: 'down', label: 'Come down the mountain', to: 'wc-aftermath' }],
@@ -606,31 +679,49 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'up', label: 'Back on your feet', to: 'warcamp' }], noBack: true,
   },
-  // Vex refused the party in Part 1, or this is a cold start.
+  // The one ending: its text holds for every company, and the slides read
+  // the run back. Each slide stands alone, so any mix of them reads in order.
   'wc-epilogue': {
     id: 'wc-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
       'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one all end on the same mountain, with your company standing on it. You silenced the Calling, and the coven\'s long debt burned away to reeds on a mountain wind.',
       MIRA_TOAST,
-      'Vex once walked away from a losing side and gave himself up. Tonight he stands on the winning one, and he still looks surprised about it. He raises a glass to the four of you. "To the company," he says. "Paid in full."',
+      'Vex raises a glass to the four of you. "To the company," he says. "Paid in full."',
     ],
-  },
-  // The company broke the Ashfang in Part 1, but Vex never took its offer.
-  'wc-epilogue-veteran': {
-    id: 'wc-epilogue-veteran', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
-    text: [
-      'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The same four names run through all three stories like a bright thread. You broke the Ashfang. You sealed the Undercrypt. You silenced the Calling, and the coven\'s long debt burned away to reeds on a mountain wind.',
-      MIRA_TOAST,
-      'Vex once walked away from a losing side and gave himself up. Tonight he stands on the winning one, and he still looks surprised about it. He raises a glass to the four of you. "To the company," he says. "Paid in full."',
-    ],
-  },
-  // Vex took the party's offer in Part 1: a veteran company, three for three.
-  'wc-epilogue-turned': {
-    id: 'wc-epilogue-turned', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
-    text: [
-      'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The same four names run through all three stories like a bright thread. You broke the Ashfang. You sealed the Undercrypt. You silenced the Calling, and the coven\'s long debt burned away to reeds on a mountain wind.',
-      MIRA_TOAST,
-      'Vex has seen every side of this valley\'s troubles, and he finally picked the right one. He raises a glass to the four of you. "To the company," he says. "Paid in full."',
+    slides: [
+      { if: [{ kind: 'flag', flag: 'hollow-road:chief-dead' }],
+        text: 'The same four names run through all three songs. You broke the Ashfang. You sealed the Undercrypt.' },
+      { if: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
+        text: 'Vex has seen every side of the valley\'s troubles, and he finally picked the right one.' },
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }],
+        text: 'Vex once walked away from the losing side, and he still looks surprised to be on the winning one.' },
+      { if: [{ kind: 'flag', flag: 'oni-paid' }],
+        text: 'Far past the mountain, an ogre-mage\'s warband marches on someone else\'s valley, and your gold paid for its boots.' },
+      { if: [{ kind: 'notFlag', flag: 'oni-paid' }],
+        text: 'The fort at the middle pass becomes Vex\'s lookout, and no warband holds that pass against the valley again.' },
+      { if: [{ kind: 'flag', flag: 'clutch-skipped' }],
+        text: 'No dragon flies over the high pastures again, because you burned out every den on the way up.' },
+      { if: [{ kind: 'flag', flag: 'clutch-beaten' }],
+        text: 'The wyrmlings you left in their dens died on the rim instead, and the shepherds still give those dens a wide berth.' },
+      { if: [{ kind: 'flag', flag: 'answered-defiant' }],
+        text: 'The valley still says what you told the sisters: she fed on us for a hundred years, so we owe her nothing.' },
+      { if: [{ kind: 'flag', flag: 'answered-rueful' }],
+        text: 'Some nights you still think about the sisters, and about the vigil you ended without knowing it was one.' },
+      { if: [{ kind: 'flag', flag: 'answered-cold' }],
+        text: 'Nobody ever learns what you said to the sisters at the stone, because you said nothing at all.' },
+      { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
+        text: 'Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.' },
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'flag', flag: 'sunken-barrows:met-wren' }],
+        text: 'Wren tells every new scout how she held the gate of the Undercrypt, and how you walked back out.' },
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'notFlag', flag: 'sunken-barrows:met-wren' }],
+        text: 'Wren pins her map of the passes over her bed, arrowheads and all, with your four names inked along the top.' },
+      { if: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }],
+        text: 'Brother Halden climbs to the bowl each spring to bless the broken stone, and then he walks home to his little chapel.' },
+      { if: [{ kind: 'flag', flag: 'sunken-barrows:seal-cracked' }],
+        text: 'Deep under the fen, the Undercrypt\'s door still holds, though on still nights the fen-folk swear they hear something knock.' },
+      // A company that played Part 2 always met Wren there; a clean seal.
+      { if: [{ kind: 'flag', flag: 'sunken-barrows:met-wren' }, { kind: 'notFlag', flag: 'sunken-barrows:seal-cracked' }],
+        text: 'Deep under the fen, the Undercrypt\'s door stays shut and silent, just as you left it.' },
     ],
   },
 };
