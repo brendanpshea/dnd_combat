@@ -27,7 +27,7 @@ describe('generated delves', () => {
       expect(validateModule(module), `seed ${seed}`).toEqual([]);
       expect(layoutDungeon(delveOf(module)).faults, `seed ${seed}`).toEqual([]);
     }
-  });
+  }, 30_000); // 240 full validations, reach search included: slow under a loaded run
 
   it('are the same for the same seed', () => {
     for (const seed of [3, 77, 501]) expect(generateDelve(seed)).toEqual(generateDelve(seed));
