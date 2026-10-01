@@ -18,6 +18,13 @@ import { serializeAdventure, parseAdventure, savedModuleId } from '../../src/adv
 import { levelForXp } from '../../src/campaign/campaign.js';
 
 export const SLOT_COUNT = 3;
+/** Generated delves (dev only) keep to a slot of their own, past the
+ *  companies, so trying one can never overwrite a story save. */
+export const DELVE_SLOT = SLOT_COUNT;
+/** The slot a module's run lives in: the delve slot, or the active company. */
+export function slotFor(moduleId: string): number {
+  return moduleId.startsWith('delve-') ? DELVE_SLOT : activeSlot();
+}
 const LEGACY_KEY = 'dnd-adventure-save';
 const ACTIVE_KEY = 'dnd-adventure-active-slot';
 const runKey = (slot: number) => `dnd-adventure-slot-${slot}`;
@@ -90,7 +97,7 @@ export function slotMeta(slot: number): SlotMeta | undefined {
   return moduleId ? { moduleId, level: 0, names: [], savedAt: 0 } : undefined;
 }
 
-export function saveAdventureWeb(state: AdventureState, slot = activeSlot()): void {
+export function saveAdventureWeb(state: AdventureState, slot = slotFor(state.moduleId)): void {
   set(runKey(slot), serializeAdventure(state));
   writeMeta(slot, state);
 }
@@ -118,17 +125,17 @@ export function deleteAdventureWeb(slot = activeSlot()): void {
 export function deleteAllAdventureSaves(): void {
   remove(LEGACY_KEY);
   remove(ACTIVE_KEY);
-  for (let s = 0; s < SLOT_COUNT; s++) deleteAdventureWeb(s);
+  for (let s = 0; s <= DELVE_SLOT; s++) deleteAdventureWeb(s);
 }
 
 /** The party as it stands at the door of a fight, labelled with the fight. */
-export function saveCheckpointWeb(state: AdventureState, label: string, slot = activeSlot()): void {
+export function saveCheckpointWeb(state: AdventureState, label: string, slot = slotFor(state.moduleId)): void {
   set(checkpointKey(slot), serializeAdventure(state));
   writeMeta(slot, state, label);
 }
 
 /** The checkpoint for `module` in `slot`, or undefined. */
-export function loadCheckpointWeb(module: Module, slot = activeSlot()): AdventureState | undefined {
+export function loadCheckpointWeb(module: Module, slot = slotFor(module.id)): AdventureState | undefined {
   const raw = get(checkpointKey(slot));
   return raw ? parseAdventure(raw, module) : undefined;
 }

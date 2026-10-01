@@ -61,8 +61,23 @@ export function DungeonMap({ scene, state, module, onAct, onRest, onTravel }: Pr
   const exits = dungeonExits(state, module);
   const shut = new Map(exits.filter((x) => x.blocked).map((x) => [x.link, x]));
 
-  const W = layout.cols * PX + PAD * 2;
-  const H = layout.rows * PY + PAD * 2;
+  // Frame what the party knows of, not the whole dungeon: in a big one the
+  // first room would otherwise be a speck. Positions never move; the view
+  // widens as the place reveals itself. At least 3 cells across and 4 down,
+  // so a lone first room is not blown up to fill the screen.
+  const knownCells = [...known].map((id) => layout.cells[id]).filter((c): c is [number, number] => !!c);
+  let c0 = Math.min(...knownCells.map((c) => c[0])), c1 = Math.max(...knownCells.map((c) => c[0]));
+  let r0 = Math.min(...knownCells.map((c) => c[1])), r1 = Math.max(...knownCells.map((c) => c[1]));
+  const widen = (lo: number, hi: number, min: number, max: number): [number, number] => {
+    let a = lo, b = hi;
+    while (b - a + 1 < Math.min(min, max)) { if (a > 0) a--; if (b - a + 1 < Math.min(min, max) && b < max - 1) b++; if (a === 0 && b === max - 1) break; }
+    return [a, b];
+  };
+  [c0, c1] = widen(c0, c1, 3, layout.cols);
+  [r0, r1] = widen(r0, r1, 4, layout.rows);
+  const VX = c0 * PX, VY = r0 * PY;
+  const W = (c1 - c0 + 1) * PX + PAD * 2;
+  const H = (r1 - r0 + 1) * PY + PAD * 2;
   const centre = (id: string): [number, number] => {
     const [c, r] = layout.cells[id] ?? [0, 0];
     return [PAD + c * PX + PX / 2, PAD + r * PY + PY / 2];
@@ -102,7 +117,7 @@ export function DungeonMap({ scene, state, module, onAct, onRest, onTravel }: Pr
       </div>
 
       <div className="dg-map">
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`Map of ${d.title}`}>
+        <svg viewBox={`${VX} ${VY} ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`Map of ${d.title}`}>
           <defs>
             <pattern id="dg-fog" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
               <line x1="0" y1="0" x2="0" y2="10" stroke="#ffffff10" strokeWidth="3" />

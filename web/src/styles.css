@@ -4558,11 +4558,19 @@ button.category .count {
   padding: 9px 12px; border-radius: 10px; text-align: center; font-size: .86rem;
   background: #15121ef0; border: 1px solid #caa46a; box-shadow: 0 6px 20px #000a;
 }
-.dg-bar { display: flex; align-items: center; gap: 8px; }
-.dg-here { flex: 1; min-width: 0; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dg-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+/* The room name keeps its width; when the buttons will not fit beside it,
+   they wrap to a row of their own rather than cutting the name short. */
+.dg-here { flex: 1 0 auto; max-width: 100%; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dg-here b { font-family: var(--display); }
 .dg-act {
   padding: 7px 11px; border-radius: 10px; border: 1px solid #453d63; background: #2c2640;
   color: var(--text); font-size: .85rem; white-space: nowrap;
 }
 .dg-travel { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Dev-only: the random delve card on the landing page. */
+.delve-card { display: flex; flex-direction: column; gap: 6px; text-align: left; cursor: default; }
+.delve-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.delve-row .mini { margin-left: 0; }
+.delve-row .mini.on { background: var(--blue); color: #0d1a2c; }

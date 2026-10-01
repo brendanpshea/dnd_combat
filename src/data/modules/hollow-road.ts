@@ -658,8 +658,8 @@ const scenes: Record<string, Scene> = {
   },
   'den-hyenas': {
     id: 'den-hyenas', kind: 'battle', encounterId: 'kennel-hyenas', mapId: '@room',
-    intro: ['Two giant hyenas lunge to the ends of their chains at the sight of you. A gnoll handler yanks the pins, and they come loose in a scrabble of claws and that awful laughing yammer.'],
-    onWin: { to: 'inner', text: ['The kennel falls quiet. In the straw you find a raider\'s stashed purse and a satchel worth the trouble. The handler carried the key to the plunder tent.'],
+    intro: ['Two giant hyenas lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The hyenas come loose in a scrabble of claws and that awful laughing yammer.'],
+    onWin: { to: 'inner', text: ['The kennel falls quiet. In the straw you find a raider\'s stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.'],
       effects: [{ kind: 'setFlag', flag: 'kennel-cleared' }, { kind: 'gold', amount: 30 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
   },
   cache: {

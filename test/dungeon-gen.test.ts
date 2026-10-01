@@ -76,3 +76,39 @@ describe('generated delves', () => {
     }
   });
 });
+
+describe('playing a delve from the menu', () => {
+  it('rebuilds the same delve from its id, so a saved run can be resumed', async () => {
+    const { delveFromId } = await import('../src/adventure/dungeon-gen.js');
+    const { module } = generateDelve(77, { theme: 'bog', size: 'large', level: 3 });
+    expect(module.id).toBe('delve-77-bog-large-3');
+    expect(delveFromId(module.id)).toEqual(module);
+    expect(delveFromId('hollow-road')).toBeUndefined();
+  });
+
+  it('brings a fresh party up to the delve\'s level on the way in', async () => {
+    const { startAdventure, enterScene, choose } = await import('../src/adventure/runtime.js');
+    const { levelForXp } = await import('../src/campaign/campaign.js');
+    const { module } = generateDelve(5, { level: 3 });
+    const s = startAdventure(newCampaign(5), module);
+    enterScene(s, module, module.start);
+    choose(s, module, 'in');
+    expect(levelForXp(s.campaign.xp)).toBe(3);
+    expect(s.sceneId).toBe('delve');
+  });
+
+  it('saves in a slot of its own, never a company\'s', async () => {
+    const store = new Map<string, string>();
+    (globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => { store.set(k, v); },
+      removeItem: (k: string) => { store.delete(k); },
+    };
+    const S = await import('../web/src/adventureStorage.js');
+    const { startAdventure } = await import('../src/adventure/runtime.js');
+    const { module } = generateDelve(9);
+    S.saveAdventureWeb(startAdventure(newCampaign(9), module));
+    expect(S.savedAdventureModule(0)).toBeUndefined();
+    expect(S.savedAdventureModule(S.DELVE_SLOT)).toBe(module.id);
+  });
+});
