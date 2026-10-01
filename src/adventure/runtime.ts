@@ -396,13 +396,21 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
       events.push({ type: 'rest', variant: scene.variant, next: scene.next });
       break;
     case 'ending':
-      events.push({ type: 'text', paragraphs: scene.text });
+      events.push({ type: 'text', paragraphs: endingText(state, scene) });
       events.push({ type: 'ending', outcome: scene.outcome });
       break;
     case 'explore': break; // the UI renders the node map; no auto text
     case 'dungeon': events.push(...enterDungeon(state, module, scene, cameFrom !== resolved)); break;
   }
   return events;
+}
+
+/** An ending's paragraphs: its text, then each slide whose requirements hold. */
+export function endingText(state: AdventureState, scene: Extract<Scene, { kind: 'ending' }>): string[] {
+  return [
+    ...scene.text,
+    ...(scene.slides ?? []).filter((s) => s.if.every((r) => requirementMet(state, r))).map((s) => s.text),
+  ];
 }
 
 /** The scenes that are places: a map the party stands on, and returns to. */

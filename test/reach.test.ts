@@ -110,3 +110,21 @@ describe('campaign bugs found by the second read-through', () => {
     expect(battle.onWin.effects ?? []).not.toContainEqual({ kind: 'xpToLevel', level: 5 });
   });
 });
+
+describe('ending slides', () => {
+  it('show only the lines whose requirements hold', async () => {
+    const { startAdventure, enterScene, endingText } = await import('../src/adventure/runtime.js');
+    const { newCampaign } = await import('../src/campaign/campaign.js');
+    const end: Scene = { id: 'end', kind: 'ending', outcome: 'victory', text: ['Done.'],
+      slides: [{ if: [{ kind: 'flag', flag: 'kind' }], text: 'You were kind.' }, { if: [{ kind: 'notFlag', flag: 'kind' }], text: 'You were not.' }] };
+    const m: Module = { id: 'slides', title: 'T', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], next: [{ id: 'k', label: 'Be kind', to: 'end', effects: [{ kind: 'setFlag', flag: 'kind' }] }, { id: 'n', label: 'Do not', to: 'end' }] },
+      end } };
+    const s = startAdventure(newCampaign(1), m);
+    s.flags.kind = true;
+    expect(endingText(s, end)).toEqual(['Done.', 'You were kind.']);
+    const ev = enterScene(s, m, 'end');
+    expect(ev.find((e) => e.type === 'text')).toMatchObject({ paragraphs: ['Done.', 'You were kind.'] });
+    expect(validateModule(m)).toEqual([]);
+  });
+});

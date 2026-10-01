@@ -337,7 +337,16 @@ export type Scene =
        *  merchant archetype when absent. */
       npc?: NpcRef }
   | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Paragraph[] }
-  | { id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt };
+  | {
+      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt;
+      /**
+       * Ending slides: a line each about what became of the people and places
+       * the player touched, shown after `text` when its requirements hold
+       * ("Mira sets an extra cup at the end of the bar…" if the scout died).
+       * The ending reads the run back, so choices visibly mattered.
+       */
+      slides?: Array<{ if: Requirement[]; text: Paragraph }>;
+    };
 
 /**
  * An NPC who can travel with the party — the Gold Box guide, prisoner or

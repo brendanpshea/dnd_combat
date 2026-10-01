@@ -32,7 +32,7 @@ import {
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
   hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
-  travelDestinations, fastTravel, carryCompanyInto, endingDisposition,
+  travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
@@ -965,7 +965,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
       <div className="adv-scene centered">
         <div className="adv-panel">
           <h1>{scene.outcome === 'victory' ? '🏆 Victory' : '☠️ Defeat'}</h1>
-          {scene.text.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+          {endingText(state, scene).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
           {sequel && carried && onContinue && (
             <button className="primary" onClick={() => onContinue(sequel, carried.state)}>
               ⚔️ Onward → {sequel.title}
