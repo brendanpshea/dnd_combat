@@ -90,7 +90,9 @@ const scenes: Record<string, Scene> = {
         ['command', 'stores'], ['stores', 'scouts'], ['stores', 'trailhead'],
       ],
       nodes: [
-        { id: 'command', x: 25, y: 30, label: 'The Command Tent', icon: 'tok-fire', scene: 'command',
+        // Unbriefed (the party lost to the envoy and was carried in), the
+        // tent is where Vex gives the briefing the win would have led to.
+        { id: 'command', x: 25, y: 30, label: 'The Command Tent', icon: 'tok-fire', scene: 'envoys-won',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'briefed' }], to: 'command-done' }] },
         { id: 'stores', x: 50, y: 45, label: 'The War-Stores', icon: 'tok-market', scene: 'wc-stores' },
         { id: 'scouts', x: 30, y: 70, label: 'The Scouts\' Fire', icon: 'tok-camp', scene: 'scouts-fire',
@@ -99,11 +101,6 @@ const scenes: Record<string, Scene> = {
           requires: [{ kind: 'flag', flag: 'briefed' }] },
       ],
     },
-  },
-  command: {
-    id: 'command', kind: 'story', art: { emoji: '🗺️' },
-    text: ['Vex is arguing with three recruits about guard rotations, keeping time by waving a map-weight at them. He gives you a nod that means the hills are that way and you know your business. From Vex, that counts as a warm send-off.'],
-    next: [{ id: 'ok', label: 'Leave him to the war', to: 'warcamp' }],
   },
   'command-done': {
     id: 'command-done', kind: 'story', art: { emoji: '🗺️' },

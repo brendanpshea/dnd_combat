@@ -191,6 +191,32 @@ dungeon counts as shut — it can guard a side room, not the goal.
 `generateDelve(seed, { theme, size, level })` (src/adventure/dungeon-gen.ts)
 builds a whole playable module the same way, and is held to the same proofs.
 
+### Can it still be won?
+
+Once a module's shape is sound, the validator walks **every state a party can
+get it into** (src/adventure/reach.ts): the scene, the place `@hub` returns
+to, and every flag a requirement reads, companion it names and location
+visited. Every check passes and fails, every fight is won and lost. It
+reports two things:
+
+- a scene no state reaches — something routes to it, but the requirement on
+  the way in can never hold by then;
+- a state with **no way left to a victory ending**, with the shortest way
+  there spelled out (`muster: "Report to the command tent" → envoys: loses
+  the fight → …`).
+
+The second is the bug a playtest rarely finds, because it needs one unlucky
+loss or one odd button. Both of the ones it found had that shape: losing
+Wyrmcalling's opening fight left the party unbriefed with no way to be
+briefed, and the Hollow Road's victory scene let the party walk back into a
+den with nothing left in it. The usual fixes are `noBack` on a scene that
+should be one-way, or a second route to whatever a lost fight would have set.
+
+Gold, items and classes are not tracked (a requirement on them is taken as
+possible), nor are spent `once` choices or a dungeon's doors (which the
+dungeon checks prove). A state packs at most 31 facts; a module that tracks
+more is reported, not passed.
+
 ## Mechanics of prose in a scene
 
 - **Story/dialogue `text`/`lines`** unveil one beat per tap — write each entry as

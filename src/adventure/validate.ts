@@ -16,6 +16,7 @@ import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
 import { HUB_REF, ROOM_MAP_REF, type Module } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf } from './graph.js';
 import { checkDungeon } from './dungeon.js';
+import { checkModuleReach } from './reach.js';
 
 function itemExists(id: Id): boolean {
   return !!(ITEMS[id] || WEAPONS[id] || ARMOR[id] || TRINKETS[id]);
@@ -213,6 +214,14 @@ export function validateModule(module: Module): string[] {
   for (const [id, scene] of Object.entries(module.scenes)) {
     if (scene.kind === 'ending') continue;
     if (refsOf(scene).length === 0) at(id, 'is a dead end (no routes out and not an ending)');
+  }
+
+  // With the shape sound, walk every state a party can get the module into:
+  // scenes gated shut for good, and states with no way left to a victory.
+  if (errors.length === 0) {
+    const reach = checkModuleReach(module);
+    if (reach.skipped) errors.push(`the reachability search could not run: ${reach.skipped}`);
+    errors.push(...reach.errors);
   }
 
   return errors;
