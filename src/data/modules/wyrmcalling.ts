@@ -286,8 +286,8 @@ const TO_STONE: Choice[] = [
  * A company owed nothing (a cold start) gets the short version
  * (`war-council-cold`). Leaving the council sets `rim-clear`, so a company
  * that comes back up after a defeat walks straight down. Who goes down is the
- * way out of the council: one choice per pair (two seats, no more), so the cap
- * costs the reachability search no facts at all.
+ * way out of the council: one choice per group (alone, any one, or any pair;
+ * two seats, no more), so the cap costs the reachability search no facts.
  *
  * Two more debts are paid at the war-camp, as map markers:
  *   - the carter from the Ashfang pens (`captives-freed`) — potions;
@@ -317,20 +317,19 @@ const goDown = (effects: Effect[] = []): Choice[] => {
   ];
 };
 /** Who is owed a place beside the company, and why (`owed`: any one of these
- *  holds; `unowed`: none does). Wren: she lived in Part 1, or walked the fen
+ *  requirement lists holds; they never overlap). Wren: she lived in Part 1, or walked the fen
  *  with you in Part 2. */
 const SEATS = {
   wren: { name: 'Wren', who: 'who has mapped every pass you cleared', role: 'a scout',
     owed: [[has('hollow-road:saved-scout')], [hasNot('hollow-road:saved-scout'), has('sunken-barrows:met-wren')]],
-    unowed: [hasNot('hollow-road:saved-scout'), hasNot('sunken-barrows:met-wren')],
     journal: { id: 'n-wren3', title: 'Wren, Chief of Scouts',
       body: 'Wren climbed up with the column and went down into the bowl with you. Somebody, she says, has to write the route report.' } },
   halden: { name: 'Brother Halden', who: 'his prayer book under his arm', role: 'a priest',
-    owed: [[has('sunken-barrows:halden-saved')]], unowed: [hasNot('sunken-barrows:halden-saved')],
+    owed: [[has('sunken-barrows:halden-saved')]],
     journal: { id: 'n-halden3', title: 'Brother Halden',
       body: 'Halden climbed the whole mountain with his prayer book under his arm, to say his rites at the stone. A door\'s a door, he says, whether it\'s under a fen or inside a rock.' } },
   hask: { name: 'Hask', who: 'Vargan\'s guard, who stood aside for you in his hall', role: 'a veteran',
-    owed: [[has('hollow-road:vex-turned')]], unowed: [hasNot('hollow-road:vex-turned')],
+    owed: [[has('hollow-road:vex-turned')]],
     journal: { id: 'n-hask', title: 'Hask, Vex\'s Sergeant',
       body: 'Hask was the Ashfang chief\'s own guard, but he answered to Vex. When you came for Vargan in his hall, Hask stood aside and let you pass. Now Vex has lent him to you for the stone.' } },
 } as const;
@@ -340,23 +339,21 @@ const SEAT_IDS = Object.keys(SEATS) as Seat[];
 const product = (lists: ReadonlyArray<ReadonlyArray<ReadonlyArray<Requirement>>>): Requirement[][] =>
   lists.reduce<Requirement[][]>((acc, l) => acc.flatMap((a) => l.map((r) => [...a, ...r])), [[]]);
 /**
- * The way out of the council: go down with a pair when two or more are owed a
- * seat, with the one when only one is, alone when nobody is. Exactly the
- * options a company has earned are shown.
+ * The way out of the council, and always the company's choice: go down alone,
+ * with any one companion owed a seat, or with any two of them (never more).
+ * Each group shows whenever every member of it is owed a seat.
  */
 const escortChoices = (): Choice[] => {
   const groups: Seat[][] = [[], ...SEAT_IDS.map((c) => [c]),
     ...SEAT_IDS.flatMap((c, i) => SEAT_IDS.slice(i + 1).map((d) => [c, d]))];
   return groups.flatMap((g) => {
-    // A single (or nobody) only when nobody else is owed; a pair whenever both are.
-    const others = g.length < 2 ? SEAT_IDS.filter((c) => !g.includes(c)).flatMap((c) => SEATS[c].unowed) : [];
     const names = g.map((c) => `${SEATS[c].name}, ${SEATS[c].who}`).join(', and ');
     const roles = g.map((c) => SEATS[c].role).join(' and ');
-    const label = g.length === 0 ? 'Go down into the bowl'
+    const label = g.length === 0 ? 'Go down into the bowl alone (nobody joins the party)'
       : `Go down into the bowl with ${names} (${roles} ${g.length === 1 ? 'joins' : 'join'} the party)`;
     return product(g.map((c) => SEATS[c].owed)).map((owed, i): Choice => ({
       id: `go-${g.join('-') || 'alone'}-${i}`, label, to: 'calling-approach', hideWhenBlocked: true,
-      requires: [...owed, ...others],
+      requires: owed,
       effects: [{ kind: 'setFlag', flag: 'rim-clear' },
         ...g.flatMap((c): Effect[] => [{ kind: 'joinParty', companion: c },
           { kind: 'journal', entry: { kind: 'npc', ...SEATS[c].journal } }])],
@@ -371,6 +368,10 @@ const COUNCIL: Choice[] = [
         body: 'The families whose drowned you carried home sent two fen-folk up the mountain with coils of drowning-rope, braided for hauling people out of deep water. Loop them round the sisters and pull.' } }] },
   ...escortChoices(),
 ];
+
+/** The fen-folk's hedge-witch, drawn so she works whether or not the company
+ *  ever sat at the regulars' table in Mira's inn and heard her talk spells. */
+const FENFOLK_WITCH = 'The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old hedge-witch waves you over. She has river-stones braided into her hair. In Thornwick she drinks at the regulars\' table in Mira\'s inn, and tells young casters how to spend their spells. She knits while she talks, and she doesn\'t look up.';
 
 /** The Reedwife's price, told once and the same way everywhere: one lamb a
  *  winter kept the door. The people the Ashfang penned for her were her own
@@ -476,9 +477,10 @@ const scenes: Record<string, Scene> = {
     id: 'envoys', kind: 'battle', encounterId: 'knights', mapId: 'open',
     intro: [
       'You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Four hired swords stand behind her: a knight in dented black plate, two archers and a thug with a club. They watch you with bored, empty eyes.',
-      '"The famous company," the Reedwife\'s sister says. Her smile has too many teeth in it. "My sister fed off that marsh for longer than your Thornwick has had a name. You cost this family its living, so we have come to settle the bill." She flexes her green fingers. "The rest of the collectors are gathering up on the mountain. Think of this as a knock at the door."',
+      '"The famous company." Her smile has too many teeth in it. "I am **Nettle**, elder sister to the one you called the Reedwife. She kept the door under the fen for longer than your Thornwick has had a name. You cut her down, and you cost this family its living. That debt is written down, and it will be paid."',
+      'She flexes her green fingers. "The rest of the collectors are gathering up on the mountain. Think of this as the first notice."',
     ],
-    onWin: { to: 'envoys-won', text: ['The last hired sword falls, and the hag falls apart into reeds and river-water. She was never really standing there at all. Her hired swords were real, and they stay where they fall.'] },
+    onWin: { to: 'envoys-won', text: ['The last hired sword falls, and Nettle falls apart into reeds and river-water. She was never really standing there at all. Her hired swords were real, and they stay where they fall.'] },
     // Losing the opening fight gets its own beat: nobody has met Vex yet,
     // and the briefing that follows must not read as if you had won.
     onLoss: { to: 'envoys-lost', text: ['The hag\'s laugh is the last thing you hear. Then the mud comes up to meet you.'] },
@@ -601,7 +603,7 @@ const scenes: Record<string, Scene> = {
   'fenfolk-fire': {
     id: 'fenfolk-fire', kind: 'story', art: { imageId: 'loc-camp', emoji: '🔥' },
     text: [
-      'The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old woman waves you over. It\'s the hedge-witch from the regulars\' table at Mira\'s inn, the river-stones still braided into her hair. She knits while she talks, and she still doesn\'t look up.',
+      FENFOLK_WITCH,
       FENFOLK_PRICE,
       '"And the stone sings into the ground as well as the sky. We feel it in our feet. The dead under the barrows are turning in their sleep." She pulls her yarn tight. "Break that stone before they wake up properly."',
     ],
@@ -610,7 +612,7 @@ const scenes: Record<string, Scene> = {
   'fenfolk-fire-cracked': {
     id: 'fenfolk-fire-cracked', kind: 'story', art: { imageId: 'loc-camp', emoji: '🔥' },
     text: [
-      'The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old woman waves you over. It\'s the hedge-witch from the regulars\' table at Mira\'s inn, the river-stones still braided into her hair. She knits while she talks, and she still doesn\'t look up.',
+      FENFOLK_WITCH,
       FENFOLK_PRICE,
       '"You know the door under the barrows. You shut it, near enough. Well, it knocks now, every night the stone sings, and louder each time." She pulls her yarn tight. "If the Calling runs much longer, that crack\'ll open. The sisters know it. I think they\'re counting on it."',
     ],
@@ -816,7 +818,7 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'harpy-roost', mapId: 'open',
     intro: [
-      'In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. One of them turns. "You took our sister from that door," she says. "So we will take the valley from you."',
+      'In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You took our sister from that door," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."',
       'The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Harpies come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, mostly because the sentry threw a boot.',
     ],
     onWin: { to: '@hub', text: ['The last harpy drops into the dark with its song broken. You do not sleep again that night. You bank the fire and count the watches until a grey, quiet dawn.'] },
@@ -947,7 +949,7 @@ const scenes: Record<string, Scene> = {
     id: 'greenden-fight', kind: 'battle', encounterId: 'green-dragon-den', mapId: 'marsh',
     intro: ['The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. The air turns sharp and green.'],
     onWin: { to: 'hills', text: ['The wyrmling drops in the middle of a hiss, and its poison breath fades to a harmless stink. That is one monster fewer for the Calling. The den\'s small hoard rides out in your packs.',
-      'Up the mountain, the Calling\'s note bends. Two women\'s voices ride it down the wind, close as a whisper. "One fewer, little debtors. We have so many more."'],
+      'Up the mountain, the Calling\'s note bends. Nettle\'s voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."'],
       effects: [{ kind: 'setFlag', flag: 'green-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 75 }] },
   },
   'greenden-cowed': {
@@ -1076,7 +1078,7 @@ const scenes: Record<string, Scene> = {
       'The wyrmling lies on the largest heap with one eye open. Red dragons are the proudest of a proud family, and the stone\'s song promised this one a war. It rises, burning with its own light, delighted that you have saved it the trip downhill.',
     ],
     onWin: { to: 'hills', text: ['The wyrmling\'s fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps. They are the honest kind, and Bram will weigh them twice and pay well.',
-      'The stone\'s song dips, and a voice comes down the wind with it. "That one was promised a war," says one of the sisters, almost fondly. "Never mind. Promises are cheap, and we have plenty left."'],
+      'The stone\'s song dips, and Nettle\'s voice comes down the wind with it. "That one was promised a war," she says, like a clerk striking out a line. "Never mind. Promises are cheap, and we have plenty left."'],
       effects: [{ kind: 'setFlag', flag: 'red-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 120 }] },
   },
   'redden-done': {
@@ -1207,7 +1209,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.',
       'Behind the pikes come faces you know from the valley, from the marsh road to the deep fen. Each of them owes your company something. They are out of breath and mud to the knees, and not one of them has climbed this mountain to stand at the back.',
-      '"We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. If any of them can fight, two can go down with you, no more. A big party\'s a loud one."',
+      '"We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party\'s a loud one."',
     ],
     next: COUNCIL,
   },
@@ -1235,10 +1237,11 @@ const scenes: Record<string, Scene> = {
   'calling-approach': {
     id: 'calling-approach', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
     text: [
-      'Down in the bowl, at the foot of the stone, the **sisters** are waiting. The two hags stand a head taller than any man. They have pushed their green fingers to the knuckle into the black rock. Old letters ring the base of the stone, cut deep and filled with lead, like the letters on the Warden\'s door under the fen.',
+      'Down in the bowl, at the foot of the stone, the **sisters** are waiting. **Nettle**, the elder, is the hag who met you at the war-camp. **Sedge**, the younger, you have never seen before. They stand a head taller than any man. They have pushed their green fingers to the knuckle into the black rock. Old letters ring the base of the stone, cut deep and filled with lead, like the letters on the Warden\'s door under the fen.',
       'They are not commanding the stone. They are pouring themselves into it. Their hair has turned to river-weed and wire, and their faces are burning down like candles. They are spending two long lives to keep the Calling singing.',
-      '"Sister-killers," they say together, without turning around. "Our sister kept the door under the fen since before your Thornwick had a name. One lamb at the water\'s edge each midwinter, and the Warden slept. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."',
-      '"So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time." The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far. Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
+      '"Sister-killers," Nettle says, without turning around. "Our sister kept the door under the fen since before your Thornwick had a name. One lamb at the water\'s edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."',
+      'Sedge does not turn either. Her voice is raw. "She kept it alone, in the dark, for an age. Nobody ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."',
+      'The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
     ],
     // The level floor lands before the hardest fight, not after it: every
     // answer carries it (see REPLIES).
@@ -1246,12 +1249,15 @@ const scenes: Record<string, Scene> = {
   },
   'answer-defiant': {
     id: 'answer-defiant', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['The sisters laugh together, a sound like wind in dry reeds. "A few carters in a pen," one says. "She grew greedy at the end. We do not deny it. But for longer than your Thornwick has had a name, she took one lamb a winter, and the dead never once walked. Ask your barrows what her death bought you." Their hands sink deeper into the stone, and the burning ground creeps toward your boots.'],
+    text: [
+      'Nettle laughs, a sound like wind in dry reeds. "A few carters in a pen. She grew greedy at the end. We do not deny it. But for longer than your Thornwick has had a name, she took one lamb a winter, and the dead never once walked. Set that against your carters."',
+      'Sedge does not laugh. "Ask your barrows what her death bought you," she says, very quietly. Their hands sink deeper into the stone, and the burning ground creeps toward your boots.',
+    ],
     next: TO_STONE, noBack: true,
   },
   'answer-rueful': {
     id: 'answer-rueful', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['For one breath, the song falters. The younger sister turns her burning face toward you. "Sorry," she says slowly, as if nobody has ever said the word to her before. "Sorry does not put the dead back to sleep. But I heard it." The elder sister, **Nettle**, hisses at her. "Sedge. Hold still." Sedge turns back to the stone.'],
+    text: ['For one breath, the song falters. Sedge turns her burning face toward you. "Sorry," she says slowly, as if nobody has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it." Nettle hisses at her. "Sedge. Hold still. Sorry pays nothing." Sedge turns back to the stone.'],
     // The one reply that opens a door: ask Sedge to take up her dead sister's
     // vigil. Success ends the Calling without the last fight; a miss leaves
     // the stone to be faced the usual way. One try.
@@ -1266,7 +1272,7 @@ const scenes: Record<string, Scene> = {
   },
   'answer-cold': {
     id: 'answer-cold', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['You say nothing. The ring of your blade leaving its sheath is your whole answer. The sisters go quiet, and for the first time they look a little afraid. "Then come and pull us out," they say together. "If you can."'],
+    text: ['You say nothing. The ring of your blade leaving its sheath is your whole answer. Sedge flinches, and for the first time she looks a little afraid. Nettle only nods, like a clerk who expected to collect the hard way. "Then come and pull us out," she says. "If you can."'],
     next: TO_STONE, noBack: true,
   },
   // Face them, or let the stone spend them: a success means the sisters fight
@@ -1338,8 +1344,8 @@ const scenes: Record<string, Scene> = {
   'sisters-battle': {
     id: 'sisters-battle', kind: 'battle', encounterId: 'sisters-at-stone', mapId: 'firepit',
     loot: { bonusTier: 'rare' },
-    intro: ['The sisters come at you with green claws and burning faces. Behind them, the crack in the floor gives up the last thing the stone can pay for. A pillar of living fire climbs out and turns toward you. This time the sisters have to fight for themselves.'],
-    onWin: { to: 'calling-won', text: ['The first sister falls clawing at your boots. The second falls calling her dead sister\'s name, and then cursing yours. Both of them crumble into drifts of dry reeds, and the fire gutters out of the air. The black fang has nobody left to spend, so it cracks from top to bottom and falls silent. The Calling ends with the huge, ringing quiet of a held note finally let go.'],
+    intro: ['The sisters come at you with green claws and burning faces. "Then we collect by hand," Nettle says. Sedge says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last thing the stone can pay for. A pillar of living fire climbs out and turns toward you. This time the sisters have to fight for themselves.'],
+    onWin: { to: 'calling-won', text: ['Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling her dead sister\'s name, and then cursing yours. Both of them crumble into drifts of dry reeds, and the fire gutters out of the air. The black fang has nobody left to spend, so it cracks from top to bottom and falls silent. The Calling ends with the huge, ringing quiet of a held note finally let go.'],
       effects: [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
   },
   // Sedge said yes: she drags her sister out of the stone and takes her down
@@ -1351,7 +1357,7 @@ const scenes: Record<string, Scene> = {
       '"The door under the fen still needs a keeper," you tell her. "We broke the vigil, and a priest\'s book is a poor jailer. Your sister kept that door for longer than Thornwick has had a name. Keep it for her."',
       'Sedge looks down at her own hands, sunk to the wrist in the stone. Then she pulls them out. The stone screams. Nettle screams with it, and Sedge takes her sister by both wrists and drags her free.',
       'With nobody feeding it, the Calling falters. The black fang cracks from top to bottom and goes quiet. The fire in the floor of the bowl sinks back into the rock.',
-      '"We will keep the door," Sedge says. "And we will eat what the keeping pays: one lamb at the water\'s edge each midwinter, as our sister did before she grew greedy. Do not come into the deep fen again." Nettle says nothing. She only looks at you, the way you look at a debt you mean to collect.',
+      '"We will keep the door," Sedge says. "She kept it alone for an age. I will not let that go to waste. And we will eat what the keeping pays: one lamb at the water\'s edge each midwinter, as our sister did before she grew greedy. Do not come into the deep fen again." Nettle says nothing. She only looks at you, the way you look at a debt you mean to collect.',
     ],
     next: walkDown(0, 'vigil-down-with', 'vigil-aftermath', 'Watch them walk down the mountain toward the fen',
       [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'setFlag', flag: 'vigil-kept' }, { kind: 'xp', amount: 1200 }]),
@@ -1359,7 +1365,7 @@ const scenes: Record<string, Scene> = {
   ...walkDownScenes('vigil-down-with', 'vigil-aftermath'),
   'vigil-refused': {
     id: 'vigil-refused', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['Sedge listens to the end. Then she laughs, and it is not a kind laugh. "Starve in the dark for another age, so that you can sleep soundly? No." Nettle hisses at her to hold still. The stone drinks deeper, and the burning ground creeps toward your boots.'],
+    text: ['Sedge listens to the end. Then she laughs, and it is not a kind laugh. "She starved in the dark for an age so that you could sleep soundly, and you killed her for it. Now you want me to do the same? No." Nettle hisses at her to hold still. "I told you. Sorry pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.'],
     next: TO_STONE,
   },
   'vigil-aftermath': {
@@ -1384,8 +1390,8 @@ const scenes: Record<string, Scene> = {
   'calling-battle': {
     id: 'calling-battle', kind: 'battle', encounterId: 'elemental-cataclysm', mapId: 'firepit',
     loot: { bonusTier: 'rare' },
-    intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it, and the mountain\'s own bones heave up beside it into a shape with fists. The sisters sink into the rock to the shoulder, and they do not let go. The Calling\'s last note is a disaster, and it has your name in it.'],
-    onWin: { to: 'calling-won', text: ['The sisters crumble into drifts of dry reeds, smiling as they go. The fire gutters out of the air, and the stone shape shakes itself apart into loose rubble. The black fang has nothing left to spend and nobody left to spend it, so it cracks from top to bottom and falls silent. The Calling does not end with thunder. It ends with the huge, ringing quiet of a held note finally let go.'],
+    intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it, and the mountain\'s own bones heave up beside it into a shape with fists. The sisters sink into the rock to the shoulder, and they do not let go. "Take it all," Nettle tells the stone. "Every drop we owe." Sedge only whispers her dead sister\'s name. The Calling\'s last note is a disaster, and it has your name in it.'],
+    onWin: { to: 'calling-won', text: ['The sisters crumble into drifts of dry reeds. Nettle goes smiling, as if she has settled the account at last. Sedge goes with her sister\'s name still on her lips. The fire gutters out of the air, and the stone shape shakes itself apart into loose rubble. The black fang has nothing left to spend and nobody left to spend it, so it cracks from top to bottom and falls silent. The Calling does not end with thunder. It ends with the huge, ringing quiet of a held note finally let go.'],
       effects: [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
   },
   'calling-won': {
