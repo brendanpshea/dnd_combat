@@ -231,6 +231,25 @@ bring (a scout both saved and left behind) is never searched, and carried
 choices cost no facts. A chapter pays instead for what it hands on: each of
 its `carries` that a later chapter reads is one more fact.
 
+### One scene, routes that differ in a line
+
+A story's `text` and a dialogue's `lines` take conditional paragraphs, the
+same shape as an ending's slides:
+
+```ts
+text: [
+  'The camp cheers.',
+  { if: [{ kind: 'companion', companion: 'wren' }], text: 'Wren, still at your shoulder, lowers her bow.' },
+  { if: [{ kind: 'noCompanion', companion: 'wren' }], text: 'Wren waves from the scouts\' fire.' },
+],
+```
+
+Reach for this before copying a scene per route. A shared scene that
+assumes one route is the commonest contradiction in review: a companion
+greeting you from camp after walking down the mountain beside you. Every
+scene needs at least one paragraph that always shows. Text never changes
+where a party can go, so the reachability search ignores it.
+
 ### The clock
 
 A chapter starts on day 1, and every long rest ends a day: a night at a

@@ -17,6 +17,15 @@ import type { MapTheme } from '../data/maps.js';
 /** A run of prose. One entry = one paragraph/beat the UI reveals in turn. */
 export type Paragraph = string;
 
+/**
+ * A paragraph of a story's text or a dialogue's lines: plain, or shown only
+ * when its requirements hold (`{ if: [...], text }`, the shape of an ending's
+ * slides). One scene can then serve routes that differ in a line — Wren at
+ * your shoulder, or waiting at the fire — instead of a copy per route. Text
+ * never changes where a party can go, so the reachability search ignores it.
+ */
+export type Para = Paragraph | { if: Requirement[]; text: Paragraph };
+
 /** A reference to another scene by id (kept nominal for the validator's sake). */
 export type SceneRef = Id;
 
@@ -282,8 +291,8 @@ export const ROOM_MAP_REF = '@room';
 export type Scene =
   // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
   // beat the player shouldn't be able to walk away from.
-  | { id: Id; kind: 'story'; text: Paragraph[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Paragraph[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  | { id: Id; kind: 'story'; text: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
       intro: Paragraph[]; art?: SceneArt; success: Outcome; failure: Outcome;

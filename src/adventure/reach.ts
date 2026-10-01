@@ -195,8 +195,15 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const facts = new Map<string, number>();
   const fact = (k: string) => { if (!facts.has(k)) facts.set(k, facts.size); };
   const settled = new Set(carriedReads(module));
+  // A counted flag (a tally: set to a number, or read against one) has more
+  // than two states, and a bit cannot hold it. It is left untracked, so a
+  // requirement on it is taken as possible either way, like gold or items.
+  const counted = new Set([
+    ...Object.values(module.scenes).flatMap(effectsOf), ...(module.dawns ?? []).flatMap((d) => d.effects ?? []),
+  ].flatMap((e) => (e.kind === 'setFlag' && typeof e.value === 'number' ? [e.flag] : [])));
+  for (const r of pathReads(module)) if (r.kind === 'flag' && typeof r.value === 'number') counted.add(r.flag);
   for (const r of pathReads(module)) {
-    if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':')) fact(`flag:${r.flag}`);
+    if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':') && !counted.has(r.flag)) fact(`flag:${r.flag}`);
     if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
     if (r.kind === 'visited') fact(`visited:${r.scene}`);
   }
@@ -340,7 +347,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const hubVisitedBits = hubs.map((h) => bit(`visited:${h}`));
   const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects) }));
   /** Where a party can sleep the night, by scene: at a camp (the place it
-   *  stands in, or the one it came from — as `campRule`), or a long rest scene. */
+   *  stands in — as `campRule`), or a long rest scene. */
   const campAt = (s: Scene | undefined) =>
     s?.kind === 'explore' ? !!s.map.camp : s?.kind === 'dungeon' ? !!s.dungeon.camp : false;
   const sleeps = ids.map((id) => {
@@ -426,7 +433,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     // the nights between change nothing, and the walk has those already).
     if (next) {
       const scene = module.scenes[here];
-      const camp = isHubScene(scene) ? campAt(scene) : hub >= 0 && campAt(module.scenes[hubs[hub]!]);
+      const camp = isHubScene(scene) && campAt(scene);
       const label = `sleeps until the morning of day ${next.day}`;
       if (camp) enter(n, here, next.set | next.bit, next.clr, `${here}: ${label}`);
       if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, next.set | next.bit, next.clr, `${here}: ${label}`);

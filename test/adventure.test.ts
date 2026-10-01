@@ -621,11 +621,14 @@ describe('camp', () => {
     expect(campRule(state, hollow)?.risky).toBeTruthy(); // rest in the den, at a price
   });
 
-  it('campRule follows the hub from a location sub-scene', () => {
+  it('a camp is only made on the map, never from inside a scene', () => {
+    // Inside a scene, a night's ambush (whose win goes back to the map) would
+    // let the party skip a one-way scene: the pens, the cleared ridge.
     const state = startAdventure(newCampaign(1), hollow);
     enterScene(state, hollow, 'square'); // hub = square (safe camp)
-    enterScene(state, hollow, 'board');  // a sub-scene of the square
     expect(campRule(state, hollow)).toEqual({});
+    enterScene(state, hollow, 'board');  // a scene opened from the square
+    expect(campRule(state, hollow)).toBeNull();
   });
 
   it('a long rest heals the party to full', () => {
