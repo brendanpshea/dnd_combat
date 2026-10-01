@@ -44,7 +44,9 @@ function passage(text: string, opts: { quote?: boolean } = {}): string | undefin
 }
 
 function block(title: string, paras: readonly unknown[] | undefined, quote = false): string {
-  const rendered = (paras ?? []).map((p) => passage(String(p), { quote })).filter((s): s is string => !!s);
+  // A conditional paragraph (`{ if, text }`) is shown with a marker.
+  const words = (p: unknown) => (typeof p === 'object' && p !== null && 'text' in p ? `*(on some routes)* ${String((p as { text: unknown }).text)}` : String(p));
+  const rendered = (paras ?? []).map((p) => passage(words(p), { quote })).filter((s): s is string => !!s);
   if (rendered.length === 0) return '';
   return `**${title}**\n\n${rendered.join('\n\n')}\n\n`;
 }

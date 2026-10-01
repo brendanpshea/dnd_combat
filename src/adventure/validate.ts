@@ -87,7 +87,12 @@ export function validateModule(module: Module): string[] {
         leadResolvers.set(eff.entry.resolvedBy, id);
       }
     }
-    for (const req of requirementsOf(scene)) {
+    // Conditional paragraphs (see `Para`): their requirements are checked like
+    // any other, and a scene always has something to say whatever holds.
+    const paras = scene.kind === 'story' ? scene.text : scene.kind === 'dialogue' ? scene.lines : [];
+    const textConds = paras.flatMap((p) => (typeof p === 'string' ? [] : p.if));
+    if (paras.length && paras.every((p) => typeof p !== 'string')) at(id, 'every paragraph is conditional: give it at least one that always shows');
+    for (const req of [...requirementsOf(scene), ...textConds]) {
       if (req.kind === 'flag' || req.kind === 'notFlag') read.add(req.flag);
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);

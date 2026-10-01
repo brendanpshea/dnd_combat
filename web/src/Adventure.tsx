@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -534,7 +534,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           {dice ? (
             // Freeze the scene the roll came from (NPC + words), so the player
             // stays *in* the moment while the dice resolve over it.
-            <FrozenScene scene={dice.from} />
+            <FrozenScene scene={dice.from} state={state} />
           ) : (
             <SceneBody
               scene={scene}
@@ -767,9 +767,9 @@ function BattleIntro(
 
 /** A non-interactive snapshot of a story/dialogue/check scene — the NPC and
  *  their words — shown behind the dice modal so the roll happens *in* the scene. */
-function FrozenScene({ scene }: { scene: Scene }) {
-  const lines = scene.kind === 'story' ? scene.text
-    : scene.kind === 'dialogue' ? scene.lines
+function FrozenScene({ scene, state }: { scene: Scene; state: AdventureState }) {
+  const lines = scene.kind === 'story' ? paragraphsFor(state, scene.text)
+    : scene.kind === 'dialogue' ? paragraphsFor(state, scene.lines)
     : scene.kind === 'check' ? scene.intro
     : scene.kind === 'challenge' ? scene.intro : [];
   return (
@@ -987,7 +987,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
   }
 
   if (scene.kind === 'story' || scene.kind === 'dialogue') {
-    const lines = scene.kind === 'story' ? scene.text : scene.lines;
+    const lines = paragraphsFor(state, scene.kind === 'story' ? scene.text : scene.lines);
     // Beats reveal one tap at a time; choices wait until the prose is finished.
     const revealed = Math.min(beat, lines.length - 1);
     const shown = lines.slice(0, revealed + 1);

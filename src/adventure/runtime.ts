@@ -31,7 +31,7 @@ import {
 import {
   HUB_REF, ROOM_MAP_REF,
   type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
-  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach,
+  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph,
 } from './types.js';
 import { linkKey, linksFrom, roomOf } from './dungeon.js';
 
@@ -255,6 +255,12 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
   }
 }
 
+/** The paragraphs of a scene this party sees: plain ones, and conditional
+ *  ones whose requirements hold (see `Para`). */
+export function paragraphsFor(state: AdventureState, paras: readonly Para[]): Paragraph[] {
+  return paras.flatMap((p) => (typeof p === 'string' ? [p] : p.if.every((r) => requirementMet(state, r)) ? [p.text] : []));
+}
+
 /** Why a gated thing is blocked, for the UI's greyed-out reason (or null). */
 export function blockedReason(state: AdventureState, requires?: Requirement[]): string | null {
   if (!requires) return null;
@@ -386,8 +392,8 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
   const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind, revisit }];
 
   switch (scene.kind) {
-    case 'story': events.push({ type: 'text', paragraphs: scene.text }); break;
-    case 'dialogue': events.push({ type: 'text', paragraphs: scene.lines }); break;
+    case 'story': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.text) }); break;
+    case 'dialogue': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.lines) }); break;
     case 'check': events.push({ type: 'text', paragraphs: scene.intro }); break;
     case 'challenge': events.push({ type: 'text', paragraphs: scene.intro }); break;
     case 'battle':
@@ -1353,8 +1359,10 @@ export function shopSteal(state: AdventureState, module: Module): AdventureEvent
  *  its hub's when they're in one of that location's sub-scenes. Null = the
  *  party can't rest here (gear management is always allowed; sleeping isn't). */
 export function campRule(state: AdventureState, module: Module): CampRule | null {
+  // Only on a map or in a dungeon. A camp opened from inside a scene would let
+  // a night's ambush (whose win goes back to the map) skip a one-way scene.
   const scene = currentScene(state, module);
-  const place = isHub(scene) ? scene : state.hub ? module.scenes[state.hub] : undefined;
+  const place = isHub(scene) ? scene : undefined;
   if (place?.kind === 'explore') return place.map.camp ?? null;
   if (place?.kind === 'dungeon') return place.dungeon.camp ?? null;
   return null;

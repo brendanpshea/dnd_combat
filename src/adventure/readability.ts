@@ -11,7 +11,7 @@
  * beat easier to follow on a phone mid-fight.
  */
 import nlp from 'compromise';
-import type { Module, Paragraph } from './types.js';
+import type { Module, Para, Paragraph } from './types.js';
 
 /** Strip the markdown and glyphs the UI renders, so scoring sees only prose. */
 function plain(text: string): string {
@@ -385,6 +385,9 @@ export function collectModuleLabels(mod: Module): ProsePassage[] {
   return out;
 }
 
+/** A paragraph's words, whether or not it is conditional (see `Para`). */
+const paraText = (p: Para): string => (typeof p === 'string' ? p : p.text);
+
 /** Every substantial prose passage in a module — the narration a player reads,
  *  not the short choice/approach labels (see `collectModuleLabels`). */
 export function collectModuleProse(mod: Module): ProsePassage[] {
@@ -395,9 +398,9 @@ export function collectModuleProse(mod: Module): ProsePassage[] {
   for (const d of mod.dawns ?? []) add(d.text, `${mod.id}:dawn${d.day}`);
   for (const scene of Object.values(mod.scenes)) {
     const at = `${mod.id}:${scene.id}`;
-    if ('text' in scene) add(scene.text, `${at}:text`);
+    if ('text' in scene) add(scene.text.map(paraText), `${at}:text`);
     if (scene.kind === 'ending') (scene.slides ?? []).forEach((sl, i) => add([sl.text], `${at}:slide${i}`));
-    if ('lines' in scene) add(scene.lines, `${at}:lines`);
+    if ('lines' in scene) add(scene.lines.map(paraText), `${at}:lines`);
     if ('intro' in scene) add(scene.intro, `${at}:intro`);
     if ('success' in scene && scene.success?.text) add(scene.success.text, `${at}:success`);
     if ('failure' in scene && scene.failure?.text) add(scene.failure.text, `${at}:failure`);

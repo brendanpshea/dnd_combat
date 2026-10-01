@@ -340,7 +340,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const hubVisitedBits = hubs.map((h) => bit(`visited:${h}`));
   const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects) }));
   /** Where a party can sleep the night, by scene: at a camp (the place it
-   *  stands in, or the one it came from — as `campRule`), or a long rest scene. */
+   *  stands in — as `campRule`), or a long rest scene. */
   const campAt = (s: Scene | undefined) =>
     s?.kind === 'explore' ? !!s.map.camp : s?.kind === 'dungeon' ? !!s.dungeon.camp : false;
   const sleeps = ids.map((id) => {
@@ -426,7 +426,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     // the nights between change nothing, and the walk has those already).
     if (next) {
       const scene = module.scenes[here];
-      const camp = isHubScene(scene) ? campAt(scene) : hub >= 0 && campAt(module.scenes[hubs[hub]!]);
+      const camp = isHubScene(scene) && campAt(scene);
       const label = `sleeps until the morning of day ${next.day}`;
       if (camp) enter(n, here, next.set | next.bit, next.clr, `${here}: ${label}`);
       if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, next.set | next.bit, next.clr, `${here}: ${label}`);
