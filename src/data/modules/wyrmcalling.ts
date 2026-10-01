@@ -159,6 +159,8 @@ const DENS = {
   r: { flag: 'red-cleared', name: 'red', from: 'up from the burning den' },
 } as const;
 const BROODS = ['g', 'b', 'r', 'gb', 'gr', 'br', 'gbr'] as const;
+/** A den marker after the Calling peaks (see DAWNS): nobody home. */
+const PEAKED = { if: [{ kind: 'flag' as const, flag: 'calling-peaked' }], to: 'den-flown' };
 const broodChoices = (effects?: Effect[]): Choice[] => BROODS.map((k) => ({
   id: `brood-${k}`, label: 'Meet the brood on the rim', to: `clutch-${k}`, hideWhenBlocked: true,
   requires: (['g', 'b', 'r'] as const).map((c) => (k.includes(c)
@@ -324,6 +326,8 @@ const MIRA_TOAST = 'Mira, who keeps the Wander-Inn down in Thornwick, has hauled
 type Slide = { if: Requirement[]; text: string };
 /** Ending slides every company's ending shares: the hills, and the people. */
 const SLIDES_HILLS: Slide[] = [
+  { if: [{ kind: 'flag', flag: 'calling-peaked' }],
+    text: 'The Calling peaked before you reached the stone. The camp held through the night of it, and the pikemen still talk about the sound the mountain made.' },
   // Every company that played all three chapters met Vex at his fire and Wren
   // in the fen, whatever became of the Ashfang chief.
   { if: [{ kind: 'flag', flag: 'hollow-road:met-vex' }, { kind: 'flag', flag: 'sunken-barrows:met-wren' }],
@@ -663,15 +667,15 @@ const scenes: Record<string, Scene> = {
         { id: 'boarruns', x: 30, y: 86, label: 'The Boar-Runs', mystery: 'Drumming underfoot…', icon: 'tok-danger', scene: 'boarruns',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'boarruns-cleared' }], to: 'boarruns-done' }] },
         { id: 'greenden', x: 38, y: 48, label: 'The Green Den', mystery: 'A sharp green stink…', icon: 'tok-cave', scene: 'greenden',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'green-cleared' }], to: 'greenden-done' }] },
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'green-cleared' }], to: 'greenden-done' }, PEAKED] },
         { id: 'seam', x: 50, y: 66, label: 'The Flooded Pass', mystery: 'A stream running uphill…', icon: 'tok-crossing', scene: 'seam',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'seam-cleared' }], to: 'seam-done' }] },
         { id: 'blueden', x: 58, y: 30, label: 'The Blue Mesa', mystery: 'A smell of thunder…', icon: 'tok-cave', scene: 'blueden',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'blue-cleared' }], to: 'blueden-done' }] },
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'blue-cleared' }], to: 'blueden-done' }, PEAKED] },
         { id: 'onihold', x: 68, y: 56, label: 'The Middle Pass', mystery: 'A horn on a wall…', icon: 'tok-ruin', scene: 'onihold',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'oni-cleared' }], to: 'onihold-done' }] },
         { id: 'redden', x: 74, y: 22, label: 'The Burning Den', mystery: 'Smoke with no campfire…', icon: 'tok-fire', scene: 'redden',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'red-cleared' }], to: 'redden-done' }] },
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'red-cleared' }], to: 'redden-done' }, PEAKED] },
         { id: 'gorgonvale', x: 84, y: 78, label: 'The Valley of Statues', mystery: 'Statues that are too good…', icon: 'tok-mystery', scene: 'gorgonvale',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'gorgon-cleared' }], to: 'gorgonvale-done' }] },
         { id: 'steading', x: 88, y: 44, label: 'The Giants\' Hall', mystery: 'Smoke above the tree-line…', icon: 'tok-house', scene: 'steading',
@@ -847,6 +851,13 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'green-cleared' }, { kind: 'setFlag', flag: 'green-sent' },
         ...tally(), { kind: 'xp', amount: 150 }] }],
     noBack: true,
+  },
+  // The clock (see DAWNS): after the Calling peaks, a den left standing is
+  // empty. Its wyrmlings have gone up to the rim, and its hoard with them.
+  'den-flown': {
+    id: 'den-flown', kind: 'story', art: { emoji: '🪶' },
+    text: ['The den is empty. Scorched scales litter the floor, and claw-marks run up the rock to the open sky. Whatever lived here went up to the stone when the Calling peaked, and it took its hoard in its belly. It will be waiting on the rim.'],
+    next: [{ id: 'ok', label: 'Onward', to: 'hills' }], noBack: true,
   },
   'greenden-done': {
     id: 'greenden-done', kind: 'story', art: { emoji: '🌿' },
@@ -1334,6 +1345,14 @@ export const WYRMCALLING_MODULE: Module = {
   cover: 'loc-mountain',
   levelBand: { from: 4, to: 5 },
   start: 'muster', scenes, defeatScene: 'wc-defeat', town: 'warcamp',
+  // The clock: the Calling peaks on the sixth morning. Any dragon den still
+  // standing then empties, and its wyrmlings go up to the rim (den-flown).
+  dawns: [
+    { day: 3, text: ['The stone\'s note is louder this morning. At the scouts\' fire, Wren chalks a number on the map board: four more nights before the Calling peaks, she reckons, five at the most.'] },
+    { day: 5, text: ['The streams on the mountain run uphill all night now, loud enough to hear from the camp. Vex doubles the watch. "Tomorrow night," he says. "Whatever is still in those dens will fly."'] },
+    { day: 6, text: ['The Calling peaked in the night. The whole mountain hummed with it, and the pikemen stood to their posts until dawn. Anything still nesting in the hills has gone up to the ridge.'],
+      effects: [{ kind: 'setFlag', flag: 'calling-peaked' }] },
+  ],
   // The people the war council can send down into the bowl (see SEATS).
   companions: {
     wren: {

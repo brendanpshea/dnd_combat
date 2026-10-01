@@ -88,4 +88,38 @@ describe('the clock', () => {
     expect(shut.some((e) => e.includes('stranded') && e.includes('sleeps until the morning of day 3'))).toBe(true);
     expect(checkModuleReach(clocked(true)).errors).toEqual([]);
   });
+
+  it('a dawn whose flag a scene can also set still counts as its own morning', () => {
+    const m = clocked(false);
+    const gate = m.scenes.gate;
+    if (gate?.kind !== 'story') throw new Error();
+    gate.next.push({ id: 'bar', label: 'Bar it behind you', to: 'won', effects: [{ kind: 'setFlag', flag: 'gate-shut' }] });
+    expect(checkModuleReach(m).errors.some((e) => e.includes('sleeps until the morning of day 3'))).toBe(true);
+  });
+});
+
+describe('the shipped clocks', () => {
+  it('the Hollow Road: the captives are gone after the sixth night', async () => {
+    const { MODULES } = await import('../src/data/modules/index.js');
+    const m = MODULES.find((x) => x.id === 'hollow-road')!;
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'square');
+    for (let n = 0; n < 5; n++) campRest(s, m, 'long');
+    expect(s.flags['captives-taken']).toBeUndefined();
+    campRest(s, m, 'long');
+    expect(dayOf(s)).toBe(7);
+    expect(s.flags['captives-taken']).toBe(true);
+  });
+
+  it('the Wyrmcalling: after the peak, a den left standing is empty', async () => {
+    const { MODULES } = await import('../src/data/modules/index.js');
+    const m = MODULES.find((x) => x.id === 'wyrmcalling')!;
+    const hills = m.scenes.hills;
+    if (hills?.kind !== 'explore') throw new Error();
+    for (const id of ['greenden', 'blueden', 'redden']) {
+      const when = hills.map.nodes.find((n) => n.id === id)!.sceneWhen!;
+      expect(when.at(-1)).toEqual({ if: [{ kind: 'flag', flag: 'calling-peaked' }], to: 'den-flown' });
+    }
+    expect(m.dawns!.find((d) => d.effects?.length)!.effects).toEqual([{ kind: 'setFlag', flag: 'calling-peaked' }]);
+  });
 });

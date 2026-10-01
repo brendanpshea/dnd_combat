@@ -839,7 +839,7 @@ const scenes: Record<string, Scene> = {
           firstVisit: ['Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never once been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.'] },
         { id: 'kennel', name: 'Kennels', fight: 'den-hyenas' },
         // What the hag is paid in: the captives, penned behind the kennels.
-        { id: 'pens', name: 'The Pens', size: 'small', event: { scene: 'den-pens' } },
+        { id: 'pens', name: 'The Pens', size: 'small', event: { scene: 'den-pens-door' } },
         { id: 'cache', name: 'Plunder Tent', size: 'small', search: 'cache' },
         { id: 'muster', name: 'The Pit', fight: 'den-muster' },
         { id: 'vex', name: 'A Lone Fire', size: 'small',
@@ -878,11 +878,31 @@ const scenes: Record<string, Scene> = {
     intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents — an orc, an archer and a bandit, blinking in the firelight, already shouting the alarm. So much for rest.'],
     onWin: { to: '@hub', text: ['You put the patrol down before the whole camp wakes. But the night\'s gone, and you got no rest of it.'] },
   },
+  // The clock (see DAWNS): the Reedwife takes her due when the moon goes
+  // dark. Until then the pen holds people; after, it holds a shoe.
+  'den-pens-door': {
+    id: 'den-pens-door', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '⛓️' },
+    text: ['Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your torch comes near.'],
+    next: [
+      { id: 'look', label: 'Look in the pen', to: 'den-pens', hideWhenBlocked: true,
+        requires: [{ kind: 'notFlag', flag: 'captives-taken' }] },
+      { id: 'look-late', label: 'Look in the pen', to: 'den-pens-empty', hideWhenBlocked: true,
+        requires: [{ kind: 'flag', flag: 'captives-taken' }] },
+    ],
+  },
+  'den-pens-empty': {
+    id: 'den-pens-empty', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '⛓️' },
+    text: [
+      'There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open. Wet, webbed footprints lead from the gate toward the marsh, and none lead back.',
+      'In the corner lies one small shoe. The moon has gone dark, and the Reedwife has had her due.',
+    ],
+    next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }],
+  },
   'den-pens': {
     id: 'den-pens', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: [
-      'Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
-      'The girl has one shoe. "They said the lady in the water was coming for us tonight," the carter whispers. "Are you the reeve\'s men?"',
+      'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
+      'The girl has one shoe. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "Are you the reeve\'s men?"',
       'A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.',
     ],
     // Freeing them is never free: a quiet lock that may fail, or a loud one
@@ -1189,6 +1209,8 @@ const scenes: Record<string, Scene> = {
         text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
       { if: [{ kind: 'flag', flag: 'captives-freed' }],
         text: 'The carter\'s girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.' },
+      { if: [{ kind: 'flag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
+        text: 'A reed-cutter\'s widow walks the marsh edge every evening, calling a name. Nobody has the heart to tell her what the pens held.' },
       { if: [{ kind: 'flag', flag: 'captives-left' }],
         text: 'The reeve\'s men find the pens behind the kennels two days later. The carter is alive. He will not say your names, and he will not drive the marsh road again.' },
     ],
@@ -1205,6 +1227,14 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
   start: 'road', scenes, defeatScene: 'defeat', town: 'square',
+  // The clock: the Ashfang keep their captives for the Reedwife, and she
+  // takes them when the moon goes dark. Six nights' sleep and they are gone.
+  dawns: [
+    { day: 4, text: ['The moon was thinner last night. In Thornwick they say the Ashfang take people off the marsh road and keep them for the Reedwife. She collects when the moon goes dark.'] },
+    { day: 6, text: ['Last night the moon was a paring, low over the marsh. Tonight it will be gone.'] },
+    { day: 7, text: ['The moon was dark last night. Somewhere out on the marsh, something sang until dawn, and then stopped.'],
+      effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
+  ],
   // What the rest of the campaign remembers (read as 'hollow-road:saved-scout',
   // …): whether Wren lived, whether the company met Vex at his fire and
   // whether he took its offer, and whether it cut the captives out of the

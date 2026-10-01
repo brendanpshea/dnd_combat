@@ -31,7 +31,7 @@
  */
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Requirement, type Effect, type Scene } from './types.js';
-import { requirementsOf } from './graph.js';
+import { requirementsOf, effectsOf } from './graph.js';
 
 /** The most facts a state can carry: they share a 32-bit word. */
 const MAX_FACTS = 31;
@@ -103,8 +103,21 @@ function searchModule(module: Module): ReachReport {
   for (const h of hubs) fact(`visited:${h}`);
   // The chapter's clock: which of the mornings that change something have
   // come. They come in order, so the next is always the first not yet come.
-  const dawns = (module.dawns ?? []).filter((d) => d.effects?.length);
-  dawns.forEach((d) => fact(`dawn:${d.day}`));
+  // A dawn that touches nothing tracked changes nowhere a party can get to,
+  // and one that sets a flag no scene sets is marked by that flag alone.
+  const sceneSets = new Set(Object.values(module.scenes).flatMap(effectsOf)
+    .flatMap((e) => (e.kind === 'setFlag' || e.kind === 'clearFlag' ? [e.flag] : [])));
+  const dawns = (module.dawns ?? []).flatMap((d) => {
+    const flags = (d.effects ?? []).flatMap((e) => (e.kind === 'setFlag' && e.value !== false ? [e.flag] : []));
+    const touches = (d.effects ?? []).some((e) =>
+      ((e.kind === 'setFlag' || e.kind === 'clearFlag') && facts.has(`flag:${e.flag}`)) ||
+      ((e.kind === 'joinParty' || e.kind === 'leaveParty') && facts.has(`companion:${e.companion}`)));
+    if (!touches) return [];
+    const own = flags.find((f) => facts.has(`flag:${f}`) && !sceneSets.has(f));
+    const key = own ? `flag:${own}` : `dawn:${d.day}`;
+    fact(key);
+    return [{ day: d.day, key, effects: d.effects }];
+  });
   if (facts.size > MAX_FACTS) {
     return { errors: [], states: 0, skipped: `${facts.size} facts to track; the search packs at most ${MAX_FACTS}` };
   }
@@ -213,7 +226,7 @@ function searchModule(module: Module): ReachReport {
     return c;
   });
   const hubVisitedBits = hubs.map((h) => bit(`visited:${h}`));
-  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(`dawn:${d.day}`), ...effects(d.effects) }));
+  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects) }));
   /** Where a party can sleep the night, by scene: at a camp (the place it
    *  stands in, or the one it came from — as `campRule`), or a long rest scene. */
   const campAt = (s: Scene | undefined) =>
