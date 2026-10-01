@@ -87,7 +87,7 @@ const scenes: Record<string, Scene> = {
     id: 'road', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
       'A day\'s hard walk up the valley. The country has gone wrong-quiet. The road holds no carters and no herders. Only crows lift off the hedgerows as you pass.',
-      'Thornwick lies an hour ahead, its chimney-smoke thin against the grey hills. You carry the reeve\'s bounty folded in your pack. The plea that hung beneath it is why you kept walking.',
+      'Thornwick lies an hour ahead, its chimney-smoke thin against the grey hills. You carry the reeve\'s bounty folded in your pack. Pinned under it was a second note in a plainer hand. *Come quick. We are not too proud to ask.* Mira of the Wander-Inn signed it. That note is why you kept walking.',
       'Then the hedges shift on both sides at once — and it\'s already too late to run.',
     ],
     next: [{ id: 'go', label: 'Draw steel', to: 'road-ambush' }], noBack: true,
@@ -147,7 +147,7 @@ const scenes: Record<string, Scene> = {
     id: 'tavern-meet', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
       'Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
-      '"Sellswords. Good." **Mira** doesn\'t smile — you get the feeling she keeps it somewhere safe, for special occasions. "The reeve\'s too proud to beg, so I do it for him. Sit."',
+      '"Sellswords. Good. You read my note, then." **Mira** doesn\'t smile — you get the feeling she keeps it somewhere safe, for special occasions. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
       '"The **Ashfang** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. But there\'s more — the kind folk won\'t say with the door open."',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
@@ -189,7 +189,7 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'know-spy' },
         { kind: 'journal', entry: { id: 'lead-spy', kind: 'lead', resolvedBy: 'spy-caught',
-          title: 'The Furtive Peddler', body: 'Mira named a peddler who loiters by the market gate as the raiders\' informant. Find him in Thornwick Square and deal with him.' } }] }],
+          title: 'The Furtive Peddler', body: 'Mira named a peddler who loiters by the market gate as the raiders\' informant. Find his stall in Thornwick Square. Come at him quietly, before he can whistle up his crew.' } }] }],
   },
   'tavern-trail': {
     id: 'tavern-trail', kind: 'story', art: { emoji: '🗺️' },
@@ -277,11 +277,14 @@ const scenes: Record<string, Scene> = {
         // Optional side bounty: honest early XP for a party that helps out.
         { id: 'mill', x: 12, y: 62, label: 'The Old Mill', icon: 'tok-figure', scene: 'mill',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'mill-saved' }], to: 'mill-done' }] },
-        // The peddler is always here to be dealt with (the tavern Insight just
-        // names him early). Confronting him always ends in a fight — and the
-        // gate below won't open until he's caught, so no party skips it.
-        { id: 'informant', x: 48, y: 66, label: 'Furtive Peddler', icon: 'tok-figure', scene: 'spy-confront',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'spy-caught' }], to: 'spy-gone' }] },
+        // The peddler is always here to be dealt with, under a plain label: the
+        // map doesn't know he's the leak until Mira (the tavern Insight) says so.
+        // Walking up cold ends in a fight. A party that read the lead can stalk
+        // him first (`spy-stalk`) and take him before he whistles. The gate
+        // below won't open until he's caught, so no party skips him.
+        { id: 'informant', x: 48, y: 66, label: 'Peddler\'s Stall', icon: 'tok-figure', scene: 'spy-confront',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'spy-caught' }], to: 'spy-gone' },
+            { if: [{ kind: 'flag', flag: 'know-spy' }], to: 'spy-stalk' }] },
         { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: 'tok-gate', scene: 'trailhead',
           sceneWhen: [{ if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-blocked' },
             // The road out was fought (or faced down) already: don't replay it.
@@ -289,7 +292,15 @@ const scenes: Record<string, Scene> = {
       ],
     },
   },
+  // A raided village's market: healing, plain steel and road armour. Not much
+  // magic gets through when the Ashfang take every second cart.
   market: { id: 'market', kind: 'shop', title: 'Thornwick Market', next: 'square',
+    stock: [
+      'potion-healing', 'potion-greater-healing', 'alchemists-fire', 'potion-poison-resistance',
+      'scroll-cure-wounds', 'scroll-healing-word', 'scroll-bless', 'scroll-protection-from-evil-and-good',
+      'dagger', 'handaxe', 'spear', 'battleaxe', 'warhammer', 'longbow',
+      'padded', 'leather', 'studded-leather', 'hide', 'chain-shirt', 'ring-mail', 'scale-mail', 'chain-mail',
+    ],
     npc: { id: 'npc-quartermaster', name: 'Bram the Quartermaster', portraitId: 'npc-merchant', emoji: '🧑‍🌾' },
     intro: ['"Coin\'s coin, and I\'ll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are honest — a dead customer never comes back for more, and I do like the repeat trade."'] },
   board: {
@@ -324,17 +335,43 @@ const scenes: Record<string, Scene> = {
   'spy-caught': {
     id: 'spy-caught', kind: 'story', art: { emoji: '🔗' },
     text: [
-      'His crew is gone, one way or another. The peddler makes it four steps before you run him down.',
-      'Under the false bottom of his cart lies a tally of every caravan to leave Thornwick this month. It isn\'t in his handwriting. He folds like wet paper. "I only carried word! I never lifted a blade!"',
+      'His crew is gone, one way or another, and the peddler knows it. He folds like wet paper. "I only carried word! I never lifted a blade!"',
+      'Under the false bottom of his cart lies a list of every caravan to leave Thornwick this month. Someone has ticked off each one. The list isn\'t in his hand. "The chief writes it," he babbles. "He knows every carter in this town by name. I only tick them off."',
       'Then, babbling, he gives up the rest. **He tells you the raiders\' gate-signal.** With it, you can walk up to the den like one of their own.',
     ],
+    noBack: true,
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
         { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'You caught the Ashfang\'s informant in the market and took the raiders\' gate signal off him. With it, you can fool the den\'s watch.' } }] }],
   },
+  // Mira's lead pays off: the party knows who he is, and he doesn't know them.
+  'spy-stalk': {
+    id: 'spy-stalk', kind: 'story', art: { imageId: 'loc-village', emoji: '🕵️' },
+    text: [
+      'There he is, just where Mira said. A peddler with a stall of chipped buttons and a birdcage with no bird. He sells nothing. He watches the gate.',
+      'He hasn\'t seen you yet. Round the square, a few hard-faced men nurse their drinks. They watch him the way he watches the gate.',
+    ],
+    next: [
+      { id: 'stalk', label: '[Stealth DC 12] Come at him from behind the stalls', to: 'spy-grabbed',
+        once: true, check: { skill: 'stealth', dc: 12, failTo: 'spy-confront' } },
+      { id: 'walk', label: 'Walk straight up to his stall', to: 'spy-confront' },
+    ],
+  },
+  'spy-grabbed': {
+    id: 'spy-grabbed', kind: 'story', art: { imageId: 'loc-village', emoji: '🤫' },
+    text: [
+      'You slip round behind the fish stall and come up at his back. His fingers are halfway to his teeth when you take his wrist.',
+      'His crew sees the knife at his ribs. One by one, they find somewhere else to drink.',
+    ],
+    next: [{ id: 'ok', label: 'Turn out his cart', to: 'spy-caught', effects: [{ kind: 'xp', amount: 25 }] }],
+    noBack: true,
+  },
   'gate-blocked': {
     id: 'gate-blocked', kind: 'story', art: { imageId: 'loc-village', emoji: '🚧' },
-    text: ['The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve\'s orders, and for once they\'re sound ones. Nobody leaves while the Ashfang still keep a whistler in the **market**, counting who comes and goes. Deal with that first — then the road\'s yours."'],
+    text: [
+      'The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve\'s orders, and for once they\'re sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until we know who."',
+      '"Don\'t look at me like that. If I knew his face, he\'d be in the cells. Ask around the **market**, or ask Mira — she hears everything. Find me the whistler, and the road\'s yours."',
+    ],
     next: [{ id: 'ok', label: 'Back into the square', to: 'square' }], noBack: true,
   },
   // --- Optional: the mill bounty (Act 1 side fight) ------------------------
@@ -429,7 +466,8 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'saved-scout' }, { kind: 'companion', companion: 'wren' }], to: 'scout-along' },
             { if: [{ kind: 'flag', flag: 'saved-scout' }], to: 'scout-sent' },
-            { if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' }] },
+            { if: [{ kind: 'flag', flag: 'scout-met' }], to: 'scout-gone' },
+            { if: [{ kind: 'flag', flag: 'scout-left' }], to: 'scout-passed' }] },
         // Optional: a sunken barrow, spotted only by a sharp-eyed party.
         { id: 'barrow', x: 52, y: 90, label: 'A Sunken Barrow', mystery: 'A low mound…', icon: 'tok-cave', scene: 'barrow',
           hidden: { dc: 12 },
@@ -449,13 +487,30 @@ const scenes: Record<string, Scene> = {
       ],
     },
   },
+  // The tracks: a Survival roll, or a ranger reads them at a glance.
   tracks: {
-    id: 'tracks', kind: 'check', skill: 'survival', dc: 12, art: { emoji: '👣' },
-    intro: ['Boot-prints and drag-marks cross the mud. Read them right and the maze unravels.'],
-    success: { to: 'trail', text: ['The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You\'ve found the **safe path to the hollow**.'],
-      effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 20 }] },
-    failure: { to: 'trail', text: ['The prints tangle and double back on themselves until your eyes water. Still, they point roughly toward the hills. That\'s enough to find the hollow by, if not the driest way there.'],
-      effects: [{ kind: 'setFlag', flag: 'trail-read' }] },
+    id: 'tracks', kind: 'story', art: { emoji: '👣' },
+    text: ['Boot-prints and drag-marks cross the mud. Read them right and the maze unravels.'],
+    next: [
+      { id: 'ranger', label: '[Ranger] Read the patrols\' line at a glance', to: 'tracks-read',
+        requires: [{ kind: 'classInParty', classId: 'ranger' }], hideWhenBlocked: true },
+      { id: 'read', label: '[Survival DC 12] Follow the boot-prints', to: 'tracks-read',
+        once: true, check: { skill: 'survival', dc: 12, failTo: 'tracks-lost' } },
+    ],
+  },
+  'tracks-read': {
+    id: 'tracks-read', kind: 'story', art: { emoji: '👣' },
+    text: ['The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You\'ve found the **safe path to the hollow**.'],
+    next: [{ id: 'ok', label: 'Follow the dry line', to: 'trail',
+      effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 20 }] }],
+    noBack: true,
+  },
+  'tracks-lost': {
+    id: 'tracks-lost', kind: 'story', art: { emoji: '👣' },
+    text: ['The prints tangle and double back on themselves until your eyes water. Still, they point roughly toward the hills. That\'s enough to find the hollow by, if not the driest way there.'],
+    next: [{ id: 'ok', label: 'Head for the hills', to: 'trail',
+      effects: [{ kind: 'setFlag', flag: 'trail-read' }] }],
+    noBack: true,
   },
   'tracks-done': {
     id: 'tracks-done', kind: 'story', art: { emoji: '👣' },
@@ -516,11 +571,40 @@ const scenes: Record<string, Scene> = {
   wounded: {
     id: 'wounded', kind: 'dialogue', npc: SCOUT, art: { emoji: '🤕' },
     lines: ['A young scout in the reeve\'s colours lies pinned under a dead horse, an arrow through her leg, her jaw set hard against the pain. "I\'m fine," she says — a lie you can see from here. "Get the horse off me and I\'ll tell you everything. How they\'re set, where they watch. I counted. That\'s the job."'],
+    // Three sure ways to save her and one roll: a potion, a healer's hands, or
+    // the Medicine check. Walking past is final (`scout-left`): the map marker
+    // then shows only the empty horse, never the rescue again.
     next: [
+      { id: 'potion', label: 'Give her a healing potion', to: 'scout-saved',
+        requires: [{ kind: 'item', itemId: 'potion-healing' }], hideWhenBlocked: true,
+        effects: [{ kind: 'removeItem', itemId: 'potion-healing', qty: 1 }] },
+      { id: 'lay-hands', label: '[Paladin] Lay hands on the wound', to: 'scout-saved',
+        requires: [{ kind: 'classInParty', classId: 'paladin' }], hideWhenBlocked: true },
+      { id: 'pray', label: '[Cleric] Pray over the wound', to: 'scout-saved',
+        requires: [{ kind: 'classInParty', classId: 'cleric' }], hideWhenBlocked: true },
+      { id: 'moss', label: '[Druid] Pack the wound with marsh-moss', to: 'scout-saved',
+        requires: [{ kind: 'classInParty', classId: 'druid' }], hideWhenBlocked: true },
       { id: 'medicine', label: '[Medicine DC 12] Ease her out and bind the leg', to: 'scout-saved',
         once: true, check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
-      { id: 'leave', label: 'No time to spare her — press on', to: 'trail' },
+      { id: 'leave', label: 'No time to spare her — press on', to: 'scout-left',
+        effects: [{ kind: 'setFlag', flag: 'scout-left' }] },
     ],
+  },
+  // Walking past. Neither `saved-scout` nor `scout-met` is set: the party
+  // never learned her name, and the next chapters treat her as a stranger.
+  'scout-left': {
+    id: 'scout-left', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
+    text: [
+      'You step around the horse. She doesn\'t call after you. She only watches you go, jaw still set, as if she had expected nothing else.',
+      'Behind you the reeds close over the trail. You don\'t look back.',
+    ],
+    next: [{ id: 'ok', label: 'Press on', to: 'trail' }], noBack: true,
+  },
+  // The marker after walking past: she's gone, and no telling how.
+  'scout-passed': {
+    id: 'scout-passed', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
+    text: ['The dead horse still lies across the trail. The scout is gone. A line of flattened reeds drags away toward Thornwick, and you cannot tell who made it.'],
+    next: [{ id: 'ok', label: 'Move on', to: 'trail' }], noBack: true,
   },
   'scout-saved': {
     id: 'scout-saved', kind: 'story', art: { emoji: '❤️‍🩹' },
@@ -693,6 +777,10 @@ const scenes: Record<string, Scene> = {
         requires: [{ kind: 'flag', flag: 'know-signal' }, { kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'den-entered' }],
         check: { skill: 'deception', dc: 10, failTo: 'gate-fight', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
+      // A rogue's bonus: the water-gate's lock, no roll and no alarm.
+      { id: 'lock', label: '[Rogue] Pick the lock on the little water-gate', to: 'den-picked',
+        requires: [{ kind: 'classInParty', classId: 'rogue' }, { kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
+        effects: [{ kind: 'setFlag', flag: 'den-entered' }] },
       { id: 'sneak', label: '[Stealth DC 13] Slip over the wall (whole party)', to: 'inner',
         requires: [{ kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'den-entered' }],
@@ -700,6 +788,11 @@ const scenes: Record<string, Scene> = {
       { id: 'fight', label: 'Storm the gate', to: 'gate-fight',
         requires: [{ kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true },
     ],
+  },
+  'den-picked': {
+    id: 'den-picked', kind: 'story', art: { imageId: 'loc-camp', emoji: '🗝️' },
+    text: ['Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.'],
+    next: [{ id: 'in', label: 'Slip inside', to: 'inner' }], noBack: true,
   },
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
@@ -730,6 +823,8 @@ const scenes: Record<string, Scene> = {
         { id: 'yard', name: 'Muster Yard', size: 'large',
           firstVisit: ['Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never once been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.'] },
         { id: 'kennel', name: 'Kennels', fight: 'den-hyenas' },
+        // What the hag is paid in: the captives, penned behind the kennels.
+        { id: 'pens', name: 'The Pens', size: 'small', event: { scene: 'den-pens' } },
         { id: 'cache', name: 'Plunder Tent', size: 'small', search: 'cache' },
         { id: 'muster', name: 'The Pit', fight: 'den-muster' },
         { id: 'vex', name: 'A Lone Fire', size: 'small',
@@ -740,6 +835,7 @@ const scenes: Record<string, Scene> = {
       links: [
         { a: 'gate', b: 'yard' },
         { a: 'yard', b: 'kennel' },
+        { a: 'kennel', b: 'pens' },
         { a: 'yard', b: 'cache', door: {
           locked: [{ kind: 'flag', flag: 'kennel-cleared' }],
           note: 'Barred from inside — the kennel-master keeps the key.',
@@ -766,6 +862,21 @@ const scenes: Record<string, Scene> = {
     loot: false, encounterId: 'raiders-forward', mapId: '@room',
     intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents — an orc, an archer and a bandit, blinking in the firelight, already shouting the alarm. So much for rest.'],
     onWin: { to: '@hub', text: ['You put the patrol down before the whole camp wakes. But the night\'s gone, and you got no rest of it.'] },
+  },
+  'den-pens': {
+    id: 'den-pens', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
+    text: [
+      'Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
+      'The girl has one shoe. "They said the lady in the water was coming for us tonight," the carter whispers. "Are you the reeve\'s men?"',
+    ],
+    next: [{ id: 'free', label: 'Cut them loose and send them out the gate', to: 'den-pens-freed',
+      effects: [{ kind: 'setFlag', flag: 'captives-freed' }] }],
+    noBack: true,
+  },
+  'den-pens-freed': {
+    id: 'den-pens-freed', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
+    text: ['The stakes come apart under your blades. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.'],
+    next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
   },
   'den-hyenas': {
     id: 'den-hyenas', kind: 'battle', encounterId: 'kennel-hyenas', mapId: '@room',
@@ -836,6 +947,14 @@ const scenes: Record<string, Scene> = {
         requires: [{ kind: 'flag', flag: 'vex-turned' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'vargan-shaken' }],
         check: { skill: 'insight', dc: 14, failTo: 'boss-unguarded', failEffects: [{ kind: 'clearFlag', flag: 'vargan-shaken' }] } },
+      // A warlock knows a pact-mark when one sees it: the brand, named
+      // without a roll. Split on Vex's bargain like the Insight read above.
+      { id: 'pact', label: '[Warlock] Name the bargain burned into his hand', to: 'boss-shaken',
+        requires: [{ kind: 'classInParty', classId: 'warlock' }, { kind: 'notFlag', flag: 'vex-turned' }], hideWhenBlocked: true,
+        effects: [{ kind: 'setFlag', flag: 'vargan-shaken' }] },
+      { id: 'pact-alone', label: '[Warlock] Name the bargain burned into his hand', to: 'boss-unguarded-shaken',
+        requires: [{ kind: 'classInParty', classId: 'warlock' }, { kind: 'flag', flag: 'vex-turned' }], hideWhenBlocked: true,
+        effects: [{ kind: 'setFlag', flag: 'vargan-shaken' }] },
       // Vex's bargain pays off here: his guard stands down, and the chief and
       // the hag fight alone. The two choices are mutually exclusive on the flag.
       { id: 'fight-alone', label: 'End them both — Vex\'s man stands aside', to: 'boss-unguarded',
@@ -960,6 +1079,10 @@ const scenes: Record<string, Scene> = {
         text: 'Mira nails the Ashfang banner up over her bar, upside down, where all can see it.' },
       { if: [{ kind: 'flag', flag: 'scout-met' }, { kind: 'notFlag', flag: 'saved-scout' }],
         text: 'Mira sets an extra cup at the end of the bar and fills it. Nobody drinks from it. Nobody asks.' },
+      { if: [{ kind: 'flag', flag: 'scout-left' }],
+        text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
+      { if: [{ kind: 'flag', flag: 'captives-freed' }],
+        text: 'The carter\'s girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.' },
     ],
   },
 
