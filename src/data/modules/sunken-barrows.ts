@@ -37,6 +37,16 @@ const WREN_JOINS: Effect[] = [
 /** What Wren tells the party at the fen road, whether or not they know her. */
 const WREN_BRIEF = 'I\'ve scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as sense allows. After that it\'s barrows, and sense stays home.';
 
+/** What the chapel hands over, whether Halden lived through it or not. */
+const CHAPEL_CLEARED: Effect[] = [
+  { kind: 'setFlag', flag: 'chapel-cleared' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 },
+  { kind: 'journal', entry: { id: 'c-rites', kind: 'clue', title: 'The Rites of Sealing',
+    body: 'Brother Halden\'s prayer book holds the old rites of sealing. The Reedwife was the jailer of the Warden of the Barrows. Her feeding kept him asleep, and her death broke his seal. Speak the rites at the Warden\'s door, deep in the great barrow, to shut him in again.' } },
+];
+
+/** The words Halden said over Thornwick's dead, said back to him. */
+const LITURGY = '*Lie down and be at peace. Your work is done. The bell will wake you.*';
+
 const INN_CHOICES = [
   { id: 'room', label: 'Take a room for the night — 1 gold (long rest)', to: 'inn-rest',
     requires: [{ kind: 'gold' as const, atLeast: 1 }], effects: [{ kind: 'gold' as const, amount: -1 }] },
@@ -315,12 +325,43 @@ const scenes: Record<string, Scene> = {
     id: 'chapel-fight', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
     intro: ['Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows. Two acolytes in Thornwick\'s chapel colours step up beside him, their eyes as empty as the dead\'s. "The Warden provides," says Halden, and sets them on you.'],
     onWin: { to: 'chapel-won', text: ['Halden sinks down on the altar steps. At the end, he mostly looks relieved.'] },
+    // Saving Halden: the thing wearing him borrowed his prayers, so his own
+    // words for the dead can turn it out. One try, before the first blow.
+    parley: {
+      skill: 'religion', dc: 14, label: 'Speak his own liturgy back to him',
+      success: { to: 'chapel-saved', text: [
+        'You know the words Halden said over Thornwick\'s dead. Every priest in the valley says them. You say them back to him, slow and plain. ' + LITURGY,
+        'His smile twitches. The acolytes stop in mid-step. Then the thing inside Halden lets go of him all at once, like a hand opening. His acolytes drop where they stand, and the skeletons fold into the water.',
+      ] },
+    },
   },
   'chapel-caught': {
     id: 'chapel-caught', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
     surprise: 'enemies',
     intro: ['You see it a breath before it moves. The thing behind Halden\'s serenity winds up through him like rot up a post. You\'re already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.'],
     onWin: { to: 'chapel-won', text: ['Caught off balance from the first blow, the dead never find their rows again. Halden slumps against the altar rail. Whatever was wearing him lets go, and leaves him looking almost grateful.'] },
+    parley: {
+      skill: 'religion', dc: 14, label: 'Speak his own liturgy back to him',
+      success: { to: 'chapel-saved', text: [
+        'You saw the thing behind his face. So you aim your words at the man under it. You speak the prayer Halden said over Thornwick\'s dead, slow and plain. ' + LITURGY,
+        'Halden\'s calm face cracks like ice on a pond. Then the thing inside him lets go all at once. His acolytes drop where they stand, and the skeletons fold into the water.',
+      ] },
+    },
+  },
+  // Halden lives: he tells the party himself what the dead man's book says.
+  'chapel-saved': {
+    id: 'chapel-saved', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '📖' },
+    lines: [
+      'Halden sits down hard on the altar steps. He is shaking, and he is himself again. He stares at his hands as if someone just gave them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water.',
+      '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
+      '"The **Reedwife** was never just a hag. She was a jailer. Her feeding kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside."',
+      '"The rites of sealing are in that book. Someone must say them at his door, in the great barrow past the Barrow Gate." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me."',
+      'He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
+    ],
+    next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
+      effects: [...CHAPEL_CLEARED, { kind: 'setFlag', flag: 'halden-saved' },
+        { kind: 'journal', entry: { id: 'n-halden', kind: 'npc', title: 'Brother Halden',
+          body: 'Halden keeps Thornwick\'s little chapel. Something under the fen took hold of him through his own prayers, and you talked it out of him. He has promised to follow you down to the Warden\'s door.' } }] }],
   },
   'chapel-won': {
     id: 'chapel-won', kind: 'story', art: { imageId: 'loc-temple', emoji: '📖' },
@@ -331,10 +372,7 @@ const scenes: Record<string, Scene> = {
       'The book also gives you the fix. Take it to the great barrow, reach the Warden\'s door, and *speak the rites of sealing there*. That will shut him in again. Under the altar cloth you also find a healing potion that Halden never got to drink.',
       '"Nerve we\'ve got," Wren says, reading over your shoulder. She sounds almost sure of it. "The door\'s past the Barrow Gate."',
     ],
-    next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
-      effects: [{ kind: 'setFlag', flag: 'chapel-cleared' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 },
-        { kind: 'journal', entry: { id: 'c-rites', kind: 'clue', title: 'The Rites of Sealing',
-          body: 'Brother Halden\'s prayer book holds the old rites of sealing. The Reedwife was the jailer of the Warden of the Barrows. Her feeding kept him asleep, and her death broke his seal. Speak the rites at the Warden\'s door, deep in the great barrow, to shut him in again.' } }] }],
+    next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],
   },
   'chapel-done': {
     id: 'chapel-done', kind: 'story', art: { imageId: 'loc-temple', emoji: '🕯️' },
@@ -439,7 +477,9 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'wights-down' }], to: 'wights-done' }] },
         { id: 'king', x: 68, y: 40, label: 'The King\'s Chamber', mystery: 'A door sealed in lead…', icon: 'tok-boss', scene: 'king',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'king-down' }], to: 'king-done' }] },
-        { id: 'seal', x: 88, y: 60, label: 'The Warden\'s Door', mystery: 'Chanting, below…', icon: 'tok-danger', scene: 'seal-approach' },
+        { id: 'seal', x: 88, y: 60, label: 'The Warden\'s Door', mystery: 'Chanting, below…', icon: 'tok-danger', scene: 'seal-approach',
+          // Beaten back from a cracked door: the dead are still coming through it.
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'seal-breach' }], to: 'seal-breach' }] },
       ],
     },
   },
@@ -527,15 +567,66 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'resealing', text: ['The fanatic dies reaching for the door. For the first time in an age, none of the Warden\'s servants stand at his door. Only you stand there, with the book.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
+  // The climax is a choice of how, and a roll: each way of saying the rites may
+  // be tried once. Halden, if he lived, can say his own. If every voice fails,
+  // the door cracks and the Warden's dead come through it.
   resealing: {
-    id: 'resealing', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '📖' },
+    id: 'resealing', kind: 'challenge', art: { imageId: 'loc-dungeon', emoji: '📖' },
+    intro: [
+      'The great door still bulges outward. Half the lead is gone from its letters, and the Warden leans on what is left. Against the far wall, the cultists who never fought are still on their knees. They watch you with their black candles guttering.',
+      'Halden\'s book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door. Halden wrote that it would take nerve. Whose nerve, and how, is up to you.',
+    ],
+    retry: 'perApproach',
+    noBack: true,
+    approaches: [
+      { id: 'rites', label: 'Speak the rites aloud', hint: 'Read the old prayers straight from the book, and mean every word.',
+        skill: 'religion', dc: 13,
+        success: { to: 'seal-clean', text: ['You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.'] },
+        failure: { to: 'resealing', text: ['Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.'] } },
+      { id: 'letters', label: 'Read the lead letters as a spell', hint: 'The words cut in the door are a lock. Use the rites as its key.',
+        skill: 'arcana', dc: 14,
+        success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.'] },
+        failure: { to: 'resealing', text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark. Whatever the old masons built, it will not take orders from you.'] } },
+      { id: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door. Make them chant the right thing.',
+        skill: 'persuasion', dc: 14,
+        success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden\'s own faithful sing him back to sleep.'] },
+        failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
+      { id: 'halden', label: 'Give Halden the book', hint: 'He followed you all the way down. Let him say his own rites.',
+        skill: 'religion', dc: 8,
+        requires: [{ kind: 'flag', flag: 'halden-saved' }], hideWhenBlocked: true,
+        success: { to: 'seal-clean', text: ['Brother Halden comes down the last stair, still shaking. He takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own. The lead letters drink every word.'] },
+        failure: { to: 'resealing', text: ['Halden opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."'] } },
+    ],
+    success: { to: 'seal-clean' },
+    // Every voice failed: the door cracks before it seals.
+    failure: { to: 'seal-breach', text: ['The last word dies in the dark. For a moment nothing happens. Then the great door splits from top to bottom, with a crack like river ice. Grey hands push out through the gap. The Warden has stopped waiting for his servants.'],
+      effects: [{ kind: 'setFlag', flag: 'seal-breach' }] },
+  },
+  'seal-clean': {
+    id: 'seal-clean', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '📖' },
     text: [
-      'You read the old rites from Halden\'s prayer book by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain. Line by line, the great door stops *straining*.',
-      'Last of all comes the pressure behind it. Something enormous on the far side turns its attention away, unhurried and unimpressed. It is not beaten. It has simply gone back to sleep. Up above, across the barrow-field, every walking corpse lies down where it stands.',
+      'Line by line, the great door stops *straining*. Last of all goes the pressure behind it. Something enormous on the far side turns its attention away, unhurried and unimpressed. It is not beaten. It has simply gone back to sleep. Up above, across the barrow-field, every walking corpse lies down where it stands.',
       'It is done. The door stands sealed, and the **Warden** sleeps again.',
       'The vigil holds. It has a new keeper now — a book, a door, and a town that knows to watch it. It will have to do.',
     ],
-    next: [{ id: 'home', label: 'Climb back to the light', to: 'sb-aftermath' }],
+    next: [{ id: 'home', label: 'Climb back to the light', to: 'sb-aftermath' }], noBack: true,
+  },
+  // The rites failed, and the Warden pushed back. Win, and the door shuts
+  // over the bodies, but not cleanly: the crack carries into Part 3.
+  'seal-breach': {
+    id: 'seal-breach', kind: 'battle', encounterId: 'undead', mapId: 'firepit',
+    noFlee: true,
+    intro: ['The Warden\'s own dead squeeze out through the crack in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and more grey fingers wait behind them. If they get past you, Thornwick is next.'],
+    onWin: { to: 'seal-shut', text: ['The last of them falls across the doorstep. All of you put your shoulders to the door and shove it home over the bodies. You shout the rites into the crack, badly and all at once. It is enough, barely.'],
+      effects: [{ kind: 'setFlag', flag: 'seal-cracked' }] },
+  },
+  'seal-shut': {
+    id: 'seal-shut', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
+    text: [
+      'The door holds. The crack in it does not close. Lead creeps into it from the letters on either side, and stops a finger short. Behind the stone, the Warden settles. He is not asleep. Now and then the door ticks under your hand, like a knuckle tapping.',
+      'Up above, across the barrow-field, every walking corpse lies down where it stands. It is done, more or less. The vigil holds, with a new keeper — a book, a cracked door, and a town that will have to watch it closely.',
+    ],
+    next: [{ id: 'home', label: 'Climb back to the light', to: 'sb-aftermath' }], noBack: true,
   },
   // Each claim gets one line, then a short hub: the homecoming doesn't replay.
   'sb-claim-paid': {
@@ -574,8 +665,24 @@ const scenes: Record<string, Scene> = {
   'sb-epilogue': {
     id: 'sb-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'The barrows sleep. The chapel is drained and re-blessed. The corpse-lights are out for good. Every grave in Thornwick\'s churchyard is full again, and stays that way. The prayer book lives in the reeve\'s strongest chest. The reeve has promoted Wren, to her visible horror. She leads the watch that walks the old road once a season.',
-      'Only one thing sours the ale. On the last night, at the fen\'s edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment. Then they looked at the town, the way you look at a house you mean to come back to. Then the reeds closed, and they were gone — for now. Debts, in the deep fen, have a way of *coming due*.',
+      'The barrows sleep. The corpse-lights are out for good. Every grave in Thornwick\'s churchyard is full again, and stays that way.',
+    ],
+    // One line per thread the run touched, then the hook for Part 3 (always).
+    slides: [
+      { if: [{ kind: 'flag', flag: 'halden-saved' }],
+        text: 'Brother Halden keeps the vigil now, and he reads the rites a little louder than he needs to.' },
+      { if: [{ kind: 'notFlag', flag: 'halden-saved' }],
+        text: 'Halden and his acolytes share a new grave by the chapel, and Mira won\'t say whose idea the white stone was.' },
+      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }],
+        text: 'Far below the barrow-field, the Warden\'s door stays shut and silent, the way a good door should.' },
+      { if: [{ kind: 'flag', flag: 'seal-cracked' }],
+        text: 'The door holds, but on still nights the fen-folk swear that something under the barrows still knocks, faintly.' },
+      { if: [{ kind: 'flag', flag: 'met-wren' }],
+        text: 'The reeve has promoted Wren, to her visible horror, and she leads the watch that walks the old road once a season.' },
+      { if: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
+        text: 'Vex, who turned on the Ashfang chief for you, hears the news in a hill inn and buys the whole room a round.' },
+      { if: [],
+        text: 'On the last night, at the fen\'s edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment. Then they looked at the town, the way you look at a house you mean to come back to. Then the reeds closed, and they were gone — for now. Debts, in the deep fen, have a way of *coming due*.' },
     ],
   },
 };
@@ -588,9 +695,10 @@ export const SUNKEN_BARROWS_MODULE: Module = {
   // Part 2 of the trilogy: a victory carries the company into The Wyrmcalling.
   sequel: 'wyrmcalling',
   start: 'return', scenes, defeatScene: 'sb-defeat', town: 'town',
-  // What the last chapter remembers: whether the company knows Wren (read
-  // there as 'sunken-barrows:met-wren'). Set on every route to the fen.
-  carries: ['met-wren'],
+  // What the last chapter remembers (read there as 'sunken-barrows:<flag>'):
+  // whether the company knows Wren (set on every route to the fen), whether
+  // Brother Halden lived, and whether the Warden's door shut cracked.
+  carries: ['met-wren', 'halden-saved', 'seal-cracked'],
   companions: {
     wren: {
       id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',

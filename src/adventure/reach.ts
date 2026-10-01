@@ -60,6 +60,10 @@ export function checkModuleReach(module: Module): ReachReport {
   const facts = new Map<string, number>();
   const fact = (k: string) => { if (!facts.has(k)) facts.set(k, facts.size); };
   for (const s of Object.values(module.scenes)) {
+    // An ending's slides only colour the last screen: nothing they read can
+    // change where a party gets to, so tracking them would only multiply the
+    // states (each carried flag doubles them) for no answer.
+    if (s.kind === 'ending') continue;
     for (const r of requirementsOf(s)) {
       if (r.kind === 'flag' || r.kind === 'notFlag') fact(`flag:${r.flag}`);
       if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
