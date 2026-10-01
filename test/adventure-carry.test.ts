@@ -133,7 +133,7 @@ describe('choices carried into the next chapter', () => {
     const { HOLLOW_ROAD_MODULE } = await import('../src/data/modules/hollow-road.js');
     const { carriedFlags } = await import('../src/adventure/runtime.js');
     const s = startAdventure(newCampaign(1), HOLLOW_ROAD_MODULE);
-    s.flags = { 'saved-scout': true, 'vex-turned': false, 'chief-dead': true };
+    s.flags = { 'saved-scout': true, 'vex-turned': false, 'trail-read': true };
     expect(carriedFlags(HOLLOW_ROAD_MODULE, s)).toEqual({ 'hollow-road:saved-scout': true });
   });
 

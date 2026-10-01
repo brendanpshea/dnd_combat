@@ -112,7 +112,7 @@ const scenes: Record<string, Scene> = {
     id: 'road-reveal', kind: 'story', art: { imageId: 'loc-road', emoji: '🩸' },
     text: [
       'The bandit isn\'t dead yet. He laughs wetly through red teeth as you stand over him.',
-      '"You think you\'ve done something? We\'re a hundred strong in the hollow — and the **chief**, he don\'t even answer to himself no more. There\'s something *in the marsh* he feeds, and it feeds him back. The **Ashfang** own this whole valley now, and worse than us owns them."',
+      '"You think you\'ve done something? There\'s more of us in the hollow than you\'ve got arrows — and the **chief**, he don\'t even answer to himself no more. There\'s something *in the marsh* he feeds, and it feeds him back. The **Ashfang** own this whole valley now, and worse than us owns them."',
       'His eyes drift to the hills, to a thin smudge of smoke rising somewhere past the marsh. Then they drift to nothing at all.',
     ],
     next: [{ id: 'on', label: 'Press on to Thornwick', to: 'thornwick',
@@ -126,7 +126,7 @@ const scenes: Record<string, Scene> = {
     id: 'thornwick', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: [
       'The road brings you into **Thornwick** at last. Its gate is scorched and its shutters barred. Faces watch you pass from the dark of doorways.',
-      'So the raiders told it true. For a month the **Ashfang** have bled this valley dry, and the whole country locks its doors by dark.',
+      'So it is true. For a month the **Ashfang** have bled this valley dry, and the whole country locks its doors by dark.',
     ],
     next: [{ id: 'go', label: 'Enter the Wander-Inn', to: 'tavern-meet' }],
     noBack: true,
@@ -575,7 +575,7 @@ const scenes: Record<string, Scene> = {
   barrow: {
     id: 'barrow', kind: 'story', art: { emoji: '🪦' },
     text: [
-      'Half-swallowed by the reeds is a barrow-mound older than any kingdom you could name. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something has been chewing back out.',
+      'Half-swallowed by the reeds is a barrow-mound older than any kingdom you could name. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.',
       'Grave-goods glint in the dark below. So does something that moves without touching the water.',
     ],
     next: [
@@ -625,13 +625,16 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'ravine', text: ['The second toad shudders and goes still, half in the water. You scrape the slime off and press on — the ravine still waits.'] },
   },
   'camp-ambush': {
-    id: 'camp-ambush', kind: 'battle', encounterId: 'marsh-dead', mapId: 'bog',
+    id: 'camp-ambush', kind: 'battle',
+    // A night attack is a setback, not a payday: no XP or loot, so a
+    // risky camp can't be farmed by resting over and over.
+    loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight. No time to ready anything — you fight with what you\'ve got.'],
     onWin: { to: '@hub', text: ['The dead lie still again — but the night\'s ruined, and no one\'s resting now. You got no good of that rest. If you want sleep, you\'ll have to start over.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
-    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Shapes crouch there that are not raiders. Scaled things lie low in the shallows, only their eyes above the water. Who spots the trap first decides everything.'],
+    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Nothing moves. That is the trouble. Whoever spots what is waiting first decides everything.'],
     // The perception check only sets the terms (surprise); Milestone M2 rides the
     // battle's win, so 3rd level is earned in the fight, not handed over — and the
     // hollow ambush is the one route to the den (approach needs trail-read from
@@ -660,7 +663,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'You turn the nearest body with your boot. Branded into the scaled hide, still weeping: a crude mark of reeds and a reaching hand. These weren\'t raiders. Someone *owned* them, and marked them like cattle.',
       'Then a voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter. **Vargan**, the Ashfang chief, sold me this marsh, sweetlings, and all his people\'s homes in it. I pay him in coin and in creatures."',
-      '"Come up to the fire. The chief and his **Reedwife** have been expecting you." The reeds shiver, and go quiet. So the Ashfang answer to a **green hag** of the marsh.',
+      '"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet. So the Ashfang answer to a **green hag** of the marsh.',
     ],
     next: [{ id: 'ok', label: 'On to the den', to: 'gate',
       requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true,
@@ -750,7 +753,10 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'muster-cleared' }, { kind: 'gold', amount: 25 }] },
   },
   'den-camp-ambush': {
-    id: 'den-camp-ambush', kind: 'battle', encounterId: 'raiders-forward', mapId: '@room',
+    id: 'den-camp-ambush', kind: 'battle',
+    // A night attack is a setback, not a payday: no XP or loot, so a
+    // risky camp can't be farmed by resting over and over.
+    loot: false, encounterId: 'raiders-forward', mapId: '@room',
     intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents — an orc, an archer and a bandit, blinking in the firelight, already shouting the alarm. So much for rest.'],
     onWin: { to: '@hub', text: ['You put the patrol down before the whole camp wakes. But the night\'s gone, and you got no rest of it.'] },
   },
@@ -772,7 +778,7 @@ const scenes: Record<string, Scene> = {
     id: 'vex-parley', kind: 'dialogue', npc: LIEUTENANT, art: { emoji: '🗡️' },
     lines: [
       'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it like a man who\'d rather be leaning on it.',
-      '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He threw you to his ogre in the pit. I notice he didn\'t throw me." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
+      '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. I notice he never kept one for me." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
     ],
     next: [
       { id: 'persuade', label: '[Persuasion DC 13] Offer him the chief\'s seat, once it\'s empty', to: 'vex-turned',
@@ -913,7 +919,7 @@ export const HOLLOW_ROAD_MODULE: Module = {
   start: 'road', scenes, defeatScene: 'defeat', town: 'square',
   // What the rest of the campaign remembers: whether Wren lived, and whether
   // Vex took the party's offer (read as 'hollow-road:saved-scout', …).
-  carries: ['saved-scout', 'vex-turned'],
+  carries: ['saved-scout', 'scout-met', 'vex-turned', 'chief-dead'],
   companions: {
     wren: {
       id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',

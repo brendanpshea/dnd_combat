@@ -17,7 +17,7 @@
  * flooded seam 1,800, the oni's hold 1,650, the giants' hall 1,650,
  * cataclysm finale 3,600); optional dens/beasts add up to ~6,000 more. A
  * continuing company (~3,050 XP from Part 2) that raids most of the hills
- * passes L5's 6,500 honestly; `xpToLevel: 5` on the finale win is the floor
+ * passes L5's 6,500 honestly; `xpToLevel: 5` on stepping up to the finale is the floor
  * for a fight-shy run (or one that buys its way past the ogre-mage). Cold
  * starts are floored to L4 by the opening choice.
  *
@@ -81,9 +81,44 @@ const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warc
 const TO_EPILOGUE: Choice[] = [
   { id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue-turned',
     requires: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }], hideWhenBlocked: true },
+  // A company that broke the Ashfang, whatever it did about Vex.
+  { id: 'done-veteran', label: 'Let the valley celebrate', to: 'wc-epilogue-veteran',
+    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }, { kind: 'flag', flag: 'hollow-road:chief-dead' }], hideWhenBlocked: true },
   { id: 'done-new', label: 'Let the valley celebrate', to: 'wc-epilogue',
-    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }], hideWhenBlocked: true },
+    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }, { kind: 'notFlag', flag: 'hollow-road:chief-dead' }], hideWhenBlocked: true },
 ];
+
+/**
+ * The brood on the rim is exactly the wyrmlings whose dens were left
+ * standing — Vex's "one monster fewer on the day", kept to the letter. One
+ * battle scene per combination (encounters `den-clutch-*`), picked by which
+ * dens are cleared. All three cleared skips the rim (`calling-gate-clear`).
+ */
+const DENS = {
+  g: { flag: 'green-cleared', name: 'green', from: 'out of the thicket' },
+  b: { flag: 'blue-cleared', name: 'blue', from: 'off the mesa' },
+  r: { flag: 'red-cleared', name: 'red', from: 'up from the burning den' },
+} as const;
+const BROODS = ['g', 'b', 'r', 'gb', 'gr', 'br', 'gbr'] as const;
+const broodChoices = (effects?: Effect[]): Choice[] => BROODS.map((k) => ({
+  id: `brood-${k}`, label: 'Meet the brood on the rim', to: `clutch-${k}`, hideWhenBlocked: true,
+  requires: (['g', 'b', 'r'] as const).map((c) => (k.includes(c)
+    ? { kind: 'notFlag' as const, flag: DENS[c].flag }
+    : { kind: 'flag' as const, flag: DENS[c].flag })),
+  ...(effects ? { effects } : {}),
+}));
+const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((k) => {
+  const parts = [...k].map((c) => `the ${DENS[c as keyof typeof DENS].name} ${DENS[c as keyof typeof DENS].from}`);
+  const intro = k.length === 1
+    ? `One wyrmling comes over the rim alone: ${parts[0]}, from the one den you left standing. It is all the brood the stone has left, and it is furious about it.`
+    : `${k.length === 2 ? 'Two' : 'Three'} wyrmlings come over the rim together: ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}. Every den you left standing has answered the stone.`;
+  const id = `clutch-${k}`;
+  return [id, {
+    id, kind: 'battle', encounterId: `den-clutch-${k}`, mapId: 'open', intro: [intro],
+    onWin: { to: 'calling-approach', text: ['The last wyrmling drops out of the bruised light and does not get up. The rim is yours, and the hollow below waits. The stone\'s note wavers, as if it has just counted how few voices are still answering it.'],
+      effects: [{ kind: 'setFlag', flag: 'clutch-beaten' }] },
+  } satisfies Scene];
+}));
 
 const MIRA_TOAST = 'Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She pours the first round on the house, and the second before anybody asks. With the third comes her observation that heroes drink no more carefully than anyone else. The reeve orders a plaque made. Wren corrects the geography on it.';
 
@@ -146,7 +181,7 @@ const scenes: Record<string, Scene> = {
   'vex-brief': {
     id: 'vex-brief', kind: 'story', art: { imageId: 'loc-camp', emoji: '🗡️' },
     text: [
-      'This is **Vex**. He was the Ashfang\'s lieutenant once. When the chief made his last stand, Vex would not fight for him. He walked away and gave himself up to the reeve. Now Thornwick trusts him to run its war. "Someone offered me a way out once, and I said no," he says. "Then I walked out anyway. A slow learner still learns."',
+      'This is **Vex**. He was the Ashfang\'s lieutenant once. When the chief made his last stand, Vex would not fight for him. He walked away and gave himself up to the reeve. Now Thornwick trusts him to run its war. "It took me too long to walk away," he says. "A slow learner still learns."',
       ...BRIEF_PLAN,
     ],
     next: [{ id: 'on', label: 'Step out into the camp', to: 'warcamp',
@@ -203,7 +238,7 @@ const scenes: Record<string, Scene> = {
     id: 'scouts-fire', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
     lines: [
       'A young woman named **Wren** runs the scouts\' fire. Three riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She is young to be Chief of Scouts. She wears the title like a coat that fits her but embarrasses her anyway.',
-      '"You are the company Vex sent? Good. Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
+      '"You are the company the camp keeps talking about? Good. Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
       'She looks up. "And the streams are walking uphill. I have no advice about that one. I only know where they walk." She hesitates. "Come back down the hill on your own feet," she adds, a little too fast.',
     ],
@@ -299,7 +334,10 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Onward', to: 'hills' }], noBack: true,
   },
   'hills-night': {
-    id: 'hills-night', kind: 'battle', encounterId: 'harpy-roost', mapId: 'open',
+    id: 'hills-night', kind: 'battle',
+    // A night attack is a setback, not a payday: no XP or loot, so a
+    // risky camp can't be farmed by resting over and over.
+    loot: false, encounterId: 'harpy-roost', mapId: 'open',
     intro: ['The singing starts an hour after you bank the fire. It is sweet, and wrong, and getting closer. Harpies come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, mostly because the sentry threw a boot.'],
     onWin: { to: '@hub', text: ['The last harpy drops into the dark with its song broken. You do not sleep again that night. You bank the fire and count the watches until a grey, quiet dawn.'] },
   },
@@ -366,7 +404,7 @@ const scenes: Record<string, Scene> = {
     id: 'seam', kind: 'story', art: { emoji: '🌊' },
     text: [
       'A mountain brook runs up the pass instead of down it, quickly and steadily, straight against gravity. Where it pools at the top, the pool has a shape. It has shoulders. It waits with a patience that water should not have.',
-      'The Undercrypt\'s broken ward left thin places in the world, and something came through this one. The Calling holds it here like a cork in a bottle. The road to the middle pass runs right through its pool.',
+      'The weeks the Undercrypt\'s ward stood broken left thin places in the world, and something came through this one. The Calling holds it here like a cork in a bottle. The road to the middle pass runs right through its pool.',
     ],
     next: [{ id: 'fight', label: 'Break the water', to: 'seam-fight' }],
   },
@@ -488,8 +526,7 @@ const scenes: Record<string, Scene> = {
       'Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang, older than anyone can guess, wrapped in a light that hurts to look at.',
       'Wingbeats ride the wind. The rim of the bowl is where the wyrms gather, and the Calling has pulled every wyrmling it could still reach up there to meet you. Clear the rim, and only the stone and its keepers are left.',
     ],
-    next: [{ id: 'on', label: 'Meet the clutch on the rim', to: 'clutch-fight',
-      effects: [{ kind: 'setFlag', flag: 'calling-found' }] }],
+    next: broodChoices([{ kind: 'setFlag', flag: 'calling-found' }]),
     noBack: true,
   },
   // The den-raiding payoff: all three dens emptied, so the brood never masses.
@@ -513,14 +550,9 @@ const scenes: Record<string, Scene> = {
   'clutch-again': {
     id: 'clutch-again', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌄' },
     text: ['The brood still circles the rim of the bowl, shrieking. They watched you go, and they have been waiting for you to come back.'],
-    next: [{ id: 'on', label: 'Meet the clutch on the rim', to: 'clutch-fight' }],
+    next: broodChoices(),
   },
-  'clutch-fight': {
-    id: 'clutch-fight', kind: 'battle', encounterId: 'chromatic-clutch', mapId: 'open',
-    intro: ['They come over the rim together, every wyrmling the Calling could still reach. Two green and one blue, pulled in from dens all over the mountain, shriek in three keys of greed. They have decided that your debt is theirs to collect.'],
-    onWin: { to: 'calling-approach', text: ['The last wyrmling drops out of the bruised light and does not get up. The rim is yours, and the hollow below waits. The stone\'s note wavers, as if it has just counted how few voices are still answering it.'],
-      effects: [{ kind: 'setFlag', flag: 'clutch-beaten' }] },
-  },
+  ...broodScenes(),
   'calling-approach': {
     id: 'calling-approach', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
     text: [
@@ -528,14 +560,16 @@ const scenes: Record<string, Scene> = {
       'They are not commanding the stone. They are pouring themselves into it. Their hair has turned to river-weed and wire. Their faces are burning down like candles. They are spending two long lives to keep the Calling singing.',
       '"Sister-killers," they say together, without turning around. "You cut her down in the chief\'s hall. So we woke the stone, and we called the hills down on everyone you saved." The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far. Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
     ],
-    next: [{ id: 'fight', label: 'Break the stone, and the sisters with it', to: 'calling-battle' }],
+    // The level floor lands before the hardest fight, not after it.
+    next: [{ id: 'fight', label: 'Break the stone, and the sisters with it', to: 'calling-battle',
+      effects: [{ kind: 'xpToLevel', level: 5 }] }],
   },
   'calling-battle': {
     id: 'calling-battle', kind: 'battle', encounterId: 'elemental-cataclysm', mapId: 'firepit',
     loot: { bonusTier: 'rare' },
-    intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it. The mountain\'s own bones heave up into a shape with fists. The sisters crumble into drifts of dry reeds, smiling as they go. The Calling\'s last note is a disaster, and it has your name in it.'],
-    onWin: { to: 'calling-won', text: ['The fire gutters out of the air. The stone shape shakes itself apart into loose rubble. The black fang has nothing left to spend and nobody left to spend it, so it cracks from top to bottom and falls silent. The Calling does not end with thunder. It ends with the huge, ringing quiet of a held note finally let go.'],
-      effects: [{ kind: 'xpToLevel', level: 5 }, { kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
+    intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it. The mountain\'s own bones heave up into a shape with fists. The sisters\' hands sink into the rock to the wrist, and they do not let go. The Calling\'s last note is a disaster, and it has your name in it.'],
+    onWin: { to: 'calling-won', text: ['The sisters crumble into drifts of dry reeds, smiling as they go. The fire gutters out of the air. The stone shape shakes itself apart into loose rubble. The black fang has nothing left to spend and nobody left to spend it, so it cracks from top to bottom and falls silent. The Calling does not end with thunder. It ends with the huge, ringing quiet of a held note finally let go.'],
+      effects: [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
   },
   'calling-won': {
     id: 'calling-won', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌅' },
@@ -577,6 +611,15 @@ const scenes: Record<string, Scene> = {
     id: 'wc-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
       'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one all end on the same mountain, with your company standing on it. You silenced the Calling, and the coven\'s long debt burned away to reeds on a mountain wind.',
+      MIRA_TOAST,
+      'Vex once walked away from a losing side and gave himself up. Tonight he stands on the winning one, and he still looks surprised about it. He raises a glass to the four of you. "To the company," he says. "Paid in full."',
+    ],
+  },
+  // The company broke the Ashfang in Part 1, but Vex never took its offer.
+  'wc-epilogue-veteran': {
+    id: 'wc-epilogue-veteran', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
+    text: [
+      'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The same four names run through all three stories like a bright thread. You broke the Ashfang. You sealed the Undercrypt. You silenced the Calling, and the coven\'s long debt burned away to reeds on a mountain wind.',
       MIRA_TOAST,
       'Vex once walked away from a losing side and gave himself up. Tonight he stands on the winning one, and he still looks surprised about it. He raises a glass to the four of you. "To the company," he says. "Paid in full."',
     ],

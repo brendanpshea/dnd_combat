@@ -240,8 +240,14 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   },
   'chromatic-clutch': {
     id: 'chromatic-clutch', name: 'Chromatic Clutch', suggestedLevel: 4,
-    members: ['green-wyrmling', 'green-wyrmling', 'blue-wyrmling'],
+    members: ['black-wyrmling', 'green-wyrmling', 'white-wyrmling'],
   },
+  // The Wyrmcalling's brood on the rim: exactly the wyrmlings whose dens the
+  // party left standing (g/b/r), so each den emptied is one fewer here.
+  ...Object.fromEntries((['g', 'b', 'r', 'gb', 'gr', 'br', 'gbr'] as const).map((k) => [`den-clutch-${k}`, {
+    id: `den-clutch-${k}`, name: 'The Brood on the Rim', suggestedLevel: 4,
+    members: [...k].map((c) => ({ g: 'green-wyrmling', b: 'blue-wyrmling', r: 'red-wyrmling' })[c]!),
+  }])),
   // A back-alley crew: a fixer (spy) and two hired knives — the muscle a town
   // informant keeps around. A first-real-fight step up from a bare street mug.
   cutpurses: {

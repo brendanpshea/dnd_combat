@@ -377,7 +377,7 @@ export const STAGES: StageData[] = [
   { encounterId: 'wisp-bog', mapId: 'marsh' },       // 1100
   { encounterId: 'red-dragon-den', mapId: 'firepit' }, // 1150
   { encounterId: 'ashfang-warlord', mapId: 'firepit' }, // 1175
-  { encounterId: 'chromatic-clutch', mapId: 'corridor' }, // 1600
+  { encounterId: 'chromatic-clutch', mapId: 'corridor' }, // 1350
   { encounterId: 'oni', mapId: 'firepit' },          // 1650
   { encounterId: 'water-vortex', mapId: 'marsh' },   // 1800
   { encounterId: 'gorgon-maze', mapId: 'ruins' },    // 1800  → L5 around here

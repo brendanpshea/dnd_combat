@@ -48,6 +48,17 @@ const POOL_CHOICES = [
   { id: 'leave', label: 'Leave the pool its privacy', to: 'fen' },
 ];
 
+/** What the party can still do in Thornwick once the door is sealed. */
+const SB_CLAIMS = [
+  { id: 'bounty', label: 'Collect the reeve\'s commission', to: 'sb-claim-paid',
+    requires: [{ kind: 'notFlag' as const, flag: 'sb-paid' }], hideWhenBlocked: true,
+    effects: [{ kind: 'gold' as const, amount: 150 }, { kind: 'setFlag' as const, flag: 'sb-paid' }] },
+  { id: 'mira', label: 'Stand Mira\'s taproom a round (10 gold)', to: 'sb-claim-round',
+    requires: [{ kind: 'gold' as const, atLeast: 10 }, { kind: 'notFlag' as const, flag: 'sb-round' }], hideWhenBlocked: true,
+    effects: [{ kind: 'gold' as const, amount: -10 }, { kind: 'setFlag' as const, flag: 'sb-round' }] },
+  { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue' },
+];
+
 const scenes: Record<string, Scene> = {
   // === ACT 1 — THORNWICK, THE WRONG BELLS ================================
   return: {
@@ -120,6 +131,8 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'met-wren' }], to: 'fen-road' },
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'fen-reunion' },
+            // The scout under the horse died in Part 1: this Wren is someone else.
+            { if: [{ kind: 'flag', flag: 'hollow-road:scout-met' }], to: 'fen-partner' },
           ] },
       ],
     },
@@ -127,7 +140,7 @@ const scenes: Record<string, Scene> = {
   inn: {
     id: 'inn', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
-      'The Wander-Inn is far too full for this hour. Nobody in Thornwick wants to sleep alone tonight, not with the churchyard standing open. **Mira** sets down a bowl in front of you unasked.',
+      'The Wander-Inn is full, and nobody is in a hurry to leave. Nobody in Thornwick wants to be alone today, not with the churchyard standing open. **Mira** sets down a bowl in front of you unasked.',
       '"So. The marsh sends us another bill." She says it flat, wiping the bar the way other people sharpen knives. "First raiders, now the departed. I\'d ask what\'s next, but I\'ve found the marsh treats that as a challenge."',
       '"Eat. Then go see the reeve — he\'s been pacing his hall since the bells. And whatever\'s pulling the dead out there — charge it double."',
     ],
@@ -194,6 +207,20 @@ const scenes: Record<string, Scene> = {
       effects: [...WREN_JOINS,
         { kind: 'journal', entry: { id: 'n-wren', kind: 'npc', title: 'Wren, the Reeve\'s Scout',
           body: 'Wren is Reeve Aldous\'s scout. She is young, she limps, and she will not be left behind. She guides you through the deep fen as far as the old barrow-country.' } }] }],
+  },
+  // The company found a scout dying under a horse in Part 1, and she never
+  // told them her name. She was Wren's partner.
+  'fen-partner': {
+    id: 'fen-partner', kind: 'dialogue', npc: WREN, art: { imageId: 'loc-marsh', emoji: '🌫️' },
+    lines: [
+      'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees.',
+      '"**Wren**. The reeve\'s scout." She looks you over. "You\'re the ones who found Tamsin under that horse on the marsh road. She was my partner. The reeve says you stayed with her at the end." She puts the knife away. "Thank you for that."',
+      '"' + WREN_BRIEF + '"',
+    ],
+    next: [{ id: 'go', label: 'Follow her onto the raised road', to: 'fen',
+      effects: [...WREN_JOINS,
+        { kind: 'journal', entry: { id: 'n-wren', kind: 'npc', title: 'Wren, the Reeve\'s Scout',
+          body: 'Wren is Reeve Aldous\'s scout. Her partner Tamsin was the scout you found dying on the marsh road. She guides you through the deep fen as far as the old barrow-country.' } }] }],
   },
   // Reunion: the company saved her on the marsh road in Part 1.
   'fen-reunion': {
@@ -263,7 +290,10 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Press on', to: 'fen' }], noBack: true,
   },
   'fen-night': {
-    id: 'fen-night', kind: 'battle', encounterId: 'marsh-dead', mapId: 'bog',
+    id: 'fen-night', kind: 'battle',
+    // A night attack is a setback, not a payday: no XP or loot, so a
+    // risky camp can't be farmed by resting over and over.
+    loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. The fen has sent visitors. Two ghouls, grave-mud to the elbows, crawl out of the black water. They move with the calm confidence of things that have done this before. No rest tonight. Just work.'],
     onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time. The night is ruined and the fire is out. Nobody says what you are all thinking. They came out of the deep fen, the *very place you plan to go*.'] },
   },
@@ -295,8 +325,8 @@ const scenes: Record<string, Scene> = {
   'chapel-won': {
     id: 'chapel-won', kind: 'story', art: { imageId: 'loc-temple', emoji: '📖' },
     text: [
-      'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in a tidy priest\'s hand. *The Reedwife kept the vigil. The vigil is ended. The Warden of the Barrows wakes, and gathers hands to open his door from within.*',
-      'And beneath, underlined twice, the sentence that makes it your business: *"The rites of sealing are the old rites. The words are in this book. What is wanted is someone with the nerve to say them at the door."*',
+      'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in Halden\'s tidy hand. *The Reedwife kept the vigil. The vigil is ended. The Warden of the Barrows wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
+      'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at the door. Not me. It will not let it be me."*',
       'So the truth lands at last. The **Reedwife** was never just a hag. She was the jailer of the **Warden of the Barrows**, an ancient dead power under the fen. Her feeding kept him asleep. When she died, his seal broke with her. Now he wakes, and he calls the dead to open his door from the inside.',
       'The book also gives you the fix. Take it to the great barrow, reach the Warden\'s door, and *speak the rites of sealing there*. That will shut him in again. Under the altar cloth you also find a healing potion that Halden never got to drink.',
       '"Nerve we\'ve got," Wren says, reading over your shoulder. She sounds almost sure of it. "The door\'s past the Barrow Gate."',
@@ -314,7 +344,7 @@ const scenes: Record<string, Scene> = {
   lights: {
     id: 'lights', kind: 'story', art: { emoji: '💡' },
     text: [
-      'The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror — soft, swaying, warm as windows. Wren\'s face goes carefully blank. "Corpse-candles. They walk mourners into the deep pools and hold them under. Half of Thornwick\'s missing folk are *under this water*."',
+      'The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror — soft, swaying, warm as windows. Wren\'s face goes carefully blank. "Corpse-candles. They walk mourners into the deep pools and hold them under. Half the people the fen has taken this year are *under this water*."',
       'The lights drift nearer, hopeful as dogs. Something else moves between them, further out. It is a colder shape, and it was a person once.',
     ],
     next: [
@@ -325,7 +355,7 @@ const scenes: Record<string, Scene> = {
   'lights-fight': {
     id: 'lights-fight', kind: 'battle', encounterId: 'wisp-bog', mapId: 'bog',
     intro: ['The lights stop pretending. Two of them come in low and fast over the water, crackling with stolen life. A cold shape rises between them. It is a specter trailing fen-mist, its mouth open on a scream the water drank years ago.'],
-    onWin: { to: 'fen', text: ['The last wisp winks out, and the water goes dark for good. In the shallows you find the purses of the drowned, 55 gold between them. Somewhere under the water, Thornwick\'s missing folk can rest at last.'],
+    onWin: { to: 'fen', text: ['The last wisp winks out, and the water goes dark for good. In the shallows you find the purses of the drowned, 55 gold between them. Somewhere under the water, the fen\'s drowned can rest at last.'],
       effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'gold', amount: 55 }] },
   },
   'lights-done': {
@@ -364,7 +394,7 @@ const scenes: Record<string, Scene> = {
     id: 'lychgate', kind: 'battle', encounterId: 'gargoyle-perch', mapId: 'ruins',
     intro: [
       'All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **Barrow Gate**. It is older than the chapel and older than the road. Two weathered granite watchers crouch on top of it.',
-      'Wren stops dead. "Those weren\'t there when I scouted." She\'s right — the stone bases are mossy, but the watchers\' claws are clean. The granite stretches, cracks its wings, and drops on you like a falling roof.',
+      'Wren stops dead. "Nobody said anything about those." She\'s right — the stone bases are mossy, but the watchers\' claws are clean. The granite stretches, cracks its wings, and drops on you like a falling roof.',
     ],
     onWin: { to: 'lychgate-won', text: ['The second gargoyle shatters mid-dive and rains down as plain gravel. The Barrow Gate stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.'] },
   },
@@ -432,7 +462,10 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Deeper in', to: 'undercrypt' }], noBack: true,
   },
   'crypt-night': {
-    id: 'crypt-night', kind: 'battle', encounterId: 'specter-haunt', mapId: 'corridor',
+    id: 'crypt-night', kind: 'battle',
+    // A night attack is a setback, not a payday: no XP or loot, so a
+    // risky camp can't be farmed by resting over and over.
+    loot: false, encounterId: 'specter-haunt', mapId: 'corridor',
     intro: ['You bank a fire in a dry side-vault, and the Undercrypt notices. The cold comes first. Then come the shapes it belongs to. Two specters, the painted dead come loose from the walls, slide toward your fire.'],
     onWin: { to: '@hub', text: ['The specters tear apart into cold and silence. Nobody tries to sleep again. You sit out the rest of the night with your backs to the wall and your weapons across your knees.'] },
   },
@@ -455,7 +488,7 @@ const scenes: Record<string, Scene> = {
       'This is the hall of the kings\' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*. Cold light burns in its eye sockets. It draws a sword older than the road outside. It does not shuffle like the other dead. It takes a **stance**.',
       'From the slabs on either side, two skeletons rise to guard it. They snap to their feet like soldiers called to order, and they come for you.',
     ],
-    onWin: { to: 'undercrypt', text: ['The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it. The dead army below just lost its officers.'],
+    onWin: { to: 'undercrypt', text: ['The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it. Whatever the Warden raises next will have nobody to lead it.'],
       effects: [{ kind: 'setFlag', flag: 'wights-down' }, { kind: 'gold', amount: 40 }] },
   },
   'wights-done': {
@@ -504,21 +537,29 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'home', label: 'Climb back to the light', to: 'sb-aftermath' }],
   },
+  // Each claim gets one line, then a short hub: the homecoming doesn't replay.
+  'sb-claim-paid': {
+    id: 'sb-claim-paid', kind: 'story', art: { imageId: 'loc-town', emoji: '💰' },
+    text: ['The reeve counts the purse into your hands himself, coin by coin. "Thornwick settles its debts," he says, and for once he almost smiles.'],
+    next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
+  },
+  'sb-claim-round': {
+    id: 'sb-claim-round', kind: 'story', art: { imageId: 'loc-tavern', emoji: '🍺' },
+    text: ['The taproom drinks to the company, then to the dead, then to Mira, who pretends not to hear it.'],
+    next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
+  },
+  'sb-aftermath-hub': {
+    id: 'sb-aftermath-hub', kind: 'story', art: { imageId: 'loc-town', emoji: '🏘️' },
+    text: ['Thornwick goes about its burying, and its living.'],
+    next: SB_CLAIMS, noBack: true,
+  },
   'sb-aftermath': {
     id: 'sb-aftermath', kind: 'story', art: { imageId: 'loc-town', emoji: '🏘️' },
     text: [
       'Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time. The walk home is long and wet, and the best walk any of you can remember.',
-      'Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service. He pays before anyone asks, and counts nothing twice. He shakes each of your hands one entire second longer than protocol requires. For Aldous, this is close to weeping.',
+      'Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service. He has a purse set aside for you, and does not make you ask twice. He shakes each of your hands one entire second longer than protocol requires. For Aldous, this is close to weeping.',
     ],
-    next: [
-      { id: 'bounty', label: 'Accept the reeve\'s commission, paid in full', to: 'sb-aftermath',
-        requires: [{ kind: 'flag', flag: 'reeve-task' }, { kind: 'notFlag', flag: 'sb-paid' }],
-        effects: [{ kind: 'gold', amount: 150 }, { kind: 'setFlag', flag: 'sb-paid' }] },
-      { id: 'mira', label: 'Stand Mira\'s taproom a round, for once', to: 'sb-aftermath',
-        requires: [{ kind: 'gold', atLeast: 10 }, { kind: 'notFlag', flag: 'sb-round' }],
-        effects: [{ kind: 'gold', amount: -10 }, { kind: 'setFlag', flag: 'sb-round' }] },
-      { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue' },
-    ],
+    next: SB_CLAIMS,
     // Home, with the door sealed: nothing below is left to walk back into.
     noBack: true,
   },
