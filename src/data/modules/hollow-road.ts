@@ -457,7 +457,7 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'xpToLevel', level: 2 }] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
-      success: { to: 'trail', text: ['You hold his eye and draw steel slow, and let him count your blades. The cackle dies in his throat. He barks something at his pack, and they melt back into the reeds as if they were never there. You have learned something new on this road. Sometimes a fight can end before it starts.'],
+      success: { to: 'trail', text: ['You hold his eye and draw steel slow, and let him count your blades. The cackle dies in his throat. He barks something at his pack, and they melt back into the reeds as if they were never there. Behind you, somebody lets out a long breath. Not one blade got wet.'],
         effects: [{ kind: 'xpToLevel', level: 2 }] },
     },
   },
@@ -740,11 +740,11 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight. No time to ready anything — you fight with what you\'ve got.'],
-    onWin: { to: '@hub', text: ['The dead lie still again — but the night\'s ruined, and no one\'s resting now. You got no good of that rest. If you want sleep, you\'ll have to start over.'] },
+    onWin: { to: '@hub', text: ['The dead lie still again, but the night\'s ruined. Nobody sleeps after that. You sit out the dark with your blades across your knees, and dawn finds you as tired as when you lay down.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
-    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Nothing moves. That is the trouble. Whoever spots what is waiting first decides everything.'],
+    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Nothing moves. That is the trouble. Something out there is lying very still, waiting for you to come closer.'],
     // The perception check only sets the terms (surprise); Milestone M2 rides the
     // battle's win, so 3rd level is earned in the fight, not handed over — and the
     // hollow ambush is the one route to the den (approach needs trail-read from

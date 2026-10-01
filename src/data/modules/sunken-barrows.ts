@@ -250,7 +250,7 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'graves-read' }, { kind: 'xp', amount: 30 },
         { kind: 'journal', entry: { id: 'c-muster', kind: 'clue', title: 'The Dead Marched in Ranks',
           body: 'The dead left in neat rows, oldest graves first. They were not hungry. They were obeying orders. Something down there has the right to command graves, and it is using it.' } }] },
-    failure: { to: 'town', text: ['Mud, turf, and the underside of a churchyard: whatever the graves have to say, they aren\'t saying it to you. The trails still point one way. Sometimes the obvious clue is the whole clue.'],
+    failure: { to: 'town', text: ['You get mud, turf, and the underside of a churchyard. Whatever the graves have to say, they aren\'t saying it to you. But the trails still point one way, into the fen, and that will have to do.'],
       effects: [{ kind: 'setFlag', flag: 'graves-read' }] },
   },
   'graves-done': {
@@ -422,10 +422,9 @@ const scenes: Record<string, Scene> = {
     lines: [
       'Halden sits down hard on the altar steps. He is shaking, and he is himself again. He stares at his hands as if someone just gave them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water.',
       '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
-      '"The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside."',
-      'He taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That is the reed-woman\'s mark, the vigil\'s mark. The old builders cut it into the Barrow Gate. The gate\'s watchers know it."',
-      '"The rites of sealing are in that book. Someone must say them at his door, in the great barrow past the Barrow Gate. Say them whole, or not at all. It will take nerve." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me."',
-      'He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
+      '"The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."',
+      'Halden taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That\'s the vigil\'s mark. The old builders cut it into the Barrow Gate, and the gate\'s watchers know it. The rites of sealing are in there too. Someone must say them at his door, in the great barrow past the gate. Say them whole, or not at all."',
+      '"It will take nerve." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me." He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
       effects: [...CHAPEL_CLEARED, { kind: 'setFlag', flag: 'halden-saved' },
@@ -435,12 +434,10 @@ const scenes: Record<string, Scene> = {
   'chapel-won': {
     id: 'chapel-won', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '📖' },
     text: [
-      'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in Halden\'s tidy hand. *The Reedwife kept the vigil, and the fen-folk paid her a lamb each midwinter for it. The vigil is ended. The Warden of the Barrows wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
-      'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at the door. Not me. It will not let it be me."*',
-      'On the flyleaf, someone has inked a mark of reeds and a reaching hand. Beside it, in the tidy hand: *The vigil\'s mark. The old builders cut it into the Barrow Gate, and its watchers know it.*',
-      'So the truth lands at last. The **Reedwife** was never just a hag. She was the jailer of the **Warden of the Barrows**, an ancient dead power under the fen. For one lamb a winter, she kept him asleep. When she died, his seal broke with her. Now he wakes, and he calls the dead to open his door from the inside.',
-      'The book also gives you the fix. Take it to the great barrow, reach the Warden\'s door, and *speak the rites of sealing there*. That will shut him in again. Under the altar cloth you also find a healing potion that Halden never got to drink.',
-      '"Nerve we\'ve got," Wren says, reading over your shoulder. She sounds almost sure of it. "The door\'s past the Barrow Gate." On the way out she sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."',
+      'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand. *The Reedwife was the jailer of the Warden of the Barrows. The fen-folk paid her a lamb each midwinter, and she kept him asleep under the fen. She is dead, and the vigil is over. The Warden wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
+      'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at his door, in the great barrow. Not me. It will not let it be me."* On the flyleaf, someone has inked a mark of reeds and a reaching hand. Beside it, in the tidy hand: *The vigil\'s mark. The old builders cut it into the Barrow Gate, and its watchers know it.*',
+      '"So the hag was the lock," Wren says, reading over your shoulder. "And we broke it." She shuts the book and hands it to you. "Well. Nerve we\'ve got. The door\'s past the Barrow Gate."',
+      'Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],
   },
@@ -580,7 +577,7 @@ const scenes: Record<string, Scene> = {
     id: 'lychgate-won', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛩️' },
     text: [
       'Past the Barrow Gate the mounds rise in their dozens. At the field\'s heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.',
-      'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut for a hundred years. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
+      'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since before Thornwick had a name. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
     ],
     next: [
       { id: 'down', label: 'Leave Wren the gate, and go down', to: 'undercrypt',
@@ -662,7 +659,7 @@ const scenes: Record<string, Scene> = {
       'The stair opens into a painted hall. Artists covered these walls before Thornwick had a name. The pictures tell one story, over and over. A **door** stands under the earth. A **horned warden** waits behind it. Before the door, age after age, a **woman of the reeds** keeps watch.',
       'In one panel, a line of soldiers in green bronze stands before the door. Each one holds a fist pressed flat to his chest. That is the old kings\' salute, and the painter took great care over it.',
       'The last panel is fresh mud smeared over old paint. One angry stroke crosses out the woman of the reeds. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**',
-      'It is Halden\'s prayer book in pictures. The mud adds one thing the book did not say. The Warden\'s servants are at his door right now, deep below you.',
+      'The mud is still wet. Whoever wrote those words is down at the door right now, somewhere deep below you.',
     ],
     next: [{ id: 'on', label: 'Deeper in', to: '@hub',
       effects: [{ kind: 'setFlag', flag: 'hall-seen' },
@@ -799,7 +796,7 @@ const scenes: Record<string, Scene> = {
     id: 'seal-approach', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
     text: [
       'The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it. The chanting you\'ve heard for an hour turns into words. Living voices speak them. The dead do not chant.',
-      'A congregation of the **living** kneels at the door. They wear robes the colour of grave-worms and hold candles of black tallow. This is the **Cult of the Worm**, come far and fast on the news of a failing seal. The nailed boots on the old road were theirs. So were the black candles in the chapel.',
+      'A congregation of the **living** kneels at the door. They wear robes the colour of grave-worms and hold candles of black tallow. This is the **Cult of the Worm**, come far and fast on the news of a failing seal.',
       'Their leader stands at the door with a chisel of bone, prying the lead out one letter at a time. He is a thin grey man in a gravedigger\'s apron. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets.',
       '"Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles. I dug graves at Saltmere for thirty years," he says. "Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves. Then I walked away and left them all in the cold."',
       '"The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."',
@@ -855,7 +852,7 @@ const scenes: Record<string, Scene> = {
     id: 'resealing', kind: 'challenge', art: { imageId: 'loc-dungeon', emoji: '📖' },
     intro: [
       'The great door still bulges outward. Half the lead is gone from its letters, and the Warden leans on what is left. Against the far wall, the cultists who never fought are still on their knees. They watch you with their black candles guttering.',
-      'Halden\'s book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door. Halden wrote that it would take nerve. Whose nerve, and how, is up to you.',
+      'Halden\'s book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door. Halden wrote that it would take nerve.',
     ],
     retry: 'perApproach',
     noBack: true,
@@ -940,7 +937,7 @@ const scenes: Record<string, Scene> = {
   // Each claim gets one line, then a short hub: the homecoming doesn't replay.
   'sb-claim-paid': {
     id: 'sb-claim-paid', kind: 'story', art: { imageId: 'loc-town', emoji: '💰' },
-    text: ['The reeve counts the purse into your hands himself, coin by coin. "Thornwick settles its debts," he says, and for once he almost smiles.'],
+    text: ['The reeve counts the purse into your hands himself, coin by coin. He loses count twice, and for once he almost smiles.'],
     next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
   },
   'sb-claim-round': {
