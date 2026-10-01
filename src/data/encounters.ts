@@ -240,7 +240,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   },
   'chromatic-clutch': {
     id: 'chromatic-clutch', name: 'Chromatic Clutch', suggestedLevel: 4,
-    members: ['black-wyrmling', 'green-wyrmling', 'white-wyrmling'],
+    members: ['green-wyrmling', 'green-wyrmling', 'blue-wyrmling'],
   },
   // A back-alley crew: a fixer (spy) and two hired knives — the muscle a town
   // informant keeps around. A first-real-fight step up from a bare street mug.
@@ -276,13 +276,13 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   // The chief and the power behind him: the Ashfang warlord flanked by the green
   // hag whose marsh he sold his own people to, and one last human blade.
   'ashfang-warlord': {
-    id: 'ashfang-warlord', name: 'The Ashfang Warlord', suggestedLevel: 3,
+    id: 'ashfang-warlord', name: 'The Ashfang Chief', suggestedLevel: 3,
     members: ['bandit-captain', 'green-hag', 'bandit'],
   },
   // The same fight after Vex turns: his guard stands down, so the chief and
   // the hag face the party alone — the parley's promised payoff.
   'ashfang-warlord-alone': {
-    id: 'ashfang-warlord-alone', name: 'The Ashfang Warlord, Unguarded', suggestedLevel: 3,
+    id: 'ashfang-warlord-alone', name: 'The Ashfang Chief, Unguarded', suggestedLevel: 3,
     members: ['bandit-captain', 'green-hag'],
   },
   // The Ashfang's kenneled hunting-beasts — two giant hyenas off their chains.

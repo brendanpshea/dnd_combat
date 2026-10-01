@@ -1097,7 +1097,14 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   }
   // Loss: an authored per-battle branch wins; else the module's defeat scene
   // (the party is dragged back, revived at half HP); else just retry the fight.
-  if (scene.onLoss) return applyOutcome(state, module, scene.onLoss);
+  // Either way the party is picked up first (half HP): an authored loss beat
+  // is still somebody dragging them off the field, and leaving them at 0 HP
+  // put a party on the map that could not survive its next step.
+  if (scene.onLoss) {
+    reviveParty(state.campaign);
+    restCompanions(state, 'revive', module);
+    return applyOutcome(state, module, scene.onLoss);
+  }
   if (module.defeatScene) {
     reviveParty(state.campaign);
     restCompanions(state, 'revive', module);

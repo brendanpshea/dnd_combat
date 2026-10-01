@@ -94,7 +94,7 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'road-reveal', text: ['The bandit drops into the mud, and the road is yours again — for now.'] },
     // Losing the very first fight must not skip the arrival in Thornwick (the
     // module's defeat scene wakes you at Mira's hearth before you've met her).
-    onLoss: { to: 'road-carter', text: ['The world goes grey, then black.'], effects: [{ kind: 'heal', amount: 'full' }] },
+    onLoss: { to: 'road-carter', text: ['The world goes grey, then black.'] },
   },
   'road-carter': {
     id: 'road-carter', kind: 'story', art: { imageId: 'loc-road', emoji: '🛒' },

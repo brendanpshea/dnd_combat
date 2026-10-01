@@ -53,13 +53,13 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | Ogre and Retinue | `ogre` | 3 | 550 | 1× Ogre, 2× Goblin Warrior |
 | Owlbear Den | `owlbear-den` | 3 | 900 | 1× Owlbear, 1× Brown Bear |
 | Shadow Syndicate | `syndicate` | 3 | 450 | 2× Spy, 2× Bandit |
-| The Ashfang Warlord | `ashfang-warlord` | 3 | 1175 | 1× Bandit Captain, 1× Green Hag, 1× Bandit |
-| The Ashfang Warlord, Unguarded | `ashfang-warlord-alone` | 3 | 1150 | 1× Bandit Captain, 1× Green Hag |
+| The Ashfang Chief | `ashfang-warlord` | 3 | 1175 | 1× Bandit Captain, 1× Green Hag, 1× Bandit |
+| The Ashfang Chief, Unguarded | `ashfang-warlord-alone` | 3 | 1150 | 1× Bandit Captain, 1× Green Hag |
 | The Kennels | `kennel-hyenas` | 3 | 400 | 2× Giant Hyena |
 | The Pit-Brute | `den-muster` | 3 | 650 | 1× Ogre, 2× Orc Raider |
 | Viper Pit | `snake-pit` | 3 | 900 | 2× Giant Constrictor Snake |
 | Wight Tomb | `wight-tomb` | 3 | 800 | 1× Wight, 2× Skeleton |
-| Chromatic Clutch | `chromatic-clutch` | 4 | 1350 | 1× Black Dragon Wyrmling, 1× Green Dragon Wyrmling, 1× White Dragon Wyrmling |
+| Chromatic Clutch | `chromatic-clutch` | 4 | 1600 | 2× Green Dragon Wyrmling, 1× Blue Dragon Wyrmling |
 | Hag Coven | `hag-coven` | 4 | 750 | 1× Green Hag, 2× Bandit |
 | Knightly Order | `knights` | 4 | 925 | 1× Knight, 2× Scout, 1× Bandit |
 | Labyrinth Terror | `labyrinth` | 4 | 775 | 1× Minotaur of Baphomet, 3× Kobold Warrior |
@@ -97,6 +97,6 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | --- | --- | --- | --- | --- | --- | --- |
 | The Bandit Hideout | `hideout` | — | 12 | — | dev only | Root out the bandits plaguing the road — by blade or by wit. |
 | The Classic Ladder | `classic` | — | 70 | — | dev only | The original fourteen-battle gauntlet, now as an adventure. |
-| The Hollow Road | `hollow-road` | 1–3 | 67 | sunken-barrows | yes | Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit. |
-| The Sunken Barrows | `sunken-barrows` | 3–4 | 45 | wyrmcalling | yes | The Reedwife's death broke an old vigil. Follow Thornwick's walking dead into the fen — and close what your victory opened. |
-| The Wyrmcalling | `wyrmcalling` | 4–5 | 46 | — | yes | The Reedwife's sisters wake the Calling Stone, and the hills answer with wyrms, giants, and worse. Climb the passes, thin what answers, and silence the stone. |
+| The Hollow Road | `hollow-road` | 1–3 | 81 | sunken-barrows | yes | Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit. |
+| The Sunken Barrows | `sunken-barrows` | 3–4 | 51 | wyrmcalling | yes | The Reedwife's death broke an old vigil. Follow Thornwick's walking dead into the fen — and close what your victory opened. |
+| The Wyrmcalling | `wyrmcalling` | 4–5 | 55 | — | yes | The Reedwife's sisters wake the Calling Stone, and the hills answer with wyrms, giants, and worse. Climb the passes, thin what answers, and silence the stone. |
