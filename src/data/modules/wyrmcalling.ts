@@ -33,11 +33,11 @@
  * CARRIED CHOICES: Vex's briefing reads `hollow-road:vex-turned` (he took the
  * party's offer in Part 1) and `hollow-road:met-vex` (they met at his fire,
  * no deal); Wren's familiarity reads `hollow-road:saved-scout` (she owes you
- * a leg) or `sunken-barrows:met-wren` (she held the Barrow Gate for you).
+ * a leg); otherwise she held the Barrow Gate for you in Part 2.
  * Wren also remembers a company that left her under the horse
  * (`hollow-road:scout-left`). A cold start is still the company that broke
- * the Ashfang and killed the Reedwife: Vex met it at his fire, Wren knows it
- * by name, and nothing carried says how either parting went. A saved
+ * the Ashfang and killed the Reedwife: Vex met it at his fire, Wren guided it
+ * through the fen, and nothing carried says how either parting went. A saved
  * Halden (`sunken-barrows:halden-saved`) opens an easier way to tear the
  * sisters loose. The endings' slides read these and the rest
  * (`hollow-road:chief-dead`, `sunken-barrows:seal-cracked`, what became of
@@ -251,11 +251,9 @@ const REPLIES = [
     label: 'Say nothing. Draw your blade.' },
 ] as const;
 const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, to: r.to,
-  effects: [{ kind: 'xpToLevel', level: 5 },
-    // A company that falls back and climbs again answers again; the last
-    // answer is the one the valley remembers.
-    ...REPLIES.filter((o) => o.id !== r.id).map((o) => ({ kind: 'clearFlag' as const, flag: o.flag })),
-    { kind: 'setFlag', flag: r.flag }] }));
+  // Answered once: a company that falls back and climbs again goes to
+  // `calling-return`, not back through the sisters' greeting.
+  effects: [{ kind: 'xpToLevel', level: 5 }, { kind: 'setFlag', flag: r.flag }] }));
 /**
  * `tear-loose` spends every approach it tries, for good. So a company that
  * loses the fight after it and climbs back must not walk into it again with
@@ -307,7 +305,13 @@ const goDown = (effects: Effect[] = []): Choice[] => {
   const fx = effects.length ? { effects } : {};
   return [
     { id: 'down', label: 'Down into the bowl', to: 'calling-approach', hideWhenBlocked: true,
-      requires: [has('rim-clear')], ...fx },
+      requires: [has('rim-clear'), hasNot('sisters-loose'), hasNot('stone-spent')], ...fx },
+    // Back after falling back or a defeat: the sisters have had their say, so
+    // the party goes straight back to the fight it left (see TO_STONE).
+    { id: 'back-loose', label: 'Back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
+      requires: [has('rim-clear'), has('sisters-loose')], ...fx },
+    { id: 'back-spent', label: 'Back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
+      requires: [has('rim-clear'), has('stone-spent')], ...fx },
     // Owed anything at all: the first flag that holds picks the one choice shown.
     ...OWED.map((f, i): Choice => ({ id: `down-${i}`, label: 'Down into the bowl', to: 'war-council', hideWhenBlocked: true,
       requires: [hasNot('rim-clear'), ...OWED.slice(0, i).map(hasNot), has(f)], ...fx })),
@@ -386,7 +390,7 @@ const SLIDES_HILLS: Slide[] = [
     text: 'The Calling peaked before you reached the stone. The camp held through the night of it, and the pikemen still talk about the sound the mountain made.' },
   // A company that won both earlier chapters.
   { if: [{ kind: 'flag', flag: 'hollow-road:won' }, { kind: 'flag', flag: 'sunken-barrows:won' }],
-    text: 'The same four names run through all three songs. You broke the Ashfang. You sealed the Undercrypt.' },
+    text: 'The same company runs through all three songs. You broke the Ashfang. You sealed the Undercrypt.' },
   { if: [{ kind: 'flag', flag: 'hollow-road:chief-dead' }],
     text: 'Nobody in the valley mourns Vargan. His mother\'s house is still under the water, but the reed-cutters are back in the shallows he sold, cutting reeds for a copper a bundle.' },
   { if: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
@@ -432,10 +436,9 @@ const SLIDES_HILLS: Slide[] = [
 const SLIDES_PEOPLE: Slide[] = [
   { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
     text: 'Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.' },
-  { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'flag', flag: 'sunken-barrows:met-wren' }],
+  // A cold start is still the company Wren guided through the fen.
+  { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }],
     text: 'Wren tells every new scout how she held the gate of the Undercrypt, and how you walked back out.' },
-  { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'notFlag', flag: 'sunken-barrows:met-wren' }],
-    text: 'Wren pins her map of the passes over her bed, arrowheads and all, with your four names inked along the top.' },
   { if: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }],
     text: 'Brother Halden climbs to the bowl each spring to bless the broken stone, and then he walks home to his little chapel.' },
   // The war assets the council called in (see COUNCIL).
@@ -557,17 +560,16 @@ const scenes: Record<string, Scene> = {
         { id: 'command', x: 25, y: 30, label: 'The Command Tent', icon: 'tok-fire', scene: 'tent-after-loss',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'briefed' }], to: 'command-done' }] },
         { id: 'stores', x: 50, y: 45, label: 'The War-Stores', icon: 'tok-market', scene: 'wc-stores' },
-        // Wren knows you if you pulled her out from under a horse (Part 1) or
-        // walked the fen with her (Part 2), and coolly if you left her under
-        // it; otherwise she knows you by name only.
-        { id: 'scouts', x: 30, y: 70, label: 'The Scouts\' Fire', icon: 'tok-camp', scene: 'scouts-fire',
+        // Wren knows you if you pulled her out from under a horse (Part 1), and
+        // coolly if you left her under it. Every company, a cold start too,
+        // walked the fen with her in Part 2 (`scouts-fire-old`).
+        { id: 'scouts', x: 30, y: 70, label: 'The Scouts\' Fire', icon: 'tok-camp', scene: 'scouts-fire-old',
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'wren-brief' }], to: 'scouts-done' },
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'scouts-fire-saved' },
             // Left her under the horse, then (always, on the way to the Barrow
             // Gate) walked the fen with her: some of it is squared.
             { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'scouts-fire-mended' },
-            { if: [{ kind: 'flag', flag: 'sunken-barrows:met-wren' }], to: 'scouts-fire-old' },
           ] },
         // War assets paid at the camp (see WAR ASSETS): the marker's scene is
         // the gift; a company not owed it, or already paid, is waved past.
@@ -630,18 +632,6 @@ const scenes: Record<string, Scene> = {
       'spear', 'longbow', 'chain-mail',
     ],
     intro: ['Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more. Except my goods, because I\'m a patriot. Also the captain reads my books." He turns a crate around to face you. "There\'s big things up that hill. Buy accordingly."'] },
-  // A cold start, or a company that never got her name: she knows them by
-  // reputation, and maybe from across a room, and nothing more is said.
-  'scouts-fire': {
-    id: 'scouts-fire', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
-    lines: [
-      'A young woman named **Wren** runs the scouts\' fire. Three riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She is young to be Chief of Scouts. She wears the title like a coat that fits her but embarrasses her anyway.',
-      '"I know who you are. Everyone in the valley does. I think I saw you once across Mira\'s taproom, but you were busy being famous." She jabs a finger at the map. "Right. Listen." ' + WREN_BEASTS,
-      WREN_GORGON,
-      'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I\'ve got no advice about that one." She hesitates. "Come back down the hill," she adds, a little too fast. "All of you. I hate rewriting the roster."',
-    ],
-    next: TAKE_NOTES,
-  },
   // Left under the horse in Part 1, then walked the fen together in Part 2.
   'scouts-fire-mended': {
     id: 'scouts-fire-mended', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
@@ -654,7 +644,7 @@ const scenes: Record<string, Scene> = {
     next: TAKE_NOTES,
   },
   // Wren knows the company from the deep fen: she held the Barrow Gate while
-  // they went down into the Undercrypt.
+  // they went down into the Undercrypt. A cold start lands here too.
   'scouts-fire-old': {
     id: 'scouts-fire-old', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
     lines: [
@@ -1204,7 +1194,13 @@ const scenes: Record<string, Scene> = {
     id: 'war-council', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '⚔️' },
     text: [
       'Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.',
-      'Behind the pikes come faces you know from the valley, from the marsh road to the deep fen. Each of them owes your company something. They are out of breath and mud to the knees, and not one of them has climbed this mountain to stand at the back.',
+      'Behind the pikes come people who owe your company something. They are out of breath and mud to the knees, and not one of them has climbed this mountain to stand at the back.',
+      // One line for each debt that holds (see OWED); text only, so free.
+      { if: [has('hollow-road:saved-scout')], text: 'Wren is first up the last slope, bow on her back and map under her arm.' },
+      { if: [hasNot('hollow-road:saved-scout'), has('sunken-barrows:met-wren')], text: 'Wren is first up the last slope, bow on her back and map under her arm.' },
+      { if: [has('sunken-barrows:halden-saved')], text: 'Brother Halden climbs with his prayer book under his arm, red in the face and still praying.' },
+      { if: [has('hollow-road:vex-turned')], text: 'Hask, the chief\'s old guard who stood aside for you in Vargan\'s hall, walks at Vex\'s shoulder.' },
+      { if: [has('sunken-barrows:drowned-gold-home')], text: 'Two fen-folk carry coils of rope over their shoulders. They are kin to the drowned whose purses you carried home.' },
       '"We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party\'s a loud one."',
     ],
     next: COUNCIL,
@@ -1242,6 +1238,20 @@ const scenes: Record<string, Scene> = {
     // The level floor lands before the hardest fight, not after it: every
     // answer carries it (see REPLIES).
     next: replyChoices,
+  },
+  // Back in the bowl after falling back or a defeat. The sisters are either
+  // torn loose (`sisters-loose`) or sunk in the stone to the shoulder
+  // (`stone-spent`); nothing else lets a party leave the bowl.
+  'calling-return': {
+    id: 'calling-return', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: [
+      'You climb back down into the bowl. The burning ground has spread while you were gone, and the stone\'s note has not changed.',
+      { if: [{ kind: 'flag', flag: 'sisters-loose' }],
+        text: 'The sisters wait at the foot of the stone, out of the rock where you tore them loose. Their burned hands still curl like claws. "Back again," Nettle says. "Good. The account is still open." Sedge says nothing at all.' },
+      { if: [{ kind: 'flag', flag: 'stone-spent' }],
+        text: 'The sisters still stand sunk to the shoulder in the stone. They do not turn to look at you. The crack across the floor glows red, and the ground heaves under your boots as the stone gets ready to spend them again.' },
+    ],
+    next: TO_STONE,
   },
   'answer-defiant': {
     id: 'answer-defiant', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
@@ -1299,12 +1309,13 @@ const scenes: Record<string, Scene> = {
       { id: 'song', label: 'Break the song', hint: 'Sing a wrong note into the Calling and knock it off its beat.',
         skill: 'arcana', dc: 15,
         failure: { to: 'tear-loose', text: ['Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.'] } },
-      // Halden lived through the barrows, and the company read his rites at the door.
+      // Every Part 2 victory carried Halden's book down to the Warden's door,
+      // whether he lived or not. With Halden himself here, his way is better.
       { id: 'rites', label: 'Say Halden\'s rites over the stone', hint: 'Brother Halden\'s book of rites went down into the barrows with you. Its oldest words are for shutting doors.',
         skill: 'religion', dc: 11,
-        requires: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }, { kind: 'noCompanion', companion: 'halden' }], hideWhenBlocked: true,
+        requires: [{ kind: 'flag', flag: 'sunken-barrows:won' }, { kind: 'noCompanion', companion: 'halden' }], hideWhenBlocked: true,
         success: { to: 'sisters-battle', effects: LOOSE, text: ['Halden\'s old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.'] },
-        failure: { to: 'tear-loose', text: ['You lose the words halfway through. Halden always warned you to say them whole.'] } },
+        failure: { to: 'tear-loose', text: ['You lose the words halfway through. The book says to say them whole, and you did not.'] } },
       // Halden came down into the bowl: he says his own rites at the stone.
       { id: 'halden', label: '[Halden] Let Halden say his rites over the stone', hint: 'He climbed the whole mountain to say them here. Stand back and let him.',
         skill: 'religion', dc: 8, requires: [{ kind: 'companion', companion: 'halden' }], hideWhenBlocked: true,
@@ -1370,7 +1381,10 @@ const scenes: Record<string, Scene> = {
     text: [
       'You come down the mountain a long way behind the sisters. The camp watched two tall green shapes walk past its lines in the dusk, and it has not decided yet whether to cheer.',
       'Vex decides for it. "The Calling\'s broken," he says, loud enough to carry. Then, quieter: "I hear we\'ve got hags in the fen again." You tell him they\'re keepers now. He looks at you for a long moment. "Then I hope they keep," he says.',
-      '**Wren**, the camp\'s Chief of Scouts, watched the two hags walk past from the scouts\' fire with an arrow on the string the whole way. When she sees the four of you behind them, she puts the arrow back in her quiver and sits down hard, laughing.',
+      { if: [{ kind: 'noCompanion', companion: 'wren' }],
+        text: '**Wren**, the camp\'s Chief of Scouts, watched the two hags walk past from the scouts\' fire with an arrow on the string the whole way. When she sees your company behind them, she puts the arrow back in her quiver and sits down hard, laughing.' },
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: 'Wren goes straight to the scouts\' fire. Her riders crowd round her, and she tells them about the hags in the fen before anyone can ask. Then she sits down hard, and laughs until she has to wipe her eyes.' },
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'vigil-purse',
@@ -1394,7 +1408,9 @@ const scenes: Record<string, Scene> = {
   'calling-won': {
     id: 'calling-won', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌅' },
     text: [
-      'It is over. The **Calling Stone** lies cracked and silent, and the sisters are gone with it. Where they fell, a scatter of dry reeds lifts on the wind. They climbed all this way for revenge, and the stone burned them up instead. Your company has the mountain to itself.',
+      'It is over. The **Calling Stone** lies cracked and silent, and the sisters are gone with it. Where they fell, a scatter of dry reeds lifts on the wind.',
+      { if: [{ kind: 'flag', flag: 'stone-spent' }], text: 'They climbed all this way for revenge, and the stone burned them up instead. Your company has the mountain to itself.' },
+      { if: [{ kind: 'notFlag', flag: 'stone-spent' }], text: 'They climbed all this way for revenge, and in the end they had to fight for it with their own hands. Your company has the mountain to itself.' },
       'Below you, pass by pass, the hills go quiet. The song that pulled monsters toward the valley has stopped. Whatever was still walking down the slope stops, shakes its head, and turns back toward its own hills. The wingbeats fade off the wind.',
       'The valley is safe. Far down the slope, faint and disbelieving, the war-camp starts to cheer.',
     ],
@@ -1406,7 +1422,10 @@ const scenes: Record<string, Scene> = {
     text: [
       'You come down the hill on your own feet. You walk into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown.',
       'Vex shakes your hand like a man signing off on accounts he never expected to balance. "The Calling\'s broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."',
-      '**Wren**, the camp\'s Chief of Scouts, looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and goes back to giving orders.',
+      { if: [{ kind: 'noCompanion', companion: 'wren' }],
+        text: '**Wren**, the camp\'s Chief of Scouts, looks at your company, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and goes back to giving orders.' },
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: 'Wren hands Vex her route report before she has even sat down. Then she looks back up at the hills and grins her whole age for once. She remembers herself, coughs, and goes off to give orders.' },
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'wc-purse',
@@ -1435,7 +1454,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one all end on the same mountain, with your company standing on it. You silenced the Calling, and the coven\'s long debt burned away to reeds on a mountain wind.',
       MIRA_TOAST,
-      'Vex raises a glass to the four of you. "To the company," he says. "Paid in full."',
+      'Vex raises a glass to your company. "To the company," he says. "Paid in full."',
     ],
     slides: [
       ...SLIDES_HILLS,
@@ -1464,7 +1483,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the deep fen, and the Calling stops.',
       MIRA_TOAST,
-      'Vex raises a glass to the four of you. "To the company," he says. "And to whoever\'s keeping that door tonight."',
+      'Vex raises a glass to your company. "To the company," he says. "And to whoever\'s keeping that door tonight."',
     ],
     slides: [
       ...SLIDES_HILLS,

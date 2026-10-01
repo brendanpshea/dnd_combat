@@ -346,22 +346,23 @@ const scenes: Record<string, Scene> = {
     art: { emoji: '🕵️' },
     lines: [
       'The peddler\'s stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He watches the gate the way a cat watches a mousehole.',
-      'When your shadow falls across his goods he goes very still. Then he does the last thing you expected of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. This won\'t end with words.',
+      'When your shadow falls across his goods he goes very still. Then he does the last thing you expected of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. This won\'t end quietly.',
     ],
     next: [
       { id: 'investigate', label: '[Investigation DC 13] Pick his crew out of the crowd first', to: 'spy-ambush',
         once: true, check: { skill: 'investigation', dc: 13, failTo: 'spy-pinched', failEffects: [{ kind: 'gold', amount: -15 }] } },
-      { id: 'intimidate', label: '[Intimidation DC 14] Shout down the hired help before they close', to: 'spy-ambush',
+      { id: 'intimidate', label: '[Intimidation DC 14] Shout down the hired help before they close', to: 'spy-balked',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'spy-bolts' } },
       { id: 'brace', label: 'Put your backs to the wall and draw', to: 'spy-bolts' },
     ],
   },
-  // Taken quietly (stalked and grabbed, or his knives talked off): nobody
-  // runs to warn the den, so the gate-signal he gives up is still good.
+  // Taken quietly (stalked and grabbed, his crew shouted down, or caught by
+  // a read of the crowd): nobody runs to warn the den, so the gate-signal he
+  // gives up is still good.
   'spy-caught': {
     id: 'spy-caught', kind: 'story', art: { emoji: '🔗' },
     text: [
-      'His crew is gone, one way or another, and the peddler knows it. He folds like wet paper. "I only carried word! I never lifted a blade!"',
+      'His crew is down or gone, one way or another, and the peddler knows it. He folds like wet paper. "I only carried word! I never lifted a blade!"',
       SPY_LIST,
       'Then he gives up the rest, all in one breath. **He tells you the raiders\' gate-signal.** Nobody ran to warn the den, so the signal is still good. With it, you can walk up to the den like one of their own.',
     ],
@@ -370,20 +371,20 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
         { kind: 'journal', entry: { id: 'c-signal', kind: 'clue', title: 'The Watch-Signal', body: 'You caught the Ashfang\'s informant in the market and took the raiders\' gate signal off him. With it, you can fool the den\'s watch.' } }] }],
   },
-  // Taken in a brawl: one of his knives ran for the den in the fight, so the
-  // signal is spoiled before the peddler can give it up. The den still has
+  // Taken the loud way (a brawl, or his knives scared off): one of them ran
+  // for the den, so the signal is spoiled before the peddler can give it up. The den still has
   // other ways in (the wall, the water-gate, the gate itself).
   'spy-caught-loud': {
     id: 'spy-caught-loud', kind: 'story', art: { emoji: '🔗' },
     text: [
-      'The fight is over, and half the square watched it. The peddler sits in the dirt by his stall with his hands up. "I only carried word! I never lifted a blade!"',
+      'It is over, and half the square watched it happen. The peddler sits in the dirt by his stall with his hands up. "I only carried word! I never lifted a blade!"',
       SPY_LIST,
       'You ask him for the raiders\' gate-signal. He laughs, shakily, and points past the gate. Out on the marsh road, one of his knives is still running. "He\'ll be at the den by dark. They\'ll change the signal the minute he tells them. It\'s no good to anybody now."',
     ],
     noBack: true,
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'gold', amount: 40 },
-        { kind: 'journal', entry: { id: 'c-peddler', kind: 'clue', title: 'The Peddler\'s List', body: 'You caught the Ashfang\'s informant in the market after a brawl. One of his crew ran for the den, so the gate signal he knew is no good now. You will need another way past the den\'s watch.' } }] }],
+        { kind: 'journal', entry: { id: 'c-peddler', kind: 'clue', title: 'The Peddler\'s List', body: 'You caught the Ashfang\'s informant in the market, but not quietly. One of his crew ran for the den, so the gate signal he knew is no good now. You will need another way past the den\'s watch.' } }] }],
   },
   // Mira's lead pays off: the party knows who he is, and he doesn't know them.
   'spy-stalk': {
@@ -446,14 +447,26 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'spy-caught-loud', text: ['The fixer goes down, and the hired help drops its knives and its nerve together, and runs. One of them does not stop at the edge of the square. He goes straight out through the gate, toward the marsh.'] },
     parley: {
       skill: 'deception', dc: 13, label: 'Tell the knives the watch is coming',
-      success: { to: 'spy-caught', text: ['"The reeve\'s men are two stalls behind us," you say, loud enough to carry, and glance past them as if you can see the pikes. The hired knives do the sums faster than their fixer does. They are gone into the crowd before he turns round. Alone, the fixer raises his empty hands and backs off into the market.'] },
+      success: { to: 'spy-caught-loud', text: ['"The reeve\'s men are two stalls behind us," you say, loud enough to carry, and glance past them as if you can see the pikes. The hired knives do the sums faster than their fixer does. They are gone into the crowd before he turns round. Alone, the fixer raises his empty hands and backs off into the market.',
+        'Not one blade got wet. But over the heads of the crowd you see one of the knives slip out through the gate, toward the marsh.'] },
     },
   },
   'spy-ambush': {
     id: 'spy-ambush', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
     surprise: 'enemies', // you read the ambush first — the crew loses its opening round
     intro: ['The crew moves in from the stalls a beat too late. You\'re already where they didn\'t expect you, and they scramble.'],
-    onWin: { to: 'spy-caught-loud', text: ['Off balance from the first, the crew never finds its feet. The fixer falls, and his hired blades throw down and bolt. One of them bolts straight out through the gate, toward the marsh.'] },
+    // You picked them out first and stood between them and the gate, so
+    // nobody gets out to warn the den.
+    onWin: { to: 'spy-caught', text: ['Off balance from the first, the crew never finds its feet. The fixer falls, and his hired blades throw down their knives. You are standing between them and the gate, so they bolt the other way, straight into the reeve\'s watch.'] },
+  },
+  // Shouted down: the hired help decides this is not worth dying for.
+  'spy-balked': {
+    id: 'spy-balked', kind: 'story', noBack: true, art: { imageId: 'loc-village', emoji: '📣' },
+    text: [
+      'You plant your feet and roar at the hired knives to put their blades away, now, while they still have hands to do it. Every head in the square turns.',
+      'The knives look at your steel, then at the fixer, then at all the people watching. One by one they set their blades down on the cobbles. The fixer goes with them, out past the well and away from the gate. None of them looks keen to explain this to the chief.',
+    ],
+    next: [{ id: 'ok', label: 'Turn out his cart', to: 'spy-caught', effects: [{ kind: 'xp', amount: 25 }] }],
   },
   // A failed stalk: he sees you coming and slips away, and the party loses a
   // day waiting for him to come back to his stall.
@@ -813,7 +826,7 @@ const scenes: Record<string, Scene> = {
     id: 'ambush-wren', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🧭' },
     text: [
       'At the lip of the hollow Wren puts out an arm and stops you. She watches the reeds below for a long time.',
-      '"Too still," she says. "And cold. The marsh is never cold at noon." She points once, twice, five times. "Lizardfolk, lying in the water. They think we\'ll come down the dry line. So we won\'t."',
+      '"Too still," she says. "And cold. The marsh is never cold at noon." She points once, twice, three times. "Lizardfolk, lying in the water. And something big behind them, a toad, I think. They think we\'ll come down the dry line. So we won\'t."',
     ],
     next: [{ id: 'wren', label: '[Wren] Follow her round behind them', to: 'ambush-turned',
       requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true }],
@@ -1054,7 +1067,7 @@ const scenes: Record<string, Scene> = {
     id: 'vex-parley', kind: 'dialogue', noBack: true, npc: LIEUTENANT, art: { emoji: '🗡️' },
     lines: [
       'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it like a man who\'d rather be leaning on it.',
-      '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven\'t seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
+      '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He kept an ogre in a pit for people like you. You\'ve seen what that bought him. For me he keeps a knife he thinks I haven\'t seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
     ],
     next: [
       // Wren's tip (`know-vex`): the party knows what he wants before he says it.
