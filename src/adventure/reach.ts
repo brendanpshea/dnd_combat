@@ -77,12 +77,24 @@ function searchModule(module: Module): ReachReport {
   // --- The facts worth tracking -------------------------------------------
   const facts = new Map<string, number>();
   const fact = (k: string) => { if (!facts.has(k)) facts.set(k, facts.size); };
+  // A "you've been here" beat: a map marker's conditional redirect to a scene
+  // that changes nothing and only leads back. The flag behind it can't change
+  // where a party gets to, so it needn't be tracked; the walk takes both the
+  // redirect and the original scene instead (an over-approximation).
+  const cosmetic = (to: Id, hub: Id): boolean => {
+    const t = module.scenes[to];
+    if (!t || (t.kind !== 'story' && t.kind !== 'dialogue')) return false;
+    return t.next.every((c) => !c.effects?.length && !c.check && !c.requires?.length && (c.to === HUB_REF || c.to === hub));
+  };
   for (const s of Object.values(module.scenes)) {
     // An ending's slides only colour the last screen: nothing they read can
     // change where a party gets to, so tracking them would only multiply the
     // states (each carried flag doubles them) for no answer.
     if (s.kind === 'ending') continue;
-    for (const r of requirementsOf(s)) {
+    const reads: Requirement[] = s.kind === 'explore'
+      ? s.map.nodes.flatMap((n) => [...(n.requires ?? []), ...(n.sceneWhen ?? []).filter((w) => !cosmetic(w.to, s.id)).flatMap((w) => w.if)])
+      : requirementsOf(s);
+    for (const r of reads) {
       if (r.kind === 'flag' || r.kind === 'notFlag') fact(`flag:${r.flag}`);
       if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
       if (r.kind === 'visited') fact(`visited:${r.scene}`);
@@ -93,6 +105,8 @@ function searchModule(module: Module): ReachReport {
     return { errors: [], states: 0, skipped: `${facts.size} facts to track; the search packs at most ${MAX_FACTS}` };
   }
   const bit = (k: string) => (facts.has(k) ? 1 << facts.get(k)! : 0);
+  const untracked = (r: Requirement) =>
+    (r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`);
   const factNames = [...facts.keys()];
 
   const mask = (reqs: Requirement[] | undefined): Mask => {
@@ -129,7 +143,7 @@ function searchModule(module: Module): ReachReport {
   interface Compiled {
     steps: Step[];
     leave: boolean;
-    nodes: Array<{ req: Mask; when: Array<{ req: Mask; to: Id }>; to: Id; label: string }>;
+    nodes: Array<{ req: Mask; when: Array<{ req: Mask; to: Id; maybe: boolean }>; to: Id; label: string }>;
     events: Array<{ until: Mask | null; to: Id; label: string }>;
     travel: boolean;
   }
@@ -169,7 +183,8 @@ function searchModule(module: Module): ReachReport {
       case 'shop': case 'rest': c.steps.push(step(s.next, 'moves on')); break;
       case 'explore':
         for (const n of s.map.nodes) {
-          c.nodes.push({ req: mask(n.requires), when: (n.sceneWhen ?? []).map((w) => ({ req: mask(w.if), to: w.to })), to: n.scene, label: `goes to ${n.label}` });
+          c.nodes.push({ req: mask(n.requires), to: n.scene, label: `goes to ${n.label}`,
+            when: (n.sceneWhen ?? []).map((w) => ({ req: mask(w.if), to: w.to, maybe: w.if.some(untracked) })) });
           if (n.wandering) c.steps.push(step(n.wandering.battleScene, `is jumped on the way to ${n.label}`, mask(n.requires)));
         }
         if (s.map.camp?.risky) c.steps.push(step(s.map.camp.risky.battleScene, 'is attacked in camp'));
@@ -251,8 +266,14 @@ function searchModule(module: Module): ReachReport {
     for (const st of c.steps) if (met(st.req, f)) enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
     for (const nd of c.nodes) {
       if (!met(nd.req, f)) continue;
-      const w = nd.when.find((x) => met(x.req, f));
-      enter(n, w ? w.to : nd.to, 0, 0, `${here}: ${nd.label}`);
+      // First matching redirect wins; one that reads an untracked flag may or
+      // may not apply, so it is taken and the search carries on past it too.
+      let to: Id = nd.to;
+      for (const w of nd.when) {
+        if (w.maybe) { enter(n, w.to, 0, 0, `${here}: ${nd.label}`); continue; }
+        if (met(w.req, f)) { to = w.to; break; }
+      }
+      enter(n, to, 0, 0, `${here}: ${nd.label}`);
     }
     for (const ev of c.events) if (!ev.until || !met(ev.until, f)) enter(n, ev.to, 0, 0, `${here}: ${ev.label}`);
     if (c.leave && hub >= 0 && hubs[hub] !== here) enter(n, HUB_REF, 0, 0, `${here}: goes back`);
