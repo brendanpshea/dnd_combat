@@ -10,6 +10,9 @@ import type { Module, Scene } from '../src/adventure/types.js';
 
 const byId = (id: string) => MODULES.find((m) => m.id === id)!;
 const clone = (m: Module): Module => JSON.parse(JSON.stringify(m)) as Module;
+/** A whole chapter takes a second or two to search, longer under a loaded
+ *  test run; the default 5 s is too close. */
+const SEARCH_TIMEOUT = 30_000;
 
 describe('shipped modules', () => {
   for (const m of MODULES) {
@@ -18,7 +21,7 @@ describe('shipped modules', () => {
       expect(r.skipped).toBeUndefined();
       expect(r.errors).toEqual([]);
       expect(r.states).toBeGreaterThan(0);
-    });
+    }, SEARCH_TIMEOUT);
   }
 });
 
@@ -28,7 +31,7 @@ describe('what it catches', () => {
     delete (m.scenes.aftermath as { noBack?: boolean }).noBack;
     const errors = checkModuleReach(m).errors;
     expect(errors.some((e) => e.includes('stranded') && e.includes('chief-dead'))).toBe(true);
-  });
+  }, SEARCH_TIMEOUT);
 
   it('Wyrmcalling: losing the opening fight and never being briefed', () => {
     const m = clone(byId('wyrmcalling'));
@@ -40,7 +43,7 @@ describe('what it catches', () => {
     const hit = errors.find((e) => e.includes('stranded'));
     expect(hit).toBeDefined();
     expect(hit).toContain('loses the fight'); // the way there is spelled out
-  });
+  }, SEARCH_TIMEOUT);
 
   const tiny = (scenes: Record<string, Scene>): Module => ({ id: 'tiny', title: 'T', blurb: '', start: 'a', scenes });
   const won: Scene = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] };
@@ -218,5 +221,36 @@ describe('carried choices', () => {
     ] });
     const errors = checkModuleReach(coldStrands, [partA, coldStrands]).errors;
     expect(errors.some((e) => e.startsWith('[b]') && e.includes('stranded') && !e.includes('carried in'))).toBe(true);
+  });
+});
+
+describe('campaign bugs found by the fifth read-through', () => {
+  const battle = (mod: string, id: string) => {
+    const s = byId(mod).scenes[id];
+    if (s?.kind !== 'battle') throw new Error(`${mod}:${id}`);
+    return s;
+  };
+
+  it('a fight that cannot be come back to cannot be fled', () => {
+    for (const [mod, id] of [['hollow-road', 'pens-alarm'], ['hollow-road', 'reedwife-fight'], ['hollow-road', 'reedwife-fight-alone'], ['sunken-barrows', 'seal-doubt']] as const) {
+      expect(battle(mod, id).noFlee, `${mod}:${id}`).toBe(true);
+    }
+    // Losing the pens fight loses the captives, rather than leaving them in limbo.
+    expect(battle('hollow-road', 'pens-alarm').onLoss?.effects).toContainEqual({ kind: 'setFlag', flag: 'captives-taken' });
+  });
+
+  it('Vex, once met, stays met', () => {
+    const vex = byId('hollow-road').scenes['vex-parley'];
+    expect(vex?.kind === 'dialogue' && vex.noBack).toBe(true);
+  });
+
+  it('the camp is only said to have fought its night if the Calling peaked', () => {
+    const end = byId('wyrmcalling').scenes['wc-epilogue'];
+    if (end?.kind !== 'ending') throw new Error();
+    for (const sl of end.slides ?? []) {
+      if (sl.text.includes('night of the Calling') || sl.text.includes('arrows nobody needed')) {
+        expect(sl.if, sl.text).toContainEqual({ kind: 'flag', flag: 'calling-peaked' });
+      }
+    }
   });
 });
