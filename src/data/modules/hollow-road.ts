@@ -81,7 +81,10 @@ const AFTERMATH_CLAIMS: Choice[] = [
   { id: 'scout', label: 'Accept the scout\'s thanks, and the reeve\'s reward', to: 'claim-scout',
     requires: [{ kind: 'flag', flag: 'saved-scout' }, { kind: 'notFlag', flag: 'got-scout' }],
     effects: [{ kind: 'gold', amount: 50 }, { kind: 'setFlag', flag: 'got-scout' }] },
-  { id: 'done', label: 'Raise a glass at the Wander-Inn', to: 'epilogue' },
+  // `won`: every road to the victory ending runs through here, so the next
+  // chapters can tell a company that broke the Ashfang from a cold start.
+  { id: 'done', label: 'Raise a glass at the Wander-Inn', to: 'epilogue',
+    effects: [{ kind: 'setFlag', flag: 'won' }] },
 ];
 
 
@@ -454,7 +457,7 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'xpToLevel', level: 2 }] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
-      success: { to: 'trail', text: ['You hold his eye and draw steel slow, and let him count your blades. The cackle dies in his throat. He barks something at his pack, and they melt back into the reeds as if they were never there. You have learned something new on this road. Sometimes a fight can end before it starts.'],
+      success: { to: 'trail', text: ['You hold his eye and draw steel slow, and let him count your blades. The cackle dies in his throat. He barks something at his pack, and they melt back into the reeds as if they were never there. Behind you, somebody lets out a long breath. Not one blade got wet.'],
         effects: [{ kind: 'xpToLevel', level: 2 }] },
     },
   },
@@ -488,12 +491,13 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'barrow-cleared' }], to: 'barrow-done' }] },
         // Optional: a webbed thicket — plainly dangerous, plainly avoidable.
         { id: 'thicket', x: 66, y: 70, label: 'Webbed Thicket', mystery: 'Pale shapes in the reeds…', icon: 'tok-tree', scene: 'thicket',
+          requires: [{ kind: 'flag', flag: 'crossed-ravine' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'thicket-cleared' }], to: 'thicket-done' }] },
         { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
           wandering: { chance: 0.5, battleScene: 'bog-toads' } },
         { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
-          requires: [{ kind: 'flag', flag: 'trail-read' }],
+          requires: [{ kind: 'flag', flag: 'trail-read' }, { kind: 'flag', flag: 'crossed-ravine' }],
           // Once the ambush is broken the hollow is a walk, not a re-fightable
           // reward loop — the return trip from a den retreat passes through
           // quietly instead of re-rolling the battle (and its XP/treasure).
@@ -649,7 +653,7 @@ const scenes: Record<string, Scene> = {
   'scout-fail': {
     id: 'scout-fail', kind: 'story', noBack: true, art: { emoji: '🩸' },
     text: [
-      'The arrow went deeper than it looked, and she knows it before you do. She presses her last healing potion into your hand. "Too late for me. Take it in there with you."',
+      'Your hands slip, and the arrowhead tears loose something deep inside. She knows it before you do. No potion will close that. She presses her own healing potion into your hand. "Wasted on me now. Take it in there with you."',
       'A minute later she is gone. She never told you her name.',
     ],
     next: [{ id: 'ok', label: 'Cover her and go', to: 'trail',
@@ -736,11 +740,11 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight. No time to ready anything — you fight with what you\'ve got.'],
-    onWin: { to: '@hub', text: ['The dead lie still again — but the night\'s ruined, and no one\'s resting now. You got no good of that rest. If you want sleep, you\'ll have to start over.'] },
+    onWin: { to: '@hub', text: ['The dead lie still again, but the night\'s ruined. Nobody sleeps after that. You sit out the dark with your blades across your knees, and dawn finds you as tired as when you lay down.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
-    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Nothing moves. That is the trouble. Whoever spots what is waiting first decides everything.'],
+    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Nothing moves. That is the trouble. Something out there is lying very still, waiting for you to come closer.'],
     // The perception check only sets the terms (surprise); Milestone M2 rides the
     // battle's win, so 3rd level is earned in the fight, not handed over — and the
     // hollow ambush is the one route to the den (approach needs trail-read from
@@ -902,7 +906,7 @@ const scenes: Record<string, Scene> = {
     id: 'den-pens', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: [
       'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
-      'The girl has one shoe. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "Are you the reeve\'s men?"',
+      'The girl has one shoe. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one lamb each midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
       'A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.',
     ],
     // Freeing them is never free: a quiet lock that may fail, or a loud one
@@ -955,8 +959,13 @@ const scenes: Record<string, Scene> = {
       '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. I notice he never kept one for me." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
     ],
     next: [
+      // Wren's tip (`know-vex`): the party knows what he wants before he says it.
+      { id: 'wren', label: '[Persuasion DC 9] "Wren says you want out. The reeve\'s pardon, and a road."', to: 'vex-turned',
+        once: true, requires: [{ kind: 'flag', flag: 'know-vex' }], hideWhenBlocked: true,
+        check: { skill: 'persuasion', dc: 9, failTo: 'vex-refuses' } },
       { id: 'persuade', label: '[Persuasion DC 13] Offer him the reeve\'s pardon and a road out', to: 'vex-turned',
-        once: true, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
+        once: true, requires: [{ kind: 'notFlag', flag: 'know-vex' }], hideWhenBlocked: true,
+        check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
       { id: 'intimidate', label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses' } },
       { id: 'refuse', label: 'Refuse to deal with a raider', to: 'vex-dismissed',
@@ -1196,7 +1205,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'vex-turned' }],
         text: 'At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.' },
       { if: [{ kind: 'flag', flag: 'met-vex' }, { kind: 'notFlag', flag: 'vex-turned' }],
-        text: 'At dawn Vex walks into the reeve\'s hall alone and gives himself up. He asks for a cell with a window.' },
+        text: 'Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
       { if: [{ kind: 'flag', flag: 'saved-scout' }],
         text: 'At dawn Wren limps out ahead of the reeve\'s men, pleased to find you left her something to arrest.' },
       { if: [{ kind: 'flag', flag: 'mill-saved' }],
@@ -1209,10 +1218,15 @@ const scenes: Record<string, Scene> = {
         text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
       { if: [{ kind: 'flag', flag: 'captives-freed' }],
         text: 'The carter\'s girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.' },
+      // The captives: freed (above), left, taken by the dark moon, or never found.
       { if: [{ kind: 'flag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
         text: 'A reed-cutter\'s widow walks the marsh edge every evening, calling a name. Nobody has the heart to tell her what the pens held.' },
-      { if: [{ kind: 'flag', flag: 'captives-left' }],
+      { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'notFlag', flag: 'captives-taken' }],
         text: 'The reeve\'s men find the pens behind the kennels two days later. The carter is alive. He will not say your names, and he will not drive the marsh road again.' },
+      { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'flag', flag: 'captives-taken' }],
+        text: 'The reeve\'s men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open and a child\'s shoe in the straw. You told the carter they would come.' },
+      { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
+        text: 'Behind the kennels, the reeve\'s men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.' },
     ],
   },
 
@@ -1230,17 +1244,17 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // The clock: the Ashfang keep their captives for the Reedwife, and she
   // takes them when the moon goes dark. Six nights' sleep and they are gone.
   dawns: [
-    { day: 4, text: ['The moon was thinner last night. In Thornwick they say the Ashfang take people off the marsh road and keep them for the Reedwife. She collects when the moon goes dark.'] },
+    { day: 4, text: ['The moon was thinner last night. In Thornwick they say the Ashfang take people off the marsh road and keep them for "the lady in the water". She collects when the moon goes dark.'] },
     { day: 6, text: ['Last night the moon was a paring, low over the marsh. Tonight it will be gone.'] },
     { day: 7, text: ['The moon was dark last night. Somewhere out on the marsh, something sang until dawn, and then stopped.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
   ],
   // What the rest of the campaign remembers (read as 'hollow-road:saved-scout',
-  // …): whether Wren lived, whether the company met Vex at his fire and
-  // whether he took its offer, and whether it cut the captives out of the
+  // …): that the company won this chapter at all (`won`), whether Wren
+  // lived, whether the company met Vex at his fire and whether he took its offer, and whether it cut the captives out of the
   // pens (the last two are war assets at the Wyrmcalling's council), and
   // what became of Vargan if the company turned him on the hag and spared him.
-  carries: ['saved-scout', 'scout-met', 'scout-left', 'met-vex', 'vex-turned', 'chief-dead', 'captives-freed',
+  carries: ['won', 'saved-scout', 'scout-met', 'scout-left', 'met-vex', 'vex-turned', 'chief-dead', 'captives-freed',
     'vargan-jailed', 'vargan-freed'],
   companions: {
     wren: {

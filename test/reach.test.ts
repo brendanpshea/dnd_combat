@@ -157,3 +157,29 @@ describe('outcome scenes that could be left by the back door', () => {
     expect(validateModule(m).filter((e) => e.includes('set noBack'))).toEqual([]);
   });
 });
+
+describe('campaign bugs found by the fourth read-through', () => {
+  const node = (mod: string, map: string, id: string) => {
+    const s = byId(mod).scenes[map];
+    if (s?.kind !== 'explore') throw new Error();
+    return s.map.nodes.find((n) => n.id === id)!;
+  };
+  const needs = (mod: string, map: string, id: string, flag: string) =>
+    expect(node(mod, map, id).requires ?? [], `${mod}:${id}`).toContainEqual({ kind: 'flag', flag });
+
+  it('an obstacle cannot be stepped into and back out of to open the way past it', () => {
+    needs('hollow-road', 'trail', 'approach', 'crossed-ravine');
+    needs('hollow-road', 'trail', 'thicket', 'crossed-ravine');
+    for (const id of ['blueden', 'onihold']) needs('wyrmcalling', 'hills', id, 'seam-cleared');
+    for (const id of ['redden', 'gorgonvale', 'steading']) needs('wyrmcalling', 'hills', id, 'oni-cleared');
+  });
+
+  it('Marrow, talked round, does not fight in the fight that follows, and losing it keeps him talked round', async () => {
+    const { ENCOUNTERS } = await import('../src/data/encounters.js');
+    const doubt = byId('sunken-barrows').scenes['seal-doubt'];
+    if (doubt?.kind !== 'battle') throw new Error();
+    expect(ENCOUNTERS[doubt.encounterId]!.members).not.toContain('cult-fanatic');
+    const lost = byId('sunken-barrows').scenes[doubt.onLoss!.to];
+    expect(lost?.kind === 'rest' && lost.next).toBe('seal-doubt');
+  });
+});

@@ -72,6 +72,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'cult', name: 'Cult of the Worm', suggestedLevel: 3,
     members: ['cult-fanatic', 'acolyte', 'ghoul', 'ghoul', 'animated-armor'],
   },
+  // The Sunken Barrows: the cult once Marrow has stopped believing. He stands
+  // aside; his acolyte and the things he raised do not.
+  'cult-wavering': {
+    id: 'cult-wavering', name: 'The Worm Without Its Shepherd', suggestedLevel: 3,
+    members: ['acolyte', 'ghoul', 'ghoul', 'animated-armor'],
+  },
   knights: {
     id: 'knights', name: 'Knightly Order', suggestedLevel: 4,
     members: ['knight', 'scout', 'scout', 'bandit'],
