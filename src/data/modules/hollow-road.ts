@@ -343,7 +343,7 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'investigate', label: '[Investigation DC 13] Pick his crew out of the crowd first', to: 'spy-ambush',
-        once: true, check: { skill: 'investigation', dc: 13, failTo: 'spy-bolts' } },
+        once: true, check: { skill: 'investigation', dc: 13, failTo: 'spy-pinched', failEffects: [{ kind: 'gold', amount: -15 }] } },
       { id: 'intimidate', label: '[Intimidation DC 14] Shout down the hired help before they close', to: 'spy-ambush',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'spy-bolts' } },
       { id: 'brace', label: 'Put your backs to the wall and draw', to: 'spy-bolts' },
@@ -370,7 +370,7 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'stalk', label: '[Stealth DC 12] Come at him from behind the stalls', to: 'spy-grabbed',
-        once: true, check: { skill: 'stealth', dc: 12, failTo: 'spy-confront' } },
+        once: true, check: { skill: 'stealth', dc: 12, failTo: 'spy-slipped' } },
       { id: 'walk', label: 'Walk straight up to his stall', to: 'spy-confront' },
     ],
   },
@@ -430,6 +430,19 @@ const scenes: Record<string, Scene> = {
     surprise: 'enemies', // you read the ambush first — the crew loses its opening round
     intro: ['The crew moves in from the stalls a beat too late. You\'re already where they didn\'t expect you, and they scramble.'],
     onWin: { to: 'spy-caught', text: ['Off balance from the first, the crew never finds its feet. The fixer falls, and his hired blades throw down and bolt.'] },
+  },
+  // A failed stalk: he sees you coming and slips away, and the party loses a
+  // day waiting for him to come back to his stall.
+  'spy-slipped': {
+    id: 'spy-slipped', kind: 'story', noBack: true, art: { imageId: 'loc-village', emoji: '🕵️' },
+    text: ['A board creaks under your boot, three stalls short. The peddler glances round, sees you, and is gone into the crowd before you can reach him. He does not come back to his stall until the next evening. You lose a whole day watching it stand empty.'],
+    next: [{ id: 'on', label: 'Walk up to his stall', to: 'spy-confront', effects: [{ kind: 'passDay' }] }],
+  },
+  // A failed read of the crowd: while you look for his crew, one of them robs you.
+  'spy-pinched': {
+    id: 'spy-pinched', kind: 'story', noBack: true, art: { imageId: 'loc-village', emoji: '👛' },
+    text: ['You search the crowd for his crew, and you look in all the wrong places. By the time you spot the fixer, one of his knives has already brushed past you. Your purse went with him, fifteen gold and all.'],
+    next: [{ id: 'on', label: 'Get your backs to the wall', to: 'spy-bolts' }],
   },
 
   // === ACT 2 — THE MARSH ROAD (wilderness) ==============================
@@ -501,7 +514,9 @@ const scenes: Record<string, Scene> = {
           // Once the ambush is broken the hollow is a walk, not a re-fightable
           // reward loop — the return trip from a den retreat passes through
           // quietly instead of re-rolling the battle (and its XP/treasure).
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'know-hag' }], to: 'hollow-quiet' }] },
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'know-hag' }], to: 'hollow-quiet' },
+            // A scout who counted the den's watch-posts sees the ambush first.
+            { if: [{ kind: 'companion', companion: 'wren' }], to: 'ambush-wren' }] },
       ],
     },
   },
@@ -752,6 +767,16 @@ const scenes: Record<string, Scene> = {
     success: { to: 'ambush-turned', text: ['You catch the gleam of an eye among the reeds a breath before it moves. The trap is yours to spring.'] },
     failure: { to: 'ambush-sprung', text: ['A hiss, a ripple — and the reeds come alive all at once. Too late.'] },
   },
+  // Wren's one trick on the marsh road: she reads the reeds before anyone rolls.
+  'ambush-wren': {
+    id: 'ambush-wren', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🧭' },
+    text: [
+      'At the lip of the hollow Wren puts out an arm and stops you. She watches the reeds below for a long time.',
+      '"Too still," she says. "And cold. The marsh is never cold at noon." She points once, twice, five times. "Lizardfolk, lying in the water. They think we\'ll come down the dry line. So we won\'t."',
+    ],
+    next: [{ id: 'wren', label: '[Wren] Follow her round behind them', to: 'ambush-turned',
+      requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true }],
+  },
   'ambush-turned': {
     id: 'ambush-turned', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'enemies', // you spotted them — they lose the first round
@@ -795,7 +820,7 @@ const scenes: Record<string, Scene> = {
       { id: 'signal', label: '[Deception DC 10] Call the stolen watch-signal up to the post', to: 'inner',
         requires: [{ kind: 'flag', flag: 'know-signal' }, { kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'den-entered' }],
-        check: { skill: 'deception', dc: 10, failTo: 'gate-fight', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
+        check: { skill: 'deception', dc: 10, failTo: 'gate-signal-blown', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
       // A rogue's bonus: the water-gate's lock, no roll and no alarm.
       { id: 'lock', label: '[Rogue] Pick the lock on the little water-gate', to: 'den-picked',
         requires: [{ kind: 'classInParty', classId: 'rogue' }, { kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
@@ -803,7 +828,7 @@ const scenes: Record<string, Scene> = {
       { id: 'sneak', label: '[Stealth DC 13] Slip over the wall (whole party)', to: 'inner',
         requires: [{ kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'den-entered' }],
-        check: { skill: 'stealth', dc: 13, roller: 'group', failTo: 'gate-fight', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
+        check: { skill: 'stealth', dc: 13, roller: 'group', failTo: 'gate-caught', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
       { id: 'fight', label: 'Storm the gate', to: 'gate-fight',
         requires: [{ kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true },
     ],
@@ -823,6 +848,25 @@ const scenes: Record<string, Scene> = {
       success: { to: 'inner', text: ['"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The bugbear sniffs you, weighs you, and decides you are someone else\'s problem. The gnolls fall in laughing behind you, and the den stays asleep.'],
         effects: [{ kind: 'setFlag', flag: 'den-entered' }] },
     },
+  },
+  // The stolen signal, called wrong: the watch knows it has been sold. The
+  // party lies up in the reeds until the den settles, and the signal is gone.
+  'gate-signal-blown': {
+    id: 'gate-signal-blown', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '📯' },
+    text: [
+      'The watch-post goes quiet. Then a voice calls down a countersign you never learned. Somebody up there knows that someone sold the signal.',
+      'A horn brays, and torches run along the wall. You fall back into the reeds and lie in the mud while the watch hunts the hollow. It takes all night and most of the next day before the den settles. By then the watch has a new signal, and you do not know it.',
+    ],
+    next: [{ id: 'back', label: 'Crawl back up to the gate', to: 'gate',
+      effects: [{ kind: 'passDay' }, { kind: 'clearFlag', flag: 'know-signal' }] }],
+  },
+  // Caught on the wall: the gate-runners are waiting at the bottom of it.
+  'gate-caught': {
+    id: 'gate-caught', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
+    surprise: 'party',
+    intro: ['Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, the bugbear and two gnolls are already waiting at the foot of the wall.'],
+    onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open.'],
+      effects: [{ kind: 'setFlag', flag: 'den-entered' }] },
   },
   // The den as a dungeon: rooms and links, laid out by the game. The spine is
   // forced — yard → pit → Vex's fire → the chief's hall — so every party
