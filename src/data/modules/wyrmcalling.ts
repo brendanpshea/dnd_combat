@@ -402,12 +402,18 @@ const SLIDES_HILLS: Slide[] = [
   { if: [{ kind: 'flag', flag: 'green-sent' }],
     text: 'Somewhere past the far hills, a green dragon is growing up. It still flinches at the sound of the dragon tongue.' },
   // The camp's tally (see TALLY): above zero means the hills were thinned.
-  { if: [{ kind: 'notFlag', flag: TALLY }],
+  // The camp is only attacked if the Calling peaked (see DAWNS); broken
+  // before then, what was left in the hills simply turned for home.
+  { if: [{ kind: 'flag', flag: 'calling-peaked' }, { kind: 'notFlag', flag: TALLY }],
     text: 'On the night of the Calling, the beasts you left in the hills came down on the war-camp. The pikes held, but only just. Vex burned a long row of funeral fires the next morning, and he wrote down every name.' },
-  { if: [{ kind: 'flag', flag: TALLY, value: 1 }],
+  { if: [{ kind: 'flag', flag: 'calling-peaked' }, { kind: 'flag', flag: TALLY, value: 1 }],
     text: 'On the night of the Calling, the war-camp held. You had thinned the hills so well that Vex did not lose a single soldier.' },
-  { if: [{ kind: 'flag', flag: TALLY, value: 10 - THREAT_PAR }],
+  { if: [{ kind: 'flag', flag: 'calling-peaked' }, { kind: 'flag', flag: TALLY, value: 10 - THREAT_PAR }],
     text: 'Bram still complains about all the arrows nobody needed.' },
+  { if: [{ kind: 'notFlag', flag: 'calling-peaked' }, { kind: 'notFlag', flag: TALLY }],
+    text: 'You broke the stone before the Calling peaked, and the war-camp never had to fight its night. But what you left in the hills is still up there. The shepherds will be dealing with it for years.' },
+  { if: [{ kind: 'notFlag', flag: 'calling-peaked' }, { kind: 'flag', flag: TALLY, value: 1 }],
+    text: 'You broke the stone before the Calling peaked, and you had thinned the hills on the way. Vex sends the pikemen home before the first snow.' },
   { if: [{ kind: 'flag', flag: 'manticore-sent' }],
     text: 'The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting about unpaid tolls.' },
   { if: [{ kind: 'flag', flag: 'herd-spared' }],
@@ -439,8 +445,10 @@ const SLIDES_PEOPLE: Slide[] = [
     text: 'Hask went back to Vex\'s side with a new scar and a better story, and Vex pretends to be tired of hearing it.' },
   { if: [{ kind: 'flag', flag: 'mules-unloaded' }],
     text: 'The carter from the Ashfang pens drives the last wagon home to Thornwick. The girl in her new shoes rides on top.' },
-  { if: [{ kind: 'flag', flag: 'watch-holds' }],
-    text: 'Thornwick\'s watch held the camp\'s weakest line on the night of the Calling. Reeve Aldous calls it a debt settled, and for once he smiles as he says it.' },
+  { if: [{ kind: 'flag', flag: 'watch-holds' }, { kind: 'flag', flag: 'calling-peaked' }],
+        text: 'Thornwick\'s watch held the camp\'s weakest line on the night of the Calling. Reeve Aldous calls it a debt settled, and for once he smiles as he says it.' },
+      { if: [{ kind: 'flag', flag: 'watch-holds' }, { kind: 'notFlag', flag: 'calling-peaked' }],
+        text: 'Thornwick\'s watch dug in on the camp\'s weakest line and never had to hold it. Reeve Aldous calls the debt settled anyway, and almost means it.' },
 ];
 
 const scenes: Record<string, Scene> = {
@@ -558,8 +566,9 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'wren-brief' }], to: 'scouts-done' },
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'scouts-fire-saved' },
-            // Walked the fen with her since, but she remembers the horse first.
-            { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'scouts-fire-left' },
+            // Left her under the horse, then (always, on the way to the Barrow
+            // Gate) walked the fen with her: some of it is squared.
+            { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'scouts-fire-mended' },
             { if: [{ kind: 'flag', flag: 'sunken-barrows:met-wren' }], to: 'scouts-fire-old' },
           ] },
         // War assets paid at the camp (see WAR ASSETS): the marker's scene is
@@ -635,15 +644,14 @@ const scenes: Record<string, Scene> = {
     ],
     next: TAKE_NOTES,
   },
-  // The company stepped round her under the dead horse in Part 1. She does
-  // her job, and she does not pretend that day did not happen.
-  'scouts-fire-left': {
-    id: 'scouts-fire-left', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
+  // Left under the horse in Part 1, then walked the fen together in Part 2.
+  'scouts-fire-mended': {
+    id: 'scouts-fire-mended', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
     lines: [
-      '**Wren** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She sees you, and her face goes flat. She has not forgotten the marsh road, or the dead horse you stepped round.',
-      '"The captain says you get my notes, so you get my notes." She jabs a finger at the map. ' + WREN_BEASTS,
+      '**Wren** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She sees you and nods, once. It\'s not warm, but it\'s not the look she gave you in the fen, either.',
+      '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
-      'She looks up. ' + WREN_GIANTS + ' "And the streams are walking uphill. I\'ve got no advice about that one." She holds out the map-notes, and lets go a moment before you have them. "I don\'t need you to be sorry. I need this camp alive. Clear the hills."',
+      'She looks up. ' + WREN_GIANTS + ' "And the streams are walking uphill. I\'ve got no advice about that one." She hands over the map-notes. "You walked past me once. Then you came back up out of that barrow when you said you would. I\'m still counting, but that one counted."',
     ],
     next: TAKE_NOTES,
   },
@@ -879,7 +887,7 @@ const scenes: Record<string, Scene> = {
       { id: 'time', label: '[Survival DC 14] Time the stampede', to: 'boarruns-timed',
         requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true,
         once: true, check: { skill: 'survival', dc: 14, failTo: 'boarruns-scattered', failEffects: SCATTERED } },
-      { id: 'calm', label: '[Animal Handling DC 12] Kneel in the narrows and calm the leaders', to: 'boarruns-calmed',
+      { id: 'calm', label: '[Druid · Animal Handling DC 12] Kneel in the narrows and calm the leaders', to: 'boarruns-calmed',
         requires: [{ kind: 'classInParty', classId: 'druid' }], hideWhenBlocked: true,
         once: true, check: { skill: 'animal-handling', dc: 12, failTo: 'boarruns-fight' } },
       { id: 'fight', label: 'Meet the stampede at the narrows', to: 'boarruns-fight' },
@@ -1289,8 +1297,8 @@ const scenes: Record<string, Scene> = {
       { id: 'song', label: 'Break the song', hint: 'Sing a wrong note into the Calling and knock it off its beat.',
         skill: 'arcana', dc: 15,
         failure: { to: 'tear-loose', text: ['Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.'] } },
-      // Halden lived through the barrows, and he taught the company his rites.
-      { id: 'rites', label: 'Say Halden\'s rites over the stone', hint: 'Brother Halden taught you the old words for shutting a door.',
+      // Halden lived through the barrows, and the company read his rites at the door.
+      { id: 'rites', label: 'Say Halden\'s rites over the stone', hint: 'Brother Halden\'s book of rites went down into the barrows with you. Its oldest words are for shutting doors.',
         skill: 'religion', dc: 11,
         requires: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }, { kind: 'noCompanion', companion: 'halden' }], hideWhenBlocked: true,
         success: { to: 'sisters-battle', effects: LOOSE, text: ['Halden\'s old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free, smoking and furious.'] },
@@ -1359,7 +1367,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'You come down the hill on your own feet. The camp has seen two tall green shapes walk past its lines in the dusk, and it has not decided yet whether to cheer.',
       'Vex decides for it. "The Calling\'s broken," he says, loud enough to carry. Then, quieter: "I hear we\'ve got hags in the fen again." You tell him they\'re keepers now. He looks at you for a long moment. "Then I hope they keep," he says.',
-      '**Wren**, the camp\'s Chief of Scouts, looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and says somebody had better write the route report.',
+      '**Wren**, the camp\'s Chief of Scouts, watched the two hags walk past from the scouts\' fire with an arrow on the string the whole way. When she sees the four of you behind them, she puts the arrow away and grins her whole age for once.',
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'vigil-purse',
@@ -1395,7 +1403,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'You come down the hill on your own feet. You walk into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown.',
       'Vex shakes your hand like a man signing off on accounts he never expected to balance. "The Calling\'s broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."',
-      '**Wren**, the camp\'s Chief of Scouts, looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and says somebody had better write the route report.',
+      '**Wren**, the camp\'s Chief of Scouts, looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and goes back to giving orders.',
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'wc-purse',

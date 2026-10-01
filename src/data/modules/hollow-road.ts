@@ -970,6 +970,11 @@ const scenes: Record<string, Scene> = {
     loot: false,
     intro: ['The noise carries. The raider by the fire jumps up and yells, and the den\'s watch comes running with him. Two orcs, two archers and a bandit spread out in front of the pen. The carter pulls the girl down into the straw.'],
     onWin: { to: 'den-pens-freed', text: ['The last raider falls against the stakes. Nobody else comes. In a den this loud, one more fight in the dark is nothing new.'] },
+    // The pens are played once: there is no coming back to them, so the fight
+    // is seen through, and losing it loses the captives.
+    noFlee: true,
+    onLoss: { to: 'inner', text: ['You go down in the mud in front of the pen. When you come to, the raiders have dragged you into the kennel straw and left you for dead. The pen stands open. The captives are gone, and so are their tracks, out toward the deep fen.'],
+      effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
   },
   'den-pens-freed': {
     id: 'den-pens-freed', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
@@ -997,7 +1002,8 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'gold', amount: 25 }, { kind: 'setFlag', flag: 'cache-searched' }] },
   },
   'vex-parley': {
-    id: 'vex-parley', kind: 'dialogue', npc: LIEUTENANT, art: { emoji: '🗡️' },
+    // One-way: whatever the party says (or doesn't), Vex has met them.
+    id: 'vex-parley', kind: 'dialogue', noBack: true, npc: LIEUTENANT, art: { emoji: '🗡️' },
     lines: [
       'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it like a man who\'d rather be leaning on it.',
       '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. I notice he never kept one for me." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
@@ -1135,6 +1141,8 @@ const scenes: Record<string, Scene> = {
   // without him, with the chief's guard and one more raider at her side.
   'reedwife-fight': {
     id: 'reedwife-fight', kind: 'battle', encounterId: 'hag-coven', mapId: 'firepit',
+    // No falling back: the hall behind you is the one where Vargan turned.
+    noFlee: true,
     loot: { bonusTier: 'rare' },
     intro: [VARGAN_TURNS, 'She turns to you, smiling. "Waste not," she says, and whistles. The chief\'s guard comes out of the smoke with another raider at his back.'],
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS], effects: REEDWIFE_WON },
@@ -1143,6 +1151,7 @@ const scenes: Record<string, Scene> = {
   // The same, with Vex's man gone: the two raiders she whistles in come late.
   'reedwife-fight-alone': {
     id: 'reedwife-fight-alone', kind: 'battle', encounterId: 'hag-coven', mapId: 'firepit',
+    noFlee: true,
     surprise: 'enemies',
     loot: { bonusTier: 'rare' },
     intro: [VARGAN_TURNS, 'She turns to you, smiling. "Waste not," she says, and whistles for the chief\'s guard. Vex\'s man does not come. Two raiders stumble in from the yard instead, a breath too late.'],
@@ -1251,7 +1260,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'met-vex' }, { kind: 'notFlag', flag: 'vex-turned' }],
         text: 'Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
       { if: [{ kind: 'flag', flag: 'saved-scout' }],
-        text: 'At dawn Wren limps out ahead of the reeve\'s men, pleased to find you left her something to arrest.' },
+        text: 'At dawn Wren limps out ahead of the reeve\'s men to round up what\'s left of the Ashfang. She makes a list first.' },
       { if: [{ kind: 'flag', flag: 'mill-saved' }],
         text: 'Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog\'s neck.' },
       { if: [{ kind: 'flag', flag: 'looted' }],

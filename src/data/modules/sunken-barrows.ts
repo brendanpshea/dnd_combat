@@ -236,7 +236,7 @@ const scenes: Record<string, Scene> = {
     id: 'reeve-hall-won', kind: 'dialogue', npc: REEVE, art: { emoji: '⚖️' },
     lines: [
       'The reeve\'s hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you. He watches the fen fog eat his water-meadows. He grips his chain of office in one fist, like a weapon he doesn\'t know how to use.',
-      '"You again," he says, without turning. "Last season you broke the Ashfang, and I paid you for it. Thornwick settles its debts. It appears the marsh does likewise. My grandfather\'s grave is open, and my grandfather has *gone somewhere*. We buried him in his chain of office. The twin of this one."',
+      '"You again," he says, without turning. "Last season you broke the Ashfang. Thornwick settles its debts. It appears the marsh does likewise. My grandfather\'s grave is open, and my grandfather has *gone somewhere*. We buried him in his chain of office. The twin of this one."',
       'He turns. He looks older than the ledgers. "The fen-folk say the hag kept something shut out there, and that it got loose when you killed her. I don\'t know if that is true. I know you stood in my churchyard last night, and my watch did not. So I am paying you again. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, Wren, will meet you at the fen road. She asked for the job. Rather forcefully, for someone I employ."',
     ],
@@ -396,7 +396,7 @@ const scenes: Record<string, Scene> = {
   'chapel-fight': {
     id: 'chapel-fight', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
     intro: ['Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows. Two acolytes in Thornwick\'s chapel colours step up beside him, their eyes as empty as the dead\'s. "The Warden provides," says Halden, and sets them on you.'],
-    onWin: { to: 'chapel-won', text: ['Halden sinks down on the altar steps. At the end, he mostly looks relieved.'] },
+    onWin: { to: 'chapel-won', text: ['Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.'] },
     // Saving Halden: the thing wearing him borrowed his prayers, so his own
     // words for the dead can turn it out. One try, before the first blow.
     parley: {
@@ -411,7 +411,7 @@ const scenes: Record<string, Scene> = {
     id: 'chapel-caught', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
     surprise: 'enemies',
     intro: ['You see it a breath before it moves. The thing behind Halden\'s serenity winds up through him like rot up a post. You\'re already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.'],
-    onWin: { to: 'chapel-won', text: ['Caught off balance from the first blow, the dead never find their rows again. Halden slumps against the altar rail. Whatever was wearing him lets go, and leaves him looking almost grateful.'] },
+    onWin: { to: 'chapel-won', text: ['Caught off balance from the first blow, the dead never find their rows again. Halden slumps against the altar rail and does not get up again. Whatever was wearing him lets go, and he dies looking almost grateful.'] },
     parley: {
       skill: 'religion', dc: 14, label: 'Speak his own liturgy back to him',
       success: { to: 'chapel-saved', text: [
@@ -843,6 +843,8 @@ const scenes: Record<string, Scene> = {
   },
   'seal-doubt': {
     id: 'seal-doubt', kind: 'battle', encounterId: 'cult-wavering', mapId: 'firepit',
+    // No falling back: the stair behind you leads to the Marrow who still believed.
+    noFlee: true,
     surprise: 'enemies',
     onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
@@ -873,7 +875,7 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
     intro: ['Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.'],
-    onWin: { to: 'resealing', text: ['Marrow dies reaching for the door. For the first time in an age, none of the Warden\'s servants stand at his door. Only you stand there, with the book.'],
+    onWin: { to: 'resealing', text: ['Marrow dies reaching for the door. Nobody stands to fight for the Warden now. Only his kneeling faithful remain, staring at the body, and you stand at the door with the book.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // The climax is a choice of how, and a roll: each way of saying the rites may

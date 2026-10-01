@@ -220,3 +220,34 @@ describe('carried choices', () => {
     expect(errors.some((e) => e.startsWith('[b]') && e.includes('stranded') && !e.includes('carried in'))).toBe(true);
   });
 });
+
+describe('campaign bugs found by the fifth read-through', () => {
+  const battle = (mod: string, id: string) => {
+    const s = byId(mod).scenes[id];
+    if (s?.kind !== 'battle') throw new Error(`${mod}:${id}`);
+    return s;
+  };
+
+  it('a fight that cannot be come back to cannot be fled', () => {
+    for (const [mod, id] of [['hollow-road', 'pens-alarm'], ['hollow-road', 'reedwife-fight'], ['hollow-road', 'reedwife-fight-alone'], ['sunken-barrows', 'seal-doubt']] as const) {
+      expect(battle(mod, id).noFlee, `${mod}:${id}`).toBe(true);
+    }
+    // Losing the pens fight loses the captives, rather than leaving them in limbo.
+    expect(battle('hollow-road', 'pens-alarm').onLoss?.effects).toContainEqual({ kind: 'setFlag', flag: 'captives-taken' });
+  });
+
+  it('Vex, once met, stays met', () => {
+    const vex = byId('hollow-road').scenes['vex-parley'];
+    expect(vex?.kind === 'dialogue' && vex.noBack).toBe(true);
+  });
+
+  it('the camp is only said to have fought its night if the Calling peaked', () => {
+    const end = byId('wyrmcalling').scenes['wc-epilogue'];
+    if (end?.kind !== 'ending') throw new Error();
+    for (const sl of end.slides ?? []) {
+      if (sl.text.includes('night of the Calling') || sl.text.includes('arrows nobody needed')) {
+        expect(sl.if, sl.text).toContainEqual({ kind: 'flag', flag: 'calling-peaked' });
+      }
+    }
+  });
+});
