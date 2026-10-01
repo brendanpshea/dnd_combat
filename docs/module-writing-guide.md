@@ -193,6 +193,12 @@ builds a whole playable module the same way, and is held to the same proofs.
 
 ### Can it still be won?
 
+To see a whole chapter at once, `npm run module:map -- <module-id>` draws it:
+a box per location, stacked in the order a party reaches them, every way
+between scenes labelled with what it needs, and anything the validator
+reports outlined in red. (A ↩ on a scene means it leads back to its location;
+those arrows are left out, since nearly every scene has one.)
+
 Once a module's shape is sound, the validator walks **every state a party can
 get it into** (src/adventure/reach.ts): the scene, the place `@hub` returns
 to, and every flag a requirement reads, companion it names and location
