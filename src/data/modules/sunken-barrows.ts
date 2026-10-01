@@ -109,7 +109,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'grave-morning': {
-    id: 'grave-morning', kind: 'story', art: { emoji: '⛪' },
+    id: 'grave-morning', kind: 'story', noBack: true, art: { emoji: '⛪' },
     text: [
       'Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead didn\'t wait for anyone to take them. They climbed out and left on their own.',
       'And they left together. The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way, straight as a drawn line: **into the deep fen**.',
@@ -147,6 +147,8 @@ const scenes: Record<string, Scene> = {
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'fen-reunion' },
             // The scout under the horse died in Part 1: this Wren is someone else.
             { if: [{ kind: 'flag', flag: 'hollow-road:scout-met' }], to: 'fen-partner' },
+            // The company walked past her on the marsh road in Part 1.
+            { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'fen-left' },
           ] },
       ],
     },
@@ -229,6 +231,19 @@ const scenes: Record<string, Scene> = {
       effects: [...WREN_JOINS,
         { kind: 'journal', entry: { id: 'n-wren', kind: 'npc', title: 'Wren, the Reeve\'s Scout',
           body: 'Wren is Reeve Aldous\'s scout. She is young, she limps, and she will not be left behind. She guides you through the deep fen as far as the old barrow-country.' } }] }],
+  },
+  // The company stepped round her on the marsh road in Part 1. She lived.
+  'fen-left': {
+    id: 'fen-left', kind: 'dialogue', npc: WREN, art: { imageId: 'loc-marsh', emoji: '🌫️' },
+    lines: [
+      'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. She stands when she sees you, and favours one leg.',
+      '"**Wren**. The reeve\'s scout." She looks at you a long moment. "We\'ve met. You stepped round me on the marsh road, under a dead horse. The reeve\'s men dug me out the next day." She puts the knife away. "I\'m not here to settle that. I\'m here because the reeve asked. Keep up."',
+      '"' + WREN_BRIEF + '"',
+    ],
+    next: [{ id: 'go', label: 'Follow her onto the raised road', to: 'fen',
+      effects: [...WREN_JOINS,
+        { kind: 'journal', entry: { id: 'n-wren', kind: 'npc', title: 'Wren, the Reeve\'s Scout',
+          body: 'Wren is Reeve Aldous\'s scout, the one you left under a horse on the marsh road. She lived. She guides you through the deep fen anyway, as far as the old barrow-country.' } }] }],
   },
   // The company found a scout dying under a horse in Part 1, and she never
   // told them her name. She was Wren's partner.
@@ -364,7 +379,7 @@ const scenes: Record<string, Scene> = {
   },
   // Halden lives: he tells the party himself what the dead man's book says.
   'chapel-saved': {
-    id: 'chapel-saved', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '📖' },
+    id: 'chapel-saved', kind: 'dialogue', noBack: true, npc: HALDEN, art: { imageId: 'loc-temple', emoji: '📖' },
     lines: [
       'Halden sits down hard on the altar steps. He is shaking, and he is himself again. He stares at his hands as if someone just gave them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water.',
       '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop. The black candles aren\'t mine. A man in robes the colour of grave-worms brought them, and I *thanked* him." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
@@ -378,7 +393,7 @@ const scenes: Record<string, Scene> = {
           body: 'Halden keeps Thornwick\'s little chapel. Something under the fen took hold of him through his own prayers, and you talked it out of him. He has promised to follow you down to the Warden\'s door.' } }] }],
   },
   'chapel-won': {
-    id: 'chapel-won', kind: 'story', art: { imageId: 'loc-temple', emoji: '📖' },
+    id: 'chapel-won', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '📖' },
     text: [
       'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in Halden\'s tidy hand. *The Reedwife kept the vigil. The vigil is ended. The Warden of the Barrows wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
       'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at the door. Not me. It will not let it be me."*',
@@ -521,7 +536,7 @@ const scenes: Record<string, Scene> = {
   },
   // Wren stays here. Every way down the steps sends her to her post.
   'lychgate-won': {
-    id: 'lychgate-won', kind: 'story', art: { imageId: 'loc-crypt', emoji: '⛩️' },
+    id: 'lychgate-won', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛩️' },
     text: [
       'Past the Barrow Gate the mounds rise in their dozens. At the field\'s heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.',
       'The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife\'s long feeding kept shut. Wren looks at the steps, then at you. "This is where sense stays home," she says. "I\'ll hold the gate. Someone\'s got to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.',
@@ -747,6 +762,7 @@ const scenes: Record<string, Scene> = {
   },
   'seal-battle': {
     id: 'seal-battle', kind: 'battle', encounterId: 'cult', mapId: 'firepit',
+    onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
     intro: ['The fanatic turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.'],
     onWin: { to: 'resealing', text: ['The fanatic dies reaching for the door. For the first time in an age, none of the Warden\'s servants stand at his door. Only you stand there, with the book.'],
@@ -813,6 +829,12 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'seal-shut', text: ['The last of them falls across the doorstep. All of you put your shoulders to the door and shove it home over the bodies. You shout the rites into the crack, badly and all at once. It is enough, barely.'],
       effects: [{ kind: 'setFlag', flag: 'seal-cracked' }] },
   },
+  // Lost to the cult below the one-way drop: they leave the party for dead
+  // and go back to their door, and the party comes to where it fell.
+  'seal-battle-lost': {
+    id: 'seal-battle-lost', kind: 'rest', variant: 'long', next: 'seal-battle',
+    intro: ['You go down under the cultists\' knives. You wake on the cold floor by the shaft, tied and forgotten. They were too busy with the door to finish you. You work the ropes loose, and the chanting is still going.'],
+  },
   'seal-breach-lost': {
     id: 'seal-breach-lost', kind: 'rest', variant: 'long', next: 'seal-breach',
     intro: ['You go down under grey hands, and the dark closes over you. When you wake, you are lying on the stair, far above the door. The dead have not climbed past you. They are still pushing out through the crack, slowly, one at a time.', 'You get up. Someone has to hold that door, and it is still you.'],
@@ -862,7 +884,7 @@ const scenes: Record<string, Scene> = {
   'sb-epilogue': {
     id: 'sb-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'The barrows sleep. The corpse-lights are out for good. Every grave in Thornwick\'s churchyard is full again, and stays that way.',
+      'The barrows sleep, and Thornwick\'s churchyard is quiet again.',
     ],
     // One line per thread the run touched, then the hook for Part 3 (always).
     slides: [

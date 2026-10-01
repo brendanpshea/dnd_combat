@@ -94,7 +94,7 @@ const WREN_GIANTS =
 const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warcamp',
   effects: [{ kind: 'setFlag', flag: 'wren-brief' }, { kind: 'xp', amount: 30 },
     { kind: 'journal', entry: { id: 'c-scoutnotes', kind: 'clue', title: 'Wren\'s Map-Notes',
-      body: 'Wren said the manticore on the toll-cliff is greedy, so promise it a bigger meal somewhere else. Watch the dust at the boar-runs and slip across between stampedes. The gorgon\'s statues still wear their purses, for anyone quiet enough. The ogre-mage and the ettin distrust each other, and the ettin\'s two heads never agree.' } }] }];
+      body: 'Wren said the manticore on the toll-cliff is greedy, so promise it a bigger meal somewhere else. Watch the dust at the boar-runs and slip across between stampedes. The gorgon\'s statues dropped their purses when their belts turned to stone, and anyone quiet enough can pick them up. The ogre-mage and the ettin distrust each other, and the ettin\'s two heads never agree.' } }] }];
 
 /**
  * The camp's tally: one tick for every threat dealt with before the stone,
@@ -255,7 +255,7 @@ const scenes: Record<string, Scene> = {
   // Vex refused the party in Part 1, or this is a cold start: introduce him
   // plainly, in words that hold for both.
   'vex-brief': {
-    id: 'vex-brief', kind: 'story', art: { imageId: 'loc-camp', emoji: '🗡️' },
+    id: 'vex-brief', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     text: [
       'This is **Vex**. He was the Ashfang\'s lieutenant once. When the chief made his last stand, Vex would not fight for him. He walked away and gave himself up to the reeve. Now Thornwick trusts him to run its war. "It took me too long to walk away," he says. "A slow learner still learns."',
       ...BRIEF_PLAN,
@@ -264,7 +264,7 @@ const scenes: Record<string, Scene> = {
       effects: briefed('Vex was the Ashfang\'s lieutenant. He walked away from the chief\'s last fight and gave himself up. Now he runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the Calling peaks.') }],
   },
   'vex-brief-turned': {
-    id: 'vex-brief-turned', kind: 'story', art: { imageId: 'loc-camp', emoji: '🗡️' },
+    id: 'vex-brief-turned', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     text: [
       'You know this man. It is **Vex**, once the Ashfang\'s lieutenant. In the chief\'s den he took your offer and kept his guards out of the last fight. Now Thornwick trusts him to run its war. "No more burned barns," he says. "I like this side better."',
       ...BRIEF_PLAN,
@@ -297,6 +297,7 @@ const scenes: Record<string, Scene> = {
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'scouts-fire-old' },
           ] },
         { id: 'trailhead', x: 80, y: 60, label: 'The High Trail', icon: 'tok-gate', scene: 'hills-out',
+          sceneWhen: [{ if: [{ kind: 'visited', scene: 'hills-out' }], to: 'hills-out-again' }],
           requires: [{ kind: 'flag', flag: 'briefed' }] },
       ],
     },
@@ -343,6 +344,11 @@ const scenes: Record<string, Scene> = {
     id: 'scouts-done', kind: 'story', art: { emoji: '🏹' },
     text: ['The scouts\' fire crackles through another change of shift. Wren\'s riders come and go with the brisk urgency she has drilled into them, and her map grows more arrowheads by the hour. She flicks you a two-finger salute without looking up.'],
     next: [{ id: 'ok', label: 'Back to the camp', to: 'warcamp' }], noBack: true,
+  },
+  'hills-out-again': {
+    id: 'hills-out-again', kind: 'story', art: { imageId: 'loc-hills', emoji: '⛰️' },
+    text: ['The high trail again, past the saluted marker. Above, the Calling hums on, no quieter than before.'],
+    next: [{ id: 'up', label: 'Climb', to: 'hills' }],
   },
   'hills-out': {
     id: 'hills-out', kind: 'story', art: { imageId: 'loc-hills', emoji: '⛰️' },
@@ -448,7 +454,7 @@ const scenes: Record<string, Scene> = {
     id: 'tollcliff-talked', kind: 'story', art: { emoji: '🦁' },
     text: [
       'You tell it the truth, more or less. "The hags promised you a valley full of meat. They are up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord collects what he is owed. He does not wait on a ledge for scraps."',
-      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. Then it stretches, and its spiked tail rattles. "I believe I will go and collect." It drops off the ledge and beats away uphill, toward the Calling Stone. Its goblins look at each other and run the other way.',
+      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. Then it stretches, and its spiked tail rattles. "I believe I will go and collect." It drops off the ledge and beats away uphill, toward the Calling Stone. Even its goblins, hiding in the rocks below the ledge, run the other way.',
     ],
     next: [{ id: 'ok', label: 'Walk the open trail', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'setFlag', flag: 'manticore-sent' },
@@ -624,7 +630,7 @@ const scenes: Record<string, Scene> = {
   },
   'onihold-fight': {
     id: 'onihold-fight', kind: 'battle', encounterId: 'oni', mapId: 'corridor',
-    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. An ogre in an iron collar marches out with its maul on its shoulder, like a drilled soldier. An orc veteran in stolen mail calls the step. Then the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
+    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. An ogre in an iron collar marches out with its maul on its shoulder, like a drilled soldier. An scarred old orc in stolen mail calls the step. Then the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
     onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate. The middle pass stands open, and beyond it lies the road to the giants\' hall and the stone. The fort\'s war-chest is yours, fair and square.'],
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, ...tally(), { kind: 'gold', amount: 130 }] },
   },
@@ -665,7 +671,7 @@ const scenes: Record<string, Scene> = {
   'gorgonvale-sneak': {
     id: 'gorgonvale-sneak', kind: 'challenge', art: { emoji: '🗿' },
     intro: [
-      'The statues stand in crooked rows, and the dead still carry their purses. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.',
+      'The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.',
       'One wrong step on the loose rock, and you join the collection.',
     ],
     approaches: [
@@ -722,7 +728,7 @@ const scenes: Record<string, Scene> = {
       'Above the tree-line stands the giants\' hall, and it has had a bad night. Fire has eaten half the roof. Dead orcs from the ogre-mage\'s warband lie in the yard, and the ettin\'s ogre lies among them. Of the ogre-mage itself there is only a trail of blue blood, leading down the far side of the mountain.',
       'The **ettin** comes out at the first scrape of your boots, limping. "YOU let them in," roars the left head. "YOU were asleep," roars the right. A skinny orc runner stumbles out behind it. All three of them notice you at once.',
     ],
-    onWin: { to: 'hills', text: ['The ettin goes down still blaming itself, one head at a time. The ogre and the orc runner lie beside it. The ogre-mage\'s warband left its war-chest in the yard, and the hall holds the ettin\'s tribute too. Two warbands on the mountain have stopped answering the stone.'],
+    onWin: { to: 'hills', text: ['The ettin goes down still blaming itself, one head at a time. The orc runner lies beside it. The ogre-mage\'s warband left its war-chest in the yard, and the hall holds the ettin\'s tribute too. Two warbands on the mountain have stopped answering the stone.'],
       effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 190 }] },
     parley: {
       skill: 'deception', dc: 11, label: 'Ask each head whose fault the raid was',
@@ -776,7 +782,7 @@ const scenes: Record<string, Scene> = {
   },
   ...broodScenes(),
   'calling-approach': {
-    id: 'calling-approach', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    id: 'calling-approach', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
     text: [
       'Down in the bowl, at the foot of the stone, the **sisters** are waiting. The two hags stand a head taller than any man. They have pushed their green fingers to the knuckle into the black rock.',
       'They are not commanding the stone. They are pouring themselves into it. Their hair has turned to river-weed and wire. Their faces are burning down like candles. They are spending two long lives to keep the Calling singing.',
@@ -856,7 +862,7 @@ const scenes: Record<string, Scene> = {
   'calling-battle': {
     id: 'calling-battle', kind: 'battle', encounterId: 'elemental-cataclysm', mapId: 'firepit',
     loot: { bonusTier: 'rare' },
-    intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it. The mountain\'s own bones heave up into a shape with fists. The sisters\' hands sink into the rock to the wrist, and they do not let go. The Calling\'s last note is a disaster, and it has your name in it.'],
+    intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it. The mountain\'s own bones heave up into a shape with fists. The sisters sink into the rock to the shoulder, and they do not let go. The Calling\'s last note is a disaster, and it has your name in it.'],
     onWin: { to: 'calling-won', text: ['The sisters crumble into drifts of dry reeds, smiling as they go. The fire gutters out of the air. The stone shape shakes itself apart into loose rubble. The black fang has nothing left to spend and nobody left to spend it, so it cracks from top to bottom and falls silent. The Calling does not end with thunder. It ends with the huge, ringing quiet of a held note finally let go.'],
       effects: [{ kind: 'setFlag', flag: 'calling-broken' }, { kind: 'gold', amount: 200 }] },
   },
@@ -926,7 +932,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: TALLY, value: 1 }],
         text: 'On the night of the Calling, the war-camp held. You had thinned the hills so well that Vex did not lose a single soldier.' },
       { if: [{ kind: 'flag', flag: TALLY, value: 9 - THREAT_PAR }],
-        text: 'Not one beast reached the pikes that night. Bram still complains about all the arrows nobody needed.' },
+        text: 'Bram still complains about all the arrows nobody needed.' },
       { if: [{ kind: 'flag', flag: 'manticore-sent' }],
         text: 'The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting about unpaid tolls.' },
       { if: [{ kind: 'flag', flag: 'herd-spared' }],
@@ -942,7 +948,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'answered-rueful' }],
         text: 'Some nights you still think about the sisters, and about the vigil you ended without knowing it was one.' },
       { if: [{ kind: 'flag', flag: 'answered-cold' }],
-        text: 'Nobody ever learns what you said to the sisters at the stone, because you said nothing at all.' },
+        text: 'The valley still argues about what you said to the sisters at the stone. You said nothing at all.' },
       { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
         text: 'Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.' },
       { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'flag', flag: 'sunken-barrows:met-wren' }],
