@@ -488,12 +488,13 @@ const scenes: Record<string, Scene> = {
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'barrow-cleared' }], to: 'barrow-done' }] },
         // Optional: a webbed thicket — plainly dangerous, plainly avoidable.
         { id: 'thicket', x: 66, y: 70, label: 'Webbed Thicket', mystery: 'Pale shapes in the reeds…', icon: 'tok-tree', scene: 'thicket',
+          requires: [{ kind: 'flag', flag: 'crossed-ravine' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'thicket-cleared' }], to: 'thicket-done' }] },
         { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
           wandering: { chance: 0.5, battleScene: 'bog-toads' } },
         { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
-          requires: [{ kind: 'flag', flag: 'trail-read' }],
+          requires: [{ kind: 'flag', flag: 'trail-read' }, { kind: 'flag', flag: 'crossed-ravine' }],
           // Once the ambush is broken the hollow is a walk, not a re-fightable
           // reward loop — the return trip from a den retreat passes through
           // quietly instead of re-rolling the battle (and its XP/treasure).
@@ -649,7 +650,7 @@ const scenes: Record<string, Scene> = {
   'scout-fail': {
     id: 'scout-fail', kind: 'story', noBack: true, art: { emoji: '🩸' },
     text: [
-      'The arrow went deeper than it looked, and she knows it before you do. She presses her last healing potion into your hand. "Too late for me. Take it in there with you."',
+      'Your hands slip, and the arrowhead tears loose something deep inside. She knows it before you do. No potion will close that. She presses her own healing potion into your hand. "Wasted on me now. Take it in there with you."',
       'A minute later she is gone. She never told you her name.',
     ],
     next: [{ id: 'ok', label: 'Cover her and go', to: 'trail',
@@ -955,8 +956,13 @@ const scenes: Record<string, Scene> = {
       '"**Vex**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. I notice he never kept one for me." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
     ],
     next: [
+      // Wren's tip (`know-vex`): the party knows what he wants before he says it.
+      { id: 'wren', label: '[Persuasion DC 9] "Wren says you want out. The reeve\'s pardon, and a road."', to: 'vex-turned',
+        once: true, requires: [{ kind: 'flag', flag: 'know-vex' }], hideWhenBlocked: true,
+        check: { skill: 'persuasion', dc: 9, failTo: 'vex-refuses' } },
       { id: 'persuade', label: '[Persuasion DC 13] Offer him the reeve\'s pardon and a road out', to: 'vex-turned',
-        once: true, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
+        once: true, requires: [{ kind: 'notFlag', flag: 'know-vex' }], hideWhenBlocked: true,
+        check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
       { id: 'intimidate', label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
         once: true, check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses' } },
       { id: 'refuse', label: 'Refuse to deal with a raider', to: 'vex-dismissed',
@@ -1209,10 +1215,15 @@ const scenes: Record<string, Scene> = {
         text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
       { if: [{ kind: 'flag', flag: 'captives-freed' }],
         text: 'The carter\'s girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.' },
+      // The captives: freed (above), left, taken by the dark moon, or never found.
       { if: [{ kind: 'flag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
         text: 'A reed-cutter\'s widow walks the marsh edge every evening, calling a name. Nobody has the heart to tell her what the pens held.' },
-      { if: [{ kind: 'flag', flag: 'captives-left' }],
+      { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'notFlag', flag: 'captives-taken' }],
         text: 'The reeve\'s men find the pens behind the kennels two days later. The carter is alive. He will not say your names, and he will not drive the marsh road again.' },
+      { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'flag', flag: 'captives-taken' }],
+        text: 'The reeve\'s men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open and a child\'s shoe in the straw. You told the carter they would come.' },
+      { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
+        text: 'Behind the kennels, the reeve\'s men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.' },
     ],
   },
 
@@ -1230,7 +1241,7 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // The clock: the Ashfang keep their captives for the Reedwife, and she
   // takes them when the moon goes dark. Six nights' sleep and they are gone.
   dawns: [
-    { day: 4, text: ['The moon was thinner last night. In Thornwick they say the Ashfang take people off the marsh road and keep them for the Reedwife. She collects when the moon goes dark.'] },
+    { day: 4, text: ['The moon was thinner last night. In Thornwick they say the Ashfang take people off the marsh road and keep them for "the lady in the water". She collects when the moon goes dark.'] },
     { day: 6, text: ['Last night the moon was a paring, low over the marsh. Tonight it will be gone.'] },
     { day: 7, text: ['The moon was dark last night. Somewhere out on the marsh, something sang until dawn, and then stopped.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },

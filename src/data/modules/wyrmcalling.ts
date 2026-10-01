@@ -108,7 +108,7 @@ const briefed = (vexBody: string): Effect[] => [
 const WREN_BEASTS =
   '"The **manticore** on the toll-cliff talks. It will ask you for a toll, and what it really wants is you. But it is greedy. Promise it a bigger meal somewhere else, and it might fly off. The **boar-runs** flood with a stampede twice a day. Watch the dust, and you can slip across between runs."';
 const WREN_GORGON =
-  '"There is a valley past the middle pass full of statues that are far too good. A **gorgon** made them. Its breath turns people to stone. The statues still wear their purses. Go in quietly, or go in with your blade drawn."';
+  '"There is a valley past the middle pass full of statues that are far too good. A **gorgon** made them. Its breath turns people to stone. Their purses are still lying at their feet. Go in quietly, or go in with your blade drawn."';
 const WREN_GIANTS =
   '"The ogre-mage and the ettin both want the valley, and neither one trusts the other. The ettin\'s two heads cannot even agree with each other. Use that."';
 
@@ -332,6 +332,8 @@ const SLIDES_HILLS: Slide[] = [
   // in the fen, whatever became of the Ashfang chief.
   { if: [{ kind: 'flag', flag: 'hollow-road:met-vex' }, { kind: 'flag', flag: 'sunken-barrows:met-wren' }],
     text: 'The same four names run through all three songs. You broke the Ashfang. You sealed the Undercrypt.' },
+  { if: [{ kind: 'flag', flag: 'hollow-road:chief-dead' }],
+    text: 'Nobody in the valley mourns Vargan. His mother\'s house is still under the water, but the reed-cutters are back in the shallows he sold, cutting reeds for a copper a bundle.' },
   { if: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
     text: 'Vex has seen every side of the valley\'s troubles, and he finally picked the right one.' },
   { if: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }],
@@ -671,14 +673,19 @@ const scenes: Record<string, Scene> = {
         { id: 'seam', x: 50, y: 66, label: 'The Flooded Pass', mystery: 'A stream running uphill…', icon: 'tok-crossing', scene: 'seam',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'seam-cleared' }], to: 'seam-done' }] },
         { id: 'blueden', x: 58, y: 30, label: 'The Blue Mesa', mystery: 'A smell of thunder…', icon: 'tok-cave', scene: 'blueden',
+          requires: [{ kind: 'flag', flag: 'seam-cleared' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'blue-cleared' }], to: 'blueden-done' }, PEAKED] },
         { id: 'onihold', x: 68, y: 56, label: 'The Middle Pass', mystery: 'A horn on a wall…', icon: 'tok-ruin', scene: 'onihold',
+          requires: [{ kind: 'flag', flag: 'seam-cleared' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'oni-cleared' }], to: 'onihold-done' }] },
         { id: 'redden', x: 74, y: 22, label: 'The Burning Den', mystery: 'Smoke with no campfire…', icon: 'tok-fire', scene: 'redden',
+          requires: [{ kind: 'flag', flag: 'oni-cleared' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'red-cleared' }], to: 'redden-done' }, PEAKED] },
         { id: 'gorgonvale', x: 84, y: 78, label: 'The Valley of Statues', mystery: 'Statues that are too good…', icon: 'tok-mystery', scene: 'gorgonvale',
+          requires: [{ kind: 'flag', flag: 'oni-cleared' }],
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'gorgon-cleared' }], to: 'gorgonvale-done' }] },
         { id: 'steading', x: 88, y: 44, label: 'The Giants\' Hall', mystery: 'Smoke above the tree-line…', icon: 'tok-house', scene: 'steading',
+          requires: [{ kind: 'flag', flag: 'oni-cleared' }],
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'steading-cleared' }], to: 'steading-done' },
             // The ogre-mage was lied into raiding the hall first.
@@ -876,7 +883,7 @@ const scenes: Record<string, Scene> = {
     id: 'seam-fight', kind: 'battle', encounterId: 'water-vortex', mapId: 'bog',
     intro: ['The pool stands up. Twelve feet of mountain water in the rough shape of a giant, cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is.'],
     onWin: { to: 'hills', text: ['The elemental loses its argument with gravity all at once. It collapses into a hundred gallons of ordinary water, which hurries away downhill as if embarrassed. The thin place behind it closes. The pass is open.',
-      'Just before it shuts, you hear something through the crack, far away and deep under the ground. It is a slow knock, like a knuckle on a stone door.'],
+      'Just before it shuts, you hear something through the crack, far away and deep under the ground. It is a slow sound, like the sea heard in a shell. Something down there is listening.'],
       effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, ...tally(), { kind: 'gold', amount: 50 }] },
   },
   'seam-done': {
@@ -935,7 +942,7 @@ const scenes: Record<string, Scene> = {
   },
   'onihold-fight': {
     id: 'onihold-fight', kind: 'battle', encounterId: 'oni', mapId: 'corridor',
-    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. An ogre in an iron collar marches out with its maul on its shoulder, like a drilled soldier. An scarred old orc in stolen mail calls the step. Then the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
+    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. An ogre in an iron collar marches out with its maul on its shoulder, like a drilled soldier. A scarred old orc in stolen mail calls the step. Then the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
     onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate. The middle pass stands open, and beyond it lies the road to the giants\' hall and the stone. The fort\'s war-chest is yours, fair and square.'],
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, ...tally(), { kind: 'gold', amount: 130 }] },
   },
@@ -967,7 +974,7 @@ const scenes: Record<string, Scene> = {
       'It has not noticed you yet. The statues suggest that never lasts long.',
     ],
     next: [
-      // Wren's tip: the statues still wear their purses. One try, and the
+      // Wren's tip: the statues' purses lie at their feet. One try, and the
       // gorgon stays to be fought (or left) either way.
       { id: 'rob', label: 'Rob the statues without waking it', to: 'gorgonvale-sneak', once: true },
       { id: 'fight', label: 'Go in blade-first', to: 'gorgonvale-fight' },
@@ -1229,7 +1236,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'You come down the hill on your own feet. The camp has seen two tall green shapes walk past its lines in the dusk, and it has not decided yet whether to cheer.',
       'Vex decides for it. "The Calling is broken," he says, loud enough to carry. Then, quieter: "I hear we have hags in the fen again." You tell him they are keepers now. He looks at you for a long moment. "Then I hope they keep," he says.',
-      'Wren just looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers that she is Chief of Scouts, coughs, and asks for your route report.',
+      '**Wren**, the camp\'s Chief of Scouts, looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and says somebody had better write the route report.',
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'vigil-purse',
@@ -1264,7 +1271,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'You come down the hill on your own feet. You walk into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown.',
       'Vex shakes your hand like a man signing off on accounts he never expected to balance. "The Calling is broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."',
-      'Wren says nothing at all. She just looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers that she is Chief of Scouts, coughs, and asks for your route report.',
+      '**Wren**, the camp\'s Chief of Scouts, looks at the four of you, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and says somebody had better write the route report.',
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'wc-purse',
@@ -1307,7 +1314,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'companion', companion: 'halden' }],
         text: 'At the broken stone, Halden said the rites for the sisters too. Nobody else would have.' },
       { if: [{ kind: 'flag', flag: 'fen-ropes' }],
-        text: 'The fen-folk hang their burnt ropes over the widow\'s door at the edge of the fen. Everyone who walks past asks about them.' },
+        text: 'The fen-folk carry their drowning-ropes home from the mountain and hang them over the widow\'s door at the edge of the fen. Everyone who walks past asks about them.' },
       { if: [{ kind: 'flag', flag: 'sunken-barrows:seal-cracked' }],
         text: 'Deep under the fen, the Undercrypt\'s door still holds, though on still nights the fen-folk swear they hear something knock.' },
       // A company that played Part 2 always met Wren there; a clean seal.
@@ -1348,8 +1355,8 @@ export const WYRMCALLING_MODULE: Module = {
   // The clock: the Calling peaks on the sixth morning. Any dragon den still
   // standing then empties, and its wyrmlings go up to the rim (den-flown).
   dawns: [
-    { day: 3, text: ['The stone\'s note is louder this morning. At the scouts\' fire, Wren chalks a number on the map board: four more nights before the Calling peaks, she reckons, five at the most.'] },
-    { day: 5, text: ['The streams on the mountain run uphill all night now, loud enough to hear from the camp. Vex doubles the watch. "Tomorrow night," he says. "Whatever is still in those dens will fly."'] },
+    { day: 3, text: ['The stone\'s note is louder this morning. At the scouts\' fire, Wren chalks a number on the map board: three more nights before the Calling peaks, she reckons, and not one more.'] },
+    { day: 5, text: ['The streams on the mountain run uphill all night now, loud enough to hear from the camp. Vex doubles the watch. "Tonight," he says. "Whatever is still in those dens will fly."'] },
     { day: 6, text: ['The Calling peaked in the night. The whole mountain hummed with it, and the pikemen stood to their posts until dawn. Anything still nesting in the hills has gone up to the ridge.'],
       effects: [{ kind: 'setFlag', flag: 'calling-peaked' }] },
   ],

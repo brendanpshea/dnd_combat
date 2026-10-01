@@ -335,12 +335,12 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. The fen has sent visitors. Two ghouls, grave-mud to the elbows, crawl out of the black water. They move with the calm confidence of things that have done this before. No rest tonight. Just work.'],
-    onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time. The night is ruined and the fire is out. Nobody says what you are all thinking. They came out of the deep fen, the *very place you plan to go*.'] },
+    onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time. The night is ruined and the fire is out. Nobody says what you are all thinking. They came from further in, where every track in this fen leads.'] },
   },
   chapel: {
     id: 'chapel', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '🕯️' },
     lines: [
-      'The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. Most are plain white wax, the kind Halden buys in Thornwick. A few are **black tallow**, and they smoke like wet wood. On the dry island of the altar steps stands a priest. His robes are fen-stained, his face serene. He is leading a congregation.',
+      'The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. Most are plain white wax, the kind the chandler sells in Thornwick. A few are **black tallow**, and they smoke like wet wood. On the dry island of the altar steps stands a priest. His robes are fen-stained, his face serene. He is leading a congregation.',
       'The congregation is dead. They stand in the water in row after row, mud-black and empty-eyed, every face turned to the altar.',
       'Wren grips your arm. "That\'s **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley. He could never get a room to go quiet."',
       '"**Welcome!**" Halden beams at you with terrible peace, and the whole room goes quiet for him. "You\'ve come to see the great work. The Warden below is gathering his flock at last. I merely… keep the service, until he calls them down. Will you kneel? Everyone kneels down here, sooner or later."',
@@ -383,10 +383,10 @@ const scenes: Record<string, Scene> = {
     id: 'chapel-saved', kind: 'dialogue', noBack: true, npc: HALDEN, art: { imageId: 'loc-temple', emoji: '📖' },
     lines: [
       'Halden sits down hard on the altar steps. He is shaking, and he is himself again. He stares at his hands as if someone just gave them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water.',
-      '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop. The black candles aren\'t mine. A man in robes the colour of grave-worms brought them. He said his name was **Marrow**, and I *thanked* him." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
+      '"It came up through the floor," he says. "Through the *prayers*. I heard myself preaching, and I couldn\'t stop. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him." He pushes his prayer book into your hands. His tidy notes crowd the margins. Further down the page, the writing starts to shake.',
       '"The **Reedwife** was never just a hag. She was a jailer. Her feeding kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside."',
       'He taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That is the reed-woman\'s mark, the vigil\'s mark. The old builders cut it into the Barrow Gate. The gate\'s watchers know it."',
-      '"The rites of sealing are in that book. Someone must say them at his door, in the great barrow past the Barrow Gate. Say them whole, or not at all." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me."',
+      '"The rites of sealing are in that book. Someone must say them at his door, in the great barrow past the Barrow Gate. Say them whole, or not at all. It will take nerve." He swallows. "It wouldn\'t let me say them while it had me. I don\'t know if I can now. But I\'ll follow you down, well behind. I\'ll be on the stair when you need me."',
       'He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
@@ -569,7 +569,7 @@ const scenes: Record<string, Scene> = {
     id: 'undercrypt', kind: 'dungeon',
     dungeon: {
       title: 'The Undercrypt', theme: 'graveyard', art: { imageId: 'loc-crypt', emoji: '🕳️' },
-      torch: { length: 12, out: 'crypt-dark' },
+      torch: { length: 16, out: 'crypt-dark' },
       camp: { risky: { chance: 0.35, battleScene: 'crypt-night' } },
       entry: 'stair',
       rooms: [
@@ -611,7 +611,7 @@ const scenes: Record<string, Scene> = {
   'crypt-dark': {
     id: 'crypt-dark', kind: 'story', art: { imageId: 'loc-crypt', emoji: '🕯️' },
     text: [
-      'The torch gutters, spits, and dies. The dark down here is total. You hold hands like children and feel your way along the walls, up and up.',
+      'The torch gutters, spits, and dies. The dark down here is total. You hold hands like children and feel your way along the walls. You crawl through gaps and climb stairs you never saw by torchlight, always toward the cold air.',
       'At last grey daylight shows at the top of a stair. You climb out into the barrow-field and light a fresh torch with shaking fingers.',
     ],
     next: [{ id: 'out', label: 'Catch your breath in the barrow-field', to: 'fen' }],
@@ -762,8 +762,8 @@ const scenes: Record<string, Scene> = {
     text: [
       'The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it. The chanting you\'ve heard for an hour turns into words. Living voices speak them. The dead do not chant.',
       'A congregation of the **living** kneels at the door. They wear robes the colour of grave-worms and hold candles of black tallow. This is the **Cult of the Worm**, come far and fast on the news of a failing seal. The nailed boots on the old road were theirs. So were the black candles in the chapel.',
-      'Their leader stands at the door with a chisel of bone, prying the lead out one letter at a time. He is a thin grey man in a gravedigger\'s apron. This is **Marrow**, the man who brought Halden his candles. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets.',
-      '"Faster," Marrow tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "I dug graves at Saltmere for thirty years," he says. "Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves. Then I walked away and left them all in the cold."',
+      'Their leader stands at the door with a chisel of bone, prying the lead out one letter at a time. He is a thin grey man in a gravedigger\'s apron. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets.',
+      '"Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles. I dug graves at Saltmere for thirty years," he says. "Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves. Then I walked away and left them all in the cold."',
       '"The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."',
     ],
     next: [
@@ -776,15 +776,15 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'seal-doubt': {
-    id: 'seal-doubt', kind: 'battle', encounterId: 'cult', mapId: 'firepit',
+    id: 'seal-doubt', kind: 'battle', encounterId: 'cult-wavering', mapId: 'firepit',
     surprise: 'enemies',
-    onLoss: { to: 'seal-battle-lost' },
+    onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
     intro: [
       'You tell him about the wall in the king\'s chamber. Hundreds of villages are cut there, with a line through every one. None of them stand together. None of them stand at all. "Thornwick is the next name," you say. "Saltmere\'s graves will be on the wall after that."',
-      'Marrow\'s chisel stops. His acolyte sees it stop, and screams that he has lost his faith. The armour and the ghouls come for you anyway. Marrow comes with them, slow and late, like a man walking in his sleep.',
+      'Marrow\'s chisel stops. His acolyte sees it stop, and screams that he has lost his faith. The armour and the ghouls come for you anyway. Marrow does not. He sets his back against the door and watches, like a man walking in his sleep.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. Marrow never once swung to kill. When it is over, he is still alive, sitting on the bottom stair with the chisel in his lap.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is sitting on the bottom stair with the chisel in his lap.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -878,6 +878,11 @@ const scenes: Record<string, Scene> = {
   },
   // Lost to the cult below the one-way drop: they leave the party for dead
   // and go back to their door, and the party comes to where it fell.
+  // Losing after Marrow has stopped believing does not make him believe again.
+  'seal-doubt-lost': {
+    id: 'seal-doubt-lost', kind: 'rest', variant: 'long', next: 'seal-doubt',
+    intro: ['You go down under the ghouls. You wake on the cold floor by the shaft, with a gravedigger\'s coat folded under your head. Below, the acolyte is still chanting, and Marrow still has not lifted his chisel.'],
+  },
   'seal-battle-lost': {
     id: 'seal-battle-lost', kind: 'rest', variant: 'long', next: 'seal-battle',
     intro: ['You go down under the cultists\' knives. You wake on the cold floor by the shaft, tied and forgotten. They were too busy with the door to finish you. You work the ropes loose, and the chanting is still going.'],
