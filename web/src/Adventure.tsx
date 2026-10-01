@@ -49,7 +49,7 @@ import { renderProse } from './prose.js';
 import { PartySetup } from './PartySetup.js';
 import { LootScreen } from './Loot.js';
 import { LevelUpModal } from './LevelUp.js';
-import { saveAdventureWeb, deleteAdventureWeb, saveCheckpointWeb, loadCheckpointWeb } from './adventureStorage.js';
+import { saveAdventureWeb, deleteAdventureWeb, saveCheckpointWeb, loadCheckpointWeb, slotFor } from './adventureStorage.js';
 import { partingBlows } from '../../src/engine/rules/movement.js';
 import { markModuleCompleted } from './adventureProgress.js';
 import { moduleById } from '../../src/data/modules/index.js';
@@ -211,7 +211,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         saveAdventureWeb(onward);
       } else {
         setCarried(null);
-        deleteAdventureWeb();
+        deleteAdventureWeb(slotFor(module.id));
       }
     } else {
       saveAdventureWeb(state);

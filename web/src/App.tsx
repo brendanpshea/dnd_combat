@@ -31,6 +31,7 @@ import { makeTrainingCombat, TRAINING_COACH, type CoachStep } from './training.j
 import { CampaignScreen } from './Campaign.js';
 import { ArenaScreen } from './Arena.js';
 import { AdventureScreen } from './Adventure.js';
+import { DelveCard } from './DelveCard.js';
 import {
   savedAdventureModule, loadAdventureWeb, deleteAdventureWeb, activeSlot, setActiveSlot, slotMeta, SLOT_COUNT,
 } from './adventureStorage.js';
@@ -339,10 +340,13 @@ function Menu({ onPick }: { onPick(s: Screen): void }) {
           a link to: these are gone from a production build entirely, and the
           branch is dead code the bundler drops. `?dev` still reveals the test
           MODULES, which do want to be reachable on a deployed build. */}
-      {(import.meta.env.DEV || loose.length > 0) && (
+      {(import.meta.env.DEV || dev || loose.length > 0) && (
         <div className="landing-more">
           <span className="landing-more-label">{import.meta.env.DEV ? 'Dev builds only' : 'Test modules'}</span>
           <div className="landing-more-row">
+            {(import.meta.env.DEV || dev) && (
+              <DelveCard onPlay={(module, resume) => onPick({ view: 'adventure', module, ...(resume ? { resume } : {}) })} />
+            )}
             {import.meta.env.DEV && (<>
             <button className="landing-alt" onClick={() => onPick({ view: 'campaign' })}>
               🏰 Classic Campaign{loadCampaignWeb() ? ' · resume' : ''}

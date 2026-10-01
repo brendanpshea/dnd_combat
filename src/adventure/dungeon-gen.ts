@@ -202,7 +202,9 @@ function draft(seed: number, opts: Required<DelveOptions>): Module {
     intro: ['Your fire draws them out of the dark.'], onWin: { to: '@hub' },
   };
   Object.assign(scenes, {
-    start: { id: 'start', kind: 'story', text: [`The way into ${title} stands open.`], next: [{ id: 'in', label: 'Go in', to: 'delve' }] },
+    start: { id: 'start', kind: 'story', text: [`The way into ${title} stands open.`], next: [{ id: 'in', label: 'Go in', to: 'delve',
+      // A party fresh from the setup screen is brought up to the delve's level.
+      effects: [{ kind: 'xpToLevel', level: opts.level }] }] },
     delve: { id: 'delve', kind: 'dungeon', dungeon },
     outside: { id: 'outside', kind: 'story', text: ['Daylight, and air that does not smell of the deep.'], noBack: true,
       next: [{ id: 'in', label: 'Go back in', to: 'delve' }, { id: 'quit', label: 'Leave it for someone else', to: 'gave-up' }] },
@@ -225,6 +227,21 @@ function draft(seed: number, opts: Required<DelveOptions>): Module {
 }
 
 /**
+ * A delve's id carries everything it was made from, so a saved run can be
+ * rebuilt exactly: `delve-<seed>-<theme>-<size>-<level>`.
+ */
+export function delveId(seed: number, o: Required<DelveOptions>): string {
+  return `delve-${seed}-${o.theme}-${o.size}-${o.level}`;
+}
+
+/** The delve an id names, rebuilt; undefined if it is not a delve id. */
+export function delveFromId(id: string): Module | undefined {
+  const m = /^delve-(\d+)-(stone|graveyard|ember|bog)-(small|medium|large)-(\d+)$/.exec(id);
+  if (!m) return undefined;
+  return generateDelve(Number(m[1]), { theme: m[2] as DelveTheme, size: m[3] as NonNullable<DelveOptions['size']>, level: Number(m[4]) }).module;
+}
+
+/**
  * A playable, validated delve. Deterministic in `seed` and the options; tries
  * successive candidates until one passes every proof.
  */
@@ -239,7 +256,7 @@ export function generateDelve(seed: number, opts: DelveOptions = {}): { module: 
   for (let attempt = 0; attempt < 40; attempt++) {
     const module = draft(seed * 41 + attempt, full);
     last = validateModule(module);
-    if (last.length === 0) return { module: { ...module, id: `delve-${seed}` }, rerolls: attempt };
+    if (last.length === 0) return { module: { ...module, id: delveId(seed, full) }, rerolls: attempt };
   }
   throw new Error(`No valid delve for seed ${seed}: ${last.join('; ')}`);
 }
