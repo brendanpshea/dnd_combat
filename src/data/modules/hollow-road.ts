@@ -31,7 +31,7 @@ import type { Module, Scene, Effect, Choice } from '../../adventure/types.js';
 const HAG_LEARNED: Effect[] = [
   { kind: 'setFlag', flag: 'know-hag' },
   { kind: 'journal', entry: { id: 'c-hag', kind: 'clue', title: 'The Reedwife',
-    body: 'A green hag called the "Reedwife" owns and brands the marsh-creatures that serve the Ashfang. The deep fen was always hers. Vargan, the Ashfang chief, sold her the rest of the marsh. She pays him in coin and monsters, and she waits at the den\'s fire beside him.' } },
+    body: 'A green hag the reed-cutters call the "Reedwife" owns the marsh-creatures that serve the Ashfang, and brands them like cattle. She waits at the den\'s fire beside the Ashfang chief. She told you to ask him what he sold her.' } },
 ];
 
 /** Past the hollow: the reveal, and the wet way in (`trail-wet`) no longer
@@ -172,6 +172,7 @@ const scenes: Record<string, Scene> = {
     lines: [
       'Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
       '"Sellswords. Good. You read my note, then." **Mira** doesn\'t smile. Nobody in Thornwick has seen her do it since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
+      '"Some of the old reed-cutters say their chief knows the marsh like he was born on it." She wipes a cup. "There was a reed-cutter\'s boy once. He walked out of Thornwick the spring his mother\'s house went under the water, and he never came back. Folk talk."',
       '"The **Ashfang** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. But there\'s more — the kind folk won\'t say with the door open."',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
@@ -851,7 +852,7 @@ const scenes: Record<string, Scene> = {
     id: 'hollow-won', kind: 'story', noBack: true, art: { imageId: 'loc-marsh', emoji: '🐍' },
     text: [
       'You turn the nearest body with your boot. Branded into the scaled hide, still weeping: a crude mark of reeds and a reaching hand. These weren\'t raiders. Someone *owned* them, and marked them like cattle.',
-      'Then a voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter. The deep fen was always mine, sweetlings. **Vargan**, the Ashfang chief, sold me the rest, and I pay him in coin and in creatures. Ask him what he sold. He tells it better than I do."',
+      'Then a voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **Reedwife**. Ask your chief what he sold me. Ask him what I paid."',
       '"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet. So the Ashfang answer to a **green hag** of the marsh.',
     ],
     next: [{ id: 'ok', label: 'On to the den', to: 'gate',
@@ -1085,10 +1086,10 @@ const scenes: Record<string, Scene> = {
   },
   'vex-turned': {
     id: 'vex-turned', kind: 'story', noBack: true, art: { emoji: '🤝' },
-    text: ['Vex weighs it, then slides the blade home. "A road out of this valley, then. I\'ll take it before the reeve\'s men take it from me."', '"The man who guards the chief answers to me, not him. He\'ll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I\'m tired of soldiering for a man who burns barns and calls it strategy."'],
+    text: ['Vex weighs it, then slides the blade home. "A road out of this valley, then. I\'ll take it before the reeve\'s men take it from me."', '"Hask guards the chief, and Hask answers to me. He\'ll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I\'m tired of soldiering for a man who burns barns and calls it strategy."'],
     next: [{ id: 'ok', label: 'On to the chief', to: 'inner',
       effects: [{ kind: 'setFlag', flag: 'vex-turned' }, { kind: 'setFlag', flag: 'met-vex' },
-        { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: 'Vex, Turned', body: 'Vex the lieutenant took your offer of a way out of the valley. The chief\'s guard will stand aside when you face Vargan, this once. After that, Vex means to be gone.' } }] }],
+        { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: 'Vex, Turned', body: 'Vex the lieutenant took your offer of a way out of the valley. Hask, the chief\'s guard, answers to Vex. He will stand aside when you face the chief, this once. After that, Vex means to be gone.' } }] }],
   },
   'vex-refuses': {
     id: 'vex-refuses', kind: 'story', noBack: true, art: { emoji: '💢' },
@@ -1136,7 +1137,7 @@ const scenes: Record<string, Scene> = {
         check: { skill: 'arcana', dc: 11, failTo: 'boss-unguarded', failEffects: [{ kind: 'clearFlag', flag: 'vargan-shaken' }] } },
       // Vex's bargain pays off here: his guard stands down, and the chief and
       // the hag fight alone. The two choices are mutually exclusive on the flag.
-      { id: 'fight-alone', label: 'End them both — Vex\'s man stands aside', to: 'boss-unguarded',
+      { id: 'fight-alone', label: 'End them both. Hask stands aside', to: 'boss-unguarded',
         requires: [{ kind: 'flag', flag: 'vex-turned' }], hideWhenBlocked: true },
       { id: 'fight', label: 'End them both', to: 'boss',
         requires: [{ kind: 'notFlag', flag: 'vex-turned' }], hideWhenBlocked: true },
@@ -1162,7 +1163,7 @@ const scenes: Record<string, Scene> = {
   'boss-unguarded': {
     id: 'boss-unguarded', kind: 'battle', encounterId: 'ashfang-warlord-alone', mapId: 'firepit',
     intro: [
-      'The chief bellows for his guard. Nothing answers. Somewhere back in the smoke, Vex is looking the other way on purpose.',
+      'The chief bellows for Hask, his guard. Nothing answers. Somewhere back in the smoke, Vex is looking the other way on purpose.',
       '"You\'ve cost me a good season," he says anyway, almost mild, and rolls the great axe off his shoulder. The hag\'s laughter falters, just once, counting the blades that didn\'t come.',
     ],
     loot: { bonusTier: 'rare' },
@@ -1173,7 +1174,7 @@ const scenes: Record<string, Scene> = {
     id: 'boss-unguarded-shaken', kind: 'battle', encounterId: 'ashfang-warlord-alone', mapId: 'firepit',
     surprise: 'enemies',
     intro: [
-      'Vargan closes his fist over the brand and bellows for his guard. Nothing answers. The hag\'s laughter comes a beat too late, and by then you are already moving.',
+      'Vargan closes his fist over the brand and bellows for Hask. Nothing answers. The hag\'s laughter comes a beat too late, and by then you are already moving.',
     ],
     loot: { bonusTier: 'rare' },
     onWin: { to: 'aftermath', text: [`Vargan never finds his feet after you name the brand. ${BOSS_FALLS}`], effects: BOSS_WON },
@@ -1211,13 +1212,13 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost' },
   },
-  // The same, with Vex's man gone: the two raiders she whistles in come late.
+  // The same, with Hask gone: the two raiders she whistles in come late.
   'reedwife-fight-alone': {
     id: 'reedwife-fight-alone', kind: 'battle', encounterId: 'hag-coven', mapId: 'firepit',
     noFlee: true,
     surprise: 'enemies',
     loot: { bonusTier: 'rare' },
-    intro: [VARGAN_TURNS, 'She turns to you, smiling. "Waste not," she says, and whistles for the chief\'s guard. Vex\'s man does not come. Two raiders stumble in from the yard instead, a breath too late.'],
+    intro: [VARGAN_TURNS, 'She turns to you, smiling. "Waste not," she says, and whistles for the chief\'s guard. Hask does not come. Two raiders stumble in from the yard instead, a breath too late.'],
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost-alone' },
   },

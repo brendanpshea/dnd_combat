@@ -182,8 +182,9 @@ const scenes: Record<string, Scene> = {
     id: 'inn', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
       'The Wander-Inn is full, and nobody is in a hurry to leave. Nobody in Thornwick wants to be alone today, not with the churchyard standing open. **Mira** sets down a bowl in front of you unasked.',
-      '"So. The marsh sends us another bill." She says it flat, wiping the bar the way other people sharpen knives. "I\'ll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. The fen-folk say she kept something shut out there, and now nobody\'s minding it."',
-      '"I poured your first round on the house when you came back from that den, and I\'d do it again. But folk are starting to look at you sideways. Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
+      '"Well." She says it flat, wiping the bar the way other people sharpen knives. "I\'ll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying the marsh sends bills, and you ran this one up."',
+      '"I poured your first round on the house when you came back from that den, and I\'d do it again. But folk are starting to look at you sideways." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden\'s not rung his bell in a week."',
+      '"Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
     ],
     next: INN_CHOICES,
   },
@@ -216,7 +217,7 @@ const scenes: Record<string, Scene> = {
     lines: [
       'The reeve\'s hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you. He watches the fen fog eat his water-meadows. He grips his chain of office in one fist, like a weapon he doesn\'t know how to use.',
       '"You again," he says, without turning. "Last season you broke the Ashfang. Thornwick settles its debts. It appears the marsh does likewise. My grandfather\'s grave is open, and my grandfather has *gone somewhere*. We buried him in his chain of office. The twin of this one."',
-      'He turns. He looks as if he has not slept since the bells. "The fen-folk say the hag kept something shut out there, and that it got loose when you killed her. I don\'t know if that is true. I know you stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
+      'He turns. He looks as if he has not slept since the bells. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, Wren, will meet you at the fen road. She asked for the job. Rather forcefully, for someone I employ."',
     ],
     next: REEVE_TAKE,
