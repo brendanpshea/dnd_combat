@@ -254,3 +254,22 @@ describe('campaign bugs found by the fifth read-through', () => {
     }
   });
 });
+
+describe('counted flags', () => {
+  it('a tally is not a bit: both sides of a threshold are searched', () => {
+    const won: Scene = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] };
+    // Set to minus two at the start, so a bit would read it as "set" forever
+    // and never search the low side, where this party is stranded.
+    const m: Module = { id: 't', title: 'T', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], next: [{ id: 'go', label: 'Go', to: 'b', effects: [{ kind: 'setFlag', flag: 'tally', value: -2 }] }] },
+      b: { id: 'b', kind: 'story', text: ['B.'], noBack: true, next: [
+        { id: 'high', label: 'High', to: 'won', requires: [{ kind: 'flag', flag: 'tally', value: 1 }] },
+      ] },
+      won,
+    } };
+    // Taken as possible either way: the search does not claim the low side is
+    // stranded (it cannot count), but neither does it pretend the flag is set.
+    expect(checkModuleReach(m).errors).toEqual([]);
+    expect(checkModuleReach(m).states).toBeGreaterThan(0);
+  });
+});
