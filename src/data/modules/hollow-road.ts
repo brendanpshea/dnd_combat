@@ -923,9 +923,9 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'met-vex' }] }],
   },
   'vex-dismissed': {
-    id: 'vex-dismissed', kind: 'story', art: { emoji: '🗡️' },
+    id: 'vex-dismissed', kind: 'story', noBack: true, art: { emoji: '🗡️' },
     text: ['"Suit yourself." Vex turns back to his fire. "I won\'t help you. I won\'t get in your way, either."'],
-    next: [{ id: 'ok', label: 'Press on', to: 'inner' }],
+    next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'setFlag', flag: 'met-vex' }] }],
   },
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
@@ -1097,9 +1097,11 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
   start: 'road', scenes, defeatScene: 'defeat', town: 'square',
-  // What the rest of the campaign remembers: whether Wren lived, and whether
-  // Vex took the party's offer (read as 'hollow-road:saved-scout', …).
-  carries: ['saved-scout', 'scout-met', 'scout-left', 'vex-turned', 'chief-dead'],
+  // What the rest of the campaign remembers (read as 'hollow-road:saved-scout',
+  // …): whether Wren lived, whether the company met Vex at his fire and
+  // whether he took its offer, and whether it cut the captives out of the
+  // pens. The last two are war assets at the Wyrmcalling's council.
+  carries: ['saved-scout', 'scout-met', 'scout-left', 'met-vex', 'vex-turned', 'chief-dead', 'captives-freed'],
   companions: {
     wren: {
       id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',

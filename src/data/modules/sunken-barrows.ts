@@ -922,8 +922,10 @@ export const SUNKEN_BARROWS_MODULE: Module = {
   start: 'return', scenes, defeatScene: 'sb-defeat', town: 'town',
   // What the last chapter remembers (read there as 'sunken-barrows:<flag>'):
   // whether the company knows Wren (set on every route to the fen), whether
-  // Brother Halden lived, and whether the Warden's door shut cracked.
-  carries: ['met-wren', 'halden-saved', 'seal-cracked'],
+  // Brother Halden lived, whether the Warden's door shut cracked, and whether
+  // the company carried the old reeve home and the drowned folk's purses back
+  // to their families. Those last two are owed back at the Wyrmcalling.
+  carries: ['met-wren', 'halden-saved', 'seal-cracked', 'grandfather-home', 'drowned-gold-home'],
   companions: {
     wren: {
       id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',
