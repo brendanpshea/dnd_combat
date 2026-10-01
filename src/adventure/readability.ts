@@ -395,6 +395,7 @@ export function collectModuleProse(mod: Module): ProsePassage[] {
   for (const scene of Object.values(mod.scenes)) {
     const at = `${mod.id}:${scene.id}`;
     if ('text' in scene) add(scene.text, `${at}:text`);
+    if (scene.kind === 'ending') (scene.slides ?? []).forEach((sl, i) => add([sl.text], `${at}:slide${i}`));
     if ('lines' in scene) add(scene.lines, `${at}:lines`);
     if ('intro' in scene) add(scene.intro, `${at}:intro`);
     if ('success' in scene && scene.success?.text) add(scene.success.text, `${at}:success`);
