@@ -350,3 +350,16 @@ describe('walking a dungeon', () => {
     }
   });
 });
+
+describe('the Ashfang Den', () => {
+  it('offers no way back into the den once the chief is dead (it would strand the ending)', async () => {
+    const { HOLLOW_ROAD_MODULE: H } = await import('../src/data/modules/hollow-road.js');
+    const { hubReturn } = await import('../src/adventure/runtime.js');
+    const s = startAdventure(newCampaign(1), H);
+    enterScene(s, H, 'inner');
+    enterScene(s, H, 'boss');
+    resolveBattle(s, H, true);
+    expect(s.sceneId).toBe('aftermath');
+    expect(hubReturn(s, H)).toBeNull();
+  });
+});
