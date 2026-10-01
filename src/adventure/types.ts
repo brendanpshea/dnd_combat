@@ -404,4 +404,21 @@ export interface Module {
   carries?: string[];
   /** The NPCs who may join the party in this module, by id. */
   companions?: Record<Id, CompanionDef>;
+  /**
+   * The chapter's clock. A chapter starts on day 1, and every long rest (at a
+   * camp, or a long `rest` scene) ends a day. Each dawn here plays on the
+   * morning its `day` begins: its text is shown, and its effects apply. That
+   * is how time presses: a dawn sets a flag ('captives-moved'), and scenes
+   * read the flag like any other, so a party that camps too often finds a
+   * door shut or a fight harder. A camp interrupted by a fight is not a night
+   * slept, so it does not end the day. Days ascending, each 2 or later.
+   */
+  dawns?: Dawn[];
+}
+
+/** A morning that matters on a chapter's clock (Module.dawns). */
+export interface Dawn {
+  day: number;
+  text: Paragraph[];
+  effects?: Effect[];
 }

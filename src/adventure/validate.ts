@@ -184,6 +184,19 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // The chapter's clock: mornings in order, after the first day.
+  let lastDawn = 1;
+  for (const d of module.dawns ?? []) {
+    if (!Number.isInteger(d.day) || d.day <= lastDawn) errors.push(`dawn of day ${d.day} must be a whole day after ${lastDawn}, in order`);
+    lastDawn = Math.max(lastDawn, d.day);
+    if (!d.text.length) errors.push(`dawn of day ${d.day} has no text: a player must see the morning that changed things`);
+    for (const eff of d.effects ?? []) {
+      if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
+      if ((eff.kind === 'addItem' || eff.kind === 'removeItem') && !itemExists(eff.itemId)) errors.push(`dawn of day ${d.day} references unknown item '${eff.itemId}'`);
+      if ((eff.kind === 'joinParty' || eff.kind === 'leaveParty') && !module.companions?.[eff.companion]) errors.push(`dawn of day ${d.day} names unknown companion '${eff.companion}'`);
+    }
+  }
+
   // A carried flag (`module:flag`) is set by an earlier chapter of the same
   // campaign, which must declare it in its `carries`.
   const ancestors: Module[] = [];

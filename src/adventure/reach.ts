@@ -101,6 +101,10 @@ function searchModule(module: Module): ReachReport {
     }
   }
   for (const h of hubs) fact(`visited:${h}`);
+  // The chapter's clock: which of the mornings that change something have
+  // come. They come in order, so the next is always the first not yet come.
+  const dawns = (module.dawns ?? []).filter((d) => d.effects?.length);
+  dawns.forEach((d) => fact(`dawn:${d.day}`));
   if (facts.size > MAX_FACTS) {
     return { errors: [], states: 0, skipped: `${facts.size} facts to track; the search packs at most ${MAX_FACTS}` };
   }
@@ -209,6 +213,15 @@ function searchModule(module: Module): ReachReport {
     return c;
   });
   const hubVisitedBits = hubs.map((h) => bit(`visited:${h}`));
+  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(`dawn:${d.day}`), ...effects(d.effects) }));
+  /** Where a party can sleep the night, by scene: at a camp (the place it
+   *  stands in, or the one it came from — as `campRule`), or a long rest scene. */
+  const campAt = (s: Scene | undefined) =>
+    s?.kind === 'explore' ? !!s.map.camp : s?.kind === 'dungeon' ? !!s.dungeon.camp : false;
+  const sleeps = ids.map((id) => {
+    const s = module.scenes[id];
+    return s?.kind === 'rest' && s.variant === 'long';
+  });
   const sceneVisitedBit = ids.map((id) => bit(`visited:${id}`));
 
   // --- The walk ----------------------------------------------------------------
@@ -279,6 +292,16 @@ function searchModule(module: Module): ReachReport {
     if (c.leave && hub >= 0 && hubs[hub] !== here) enter(n, HUB_REF, 0, 0, `${here}: goes back`);
     if (c.travel) {
       hubs.forEach((h, i) => { if (h !== here && (f & hubVisitedBits[i]!)) enter(n, h, 0, 0, `${here}: travels to ${h}`); });
+    }
+    // A night slept may bring the next morning that matters (or may not yet:
+    // the nights between change nothing, and the walk has those already).
+    const next = dawnSteps.find((d) => !(f & d.bit));
+    if (next) {
+      const scene = module.scenes[here];
+      const camp = isHubScene(scene) ? campAt(scene) : hub >= 0 && campAt(module.scenes[hubs[hub]!]);
+      const label = `sleeps until the morning of day ${next.day}`;
+      if (camp) enter(n, here, next.set | next.bit, next.clr, `${here}: ${label}`);
+      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, next.set | next.bit, next.clr, `${here}: ${label}`);
     }
   }
 

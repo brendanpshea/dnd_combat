@@ -65,6 +65,7 @@ function render(events: AdventureEvent[], c: CampaignState): void {
         for (const p of e.firstVisit ?? []) console.log(`\n${p}`);
         break;
       case 'doorFound': console.log('   🚪 A hidden door!'); break;
+      case 'dawn': console.log(`\n☀️ Day ${e.day}`); break;
       default: break;
     }
   }

@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -260,6 +260,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
     for (const e of events) {
       if (e.type === 'text') paragraphs.push(...e.paragraphs);
       if (e.type === 'room' && e.firstVisit) paragraphs.push(...e.firstVisit);
+      if (e.type === 'dawn' && module.dawns) rewards.push(`☀️ Day ${e.day}`);
       if (e.type === 'doorFound') { rewards.push('🚪 A hidden door'); sfx('page'); }
       if (e.type === 'gold' && e.amount !== 0) { rewards.push(`${e.amount >= 0 ? '+' : ''}${e.amount} gold`); sfx('coin'); }
       if (e.type === 'item' && e.gained) { rewards.push(`Gained ${label(e.itemId)}`); sfx('item'); }
@@ -488,6 +489,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           onClick={() => { const m = !muted; setMuted(m); setMutedState(m); if (!m) initAudio(); }}>
           {muted ? '🔇' : '🔊'}
         </button>
+        {module.dawns && <span className="adv-gold" title="Each long rest ends a day">☀️ Day {dayOf(state)}</span>}
         <span className="adv-gold">💰 {campaign.gold}</span>
       </div>
 
