@@ -17,6 +17,7 @@ import { HUB_REF, ROOM_MAP_REF, type Module } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf } from './graph.js';
 import { checkDungeon } from './dungeon.js';
 import { checkModuleReach } from './reach.js';
+import { MODULES } from '../data/modules/index.js';
 
 function itemExists(id: Id): boolean {
   return !!(ITEMS[id] || WEAPONS[id] || ARMOR[id] || TRINKETS[id]);
@@ -183,8 +184,27 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // A carried flag (`module:flag`) is set by an earlier chapter of the same
+  // campaign, which must declare it in its `carries`.
+  const ancestors: Module[] = [];
+  for (let id: string | undefined = module.id; ;) {
+    const prev = MODULES.find((m) => m.sequel === id && !ancestors.includes(m));
+    if (!prev) break;
+    ancestors.push(prev);
+    id = prev.id;
+  }
   for (const flag of read) {
+    if (flag.includes(':')) {
+      const [origin, name] = [flag.slice(0, flag.indexOf(':')), flag.slice(flag.indexOf(':') + 1)];
+      const from = ancestors.find((m) => m.id === origin);
+      if (!from) errors.push(`flag '${flag}' is carried from '${origin}', which is not an earlier chapter of this campaign`);
+      else if (!from.carries?.includes(name)) errors.push(`flag '${flag}' is not in ${origin}'s carries`);
+      continue;
+    }
     if (!written.has(flag)) errors.push(`flag '${flag}' is read but never set by any scene`);
+  }
+  for (const flag of module.carries ?? []) {
+    if (!written.has(flag)) errors.push(`carries '${flag}', which no scene sets`);
   }
   for (const [flag, id] of leadResolvers) {
     if (!written.has(flag)) at(id, `journal lead's resolvedBy flag '${flag}' is never set, so the lead can never close`);

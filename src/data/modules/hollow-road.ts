@@ -784,6 +784,9 @@ export const HOLLOW_ROAD_MODULE: Module = {
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
   start: 'road', scenes, defeatScene: 'defeat', town: 'square',
+  // What the rest of the campaign remembers: whether Wren lived, and whether
+  // Vex took the party's offer (read as 'hollow-road:saved-scout', …).
+  carries: ['saved-scout', 'vex-turned'],
   companions: {
     wren: {
       id: 'wren', name: 'Wren', monsterId: 'scout', portraitId: 'npc-scout', emoji: '🏹',
