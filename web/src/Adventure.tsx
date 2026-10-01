@@ -206,7 +206,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       if (scene.outcome === 'victory') markModuleCompleted(module.id);
       const next = endingDisposition(module, scene.outcome, moduleById);
       if (next.kind === 'carry') {
-        const onward = carryCompanyInto(campaign, next.sequel);
+        const onward = carryCompanyInto(campaign, next.sequel, { module, state });
         setCarried({ module: next.sequel, state: onward });
         saveAdventureWeb(onward);
       } else {

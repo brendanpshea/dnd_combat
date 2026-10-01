@@ -162,11 +162,29 @@ export function startAdventure(campaign: CampaignState, module: Module): Adventu
  * is `fullRest`, which clears spent resources; it is not a heal, so a party
  * that limped over the line still starts the next chapter needing to camp.
  */
-export function carryCompanyInto(campaign: CampaignState, sequel: Module): AdventureState {
+export function carryCompanyInto(
+  campaign: CampaignState, sequel: Module, from?: { module: Module; state: AdventureState },
+): AdventureState {
   fullRest(campaign);
   const next = startAdventure(campaign, sequel);
+  if (from) next.flags = carriedFlags(from.module, from.state);
   enterScene(next, sequel, sequel.start);
   return next;
+}
+
+/**
+ * The choices a finished chapter hands on: what it inherited itself (already
+ * named `module:flag`), plus each flag it `carries` that was set, renamed
+ * after it. Nothing else crosses — the sequel's own flags start clean.
+ */
+export function carriedFlags(module: Module, state: AdventureState): Record<string, boolean | number> {
+  const out: Record<string, boolean | number> = {};
+  for (const [k, v] of Object.entries(state.flags)) if (k.includes(':')) out[k] = v;
+  for (const f of module.carries ?? []) {
+    const v = state.flags[f];
+    if (v === true || (typeof v === 'number' && v > 0)) out[`${module.id}:${f}`] = v;
+  }
+  return out;
 }
 
 /**
@@ -1079,7 +1097,14 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   }
   // Loss: an authored per-battle branch wins; else the module's defeat scene
   // (the party is dragged back, revived at half HP); else just retry the fight.
-  if (scene.onLoss) return applyOutcome(state, module, scene.onLoss);
+  // Either way the party is picked up first (half HP): an authored loss beat
+  // is still somebody dragging them off the field, and leaving them at 0 HP
+  // put a party on the map that could not survive its next step.
+  if (scene.onLoss) {
+    reviveParty(state.campaign);
+    restCompanions(state, 'revive', module);
+    return applyOutcome(state, module, scene.onLoss);
+  }
   if (module.defeatScene) {
     reviveParty(state.campaign);
     restCompanions(state, 'revive', module);

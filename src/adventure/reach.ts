@@ -211,7 +211,14 @@ export function checkModuleReach(module: Module): ReachReport {
   const start = index.get(module.start);
   if (start === undefined) return { errors: [], states: 0, skipped: 'no start scene' };
   const startHub = hubIndex.get(module.start) ?? -1;
-  add(start, startHub, sceneVisitedBit[start]! | (startHub >= 0 ? hubVisitedBits[startHub]! : 0), -1, '');
+  // Choices carried in from earlier chapters (`module:flag`) may arrive
+  // either way — a cold start has none — so the walk starts from every mix.
+  const inherited = factNames.map((k, i) => (k.startsWith('flag:') && k.includes(':', 5) ? 1 << i : 0)).filter(Boolean);
+  for (let mix = 0; mix < 1 << inherited.length; mix++) {
+    let f = sceneVisitedBit[start]! | (startHub >= 0 ? hubVisitedBits[startHub]! : 0);
+    inherited.forEach((b, j) => { if (mix & (1 << j)) f |= b; });
+    add(start, startHub, f, -1, '');
+  }
   for (let n = 0; n < sceneOf.length; n++) {
     if (sceneOf.length > MAX_STATES) {
       return { errors: [], states: sceneOf.length, skipped: `more than ${MAX_STATES} states` };

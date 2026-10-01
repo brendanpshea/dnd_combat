@@ -384,6 +384,15 @@ export interface Module {
    *  continue button ("The Sunken Barrows · levels 3–4"). Purely informative —
    *  nothing gates on it. */
   levelBand?: { from: number; to: number };
+  /**
+   * Choices this chapter hands on to the rest of the campaign: flags that,
+   * when the company carries into the sequel, arrive there named after this
+   * module — `carries: ['saved-scout']` on the Hollow Road is read in a later
+   * chapter as `{ kind: 'flag', flag: 'hollow-road:saved-scout' }`. They pass
+   * down the whole chain, and exist only if this company played this chapter:
+   * a cold start has none, so a scene that reads one needs a version without.
+   */
+  carries?: string[];
   /** The NPCs who may join the party in this module, by id. */
   companions?: Record<Id, CompanionDef>;
 }

@@ -158,3 +158,14 @@ describe('adventure save slots', () => {
     expect(S.slotMeta(0)?.checkpointLabel).toBe('Goblin Outriders');
   });
 });
+
+describe('a lost fight with its own loss beat', () => {
+  it('still picks the party up, as the defeat scene does', () => {
+    const s = startAdventure(newCampaign(3), HOLLOW);
+    enterScene(s, HOLLOW, 'road-ambush');
+    for (const ch of s.campaign.characters) ch.resources = { ...ch.resources, hp: 0 };
+    resolveBattle(s, HOLLOW, false);
+    expect(s.sceneId).toBe('road-carter');
+    expect(s.campaign.characters.every((ch) => (ch.resources?.hp ?? 1) > 0)).toBe(true);
+  });
+});
