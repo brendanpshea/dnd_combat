@@ -223,13 +223,27 @@ possible), nor are spent `once` choices or a dungeon's doors (which the
 dungeon checks prove). A state packs at most 31 facts; a module that tracks
 more is reported, not passed.
 
-Carried choices (`hollow-road:saved-scout`) are not facts. They never change
+Carried choices (`hollow-road:captives-freed`) are not facts. They never change
 once a chapter starts, so the walk runs once for each mix the chapter can be
 handed: whatever a victory in the chapter before can carry, found by
 searching that chapter, plus a cold start with none. A pairing no party can
 bring (a scout both saved and left behind) is never searched, and carried
 choices cost no facts. A chapter pays instead for what it hands on: each of
 its `carries` that a later chapter reads is one more fact.
+
+### One try, and coming back
+
+`once` stops a choice being taken twice at one scene. When the same try is
+offered in more than one place (a plain version and a "with Wren's notes"
+version, a story choice and a fight's parley, two fights that offer the same
+talk-down), give them a shared `attempt: 'toll'`. Using any one of them,
+whatever the roll, spends the attempt for all: choices with it disappear,
+approaches show as spent, and the parley is no longer offered.
+
+A story or dialogue the party can come back to should have `again`: the
+text shown on every visit after the first, instead of `text` / `lines`. Use
+it for anything that would otherwise replay a first meeting ("Welcome!",
+introductions, a monster rising to meet you).
 
 ### Falling back, and locked markers
 
@@ -246,8 +260,10 @@ generic "Requires something you haven't done yet".
 
 ### One scene, routes that differ in a line
 
-A story's `text` and a dialogue's `lines` take conditional paragraphs, the
-same shape as an ending's slides:
+Every prose field takes conditional paragraphs, the same shape as an
+ending's slides: a story's `text`, a dialogue's `lines`, every `intro`
+(check, challenge, battle, shop, rest), every outcome's result `text`, an
+ending's `text`, a dungeon room's `firstVisit` and a dawn's `text`:
 
 ```ts
 text: [
@@ -262,6 +278,105 @@ assumes one route is the commonest contradiction in review: a companion
 greeting you from camp after walking down the mountain beside you. Every
 scene needs at least one paragraph that always shows. Text never changes
 where a party can go, so the reachability search ignores it.
+
+### Saying what a line takes for granted
+
+A line that only makes sense on some routes should say so with `assumes`:
+
+```ts
+{ assumes: [{ kind: 'noCompanion', companion: 'wren' }], text: 'Wren waves from the scouts\' fire.' },
+```
+
+It still shows (unless it also has an `if`), but the reachability search
+proves that every route which can show it satisfies the assumption, and
+reports the shortest route that doesn't. A whole story, dialogue or ending
+can carry `assumes` too. Assume flags, carried flags, companions and visits;
+the search can't see gold, items, classes or counted flags (tallies), and
+says so. Prefer `assumes` to hoping: a shared scene that silently assumes a
+route is the commonest contradiction in review.
+
+### Naming characters: the NPC registry
+
+Named characters live in one registry per campaign (`NpcDef` records; see
+src/adventure/npcs.ts). Prose names them by token, never by typing the name:
+
+```ts
+'{vargan} rises from a throne of lashed spears.'
+```
+
+The module is built with `withNpcs(module, NPCS)`, which resolves every
+token to the registry's `name`. A rename is one line, and a misspelt token
+(`{vragan}`) is an error at load. Dialogue speakers come from the same record
+(`npc: speaker(NPCS.wren, 'Chief of Scouts')`), as do companions
+(`companions: companionsFrom(NPCS, ['wren', 'halden'])`). A record's
+`introducedAt` lists, by chapter, the scenes that introduce the character,
+and feeds the cast check below.
+
+A test fails if a registered name is typed in a chapter's source outside a
+comment: write the token.
+
+### What became of them: NPC state
+
+A character's fate and whether the party has met them belong to the
+character, not to a chapter. Declare the fates a record can have, then set
+and test them by NPC:
+
+```ts
+scout: { id: 'scout', name: 'Wren', fates: ['saved', 'left', 'dead'] },
+
+effects: [{ kind: 'npc', npc: 'scout', met: true, fate: 'saved' }]
+requires: [{ kind: 'npc', npc: 'scout', fate: 'saved' }]
+if: [{ kind: 'npc', npc: 'scout', notFate: ['dead'] }]
+```
+
+A fate replaces the one before it: a character has one at a time. The state
+is campaign-wide. Every later chapter sees it with no `carries` entry, and
+any chapter may change it (the saved scout can fall at the ford in chapter
+two, and chapter three knows). `withNpcs` compiles these to flags (`npc.scout.fate.saved`,
+`npc.scout.met`). An unknown NPC or an undeclared fate is an error at load,
+and a fate no chapter so far sets is an error in validation. The
+reachability search follows the state across chapters as each one leaves it,
+so a scene that needs the scout dead is reachable only if some earlier route
+can kill her.
+
+Use this for anything said about a person. Keep plain flags for things
+about the world (a gate shut, a den raided).
+
+How a character feels about the company is their `attitude`: a signed tally
+that starts at 0 and carries like the rest. Deeds move it, and lines and
+choices read it by bounds:
+
+```ts
+effects: [{ kind: 'npc', npc: 'wren', attitude: -1 }]      // left her to the wolves
+if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }]  // she'd follow you anywhere
+if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }]    // she hasn't forgotten
+```
+
+The search doesn't track a tally, so it treats an attitude gate as possibly
+open and possibly shut. Don't gate the only way on, and don't `assume` it.
+Use attitude to colour a line or open an extra door. (The same tools, `addFlag`
+and `count`, work on any tally.)
+
+### The cast
+
+Rule 7 (a name with no referent is a debt) is checked, not hoped for. List
+each chapter's named characters in `cast`, with the scenes that introduce
+them:
+
+```ts
+cast: [
+  { name: 'Vargan', aka: ['the chief'], introducedAt: ['tavern-meet', 'boss-approach'] },
+],
+```
+
+The reachability search proves no route shows the name (or an alias)
+anywhere a player reads it (prose, labels, map markers, slides) before
+passing one of its introducing scenes, and reports a route that does. A
+mention inside an introducing scene is the introduction. Names are matched as
+whole words, as written; aliases in any case. A line behind an `if`, a hidden
+choice or a conditional slide counts only where its condition can hold, so a
+mention gated on a flag that only an introduction sets needs no entry. A character known from an
+earlier chapter needs no entry in a later one.
 
 ### The clock
 
@@ -281,6 +396,11 @@ the flag like any other, so time presses through things a player can see: a
 door shut, a fight harder, a person gone. Give a warning before a deadline:
 an earlier dawn with text only, or a line in the scene the deadline is about.
 A module with dawns shows the day on screen; one without has no clock.
+
+A dawn can also freeze a count as it stood that morning:
+`{ kind: 'copyFlag', from: 'threats-cleared', to: 'tally-at-peak' }`. Read
+the snapshot, not the live count, wherever a scene reports how that night
+went, so deeds done later can't rewrite it.
 
 A failure can cost time too: `{ kind: 'passDay' }` loses a day without a
 rest (a long detour, a trail gone cold), and plays that morning's dawn. With
@@ -302,3 +422,36 @@ is one more fact for it to track.
   it land the consequence in one or two lines, concrete, in the world's voice.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
+
+## Reading a route
+
+A scene that reads well on its own can still contradict the one before it — a
+companion greets you from camp right after walking down the mountain beside
+you; a dawn warns of a danger the party already put down. Those mistakes are
+invisible in the source, which is organised by scene, and obvious in the order
+a player meets them. So read routes, not just scenes.
+
+`docs/transcripts/` holds the exact text a player reads, in order, on a few
+fixed playthroughs: the whole trilogy with one carried company played four
+ways (`trilogy-completionist`, `trilogy-rusher`, `trilogy-cruel`,
+`trilogy-unlucky`), and cold starts of chapters two and three
+(`cold-sunken-barrows`, `cold-wyrmcalling`). Each lists every paragraph shown
+— story text, dialogue lines under the speaker's name, battle intros, results,
+room and dawn text, the ending and the slides that show — with the choice
+taken, the roll behind each check, each fight's outcome, map moves and nights
+slept. The header names the route's policy, its seed, the ending reached and
+the flags carried across each chapter boundary. Prose comes from the runtime's
+own events, so a conditional paragraph appears exactly when a player would see
+it.
+
+- **Regenerate** with `npm run transcripts` after any module or runtime change;
+  `test/transcripts.test.ts` fails until the committed files match.
+- **Review the diff.** A content PR's transcript diff shows what actually
+  changed for a player, in context.
+- **Reviewers, human or AI: read the transcripts.** Read a route top to bottom
+  as a player would, and look for what only shows in sequence — who is where,
+  what the party already knows, what time it is, what a slide claims happened.
+  Report a contradiction with the route name and the quoted lines.
+
+The routes are defined at the top of `scripts/transcripts.ts`; add one when a
+branch you care about is not on any of them.

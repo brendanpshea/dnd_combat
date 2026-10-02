@@ -7,7 +7,7 @@
  *
  * Each location is laid out by ELK's layered algorithm (elkjs) and the boxes
  * are stacked in the order a party reaches them.
- * Edges carry what they need ("needs vex-turned") when they need something;
+ * Edges carry what they need ("needs npc.vex.fate.turned") when they need something;
  * the way back to a location is a ↩ on the scene rather than an arrow, and a
  * lost fight's fall to the defeat scene is left out, since every fight has it.
  */

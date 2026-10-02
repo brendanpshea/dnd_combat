@@ -17,7 +17,7 @@ import {
   type CampaignState, type ItemCategory,
 } from '../../src/campaign/campaign.js';
 import {
-  shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, type HaggleSkill,
+  shopStock, shopPrice, shopVisitOf, shopHaggle, shopSteal, paragraphsFor, type HaggleSkill,
   type AdventureState, type AdventureEvent,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene } from '../../src/adventure/types.js';
@@ -103,9 +103,10 @@ export function AdventureShop({ campaign, state, module, scene, focus, setFocus,
   };
   const doSteal = () => onRoll(shopSteal(state, module));
 
+  const said = scene.intro ? paragraphsFor(state, scene.intro)[0] : undefined;
   const greeting = npc
-    ? (scene.intro?.[0] ?? '"Something catch your eye?"')
-    : (scene.intro?.[0] ?? 'A wary quartermaster looks up from the counter.');
+    ? (said ?? '"Something catch your eye?"')
+    : (said ?? 'A wary quartermaster looks up from the counter.');
 
   return (
     <div className="adv-scene bottom">

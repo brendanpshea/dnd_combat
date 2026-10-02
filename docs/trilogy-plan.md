@@ -106,7 +106,7 @@ campaign ends at the cap, fighting the biggest encounter in the data.)
 - Party continuation — **shipped**: `startAdventure(existingCampaign, sequel)`
   carries party/XP/gold/gear. Story flags stay in their own module, except
   the few a module names in `carries`: those arrive in later chapters named
-  after their origin (`hollow-road:saved-scout`), and a cold start has none.
+  after their origin (`hollow-road:captives-freed`), and a cold start has none.
 - Cold starts — **shipped** as an XP floor: each sequel's opening choice
   carries `xpToLevel` to its band's start (a no-op for continuing parties).
   Fresh parties keep starting gear + an early gold grant, and shop up in the

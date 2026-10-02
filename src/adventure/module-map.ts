@@ -39,7 +39,7 @@ export interface MapEdge {
   kind: EdgeKind;
   /** The choice, node or room it is, kept short. */
   label?: string;
-  /** What it needs, when it needs something ("vex-turned", "!met-vex"). */
+  /** What it needs, when it needs something ("npc.vex.fate.turned", "!npc.vex.met"). */
   needs?: string;
 }
 
@@ -66,6 +66,8 @@ export function needsOf(reqs: Requirement[] | undefined): string | undefined {
       case 'visited': return `seen ${r.scene}`;
       case 'companion': return `+${r.companion}`;
       case 'noCompanion': return `-${r.companion}`;
+      case 'count': return `${r.flag}${r.atLeast !== undefined ? `≥${r.atLeast}` : ''}${r.below !== undefined ? `<${r.below}` : ''}`;
+      case 'npc': return `${r.npc}${r.fate ? `:${r.fate}` : ''}`;
     }
   }).join(', ');
 }

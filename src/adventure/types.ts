@@ -24,7 +24,22 @@ export type Paragraph = string;
  * your shoulder, or waiting at the fire — instead of a copy per route. Text
  * never changes where a party can go, so the reachability search ignores it.
  */
-export type Para = Paragraph | { if: Requirement[]; text: Paragraph };
+export type Para = Paragraph | {
+  /** Shown only when these hold. Absent = always shown. */
+  if?: Requirement[];
+  /**
+   * What the line takes for granted ("Wren watched from the scouts' fire"
+   * assumes she isn't beside you). Not a condition: the line still shows
+   * when `if` allows. The reachability search proves that every route which
+   * can show it satisfies the assumption, and reports the shortest route
+   * that doesn't. See also `assumes` on a scene.
+   */
+  assumes?: Requirement[];
+  text: Paragraph;
+};
+
+/** A paragraph that always shows: plain, or an object with no `if`. */
+export const alwaysShown = (p: Para): boolean => typeof p === 'string' || !p.if?.length;
 
 /** A reference to another scene by id (kept nominal for the validator's sake). */
 export type SceneRef = Id;
@@ -41,7 +56,14 @@ export type Requirement =
   | { kind: 'speciesInParty'; speciesId: Id }
   | { kind: 'visited'; scene: SceneRef }
   | { kind: 'companion'; companion: Id }                       // travelling with the party
-  | { kind: 'noCompanion'; companion: Id };
+  | { kind: 'noCompanion'; companion: Id }
+  /** What became of a registry NPC, and whether the company has met them,
+   *  across the whole campaign (see NpcDef.fates). Compiled to flags by
+   *  `withNpcs`. `fate`: is this; `notFate`: is none of these; `attitude`:
+   *  how they feel about the company (a signed tally from 0) is in bounds. */
+  | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean; attitude?: { atLeast?: number; below?: number } }
+  /** A tally against bounds, unset counting as 0. */
+  | { kind: 'count'; flag: string; atLeast?: number; below?: number };
 
 /** A state mutation a choice/outcome applies. Deliberately tiny vocabulary. */
 export type Effect =
@@ -58,7 +80,18 @@ export type Effect =
   | { kind: 'leaveParty'; companion: Id }
   /** A day lost without rest (a long detour, a trail gone cold): the clock
    *  moves on as if a night had passed, and that morning's dawn plays. */
-  | { kind: 'passDay' };
+  | { kind: 'passDay' }
+  /** Snapshot a flag: `to` takes `from`'s value as it is now (unset if
+   *  `from` is). A dawn can freeze a tally at the moment it matters, so later
+   *  deeds don't rewrite how a night went. */
+  | { kind: 'copyFlag'; from: string; to: string }
+  /** Record what became of a registry NPC (`fate`, replacing any other), or
+   *  that the company has met them. Compiled to flags by `withNpcs`; the state
+   *  carries into every later chapter of the campaign. `attitude` adds to
+   *  how they feel about the company (signed). */
+  | { kind: 'npc'; npc: Id; fate?: string; met?: true; attitude?: number }
+  /** Add to a tally (signed; unset counts as 0). */
+  | { kind: 'addFlag'; flag: string; amount: number };
 
 export interface JournalEntry {
   id: Id;
@@ -75,7 +108,7 @@ export interface JournalEntry {
 /** Where a check/branch lands, plus what it does on the way. */
 export interface Outcome {
   to: SceneRef;
-  text?: Paragraph[];        // shown before the transition (the result narration)
+  text?: Para[];        // shown before the transition (the result narration)
   effects?: Effect[];
 }
 
@@ -96,6 +129,11 @@ export interface Choice {
    *  / anti-farm guard that makes a revisitable scene safe: a social check can't
    *  be re-rolled, a one-time reward can't be re-claimed. */
   once?: boolean;
+  /** One try shared by every choice, approach or parley with the same id,
+   *  anywhere in the module. Using any of them, whatever the roll, spends it
+   *  for all: a "with Wren's notes" version and the plain one, or two fights
+   *  that offer the same parley, can't be used to roll twice. */
+  attempt?: Id;
 }
 
 /** One way to tackle a challenge scene: a named line of attack the party can
@@ -122,6 +160,8 @@ export interface Approach {
    *  only its text/effects show, as the flavour before the party tries another
    *  way. */
   failure?: Outcome;
+  /** One try shared with every other choice, approach or parley of this id (see `Choice.attempt`). */
+  attempt?: Id;
 }
 
 /** The special SceneRef `@hub` resolves at runtime to the explore scene the
@@ -247,7 +287,7 @@ export interface DungeonRoom {
   /** How big it is drawn, and how deep its `@room` battle board is. */
   size?: RoomSize;
   /** The room's one piece of prose, shown the first time the party walks in. */
-  firstVisit?: Paragraph[];
+  firstVisit?: Para[];
   /** A battle scene sprung on walking in, every time, until it is won. */
   fight?: SceneRef;
   /** A scene that plays on walking in (a conversation, a find): once, or on
@@ -294,14 +334,18 @@ export const ROOM_MAP_REF = '@room';
 export type Scene =
   // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
   // beat the player shouldn't be able to walk away from.
-  | { id: Id; kind: 'story'; text: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  /** `again`: shown instead of `text` / `lines` on every visit after the
+   *  first, so a scene the party returns to doesn't replay a first meeting. */
+  /** `assumes` (story, dialogue, ending): what the whole scene takes for
+   *  granted; proven on every route to it, like a paragraph's `assumes`. */
+  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
-      intro: Paragraph[]; art?: SceneArt; success: Outcome; failure: Outcome;
+      intro: Para[]; art?: SceneArt; success: Outcome; failure: Outcome;
     }
   | {
-      id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Paragraph[]; art?: SceneArt;
+      id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Para[]; art?: SceneArt;
       onWin: Outcome; onLoss?: Outcome;
       /** Ambush: `enemies` surprised (a won perception check) or `party` caught
        *  out (a failed one). The surprised side loses its first round. */
@@ -323,13 +367,15 @@ export type Scene =
         label?: string;
         success: Outcome;
         failure?: Outcome;
+        /** One try shared with every other use of this id (see `Choice.attempt`). */
+        attempt?: Id;
       };
       /** No falling back or retreating from this one (a fight the story
        *  cannot let you walk away from). Sneaking up is still allowed. */
       noFlee?: boolean;
     }
   | {
-      id: Id; kind: 'challenge'; intro: Paragraph[]; art?: SceneArt;
+      id: Id; kind: 'challenge'; intro: Para[]; art?: SceneArt;
       /** The lines of attack on offer — the player picks how to try. */
       approaches: Approach[];
       /** `single` (default): the first approach attempted resolves the whole
@@ -344,16 +390,16 @@ export type Scene =
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'dungeon'; dungeon: Dungeon }
-  | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];
+  | { id: Id; kind: 'shop'; next: SceneRef; intro?: Para[];
       /** Per-location stock (item ids). Absent = the default SHOP_STOCK. */
       stock?: Id[]; title?: string;
       /** The shopkeeper — rendered like a dialogue NPC so a shop reads as a
        *  conversation with someone, not a bare list. Defaults to a generic
        *  merchant archetype when absent. */
       npc?: NpcRef }
-  | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Paragraph[] }
+  | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Para[] }
   | {
-      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt;
+      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Para[]; art?: SceneArt; assumes?: Requirement[];
       /**
        * Ending slides: a line each about what became of the people and places
        * the player touched, shown after `text` when its requirements hold
@@ -378,6 +424,32 @@ export interface CompanionDef {
   emoji?: string;
   /** One line for the party screen: who they are and why they are here. */
   blurb: string;
+}
+
+/**
+ * A named character, once for the whole campaign (see src/adventure/npcs.ts).
+ * Prose names them by token, `{vargan}`, resolved to `name` when the module
+ * is built, so a rename is one line and a typo is an error. Dialogue
+ * speakers, companions and the cast check all come from here.
+ */
+export interface NpcDef {
+  /** The token and the id everything else uses: 'vargan', 'wren'. */
+  id: Id;
+  /** The name prose uses: "Vargan". */
+  name: string;
+  /** Other names prose uses, for the cast check ("the chief"). */
+  aka?: string[];
+  portraitId?: Id;
+  emoji?: string;
+  /** The stat block they fight with, if they can join the party. */
+  monsterId?: Id;
+  /** One line for the party screen, if they can join. */
+  blurb?: string;
+  /** By module id: the scenes that introduce them in that chapter. */
+  introducedAt?: Record<Id, SceneRef[]>;
+  /** What can become of them, besides carrying on: 'dead', 'jailed',
+   *  'freed'… Requirements and effects may only name these. */
+  fates?: string[];
 }
 
 export interface Module {
@@ -411,14 +483,31 @@ export interface Module {
   /**
    * Choices this chapter hands on to the rest of the campaign: flags that,
    * when the company carries into the sequel, arrive there named after this
-   * module — `carries: ['saved-scout']` on the Hollow Road is read in a later
-   * chapter as `{ kind: 'flag', flag: 'hollow-road:saved-scout' }`. They pass
+   * module — `carries: ['captives-freed']` on the Hollow Road is read in a later
+   * chapter as `{ kind: 'flag', flag: 'hollow-road:captives-freed' }`. They pass
    * down the whole chain, and exist only if this company played this chapter:
    * a cold start has none, so a scene that reads one needs a version without.
    */
   carries?: string[];
+  /**
+   * Flags this module once used under another name, old → new (a carried one
+   * by its full `module:flag` name). A save made before the rename loads with
+   * them renamed, so a run in progress keeps what it did.
+   */
+  renamedFlags?: Record<string, string>;
   /** The NPCs who may join the party in this module, by id. */
   companions?: Record<Id, CompanionDef>;
+  /**
+   * The named characters a player meets in this chapter, and the scenes that
+   * introduce each. The reachability search proves no route shows a name
+   * before one of its introductions (a name with no referent is a debt the
+   * reader carries). A character known from an earlier chapter, by canon,
+   * needs no entry here.
+   */
+  cast?: CastMember[];
+  /** The campaign's NPC registry (set by `withNpcs`). Its `introducedAt` for
+   *  this module joins `cast` in the reachability check. */
+  npcs?: Record<Id, NpcDef>;
   /**
    * The chapter's clock. A chapter starts on day 1, and every long rest (at a
    * camp, or a long `rest` scene) ends a day. Each dawn here plays on the
@@ -431,9 +520,20 @@ export interface Module {
   dawns?: Dawn[];
 }
 
+/** A named character and where a chapter introduces them (Module.cast). */
+export interface CastMember {
+  /** The name as written in prose ("Vargan"). Matched as a whole word. */
+  name: string;
+  /** Other names the prose uses for them ("the chief"), matched in any case. */
+  aka?: string[];
+  /** Scenes that introduce them. Any of these, entered first, counts; a
+   *  mention inside an introducing scene is the introduction itself. */
+  introducedAt: SceneRef[];
+}
+
 /** A morning that matters on a chapter's clock (Module.dawns). */
 export interface Dawn {
   day: number;
-  text: Paragraph[];
+  text: Para[];
   effects?: Effect[];
 }

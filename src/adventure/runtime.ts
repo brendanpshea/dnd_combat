@@ -34,6 +34,7 @@ import {
   type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph,
 } from './types.js';
 import { linkKey, linksFrom, roomOf } from './dungeon.js';
+import { isNpcFlag } from './npcs.js';
 
 export interface AdventureState {
   campaign: CampaignState;
@@ -79,6 +80,8 @@ export interface AdventureState {
   companions?: Array<{ id: Id; hp?: number }>;
   /** The chapter's day (Module.dawns): absent = day 1. Each long rest ends one. */
   day?: number;
+  /** The scene the party stands in was visited before (its `again` text shows). */
+  returning?: boolean;
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
@@ -183,7 +186,7 @@ export function carryCompanyInto(
  */
 export function carriedFlags(module: Module, state: AdventureState): Record<string, boolean | number> {
   const out: Record<string, boolean | number> = {};
-  for (const [k, v] of Object.entries(state.flags)) if (k.includes(':')) out[k] = v;
+  for (const [k, v] of Object.entries(state.flags)) if (k.includes(':') || isNpcFlag(k)) out[k] = v;
   for (const f of module.carries ?? []) {
     const v = state.flags[f];
     if (v === true || (typeof v === 'number' && v > 0)) out[`${module.id}:${f}`] = v;
@@ -252,13 +255,34 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     case 'visited': return state.visited.includes(req.scene);
     case 'companion': return (state.companions ?? []).some((x) => x.id === req.companion);
     case 'noCompanion': return !(state.companions ?? []).some((x) => x.id === req.companion);
+    case 'count': {
+      const v = state.flags[req.flag];
+      const n = typeof v === 'number' ? v : v === true ? 1 : 0;
+      return (req.atLeast === undefined || n >= req.atLeast) && (req.below === undefined || n < req.below);
+    }
+    case 'npc': throw new Error(`NPC requirement on '${req.npc}' in a module not built with withNpcs`);
   }
 }
 
-/** The paragraphs of a scene this party sees: plain ones, and conditional
- *  ones whose requirements hold (see `Para`). */
+/** What a story or dialogue says to this party: its `again` text on a
+ *  return visit (when it has one), else its own; conditional paragraphs
+ *  resolved. */
+export function sceneParagraphs(state: AdventureState, scene: Extract<Scene, { kind: 'story' | 'dialogue' }>): Paragraph[] {
+  const own = scene.kind === 'story' ? scene.text : scene.lines;
+  return paragraphsFor(state, state.returning && scene.again ? scene.again : own);
+}
+
+/** A one-try group (`attempt`) already spent? */
+export const attemptSpent = (state: AdventureState, attempt: Id | undefined): boolean =>
+  !!attempt && state.consumedChoices.includes(`attempt:${attempt}`);
+const spendAttempt = (state: AdventureState, attempt: Id | undefined) => {
+  if (attempt && !attemptSpent(state, attempt)) state.consumedChoices.push(`attempt:${attempt}`);
+};
+
+/** The paragraphs this party sees: plain ones, and conditional ones whose
+ *  requirements hold (see `Para`). */
 export function paragraphsFor(state: AdventureState, paras: readonly Para[]): Paragraph[] {
-  return paras.flatMap((p) => (typeof p === 'string' ? [p] : p.if.every((r) => requirementMet(state, r)) ? [p.text] : []));
+  return paras.flatMap((p) => (typeof p === 'string' ? [p] : (p.if ?? []).every((r) => requirementMet(state, r)) ? [p.text] : []));
 }
 
 /** Why a gated thing is blocked, for the UI's greyed-out reason (or null). */
@@ -276,6 +300,8 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'visited': return 'Requires exploring elsewhere first';
     case 'companion': return 'Requires someone who isn\'t with you';
     case 'noCompanion': return 'Not while they\'re with you';
+    case 'count': return 'Not as things stand';
+    case 'npc': return 'Requires something you haven\'t done yet';
   }
 }
 
@@ -362,6 +388,20 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
         events.push({ type: 'companion', companionId: eff.companion, joined: false });
       }
       break;
+    case 'copyFlag': {
+      const v = state.flags[eff.from];
+      if (v === undefined) delete state.flags[eff.to];
+      else state.flags[eff.to] = v;
+      break;
+    }
+    case 'addFlag': {
+      const cur = state.flags[eff.flag];
+      const value = (typeof cur === 'number' ? cur : cur === true ? 1 : 0) + eff.amount;
+      state.flags[eff.flag] = value;
+      events.push({ type: 'flag', flag: eff.flag, value });
+      break;
+    }
+    case 'npc': throw new Error(`NPC effect on '${eff.npc}' in a module not built with withNpcs`);
     case 'passDay':
       // A day lost, not a night slept: the clock moves, nobody rests.
       if (module) events.push(...endDay(state, module));
@@ -386,28 +426,28 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
   const revisit = state.visited.includes(resolved); // already been here before
   state.sceneId = resolved;
   if (!revisit) state.visited.push(resolved);
+  state.returning = revisit;
   const scene = currentScene(state, module);
   const cameFrom = state.hub;
   if (isHub(scene)) state.hub = resolved; // this is now the location
   const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind, revisit }];
 
   switch (scene.kind) {
-    case 'story': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.text) }); break;
-    case 'dialogue': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.lines) }); break;
-    case 'check': events.push({ type: 'text', paragraphs: scene.intro }); break;
-    case 'challenge': events.push({ type: 'text', paragraphs: scene.intro }); break;
+    case 'story': case 'dialogue': events.push({ type: 'text', paragraphs: sceneParagraphs(state, scene) }); break;
+    case 'check': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
+    case 'challenge': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
     case 'battle':
-      if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
+      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
       events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
       break;
     case 'shop':
       // A fresh visit: haggle discount and spent gambits reset each entry.
       state.shopVisits[resolved] = { priceMult: 1, haggleUsed: false, stealUsed: false };
-      if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
+      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
       events.push({ type: 'enterShop', next: scene.next });
       break;
     case 'rest':
-      if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
+      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
       events.push({ type: 'rest', variant: scene.variant, next: scene.next });
       break;
     case 'ending':
@@ -422,10 +462,8 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
 
 /** An ending's paragraphs: its text, then each slide whose requirements hold. */
 export function endingText(state: AdventureState, scene: Extract<Scene, { kind: 'ending' }>): string[] {
-  return [
-    ...scene.text,
-    ...(scene.slides ?? []).filter((s) => s.if.every((r) => requirementMet(state, r))).map((s) => s.text),
-  ];
+  // Slides are conditional paragraphs by another name.
+  return paragraphsFor(state, [...scene.text, ...(scene.slides ?? [])]);
 }
 
 /** The scenes that are places: a map the party stands on, and returns to. */
@@ -442,7 +480,7 @@ export function hubTitleOf(scene: Scene | undefined): string | null {
 
 function applyOutcome(state: AdventureState, module: Module, outcome: Outcome): AdventureEvent[] {
   const events: AdventureEvent[] = [];
-  if (outcome.text) events.push({ type: 'text', paragraphs: outcome.text });
+  if (outcome.text) events.push({ type: 'text', paragraphs: paragraphsFor(state, outcome.text) });
   applyEffects(state, outcome.effects, events, module);
   events.push(...enterScene(state, module, outcome.to));
   return events;
@@ -515,7 +553,7 @@ export function legalApproaches(
     .map((approach) => ({
       approach,
       blocked: blockedReason(state, approach.requires),
-      spent: state.spentApproaches.includes(approachKey(scene.id, approach.id)),
+      spent: state.spentApproaches.includes(approachKey(scene.id, approach.id)) || attemptSpent(state, approach.attempt),
     }))
     .filter(({ approach, blocked }) => !(blocked && approach.hideWhenBlocked));
 }
@@ -535,12 +573,13 @@ export function tryApproach(
   if (!approach) throw new Error(`No approach ${approachId} at ${state.sceneId}`);
   if (blockedReason(state, approach.requires)) throw new Error(`Approach ${approachId} is blocked`);
   const key = approachKey(scene.id, approach.id);
-  if (state.spentApproaches.includes(key)) throw new Error(`Approach ${approachId} already tried`);
+  if (state.spentApproaches.includes(key) || attemptSpent(state, approach.attempt)) throw new Error(`Approach ${approachId} already tried`);
 
   const perApproach = scene.retry === 'perApproach';
   // Spend the approach up front (a failed try can't be re-rolled). In `single`
   // mode the whole challenge ends here regardless, so tracking it is harmless.
   if (perApproach) state.spentApproaches.push(key);
+  spendAttempt(state, approach.attempt);
 
   const events: AdventureEvent[] = [];
   const roller = approach.roller ?? 'best';
@@ -558,7 +597,7 @@ export function tryApproach(
   }
   // A `perApproach` failure: show this line's beat and stay — unless nothing
   // else is left to try, in which case the challenge fails for good.
-  if (approach.failure?.text) events.push({ type: 'text', paragraphs: approach.failure.text });
+  if (approach.failure?.text) events.push({ type: 'text', paragraphs: paragraphsFor(state, approach.failure.text) });
   applyEffects(state, approach.failure?.effects, events, module);
   const anyLeft = legalApproaches(state, module).some((a) => !a.spent && !a.blocked);
   if (!anyLeft) events.push(...applyOutcome(state, module, scene.failure));
@@ -578,6 +617,7 @@ export function legalChoices(
   const next = scene.kind === 'story' || scene.kind === 'dialogue' ? scene.next : [];
   return next
     .filter((choice) => !(choice.once && state.consumedChoices.includes(choiceKey(scene.id, choice.id))))
+    .filter((choice) => !attemptSpent(state, choice.attempt))
     .map((choice) => ({ choice, blocked: blockedReason(state, choice.requires) }))
     .filter(({ choice, blocked }) => !(blocked && choice.hideWhenBlocked));
 }
@@ -654,9 +694,11 @@ export function choose(
   const choice = list.find((c) => c.id === choiceId);
   if (!choice) throw new Error(`No choice ${choiceId} at ${state.sceneId}`);
   if (blockedReason(state, choice.requires)) throw new Error(`Choice ${choiceId} is blocked`);
+  if (attemptSpent(state, choice.attempt)) throw new Error(`Choice ${choiceId} already tried`);
   // Record a `once` choice as spent up front — a failed social check is still
   // spent, so it can't be re-rolled by revisiting.
   if (choice.once) state.consumedChoices.push(choiceKey(scene.id, choice.id));
+  spendAttempt(state, choice.attempt);
 
   const events: AdventureEvent[] = [];
   applyEffects(state, choice.effects, events, module);
@@ -844,7 +886,7 @@ function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, 
   const events: AdventureEvent[] = [];
   const first = !p.seen.includes(room.id);
   if (first) p.seen.push(room.id);
-  events.push({ type: 'room', roomId: room.id, name: room.name, ...(first && room.firstVisit ? { firstVisit: room.firstVisit } : {}) });
+  events.push({ type: 'room', roomId: room.id, name: room.name, ...(first && room.firstVisit ? { firstVisit: paragraphsFor(state, room.firstVisit) } : {}) });
 
   const passive = partyPassivePerception(state.campaign);
   for (const { link } of allLinksAt(d, room.id)) {
@@ -1174,7 +1216,7 @@ export function battleOptions(state: AdventureState, module: Module): BattleOpti
   const scene = currentScene(state, module);
   if (scene.kind !== 'battle') return {};
   const out: BattleOptions = {};
-  if (scene.parley && !state.consumedChoices.includes(doorKey(scene.id, 'parley'))) {
+  if (scene.parley && !state.consumedChoices.includes(doorKey(scene.id, 'parley')) && !attemptSpent(state, scene.parley.attempt)) {
     out.parley = {
       label: scene.parley.label ?? 'Parley',
       skill: scene.parley.skill ?? 'persuasion',
@@ -1202,6 +1244,7 @@ export function parleyBattle(state: AdventureState, module: Module, actorIdx?: n
   if (scene.kind !== 'battle' || !scene.parley) throw new Error('No parley here');
   if (!battleOptions(state, module).parley) throw new Error('Parley already tried');
   state.consumedChoices.push(doorKey(scene.id, 'parley'));
+  spendAttempt(state, scene.parley!.attempt);
   const p = scene.parley;
   const skill = (p.skill ?? 'persuasion') as Parameters<typeof characterSkillCheck>[2];
   const roller = p.roller ?? 'chosen';
@@ -1416,7 +1459,7 @@ export function endDay(state: AdventureState, module: Module): AdventureEvent[] 
   const events: AdventureEvent[] = [{ type: 'dawn', day }];
   for (const d of module.dawns ?? []) {
     if (d.day !== day) continue;
-    events.push({ type: 'text', paragraphs: d.text });
+    events.push({ type: 'text', paragraphs: paragraphsFor(state, d.text) });
     applyEffects(state, d.effects, events, module);
   }
   return events;

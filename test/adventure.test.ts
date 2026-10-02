@@ -7,6 +7,7 @@ import {
 import { SKILL_ABILITY } from '../src/data/classes.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { validateModule } from '../src/adventure/validate.js';
+import { npcFateFlag } from '../src/adventure/npcs.js';
 import {
   startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
   legalApproaches, tryApproach,
@@ -571,7 +572,7 @@ describe('defeat, finished locations, battle rewards', () => {
     enterNode(s, hollow, 'scout');
     expect(s.sceneId).toBe('wounded'); // first visit: the full scene
     enterScene(s, hollow, 'trail');
-    s.flags['scout-met'] = true;       // now the scout has been dealt with
+    s.flags[npcFateFlag('tamsin', 'dead')] = true; // now the scout has been dealt with
     enterNode(s, hollow, 'scout');
     expect(s.sceneId).toBe('scout-gone'); // revisit: the short "already done" beat
   });
@@ -779,7 +780,7 @@ describe('traversal maps (paths & frontier)', () => {
 describe('exploration (M2)', () => {
   it('every registered module validates', () => {
     for (const m of MODULES) expect(validateModule(m)).toEqual([]);
-  });
+  }, 30_000); // the reach search over every chapter: slow under a loaded run
 
   it('the hideout demo validates and auto-plays to an ending', () => {
     expect(validateModule(HIDEOUT_MODULE)).toEqual([]);

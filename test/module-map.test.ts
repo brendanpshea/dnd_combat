@@ -4,6 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { moduleMap, needsOf } from '../src/adventure/module-map.js';
+import { npcFateFlag } from '../src/adventure/npcs.js';
 import { MODULES } from '../src/data/modules/index.js';
 import { HUB_REF } from '../src/adventure/types.js';
 
@@ -43,7 +44,7 @@ describe('module map', () => {
       expect(new Set(keys).size).toBe(keys.length);
     }
     const unguarded = moduleMap(hollow).edges.find((e) => e.to === 'boss-unguarded')!;
-    expect(unguarded.needs).toBe('vex-turned');
+    expect(unguarded.needs).toBe(npcFateFlag('vex', 'turned'));
     expect(needsOf([{ kind: 'notFlag', flag: 'x' }, { kind: 'companion', companion: 'wren' }])).toBe('!x, +wren');
   });
 });

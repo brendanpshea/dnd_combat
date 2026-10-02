@@ -13,8 +13,9 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, ROOM_MAP_REF, type Module } from './types.js';
-import { refsOf, effectsOf, requirementsOf, skillsOf } from './graph.js';
+import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement } from './types.js';
+import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf, flagsWritten } from './graph.js';
+import { unresolvedTokens, isNpcFlag, hasUncompiledNpcState } from './npcs.js';
 import { checkDungeon } from './dungeon.js';
 import { checkModuleReach } from './reach.js';
 import { MODULES } from '../data/modules/index.js';
@@ -83,17 +84,26 @@ export function validateModule(module: Module): string[] {
       }
       if (eff.kind === 'setFlag') written.add(eff.flag);
       if (eff.kind === 'clearFlag') written.add(eff.flag);
+      if (eff.kind === 'copyFlag') { written.add(eff.to); read.add(eff.from); }
+      if (eff.kind === 'addFlag') written.add(eff.flag);
       if (eff.kind === 'journal' && eff.entry.kind === 'lead' && eff.entry.resolvedBy) {
         leadResolvers.set(eff.entry.resolvedBy, id);
       }
     }
     // Conditional paragraphs (see `Para`): their requirements are checked like
     // any other, and a scene always has something to say whatever holds.
-    const paras = scene.kind === 'story' ? scene.text : scene.kind === 'dialogue' ? scene.lines : [];
-    const textConds = paras.flatMap((p) => (typeof p === 'string' ? [] : p.if));
-    if (paras.length && paras.every((p) => typeof p !== 'string')) at(id, 'every paragraph is conditional: give it at least one that always shows');
-    for (const req of [...requirementsOf(scene), ...textConds]) {
-      if (req.kind === 'flag' || req.kind === 'notFlag') read.add(req.flag);
+    const textConds: Requirement[] = [];
+    for (const { where, paras } of parasOf(scene)) {
+      textConds.push(...paras.flatMap((p) => (typeof p === 'string' ? [] : [...(p.if ?? []), ...(p.assumes ?? [])])));
+      // The text a scene stands on must always say something; an intro or a
+      // result may be wholly conditional (it can add a line, or none).
+      if ((where === 'text' || where === 'lines' || where === 'again') && !paras.some(alwaysShown)) {
+        at(id, 'every paragraph is conditional: give it at least one that always shows');
+      }
+    }
+    const sceneAssumes = 'assumes' in scene ? scene.assumes ?? [] : [];
+    for (const req of [...requirementsOf(scene), ...textConds, ...sceneAssumes]) {
+      if (req.kind === 'flag' || req.kind === 'notFlag' || req.kind === 'count') read.add(req.flag);
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);
       if (req.kind === 'visited' && !ids.has(req.scene)) at(id, `requires visiting unknown scene '${req.scene}'`);
@@ -189,6 +199,19 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // NPC tokens are all resolved (see npcs.ts), and the registry's
+  // introductions for this chapter name real scenes.
+  for (const t of unresolvedTokens(module)) errors.push(`unresolved NPC token ${t}: build the module with withNpcs, or fix the token`);
+  for (const npc of Object.values(module.npcs ?? {})) {
+    for (const sid of npc.introducedAt?.[module.id] ?? []) if (!ids.has(sid)) errors.push(`NPC ${npc.id} is introduced at unknown scene '${sid}'`);
+  }
+
+  // The cast: every introducing scene exists.
+  for (const member of module.cast ?? []) {
+    if (!member.introducedAt.length) errors.push(`cast ${member.name} has no introducing scene`);
+    for (const sid of member.introducedAt) if (!ids.has(sid)) errors.push(`cast ${member.name} is introduced at unknown scene '${sid}'`);
+  }
+
   // The chapter's clock: mornings in order, after the first day.
   let lastDawn = 1;
   for (const d of module.dawns ?? []) {
@@ -197,6 +220,8 @@ export function validateModule(module: Module): string[] {
     if (!d.text.length) errors.push(`dawn of day ${d.day} has no text: a player must see the morning that changed things`);
     for (const eff of d.effects ?? []) {
       if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
+      if (eff.kind === 'copyFlag') { written.add(eff.to); read.add(eff.from); }
+      if (eff.kind === 'addFlag') written.add(eff.flag);
       if ((eff.kind === 'addItem' || eff.kind === 'removeItem') && !itemExists(eff.itemId)) errors.push(`dawn of day ${d.day} references unknown item '${eff.itemId}'`);
       if ((eff.kind === 'joinParty' || eff.kind === 'leaveParty') && !module.companions?.[eff.companion]) errors.push(`dawn of day ${d.day} names unknown companion '${eff.companion}'`);
       if (eff.kind === 'passDay') errors.push(`dawn of day ${d.day} loses a day: a morning cannot pass another`);
@@ -220,7 +245,15 @@ export function validateModule(module: Module): string[] {
       else if (!from.carries?.includes(name)) errors.push(`flag '${flag}' is not in ${origin}'s carries`);
       continue;
     }
+    if (isNpcFlag(flag)) {
+      // NPC state is campaign-wide: this chapter or any before it may set it.
+      if (!written.has(flag) && !ancestors.some((m) => flagsWritten(m).has(flag))) errors.push(`NPC state '${flag}' is read but no scene of this chapter or an earlier one sets it`);
+      continue;
+    }
     if (!written.has(flag)) errors.push(`flag '${flag}' is read but never set by any scene`);
+  }
+  if (hasUncompiledNpcState([module.scenes, module.dawns ?? []])) {
+    errors.push('has NPC requirements or effects left uncompiled: build the module with withNpcs');
   }
   for (const flag of module.carries ?? []) {
     if (!written.has(flag)) errors.push(`carries '${flag}', which no scene sets`);

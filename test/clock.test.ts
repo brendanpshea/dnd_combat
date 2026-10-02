@@ -120,7 +120,8 @@ describe('the shipped clocks', () => {
       const when = hills.map.nodes.find((n) => n.id === id)!.sceneWhen!;
       expect(when.at(-1)).toEqual({ if: [{ kind: 'flag', flag: 'calling-peaked' }], to: 'den-flown' });
     }
-    expect(m.dawns!.find((d) => d.effects?.length)!.effects).toEqual([{ kind: 'setFlag', flag: 'calling-peaked' }]);
+    // The peak's dawn sets the flag (and snapshots the tally: see PEAK_SNAPSHOT).
+    expect(m.dawns!.find((d) => d.effects?.length)!.effects).toContainEqual({ kind: 'setFlag', flag: 'calling-peaked' });
   });
 });
 
@@ -159,5 +160,27 @@ describe('losing a day', () => {
     const m = clocked(true);
     m.dawns = [{ day: 2, text: ['x'], effects: [{ kind: 'passDay' }] }];
     expect(validateModule(m).some((e) => e.includes('cannot pass another'))).toBe(true);
+  });
+});
+
+describe('a snapshot at dawn', () => {
+  it('freezes a tally as it stood that morning; later deeds change only the live count', () => {
+    const m = clocked(true);
+    m.dawns![0]!.effects = [{ kind: 'copyFlag', from: 'tally', to: 'tally-that-night' }]; // day 2
+    m.scenes.kill = { id: 'kill', kind: 'story', text: ['One fewer.'], noBack: true, next: [{ id: 'on', label: 'On', to: 'camp', effects: [{ kind: 'setFlag', flag: 'tally' }] }] };
+    const camp = m.scenes.camp;
+    if (camp?.kind !== 'explore') throw new Error();
+    camp.map.nodes.push({ id: 'k', x: 4, y: 4, label: 'K', icon: 'x', scene: 'kill' });
+    expect(validateModule(m)).toEqual([]);
+    const s = startAdventure(newCampaign(1), m);
+    s.flags.tally = 2;
+    enterScene(s, m, 'camp');
+    campRest(s, m, 'long');
+    expect(s.flags['tally-that-night']).toBe(2);
+    enterScene(s, m, 'kill');
+    choose(s, m, 'on');
+    expect(s.flags.tally).toBe(3);
+    expect(s.flags['tally-that-night']).toBe(2);
+    expect(checkModuleReach(m).errors).toEqual([]);
   });
 });

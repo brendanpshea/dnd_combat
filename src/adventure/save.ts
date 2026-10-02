@@ -50,6 +50,12 @@ export function parseAdventure(json: string, module: Module): AdventureState | u
 
     // Back-fill fields added after older saves.
     state.flags ??= {};
+    for (const [from, to] of Object.entries(module.renamedFlags ?? {})) {
+      if (from in state.flags) {
+        state.flags[to] ??= state.flags[from]!;
+        delete state.flags[from];
+      }
+    }
     state.visited ??= [];
     state.exploredNodes ??= [];
     state.wanderingRolled ??= [];

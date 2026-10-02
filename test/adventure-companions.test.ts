@@ -8,6 +8,7 @@ import {
   readBackCompanions, restCompanions, resolveBattle,
 } from '../src/adventure/runtime.js';
 import { validateModule } from '../src/adventure/validate.js';
+import { npcFateFlag } from '../src/adventure/npcs.js';
 import { newCampaign, buildCampaignParty } from '../src/campaign/campaign.js';
 import { HOLLOW_ROAD_MODULE as HOLLOW } from '../src/data/modules/hollow-road.js';
 import { MAPS, parseMap } from '../src/data/maps.js';
@@ -32,7 +33,7 @@ describe('joining and leaving', () => {
     const s = withWren();
     expect(s.companions?.map((x) => x.id)).toEqual(['wren']);
     expect(requirementMet(s, { kind: 'companion', companion: 'wren' })).toBe(true);
-    expect(s.flags['saved-scout']).toBe(true);   // the same story beat either way
+    expect(s.flags[npcFateFlag('wren', 'saved')]).toBe(true);   // the same story beat either way
   });
 
   it('sending her home leaves the party as it was', () => {
@@ -40,7 +41,7 @@ describe('joining and leaving', () => {
     enterScene(s, HOLLOW, 'scout-saved');
     choose(s, HOLLOW, 'ok');
     expect(s.companions ?? []).toEqual([]);
-    expect(s.flags['saved-scout']).toBe(true);
+    expect(s.flags[npcFateFlag('wren', 'saved')]).toBe(true);
   });
 
   it('she parts at the den, whichever way the party comes up to it', () => {
