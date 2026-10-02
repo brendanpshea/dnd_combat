@@ -222,6 +222,10 @@ export interface ExploreNode {
  *  (0–1) rng roll can divert to `battleScene` (whose onWin should route home). */
 export interface CampRule {
   risky?: { chance: number; battleScene: SceneRef };
+  /** How many nights the party may sleep here in one chapter (an ambushed
+   *  night counts: it was spent). Past them, short rests only: deep in enemy
+   *  ground, you cannot wait out every wound. Absent: no limit. */
+  nights?: number;
 }
 
 export interface ExploreMap {

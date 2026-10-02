@@ -571,7 +571,7 @@ Down where the wall meets the marsh, a little gate lets the den draw water. Its 
 
 → Search the room
 
-Nothing turns up.
+Dust, old bones and nothing else.
 
 → Muster Yard
 
@@ -637,7 +637,7 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+Whatever was worth taking here went long ago.
 
 → Kennels
 
@@ -645,7 +645,7 @@ _(a paragraph shown before: “Nothing turns up.…”)_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 → Muster Yard
 
@@ -677,7 +677,7 @@ _Gained: Potion of Greater Healing_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 → The Pit
 
@@ -703,7 +703,7 @@ _+25 gold (436)_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 → A Lone Fire
 
@@ -735,7 +735,7 @@ _Journal (npc): Vex, Turned_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You find only scratches in the stone, and none of them mean anything.
 
 → The Chief's Hall
 
@@ -1231,7 +1231,7 @@ The specters tear apart into cold and silence. Where they came from, two bare pa
 
 → Search the room
 
-Nothing turns up.
+Dust, old bones and nothing else.
 
 → The Painted Hall
 
@@ -1283,7 +1283,7 @@ _Gained: Potion of Greater Healing_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 → The Lead Cut
 
@@ -1323,7 +1323,7 @@ _Journal (clue): The Old Reeve_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+Nothing turns up.
 
 → The Barrow-Guard
 
@@ -1351,7 +1351,7 @@ _+40 gold (1070)_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You sound the walls and lift what can be lifted. Nothing.
 
 → The King's Chamber
 
@@ -1395,7 +1395,7 @@ Below, black candles burn on every step of the last stair. You will not need you
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You find only scratches in the stone, and none of them mean anything.
 
 → The Warden's Door
 

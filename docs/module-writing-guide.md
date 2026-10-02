@@ -474,6 +474,11 @@ earlier chapter needs no entry in a later one.
 
 ### The clock
 
+A camp deep in enemy ground can limit its nights: `camp: { nights: 2 }`
+lets the party sleep there twice in the chapter (an ambushed night counts),
+then only short-rest. Use it where waiting out every wound would take the
+danger out of a dungeon; leave towns and safe maps unlimited.
+
 A chapter starts on day 1, and every long rest ends a day: a night at a
 camp, or a long `rest` scene. (A camp broken up by a fight is not a night
 slept.) `Module.dawns` names the mornings that matter:

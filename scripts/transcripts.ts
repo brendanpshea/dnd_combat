@@ -45,7 +45,7 @@ import { roomOf, linksFrom } from '../src/adventure/dungeon.js';
 import {
   type AdventureState, type AdventureEvent,
   startAdventure, carryCompanyInto, carriedFlags, currentScene, enterScene, legalChoices, choose,
-  rollSceneCheck, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
+  rollSceneCheck, nightsLeft, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
   resolveShopOrRest, dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere,
   leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, dungeonProgress,
   endingText, dayOf,
@@ -630,7 +630,7 @@ function playChapter(
       case 'explore':
       case 'dungeon': {
         // Make camp first, if the route wants to and the place allows it.
-        if (campRule(state, module) && campedAt !== step - 1 && route.camp({ fightsSinceRest, lostSinceRest })) {
+        if (campRule(state, module) && nightsLeft(state, module) !== 0 && campedAt !== step - 1 && route.camp({ fightsSinceRest, lostSinceRest })) {
           campedAt = step;
           fightsSinceRest = 0; lostSinceRest = 0;
           t.line(`**» Make camp (long rest)** <sub>(day ${dayOf(state)})</sub>`);

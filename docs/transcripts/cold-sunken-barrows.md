@@ -369,7 +369,7 @@ Worked steps lead down into the cold. Your torch makes a small, brave circle, an
 
 → Search the room
 
-Nothing turns up.
+Dust, old bones and nothing else.
 
 → The Painted Hall
 
@@ -421,7 +421,7 @@ _Gained: Potion of Greater Healing_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 → The Lead Cut
 
@@ -461,7 +461,7 @@ _Journal (clue): The Old Reeve_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+Nothing turns up.
 
 → The Barrow-Guard
 
@@ -499,7 +499,7 @@ The specters tear apart into cold and silence. Where they came from, two bare pa
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You sound the walls and lift what can be lifted. Nothing.
 
 → The King's Chamber
 
@@ -547,7 +547,7 @@ Below, black candles burn on every step of the last stair. You will not need you
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You find only scratches in the stone, and none of them mean anything.
 
 → The Warden's Door
 

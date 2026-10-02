@@ -82,6 +82,8 @@ export interface AdventureState {
   day?: number;
   /** The scene the party stands in was visited before (its `again` text shows). */
   returning?: boolean;
+  /** Nights slept (or tried) at each camp with a `nights` limit, by scene. */
+  campNights?: Record<Id, number>;
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
@@ -1077,6 +1079,23 @@ function step(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, to
   return arrive(state, module, sceneId, d, p);
 }
 
+/** What an empty search turns up: one of a few lines, fixed per room, so a
+ *  dungeon of empty corners doesn't say the same sentence in every one. Every
+ *  room can be searched (a hidden door must not give itself away by the
+ *  option alone), so most searches find nothing. */
+const EMPTY_SEARCHES = [
+  'Nothing turns up.',
+  'You sound the walls and lift what can be lifted. Nothing.',
+  'Dust, old bones and nothing else.',
+  'Whatever was worth taking here went long ago.',
+  'You find only scratches in the stone, and none of them mean anything.',
+];
+function emptySearch(roomId: string): string {
+  let h = 0;
+  for (const ch of roomId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return EMPTY_SEARCHES[h % EMPTY_SEARCHES.length]!;
+}
+
 /** Whether the room the party stands in can still be searched. */
 export function canSearch(state: AdventureState, module: Module): boolean {
   const scene = currentScene(state, module);
@@ -1118,7 +1137,7 @@ export function searchRoom(state: AdventureState, module: Module): AdventureEven
   const dark = spendTorch(state, module, d, p, 1);
   if (dark) return [...events, ...dark];
   if (room.search) events.push(...enterScene(state, module, room.search));
-  else if (found === 0) events.push({ type: 'text', paragraphs: ['Nothing turns up.'] });
+  else if (found === 0) events.push({ type: 'text', paragraphs: [emptySearch(room.id)] });
   return events;
 }
 
@@ -1457,6 +1476,13 @@ export function campRule(state: AdventureState, module: Module): CampRule | null
   return null;
 }
 
+/** Nights left to sleep at this camp: null when it sets no limit. */
+export function nightsLeft(state: AdventureState, module: Module): number | null {
+  const rule = campRule(state, module);
+  if (rule?.nights === undefined) return null;
+  return Math.max(0, rule.nights - (state.campNights?.[state.sceneId] ?? 0));
+}
+
 /** Rest at a campable location. A long rest at a `risky` camp may be
  *  interrupted: a chance roll on the campaign rng diverts to its battle scene
  *  (whose onWin routes home). Returns the event stream (heal, maybe a battle).
@@ -1466,6 +1492,10 @@ export function campRest(
 ): AdventureEvent[] {
   const rule = campRule(state, module);
   if (!rule) throw new Error('No camp at this location');
+  if (variant === 'long' && rule.nights !== undefined) {
+    if (nightsLeft(state, module) === 0) throw new Error('No nights left to sleep here');
+    (state.campNights ??= {})[state.sceneId] = (state.campNights[state.sceneId] ?? 0) + 1;
+  }
   const events: AdventureEvent[] = [];
   const c = state.campaign;
   // A risky long rest can be interrupted *before* you get any benefit — roll

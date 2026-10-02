@@ -316,6 +316,12 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // A camp's night limit is a whole number of nights, at least one.
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    const camp = sc.kind === 'explore' ? sc.map.camp : sc.kind === 'dungeon' ? sc.dungeon.camp : undefined;
+    if (camp?.nights !== undefined && !(Number.isInteger(camp.nights) && camp.nights >= 1)) at(id, `camp nights ${camp.nights} must be a whole number, at least 1`);
+  }
+
   // One-time things can't be spent by walking away. A dungeon room's event
   // plays once: if it offers a way back while a choice in it carries an
   // effect, leaving loses that effect for good. And a challenge reached by a
