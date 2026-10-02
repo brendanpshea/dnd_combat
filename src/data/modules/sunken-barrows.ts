@@ -73,7 +73,7 @@ const KNEELERS_LOST = { to: 'resealing', text: ['The kneelers look at the book, 
 const NOT_SINGING = { kind: 'npc' as const, npc: 'marrow', notFate: ['sings'] };
 /** Marrow's kneelers, chanting each line after whoever reads it. */
 const SINGERS = { if: [{ kind: 'npc' as const, npc: 'marrow', fate: 'sings' }],
-  text: 'At the back of the stair, {marrow}\'s kneelers chant every line back. Forty voices keep time, low and steady.' };
+  text: 'At the back of the stair, {marrow}\'s kneelers chant every line back. The whole stair keeps time, low and steady.' };
 
 /** The cult, glimpsed in the fen before it shows itself at the Warden's door. */
 const WORM_CLUE: Effect = { kind: 'journal', entry: { id: 'c-worm', kind: 'clue', title: 'Robes the Colour of Worms',
@@ -120,11 +120,11 @@ const POOL_CHOICES = [
 ];
 
 /** The way home from the sealed door, whichever way it shut. The reeve's
- *  commission is paid on arrival, and what the company carried up (the old
- *  reeve, the drowned folk's purses) is handed over in `sb-hall`, the next beat,
- *  so what this chapter carries on is what really reached Thornwick. */
-const CLIMB_HOME = [{ id: 'home', label: 'Climb the cult\'s rope ladder back to the light', to: 'sb-aftermath',
-  effects: [{ kind: 'gold' as const, amount: 150 }] }];
+ *  commission is counted out that evening in `sb-hall` (paid on the way into
+ *  it, from `sb-aftermath`), where what the company carried up (the old reeve,
+ *  the drowned folk's purses) is handed over too, so what this chapter carries
+ *  on is what really reached Thornwick. */
+const CLIMB_HOME = [{ id: 'home', label: 'Climb the cult\'s rope ladder back to the light', to: 'sb-aftermath' }];
 
 /** What the party can still do in Thornwick once the door is sealed. */
 const SB_CLAIMS = [
@@ -440,7 +440,7 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. Two shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. They do not hurry. They have done this before.'],
-    onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time, and the fire is out. In the grey before dawn you find their tracks, leading back into the black water they crawled out of.'] },
+    onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back into the black water they crawled out of. It is a long while before anyone\'s hands are steady enough to bank the fire again.'] },
   },
   chapel: {
     id: 'chapel', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '🕯️' },
@@ -515,7 +515,8 @@ const scenes: Record<string, Scene> = {
       // "We" only from the Wren who mapped the den for the company in Part 1.
       { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says. "And we broke it without knowing it was one."' },
       { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says. "And you broke it without knowing it was one."' },
-      '{halden} taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil\'s mark first. The old builders cut it into the {barrow-gate}, and the gate\'s watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I\'ll follow you down and wait on the stair." {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says.',
+      '{halden} lifts the altar cloth and hands you a healing potion. "I bought it in {thornwick} for a bad night," he says. "I think yours will be worse."',
+      'He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil\'s mark first. The old builders cut it into the {barrow-gate}, and the gate\'s watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I\'ll follow you down and wait on the stair." {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says.',
     ],
     // Talked down, not fought: the chapel's fight is still earned.
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
@@ -732,8 +733,13 @@ const scenes: Record<string, Scene> = {
         text: '{wren} scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **{undercrypt}**. Let it stay shut.*" She wipes her thumb on her coat.' },
       { if: [{ kind: 'noCompanion', companion: 'wren' }],
         text: 'You scrape the moss out of them and read them aloud. *Here is the **{undercrypt}**. Let it stay shut.*' },
-      { assumes: [{ kind: 'companion', companion: 'wren' }], text: '{wren} looks at the steps, then at you. "I don\'t know the ground past here," she says. "I\'ll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.' },
-      // What she makes of the company so far (her `attitude`; neither line on a cold start).
+      { assumes: [{ kind: 'companion', companion: 'wren' }], text: '{wren} looks at the steps, then at you. "I don\'t know the ground past here," she says. "I\'ll hold the gate."' },
+      // What she makes of the company so far (her `attitude`): plain on a cold
+      // start, warm once earned, cool once lost.
+      { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0, below: 1 } }],
+        text: '"Shout if it goes bad. I\'ll hear you from up here."' },
+      { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 1 } }],
+        text: '"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.' },
       { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
         text: 'She ties a strip of the reeve\'s colours round your arm, quick and tight, and does not explain it.' },
       { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
@@ -871,7 +877,7 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'specter-haunt', mapId: 'corridor',
     intro: ['You bank a fire in a dry side-vault, and the {undercrypt} notices. The paint on the far wall begins to move. Two of the painted dead peel loose from it, grey and flat and cold, and slide toward your fire.'],
-    onWin: { to: '@hub', text: ['The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. You sit out the rest of the night with your backs to it.'] },
+    onWin: { to: '@hub', text: ['The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. Your fire lies kicked across the vault floor, and you have never been more awake.'] },
   },
   // Below the drop: the same cold, by the cult's candles. A loss wakes on the
   // stair, since there is no way back up to be carried out by.
@@ -884,7 +890,7 @@ const scenes: Record<string, Scene> = {
   },
   'stair-night-lost': {
     id: 'stair-night-lost', kind: 'story', noBack: true,
-    text: ['The cold closes over you. You wake stiff on the bottom step with frost in your hair, and the grey shapes are back inside the wall. They took their fill of your warmth, and the night with it: nobody slept. No one below came up to look, and the chanting goes on.'],
+    text: ['The cold closes over you. You wake stiff on the bottom step with frost in your hair, and the grey shapes are back inside the wall. They took their fill of your warmth, and left you none of the rest you lay down for. No one below came up to look, and the chanting goes on.'],
     next: [{ id: 'up', label: 'Get up', to: 'warden-stair' }],
   },
   ossuary: {
@@ -914,7 +920,7 @@ const scenes: Record<string, Scene> = {
     id: 'diggers', kind: 'challenge', back: true, art: { imageId: 'loc-crypt', emoji: '⛏️' },
     intro: [
       '{thornwick}\'s dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.',
-      'The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.',
+      'The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its burial coat.',
     ],
     again: ['{thornwick}\'s dead are still digging at the lead, wall to wall. Near the far end, the digger in the reeve\'s chain swings its pick with the rest.'],
     retry: 'perApproach',
@@ -1271,7 +1277,8 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
         text: '{wren} walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.' },
     ],
-    next: [{ id: 'hall', label: 'Go up to the reeve\'s hall', to: 'sb-hall' }],
+    // The reeve's commission, counted out in the hall that evening.
+    next: [{ id: 'hall', label: 'Go up to the reeve\'s hall', to: 'sb-hall', effects: [{ kind: 'gold', amount: 150 }] }],
     // Home, with the door sealed: nothing below is left to walk back into.
     noBack: true,
   },
