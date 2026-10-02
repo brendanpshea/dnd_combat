@@ -323,3 +323,36 @@ is one more fact for it to track.
   it land the consequence in one or two lines, concrete, in the world's voice.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
+
+## Reading a route
+
+A scene that reads well on its own can still contradict the one before it — a
+companion greets you from camp right after walking down the mountain beside
+you; a dawn warns of a danger the party already put down. Those mistakes are
+invisible in the source, which is organised by scene, and obvious in the order
+a player meets them. So read routes, not just scenes.
+
+`docs/transcripts/` holds the exact text a player reads, in order, on a few
+fixed playthroughs: the whole trilogy with one carried company played four
+ways (`trilogy-completionist`, `trilogy-rusher`, `trilogy-cruel`,
+`trilogy-unlucky`), and cold starts of chapters two and three
+(`cold-sunken-barrows`, `cold-wyrmcalling`). Each lists every paragraph shown
+— story text, dialogue lines under the speaker's name, battle intros, results,
+room and dawn text, the ending and the slides that show — with the choice
+taken, the roll behind each check, each fight's outcome, map moves and nights
+slept. The header names the route's policy, its seed, the ending reached and
+the flags carried across each chapter boundary. Prose comes from the runtime's
+own events, so a conditional paragraph appears exactly when a player would see
+it.
+
+- **Regenerate** with `npm run transcripts` after any module or runtime change;
+  `test/transcripts.test.ts` fails until the committed files match.
+- **Review the diff.** A content PR's transcript diff shows what actually
+  changed for a player, in context.
+- **Reviewers, human or AI: read the transcripts.** Read a route top to bottom
+  as a player would, and look for what only shows in sequence — who is where,
+  what the party already knows, what time it is, what a slide claims happened.
+  Report a contradiction with the route name and the quoted lines.
+
+The routes are defined at the top of `scripts/transcripts.ts`; add one when a
+branch you care about is not on any of them.
