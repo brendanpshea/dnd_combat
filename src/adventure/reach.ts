@@ -314,7 +314,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
           out(s.parley.success, 'talks them down');
           if (s.parley.failure) out(s.parley.failure, 'fails to talk them down');
         }
-        c.leave = !s.noFlee;
+        c.leave = !s.noFlee && s.surprise !== 'party'; // caught out: no falling back
         break;
       case 'shop': case 'rest': c.steps.push(step(s.next, 'moves on')); break;
       case 'explore':

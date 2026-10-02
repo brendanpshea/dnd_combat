@@ -231,6 +231,19 @@ bring (a scout both saved and left behind) is never searched, and carried
 choices cost no facts. A chapter pays instead for what it hands on: each of
 its `carries` that a later chapter reads is one more fact.
 
+### Falling back, and locked markers
+
+A party can fall back from most fights to the map (or, in a dungeon, to the
+room it came from). Two exceptions: a fight marked `noFlee`, and any fight
+where the party is caught out (`surprise: 'party'`, or a sneak-up rolled
+against it at the door). So a failed check that leads to a worse, surprised
+fight can't be fled and walked back into clean. Mark `noFlee` on any fight
+that can't be come back to.
+
+A map marker gated by `requires` says why with its `note`, in the world's
+words ("The ravine cuts the trail."). Without one, the player sees a
+generic "Requires something you haven't done yet".
+
 ### One scene, routes that differ in a line
 
 A story's `text` and a dialogue's `lines` take conditional paragraphs, the
