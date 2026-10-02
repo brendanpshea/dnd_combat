@@ -677,6 +677,12 @@ export function hubReturn(state: AdventureState, module: Module): Id | null {
   // Out of a dungeon: its map is behind the party, not somewhere to step back to.
   const hub = module.scenes[state.hub];
   if (hub?.kind === 'dungeon' && state.dungeons?.[hub.id]?.outside) return null;
+  // A confrontation in the room the party stands in can't be stepped back out
+  // of: it would only begin again (see enterDungeon). Leave by another door.
+  if (hub?.kind === 'dungeon') {
+    const p = state.dungeons?.[hub.id];
+    if (p && standingEvent(state, hub.dungeon, p) === scene.id) return null;
+  }
   return state.hub;
 }
 
@@ -919,6 +925,13 @@ function enterDungeon(
     if (d.torch) p.torch = d.torch.length;
   }
   return p.pending ? arrive(state, module, scene.id, d, p) : [];
+}
+
+/** The event of the room the party stands in, if it plays until something
+ *  holds and that something doesn't yet: a confrontation still under way. */
+function standingEvent(state: AdventureState, d: Dungeon, p: DungeonProgress): Id | undefined {
+  const ev = roomOf(d, p.at)?.event;
+  return ev?.until && !ev.until.every((r) => requirementMet(state, r)) ? ev.scene : undefined;
 }
 
 /**
@@ -1243,6 +1256,12 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   // Either way the party is picked up first (half HP): an authored loss beat
   // is still somebody dragging them off the field, and leaving them at 0 HP
   // put a party on the map that could not survive its next step.
+  // Beaten inside a dungeon: whatever the room held is still there when the
+  // party comes back to it (a wipe, then "go straight back in"). The arrival
+  // plays again: the room's fight, or a confrontation not yet settled. Without
+  // this the room stood empty, and the chief could be camped in front of.
+  const hub = hubDungeon(state, module);
+  if (hub) dungeonProgress(state, hub.id, hub.dungeon).pending = true;
   if (scene.onLoss) {
     reviveParty(state.campaign);
     restCompanions(state, 'revive', module);

@@ -937,20 +937,6 @@ _(2 paragraphs shown before: “You wake on Mira's cot again, under…” / “"
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
-**» Make camp (long rest)** <sub>(day 11)</sub>
-
-**Dawn — day 12.**
-
-→ Search the room
-
-You sound the walls and lift what can be lifted. Nothing.
-
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `vex`)</sub>
-
-→ The Chief's Hall
-
 **→ The Chief's Hall** <sub>(room `throne`)</sub>
 
 <sub>scene `boss-approach` (again)</sub>
@@ -961,7 +947,7 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 
 **» [Insight DC 14] Look at his hands**
 
-`[Insight DC 14 — Elaine the Holy rolls 8 — failed]`
+`[Insight DC 14 — Elaine the Holy rolls 10 — failed]`
 
 <sub>scene `vargan-unread`</sub>
 
@@ -1215,7 +1201,7 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 **» [Religion DC 14] Speak his own liturgy back to him**
 
-`[Religion DC 14 — Morgan Le Fey rolls 7 — failed]`
+`[Religion DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 <sub>scene `chapel-unheard`</sub>
 
@@ -1267,7 +1253,7 @@ The corpse-lights still sway over the black water, warm as windows. Wren keeps a
 
 **» [Survival DC 13] Find the dry way round the pools**
 
-`[Survival DC 13 — Elaine the Holy rolls 8 — failed]`
+`[Survival DC 13 — Elaine the Holy rolls 12 — failed]`
 
 <sub>scene `lights-sunk`</sub>
 
@@ -1349,7 +1335,7 @@ The ground shivered once in the night, deep down under the fen, the way a door s
 
 The open graves are as the dead left them. In the bottom of the nearest, the clay still holds the shape of the body that lay there, pressed in like a boot-print. A healer's eye might read how it got up.
 
-`[Medicine DC 12 — Elaine the Holy rolls 9 — failed]`
+`[Medicine DC 12 — Elaine the Holy rolls 7 — failed]`
 
 You get mud, turf, and the underside of a churchyard. You trample the edges of three graves, and what they had to say is gone under your boots.
 
@@ -1377,7 +1363,7 @@ The old raised road runs out into the fog, the same as before. The fen waits at 
 
 **» [Insight DC 13] Read what is wearing him**
 
-`[Insight DC 13 — Elaine the Holy rolls 10 — failed]`
+`[Insight DC 13 — Elaine the Holy rolls 12 — failed]`
 
 <sub>scene `chapel-unread`</sub>
 
@@ -1433,7 +1419,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 11 — failed]`
+`[History DC 14 — Morgan Le Fey rolls 12 — failed]`
 
 You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
@@ -1529,19 +1515,19 @@ A loose stone skitters across the floor, and every pick in the cut stops. After 
 
 **» Say the burial words over them — Halden said these over every grave in Thornwick.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 12 — failed]`
 
 The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
 
 **» Pick up a tool and fall into step — Shuffle, swing, and look as dead as they do.**
 
-`[Deception DC 13 — Ash the Sneaky rolls 8 — failed]`
+`[Deception DC 13 — Ash the Sneaky rolls 5 — failed]`
 
 You swing too fast. The living always do. The nearest digger stops and turns its empty face toward you, then slowly goes back to work.
 
 **» [Cleric] Raise your holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Elaine the Holy rolls 7 — failed]`
+`[Religion DC 10 — Elaine the Holy rolls 4 — failed]`
 
 The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.
 
@@ -1593,7 +1579,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 **» [History DC 15] Relieve him of his post, the old way**
 
-`[History DC 15 — Morgan Le Fey rolls 14 — failed]`
+`[History DC 15 — Morgan Le Fey rolls 10 — failed]`
 
 You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
@@ -1615,22 +1601,6 @@ The ground shook again before dawn, longer this time, and hard enough to wake th
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 6)</sub>
-
-<sub>scene `crypt-night`</sub>
-
-You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on the far wall begins to move. Two of the painted dead peel loose from it, grey and flat and cold, and slide toward your fire.
-
-**Battle:** Specter Haunt <sub>(`specter-haunt` on `corridor`)</sub>
-
-**» Fall back to The Undercrypt**
-
-_(a paragraph shown before: “You think better of it and fall…”)_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-→ The Barrow-Guard
-
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
 <sub>scene `wights` (again)</sub>
@@ -1647,6 +1617,10 @@ _+40 gold (580)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
+**» Make camp (long rest)** <sub>(day 6)</sub>
+
+**Dawn — day 7.**
+
 → The King's Chamber
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
@@ -1658,6 +1632,22 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore. These are the places the Warden swallowed the last time he woke.
 
 The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
+
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
+
+**» Fall back to The Undercrypt**
+
+_(a paragraph shown before: “You think better of it and fall…”)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+
+→ The King's Chamber
+
+**→ The King's Chamber** <sub>(room `king`)</sub>
+
+<sub>scene `king` (again)</sub>
+
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.
 
 **Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
@@ -1719,7 +1709,7 @@ A knife-hilt catches you behind the ear, and the candles go out. You come to by 
 
 _Long rest._
 
-**Dawn — day 7.**
+**Dawn — day 8.**
 
 <sub>scene `seal-battle` (again)</sub>
 
@@ -1747,25 +1737,25 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 10 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — They are cut deeper than any prayer needs, and the door has shifted in its frame since.**
 
-`[Arcana DC 16 — Morgan Le Fey rolls 10 — failed]`
+`[Arcana DC 16 — Morgan Le Fey rolls 14 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They felt the ground shake, and they think their door is opening.**
 
-`[Persuasion DC 16 — Elaine the Holy rolls 8 — failed]`
+`[Persuasion DC 16 — Elaine the Holy rolls 13 — failed]`
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
 
 **» [Wizard] Pick the lock the old masons cut — You know a ward when you see one. This one is only half-broken.**
 
-`[Arcana DC 11 — Morgan Le Fey rolls 9 — failed]`
+`[Arcana DC 11 — Morgan Le Fey rolls 10 — failed]`
 
 No book you have ever read goes back as far as this ward. You lose your place in it, and a letter spits hot lead at your hand.
 
@@ -1787,7 +1777,7 @@ You get up. Someone has to hold that door, and it is still you.
 
 _Long rest._
 
-**Dawn — day 8.**
+**Dawn — day 9.**
 
 <sub>scene `seal-breach` (again)</sub>
 
@@ -2183,7 +2173,7 @@ The drumming starts up under your boots again. The herd is still running its gul
 
 **» [Survival DC 11] Time the stampede**
 
-`[Survival DC 11 — Elaine the Holy rolls 7 — failed]`
+`[Survival DC 11 — Elaine the Holy rolls 10 — failed]`
 
 _-30 gold (1065)_
 
@@ -2421,7 +2411,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 10 — failed]`
+`[Deception DC 11 — Ash the Sneaky rolls 4 — failed]`
 
 <sub>scene `steading-balked`</sub>
 
@@ -2575,19 +2565,19 @@ Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are 
 
 **» Drag Nettle out while she rages — She is shouting, not holding on.**
 
-`[Athletics DC 11 — Arthur the Bold rolls 10 — failed]`
+`[Athletics DC 11 — Arthur the Bold rolls 9 — failed]`
 
 Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
 
 **» Break the song — Nettle has sung louder since you answered her. Sing a wrong note into the Calling anyway.**
 
-`[Arcana DC 17 — Morgan Le Fey rolls 13 — failed]`
+`[Arcana DC 17 — Morgan Le Fey rolls 8 — failed]`
 
 Nettle hears your wrong note and sings right over it, louder. The Calling never misses a beat.
 
 **» Say Halden's rites over the stone — Brother Halden's book of rites went down into the barrows with you, and it is still in your pack. Its oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 10 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
@@ -2599,7 +2589,7 @@ The letters crawl and shift under your wizard's eyes. They will not hold still l
 
 **» Find where the stone is weakest — The song is louder on one face of the stone than the others.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 8 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 12 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 

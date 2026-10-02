@@ -9,7 +9,7 @@ import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, enterScene, currentScene, resolveBattle, fleeBattle, dungeonProgress, dungeonExits,
   walkTo, searchRoom, canSearch, forceDoor, leaveDungeon, dungeonExitHere, battleMap, choose,
-  dungeonRoute, travelDestinations, campRule,
+  dungeonRoute, travelDestinations, campRule, hubReturn,
   type AdventureEvent,
 } from '../src/adventure/runtime.js';
 import { runModule } from '../src/adventure/runner.js';
@@ -249,6 +249,29 @@ describe('walking a dungeon', () => {
     walkTo(s, M, 'pit');
     walkTo(s, M, 'vex');
     expect(s.sceneId).toBe('den');
+  });
+
+  it('an unsettled event is still waiting when a beaten party comes back into its room', () => {
+    const m = moduleWith(den(), {
+      'vex-talk': { id: 'vex-talk', kind: 'story', text: ['Vex.'], next: [
+        { id: 'deal', label: 'Deal', to: '@hub', effects: [{ kind: 'setFlag', flag: 'met-vex' }] },
+        { id: 'fight', label: 'Fight', to: 'vex-fight' },
+      ] },
+      'vex-fight': { id: 'vex-fight', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins', onWin: { to: '@hub' }, onLoss: { to: 'outside' } },
+    });
+    const s = startAdventure(newCampaign(3), m);
+    enterScene(s, m, 'start'); choose(s, m, 'in');
+    walkTo(s, m, 'yard'); walkTo(s, m, 'pit'); resolveBattle(s, m, true);
+    walkTo(s, m, 'vex');
+    expect(s.sceneId).toBe('vex-talk');
+    // No backing out of a confrontation into the room it stands in.
+    expect(hubReturn(s, m)).toBeNull();
+    choose(s, m, 'fight');
+    resolveBattle(s, m, false);
+    // Beaten, dragged off, and straight back in: Vex is still at the fire.
+    choose(s, m, 'back');
+    expect(dungeonProgress(s, 'den', den()).at).toBe('vex');
+    expect(s.sceneId).toBe('vex-talk');
   });
 
   it('search finds a secret door and the room\'s own find, once', () => {
