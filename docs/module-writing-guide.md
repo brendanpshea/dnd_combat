@@ -60,7 +60,7 @@ stand-up bit, cut it.
    name with no referent is a debt the reader carries for the rest of the scene.
    Introduce it attached to a sound, a sight, or a feeling — and let a character
    say what it *means* for the party.
-   - ✅ "you hear it for the first time: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds."
+   - ✅ "you hear it at last: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds."
    - ❌ "The Calling threads through it all… one voice fewer when the Calling peaks."
 
 8. **The narrator describes; a character explains.** When a scene carries
