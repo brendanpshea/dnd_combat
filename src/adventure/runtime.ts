@@ -275,7 +275,7 @@ const spendAttempt = (state: AdventureState, attempt: Id | undefined) => {
 /** The paragraphs this party sees: plain ones, and conditional ones whose
  *  requirements hold (see `Para`). */
 export function paragraphsFor(state: AdventureState, paras: readonly Para[]): Paragraph[] {
-  return paras.flatMap((p) => (typeof p === 'string' ? [p] : p.if.every((r) => requirementMet(state, r)) ? [p.text] : []));
+  return paras.flatMap((p) => (typeof p === 'string' ? [p] : (p.if ?? []).every((r) => requirementMet(state, r)) ? [p.text] : []));
 }
 
 /** Why a gated thing is blocked, for the UI's greyed-out reason (or null). */

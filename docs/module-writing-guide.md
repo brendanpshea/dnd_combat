@@ -279,6 +279,22 @@ greeting you from camp after walking down the mountain beside you. Every
 scene needs at least one paragraph that always shows. Text never changes
 where a party can go, so the reachability search ignores it.
 
+### Saying what a line takes for granted
+
+A line that only makes sense on some routes should say so with `assumes`:
+
+```ts
+{ assumes: [{ kind: 'noCompanion', companion: 'wren' }], text: 'Wren waves from the scouts\' fire.' },
+```
+
+It still shows (unless it also has an `if`), but the reachability search
+proves that every route which can show it satisfies the assumption, and
+reports the shortest route that doesn't. A whole story, dialogue or ending
+can carry `assumes` too. Assume flags, carried flags, companions and visits;
+the search can't see gold, items, classes or counted flags (tallies), and
+says so. Prefer `assumes` to hoping: a shared scene that silently assumes a
+route is the commonest contradiction in review.
+
 ### The clock
 
 A chapter starts on day 1, and every long rest ends a day: a night at a

@@ -13,7 +13,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, ROOM_MAP_REF, type Module, type Requirement } from './types.js';
+import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf } from './graph.js';
 import { checkDungeon } from './dungeon.js';
 import { checkModuleReach } from './reach.js';
@@ -92,14 +92,15 @@ export function validateModule(module: Module): string[] {
     // any other, and a scene always has something to say whatever holds.
     const textConds: Requirement[] = [];
     for (const { where, paras } of parasOf(scene)) {
-      textConds.push(...paras.flatMap((p) => (typeof p === 'string' ? [] : p.if)));
+      textConds.push(...paras.flatMap((p) => (typeof p === 'string' ? [] : [...(p.if ?? []), ...(p.assumes ?? [])])));
       // The text a scene stands on must always say something; an intro or a
       // result may be wholly conditional (it can add a line, or none).
-      if ((where === 'text' || where === 'lines' || where === 'again') && paras.every((p) => typeof p !== 'string')) {
+      if ((where === 'text' || where === 'lines' || where === 'again') && !paras.some(alwaysShown)) {
         at(id, 'every paragraph is conditional: give it at least one that always shows');
       }
     }
-    for (const req of [...requirementsOf(scene), ...textConds]) {
+    const sceneAssumes = 'assumes' in scene ? scene.assumes ?? [] : [];
+    for (const req of [...requirementsOf(scene), ...textConds, ...sceneAssumes]) {
       if (req.kind === 'flag' || req.kind === 'notFlag') read.add(req.flag);
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);

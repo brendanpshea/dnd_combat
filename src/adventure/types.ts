@@ -24,7 +24,22 @@ export type Paragraph = string;
  * your shoulder, or waiting at the fire — instead of a copy per route. Text
  * never changes where a party can go, so the reachability search ignores it.
  */
-export type Para = Paragraph | { if: Requirement[]; text: Paragraph };
+export type Para = Paragraph | {
+  /** Shown only when these hold. Absent = always shown. */
+  if?: Requirement[];
+  /**
+   * What the line takes for granted ("Wren watched from the scouts' fire"
+   * assumes she isn't beside you). Not a condition: the line still shows
+   * when `if` allows. The reachability search proves that every route which
+   * can show it satisfies the assumption, and reports the shortest route
+   * that doesn't. See also `assumes` on a scene.
+   */
+  assumes?: Requirement[];
+  text: Paragraph;
+};
+
+/** A paragraph that always shows: plain, or an object with no `if`. */
+export const alwaysShown = (p: Para): boolean => typeof p === 'string' || !p.if?.length;
 
 /** A reference to another scene by id (kept nominal for the validator's sake). */
 export type SceneRef = Id;
@@ -307,8 +322,10 @@ export type Scene =
   // beat the player shouldn't be able to walk away from.
   /** `again`: shown instead of `text` / `lines` on every visit after the
    *  first, so a scene the party returns to doesn't replay a first meeting. */
-  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  /** `assumes` (story, dialogue, ending): what the whole scene takes for
+   *  granted; proven on every route to it, like a paragraph's `assumes`. */
+  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
       intro: Para[]; art?: SceneArt; success: Outcome; failure: Outcome;
@@ -368,7 +385,7 @@ export type Scene =
       npc?: NpcRef }
   | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Para[] }
   | {
-      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Para[]; art?: SceneArt;
+      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Para[]; art?: SceneArt; assumes?: Requirement[];
       /**
        * Ending slides: a line each about what became of the people and places
        * the player touched, shown after `text` when its requirements hold

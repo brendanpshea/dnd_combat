@@ -34,7 +34,7 @@
  */
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Requirement, type Effect, type Scene } from './types.js';
-import { requirementsOf, effectsOf } from './graph.js';
+import { requirementsOf, effectsOf, parasOf } from './graph.js';
 import { MODULES } from '../data/modules/index.js';
 
 /** The most facts a state can carry: they share a 32-bit word. */
@@ -85,10 +85,34 @@ function pathReads(module: Module): Requirement[] {
   });
 }
 
-/** The carried flags (`module:flag`) a party's path can depend on. */
+/**
+ * What each scene takes for granted (`assumes` on the scene, or on any of its
+ * paragraphs), by where it is said. The search proves each holds on every
+ * route that reaches the scene.
+ */
+function assumptionsOf(scene: Scene): Array<{ where: string; reqs: Requirement[]; when: Requirement[] }> {
+  const out: Array<{ where: string; reqs: Requirement[]; when: Requirement[] }> = [];
+  if ('assumes' in scene && scene.assumes?.length) out.push({ where: 'the scene', reqs: scene.assumes, when: [] });
+  for (const { where, paras } of parasOf(scene)) {
+    for (const p of paras) {
+      if (typeof p !== 'string' && p.assumes?.length) {
+        // Only where the line shows: its own `if` must hold too.
+        out.push({ where: `${where} "${p.text.slice(0, 40)}${p.text.length > 40 ? '…' : ''}"`, reqs: p.assumes, when: p.if ?? [] });
+      }
+    }
+  }
+  return out;
+}
+const assumedReads = (module: Module): Requirement[] =>
+  Object.values(module.scenes).flatMap((s) => assumptionsOf(s).flatMap((a) => [...a.reqs, ...a.when]));
+
+/** The carried flags (`module:flag`) a party's path, or a line's assumption,
+ *  can depend on. */
 function carriedReads(module: Module): string[] {
   const out = new Set<string>();
-  for (const r of pathReads(module)) if ((r.kind === 'flag' || r.kind === 'notFlag') && r.flag.includes(':')) out.add(r.flag);
+  for (const r of [...pathReads(module), ...assumedReads(module)]) {
+    if ((r.kind === 'flag' || r.kind === 'notFlag') && r.flag.includes(':')) out.add(r.flag);
+  }
   return [...out].sort();
 }
 
@@ -204,7 +228,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     // A snapshot can hold any value its source can: never a bit.
     : e.kind === 'copyFlag' ? [e.to] : [])));
   for (const r of pathReads(module)) if (r.kind === 'flag' && typeof r.value === 'number') counted.add(r.flag);
-  for (const r of pathReads(module)) {
+  for (const r of [...pathReads(module), ...assumedReads(module)]) {
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':') && !counted.has(r.flag)) fact(`flag:${r.flag}`);
     if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
     if (r.kind === 'visited') fact(`visited:${r.scene}`);
@@ -518,6 +542,42 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       }
     }
   });
+  // What each line takes for granted (`assumes`) holds on every route that
+  // reaches it. States are numbered breadth-first, so the first state found
+  // breaking an assumption has the shortest way there.
+  const unseen = (r: Requirement): string | null => {
+    if (r.kind === 'item' || r.kind === 'gold' || r.kind === 'classInParty' || r.kind === 'speciesInParty') return r.kind;
+    if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':') && !facts.has(`flag:${r.flag}`)) return `the counted flag '${r.flag}'`;
+    return null;
+  };
+  const describe = (r: Requirement): string =>
+    r.kind === 'flag' ? r.flag : r.kind === 'notFlag' ? `not ${r.flag}` : r.kind === 'companion' ? `${r.companion} in the party`
+      : r.kind === 'noCompanion' ? `${r.companion} not in the party` : r.kind === 'visited' ? `visited ${r.scene}` : r.kind;
+  const assumed = ids.map((id) => assumptionsOf(module.scenes[id]!).map((a) => ({ ...a, mask: mask(a.reqs), shows: mask(a.when) })));
+  const broken = new Set<string>();
+  ids.forEach((id, si) => {
+    for (const a of assumed[si]!) {
+      const blind = [...a.reqs, ...a.when].map(unseen).find((x) => x);
+      if (blind) {
+        errors.push(`[${id}] assumes something the search can't see (${blind}), at ${a.where}: assume a flag, a companion or a visit instead`);
+        broken.add(`${si}|${a.where}`);
+      }
+    }
+  });
+  for (let n = 0; n < N; n++) {
+    const si = sceneOf[n]!;
+    for (const a of assumed[si]!) {
+      const key = `${si}|${a.where}`;
+      if (broken.has(key) || !met(a.shows, factsOf[n]!) || met(a.mask, factsOf[n]!)) continue;
+      broken.add(key);
+      const path: string[] = [];
+      for (let m = n; parent[m]! >= 0; m = parent[m]!) path.unshift(via[m]!);
+      const shown = path.length > 10 ? ['…', ...path.slice(-10)] : path;
+      errors.push(`[${ids[si]}] ${a.where} assumes ${a.reqs.map(describe).join(' and ')}, but a party can get here without it`
+        + `${carriedNote}. One way: ${shown.join(' → ') || '(the start)'}`);
+    }
+  }
+
   // What a victory hands on.
   const outputs = new Map<number, string[]>();
   const handBits = handsOn.map((f) => bit(`flag:${f}`));
