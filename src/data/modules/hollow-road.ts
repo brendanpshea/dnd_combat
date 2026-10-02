@@ -92,7 +92,7 @@ const BOSS_FALLS = 'The chief falls across the fire-pit, and the **{reedwife}** 
 /** What the hall pays, beside its loot: the chief's strongbox. */
 const BOSS_HOARD = 'Behind the throne stands the chief\'s strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.';
 const BOSS_WON: Effect[] = [
-  { kind: 'npc', npc: 'reedwife', fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' },
+  { kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' },
 ];
 
 /** Naming Vargan's brand: the moment before he chooses a side. */
@@ -147,7 +147,29 @@ const FREE_VARGAN = (label: string): Choice[] => [
 const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.';
 /** And hers: the purse at her belt. */
 const REEDWIFE_HOARD = 'A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.';
-const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' }];
+const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' }];
+/**
+ * Binding her instead: with {vargan} turned on her, his bargain is broken and
+ * only the older one stands. Every company that gets here has heard its price
+ * from her own mouth (`boss-approach`). Said back to her at the door of the
+ * fight, it holds her (a parley: one try between both fights, `bind-hag`, so
+ * a miss is the fight and the kill, never a second roll). Its success pays
+ * what the fight would have, and carries the fight's story effects (not her
+ * purse, which she keeps). No scene of its own: the parley lands on
+ * `vargan-fate`, so the reach search gains no layer.
+ */
+const BIND_HAG = (encounter: string, after: string): NonNullable<Extract<Scene, { kind: 'battle' }>['parley']> => ({
+  skill: 'arcana', dc: 15, attempt: 'bind-hag',
+  label: 'Hold her to her old price: one {door-price} a winter, by their door',
+  refused: ['You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.'],
+  success: { to: 'vargan-fate',
+    effects: [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'pens-settled' }, { kind: 'xp', amount: avoidedFightXP(encounter) }],
+    text: [
+      'You say her price back to her, in her own words. One {door-price} each {door-midwinter}, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.',
+      'The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One {door-price}," she says at last, as if it tastes of mud. "See that they pay it."',
+      `She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. ${after}`,
+    ] },
+});
 const REEDWIFE_LOST = [
   'The hag\'s cold fingers close over your eyes, and the hall goes dark.',
   'You wake behind the throne, where somebody dragged you. {vargan} sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."',
@@ -1221,8 +1243,12 @@ const scenes: Record<string, Scene> = {
         { id: 'vex', name: 'A Lone Fire', size: 'small',
           event: { scene: 'vex-parley', until: [{ kind: 'npc', npc: 'vex', met: true }] } },
         // Whatever becomes of {vargan} here, the company leaves the den for good.
+        // The hall is settled once the {reedwife} is: dead or bound, both of
+        // which mark her `met` (BOSS_WON, REEDWIFE_WON, BIND_HAG). An `until`
+        // is all-of, so it reads that one mark rather than either fate, and
+        // the two fates leave the reach search one state, not two.
         { id: 'throne', name: 'The Chief\'s Hall', size: 'large', goal: true,
-          event: { scene: 'boss-approach', until: [{ kind: 'npc', npc: 'reedwife', fate: 'dead' }] } },
+          event: { scene: 'boss-approach', until: [{ kind: 'npc', npc: 'reedwife', met: true }] } },
       ],
       links: [
         { a: 'gate', b: 'yard' },
@@ -1559,6 +1585,7 @@ const scenes: Record<string, Scene> = {
     again: ['The {reedwife} is still by the fire-pit. "Up again, sweetlings?" She whistles, and the chief\'s guard comes back out of the smoke with his raider.'],
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS, REEDWIFE_HOARD], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost' },
+    parley: BIND_HAG('hag-guarded', 'The chief\'s guard watches her go, and then walks out into the smoke after her.'),
   },
   // The same, with Hask gone: the two raiders she whistles in come late, and
   // lose their first round (`surprise`).
@@ -1571,6 +1598,7 @@ const scenes: Record<string, Scene> = {
     again: ['The {reedwife} is still by the fire-pit. She whistles for {hask} once more, and he still does not come. Her two raiders stumble in from the yard, and you are on them before they find their blades.'],
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS, REEDWIFE_HOARD], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost-alone' },
+    parley: BIND_HAG('hag-coven', 'Her two raiders watch her go, and then they run too.'),
   },
   // A short rest, not a night: Vargan's "Get up" is now, and no dawn (the
   // dark moon's included) can come while the hag waits by the fire.
@@ -1602,7 +1630,7 @@ const scenes: Record<string, Scene> = {
         effects: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
     ],
   },
-  // Turned on the hag: she is dead and the chief is alive. What becomes of
+  // Turned on the hag: she is dead or bound, and the chief is alive. What becomes of
   // him is the company's call, and the reeve pays only for a chief he gets to see.
   'vargan-fate': {
     id: 'vargan-fate', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '⚖️' },
@@ -1651,7 +1679,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }, { kind: 'flag', flag: 'bounty' }],
         text: 'He holds out his hand for the retainer you drew at the board. He does not lower it until the coin, or what is left of it, is back in the strongbox. "{thornwick} pays its debts," he says. "So will you."' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
-        text: 'Someone asks how the chief died, and you tell them: on his knees in his own hall, after the hag was already dead. The square goes quiet. Behind the reeve, {mira} looks at you, says nothing, and turns away.' },
+        text: 'Someone asks how the chief died, and you tell them: on his knees in his own hall, after the hag was already down. The square goes quiet. Behind the reeve, {mira} looks at you, says nothing, and turns away.' },
     ],
     next: AFTERMATH_CLAIMS,
     // Back in Thornwick with the chief dead: there is no den to go back to,
@@ -1802,6 +1830,9 @@ const scenes: Record<string, Scene> = {
         text: 'Out past the reeds, the reeve\'s men pull down the den\'s timber wall one post at a time. They leave the posts for the marsh to take.' },
       { if: [{ kind: 'visited', scene: 'board' }],
         text: 'The bounty notice comes down off the board in the square. Someone tears off the bottom corner first, the line in the prouder hand, and keeps it.' },
+      // Bound to the old price in the hall (BIND_HAG).
+      { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
+        text: 'At {door-midwinter} an old reed-cutter ties a {door-price} to a stake at the water\'s edge, the way his gran did. In the morning the rope hangs wet and empty, and nothing else is missing.' },
       { if: [{ kind: 'flag', flag: 'mill-saved' }],
         text: 'Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog\'s neck.' },
       { if: [{ kind: 'flag', flag: 'captives-freed' }],

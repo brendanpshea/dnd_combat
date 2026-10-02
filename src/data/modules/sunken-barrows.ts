@@ -6,7 +6,9 @@
  * The premise pays off Part 1's victory with its cost: the Reedwife was not
  * merely squatting in the marsh — she was the Undercrypt's jailer gone to
  * rot, paid a lamb each midwinter to keep something older under. The
- * company killed her, so the barrows are opening, and the debt is theirs.
+ * company killed her (or, Part 1's other road, bound her back to that door
+ * after she had left it all spring), so the barrows are opening, and the
+ * debt is theirs. Every line about her is worded true of both.
  * The Cult of the Worm arrives to finish what the broken ward began.
  *
  * XP budget (see trilogy-plan.md), and no level floor: the fights carry a
@@ -53,7 +55,7 @@ const WREN_BRIEF = 'I\'ve scouted the near fen twice since the graves opened. Ev
 const CHAPEL_CLEARED: Effect[] = [
   { kind: 'setFlag', flag: 'chapel-cleared' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 },
   { kind: 'journal', entry: { id: 'c-rites', kind: 'clue', title: 'The Rites of Sealing',
-    body: 'Brother {halden}\'s prayer book holds the old rites of sealing. The {reedwife} was the jailer of the {warden} of the Barrows. The fen-folk gave her a {door-price} each {door-midwinter}, and she kept him asleep. Her death broke his seal. Speak the rites at the {warden}\'s door, deep in the great barrow, to shut him in again.' } },
+    body: 'Brother {halden}\'s prayer book holds the old rites of sealing. The {reedwife} was the jailer of the {warden} of the Barrows. The fen-folk gave her a {door-price} each {door-midwinter}, and she kept him asleep. With her gone from the door, his seal broke. Speak the rites at the {warden}\'s door, deep in the great barrow, to shut him in again.' } },
 ];
 
 /** The words Halden said over Thornwick's dead, said back to him. */
@@ -217,7 +219,7 @@ const scenes: Record<string, Scene> = {
     id: 'return', kind: 'story', art: { imageId: 'loc-town', emoji: '🔔' },
     text: [
       '{thornwick} by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.',
-      'Last season your company broke the {ashfang} in their den past the marsh, and killed the hag their chief had sold himself to. You had hoped for a quiet homecoming.',
+      'Last season your company broke the {ashfang} in their den past the marsh, and beat the hag their chief had sold himself to. You had hoped for a quiet homecoming.',
       'The gate-warden meets you on the road. His hands are raw from the bell-rope. "It\'s the **churchyard**," he manages. "The graves are *open*, and it wasn\'t shovels did it."',
       'Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.',
       { if: [{ kind: 'notFlag', flag: 'hollow-road:won' }],
@@ -305,16 +307,16 @@ const scenes: Record<string, Scene> = {
       ],
     },
   },
-  // The company that killed the Reedwife, home again: Mira says out loud
+  // The company that beat the Reedwife, home again: Mira says out loud
   // what the rest of the taproom is thinking.
   inn: {
     id: 'inn', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
       'The {wander-inn} is full, and the drinkers are in no hurry to leave, not with the churchyard standing open across the lane. **{mira}** sets down a bowl in front of you unasked.',
-      '"Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I\'ll say it, since the rest of them won\'t. You killed the {reedwife}, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."',
+      '"Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I\'ll say it, since the rest of them won\'t. You saw off the {reedwife}, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."',
       '"Not a soul in here can tell you what the one thing has to do with the other. That\'s why they keep looking at you." She tops up your cup. "And that racket when the graves opened was the gate-warden on the rope. Brother {halden}\'s not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn\'t come back."',
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
-        text: 'She stops with the jug still tilted. "Some of them haven\'t forgotten the chief, either. On his knees in his own hall, they say, with the hag already dead." She sets the jug down. "I haven\'t forgotten it myself."' },
+        text: 'She stops with the jug still tilted. "Some of them haven\'t forgotten the chief, either. On his knees in his own hall, they say, with the hag already down." She sets the jug down. "I haven\'t forgotten it myself."' },
       '"Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
     ],
     again: ['The {wander-inn} is still full. **{mira}** slides a fresh bowl your way. "Still here? The reeve\'s still pacing his hall. Go and let him pay you."'],
@@ -607,8 +609,8 @@ const scenes: Record<string, Scene> = {
       'The thing inside {halden} lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **{marrow}**, and I *thanked* him."',
       'He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."',
       // "We" only from the Wren who mapped the den for the company in Part 1.
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "We drank to that," she says.' },
-      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "The whole town drank to that," she says.' },
+      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "We drank to her fall," she says.' },
+      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "The whole town drank to her fall," she says.' },
       '{halden} lifts the altar cloth and hands you a healing potion. "I bought it in {thornwick} for a bad night," he says. "I think yours will be worse."',
       'He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil\'s mark first. The old builders cut it into the {barrow-gate}, and the gate\'s watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I\'ll follow you down and wait on the stair." {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says.',
     ],
@@ -625,12 +627,12 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'halden', notFate: ['saved'] }],
     text: [
       '{halden}\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The {door-price} each {door-midwinter} was never an offering. It was her wage. The {reedwife} was the {warden}\'s jailer, and we paid her to keep him asleep.*',
-      'The next note is shorter. *She is dead. No one pays the jailer now, and he is waking.* Below that: *It has me ring the drowned tower\'s bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*',
+      'The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower\'s bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*',
       'Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil\'s mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*',
       { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
-        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "We drank to that," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
+        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
       { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }],
-        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "The whole town drank to that," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
+        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
       'Under the altar cloth you find a healing potion that {halden} never got to drink. On the way out, {wren} sniffs one of the black candles and makes a face. "{halden} never bought these in {thornwick}. Somebody brought them out here."',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],
@@ -1481,7 +1483,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'visited', scene: 'chapel' }],
         text: 'Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.' },
       { if: [],
-        text: 'On the night the barrows close, at the fen\'s edge, two figures step out of the reeds. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain late {reedwife}. They look at the sealed barrow-field, and then at the town, and take their time about both. The reeds close behind them without a ripple.' },
+        text: 'On the night the barrows close, at the fen\'s edge, two figures step out of the reeds. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain {reedwife}. They look at the sealed barrow-field, and then at the town, and take their time about both. The reeds close behind them without a ripple.' },
     ],
   },
 };
@@ -1501,7 +1503,7 @@ const SUNKEN_BARROWS_RENAMED: Record<string, string> = {
 
 export const SUNKEN_BARROWS_MODULE: Module = withCanon({
   id: 'sunken-barrows', title: 'The Sunken Barrows',
-  blurb: 'The {reedwife}\'s death broke an old vigil. Follow {thornwick}\'s walking dead into the fen — and close what your victory opened.',
+  blurb: 'The {reedwife}\'s fall broke an old vigil. Follow {thornwick}\'s walking dead into the fen — and close what your victory opened.',
   cover: 'loc-crypt',
   levelBand: { from: 3, to: 4 },
   // Part 2 of the trilogy: a victory carries the company into The Wyrmcalling.

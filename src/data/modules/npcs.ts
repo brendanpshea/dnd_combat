@@ -90,7 +90,9 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   reedwife: {
     id: 'reedwife', name: 'Reedwife',
-    fates: ['dead'],
+    // Killed in the chief's hall, or (after {vargan} turned on her) held to
+    // her old price and sent back to her door under the fen (`bound`).
+    fates: ['dead', 'bound'],
     introducedAt: {
       'hollow-road': ['hollow-won', 'boss-approach'],
       'sunken-barrows': ['inn', 'chapel-saved', 'chapel-won'],
