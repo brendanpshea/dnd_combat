@@ -113,7 +113,9 @@ stand-up bit, cut it.
     class (`if: [{ kind: 'classInParty', classId: 'cleric' }]`): the cleric
     who says the words over the grave, the rogue who already has the lock
     open. One such line per chapter's key beat is plenty; the valley's
-    people still do most of the feeling.
+    people still do most of the feeling. The company's members are the
+    player's, so they never get a pronoun: "your cleric", never "he" or
+    "she".
 
 ### Register
 
