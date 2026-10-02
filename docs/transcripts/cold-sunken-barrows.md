@@ -21,9 +21,9 @@ Last season your company broke the Ashfang here, and killed the hag who ran them
 
 The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
-Your purse is still heavy with last season's bounty. Thornwick pays its debts.
-
 Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.
+
+Your purse is still heavy with last season's bounty. Thornwick pays its debts.
 
 **» Answer the bells**
 
@@ -67,9 +67,9 @@ _Journal (clue): They Walk One Way_
 
 > The Wander-Inn is full, and nobody is in a hurry to leave. Nobody in Thornwick wants to be alone today, not with the churchyard standing open. **Mira** sets down a bowl in front of you unasked.
 
-> "Well." She says it flat, wiping the bar the way other people sharpen knives. "I'll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."
+> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."
 
-> "I was glad to see you walk back out of that den, and I still am. But folk are starting to look at you sideways." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung his bell in a week."
+> "I was glad to see you walk back out of that den, and I still am. But folk are starting to look at you sideways." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -159,7 +159,7 @@ _Journal (npc): Wren, the Reeve's Scout_
 
 <sub>scene `causeway`</sub>
 
-The old raised road is older than the cart-track that meets it, laid in great flat stones by hands that measured time in generations. Wren crouches at its edge and reads the mud the way Mira reads a customer.
+The old raised road is older than the cart-track that meets it, laid in great flat stones by hands that measured time in generations. Wren crouches at its edge and reads the mud, slow and careful.
 
 "Here. And here." Footprints, water-filled, in files. "Your churchyard dead came through in *step*. And look at this." She points to older prints, sunk deeper and wider. "They weren't the first. The fen's own dead have been walking for days. Whatever's calling has been at it a while, and it isn't calling them to wander. It's calling them to **work**."
 
@@ -187,7 +187,7 @@ _Journal (clue): Called to Work_
 
 > "**Welcome!**" Halden beams at you with terrible peace, and the whole room goes quiet for him. "You've come to see the great work. The Warden below is gathering his flock at last. I merely… keep the service, until he calls them down. Will you kneel? Everyone kneels down here, sooner or later."
 
-**» [Insight DC 13] Read what's wearing him before it moves**
+**» [Insight DC 13] Read what is wearing him**
 
 `[Insight DC 13 — Elaine the Holy rolls 17 — passed]`
 
@@ -211,7 +211,7 @@ Caught off balance from the first blow, the dead never find their rows again. Ha
 
 <sub>scene `chapel-won`</sub>
 
-Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand. *The Reedwife was the jailer of the Warden of the Barrows. The fen-folk paid her a lamb each midwinter, and she kept him asleep under the fen. She is dead, and the vigil is over. The Warden wakes, and gathers hands to open his door from within.* Below that: *It has me ring the tower bell each night. The bell will wake you, we tell the dead. Forgive me. It does.* Further down, the hand changes. It shakes, like a man fighting his own arm.
+Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand. *The Reedwife was the jailer of the Warden of the Barrows. The fen-folk paid her a lamb each midwinter, and she kept him asleep under the fen. She is dead, and the vigil is over. The Warden wakes, and gathers hands to open his door from within.* Below that: *It has me ring the drowned tower's bell each night. The bell will wake you, we tell the dead. Forgive me. It does.* Further down, the hand changes. It shakes, like a man fighting his own arm.
 
 Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at his door, in the great barrow. Not me. It will not let it be me."* On the flyleaf, someone has inked a mark of reeds and a reaching hand. Beside it, in the tidy hand: *The vigil's mark. The old builders cut it into the Barrow Gate, and its watchers know it. It was a keeper's mark first. She made it a slaver's brand.*
 
@@ -261,7 +261,7 @@ The last wisp winks out, and the water goes dark for good. Somewhere under it, t
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the purses of the drowned. There are a dozen of them, 55 gold between them, still tied to their belts.
+In the shallows you find the purses of the drowned. There are a dozen of them, fifty-five gold between them, still tied to their belts.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "Nobody from here dresses like that to go walking."
 
@@ -331,7 +331,13 @@ _Gained: Potion of Greater Healing_
 
 All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **Barrow Gate**. It is older than the chapel and older than the road. Two weathered granite watchers crouch on top of it.
 
-Wren stops dead. "Nobody said anything about those." She's right — the stone bases are mossy, but the watchers' claws are clean. The granite stretches, cracks its wings, and drops on you like a falling roof.
+Wren stops dead. "Nobody said anything about those." She's right. The stone bases are mossy, but the watchers' claws are clean.
+
+**» Walk up to the gate**
+
+<sub>scene `lychgate-fight`</sub>
+
+The nearest watcher turns its head with a sound like a millstone. The granite stretches, cracks its wings, and drops on you like a falling roof.
 
 **Battle:** Gargoyle Perch <sub>(`gargoyle-perch` on `ruins`)</sub>
 
@@ -343,7 +349,9 @@ The second gargoyle shatters mid-dive and rains down as plain gravel. The Barrow
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
-The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen. Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen.
+
+Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
 **» Leave Wren the gate, and go down**
 
@@ -441,7 +449,7 @@ Whatever called him down here has let him go. He is light now, just bones in a c
 
 The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
 
-**» Wrap him in a cloak and carry him home (leave the grave-goods)**
+**» Wrap him in a cloak and carry him home**
 
 _Journal (clue): The Old Reeve_
 
@@ -545,7 +553,7 @@ _(a paragraph shown before: “Nothing turns up.…”)_
 
 The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it.
 
-The chanting you've heard for an hour comes from the **living**. They kneel at the door in robes the colour of grave-worms, holding candles of black tallow. This is the **Cult of the Worm**. Their leader is a thin grey man in a gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.
+The chanting you've heard for an hour comes from the **living**. They kneel at the door in the same long robes, holding candles of black tallow. This is the **Cult of the Worm**. Their leader is a thin grey man in a gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.
 
 "Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
@@ -585,11 +593,13 @@ _+120 gold (859)_
 
 > "They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."
 
-**» Make him lead his faithful in the rites (an easier way to seal the door)**
+**» Make him lead his faithful in the rites**
 
 <sub>scene `seal-door`</sub>
 
 Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the Warden leans on what is left of its lead.
+
+Marrow kneels down among his faithful and holds out his hands for the book. "They know how to chant at this door," he says. "Let me teach them the right words. They will follow me faster than they will follow you."
 
 **» Open Halden's book at the door**
 
@@ -621,15 +631,19 @@ _+150 gold (1009)_
 
 <sub>scene `sb-aftermath`</sub>
 
-Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time. The walk home is long and wet, and the best walk any of you can remember.
-
-Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the steps."
+Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren watches him go with her hand on her knife. She counts his steps until the fog takes him. "If he comes back," she says, "I'll know."
 
-Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service. He counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
+Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the steps."
 
-You carry the old man into the reeve's hall, still wrapped in your cloak, and lay him on the long table among the ledgers. Aldous takes off his own chain of office and lays it beside his grandfather's. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window, and he does not turn back while you are in the room.
+The walk home is long and wet, and the best walk any of you can remember.
+
+That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
+
+Then you carry the old man in, still wrapped in your cloak, and lay him on the long table among the ledgers. Aldous takes off his own chain of office and lays it beside his grandfather's. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window, and he does not turn back while you are in the room.
+
+Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.
 
 **» Pay for a hot supper for the whole taproom (10 gold)**
 
@@ -661,6 +675,6 @@ The reeve has promoted Wren, to her visible horror, and she leads the watch that
 
 Marrow walks home to Saltmere alone, to keep forty graves he once left in the cold. He says the rites over them every evening.
 
-On the last night, at the fen's edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment. Then they looked at the town, the way you look at a house you mean to come back to. Then the reeds closed over them.
+On the last night, at the fen's edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment. Then they turned and looked at the town, and took their time about it. Then the reeds closed over them.
 
 ### Ending: victory

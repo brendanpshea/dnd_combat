@@ -239,7 +239,7 @@ _+50 gold (625)_
 
 Someone holds the middle pass, and holds it the way a soldier would. A stone fort stands across it, rebuilt in a week by hands that lift boulders like loaves of bread. Guard posts of sharpened pine ring its walls, and a horn hangs by the gate. It has sounded once today.
 
-The holder stands above the gate: an **ogre-mage**, blue-skinned, wearing scraps of old lacquered armour. It looks you over the way Bram looks over a cart of stores. Everything else in these hills came at you hungry. This one has stopped to think.
+The holder stands above the gate: an **ogre-mage**, blue-skinned, wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
 "The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of one hundred and fifty gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
@@ -255,6 +255,30 @@ The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one o
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
+→ The Giants' Hall
+
+<sub>scene `steading`</sub>
+
+Above the tree-line stands the giants' hall, built from whole pine trunks and stone blocks as big as wagons. Something put it up in a single season. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing on top of one enormous body. A shaggy ogre in a sheepskin stumbles out behind it, still chewing. A skinny orc runner trots at its heels.
+
+"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.
+
+Wren's notes said it: the two heads never agree. Agree with both of them.
+
+**» [Deception DC 11] Wren's tip: agree with both heads at once**
+
+`[Deception DC 11 — Ash the Sneaky rolls 16 — passed]`
+
+<sub>scene `steading-talked`</sub>
+
+"The valley is yours," you tell the left head. Then you turn to the right head. "And yours." Both heads hear you say it.
+
+The ettin stands very still. Then it punches itself in the jaw. The two heads brawl across the hall and through the back wall, and they roll on down the far side of the mountain. The ogre and the orc runner chase after it, shouting. The road to the stone stands open.
+
+**» Onward**
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
+
 → The Toll-Cliff
 
 <sub>scene `tollcliff`</sub>
@@ -265,7 +289,7 @@ The trail narrows under an overhang. A **manticore** lies stretched along it lik
 
 **» [Persuasion DC 11] Wren's tip: promise it a bigger meal up at the stone**
 
-`[Persuasion DC 11 — Elaine the Holy rolls 16 — passed]`
+`[Persuasion DC 11 — Elaine the Holy rolls 14 — passed]`
 
 <sub>scene `tollcliff-talked`</sub>
 
@@ -291,7 +315,7 @@ Wren's notes said the same: watch the dust.
 
 **» [Survival DC 11] Time the stampede by Wren's notes**
 
-`[Survival DC 11 — Elaine the Holy rolls 15 — passed]`
+`[Survival DC 11 — Elaine the Holy rolls 14 — passed]`
 
 <sub>scene `boarruns-timed`</sub>
 
@@ -361,7 +385,9 @@ _+120 gold (690)_
 
 **Dawn — day 3.**
 
-The stone's note is louder this morning. At the scouts' fire, Wren chalks a number on the map board: three more nights before the Calling peaks, she reckons, and not one more.
+The stone's note is louder this morning.
+
+A rider from the scouts' fire brings Wren's word at first light. Three more nights before the Calling peaks, she reckons, and not one more.
 
 → The Valley of Statues
 
@@ -383,7 +409,7 @@ One wrong step on the loose rock, and you join the collection.
 
 **» Creep in along Wren's line — Wren's tip: go in quietly, and take only the purses at their feet.**
 
-`[Stealth DC 11 — Ash the Sneaky rolls 12 — passed]`
+`[Stealth DC 11 — Ash the Sneaky rolls 13 — passed]`
 
 You work down the rows with soft hands. You lift a purse from a stone shepherd and a silver ring from a stone finger. A hired sword gives up his flask of healing without a word.
 
@@ -392,30 +418,6 @@ The gorgon chews on and never once looks up. You are back on the trail before yo
 _+90 gold (780)_
 
 _Gained: Potion of Greater Healing_
-
-**↳ The High Hills** <sub>(map `hills`)</sub>
-
-→ The Giants' Hall
-
-<sub>scene `steading-notes`</sub>
-
-Above the tree-line stands the giants' hall, built from whole pine trunks and stone blocks as big as wagons. Something put it up in a single season. The **ettin** that holds it comes out at the first scrape of your boots. It is two heads arguing on top of one enormous body. A shaggy ogre in a sheepskin stumbles out behind it, still chewing. A skinny orc runner trots at its heels.
-
-"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.
-
-Wren's notes said it: the two heads never agree. Agree with both of them.
-
-**» [Deception DC 11] Wren's tip: agree with both heads at once**
-
-`[Deception DC 11 — Ash the Sneaky rolls 21 — passed]`
-
-<sub>scene `steading-talked`</sub>
-
-"The valley is yours," you tell the left head. Then you turn to the right head. "And yours." Both heads hear you say it.
-
-The ettin stands very still. Then it punches itself in the jaw. The two heads brawl across the hall and through the back wall, and they roll on down the far side of the mountain. The ogre and the orc runner chase after it, shouting. The road to the stone stands open.
-
-**» Onward**
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -441,7 +443,7 @@ Wren is first up the last slope, bow on her back and map under her arm.
 
 "We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party's a loud one."
 
-**» Go down into the bowl alone (nobody joins the party)**
+**» Go down into the bowl alone**
 
 <sub>scene `calling-approach`</sub>
 
@@ -477,7 +479,7 @@ All their power is in the stone now. Pull them out, and they must fight you with
 
 **» Drag their hands out of the rock — Grab a wrist each and pull, while the stone pulls back.**
 
-`[Athletics DC 15 — Arthur the Bold rolls 16 — passed]`
+`[Athletics DC 15 — Arthur the Bold rolls 23 — passed]`
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair. For the first time in longer than anyone can remember, the coven has to fight for itself.
 
@@ -527,7 +529,9 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one all end on the same mountain, with your company standing on it. The Calling is silent now, and the coven burned away to reeds on a mountain wind.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "I did warn you about habits." The reeve orders a plaque made for the square.
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "I did warn you about habits."
+
+Down in Thornwick, the reeve orders a plaque made for the square. He has the wording changed twice.
 
 Vex finds you at the edge of the firelight. "May this valley never need me again," he says, and he means it kindly.
 
