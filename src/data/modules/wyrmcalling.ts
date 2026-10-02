@@ -162,13 +162,15 @@ const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warc
 
 /**
  * The camp's tally: one tick for every threat dealt with before the Calling
- * peaks, whether fought, talked down or paid off. Three are on every road up
+ * peaks, whether fought or talked down. (A toll paid at the middle pass buys
+ * the pass, not the warband, which goes down at the camp on the night: no
+ * tick; see `onihold`.) Three are on every road up
  * (the flooded pass, the middle pass, the giants' hall). The rest are the
  * company's choice: the toll-cliff, the boar-runs, the gorgon, and the three
  * dens. A den burned out counts twice (DEN_TICKS), as Vex promised: its
  * wyrmling never reaches the rim, and its kobolds never reach the camp.
  * Thornwick's watch, if Reeve Aldous sends it (see WAR ASSETS), counts for
- * two more. So the tally on the night runs from 3 to 14 (the brood met on the
+ * two more. So the tally on the night runs from 2 to 14 (the brood met on the
  * rim comes after the night, and does not count). It starts at minus
  * THREAT_PAR, so `flag` (above zero) means more than THREAT_PAR threats were
  * handled, `notFlag` means THREAT_PAR or fewer. Play reads it: Vex's map in
@@ -179,12 +181,15 @@ const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warc
  * track a counted flag; a requirement on it is taken as possible either way.
  */
 const TALLY = 'threats-cleared';
-const THREAT_PAR = 7;
+const THREAT_PAR = 9;
 const DEN_TICKS = 2;
 const tally = (n = 1): Effect[] => Array.from({ length: n }, () => ({ kind: 'setFlag' as const, flag: TALLY }));
-/** The tally read in play: at least TALLY_HIGH is more than half the hills
- *  dealt with (eight or more), at least TALLY_HALF about half (four to seven),
- *  and anything under that is a camp in trouble. */
+/** The tally read in play: at least TALLY_HIGH is most of the hills dealt
+ *  with (ten or more of fourteen), at least TALLY_HALF about half (six to
+ *  nine), and anything under that is a camp in trouble. With par at nine, a
+ *  company that walks the road and burns the dens but leaves the rest (or
+ *  pays its way through the middle pass) lands at a cost; the best night
+ *  needs side threats or Thornwick's watch as well. */
 const TALLY_HIGH = 1;
 const TALLY_HALF = -3;
 const tallyAtLeast = (n: number): Requirement => ({ kind: 'flag', flag: TALLY, value: n });
@@ -356,8 +361,9 @@ const REPLIES = [
     // and only a company that opened it says so; see `answer-defiant`).
     label: '"She fed on the people of this valley. We owe you nothing."' },
   { id: 'rueful', to: 'answer-rueful',
-    // Its cost shows in the scene (`calling-approach`): {nettle} is waiting
-    // to hear the debt owned, and owning it digs her in (`tear-loose-rueful`).
+    // Its cost is said aloud before the answer (`calling-approach`: "Say you
+    // owe it, and I will hold on until it is paid"): owning the debt digs
+    // {nettle} in (`tear-loose-rueful`).
     label: '"Killing her broke the vigil. We know, and we\'re sorry for that part."' },
   { id: 'unknowing', to: 'answer-unknowing',
     label: '"We didn\'t know what she was keeping. No one in the valley did."' },
@@ -390,10 +396,14 @@ const replyChoices: Choice[] = REPLIES.flatMap((r) => [{ id: r.id, label: r.labe
  * door cracked and once without.
  */
 const LOOSE: Effect[] = [{ kind: 'setFlag', flag: 'sisters-loose' }];
-/** Beaten at the stone: up onto the rim, where the column is (`stone-lost`). */
-const STONE_LOST_SISTERS = { to: 'stone-lost',
+/** Beaten at the stone: up onto the rim, where the column is (`stone-lost`).
+ *  Hauling the company out costs {vex}'s column pikemen (RIM_DEAD, a count
+ *  read only by the ending's slides, so the reach search never sees it). */
+const RIM_DEAD = 'rim-dead';
+const RIM_COST: Effect[] = [{ kind: 'addFlag', flag: RIM_DEAD, amount: 1 }];
+const STONE_LOST_SISTERS = { to: 'stone-lost', effects: RIM_COST,
   text: ['Green claws close over you, and the last thing you hear is {nettle} adding it to the account.'] } satisfies Outcome;
-const STONE_LOST_CALLING = { to: 'stone-lost',
+const STONE_LOST_CALLING = { to: 'stone-lost', effects: RIM_COST,
   text: ['The rock bucks under you like a struck bell, and the {calling}\'s note goes on singing after the light goes out.'] } satisfies Outcome;
 const CRACKED = 'sunken-barrows:seal-cracked';
 const CRACK = '-cracked';
@@ -511,6 +521,9 @@ const RIDGE_NIGHT: Para[] = [
     text: `${NIGHT_FALLS} It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.` },
   { if: [hasNot('calling-peaked'), { kind: 'count', flag: TALLY, below: TALLY_HALF }],
     text: `${NIGHT_FALLS} There is too much of it. The torches on the east line go out one after another, and stay out. The horns sound until long after midnight, and then they stop.` },
+  // The toll bought the pass, not the warband (see `onihold-paid`).
+  { if: [hasNot('calling-peaked'), has('oni-paid')],
+    text: 'One column on the slope below keeps step, with a horn at its head. The ogre-mage is taking its spears to the camp, as it said it would.' },
 ];
 
 /**
@@ -1788,12 +1801,26 @@ const scenes: Record<string, Scene> = {
       'Above the gate stands the **ogre-mage** {vex} marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.',
       { if: [has('calling-peaked')],
         text: 'Its orcs went down against the war-camp in the night, and the ones who came back wear bandages. The ogre-mage stayed behind to hold the pass. The stone promised it something, and it means to collect.' },
-      '"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of {ogre-toll}, and we will find another war. Or try us. We have not had a proper fight all week."',
+      // What the toll buys, said before it is paid: the pass, not the
+      // warband. Paid before the peak, the warband goes down at the camp on
+      // the night (no tally tick; see `onihold-paid`).
+      { if: [hasNot('calling-peaked')],
+        text: '"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of {ogre-toll}, and the pass is yours. We will take our spears somewhere else. Down to your camp in the meadows, I expect, on the night the stone peaks. Or try us. We have not had a proper fight all week."' },
+      { if: [has('calling-peaked')],
+        text: '"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of {ogre-toll}, and we will find another war. Or try us. We have not had a proper fight all week."' },
     ],
     next: [
+      // The toll buys the pass and the fight's XP (the guide's avoidance
+      // rule), but no tally tick: the warband is not dealt with, only moved.
+      // Before the peak it goes down at the camp on the night (`oni-paid`,
+      // read only by text); after it, the night is already judged.
       { id: 'pay', label: `Pay the toll (${factValue('ogre-toll')} gold)`, to: 'onihold-paid',
-        requires: [{ kind: 'gold', atLeast: factValue('ogre-toll') }],
-        effects: [{ kind: 'gold', amount: -factValue('ogre-toll') }, { kind: 'setFlag', flag: 'oni-cleared' }, ...tally(),
+        requires: [{ kind: 'gold', atLeast: factValue('ogre-toll') }, hasNot('calling-peaked')], hideWhenBlocked: true,
+        effects: [{ kind: 'gold', amount: -factValue('ogre-toll') }, { kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-paid' },
+          { kind: 'xp', amount: avoidedFightXP('oni-hold') }] },
+      { id: 'pay-late', label: `Pay the toll (${factValue('ogre-toll')} gold)`, to: 'onihold-paid',
+        requires: [{ kind: 'gold', atLeast: factValue('ogre-toll') }, has('calling-peaked')], hideWhenBlocked: true,
+        effects: [{ kind: 'gold', amount: -factValue('ogre-toll') }, { kind: 'setFlag', flag: 'oni-cleared' },
           { kind: 'xp', amount: avoidedFightXP('oni-hold') }] },
       // Wren's clue: set the two warbands on each other. One try, and easier
       // with her notes. A lie it sees through drives the party off the pass.
@@ -1828,10 +1855,16 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'on', label: 'Climb back to the trail, a day behind', to: 'hills', effects: [{ kind: 'passDay' }] }],
   },
-  // Bought off: the ogre-mage takes the gold and its warband leaves the mountain.
+  // Bought off: the ogre-mage takes the gold and leaves the pass. Before the
+  // peak its warband goes down toward the camp, to come at it on the night;
+  // after it, the warband has had its night and leaves the mountain.
   'onihold-paid': {
     id: 'onihold-paid', kind: 'story', art: { imageId: 'loc-keep', emoji: '🏯' },
-    text: ['The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times. By noon its warband is marching down the other side of the mountain, away from the valley. The middle pass is open.'],
+    text: ['The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times.',
+      { if: [has('oni-paid')],
+        text: 'By noon its warband is marching down the long road toward the meadows, where the war-camp\'s smoke goes up. The middle pass is open behind it.' },
+      { if: [hasNot('oni-paid')],
+        text: 'By noon its warband is marching down the other side of the mountain, away from the valley. The middle pass is open.' }],
     next: [{ id: 'ok', label: 'Walk through the open pass', to: 'hills' }], noBack: true,
   },
   'onihold-fight': {
@@ -2087,7 +2120,10 @@ const scenes: Record<string, Scene> = {
       'They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," {nettle} says, without turning around. "Our sister kept the door under the fen since before your grandmothers\' grandmothers. One {door-price} at the water\'s edge each {door-midwinter}, and the {warden} slept. That was the price, and it was paid. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."',
       '{sedge} does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." {nettle} goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."',
       'The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," {nettle} says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
-      '{nettle}\'s hands shake in the rock. She watches your mouth like a clerk waiting for a signature. {sedge} has not looked at you once. She is looking down the mountain, toward the marsh.',
+      // The sisters' tells, said before the answer (see REPLIES): {nettle}'s
+      // temper loosens her grip, owning the debt digs her in, and {sedge}
+      // is listening for something else.
+      '{nettle}\'s hands shake in the rock. "Well?" she says. "Say you owe it, and I will hold on until it is paid." {sedge} has not looked at you once. She is looking down the mountain, toward the marsh.',
     ],
     next: replyChoices,
   },
@@ -2309,7 +2345,12 @@ const scenes: Record<string, Scene> = {
     id: 'stone-lost', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🌄' },
     text: [
       'You come to on the rim, flat on your back on cold rock, with rope burns under your arms. {vex}\'s pikemen went down the slope on lines and dragged you up while the stone was busy singing.',
-      '{vex} crouches beside you. Down in the bowl, the light round the stone has not dimmed at all. "You\'re still breathing," he says, and nods down at it. "So is that thing. My column holds this rim as long as it takes. Go back down when you can stand."',
+      '{vex} crouches beside you. Down in the bowl, the light round the stone has not dimmed at all. "You\'re still breathing," he says, and nods down at it. "So is that thing. Three of my lads went down those lines for you, and two came back up. My column holds this rim as long as it takes. Go back down when you can stand."',
+    ],
+    // A second defeat, the same rescue: shorter, and it costs the column again.
+    again: [
+      'Rope burns again, and cold rock under your back. The pikemen who hauled you up this time sit in a row along the rim, getting their breath back. There are fewer of them than before.',
+      '{vex} does not crouch this time. He looks down into the bowl, and then at you. "I\'m running out of men who\'ll go down those lines," he says. "Make the next one count."',
     ],
     next: [...goDown(), { id: 'trail', label: 'Climb back down to the trail', to: 'hills' }],
   },
@@ -2383,6 +2424,11 @@ const scenes: Record<string, Scene> = {
       // A clean seal (a cold start sealed the barrows too).
       { if: [{ kind: 'notFlag', flag: 'sunken-barrows:seal-cracked' }],
         text: 'A fen-boy dares his friends to knock on the barrow stair. None of them do.' },
+      // Beaten at the stone (`stone-lost`): the pikemen who went down the
+      // lines for the company. Only this ending: a defeat there has torn the
+      // sisters loose or spent the stone, so the vigil is past.
+      { if: [{ kind: 'count', flag: RIM_DEAD, atLeast: 1 }],
+        text: 'A heap of rocks stands on the rim above the broken stone. {vex}\'s pikemen went down the lines for you there, and not all of them came back up. {vex} carried the first rock himself.' },
       ...SLIDES_PEOPLE,
       { if: [{ kind: 'companion', companion: 'halden' }],
         text: 'At the broken stone, {halden} said the rites for the sisters too. No one else would have.' },
