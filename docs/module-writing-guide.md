@@ -11,11 +11,12 @@ from jokes at the player's expense or winks at the camera. If a line made a
 Discworld innkeeper roll their eyes, it's about right. If it sounds like a
 stand-up bit, cut it.
 
-## The five rules
+## The rules
 
-1. **State discoveries plainly, in the moment, in someone's voice.** When the
+1. **State discoveries plainly, in the moment, in someone's voice — once.** When the
    party learns a fact the game is tracking, *say the fact* — then file it in the
    journal. Never make the player infer what the scene already decided they know.
+   Then trust it: don't say it again in the next scene, or at the end of this one.
    - ✅ "So the peddler's your leak." / *journal: The Furtive Peddler — find him by the market gate.*
    - ❌ "You sense there may be more to the market than meets the eye."
 
@@ -26,9 +27,15 @@ stand-up bit, cut it.
 
 3. **Choices are intentions, not stat lines.** A choice label should read like
    something a person would *do* or *say*. Keep the skill/DC chip — it's useful —
-   but the words after it are a decision, not a mechanic.
+   but the words after it are a decision, not a mechanic. One grammar: a verb
+   phrase ("Read what she isn't saying"), or quoted speech where the choice *is*
+   speech ("Keep the purses. The dead won't spend them"). A hint below the label
+   only when it says something the label can't; never "Title — gloss — gloss".
+   No "Onward". A companion's idea reads as theirs ("Let Wren lead them off"),
+   not as a tag ("[Wren] …"), and a tip is a clue, not the answer.
    - ✅ `[Persuasion DC 12] Buy the whole room a round`
    - ❌ `[Persuasion DC 12] Attempt to gain information`
+   - ❌ `Climb it head-on — Muscle up the sheer face — fastest, if you don't fall`
 
 4. **Concrete and sensory over abstract.** Name the thing. A "furtive peddler by
    the market gate" beats "a suspicious figure"; "a child's shoe nailed to the
@@ -59,13 +66,65 @@ stand-up bit, cut it.
 8. **The narrator describes; a character explains.** When a scene carries
    information the player must act on — what a place costs, why a fight is worth
    taking — put it in dialogue. Vex saying "every den you burn out is one monster
-   fewer on the day" lands; the narrator musing about arithmetic does not.
+   fewer on the day" lands; the narrator musing about arithmetic does not. And
+   Vex says it once: a narrator closing each fight with "one monster fewer for
+   the Calling" is the quest log reading itself aloud.
+
+9. **Show the creature before you name it. Never define it.** Introduce a
+   monster by what it has done to the place, or by what it does now; let the
+   name arrive late, or in a character's mouth. The narrator is not a
+   bestiary.
+   - ✅ The statues in the valley, too good, a hired sword with his blade half drawn. Then Wren: "Gorgon. Don't let it breathe on you."
+   - ❌ "This is a **gorgon**. Its breath turns living things to stone."
+
+10. **End on the image, not on what it meant.** If a paragraph closes by
+    explaining the picture it just painted ("So the Ashfang answer to a green
+    hag…", "They climbed all this way for revenge…"), cut that sentence and
+    read it again. Nine times in ten nothing was lost.
+
+11. **Shared text is neutral; warmth and coldness are earned.** A line that
+    every route reads must be true on every route. A smile, a thank-you, "the
+    best walk any of you can remember" — anything that praises the company —
+    needs a flag, or an NPC's attitude, behind it. So does a rebuke. Read the
+    cruel and merciful transcripts after any change to a shared scene.
+
+12. **Ration the tells, and write the recurring beats more than once.** Give
+    each character one signature gesture and use it once a chapter: Mira's
+    near-smile, Wren's blush, Vex's tired calm. A beat that recurs (a camp
+    attacked in the night, a defeat and waking, a return to the hub) gets two
+    or three written variants, not one sentence with the place swapped. Words
+    that have been worked too hard: "Then" to open a sentence, "Nobody",
+    "Whatever…", "older than…", "honest", "like a man who…", "comes apart
+    like reeds".
+
+13. **Epilogues are eight to twelve fates, and they build.** Each slide is a
+    person or a place told through an object or a gesture (the stone dog's
+    ribbon; the carter's girl in new shoes), ordered so the last one is an
+    image to close on. Never a status report ("No dragon flies over the high
+    pastures again") and never the player's own choice quoted back to them.
+
+14. **Rules terms stay out of people's mouths.** Characters describe the thing;
+    the interface names the rule. "Get clear before you start your muttering"
+    is a hedge-witch talking. "Your real spells burn *slots*" is a rulebook.
+    The same goes for narration: not "No time to ready anything".
+
+15. **The company is not mute.** The party is the player's own, so it has no
+    fixed lines, but at a chapter's big beats one member can act or speak by
+    class (`if: [{ kind: 'classInParty', classId: 'cleric' }]`): the cleric
+    who says the words over the grave, the rogue who already has the lock
+    open. One such line per chapter's key beat is plenty; the valley's
+    people still do most of the feeling.
 
 ### Register
 
-One idea per sentence. Short sentences beat long ones, and a paragraph of four
-short ones beats a single sentence with four clauses in it. Prefer the word a
-nine-year-old already owns: *hall* over *steading*, *loose rock* over *scree*,
+Plain words, varied rhythm. Most sentences carry one idea, but a passage made
+only of short declaratives reads like a primer, and its big moment has nowhere
+to rise from. Join a pair of short sentences with *and*, *but* or *which* when
+they belong together; let the moment that matters run a little longer and then
+land on a short one. The checker allows this: it grades the paragraph (≤ 8 on
+average), caps a sentence at 26 words and one heavy clause-break, and nothing
+stricter. A paragraph of four short sentences still beats one sentence with four
+clauses in it. Prefer the word a nine-year-old already owns: *hall* over *steading*, *loose rock* over *scree*,
 *empty shepherds' huts* over *abandoned shielings*, *brook* over *beck*. Break
 a description into its own short paragraph per beat — text boxes are read on
 phones, and white space is comprehension.
@@ -443,6 +502,18 @@ The reach search knows a night can pass wherever a party can sleep, so a
 deadline that strands a party is reported like any other dead end, with
 `sleeps until the morning of day N` on the way there. Each dawn with effects
 is one more fact for it to track.
+
+## The arena's voice
+
+The arena is drier and more knowing than the valley, and that is fine: it is
+an afterlife with a bored demon in it. The quasit carries the attitude and is
+the only arch voice; the healers, the merchant and the crowd sound like
+people. Say each rule once, in one voice: if the quasit explains that a
+retried day replays the same two fights, the intro and the temple screen
+don't explain it again. Two characters never share a joke. A gambit's stakes
+line is plain speech a player can weigh ("their first swings go wide"), not a
+condition name ("baned"). Every line must be true of the place: it is packed
+sand under a sky nobody built, not mud.
 
 ## Mechanics of prose in a scene
 
