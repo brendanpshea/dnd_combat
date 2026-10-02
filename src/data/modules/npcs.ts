@@ -118,7 +118,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   halden: {
     id: 'halden', name: 'Halden', portraitId: 'npc-priest', emoji: '🕯️', monsterId: 'priest',
-    blurb: '{thornwick}\'s priest, whom you talked back out of the Warden\'s grip. He came to say his rites at the stone.',
+    blurb: '{thornwick}\'s priest, whom you talked back out of the {warden}\'s grip. He came to say his rites at the stone.',
     // Talked out of the Warden's grip in the drowned chapel.
     fates: ['saved'],
     introducedAt: {
@@ -132,6 +132,12 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     // Spared at the Warden's door: leads his faithful in the rites, or bound for the reeve.
     fates: ['sings', 'bound'],
     introducedAt: { 'sunken-barrows': ['chapel-saved', 'seal-approach'] },
+  },
+  warden: {
+    id: 'warden', name: 'Warden',
+    // What sleeps behind the door under the barrows. Halden speaks of him in
+    // the drowned chapel; by Part 3 every company has stood at his door.
+    introducedAt: { 'sunken-barrows': ['chapel', 'chapel-saved'] },
   },
   nettle: {
     id: 'nettle', name: 'Nettle',
