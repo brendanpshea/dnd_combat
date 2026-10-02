@@ -772,7 +772,7 @@ const scenes: Record<string, Scene> = {
       '{wren} looks at the strip of colours she has just tied round your arm. Then she unties it, and ties it round her own. "Fine," she says. "I still don\'t know the ground down there. I know you."',
       'She lights a second torch from yours and takes the first step down before anyone can think better of it. Behind you the {barrow-gate} stands empty.',
     ],
-    next: [{ id: 'down', label: 'Follow her down the steps', to: 'undercrypt' }],
+    next: [{ id: 'down', label: 'Follow her down the steps', to: 'undercrypt', effects: [{ kind: 'setFlag', flag: 'wren-came-down' }] }],
   },
   // Asked, by a company she does not trust that far: she keeps the gate.
   'lychgate-wren-stays': {
@@ -1468,7 +1468,7 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
   // drowned folk's purses back to their families. Those last two are owed
   // back at the Wyrmcalling. Whether the company knows Wren, whether Brother
   // Halden lived and what became of Marrow are NPC state, and need no carry.
-  carries: ['won', 'seal-cracked', 'grandfather-home', 'drowned-gold-home'],
+  carries: ['won', 'seal-cracked', 'grandfather-home', 'drowned-gold-home', 'wren-came-down'],
   // Saves from before that state moved onto the NPCs.
   renamedFlags: SUNKEN_BARROWS_RENAMED,
   companions: companionsFrom(NPCS, [

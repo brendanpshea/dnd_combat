@@ -31,7 +31,7 @@
  * 3,500 more. The near side is fought at 4th and tuned for it (the hold is
  * the hardest, 73% won at 4th). Every way past a fight (talking, tricking,
  * paying, scattering the herd) pays what the fight would have
- * (`avoidedFightXP`). A continuing company (~3,000–3,700 XP from Part 2)
+ * (`avoidedFightXP`). A continuing company (~3,450–4,300 XP from Part 2)
  * reaches 5th partway up the hills on every transcript route; a cold start
  * opens at 4th (its one floor, on the cold-start choice) and gets there
  * after its last hill fight. The stone is fought at 5th.
@@ -349,7 +349,9 @@ const REPLIES = [
     hint: '{nettle}\'s hands are shaking.' },
   { id: 'rueful', to: 'answer-rueful',
     label: '"Killing her broke the vigil. We know, and we\'re sorry for that part."',
-    hint: '{sedge} has not looked at you once.' },
+    // Its cost shows too: {nettle} is waiting to hear the debt owned, and
+    // owning it digs her in (`tear-loose-rueful`).
+    hint: '{sedge} has not looked at you once. {nettle} is waiting to hear you own the debt.' },
   { id: 'unknowing', to: 'answer-unknowing',
     label: '"We didn\'t know what she was keeping. No one in the valley did."',
     hint: 'The plain truth. It is not an apology, and {sedge} will hear the difference.' },
@@ -372,6 +374,11 @@ const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, .
  * door cracked and once without.
  */
 const LOOSE: Effect[] = [{ kind: 'setFlag', flag: 'sisters-loose' }];
+/** Beaten at the stone: up onto the rim, where the column is (`stone-lost`). */
+const STONE_LOST_SISTERS = { to: 'stone-lost',
+  text: ['Green claws close over you, and the last thing you hear is {nettle} adding it to the account.'] } satisfies Outcome;
+const STONE_LOST_CALLING = { to: 'stone-lost',
+  text: ['The rock bucks under you like a struck bell, and the {calling}\'s note goes on singing after the light goes out.'] } satisfies Outcome;
 const CRACKED = 'sunken-barrows:seal-cracked';
 const CRACK = '-cracked';
 /** A way on to the stone, in a sound version and a cracked one. */
@@ -753,8 +760,10 @@ const SLIDES_LAST: Slide[] = [
   { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0, below: 2 } }],
     text: '{wren} still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.' },
   // A cold start is still the company Wren guided through the fen.
-  { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0, below: 2 } }],
+  { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0, below: 2 } }, { kind: 'notFlag', flag: 'sunken-barrows:wren-came-down' }],
     text: '{wren} tells every new scout how she held the gate of the {undercrypt}, and how you walked back out.' },
+  { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0, below: 2 } }, { kind: 'flag', flag: 'sunken-barrows:wren-came-down' }],
+    text: '{wren} tells every new scout how she went first down the steps of the {undercrypt}, and how all of you walked back out.' },
   { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
     text: '{wren} keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.' },
   { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
@@ -2103,6 +2112,7 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' },
     intro: ['The sisters come at you with green claws and burning faces. "Then we collect by hand," {nettle} says. {sedge} says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last thing the stone has the strength to raise. A pillar of living fire climbs out and turns toward you.'],
     again: ['"Then we collect by hand," {nettle} says again, and the sisters come at you with their burned claws. {sedge} is still weeping. Behind them, the pillar of living fire turns toward you once more.'],
+    onLoss: STONE_LOST_SISTERS,
     onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling her dead sister\'s name, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.',
       'The black fang has no one left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
@@ -2114,6 +2124,7 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' }, surprise: 'party',
     intro: ['The sisters come at you with green claws and burning faces. Grey hands still hold your ankles, and you are still kicking free when the sisters reach you. "Then we collect by hand," {nettle} says. {sedge} is weeping, and she comes at you all the same. Behind them, a pillar of living fire climbs out of the crack and turns toward you.'],
     again: ['Grey hands catch at your ankles again as the sisters come at you, claws out. {sedge} is still weeping, and behind them the pillar of living fire turns toward you once more.'],
+    onLoss: STONE_LOST_SISTERS,
     onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling her dead sister\'s name, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.',
       'The black fang has no one left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
@@ -2173,6 +2184,7 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' },
     intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. The floor of the bowl splits along a burning crack. A pillar of living fire climbs out of it, and the mountain\'s own bones heave up beside it into a shape with fists. The sisters sink into the rock to the shoulder, and they do not let go. "Take it all," {nettle} tells the stone. "Every drop we owe." {sedge} only whispers her dead sister\'s name. The {calling} rises to one last note, and everything it raised turns toward you.'],
     again: ['The stone spends the sisters again. The pillar of fire and the shape of mountain bone climb out of the burning crack, and everything the {calling} raised turns toward you.'],
+    onLoss: STONE_LOST_CALLING,
     onWin: { to: 'calling-won', text: ['The stone takes the last of the sisters. {nettle} goes smiling, and {sedge} goes with her sister\'s name still on her lips. A few dry reeds are all that is left of them.',
       'The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The black fang has nothing left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
@@ -2182,9 +2194,22 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' }, surprise: 'party',
     intro: ['The sisters pour the last of themselves into the stone, and the stone spends it all at once. A pillar of living fire climbs out of the burning crack. The mountain\'s own bones heave up beside it into a shape with fists. Grey hands push up through the cracks and hold your ankles fast. "Take it all," {nettle} tells the stone. "Every drop we owe." The {calling} rises to one last note, and everything it raised turns toward you.'],
     again: ['The stone spends the sisters again, and grey hands hold your ankles fast. The pillar of fire and the shape of mountain bone climb out of the burning crack toward you.'],
+    onLoss: STONE_LOST_CALLING,
     onWin: { to: 'calling-won', text: ['The stone takes the last of the sisters. {nettle} goes smiling, and {sedge} goes with her sister\'s name still on her lips. A few dry reeds are all that is left of them.',
       'The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The black fang has nothing left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
+  },
+  // Beaten at the stone: {vex}'s column holds the rim above the bowl, so it
+  // hauls the company up there, not off the mountain. No day passes and no
+  // one rests: the party is picked up at half strength (see resolveBattle),
+  // and goes back down, or back to the trail and the camp, as it is.
+  'stone-lost': {
+    id: 'stone-lost', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🌄' },
+    text: [
+      'You come to on the rim, flat on your back on cold rock, with rope burns under your arms. {vex}\'s pikemen went down the slope on lines and dragged you up while the stone was busy singing.',
+      '{vex} crouches beside you. Down in the bowl, the light round the stone has not dimmed at all. "You\'re still breathing," he says, and nods down at it. "So is that thing. My column holds this rim as long as it takes. Go back down when you can stand."',
+    ],
+    next: [...goDown(), { id: 'trail', label: 'Climb back down to the trail', to: 'hills' }],
   },
   'calling-won': {
     id: 'calling-won', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🌅' },
