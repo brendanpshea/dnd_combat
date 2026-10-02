@@ -345,6 +345,8 @@ The black water bulges, then heaves. A pair of giant toads haul themselves onto 
 
 **» Fight — won**
 
+_Level up: 1 → 2_
+
 The second toad shudders and goes still, half in the water. You scrape off the slime and press on toward the ravine.
 
 <sub>scene `ravine`</sub>
@@ -848,6 +850,8 @@ Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning
 **Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
 
 **» Fight — won**
+
+_Level up: 3 → 4_
 
 Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
 
@@ -1458,6 +1462,8 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
+
+_Level up: 4 → 5_
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 

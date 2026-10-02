@@ -271,15 +271,19 @@ Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and 
 
 "The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
-**» Pay the toll (600 gold)**
+**» Try them**
 
-_-600 gold (425)_
+<sub>scene `onihold-fight`</sub>
 
-<sub>scene `onihold-paid`</sub>
+The horn sounds twice, and the gate opens on the ogre-mage's guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders, like drilled soldiers. The scarred old one calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.
 
-The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times. By noon its warband is marching down the other side of the mountain, away from the valley. The middle pass is open.
+**Battle:** The Ogre-Mage's Hold <sub>(`oni-hold` on `open`)</sub>
 
-**» Walk through the open pass**
+**» Fight — won**
+
+The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate. The middle pass stands open, and beyond it lies the road to the giants' hall and the stone. The fort's war-chest is yours.
+
+_+130 gold (1155)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -295,19 +299,35 @@ At the first scrape of your boots, one huge body ducks out of the door with two 
 
 In the margin of Wren's map, beside the hall, she has written: *Two heads. Never agree. Use that.*
 
-**» [Deception DC 11] Agree with both heads at once**
+**» Draw steel**
 
-`[Deception DC 11 — Ash the Sneaky rolls 25 — passed]`
+<sub>scene `steading-roused`</sub>
 
-<sub>scene `steading-talked`</sub>
+The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orc ducks behind them all.
 
-"The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.
+**Battle:** The Giants' Hall <sub>(`giants-hall` on `ruins`)</sub>
 
-The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runner and all. You can hear it halfway down the mountain.
+**» Fight — won**
 
-The road to the stone stands open.
+The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
-**» Climb on past the empty hall**
+_+140 gold (1295)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+<sub>scene `hills-night`</sub>
+
+In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You took our sister from that door," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
+
+The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Harpies come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
+
+**Battle:** Harpy Roost <sub>(`harpy-roost` on `open`)</sub>
+
+**» Fight — won**
+
+The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -321,17 +341,33 @@ It lifts its head, and the face is a man's. It is a **manticore**, and it is in 
 
 "Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with human lips, and the teeth behind them are a lion's. "You will pay in meat. I have decided."
 
-**» [Persuasion DC 11] "Have the hags paid you yet?"**
+**» Pay it in steel**
 
-`[Persuasion DC 11 — Elaine the Holy rolls 18 — passed]`
+<sub>scene `tollcliff-fight`</sub>
 
-<sub>scene `tollcliff-talked`</sub>
+"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Two goblins scramble up from the rocks behind it with spears.
 
-You tell it the truth, more or less. "The hags promised you a valley full of meat. They're up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn't wait on a ledge for scraps."
+**Battle:** Manticore Cliff <sub>(`manticore-cliff` on `cliff`)</sub>
 
-The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.
+**» Fight — won**
 
-**» Walk the open trail**
+The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
+
+_+110 gold (1405)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+<sub>scene `hills-night` (again)</sub>
+
+The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and harpies come riding the night wind down from the crags. You wake in time, because the sentry is shouting.
+
+**Battle:** Harpy Roost <sub>(`harpy-roost` on `open`)</sub>
+
+**» Fight — won**
+
+_(a paragraph shown before: “The last harpy drops into the dark…”)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -345,19 +381,25 @@ Under your boots, the ground has begun to drum.
 
 Far up the gully, a haze of dust hangs where the herd last ran. You know what to watch for now.
 
-**» [Survival DC 11] Time the stampede**
+**» Meet the stampede at the narrows**
 
-`[Survival DC 11 — Elaine the Holy rolls 16 — passed]`
+<sub>scene `boarruns-fight`</sub>
 
-<sub>scene `boarruns-timed`</sub>
+The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Too late, you see that the gully narrows behind you as well.
 
-You lie flat on the lip of the gully and watch the dust. The herd thunders past below you and away over the next rise. You count to twenty, and then you run.
+**Battle:** Boar Stampede <sub>(`boar-stampede` on `pass`)</sub>
 
-Across the gully you pile dry brush in the narrows and set it alight. When the herd comes back, it smells the smoke and swings away over the far ridge, away from the valley. Every boar lives, and not one of them will come near the camp.
+**» Fight — won**
 
-**» Climb on**
+The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley.
+
+_+40 gold (1445)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+**Dawn — day 4.**
 
 → The Blue Mesa
 
@@ -373,7 +415,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (520)_
+_+95 gold (1540)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -389,17 +431,29 @@ On the largest heap lies a red **wyrmling** with one eye open. It rises to meet 
 
 **» Fight — won**
 
+_Level up: 4 → 5_
+
 The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She says it like a clerk striking out a line.
 
-_+120 gold (640)_
+_+120 gold (1660)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 4)</sub>
 
-**Dawn — day 4.**
+<sub>scene `hills-night` (again)</sub>
+
+_(a paragraph shown before: “The same dream comes back: the stone…”)_
+
+**Battle:** Harpy Roost <sub>(`harpy-roost` on `open`)</sub>
+
+**» Fight — won**
+
+_(a paragraph shown before: “The last harpy drops into the dark…”)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Valley of Statues
 
@@ -421,13 +475,13 @@ One wrong step on the loose rock, and you join the collection.
 
 **» Creep in while it grazes**
 
-`[Stealth DC 11 — Ash the Sneaky rolls 22 — passed]`
+`[Stealth DC 11 — Ash the Sneaky rolls 21 — passed]`
 
 You work down the rows with soft hands, gathering purses out of the grass. A silver ring lies at a stone shepherd's feet, and a hired sword's flask of healing lies by his stone boot.
 
 The gorgon chews on and does not look up. You are back on the trail before your hands stop shaking.
 
-_+90 gold (730)_
+_+90 gold (1750)_
 
 _Gained: Potion of Greater Healing_
 
@@ -468,8 +522,6 @@ Wren is first up the last slope, bow on her back and map under her arm.
 <sub>scene `calling-approach`</sub>
 
 Down in the bowl, at the foot of the stone, the **sisters** are waiting. **Nettle**, the elder, is the hag who met you at the war-camp, and **Sedge** is the younger. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen.
-
-On a ledge above the bowl crouches the manticore from the toll-cliff. It came up here to collect its meal from the hags. It watches the sisters, and licks its lips, and waits to see who wins.
 
 They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister kept the door under the fen since before your grandmothers' grandmothers. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
@@ -513,7 +565,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (930)_
+_+200 gold (1950)_
 
 <sub>scene `calling-won`</sub>
 
@@ -537,7 +589,7 @@ Your fighter sits down on the first barrel inside the gate, and does not get up 
 
 **» Accept the valley's purse**
 
-_+250 gold (1180)_
+_+250 gold (2200)_
 
 <sub>scene `wc-purse`</sub>
 
@@ -550,10 +602,6 @@ Every village in the valley paid into the purse, and a farmer from each one come
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
 Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
-
-The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting for the meal the hags swore to give it.
-
-Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
 The war-camp fought its long night while you were still up in the hills. The sentries still keep the arrows they never had to loose.
 

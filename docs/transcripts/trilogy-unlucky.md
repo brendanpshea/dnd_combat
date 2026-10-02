@@ -707,6 +707,8 @@ The silk trembles over your heads. Four giant spiders drop from the high webbing
 
 **» Fight — won**
 
+_Level up: 1 → 2_
+
 The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He does not stop thanking you until the reeds swallow the sound.
 
 _+60 gold (205)_
@@ -870,6 +872,8 @@ On the far side of the ring, a bare-chested raider gets up off an upturned barre
 **Battle:** The Pit-Brute and Its Champion <sub>(`den-pit` on `ruins`)</sub>
 
 **» Fight — won**
+
+_Level up: 2 → 3_
 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
 
@@ -1622,6 +1626,8 @@ The old guardsman stands before its slab again, sword drawn, cold light in its e
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
 
 **» Fight — won**
+
+_Level up: 3 → 4_
 
 The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it.
 
@@ -2500,6 +2506,8 @@ The ettin lifts both its clubs again, and both heads still want the same thing. 
 **Battle:** The Giants' Hall <sub>(`giants-hall` on `ruins`)</sub>
 
 **» Fight — won**
+
+_Level up: 4 → 5_
 
 The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 

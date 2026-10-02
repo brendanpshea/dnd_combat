@@ -189,27 +189,17 @@ _Journal (clue): Called to Work_
 
 > "**Welcome!**" Halden beams at you with terrible peace, and the whole room goes quiet for him. "You've come to see the great work. The Warden below is gathering his flock at last. I merely… keep the service, until he calls them down. Will you kneel? Everyone kneels down here, sooner or later."
 
-**» [Insight DC 13] Read what is wearing him**
+**» Refuse the sermon and draw**
 
-`[Insight DC 13 — Elaine the Holy rolls 17 — passed]`
+<sub>scene `chapel-fight`</sub>
 
-<sub>scene `chapel-read`</sub>
-
-You see it a breath before it moves. Something winds up through Halden's calm like rot up a post. His smile belongs to it, and so does his voice.
-
-But his hands are shaking on the altar rail, and somewhere under that thing Halden is still in there. The words he said over Thornwick's dead might reach him. Or you could strike now, while it still thinks you came to listen.
-
-**» Strike before it moves**
-
-<sub>scene `chapel-caught`</sub>
-
-You're already moving when his two acolytes step forward and his dead wade out of the rows, two skeletons and two grey, gnawing parishioners. For once the dead are the ones caught flat-footed.
+Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's. "The Warden provides," says Halden, and sets them on you.
 
 **Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
 
 **» Fight — won**
 
-The dead are still shuffling into their rows when the last of them falls. Halden slumps against the altar rail. The thing wearing him lets go, and he dies looking almost grateful.
+Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
 
 <sub>scene `chapel-won`</sub>
 
@@ -287,17 +277,7 @@ Wren watches you fill your pockets with the drowned folk's coin. She says nothin
 
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
-<sub>scene `fen-night`</sub>
-
-You wake to a hand on your shoulder and a blade already drawn beside you. Two shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. They do not hurry. They have done this before.
-
-**Battle:** The Marsh Dead <sub>(`marsh-dead` on `bog`)</sub>
-
-**» Fight — won**
-
-The ghouls lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back into the black water they crawled out of. It is a long while before anyone's hands are steady enough to bank the fire again.
-
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**Dawn — day 3.**
 
 → The Serpent Pool
 
@@ -324,10 +304,6 @@ _+85 gold (549)_
 _Gained: Potion of Greater Healing_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
 
 → The Barrow Gate
 
@@ -379,6 +355,12 @@ She sits down on the nearest stone with her bow across her knees, facing the fen
 
 Worked steps lead down into the cold. Your torch makes a small, brave circle, and the dark waits politely outside it.
 
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+**Dawn — day 4.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
+
 → Search the room
 
 Every niche is empty. The walking dead took their grave-goods with them when they went down to dig.
@@ -419,7 +401,7 @@ Skulls fill this room from floor to ceiling, stacked in rows like bricks. Ten th
 
 Old gold winks from the niches between the skulls. The barrow-lords took their wealth down with them. A careful eye might take some of it back up.
 
-`[Investigation DC 12 — Morgan Le Fey rolls 25 — passed]`
+`[Investigation DC 12 — Morgan Le Fey rolls 16 — passed]`
 
 Behind a row of skulls, the builders left a hidden nook. Inside are coins stamped with kings no song remembers. There is also a flask of drink that has gone strong with age instead of sour.
 
@@ -477,9 +459,7 @@ He weighs almost nothing, and he is still the hardest thing you have ever carrie
 
 **» Go on, with the old man on your back**
 
-**Dawn — day 4.**
-
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
+**Dawn — day 5.**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -488,6 +468,22 @@ The ground shivered once in the night, deep down under the fen, the way a door s
 _(a paragraph shown before: “Every niche is empty. The walking dead…”)_
 
 → The Barrow-Guard
+
+<sub>scene `crypt-ambush`</sub>
+
+A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
+
+"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
+
+**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+
+**» Fight — won**
+
+_Level up: 3 → 4_
+
+The man in the robe dies still holding his candle. It smells of the fen. Whoever he served, there are more of them further down.
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
@@ -507,19 +503,11 @@ _+40 gold (679)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 4)</sub>
+**» Make camp (long rest)** <sub>(day 5)</sub>
 
-<sub>scene `crypt-night`</sub>
+**Dawn — day 6.**
 
-You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on the far wall begins to move. Two of the painted dead peel loose from it, grey and flat and cold, and slide toward your fire.
-
-**Battle:** Specter Haunt <sub>(`specter-haunt` on `corridor`)</sub>
-
-**» Fight — won**
-
-The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. Your fire lies kicked across the vault floor, and you have never been more awake.
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+The ground shook again before dawn, longer this time, and hard enough to wake the soundest sleeper. Somewhere under the fen, old stone gave a little.
 
 → Search the room
 
@@ -550,10 +538,6 @@ _+60 gold (739)_
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
-
-**» Make camp (long rest)** <sub>(day 4)</sub>
-
-**Dawn — day 5.**
 
 → Search the room
 
@@ -589,9 +573,11 @@ The grey man leans in to his work. "Faster," he tells the chisel, sweetly reason
 
 "I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves, and then I walked away and left them all in the cold. The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."
 
+The door has shifted in its frame since the ground shook. A line of dark, a finger wide, shows along its top. "He leaned on it in the night, and the stone gave," Marrow says. "It will be harder to shut now."
+
 **» [Persuasion DC 14] Tell Marrow what the king's wall says**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 21 — passed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 15 — passed]`
 
 <sub>scene `seal-doubt-words`</sub>
 
@@ -643,7 +629,7 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 13 — passed]`
+`[Religion DC 13 — Morgan Le Fey rolls 15 — passed]`
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.
 

@@ -114,3 +114,16 @@ describe('a night broken up by an ambush', () => {
     expect(flagged({ id: 'lost', kind: 'story', noBack: true, text: ['Cold.'], next: [{ id: 'up', label: 'Up', to: 'map' }] })).toBe(false);
   });
 });
+
+describe('a fight with no way out', () => {
+  it('may not lose into a short rest straight back into it', () => {
+    const m = (variant: 'short' | 'long'): Module => ({ id: 'lo', title: 'L', blurb: '', start: 'boss', scenes: {
+      boss: { id: 'boss', kind: 'battle', encounterId: 'cutpurses', mapId: 'open', noFlee: true, onWin: { to: 'won' }, onLoss: { to: 'lost' } },
+      lost: { id: 'lost', kind: 'rest', variant, next: 'boss' },
+      won,
+    } });
+    const flagged = (v: 'short' | 'long') => validateModule(m(v)).some((e) => e.startsWith('[boss]') && e.includes('make it a long rest'));
+    expect(flagged('short')).toBe(true);
+    expect(flagged('long')).toBe(false);
+  });
+});

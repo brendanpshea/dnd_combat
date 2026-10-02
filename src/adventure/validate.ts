@@ -395,6 +395,17 @@ export function validateModule(module: Module): string[] {
     if (camp?.nights !== undefined && !(Number.isInteger(camp.nights) && camp.nights >= 1)) at(id, `camp nights ${camp.nights} must be a whole number, at least 1`);
   }
 
+  // A fight that can't be fled and loses into a rest that leads straight back
+  // to it must be a long rest: a short one returns no spell slots and no hit
+  // dice, so each loss leaves the party weaker, and there is no way out.
+  for (const sc of Object.values(module.scenes)) {
+    if (sc.kind !== 'battle' || !sc.noFlee || !sc.onLoss) continue;
+    const lost = module.scenes[sc.onLoss.to];
+    if (lost?.kind === 'rest' && lost.variant === 'short' && lost.next === sc.id) {
+      at(sc.id, `loses into '${lost.id}', a short rest straight back into the fight: with no way out, make it a long rest`);
+    }
+  }
+
   // A night's ambush lost is a night lost: the way out of it must not be a
   // long rest or a full heal, or losing on purpose beats the camp's risk.
   for (const sc of Object.values(module.scenes)) {

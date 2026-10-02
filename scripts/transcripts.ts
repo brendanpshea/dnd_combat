@@ -50,7 +50,7 @@ import {
   leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, dungeonProgress,
   endingText, dayOf,
 } from '../src/adventure/runtime.js';
-import { type CampaignState, newCampaign, xpAward, itemName, fullRest } from '../src/campaign/campaign.js';
+import { type CampaignState, newCampaign, xpAward, levelForXp, itemName, fullRest } from '../src/campaign/campaign.js';
 import { seedRng } from '../src/engine/rng.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
@@ -82,6 +82,9 @@ interface Option {
   run: () => AdventureEvent[];
   /** The option rolls dice the route may want to steer. */
   rolls: boolean;
+  /** A way past a fight offered beside the fight itself (a check or a price
+   *  instead of drawing steel): the completionist leaves it for last. */
+  avoids?: boolean;
   /** Printed before the events: how the option reads. */
   kind: 'choice' | 'node' | 'approach' | 'room' | 'search' | 'force' | 'leave';
 }
@@ -170,7 +173,7 @@ const rush = (o: Option): number => d(o) + (o.kind === 'room' ? 1 : 4) * o.times
  */
 const completionist = (o: Option): number[] => {
   const fresh = o.kind === 'room' ? o.novel : o.times === 0;
-  return [o.defeat ? 1 : 0, fresh ? 0 : 1, fresh ? -d(o) : rush(o)];
+  return [o.defeat ? 1 : 0, fresh ? 0 : 1, o.avoids ? 1 : 0, fresh ? -d(o) : rush(o)];
 };
 
 const ROUTES: Route[] = [
@@ -181,7 +184,7 @@ const ROUTES: Route[] = [
       'Plays all three chapters with one carried company.',
       'Prefers whatever it has not done yet: an untaken choice, an unexplored marker, an unseen room, an unsearched room, a door not yet forced. Among new options it takes the one *furthest* from the ending first (side content before the road on), so it sees each hub out before leaving it.',
       'Steers every skill check it rolls to a pass (re-seeding the rng until it passes, where that is possible at all).',
-      'Fights every fight and wins it (never parleys, never falls back). Camps on a map after every two fights.',
+      'Fights every fight and wins it (never parleys, never falls back; where a choice offers a way past a fight — a check or a price — beside the fight itself, it draws steel). Camps on a map after every two fights.',
     ],
     seed: 11,
     chapters: ['hollow-road', 'sunken-barrows', 'wyrmcalling'],
@@ -199,10 +202,12 @@ const ROUTES: Route[] = [
       'Heads for the ending: every option is scored by the static scene-graph distance from its target to the nearest victory ending (refs walked backwards from the endings; `@hub` returns count as no progress), plus 4 for each time it has already taken that option (1 for walking back into a dungeon room) — so a gated road sends it round the hub until the gate opens, rather than looping.',
       'In a dungeon it walks the room links toward the nearest goal room and leaves by the way out nearest the ending; it searches or forces a door only when nothing else is left.',
       'Natural rolls on every check. Parleys where a fight offers it (natural roll), otherwise fights and wins. Never camps.',
+      'At the stone it answers the sisters by naming Vargan\'s sale, so that reply is read on some route.',
     ],
     seed: 23,
     chapters: ['hollow-road', 'sunken-barrows', 'wyrmcalling'],
-    score: (o) => [o.defeat ? 1 : 0, rush(o)],
+    // At the stone it names Vargan's sale, so that reply has a route to read it.
+    score: (o) => [o.defeat ? 1 : 0, o.times === 0 && /^calling-approach:sold/.test(o.key) ? 0 : 1, rush(o)],
     check: 'natural',
     battle: ({ canParley }) => (canParley ? 'parley' : 'fight'),
     win: () => true,
@@ -540,9 +545,19 @@ function playChapter(
       case 'dialogue': {
         const options = legalChoices(state, module).filter((x) => !x.blocked);
         if (options.length === 0) throw new Error(`${route.id}: dead end at '${scene.id}'`);
+        // Does a choice lead into a fight (straight in, or through one beat)?
+        const fights = (to: string): boolean => {
+          const t = module.scenes[to];
+          if (t?.kind === 'battle') return true;
+          return (t?.kind === 'story' || t?.kind === 'dialogue') && t.next.length > 0
+            && t.next.every((n) => module.scenes[n.to]?.kind === 'battle');
+        };
+        const anyFight = options.some(({ choice }) => fights(choice.to));
         const opts: Option[] = options.map(({ choice }) => {
           const c: Choice = choice;
+          const paid = (c.requires ?? []).some((r) => r.kind === 'gold');
           return {
+            avoids: anyFight && !fights(c.to) && (!!c.check || paid || /^\[/.test(c.label)),
             ...base(`${scene.id}:${c.id}`, c.to),
             label: `${c.label}${c.hint ? ` — ${c.hint}` : ''}`,
             defeat: isDefeat(c.to),
@@ -613,7 +628,14 @@ function playChapter(
         const won = route.win(ctx);
         t.line(`**» Fight — ${won ? 'won' : 'lost'}**`);
         if (won && scene.loot !== false) {
-          if (!battleWonBefore(state, scene.id)) state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
+          if (!battleWonBefore(state, scene.id)) {
+            // Show the level a won fight brings, where it comes: levels come
+            // from fights, and the curve should be readable here.
+            const before = levelForXp(state.campaign.xp);
+            state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
+            const after = levelForXp(state.campaign.xp);
+            if (after > before) t.line(`_Level up: ${before} → ${after}_`);
+          }
         }
         fightsSinceRest++;
         if (!won) lostSinceRest++;

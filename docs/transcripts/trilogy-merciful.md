@@ -519,6 +519,8 @@ On the far side of the ring, a bare-chested raider gets up off an upturned barre
 
 **» Fight — won**
 
+_Level up: 2 → 3_
+
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
 
 _+40 gold (211)_
