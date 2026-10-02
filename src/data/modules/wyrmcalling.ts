@@ -1492,7 +1492,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'gorgonvale-sneak': {
-    id: 'gorgonvale-sneak', kind: 'challenge', art: { emoji: '🗿' },
+    id: 'gorgonvale-sneak', kind: 'challenge', art: { emoji: '🗿' }, noBack: true,
     intro: [
       'The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.',
       'One wrong step on the loose rock, and you join the collection.',

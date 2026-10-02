@@ -316,6 +316,33 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // One-time things can't be spent by walking away. A dungeon room's event
+  // plays once: if it offers a way back while a choice in it carries an
+  // effect, leaving loses that effect for good. And a challenge reached by a
+  // one-try choice (`once`, `attempt`) spends the try on arrival: a way back
+  // spends it without a roll.
+  const roomEvents = new Set<Id>();
+  for (const sc of Object.values(module.scenes)) {
+    // An event with `until` plays on every entry until it holds: not one-time.
+    if (sc.kind === 'dungeon') for (const r of sc.dungeon.rooms) if (r.event?.scene && !r.event.until) roomEvents.add(r.event.scene);
+  }
+  for (const id of roomEvents) {
+    const sc = module.scenes[id];
+    if ((sc?.kind === 'story' || sc?.kind === 'dialogue') && !sc.noBack && sc.next.some((c) => (c.effects?.length ?? 0) > 0)) {
+      at(id, 'is a room\'s one-time event with a choice that carries an effect, but it offers a way back that loses it for good: set noBack');
+    }
+  }
+  const oneTry = new Set<Id>();
+  for (const sc of Object.values(module.scenes)) {
+    if (sc.kind === 'story' || sc.kind === 'dialogue') for (const c of sc.next) if (c.once || c.attempt) oneTry.add(c.to);
+  }
+  for (const id of oneTry) {
+    const sc = module.scenes[id];
+    if (sc?.kind === 'challenge' && !sc.noBack) {
+      at(id, 'is a challenge reached by a one-try choice, but it offers a way back that spends the try without a roll: set noBack');
+    }
+  }
+
   // With the shape sound, walk every state a party can get the module into:
   // scenes gated shut for good, and states with no way left to a victory.
   if (errors.length === 0) {

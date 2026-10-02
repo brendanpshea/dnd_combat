@@ -330,10 +330,13 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       delete state.flags[eff.flag];
       events.push({ type: 'flag', flag: eff.flag, value: false });
       break;
-    case 'gold':
+    case 'gold': {
+      // A loss takes what there is: the event says what changed hands.
+      const before = c.gold;
       c.gold = Math.max(0, c.gold + eff.amount);
-      events.push({ type: 'gold', amount: eff.amount, total: c.gold });
+      events.push({ type: 'gold', amount: c.gold - before, total: c.gold });
       break;
+    }
     case 'addItem':
       addItem(partyStash(c), eff.itemId, eff.qty ?? 1);
       events.push({ type: 'item', itemId: eff.itemId, qty: eff.qty ?? 1, gained: true });
@@ -494,9 +497,35 @@ function applyOutcome(state: AdventureState, module: Module, outcome: Outcome): 
 
 // --- Skill checks -----------------------------------------------------------
 
+/**
+ * Who may roll for an option: an option locked to a class or species
+ * (`classInParty`, `speciesInParty` among its requirements) is that
+ * character's to try, not whoever happens to be best at the skill. Every
+ * character, for an option with no such lock.
+ */
+export function eligibleRollers(state: AdventureState, requires: Requirement[] | undefined): number[] {
+  const chars = state.campaign.characters;
+  const all = chars.map((_, i) => i);
+  const locks = (requires ?? []).filter((r) => r.kind === 'classInParty' || r.kind === 'speciesInParty');
+  if (!locks.length) return all;
+  const ok = all.filter((i) => locks.every((r) =>
+    r.kind === 'classInParty' ? chars[i]!.classId === r.classId : r.kind === 'speciesInParty' ? chars[i]!.speciesId === r.speciesId : true));
+  return ok.length ? ok : all;
+}
+
+/** The best at a skill among those who may roll it. */
+function bestEligible(state: AdventureState, skill: Parameters<typeof characterSkillBonus>[2], who: number[]): number {
+  let best = who[0] ?? 0, bonus = -Infinity;
+  for (const i of who) {
+    const b = characterSkillBonus(state.campaign, i, skill);
+    if (b > bonus) { bonus = b; best = i; }
+  }
+  return best;
+}
+
 function rollFor(
   state: AdventureState, skill: Parameters<typeof partySkillCheck>[1], dc: number, roller: Roller,
-  events: AdventureEvent[],
+  events: AdventureEvent[], requires?: Requirement[],
 ): boolean {
   const c = state.campaign;
   const noGuidance = state.guidanceSpent.includes(state.sceneId);
@@ -506,7 +535,8 @@ function rollFor(
     events.push({ type: 'groupCheck', result, success: result.success });
     return result.success;
   }
-  const idx = roller === 'best' ? bestAtSkill(c, skill).idx : chosenRoller(state, skill);
+  const who = eligibleRollers(state, requires);
+  const idx = who.length === c.characters.length ? (roller === 'best' ? bestAtSkill(c, skill).idx : chosenRoller(state, skill)) : bestEligible(state, skill, who);
   const roll = characterSkillCheck(c, idx, skill, dc, { noGuidance });
   state.guidanceSpent.push(state.sceneId);
   events.push({ type: 'check', roll, success: roll.success });
@@ -535,8 +565,11 @@ export function rollSceneCheck(state: AdventureState, module: Module, actorIdx?:
 
 function rollChosen(
   state: AdventureState, skill: Parameters<typeof characterSkillCheck>[2], dc: number,
-  actorIdx: number, events: AdventureEvent[],
+  actorIdx: number, events: AdventureEvent[], requires?: Requirement[],
 ): boolean {
+  // A hero who can't take a locked option doesn't roll it: the one who can does.
+  const who = eligibleRollers(state, requires);
+  if (!who.includes(actorIdx)) actorIdx = bestEligible(state, skill, who);
   const noGuidance = state.guidanceSpent.includes(state.sceneId);
   const roll = characterSkillCheck(state.campaign, actorIdx, skill, dc, { noGuidance });
   state.guidanceSpent.push(state.sceneId);
@@ -590,8 +623,8 @@ export function tryApproach(
   const events: AdventureEvent[] = [];
   const roller = approach.roller ?? 'best';
   const success = actorIdx !== undefined && roller === 'chosen'
-    ? rollChosen(state, approach.skill, approach.dc, actorIdx, events)
-    : rollFor(state, approach.skill, approach.dc, roller, events);
+    ? rollChosen(state, approach.skill, approach.dc, actorIdx, events, approach.requires)
+    : rollFor(state, approach.skill, approach.dc, roller, events, approach.requires);
 
   if (success) {
     events.push(...applyOutcome(state, module, approach.success ?? scene.success));
@@ -712,8 +745,8 @@ export function choose(
   if (choice.check) {
     const roller = choice.check.roller ?? 'best';
     const success = actorIdx !== undefined && roller === 'chosen'
-      ? rollChosen(state, choice.check.skill, choice.check.dc, actorIdx, events)
-      : rollFor(state, choice.check.skill, choice.check.dc, roller, events);
+      ? rollChosen(state, choice.check.skill, choice.check.dc, actorIdx, events, choice.requires)
+      : rollFor(state, choice.check.skill, choice.check.dc, roller, events, choice.requires);
     if (success) {
       events.push(...enterScene(state, module, choice.to));
     } else {

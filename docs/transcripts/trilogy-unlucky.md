@@ -1723,7 +1723,7 @@ You swing too fast. The living always do. The nearest digger stops and turns its
 
 **» [Cleric] Raise your holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Morgan Le Fey rolls 8 — failed]`
+`[Religion DC 10 — Elaine the Holy rolls 8 — failed]`
 
 The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.
 
@@ -1755,21 +1755,13 @@ _Journal (clue): The Old Reeve_
 
 → The Barrow-Guard
 
-**→ The Barrow-Guard** <sub>(room `guard`)</sub>
+<sub>scene `crypt-ambush`</sub>
 
-<sub>scene `wights`</sub>
+A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
+"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
 
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet like soldiers called to order, and they come for you.
-
-**Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
-
-**» [History DC 15] Relieve him of his post, the old way**
-
-`[History DC 15 — Morgan Le Fey rolls 11 — failed]`
-
-You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
+**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
 
 **» Fight — lost**
 
@@ -1961,11 +1953,19 @@ _(3 paragraphs shown before: “The Barrow Gate stands unwatched, its broken…�
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-<sub>scene `wights` (again)</sub>
+<sub>scene `wights`</sub>
 
-The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides like soldiers on parade.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
+
+From the slabs on either side, two skeletons rise to guard it. They snap to their feet like soldiers called to order, and they come for you.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
+
+**» [History DC 15] Relieve him of his post, the old way**
+
+`[History DC 15 — Morgan Le Fey rolls 13 — failed]`
+
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — won**
 
@@ -1986,22 +1986,6 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore. These are the places the Warden swallowed the last time he woke.
 
 The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
-
-**Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
-
-**» Fall back to The Undercrypt**
-
-_(a paragraph shown before: “You think better of it and fall…”)_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-→ The King's Chamber
-
-**→ The King's Chamber** <sub>(room `king`)</sub>
-
-<sub>scene `king` (again)</sub>
-
-The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.
 
 **Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
 
@@ -2085,19 +2069,19 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 10 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — The words cut in the door are a lock. Use the rites as its key.**
 
-`[Arcana DC 14 — Morgan Le Fey rolls 10 — failed]`
+`[Arcana DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They came here to chant at this door. Make them chant the right thing.**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 6 — failed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 8 — failed]`
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
 
@@ -2539,7 +2523,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 8 — failed]`
+`[Deception DC 11 — Ash the Sneaky rolls 9 — failed]`
 
 <sub>scene `steading-balked`</sub>
 
@@ -2795,7 +2779,7 @@ For one breath, the song falters. Sedge turns her burning face toward you. "Sorr
 
 **» [Persuasion DC 15] Ask Sedge to keep the vigil her sister kept**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 11 — failed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 9 — failed]`
 
 <sub>scene `vigil-refused`</sub>
 
@@ -2815,31 +2799,31 @@ Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are 
 
 **» Drag their hands out of the rock — Grab a wrist each and pull, while the stone pulls back.**
 
-`[Athletics DC 15 — Arthur the Bold rolls 13 — failed]`
+`[Athletics DC 15 — Arthur the Bold rolls 14 — failed]`
 
 The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
 
 **» Break the song — Sing a wrong note into the Calling and knock it off its beat.**
 
-`[Arcana DC 15 — Morgan Le Fey rolls 11 — failed]`
+`[Arcana DC 15 — Morgan Le Fey rolls 7 — failed]`
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
 **» Say Halden's rites over the stone — Brother Halden's book of rites went down into the barrows with you. Its oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 5 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 4 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
 **» Read the old letters cut into the stone — Your wizard knows these marks. Find the line that holds the sisters, and scratch it out.**
 
-`[Arcana DC 12 — Morgan Le Fey rolls 9 — failed]`
+`[Arcana DC 12 — Morgan Le Fey rolls 11 — failed]`
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
 **» Find where the stone is weakest — Look for the seam the song leaks out of, and hit it hard.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 10 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 13 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 

@@ -985,7 +985,7 @@ The cut is just wide enough for them. To get past, you will have to get through 
 
 **» [Cleric] Raise your holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Morgan Le Fey rolls 18 — passed]`
+`[Religion DC 10 — Elaine the Holy rolls 16 — passed]`
 
 You hold up your holy symbol, and a light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog. They press to the walls and leave you a road.
 

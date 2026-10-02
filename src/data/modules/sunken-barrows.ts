@@ -788,7 +788,7 @@ const scenes: Record<string, Scene> = {
   },
   // The chapel told it in words; the hall shows it in paint, and adds where.
   hall: {
-    id: 'hall', kind: 'story', art: { imageId: 'loc-crypt', emoji: '🎨' },
+    id: 'hall', kind: 'story', art: { imageId: 'loc-crypt', emoji: '🎨' }, noBack: true,
     text: [
       'The stair opens into a painted hall. Artists covered these walls before {thornwick} had a name. The pictures tell one story, over and over. A **door** stands under the earth with a **horned warden** behind it, and before it, age after age, a **woman of the reeds** keeps watch.',
       'In one panel a line of soldiers in green bronze stands before the door, each with a fist pressed flat to his chest. It is the old kings\' salute, and the painter took great care over it.',
