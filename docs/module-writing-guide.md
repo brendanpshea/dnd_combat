@@ -95,7 +95,10 @@ stand-up bit, cut it.
     or three written variants, not one sentence with the place swapped. Words
     that have been worked too hard: "Then" to open a sentence, "Nobody",
     "Whatever…", "older than…", "honest", "like a man who…", "comes apart
-    like reeds".
+    like reeds". A test reads every route transcript for four-word
+    phrases that turn up in three or more paragraphs of one playthrough
+    (test/repetition.test.ts): rewrite the tic, or, if the repeat is the
+    point (the liturgy, a place's name), list it as a motif there.
 
 13. **Epilogues are eight to twelve fates, and they build.** Each slide is a
     person or a place told through an object or a gesture (the stone dog's
@@ -453,7 +456,10 @@ effects: [{ kind: 'gold', amount: FACTS['drowned-gold'].value }],
 `{^id}` capitalises a fact or name to open a sentence ("{^drowned-gold} in
 all."). Build the module with `withCanon(module, { npcs, facts })`. An id
 names a person or a fact, never both, and an unknown token is an error at
-load. Register a fact when a second line or a rule depends on it. A one-off
+load. Register a fact when a second line or a rule depends on it. That goes for things
+and terms too, not only numbers: if two scenes name the same object (the
+peddler's stall, the raiders' gate-signal), make it a fact, so one scene
+can't call it a cart and another a tray. A one-off
 detail stays plain prose. The trilogy's facts are in src/data/modules/canon.ts
 (`TRILOGY_FACTS`). As with people, a test fails if a registered place or group
 name is typed in a chapter's source outside a comment, and another checks that
