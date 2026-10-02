@@ -23,7 +23,7 @@ The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It
 
 Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.
 
-Your purse is still heavy with last season's bounty. Thornwick pays its debts.
+Your purse is still heavy with last season's bounty. Thornwick keeps its word.
 
 **» Answer the bells**
 
@@ -159,7 +159,7 @@ _Journal (npc): Wren, the Reeve's Scout_
 
 <sub>scene `causeway`</sub>
 
-The old raised road was here long before the cart-track that meets it, laid in great flat stones by hands that measured time in generations. Wren crouches at its edge and reads the mud, slow and careful.
+The old raised road was here long before the cart-track that meets it. Each of its great flat stones is too heavy for a cart. Wren crouches at its edge and reads the mud, slow and careful.
 
 "Here. And here." Footprints, water-filled, in files. "Your churchyard dead came through in *step*. And look at this." She points to older prints, sunk deeper and wider. "They weren't the first. The fen's own dead have been walking for days. Whatever's calling has been at it a while, and it isn't calling them to wander. It's calling them to **work**."
 
@@ -207,7 +207,7 @@ You're already moving when his two acolytes step forward and his dead wade out o
 
 **» Fight — won**
 
-Caught off balance from the first blow, the dead never find their rows again. Halden slumps against the altar rail. The thing wearing him lets go, and he dies looking almost grateful.
+The dead are still shuffling into their rows when the last of them falls. Halden slumps against the altar rail. The thing wearing him lets go, and he dies looking almost grateful.
 
 <sub>scene `chapel-won`</sub>
 
@@ -263,7 +263,7 @@ The last wisp winks out, and the water goes dark for good.
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the purses of the drowned. There are twelve of them, fifty-five gold between them, still tied to their belts.
+In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "Nobody from here dresses like that to go walking."
 
@@ -351,9 +351,9 @@ The second gargoyle shatters mid-dive and rains down as plain gravel. The Barrow
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
-The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen.
+The **Undercrypt**: the prison the old prayers named.
 
-Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
@@ -435,11 +435,11 @@ The passage narrows into a long cut through the rock. Ahead of you, dozens of pi
 
 <sub>scene `diggers`</sub>
 
-A long cut runs through the rock here, and Thornwick's dead fill it. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
+Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud. Its links match the chain Reeve Aldous wears.
+The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.
 
-**» Slip past along the wall — Keep low, and only move when the picks swing.**
+**» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
 `[Group Stealth DC 12 — 2/4 pass — passed]`
 
@@ -447,7 +447,7 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 
 <sub>scene `diggers-chain`</sub>
 
-At the end of the cut lies an old man in a good burial coat. A reeve's chain of office hangs round his neck, with the same crest Aldous wears. This is the reeve's **grandfather**.
+At the end of the cut lies an old man in a good burial coat, with a reeve's chain of office round his neck. This is the reeve's **grandfather**.
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
@@ -687,10 +687,14 @@ Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn 
 
 Wren wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.
 
+Every night since the graves opened, a lamp has burned in the window of the Wander-Inn. Now Mira takes it down and blows it out.
+
 Aldous buries his grandfather a second time, chain and all, and digs the grave himself. The gravediggers stand back with their spades and let him.
 
 Deep under the barrow-field, the Warden's door stands shut in the dark. Every lead letter in it is whole.
 
-On the last night, at the fen's edge, the reeds parted around two figures. They did not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment, and then at the town, and took their time about it. The reeds closed behind them without a ripple.
+Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.
+
+On the night the barrows close, at the fen's edge, the reeds part around two figures. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain late Reedwife. They look at the sealed barrow-field for a long moment, and then at the town, and take their time about it. The reeds close behind them without a ripple.
 
 ### Ending: victory
