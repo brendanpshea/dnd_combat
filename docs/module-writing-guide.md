@@ -220,8 +220,9 @@ should be one-way, or a second route to whatever a lost fight would have set.
 
 Gold, items and classes are not tracked (a requirement on them is taken as
 possible), nor are spent `once` choices or a dungeon's doors (which the
-dungeon checks prove). A state packs at most 31 facts; a module that tracks
-more is reported, not passed.
+dungeon checks prove). A state packs at most 52 facts, and a search stops
+at 3 million states; a module past either is reported, not passed. Each
+fact a chapter tracks can double its states, so track what matters.
 
 Carried choices (`hollow-road:captives-freed`) are not facts. They never change
 once a chapter starts, so the walk runs once for each mix the chapter can be

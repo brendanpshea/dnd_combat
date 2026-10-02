@@ -74,7 +74,7 @@ describe('what it catches', () => {
   });
 
   it('says so, rather than passing, when a module tracks too many facts', () => {
-    const next = Array.from({ length: 33 }, (_, i) => ({ id: `c${i}`, label: `C${i}`, to: 'won', requires: [{ kind: 'flag' as const, flag: `f${i}` }] }));
+    const next = Array.from({ length: 53 }, (_, i) => ({ id: `c${i}`, label: `C${i}`, to: 'won', requires: [{ kind: 'flag' as const, flag: `f${i}` }] }));
     const m = tiny({ a: { id: 'a', kind: 'story', text: ['A.'], next }, won });
     expect(checkModuleReach(m).skipped).toMatch(/facts/);
   });
@@ -272,5 +272,28 @@ describe('counted flags', () => {
     // stranded (it cannot count), but neither does it pretend the flag is set.
     expect(checkModuleReach(m).errors).toEqual([]);
     expect(checkModuleReach(m).states).toBeGreaterThan(0);
+  });
+});
+
+describe('a chapter with more facts than one 32-bit word', () => {
+  it('is searched, and the high facts count like the low ones', () => {
+    const n = 40;
+    const scenes: Module['scenes'] = {};
+    for (let i = 0; i < n; i++) {
+      scenes[`s${i}`] = { id: `s${i}`, kind: 'story', text: [`Room ${i}.`], noBack: true,
+        next: [{ id: 'on', label: 'On', to: i + 1 < n ? `s${i + 1}` : 'last', effects: [{ kind: 'setFlag', flag: `f${i}` }] }] };
+    }
+    const all = Array.from({ length: n }, (_, i) => ({ kind: 'flag' as const, flag: `f${i}` }));
+    scenes.last = { id: 'last', kind: 'story', text: ['The end of the hall.'], noBack: true, next: [
+      { id: 'win', label: 'Win', to: 'won', requires: all },
+      // Never open: every party here has set f38.
+      { id: 'trap', label: 'Trap', to: 'trap', requires: [{ kind: 'notFlag', flag: 'f38' }] },
+    ] };
+    scenes.trap = { id: 'trap', kind: 'story', text: ['A trap.'], noBack: true, next: [{ id: 'on', label: 'On', to: 'won' }] };
+    scenes.won = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] };
+    const m: Module = { id: 'wide', title: 'W', blurb: '', start: 's0', scenes };
+    const report = checkModuleReach(m, [m]);
+    expect(report.skipped).toBeUndefined();
+    expect(report.errors).toEqual(['[trap] can never be reached: every way in is shut by a requirement that cannot hold by then']);
   });
 });

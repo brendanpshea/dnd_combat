@@ -38,8 +38,8 @@ import { requirementsOf, effectsOf, parasOf, flagsWritten } from './graph.js';
 import { isNpcFlag } from './npcs.js';
 import { MODULES } from '../data/modules/index.js';
 
-/** The most facts a state can carry: they share a 32-bit word. */
-const MAX_FACTS = 31;
+/** The most facts a state can carry: they share one number, exact to 2^53. */
+const MAX_FACTS = 52;
 /** A search bigger than this is reported, not run. */
 const MAX_STATES = 3_000_000;
 
@@ -57,8 +57,21 @@ export interface ReachReport {
 }
 
 /** A mask bit no state holds: a requirement on a carried flag the run was
- *  not handed can never hold. (Facts use bits 0–30.) */
-const NEVER = 1 << 31;
+ *  not handed can never hold. (Facts use bits 0–51.) */
+const NEVER = 2 ** 52;
+
+// Fact sets are non-negative numbers up to 2^53: JavaScript's bitwise
+// operators see only 32 bits, so a set wider than that is done in two halves.
+// The low half alone is the common case, and the fast one.
+const LO = 2 ** 32;
+const lo = (a: number) => a % LO;
+const hi = (a: number) => Math.floor(a / LO);
+const and = (a: number, b: number) =>
+  (a < LO && b < LO ? (a & b) >>> 0 : ((lo(a) & lo(b)) >>> 0) + (hi(a) & hi(b)) * LO);
+const or = (a: number, b: number) =>
+  (a < LO && b < LO ? (a | b) >>> 0 : ((lo(a) | lo(b)) >>> 0) + (hi(a) | hi(b)) * LO);
+const without = (a: number, b: number) =>
+  (a < LO && b < LO ? (a & ~b) >>> 0 : ((lo(a) & ~lo(b)) >>> 0) + ((hi(a) & ~hi(b)) >>> 0) * LO);
 /** A chapter with no earlier chapter to say what it is handed: every mix of
  *  the carried flags it reads is tried, up to this many flags. */
 const MAX_FREE_CARRIED = 12;
@@ -178,7 +191,7 @@ export function checkModuleReach(module: Module, chapters: readonly Module[] = M
  * in the chapter before can hand on (worked out by searching that chapter),
  * plus a cold start with none — so a pairing no party can bring (a scout both
  * saved and left behind) is never searched, and carried choices do not count
- * against the 31 facts a state can hold.
+ * against the 52 facts a state can hold.
  */
 function searchChapter(module: Module, chapters: readonly Module[]): ReachReport {
   const reads = carriedReads(module);
@@ -297,7 +310,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   if (facts.size > MAX_FACTS) {
     return { ...none, skipped: `${facts.size} facts to track; the search packs at most ${MAX_FACTS}` };
   }
-  const bit = (k: string) => (facts.has(k) ? 1 << facts.get(k)! : 0);
+  const bit = (k: string) => (facts.has(k) ? 2 ** facts.get(k)! : 0);
   // A flag read only behind a cosmetic redirect is neither a fact nor
   // settled: such a redirect is taken both ways.
   const untracked = (r: Requirement) =>
@@ -309,13 +322,13 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     for (const r of reqs ?? []) {
       // A carried flag is settled for the whole run: met, or never.
       if ((r.kind === 'flag' || r.kind === 'notFlag') && settled.has(r.flag)) {
-        if (handed.has(r.flag) !== (r.kind === 'flag')) has |= NEVER;
+        if (handed.has(r.flag) !== (r.kind === 'flag')) has = or(has, NEVER);
       }
-      else if (r.kind === 'flag') has |= bit(`flag:${r.flag}`);
-      else if (r.kind === 'notFlag') not |= bit(`flag:${r.flag}`);
-      else if (r.kind === 'companion') has |= bit(`companion:${r.companion}`);
-      else if (r.kind === 'noCompanion') not |= bit(`companion:${r.companion}`);
-      else if (r.kind === 'visited') has |= bit(`visited:${r.scene}`);
+      else if (r.kind === 'flag') has = or(has, bit(`flag:${r.flag}`));
+      else if (r.kind === 'notFlag') not = or(not, bit(`flag:${r.flag}`));
+      else if (r.kind === 'companion') has = or(has, bit(`companion:${r.companion}`));
+      else if (r.kind === 'noCompanion') not = or(not, bit(`companion:${r.companion}`));
+      else if (r.kind === 'visited') has = or(has, bit(`visited:${r.scene}`));
       // gold, items, classes, species: not tracked, taken as possible.
     }
     return { has, not };
@@ -328,11 +341,11 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       else if (e.kind === 'clearFlag') { b = bit(`flag:${e.flag}`); on = false; }
       else if (e.kind === 'joinParty') b = bit(`companion:${e.companion}`);
       else if (e.kind === 'leaveParty') { b = bit(`companion:${e.companion}`); on = false; }
-      if (on) { set |= b; clr &= ~b; } else { clr |= b; set &= ~b; }
+      if (on) { set = or(set, b); clr = without(clr, b); } else { clr = or(clr, b); set = without(set, b); }
     }
     return { set, clr };
   };
-  const met = (m: Mask, f: number) => (f & m.has) === m.has && (f & m.not) === 0;
+  const met = (m: Mask, f: number) => and(f, m.has) === m.has && and(f, m.not) === 0;
   const OPEN: Mask = { has: 0, not: 0 };
   const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined): Step =>
     ({ to, label, req, ...effects(eff), ...(eff?.some((e) => e.kind === 'passDay') ? { day: true as const } : {}) });
@@ -421,13 +434,16 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const sceneVisitedBit = ids.map((id) => bit(`visited:${id}`));
 
   // --- The walk ----------------------------------------------------------------
-  // A state is (scene, hub + 1, facts) packed into one safe integer.
+  // A state is (scene, hub + 1, facts): packed into one safe integer while
+  // that fits, and keyed by a string past it.
   const H = hubs.length + 1;
   const FACT_SPAN = 2 ** facts.size;
-  const pack = (scene: number, hub: number, f: number) => (scene * H + hub + 1) * FACT_SPAN + (f >>> 0);
+  const packs = ids.length * H * FACT_SPAN <= Number.MAX_SAFE_INTEGER;
+  const pack = (scene: number, hub: number, f: number): number | string =>
+    (packs ? (scene * H + hub + 1) * FACT_SPAN + f : `${scene * H + hub + 1}|${f}`);
   const sceneOf: number[] = [], hubOf: number[] = [], factsOf: number[] = [];
   const parent: number[] = [], via: string[] = [];
-  const idOf = new Map<number, number>();
+  const idOf = new Map<number | string, number>();
   const edgeFrom: number[] = [], edgeTo: number[] = [];
 
   const add = (scene: number, hub: number, f: number, from: number, label: string): number => {
@@ -446,10 +462,10 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const target = toRef === HUB_REF ? (hub >= 0 ? hubs[hub]! : module.start) : toRef;
     const t = index.get(target);
     if (t === undefined) return; // a dangling ref; the validator reports it
-    let f = ((factsOf[n]! & ~clr) | set) | sceneVisitedBit[t]!;
+    let f = or(or(without(factsOf[n]!, clr), set), sceneVisitedBit[t]!);
     let h = hub;
-    const hi = hubIndex.get(target);
-    if (hi !== undefined) { h = hi; f |= hubVisitedBits[hi]!; }
+    const hx = hubIndex.get(target);
+    if (hx !== undefined) { h = hx; f = or(f, hubVisitedBits[hx]!); }
     const m = add(t, h, f, n, label);
     edgeFrom.push(n); edgeTo.push(m);
   };
@@ -457,8 +473,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const start = index.get(module.start);
   if (start === undefined) return { ...none, skipped: 'no start scene' };
   const startHub = hubIndex.get(module.start) ?? -1;
-  const handedBits = [...handed].reduce((acc, f) => acc | bit(`flag:${f}`), 0);
-  add(start, startHub, handedBits | sceneVisitedBit[start]! | (startHub >= 0 ? hubVisitedBits[startHub]! : 0), -1, '');
+  const handedBits = [...handed].reduce((acc, f) => or(acc, bit(`flag:${f}`)), 0);
+  add(start, startHub, or(or(handedBits, sceneVisitedBit[start]!), startHub >= 0 ? hubVisitedBits[startHub]! : 0), -1, '');
   for (let n = 0; n < sceneOf.length; n++) {
     if (sceneOf.length > MAX_STATES) {
       return { ...none, states: sceneOf.length, skipped: `more than ${MAX_STATES} states` };
@@ -467,14 +483,14 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const c = compiled[s]!;
     const here = ids[s]!;
     // The next morning that matters, if any is still to come.
-    const next = dawnSteps.find((d) => !(f & d.bit));
+    const next = dawnSteps.find((d) => !and(f, d.bit));
     for (const st of c.steps) {
       if (!met(st.req, f)) continue;
       enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
       // A day lost may bring that morning (or may not yet).
       // The step's effects, then the morning's.
       if (st.day && next) {
-        enter(n, st.to, (st.set & ~next.clr) | next.set | next.bit, st.clr | next.clr,
+        enter(n, st.to, or(or(without(st.set, next.clr), next.set), next.bit), or(st.clr, next.clr),
           `${here}: ${st.label}, and loses a day to the morning of day ${next.day}`);
       }
     }
@@ -492,7 +508,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     for (const ev of c.events) if (!ev.until || !met(ev.until, f)) enter(n, ev.to, 0, 0, `${here}: ${ev.label}`);
     if (c.leave && hub >= 0 && hubs[hub] !== here) enter(n, HUB_REF, 0, 0, `${here}: goes back`);
     if (c.travel) {
-      hubs.forEach((h, i) => { if (h !== here && (f & hubVisitedBits[i]!)) enter(n, h, 0, 0, `${here}: travels to ${h}`); });
+      hubs.forEach((h, i) => { if (h !== here && and(f, hubVisitedBits[i]!)) enter(n, h, 0, 0, `${here}: travels to ${h}`); });
     }
     // A night slept may bring the next morning that matters (or may not yet:
     // the nights between change nothing, and the walk has those already).
@@ -500,8 +516,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       const scene = module.scenes[here];
       const camp = isHubScene(scene) && campAt(scene);
       const label = `sleeps until the morning of day ${next.day}`;
-      if (camp) enter(n, here, next.set | next.bit, next.clr, `${here}: ${label}`);
-      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, next.set | next.bit, next.clr, `${here}: ${label}`);
+      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`);
+      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`);
     }
   }
 
@@ -541,7 +557,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       const path: string[] = [];
       for (let m = n; parent[m]! >= 0; m = parent[m]!) path.unshift(via[m]!);
       const shown = path.length > 10 ? ['…', ...path.slice(-10)] : path;
-      const held = factNames.filter((k, i) => k.startsWith('flag:') && factsOf[n]! & (1 << i)).map((k) => k.slice(5));
+      const held = factNames.filter((k, i) => k.startsWith('flag:') && and(factsOf[n]!, 2 ** i)).map((k) => k.slice(5));
       errors.push(`[${ids[sceneOf[n]!]}] a party can be stranded here with no way left to a victory ending`
         + `${held.length ? ` (flags: ${held.join(', ')})` : ''}${carriedNote}. One way there: ${shown.join(' → ')}`);
     }
@@ -678,8 +694,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const handBits = handsOn.map((h) => bit(`flag:${h.flag}`));
   for (let n = 0; n < N; n++) {
     if (!victory(n)) continue;
-    const m = handBits.reduce((acc, b) => acc | (factsOf[n]! & b), 0);
-    if (!outputs.has(m)) outputs.set(m, handsOn.filter((_, i) => factsOf[n]! & handBits[i]!).map((h) => h.as));
+    const m = handBits.reduce((acc, b) => or(acc, and(factsOf[n]!, b)), 0);
+    if (!outputs.has(m)) outputs.set(m, handsOn.filter((_, i) => and(factsOf[n]!, handBits[i]!)).map((h) => h.as));
   }
   return { errors, states: N, seen: seenScenes, outputs: [...outputs.values()], rewrites: new Set(handsOn.filter((h) => isNpcFlag(h.flag)).map((h) => h.flag)) };
 }
