@@ -1202,7 +1202,9 @@ const scenes: Record<string, Scene> = {
       'The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **{reedwife}**, the green hag of the marsh, come up out of her water to see what her coin has bought.',
       '"Up, **{vargan}**, my sweet," the hag says. "Guests." The chief rises.',
       '"I was born down in {thornwick}," {vargan} says. "I cut reeds on that marsh for a copper a bundle, same as my father. The shallows were common water. Every reed-cutter in {thornwick} worked them. So I sold them to her." He looks up at his trophies the way a farmer looks at a full barn. "She paid me in monsters, and a valley to run. Then she raised the water to take what she\'d bought. My mother\'s house went under first. Fair price."',
-      '"You\'ve been *busy*," the hag tells you, delighted. At a flick of her hand, she calls for the chief\'s guard. For a heartbeat the whole hall waits to see what you\'ll do.',
+      // The jailer, planted where every winning route walks: a line that
+      // reads as a hag's grumble now and as the whole story in Part 2.
+      'The hag laughs. "Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark." She turns to you, delighted. "You\'ve been *busy*." At a flick of her hand, she calls for the chief\'s guard. For a heartbeat the whole hall waits to see what you\'ll do.',
     ],
     again: [
       'The chief\'s hall still reeks of smoke and old blood, and the child\'s shoe still hangs from the rafters.',

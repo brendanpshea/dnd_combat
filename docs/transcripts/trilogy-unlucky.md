@@ -1169,7 +1169,7 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 "I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The shallows were common water. Every reed-cutter in Thornwick worked them. So I sold them to her." He looks up at his trophies the way a farmer looks at a full barn. "She paid me in monsters, and a valley to run. Then she raised the water to take what she'd bought. My mother's house went under first. Fair price."
 
-"You've been *busy*," the hag tells you, delighted. At a flick of her hand, she calls for the chief's guard. For a heartbeat the whole hall waits to see what you'll do.
+The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. For a heartbeat the whole hall waits to see what you'll do.
 
 **» End them both**
 
@@ -1297,9 +1297,9 @@ _Journal (clue): They Walk One Way_
 
 > The Wander-Inn is full, and no one is in a hurry to leave, not with the churchyard standing open across the lane. **Mira** sets down a bowl in front of you unasked.
 
-> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."
+> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season, and this whole town drank to it. I poured. This season the dead get up and walk, and now we all sleep with the lamp lit."
 
-> "I was glad to see you walk back out of that den. Most of us were." She tops up your cup. "But folk are starting to look at you sideways. And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
+> "No one in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -1577,7 +1577,7 @@ The next note is shorter. *She is dead. No one pays the jailer now, and he is wa
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it without knowing it was one." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."
 
@@ -1787,7 +1787,7 @@ _(a paragraph shown before: “"The fen's still there," Mira says, which…”)_
 
 > The Wander-Inn is as full as ever. Thornwick would sooner sleep on the benches in company than alone in its own beds while the dead are walking. **Mira** slides a bowl your way without asking.
 
-> "So Aldous hired you. Good. He pays slow, but he pays." She tops up your cup. "Put the dead back where they belong, and the town will stop looking at you sideways. The fen will still be out there in the morning. That's the trouble with it."
+> "So Aldous hired you. Good. He pays slow, but he pays." She tops up your cup. "Put the dead back where they belong, and the town will find something else to look at. The fen will still be out there in the morning. That's the trouble with it."
 
 **» Go back out to the street**
 
@@ -2181,7 +2181,7 @@ The valley has raised an army at last. A **war-camp** spreads across the wet mea
 
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
-Word of your company reached the camp before you did. The crowd opens a path for you all the way to the command tent, and no one says out loud whose fault the sisters are. They do not have to.
+He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night she died, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
 **» Report to the command tent**
 
@@ -2759,6 +2759,8 @@ The ridge lies still, and no wings ride the wind. Below you, the bowl and the st
 
 **» Go down into the bowl**
 
+_Level up: 4 → 5_
+
 <sub>scene `war-council`</sub>
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
@@ -2781,25 +2783,17 @@ Sedge does not turn either. Her voice is raw. It is the voice you heard on the w
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "Killing her broke the vigil. We know, and we're sorry for that part."**
+**» "She ate people out of a pen. We owe you nothing."**
 
-_Level up: 4 → 5_
+<sub>scene `answer-defiant`</sub>
 
-<sub>scene `answer-rueful`</sub>
+Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and the dead never once walked. Set that against your carters."
 
-For one breath, the song falters. Sedge turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it." Nettle hisses at her. "Sedge. Hold still. Sorry pays nothing." Sedge turns back to the stone.
-
-**» [Persuasion DC 15] Ask Sedge to keep the vigil her sister kept**
-
-`[Persuasion DC 15 — Elaine the Holy rolls 14 — failed]`
-
-<sub>scene `vigil-refused`</sub>
-
-Sedge listens to the end, and then she slowly shakes her head. "She starved in the dark for an age so that you could sleep soundly, and you killed her for it. Now you want me to do the same? No." Nettle hisses at her to hold still. "I told you. Sorry pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge does not laugh. "Ask your barrows what her death bought you," she says, very quietly, and turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
-<sub>scene `tear-loose-cracked`</sub>
+<sub>scene `tear-loose-defiant-cracked`</sub>
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
@@ -2809,21 +2803,21 @@ Grey hands push up through the cracks around the stone. They catch at your ankle
 
 Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are two old women with sharp nails. Leave us in, and we are the whole mountain."
 
-**» Drag their hands out of the rock — Grab a wrist each and pull, while the stone pulls back.**
+**» Drag Nettle out while she rages — She is shouting at you, not holding on. Take her wrists while her hands are half out of the rock.**
 
-`[Athletics DC 15 — Arthur the Bold rolls 10 — failed]`
+`[Athletics DC 11 — Arthur the Bold rolls 10 — failed]`
 
-The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
+Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
 
-**» Break the song — Sing a wrong note into the Calling and knock it off its beat.**
+**» Break the song — Nettle has sung louder since you answered her. Sing a wrong note into the Calling anyway.**
 
-`[Arcana DC 15 — Morgan Le Fey rolls 8 — failed]`
+`[Arcana DC 17 — Morgan Le Fey rolls 8 — failed]`
 
-Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
+Nettle hears your wrong note and sings right over it, louder. The Calling never misses a beat.
 
 **» Say Halden's rites over the stone — Brother Halden's book of rites went down into the barrows with you. Its oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 8 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 5 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
@@ -2835,7 +2829,7 @@ The letters crawl and shift under your wizard's eyes. They will not hold still l
 
 **» Find where the stone is weakest — Look for the seam the song leaks out of, and hit it hard.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 9 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 13 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 

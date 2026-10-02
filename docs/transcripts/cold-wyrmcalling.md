@@ -19,7 +19,7 @@ The valley has raised an army at last. A **war-camp** spreads across the wet mea
 
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
-Word of your company reached the camp before you did. The crowd opens a path for you all the way to the command tent, and no one says out loud whose fault the sisters are. They do not have to.
+He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night she died, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
 Your purse still holds two seasons of the reeve's pay: the bounty for the Ashfang, and the commission for the barrows. Thornwick pays its debts.
 
@@ -443,6 +443,8 @@ Nothing moves overhead. Old scorch marks blacken the rim where wyrms once perche
 
 **» Go down into the bowl**
 
+_Level up: 4 → 5_
+
 <sub>scene `war-council`</sub>
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
@@ -471,13 +473,11 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 **» "She ate people out of a pen. We owe you nothing."**
 
-_Level up: 4 → 5_
-
 <sub>scene `answer-defiant`</sub>
 
 Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and the dead never once walked. Set that against your carters."
 
-Sedge does not laugh. "Ask your barrows what her death bought you," she says, very quietly. Their hands sink deeper into the stone. Nettle's song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
+Sedge does not laugh. "Ask your barrows what her death bought you," she says, very quietly, and turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
@@ -487,11 +487,11 @@ The sisters have sunk their hands to the wrist in the black rock, and the stone 
 
 Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are two old women with sharp nails. Leave us in, and we are the whole mountain."
 
-**» Drag their hands out of the rock — Grab a wrist each and pull, while the stone pulls back.**
+**» Drag Nettle out while she rages — She is shouting at you, not holding on. Take her wrists while her hands are half out of the rock.**
 
-`[Athletics DC 15 — Arthur the Bold rolls 23 — passed]`
+`[Athletics DC 11 — Arthur the Bold rolls 23 — passed]`
 
-The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
+Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>scene `sisters-battle`</sub>
 

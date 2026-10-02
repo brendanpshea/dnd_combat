@@ -571,7 +571,7 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 "I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The shallows were common water. Every reed-cutter in Thornwick worked them. So I sold them to her." He looks up at his trophies the way a farmer looks at a full barn. "She paid me in monsters, and a valley to run. Then she raised the water to take what she'd bought. My mother's house went under first. Fair price."
 
-"You've been *busy*," the hag tells you, delighted. At a flick of her hand, she calls for the chief's guard. For a heartbeat the whole hall waits to see what you'll do.
+The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. For a heartbeat the whole hall waits to see what you'll do.
 
 **» [Insight DC 14] Look at his hands**
 
@@ -679,9 +679,9 @@ _Journal (clue): They Walk One Way_
 
 > The Wander-Inn is full, and no one is in a hurry to leave, not with the churchyard standing open across the lane. **Mira** sets down a bowl in front of you unasked.
 
-> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."
+> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season, and this whole town drank to it. I poured. This season the dead get up and walk, and now we all sleep with the lamp lit."
 
-> "I was glad to see you walk back out of that den. Most of us were." She tops up your cup. "But folk are starting to look at you sideways. And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
+> "No one in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -813,7 +813,7 @@ But his hands are shaking on the altar rail, and somewhere under that thing Hald
 
 > He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
 
-> He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."
+> He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it without knowing it was one."
 
 > Halden taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That's the hag's brand," Wren says. "Every marsh-thing that ran with the Ashfang wore it." Halden shakes his head. "It was a keeper's mark first, the vigil's mark. The old builders cut it into the Barrow Gate, and the gate's watchers know it. She grew greedy and made it a slaver's brand."
 
@@ -1225,7 +1225,7 @@ The valley has raised an army at last. A **war-camp** spreads across the wet mea
 
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
-Word of your company reached the camp before you did. The crowd opens a path for you all the way to the command tent, and no one says out loud whose fault the sisters are. They do not have to.
+He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night she died, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
 **» Report to the command tent**
 
@@ -1513,6 +1513,8 @@ The ridge lies still, and no wings ride the wind. Below you, the bowl and the st
 
 **» Go down into the bowl**
 
+_Level up: 4 → 5_
+
 <sub>scene `war-council`</sub>
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
@@ -1541,19 +1543,25 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 **» "Killing her broke the vigil. We know, and we're sorry for that part."**
 
-_Level up: 4 → 5_
-
 <sub>scene `answer-rueful`</sub>
 
-For one breath, the song falters. Sedge turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it." Nettle hisses at her. "Sedge. Hold still. Sorry pays nothing." Sedge turns back to the stone.
+For one breath, the song falters. Sedge turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it."
 
-**» [Persuasion DC 15] Ask Sedge to keep the vigil her sister kept**
+Nettle does not turn. "Then you own the debt," she says, and her hands sink deeper into the rock. "Good. Owed is owed."
+
+**» Ask Sedge to take up her sister's vigil**
+
+<sub>scene `vigil-rueful`</sub>
+
+Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+
+**» Promise her Thornwick will remember her this time — The reeve owes you his grandfather, and he keeps the town's ledger.**
 
 `[Persuasion DC 15 — Elaine the Holy rolls 23 — passed]`
 
-<sub>scene `vigil-kept`</sub>
+"The reeve owes us his grandfather," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 
-"The door under the fen still needs a keeper," you tell her. "We broke the vigil, and a priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
+<sub>scene `vigil-kept`</sub>
 
 Sedge looks down at her own hands, sunk to the wrist in the stone, for a long moment. She pulls them out. The stone screams, and Nettle screams with it, and Sedge takes her sister by both wrists and drags her free of the rock.
 

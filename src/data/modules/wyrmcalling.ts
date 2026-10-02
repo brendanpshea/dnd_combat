@@ -26,7 +26,7 @@
  * swords 925, the flooded seam 1,800, the oni's hold 1,650, the giants' hall 1,650,
  * cataclysm finale 3,600, or 3,200 for the sisters in person); optional
  * dens/beasts add up to ~6,000 more. A continuing company (~3,050 XP from
- * Part 2) that raids most of the hills passes L5's 6,500 honestly; `xpToLevel: 5` on stepping up to the finale is the floor
+ * Part 2) that raids most of the hills passes L5's 6,500 honestly; `xpToLevel: 5` on the way down to the war council is the floor
  * for a fight-shy run (or one that buys its way past the ogre-mage). Cold
  * starts are floored to L4 by the opening choice.
  *
@@ -45,10 +45,12 @@
  * through a "you've been here" beat the reach search does not track, and at
  * the stone the Warden's dead come up through the cracks (see CRACKED).
  *
- * TWO ENDINGS: the sisters fall at the stone (`wc-epilogue`), or — after the
- * rueful answer and a Persuasion check — Sedge agrees to keep the vigil her
- * sister kept, drags Nettle out of the stone, and the Calling dies without a
- * last fight (`wc-epilogue-vigil`). No loot, no fight; hags in the fen again.
+ * TWO ENDINGS: the sisters fall at the stone (`wc-epilogue`), or — after an
+ * answer that owns the wrong or tells the truth, and a challenge whose
+ * approaches are the company's carried mercy (see REPLIES, vigilScene) —
+ * Sedge agrees to keep the vigil her sister kept, drags Nettle out of the
+ * stone, and the Calling dies without a last fight (`wc-epilogue-vigil`). No
+ * loot, no fight; hags in the fen again.
  *
  * WAR ASSETS: the war council on the rim, before the company goes down into
  * the bowl, is where Parts 1–2 come due (see OWED / COUNCIL): Wren, Halden
@@ -71,7 +73,7 @@
  * docs/module-writing-guide.md.
  */
 import type { Choice, Effect, Module, Outcome, Para, Requirement, Scene } from '../../adventure/types.js';
-import { withCanon, speaker, companionsFrom, carriedRenames } from '../../adventure/npcs.js';
+import { withCanon, speaker, companionsFrom, carriedRenames, npcFateFlag } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
 import { TRILOGY_FACTS, factValue } from './canon.js';
 import { HOLLOW_ROAD_RENAMED_NPC_FLAGS } from './hollow-road.js';
@@ -298,29 +300,42 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
 }));
 
 /**
- * The party's answer to the sisters at the stone. None is the right one, and
- * the sisters have a reply for each. Only
- * the rueful one opens a door: `answer-rueful` offers the vigil (a Persuasion
- * try that ends the Calling without the last fight). The defiant and the cold
- * answers each lead to their own `tear-loose` (see tearLoose): defiance makes
- * Nettle sing louder (breaking the song is harder), and cold steel makes Sedge
- * flinch (dragging her out is easier). Routed by scene, not by flag, so an
- * answer costs the reach search nothing. The level floor rides on every answer, so it lands before
- * whichever fight comes. A company that cut the captives out of the Ashfang
- * pens (Part 1) says so in its defiance (`answer-defiant`).
+ * The party's answer to the sisters at the stone, to {nettle}'s "Sister-killers".
+ * None is the right one: each buys something and costs something, and the
+ * answer's hint says which sister it will reach.
+ *   - rueful ("sorry"): owns the wrong. Opens the vigil (`vigil-rueful`) on
+ *     its easiest plain ask, but {nettle} takes it as a debt owned and digs in
+ *     to collect it: dragging them out is harder (`tear-loose-rueful`).
+ *   - unknowing ("we didn't know"): the truth, for every company. Opens the
+ *     vigil too (`vigil-unknowing`), on a harder plain ask, since it is not an
+ *     apology; the stone is faced as it stands (`tear-loose`).
+ *   - defiant ("we owe you nothing"): {nettle} rages, and her grip slips:
+ *     dragging her out is easiest of all. But she sings louder (breaking the
+ *     song is harder), and {sedge} stops listening: no vigil.
+ *   - cold (a drawn blade): {sedge} flinches, so dragging her out is easier,
+ *     and no one will hear another word: no vigil.
+ * Routed by scene, not by flag, so an answer costs the reach search nothing.
+ * A company that cut the captives out of the {ashfang} pens (Part 1) says so
+ * in its defiance (`answer-defiant`). The level floor is on the way to the war
+ * council (see goDown), so no level-up lands between an answer and its reply.
  */
 const REPLIES = [
   { id: 'defiant', to: 'answer-defiant',
-    label: '"She ate people out of a pen. We owe you nothing."' },
+    label: '"She ate people out of a pen. We owe you nothing."',
+    hint: '{nettle} has the shorter temper, and her grip on the rock is only as steady as she is.' },
   { id: 'rueful', to: 'answer-rueful',
-    label: '"Killing her broke the vigil. We know, and we\'re sorry for that part."' },
+    label: '"Killing her broke the vigil. We know, and we\'re sorry for that part."',
+    hint: '{sedge} has waited an age for someone to say it. {nettle} will hear a debt owned.' },
+  { id: 'unknowing', to: 'answer-unknowing',
+    label: '"We didn\'t know what she was keeping. No one in the valley did."',
+    hint: 'The plain truth. It is not an apology, and {sedge} will hear the difference.' },
   { id: 'cold', to: 'answer-cold',
-    label: 'Say nothing. Draw your blade.' },
+    label: 'Say nothing. Draw your blade.',
+    hint: '{sedge} has never stood in a fight. After steel, neither sister will hear another word.' },
 ] as const;
-const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, to: r.to,
-  // Answered once: a company that falls back and climbs again goes to
-  // `calling-return`, not back through the sisters' greeting.
-  effects: [{ kind: 'xpToLevel', level: 5 }] }));
+// Answered once: a company that falls back and climbs again goes to
+// `calling-return`, not back through the sisters' greeting.
+const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, hint: r.hint, to: r.to }));
 /**
  * `tear-loose` spends every approach it tries, for good. So a company that
  * loses the fight after it and climbs back must not walk into it again with
@@ -453,9 +468,11 @@ const goDown = (effects: Effect[] = []): Choice[] => {
     { id: 'back-spent', label: 'Go back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
       requires: [has('rim-clear'), has('stone-spent')], ...fx },
     // The first time: through the war council. Every company is owed Wren
-    // at least (see SEATS), so there is always a council.
+    // at least (see SEATS), so there is always a council. The level floor
+    // rides here, the one way to the stone the first time, so it lands
+    // before the council and not between an answer and its reply.
     { id: 'down-council', label: 'Go down into the bowl', to: 'war-council', hideWhenBlocked: true,
-      requires: [hasNot('rim-clear')], ...fx },
+      requires: [hasNot('rim-clear')], effects: [...effects, { kind: 'xpToLevel', level: 5 }] },
   ];
 };
 /** Who is owed a place beside the company, and why (`owed`: any one of these
@@ -632,23 +649,39 @@ const TEAR_CRACKED = [
  * each twice: sound, and with the Warden's dead come up through the cracks
  * (see CRACKED).
  */
-/** How the sisters took the company's answer: a defiant one makes `song`
- *  harder, a cold one makes dragging Sedge out easier (see REPLIES). */
-type TearMood = 'defiant' | 'cold';
-const tearLoose = (id: string, intro: string[], sisters: string, calling: string, mood?: TearMood): Scene => ({
+/** How the sisters took the company's answer (see REPLIES): a rueful one
+ *  makes the haul harder, a defiant one makes {nettle} easy to drag and the
+ *  song harder to break, a cold one makes {sedge} easy to drag. */
+type TearMood = 'rueful' | 'defiant' | 'cold';
+/** The haul without {hask}: plain, or as the answer left the sisters. `won`
+ *  is its own success beat (the plain haul uses the challenge's). */
+type Drag = { id: string; label: string; hint: string; dc: number; won?: string; lost: string };
+const DRAG: Record<TearMood | 'plain', Drag> = {
+  plain: { id: 'drag', label: 'Drag their hands out of the rock', hint: 'Grab a wrist each and pull, while the stone pulls back.', dc: 15,
+    lost: 'The rock holds them fast. You let go with burned palms, and the stone keeps drinking.' },
+  // You owned the debt, and {nettle} means to collect it.
+  rueful: { id: 'drag', label: 'Drag their hands out of the rock', hint: '{nettle} has dug in deeper since you owned the debt. Grab a wrist each and pull anyway.', dc: 17,
+    lost: '{nettle} has her hands sunk past the wrist, and she smiles at you the whole time you pull. You let go with burned palms.' },
+  // The defiant answer: {nettle} rages, and her grip slips.
+  defiant: { id: 'drag-nettle', label: 'Drag {nettle} out while she rages', hint: 'She is shouting at you, not holding on. Take her wrists while her hands are half out of the rock.', dc: 11,
+    won: '{nettle} is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. {sedge} will not leave her sister alone with you, and she pulls free after her.',
+    lost: '{nettle} stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.' },
+  // The cold answer: {sedge} flinched at the drawn blade. Take her first.
+  cold: { id: 'drag-sedge', label: 'Drag {sedge} out first', hint: 'She flinched when you drew steel. Take her wrists before she finds her nerve again.', dc: 12,
+    won: '{sedge} does not pull back, not at first. By the time she does, her hands are out of the rock. {nettle} will not let her sister go alone, and she tears free after her, screaming.',
+    lost: '{sedge} finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.' },
+};
+const tearLoose = (id: string, intro: string[], sisters: string, calling: string, mood?: TearMood): Scene => {
+  const drag = DRAG[mood ?? 'plain'];
+  return {
     id, kind: 'challenge', art: { imageId: 'loc-mountain', emoji: '🗿' },
     intro,
     retry: 'perApproach',
     approaches: [
-      mood === 'cold'
-        // The cold answer: Sedge flinched at the drawn blade. Take her first.
-        ? { id: 'drag-sedge', label: 'Drag {sedge} out first', hint: 'She flinched when you drew steel. Take her wrists before she finds her nerve again.',
-          skill: 'athletics', dc: 12, requires: [{ kind: 'noCompanion', companion: 'hask' }], hideWhenBlocked: true,
-          success: { to: sisters, effects: LOOSE, text: ['{sedge} does not pull back, not at first. By the time she does, her hands are out of the rock. {nettle} will not let her sister go alone, and she tears free after her, screaming.'] },
-          failure: { to: id, text: ['{sedge} finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.'] } }
-        : { id: 'drag', label: 'Drag their hands out of the rock', hint: 'Grab a wrist each and pull, while the stone pulls back.',
-          skill: 'athletics', dc: 15, requires: [{ kind: 'noCompanion', companion: 'hask' }], hideWhenBlocked: true,
-          failure: { to: id, text: ['The rock holds them fast. You let go with burned palms, and the stone keeps drinking.'] } },
+      { id: drag.id, label: drag.label, hint: drag.hint, skill: 'athletics', dc: drag.dc,
+        requires: [{ kind: 'noCompanion', companion: 'hask' }], hideWhenBlocked: true,
+        ...(drag.won ? { success: { to: sisters, effects: LOOSE, text: [drag.won] } } : {}),
+        failure: { to: id, text: [drag.lost] } },
       // Hask's way: the same haul, on a sergeant's count.
       { id: 'hask', label: 'Haul them out on {hask}\'s count', hint: 'He has called the step for twenty years. Pull when he says pull, and not before.',
         skill: 'athletics', dc: 11, requires: [{ kind: 'companion', companion: 'hask' }], hideWhenBlocked: true,
@@ -706,6 +739,74 @@ const tearLoose = (id: string, intro: string[], sisters: string, calling: string
     success: { to: sisters, effects: LOOSE, text: ['The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.'] },
     failure: { to: calling, effects: [{ kind: 'setFlag', flag: 'stone-spent' }], text: ['Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.'] },
     noBack: true,
+  };
+};
+
+/**
+ * The vigil: asking {sedge} to keep the door her sister kept, after an answer
+ * that owns the wrong (`rueful`) or tells the truth (`unknowing`). One try per
+ * approach, and each approach is a reason she might listen, given by whoever
+ * has the right to give it. The plain ask is open to every company, a cold
+ * start too; its DC is set by the answer. The rest are what three chapters of
+ * mercy carried up the mountain: the pen opened (`hollow-road:captives-freed`),
+ * the drowned carried home (`sunken-barrows:drowned-gold-home`), the old reeve
+ * carried home (`sunken-barrows:grandfather-home`), {marrow} spared to keep
+ * his graves, {halden} saved (or beside you), and a {wren} who would follow
+ * you anywhere. So a merciful company has several tries at it, and a cruel
+ * one (if it says sorry at all) has one hard one.
+ *
+ * Every approach lands on `vigil-kept`, or on the answer's own refusal once
+ * all are spent, so none can open or shut a way on. The carried flags behind
+ * them are read as counts (OWED), which the reach search leaves untracked as
+ * it does an attitude gate; read as flags, each would double its whole walk.
+ */
+const OWED = (flag: string): Requirement => ({ kind: 'count', flag, atLeast: 1 });
+type VigilMood = 'rueful' | 'unknowing';
+const VIGIL_ASK_DC: Record<VigilMood, number> = { rueful: 15, unknowing: 17 };
+const vigilScene = (mood: VigilMood): Scene => ({
+  id: `vigil-${mood}`, kind: 'challenge', art: { imageId: 'loc-mountain', emoji: '🚪' },
+  intro: ['{sedge} keeps her hands in the rock, but she is listening. {nettle} sings louder, to drown you out.'],
+  retry: 'perApproach',
+  noBack: true,
+  approaches: [
+    { id: 'pen', label: 'Tell her the pen behind the kennels stands empty', hint: 'Whatever her sister grew greedy for, you let it walk home.',
+      skill: 'persuasion', dc: 15, requires: [OWED('hollow-road:captives-freed')], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['"We opened her pen," you tell {sedge}. "The carter walked home, and the girl with one shoe. Whatever your sister grew greedy for at the end is given back." {sedge} is quiet for a long breath. "Then only the door is owed," she says.'] },
+      failure: { to: `vigil-${mood}`, text: ['"One pen," {sedge} says. "She sat in the dark for {door-kept}. A pen does not weigh much against that."'] } },
+    { id: 'fen', label: 'Promise her the fen will pay the old price again', hint: 'The fen-folk on the rim are kin to the drowned you carried home. Ask them, and they would do it.',
+      skill: 'persuasion', dc: 15, requires: [OWED('sunken-barrows:drowned-gold-home')], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['"The fen-folk on the rim owe us their drowned," you tell her. "There will be a {door-price} at the water\'s edge each {door-midwinter} again, the way their grandparents left it." {sedge} turns her burning face up toward the rim, where the fen-folk stand with their ropes.'] },
+      failure: { to: `vigil-${mood}`, text: ['"Their grandparents forgot," {sedge} says. "So will they."'] } },
+    { id: 'ledger', label: 'Promise her {thornwick} will remember her this time', hint: 'The reeve owes you his grandfather, and he keeps the town\'s ledger.',
+      skill: 'persuasion', dc: 15, requires: [OWED('sunken-barrows:grandfather-home')], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['"The reeve owes us his grandfather," you tell her. "He will write her price into {thornwick}\'s ledger, and her name beside it, and every reeve after him will read it." {sedge} turns the words over. "Her name," she says. "In a ledger."'] },
+      failure: { to: `vigil-${mood}`, text: ['"Ink," {sedge} says. "Your {thornwick} had ink before, and it forgot her all the same."'] } },
+    { id: 'marrow', label: 'Tell her who keeps {saltmere}\'s graves now', hint: '{marrow} took a chisel to the {warden}\'s door. You let him go home to his dead.',
+      skill: 'persuasion', dc: 16, requires: [OWED(npcFateFlag('marrow', 'sings'))], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['"The man who took a chisel to that door was {marrow}," you tell her. "We let him live, and he went home to keep {saltmere}\'s graves with the rites, so that nothing there wakes." {sedge} looks at you, and for once there is no anger in it. "A gravedigger keeping watch," she says. "She would have laughed."'] },
+      failure: { to: `vigil-${mood}`, text: ['"One old man with a lamp," {sedge} says. "She kept the whole fen."'] } },
+    // Halden came down into the bowl: he says the rites for her himself.
+    { id: 'halden', label: 'Let {halden} say the rites for her sister', hint: 'He has said them over every grave in {thornwick}. No one has ever said them over hers.',
+      skill: 'religion', dc: 13, requires: [{ kind: 'companion', companion: 'halden' }], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['Brother {halden} opens his book at the rites for the dead. He says them slowly, all the way through, for a hag whose name he does not know. When he finishes, {sedge} is weeping. "No one ever said them for her," she says.'] },
+      failure: { to: `vigil-${mood}`, text: ['{halden} starts the rites, and {nettle} sings over him until no one can hear the words. {sedge} turns her face back to the stone.'] } },
+    { id: 'halden-rim', label: 'Promise her {halden} will say the rites for her sister', hint: 'He is up on the rim, alive because of you. He has never refused anyone the rites.',
+      skill: 'persuasion', dc: 15, requires: [{ kind: 'npc', npc: 'halden', fate: 'saved' }, { kind: 'noCompanion', companion: 'halden' }], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['"Brother {halden} is up on the rim," you tell her. "He says the rites over everyone {thornwick} buries. He will say them for your sister." {sedge} says nothing for a breath. "No one ever said them for her," she says.'] },
+      failure: { to: `vigil-${mood}`, text: ['"A priest\'s words," {sedge} says. "She had {door-kept} of silence. Words come late."'] } },
+    // A Wren who would follow the company anywhere (her `attitude`) speaks for it.
+    { id: 'wren', label: 'Let {wren} speak for you', hint: 'She has walked behind you through three wars. She would tell anyone what she thinks of you.',
+      skill: 'persuasion', dc: 13,
+      requires: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }], hideWhenBlocked: true,
+      success: { to: 'vigil-kept', text: ['{wren} lowers her bow and steps up beside you. "I\'ve walked behind them through three wars," she tells {sedge}. "They keep their word. If they say the fen will pay, it will." {sedge} looks at the girl, and then at you.'] },
+      failure: { to: `vigil-${mood}`, text: ['{sedge} hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."'] } },
+    // The plain ask, open to every company: the answer sets how hard it is.
+    { id: 'ask', label: 'Tell her the door still needs a keeper', skill: 'persuasion', dc: VIGIL_ASK_DC[mood],
+      success: { to: 'vigil-kept', text: ['"The door under the fen still needs a keeper," you tell her. "A priest\'s book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."'] },
+      failure: { to: `vigil-${mood}`, text: ['"A keeper," {sedge} says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."'] } },
+  ],
+  success: { to: 'vigil-kept' },
+  failure: { to: `vigil-refused-${mood}` },
 });
 
 /** Into the war-camp. Cold-start floor: a fresh company begins the finale
@@ -723,7 +824,8 @@ const scenes: Record<string, Scene> = {
     text: [
       'The valley has raised an army at last. A **war-camp** spreads across the wet meadows below the high hills, where {thornwick}\'s recruits drill: fen-folk with boar-spears, and carters holding pikes. This time everyone can see the trouble coming. Fires burn every night up in the high passes, and no shepherd lit them.',
       'A fen-folk recruit with a boar-spear falls into step beside you. "It\'s the **{calling} Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can\'t hear it yet. Up there, you will. The **{reedwife}\'s sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."',
-      'Word of your company reached the camp before you did. The crowd opens a path for you all the way to the command tent, and no one says out loud whose fault the sisters are. They do not have to.',
+      // The blame falls on what no one knew, not on a crime (see `answer-unknowing`).
+      'He looks sideways at you, and then away. "There\'s talk round the fires that it\'s on you, for the hag. I lit a bonfire the night she died, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.',
       { if: [hasNot('sunken-barrows:won')],
         text: 'Your purse still holds two seasons of the reeve\'s pay: the bounty for the {ashfang}, and the commission for the barrows. {thornwick} pays its debts.' },
     ],
@@ -1692,7 +1794,7 @@ const scenes: Record<string, Scene> = {
       '{nettle} laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for {door-kept} she kept that door, and the dead never once walked. Set that against your carters."',
       { if: [{ kind: 'flag', flag: 'hollow-road:captives-freed' }],
         text: '"We took her pen apart ourselves," you tell her. "Everyone in it walked home." {nettle}\'s lip curls. "Very brave. And the next season, the dead walked out of their graves."' },
-      '{sedge} does not laugh. "Ask your barrows what her death bought you," she says, very quietly. Their hands sink deeper into the stone. {nettle}\'s song climbs, louder and angrier than before, and the burning ground creeps toward your boots.',
+      '{sedge} does not laugh. "Ask your barrows what her death bought you," she says, very quietly, and turns back to the stone. {nettle} rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.',
       { if: [{ kind: 'companion', companion: 'wren' }],
         text: '"She took people off the marsh road," {wren} says under her breath, her bow drawn. "I wrote their names down for the reeve. I can still say every one."' },
     ],
@@ -1700,17 +1802,32 @@ const scenes: Record<string, Scene> = {
   },
   'answer-rueful': {
     id: 'answer-rueful', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['For one breath, the song falters. {sedge} turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it." {nettle} hisses at her. "{sedge}. Hold still. Sorry pays nothing." {sedge} turns back to the stone.',
+    text: ['For one breath, the song falters. {sedge} turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it."',
+      '{nettle} does not turn. "Then you own the debt," she says, and her hands sink deeper into the rock. "Good. Owed is owed."',
       { if: [{ kind: 'companion', companion: 'wren' }],
         text: '{wren} lets her bowstring ease a finger\'s width. "That\'s the first time anyone\'s said it," she murmurs. "Somebody should have."' }],
-    // The one reply that opens a door: ask Sedge to take up her dead sister's
-    // vigil. Success ends the Calling without the last fight; a miss leaves
-    // the stone to be faced the usual way. One try.
+    // An answer that owns the wrong opens the vigil (see vigilScene): ask
+    // Sedge to keep the door. One try at the whole of it; or face the stone,
+    // with Nettle dug in to collect (`tear-loose-rueful`).
     next: [
-      { id: 'vigil', label: '[Persuasion DC 15] Ask {sedge} to keep the vigil her sister kept', to: 'vigil-kept',
+      { id: 'vigil', label: 'Ask {sedge} to take up her sister\'s vigil', to: 'vigil-rueful',
         once: true, hideWhenBlocked: true,
-        requires: [{ kind: 'notFlag', flag: 'sisters-loose' }, { kind: 'notFlag', flag: 'stone-spent' }],
-        check: { skill: 'persuasion', dc: 15, failTo: 'vigil-refused' } },
+        requires: [{ kind: 'notFlag', flag: 'sisters-loose' }, { kind: 'notFlag', flag: 'stone-spent' }] },
+      ...stoneChoices('tear-loose-rueful'),
+    ],
+    noBack: true,
+  },
+  // The truth, for every company: no one in the valley knew what she kept.
+  'answer-unknowing': {
+    id: 'answer-unknowing', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['{nettle} laughs without turning round. "Not knowing pays nothing."',
+      '{sedge} turns her burning face toward you, and looks at you for a long time. "No," she says. "You did not know. None of you ever asked." The song goes on, but she has stopped singing it.',
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '"It\'s true," {wren} says quietly, beside you. "I scouted that fen for the reeve, and I never knew either."' }],
+    next: [
+      { id: 'vigil', label: 'Ask {sedge} to take up her sister\'s vigil', to: 'vigil-unknowing',
+        once: true, hideWhenBlocked: true,
+        requires: [{ kind: 'notFlag', flag: 'sisters-loose' }, { kind: 'notFlag', flag: 'stone-spent' }] },
       ...TO_STONE,
     ],
     noBack: true,
@@ -1726,7 +1843,7 @@ const scenes: Record<string, Scene> = {
     next: stoneChoices('tear-loose-cold'), noBack: true,
   },
   // One `tear-loose` per answer's mood, sound and cracked (see tearLoose).
-  ...Object.fromEntries((['', 'defiant', 'cold'] as const).flatMap((mood) => {
+  ...Object.fromEntries((['', 'rueful', 'defiant', 'cold'] as const).flatMap((mood) => {
     const id = mood ? `tear-loose-${mood}` : 'tear-loose';
     return [
       [id, tearLoose(id, [TEAR_OPEN, TEAR_STAKES], 'sisters-battle', 'calling-battle', mood || undefined)],
@@ -1757,11 +1874,11 @@ const scenes: Record<string, Scene> = {
   },
   // Sedge said yes: she drags her sister out of the stone and takes her down
   // to the fen, to keep the Warden's door. The Calling dies with nobody
-  // feeding it. No last fight, and no hoard either.
+  // feeding it. No last fight, and no hoard either. Whatever reason moved
+  // her was said in the vigil's own beat (see vigilScene).
   'vigil-kept': {
     id: 'vigil-kept', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🚪' },
     text: [
-      '"The door under the fen still needs a keeper," you tell her. "We broke the vigil, and a priest\'s book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."',
       '{sedge} looks down at her own hands, sunk to the wrist in the stone, for a long moment. She pulls them out. The stone screams, and {nettle} screams with it, and {sedge} takes her sister by both wrists and drags her free of the rock.',
       'With no one feeding it, the {calling} falters. The black fang cracks from top to bottom, and the fire in the floor of the bowl sinks back into the rock. There is only the wind.',
       '"We will keep the door," {sedge} says. "She kept it alone for an age. I will not let that go to waste. And we will take one {door-price} at {door-midwinter} and no more, as our sister did before she grew greedy. Do not come into the deep fen again." {nettle} says nothing. She only looks at you, the way you look at a debt you mean to collect.',
@@ -1770,11 +1887,19 @@ const scenes: Record<string, Scene> = {
       [{ kind: 'xp', amount: 1200 }]),
   },
   ...walkDownScenes('vigil-down-with', 'vigil-aftermath'),
-  'vigil-refused': {
-    id: 'vigil-refused', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
-    text: ['{sedge} listens to the end, and then she slowly shakes her head. "She starved in the dark for an age so that you could sleep soundly, and you killed her for it. Now you want me to do the same? No." {nettle} hisses at her to hold still. "I told you. Sorry pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.'],
+  // Every reason spent, and Sedge still says no: the stone, as the answer left it.
+  'vigil-refused-rueful': {
+    id: 'vigil-refused-rueful', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['{sedge} slowly shakes her head. "She starved in the dark for an age so that you could sleep soundly, and she died for it. Now you want me to do the same? No." {nettle} hisses at her to hold still. "Sorry pays nothing. I could have told you." The stone drinks deeper, and the burning ground creeps toward your boots.'],
+    next: stoneChoices('tear-loose-rueful'),
+  },
+  'vigil-refused-unknowing': {
+    id: 'vigil-refused-unknowing', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['{sedge} slowly shakes her head. "She starved in the dark for an age so that you could sleep soundly, and none of you ever asked her name. Now you want me to do the same? No." {nettle} hisses at her to hold still. "I told you. Not knowing pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.'],
     next: TO_STONE,
   },
+  'vigil-rueful': vigilScene('rueful'),
+  'vigil-unknowing': vigilScene('unknowing'),
   'vigil-aftermath': {
     id: 'vigil-aftermath', kind: 'story', art: { imageId: 'loc-camp', emoji: '🎉' },
     text: [
