@@ -1539,7 +1539,7 @@ Sedge does not turn either. Her voice is raw. It is the voice you heard on the w
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "Killing her broke the vigil. We know, and we're sorry for that part."**
+**» "Killing her broke the vigil. We know, and we're sorry for that part." — Sedge has waited an age for someone to say it. Nettle will hear a debt owned.**
 
 <sub>scene `answer-rueful`</sub>
 

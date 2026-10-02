@@ -1024,6 +1024,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
               >
                 {choice.check && <span className="adv-chip">🎲 {choice.check.skill} DC {choice.check.dc}</span>}
                 <span>{choice.label}</span>
+                {choice.hint && <span className="adv-approach-hint">{choice.hint}</span>}
                 {blocked && <span className="adv-lock">🔒 {blocked}</span>}
               </button>
             ))}

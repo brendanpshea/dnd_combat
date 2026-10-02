@@ -544,7 +544,7 @@ function playChapter(
           const c: Choice = choice;
           return {
             ...base(`${scene.id}:${c.id}`, c.to),
-            label: c.label,
+            label: `${c.label}${c.hint ? ` — ${c.hint}` : ''}`,
             defeat: isDefeat(c.to),
             cruel: cruelty(`${c.label} ${c.id}`), mercy: mercy(`${c.label} ${c.id}`),
             rolls: !!c.check,

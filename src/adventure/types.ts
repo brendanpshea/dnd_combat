@@ -117,6 +117,9 @@ export interface Outcome {
 export interface Choice {
   id: Id;
   label: string;
+  /** A line under the label: what the choice risks or hints at, when the
+   *  label can't say it (see the guide's rule on labels). */
+  hint?: string;
   to: SceneRef;
   effects?: Effect[];
   requires?: Requirement[];

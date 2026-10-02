@@ -2645,7 +2645,7 @@ Sedge does not turn either. Her voice is raw. It is the voice you heard on the w
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "She fed on the people of this valley. We owe you nothing."**
+**» "She fed on the people of this valley. We owe you nothing." — Nettle has the shorter temper, and her grip on the rock is only as steady as she is.**
 
 <sub>scene `answer-defiant`</sub>
 
