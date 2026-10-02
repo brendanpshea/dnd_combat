@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`, `sunken-barrows:wren-came-down`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`, `sunken-barrows:wren-came-down`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`, `sunken-barrows:wren-came-down`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`, `sunken-barrows:wren-came-down`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -1167,7 +1167,7 @@ The last wisp winks out, and the water goes dark for good.
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them.
+In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "No one from here dresses like that to go walking."
 
@@ -1177,11 +1177,13 @@ She looks at the purses, then at you. "Those belonged to somebody's husband, som
 
 _+55 gold (870)_
 
+_Gained: Potion of Healing ×2_
+
 _Journal (clue): Robes the Colour of Worms_
 
 <sub>scene `lights-kept`</sub>
 
-Wren watches you fill your pockets with the drowned folk's coin. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
+Wren watches you fill your pockets with the drowned folk's coin and their two potions. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
 
 **» Follow her into the fen**
 
@@ -1295,6 +1297,8 @@ Worked steps lead down into the cold. Your torch makes a small, brave circle, an
 
 **Dawn — day 3.**
 
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
+
 → Search the room
 
 Every niche is empty. The walking dead took their grave-goods with them when they went down to dig.
@@ -1315,7 +1319,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 Wren keeps an arrow on the string until his lantern is gone. "The dead don't tell you to mind the cut," she says.
 
@@ -1385,7 +1389,7 @@ The call that brought him down here has let him go. He is light now, just bones 
 
 Wren kneels and straightens the chain on his chest, and says nothing at all.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
 **» Carry him home in your cloak, though it will cost the day**
 
@@ -1398,8 +1402,6 @@ He weighs almost nothing, and he is still the hardest thing you have ever carrie
 **» Go on, with the old man on your back**
 
 **Dawn — day 4.**
-
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1465,6 +1467,8 @@ _+60 gold (1145)_
 
 **Dawn — day 5.**
 
+The ground shook again before dawn, longer this time, and hard enough to wake the soundest sleeper. Somewhere under the fen, old stone gave a little.
+
 → Search the room
 
 You sift the dust by hand. It is mostly the dead, and they carried nothing.
@@ -1498,6 +1502,8 @@ A walking suit of ancient armour guards the stair. Two ghouls crouch among the c
 The grey man leans in to his work. "Faster," he tells the chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
 "I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves, and then I walked away and left them all in the cold. The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."
+
+The door has shifted in its frame since the ground shook. A line of dark, a finger wide, shows along its top. "He leaned on it in the night, and the stone gave," Marrow says. "It will be harder to shut now."
 
 **» [Persuasion DC 14] Tell Marrow what the king's wall says**
 
@@ -1545,7 +1551,7 @@ Marrow kneels down among his faithful. "They know how to chant at this door," he
 
 **» Open Halden's book at the door**
 
-<sub>scene `resealing`</sub>
+<sub>scene `resealing-shifted`</sub>
 
 The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
 
@@ -1553,9 +1559,9 @@ Marrow has laid his chisel down on the step. He watches the book now, not the do
 
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
 
-**» Speak the rites aloud**
+**» Speak the rites aloud — The door has shifted in its frame, and the lead in its letters has cracked with it.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 21 — passed]`
+`[Religion DC 15 — Morgan Le Fey rolls 21 — passed]`
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.
 
@@ -1907,7 +1913,7 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and the pass is yours. We will take our spears somewhere else. Down to your camp in the meadows, I expect, on the night the stone peaks. Or try us. We have not had a proper fight all week."
 
 **» Try them**
 
@@ -2151,7 +2157,7 @@ Sedge does not turn either. Her voice is raw, and you have heard it before, on t
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-Nettle's hands shake in the rock. She watches your mouth like a clerk waiting for a signature. Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
+Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and I will hold on until it is paid." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "She fed on the people of this valley. We owe you nothing."**
 

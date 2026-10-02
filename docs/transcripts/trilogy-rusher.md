@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue-vigil` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -553,6 +553,8 @@ The reeve does not hang Vargan. He sends him out to cut reeds on the common land
 
 Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
 
+The reeve's men ride out along the marsh road and find their scout still pinned under a dead horse, alive and furious. She has scratched every watch-post on the den's wall into the mud beside her.
+
 Mira pours your round and takes your coin for it. "Town's still standing," she allows, and moves off down the bar.
 
 The quartermaster in the market puts his prices up a copper for the bonfire week. He calls it the festival rate.
@@ -561,7 +563,7 @@ Out past the reeds, the reeve's men pull down the den's timber wall one post at 
 
 The bounty notice comes down off the board in the square. Someone tears off the bottom corner first, the line in the prouder hand, and keeps it.
 
-Behind the kennels, the reeve's men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.
+The reeve's men find the pens behind the kennels two days later. The carter is alive. Someone tells him who broke the den, and that they knew he was there. He will not say your names, and he will not drive the marsh road again.
 
 ### Ending: victory
 
@@ -669,9 +671,11 @@ _Journal (lead): Into the Deep Fen_
 
 **Wren, the Reeve's Scout**
 
-> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees. She favours one leg when she stands, and pretends she doesn't.
+> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees.
 
-> "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "I've scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+> She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men dug me out, after the den fell. It holds."
+
+> "I've scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
 **» Follow her onto the raised road**
 
@@ -819,7 +823,7 @@ You drag each other out onto the mud, soaked and shaking. Behind you the last wi
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them.
+In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "No one from here dresses like that to go walking."
 
@@ -829,11 +833,13 @@ She looks at the purses, then at you. "Those belonged to somebody's husband, som
 
 _+55 gold (511)_
 
+_Gained: Potion of Healing ×2_
+
 _Journal (clue): Robes the Colour of Worms_
 
 <sub>scene `lights-kept`</sub>
 
-Wren watches you fill your pockets with the drowned folk's coin. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
+Wren watches you fill your pockets with the drowned folk's coin and their two potions. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
 
 **» Follow her into the fen**
 
@@ -937,7 +943,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -973,7 +979,7 @@ At the end of the cut, an old man in a good burial coat has folded down against 
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
 **» Carry him home in your cloak, though it will cost the day**
 
@@ -1126,6 +1132,8 @@ The rope ladder brings you up out of the great barrow and into the open air.
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet, and the best walk any of you can remember.
+
+Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
 
 **» Go up to the reeve's hall**
 
@@ -1371,7 +1379,7 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and the pass is yours. We will take our spears somewhere else. Down to your camp in the meadows, I expect, on the night the stone peaks. Or try us. We have not had a proper fight all week."
 
 **» Pay the toll (600 gold)**
 
@@ -1381,7 +1389,9 @@ _Level up: 4 → 5_
 
 <sub>scene `onihold-paid`</sub>
 
-The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times. By noon its warband is marching down the other side of the mountain, away from the valley. The middle pass is open.
+The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times.
+
+By noon its warband is marching down the long road toward the meadows, where the war-camp's smoke goes up. The middle pass is open behind it.
 
 **» Walk through the open pass**
 
@@ -1455,7 +1465,9 @@ You reach the last ridge. The Calling is not a pull any more. It is a pressure, 
 
 Down in the bowl, two green shapes at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
-Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
+Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.
+
+One column on the slope below keeps step, with a horn at its head. The ogre-mage is taking its spears to the camp, as it said it would.
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
@@ -1467,17 +1479,15 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
 
-Vex has had some sleep, by the look of him. "The night went our way," he says. "I didn't bury anyone."
+Vex has not slept, and there is a bandage round one hand. "We held," he says. "It cost. I have a list of names in my coat."
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-"My riders were on the east line all night," Wren says. "Every one of them came back."
-
-While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
+She reports to Vex first. You get a nod, later. When Vex asks who is going down with you, she says the rim needs its scout more than you do.
 
 No guard walks at Vex's shoulder. The chief's guard answered to him once, and Vex let that man fight you in Vargan's hall. Now Vex holds this column on the reeve's terms, and two of the reeve's pikemen walk behind him.
 
-"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
+"We hold the ridge. You go down," Vex says. He looks along the rim, where no one from the valley has come to see you off. "That's the whole plan. A small party's a quiet one."
 
 **» Let them hold the rim while you go down**
 
@@ -1491,7 +1501,7 @@ Sedge does not turn either. Her voice is raw, and you have heard it before, on t
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-Nettle's hands shake in the rock. She watches your mouth like a clerk waiting for a signature. Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
+Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and I will hold on until it is paid." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "Vargan sold her that water, and the people off the marsh road with it. The reeve has him cutting reeds in it now."**
 
@@ -1539,13 +1549,13 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She pours for the pikemen first. When she gets to you, she fills your cup and holds out her hand for the coin, the same as anyone's.
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 
 Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
-The war-camp fought its long night while you were still up in the hills. The sentries still keep the arrows they never had to loose.
+The war-camp fought its long night while you were still up in the hills. The pikes held, but it cost. The pikemen still keep the list of names.
 
 Vargan hears about the Calling in the reeve's reed-beds. He asks to go up and fight. The reeve says no, and Vargan goes back to cutting.
 
@@ -1553,6 +1563,6 @@ Deep under the fen, the Warden's door stays shut. Two shapes keep watch over it 
 
 Down in Thornwick, the reeve orders a plaque for the square, to mark the year of three wars. He has the wording changed twice.
 
-Wren tells every new scout how she held the gate of the Undercrypt, and how you walked back out.
+Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
 
 ### Ending: victory

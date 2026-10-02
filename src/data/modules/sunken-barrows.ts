@@ -396,16 +396,21 @@ const scenes: Record<string, Scene> = {
       { kind: 'notFlag', flag: 'hollow-road:scout-walked-past' }],
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
-      'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees. She favours one leg when she stands, and pretends she doesn\'t.',
+      'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees.',
       // Never found under the horse in Part 1 (or a cold start, whose company
       // never met her either): the reeve's men dug her out after the den fell.
-      '"**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve\'s men dug me out, after the den fell. It holds."',
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:scout-bled-out' }],
+        text: 'She favours one leg when she stands, and pretends she doesn\'t. ' + '"**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve\'s men dug me out, after the den fell. It holds."' },
+      // Out past the fifth dawn without ever finding the scout: the one under
+      // the horse was her partner, and the reeve's men found her too late.
+      { if: [{ kind: 'flag', flag: 'hollow-road:scout-bled-out' }],
+        text: '"**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. "My partner was {tamsin}. A dead horse came down on her on the marsh road, the week you went for the den. Nobody found her in time." She tests her bowstring and does not look up.' },
       '"' + WREN_BRIEF + '"',
     ],
     next: [{ id: 'go', label: 'Follow her onto the raised road', to: 'fen',
       effects: [...WREN_JOINS,
         { kind: 'journal', entry: { id: 'n-wren', kind: 'npc', title: '{wren}, the Reeve\'s Scout',
-          body: '{wren} is Reeve {aldous}\'s scout. She is young, she limps, and she will not be left behind. She guides you through the deep fen as far as the old barrow-country.' } }] }],
+          body: '{wren} is Reeve {aldous}\'s scout. She is young, and she will not be left behind. She guides you through the deep fen as far as the old barrow-country.' } }] }],
   },
   // The company stepped round her on the marsh road in Part 1. She lived.
   'fen-left': {

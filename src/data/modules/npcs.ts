@@ -51,7 +51,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     id: 'tamsin', name: 'Tamsin',
     // The scout who died under the horse when no one tended her in time.
     fates: ['dead'],
-    introducedAt: { 'sunken-barrows': ['fen-partner'] },
+    introducedAt: { 'sunken-barrows': ['fen-partner', 'fen-out'] },
   },
   vex: {
     id: 'vex', name: 'Vex', aka: ['the lieutenant'], portraitId: 'npc-captain', emoji: '🗡️',

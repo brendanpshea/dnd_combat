@@ -145,9 +145,11 @@ _Journal (clue): The Dead Marched in Ranks_
 
 **Wren, the Reeve's Scout**
 
-> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees. She favours one leg when she stands, and pretends she doesn't.
+> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees.
 
-> "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "I've scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+> She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men dug me out, after the den fell. It holds."
+
+> "I've scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
 **» Follow her onto the raised road**
 
@@ -255,7 +257,7 @@ The last wisp winks out, and the water goes dark for good.
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them.
+In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "No one from here dresses like that to go walking."
 
@@ -265,11 +267,13 @@ She looks at the purses, then at you. "Those belonged to somebody's husband, som
 
 _+55 gold (464)_
 
+_Gained: Potion of Healing ×2_
+
 _Journal (clue): Robes the Colour of Worms_
 
 <sub>scene `lights-kept`</sub>
 
-Wren watches you fill your pockets with the drowned folk's coin. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
+Wren watches you fill your pockets with the drowned folk's coin and their two potions. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
 
 **» Follow her into the fen**
 
@@ -278,6 +282,8 @@ Wren watches you fill your pockets with the drowned folk's coin. She says nothin
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
 **Dawn — day 3.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
 
 → The Serpent Pool
 
@@ -359,8 +365,6 @@ Worked steps lead down into the cold. Your torch makes a small, brave circle, an
 
 **Dawn — day 4.**
 
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
-
 → Search the room
 
 Every niche is empty. The walking dead took their grave-goods with them when they went down to dig.
@@ -381,7 +385,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -447,7 +451,7 @@ At the end of the cut, an old man in a good burial coat has folded down against 
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
 **» Carry him home in your cloak, though it will cost the day**
 
@@ -460,6 +464,8 @@ He weighs almost nothing, and he is still the hardest thing you have ever carrie
 **» Go on, with the old man on your back**
 
 **Dawn — day 5.**
+
+The ground shook again before dawn, longer this time, and hard enough to wake the soundest sleeper. Somewhere under the fen, old stone gave a little.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -508,8 +514,6 @@ _+40 gold (679)_
 **» Make camp (long rest)** <sub>(day 5)</sub>
 
 **Dawn — day 6.**
-
-The ground shook again before dawn, longer this time, and hard enough to wake the soundest sleeper. Somewhere under the fen, old stone gave a little.
 
 → Search the room
 
@@ -625,7 +629,7 @@ Marrow kneels down among his faithful. "They know how to chant at this door," he
 
 **» Open Halden's book at the door**
 
-<sub>scene `resealing`</sub>
+<sub>scene `resealing-shifted`</sub>
 
 The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
 
@@ -633,9 +637,9 @@ Marrow has laid his chisel down on the step. He watches the book now, not the do
 
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
 
-**» Speak the rites aloud**
+**» Speak the rites aloud — The door has shifted in its frame, and the lead in its letters has cracked with it.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 15 — passed]`
+`[Religion DC 15 — Morgan Le Fey rolls 15 — passed]`
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.
 
