@@ -9,7 +9,7 @@
  * record's `introducedAt` feeds the reachability search's cast check.
  */
 import type { Id } from '../engine/types.js';
-import type { Module, NpcDef, NpcRef, CompanionDef, Requirement, Effect } from './types.js';
+import type { Module, NpcDef, NpcRef, CompanionDef, Requirement, Effect, CanonFact } from './types.js';
 
 /**
  * NPC state lives in campaign-wide flags under `npc.`: they carry, unprefixed,
@@ -28,8 +28,9 @@ export function carriedRenames(moduleId: Id, renamed: Record<string, string>): R
   return Object.fromEntries(Object.entries(renamed).map(([from, to]) => [`${moduleId}:${from}`, to]));
 }
 
-/** A token: `{id}`, the id in lower case with hyphens. */
-const TOKEN = /\{([a-z][a-z0-9-]*)\}/g;
+/** A token: `{id}`, the id in lower case with hyphens; `{^id}` capitalises
+ *  what it stands for, to open a sentence. */
+const TOKEN = /\{(\^?)([a-z][a-z0-9-]*)\}/g;
 
 /** Every string in `value`, deeply, with `f` applied (a fresh copy). */
 function mapStrings<T>(value: T, f: (s: string) => string): T {
@@ -105,15 +106,29 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
  * Throws on a token, NPC or fate the registry doesn't know.
  */
 export function withNpcs(module: Module, npcs: Record<Id, NpcDef>): Module {
+  return withCanon(module, { npcs });
+}
+
+/**
+ * The module built against the campaign's canon: every token resolved (an
+ * NPC's name, or a fact's text), NPC requirements and effects compiled to
+ * their flags, and both registries attached. An id may name a person or a
+ * fact, not both. Throws on a token, NPC or fate the canon doesn't know.
+ */
+export function withCanon(module: Module, canon: { npcs?: Record<Id, NpcDef>; facts?: Record<Id, CanonFact> }): Module {
+  const npcs = canon.npcs ?? {};
+  const facts = canon.facts ?? {};
+  const both = Object.keys(facts).filter((id) => id in npcs);
+  if (both.length) throw new Error(`${module.id}: ${both.join(', ')} named both a person and a fact`);
   const unknown = new Set<string>();
-  const resolved = mapStrings(module, (s) => s.replace(TOKEN, (whole, id: string) => {
-    const npc = npcs[id];
-    if (!npc) { unknown.add(id); return whole; }
-    return npc.name;
+  const resolved = mapStrings(module, (s) => s.replace(TOKEN, (whole, cap: string, id: string) => {
+    const text = npcs[id]?.name ?? facts[id]?.text;
+    if (text === undefined) { unknown.add(id); return whole; }
+    return cap ? text.charAt(0).toUpperCase() + text.slice(1) : text;
   }));
-  if (unknown.size) throw new Error(`${module.id}: unknown NPC token(s) ${[...unknown].map((u) => `{${u}}`).join(', ')}`);
+  if (unknown.size) throw new Error(`${module.id}: unknown token(s) ${[...unknown].map((u) => `{${u}}`).join(', ')}`);
   const compiled = compileNpcState(resolved, npcs, module.id);
-  return { ...compiled, npcs };
+  return { ...compiled, ...(canon.npcs ? { npcs } : {}), ...(canon.facts ? { facts } : {}) };
 }
 
 /** Whether NPC requirements or effects are left in a module (one built

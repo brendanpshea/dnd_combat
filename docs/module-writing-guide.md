@@ -357,6 +357,25 @@ open and possibly shut. Don't gate the only way on, and don't `assume` it.
 Use attitude to colour a line or open an extra door. (The same tools, `addFlag`
 and `count`, work on any tally.)
 
+### Facts of the world: canon
+
+Places, prices and counts that more than one line relies on live in the
+campaign's facts (`CanonFact` records), beside its people. Prose says them by
+token, and a fact with a `value` gives the number rules use:
+
+```ts
+'drowned-gold': { text: 'fifty-five gold', value: 55 },
+
+text: ['There are a dozen purses, {drowned-gold} between them.'],
+effects: [{ kind: 'gold', amount: FACTS['drowned-gold'].value }],
+```
+
+`{^id}` capitalises a fact or name to open a sentence ("{^drowned-gold} in
+all."). Build the module with `withCanon(module, { npcs, facts })`. An id
+names a person or a fact, never both, and an unknown token is an error at
+load. Register a fact when a second line or a rule depends on it. A one-off
+detail stays plain prose.
+
 ### The cast
 
 Rule 7 (a name with no referent is a debt) is checked, not hoped for. List
