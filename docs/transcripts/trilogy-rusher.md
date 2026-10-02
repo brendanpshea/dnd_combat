@@ -293,7 +293,7 @@ Barely a mile from the gate, the reeds erupt. The Ashfang keep goblin outriders 
 
 `[Intimidation DC 13 — Arthur the Bold rolls 7 — failed]`
 
-They aren't interested in talking.
+The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."
 
 **» Fight — won**
 
@@ -931,7 +931,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 `[History DC 15 — Morgan Le Fey rolls 12 — failed]`
 
-They aren't interested in talking.
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — won**
 

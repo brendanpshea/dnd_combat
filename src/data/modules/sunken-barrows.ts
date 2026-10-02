@@ -442,6 +442,7 @@ const scenes: Record<string, Scene> = {
   'chapel-fight': {
     id: 'chapel-fight', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
     intro: ['{halden} sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows. Two acolytes in {thornwick}\'s chapel colours step up beside him, their eyes as empty as the dead\'s. "The {warden} provides," says {halden}, and sets them on you.'],
+    again: ['{halden} sighs again, a shepherd let down twice. "The {warden} provides," he says, and his acolytes and the two skeletons come for you once more.'],
     onWin: { to: 'chapel-won', text: ['{halden} sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.'] },
   },
   'chapel-caught': {
@@ -528,6 +529,7 @@ const scenes: Record<string, Scene> = {
   'lights-fight': {
     id: 'lights-fight', kind: 'battle', encounterId: 'wisp-bog', mapId: 'bog',
     intro: ['Two of the lights come in low and fast over the water, crackling with stolen life. A cold shape rises between them. It is a specter trailing fen-mist, its mouth open on a scream the water drank years ago.'],
+    again: ['The two lights come in low over the water again. The specter rises between them, its mouth still open on that drowned scream.'],
     onWin: { to: 'lights-won', text: ['The last wisp winks out, and the water goes dark for good. Somewhere under it, the fen\'s drowned can rest at last.'] },
   },
   // Missed the firm ground: in the water before the lights even sing.
@@ -628,6 +630,7 @@ const scenes: Record<string, Scene> = {
   'pool-fight': {
     id: 'pool-fight', kind: 'battle', encounterId: 'snake-pit', mapId: 'marsh',
     intro: ['The pool empties itself at you. Two constrictors the girth of roof-beams pour out of the water in oiled coils. They are fen-serpents, grown old and vast on a century of offerings. And lately, on whatever walks past unwary.'],
+    again: ['The pool empties itself at you again. The two fen-serpents pour over the rim in their oiled coils, as hungry as before.'],
     onWin: POOL_WON,
   },
   // Wren's fen-craft: rattle the reeds on the far bank, and the serpents rise
@@ -636,6 +639,7 @@ const scenes: Record<string, Scene> = {
     id: 'pool-drawn', kind: 'battle', encounterId: 'snake-pit', mapId: 'marsh',
     surprise: 'enemies',
     intro: [{ assumes: [{ kind: 'companion', companion: 'wren' }], text: '{wren} creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Two constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.' }],
+    again: [{ assumes: [{ kind: 'companion', companion: 'wren' }], text: '{wren} creeps round to the far bank again and rattles the reeds. The serpents fall for it twice. They rise toward her with their backs to you.' }],
     onWin: POOL_WON,
   },
   'pool-done': {
@@ -664,6 +668,7 @@ const scenes: Record<string, Scene> = {
     // carries the vigil's mark, if someone knows the old way to show it.
     parley: {
       skill: 'history', dc: 14, label: 'Show them the vigil\'s mark in {halden}\'s book',
+      refused: ['You hold up {halden}\'s book, but you cannot find the builders\' mark on the gate in time. The watchers see only strangers at the vigil\'s door, and they keep coming.'],
       success: { to: 'lychgate-won', text: [
         'You hold up {halden}\'s book, open at the reed-woman\'s mark on the flyleaf. The old builders cut that same mark into the gate. You find it on the nearest stone and lay your hand flat on it.',
         'The watchers stop at the edge of the lintel. They look at the book for a long, grinding moment. Then they fold their wings and turn back into plain grey stone. They guard the vigil, and the book says you keep it now.',
@@ -844,6 +849,7 @@ const scenes: Record<string, Scene> = {
       'A long cut runs through the rock here, and {thornwick}\'s dead fill it. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.',
       'The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud. Its links match the chain Reeve {aldous} wears.',
     ],
+    again: ['{thornwick}\'s dead are still digging at the lead, wall to wall. Near the far end, the digger in the reeve\'s chain swings its pick with the rest.'],
     retry: 'perApproach',
     approaches: [
       { id: 'sneak', label: 'Slip past along the wall', hint: 'Keep low, and only move when the picks swing.',
@@ -882,6 +888,7 @@ const scenes: Record<string, Scene> = {
   'diggers-fight': {
     id: 'diggers-fight', kind: 'battle', encounterId: 'undead', mapId: 'corridor',
     intro: ['The dead come down the cut with their picks raised. Two are bare bones in grave-rags. Three are fresh, and still wear the faces {thornwick} buried. Hit hard, and try not to look.'],
+    again: ['The dead are waiting in the cut this time, picks raised. Hit hard, and try not to look.'],
     onWin: { to: 'diggers-chain', text: ['The last digger falls across its pick. The cut goes quiet, apart from your breathing.'] },
   },
   'diggers-chain': {
@@ -923,10 +930,12 @@ const scenes: Record<string, Scene> = {
       'This is the hall of the kings\' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*. Cold light burns in its eye sockets. It draws a sword older than the road outside. It does not shuffle like the other dead. It takes a **stance**.',
       'From the slabs on either side, two skeletons rise to guard it. They snap to their feet like soldiers called to order, and they come for you.',
     ],
+    again: ['The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides like soldiers on parade.'],
     onWin: { to: '@hub', text: ['The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it. Whatever the {warden} raises next will have nobody to lead it.'],
       effects: [{ kind: 'setFlag', flag: 'wights-down' }, { kind: 'gold', amount: 40 }] },
     parley: {
       skill: 'history', dc: 15, label: 'Relieve him of his post, the old way',
+      refused: ['You give the salute, but not quite the way the painted soldiers gave it. The wight\'s sword stays up. "Not relieved," it rasps. "Not by you."'],
       success: { to: '@hub', text: [
         'The painted hall showed how the old kings\' soldiers saluted. You give that salute now, fist to chest, and tell him his watch is over.',
         'The wight stands still for a long moment. Then it lowers its sword and lies back down on its slab. Its skeletons lie down with it. A soldier can rest, once someone tells him he may.',
@@ -940,6 +949,7 @@ const scenes: Record<string, Scene> = {
       'They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs. None of them stand anymore. These are the places the {warden} swallowed the last time he woke.',
       'The embalmed king turns. He served the {warden} once, and the {warden} has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.',
     ],
+    again: ['The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.'],
     onWin: { to: '@hub', text: ['The king crumbles. His grave-cloths sag around nothing but dust and old spice. His servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**. The {warden} has already chosen his next village.', 'Behind the king\'s throne, a burial shaft drops into the dark. The chanting comes up out of it.'],
       effects: [{ kind: 'setFlag', flag: 'king-down' }, { kind: 'gold', amount: 60 }] },
   },
@@ -1014,6 +1024,7 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
     intro: ['{marrow} turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.'],
+    again: ['{marrow} turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out, and the armour and the ghouls come for you once more.'],
     onWin: { to: 'seal-door', text: ['{marrow} dies reaching for the door. Nobody stands to fight for the {warden} now. Only his kneeling faithful remain, staring at the body, and you stand at the door with the book.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
@@ -1097,6 +1108,7 @@ const scenes: Record<string, Scene> = {
     // so the party gets up and holds it again.
     onLoss: { to: 'seal-breach-lost' },
     intro: ['The {warden}\'s own dead squeeze out through the crack in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and more grey fingers wait behind them. If they get past you, {thornwick} is next.'],
+    again: ['The {warden}\'s dead are still squeezing out through the crack, a few at a time. If they get past you, {thornwick} is next.'],
     onWin: { to: 'seal-shut', text: ['The last of them falls across the doorstep. All of you put your shoulders to the door and shove it home over the bodies. You shout the rites into the crack, badly and all at once. It is enough, barely.'],
       effects: [{ kind: 'setFlag', flag: 'seal-cracked' }] },
   },
