@@ -15,6 +15,7 @@ import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
 import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf } from './graph.js';
+import { unresolvedTokens } from './npcs.js';
 import { checkDungeon } from './dungeon.js';
 import { checkModuleReach } from './reach.js';
 import { MODULES } from '../data/modules/index.js';
@@ -195,6 +196,13 @@ export function validateModule(module: Module): string[] {
         at(id, `dungeon art '${scene.dungeon.art.imageId}' is not a known location`);
       }
     }
+  }
+
+  // NPC tokens are all resolved (see npcs.ts), and the registry's
+  // introductions for this chapter name real scenes.
+  for (const t of unresolvedTokens(module)) errors.push(`unresolved NPC token ${t}: build the module with withNpcs, or fix the token`);
+  for (const npc of Object.values(module.npcs ?? {})) {
+    for (const sid of npc.introducedAt?.[module.id] ?? []) if (!ids.has(sid)) errors.push(`NPC ${npc.id} is introduced at unknown scene '${sid}'`);
   }
 
   // The cast: every introducing scene exists.

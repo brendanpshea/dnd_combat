@@ -560,7 +560,15 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // introductions. Walk forward from the start without entering any
   // introducing scene; a state there whose scene mentions the name is a route
   // that shows it first. No extra facts: it reads the graph already built.
-  for (const member of module.cast ?? []) {
+  // The cast: the module's own list, and the registry's NPCs this chapter introduces.
+  const cast = [
+    ...(module.cast ?? []),
+    ...Object.values(module.npcs ?? {}).flatMap((npc) => {
+      const at = npc.introducedAt?.[module.id];
+      return at?.length ? [{ name: npc.name, ...(npc.aka ? { aka: npc.aka } : {}), introducedAt: at }] : [];
+    }),
+  ];
+  for (const member of cast) {
     const intro = new Set(member.introducedAt.map((sid) => index.get(sid)).filter((x): x is number => x !== undefined));
     // The name as written (proper nouns are capitalised: "Wren", not a wren);
     // an alias in any case ("The chief" opening a sentence).

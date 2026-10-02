@@ -295,6 +295,23 @@ the search can't see gold, items, classes or counted flags (tallies), and
 says so. Prefer `assumes` to hoping: a shared scene that silently assumes a
 route is the commonest contradiction in review.
 
+### Naming characters: the NPC registry
+
+Named characters live in one registry per campaign (`NpcDef` records; see
+src/adventure/npcs.ts). Prose names them by token, never by typing the name:
+
+```ts
+'{vargan} rises from a throne of lashed spears.'
+```
+
+The module is built with `withNpcs(module, NPCS)`, which resolves every
+token to the registry's `name`. A rename is one line, and a misspelt token
+(`{vragan}`) is an error at load. Dialogue speakers come from the same record
+(`npc: speaker(NPCS.wren, 'Chief of Scouts')`), as do companions
+(`companions: companionsFrom(NPCS, ['wren', 'halden'])`). A record's
+`introducedAt` lists, by chapter, the scenes that introduce the character,
+and feeds the cast check below.
+
 ### The cast
 
 Rule 7 (a name with no referent is a debt) is checked, not hoped for. List

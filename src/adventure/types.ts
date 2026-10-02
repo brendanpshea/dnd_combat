@@ -412,6 +412,29 @@ export interface CompanionDef {
   blurb: string;
 }
 
+/**
+ * A named character, once for the whole campaign (see src/adventure/npcs.ts).
+ * Prose names them by token, `{vargan}`, resolved to `name` when the module
+ * is built, so a rename is one line and a typo is an error. Dialogue
+ * speakers, companions and the cast check all come from here.
+ */
+export interface NpcDef {
+  /** The token and the id everything else uses: 'vargan', 'wren'. */
+  id: Id;
+  /** The name prose uses: "Vargan". */
+  name: string;
+  /** Other names prose uses, for the cast check ("the chief"). */
+  aka?: string[];
+  portraitId?: Id;
+  emoji?: string;
+  /** The stat block they fight with, if they can join the party. */
+  monsterId?: Id;
+  /** One line for the party screen, if they can join. */
+  blurb?: string;
+  /** By module id: the scenes that introduce them in that chapter. */
+  introducedAt?: Record<Id, SceneRef[]>;
+}
+
 export interface Module {
   id: Id;
   title: string;
@@ -459,6 +482,9 @@ export interface Module {
    * needs no entry here.
    */
   cast?: CastMember[];
+  /** The campaign's NPC registry (set by `withNpcs`). Its `introducedAt` for
+   *  this module joins `cast` in the reachability check. */
+  npcs?: Record<Id, NpcDef>;
   /**
    * The chapter's clock. A chapter starts on day 1, and every long rest (at a
    * camp, or a long `rest` scene) ends a day. Each dawn here plays on the
