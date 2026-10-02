@@ -374,7 +374,10 @@ effects: [{ kind: 'gold', amount: FACTS['drowned-gold'].value }],
 all."). Build the module with `withCanon(module, { npcs, facts })`. An id
 names a person or a fact, never both, and an unknown token is an error at
 load. Register a fact when a second line or a rule depends on it. A one-off
-detail stays plain prose.
+detail stays plain prose. The trilogy's facts are in src/data/modules/canon.ts
+(`TRILOGY_FACTS`). As with people, a test fails if a registered place or group
+name is typed in a chapter's source outside a comment, and another checks that
+each numeric fact's text spells its value and that the effects paying it agree.
 
 ### The cast
 

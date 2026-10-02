@@ -761,7 +761,7 @@ You drag each other out onto the mud, soaked and shaking. The last wisp is out. 
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the purses of the drowned. There are a dozen of them, fifty-five gold between them, still tied to their belts.
+In the shallows you find the purses of the drowned. There are twelve of them, fifty-five gold between them, still tied to their belts.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "Nobody from here dresses like that to go walking."
 
