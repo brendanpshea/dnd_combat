@@ -252,7 +252,7 @@ export const BOUNTIES: Bounty[] = [
      */
     id: 'quick-work',
     name: 'Quick Work',
-    blurb: 'Win it fast.',
+    blurb: 'Win within three rounds, plus one for every two enemies.',
     share: 0.35,
     eligible: () => true,
     earned: (ctx) => ctx.rounds <= roundsAllowed(ctx.foes),
@@ -265,7 +265,7 @@ export const BOUNTIES: Bounty[] = [
      */
     id: 'into-the-fire',
     name: 'Into the Fire',
-    blurb: 'Make an enemy take hazard damage.',
+    blurb: 'Push, pull or trick an enemy into a hazard.',
     share: 0.45,
     eligible: (_party, state) => hasTerrain(state, 'hazard'),
     earned: (ctx) => ctx.events.some((e) =>

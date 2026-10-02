@@ -509,11 +509,13 @@ The arena is drier and more knowing than the valley, and that is fine: it is
 an afterlife with a bored demon in it. The quasit carries the attitude and is
 the only arch voice; the healers, the merchant and the crowd sound like
 people. Say each rule once, in one voice: if the quasit explains that a
-retried day replays the same two fights, the intro and the temple screen
-don't explain it again. Two characters never share a joke. A gambit's stakes
+retried day replays the same two fights, the temple screen doesn't explain
+it again. Two characters never share a joke. A gambit's stakes
 line is plain speech a player can weigh ("their first swings go wide"), not a
-condition name ("baned"). Every line must be true of the place: it is packed
-sand under a sky nobody built, not mud.
+condition name ("baned"). Every line must be true of every place it can show:
+a fight's board may be sand, forest, bog or lava, so a line any board can
+draw names none of them. A rule the quasit explains in voice may also stand
+once, plainly, in the interface, because a player can silence the quasit.
 
 ## Mechanics of prose in a scene
 
