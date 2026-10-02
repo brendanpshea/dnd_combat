@@ -91,7 +91,7 @@ const BOSS_WON: Effect[] = [
 /** Naming Vargan's brand: the moment before he chooses a side. */
 const VARGAN_BRAND = [
   'The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand, the same brand the lizardfolk wore in the hollow.',
-  '"She owns you too, {vargan}," you say. He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.',
+  'He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.',
 ];
 /** Talked round: he turns on her, and she burns him down with her own mark
  *  (named already, or shown to the company only now). */
@@ -166,7 +166,7 @@ const AFTERMATH_CLAIMS: Choice[] = [
 // they share art with every other module's innkeeper / scout / captain; the
 // emoji is the fallback until that portrait is generated.
 /** What the peddler's stall gives up, however he was taken. */
-const SPY_LIST = 'Under a loose board at the back of his stall lies a list of every caravan to leave {thornwick} this month. Someone has ticked off each one. The ticks are his. The list is in another man\'s writing. "The chief writes it," he babbles. "He knows every carter in this town by name. I only tick them off."';
+const SPY_LIST = 'Under a loose board at the back of his stall lies a list of every caravan that has left {thornwick} this month. Someone has ticked off each one. The ticks are his. The names are in another man\'s writing. "The chief sends the names," he babbles. "He knows every carter in this town. I only tick them off."';
 
 /** What the company can say at {vex}'s fire. Split on whether the pen is
  *  still an open question: only then does his word on it go in the journal
@@ -277,11 +277,11 @@ const scenes: Record<string, Scene> = {
   'tavern-meet': {
     id: 'tavern-meet', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
-      'Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
-      '"Sellswords. Good. You read my note, then." **{mira}** doesn\'t smile. Nobody in {thornwick} has seen her do it since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
-      '"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up." She sets down the cup. "Last week they took a carter off the north road, and his granddaughter with him. She\'s seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."',
+      'Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you\'ll do.',
+      '"Sellswords. Good. You read my note, then." **{mira}** doesn\'t smile. She hasn\'t since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
+      '"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off the north road, and his granddaughter with him. She\'s seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."',
       '"And the reeve sent his scout down the marsh road a few days back, a girl on a grey horse. She hasn\'t come back. If she\'s lying hurt out there, she hasn\'t many nights left."',
-      '"Some of the old reed-cutters say the {ashfang} chief knows the marsh like he was born on it." She wipes a cup. "There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. Folk talk. And there\'s more, the kind folk won\'t say with the door open."',
+      '"Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there\'s more, the kind no one says with the door open." She sets the cup down.',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the {ashfang}', body: '{mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them.' } }] }],
@@ -646,7 +646,7 @@ const scenes: Record<string, Scene> = {
     // No milestone on the win: the fight's own XP is the reward. Staring the
     // pack down is the clever way past, so the parley carries the level a
     // company that has done the town would reach by fighting (2nd).
-    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.'] },
+    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. When you walked into this valley, that fight would have finished you.'] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
       refused: ['The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."'],
@@ -854,7 +854,7 @@ const scenes: Record<string, Scene> = {
   'scout-saved': {
     id: 'scout-saved', kind: 'story', noBack: true, art: { emoji: '❤️‍🩹' },
     text: [
-      'The horse comes off and the bleeding stops, and the scout lets out a breath she has been holding since the horse went down. "**{wren}**," she offers, as if admitting to a name costs her something. She scratches the den\'s watch-posts into the mud, quick and exact. She really did count.',
+      'The horse comes off and the bleeding stops, and the scout lets out a breath she has been holding for hours. "**{wren}**," she offers, as if admitting to a name costs her something. She scratches the den\'s watch-posts into the mud, quick and exact.',
       ...WREN_ON_VEX,
     ],
     next: [
@@ -877,7 +877,7 @@ const scenes: Record<string, Scene> = {
   'wren-parts': {
     id: 'wren-parts', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🧭' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
-    text: ['At the tree line above the hollow {wren} stops, and eases her weight off the leg. "This is as far as I said." She counts the watch-posts one last time, lips moving. "Reeve\'s men by nightfall, if I run. Leave me something to arrest."'],
+    text: ['At the tree line above the hollow {wren} stops, and eases her weight off the leg. "This is as far as I said." She looks down at the hollow a long moment. "Reeve\'s men by nightfall, if I run. Leave me something to arrest."'],
     next: [{ id: 'go', label: 'Let her go, and face the gate', to: 'gate',
       effects: [{ kind: 'leaveParty', companion: 'wren' }, { kind: 'setFlag', flag: 'wren-parted' }] }],
   },
@@ -950,7 +950,7 @@ const scenes: Record<string, Scene> = {
     id: 'barrow', kind: 'story', art: { emoji: '🪦' },
     text: [
       'Half-swallowed by the reeds lies a barrow-mound, its stones worn as smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.',
-      'Grave-goods glint in the dark below. So does something that moves without touching the water.',
+      'Something gold catches your light in the dark below. So does something that moves without touching the water.',
     ],
     again: ['The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.'],
     next: [
@@ -960,7 +960,7 @@ const scenes: Record<string, Scene> = {
   },
   'barrow-fight': {
     id: 'barrow-fight', kind: 'battle', encounterId: 'specter-haunt', mapId: 'corridor',
-    intro: ['The cold answers you. Two shapes pour up out of the grave-earth. They were men once, and now they are nothing but spite and winter air. They pass *through* the barrow stones to reach you.'],
+    intro: ['The cold answers you. Two shapes pour up out of the grave-earth. They wear the shapes of men, but they are nothing now but spite and winter air. They pass *through* the barrow stones to reach you.'],
     again: ['The two cold shapes are waiting this time, down among the grave-goods. They come for you through the barrow stones again.'],
     onWin: { to: 'trail', text: ['The specters shred into cold mist. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.'],
       effects: [{ kind: 'setFlag', flag: 'barrow-cleared' }, { kind: 'gold', amount: 45 }] },
@@ -975,7 +975,7 @@ const scenes: Record<string, Scene> = {
   thicket: {
     id: 'thicket', kind: 'story', art: { emoji: '🕸️' },
     text: [
-      'Pale silk sheets the reeds ahead, and they have gone grey and still. Bundles hang in the webbing at the height a man\'s shoulders would be. Some of the bundles are man-shaped.',
+      'Pale silk sheets the reeds ahead, and the reeds under it have gone grey and still. Bundles hang in the webbing at the height a man\'s shoulders would be. Some of the bundles are man-shaped.',
       'Something spins here, and it has been eating well off the {ashfang}\'s road. It is not small, and there is more than one of it. But those cocoons will have purses.',
     ],
     again: ['The grey webs still sheet the reeds, and the man-shaped bundles still hang in them. The spinners have not gone anywhere.'],
@@ -1071,7 +1071,7 @@ const scenes: Record<string, Scene> = {
       'A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **{reedwife}**. Ask your chief what he sold me. Ask him what I paid."',
       '"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.',
       { if: [{ kind: 'companion', companion: 'wren' }],
-        text: '{wren} has gone white. "A green hag," she says. "My gran had a story about one. I thought it was a story."' },
+        text: '{wren} has gone white. "A green hag," she says. "Reed-cutters\' children get told about them. I thought it was a story."' },
     ],
     next: [{ id: 'ok', label: 'On to the den', to: 'gate',
       requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true,
@@ -1361,7 +1361,7 @@ const scenes: Record<string, Scene> = {
     // gets `again`, a short return.
     text: [
       'The chief\'s hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters: a miller\'s ledger, a carter\'s whip, and a child\'s left shoe, small and still muddy.',
-      'The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **{reedwife}**, the green hag of the marsh, come up out of her water to see what her coin has bought.',
+      'The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **{reedwife}**, come up out of her water to see what her coin has bought.',
       '"Up, **{vargan}**, my sweet," the hag says. "Guests." The chief rises.',
       '"I was born down in {thornwick}," {vargan} says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother\'s house went under first. {thornwick} watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."',
       // The jailer, planted where every winning route walks: a line that
@@ -1506,7 +1506,7 @@ const scenes: Record<string, Scene> = {
     // No falling back: the hall behind you is the one where Vargan turned.
     noFlee: true,
     loot: { bonusTier: 'rare' },
-    intro: ['The **{reedwife}** stands by the fire-pit with river-weed dripping from her fingers. "Waste not," she says, and whistles for the chief\'s guard again. He comes out of the smoke at last, with another raider at his back.'],
+    intro: ['The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief\'s guard again. He comes out of the smoke at last, with another raider at his back.'],
     again: ['The {reedwife} is still by the fire-pit. "Up again, sweetlings?" She whistles, and the chief\'s guard comes back out of the smoke with his raider.'],
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost' },
@@ -1518,7 +1518,7 @@ const scenes: Record<string, Scene> = {
     noFlee: true,
     surprise: 'enemies',
     loot: { bonusTier: 'rare' },
-    intro: ['The **{reedwife}** stands by the fire-pit with river-weed dripping from her fingers. "Waste not," she says, and whistles for the chief\'s guard again. {hask} still does not come. Two raiders stumble in from the yard instead, still fumbling with their belts, and you are on them before they find their blades.'],
+    intro: ['The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief\'s guard again. {hask} still does not come. Two raiders stumble in from the yard instead, still fumbling with their belts, and you are on them before they find their blades.'],
     again: ['The {reedwife} is still by the fire-pit. She whistles for {hask} once more, and he still does not come. Her two raiders stumble in from the yard, and you are on them before they find their blades.'],
     onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost-alone' },
@@ -1560,7 +1560,7 @@ const scenes: Record<string, Scene> = {
     id: 'vargan-fate', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '⚖️' },
     text: [
       '{vargan} sits against his throne of spears. The brand on his hand has gone grey, like an old scar. He does not reach for his axe.',
-      '"{thornwick} will want me hanged," he says. "{thornwick} is right. I sold them to her for a full barn." He looks at the trophies in the rafters. "Do what you came to do."',
+      '"{thornwick} will want me hanged," he says. "{thornwick} is right. I sold her their common water, and I called it a fair price." He looks at the trophies in the rafters. "Do what you came to do."',
       { if: [{ kind: 'classInParty', classId: 'cleric' }],
         text: 'Your cleric kneels beside him and studies the grey brand. There is no prayer for this, and {vargan} does not ask for one.' },
     ],
