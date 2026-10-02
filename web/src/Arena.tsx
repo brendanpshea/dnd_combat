@@ -669,16 +669,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   healers with.
                 </p>
                 <p className="hint">
-                  Lose, and the day is written off: you come back tomorrow to
-                  the same two fights, exactly as they were, keeping everything
-                  you learned and everything you bought. Nothing here is
-                  permanent except the record.
+                  Lose, and you wake in the temple to face the same two fights tomorrow.
+                  Nothing here is permanent except the record.
                 </p>
                 <p className="hint">
                   Around the arena there is a town, of sorts: a market, an inn,
                   and a temple where the healers work. You have the run of it
-                  between days. Once through the arena gate, though, you stay
-                  until the day is won or lost.
+                  between days.
                 </p>
                 <div className="adv-choices">
                   <button className="primary" onClick={() => setPhase({ p: 'brief' })}>
@@ -821,8 +818,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     </div>
                     <h2>They have seen enough.</h2>
                     <p className="adv-text">
-                      Whatever it was you came here to prove, you have proved it.
-                      The gates stand open and nobody moves to stop you.
+                      The crowd is on its feet. High in the seats, the enormous
+                      thing that watched every fight you fought settles back, and
+                      for the first time it looks somewhere else.
                     </p>
                   </>
                 ) : (
@@ -830,8 +828,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                     <h2>The healers look at your purse, and turn away.</h2>
                     <p className="adv-text">
                       There is a price for being put back together, and you
-                      cannot meet it. Whatever you were proving, you will not
-                      get to finish proving it — not with this company.
+                      cannot meet it. Out on the arena floor, somebody is already
+                      raking the sand smooth for whoever comes next.
                     </p>
                     {phase.bill && (
                       <div className="revival-bill">
@@ -956,11 +954,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <h2>You wake in the temple.</h2>
                 <NpcHead id="npc-priest" name="The healers" />
                 <p className="adv-text">
-                  The crowd roared, and somebody dragged you out. The healers
-                  have done their work and the day is written off. Come back
-                  tomorrow: the same two fights will be waiting, exactly as they
-                  are now — and everything you have learned, earned and bought
-                  comes with you.
+                  The last thing you remember is the crowd. Somebody dragged
+                  you off the sand, and the healers did the rest.
                 </p>
                 {/* The night happens on a lost day as well, and used to go
                     unmentioned entirely — the party woke up whole with nothing
@@ -975,8 +970,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <div className="revival-bill">
                   {phase.bill.cost === 0 ? (
                     <p className="adv-text quiet">
-                      &ldquo;The first one is on us,&rdquo; says the healer, not looking up.
-                      &ldquo;It will not be next time.&rdquo;
+                      &ldquo;No charge for this one,&rdquo; says the healer, still picking
+                      sand out of your hair. &ldquo;Try not to make a habit of it.&rdquo;
                     </p>
                   ) : (
                     <>
@@ -1597,13 +1592,13 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                       label="Pocket something"
                       note={`and Stealth · ${STEAL_FINE}g fine`}
                       disabled={visit.stealUsed}
-                      disabledReason="Once a morning is quite enough"
+                      disabledReason="One try a morning"
                       onRoll={() => {
                         const r = attemptSteal(c, shelf);
                         setVisit({ ...visit, stealUsed: true });
                         setNotice(r.success
                           ? `Pocketed ${itemName(r.itemId!)}. Nobody saw a thing.`
-                          : `Caught. ${r.fine}g gone in fines.`);
+                          : `Caught. The stallholder wants ${r.fine}g for the trouble, and gets it.`);
                         // No second save: setVisit already wrote the new run
                         // with the updated campaign. Saving `run` here (this
                         // render's, without stealUsed) overwrote it, and a
@@ -1780,8 +1775,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                 <div className="arena-shop">
                   <NpcHead id="npc-innkeeper" name="The innkeeper" />
                   <p className="adv-text town-greeting">
-                    &ldquo;Your things are upstairs where you left them. Take your time — the
-                    sand is not going anywhere.&rdquo;
+                    &ldquo;Your things are upstairs where you left them. Take your time.
+                    The sand&rsquo;s not going anywhere.&rdquo;
                   </p>
                   <div className="town-places">
                     <button className="town-place" onClick={() => toPanel('gear')}>
@@ -1812,8 +1807,8 @@ export function ArenaScreen({ Battle, onExit }: Props) {
                   <NpcHead id="npc-priest" name="The healers" />
                   <p className="adv-text town-greeting">
                     {revival === 0
-                      ? <>&ldquo;Fall today and we will put you back together. The first time is on us.&rdquo;</>
-                      : <>&ldquo;Fall today and we will put you back together — for {revival} gold.&rdquo;</>}
+                      ? <>&ldquo;If you fall today, we&rsquo;ll put you back together. The first time costs you nothing.&rdquo;</>
+                      : <>&ldquo;If you fall today, we&rsquo;ll put you back together. That&rsquo;s {revival} gold, these days.&rdquo;</>}
                   </p>
                   <div className="loot-line">
                     <span>⚕️ If the day is lost</span>

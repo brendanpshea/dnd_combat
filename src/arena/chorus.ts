@@ -64,21 +64,21 @@ export interface ChorusLine {
  */
 export const CHORUS: Record<ChorusCue, string> = {
   arrival:
-    'Oh good, another one. Listen — you are dead, this is where they decide ' +
-    'what you were worth, and I have to watch. Two fights a day. Try to be ' +
-    'interesting about it.',
+    'Oh good, another one. They make me watch every one of you, start to ' +
+    'finish, so do try to be interesting about it. Most of you are not.',
 
   firstGate:
-    'Three doors, and they tell you what is behind them. That is not mercy, ' +
-    'that is the wager. Pick the nasty one and they pay you more for it.',
+    'Three doors, and they tell you what is behind them. That is not mercy. ' +
+    'The pay is the same behind all three, so the only question is which ' +
+    'one your lot is built to win.',
 
   firstAfternoon:
-    'Same fight as this morning. Exactly the same. The difference is you — ' +
-    'half your spells gone and a hole in your side. That is the whole trick ' +
-    'of this place, and you just walked into it.',
+    'The afternoon is no bigger than the morning. It does not need to be: ' +
+    'you are the difference, with half your spells gone and a hole in your ' +
+    'side. That is the whole trick of this place, and you just walked into it.',
 
   firstLunch:
-    'Eat something. Bind what is bleeding. Whatever you do not fix now, you ' +
+    'Eat something. Bind what is bleeding. Anything you do not fix now, you ' +
     'carry into the afternoon, and the afternoon does not care.',
 
   firstHitDice:
@@ -91,9 +91,10 @@ export const CHORUS: Record<ChorusCue, string> = {
     'I have seen how this ends, and I am not going to spoil it.',
 
   firstDefeat:
-    'Dead again. Do not look so stricken — that is rather the arrangement ' +
-    'here. Tomorrow you get the same two fights, exactly as they were. Same ' +
-    'monsters, same ground. Whatever you learned today, you keep.',
+    'Dead again. Do not look so stricken; that is rather the arrangement ' +
+    'here. Tomorrow they hand you the same two fights, exactly as they were, ' +
+    'same monsters and same ground. You keep everything you learned today, ' +
+    'and everything you bought.',
 
   firstBill:
     'The healers are not a charity. Putting four corpses back together is ' +
@@ -111,7 +112,7 @@ export const CHORUS: Record<ChorusCue, string> = {
 
   firstClear:
     'A whole day. Both fights. Somebody upstairs made a note — I saw the ' +
-    'quill move. Do not let it go to your head, it goes up from here.',
+    'quill move. Do not let it go to your head. The days only get harder.',
 
   levelled:
     'You are getting harder to kill. That matters more than you think: the ' +
@@ -119,13 +120,13 @@ export const CHORUS: Record<ChorusCue, string> = {
     'long enough and one morning you will simply be too big for it.',
 
   grinding:
-    'Third time on the same day. You could keep doing this, you know — the ' +
-    'fight is frozen and you are not. But every failure costs, and they are ' +
-    'counting the losses as well as the wins.',
+    'Third time on the same day. You could keep at it, you know. Plenty do. ' +
+    'But every loss costs, and they are counting the losses as well as the ' +
+    'wins.',
 
   homeStretch:
-    'They have very nearly seen enough of you. Whatever you have been proving, ' +
-    'you are close to having proved it.',
+    'They have very nearly seen enough of you. A little more and you will ' +
+    'have made your point, assuming you had one.',
 
   finished:
     'Well. That is that. The gates are open and nobody is moving to stop you, ' +

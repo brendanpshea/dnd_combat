@@ -268,8 +268,8 @@ export function restLine(kind: DayHalf | 'night', rows: HeroRest[], rest: RestRe
   const recovered = rest.recovered ?? [];
   if (kind === 'night') {
     const hurt = rows.filter((r) => r.hp.from < r.hp.max).length;
-    if (hurt >= 3) return 'A hard day. Sleep takes all of it back — the fights do not care.';
-    if (hurt === 0) return 'Nobody needed the night. Tomorrow will ask again.';
+    if (hurt >= 3) return 'A hard day. By morning there is nothing left of it but the bruises, and then not those.';
+    if (hurt === 0) return 'Not a scratch to mend. Tomorrow will ask more.';
     return 'Morning. Every slot, every die, every hit point — back where it started.';
   }
   if ((rest.revived ?? 0) > 0) {
@@ -277,7 +277,7 @@ export function restLine(kind: DayHalf | 'night', rows: HeroRest[], rest: RestRe
     return `${name ?? 'Somebody'} is back on their feet. The afternoon does not wait.`;
   }
   const dry = rows.filter((r) => r.hitDice.to === 0 && r.hitDice.from > 0);
-  if (dry.length > 0) return `${dry[0]!.name} has no dice left. What is left is what you fight with.`;
+  if (dry.length > 0) return `${dry[0]!.name} has no hit dice left. What they have now is what they fight with.`;
   if (recovered.length > 0) {
     return `${recovered[0]!.name} closes the book and finds something still in it.`;
   }

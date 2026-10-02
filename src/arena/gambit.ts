@@ -188,9 +188,9 @@ export function gambitLine(
  * "The {them}" in the table keeps the same slot usable mid-sentence, where
  * "Somebody built the Scarecrows" wants the article lower case.
  *
- * EVERY sentence, not just the first: "Tracks in the mud. {them} came through
+ * EVERY sentence, not just the first: "Tracks in the sand. {them} came through
  * here" put the slot after a full stop, and capitalising only the opening
- * character left "Tracks in the mud. the Tyrannosaurus Rex came through here".
+ * character left "Tracks in the sand. the Tyrannosaurus Rex came through here".
  */
 const capitalise = (t: string): string =>
   t.replace(/(^|[.!?]\s+)([a-z])/g, (_m, lead: string, ch: string) => lead + ch.toUpperCase());
@@ -317,7 +317,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'humanoid', 'celestial'),
     onSuccess: RECRUIT_US,     // +10
     onFailure: RECRUIT_THEM,   // -11
-    stakes: { win: 'another of their weakest fights for you', lose: 'another of their weakest joins them' },
+    stakes: { win: 'another of their weakest kind fights for you, scared, at disadvantage on its attacks', lose: 'another of their weakest kind fights for them, scared, at disadvantage on its attacks' },
   },
   {
     skill: 'animal-handling', label: 'Animal Handling',
@@ -328,7 +328,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => w.types.has('beast'),
     onSuccess: RECRUIT_US,
     onFailure: RECRUIT_THEM,
-    stakes: { win: 'another of their weakest fights for you', lose: 'another of their weakest joins them' },
+    stakes: { win: 'another of their weakest kind fights for you, scared, at disadvantage on its attacks', lose: 'another of their weakest kind fights for them, scared, at disadvantage on its attacks' },
   },
   {
     skill: 'performance', label: 'Perform',
@@ -339,7 +339,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'fey', 'humanoid'),
     onSuccess: RECRUIT_US,
     onFailure: RECRUIT_THEM,
-    stakes: { win: 'another of their weakest fights for you', lose: 'another of their weakest joins them' },
+    stakes: { win: 'another of their weakest kind fights for you, scared, at disadvantage on its attacks', lose: 'another of their weakest kind fights for them, scared, at disadvantage on its attacks' },
   },
   {
     skill: 'intimidation', label: 'Intimidate',
@@ -350,18 +350,18 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'humanoid', 'giant', 'fey'),
     onSuccess: (_p, f) => half(f).forEach((c) => cond(c, 'frightened')),   // +10
     onFailure: (_p, f) => half(f).forEach((c) => cond(c, 'blessed')),      // -6
-    stakes: { win: 'half of them start frightened', lose: 'half of them start blessed' },
+    stakes: { win: 'the weaker half of them are scared, at disadvantage on their attacks', lose: 'the weaker half of them add a d4 to every attack and saving throw' },
   },
   {
     skill: 'religion',
-    setup: 'Older things than {them} are listening here. Say the words?',
-    won: "You get the words right, and whatever's listening takes your side.",
-    lost: "Wrong name. Whatever's listening takes theirs.",
+    setup: 'Not everything in the seats is cheering for {them}. Say the words?',
+    won: 'You get the words right, and the seats lean your way.',
+    lost: 'Wrong name. The seats lean theirs.',
     subject: (w) => firstOf(w, 'undead', 'fiend', 'celestial', 'fey'),
     eligible: (w) => any(w.types, 'undead', 'fiend', 'celestial', 'fey'),
     onSuccess: (p) => p.forEach((c) => cond(c, 'blessed')),   // +7
     onFailure: (p) => p.forEach((c) => cond(c, 'baned')),     // -7
-    stakes: { win: 'your party starts blessed', lose: 'your party starts baned' },
+    stakes: { win: 'your party adds a d4 to every attack and saving throw', lose: 'your party takes a d4 off every attack and saving throw' },
   },
   {
     skill: 'deception',
@@ -372,7 +372,7 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'humanoid', 'fiend', 'fey'),
     onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
     onFailure: (_p, f) => champion(f).forEach((c) => cond(c, 'blessed')),        // -8
-    stakes: { win: 'their two weakest start frightened', lose: 'their strongest starts blessed' },
+    stakes: { win: 'their two weakest are scared, at disadvantage on their attacks', lose: 'their strongest adds a d4 to every attack and saving throw' },
   },
   {
     skill: 'investigation',
@@ -385,28 +385,28 @@ export const GAMBITS: GambitDef[] = [
     // acOf was fixed to let a stat block's armour class change at all.
     onSuccess: (p) => p.forEach((c) => cond(c, 'warded')),
     onFailure: (_p, f) => f.forEach((c) => cond(c, 'warded')),
-    stakes: { win: 'your party starts with +2 AC', lose: 'they start with +2 AC' },
+    stakes: { win: 'your party gets +2 armour class', lose: 'every one of them gets +2 armour class' },
   },
   {
     skill: 'athletics',
-    setup: '{them} {are} coming across that ground. Make it worse first?',
-    won: 'You get it braced in time and dig in behind it.',
-    lost: "It goes over the wrong way, and you're under it.",
+    setup: '{them} {are} coming straight for you. Drag the old barricade into the way first?',
+    won: 'You get the barricade braced in time and dig in behind it.',
+    lost: "The barricade goes over the wrong way, and you're under it.",
     subject: (w) => firstOf(w, 'giant') ?? w.members.find((id) => MONSTERS[id]?.size === 'huge'),
     eligible: (w) => w.sizes.has('huge') || w.types.has('giant'),
     onSuccess: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }),   // +9
     onFailure: bleed,                                                          // -5
-    stakes: { win: '10 temporary hit points each', lose: 'everyone starts a fifth of their hit points down' },
+    stakes: { win: 'each of you gets 10 temporary hit points', lose: 'each of you loses a fifth of your maximum hit points (never below 1)' },
   },
   {
     skill: 'medicine',
     setup: "You're carrying wounds, and there's time to patch up. Trust the hands?",
-    won: 'It works. Everyone stands a little straighter.',
-    lost: "It doesn't. Everyone stands a little slower.",
+    won: 'Tight bindings and a mouthful of water. Everyone walks out steadier than they sat down.',
+    lost: 'You pull the wrong stitch, then another. Everyone walks out sorer than they sat down.',
     eligible: (w) => w.hurt,
     onSuccess: dose,     // +7
     onFailure: bleed,    // -5
-    stakes: { win: 'a fifth of your hit points again, as temporary ones', lose: 'everyone starts a fifth of their hit points down' },
+    stakes: { win: 'each of you gets temporary hit points worth a fifth of your maximum', lose: 'each of you loses a fifth of your maximum hit points (never below 1)' },
   },
   {
     skill: 'acrobatics',
@@ -416,12 +416,12 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => w.count >= 5,
     onSuccess: (_p, f) => weakest(f, 2).forEach((c) => cond(c, 'frightened')),   // +6
     onFailure: bleed,                                                           // -5
-    stakes: { win: 'their two weakest start frightened', lose: 'everyone starts a fifth of their hit points down' },
+    stakes: { win: 'their two weakest are scared, at disadvantage on their attacks', lose: 'each of you loses a fifth of your maximum hit points (never below 1)' },
   },
   {
     skill: 'survival',
-    setup: 'Tracks in the mud. {them} came through here — read them?',
-    won: 'You read them right, and meet it on your own terms.',
+    setup: 'Fresh tracks. {them} came through here — read them?',
+    won: 'You read them right, and catch {them} wrong-footed.',
     lost: 'You read them wrong, and spend the time going nowhere.',
     // Plant was in this gate and is cut: a creeping vine leaves no trail, and
     // the line above has to be true of every wave that reaches it.
@@ -429,13 +429,13 @@ export const GAMBITS: GambitDef[] = [
     eligible: (w) => any(w.types, 'beast', 'monstrosity'),
     onSuccess: (_p, f) => f.forEach((c) => cond(c, 'sapped')),   // +5
     onFailure: bleed,                                           // -5
-    stakes: { win: 'their first swings are at disadvantage', lose: 'everyone starts a fifth of their hit points down' },
+    stakes: { win: 'each of them makes its first attack at disadvantage', lose: 'each of you loses a fifth of your maximum hit points (never below 1)' },
   },
   {
     skill: 'perception',
     setup: 'Open ground, long sightlines. Take a proper look before you commit?',
     won: 'You spot them early. Their first swings come telegraphed.',
-    lost: 'You call it wrong twice, and nobody trusts the third time.',
+    lost: 'You call it wrong, and your own first swings go wide.',
     eligible: (w) => w.cover <= 2,
     /*
      * `outlined` was the obvious fit and had to go: measured +8 / +9 / +2 across
@@ -447,7 +447,7 @@ export const GAMBITS: GambitDef[] = [
      */
     onSuccess: (_p, f) => f.forEach((c) => cond(c, 'sapped')),   // +5
     onFailure: (p) => p.forEach((c) => cond(c, 'sapped')),       // -4
-    stakes: { win: 'their first swings are at disadvantage', lose: 'your first swings are at disadvantage' },
+    stakes: { win: 'each of them makes its first attack at disadvantage', lose: 'each of you makes your first attack at disadvantage' },
   },
 ];
 

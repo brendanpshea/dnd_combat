@@ -50,19 +50,19 @@ const WREN_SAVED: Effect[] = [
 ];
 
 /** The chief and the hag go down together, in every version of the hall. */
-const BOSS_FALLS = 'The chief falls, and the **{reedwife}** comes apart like wet reeds in a fist, her scream sinking back into the marsh. With the chief and the hag both dead, the **{ashfang}** have nobody left to give them orders.';
+const BOSS_FALLS = 'The chief falls across the fire-pit, and the **{reedwife}** screams. As the scream goes on she slumps into river-weed and black water, and the earth floor drinks her down. Up in the rafters, the trophies of a hundred raids stop swinging.';
 const BOSS_WON: Effect[] = [
   { kind: 'npc', npc: 'vargan', fate: 'slain' }, { kind: 'npc', npc: 'reedwife', fate: 'dead' }, { kind: 'gold', amount: 100 },
 ];
 
 /** Naming Vargan's brand: the moment before he chooses a side. */
 const VARGAN_BRAND = [
-  'The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand. The lizardfolk in the hollow wore the same brand.',
+  'The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand, the same brand the lizardfolk wore in the hollow.',
   '"She owns you too, {vargan}," you say. He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.',
 ];
 /** Talked round: he turns on her, and she burns him down with her own mark. */
-const VARGAN_TURNS = '{vargan} looks from the brand to the hag. Then he turns and swings his axe at her, two-handed. She catches the blade in a fist of river-weed. "My mother\'s house," he says through his teeth. The hag closes her fingers, and the brand on his hand burns white. He drops to the floor, screaming.';
-const REEDWIFE_FALLS = 'The **{reedwife}** comes apart like wet reeds in a fist. Her last scream sinks back into the marsh. With the hag gone and the chief on his knees, the **{ashfang}** are finished.';
+const VARGAN_TURNS = '{vargan} looks from the brand to the hag, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother\'s house," he says through his teeth. The hag closes her fingers, and the brand on his hand burns white. He drops to the floor, screaming.';
+const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and goes down hissing. When the steam clears there is nothing in the coals but a twist of river-weed, curling as it dries.';
 const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', fate: 'dead' }, { kind: 'gold', amount: 100 }];
 const REEDWIFE_LOST = [
   'The hag\'s cold fingers close over your eyes, and the hall goes dark.',
@@ -76,21 +76,21 @@ const REEDWIFE_LOST = [
  * party that took the 25-gold retainer at the board collects the balance.
  */
 const AFTERMATH_CLAIMS: Choice[] = [
-  { id: 'bounty', label: 'Claim the reeve\'s bounty for the chief', to: 'claim-bounty',
+  { id: 'bounty', label: 'Let the reeve count out the bounty', to: 'claim-bounty',
     requires: [{ kind: 'notFlag', flag: 'bounty' }, { kind: 'notFlag', flag: 'got-bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold', amount: factValue('bounty-full') }, { kind: 'setFlag', flag: 'got-bounty' }] },
-  { id: 'balance', label: 'Claim the rest of the reeve\'s bounty', to: 'claim-balance',
+  { id: 'balance', label: 'Let the reeve settle the rest of the bounty', to: 'claim-balance',
     requires: [{ kind: 'flag', flag: 'bounty' }, { kind: 'notFlag', flag: 'got-bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold', amount: factValue('bounty-balance') }, { kind: 'setFlag', flag: 'got-bounty' }] },
-  { id: 'banner', label: 'Present the {ashfang} banner for the bonus', to: 'claim-banner',
+  { id: 'banner', label: 'Unroll the {ashfang} banner on the well', to: 'claim-banner',
     requires: [{ kind: 'flag', flag: 'looted' }, { kind: 'notFlag', flag: 'got-banner' }],
     effects: [{ kind: 'gold', amount: factValue('bounty-banner') }, { kind: 'setFlag', flag: 'got-banner' }] },
-  { id: 'scout', label: 'Accept the scout\'s thanks, and the reeve\'s reward', to: 'claim-scout',
+  { id: 'scout', label: 'Look for the scout in the crowd', to: 'claim-scout',
     requires: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'notFlag', flag: 'got-scout' }],
     effects: [{ kind: 'gold', amount: factValue('scout-reward') }, { kind: 'setFlag', flag: 'got-scout' }] },
   // `won`: every road to the victory ending runs through here, so the next
   // chapters can tell a company that broke the Ashfang from a cold start.
-  { id: 'done', label: 'Celebrate at the {wander-inn}', to: 'epilogue',
+  { id: 'done', label: 'Let the crowd carry you to the {wander-inn}', to: 'epilogue',
     effects: [{ kind: 'setFlag', flag: 'won' }] },
 ];
 
@@ -113,16 +113,16 @@ const scenes: Record<string, Scene> = {
   road: {
     id: 'road', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      'A day\'s hard walk up the valley. The country has gone wrong-quiet. The road holds no carters and no herders. Only crows lift off the hedgerows as you pass.',
-      '{thornwick} lies an hour ahead, its chimney-smoke thin against the grey hills. Word of the reeve\'s bounty reached you three towns back. Folded in your pack is a second note, in a plainer hand. *Come quick. We are not too proud to ask.* {mira} of the {wander-inn} signed it. That note is why you kept walking.',
-      'Then the hedges shift on both sides at once — and it\'s already too late to run.',
+      'A day\'s hard walk up the valley, and the country has gone wrong-quiet. There are no carters on the road and no herders, only crows that lift off the hedgerows as you pass.',
+      '{thornwick} lies an hour ahead, its chimney-smoke thin against the grey hills. Word of the reeve\'s bounty reached you three towns back, but the note folded in your pack is in a plainer hand. *Come quick. We are not too proud to ask.* {mira} of the {wander-inn} signed it, and that note is why you kept walking.',
+      'The hedges shift on both sides at once, and it is already too late to run.',
     ],
     next: [{ id: 'go', label: 'Draw steel', to: 'road-ambush' }], noBack: true,
   },
   'road-ambush': {
     id: 'road-ambush', kind: 'battle', encounterId: 'raiders-forward', mapId: 'open',
     intro: [
-      'Raiders scramble out of the ditch. An orc hefts a notched axe. A lean scout nocks an arrow. A bandit is already grinning.',
+      'Raiders scramble out of the ditch, an orc with a notched axe and a lean scout with an arrow on the string. Their bandit is already grinning.',
       '"The road\'s the **{ashfang}\'s** now!" the bandit crows. "Chief takes his cut of every throat on it — and yours\'ll do just fine."',
     ],
     onWin: { to: 'road-reveal', text: ['The bandit drops into the mud, and the road is yours again — for now.'] },
@@ -134,7 +134,7 @@ const scenes: Record<string, Scene> = {
     id: 'road-carter', kind: 'story', art: { imageId: 'loc-road', emoji: '🛒' },
     text: [
       'You wake on a bed of turnips, rocking gently. An old carter glances back from his seat. "Found you face-down in the ditch," he says. "The {ashfang} left you for dead. Lucky for you, they\'re poor judges of it."',
-      'He points his whip at the hills, where a thin smudge of smoke rises past the marsh. "That\'s their den up there. Nobody goes near it." Ahead, the roofs of {thornwick} come into view.',
+      'He points his whip at the hills, where a thin smudge of smoke rises past the marsh. "That\'s their den up there. Folk keep well clear of it." Ahead, the roofs of {thornwick} come into view.',
     ],
     next: [{ id: 'on', label: 'Ride the last mile into {thornwick}', to: 'thornwick',
       effects: [{ kind: 'setFlag', flag: 'road-ambushed' },
@@ -147,7 +147,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'The bandit isn\'t dead yet. He laughs wetly through red teeth as you stand over him.',
       '"You think you\'ve done something? There\'s more of us in the hollow than you\'ve got arrows — and the **chief**, he don\'t even answer to himself no more. There\'s something *in the marsh* he feeds, and it feeds him back. The **{ashfang}** own this whole valley now, and worse than us owns them."',
-      'His eyes drift to the hills, to a thin smudge of smoke rising somewhere past the marsh. Then they drift to nothing at all.',
+      'His eyes drift to the hills, to a thin smudge of smoke past the marsh, and then to nothing at all.',
     ],
     next: [{ id: 'on', label: 'Press on to {thornwick}', to: 'thornwick',
       effects: [{ kind: 'setFlag', flag: 'road-ambushed' },
@@ -159,8 +159,8 @@ const scenes: Record<string, Scene> = {
   thornwick: {
     id: 'thornwick', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: [
-      'The road brings you into **{thornwick}** at last. Its gate is scorched and its shutters barred. Faces watch you pass from the dark of doorways.',
-      'So it is true. For a month the **{ashfang}** have bled this valley dry, and the whole country locks its doors by dark.',
+      'The road brings you into **{thornwick}** at last, through a scorched gate and past barred shutters. Faces watch you from the dark of doorways.',
+      'For a month the {ashfang} have bled this valley dry, and the whole country locks its doors by dark.',
     ],
     next: [{ id: 'go', label: 'Enter the {wander-inn}', to: 'tavern-meet' }],
     noBack: true,
@@ -175,7 +175,7 @@ const scenes: Record<string, Scene> = {
     lines: [
       'Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
       '"Sellswords. Good. You read my note, then." **{mira}** doesn\'t smile. Nobody in {thornwick} has seen her do it since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
-      '"The **{ashfang}** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up."',
+      '"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up."',
       '"Some of the old reed-cutters say the {ashfang} chief knows the marsh like he was born on it." She wipes a cup. "There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. Folk talk. And there\'s more, the kind folk won\'t say with the door open."',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
@@ -198,20 +198,20 @@ const scenes: Record<string, Scene> = {
       { id: 'regulars', label: 'Drift over to the regulars\' table', to: 'regulars' },
       // A paid long rest: cheap, but a real gold sink and the place to re-prepare
       // spells. Gated on having the coin; the effect deducts it before resting.
-      { id: 'room', label: 'Take a room for the night — {inn-room} (long rest)', to: 'inn-rest',
+      { id: 'room', label: 'Take a room for the night ({inn-room}, long rest)', to: 'inn-rest',
         requires: [{ kind: 'gold', atLeast: factValue('inn-room') }], effects: [{ kind: 'gold', amount: -factValue('inn-room') }] },
       { id: 'leave', label: 'Step out into the square', to: 'square' },
     ],
   },
   'inn-rest': {
     id: 'inn-rest', kind: 'rest', variant: 'long', next: 'tavern',
-    intro: ['You take a room above the taproom. For the first time in days you sleep behind a bolted door — and wake clear-headed, wounds closed, spells fresh.'],
+    intro: ['You take a room above the taproom and sleep behind a bolted door for the first time in days. In the morning your wounds have closed, and your head is clear.'],
   },
   'tavern-spy': {
     id: 'tavern-spy', kind: 'story', noBack: true, art: { emoji: '👁️' },
     text: [
       '**{mira}** sees you\'ve noticed. She lowers her voice until it barely carries over the fire.',
-      '"The **{ashfang}** always seem to know which wagon\'s worth taking. Someone here feeds them word of every caravan that leaves — and I think I know who."',
+      '"The {ashfang} always seem to know which wagon\'s worth taking. Someone here feeds them word of every caravan that leaves — and I think I know who."',
       '"There\'s a **furtive peddler** who sets up by the **market**, near the gate. Sells nothing, buys nothing, but he\'s there every time a train rolls out. Watch him. If anyone\'s carrying word to the raiders, it\'s him."',
     ],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
@@ -240,7 +240,7 @@ const scenes: Record<string, Scene> = {
   },
   'tavern-round-flat': {
     id: 'tavern-round-flat', kind: 'story', art: { emoji: '🍻' },
-    text: ['The room drinks your round and thanks you kindly. Then the talk turns to the weather. Nobody wants to be the one who mentions the marsh.'],
+    text: ['The room drinks your round and thanks you kindly, and then the talk turns to the weather. The marsh does not come up once.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
 
@@ -265,23 +265,23 @@ const scenes: Record<string, Scene> = {
   'rumor-tactics': {
     id: 'rumor-tactics', kind: 'story', art: { emoji: '🛡️' },
     text: [
-      'A grey-bearded man with a soldier\'s too-straight back taps the boards. "Rule one, and it\'s the reason I\'ve still got both legs: don\'t turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you — an *opportunity*, they call it."',
-      '"Want out of a scrap without the parting gift? *Disengage* — costs you your whole action, but you walk clear and nobody swings. Especially you wand-wavers: get clear before you start your muttering, or you\'ll be eating steel halfway through the word."',
+      'A grey-bearded man with a soldier\'s too-straight back taps the boards. "Rule one, and it\'s the reason I\'ve still got both legs: don\'t turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you as you go."',
+      '"Want out of a scrap without the parting gift? Then do nothing else but get out of it. Eyes on his blade, back off slow, and don\'t try anything clever on the way. Especially you wand-wavers: get clear before you start your muttering, or you\'ll be eating steel halfway through the word."',
     ],
     next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
   },
   'rumor-magic': {
     id: 'rumor-magic', kind: 'story', art: { emoji: '🔮' },
     text: [
-      'A woman with river-stones braided into her hair doesn\'t look up from her knitting. "Magic\'s never free, whatever the college boys tell you. Your real spells burn *slots*, and you\'ve precious few. Spend them like your last coppers — because in a long fight, that\'s what they are."',
-      '"And the strong workings. A held foe, a ward of blades. You\'ve to *concentrate* to keep them lit. Take a hard knock and you\'d best hold your focus or the whole thing comes apart in your hands. Can\'t hold two at once, either. So pick the one that\'ll matter."',
+      'A woman with river-stones braided into her hair doesn\'t look up from her knitting. "Magic\'s never free, whatever the college boys tell you. Every real working takes something out of you, and you\'ve only so much to give before you sleep. Spend it like your last coppers, because in a long fight, that\'s what it is."',
+      '"The strong workings, a held foe or a ward of blades, burn only as long as you hold them in your head. Take a hard knock and you\'d best keep your focus, or the whole thing slips through your fingers. Can\'t hold two at once, either. So pick the one that\'ll matter."',
     ],
     next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
   },
   'rumor-weapons': {
     id: 'rumor-weapons', kind: 'story', art: { emoji: '⚔️' },
     text: [
-      'A scarred caravan guard rolls her axe over on the table. "Every weapon\'s got a trick in it, if you know how to ask. A heavy blade *cleaves* — bite one man and the swing carries on into the next. A mace\'ll *sap* a foe, so his next swing at you goes wide."',
+      'A scarred caravan guard rolls her axe over on the table. "Every weapon\'s got a trick in it, if you know how to ask. A heavy blade bites one man and the swing carries on into the next. A mace\'ll rattle a foe, so his next swing at you goes wide."',
       '"Learn what the thing in your hand actually *does*. That\'s how you put down men twice your size."',
     ],
     next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
@@ -331,12 +331,12 @@ const scenes: Record<string, Scene> = {
       'padded', 'leather', 'studded-leather', 'hide', 'chain-shirt', 'ring-mail', 'scale-mail', 'chain-mail',
     ],
     npc: speaker(NPCS.bram!, { label: '{bram} the Quartermaster' }),
-    intro: ['"Coin\'s coin, and I\'ll not ask where yours has been." **{bram}** plants both hands on the stall. "Buying, or selling? Prices are honest — a dead customer never comes back for more, and I do like the repeat trade."'] },
+    intro: ['"Coin\'s coin, and I\'ll not ask where yours has been." **{bram}** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."'] },
   board: {
     id: 'board', kind: 'story', art: { emoji: '📜' },
     text: [
-      'Here is the reeve\'s bounty in full, nailed up and gone grey at the edges. He will pay good coin for proof the **{ashfang} chief** is dead. He will pay better still for their banner brought back whole.',
-      'Someone has added a line at the bottom in a smaller, prouder hand — *"{thornwick} does not beg. It pays its debts."* That ink is newer than the rest.',
+      'Here is the reeve\'s bounty in full, nailed up and gone grey at the edges. He will pay good coin for proof the {ashfang} chief is dead, and better still for their banner brought back whole.',
+      'Someone has added a line at the bottom in a smaller, prouder hand: *"{thornwick} does not beg. It pays its debts."* That ink is newer than the rest.',
     ],
     again: ['The reeve\'s bounty still hangs on the board, a little greyer at the edges than before.'],
     next: [
@@ -352,7 +352,7 @@ const scenes: Record<string, Scene> = {
     art: { emoji: '🕵️' },
     lines: [
       'The peddler\'s stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He never once takes his eyes off the gate.',
-      'When your shadow falls across his goods he goes very still. Then he does the last thing you expected of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. This won\'t end quietly.',
+      'When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks.',
     ],
     again: ['The peddler is back behind his stall of chipped buttons. He sees you coming this time. His fingers are at his teeth before you reach him, and the whistle brings his hard-faced men out of the crowd again.'],
     next: [
@@ -371,7 +371,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'His crew is down or gone, one way or another, and the peddler knows it. He folds like wet paper. "I only carried word! I never lifted a blade!"',
       SPY_LIST,
-      'Then he gives up the rest, all in one breath. **He tells you the raiders\' gate-signal.** Nobody ran to warn the den, so the signal is still good. With it, you can walk up to the den like one of their own.',
+      'The rest comes out all in one breath, and the raiders\' **gate-signal** with it. "Call that up to the watch-post and they\'ll open for you like you\'re one of their own." None of his crew got away to warn the den, so the signal is still good.',
     ],
     noBack: true,
     next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
@@ -397,8 +397,8 @@ const scenes: Record<string, Scene> = {
   'spy-stalk': {
     id: 'spy-stalk', kind: 'story', art: { imageId: 'loc-village', emoji: '🕵️' },
     text: [
-      'There he is, just where {mira} said. A peddler with a stall of chipped buttons and a birdcage with no bird. He sells nothing. He watches the gate.',
-      'He hasn\'t seen you yet. Round the square, a few hard-faced men nurse their drinks. They keep one eye on him, and the other on the gate.',
+      'There he is, just where {mira} said: a peddler with a stall of chipped buttons and a birdcage with no bird. He sells nothing, and he watches the gate.',
+      'He hasn\'t seen you yet. Round the square, a few hard-faced men nurse their drinks with one eye on him and the other on the gate.',
     ],
     again: ['The peddler is back at his stall of chipped buttons, watching the gate. His hard-faced men are back at their drinks, too.'],
     assumes: [{ kind: 'flag', flag: 'know-spy' }],
@@ -439,25 +439,25 @@ const scenes: Record<string, Scene> = {
     again: ['{osk} the miller still has his boat-hook in both hands. "Back, are you? The ugly things are still in my hedgerows, and my grain\'s still standing."'],
     next: [
       { id: 'help', label: 'Beat the hedgerows', to: 'mill-fight' },
-      { id: 'later', label: 'Another time', to: 'square' },
+      { id: 'later', label: 'Leave him to his hedgerows', to: 'square' },
     ],
   },
   'mill-fight': {
     id: 'mill-fight', kind: 'battle', encounterId: 'cockatrice-flock', mapId: 'open',
-    intro: ['Two bat-winged things explode out of the hedge in a fury of beak and scale — cockatrices, all claws and temper. Mind the bite: flesh that takes it goes to stone.'],
+    intro: ['Two bat-winged things burst out of the hedge in a fury of beak and scale, hissing like geese. "Cockatrices!" the miller shouts from his door. "Mind the beaks!"'],
     again: ['The cockatrices are still in the hedge, and this time they come out of it the moment you reach the gate. Mind the bite.'],
     onWin: { to: 'square', text: ['The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.'],
       effects: [{ kind: 'setFlag', flag: 'mill-saved' }, { kind: 'gold', amount: 35 }] },
   },
   'mill-done': {
     id: 'mill-done', kind: 'story', art: { emoji: '🌾' },
-    text: ['The mill\'s sails are turning again. The miller waves from the door — and the stone dog keeps its vigil by the gate, forever pointing at nothing.'],
+    text: ['The mill\'s sails are turning again, and the miller waves from the door. The stone dog keeps its vigil by the gate, forever pointing at nothing.'],
     next: [{ id: 'ok', label: 'Back to the square', to: 'square' }], noBack: true,
   },
 
   'spy-bolts': {
     id: 'spy-bolts', kind: 'battle', encounterId: 'cutpurses', mapId: 'village',
-    intro: ['His crew shoulders out of the market crowd — a fixer and two hired knives, blades already low and level. No surprises left; just the work.'],
+    intro: ['His crew shoulders out of the market crowd: a fixer and two hired knives, blades held low and level. They come straight for you.'],
     again: ['The fixer and his two hired knives close in again, blades low and level. They know your faces now.'],
     onWin: { to: 'spy-caught-loud', text: ['The fixer goes down, and the hired help drops its knives and its nerve together, and runs. One of them does not stop at the edge of the square. He goes straight out through the gate, toward the marsh.'] },
     parley: {
@@ -502,25 +502,25 @@ const scenes: Record<string, Scene> = {
   trailhead: {
     id: 'trailhead', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
-      { assumes: [{ kind: 'flag', flag: 'spy-caught' }], text: 'The peddler is in the reeve\'s cells now. The gate-warden stands aside, and **{thornwick}** falls away behind you. Ahead the road narrows toward the **marsh**. It is a ribbon of mud between dark pools and whispering reeds.' },
-      'Somewhere out in that maze the **{ashfang}** keep their den. Somewhere a good deal closer, it seems, they keep their eyes on the road.',
+      { assumes: [{ kind: 'flag', flag: 'spy-caught' }], text: 'The peddler is in the reeve\'s cells now. The gate-warden stands aside, and **{thornwick}** falls away behind you. Ahead the road narrows into the **marsh**, a ribbon of mud between dark pools and whispering reeds.' },
+      'Somewhere out in that maze the {ashfang} keep their den. Somewhere a good deal closer, it seems, they keep their eyes on the road.',
     ],
     next: [{ id: 'go', label: 'Set out on the marsh road', to: 'road-out' }],
   },
   'trailhead-clear': {
     id: 'trailhead-clear', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
-    text: ['The gate-warden waves you through. The marsh road lies quiet now. The goblins you met on it have not come back.'],
+    text: ['The gate-warden waves you through, and the marsh road lies quiet. The goblins you met on it have not come back.'],
     next: [{ id: 'go', label: 'Out along the marsh road', to: 'trail' }],
   },
   'road-out': {
     id: 'road-out', kind: 'battle', encounterId: 'goblin-outriders', mapId: 'open',
-    intro: ['Barely a mile from the gate, the reeds erupt. The {ashfang} keep goblin outriders on the road, and word of you has run ahead. A wiry goblin boss lopes out in front of his pack. His scimitar is bared, and he cackles something in Goblin that needs no translation.'],
+    intro: ['Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling something in Goblin that needs no translation.'],
     again: ['The goblin outriders are still in the reeds a mile from the gate. Their boss lopes out in front of the pack again, scimitar bared, cackling.'],
     // Milestone M1 rides on this fight's win: surviving the road out of town is
     // what dings the party to 2nd level, so the level-up lands on a fight it
     // earned rather than out of nowhere. road-out is on the one-way path into the
     // marsh, so the grant fires exactly once.
-    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds. Behind you {thornwick}; ahead, the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.'],
+    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.'],
       effects: [{ kind: 'xpToLevel', level: 2 }] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
@@ -600,7 +600,7 @@ const scenes: Record<string, Scene> = {
   },
   'tracks-lost': {
     id: 'tracks-lost', kind: 'story', art: { emoji: '👣' },
-    text: ['The prints tangle and double back on themselves until your eyes water. Still, they point roughly toward the hills. That\'s enough to find the hollow by, if not the dry way there.',
+    text: ['The prints tangle and double back on themselves until your eyes water, but they point roughly toward the hills. That\'s enough to find the hollow by, if not the dry way there.',
       'The wet way is slow and loud. You will come at the hollow splashing from one tussock to the next. Anything waiting in the reeds will hear you long before you see it.'],
     // `trail-wet`: the hollow's ambush is sprung on the party, no Perception roll.
     next: [{ id: 'ok', label: 'Head for the hills', to: 'trail',
@@ -623,7 +623,7 @@ const scenes: Record<string, Scene> = {
   'hollow-quiet': {
     id: 'hollow-quiet', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🌾' },
     assumes: [{ kind: 'flag', flag: 'know-hag' }],
-    text: ['The hollow lies quiet where you broke the {reedwife}\'s ambush. Only flattened reeds and still water remain. The den\'s wooden wall waits ahead.'],
+    text: ['The hollow lies quiet where you broke the {reedwife}\'s ambush, with nothing left of it but flattened reeds and still water. The den\'s wooden wall waits ahead.'],
     // Wren parts at the tree line whichever way the party comes up to it.
     next: [
       { id: 'ok', label: 'On to the den gate', to: 'gate',
@@ -634,28 +634,28 @@ const scenes: Record<string, Scene> = {
   },
   ravine: {
     id: 'ravine', kind: 'challenge', art: { emoji: '🪨' },
-    intro: ['A collapsed ravine cuts the trail. The far side is close — but the gap is loose stone and broken rock. There\'s more than one way across.'],
+    intro: ['A collapsed ravine cuts the trail. The far side is close, but the gap between is all loose stone and broken rock, and there is more than one way across it.'],
     again: ['The ravine still cuts the trail. You look the loose stone over again for a way across you have not tried.'],
     // `perApproach`: a botched climb doesn't strand you — you can still scramble
     // the rubble or take the slow way round. Only when every line fails do you
     // take the long detour, and it costs a whole day on the clock.
     retry: 'perApproach',
     approaches: [
-      { id: 'climb', label: 'Climb it head-on', hint: 'Muscle up the sheer face — fastest, if you don\'t fall.',
+      { id: 'climb', label: 'Climb the sheer face', hint: 'The quickest way, for anyone who doesn\'t fall.',
         skill: 'athletics', dc: 13,
         success: { to: 'trail', text: ['You haul the party up and over, hand over hand.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 30 }] },
         failure: { to: 'ravine', text: ['A hold crumbles and you slide back down in a clatter of stone. That way will not work.'] } },
-      { id: 'scramble', label: 'Pick across the rubble', hint: 'Balance over the loose stone where it has fallen shallowest.',
+      { id: 'scramble', label: 'Pick across the rubble where it lies shallowest',
         skill: 'acrobatics', dc: 12,
         success: { to: 'trail', text: ['Light on your feet, you thread the shifting stones and reach the far lip.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 30 }] },
         failure: { to: 'ravine', text: ['The loose stone gives all at once and you scramble back before it takes an ankle with it.'] } },
-      { id: 'detour', label: 'Find the long way round', hint: 'Read the ground for a safe line — slower, but no broken bones.',
+      { id: 'detour', label: 'Look for a gentler way round', hint: 'Slower, but the footing is sure.',
         skill: 'survival', dc: 11,
         success: { to: 'trail', text: ['You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 15 }] },
-        failure: { to: 'ravine', text: ['You follow the lip of the ravine downstream for an hour. It only gets deeper. You trudge back to where you started.'] } },
+        failure: { to: 'ravine', text: ['You follow the lip of the ravine downstream for an hour, and it only gets deeper. You trudge back to where you started.'] } },
     ],
     // Reached only if every line of attack fails (or is spent).
     success: { to: 'trail', effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }] },
@@ -664,7 +664,7 @@ const scenes: Record<string, Scene> = {
   },
   'ravine-done': {
     id: 'ravine-done', kind: 'story', art: { emoji: '🪨' },
-    text: ['The broken ravine lies behind you now, already crossed. Nothing waits here but the wind over the loose stone.'],
+    text: ['The ravine lies behind you. Nothing waits here but the wind over the loose stone.'],
     next: [{ id: 'ok', label: 'Press on', to: 'trail' }], noBack: true,
   },
   wounded: {
@@ -690,7 +690,7 @@ const scenes: Record<string, Scene> = {
         attempt: 'scout-wound', check: { skill: 'nature', dc: 9, failTo: 'scout-fail' } },
       { id: 'medicine', label: '[Medicine DC 12] Ease her out and bind the leg', to: 'scout-saved',
         attempt: 'scout-wound', check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
-      { id: 'leave', label: 'No time to spare her — press on', to: 'scout-left',
+      { id: 'leave', label: 'Leave her and press on', to: 'scout-left',
         effects: [{ kind: 'npc', npc: 'wren', fate: 'left' }] },
     ],
   },
@@ -731,7 +731,7 @@ const scenes: Record<string, Scene> = {
     id: 'wren-joins', kind: 'story', art: { emoji: '🧭' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
     text: ['{wren} tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don\'t." She takes up her bow. "As far as their gate. Then I go for the reeve\'s men, and you had better still be alive when I get back."'],
-    next: [{ id: 'go', label: 'Into the marsh, with {wren} leading', to: 'trail' }],
+    next: [{ id: 'go', label: 'Follow {wren} into the marsh', to: 'trail' }],
   },
   // She came as far as she said she would.
   'wren-parts': {
@@ -744,7 +744,7 @@ const scenes: Record<string, Scene> = {
   'scout-fail': {
     id: 'scout-fail', kind: 'story', noBack: true, art: { emoji: '🩸' },
     text: [
-      'It goes wrong. As the horse comes off her, the arrowhead shifts and tears something deep inside. She knows it before you do. No potion will close that. She fumbles at her belt for the healing potion she could never reach with the horse on top of her, and presses it into your hand. "Wasted on me now. Take it in there with you."',
+      'It goes wrong. As the horse comes off her the arrowhead shifts and tears something deep inside, and she knows it before you do. She fumbles at her belt for the healing potion she could never reach with the horse on top of her, and presses it into your hand. "Wasted on me now. Take it in there with you."',
       'A minute later she is gone. She never told you her name.',
     ],
     next: [{ id: 'ok', label: 'Cover her and go', to: 'trail',
@@ -755,7 +755,7 @@ const scenes: Record<string, Scene> = {
   'scout-gone': {
     id: 'scout-gone', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'npc', npc: 'tamsin', fate: 'dead' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }],
-    text: ['The dead horse still lies across the trail, flies rising in the heat. Beside it is the low mound of reeds where you covered the scout. Nothing more remains for you here.'],
+    text: ['The dead horse still lies across the trail, flies rising in the heat. Beside it is the low mound of reeds where you covered the scout.'],
     next: [{ id: 'ok', label: 'Move on', to: 'trail' }], noBack: true,
   },
   'scout-along': {
@@ -767,7 +767,7 @@ const scenes: Record<string, Scene> = {
   'scout-sent': {
     id: 'scout-sent', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'noCompanion', companion: 'wren' }],
-    text: ['The dead horse still lies across the trail, flies rising in the heat. {wren} is long gone, limping to {thornwick} for the reeve\'s men. Nothing more remains for you here.'],
+    text: ['The dead horse still lies across the trail. {wren} is long gone, limping to {thornwick} for the reeve\'s men. A line of neat round holes in the mud shows where she leaned on her bow.'],
     next: [{ id: 'ok', label: 'Move on', to: 'trail' }], noBack: true,
   },
   'spy-gone': {
@@ -780,7 +780,7 @@ const scenes: Record<string, Scene> = {
   barrow: {
     id: 'barrow', kind: 'story', art: { emoji: '🪦' },
     text: [
-      'Half-swallowed by the reeds is a barrow-mound older than any kingdom you could name. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.',
+      'Half-swallowed by the reeds lies a barrow-mound, its stones worn as smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.',
       'Grave-goods glint in the dark below. So does something that moves without touching the water.',
     ],
     again: ['The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.'],
@@ -793,12 +793,12 @@ const scenes: Record<string, Scene> = {
     id: 'barrow-fight', kind: 'battle', encounterId: 'specter-haunt', mapId: 'corridor',
     intro: ['The cold answers you. Two shapes pour up out of the grave-earth. They were men once, and now they are nothing but spite and winter air. They pass *through* the barrow stones to reach you.'],
     again: ['The two cold shapes are waiting this time, down among the grave-goods. They come for you through the barrow stones again.'],
-    onWin: { to: 'trail', text: ['The specters shred into cold mist. Among the grave-goods you find honest silver — and leave the rest, on balance, where it lies.'],
+    onWin: { to: 'trail', text: ['The specters shred into cold mist. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.'],
       effects: [{ kind: 'setFlag', flag: 'barrow-cleared' }, { kind: 'gold', amount: 45 }] },
   },
   'barrow-done': {
     id: 'barrow-done', kind: 'story', art: { emoji: '🪦' },
-    text: ['The barrow lies quiet now, its cold spent. Whatever walked here walks no more.'],
+    text: ['The barrow lies quiet now, and the air above the capstone is no colder than the marsh.'],
     next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
   },
 
@@ -807,9 +807,9 @@ const scenes: Record<string, Scene> = {
     id: 'thicket', kind: 'story', art: { emoji: '🕸️' },
     text: [
       'Pale silk sheets the reeds ahead, and they have gone grey and still. Bundles hang in the webbing at the height a man\'s shoulders would be. Some of the bundles are man-shaped.',
-      'Whatever spins here has been eating well off the {ashfang}\'s road. It is not small, and there is more than one of it. But those cocoons will have purses.',
+      'Something spins here, and it has been eating well off the {ashfang}\'s road. It is not small, and there is more than one of it. But those cocoons will have purses.',
     ],
-    again: ['The grey webs still sheet the reeds, and the man-shaped bundles still hang in them. Whatever spins here has not gone anywhere.'],
+    again: ['The grey webs still sheet the reeds, and the man-shaped bundles still hang in them. The spinners have not gone anywhere.'],
     next: [
       { id: 'in', label: 'Cut your way in', to: 'thicket-fight' },
       { id: 'leave', label: 'Give the webs a wide berth', to: 'trail' },
@@ -817,7 +817,7 @@ const scenes: Record<string, Scene> = {
   },
   'thicket-fight': {
     id: 'thicket-fight', kind: 'battle', encounterId: 'spiders', mapId: 'marsh',
-    intro: ['The silk trembles — then the reeds themselves seem to stand up and walk. Giant spiders, four of them, drop from the high webbing on every side. They are quick, and their bite carries venom.'],
+    intro: ['The silk trembles, and then the reeds themselves seem to stand up and walk. Four giant spiders drop from the high webbing on every side, fangs already wet.'],
     again: ['The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.'],
     onWin: { to: 'trail', text: ['The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He does not stop thanking you until the reeds swallow the sound.'],
       effects: [{ kind: 'setFlag', flag: 'thicket-cleared' }, { kind: 'gold', amount: 60 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
@@ -831,20 +831,21 @@ const scenes: Record<string, Scene> = {
   'bog-toads': {
     id: 'bog-toads', kind: 'battle', encounterId: 'toad-swamp', mapId: 'bog',
     intro: ['The black water bulges, then heaves. A pair of giant toads haul themselves onto the mud bank. Each is wider than a shield, and faster than anything that size should be. A tongue lashes out for the nearest of you.'],
-    onWin: { to: 'ravine', text: ['The second toad shudders and goes still, half in the water. You scrape the slime off and press on — the ravine still waits.'] },
+    onWin: { to: 'ravine', text: ['The second toad shudders and goes still, half in the water. You scrape off the slime and press on toward the ravine.'] },
   },
   'camp-ambush': {
     id: 'camp-ambush', kind: 'battle',
     // A night attack is a setback, not a payday: no XP or loot, so a
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
-    intro: ['You wake to a wet, dragging sound in the dark. The marsh gives up its dead: two ghouls claw up out of the mire, jaws working, and come for the firelight. No time to ready anything — you fight with what you\'ve got.'],
-    onWin: { to: '@hub', text: ['The dead lie still again. The fire is out and the night is half gone, and nobody will sleep after that. You pack up, as tired as when you lay down.'] },
+    intro: ['You wake to a wet, dragging sound in the dark. Two grey shapes are clawing up out of the mire on the far side of the fire. They come for the light on all fours, jaws working.'],
+    again: ['The dragging sound comes again, out in the dark. The marsh has more dead in it than you hoped, and two of them are crawling toward your fire.'],
+    onWin: { to: '@hub', text: ['You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.'] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
-    intro: ['The hollow opens below, and the reeds are too still. They are cold where the marsh should be warm. Nothing moves. That is the trouble. Something out there is lying very still, waiting for you to come closer.'],
-    again: ['You come back to the lip of the hollow. The reeds below are still too still, and too cold. Whatever lies out there is waiting for you again.'],
+    intro: ['The hollow opens below you, and the reeds in it are too still, and cold where the marsh should be warm. Nothing moves. Something out there is lying flat in the water, waiting for you to come closer.'],
+    again: ['You come back to the lip of the hollow. The reeds below are still too still, and too cold. Something out there is waiting for you again.'],
     // The perception check only sets the terms (surprise); Milestone M2 rides the
     // battle's win, so 3rd level is earned in the fight, not handed over — and the
     // hollow ambush is the one route to the den (approach needs trail-read from
@@ -857,7 +858,7 @@ const scenes: Record<string, Scene> = {
     id: 'ambush-wet', kind: 'story', noBack: true, art: { imageId: 'loc-marsh', emoji: '⛰️' },
     text: [
       'You come up out of the sinkholes on the wrong side of the hollow, soaked to the waist. Every step sucks and splashes.',
-      'The reeds ahead are too still, and cold where the marsh should be warm. You see it a moment too late. Whatever lies in that water heard you coming a long way off.',
+      'The reeds ahead are too still, and cold where the marsh should be warm. You see it a moment too late. Anything lying in that water heard you coming a long way off.',
     ],
     next: [{ id: 'on', label: 'Draw steel', to: 'ambush-sprung' }],
   },
@@ -869,13 +870,13 @@ const scenes: Record<string, Scene> = {
       'At the lip of the hollow {wren} puts out an arm and stops you. She watches the reeds below for a long time.',
       '"Too still," she says. "And cold. The marsh is never cold at noon." She points once, twice, three times. "Lizardfolk, lying in the water. And something big behind them, a toad, I think. They think we\'ll come down the dry line. So we won\'t."',
     ],
-    next: [{ id: 'wren', label: '[{wren}] Follow her round behind them', to: 'ambush-turned',
+    next: [{ id: 'wren', label: 'Follow {wren} round behind them', to: 'ambush-turned',
       requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true }],
   },
   'ambush-turned': {
     id: 'ambush-turned', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'enemies', // you spotted them — they lose the first round
-    intro: ['You strike first. A hunting-party of **lizardfolk** rises from the water where they lay. Driven, herded, a monstrous toad lumbering at their backs. For a heartbeat they don\'t even see you. Whatever bound them here, it did not teach them to watch their own flank.'],
+    intro: ['You strike first. Scaled backs rise out of the water where they lay, a hunting-party of **lizardfolk** with a monstrous toad lumbering behind them like a herded ox. For a heartbeat, not one of them sees you.'],
     again: ['You strike first again. The lizardfolk are back in the water with their toad behind them, and once more they are watching the wrong way.'],
     onWin: { to: 'hollow-won', text: ['The lizardfolk sink back into the dark water they came from, one by one.'],
       effects: [{ kind: 'xpToLevel', level: 3 }] },
@@ -883,9 +884,9 @@ const scenes: Record<string, Scene> = {
   'ambush-sprung': {
     id: 'ambush-sprung', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'party', // the check failed — they get the drop on you
-    intro: ['The reeds erupt around you. **Lizardfolk** rush in with hooked spears. A giant toad heaves up through the muck. All of it moves with one dreadful purpose, as if a single hand worked them like puppets.'],
+    intro: ['The reeds burst apart around you, and scaled shapes rush in with hooked spears, a giant toad heaving up through the muck behind them. They move together, too well, as if one hand worked them all.'],
     again: ['The reeds erupt around you again. The lizardfolk and their toad have been waiting for you to come back.'],
-    onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The marsh-things fall still.'],
+    onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The last of the lizardfolk drags itself into the water and does not come up.'],
       effects: [{ kind: 'xpToLevel', level: 3 }] },
   },
   // The reveal beat: the lizardfolk didn't choose the raiders — something in the
@@ -893,9 +894,11 @@ const scenes: Record<string, Scene> = {
   'hollow-won': {
     id: 'hollow-won', kind: 'story', noBack: true, art: { imageId: 'loc-marsh', emoji: '🐍' },
     text: [
-      'You turn the nearest body with your boot. Branded into the scaled hide, still weeping: a crude mark of reeds and a reaching hand. These weren\'t raiders. Someone *owned* them, and marked them like cattle.',
-      'Then a voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **{reedwife}**. Ask your chief what he sold me. Ask him what I paid."',
-      '"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet. So the {ashfang} answer to a **green hag** of the marsh.',
+      'You turn the nearest body with your boot. Branded into the scaled hide, still weeping, is a crude mark of reeds and a reaching hand. Someone *owned* these, and marked them like cattle.',
+      'A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **{reedwife}**. Ask your chief what he sold me. Ask him what I paid."',
+      '"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.',
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '{wren} has gone white. "A green hag," she says. "My gran had a story about one. I thought it was a story."' },
     ],
     next: [{ id: 'ok', label: 'On to the den', to: 'gate',
       requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true,
@@ -908,7 +911,7 @@ const scenes: Record<string, Scene> = {
   // === ACT 3 — THE ASHFANG DEN (dungeon) ================================
   gate: {
     id: 'gate', kind: 'story', art: { imageId: 'loc-camp', emoji: '🏚️' },
-    text: ['A wooden wall of lashed timber rings the hollow. A watch-post looms over the only gate. Beyond it waits the chief.'],
+    text: ['A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.'],
     // `den-entered` is set by every way in (a failed roll clears it again on
     // the way to the gate fight), so a return trip only offers the way back in.
     next: [
@@ -934,7 +937,7 @@ const scenes: Record<string, Scene> = {
   },
   'den-lock-jammed': {
     id: 'den-lock-jammed', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗝️' },
-    text: ['Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. Nobody on the wall hears. But that gate will not open now, for anyone.'],
+    text: ['Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.'],
     next: [{ id: 'back', label: 'Back to the main gate', to: 'gate' }],
   },
   'den-picked': {
@@ -960,7 +963,7 @@ const scenes: Record<string, Scene> = {
   'gate-signal-blown': {
     id: 'gate-signal-blown', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '📯' },
     text: [
-      'The watch-post goes quiet. Then a voice calls down a countersign you never learned. Somebody up there knows that someone sold the signal.',
+      'The watch-post goes quiet, and a voice calls down a countersign you never learned. Somebody up there knows that someone sold the signal.',
       'A horn brays, and torches run along the wall. You fall back into the reeds and lie in the mud while the watch hunts the hollow. It takes all night and most of the next day before the den settles. By then the watch has a new signal, and you do not know it.',
     ],
     next: [{ id: 'back', label: 'Crawl back up to the gate', to: 'gate',
@@ -1019,11 +1022,11 @@ const scenes: Record<string, Scene> = {
   'den-muster': {
     id: 'den-muster', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins',
     intro: [
-      'The chained shape in the pit is an **ogre** — half-starved, whip-scarred, and utterly beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they grin and haul the pins.',
+      'The chained shape in the pit stands up, and keeps standing up: an **ogre**, half-starved, whip-scarred and beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they grin and haul the pins.',
       '"Fresh meat for the pit!" one bellows, and slips the ogre\'s chain.',
     ],
-    again: ['The ogre is off its chain now, and nobody is getting it back on. The two orc goaders whoop and drive it at you with their barbed poles.'],
-    onWin: { to: 'inner', text: ['The ogre crashes down across its own broken chains, and the goaders don\'t outlive it by much. The pit is quiet. Whatever the {ashfang} were, they were cruel to their own monsters too.'],
+    again: ['The ogre is off its chain now, and it is not going back on. The two orc goaders whoop and drive it at you with their barbed poles.'],
+    onWin: { to: 'inner', text: ['The ogre crashes down across its own broken chains, and the goaders don\'t outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.'],
       effects: [{ kind: 'setFlag', flag: 'muster-cleared' }, { kind: 'gold', amount: 25 }] },
   },
   'den-camp-ambush': {
@@ -1031,8 +1034,9 @@ const scenes: Record<string, Scene> = {
     // A night attack is a setback, not a payday: no XP or loot, so a
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'raiders-forward', mapId: '@room',
-    intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents — an orc, an archer and a bandit, blinking in the firelight, already shouting the alarm. So much for rest.'],
-    onWin: { to: '@hub', text: ['You put the patrol down before the whole camp wakes. The fire is out and the night is half gone. Nobody rests after that.'] },
+    intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents: an orc, an archer and a bandit, blinking in the light. The bandit finds his voice first and starts to shout.'],
+    again: ['Another patrol. They come round the drying-racks this time, three of them, and they have their blades out before they reach the fire.'],
+    onWin: { to: '@hub', text: ['You put the patrol down before the whole den wakes, and kick dirt over the fire. Across the yard a dog starts barking, and you are on your feet and moving before it stops.'] },
   },
   // The clock (see DAWNS): the Reedwife takes her due when the moon goes
   // dark. Until then the pen holds people; after, it holds a shoe.
@@ -1050,8 +1054,8 @@ const scenes: Record<string, Scene> = {
     id: 'den-pens-empty', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '⛓️' },
     assumes: [{ kind: 'flag', flag: 'captives-taken' }],
     text: [
-      'There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open. Wet, webbed footprints lead from the gate toward the marsh, and none lead back.',
-      'In the corner lies one small shoe. The moon has gone dark, and the {reedwife} has come and gone.',
+      'There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.',
+      'The moon has gone dark, and the {reedwife} has come and gone. In the corner lies one small shoe.',
     ],
     next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }],
   },
@@ -1081,11 +1085,11 @@ const scenes: Record<string, Scene> = {
     // The price of the captives: a hard fight with nothing in its pockets.
     loot: false,
     intro: ['The noise carries. The raider by the fire jumps up and yells, and the den\'s watch comes running with him. Two orcs, two archers and a bandit spread out in front of the pen. The carter pulls the girl down into the straw.'],
-    onWin: { to: 'den-pens-freed', text: ['The last raider falls against the stakes. Nobody else comes. In a den this loud, one more fight in the dark is nothing new.'] },
+    onWin: { to: 'den-pens-freed', text: ['The last raider falls against the stakes, and no one else comes. In a den this loud, one more fight in the dark is nothing new.'] },
     // The pens are played once: there is no coming back to them, so the fight
     // is seen through, and losing it loses the captives.
     noFlee: true,
-    onLoss: { to: 'inner', text: ['You go down in the mud in front of the pen. When you come to, you are lying in the straw of the pen itself, left for dead. The gate stands open. The captives are gone, and so are their tracks, out toward the deep fen.'],
+    onLoss: { to: 'inner', text: ['You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
   },
   'den-pens-freed': {
@@ -1118,7 +1122,7 @@ const scenes: Record<string, Scene> = {
     // One-way: whatever the party says (or doesn't), Vex has met them.
     id: 'vex-parley', kind: 'dialogue', noBack: true, npc: LIEUTENANT, art: { emoji: '🗡️' },
     lines: [
-      'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it like a man who\'d rather be leaning on it.',
+      'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.',
       '"**{vex}**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven\'t seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
     ],
     next: [
@@ -1146,14 +1150,14 @@ const scenes: Record<string, Scene> = {
     id: 'vex-refuses', kind: 'story', noBack: true, art: { emoji: '💢' },
     text: [
       '{vex} studies you a long moment, then shakes his head, almost sorry about it. "No. You\'d hang me the morning after, and we both know it."',
-      '"Pity. I\'d have liked to see the far end of this valley." He melts back into the dark. Whatever happens in the hall, he means to watch it from a long way off.',
+      '"Pity. I\'d have liked to see the far end of this valley." He melts back into the dark, toward the ridge above the den.',
     ],
-    next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
+    next: [{ id: 'ok', label: 'Leave him to the dark', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
   },
   'vex-dismissed': {
     id: 'vex-dismissed', kind: 'story', noBack: true, art: { emoji: '🗡️' },
     text: ['"Suit yourself." {vex} turns back to his fire. "I won\'t help you. I won\'t get in your way, either."'],
-    next: [{ id: 'ok', label: 'Press on', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
+    next: [{ id: 'ok', label: 'Leave him to his fire', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
   },
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
@@ -1232,7 +1236,7 @@ const scenes: Record<string, Scene> = {
     id: 'boss-unguarded', kind: 'battle', encounterId: 'ashfang-warlord-alone', mapId: 'firepit',
     intro: [
       { assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
-        text: 'The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you. Then he steps aside to let you pass, and walks out into the smoke. {vex} has kept his word.' },
+        text: 'The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.' },
       '"You\'ve cost me a good season," he says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn\'t come.',
     ],
     again: [{ assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask} is nowhere in the hall. {vex}\'s word still holds.' }, '{vargan} rolls the great axe off his shoulder again. The hag watches the doorway, still counting the blades that didn\'t come.'],
@@ -1245,7 +1249,7 @@ const scenes: Record<string, Scene> = {
     surprise: 'enemies',
     intro: [
       { assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, { kind: 'flag', flag: 'vargan-shaken' }],
-        text: '{vargan} closes his fist over the brand and bellows for {hask}. By the door, {hask} grounds his spear and steps aside to let you pass. Then he walks out into the smoke.' },
+        text: '{vargan} closes his fist over the brand and bellows for {hask}. By the door, {hask} grounds his spear, steps aside to let you pass, and walks out into the smoke.' },
       '"Waste not," the hag hisses, but by then you are already moving.',
     ],
     again: [{ assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, { kind: 'flag', flag: 'vargan-shaken' }], text: '{hask} is still gone, and {vargan} still keeps his branded hand shut in a fist.' }, '"Waste not," the hag hisses, but by then you are already moving.'],
@@ -1279,12 +1283,12 @@ const scenes: Record<string, Scene> = {
   // turn twice: the fights after it open on the hag alone.
   'vargan-turns': {
     id: 'vargan-turns', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '✋' },
-    text: [VARGAN_TURNS, 'The hag looks down at him for a moment. Then she turns to you, smiling.'],
+    text: [VARGAN_TURNS, 'The hag looks down at him for a moment before she turns to you, smiling.'],
     next: [{ id: 'fight', label: 'Face the {reedwife}', to: 'reedwife-fight' }],
   },
   'vargan-turns-alone': {
     id: 'vargan-turns-alone', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '✋' },
-    text: [VARGAN_TURNS, 'The hag looks down at him for a moment. Then she turns to you, smiling.'],
+    text: [VARGAN_TURNS, 'The hag looks down at him for a moment before she turns to you, smiling.'],
     next: [{ id: 'fight', label: 'Face the {reedwife}', to: 'reedwife-fight-alone' }],
   },
   // The hag fights on without him, with the chief's guard and one more raider.
@@ -1324,6 +1328,8 @@ const scenes: Record<string, Scene> = {
     text: [
       '{vargan} sits against his throne of spears. The brand on his hand has gone grey, like an old scar. He does not reach for his axe.',
       '"{thornwick} will want me hanged," he says. "{thornwick} is right. I sold them to her for a full barn." He looks at the trophies in the rafters. "Do what you came to do."',
+      { if: [{ kind: 'classInParty', classId: 'cleric' }],
+        text: 'Your cleric kneels beside him and studies the grey brand for a long moment. There is no prayer for this, and {vargan} does not ask for one.' },
     ],
     next: [
       // Wren asked for this at the tree line: "Leave me something to arrest."
@@ -1350,12 +1356,20 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }],
         text: '{vargan} walks in front of you with his hands tied, and the crowd goes quiet to let him through. An old reed-cutter spits at his feet. {vargan} does not look up from the road.' },
       'The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He sets the strongbox on the well and opens it. "{thornwick} settles its debts," he says, as though daring you to make something of it.',
-      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }],
+      // Mira's one near-smile is earned by more than the kill: the captives
+      // out, the scout brought home, or the mill turning again.
+      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }, { kind: 'flag', flag: 'captives-freed' }],
         text: 'Behind him, {mira} catches your eye and very nearly smiles.' },
+      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', fate: 'saved' }],
+        text: 'Behind him, {mira} catches your eye and very nearly smiles.' },
+      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'flag', flag: 'mill-saved' }],
+        text: 'Behind him, {mira} catches your eye and very nearly smiles.' },
+      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'mill-saved' }],
+        text: 'Behind him, {mira} watches from the inn door, wiping her hands on her apron.' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }],
-        text: 'Then the reeve looks past you, up the marsh road, for the prisoner who isn\'t there. "You let him *walk*?" His face goes red, then white. "{thornwick} pays for a chief it can see. Not for one you turned loose in my marsh."' },
+        text: 'The reeve looks past you, up the marsh road, for the prisoner who isn\'t there. "You let him *walk*?" His face goes red, then white. "{thornwick} pays for a chief it can see. Not for one you turned loose in my marsh."' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
-        text: 'Then someone asks how the chief died, and you tell them. He was on his knees in his own hall, and the hag was already dead. Nobody cheers that. The square goes quiet. Behind the reeve, {mira} looks at you for a long moment, and then she turns away.' },
+        text: 'Someone asks how the chief died, and you tell them: on his knees in his own hall, after the hag was already dead. The square goes quiet. Behind the reeve, {mira} looks at you for a long moment, and then she turns away.' },
     ],
     next: AFTERMATH_CLAIMS,
     // Back in Thornwick with the chief dead: there is no den to go back to,
@@ -1365,31 +1379,45 @@ const scenes: Record<string, Scene> = {
   // Where each claim comes back to: the same choices, without the homecoming.
   'aftermath-hub': {
     id: 'aftermath-hub', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
-    text: ['The square is still full, and the reeve\'s strongbox is still open.'],
+    text: [
+      'The crowd presses in around the well, where the reeve\'s strongbox stands open.',
+      { if: [{ kind: 'flag', flag: 'got-bounty' }, { kind: 'npc', npc: 'vargan', notFate: ['freed'] }],
+        text: 'The reeve has closed his ledger, and stands with his arms folded in case anyone else has a claim.' },
+      { if: [{ kind: 'flag', flag: 'got-banner' }],
+        text: 'Someone has hung the {ashfang} banner from the well-rope, and the children are taking turns to throw mud at it.' },
+      { if: [{ kind: 'flag', flag: 'got-scout' }],
+        text: '{wren} has found a barrel to sit on, her crutch across her knees. She is pretending not to watch you.' },
+    ],
     next: AFTERMATH_CLAIMS, noBack: true,
   },
   'claim-bounty': {
     id: 'claim-bounty', kind: 'story', art: { imageId: 'loc-village', emoji: '💰' },
     text: ['The reeve counts out {bounty-full}, coin by coin, as if each one hurts. "Paid in full."'],
-    next: [{ id: 'ok', label: 'Back to the crowd', to: 'aftermath-hub' }], noBack: true,
+    next: [{ id: 'ok', label: 'Sweep it into your pack', to: 'aftermath-hub' }], noBack: true,
   },
   'claim-balance': {
     id: 'claim-balance', kind: 'story', art: { imageId: 'loc-village', emoji: '💰' },
     assumes: [{ kind: 'flag', flag: 'bounty' }],
     text: ['The reeve checks his ledger, takes off the {bounty-retainer} you drew at the board, and counts out {bounty-balance}. "Paid in full."'],
-    next: [{ id: 'ok', label: 'Back to the crowd', to: 'aftermath-hub' }], noBack: true,
+    next: [{ id: 'ok', label: 'Sweep it into your pack', to: 'aftermath-hub' }], noBack: true,
   },
   'claim-banner': {
     id: 'claim-banner', kind: 'story', art: { imageId: 'loc-village', emoji: '🚩' },
     assumes: [{ kind: 'flag', flag: 'looted' }],
     text: ['The reeve unrolls the {ashfang} banner for the crowd to see, and the cheer goes on for some time. He adds {bounty-banner} to your pile without a word.'],
-    next: [{ id: 'ok', label: 'Back to the crowd', to: 'aftermath-hub' }], noBack: true,
+    next: [{ id: 'ok', label: 'Let them cheer', to: 'aftermath-hub' }], noBack: true,
   },
   'claim-scout': {
     id: 'claim-scout', kind: 'story', art: { imageId: 'loc-village', emoji: '🏹' },
     assumes: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'noCompanion', companion: 'wren' }],
-    text: ['{wren} pushes through the crowd on a crutch and hands you the reeve\'s purse of {scout-reward}. Then she just stands there. "You came back," she says at last, and goes red to the ears.'],
-    next: [{ id: 'ok', label: 'Back to the crowd', to: 'aftermath-hub' }], noBack: true,
+    text: [
+      '{wren} pushes through the crowd on a crutch and hands you the reeve\'s purse of {scout-reward}, and then she just stands there.',
+      { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 0 } }],
+        text: '"You came back," she says at last, and goes red to the ears.' },
+      { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: '"You came back," she says at last, and looks at you a moment longer, as if she is still making up her mind about it.' },
+    ],
+    next: [{ id: 'ok', label: '"So did you."', to: 'aftermath-hub' }], noBack: true,
   },
 
   // A total party wipe lands here (revived at half HP), not a hard game over —
@@ -1402,6 +1430,11 @@ const scenes: Record<string, Scene> = {
       { assumes: [{ kind: 'npc', npc: 'vargan', notFate: ['slain'] }],
         text: '"Easy, now," she says, setting down a bowl. "You slept the day round. The {ashfang} are still out there — but you\'re no use to {thornwick} dead. Rest, then finish it."' },
     ],
+    again: [
+      'You wake on {mira}\'s cot again, under the same crack in the ceiling. Someone has fetched you off the field a second time.',
+      { assumes: [{ kind: 'npc', npc: 'vargan', notFate: ['slain'] }],
+        text: '"Same bowl, same soup," {mira} says, and sets it down. "Try to need it less."' },
+    ],
     // A wipe costs time: the day goes by on Mira's cot.
     next: [{ id: 'up', label: 'Get back on your feet', to: 'square', effects: [{ kind: 'passDay' }] }], noBack: true,
   },
@@ -1412,47 +1445,49 @@ const scenes: Record<string, Scene> = {
   epilogue: {
     id: 'epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
-      'Bonfires burn in the square tonight. Out past the reeds, the marsh has gone still, and the cold has lifted from the water. The **{reedwife}** is done. Next spring, the reed-cutters will walk back out onto their common land.',
+      'Bonfires burn in the square tonight. Out past the reeds the marsh has gone still, and the cold has lifted off the water.',
       'By morning the carters are already complaining about the state of the road. {mira} says that is the surest sign a place has stopped being afraid.',
     ],
     slides: [
-      // Mira's thanks, unless the company killed a beaten man in front of her town.
-      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }],
-        text: '{mira} pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.' },
-      { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
-        text: '{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.' },
+      // The chief, then the den, then the scout, then the inn, building to the
+      // pens: every victory ends on one of the captives' slides.
       // Dead in his hall, or after it: every victory leaves him one fate.
       { if: [{ kind: 'flag', flag: 'vargan-shaken' }, { kind: 'npc', npc: 'vargan', notFate: ['jailed', 'freed'] }],
         text: 'By the bonfire they already tell it your way: the {ashfang} chief wore the hag\'s brand too, and he died knowing it.' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }],
         text: 'The reeve does not hang {vargan}. He sends him out to cut reeds on the common land until the drowned houses stand again. {vargan} has not missed a day.' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
-        text: 'The reed-cutters bury {vargan} at the edge of the shallows he sold. Nobody marks the grave, and nobody asks where it is.' },
+        text: 'The reed-cutters bury {vargan} at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }],
-        text: 'Nobody sees {vargan} leave the valley. The reeve keeps his bounty, and says so loudly. Next spring, a reed-cutter with a scarred hand works the far edge of the marsh alone.' },
+        text: 'No one sees {vargan} leave the valley, and the reeve keeps his bounty and says so loudly. Next spring, a reed-cutter with a scarred hand works the far edge of the marsh alone.' },
       { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
         text: 'At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.' },
       { if: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }],
         text: '{vex} watched the end of it from the ridge above the den. At dawn he walks down into {thornwick} alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
       { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
         text: 'At dawn {wren} limps out ahead of the reeve\'s men to round up what\'s left of the {ashfang}. She makes a list first.' },
-      { if: [{ kind: 'flag', flag: 'mill-saved' }],
-        text: 'Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog\'s neck.' },
+      { if: [{ kind: 'npc', npc: 'wren', fate: 'left' }],
+        text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
+      // Mira's thanks, unless the company killed a beaten man in front of her town.
+      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }],
+        text: '{mira} pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.' },
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
+        text: '{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.' },
       { if: [{ kind: 'flag', flag: 'looted' }],
         text: '{mira} nails the {ashfang} banner up over her bar, upside down, where all can see it.' },
       { if: [{ kind: 'npc', npc: 'tamsin', fate: 'dead' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }],
         text: '{mira} sets an extra cup at the end of the bar and fills it. Nobody drinks from it. Nobody asks.' },
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'left' }],
-        text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
+      { if: [{ kind: 'flag', flag: 'mill-saved' }],
+        text: 'Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog\'s neck.' },
       { if: [{ kind: 'flag', flag: 'captives-freed' }],
         text: 'The carter\'s girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.' },
       // The captives: freed (above), left, taken by the dark moon, or never found.
       { if: [{ kind: 'flag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
-        text: 'A reed-cutter\'s widow walks the marsh edge every evening, calling a name. Nobody has the heart to tell her what the pens held.' },
+        text: 'Every evening, a widow walks the edge of the marsh and calls a name across the water.' },
       { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'notFlag', flag: 'captives-taken' }],
         text: 'The reeve\'s men find the pens behind the kennels two days later. The carter is alive. He will not say your names, and he will not drive the marsh road again.' },
       { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'flag', flag: 'captives-taken' }],
-        text: 'The reeve\'s men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open and a child\'s shoe in the straw. You told the carter they would come.' },
+        text: 'The reeve\'s men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child\'s shoe in the straw.' },
       { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }],
         text: 'Behind the kennels, the reeve\'s men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.' },
     ],
@@ -1495,7 +1530,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   // The clock: the Ashfang keep their captives for the Reedwife, and she
   // takes them when the moon goes dark. Six nights' sleep and they are gone.
   dawns: [
-    { day: 4, text: ['The moon was thinner last night. It puts you in mind of the story every carter in the valley tells. The {ashfang} take people off the marsh road and keep them for "the lady in the water". She comes for them when the moon goes dark.'] },
+    { day: 4, text: ['The moon was thinner last night, and it puts you in mind of the story every carter in the valley tells. The {ashfang} take people off the marsh road and keep them for "the lady in the water". She comes for them when the moon goes dark.'] },
     { day: 6, text: ['Last night the moon was a paring, low over the marsh. Tonight it will be gone.'] },
     { day: 7, text: ['The moon was dark last night. Far out on the marsh, something sang until dawn, and then stopped.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
