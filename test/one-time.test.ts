@@ -46,3 +46,26 @@ describe('a camp with a night limit', () => {
     expect(validateModule(bad).some((e) => e.includes('camp nights'))).toBe(true);
   });
 });
+
+describe('the validator holds the guide\'s money and XP rules', () => {
+  const enc = 'cutpurses';
+  const base = (parleyEffects: Module['scenes'][string] extends never ? never : unknown[], lossText: string): Module => ({
+    id: 'mx', title: 'M', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], noBack: true, next: [
+        { id: 'rob', label: 'Get robbed', to: 'robbed', effects: [{ kind: 'gold', amount: -15 }] },
+        { id: 'fight', label: 'Fight', to: 'f' },
+      ] },
+      robbed: { id: 'robbed', kind: 'story', text: [lossText], noBack: true, next: [{ id: 'on', label: 'On', to: 'f' }] },
+      f: { id: 'f', kind: 'battle', encounterId: enc, mapId: 'open', onWin: { to: 'won' },
+        parley: { dc: 10, success: { to: 'won', effects: parleyEffects as never } } },
+      won,
+    },
+  });
+  it('a talk-down must pay XP', () => {
+    expect(validateModule(base([], 'Your purse is gone.')).some((e) => e.includes('parley succeeds without paying XP'))).toBe(true);
+    expect(validateModule(base([{ kind: 'xp', amount: 10 }], 'Your purse is gone.')).some((e) => e.includes('parley'))).toBe(false);
+  });
+  it('a loss of gold is not narrated as a sum', () => {
+    expect(validateModule(base([{ kind: 'xp', amount: 10 }], 'Fifteen gold went with him.')).some((e) => e.includes('names a sum'))).toBe(true);
+  });
+});

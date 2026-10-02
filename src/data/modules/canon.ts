@@ -54,7 +54,7 @@ export const TRILOGY_FACTS: Record<Id, CanonFact> = {
   /** The reeve's reward for his scout, which she brings you herself. */
   'scout-reward': { text: 'fifty gold', value: 50 },
   /** What the peddler's fixer lifts from a company that looks in the wrong places. */
-  'pinched-purse': { text: 'fifteen gold', value: 15 },
+  'pinched-purse': { text: 'fifteen gold', value: 15, unspoken: true },
   /** A round for the taproom (Part 1), and a room for the night (Parts 1 and 2). */
   'tavern-round': { text: '3 gold', value: 3 },
   'inn-room': { text: '1 gold', value: 1 },

@@ -1458,7 +1458,7 @@ const scenes: Record<string, Scene> = {
   // Timed wrong: the herd catches the party in the open, and a pack bursts.
   'boarruns-scattered': {
     id: 'boarruns-scattered', kind: 'story', noBack: true, art: { emoji: '🐗' },
-    text: ['You run too soon. The herd comes back over the rise while you are still in the open, and you dive for the rocks. A boar\'s shoulder catches a pack as it goes by and bursts it. Thirty gold scatters across the gully, and the hooves grind it into the mud.'],
+    text: ['You run too soon. The herd comes back over the rise while you are still in the open, and you dive for the rocks. A boar\'s shoulder catches a pack as it goes by and bursts it. Coins scatter across the gully, and the hooves grind them into the mud.'],
     next: [{ id: 'on', label: 'Meet them at the narrows', to: 'boarruns-fight' }],
   },
   // Timed, not fought: the herd lives, and turns away from the valley.

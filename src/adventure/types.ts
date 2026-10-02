@@ -462,6 +462,9 @@ export interface CanonFact {
   text: string;
   /** The number behind it, for effects and checks to use. */
   value?: number;
+  /** A number only rules use, never said in prose: a loss the player sees
+   *  as it happens (the interface shows what was taken). */
+  unspoken?: true;
 }
 
 export interface NpcDef {

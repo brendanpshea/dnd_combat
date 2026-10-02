@@ -251,7 +251,7 @@ _-15 gold (106)_
 
 <sub>scene `spy-pinched`</sub>
 
-You search the crowd for his crew, and you look in all the wrong places. By the time you spot the fixer, one of his knives has already brushed past you. Your purse went with him, fifteen gold and all.
+You search the crowd for his crew, and you look in all the wrong places. By the time you spot the fixer, one of his knives has already brushed past you. Your purse went with him.
 
 **» Get your backs to the wall**
 
@@ -2383,7 +2383,7 @@ _-30 gold (1014)_
 
 <sub>scene `boarruns-scattered`</sub>
 
-You run too soon. The herd comes back over the rise while you are still in the open, and you dive for the rocks. A boar's shoulder catches a pack as it goes by and bursts it. Thirty gold scatters across the gully, and the hooves grind it into the mud.
+You run too soon. The herd comes back over the rise while you are still in the open, and you dive for the rocks. A boar's shoulder catches a pack as it goes by and bursts it. Coins scatter across the gully, and the hooves grind them into the mud.
 
 **» Meet them at the narrows**
 

@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft, battleWonBefore,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -437,7 +437,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           if (won) {
             const survivors = Object.values(combat.state.combatants)
               .filter((x) => x.team === 'team1' && !actsOnItsOwn(x));
-            if (battleScene.loot === false) {
+            // A fight won before pays nothing again (see battleWonBefore).
+            if (battleScene.loot === false || battleWonBefore(state, battleScene.id)) {
               readBackSurvivors(campaign, survivors); // gear persists; no rewards
             } else {
               victory = applyAdventureVictory(

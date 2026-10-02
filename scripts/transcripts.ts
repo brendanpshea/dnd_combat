@@ -45,7 +45,7 @@ import { roomOf, linksFrom } from '../src/adventure/dungeon.js';
 import {
   type AdventureState, type AdventureEvent,
   startAdventure, carryCompanyInto, carriedFlags, currentScene, enterScene, legalChoices, choose,
-  rollSceneCheck, nightsLeft, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
+  rollSceneCheck, nightsLeft, battleWonBefore, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
   resolveShopOrRest, dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere,
   leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, dungeonProgress,
   endingText, dayOf,
@@ -613,7 +613,7 @@ function playChapter(
         const won = route.win(ctx);
         t.line(`**» Fight — ${won ? 'won' : 'lost'}**`);
         if (won && scene.loot !== false) {
-          state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
+          if (!battleWonBefore(state, scene.id)) state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
         }
         fightsSinceRest++;
         if (!won) lostSinceRest++;

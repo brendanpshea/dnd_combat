@@ -82,6 +82,8 @@ export interface AdventureState {
   day?: number;
   /** The scene the party stands in was visited before (its `again` text shows). */
   returning?: boolean;
+  /** Battle scenes this run has won. A won fight pays once (see resolveBattle). */
+  wonBattles?: Id[];
   /** Nights slept (or tried) at each camp with a `nights` limit, by scene. */
   campNights?: Record<Id, number>;
   /** Where the party stands in each dungeon it has entered, and what it has
@@ -1202,6 +1204,14 @@ export function battleMap(state: AdventureState, module: Module): MapData {
 // --- Driver callbacks (battle / shop / rest) --------------------------------
 
 /** After the driver runs the battle for the current `battle` scene. */
+/** Has this run already won this battle? A won fight pays once: its
+ *  encounter XP and loot (the caller's), and the reward effects of its win. */
+export const battleWonBefore = (state: AdventureState, sceneId: Id): boolean =>
+  (state.wonBattles ?? []).includes(sceneId);
+
+/** The effects that are a fight's reward rather than its story. */
+const REWARD_EFFECTS = new Set<Effect['kind']>(['gold', 'xp', 'xpToLevel', 'addItem']);
+
 export function resolveBattle(state: AdventureState, module: Module, won: boolean): AdventureEvent[] {
   const scene = currentScene(state, module);
   if (scene.kind !== 'battle') throw new Error(`resolveBattle on a ${scene.kind} scene`);
@@ -1216,6 +1226,13 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
       const p = dungeonProgress(state, d.id, d.dungeon);
       if (roomOf(d.dungeon, p.at)?.fight === scene.id && !p.cleared.includes(p.at)) p.cleared.push(p.at);
     }
+    // A fight won again (however the party got back to it) tells its story
+    // again but pays nothing: no farming a won fight through a way back.
+    if (battleWonBefore(state, scene.id)) {
+      const effects = scene.onWin.effects?.filter((e) => !REWARD_EFFECTS.has(e.kind));
+      return applyOutcome(state, module, { ...scene.onWin, ...(effects ? { effects } : {}) });
+    }
+    (state.wonBattles ??= []).push(scene.id);
     return applyOutcome(state, module, scene.onWin);
   }
   // Loss: an authored per-battle branch wins; else the module's defeat scene

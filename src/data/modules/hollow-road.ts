@@ -489,7 +489,7 @@ const scenes: Record<string, Scene> = {
     parley: {
       skill: 'deception', dc: 13, label: 'Tell the knives the watch is coming',
       refused: ['The fixer doesn\'t even look round. "The reeve\'s men are down at the marsh gate, friend. We watched them go." His knives close in.'],
-      success: { to: 'spy-caught-loud', text: ['"The reeve\'s men are two stalls behind us," you say, loud enough to carry, and glance past them as if you can see the pikes. The hired knives do the sums faster than their fixer does. They are gone into the crowd before he turns round. Alone, the fixer raises his empty hands and backs off into the market.',
+      success: { to: 'spy-caught-loud', effects: [{ kind: 'xp', amount: avoidedFightXP('cutpurses') }], text: ['"The reeve\'s men are two stalls behind us," you say, loud enough to carry, and glance past them as if you can see the pikes. The hired knives do the sums faster than their fixer does. They are gone into the crowd before he turns round. Alone, the fixer raises his empty hands and backs off into the market.',
         'Over the heads of the crowd, though, you see one of the knives slip out through the gate, toward the marsh.'] },
     },
   },
@@ -520,7 +520,7 @@ const scenes: Record<string, Scene> = {
   // A failed read of the crowd: while you look for his crew, one of them robs you.
   'spy-pinched': {
     id: 'spy-pinched', kind: 'story', noBack: true, art: { imageId: 'loc-village', emoji: '👛' },
-    text: ['You search the crowd for his crew, and you look in all the wrong places. By the time you spot the fixer, one of his knives has already brushed past you. Your purse went with him, {pinched-purse} and all.'],
+    text: ['You search the crowd for his crew, and you look in all the wrong places. By the time you spot the fixer, one of his knives has already brushed past you. Your purse went with him.'],
     next: [{ id: 'on', label: 'Get your backs to the wall', to: 'spy-bolts' }],
   },
 
