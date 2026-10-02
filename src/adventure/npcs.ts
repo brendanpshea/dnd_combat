@@ -22,6 +22,12 @@ export const npcFateFlag = (id: Id, fate: string) => `${NPC_FLAG_PREFIX}${id}.fa
 export const npcAttitudeFlag = (id: Id) => `${NPC_FLAG_PREFIX}${id}.attitude`;
 export const isNpcFlag = (flag: string) => flag.startsWith(NPC_FLAG_PREFIX);
 
+/** A chapter's renamed flags (`renamedFlags`), as a later chapter inherited
+ *  them: `module:flag` → the same new name. */
+export function carriedRenames(moduleId: Id, renamed: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(renamed).map(([from, to]) => [`${moduleId}:${from}`, to]));
+}
+
 /** A token: `{id}`, the id in lower case with hyphens. */
 const TOKEN = /\{([a-z][a-z0-9-]*)\}/g;
 

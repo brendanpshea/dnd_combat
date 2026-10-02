@@ -30,18 +30,18 @@
  * for a fight-shy run (or one that buys its way past the ogre-mage). Cold
  * starts are floored to L4 by the opening choice.
  *
- * CARRIED CHOICES: Vex's briefing reads `hollow-road:vex-turned` (he took the
- * party's offer in Part 1) and `hollow-road:met-vex` (they met at his fire,
- * no deal); Wren's familiarity reads `hollow-road:saved-scout` (she owes you
+ * CARRIED CHOICES: Vex's briefing reads his fate `turned` (he took the
+ * party's offer in Part 1) and `met` (they met at his fire, no deal); Wren's
+ * familiarity reads her fate `saved` (she owes you
  * a leg); otherwise she held the Barrow Gate for you in Part 2.
  * Wren also remembers a company that left her under the horse
- * (`hollow-road:scout-left`). A cold start is still the company that broke
+ * (her fate `left`). A cold start is still the company that broke
  * the Ashfang and killed the Reedwife: Vex met it at his fire, Wren guided it
  * through the fen, and nothing carried says how either parting went. A saved
- * Halden (`sunken-barrows:halden-saved`) opens an easier way to tear the
+ * Halden (fate `saved`) opens an easier way to tear the
  * sisters loose. The endings' slides read these and the rest
- * (`hollow-road:chief-dead`, `sunken-barrows:seal-cracked`, what became of
- * Vargan); the fen-folk's fire at the war-camp reads the cracked door too,
+ * (`sunken-barrows:seal-cracked`, what became of Vargan and
+ * Marrow); the fen-folk's fire at the war-camp reads the cracked door too,
  * through a "you've been here" beat the reach search does not track, and at
  * the stone the Warden's dead come up through the cracks (see CRACKED).
  *
@@ -71,8 +71,10 @@
  * docs/module-writing-guide.md.
  */
 import type { Choice, Effect, Module, Outcome, Para, Requirement, Scene } from '../../adventure/types.js';
-import { withNpcs, speaker, companionsFrom } from '../../adventure/npcs.js';
+import { withNpcs, speaker, companionsFrom, carriedRenames } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
+import { HOLLOW_ROAD_RENAMED_NPC_FLAGS } from './hollow-road.js';
+import { SUNKEN_BARROWS_RENAMED_NPC_FLAGS } from './sunken-barrows.js';
 
 const WREN = speaker(NPCS.wren!, 'Chief of Scouts');
 const BRAM = speaker(NPCS.bram!, 'War-Quartermaster');
@@ -83,11 +85,11 @@ const BRAM = speaker(NPCS.bram!, 'War-Quartermaster');
  *  one holds in every mix. */
 const TO_BRIEFING: Choice[] = [
   { id: 'hear', label: 'Hear him out', to: 'vex-brief-turned',
-    requires: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }], hideWhenBlocked: true },
+    requires: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], hideWhenBlocked: true },
   { id: 'hear-met', label: 'Hear him out', to: 'vex-brief-met',
-    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }, { kind: 'flag', flag: 'hollow-road:met-vex' }], hideWhenBlocked: true },
+    requires: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }], hideWhenBlocked: true },
   { id: 'hear-new', label: 'Hear him out', to: 'vex-brief',
-    requires: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }, { kind: 'notFlag', flag: 'hollow-road:met-vex' }], hideWhenBlocked: true },
+    requires: [{ kind: 'npc', npc: 'vex', met: false, notFate: ['turned'] }], hideWhenBlocked: true },
 ];
 
 /** Vex's plan, the same whoever he is to you. */
@@ -215,8 +217,8 @@ const ESCORT_LINES: Record<(typeof ESCORTS)[number], string> = {
 };
 /** What each escort's line takes for granted besides being there. */
 const ESCORT_ASSUMES: Partial<Record<(typeof ESCORTS)[number], Requirement[]>> = {
-  halden: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }],
-  hask: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
+  halden: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
+  hask: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
 };
 /** From the `from`th escort on: the first one still with the party, or `dest`. */
 const walkDown = (from: number, prefix: string, dest: string, label: string, effects?: Effect[]): Choice[] => {
@@ -342,8 +344,8 @@ const TO_STONE = stoneChoices();
  * Vex brings the forward column up (`war-council`), and whoever owes the
  * company comes with it:
  *   - Wren (she lived, or walked the fen with you; every company) — joins, a scout;
- *   - Brother Halden (`halden-saved`) — joins, a priest;
- *   - Hask, Vex's guard (`vex-turned`) — joins, a veteran;
+ *   - Brother Halden (fate `saved`) — joins, a priest;
+ *   - Hask, Vex's guard (Vex's fate `turned`) — joins, a veteran;
  *   - the fen-folk (`drowned-gold-home`) — ropes: an easier way to drag the
  *     sisters out of the stone at `tear-loose`.
  * Wren is owed a seat by every company, a cold start too, so there is
@@ -452,11 +454,11 @@ const SEATS = {
     journal: { id: 'n-wren3', title: '{wren}, Chief of Scouts',
       body: '{wren} climbed up with the column and went down into the bowl with you. Somebody, she says, has to write the route report.' } },
   halden: { name: 'Brother {halden}', who: 'his prayer book under his arm', role: 'a priest',
-    owed: [[has('sunken-barrows:halden-saved')]],
+    owed: [[{ kind: 'npc', npc: 'halden', fate: 'saved' }]],
     journal: { id: 'n-halden3', title: 'Brother {halden}',
       body: '{halden} climbed the whole mountain with his prayer book under his arm, to say his rites at the stone. A door\'s a door, he says, whether it\'s under a fen or inside a rock.' } },
   hask: { name: '{hask}', who: '{vargan}\'s guard, who stood aside for you in his hall', role: 'a veteran',
-    owed: [[has('hollow-road:vex-turned')]],
+    owed: [[{ kind: 'npc', npc: 'vex', fate: 'turned' }]],
     journal: { id: 'n-hask', title: '{hask}, {vex}\'s Sergeant',
       body: '{hask} was the Ashfang chief\'s own guard, but he answered to {vex}. When you came for {vargan} in his hall, {hask} stood aside and let you pass. Now {vex} has lent him to you for the stone.' } },
 } as const;
@@ -513,13 +515,14 @@ const SLIDES_HILLS: Slide[] = [
   // A company that won both earlier chapters.
   { if: [{ kind: 'flag', flag: 'hollow-road:won' }, { kind: 'flag', flag: 'sunken-barrows:won' }],
     text: 'You broke the Ashfang, sealed the Undercrypt, and silenced the stone.' },
-  { if: [{ kind: 'flag', flag: 'hollow-road:vargan-executed' }],
+  { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
     text: 'Nobody in the valley mourns {vargan}. Nobody sings about the way he died, either, on his knees in his own hall with the hag already dead. The reed-cutters are back in the shallows he sold, and they do not say his name.' },
-  { if: [{ kind: 'flag', flag: 'hollow-road:chief-dead' }, { kind: 'notFlag', flag: 'hollow-road:vargan-executed' }],
+  // (`notFate`: a save from before NPC state can hold both.)
+  { if: [{ kind: 'npc', npc: 'vargan', fate: 'slain', notFate: ['executed'] }],
     text: 'Nobody in the valley mourns {vargan}. His mother\'s house is still under the water, but the reed-cutters are back in the shallows he sold, cutting reeds for a copper a bundle.' },
-  { if: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
+  { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
     text: '{vex} keeps the reeve\'s pardon folded in his coat. He has opened it so often that the creases have gone soft.' },
-  { if: [{ kind: 'notFlag', flag: 'hollow-road:vex-turned' }],
+  { if: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }],
     text: '{vex} keeps a key to the reeve\'s cells on a nail by his cot. He walked into Thornwick once expecting a rope. Now he holds the keys.' },
   { if: [{ kind: 'flag', flag: 'oni-paid' }],
     text: 'Far past the mountain, an ogre-mage\'s warband marches on someone else\'s valley, and your gold paid for its boots.' },
@@ -560,23 +563,23 @@ const SLIDES_HILLS: Slide[] = [
     text: 'Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.' },
   { if: [{ kind: 'flag', flag: 'clutch-beaten' }],
     text: 'The wyrmlings you left in their dens died on the rim instead, and the shepherds still give those dens a wide berth.' },
-  { if: [{ kind: 'flag', flag: 'hollow-road:vargan-jailed' }],
+  { if: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }],
     text: '{vargan} hears about the Calling in the reeve\'s reed-beds. He asks to go up and fight. The reeve says no, and {vargan} goes back to cutting.' },
-  { if: [{ kind: 'flag', flag: 'hollow-road:vargan-freed' }],
+  { if: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }],
     text: 'A reed-cutter with a scarred hand left a sack of reed-arrows at the war-camp gate one night. Nobody saw his face. {bram} sold every one.' },
 ];
 const SLIDES_PEOPLE: Slide[] = [
-  { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
+  { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
     text: '{wren} still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.' },
   // A cold start is still the company Wren guided through the fen.
-  { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }],
+  { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }],
     text: '{wren} tells every new scout how she held the gate of the Undercrypt, and how you walked back out.' },
   // What became of Marrow, the gravedigger at the Warden's door (Part 2).
-  { if: [{ kind: 'flag', flag: 'sunken-barrows:marrow-sings' }],
+  { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
     text: 'Word comes up from Saltmere that a grey old gravedigger has mended forty graves there. While the stone sang, he sat up among them every night with a lamp, saying the rites, in case anyone woke.' },
-  { if: [{ kind: 'flag', flag: 'sunken-barrows:marrow-bound' }],
+  { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
     text: '{marrow} still mends Thornwick\'s churchyard on the reeve\'s orders. While the stone sang, he sat up among the graves every night with a lamp, in case anyone woke.' },
-  { if: [{ kind: 'flag', flag: 'sunken-barrows:halden-saved' }],
+  { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
     text: 'Brother {halden} climbs to the bowl each spring to bless the broken stone, and then he walks home to his little chapel.' },
   // The war assets the council called in (see COUNCIL).
   { if: [{ kind: 'companion', companion: 'wren' }],
@@ -756,7 +759,7 @@ const scenes: Record<string, Scene> = {
   'vex-brief': {
     id: 'vex-brief', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     // Only a cold start: every company that won Part 1 met him at his fire.
-    assumes: [{ kind: 'notFlag', flag: 'hollow-road:met-vex' }, { kind: 'notFlag', flag: 'hollow-road:vex-turned' }],
+    assumes: [{ kind: 'npc', npc: 'vex', met: false, notFate: ['turned'] }],
     text: [
       'You know this man. It is **{vex}**, once the Ashfang\'s lieutenant. You met him at his lone fire in the chief\'s den, the night your company broke the Ashfang. He kept out of the last fight. When it was over, he went to the reeve of his own accord. Now Thornwick trusts him to run its war. "It took me too long to walk away from that den," he says. "A slow learner still learns."',
       ...BRIEF_PLAN,
@@ -768,7 +771,7 @@ const scenes: Record<string, Scene> = {
   // their offer (or they never made one). He gave himself up anyway.
   'vex-brief-met': {
     id: 'vex-brief-met', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:met-vex' }, { kind: 'notFlag', flag: 'hollow-road:vex-turned' }],
+    assumes: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }],
     text: [
       'You know this man. It is **{vex}**, once the Ashfang\'s lieutenant. You met him at his lone fire in the chief\'s den, and you did not leave it with a deal. He sat out the last fight anyway, and the next morning he walked into the reeve\'s hall and gave himself up. Now Thornwick trusts him to run its war. "I walked in expecting to hang by noon," he says. "Instead the reeve handed me an army."',
       ...BRIEF_PLAN,
@@ -778,7 +781,7 @@ const scenes: Record<string, Scene> = {
   },
   'vex-brief-turned': {
     id: 'vex-brief-turned', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
+    assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
     text: [
       'You know this man. It is **{vex}**, once the Ashfang\'s lieutenant. In the chief\'s den he took your offer and kept his guards out of the last fight. The last you heard, he had taken the road out of the valley, just as he said he would.',
       '"I got as far as a hill inn," he says. "Then word came that the dead were walking, and then fires in the passes. I found I couldn\'t sit and drink while this valley burned twice. So I walked back and offered the reeve my sword. He took it, which surprised us both. No more burned barns. I like this side better."',
@@ -819,10 +822,10 @@ const scenes: Record<string, Scene> = {
             // Back from the bowl with Wren still in the party: she isn't here.
             { if: [{ kind: 'companion', companion: 'wren' }], to: 'scouts-with-you' },
             { if: [{ kind: 'flag', flag: 'wren-brief' }], to: 'scouts-done' },
-            { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'scouts-fire-saved' },
+            { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], to: 'scouts-fire-saved' },
             // Left her under the horse, then (always, on the way to the Barrow
             // Gate) walked the fen with her: some of it is squared.
-            { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'scouts-fire-mended' },
+            { if: [{ kind: 'npc', npc: 'wren', fate: 'left' }], to: 'scouts-fire-mended' },
           ] },
         // War assets paid at the camp (see WAR ASSETS): the marker's scene is
         // the gift; a company not owed it, or already paid, is waved past.
@@ -948,7 +951,7 @@ const scenes: Record<string, Scene> = {
   // Left under the horse in Part 1, then walked the fen together in Part 2.
   'scouts-fire-mended': {
     id: 'scouts-fire-mended', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:scout-left' }, { kind: 'noCompanion', companion: 'wren' }],
+    assumes: [{ kind: 'npc', npc: 'wren', fate: 'left' }, { kind: 'noCompanion', companion: 'wren' }],
     again: ['{wren} looks up from the map board. "My notes are still here when you want them," she says. "The passes won\'t read themselves."'],
     lines: [
       '**{wren}** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She sees you and nods, once. It\'s not warm, but it\'s not the look she gave you in the fen, either.',
@@ -963,7 +966,7 @@ const scenes: Record<string, Scene> = {
   'scouts-fire-old': {
     id: 'scouts-fire-old', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
     // Every company, a cold start too, walked the fen with her in Part 2.
-    assumes: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'notFlag', flag: 'hollow-road:scout-left' }, { kind: 'noCompanion', companion: 'wren' }],
+    assumes: [{ kind: 'npc', npc: 'wren', notFate: ['saved', 'left'] }, { kind: 'noCompanion', companion: 'wren' }],
     again: ['{wren} looks up from the map board. "My notes are still here when you want them," she says. "The passes won\'t read themselves."'],
     lines: [
       '**{wren}** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young. She wears the title like a coat that fits her but embarrasses her anyway.',
@@ -977,7 +980,7 @@ const scenes: Record<string, Scene> = {
   // horse off her on the marsh road in Part 1.
   'scouts-fire-saved': {
     id: 'scouts-fire-saved', kind: 'dialogue', npc: WREN, art: { emoji: '🏹' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }, { kind: 'noCompanion', companion: 'wren' }],
+    assumes: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'noCompanion', companion: 'wren' }],
     again: ['{wren} looks up from the map board. "My notes are still here when you want them," she says. "The passes won\'t read themselves."'],
     lines: [
       '**{wren}** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She stands when she sees you, and she only barely favours the leg you once pulled out from under a dead horse on the marsh road.',
@@ -1588,8 +1591,8 @@ const scenes: Record<string, Scene> = {
       'Behind the pikes come people from the valley who have not forgotten you. They are out of breath and mud to the knees, and not one of them has climbed this mountain to stand at the back.',
       // One line for each debt that holds (see OWED); text only, so free.
       { assumes: [{ kind: 'noCompanion', companion: 'wren' }], text: '{wren} is first up the last slope, bow on her back and map under her arm.' },
-      { if: [has('sunken-barrows:halden-saved')], text: 'Brother {halden} climbs with his prayer book under his arm, red in the face and still praying.' },
-      { if: [has('hollow-road:vex-turned')], text: '{hask}, the chief\'s old guard who stood aside for you in {vargan}\'s hall, walks at {vex}\'s shoulder.' },
+      { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }], text: 'Brother {halden} climbs with his prayer book under his arm, red in the face and still praying.' },
+      { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask}, the chief\'s old guard who stood aside for you in {vargan}\'s hall, walks at {vex}\'s shoulder.' },
       { if: [has('sunken-barrows:drowned-gold-home')], text: 'Two fen-folk carry coils of rope over their shoulders. They are kin to the drowned whose purses you carried home.' },
       '"We hold the ridge. You go down," {vex} says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party\'s a loud one."',
     ],
@@ -1870,6 +1873,11 @@ export const WYRMCALLING_MODULE: Module = withNpcs({
   cover: 'loc-mountain',
   levelBand: { from: 4, to: 5 },
   start: 'muster', scenes, defeatScene: 'wc-defeat', town: 'warcamp',
+  // Saves from before the earlier chapters' people moved onto NPC state.
+  renamedFlags: {
+    ...carriedRenames('hollow-road', HOLLOW_ROAD_RENAMED_NPC_FLAGS),
+    ...carriedRenames('sunken-barrows', SUNKEN_BARROWS_RENAMED_NPC_FLAGS),
+  },
   // The clock: the Calling peaks on the sixth morning. Any dragon den still
   // standing then empties, and its wyrmlings go up to the rim (den-flown).
   dawns: [

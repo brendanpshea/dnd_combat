@@ -223,7 +223,7 @@ possible), nor are spent `once` choices or a dungeon's doors (which the
 dungeon checks prove). A state packs at most 31 facts; a module that tracks
 more is reported, not passed.
 
-Carried choices (`hollow-road:saved-scout`) are not facts. They never change
+Carried choices (`hollow-road:captives-freed`) are not facts. They never change
 once a chapter starts, so the walk runs once for each mix the chapter can be
 handed: whatever a victory in the chapter before can carry, found by
 searching that chapter, plus a cold start with none. A pairing no party can

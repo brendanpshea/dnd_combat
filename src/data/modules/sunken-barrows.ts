@@ -22,8 +22,9 @@
  * mummy, constrictor snakes, and the cult — none of it fielded by Part 1.
  */
 import type { Module, Scene, Effect } from '../../adventure/types.js';
-import { withNpcs, speaker, companionsFrom } from '../../adventure/npcs.js';
+import { withNpcs, speaker, companionsFrom, npcMetFlag, npcFateFlag, carriedRenames } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
+import { HOLLOW_ROAD_RENAMED_NPC_FLAGS } from './hollow-road.js';
 
 const MIRA = speaker(NPCS.mira!, { label: '{mira} the Innkeeper' });
 const BRAM = speaker(NPCS.bram!, { label: '{bram} the Quartermaster' });
@@ -33,7 +34,7 @@ const HALDEN = speaker(NPCS.halden!, { label: 'Brother {halden}' });
 
 /** Wren comes along from the fen road, however the party first meets her. */
 const WREN_JOINS: Effect[] = [
-  { kind: 'setFlag', flag: 'met-wren' }, { kind: 'joinParty', companion: 'wren' },
+  { kind: 'npc', npc: 'wren', met: true }, { kind: 'joinParty', companion: 'wren' },
 ];
 
 /** What Wren tells the party at the fen road, whether or not they know her. */
@@ -177,12 +178,13 @@ const scenes: Record<string, Scene> = {
           requires: [{ kind: 'flag', flag: 'reeve-task' }],
           note: 'The gate-warden will not open the fen road without the reeve\'s say-so. See Reeve {aldous} at his hall.',
           sceneWhen: [
-            { if: [{ kind: 'flag', flag: 'met-wren' }], to: 'fen-road' },
-            { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'fen-reunion' },
+            // Back from the fen: she has walked out with you already.
+            { if: [{ kind: 'visited', scene: 'fen' }], to: 'fen-road' },
+            { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], to: 'fen-reunion' },
             // The scout under the horse died in Part 1: this Wren is someone else.
-            { if: [{ kind: 'flag', flag: 'hollow-road:scout-met' }], to: 'fen-partner' },
+            { if: [{ kind: 'npc', npc: 'tamsin', fate: 'dead' }], to: 'fen-partner' },
             // The company walked past her on the marsh road in Part 1.
-            { if: [{ kind: 'flag', flag: 'hollow-road:scout-left' }], to: 'fen-left' },
+            { if: [{ kind: 'npc', npc: 'wren', fate: 'left' }], to: 'fen-left' },
           ] },
       ],
     },
@@ -195,7 +197,7 @@ const scenes: Record<string, Scene> = {
       'The Wander-Inn is full, and nobody is in a hurry to leave. Nobody in Thornwick wants to be alone today, not with the churchyard standing open. **{mira}** sets down a bowl in front of you unasked.',
       '"Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I\'ll say it, since nobody else in here will. You killed the {reedwife} last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."',
       '"I was glad to see you walk back out of that den, and I still am. But folk are starting to look at you sideways." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother {halden}\'s not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody\'s seen him since."',
-      { if: [{ kind: 'flag', flag: 'hollow-road:vargan-executed' }],
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
         text: 'She stops with the jug still tilted. "Some of them haven\'t forgotten the chief, either. On his knees in his own hall, they say, with the hag already dead." She sets the jug down. "I haven\'t forgotten it myself."' },
       '"Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
     ],
@@ -266,7 +268,7 @@ const scenes: Record<string, Scene> = {
   'fen-out': {
     id: 'fen-out', kind: 'dialogue', npc: WREN, art: { imageId: 'loc-marsh', emoji: '🌫️' },
     // A stranger: the company never met her under the horse in Part 1.
-    assumes: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }, { kind: 'notFlag', flag: 'hollow-road:scout-met' }, { kind: 'notFlag', flag: 'hollow-road:scout-left' }],
+    assumes: [{ kind: 'npc', npc: 'wren', notFate: ['saved', 'left'] }, { kind: 'npc', npc: 'tamsin', notFate: ['dead'] }],
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
       'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees. She favours one leg when she stands, and pretends she doesn\'t.',
@@ -280,7 +282,7 @@ const scenes: Record<string, Scene> = {
   // The company stepped round her on the marsh road in Part 1. She lived.
   'fen-left': {
     id: 'fen-left', kind: 'dialogue', npc: WREN, art: { imageId: 'loc-marsh', emoji: '🌫️' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:scout-left' }],
+    assumes: [{ kind: 'npc', npc: 'wren', fate: 'left' }],
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
       'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. She stands when she sees you, and favours one leg.',
@@ -296,7 +298,7 @@ const scenes: Record<string, Scene> = {
   // told them her name. She was Wren's partner.
   'fen-partner': {
     id: 'fen-partner', kind: 'dialogue', npc: WREN, art: { imageId: 'loc-marsh', emoji: '🌫️' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:scout-met' }, { kind: 'notFlag', flag: 'hollow-road:saved-scout' }],
+    assumes: [{ kind: 'npc', npc: 'tamsin', fate: 'dead' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }],
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
       'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees.',
@@ -311,7 +313,7 @@ const scenes: Record<string, Scene> = {
   // Reunion: the company saved her on the marsh road in Part 1.
   'fen-reunion': {
     id: 'fen-reunion', kind: 'dialogue', npc: WREN, art: { imageId: 'loc-marsh', emoji: '🌫️' },
-    assumes: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
+    assumes: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
       'The cart-road ends where the old raised road begins. A familiar figure sits there sharpening a familiar boot-knife. It is **{wren}**, upright this time, with no dead horse on top of her. Someone has mended the reeve\'s colours at her shoulder.',
@@ -457,25 +459,25 @@ const scenes: Record<string, Scene> = {
       '{halden} sits down hard on the altar steps, shaking, and himself again. Behind him, his acolytes sit up in the shallows, coughing up fen-water. "It came up through the floor," he says. "Through the *prayers*. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **{marrow}**, and I *thanked* him."',
       'He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."',
       // "We" only from the Wren who mapped the den for the company in Part 1.
-      { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."' },
-      { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says quietly. "And you broke it."' },
+      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."' },
+      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says quietly. "And you broke it."' },
       '{halden} taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That\'s the hag\'s brand," {wren} says. "Every marsh-thing that ran with the Ashfang wore it." {halden} shakes his head. "It was a keeper\'s mark first, the vigil\'s mark. The old builders cut it into the Barrow Gate, and the gate\'s watchers know it. She grew greedy and made it a slaver\'s brand."',
       '"The rites of sealing are in there too. Someone must say them whole, at his door in the great barrow past the gate. It will take nerve. I couldn\'t say them while it had me, but I\'ll follow you down and wait on the stair." He finds a healing potion under the altar cloth and gives you that too. {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says, and she means it.',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
-      effects: [...CHAPEL_CLEARED, { kind: 'setFlag', flag: 'halden-saved' },
+      effects: [...CHAPEL_CLEARED, { kind: 'npc', npc: 'halden', fate: 'saved' },
         { kind: 'journal', entry: { id: 'n-halden', kind: 'npc', title: 'Brother {halden}',
           body: '{halden} keeps Thornwick\'s little chapel. Something under the fen took hold of him through his own prayers, and you talked it out of him. He has promised to follow you down to the Warden\'s door.' } }] }],
   },
   'chapel-won': {
     id: 'chapel-won', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '📖' },
-    assumes: [{ kind: 'companion', companion: 'wren' }, { kind: 'notFlag', flag: 'halden-saved' }],
+    assumes: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'halden', notFate: ['saved'] }],
     text: [
       '{halden}\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand. *The {reedwife} was the jailer of the Warden of the Barrows. The fen-folk paid her a lamb each midwinter, and she kept him asleep under the fen. She is dead, and the vigil is over. The Warden wakes, and gathers hands to open his door from within.* Below that: *It has me ring the drowned tower\'s bell each night. The bell will wake you, we tell the dead. Forgive me. It does.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
       'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at his door, in the great barrow. Not me. It will not let it be me."* On the flyleaf, someone has inked a mark of reeds and a reaching hand. Beside it, in the tidy hand: *The vigil\'s mark. The old builders cut it into the Barrow Gate, and its watchers know it. It was a keeper\'s mark first. She made it a slaver\'s brand.*',
-      { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
+      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
         text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And we broke it." She shuts the book and hands it to you. "The door\'s past the Barrow Gate. I\'ll get you that far."' },
-      { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }],
+      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }],
         text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door\'s past the Barrow Gate. I\'ll get you that far."' },
       'Under the altar cloth you find a healing potion that {halden} never got to drink. On the way out, {wren} sniffs one of the black candles and makes a face. "{halden} never bought these in Thornwick. Somebody brought them out here."',
     ],
@@ -992,9 +994,9 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'sing', label: 'Make him lead his faithful in the rites', to: 'seal-door',
-        effects: [{ kind: 'setFlag', flag: 'marrow-sings' }] },
+        effects: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }] },
       { id: 'bind', label: 'Bind him for the reeve, and take the cult\'s offering-purse', to: 'seal-door',
-        effects: [{ kind: 'setFlag', flag: 'marrow-bound' }, { kind: 'gold', amount: 50 }] },
+        effects: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'gold', amount: 50 }] },
     ],
   },
   'seal-battle': {
@@ -1011,11 +1013,11 @@ const scenes: Record<string, Scene> = {
     id: 'seal-door', kind: 'story', noBack: true, art: { imageId: 'loc-dungeon', emoji: '🚪' },
     text: [
       'Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the Warden leans on what is left of its lead.',
-      { if: [{ kind: 'flag', flag: 'marrow-sings' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
         text: '{marrow} kneels down among his faithful and holds out his hands for the book. "They know how to chant at this door," he says. "Let me teach them the right words. They will follow me faster than they will follow you."' },
-      { if: [{ kind: 'flag', flag: 'marrow-bound' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
         text: 'You tie {marrow}\'s wrists with his own apron strings. The cult\'s offering-purse hangs at his belt, fat with fifty gold of the faithful\'s coin. You take that too.' },
-      { if: [{ kind: 'flag', flag: 'halden-saved' }],
+      { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'Then boots scrape in the shaft above. Brother {halden} drops down it, skinning his palms on the way, and limps down the last stair, still shaking. He promised to follow you down, and he has.' },
     ],
     next: [{ id: 'open', label: 'Open {halden}\'s book at the door', to: 'resealing' }],
@@ -1052,12 +1054,12 @@ const scenes: Record<string, Scene> = {
         failure: { to: 'resealing', text: ['The ward is older than any book you have read. You lose your place in it, and a letter spits hot lead at your hand.'] } },
       { id: 'marrow', label: 'Let {marrow} lead his faithful in the rites', hint: 'They came to sing at this door. They will sing what he sings.',
         skill: 'persuasion', dc: 9,
-        requires: [{ kind: 'flag', flag: 'marrow-sings' }], hideWhenBlocked: true,
+        requires: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }], hideWhenBlocked: true,
         success: { to: 'seal-clean', text: ['{marrow} takes the book in both hands and turns to his kneelers. "We had the words wrong," he tells them. Then he reads, and forty living voices follow him. The lead letters drink every word.'] },
         failure: { to: 'resealing', text: ['{marrow}\'s voice breaks on the first line. He was never a priest. The kneelers wait for him, and the door groans.'] } },
       { id: 'halden', label: 'Give {halden} the book', hint: 'He followed you all the way down. Let him say his own rites.',
         skill: 'religion', dc: 8,
-        requires: [{ kind: 'flag', flag: 'halden-saved' }], hideWhenBlocked: true,
+        requires: [{ kind: 'npc', npc: 'halden', fate: 'saved' }], hideWhenBlocked: true,
         success: { to: 'seal-clean', text: ['{halden} takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own. The lead letters drink every word.'] },
         failure: { to: 'resealing', text: ['{halden} opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."'] } },
     ],
@@ -1130,11 +1132,11 @@ const scenes: Record<string, Scene> = {
     text: [
       { assumes: [{ kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.' },
-      { if: [{ kind: 'flag', flag: 'halden-saved' }],
+      { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'Brother {halden} climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
-      { if: [{ kind: 'flag', flag: 'marrow-bound' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
         text: '{marrow} climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" {wren} asks. She looks at him for a long moment, then takes the rope herself.' },
-      { if: [{ kind: 'flag', flag: 'marrow-sings' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
         text: '{marrow} climbs out after you, and walks off alone across the barrow-field toward Saltmere. {wren} watches him go with her hand on her knife. She counts his steps until the fog takes him. "If he comes back," she says, "I\'ll know."' },
       { if: [{ kind: 'flag', flag: 'grandfather-home' }],
         text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps."' },
@@ -1169,9 +1171,9 @@ const scenes: Record<string, Scene> = {
     ],
     // One line per thread the run touched, then the hook for Part 3 (always).
     slides: [
-      { if: [{ kind: 'flag', flag: 'halden-saved' }],
+      { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'Brother {halden} keeps the vigil now, and he reads the rites a little louder than he needs to.' },
-      { if: [{ kind: 'notFlag', flag: 'halden-saved' }],
+      { if: [{ kind: 'npc', npc: 'halden', notFate: ['saved'] }],
         text: '{halden} and his acolytes share a new grave by the chapel. {mira} of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.' },
       { if: [{ kind: 'notFlag', flag: 'seal-cracked' }],
         text: 'Far below the barrow-field, the Warden\'s door stays shut and silent, the way a good door should.' },
@@ -1183,20 +1185,33 @@ const scenes: Record<string, Scene> = {
         text: 'The old reeve\'s grave in the churchyard stays empty. {aldous} fills it in anyway, and visits it every week.' },
       { if: [{ kind: 'flag', flag: 'drowned-gold-home' }],
         text: 'The widow who found the bone button in her purse sews it back onto her husband\'s good coat. They bury him in it beside the rest of Thornwick\'s dead, oldest graves first.' },
-      { if: [{ kind: 'flag', flag: 'met-wren' }],
+      { if: [{ kind: 'npc', npc: 'wren', met: true }],
         text: 'The reeve has promoted {wren}, to her visible horror, and she leads the watch that walks the old road once a season.' },
-      { if: [{ kind: 'flag', flag: 'hollow-road:vex-turned' }],
+      { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
         text: '{vex}, who turned on the Ashfang chief for you, hears the news in a hill inn. He sits up late by the fire, looking back toward the valley.' },
-      { if: [{ kind: 'flag', flag: 'marrow-sings' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
         text: '{marrow} walks home to Saltmere alone, to keep forty graves he once left in the cold. He says the rites over them every evening.' },
-      { if: [{ kind: 'flag', flag: 'marrow-bound' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
         text: '{marrow} waits in the reeve\'s cells. He asks for a shovel. After some thought, {aldous} gives him the churchyard to mend.' },
-      { if: [{ kind: 'flag', flag: 'hollow-road:vargan-jailed' }],
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }],
         text: 'Out on the common land, {vargan} stops cutting reeds when the bells ring, and does not start again until they stop.' },
       { if: [],
         text: 'On the last night, at the fen\'s edge, the reeds parted around two figures. They did not walk so much as *arrive* — tall, green-fingered, river-weed in their hair. They were sisters, unmistakably, of a certain late {reedwife}. They looked at the sealed barrow-field for a long moment. Then they turned and looked at the town, and took their time about it. Then the reeds closed over them.' },
     ],
   },
+};
+
+/** What this chapter once said about people in flags of its own (see
+ *  HOLLOW_ROAD_RENAMED_NPC_FLAGS). */
+export const SUNKEN_BARROWS_RENAMED_NPC_FLAGS: Record<string, string> = {
+  'met-wren': npcMetFlag('wren'),
+  'halden-saved': npcFateFlag('halden', 'saved'),
+  'marrow-sings': npcFateFlag('marrow', 'sings'),
+  'marrow-bound': npcFateFlag('marrow', 'bound'),
+};
+const SUNKEN_BARROWS_RENAMED: Record<string, string> = {
+  ...SUNKEN_BARROWS_RENAMED_NPC_FLAGS,
+  ...carriedRenames('hollow-road', HOLLOW_ROAD_RENAMED_NPC_FLAGS),
 };
 
 export const SUNKEN_BARROWS_MODULE: Module = withNpcs({
@@ -1208,15 +1223,14 @@ export const SUNKEN_BARROWS_MODULE: Module = withNpcs({
   sequel: 'wyrmcalling',
   start: 'return', scenes, defeatScene: 'sb-defeat', town: 'town',
   // What the last chapter remembers (read there as 'sunken-barrows:<flag>'):
-  // that the company won this chapter (`won`),
-  // whether the company knows Wren (set on every route to the fen), whether
-  // Brother Halden lived, whether the Warden's door shut cracked, and whether
-  // the company carried the old reeve home and the drowned folk's purses back
-  // to their families. Those last two are owed back at the Wyrmcalling.
-  // What became of Marrow (`marrow-sings` / `marrow-bound`) is read only by
-  // the last chapter's ending slides, so carrying it costs no search.
-  carries: ['won', 'met-wren', 'halden-saved', 'seal-cracked', 'grandfather-home', 'drowned-gold-home',
-    'marrow-sings', 'marrow-bound'],
+  // that the company won this chapter (`won`), whether the Warden's door
+  // shut cracked, and whether the company carried the old reeve home and the
+  // drowned folk's purses back to their families. Those last two are owed
+  // back at the Wyrmcalling. Whether the company knows Wren, whether Brother
+  // Halden lived and what became of Marrow are NPC state, and need no carry.
+  carries: ['won', 'seal-cracked', 'grandfather-home', 'drowned-gold-home'],
+  // Saves from before that state moved onto the NPCs.
+  renamedFlags: SUNKEN_BARROWS_RENAMED,
   companions: companionsFrom(NPCS, [
     { id: 'wren', blurb: 'The reeve\'s scout. Guiding you through the deep fen as far as the Barrow Gate, where she holds the way out.' },
   ]),

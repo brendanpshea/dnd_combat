@@ -39,7 +39,7 @@ export interface MapEdge {
   kind: EdgeKind;
   /** The choice, node or room it is, kept short. */
   label?: string;
-  /** What it needs, when it needs something ("vex-turned", "!met-vex"). */
+  /** What it needs, when it needs something ("npc.vex.fate.turned", "!npc.vex.met"). */
   needs?: string;
 }
 

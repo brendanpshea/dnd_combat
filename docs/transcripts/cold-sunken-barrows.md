@@ -8,7 +8,7 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Sunken Barrows → victory
 - **Ending reached:** `sb-epilogue` (victory) in The Sunken Barrows
-- **The Sunken Barrows** — flags carried in: _none (start of the run)_; flags carried out: `sunken-barrows:grandfather-home`, `sunken-barrows:marrow-sings`, `sunken-barrows:met-wren`, `sunken-barrows:won`
+- **The Sunken Barrows** — flags carried in: _none (start of the run)_; flags carried out: `npc.marrow.fate.sings`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Sunken Barrows `sunken-barrows`

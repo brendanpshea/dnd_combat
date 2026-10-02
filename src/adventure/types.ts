@@ -483,8 +483,8 @@ export interface Module {
   /**
    * Choices this chapter hands on to the rest of the campaign: flags that,
    * when the company carries into the sequel, arrive there named after this
-   * module — `carries: ['saved-scout']` on the Hollow Road is read in a later
-   * chapter as `{ kind: 'flag', flag: 'hollow-road:saved-scout' }`. They pass
+   * module — `carries: ['captives-freed']` on the Hollow Road is read in a later
+   * chapter as `{ kind: 'flag', flag: 'hollow-road:captives-freed' }`. They pass
    * down the whole chain, and exist only if this company played this chapter:
    * a cold start has none, so a scene that reads one needs a version without.
    */

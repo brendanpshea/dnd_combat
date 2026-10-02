@@ -133,18 +133,18 @@ describe('choices carried into the next chapter', () => {
     const { HOLLOW_ROAD_MODULE } = await import('../src/data/modules/hollow-road.js');
     const { carriedFlags } = await import('../src/adventure/runtime.js');
     const s = startAdventure(newCampaign(1), HOLLOW_ROAD_MODULE);
-    s.flags = { 'saved-scout': true, 'vex-turned': false, 'trail-read': true };
-    expect(carriedFlags(HOLLOW_ROAD_MODULE, s)).toEqual({ 'hollow-road:saved-scout': true });
+    s.flags = { 'captives-freed': true, won: false, 'trail-read': true };
+    expect(carriedFlags(HOLLOW_ROAD_MODULE, s)).toEqual({ 'hollow-road:captives-freed': true });
   });
 
   it('arrive in the sequel, and pass on down the chain', async () => {
     const { HOLLOW_ROAD_MODULE } = await import('../src/data/modules/hollow-road.js');
     const { carriedFlags } = await import('../src/adventure/runtime.js');
     const s = startAdventure(newCampaign(1), HOLLOW_ROAD_MODULE);
-    s.flags = { 'saved-scout': true };
+    s.flags = { 'captives-freed': true };
     const next = carryCompanyInto(newCampaign(2), BARROWS, { module: HOLLOW_ROAD_MODULE, state: s });
-    expect(next.flags['hollow-road:saved-scout']).toBe(true);
-    expect(carriedFlags(BARROWS, next)['hollow-road:saved-scout']).toBe(true);
+    expect(next.flags['hollow-road:captives-freed']).toBe(true);
+    expect(carriedFlags(BARROWS, next)['hollow-road:captives-freed']).toBe(true);
   });
 
   it('a cold start carries nothing', () => {

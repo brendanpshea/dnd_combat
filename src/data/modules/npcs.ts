@@ -35,6 +35,8 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   wren: {
     id: 'wren', name: 'Wren', portraitId: 'npc-scout', emoji: '🏹', monsterId: 'scout',
     blurb: 'The reeve\'s scout.',
+    // Pulled from under the horse on the marsh road, or walked past there.
+    fates: ['saved', 'left'],
     introducedAt: {
       'hollow-road': ['scout-saved'],
       'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-left', 'fen-partner', 'fen-reunion'],
@@ -45,10 +47,14 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   tamsin: {
     id: 'tamsin', name: 'Tamsin',
+    // The scout who died under the horse when the company could not save her.
+    fates: ['dead'],
     introducedAt: { 'sunken-barrows': ['fen-partner'] },
   },
   vex: {
     id: 'vex', name: 'Vex', aka: ['the lieutenant'], portraitId: 'npc-captain', emoji: '🗡️',
+    // Took the company's offer at his fire (`met` alone: met, no deal).
+    fates: ['turned'],
     introducedAt: {
       'hollow-road': ['scout-saved', 'vex-parley'],
       // His briefing, and "Captain Vex" on the morning after the peak, and at
@@ -59,6 +65,8 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   vargan: {
     id: 'vargan', name: 'Vargan', aka: ['the chief', 'the Ashfang chief'],
+    // Killed in his hall; or, turned on the hag, executed, jailed or let go.
+    fates: ['slain', 'executed', 'jailed', 'freed'],
     introducedAt: {
       // The bandit on the road speaks of his chief, and Mira tells of the
       // reed-cutter's boy; the hall gives him his name.
@@ -77,6 +85,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   reedwife: {
     id: 'reedwife', name: 'Reedwife',
+    fates: ['dead'],
     introducedAt: {
       'hollow-road': ['hollow-won', 'boss-approach'],
       'sunken-barrows': ['inn', 'chapel-saved', 'chapel-won'],
@@ -110,6 +119,8 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   halden: {
     id: 'halden', name: 'Halden', portraitId: 'npc-priest', emoji: '🕯️', monsterId: 'priest',
     blurb: 'Thornwick\'s priest, whom you talked back out of the Warden\'s grip. He came to say his rites at the stone.',
+    // Talked out of the Warden's grip in the drowned chapel.
+    fates: ['saved'],
     introducedAt: {
       'sunken-barrows': ['inn', 'chapel'],
       // At the council if he lived; otherwise his book of rites, at the stone.
@@ -118,6 +129,8 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   marrow: {
     id: 'marrow', name: 'Marrow', portraitId: 'npc-priest', emoji: '⛏️',
+    // Spared at the Warden's door: leads his faithful in the rites, or bound for the reeve.
+    fates: ['sings', 'bound'],
     introducedAt: { 'sunken-barrows': ['chapel-saved', 'seal-approach'] },
   },
   nettle: {
