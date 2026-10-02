@@ -164,6 +164,9 @@ export interface ExploreNode {
    *  "already done" beat instead of replaying its full scene. */
   sceneWhen?: Array<{ if: Requirement[]; to: SceneRef }>;
   requires?: Requirement[];     // locked door / gated route
+  /** What the player is told when `requires` doesn't hold yet, in the world's
+   *  words ("The ravine cuts the trail."). Absent = a generic reason. */
+  note?: string;
   /** A secret: revealed only if the party's passive Perception ≥ dc on arrival. */
   hidden?: { dc: number };
   /** Danger on the way: on entering, a `chance` (0–1) rng roll may divert to a

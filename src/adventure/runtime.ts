@@ -752,7 +752,7 @@ export function exploreNodes(state: AdventureState, module: Module): VisibleNode
     // Frontier: known but not yet reached (and not the entry you started at).
     const frontier = traversal && !explored && !isEntry;
     out.push({
-      node, blocked: blockedReason(state, node.requires), secret, explored,
+      node, blocked: blockedReason(state, node.requires) && (node.note ?? blockedReason(state, node.requires)), secret, explored,
       frontier, here: node.id === here,
     });
   }
@@ -1185,7 +1185,12 @@ export function battleOptions(state: AdventureState, module: Module): BattleOpti
     out.sneak = { dc: sneakDc(scene.encounterId) };
   }
   const hub = state.hub;
-  if (!scene.noFlee && hub && hub !== scene.id && isHub(module.scenes[hub])) {
+  // Caught out (the scene's own ambush, or a sneak-up rolled at its door)
+  // means no falling back: they are on you. It also keeps a failed check's
+  // worse fight from being fled and walked back into clean.
+  const caughtOut = scene.surprise === 'party'
+    || (state.battleSurprise?.sceneId === scene.id && state.battleSurprise.side === 'party');
+  if (!scene.noFlee && !caughtOut && hub && hub !== scene.id && isHub(module.scenes[hub])) {
     out.fallBack = { title: hubTitleOf(module.scenes[hub]) ?? hub };
   }
   return out;
@@ -1255,12 +1260,14 @@ export function fleeBattle(state: AdventureState, module: Module, retreated: boo
   if (scene.kind !== 'battle' || !battleOptions(state, module).fallBack) throw new Error('No way back from here');
   if (retreated) (state.battleAttempts ??= {})[scene.id] = (state.battleAttempts[scene.id] ?? 0) + 1;
   delete state.battleSurprise;
-  // In a dungeon, falling back from a room's fight or a corridor ambush puts
-  // the party back in the room it came from; the fight stays where it was.
+  // In a dungeon, falling back puts the party back in the room it came from,
+  // whatever started the fight: the room's own fight, a corridor ambush, or a
+  // scene the room's event led to (which plays again when the party returns,
+  // until its condition holds). The fight stays where it was.
   const d = hubDungeon(state, module);
   if (d) {
     const p = dungeonProgress(state, d.id, d.dungeon);
-    if (p.pending || roomOf(d.dungeon, p.at)?.fight === scene.id) {
+    if (p.pending || p.from || roomOf(d.dungeon, p.at)?.fight === scene.id) {
       p.at = p.from ?? d.dungeon.entry;
       delete p.from;
       delete p.pending;

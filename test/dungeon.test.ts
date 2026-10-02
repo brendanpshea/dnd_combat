@@ -363,3 +363,63 @@ describe('the Ashfang Den', () => {
     expect(hubReturn(s, H)).toBeNull();
   });
 });
+
+describe('falling back', () => {
+  // Vex's talk can turn into a fight: one started by the room's event, not
+  // the room's own fight.
+  const M2 = moduleWith(den(), {
+    'vex-talk': { id: 'vex-talk', kind: 'story', text: ['Vex.'], next: [
+      { id: 'deal', label: 'Deal', to: '@hub', effects: [{ kind: 'setFlag', flag: 'met-vex' }] },
+      { id: 'draw', label: 'Draw steel', to: 'vex-fight' },
+    ] },
+    'vex-fight': { id: 'vex-fight', kind: 'battle', encounterId: 'den-muster', mapId: '@room', onWin: { to: '@hub', effects: [{ kind: 'setFlag', flag: 'met-vex' }] } },
+    'caught': { id: 'caught', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins', surprise: 'party', onWin: { to: '@hub' } },
+  });
+
+  it('from a fight a room\'s event started, steps back to the room the party came from', () => {
+    const s = startAdventure(newCampaign(3), M2);
+    enterScene(s, M2, 'start'); choose(s, M2, 'in');
+    walkTo(s, M2, 'yard'); walkTo(s, M2, 'pit'); resolveBattle(s, M2, true);
+    walkTo(s, M2, 'vex');
+    choose(s, M2, 'draw');
+    expect(currentScene(s, M2).id).toBe('vex-fight');
+    fleeBattle(s, M2, false);
+    expect(dungeonProgress(s, 'den', den()).at).toBe('pit');
+    // Walking back in plays the event again: the fight is still there.
+    expect(walkTo(s, M2, 'vex').some((e) => e.type === 'scene' && e.sceneId === 'vex-talk')).toBe(true);
+  });
+
+  it('is not offered when the party is caught out', async () => {
+    const { battleOptions } = await import('../src/adventure/runtime.js');
+    const s = startAdventure(newCampaign(3), M2);
+    enterScene(s, M2, 'start'); choose(s, M2, 'in');
+    enterScene(s, M2, 'caught');
+    expect(battleOptions(s, M2).fallBack).toBeUndefined();
+    // Nor when the sneak-up rolled at a fight's door went against the party.
+    enterScene(s, M2, 'pit-fight');
+    s.battleSurprise = { sceneId: 'pit-fight', side: 'party' };
+    expect(battleOptions(s, M2).fallBack).toBeUndefined();
+    s.battleSurprise = { sceneId: 'pit-fight', side: 'enemies' };
+    expect(battleOptions(s, M2).fallBack).toBeDefined();
+  });
+});
+
+describe('a locked map marker', () => {
+  it('says why in the world\'s words, when it has a note', async () => {
+    const { exploreNodes } = await import('../src/adventure/runtime.js');
+    const m: Module = { id: 'n', title: 'T', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'Map', art: {}, nodes: [
+        { id: 'a', x: 1, y: 1, label: 'A', icon: 'x', scene: 'won', requires: [{ kind: 'flag', flag: 'k' }], note: 'The ravine cuts the trail.' },
+        { id: 'b', x: 2, y: 2, label: 'B', icon: 'x', scene: 'won', requires: [{ kind: 'flag', flag: 'k' }] },
+      ] } },
+      won: { id: 'won', kind: 'ending', outcome: 'victory', text: ['Yes.'] },
+    } };
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'map');
+    const nodes = exploreNodes(s, m);
+    expect(nodes.find((n) => n.node.id === 'a')!.blocked).toBe('The ravine cuts the trail.');
+    expect(nodes.find((n) => n.node.id === 'b')!.blocked).toMatch(/haven't done/);
+    s.flags.k = true;
+    expect(exploreNodes(s, m).find((n) => n.node.id === 'a')!.blocked).toBeNull();
+  });
+});
