@@ -87,7 +87,7 @@ const AFTERMATH_CLAIMS: Choice[] = [
     effects: [{ kind: 'gold', amount: 50 }, { kind: 'setFlag', flag: 'got-scout' }] },
   // `won`: every road to the victory ending runs through here, so the next
   // chapters can tell a company that broke the Ashfang from a cold start.
-  { id: 'done', label: 'Raise a glass at the Wander-Inn', to: 'epilogue',
+  { id: 'done', label: 'Celebrate at the Wander-Inn', to: 'epilogue',
     effects: [{ kind: 'setFlag', flag: 'won' }] },
 ];
 
@@ -96,7 +96,7 @@ const AFTERMATH_CLAIMS: Choice[] = [
 // they share art with every other module's innkeeper / scout / captain; the
 // emoji is the fallback until that portrait is generated.
 /** What the peddler's cart gives up, however he was taken. */
-const SPY_LIST = 'Under the false bottom of his cart lies a list of every caravan to leave Thornwick this month. Someone has ticked off each one. The list isn\'t in his hand. "The chief writes it," he babbles. "He knows every carter in this town by name. I only tick them off."';
+const SPY_LIST = 'Under the false bottom of his cart lies a list of every caravan to leave Thornwick this month. Someone has ticked off each one. The ticks are his. The list is in another man\'s writing. "The chief writes it," he babbles. "He knows every carter in this town by name. I only tick them off."';
 
 const MIRA = { id: 'npc-mira', name: 'Mira the Innkeeper', portraitId: 'npc-innkeeper', emoji: '🍺' };
 const SCOUT = { id: 'npc-scout-hr', name: 'Wounded Scout', portraitId: 'npc-wounded', emoji: '🤕' };
@@ -172,8 +172,8 @@ const scenes: Record<string, Scene> = {
     lines: [
       'Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow sets down her cloth, looks you over once, and evidently decides you\'ll do.',
       '"Sellswords. Good. You read my note, then." **Mira** doesn\'t smile. Nobody in Thornwick has seen her do it since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
-      '"Some of the old reed-cutters say their chief knows the marsh like he was born on it." She wipes a cup. "There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of Thornwick that week and never came back. Not till the raids started this spring, some say. Folk talk."',
-      '"The **Ashfang** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. But there\'s more — the kind folk won\'t say with the door open."',
+      '"The **Ashfang** came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up."',
+      '"Some of the old reed-cutters say the Ashfang chief knows the marsh like he was born on it." She wipes a cup. "There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of Thornwick that week and never came back. Not till the raids started this spring, some say. Folk talk. And there\'s more, the kind folk won\'t say with the door open."',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
       effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the Ashfang', body: 'Mira, who keeps the Wander-Inn, begged your help against the Ashfang raiders bleeding Thornwick dry. Find where they den. Ask around the market and the marsh road, then end them.' } }] }],
@@ -451,7 +451,7 @@ const scenes: Record<string, Scene> = {
     parley: {
       skill: 'deception', dc: 13, label: 'Tell the knives the watch is coming',
       success: { to: 'spy-caught-loud', text: ['"The reeve\'s men are two stalls behind us," you say, loud enough to carry, and glance past them as if you can see the pikes. The hired knives do the sums faster than their fixer does. They are gone into the crowd before he turns round. Alone, the fixer raises his empty hands and backs off into the market.',
-        'Not one blade got wet. But over the heads of the crowd you see one of the knives slip out through the gate, toward the marsh.'] },
+        'Over the heads of the crowd, though, you see one of the knives slip out through the gate, toward the marsh.'] },
     },
   },
   'spy-ambush': {
@@ -552,7 +552,7 @@ const scenes: Record<string, Scene> = {
           wandering: { chance: 0.5, battleScene: 'bog-toads' } },
         { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
           requires: [{ kind: 'flag', flag: 'trail-read' }, { kind: 'flag', flag: 'crossed-ravine' }],
-          note: 'The ravine cuts the trail, and the reeds hide the way to the hollow. Cross the ravine, and read the tracks.',
+          note: 'The ravine cuts the trail, and past it the reeds hide the way to the hollow. Cross the ravine, and find the patrols\' tracks.',
           // Once the ambush is broken the hollow is a walk, not a re-fightable
           // reward loop — the return trip from a den retreat passes through
           // quietly instead of re-rolling the battle (and its XP/treasure).
@@ -705,7 +705,7 @@ const scenes: Record<string, Scene> = {
   },
   'wren-joins': {
     id: 'wren-joins', kind: 'story', art: { emoji: '🧭' },
-    text: ['Wren tests the bound leg, winces, and decides it will do. "Someone has to keep you out of the sinkholes." She takes up her bow. "As far as their gate. Then I go for the reeve\'s men, and you had better still be alive when I get back."'],
+    text: ['Wren tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don\'t." She takes up her bow. "As far as their gate. Then I go for the reeve\'s men, and you had better still be alive when I get back."'],
     next: [{ id: 'go', label: 'Into the marsh, with Wren leading', to: 'trail' }],
   },
   // She came as far as she said she would.
@@ -1050,7 +1050,7 @@ const scenes: Record<string, Scene> = {
   },
   'den-pens-left': {
     id: 'den-pens-left', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
-    text: ['"The reeve\'s men will come," you tell them. The carter nods as if he expected nothing else. The girl watches you go, holding her one shoe in both hands.'],
+    text: ['"The reeve\'s men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, holding her one shoe in both hands.'],
     next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
   },
   'den-hyenas': {
