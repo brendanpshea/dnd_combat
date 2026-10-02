@@ -17,7 +17,8 @@ import type { NpcDef } from '../../adventure/types.js';
 
 /** Each version of the stone's `tear-loose` challenge (see wyrmcalling.ts). */
 const TEAR_LOOSE = ['tear-loose', 'tear-loose-cracked', 'tear-loose-defiant', 'tear-loose-defiant-cracked',
-  'tear-loose-cold', 'tear-loose-cold-cracked', 'tear-loose-sold', 'tear-loose-sold-cracked'];
+  'tear-loose-cold', 'tear-loose-cold-cracked', 'tear-loose-sold', 'tear-loose-sold-cracked',
+  'tear-loose-rueful', 'tear-loose-rueful-cracked'];
 
 export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   mira: {
@@ -127,8 +128,9 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     fates: ['saved'],
     introducedAt: {
       'sunken-barrows': ['inn', 'chapel'],
-      // At the council if he lived; otherwise his book of rites, at the stone.
-      wyrmcalling: ['war-council', ...TEAR_LOOSE],
+      // At the council if he lived; his book of rites in a cold start's pack
+      // (`muster`); otherwise his book, at the stone.
+      wyrmcalling: ['muster', 'war-council', ...TEAR_LOOSE],
     },
   },
   marrow: {
