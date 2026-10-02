@@ -179,7 +179,8 @@ from every enemy in reach. Two optional fields shape this:
 - `parley: { skill, dc, label?, success, failure? }` — a way to talk the fight
   down. Opt-in, because an avoided fight needs its own outcome: `onWin` prose
   assumes a battle happened. Give `success` the same story effects `onWin`
-  carries (flags, milestone XP), just not the loot. Write it where talking is
+  carries (flags), just not the loot, and the XP the fight would have paid
+  (see "Levels come from fights" below). Write it where talking is
   plausible — mercenaries, a boss who can be bluffed — not for mindless foes.
 - `noFlee: true` — no Fall back or Retreat, for a fight the story cannot let the
   party walk away from.
@@ -474,6 +475,11 @@ earlier chapter needs no entry in a later one.
 
 ### The clock
 
+A camp deep in enemy ground can limit its nights: `camp: { nights: 2 }`
+lets the party sleep there twice in the chapter (an ambushed night counts),
+then only short-rest. Use it where waiting out every wound would take the
+danger out of a dungeon; leave towns and safe maps unlimited.
+
 A chapter starts on day 1, and every long rest ends a day: a night at a
 camp, or a long `rest` scene. (A camp broken up by a fight is not a night
 slept.) `Module.dawns` names the mornings that matter:
@@ -505,6 +511,38 @@ deadline that strands a party is reported like any other dead end, with
 `sleeps until the morning of day N` on the way there. Each dawn with effects
 is one more fact for it to track.
 
+### Levels come from fights
+
+A company levels by fighting. Size a chapter's fights so a company that
+fights what its road offers reaches the chapter's levels on time: budget
+the encounter XP first (each of four characters earns a quarter of it), then
+check the curve on the transcript routes, not on paper. Tune each fight for
+the level the party really meets it at.
+
+`xpToLevel` is **not** a progression mechanism. It stands in two places only:
+
+- **The opening.** A chapter's start scene can set a fresh company's level (a
+  cold start begins Part 2 at 3rd). Only the cold-start choice carries it; a
+  company carried in from the last chapter arrives with what its fights
+  earned.
+- **A way past a fight.** A company that talks, sneaks or pays its way past
+  a fight must not fall behind one that fought it. Pay it what the fight
+  would have: `{ kind: 'xp', amount: avoidedFightXP('the-encounter') }`
+  (a quarter of the roster's XP, so it follows any retuning), or an
+  `xpToLevel` where the fought path would ding at that point anyway. It sits
+  on the avoidance itself: a parley's `success`, a choice offered beside the
+  way into the fight, or the outcome of a roll whose other outcome is the
+  fight.
+
+Never put a floor on a fight's win or on a road every company walks: that
+makes up for a chapter with too few fights, and hides it. If the curve comes
+up short, retune where the fights sit against the party's real level, then
+strengthen the fights the chapter has (more XP and more danger together),
+and add a fight only where the story has room for one (an empty marker, a
+wandering encounter). A company that walks past optional fights may arrive a
+level lower; that is its choice, and no floor makes it up. The validator
+rejects an `xpToLevel` anywhere else.
+
 ## The arena's voice
 
 The arena is drier and more knowing than the valley, and that is fine: it is
@@ -530,6 +568,19 @@ once, plainly, in the interface, because a player can silence the quasit.
   it land the consequence in one or two lines, concrete, in the world's voice.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
+
+## Checking your work
+
+Edit against `npm run check:story` (about 30 seconds): the typecheck, every
+module's validation and reachability search (with its state count), and the
+adventure's own tests, transcripts and readability included. Regenerate with
+`npm run transcripts` and `npm run reference` when prose or routes change,
+and read the transcript diff. The full `npm test` (about two minutes, most
+of it arena simulations) is for once before a commit, not for every edit.
+
+When several people (or agents) work at once, split the work by chapter: one
+owner per chapter file, so nobody edits a file someone else has open.
+Anything that spans chapters, or touches the engine, goes first, on its own.
 
 ## Reading a route
 

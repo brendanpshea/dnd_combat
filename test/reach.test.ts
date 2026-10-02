@@ -38,6 +38,11 @@ describe('what it catches', () => {
     const m = clone(byId('wyrmcalling'));
     const camp = m.scenes.warcamp;
     if (camp?.kind !== 'explore') throw new Error();
+    // The shape before the fix: the hospital tent let the party out into the
+    // camp, rather than straight into the briefing.
+    const lost = m.scenes['envoys-lost'];
+    if (lost?.kind !== 'story') throw new Error();
+    lost.next = [{ id: 'up', label: 'Get back on your feet', to: 'warcamp' }];
     m.scenes.unbriefed = { id: 'unbriefed', kind: 'story', text: ['Vex waves you off.'], next: [{ id: 'ok', label: 'Leave', to: 'warcamp' }] };
     camp.map.nodes = camp.map.nodes.map((n) => (n.id === 'command' ? { ...n, scene: 'unbriefed' } : n));
     const errors = checkModuleReach(m).errors;
@@ -105,13 +110,15 @@ describe('campaign bugs found by the second read-through', () => {
     }
   });
 
-  it('the finale\'s level floor comes before the last fight, not after', () => {
+  it('the finale has no level floor: the hills\' fights carry a company to 5th', () => {
     const wc = byId('wyrmcalling');
-    const approach = wc.scenes['calling-approach'];
-    const battle = wc.scenes['calling-battle'];
-    if (approach?.kind !== 'story' || battle?.kind !== 'battle') throw new Error();
-    expect(approach.next[0]!.effects).toContainEqual({ kind: 'xpToLevel', level: 5 });
-    expect(battle.onWin.effects ?? []).not.toContainEqual({ kind: 'xpToLevel', level: 5 });
+    const floor = { kind: 'xpToLevel', level: 5 };
+    // Not on the climb, not on the way into the council, not on the stone's win.
+    for (const sc of Object.values(wc.scenes)) {
+      const choices = sc.kind === 'story' || sc.kind === 'dialogue' ? sc.next : [];
+      for (const c of choices) expect(c.effects ?? [], `${sc.id}:${c.id}`).not.toContainEqual(floor);
+      if (sc.kind === 'battle') expect(sc.onWin.effects ?? [], sc.id).not.toContainEqual(floor);
+    }
   });
 });
 

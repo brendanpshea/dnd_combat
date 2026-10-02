@@ -70,9 +70,11 @@ type Pick =
  *  Tap an item, then choose what to do with it — the same verb-after-noun flow
  *  as the campaign's between-battle screen, reusing the same state helpers. */
 export function PartyScreen(
-  { campaign, camp, onRest, onChange, onClose, notice: opening, frame = 'modal' }: {
+  { campaign, camp, nightsLeft = null, onRest, onChange, onClose, notice: opening, frame = 'modal' }: {
     campaign: CampaignState;
     camp: CampRule | null;
+    /** Nights left to sleep at this camp (null: no limit). */
+    nightsLeft?: number | null;
     /**
      * How this screen is framed.
      *
@@ -134,8 +136,11 @@ export function PartyScreen(
             <>
               <div className="adv-rest-btns">
                 <button className="primary" onClick={() => onRest('short')}>🌤 Short rest</button>
-                <button className="primary" onClick={() => onRest('long')}>🌙 Long rest</button>
+                <button className="primary" disabled={nightsLeft === 0} onClick={() => onRest('long')}>🌙 Long rest</button>
               </div>
+              {nightsLeft === 0 && (
+                <p className="adv-rest-warn">You have slept here as long as you dare. Short rests only, until you are out.</p>
+              )}
               {camp.risky && (
                 <p className="adv-rest-warn">⚠ This is open country — a long rest here may be interrupted.</p>
               )}

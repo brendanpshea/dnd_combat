@@ -17,13 +17,13 @@
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-Last season your company broke the Ashfang here, and killed the hag who ran them. You had hoped for a quiet homecoming.
+Last season your company broke the Ashfang in their den past the marsh, and killed the hag their chief had sold himself to. You had hoped for a quiet homecoming.
 
 The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
 Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.
 
-Your purse is still heavy with last season's bounty. Thornwick pays its debts.
+Your purse is still heavy with last season's bounty. Thornwick keeps its word.
 
 **» Answer the bells**
 
@@ -35,7 +35,7 @@ _+250 gold (350)_
 
 <sub>scene `lychyard`</sub>
 
-The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and two shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
+The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -67,9 +67,9 @@ _Journal (clue): They Walk One Way_
 
 > The Wander-Inn is full, and no one is in a hurry to leave, not with the churchyard standing open across the lane. **Mira** sets down a bowl in front of you unasked.
 
-> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."
+> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season, and this whole town drank to it. I poured. This season the dead get up and walk, and now we all sleep with the lamp lit."
 
-> "I was glad to see you walk back out of that den. Most of us were." She tops up your cup. "But folk are starting to look at you sideways. And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
+> "No one in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -105,7 +105,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn't know how to use.
 
-> "You have returned," he says, without turning. "Last season you broke the Ashfang, and Thornwick paid you, as it pays every debt. Now the marsh has opened a new one. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
+> "You have returned," he says, without turning. "Last season you broke the Ashfang. Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
 > He turns. He looks as if he has not slept since the bells. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -159,7 +159,7 @@ _Journal (npc): Wren, the Reeve's Scout_
 
 <sub>scene `causeway`</sub>
 
-The old raised road was here long before the cart-track that meets it, laid in great flat stones by hands that measured time in generations. Wren crouches at its edge and reads the mud, slow and careful.
+The old raised road was here long before the cart-track that meets it. Each of its great flat stones is too heavy for a cart. Wren crouches at its edge and reads the mud, slow and careful.
 
 "Here. And here." Footprints, water-filled, in files. "Your churchyard dead came through in *step*. And look at this." She points to older prints, sunk deeper and wider. "They weren't the first. The fen's own dead have been walking for days. Whatever's calling has been at it a while, and it isn't calling them to wander. It's calling them to **work**."
 
@@ -195,19 +195,19 @@ _Journal (clue): Called to Work_
 
 You see it a breath before it moves. Something winds up through Halden's calm like rot up a post. His smile belongs to it, and so does his voice.
 
-But his hands are shaking on the altar rail, and somewhere under that thing Halden is still in there. The words he said over Thornwick's dead might reach him. Or you could strike now, while it still thinks you are kneeling.
+But his hands are shaking on the altar rail, and somewhere under that thing Halden is still in there. The words he said over Thornwick's dead might reach him. Or you could strike now, while it still thinks you came to listen.
 
 **» Strike before it moves**
 
 <sub>scene `chapel-caught`</sub>
 
-You're already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.
+You're already moving when his two acolytes step forward and his dead wade out of the rows, two skeletons and two grey, gnawing parishioners. For once the dead are the ones caught flat-footed.
 
-**Battle:** Corrupt Temple <sub>(`temple` on `ruins`)</sub>
+**Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
 
 **» Fight — won**
 
-Caught off balance from the first blow, the dead never find their rows again. Halden slumps against the altar rail. The thing wearing him lets go, and he dies looking almost grateful.
+The dead are still shuffling into their rows when the last of them falls. Halden slumps against the altar rail. The thing wearing him lets go, and he dies looking almost grateful.
 
 <sub>scene `chapel-won`</sub>
 
@@ -217,7 +217,7 @@ The next note is shorter. *She is dead. No one pays the jailer now, and he is wa
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it without knowing it was one." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."
 
@@ -253,9 +253,9 @@ You know a lie when it sings to you. You plant your boots in the mud and stay wh
 
 <sub>scene `lights-fight`</sub>
 
-Two of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.
+Three of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.
 
-**Battle:** Wisp Bog <sub>(`wisp-bog` on `bog`)</sub>
+**Battle:** The Corpse-Lights <sub>(`corpse-lights` on `bog`)</sub>
 
 **» Fight — won**
 
@@ -263,7 +263,7 @@ The last wisp winks out, and the water goes dark for good.
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the purses of the drowned. There are twelve of them, fifty-five gold between them, still tied to their belts.
+In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "Nobody from here dresses like that to go walking."
 
@@ -303,7 +303,7 @@ The ghouls lie still, properly still this time, and the fire is out. In the grey
 
 North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been feeding something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.
 
-Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody's fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "Weeks without feeding," she says quietly. "It will be hungry."
+Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody's fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "It will be hungry," she says quietly.
 
 **» Let Wren draw it out from the far bank**
 
@@ -351,9 +351,9 @@ The second gargoyle shatters mid-dive and rains down as plain gravel. The Barrow
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
-The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen.
+The **Undercrypt**: the prison the old prayers named.
 
-Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
@@ -369,7 +369,7 @@ Worked steps lead down into the cold. Your torch makes a small, brave circle, an
 
 → Search the room
 
-Nothing turns up.
+Dust, old bones and nothing else.
 
 → The Painted Hall
 
@@ -421,7 +421,7 @@ _Gained: Potion of Greater Healing_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 → The Lead Cut
 
@@ -435,11 +435,11 @@ The passage narrows into a long cut through the rock. Ahead of you, dozens of pi
 
 <sub>scene `diggers`</sub>
 
-A long cut runs through the rock here, and Thornwick's dead fill it. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
+Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud. Its links match the chain Reeve Aldous wears.
+The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.
 
-**» Slip past along the wall — Keep low, and only move when the picks swing.**
+**» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
 `[Group Stealth DC 12 — 2/4 pass — passed]`
 
@@ -447,21 +447,31 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 
 <sub>scene `diggers-chain`</sub>
 
-At the end of the cut lies an old man in a good burial coat. A reeve's chain of office hangs round his neck, with the same crest Aldous wears. This is the reeve's **grandfather**.
+At the end of the cut lies an old man in a good burial coat, with a reeve's chain of office round his neck. This is the reeve's **grandfather**.
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
-**» Wrap him in a cloak and carry him home**
+**» Carry him home in your cloak, though it will cost the day**
 
 _Journal (clue): The Old Reeve_
+
+<sub>scene `diggers-carry`</sub>
+
+He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.
+
+**» Go on, with the old man on your back**
+
+**Dawn — day 4.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+Nothing turns up.
 
 → The Barrow-Guard
 
@@ -483,7 +493,7 @@ _+40 gold (679)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 4)</sub>
 
 <sub>scene `crypt-night`</sub>
 
@@ -499,7 +509,7 @@ The specters tear apart into cold and silence. Where they came from, two bare pa
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You sound the walls and lift what can be lifted. Nothing.
 
 → The King's Chamber
 
@@ -513,7 +523,7 @@ They are the names of villages, hundreds of them, and a line runs through every 
 
 The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
 
-**Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -527,9 +537,9 @@ _+60 gold (739)_
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 4)</sub>
 
-**Dawn — day 4.**
+**Dawn — day 5.**
 
 → Search the room
 
@@ -547,7 +557,7 @@ Below, black candles burn on every step of the last stair. You will not need you
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You find only scratches in the stone, and none of them mean anything.
 
 → The Warden's Door
 
@@ -577,15 +587,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that he has lost hi
 
 <sub>scene `seal-doubt`</sub>
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway. Marrow only watches, as if from very far away.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, as if from very far away.
+
+Beside him, a soldier of the old kings crouches by the door in green bronze, with cold light in its eye sockets. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
-The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is sitting on the bottom stair with the chisel in his lap.
-
-_Level up: 3 → 4_
+The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.
 
 _+120 gold (859)_
 
@@ -657,7 +667,7 @@ _-10 gold (999)_
 
 <sub>scene `sb-claim-round`</sub>
 
-The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. Last of all, someone names Mira the innkeeper, who pretends not to hear it.
+The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. When the last name is said, someone raises a cup to Mira, who cooked it all, and she pretends not to hear.
 
 **» Go back to the square**
 
@@ -677,10 +687,14 @@ Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn 
 
 Wren wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.
 
+Every night since the graves opened, a lamp has burned in the window of the Wander-Inn. Now Mira takes it down and blows it out.
+
 Aldous buries his grandfather a second time, chain and all, and digs the grave himself. The gravediggers stand back with their spades and let him.
 
 Deep under the barrow-field, the Warden's door stands shut in the dark. Every lead letter in it is whole.
 
-On the last night, at the fen's edge, the reeds parted around two figures. They did not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment, and then at the town, and took their time about it. The reeds closed behind them without a ripple.
+Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.
+
+On the night the barrows close, at the fen's edge, the reeds part around two figures. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain late Reedwife. They look at the sealed barrow-field for a long moment, and then at the town, and take their time about it. The reeds close behind them without a ripple.
 
 ### Ending: victory

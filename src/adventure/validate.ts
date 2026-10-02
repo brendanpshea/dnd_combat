@@ -13,7 +13,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement } from './types.js';
+import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement, type Effect, type Outcome, type SceneRef } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf, flagsWritten } from './graph.js';
 import { unresolvedTokens, isNpcFlag, hasUncompiledNpcState } from './npcs.js';
 import { checkDungeon } from './dungeon.js';
@@ -28,6 +28,60 @@ function skillExists(id: string): boolean {
 }
 function encounterExists(id: Id): boolean {
   return !!(ENCOUNTERS[id] || MONSTERS[id]);
+}
+
+/**
+ * Levels come from fights (docs/module-writing-guide.md, "Levels come from
+ * fights"). An `xpToLevel` floor may stand in only two kinds of place, where it
+ * cannot stand in for a chapter's missing fights:
+ * - the opening: a choice of the module's `start` scene, which sets a fresh
+ *   company's level (a cold start, a generated delve);
+ * - a way past a fight: a battle's `parley` success, a choice offered beside a
+ *   way into a battle that does not itself lead into one (not even on a
+ *   failed roll, since a choice's effects apply before its roll), or the
+ *   outcome of a check or challenge whose other outcome is a battle.
+ * Anywhere else (a fight's win, a road every company walks, a dawn) it is a
+ * progression floor, and an error.
+ */
+function misplacedLevelFloors(module: Module): string[] {
+  const errors: string[] = [];
+  const isBattle = (ref: SceneRef | undefined) => !!ref && module.scenes[ref]?.kind === 'battle';
+  const floors = (effs?: Effect[]) => (effs ?? []).some((e) => e.kind === 'xpToLevel');
+  const bad = (id: Id, where: string) => errors.push(`[${id}] ${where} tops XP up to a level (xpToLevel): a floor belongs only on the opening or on a way past a fight; let fights carry the levels`);
+  /** One outcome of a roll: a floor on it is fine if the other outcome is the fight it avoids. */
+  const outcome = (id: Id, what: string, mine: Outcome | undefined, other: Outcome | undefined) => {
+    if (floors(mine?.effects) && !(isBattle(other?.to) && !isBattle(mine?.to))) bad(id, what);
+  };
+  for (const [id, scene] of Object.entries(module.scenes)) {
+    switch (scene.kind) {
+      case 'story': case 'dialogue': {
+        const leadsToFight = (c: (typeof scene.next)[number]) => isBattle(c.to) || isBattle(c.check?.failTo);
+        const besideFight = scene.next.some(leadsToFight);
+        for (const c of scene.next) {
+          if (floors(c.check?.failEffects)) bad(id, `choice '${c.id}' (on a failed roll)`);
+          if (!floors(c.effects) || id === module.start) continue;
+          if (!besideFight || leadsToFight(c)) bad(id, `choice '${c.id}'`);
+        }
+        break;
+      }
+      case 'battle':
+        if (floors(scene.onWin.effects)) bad(id, 'the win');
+        if (floors(scene.onLoss?.effects)) bad(id, 'the loss');
+        if (floors(scene.parley?.failure?.effects)) bad(id, 'a refused parley');
+        break;
+      case 'check': case 'challenge':
+        outcome(id, 'success', scene.success, scene.failure);
+        outcome(id, 'failure', scene.failure, scene.success);
+        if (scene.kind === 'challenge') for (const a of scene.approaches) {
+          outcome(id, `approach '${a.id}' success`, a.success, a.failure ?? scene.failure);
+          outcome(id, `approach '${a.id}' failure`, a.failure, a.success ?? scene.success);
+        }
+        break;
+      default: break;
+    }
+  }
+  for (const d of module.dawns ?? []) if (floors(d.effects)) errors.push(`dawn of day ${d.day} tops XP up to a level (xpToLevel): let fights carry the levels`);
+  return errors;
 }
 
 /** Returns a list of problems; empty means the module is well-formed. */
@@ -199,6 +253,8 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  errors.push(...misplacedLevelFloors(module));
+
   // NPC tokens are all resolved (see npcs.ts), and the registry's
   // introductions for this chapter name real scenes.
   for (const t of unresolvedTokens(module)) errors.push(`unresolved NPC token ${t}: build the module with withNpcs, or fix the token`);
@@ -313,6 +369,39 @@ export function validateModule(module: Module): string[] {
     if (entries.has(id) || (sc.kind !== 'story' && sc.kind !== 'dialogue') || sc.noBack || sc.next.length === 0) continue;
     if (sc.next.every((c) => (c.effects?.length ?? 0) > 0 || !!c.check)) {
       at(id, 'is reached as an outcome and every choice carries an effect, but it offers a way back that skips them all: set noBack');
+    }
+  }
+
+  // A camp's night limit is a whole number of nights, at least one.
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    const camp = sc.kind === 'explore' ? sc.map.camp : sc.kind === 'dungeon' ? sc.dungeon.camp : undefined;
+    if (camp?.nights !== undefined && !(Number.isInteger(camp.nights) && camp.nights >= 1)) at(id, `camp nights ${camp.nights} must be a whole number, at least 1`);
+  }
+
+  // One-time things can't be spent by walking away. A dungeon room's event
+  // plays once: if it offers a way back while a choice in it carries an
+  // effect, leaving loses that effect for good. And a challenge reached by a
+  // one-try choice (`once`, `attempt`) spends the try on arrival: a way back
+  // spends it without a roll.
+  const roomEvents = new Set<Id>();
+  for (const sc of Object.values(module.scenes)) {
+    // An event with `until` plays on every entry until it holds: not one-time.
+    if (sc.kind === 'dungeon') for (const r of sc.dungeon.rooms) if (r.event?.scene && !r.event.until) roomEvents.add(r.event.scene);
+  }
+  for (const id of roomEvents) {
+    const sc = module.scenes[id];
+    if ((sc?.kind === 'story' || sc?.kind === 'dialogue') && !sc.noBack && sc.next.some((c) => (c.effects?.length ?? 0) > 0)) {
+      at(id, 'is a room\'s one-time event with a choice that carries an effect, but it offers a way back that loses it for good: set noBack');
+    }
+  }
+  const oneTry = new Set<Id>();
+  for (const sc of Object.values(module.scenes)) {
+    if (sc.kind === 'story' || sc.kind === 'dialogue') for (const c of sc.next) if (c.once || c.attempt) oneTry.add(c.to);
+  }
+  for (const id of oneTry) {
+    const sc = module.scenes[id];
+    if (sc?.kind === 'challenge' && !sc.noBack) {
+      at(id, 'is a challenge reached by a one-try choice, but it offers a way back that spends the try without a roll: set noBack');
     }
   }
 

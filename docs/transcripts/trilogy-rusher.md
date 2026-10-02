@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -27,7 +27,7 @@ The hedges shift on both sides at once, and it is already too late to run.
 
 <sub>scene `road-ambush`</sub>
 
-Raiders scramble out of the ditch, an orc with a notched axe and a lean scout with an arrow on the string. Their bandit is already grinning.
+Raiders scramble out of the ditch, an orc with a notched axe and a lean scout with an arrow on the string. A bandit in a stolen carter's coat climbs out after them, already grinning.
 
 "The road's the **Ashfang's** now!" the bandit crows. "Chief takes his cut of every throat on it — and yours'll do just fine."
 
@@ -89,7 +89,7 @@ _Journal (quest): Break the Ashfang_
 
 The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until we know who."
 
-"Don't look at me like that. If I knew his face, he'd be in the cells. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me the whistler, and the road's yours."
+"Don't look at me like that. If I knew his face, he'd be in the cells. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
 
 "Or ask Mira at the Wander-Inn. She hears everything."
 
@@ -151,7 +151,9 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 <sub>scene `tavern-plain`</sub>
 
-"The marsh road, then. Mind yourself." She turns back to her taps.
+"The marsh road, then. Follow it till the reeds close in, and keep going." She sets down the cup she was wiping. "The reeve sent a scout down that road a few days back, a girl on a grey horse. She hasn't come back."
+
+"If you find her, she'll be too proud to ask for help," Mira says. "Give it anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -263,7 +265,7 @@ His crew is down or gone, one way or another, and the peddler knows it. He folds
 
 Under the false bottom of his cart lies a list of every caravan to leave Thornwick this month. Someone has ticked off each one. The ticks are his. The list is in another man's writing. "The chief writes it," he babbles. "He knows every carter in this town by name. I only tick them off."
 
-The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own." None of his crew got away to warn the den, so the signal is still good.
+The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own." None of his crew went toward the marsh, so the signal is still good.
 
 **» Hand him to the reeve**
 
@@ -299,8 +301,6 @@ The goblin boss counts your blades, then counts his pack, and likes his own sum 
 
 The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.
 
-_Level up: 1 → 2_
-
 **↳ The Marsh Road** <sub>(map `trail`)</sub>
 
 → Fresh Tracks
@@ -329,7 +329,7 @@ The second toad shudders and goes still, half in the water. You scrape off the s
 
 A collapsed ravine cuts the trail. The far side is close, but the gap between is all loose stone and broken rock, and there is more than one way across it.
 
-**» Climb the sheer face — The quickest way, for anyone who doesn't fall.**
+**» Climb the sheer face**
 
 `[Athletics DC 13 — Arthur the Bold rolls 21 — passed]`
 
@@ -369,8 +369,6 @@ You strike first. Scaled backs rise out of the water where they lay, a hunting-p
 
 The lizardfolk sink back into the dark water they came from, one by one.
 
-_Level up: 2 → 3_
-
 <sub>scene `hollow-won`</sub>
 
 You turn the nearest body with your boot. Branded into the scaled hide, still weeping, is a crude mark of reeds and a reaching hand. Someone *owned* these, and marked them like cattle.
@@ -391,6 +389,12 @@ A wall of lashed timber rings the hollow, with a watch-post looming over its onl
 
 `[Deception DC 10 — Ash the Sneaky rolls 10 — passed]`
 
+<sub>scene `den-slipped`</sub>
+
+You are inside the wall, and no horn has sounded. Up in the gateway the bugbear scratches himself and watches the marsh, his back to you. The gnolls are asleep in a heap by the fire.
+
+**» Into the den**
+
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
 **→ Gate** <sub>(room `gate`)</sub>
@@ -399,7 +403,7 @@ A wall of lashed timber rings the hollow, with a watch-post looming over its onl
 
 **→ Muster Yard** <sub>(room `yard`)</sub>
 
-Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never once been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.
+Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.
 
 → The Pit
 
@@ -433,7 +437,9 @@ _+25 gold (186)_
 
 > At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
 
-> "**Vex**," he offers. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might."
 
 **» [Persuasion DC 13] Offer him the reeve's pardon and a road out**
 
@@ -463,7 +469,7 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 "I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The shallows were common water. Every reed-cutter in Thornwick worked them. So I sold them to her." He looks up at his trophies the way a farmer looks at a full barn. "She paid me in monsters, and a valley to run. Then she raised the water to take what she'd bought. My mother's house went under first. Fair price."
 
-"You've been *busy*," the hag tells you, delighted. At a flick of her hand, she calls for the chief's guard. For a heartbeat the whole hall waits to see what you'll do.
+The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. For a heartbeat the whole hall waits to see what you'll do.
 
 **» End them both**
 
@@ -471,7 +477,9 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
-**Battle:** The Ashfang Chief <sub>(`ashfang-warlord` on `firepit`)</sub>
+The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word.
+
+**Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
 
 **» Fight — won**
 
@@ -483,7 +491,7 @@ _+100 gold (286)_
 
 You come back down the marsh road into a Thornwick with its shutters thrown open for the first time in a month. Word runs ahead of you; by the time you reach the square, the square is full.
 
-The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He sets the strongbox on the well and opens it. "Thornwick settles its debts," he says, as though daring you to make something of it.
+The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He sets the strongbox on the well and opens it. "Thornwick keeps its word," he says, as though daring you to make something of it.
 
 Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
@@ -495,9 +503,17 @@ Bonfires burn in the square tonight. Out past the reeds the marsh has gone still
 
 By morning the carters are already complaining about the state of the road. Mira says that is the surest sign a place has stopped being afraid.
 
+The reeve hangs the chief's great axe over the door of his hall. His clerk dusts round it, and will not touch the blade.
+
 Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
 
 Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+
+The quartermaster in the market puts his prices up a copper for the bonfire week. He calls it the festival rate.
+
+Out past the reeds, the reeve's men pull down the den's timber wall one post at a time. They leave the posts for the marsh to take.
+
+The bounty notice comes down off the board in the square. Someone tears off the bottom corner first, the line in the prouder hand, and keeps it.
 
 Behind the kennels, the reeve's men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.
 
@@ -509,7 +525,7 @@ Behind the kennels, the reeve's men find a pen you never looked in: a carter, tw
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-Last season your company broke the Ashfang here, and killed the hag who ran them. You had hoped for a quiet homecoming.
+Last season your company broke the Ashfang in their den past the marsh, and killed the hag their chief had sold himself to. You had hoped for a quiet homecoming.
 
 The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -521,7 +537,7 @@ _Journal (quest): The Opened Graves_
 
 <sub>scene `lychyard`</sub>
 
-The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and two shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
+The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -553,9 +569,9 @@ _Journal (clue): They Walk One Way_
 
 > The Wander-Inn is full, and no one is in a hurry to leave, not with the churchyard standing open across the lane. **Mira** sets down a bowl in front of you unasked.
 
-> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."
+> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since nobody else in here will. You killed the Reedwife last season, and this whole town drank to it. I poured. This season the dead get up and walk, and now we all sleep with the lamp lit."
 
-> "I was glad to see you walk back out of that den. Most of us were." She tops up your cup. "But folk are starting to look at you sideways. And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
+> "No one in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody's seen him since."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -581,7 +597,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn't know how to use.
 
-> "You have returned," he says, without turning. "Last season you broke the Ashfang, and Thornwick paid you, as it pays every debt. Now the marsh has opened a new one. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
+> "You have returned," he says, without turning. "Last season you broke the Ashfang. Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
 > He turns. He looks as if he has not slept since the bells. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -619,7 +635,7 @@ _Journal (npc): Wren, the Reeve's Scout_
 
 <sub>scene `causeway`</sub>
 
-The old raised road was here long before the cart-track that meets it, laid in great flat stones by hands that measured time in generations. Wren crouches at its edge and reads the mud, slow and careful.
+The old raised road was here long before the cart-track that meets it. Each of its great flat stones is too heavy for a cart. Wren crouches at its edge and reads the mud, slow and careful.
 
 "Here. And here." Footprints, water-filled, in files. "Your churchyard dead came through in *step*. And look at this." She points to older prints, sunk deeper and wider. "They weren't the first. The fen's own dead have been walking for days. Whatever's calling has been at it a while, and it isn't calling them to wander. It's calling them to **work**."
 
@@ -669,7 +685,7 @@ The lights drift nearer, hopeful as dogs. Something else moves between them, fur
 
 You see it a breath before it moves. Something winds up through Halden's calm like rot up a post. His smile belongs to it, and so does his voice.
 
-But his hands are shaking on the altar rail, and somewhere under that thing Halden is still in there. The words he said over Thornwick's dead might reach him. Or you could strike now, while it still thinks you are kneeling.
+But his hands are shaking on the altar rail, and somewhere under that thing Halden is still in there. The words he said over Thornwick's dead might reach him. Or you could strike now, while it still thinks you came to listen.
 
 **» [Religion DC 14] Speak his own liturgy back to him**
 
@@ -685,9 +701,9 @@ They come out wrong, or too late. Halden's smile only widens. "Yes," says the th
 
 <sub>scene `chapel-fight`</sub>
 
-Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's. "The Warden provides," says Halden, and sets them on you.
+Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's. "The Warden provides," says Halden, and sets them on you.
 
-**Battle:** Corrupt Temple <sub>(`temple` on `ruins`)</sub>
+**Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
 
 **» Fight — won**
 
@@ -701,7 +717,7 @@ The next note is shorter. *She is dead. No one pays the jailer now, and he is wa
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it without knowing it was one." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."
 
@@ -719,7 +735,7 @@ _Journal (clue): The Rites of Sealing_
 
 North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been feeding something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.
 
-Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody's fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "Weeks without feeding," she says quietly. "It will be hungry."
+Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody's fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "It will be hungry," she says quietly.
 
 **» Leave the pool its privacy**
 
@@ -753,9 +769,9 @@ You think you have found the firm ground, and three steps later it is not there.
 
 <sub>scene `lights-lured`</sub>
 
-Two wisps flare white-hot in front of your faces. Something cold rises out of the pool behind you, close enough to touch. You have to fight your way back to the mud before you can fight anything else.
+Three wisps flare white-hot in front of your faces. Something cold rises out of the pool behind you, close enough to touch. You have to fight your way back to the mud before you can fight anything else.
 
-**Battle:** Wisp Bog <sub>(`wisp-bog` on `bog`)</sub>
+**Battle:** The Corpse-Lights <sub>(`corpse-lights` on `bog`)</sub>
 
 **» Fight — won**
 
@@ -763,7 +779,7 @@ You drag each other out onto the mud, soaked and shaking. Behind you the last wi
 
 <sub>scene `lights-won`</sub>
 
-In the shallows you find the purses of the drowned. There are twelve of them, fifty-five gold between them, still tied to their belts.
+In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "Nobody from here dresses like that to go walking."
 
@@ -811,9 +827,9 @@ The watchers stop at the edge of the lintel. They look at the book for a long, g
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
-The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen.
+The **Undercrypt**: the prison the old prayers named.
 
-Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
@@ -837,7 +853,7 @@ Worked steps lead down into the cold. Your torch makes a small, brave circle, an
 
 _(a paragraph shown before: “North of the chapel the reeds part…”)_
 
-The newest offering on the rim is green with weeks of fen-damp. The water ripples again, closer to the rim, as if it has noticed.
+The newest offering on the rim is already green with fen-damp. The water ripples again, closer to the rim, as if it has noticed.
 
 **» Leave the pool its privacy**
 
@@ -893,11 +909,11 @@ The passage narrows into a long cut through the rock. Ahead of you, dozens of pi
 
 <sub>scene `diggers`</sub>
 
-A long cut runs through the rock here, and Thornwick's dead fill it. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
+Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud. Its links match the chain Reeve Aldous wears.
+The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.
 
-**» Slip past along the wall — Keep low, and only move when the picks swing.**
+**» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
 `[Group Stealth DC 12 — 3/4 pass — passed]`
 
@@ -905,15 +921,23 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 
 <sub>scene `diggers-chain`</sub>
 
-At the end of the cut lies an old man in a good burial coat. A reeve's chain of office hangs round his neck, with the same crest Aldous wears. This is the reeve's **grandfather**.
+At the end of the cut lies an old man in a good burial coat, with a reeve's chain of office round his neck. This is the reeve's **grandfather**.
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
-**» Wrap him in a cloak and carry him home**
+**» Carry him home in your cloak, though it will cost the day**
 
 _Journal (clue): The Old Reeve_
+
+<sub>scene `diggers-carry`</sub>
+
+He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.
+
+**» Go on, with the old man on your back**
+
+**Dawn — day 2.**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -955,7 +979,7 @@ They are the names of villages, hundreds of them, and a line runs through every 
 
 The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
 
-**Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -997,15 +1021,15 @@ The chanting you've heard for an hour comes from the **living**. They kneel at t
 
 <sub>scene `seal-battle`</sub>
 
-Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.
+Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.
 
-**Battle:** Cult of the Worm <sub>(`cult` on `firepit`)</sub>
+Beside the door, a soldier of the old kings gets up off the floor in green bronze, with cold light in its eye sockets. Marrow woke it to keep his door, and it draws its sword.
+
+**Battle:** The Worm at the Door <sub>(`cult-at-door` on `firepit`)</sub>
 
 **» Fight — won**
 
 Marrow dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.
-
-_Level up: 3 → 4_
 
 _+120 gold (621)_
 
@@ -1067,11 +1091,15 @@ Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn 
 
 Wren wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.
 
+Every night since the graves opened, a lamp has burned in the window of the Wander-Inn. Now Mira takes it down and blows it out.
+
 Aldous buries his grandfather a second time, chain and all, and digs the grave himself. The gravediggers stand back with their spades and let him.
 
 Deep under the barrow-field, the Warden's door stands shut in the dark. Every lead letter in it is whole.
 
-On the last night, at the fen's edge, the reeds parted around two figures. They did not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They were sisters, unmistakably, of a certain late Reedwife. They looked at the sealed barrow-field for a long moment, and then at the town, and took their time about it. The reeds closed behind them without a ripple.
+Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.
+
+On the night the barrows close, at the fen's edge, the reeds part around two figures. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain late Reedwife. They look at the sealed barrow-field for a long moment, and then at the town, and take their time about it. The reeds close behind them without a ripple.
 
 ### Ending: victory
 
@@ -1083,7 +1111,7 @@ The valley has raised an army at last. A **war-camp** spreads across the wet mea
 
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
-Word of your company reached the camp before you did. The crowd opens a path for you all the way to the command tent, and no one says out loud whose fault the sisters are. They do not have to.
+He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night she died, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
 **» Report to the command tent**
 
@@ -1091,13 +1119,13 @@ _Journal (quest): Silence the Calling_
 
 <sub>scene `envoys`</sub>
 
-You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Four hired swords stand behind her: a knight in dented black plate, two archers and a thug with a club. They watch you with bored, empty eyes.
+You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Five hired swords stand behind her: a knight in dented black plate, a grey old sellsword with a scarred face, and three archers. They watch you with bored, empty eyes.
 
-"The famous company." She smiles without opening her mouth. "I am **Nettle**, elder sister to the one you called the Reedwife. She kept the door under the fen when your Thornwick was three huts in the reeds. You cut her down, and you cost this family its living. That debt is written down, and it will be paid."
+"The famous company." She smiles without opening her mouth. "I am **Nettle**, elder sister to the one you called the Reedwife. You cut her down, and you cost this family its living. That debt is written down, and it will be paid."
 
 She flexes her green fingers. "The rest of the collectors are gathering up on the mountain. Think of this as the first notice."
 
-**Battle:** Knightly Order <sub>(`knights` on `open`)</sub>
+**Battle:** The Sister's Hired Swords <sub>(`hired-swords` on `open`)</sub>
 
 **» Fight — won**
 
@@ -1115,7 +1143,11 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief-met`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at his lone fire in the chief's den, and you did not leave it with a deal. He sat out the last fight anyway, and the next morning he walked into the reeve's hall and gave himself up. Now Thornwick trusts him to run its war. "I walked in expecting to hang by noon," he says. "Instead the reeve handed me an army."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at his lone fire in the chief's den, and you did not leave it with a deal.
+
+"You made me an offer, and I turned it down," he says. "The chief's guard answered to me. I could have stood him down, and I let him fight you instead. I've thought about that."
+
+The morning after, he walked into the reeve's hall and gave himself up. The reeve did not pardon him. He handed him the war instead. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
@@ -1153,9 +1185,21 @@ A boulder sits beside the trail with a handprint pressed into it. The hand was w
 
 Water has cut fresh channels across the path, though no stream runs anywhere up here.
 
-Under it all runs that steady pull, which draws every beast on the mountain up toward one high place.
+Under it all runs that steady pull, and every track in the mud points the same way: up.
 
-**» Pick your fights**
+Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.
+
+**» Stand and meet them**
+
+<sub>scene `switchbacks-fight`</sub>
+
+The griffons come down on the switchbacks screaming, all beak and talon, and the loose rock goes out from under your boots. There is nowhere to run on a trail this narrow, and nothing to do but fight.
+
+**Battle:** Griffons on the Switchbacks <sub>(`griffon-flight` on `pass`)</sub>
+
+**» Fight — won**
+
+The last griffon tumbles away down the scree, and the trail is yours. Above you the whole mountain is still climbing toward the stone. Time to pick your fights.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1191,19 +1235,19 @@ Under your boots, the ground has begun to drum.
 
 The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
 
-A green **wyrmling** slides out of the briar like an eel out of a wall. It is no longer than a pony, but its grin is a dragon's grin, and everything in that bone pile mistook it for a safe one.
+A green **wyrmling** slides out of the briar on its belly. It is no longer than a pony, but its grin is a dragon's grin, and everything in that bone pile mistook it for a safe one.
 
 **» Go in after it**
 
 <sub>scene `greenden-fight`</sub>
 
-The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. The air turns sharp and green.
+The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.
 
 **Battle:** Green Wyrmling's Thicket <sub>(`green-dragon-den` on `marsh`)</sub>
 
 **» Fight — won**
 
-The wyrmling drops in the middle of a hiss, and its poison breath thins to a harmless stink. Its small hoard rides out in your packs.
+The wyrmling drops in the middle of a hiss, and its poison breath thins to a harmless stink. Its small hoard lies under the bones, and you dig it out.
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
@@ -1223,9 +1267,9 @@ A crack runs down the rock behind the pool, thin as a knife cut, and cold air br
 
 <sub>scene `seam-fight`</sub>
 
-The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is.
+The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.
 
-**Battle:** Water Vortex <sub>(`water-vortex` on `bog`)</sub>
+**Battle:** The Flooded Pass <sub>(`flooded-seam` on `bog`)</sub>
 
 **» Fight — won**
 
@@ -1263,11 +1307,11 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of one hundred and fifty gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of four hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
-**» Pay the toll (150 gold)**
+**» Pay the toll (400 gold)**
 
-_-150 gold (841)_
+_-400 gold (591)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -1293,7 +1337,7 @@ The wyrmling's fire goes out from the inside, and it is finally, simply small. I
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war," she says, like a clerk striking out a line. "Never mind. Promises are cheap, and we have plenty left."
 
-_+120 gold (961)_
+_+120 gold (711)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1317,7 +1361,7 @@ Someone has scratched one word into the rock at the shepherd's feet, in big, sha
 
 Above the tree-line stands the giants' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.
 
-At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. A shaggy ogre in a sheepskin stumbles out behind it, still chewing, and a skinny orc runner trots at its heels.
+At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.
 
 "THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.
 
@@ -1329,11 +1373,13 @@ At the first scrape of your boots, one huge body ducks out of the door with two 
 
 "The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.
 
-The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogre and the orc runner chase after them.
+The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogres and the orc runner chase after them.
 
 The road to the stone stands open.
 
 **» Climb on past the empty hall**
+
+_Level up: 4 → 5_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1357,9 +1403,11 @@ Behind the pikes come people from the valley, out of breath and mud to the knees
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-"We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party's a loud one."
+No guard walks at Vex's shoulder. His last one fell in Vargan's hall, fighting for the chief, and Vex holds this column on the reeve's terms.
 
-**» Go down into the bowl alone**
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, but no more. A big party's a loud one."
+
+**» Let them hold the rim while you go down**
 
 <sub>scene `calling-approach`</sub>
 
@@ -1367,51 +1415,31 @@ Down in the bowl, at the foot of the stone, the **sisters** are waiting. **Nettl
 
 They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister kept the door under the fen since before your Thornwick had a name. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
-Sedge does not turn either. Her voice is raw. It is the voice you heard on the wind at the foot of the high trail. "She kept it alone, in the dark, for an age. Nobody ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
+Sedge does not turn either. Her voice is raw. "She kept it alone, in the dark, for an age. Nobody ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "Killing her broke the vigil. We know, and we're sorry for that part."**
+**» "She fed on the people of this valley. We owe you nothing." — Nettle has the shorter temper, and her grip on the rock is only as steady as she is.**
 
-_Level up: 4 → 5_
+<sub>scene `answer-defiant`</sub>
 
-<sub>scene `answer-rueful`</sub>
+Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and not one of the dead walked. Set that against your carters."
 
-For one breath, the song falters. Sedge turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not bring her back. But I heard it." Nettle hisses at her. "Sedge. Hold still. Sorry pays nothing." Sedge turns back to the stone.
-
-**» [Persuasion DC 15] Ask Sedge to keep the vigil her sister kept**
-
-`[Persuasion DC 15 — Elaine the Holy rolls 13 — failed]`
-
-<sub>scene `vigil-refused`</sub>
-
-Sedge listens to the end, and then she slowly shakes her head. "She starved in the dark for an age so that you could sleep soundly, and you killed her for it. Now you want me to do the same? No." Nettle hisses at her to hold still. "I told you. Sorry pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge does not laugh. "Ask your barrows what her death bought you," she says, very quietly, and turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
-<sub>scene `tear-loose`</sub>
+<sub>scene `tear-loose-defiant`</sub>
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
 Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are two old women with sharp nails. Leave us in, and we are the whole mountain."
 
-**» Drag their hands out of the rock — Grab a wrist each and pull, while the stone pulls back.**
+**» Drag Nettle out while she rages — She is shouting at you, not holding on. Take her wrists while her hands are half out of the rock.**
 
-`[Athletics DC 15 — Arthur the Bold rolls 12 — failed]`
+`[Athletics DC 11 — Arthur the Bold rolls 16 — passed]`
 
-The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
-
-**» Break the song — Sing a wrong note into the Calling and knock it off its beat.**
-
-`[Arcana DC 15 — Morgan Le Fey rolls 13 — failed]`
-
-Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
-
-**» Say Halden's rites over the stone — Brother Halden's book of rites went down into the barrows with you. Its oldest words are for shutting doors.**
-
-`[Religion DC 11 — Morgan Le Fey rolls 14 — passed]`
-
-Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>scene `sisters-battle`</sub>
 
@@ -1425,7 +1453,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (1161)_
+_+200 gold (911)_
 
 <sub>scene `calling-won`</sub>
 
@@ -1445,6 +1473,8 @@ At the camp gate Vex shakes your hand, once. "The Calling's broken," he says. "T
 
 **Wren** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.
 
+Your fighter sits down on the first barrel inside the gate, and does not get up again until morning.
+
 **» Let the valley celebrate**
 
 <sub>scene `wc-epilogue`</sub>
@@ -1459,9 +1489,9 @@ The war-camp never had to fight its night. The pikemen are home before the first
 
 Vargan's mother's house is still under the water. The reed-cutters are back in the shallows he sold, cutting reeds for a copper a bundle.
 
-Deep under the fen, moss is creeping over the lead letters on the Undercrypt's door. It has not moved since you shut it.
+Deep under the fen, moss is creeping over the lead letters on the Warden's door. The door has not moved since you shut it.
 
-Vex keeps a key to the reeve's cells on a nail by his cot. He walked into Thornwick once expecting a rope. Now he holds the keys.
+In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain said. Vex has never opened it. It hangs on a nail by his cot, where he can see it from his pillow.
 
 Down in Thornwick, the reeve orders a plaque made for the square. He has the wording changed twice.
 

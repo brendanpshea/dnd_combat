@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs, introParagraphs,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -499,6 +499,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         <PartyScreen
           campaign={campaign}
           camp={campRule(state, module)}
+          nightsLeft={nightsLeft(state, module)}
           onRest={(variant) => {
             const evs = campRest(state, module, variant);
             setCampOpen(false);
@@ -1023,6 +1024,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
               >
                 {choice.check && <span className="adv-chip">🎲 {choice.check.skill} DC {choice.check.dc}</span>}
                 <span>{choice.label}</span>
+                {choice.hint && <span className="adv-approach-hint">{choice.hint}</span>}
                 {blocked && <span className="adv-lock">🔒 {blocked}</span>}
               </button>
             ))}
@@ -1232,7 +1234,7 @@ function ChallengeBody(
       <div className="adv-scene bottom">
         <div className="adv-panel">
           <p className="adv-prompt">Who steps up? ({pending.skill}, DC {pending.dc})</p>
-          <RosterPicker campaign={state.campaign} onPick={(idx) => { setPickFor(null); onApproach(pending.id, idx); }} />
+          <RosterPicker campaign={state.campaign} only={eligibleRollers(state, pending.requires)} onPick={(idx) => { setPickFor(null); onApproach(pending.id, idx); }} />
           <button className="adv-choice adv-leave" onClick={() => setPickFor(null)}><span>← Back</span></button>
         </div>
       </div>
@@ -1276,10 +1278,11 @@ function ChallengeBody(
   );
 }
 
-function RosterPicker({ campaign, onPick }: { campaign: CampaignState; onPick: (idx: number) => void }) {
+/** The heroes who may step up: everyone, or (`only`) those an option is locked to. */
+function RosterPicker({ campaign, onPick, only }: { campaign: CampaignState; onPick: (idx: number) => void; only?: number[] }) {
   return (
     <div className="adv-roster">
-      {campaign.characters.map((ch, idx) => (
+      {campaign.characters.map((ch, idx) => (only && !only.includes(idx) ? null :
         <button key={idx} className="adv-hero" onClick={() => onPick(idx)}>
           <Portrait id={ch.portraitId ?? ch.classId} team="team1" />
           <span>{ch.name}</span>

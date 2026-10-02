@@ -35,10 +35,11 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   wren: {
     id: 'wren', name: 'Wren', portraitId: 'npc-scout', emoji: '🏹', monsterId: 'scout',
     blurb: 'The reeve\'s scout.',
-    // Pulled from under the horse on the marsh road, or walked past there.
+    // Pulled from under the horse on the marsh road (well, or at the cost of
+    // a day), or walked past there.
     fates: ['saved', 'left'],
     introducedAt: {
-      'hollow-road': ['scout-saved'],
+      'hollow-road': ['scout-saved', 'scout-fail'],
       'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-left', 'fen-partner', 'fen-reunion'],
       // Her fire, the council on the rim, and "Wren's scouts" at the forts they took.
       wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'scouts-fire-mended', 'war-council',
@@ -47,16 +48,18 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   tamsin: {
     id: 'tamsin', name: 'Tamsin',
-    // The scout who died under the horse when the company could not save her.
+    // The scout who died under the horse when no one tended her in time.
     fates: ['dead'],
     introducedAt: { 'sunken-barrows': ['fen-partner'] },
   },
   vex: {
     id: 'vex', name: 'Vex', aka: ['the lieutenant'], portraitId: 'npc-captain', emoji: '🗡️',
-    // Took the company's offer at his fire (`met` alone: met, no deal).
-    fates: ['turned'],
+    // At his fire: took the company's offer (`turned`), turned it down
+    // (`refused`), or was refused a deal (`rebuffed`). `met` with no fate is
+    // a save from before the last two.
+    fates: ['turned', 'refused', 'rebuffed'],
     introducedAt: {
-      'hollow-road': ['scout-saved', 'vex-parley'],
+      'hollow-road': ['scout-saved', 'scout-fail', 'vex-parley'],
       // His briefing, and "Captain Vex" on the morning after the peak, and at
       // his map in the command tent.
       wyrmcalling: ['vex-brief', 'vex-brief-met', 'vex-brief-turned', 'peak-night', 'peak-line',
@@ -99,7 +102,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
       'sunken-barrows': ['sb-market'],
       // His stores; "Bram's stores" at the wagons, "Bram's war-stores" in the
       // hospital tent, the hoard he will buy, the arrows he sells in the ending.
-      wyrmcalling: ['wc-stores', 'wagons-busy', 'wagons-carter', 'wc-defeat', 'redden', 'wc-epilogue', 'wc-epilogue-vigil'],
+      wyrmcalling: ['wc-stores', 'wagons-busy', 'wagons-paid', 'wagons-carter', 'wc-defeat', 'redden', 'wc-epilogue', 'wc-epilogue-vigil'],
     },
   },
   osk: {

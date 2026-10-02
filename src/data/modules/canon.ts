@@ -73,8 +73,9 @@ export const TRILOGY_FACTS: Record<Id, CanonFact> = {
   // ── Part 3: the Wyrmcalling ──────────────────────────────────────────────
   /** Kin of the drowned, who bring their ropes to a company that carried the purses home. */
   'rope-bearers': { text: 'two fen-folk', value: 2 },
-  /** The ogre-mage's toll for the middle pass. */
-  'ogre-toll': { text: 'one hundred and fifty gold', value: 150 },
+  /** The ogre-mage's toll for the middle pass: priced to hurt, about half of
+   *  what a company carries up the mountain, against a fight or a lie. */
+  'ogre-toll': { text: 'four hundred gold', value: 400 },
   /** Wren's reckoning on the third morning: the nights left before the
    *  Calling peaks (the dawn that marks the peak comes that many days later). */
   'peak-nights': { text: 'three more nights', value: 3 },
