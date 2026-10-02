@@ -120,7 +120,8 @@ describe('the shipped clocks', () => {
       const when = hills.map.nodes.find((n) => n.id === id)!.sceneWhen!;
       expect(when.at(-1)).toEqual({ if: [{ kind: 'flag', flag: 'calling-peaked' }], to: 'den-flown' });
     }
-    expect(m.dawns!.find((d) => d.effects?.length)!.effects).toEqual([{ kind: 'setFlag', flag: 'calling-peaked' }]);
+    // The peak's dawn sets the flag (and snapshots the tally: see PEAK_SNAPSHOT).
+    expect(m.dawns!.find((d) => d.effects?.length)!.effects).toContainEqual({ kind: 'setFlag', flag: 'calling-peaked' });
   });
 });
 

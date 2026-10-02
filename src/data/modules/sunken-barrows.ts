@@ -193,6 +193,8 @@ const scenes: Record<string, Scene> = {
       'The Wander-Inn is full, and nobody is in a hurry to leave. Nobody in Thornwick wants to be alone today, not with the churchyard standing open. **Mira** sets down a bowl in front of you unasked.',
       '"Well." She says it flat, wiping the bar the way other people sharpen knives. "I\'ll say it, since nobody else in here will. You killed the Reedwife last season. This season the dead get up and walk. Folk are saying you broke something out there, and now we all sleep with the lamp lit."',
       '"I was glad to see you walk back out of that den, and I still am. But folk are starting to look at you sideways." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden\'s not rung his bell in a week."',
+      { if: [{ kind: 'flag', flag: 'hollow-road:vargan-executed' }],
+        text: 'She stops with the jug still tilted. "Some of them haven\'t forgotten the chief, either. On his knees in his own hall, they say, with the hag already dead." She sets the jug down. "I haven\'t forgotten it myself."' },
       '"Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
     ],
     next: INN_CHOICES,
@@ -331,7 +333,9 @@ const scenes: Record<string, Scene> = {
         { id: 'causeway', x: 14, y: 55, label: 'The Raised Road', icon: 'tok-tracks', scene: 'causeway',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'fen-read' }], to: 'causeway-done' }] },
         { id: 'chapel', x: 42, y: 34, label: 'The Drowned Chapel', mystery: 'A sunken bell-tower…', icon: 'tok-temple', scene: 'chapel',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'chapel-cleared' }], to: 'chapel-done' }] },
+          // Met and fought (then fled, or fell): Halden only waits for the fight.
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'chapel-cleared' }], to: 'chapel-done' },
+            { if: [{ kind: 'flag', flag: 'chapel-met' }], to: 'chapel-waits' }] },
         { id: 'lights', x: 44, y: 76, label: 'The Corpse-Lights', mystery: 'Pale fire over the water…', icon: 'tok-danger', scene: 'lights',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'lights-skirted' }], to: 'lights-skirted-done' },
             { if: [{ kind: 'flag', flag: 'lights-cleared' }], to: 'lights-done' }] },
@@ -381,10 +385,34 @@ const scenes: Record<string, Scene> = {
       '"**Welcome!**" Halden beams at you with terrible peace, and the whole room goes quiet for him. "You\'ve come to see the great work. The Warden below is gathering his flock at last. I merely… keep the service, until he calls them down. Will you kneel? Everyone kneels down here, sooner or later."',
     ],
     next: [
-      { id: 'insight', label: '[Insight DC 13] Read what\'s wearing him before it moves', to: 'chapel-caught',
+      // `chapel-met`: the meeting plays once. The liturgy lives on one fight
+      // only (`chapel-fight`'s parley), so it is one try, however the party
+      // comes and goes: a read of him trades it for the first blow.
+      { id: 'insight', label: '[Insight DC 13] Read what\'s wearing him before it moves', to: 'chapel-read',
+        effects: [{ kind: 'setFlag', flag: 'chapel-met' }],
         once: true, check: { skill: 'insight', dc: 13, failTo: 'chapel-fight' } },
-      { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight' },
+      { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight',
+        effects: [{ kind: 'setFlag', flag: 'chapel-met' }] },
     ],
+  },
+  // Read him: strike first, or speak to the man still under it.
+  'chapel-read': {
+    id: 'chapel-read', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '👁️' },
+    text: [
+      'You see it a breath before it moves. Something winds up through Halden\'s calm like rot up a post. His smile belongs to it, and so does his voice.',
+      'But his hands are shaking on the altar rail. Somewhere under that thing, Halden is still in there. The words he said over Thornwick\'s dead might reach him. Or you could strike now, while it still thinks you are kneeling.',
+    ],
+    next: [
+      { id: 'strike', label: 'Strike before it moves', to: 'chapel-caught' },
+      { id: 'speak', label: 'Speak to the man under it (no first blow)', to: 'chapel-fight' },
+    ],
+  },
+  // Back after falling back or a wipe: no second sermon, and no second try at
+  // the liturgy (its one try was at `chapel-fight`'s door).
+  'chapel-waits': {
+    id: 'chapel-waits', kind: 'story', art: { imageId: 'loc-temple', emoji: '🕯️' },
+    text: ['The drowned congregation stands in its rows, and Halden waits on the altar steps. "You came back," he says, and beams. "Everyone does, sooner or later."'],
+    next: [{ id: 'fight', label: 'Wade in', to: 'chapel-fight' }],
   },
   'chapel-fight': {
     id: 'chapel-fight', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
@@ -403,15 +431,8 @@ const scenes: Record<string, Scene> = {
   'chapel-caught': {
     id: 'chapel-caught', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
     surprise: 'enemies',
-    intro: ['You see it a breath before it moves. The thing behind Halden\'s serenity winds up through him like rot up a post. You\'re already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.'],
+    intro: ['You\'re already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.'],
     onWin: { to: 'chapel-won', text: ['Caught off balance from the first blow, the dead never find their rows again. Halden slumps against the altar rail and does not get up again. Whatever was wearing him lets go, and he dies looking almost grateful.'] },
-    parley: {
-      skill: 'religion', dc: 14, label: 'Speak his own liturgy back to him',
-      success: { to: 'chapel-saved', text: [
-        'You saw the thing behind his face. So you aim your words at the man under it. You speak the words from Thornwick\'s headstones, the prayer Halden said over every one of them. ' + LITURGY,
-        'Halden\'s calm face cracks like ice on a pond. Then the thing inside him lets go all at once. His acolytes drop where they stand, and the skeletons fold into the water.',
-      ] },
-    },
   },
   // Halden lives: he tells the party himself what the dead man's book says.
   'chapel-saved': {
@@ -438,7 +459,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
         text: '"That\'s the hag\'s brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And we broke it." She shuts the book and hands it to you. "The door\'s past the Barrow Gate. I\'ll get you that far."' },
       { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }],
-        text: '"That\'s the hag\'s brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door\'s past the Barrow Gate. I\'ll get you that far."' },
+        text: '"That\'s the hag\'s brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door\'s past the Barrow Gate. I\'ll get you that far."' },
       'Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],
@@ -685,7 +706,9 @@ const scenes: Record<string, Scene> = {
     id: 'warden-stair', kind: 'dungeon',
     dungeon: {
       title: 'The Warden\'s Stair', theme: 'graveyard', art: { imageId: 'loc-crypt', emoji: '🕯️' },
-      camp: { risky: { chance: 0.35, battleScene: 'crypt-night' } },
+      // Its own night attack: a loss here wakes on the stair, not in Thornwick
+      // (no way back up the shaft, and no fast travel from a room with no exit).
+      camp: { risky: { chance: 0.35, battleScene: 'stair-night' } },
       entry: 'shaft',
       rooms: [
         { id: 'shaft', name: 'The Shaft\'s Foot', size: 'small',
@@ -727,7 +750,20 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'specter-haunt', mapId: 'corridor',
     intro: ['You bank a fire in a dry side-vault, and the Undercrypt notices. The cold comes first. Then come the shapes it belongs to. Two specters, the painted dead come loose from the walls, slide toward your fire.'],
-    onWin: { to: '@hub', text: ['The specters tear apart into cold and silence. Nobody tries to sleep again. You sit out the rest of the night with your backs to the wall and your weapons across your knees.'] },
+    onWin: { to: '@hub', text: ['The specters tear apart into cold and silence. The fire is out and the night is half gone, and nobody will sleep down here now. You gather your packs and go on.'] },
+  },
+  // Below the drop: the same cold, by the cult's candles. A loss wakes on the
+  // stair, since there is no way back up to be carried out by.
+  'stair-night': {
+    id: 'stair-night', kind: 'battle',
+    loot: false, encounterId: 'specter-haunt', mapId: '@room',
+    intro: ['You bank a fire at the shaft\'s foot, under the black candles. The cold comes first. Then two specters peel out of the stair wall and slide toward the light.'],
+    onWin: { to: '@hub', text: ['The specters tear apart into cold and silence. The fire is out and the night is half gone. Below you, the chanting has not stopped once.'] },
+    onLoss: { to: 'stair-night-lost' },
+  },
+  'stair-night-lost': {
+    id: 'stair-night-lost', kind: 'rest', variant: 'long', next: 'warden-stair',
+    intro: ['The cold closes over you. When you wake, the fire is ash and the specters are gone. They took their fill of your warmth and went back into the walls. Nobody below came up to see. The chanting goes on.'],
   },
   ossuary: {
     id: 'ossuary', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '💀' },
@@ -801,8 +837,11 @@ const scenes: Record<string, Scene> = {
   'diggers-chain': {
     id: 'diggers-chain', kind: 'story', art: { imageId: 'loc-crypt', emoji: '⛓️' },
     text: [
-      'At the end of the cut, one of the dead has stopped moving. It is an old man in a good burial coat. A reeve\'s chain of office hangs round his neck, with the same crest Aldous wears.',
-      'This is the reeve\'s **grandfather**. Whatever called him down here has let him go. He is light now, just bones in a coat.',
+      'At the end of the cut lies an old man in a good burial coat. A reeve\'s chain of office hangs round his neck, with the same crest Aldous wears. This is the reeve\'s **grandfather**.',
+      { if: [{ kind: 'notFlag', flag: 'diggers-roused' }],
+        text: 'Whatever called him down here has let him go. He is light now, just bones in a coat.' },
+      { if: [{ kind: 'flag', flag: 'diggers-roused' }],
+        text: 'He came at you with the rest of them, and he fell with the rest of them. He is light now, just bones in a coat.' },
       'The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.',
     ],
     // A real trade: the old reeve home (a war asset in Part 3) or the gold.
@@ -864,7 +903,7 @@ const scenes: Record<string, Scene> = {
       // Marrow's own reasons, turned on him: the king's wall shows what the
       // Warden does with a village. Talked round, he fights half-hearted and
       // lives; what to do with him is the company's next choice.
-      { id: 'wall', label: '[Persuasion DC 14] Tell Marrow what the king\'s wall says', to: 'seal-doubt', once: true,
+      { id: 'wall', label: '[Persuasion DC 14] Tell Marrow what the king\'s wall says', to: 'seal-doubt-words', once: true,
         check: { skill: 'persuasion', dc: 14, failTo: 'seal-scorned', failEffects: [{ kind: 'setFlag', flag: 'kneelers-scorned' }] } },
       { id: 'fight', label: 'Interrupt the service', to: 'seal-battle' },
     ],
@@ -879,6 +918,16 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'on', label: 'Interrupt the service', to: 'seal-battle' }],
   },
+  // The words that stop his chisel: their own beat, so a party back up from
+  // losing the fight after them (`seal-doubt-lost`) does not say them twice.
+  'seal-doubt-words': {
+    id: 'seal-doubt-words', kind: 'story', noBack: true, art: { imageId: 'loc-dungeon', emoji: '⛏️' },
+    text: [
+      'You tell him about the wall in the king\'s chamber. Hundreds of villages are cut there, with a line through every one. None of them stand together. None of them stand at all. "Thornwick is the next name," you say. "Saltmere\'s graves will be on the wall after that."',
+      'Marrow\'s chisel stops. His acolyte sees it stop, and screams that he has lost his faith.',
+    ],
+    next: [{ id: 'on', label: 'Face what is left of his flock', to: 'seal-doubt' }],
+  },
   'seal-doubt': {
     id: 'seal-doubt', kind: 'battle', encounterId: 'cult-wavering', mapId: 'firepit',
     // No falling back: the stair behind you leads to the Marrow who still believed.
@@ -887,8 +936,7 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
     intro: [
-      'You tell him about the wall in the king\'s chamber. Hundreds of villages are cut there, with a line through every one. None of them stand together. None of them stand at all. "Thornwick is the next name," you say. "Saltmere\'s graves will be on the wall after that."',
-      'Marrow\'s chisel stops. His acolyte sees it stop, and screams that he has lost his faith. The armour and the ghouls come for you anyway. Marrow does not. He sets his back against the door and watches, like a man walking in his sleep.',
+      'Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway. Marrow only watches, like a man walking in his sleep.',
     ],
     onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is sitting on the bottom stair with the chisel in his lap.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
@@ -902,9 +950,9 @@ const scenes: Record<string, Scene> = {
       '"They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."',
     ],
     next: [
-      { id: 'sing', label: 'Make him lead his faithful in the rites (an easier way to seal the door)', to: 'resealing',
+      { id: 'sing', label: 'Make him lead his faithful in the rites (an easier way to seal the door)', to: 'seal-door',
         effects: [{ kind: 'setFlag', flag: 'marrow-sings' }] },
-      { id: 'bind', label: 'Bind him for the reeve, and take the cult\'s offering-purse (50 gold)', to: 'resealing',
+      { id: 'bind', label: 'Bind him for the reeve, and take the cult\'s offering-purse (50 gold)', to: 'seal-door',
         effects: [{ kind: 'setFlag', flag: 'marrow-bound' }, { kind: 'gold', amount: 50 }] },
     ],
   },
@@ -913,8 +961,19 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
     intro: ['Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.'],
-    onWin: { to: 'resealing', text: ['Marrow dies reaching for the door. Nobody stands to fight for the Warden now. Only his kneeling faithful remain, staring at the body, and you stand at the door with the book.'],
+    onWin: { to: 'seal-door', text: ['Marrow dies reaching for the door. Nobody stands to fight for the Warden now. Only his kneeling faithful remain, staring at the body, and you stand at the door with the book.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
+  },
+  // The fighting over, before the rites: Halden keeps his promise here, if
+  // he lived, so the door's challenge can take his book from him.
+  'seal-door': {
+    id: 'seal-door', kind: 'story', noBack: true, art: { imageId: 'loc-dungeon', emoji: '🚪' },
+    text: [
+      'Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the Warden leans on what is left of its lead.',
+      { if: [{ kind: 'flag', flag: 'halden-saved' }],
+        text: 'Then boots scrape in the shaft above. Brother Halden drops down it, skinning his palms on the way, and limps down the last stair, still shaking. He promised to follow you down, and he has.' },
+    ],
+    next: [{ id: 'open', label: 'Open Halden\'s book at the door', to: 'resealing' }],
   },
   // The climax is a choice of how, and a roll: each way of saying the rites may
   // be tried once. Halden, if he lived, can say his own. If every voice fails,
@@ -954,7 +1013,7 @@ const scenes: Record<string, Scene> = {
       { id: 'halden', label: 'Give Halden the book', hint: 'He followed you all the way down. Let him say his own rites.',
         skill: 'religion', dc: 8,
         requires: [{ kind: 'flag', flag: 'halden-saved' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['Brother Halden drops down the burial shaft behind you, skinning his palms on the way, and limps down the last stair, still shaking. He takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own. The lead letters drink every word.'] },
+        success: { to: 'seal-clean', text: ['Halden takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own. The lead letters drink every word.'] },
         failure: { to: 'resealing', text: ['Halden opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."'] } },
     ],
     success: { to: 'seal-clean' },
@@ -1025,6 +1084,8 @@ const scenes: Record<string, Scene> = {
       'Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time. The walk home is long and wet, and the best walk any of you can remember.',
       { if: [{ kind: 'flag', flag: 'grandfather-home' }],
         text: 'Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps."' },
+      { if: [{ kind: 'flag', flag: 'halden-saved' }],
+        text: 'Brother Halden climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
       { if: [{ kind: 'flag', flag: 'marrow-bound' }],
         text: 'Marrow climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" Wren asks. She looks at him for a long moment, then takes the rope herself.' },
       { if: [{ kind: 'flag', flag: 'marrow-sings' }],
