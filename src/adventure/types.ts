@@ -348,8 +348,8 @@ export type Scene =
    *  first, so a scene the party returns to doesn't replay a first meeting. */
   /** `assumes` (story, dialogue, ending): what the whole scene takes for
    *  granted; proven on every route to it, like a paragraph's `assumes`. */
-  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
+  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[] }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[] }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
       intro: Para[];
@@ -409,6 +409,9 @@ export type Scene =
       success: Outcome; failure: Outcome;
       /** Suppress the implicit "leave to the hub" — a forced obstacle. */
       noBack?: boolean;
+      /** The way back is meant (see the guide: a scene reached as an outcome
+       *  declares one or the other). */
+      back?: true;
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'dungeon'; dungeon: Dungeon }

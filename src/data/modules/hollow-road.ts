@@ -249,18 +249,18 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'trail-known' }] }],
   },
   'tavern-plain': {
-    id: 'tavern-plain', kind: 'story', art: { emoji: '🍺' },
+    id: 'tavern-plain', kind: 'story', back: true, art: { emoji: '🍺' },
     text: ['"The marsh road, then. Follow it till the reeds close in, and keep going." She sets down the cup she was wiping. "The reeve sent a scout down that road a few days back, a girl on a grey horse. She hasn\'t come back."',
       '"If you find her, she\'ll be too proud to ask for help," {mira} says. "Give it anyway. Take a healing potion with you, too. I\'d rather not bury anyone this month." She turns back to her taps.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
   'tavern-blank': {
-    id: 'tavern-blank', kind: 'story', art: { emoji: '🍺' },
+    id: 'tavern-blank', kind: 'story', back: true, art: { emoji: '🍺' },
     text: ['"Whatever you think you see on my face, it\'s flour." {mira} goes back to wiping cups.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
   'tavern-round-flat': {
-    id: 'tavern-round-flat', kind: 'story', art: { emoji: '🍻' },
+    id: 'tavern-round-flat', kind: 'story', back: true, art: { emoji: '🍻' },
     text: ['The room drinks your round and thanks you kindly, and then the talk turns to the weather. The marsh does not come up once.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
@@ -273,7 +273,7 @@ const scenes: Record<string, Scene> = {
   // to a short lore beat that loops back. Skippable by design: advanced players
   // simply never walk over.
   regulars: {
-    id: 'regulars', kind: 'story', art: { emoji: '🍻' },
+    id: 'regulars', kind: 'story', back: true, art: { emoji: '🍻' },
     text: ['{thornwick}\'s older hands have claimed the long table by the fire — the sort who\'ve survived enough to have firm opinions about how. They\'ll talk your ear clean off, if you let them. Some of it might even keep you breathing.'],
     again: ['The old hands at the long table shove along the bench to make room for you again.'],
     next: [
@@ -284,7 +284,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'rumor-tactics': {
-    id: 'rumor-tactics', kind: 'story', art: { emoji: '🛡️' },
+    id: 'rumor-tactics', kind: 'story', back: true, art: { emoji: '🛡️' },
     text: [
       'A grey-bearded man with a soldier\'s too-straight back taps the boards. "Rule one, and it\'s the reason I\'ve still got both legs: don\'t turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you as you go."',
       '"Want out of a scrap without the parting gift? Then do nothing else but get out of it. Eyes on his blade, back off slow, and don\'t try anything clever on the way. Especially you wand-wavers: get clear before you start your muttering, or you\'ll be eating steel halfway through the word."',
@@ -292,7 +292,7 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
   },
   'rumor-magic': {
-    id: 'rumor-magic', kind: 'story', art: { emoji: '🔮' },
+    id: 'rumor-magic', kind: 'story', back: true, art: { emoji: '🔮' },
     text: [
       'A woman with river-stones braided into her hair doesn\'t look up from her knitting. "Magic\'s never free, whatever the college boys tell you. Every real working takes something out of you, and you\'ve only so much to give before you sleep. Spend it like your last coppers, because in a long fight, that\'s what it is."',
       '"The strong workings, a held foe or a ward of blades, burn only as long as you hold them in your head. Take a hard knock and you\'d best keep your focus, or the whole thing slips through your fingers. Can\'t hold two at once, either. So pick the one that\'ll matter."',
@@ -300,7 +300,7 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
   },
   'rumor-weapons': {
-    id: 'rumor-weapons', kind: 'story', art: { emoji: '⚔️' },
+    id: 'rumor-weapons', kind: 'story', back: true, art: { emoji: '⚔️' },
     text: [
       'A scarred caravan guard rolls her axe over on the table. "Every weapon\'s got a trick in it, if you know how to ask. A heavy blade bites one man and the swing carries on into the next. A mace\'ll rattle a foe, so his next swing at you goes wide."',
       '"Learn what the thing in your hand actually *does*. That\'s how you put down men twice your size."',
@@ -758,7 +758,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'wren-joins': {
-    id: 'wren-joins', kind: 'story', art: { emoji: '🧭' },
+    id: 'wren-joins', kind: 'story', noBack: true, art: { emoji: '🧭' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
     text: ['{wren} tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don\'t." She takes up her bow. "As far as their gate. Then I go for the reeve\'s men, and you had better still be alive when I get back."'],
     next: [{ id: 'go', label: 'Follow {wren} into the marsh', to: 'trail' }],
@@ -952,7 +952,7 @@ const scenes: Record<string, Scene> = {
 
   // === ACT 3 — THE ASHFANG DEN (dungeon) ================================
   gate: {
-    id: 'gate', kind: 'story', art: { imageId: 'loc-camp', emoji: '🏚️' },
+    id: 'gate', kind: 'story', back: true, art: { imageId: 'loc-camp', emoji: '🏚️' },
     text: ['A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.'],
     // `den-entered` is set by every way in (a failed roll clears it again on
     // the way to the gate fight), so a return trip only offers the way back in.

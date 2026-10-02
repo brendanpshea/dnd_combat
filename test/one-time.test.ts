@@ -69,3 +69,17 @@ describe('the validator holds the guide\'s money and XP rules', () => {
     expect(validateModule(base([{ kind: 'xp', amount: 10 }], 'Fifteen gold went with him.')).some((e) => e.includes('names a sum'))).toBe(true);
   });
 });
+
+describe('a scene reached as an outcome says whether it can be walked away from', () => {
+  it('is an error to leave it undeclared', () => {
+    const m = (decl: object): Module => ({ id: 'bk', title: 'B', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'M', nodes: [{ id: 'n', x: 1, y: 1, label: 'Hall', icon: '🚪', scene: 'hall' }] } } as Scene,
+      hall: { id: 'hall', kind: 'story', text: ['A hall.'], next: [{ id: 'win', label: 'Win', to: 'won-hall' }] },
+      'won-hall': { id: 'won-hall', kind: 'story', text: ['You won.'], ...decl, next: [{ id: 'on', label: 'On', to: 'won' }] } as Scene,
+      won,
+    } });
+    expect(validateModule(m({})).some((e) => e.startsWith('[won-hall]') && e.includes('declare noBack'))).toBe(true);
+    expect(validateModule(m({ noBack: true })).some((e) => e.includes('declare noBack'))).toBe(false);
+    expect(validateModule(m({ back: true })).some((e) => e.includes('declare noBack'))).toBe(false);
+  });
+});

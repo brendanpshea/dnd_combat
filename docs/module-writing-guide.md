@@ -320,6 +320,13 @@ wolves, but a waste on anyone with something to say.
 
 ### Falling back, and locked markers
 
+A scene opened from a map marker or a room can always be walked away from.
+Any other story, dialogue or challenge (one reached as the outcome of a
+choice, a check or a fight) must say whether it can: `noBack: true`, or
+`back: true` when stepping back to the map is meant. The validator refuses
+a scene that says neither. A way back out of a victory is how a won fight
+gets fought again; and a won fight pays once regardless.
+
 A party can fall back from most fights to the map (or, in a dungeon, to the
 room it came from). Two exceptions: a fight marked `noFlee`, and any fight
 where the party is caught out (`surprise: 'party'`, or a sneak-up rolled

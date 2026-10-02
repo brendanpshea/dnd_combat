@@ -372,6 +372,16 @@ export function validateModule(module: Module): string[] {
       }
     }
   }
+  // Every other scene that would offer a way back says whether it means to:
+  // `noBack`, or `back: true`. A way back out of an outcome is how a victory
+  // got walked away from and a fight re-farmed; it must be a decision.
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    if (entries.has(id) || (sc.kind !== 'story' && sc.kind !== 'dialogue' && sc.kind !== 'challenge')) continue;
+    if (sc.noBack === undefined && !sc.back) {
+      at(id, 'is reached as an outcome and would offer a way back: declare noBack: true, or back: true if walking away is meant');
+    }
+    if (sc.noBack && sc.back) at(id, 'declares both noBack and back');
+  }
   for (const [id, sc] of Object.entries(module.scenes)) {
     if (entries.has(id) || (sc.kind !== 'story' && sc.kind !== 'dialogue') || sc.noBack || sc.next.length === 0) continue;
     if (sc.next.every((c) => (c.effects?.length ?? 0) > 0 || !!c.check)) {

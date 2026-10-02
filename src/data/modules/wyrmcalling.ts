@@ -917,7 +917,7 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'up', label: 'Follow him to the command tent', to: 'tent-after-loss' }], noBack: true,
   },
   'envoys-won': {
-    id: 'envoys-won', kind: 'story', art: { imageId: 'loc-camp', emoji: '🗡️' },
+    id: 'envoys-won', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     text: [
       'The command tent stands open. Inside, maps cover a table, and a grey-haired captain sits with a sword across his knees. He watches you duck in with a tired calm, as if his bad guesses keep coming true and he has stopped minding.',
       '"That\'s the second one of those this week." He nods at the tent flap. "You did better than my patrols did."',
@@ -2039,7 +2039,7 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'gold', amount: 200 }] },
   },
   'calling-won': {
-    id: 'calling-won', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌅' },
+    id: 'calling-won', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🌅' },
     text: [
       { if: [{ kind: 'flag', flag: CRACKED }],
         text: 'At the foot of the stone, the grey hands go limp and sink back down through the cracks, toward the fen.' },
