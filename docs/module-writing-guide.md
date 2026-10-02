@@ -282,6 +282,11 @@ door shut, a fight harder, a person gone. Give a warning before a deadline:
 an earlier dawn with text only, or a line in the scene the deadline is about.
 A module with dawns shows the day on screen; one without has no clock.
 
+A dawn can also freeze a count as it stood that morning:
+`{ kind: 'copyFlag', from: 'threats-cleared', to: 'tally-at-peak' }`. Read
+the snapshot, not the live count, wherever a scene reports how that night
+went, so deeds done later can't rewrite it.
+
 A failure can cost time too: `{ kind: 'passDay' }` loses a day without a
 rest (a long detour, a trail gone cold), and plays that morning's dawn. With
 a deadline on the clock, a failed check is pressure, not just a fight.

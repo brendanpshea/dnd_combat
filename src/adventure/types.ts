@@ -58,7 +58,11 @@ export type Effect =
   | { kind: 'leaveParty'; companion: Id }
   /** A day lost without rest (a long detour, a trail gone cold): the clock
    *  moves on as if a night had passed, and that morning's dawn plays. */
-  | { kind: 'passDay' };
+  | { kind: 'passDay' }
+  /** Snapshot a flag: `to` takes `from`'s value as it is now (unset if
+   *  `from` is). A dawn can freeze a tally at the moment it matters, so later
+   *  deeds don't rewrite how a night went. */
+  | { kind: 'copyFlag'; from: string; to: string };
 
 export interface JournalEntry {
   id: Id;

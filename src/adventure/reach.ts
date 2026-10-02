@@ -200,7 +200,9 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // requirement on it is taken as possible either way, like gold or items.
   const counted = new Set([
     ...Object.values(module.scenes).flatMap(effectsOf), ...(module.dawns ?? []).flatMap((d) => d.effects ?? []),
-  ].flatMap((e) => (e.kind === 'setFlag' && typeof e.value === 'number' ? [e.flag] : [])));
+  ].flatMap((e) => (e.kind === 'setFlag' && typeof e.value === 'number' ? [e.flag]
+    // A snapshot can hold any value its source can: never a bit.
+    : e.kind === 'copyFlag' ? [e.to] : [])));
   for (const r of pathReads(module)) if (r.kind === 'flag' && typeof r.value === 'number') counted.add(r.flag);
   for (const r of pathReads(module)) {
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':') && !counted.has(r.flag)) fact(`flag:${r.flag}`);

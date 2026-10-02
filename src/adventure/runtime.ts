@@ -362,6 +362,12 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
         events.push({ type: 'companion', companionId: eff.companion, joined: false });
       }
       break;
+    case 'copyFlag': {
+      const v = state.flags[eff.from];
+      if (v === undefined) delete state.flags[eff.to];
+      else state.flags[eff.to] = v;
+      break;
+    }
     case 'passDay':
       // A day lost, not a night slept: the clock moves, nobody rests.
       if (module) events.push(...endDay(state, module));
