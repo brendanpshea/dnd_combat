@@ -463,8 +463,6 @@ You strike first. Scaled backs rise out of the water where they lay, a hunting-p
 
 The lizardfolk sink back into the dark water they came from, one by one.
 
-_Level up: 2 → 3_
-
 <sub>scene `hollow-won`</sub>
 
 You turn the nearest body with your boot. Branded into the scaled hide, still weeping, is a crude mark of reeds and a reaching hand. Someone *owned* these, and marked them like cattle.
@@ -484,6 +482,12 @@ A wall of lashed timber rings the hollow, with a watch-post looming over its onl
 **» [Deception DC 10] Call the stolen watch-signal up to the post**
 
 `[Deception DC 10 — Ash the Sneaky rolls 20 — passed]`
+
+<sub>scene `den-slipped`</sub>
+
+You are inside the wall, and no horn has sounded. Up in the gateway the bugbear scratches himself and watches the marsh, his back to you. The gnolls are asleep in a heap by the fire.
+
+**» Into the den**
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -556,6 +560,8 @@ Vex weighs it, then slides the blade home. "A road out of this valley, then. I'l
 "Hask guards the chief, and Hask answers to me. He'll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I'm tired of soldiering for a man who burns barns and calls it strategy."
 
 **» On to the chief**
+
+_Level up: 2 → 3_
 
 _Journal (npc): Vex, Turned_
 
@@ -651,7 +657,7 @@ _Journal (quest): The Opened Graves_
 
 <sub>scene `lychyard`</sub>
 
-The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and two shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
+The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -811,7 +817,7 @@ But his hands are shaking on the altar rail, and somewhere under that thing Hald
 
 > You know the words Halden said over Thornwick's dead. They are cut on every old headstone in his churchyard. You say them back to him, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*
 
-> His smile twitches, and the acolytes stop in mid-step. The thing inside Halden lets go of him all at once, like a hand opening. His acolytes drop where they stand, and the skeletons fold into the water.
+> His smile twitches, and the acolytes stop in mid-step. The thing inside Halden lets go of him all at once, like a hand opening. His acolytes drop where they stand, and his dead fold into the water.
 
 > Halden sits down hard on the altar steps, shaking, and himself again. Behind him, his acolytes sit up in the shallows, coughing up fen-water. "It came up through the floor," he says. "Through the *prayers*. The black candles aren't mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him."
 
@@ -1051,15 +1057,13 @@ They are the names of villages, hundreds of them, and a line runs through every 
 
 The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
 
-**Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
 **» Fight — won**
 
 The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
-
-_Level up: 3 → 4_
 
 _+60 gold (416)_
 
@@ -1247,13 +1251,13 @@ _Journal (quest): Silence the Calling_
 
 <sub>scene `envoys`</sub>
 
-You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Four hired swords stand behind her: a knight in dented black plate, two archers and a thug with a club. They watch you with bored, empty eyes.
+You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Five hired swords stand behind her: a knight in dented black plate, a grey old sellsword with a scarred face, and three archers. They watch you with bored, empty eyes.
 
 "The famous company." She smiles without opening her mouth. "I am **Nettle**, elder sister to the one you called the Reedwife. She kept the door under the fen when your Thornwick was three huts in the reeds. You cut her down, and you cost this family its living. That debt is written down, and it will be paid."
 
 She flexes her green fingers. "The rest of the collectors are gathering up on the mountain. Think of this as the first notice."
 
-**Battle:** Knightly Order <sub>(`knights` on `open`)</sub>
+**Battle:** The Sister's Hired Swords <sub>(`hired-swords` on `open`)</sub>
 
 **» Fight — won**
 
@@ -1297,8 +1301,6 @@ For a moment there is a voice on the wind, too. It is a woman's voice, raw from 
 
 **» Climb**
 
-_Level up: 4 → 5_
-
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Switchbacks
@@ -1315,9 +1317,25 @@ Water has cut fresh channels across the path, though no stream runs anywhere up 
 
 Under it all runs that steady pull, which draws every beast on the mountain up toward one high place.
 
-**» Pick your fights**
+Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.
+
+**» Stand and meet them**
+
+<sub>scene `switchbacks-fight`</sub>
+
+The griffons come down on the switchbacks screaming, all beak and talon, and the loose rock goes out from under your boots. There is nowhere to run on a trail this narrow, and nothing to do but fight.
+
+**Battle:** Griffons on the Switchbacks <sub>(`griffon-flight` on `pass`)</sub>
+
+**» Fight — won**
+
+The last griffon tumbles away down the scree, and the trail is yours. Above you the whole mountain is still climbing toward the stone. Time to pick your fights.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 1)</sub>
+
+**Dawn — day 2.**
 
 → The Toll-Cliff
 
@@ -1344,10 +1362,6 @@ The manticore drops onto the trail with one last offended word. "Toll." The pile
 _+110 gold (786)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 1)</sub>
-
-**Dawn — day 2.**
 
 → The Boar-Runs
 
@@ -1387,6 +1401,14 @@ _+75 gold (861)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+**Dawn — day 3.**
+
+The stone's note is louder this morning.
+
+A rider from the scouts' fire brings Wren's word at first light. Three more nights before the Calling peaks, she reckons, and not one more.
+
 → The Flooded Pass
 
 <sub>scene `seam`</sub>
@@ -1399,9 +1421,9 @@ A crack runs down the rock behind the pool, thin as a knife cut, and cold air br
 
 <sub>scene `seam-fight`</sub>
 
-The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is.
+The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.
 
-**Battle:** Water Vortex <sub>(`water-vortex` on `bog`)</sub>
+**Battle:** The Flooded Pass <sub>(`flooded-seam` on `bog`)</sub>
 
 **» Fight — won**
 
@@ -1412,14 +1434,6 @@ Behind it, the crack in the rock is closing. Just before it shuts, you hear a sl
 _+50 gold (911)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
-
-The stone's note is louder this morning.
-
-A rider from the scouts' fire brings Wren's word at first light. Three more nights before the Calling peaks, she reckons, and not one more.
 
 → The Blue Mesa
 
@@ -1438,6 +1452,10 @@ The wyrmling falls off the wall trailing dead sparks, and the copper rods go col
 _+95 gold (1006)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+**Dawn — day 4.**
 
 → The Middle Pass
 
@@ -1481,19 +1499,19 @@ Someone has scratched one word into the rock at the shepherd's feet, in big, sha
 
 Above the tree-line stands the giants' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.
 
-At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. A shaggy ogre in a sheepskin stumbles out behind it, still chewing, and a skinny orc runner trots at its heels.
+At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.
 
 "THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.
 
 **» [Deception DC 14] Agree with both heads at once**
 
-`[Deception DC 14 — Ash the Sneaky rolls 18 — passed]`
+`[Deception DC 14 — Ash the Sneaky rolls 17 — passed]`
 
 <sub>scene `steading-talked`</sub>
 
 "The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.
 
-The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogre and the orc runner chase after them.
+The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogres and the orc runner chase after them.
 
 The road to the stone stands open.
 
@@ -1571,7 +1589,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 **» Promise her Thornwick will remember her this time — The reeve owes you his grandfather, and he keeps the town's ledger.**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 23 — passed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 16 — passed]`
 
 "The reeve owes us his grandfather," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 

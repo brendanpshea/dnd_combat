@@ -249,6 +249,60 @@ describe('adventure runtime vocabulary', () => {
     expect(evs2.some((e) => e.type === 'xp' && e.amount === 0)).toBe(true);
   });
 
+  it('an xpToLevel floor may stand only on the opening or on a way past a fight', () => {
+    const floor = [{ kind: 'xpToLevel' as const, level: 2 }];
+    // A chapter with a fight at its gate: talk past it, sneak past it, or fight.
+    const mk = (over: Partial<Record<string, Module['scenes'][string]>> = {}): Module => ({
+      id: 'lf', title: 'T', blurb: '', start: 's',
+      scenes: {
+        s: { id: 's', kind: 'story', text: ['x'], next: [{ id: 'go', label: 'Go', to: 'gate', effects: floor }] },
+        gate: { id: 'gate', kind: 'story', text: ['A gate.'], next: [
+          { id: 'talk', label: 'Talk', to: 'road', effects: floor },
+          { id: 'fight', label: 'Fight', to: 'guards' },
+        ] },
+        guards: { id: 'guards', kind: 'battle', encounterId: 'goblins', mapId: 'open', intro: ['Guards.'],
+          onWin: { to: 'road' },
+          parley: { skill: 'persuasion', dc: 12, success: { to: 'road', text: ['They let you by.'], effects: floor } } },
+        road: { id: 'road', kind: 'story', text: ['A road.'], next: [{ id: 'on', label: 'On', to: 'e' }] },
+        e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
+        ...over,
+      } as Module['scenes'],
+    });
+    // The opening, a choice beside the fight, and the parley are all fine.
+    expect(validateModule(mk())).toEqual([]);
+    const floorErrors = (m: Module) => validateModule(m).filter((e) => e.includes('xpToLevel'));
+    // On the fight's win: a progression floor.
+    expect(floorErrors(mk({ guards: { id: 'guards', kind: 'battle', encounterId: 'goblins', mapId: 'open', intro: ['Guards.'],
+      onWin: { to: 'road', effects: floor } } }))).toHaveLength(1);
+    // On a road every company walks: a progression floor.
+    expect(floorErrors(mk({ road: { id: 'road', kind: 'story', text: ['A road.'], next: [{ id: 'on', label: 'On', to: 'e', effects: floor }] } }))).toHaveLength(1);
+    // On the way into the fight itself, or on a roll whose failure is the fight
+    // (a choice's effects apply before its roll): not a way past it.
+    expect(floorErrors(mk({ gate: { id: 'gate', kind: 'story', text: ['A gate.'], next: [
+      { id: 'talk', label: 'Talk', to: 'road' },
+      { id: 'fight', label: 'Fight', to: 'guards', effects: floor },
+    ] } }))).toHaveLength(1);
+    expect(floorErrors(mk({ gate: { id: 'gate', kind: 'story', text: ['A gate.'], next: [
+      { id: 'sneak', label: 'Sneak', to: 'road', effects: floor, check: { skill: 'stealth', dc: 12, failTo: 'guards' } },
+    ] } }))).toHaveLength(1);
+  });
+
+  it('the trilogy\'s only level floors are its cold starts and the outriders\' parley', () => {
+    const sites: string[] = [];
+    for (const m of MODULES) {
+      for (const [id, sc] of Object.entries(m.scenes)) {
+        if (sc.kind === 'story' || sc.kind === 'dialogue') {
+          for (const c of sc.next) if (c.effects?.some((e) => e.kind === 'xpToLevel')) sites.push(`${m.id}:${id}:${c.id}`);
+        }
+        if (sc.kind === 'battle') {
+          if (sc.onWin.effects?.some((e) => e.kind === 'xpToLevel')) sites.push(`${m.id}:${id}:win`);
+          if (sc.parley?.success.effects?.some((e) => e.kind === 'xpToLevel')) sites.push(`${m.id}:${id}:parley`);
+        }
+      }
+    }
+    expect(sites.sort()).toEqual(['hollow-road:road-out:parley', 'sunken-barrows:return:go-cold', 'wyrmcalling:muster:go-cold']);
+  });
+
   const TOWN_MOD: Module = {
     id: 'tm', title: 'T', blurb: '', start: 'square', town: 'square',
     scenes: {

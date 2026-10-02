@@ -1066,8 +1066,9 @@ revisiting), and `hideWhenBlocked`.
 
 **Effects** are a deliberately tiny vocabulary: `setFlag`/`clearFlag`,
 `gold`, `addItem`/`removeItem`, `xp`, **`xpToLevel`** (top party XP up to the
-start of a level, never overshooting — how milestone level-ups ride on the
-fights that earn them), `heal`, and `journal` (quests/leads/clues/NPCs; a
+start of a level, never overshooting — a fresh company's level on a chapter's
+opening, or the reward for getting past a fight without one; the validator
+rejects it anywhere else, since levels come from fights), `heal`, and `journal` (quests/leads/clues/NPCs; a
 lead names the flag that resolves it, so the journal shows threads closing).
 
 **Explore maps** come in two shapes. A free-roam map (a town) shows every
@@ -1110,7 +1111,8 @@ the same `CampaignState` — party, XP, gold, gear — into the next module via
 flag namespace. The planned arc is a 1→5 trilogy
 ([trilogy-plan.md](trilogy-plan.md)): The Hollow Road (1→3) → The Sunken
 Barrows (3→4, undead) → The Wyrmcalling (4→5, dragons/giants/elementals),
-sized so fights carry the leveling and `xpToLevel` milestones are floors.
+sized so fights carry the leveling: `xpToLevel` sets a cold start's level and
+rewards a fight cleverly avoided, and is never a milestone on a common path.
 
 ## 7d. Arena mode
 

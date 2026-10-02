@@ -35,7 +35,7 @@ _+250 gold (350)_
 
 <sub>scene `lychyard`</sub>
 
-The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and two shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
+The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -201,9 +201,9 @@ But his hands are shaking on the altar rail, and somewhere under that thing Hald
 
 <sub>scene `chapel-caught`</sub>
 
-You're already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.
+You're already moving when his two acolytes step forward and his dead wade out of the rows, two skeletons and two grey, gnawing parishioners. For once the dead are the ones caught flat-footed.
 
-**Battle:** Corrupt Temple <sub>(`temple` on `ruins`)</sub>
+**Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
 
 **» Fight — won**
 
@@ -253,9 +253,9 @@ You know a lie when it sings to you. You plant your boots in the mud and stay wh
 
 <sub>scene `lights-fight`</sub>
 
-Two of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.
+Three of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.
 
-**Battle:** Wisp Bog <sub>(`wisp-bog` on `bog`)</sub>
+**Battle:** The Corpse-Lights <sub>(`corpse-lights` on `bog`)</sub>
 
 **» Fight — won**
 
@@ -523,15 +523,13 @@ They are the names of villages, hundreds of them, and a line runs through every 
 
 The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
 
-**Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
 **» Fight — won**
 
 The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
-
-_Level up: 3 → 4_
 
 _+60 gold (739)_
 

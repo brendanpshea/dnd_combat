@@ -11,9 +11,11 @@ holds. Rather than bloat The Hollow Road into an 8-hour mega-module, the
 campaign is a **trilogy**: three modules, each a complete evening with its own
 region, bestiary slice, and climax, linked by **party continuation**
 (`Module.sequel` — a victory ending carries the same `CampaignState` into the
-next part). Milestone `xpToLevel` effects remain as per-module *floors*, not
-the engine of leveling: a party that fights what the module offers levels
-honestly, and the floor only catches a maximally fight-avoidant run.
+next part). Fights are the engine of leveling. `xpToLevel` survives only as a
+cold start's opening level and as the reward for getting past a fight without
+one; the milestone floors this plan first put on finale wins and common paths
+are gone (see the module-writing guide, "Levels come from fights", which the
+validator enforces).
 
 The XP arithmetic that shapes everything (SRD thresholds, per-character award
 = encounterXP / 4):
@@ -58,7 +60,8 @@ proper dungeon traversal, the module's den-equivalent). Three acts like Part 1.
 | Finale: the Worm's chosen | `cult` | 1,100 | fanatic + armor + ghouls at the seal |
 
 Required spine ≈ 5,550; with either optional ≈ 6,450–7,350 → lands L4 at or
-just before the finale; `xpToLevel: 4` floor on the finale win.
+just before the finale. (Shipped without a floor: the spine was enlarged
+instead, and every route reaches 4th before the finale.)
 
 **Payoff threads from Part 1.** `saved-scout` → Wren is the fen guide NPC;
 `vex-turned` → Vex holds Thornwick's gate during the crisis (a beat, and his
@@ -96,7 +99,7 @@ mechanics) with what was left standing.
 | Finale: the Calling | `elemental-cataclysm` | 3,600 | fire + earth at the stone |
 
 Required spine ≈ 10,500; typical run ≈ 13,000–16,000 → L5 at or just before
-the finale; `xpToLevel: 5` floor on the finale win. (L5 is `MAX_LEVEL` — the
+the finale, with no floor: the hills' fights carry it. (L5 is `MAX_LEVEL` — the
 campaign ends at the cap, fighting the biggest encounter in the data.)
 
 ## Mechanics status
@@ -107,8 +110,9 @@ campaign ends at the cap, fighting the biggest encounter in the data.)
   carries party/XP/gold/gear. Story flags stay in their own module, except
   the few a module names in `carries`: those arrive in later chapters named
   after their origin (`hollow-road:captives-freed`), and a cold start has none.
-- Cold starts — **shipped** as an XP floor: each sequel's opening choice
-  carries `xpToLevel` to its band's start (a no-op for continuing parties).
+- Cold starts — **shipped** as an XP floor: each sequel's cold-start choice
+  (shown only without the last chapter's `won`) carries `xpToLevel` to its
+  band's start; a continuing company arrives with what it earned.
   Fresh parties keep starting gear + an early gold grant, and shop up in the
   hub. A scene that reads a carried flag always has a version without it
   (Wren and Vex are met fresh, or greeted as the people the company knows).

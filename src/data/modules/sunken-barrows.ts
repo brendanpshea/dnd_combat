@@ -9,15 +9,18 @@
  * company killed her, so the barrows are opening, and the debt is theirs.
  * The Cult of the Worm arrives to finish what the broken ward began.
  *
- * XP budget (see trilogy-plan.md): required spine ≈ 6,500 encounter XP
- * (shadows 200, chapel 650, wisps 1100, lychgate 900, wights 800, the king
- * 800, the cult at the door 2050, or 900 with Marrow talked down), the
- * serpent pool optional (+900). The finale is the chapter's hardest fight.
- * A continuing company (~1,650 XP from Part 1) mostly reaches the king at
- * 3rd; the `xpToLevel: 4` on the king's fall (the one way down to the
- * Warden's door) lifts those that are not yet 4th, so the cult is always
- * fought at 4th level. Cold starts: the opening choice carries
- * `xpToLevel: 3`, a no-op for a continuing party.
+ * XP budget (see trilogy-plan.md), and no level floor: the fights carry a
+ * company from 3rd to 4th before the Warden's door (docs/module-writing-guide.md,
+ * "Levels come from fights"). Required spine ≈ 6,000 encounter XP before the
+ * finale (shadows 400, the drowned chapel 1,050, the corpse-lights 1,550, the
+ * lychgate 900, wights 800, the embalmed king 1,600), then the cult at the
+ * door 2,050, or 900 with Marrow talked down; the serpent pool optional
+ * (+900). The finale is the chapter's hardest fight. Every way past a fight
+ * (Halden talked down, the lights skirted, the watchers or the wight stood
+ * down) pays what the fight would have (`avoidedFightXP`). A continuing
+ * company (~1,200–1,600 XP from Part 1) and a cold start alike reach 4th
+ * by the finale. Cold starts: only the cold-start choice carries
+ * `xpToLevel: 3`; a continuing company arrives with what it earned.
  *
  * MONSTER VARIETY: this module owns the undead/guardian shelf — shadows,
  * ghouls by night, a corrupt chapel, will-o'-wisps, gargoyles, wights, a
@@ -27,6 +30,7 @@ import type { Module, Scene, Effect } from '../../adventure/types.js';
 import { withCanon, speaker, companionsFrom, npcMetFlag, npcFateFlag, carriedRenames } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
 import { TRILOGY_FACTS, factValue } from './canon.js';
+import { avoidedFightXP } from '../encounters.js';
 import { HOLLOW_ROAD_RENAMED_NPC_FLAGS } from './hollow-road.js';
 
 const MIRA = speaker(NPCS.mira!, { label: '{mira} the Innkeeper' });
@@ -96,11 +100,15 @@ const SB_CLAIMS = [
   { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue', effects: [{ kind: 'setFlag' as const, flag: 'won' }] },
 ];
 
-/** Into the churchyard. Cold-start floor: a fresh company starts this
- *  module at 3rd level (no-op for a party continuing from The Hollow Road). */
-const OPENING: Effect[] = [{ kind: 'xpToLevel', level: 3 },
+/** Into the churchyard, however the company comes to it. */
+const OPENING: Effect[] = [
   { kind: 'journal', entry: { id: 'q-barrows', kind: 'quest', title: 'The Opened Graves',
     body: '{thornwick}\'s dead are leaving their graves and walking into the deep fen. Find what is calling them, and stop it.' } }];
+
+/** A fresh company starts this module at 3rd level. Only the cold start
+ *  carries it: a company continuing from The Hollow Road arrives with what its
+ *  fights earned (see docs/module-writing-guide.md, "Levels come from fights"). */
+const COLD_START: Effect = { kind: 'xpToLevel', level: 3 };
 
 const scenes: Record<string, Scene> = {
   // === ACT 1 — THORNWICK, THE WRONG BELLS ================================
@@ -120,14 +128,14 @@ const scenes: Record<string, Scene> = {
       // A cold start: still the company that broke the Ashfang, so it still
       // has last season's bounty, about what a run through Part 1 carries.
       { id: 'go-cold', label: 'Answer the bells', to: 'lychyard', hideWhenBlocked: true,
-        requires: [{ kind: 'notFlag', flag: 'hollow-road:won' }], effects: [...OPENING, { kind: 'gold', amount: 250 }] },
+        requires: [{ kind: 'notFlag', flag: 'hollow-road:won' }], effects: [COLD_START, ...OPENING, { kind: 'gold', amount: 250 }] },
     ],
     noBack: true,
   },
   lychyard: {
     id: 'lychyard', kind: 'battle', encounterId: 'shadow-ambush', mapId: 'corridor',
     intro: [
-      'The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and two shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.',
+      'The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.',
       'Draw steel, for whatever good steel does against a shadow.',
     ],
     onWin: { to: 'grave-morning', text: ['The last shadow tatters apart on your blade like smoke off a doused fire. The churchyard holds its breath.'] },
@@ -442,15 +450,15 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'fight', label: 'Draw steel', to: 'chapel-fight' }],
   },
   'chapel-fight': {
-    id: 'chapel-fight', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
-    intro: ['{halden} sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows. Two acolytes in {thornwick}\'s chapel colours step up beside him, their eyes as empty as the dead\'s. "The {warden} provides," says {halden}, and sets them on you.'],
-    again: ['{halden} sighs again, a shepherd let down twice. "The {warden} provides," he says, and his acolytes and the two skeletons come for you once more.'],
+    id: 'chapel-fight', kind: 'battle', encounterId: 'drowned-chapel', mapId: 'ruins',
+    intro: ['{halden} sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in {thornwick}\'s chapel colours step up beside him, their eyes as empty as the dead\'s. "The {warden} provides," says {halden}, and sets them on you.'],
+    again: ['{halden} sighs again, a shepherd let down twice. "The {warden} provides," he says, and his acolytes and his dead come for you once more.'],
     onWin: { to: 'chapel-won', text: ['{halden} sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.'] },
   },
   'chapel-caught': {
-    id: 'chapel-caught', kind: 'battle', encounterId: 'temple', mapId: 'ruins',
+    id: 'chapel-caught', kind: 'battle', encounterId: 'drowned-chapel', mapId: 'ruins',
     surprise: 'enemies',
-    intro: ['You\'re already moving when his two acolytes step forward and two skeletons wade out of the rows. For once the dead are the ones caught flat-footed.'],
+    intro: ['You\'re already moving when his two acolytes step forward and his dead wade out of the rows, two skeletons and two grey, gnawing parishioners. For once the dead are the ones caught flat-footed.'],
     onWin: { to: 'chapel-won', text: ['Caught off balance from the first blow, the dead never find their rows again. {halden} slumps against the altar rail. The thing wearing him lets go, and he dies looking almost grateful.'] },
   },
   // Halden lives: he tells the party himself what the dead man's book says.
@@ -459,7 +467,7 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'companion', companion: 'wren' }],
     lines: [
       'You know the words {halden} said over {thornwick}\'s dead. They are cut on every old headstone in his churchyard. You say them back to him, slow and plain. ' + LITURGY,
-      'His smile twitches, and the acolytes stop in mid-step. The thing inside {halden} lets go of him all at once, like a hand opening. His acolytes drop where they stand, and the skeletons fold into the water.',
+      'His smile twitches, and the acolytes stop in mid-step. The thing inside {halden} lets go of him all at once, like a hand opening. His acolytes drop where they stand, and his dead fold into the water.',
       '{halden} sits down hard on the altar steps, shaking, and himself again. Behind him, his acolytes sit up in the shallows, coughing up fen-water. "It came up through the floor," he says. "Through the *prayers*. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **{marrow}**, and I *thanked* him."',
       'He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."',
       // "We" only from the Wren who mapped the den for the company in Part 1.
@@ -468,8 +476,9 @@ const scenes: Record<string, Scene> = {
       '{halden} taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That\'s the hag\'s brand," {wren} says. "Every marsh-thing that ran with the {ashfang} wore it." {halden} shakes his head. "It was a keeper\'s mark first, the vigil\'s mark. The old builders cut it into the {barrow-gate}, and the gate\'s watchers know it. She grew greedy and made it a slaver\'s brand."',
       '"The rites of sealing are in there too. Someone must say them whole, at his door in the great barrow past the gate. It will take nerve. I couldn\'t say them while it had me, but I\'ll follow you down and wait on the stair." He finds a healing potion under the altar cloth and gives you that too. {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says, and she means it.',
     ],
+    // Talked down, not fought: the chapel's fight is still earned.
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
-      effects: [...CHAPEL_CLEARED, { kind: 'npc', npc: 'halden', fate: 'saved' },
+      effects: [...CHAPEL_CLEARED, { kind: 'npc', npc: 'halden', fate: 'saved' }, { kind: 'xp', amount: avoidedFightXP('drowned-chapel') },
         { kind: 'journal', entry: { id: 'n-halden', kind: 'npc', title: 'Brother {halden}',
           body: '{halden} keeps {thornwick}\'s little chapel. Something under the fen took hold of him through his own prayers, and you talked it out of him. He has promised to follow you down to the {warden}\'s door.' } }] }],
   },
@@ -530,9 +539,9 @@ const scenes: Record<string, Scene> = {
     failure: { to: 'lights-lured', text: ['The water is at your knees before you notice it, and then at your waist. The lights close in around you, and they are not warm at all.'] },
   },
   'lights-fight': {
-    id: 'lights-fight', kind: 'battle', encounterId: 'wisp-bog', mapId: 'bog',
-    intro: ['Two of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.'],
-    again: ['The two lights come in low over the water again. The drowned thing rises between them, its mouth still open on that scream.'],
+    id: 'lights-fight', kind: 'battle', encounterId: 'corpse-lights', mapId: 'bog',
+    intro: ['Three of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.'],
+    again: ['The three lights come in low over the water again. The drowned thing rises between them, its mouth still open on that scream.'],
     onWin: { to: 'lights-won', text: ['The last wisp winks out, and the water goes dark for good.'] },
   },
   // Missed the firm ground: in the water before the lights even sing.
@@ -544,9 +553,9 @@ const scenes: Record<string, Scene> = {
   },
   // The same fight, caught waist-deep after the lights' pull won.
   'lights-lured': {
-    id: 'lights-lured', kind: 'battle', encounterId: 'wisp-bog', mapId: 'bog',
+    id: 'lights-lured', kind: 'battle', encounterId: 'corpse-lights', mapId: 'bog',
     surprise: 'party',
-    intro: ['Two wisps flare white-hot in front of your faces. Something cold rises out of the pool behind you, close enough to touch. You have to fight your way back to the mud before you can fight anything else.'],
+    intro: ['Three wisps flare white-hot in front of your faces. Something cold rises out of the pool behind you, close enough to touch. You have to fight your way back to the mud before you can fight anything else.'],
     onWin: { to: 'lights-won', text: ['You drag each other out onto the mud, soaked and shaking. Behind you the last wisp is out, and the water lies dark and still.'] },
   },
   // The drowned folk's purses, and a body that isn't one of them.
@@ -594,7 +603,7 @@ const scenes: Record<string, Scene> = {
       'Halfway round, {wren} grabs your sleeve and points. A body floats face-down in the pool. It wears long robes the colour of grave-worms. "That\'s no fen-folk," she whispers. "Not in those robes." The lights drift closer, and you keep moving.',
     ],
     next: [{ id: 'on', label: 'Push on toward the barrows', to: 'fen',
-      effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'lights-skirted' }, { kind: 'xp', amount: 50 }, WORM_CLUE] }],
+      effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'lights-skirted' }, { kind: 'xp', amount: avoidedFightXP('corpse-lights') }, WORM_CLUE] }],
     noBack: true,
   },
   'lights-skirted-done': {
@@ -675,7 +684,7 @@ const scenes: Record<string, Scene> = {
       success: { to: 'lychgate-won', text: [
         'You hold up {halden}\'s book, open at the reed-woman\'s mark on the flyleaf. The old builders cut that same mark into the gate. You find it on the nearest stone and lay your hand flat on it.',
         'The watchers stop at the edge of the lintel. They look at the book for a long, grinding moment, then fold their wings and turn back into plain grey stone.',
-      ], effects: [{ kind: 'setFlag', flag: 'watchers-stilled' }] },
+      ], effects: [{ kind: 'setFlag', flag: 'watchers-stilled' }, { kind: 'xp', amount: avoidedFightXP('gargoyle-perch') }] },
     },
   },
   // Wren stays here. Every way down the steps sends her to her post.
@@ -953,11 +962,11 @@ const scenes: Record<string, Scene> = {
       success: { to: '@hub', text: [
         'The painted hall showed how the old kings\' soldiers saluted. You give that salute now, fist to chest, and tell him his watch is over.',
         'The wight stands still for a long moment. It lowers its sword and lies back down on its slab, and its skeletons lie down with it.',
-      ], effects: [{ kind: 'setFlag', flag: 'wights-down' }] },
+      ], effects: [{ kind: 'setFlag', flag: 'wights-down' }, { kind: 'xp', amount: avoidedFightXP('wight-tomb') }] },
     },
   },
   king: {
-    id: 'king', kind: 'battle', encounterId: 'mummy-crypt', mapId: '@room',
+    id: 'king', kind: 'battle', encounterId: 'barrow-king', mapId: '@room',
     intro: [
       'Old masons sealed the king\'s chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Within, a figure in grave-wrappings the colour of old honey stands before a wall carved with names.',
       'They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore. These are the places the {warden} swallowed the last time he woke.',
@@ -965,9 +974,7 @@ const scenes: Record<string, Scene> = {
     ],
     again: ['The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.'],
     onWin: { to: '@hub', text: ['The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.', 'Behind the king\'s throne, a burial shaft drops into the dark. The chanting comes up out of it.'],
-      // The level floor rides on the king, not the finale: the only way down
-      // to the door is past him, so the cult is fought at 4th level.
-      effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'gold', amount: 60 }] },
+      effects: [{ kind: 'gold', amount: 60 }] },
   },
   'seal-approach': {
     id: 'seal-approach', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },

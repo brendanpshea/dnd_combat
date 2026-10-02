@@ -9,12 +9,15 @@
  * visibly mattered. No new stat blocks — every encounter is composed from the
  * existing bestiary. All content is original; no published module text is reproduced.
  *
- * LEVEL BAND 1→3, paced by "acts = levels": required fights carry the leveling
- * and milestones only top up the gap. M1 rides the Act 1 road-out win → L2; M2
- * rides the Act 2 hollow-ambush win → L3, so both level-ups land on a fight the
- * party earned. Required-fight + milestone XP guarantees the floor for a
- * wit-heavy party; a fight-everything run tops out around L4 as the thresholds
- * absorb it. The party fights the boss at L3.
+ * LEVEL BAND 1→3: fights carry the leveling, with no milestone floors
+ * (docs/module-writing-guide.md, "Levels come from fights"). Every way past a
+ * fight pays what the fight would have (`avoidedFightXP`): the spy's crew
+ * shouted down or caught, the den's gate slipped, Vex turned so that Hask
+ * stands aside from the chief's guard; staring down the road-out goblins carries the 2nd level a
+ * company that has done the town would reach by fighting them. A company
+ * that fights its road reaches 2nd on the marsh road and 3rd by the chief's
+ * hall; one that walks past the side fights (the mill, the barrow, the
+ * thicket) meets the chief at 2nd, by its own choice.
  *
  * MONSTER VARIETY is a goal in itself — this module is a tour of the bestiary,
  * a distinct roster per fight (goblins, human crooks, the marsh's toads and
@@ -29,6 +32,7 @@ import type { Module, Scene, Effect, Choice, Para } from '../../adventure/types.
 import { withCanon, speaker, companionsFrom, npcMetFlag, npcFateFlag } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
 import { TRILOGY_FACTS, factValue } from './canon.js';
+import { avoidedFightXP } from '../encounters.js';
 
 /** Learning whose the marsh-things are: the Reedwife reveal. */
 const HAG_LEARNED: Effect[] = [
@@ -36,6 +40,10 @@ const HAG_LEARNED: Effect[] = [
   { kind: 'journal', entry: { id: 'c-hag', kind: 'clue', title: 'The {reedwife}',
     body: 'A green hag the reed-cutters call the "{reedwife}" owns the marsh-creatures that serve the {ashfang}, and brands them like cattle. She waits at the den\'s fire beside the {ashfang} chief. She told you to ask him what he sold her.' } },
 ];
+
+/** Past the den's gate without a fight (the signal, the wall, the water-gate,
+ *  or a bluff): what beating its enforcers would have earned. */
+const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-gate') }];
 
 /** Past the hollow: the reveal, and the wet way in (`trail-wet`) no longer
  *  matters, so the den is not searched twice over for it. */
@@ -428,7 +436,7 @@ const scenes: Record<string, Scene> = {
       'You slip round behind the fish stall and come up at his back. His fingers are halfway to his teeth when you take his wrist.',
       'His crew sees the knife at his ribs. One by one, they find somewhere else to drink.',
     ],
-    next: [{ id: 'ok', label: 'Turn out his cart', to: 'spy-caught', effects: [{ kind: 'xp', amount: 25 }] }],
+    next: [{ id: 'ok', label: 'Turn out his cart', to: 'spy-caught', effects: [{ kind: 'xp', amount: avoidedFightXP('cutpurses') }] }],
     noBack: true,
   },
   'gate-blocked': {
@@ -496,7 +504,7 @@ const scenes: Record<string, Scene> = {
       'You plant your feet and roar at the hired knives to put their blades away, now, while they still have hands to do it. Every head in the square turns.',
       'The knives look at your steel, then at the fixer, then at all the people watching. One by one they set their blades down on the cobbles. The fixer goes with them, out past the well and away from the gate. None of them looks keen to explain this to the chief.',
     ],
-    next: [{ id: 'ok', label: 'Turn out his cart', to: 'spy-caught', effects: [{ kind: 'xp', amount: 25 }] }],
+    next: [{ id: 'ok', label: 'Turn out his cart', to: 'spy-caught', effects: [{ kind: 'xp', amount: avoidedFightXP('cutpurses') }] }],
   },
   // A failed stalk: he sees you coming and slips away, and the party loses a
   // day waiting for him to come back to his stall.
@@ -530,12 +538,10 @@ const scenes: Record<string, Scene> = {
     id: 'road-out', kind: 'battle', encounterId: 'goblin-outriders', mapId: 'open',
     intro: ['Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling something in Goblin that needs no translation.'],
     again: ['The goblin outriders are still in the reeds a mile from the gate. Their boss lopes out in front of the pack again, scimitar bared, cackling.'],
-    // Milestone M1 rides on this fight's win: surviving the road out of town is
-    // what dings the party to 2nd level, so the level-up lands on a fight it
-    // earned rather than out of nowhere. road-out is on the one-way path into the
-    // marsh, so the grant fires exactly once.
-    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.'],
-      effects: [{ kind: 'xpToLevel', level: 2 }] },
+    // No milestone on the win: the fight's own XP is the reward. Staring the
+    // pack down is the clever way past, so the parley carries the level a
+    // company that has done the town would reach by fighting (2nd).
+    onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your sword-arm aches, but your hands are steady. A week ago, that fight would have finished you.'] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
       refused: ['The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."'],
@@ -881,10 +887,9 @@ const scenes: Record<string, Scene> = {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
     intro: ['The hollow opens below you, and the reeds in it are too still, and cold where the marsh should be warm. Nothing moves. Something out there is lying flat in the water, waiting for you to come closer.'],
     again: ['You come back to the lip of the hollow. The reeds below are still too still, and too cold. Something out there is waiting for you again.'],
-    // The perception check only sets the terms (surprise); Milestone M2 rides the
-    // battle's win, so 3rd level is earned in the fight, not handed over — and the
-    // hollow ambush is the one route to the den (approach needs trail-read from
-    // the tracks), so it never gets skipped.
+    // The perception check only sets the terms (surprise). The hollow ambush is
+    // the one route to the den (approach needs trail-read from the tracks), so
+    // it never gets skipped.
     success: { to: 'ambush-turned', text: ['You catch the gleam of an eye among the reeds a breath before it moves. The trap is yours to spring.'] },
     failure: { to: 'ambush-sprung', text: ['A hiss, a ripple — and the reeds come alive all at once. Too late.'] },
   },
@@ -913,16 +918,14 @@ const scenes: Record<string, Scene> = {
     surprise: 'enemies', // you spotted them — they lose the first round
     intro: ['You strike first. Scaled backs rise out of the water where they lay, a hunting-party of **lizardfolk** with a monstrous toad lumbering behind them like a herded ox. For a heartbeat, not one of them sees you.'],
     again: ['You strike first again. The lizardfolk are back in the water with their toad behind them, and once more they are watching the wrong way.'],
-    onWin: { to: 'hollow-won', text: ['The lizardfolk sink back into the dark water they came from, one by one.'],
-      effects: [{ kind: 'xpToLevel', level: 3 }] },
+    onWin: { to: 'hollow-won', text: ['The lizardfolk sink back into the dark water they came from, one by one.'] },
   },
   'ambush-sprung': {
     id: 'ambush-sprung', kind: 'battle', encounterId: 'hag-thralls', mapId: 'bog',
     surprise: 'party', // the check failed — they get the drop on you
     intro: ['The reeds burst apart around you, and scaled shapes rush in with hooked spears, a giant toad heaving up through the muck behind them. They move together, too well, as if one hand worked them all.'],
     again: ['The reeds erupt around you again. The lizardfolk and their toad have been waiting for you to come back.'],
-    onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The last of the lizardfolk drags itself into the water and does not come up.'],
-      effects: [{ kind: 'xpToLevel', level: 3 }] },
+    onWin: { to: 'hollow-won', text: ['Bloodied, you break them at last. The last of the lizardfolk drags itself into the water and does not come up.'] },
   },
   // The reveal beat: the lizardfolk didn't choose the raiders — something in the
   // marsh owns them, and now you know its name.
@@ -952,7 +955,7 @@ const scenes: Record<string, Scene> = {
     next: [
       { id: 'back', label: 'Slip back in the way you left', to: 'inner',
         requires: [{ kind: 'flag', flag: 'den-entered' }], hideWhenBlocked: true },
-      { id: 'signal', label: '[Deception DC 10] Call the stolen watch-signal up to the post', to: 'inner',
+      { id: 'signal', label: '[Deception DC 10] Call the stolen watch-signal up to the post', to: 'den-slipped',
         requires: [{ kind: 'flag', flag: 'know-signal' }, { kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'den-entered' }],
         check: { skill: 'deception', dc: 10, failTo: 'gate-signal-blown', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
@@ -962,7 +965,7 @@ const scenes: Record<string, Scene> = {
         requires: [{ kind: 'classInParty', classId: 'rogue' }, { kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         once: true, effects: [{ kind: 'setFlag', flag: 'den-entered' }],
         check: { skill: 'sleight-of-hand', dc: 10, failTo: 'den-lock-jammed', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
-      { id: 'sneak', label: '[Stealth DC 13] Slip over the wall together', to: 'inner',
+      { id: 'sneak', label: '[Stealth DC 13] Slip over the wall together', to: 'den-slipped',
         requires: [{ kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'den-entered' }],
         check: { skill: 'stealth', dc: 13, roller: 'group', failTo: 'gate-caught', failEffects: [{ kind: 'clearFlag', flag: 'den-entered' }] } },
@@ -978,7 +981,14 @@ const scenes: Record<string, Scene> = {
   'den-picked': {
     id: 'den-picked', kind: 'story', art: { imageId: 'loc-camp', emoji: '🗝️' },
     text: ['Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.'],
-    next: [{ id: 'in', label: 'Slip inside', to: 'inner' }], noBack: true,
+    next: [{ id: 'in', label: 'Slip inside', to: 'inner', effects: GATE_PASSED }], noBack: true,
+  },
+  // In by the signal or over the wall: past the gate's enforcers without a
+  // blow, which earns what beating them would have.
+  'den-slipped': {
+    id: 'den-slipped', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🤫' },
+    text: ['You are inside the wall, and no horn has sounded. Up in the gateway the bugbear scratches himself and watches the marsh, his back to you. The gnolls are asleep in a heap by the fire.'],
+    next: [{ id: 'in', label: 'Into the den', to: 'inner', effects: GATE_PASSED }],
   },
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
@@ -990,7 +1000,7 @@ const scenes: Record<string, Scene> = {
       skill: 'deception', dc: 15, label: 'Pass yourselves off as new blood',
       refused: ['The bugbear sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.'],
       success: { to: 'inner', text: ['"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The bugbear sniffs you, weighs you, and decides you are someone else\'s problem. The gnolls fall in laughing behind you, and the den stays asleep.'],
-        effects: [{ kind: 'setFlag', flag: 'den-entered' }] },
+        effects: [{ kind: 'setFlag', flag: 'den-entered' }, ...GATE_PASSED] },
     },
   },
   // The stolen signal, called wrong: the watch knows it has been sold. The
@@ -1183,8 +1193,11 @@ const scenes: Record<string, Scene> = {
   'vex-turned': {
     id: 'vex-turned', kind: 'story', noBack: true, art: { emoji: '🤝' },
     text: ['{vex} weighs it, then slides the blade home. "A road out of this valley, then. I\'ll take it before the reeve\'s men take it from me."', '"{hask} guards the chief, and {hask} answers to me. He\'ll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I\'m tired of soldiering for a man who burns barns and calls it strategy."'],
+    // Hask standing aside is one blade fewer at the chief's side: the company
+    // earns what beating him would have.
     next: [{ id: 'ok', label: 'On to the chief', to: 'inner',
       effects: [{ kind: 'npc', npc: 'vex', met: true, fate: 'turned' },
+        { kind: 'xp', amount: avoidedFightXP('ashfang-hall') - avoidedFightXP('ashfang-warlord-alone') },
         { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: '{vex}, Turned', body: '{vex} the lieutenant took your offer of a way out of the valley. {hask}, the chief\'s guard, answers to {vex}. He will stand aside when you face the chief, this once. After that, {vex} means to be gone.' } }] }],
   },
   'vex-refuses': {

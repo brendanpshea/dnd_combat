@@ -22,16 +22,19 @@
  * loose. Everything dealt with ticks the camp's tally (TALLY), which the
  * ending reads as the camp held or the camp bled.
  *
- * XP budget (trilogy-plan.md): required spine ≈ 9,625 (the envoy's hired
- * swords 925, the flooded seam 1,800, the oni's hold 1,650, the giants' hall 1,650,
- * cataclysm finale 3,600, or 3,200 for the sisters in person); optional
- * dens/beasts add up to ~6,000 more. A continuing company (~3,050 XP from
- * Part 2) that raids most of the hills still reached L5's 6,500 only at the
- * stone, so the hills were fought a level low: `xpToLevel: 5` on the climb
- * out of the war-camp (`hills-out`) now floors every company to 5th before
- * the first hill fight, and the one on the way down to the war council stays
- * as a backstop. Cold starts are floored to L4 by the opening choice (the
- * envoy's hired swords are the one L4 fight).
+ * XP budget (trilogy-plan.md), and no level floor: the hills' fights carry a
+ * company from 4th to 5th before the stone (docs/module-writing-guide.md,
+ * "Levels come from fights"). On every road up: the envoy's hired swords
+ * 1,700, the griffons on the switchbacks 1,800, the flooded seam 2,100, the
+ * three dens 2,625 (or the brood on the rim), the ogre-mage's hold 3,100 and
+ * the giants' hall 2,100; the manticore, the boar-runs and the gorgon add
+ * 3,500 more. The near side is fought at 4th and tuned for it (the hold is
+ * the hardest, 73% won at 4th). Every way past a fight (talking, tricking,
+ * paying, scattering the herd) pays what the fight would have
+ * (`avoidedFightXP`). A continuing company (~3,000–3,700 XP from Part 2)
+ * reaches 5th partway up the hills on every transcript route; a cold start
+ * opens at 4th (its one floor, on the cold-start choice) and gets there
+ * after its last hill fight. The stone is fought at 5th.
  *
  * CARRIED CHOICES: Vex's briefing reads his fate `turned` (he took the
  * party's offer in Part 1) and `met` (they met at his fire, no deal); Wren's
@@ -79,6 +82,7 @@ import type { Choice, Effect, Module, Outcome, Para, Requirement, Scene } from '
 import { withCanon, speaker, companionsFrom, carriedRenames, npcFateFlag } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
 import { TRILOGY_FACTS, factValue } from './canon.js';
+import { avoidedFightXP } from '../encounters.js';
 import { HOLLOW_ROAD_RENAMED_NPC_FLAGS } from './hollow-road.js';
 import { SUNKEN_BARROWS_RENAMED_NPC_FLAGS } from './sunken-barrows.js';
 
@@ -200,7 +204,7 @@ const PEAK_SNAPSHOT: Effect[] = [
  */
 /** The herd got past without a fight: it lives, and it turns away. */
 const HERD_SPARED: Effect[] = [{ kind: 'setFlag', flag: 'boarruns-cleared' },
-  ...tally(), { kind: 'xp', amount: 150 }];
+  ...tally(), { kind: 'xp', amount: avoidedFightXP('boar-stampede') }];
 
 /** A missed run across the boar-runs: a pack bursts under the herd. */
 const SCATTERED: Effect[] = [{ kind: 'gold', amount: -30 }];
@@ -210,11 +214,11 @@ const GORGON_WON = { to: 'hills', text: ['The gorgon crashes onto its side with 
 
 /** The ettin talked into a fight with itself: the hall empties, no loot. */
 const STEADING_TALKED: Effect[] = [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'setFlag', flag: 'ettin-split' },
-  ...tally(), { kind: 'xp', amount: 300 }];
+  ...tally(), { kind: 'xp', amount: avoidedFightXP('giants-hall') }];
 
 const STEADING_INTRO = [
   'Above the tree-line stands the giants\' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.',
-  'At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** {vex} warned you about. A shaggy ogre in a sheepskin stumbles out behind it, still chewing, and a skinny orc runner trots at its heels.',
+  'At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** {vex} warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.',
   '"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.',
 ];
 const STEADING_WON = { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was, and the orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, taken from the valley one cart at a time.'],
@@ -222,7 +226,7 @@ const STEADING_WON = { to: 'hills', text: ['The ettin goes down still arguing ab
 /** Wren's clue: the two heads never agree. Agree with both. */
 const STEADING_PARLEY = [
   '"The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.',
-  'The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogre and the orc runner chase after them.',
+  'The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogres and the orc runner chase after them.',
   'The road to the stone stands open.',
 ];
 
@@ -327,8 +331,8 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
  *     and no one will hear another word: no vigil.
  * Routed by scene, not by flag, so an answer costs the reach search nothing.
  * A company that cut the captives out of the {ashfang} pens (Part 1) says so
- * in its defiance (`answer-defiant`). The level floor is on the way to the war
- * council (see goDown), so no level-up lands between an answer and its reply.
+ * in its defiance (`answer-defiant`). No XP rides on the way down (see goDown),
+ * so no level-up lands between an answer and its reply.
  */
 const REPLIES = [
   { id: 'defiant', to: 'answer-defiant',
@@ -482,11 +486,9 @@ const goDown = (effects: Effect[] = []): Choice[] => {
       requires: [has('rim-clear'), has('sisters-loose')], ...fx },
     { id: 'back-spent', label: 'Go back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
       requires: [has('rim-clear'), has('stone-spent')], ...fx },
-    // The first time: through the war council (see SEATS). The level floor
-    // rides here, the one way to the stone the first time, so it lands
-    // before the council and not between an answer and its reply.
+    // The first time: through the war council (see SEATS).
     { id: 'down-council', label: 'Go down into the bowl', to: 'war-council', hideWhenBlocked: true,
-      requires: [hasNot('rim-clear')], effects: [...effects, { kind: 'xpToLevel', level: 5 }] },
+      requires: [hasNot('rim-clear')], ...fx },
   ];
 };
 /** Who is owed a place beside the company, and why (`owed`: any one of these
@@ -851,9 +853,12 @@ const vigilScene = (mood: VigilMood): Scene => ({
   failure: { to: `vigil-refused-${mood}` },
 });
 
-/** Into the war-camp. Cold-start floor: a fresh company begins the finale
- *  at 4th level (no-op for a company continuing from The Sunken Barrows). */
-const OPENING: Effect[] = [{ kind: 'xpToLevel', level: 4 },
+/** A fresh company begins the finale at 4th level. Only the cold start
+ *  carries it: a company continuing from The Sunken Barrows arrives with what
+ *  its fights earned (see docs/module-writing-guide.md, "Levels come from fights"). */
+const COLD_START: Effect = { kind: 'xpToLevel', level: 4 };
+/** Into the war-camp, however the company comes to it. */
+const OPENING: Effect[] = [
   // The camp's tally starts below zero (see TALLY).
   { kind: 'setFlag', flag: TALLY, value: -THREAT_PAR },
   { kind: 'journal', entry: { id: 'q-calling', kind: 'quest', title: 'Silence the {calling}',
@@ -884,15 +889,15 @@ const scenes: Record<string, Scene> = {
       // the barrows, so it still has the pay: about what a run through Parts
       // 1–2 carries, and enough for the ogre-mage's toll.
       { id: 'go-cold', label: 'Report to the command tent', to: 'envoys', hideWhenBlocked: true,
-        requires: [hasNot('sunken-barrows:won')], effects: [...OPENING, { kind: 'gold', amount: 400 }] },
+        requires: [hasNot('sunken-barrows:won')], effects: [COLD_START, ...OPENING, { kind: 'gold', amount: 400 }] },
     ],
     noBack: true,
   },
   envoys: {
     // The sister is only a seeming (see onWin); her hired swords are real.
-    id: 'envoys', kind: 'battle', encounterId: 'knights', mapId: 'open',
+    id: 'envoys', kind: 'battle', encounterId: 'hired-swords', mapId: 'open',
     intro: [
-      'You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Four hired swords stand behind her: a knight in dented black plate, two archers and a thug with a club. They watch you with bored, empty eyes.',
+      'You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with river-weed braided into her hair. Five hired swords stand behind her: a knight in dented black plate, a grey old sellsword with a scarred face, and three archers. They watch you with bored, empty eyes.',
       '"The famous company." She smiles without opening her mouth. "I am **{nettle}**, elder sister to the one you called the {reedwife}. She kept the door under the fen when your {thornwick} was three huts in the reeds. You cut her down, and you cost this family its living. That debt is written down, and it will be paid."',
       'She flexes her green fingers. "The rest of the collectors are gathering up on the mountain. Think of this as the first notice."',
     ],
@@ -1255,9 +1260,9 @@ const scenes: Record<string, Scene> = {
     text: ['The high trail leaves the last lookout behind at a stone marker the recruits have started saluting. Above you the hills stack up into the sky, pass over pass. Over the highest one you hear it for the first time: the **{calling}**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds.',
       // Sedge's first beat, on every road up: her grief, not Nettle's ledger.
       'For a moment there is a voice on the wind, too. It is a woman\'s voice, raw from crying. "She kept it alone," it says. "In the dark, all those winters. And nobody ever came." The wind turns, and the voice is gone.'],
-    // The level floor: every company meets the hills at 5th level (their
-    // fights are tuned for it). The council's floor stays as a backstop.
-    next: [{ id: 'up', label: 'Climb', to: 'hills', effects: [{ kind: 'xpToLevel', level: 5 }] }],
+    // No level floor on the climb: the hills' near side is tuned for 4th,
+    // and its fights carry the company to 5th.
+    next: [{ id: 'up', label: 'Climb', to: 'hills' }],
   },
 
   // === ACT 2 — THE HIGH HILLS ===========================================
@@ -1334,9 +1339,20 @@ const scenes: Record<string, Scene> = {
       'A boulder sits beside the trail with a handprint pressed into it. The hand was wider than a door.',
       'Water has cut fresh channels across the path, though no stream runs anywhere up here.',
       'Under it all runs that steady pull, which draws every beast on the mountain up toward one high place.',
+      'Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.',
     ],
-    next: [{ id: 'on', label: 'Pick your fights', to: 'hills',
-      effects: [{ kind: 'setFlag', flag: 'hills-read' }] }],
+    again: ['The griffons still wheel over the switchbacks, riding the pull up the mountain, and they have seen you.'],
+    next: [{ id: 'on', label: 'Stand and meet them', to: 'switchbacks-fight' }],
+  },
+  // The hills' opening fight, on every road up: the first thing the Calling
+  // has pulled up the mountain. Fought at 4th, like the rest of the hills'
+  // near side (the levels come from these fights, not from a floor).
+  'switchbacks-fight': {
+    id: 'switchbacks-fight', kind: 'battle', encounterId: 'griffon-flight', mapId: 'pass',
+    intro: ['The griffons come down on the switchbacks screaming, all beak and talon, and the loose rock goes out from under your boots. There is nowhere to run on a trail this narrow, and nothing to do but fight.'],
+    again: ['The griffons drop on the switchbacks again, screaming. Their talons rake the loose rock where you stand.'],
+    onWin: { to: 'hills', text: ['The last griffon tumbles away down the scree, and the trail is yours. Above you the whole mountain is still climbing toward the stone. Time to pick your fights.'],
+      effects: [{ kind: 'setFlag', flag: 'hills-read' }] },
   },
   'switchbacks-done': {
     id: 'switchbacks-done', kind: 'story', art: { emoji: '👣' },
@@ -1386,7 +1402,7 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'ok', label: 'Walk the open trail', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'setFlag', flag: 'manticore-sent' },
-        ...tally(), { kind: 'xp', amount: 200 }] }],
+        ...tally(), { kind: 'xp', amount: avoidedFightXP('manticore-cliff') }] }],
     noBack: true,
   },
   'tollcliff-fight': {
@@ -1499,7 +1515,7 @@ const scenes: Record<string, Scene> = {
     // Sparing it costs the hoard: the fight pays, the mercy does not.
     next: [{ id: 'ok', label: 'Let it go', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'green-cleared' }, { kind: 'setFlag', flag: 'green-sent' },
-        ...tally(DEN_TICKS), { kind: 'xp', amount: 150 }] }],
+        ...tally(DEN_TICKS), { kind: 'xp', amount: avoidedFightXP('green-dragon-den') }] }],
     noBack: true,
   },
   // The clock (see DAWNS): after the Calling peaks, a den left standing is
@@ -1543,9 +1559,9 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'fight', label: 'Break the water', to: 'seam-fight' }],
   },
   'seam-fight': {
-    id: 'seam-fight', kind: 'battle', encounterId: 'water-vortex', mapId: 'bog',
-    intro: ['The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is.'],
-    again: ['The pool stands up again into its rough giant\'s shape. It pours itself at you, as cold as the crack it came through.'],
+    id: 'seam-fight', kind: 'battle', encounterId: 'flooded-seam', mapId: 'bog',
+    intro: ['The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.'],
+    again: ['The pool stands up again into its rough giant\'s shape. It pours itself at you, as cold as the crack it came through, and the ice-things come shrieking after it.'],
     onWin: { to: 'hills', text: ['The elemental falls apart all at once. A hundred gallons of plain water run away downhill like any other brook.',
       'Behind it, the crack in the rock is closing. Just before it shuts, you hear a slow drip far below, like water on a stone door under the fen.'],
       effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, ...tally(), { kind: 'gold', amount: 50 }] },
@@ -1584,7 +1600,8 @@ const scenes: Record<string, Scene> = {
     next: [
       { id: 'pay', label: `Pay the toll (${factValue('ogre-toll')} gold)`, to: 'onihold-paid',
         requires: [{ kind: 'gold', atLeast: factValue('ogre-toll') }],
-        effects: [{ kind: 'gold', amount: -factValue('ogre-toll') }, { kind: 'setFlag', flag: 'oni-cleared' }, ...tally()] },
+        effects: [{ kind: 'gold', amount: -factValue('ogre-toll') }, { kind: 'setFlag', flag: 'oni-cleared' }, ...tally(),
+          { kind: 'xp', amount: avoidedFightXP('oni-hold') }] },
       // Wren's clue: set the two warbands on each other. One try, and easier
       // with her notes. A lie it sees through drives the party off the pass.
       { id: 'trick-notes', label: '[Deception DC 12] "The ettin is coming for your pass tonight."', to: 'onihold-tricked',
@@ -1605,7 +1622,7 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'ok', label: 'Walk through the open gate', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, { kind: 'setFlag', flag: 'oni-tricked' },
-        ...tally(), { kind: 'xp', amount: 300 }] }],
+        ...tally(), { kind: 'xp', amount: avoidedFightXP('oni-hold') }] }],
     noBack: true,
   },
   // The lie seen through: the warband drives the party off the pass, and
@@ -1625,8 +1642,8 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Walk through the open pass', to: 'hills' }], noBack: true,
   },
   'onihold-fight': {
-    id: 'onihold-fight', kind: 'battle', encounterId: 'oni', mapId: 'corridor',
-    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. An ogre in an iron collar marches out with its maul on its shoulder, like a drilled soldier. A scarred old orc in stolen mail calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
+    id: 'onihold-fight', kind: 'battle', encounterId: 'oni-hold', mapId: 'open',
+    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders, like drilled soldiers. The scarred old one calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
     onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate. The middle pass stands open, and beyond it lies the road to the giants\' hall and the stone. The fort\'s war-chest is yours.'],
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, ...tally(), { kind: 'gold', amount: 130 }] },
   },
@@ -1732,9 +1749,9 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'fight', label: 'Draw steel', to: 'steading-roused' }],
   },
   'steading-roused': {
-    id: 'steading-roused', kind: 'battle', encounterId: 'giants', mapId: 'ruins',
-    intro: ['The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogre spits out its breakfast, and the orc runner ducks behind them both.'],
-    again: ['The ettin lifts both its clubs again, and both heads still want the same thing. The ogre is on its feet this time, and the orc runner is already behind them both.'],
+    id: 'steading-roused', kind: 'battle', encounterId: 'giants-hall', mapId: 'ruins',
+    intro: ['The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast, and the orc runner ducks behind them all.'],
+    again: ['The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and the orc runner is already behind them all.'],
     onWin: STEADING_WON,
   },
   // The ogre-mage took the bait: its warband hit the hall first, and the
@@ -1744,7 +1761,7 @@ const scenes: Record<string, Scene> = {
   'steading-raided': {
     id: 'steading-raided', kind: 'battle', encounterId: 'giants-raided', mapId: 'ruins',
     intro: [
-      'Above the tree-line stands the giants\' hall, and you arrive at the end of its fight. Fire is eating half the roof. Dead orcs from the ogre-mage\'s warband lie in the yard, and the ettin\'s ogre lies among them. Of the ogre-mage itself there is only a trail of blue blood, leading down the far side of the mountain.',
+      'Above the tree-line stands the giants\' hall, and you arrive at the end of its fight. Fire is eating half the roof. Dead orcs from the ogre-mage\'s warband lie in the yard, and the ettin\'s ogres lie among them. Of the ogre-mage itself there is only a trail of blue blood, leading down the far side of the mountain.',
       'The **ettin** comes out at the first scrape of your boots, limping. "YOU let them in," roars the left head. "YOU were asleep," roars the right. A skinny orc runner stumbles out behind it. All three of them notice you at once.',
     ],
     again: ['The giants\' hall is still burning. The ettin limps out into the yard again, its two heads still arguing about the raid, and the orc runner stumbles after it.'],
@@ -1845,8 +1862,6 @@ const scenes: Record<string, Scene> = {
       '{sedge} does not turn either. Her voice is raw. It is the voice you heard on the wind at the foot of the high trail. "She kept it alone, in the dark, for an age. Nobody ever thanked her. You never even knew her name." {nettle} goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."',
       'The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," {nettle} says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
     ],
-    // The level floor lands before the hardest fight, not after it: every
-    // answer carries it (see REPLIES).
     next: replyChoices,
   },
   // Back in the bowl after falling back or a defeat. The sisters are either

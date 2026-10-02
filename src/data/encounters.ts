@@ -223,9 +223,11 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'gorgon-maze', name: 'Gorgon Lair', suggestedLevel: 5,
     members: ['gorgon'],
   },
+  // The Sunken Barrows' cold open, fought at 3rd level: four shadows, not
+  // two, so the churchyard pays its share of the road to 4th.
   'shadow-ambush': {
-    id: 'shadow-ambush', name: 'Shadow Ambush', suggestedLevel: 1,
-    members: ['shadow', 'shadow'],
+    id: 'shadow-ambush', name: 'Shadow Ambush', suggestedLevel: 2,
+    members: ['shadow', 'shadow', 'shadow', 'shadow'],
   },
   'specter-haunt': {
     id: 'specter-haunt', name: 'Specter Haunt', suggestedLevel: 2,
@@ -249,9 +251,11 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'black-dragon-den', name: "Black Wyrmling's Bog", suggestedLevel: 2,
     members: ['black-wyrmling', 'kobold', 'kobold'],
   },
+  // The Wyrmcalling's green and blue dens, met at 4th: two kobold
+  // emberlings apiece tend the hoard beside the spearmen (still 100% at 4th).
   'green-dragon-den': {
     id: 'green-dragon-den', name: "Green Wyrmling's Thicket", suggestedLevel: 2,
-    members: ['green-wyrmling', 'kobold', 'kobold'],
+    members: ['green-wyrmling', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling'],
   },
   'white-dragon-den': {
     id: 'white-dragon-den', name: "White Wyrmling's Cave", suggestedLevel: 2,
@@ -259,7 +263,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   },
   'blue-dragon-den': {
     id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 3,
-    members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold'],
+    members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling'],
   },
   'red-dragon-den': {
     id: 'red-dragon-den', name: "Red Wyrmling's Forge", suggestedLevel: 4,
@@ -288,10 +292,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['ghoul', 'ghoul'],
   },
   // The Ashfang's goblin outriders: a boss and his swarming pack. The road-out
-  // climax of Act 1 — still the humanoid, hired-blade face of the band.
+  // climax of Act 1 — still the humanoid, hired-blade face of the band. Four
+  // warriors, not three: with no milestone on the win, this fight carries more
+  // of the road to 2nd level (88% won by a 1st-level party, greedy AI).
   'goblin-outriders': {
     id: 'goblin-outriders', name: 'Ashfang Outriders', suggestedLevel: 1,
-    members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
+    members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
   },
   // The marsh tribe in the green hag's thrall — lizardfolk driven to serve, herding
   // one of her monstrous toads. The Act 2 climax: first proof the raiders command
@@ -343,6 +349,60 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'den-muster', name: 'The Pit-Brute', suggestedLevel: 3,
     members: ['ogre', 'orc', 'orc'],
   },
+  // --- The trilogy's own spine fights, sized so fights carry the levels -----
+  // (no milestone floors; see docs/module-writing-guide.md, "Levels come from
+  // fights"). Each is the ladder roster it grew from, kept separate so the
+  // classic ladder and the arena keep theirs. Win rates: a fresh party at the
+  // level the chapter really meets it, greedy AI, 120 seeds.
+  // The drowned chapel: Halden's flock, living and dead (`temple` + two
+  // drowned parishioners). 92% at 3rd.
+  'drowned-chapel': {
+    id: 'drowned-chapel', name: 'The Drowned Chapel', suggestedLevel: 3,
+    members: ['priest', 'acolyte', 'acolyte', 'ghoul', 'ghoul', 'skeleton', 'skeleton'],
+  },
+  // The fen's corpse-lights: three wisps and the drowned thing they feed.
+  // 100% at 3rd, but it drains the party.
+  'corpse-lights': {
+    id: 'corpse-lights', name: 'The Corpse-Lights', suggestedLevel: 3,
+    members: ['will-o-wisp', 'will-o-wisp', 'will-o-wisp', 'specter'],
+  },
+  // The embalmed king and his household dead, ghasts in their funeral best:
+  // the Undercrypt's hardest room before the door. 91% at 3rd.
+  'barrow-king': {
+    id: 'barrow-king', name: 'The Embalmed King', suggestedLevel: 3,
+    members: ['mummy', 'ghast', 'ghast'],
+  },
+  // The sister's hired swords at the war-camp: a knight, a veteran sellsword
+  // and three archers. 96% at 4th.
+  'hired-swords': {
+    id: 'hired-swords', name: 'The Sister\'s Hired Swords', suggestedLevel: 4,
+    members: ['knight', 'veteran', 'scout', 'scout', 'scout'],
+  },
+  // The ogre-mage's hold, met at 4th (the oni's own ladder roster wins 13% at
+  // 4th in a corridor): its orcs march out with it onto open ground before
+  // the gate. 73% at 4th.
+  'oni-hold': {
+    id: 'oni-hold', name: 'The Ogre-Mage\'s Hold', suggestedLevel: 4,
+    members: ['ogre-mage', 'orc', 'orc'],
+  },
+  // The first thing on the high trail: a flight of griffons riding the
+  // Calling's pull up the switchbacks. The hills' opening fight, on every road
+  // up. 98% at 4th.
+  'griffon-flight': {
+    id: 'griffon-flight', name: 'Griffons on the Switchbacks', suggestedLevel: 4,
+    members: ['griffon', 'griffon', 'griffon', 'griffon'],
+  },
+  // The flooded pass: the water elemental, and the ice-mephits that came
+  // through the crack behind it. 95% at 4th.
+  'flooded-seam': {
+    id: 'flooded-seam', name: 'The Flooded Pass', suggestedLevel: 4,
+    members: ['water-elemental', 'ice-mephit', 'ice-mephit', 'ice-mephit'],
+  },
+  // The giants' hall: the ettin, two ogres and a runner. 88% at 4th.
+  'giants-hall': {
+    id: 'giants-hall', name: 'The Giants\' Hall', suggestedLevel: 4,
+    members: ['ettin', 'ogre', 'ogre', 'orc'],
+  },
 };
 
 /**
@@ -356,6 +416,16 @@ export function encounterXP(encounterId: Id): number {
   const enc = ENCOUNTERS[encounterId];
   if (!enc) return 0;
   return enc.members.reduce((sum, mid) => sum + (MONSTER_XP[mid] ?? 0), 0);
+}
+
+/**
+ * What a fight is worth to each of a party of four: the XP owed to a company
+ * that talks, sneaks or pays its way past it, so cleverness never leaves it
+ * behind a company that fought (docs/module-writing-guide.md, "Levels come
+ * from fights"). Reads the roster, so the reward follows any retuning.
+ */
+export function avoidedFightXP(encounterId: Id): number {
+  return Math.round(encounterXP(encounterId) / 4);
 }
 
 /** Creature types that carry no coin or valuables — a wolf pack has no purse and

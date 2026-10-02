@@ -110,19 +110,15 @@ describe('campaign bugs found by the second read-through', () => {
     }
   });
 
-  it('the finale\'s level floor comes on the way to the war council, not between an answer and its reply', () => {
+  it('the finale has no level floor: the hills\' fights carry a company to 5th', () => {
     const wc = byId('wyrmcalling');
     const floor = { kind: 'xpToLevel', level: 5 };
-    const approach = wc.scenes['calling-approach'];
-    const battle = wc.scenes['calling-battle'];
-    if (approach?.kind !== 'story' || battle?.kind !== 'battle') throw new Error();
-    // Every way into the council (the one way to the stone the first time) carries it.
-    const intoCouncil = Object.values(wc.scenes).flatMap((sc) =>
-      (sc.kind === 'story' || sc.kind === 'dialogue' ? sc.next : []).filter((c) => c.to === 'war-council'));
-    expect(intoCouncil.length).toBeGreaterThan(0);
-    for (const c of intoCouncil) expect(c.effects ?? []).toContainEqual(floor);
-    for (const c of approach.next) expect(c.effects ?? []).not.toContainEqual(floor);
-    expect(battle.onWin.effects ?? []).not.toContainEqual(floor);
+    // Not on the climb, not on the way into the council, not on the stone's win.
+    for (const sc of Object.values(wc.scenes)) {
+      const choices = sc.kind === 'story' || sc.kind === 'dialogue' ? sc.next : [];
+      for (const c of choices) expect(c.effects ?? [], `${sc.id}:${c.id}`).not.toContainEqual(floor);
+      if (sc.kind === 'battle') expect(sc.onWin.effects ?? [], sc.id).not.toContainEqual(floor);
+    }
   });
 });
 
