@@ -307,11 +307,14 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'hag-thralls', name: 'The Hag\'s Thralls', suggestedLevel: 2,
     members: ['lizardfolk', 'lizardfolk', 'lizardfolk', 'giant-toad'],
   },
-  // The den's gate: a bugbear enforcer and the gnolls the Ashfang let run their
-  // perimeter for scraps.
+  // The den's gate: a bugbear enforcer and the gnoll pack the Ashfang let run
+  // their perimeter for scraps, with the bone-hung packcaller that keeps them.
+  // Fought or slipped (a slip pays `avoidedFightXP`), it carries a share of the
+  // road to 3rd before the chief's hall. Met at 2nd: 100% (greedy AI, corridor,
+  // 100 seeds); 72% for a company that reaches it still at 1st.
   'den-gate': {
-    id: 'den-gate', name: 'Gate Enforcers', suggestedLevel: 3,
-    members: ['bugbear', 'gnoll', 'gnoll'],
+    id: 'den-gate', name: 'Gate Enforcers', suggestedLevel: 2,
+    members: ['bugbear', 'gnoll-packcaller', 'gnoll', 'gnoll', 'gnoll'],
   },
   // The chief and the power behind him: the Ashfang warlord flanked by the green
   // hag whose marsh he sold his own people to, and one last human blade.
@@ -344,11 +347,20 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['giant-hyena', 'giant-hyena'],
   },
   // The muster yard: a captured ogre the Ashfang keep chained as a pit-brute,
-  // loosed on you by two orc goaders. A unique roster (the module's only ogre)
-  // and the first thing you meet inside the palisade.
+  // loosed on you by two orc goaders. Fought on the classic ladder; The Hollow
+  // Road fights `den-pit`, which grew from it.
   'den-muster': {
     id: 'den-muster', name: 'The Pit-Brute', suggestedLevel: 3,
     members: ['ogre', 'orc', 'orc'],
+  },
+  // The Hollow Road's pit as it is fought: the chained ogre and its two orc
+  // goaders, with the berserker who is the pit's champion. A unique roster
+  // (the module's only ogre) and the forced fight on the den's spine, so it
+  // carries the rest of the road to 3rd before the chief's hall. Met at 2nd:
+  // 86% on its own map (greedy AI, ruins, 200 seeds).
+  'den-pit': {
+    id: 'den-pit', name: 'The Pit-Brute and Its Champion', suggestedLevel: 2,
+    members: ['ogre', 'berserker', 'orc', 'orc'],
   },
   // --- The trilogy's own spine fights, sized so fights carry the levels -----
   // (no milestone floors; see docs/module-writing-guide.md, "Levels come from

@@ -147,7 +147,7 @@ Pikemen stand to their posts along the east line. At the far end the line runs t
 
 The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. By it sits the old hedge-witch from the regulars' table at Mira's inn, with river-stones in her hair. She knits while she talks, and she does not look up.
 
-"Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
+"Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed, and their chief was glad to sell them to her," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
 
 "And the stone sings into the ground as well as the sky. We feel it in our feet. The dead under the barrows are turning in their sleep." She pulls her yarn tight. "Break that stone before they wake up properly."
 
@@ -473,11 +473,11 @@ On a ledge above the bowl crouches the manticore from the toll-cliff. It came up
 
 They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister kept the door under the fen since before your grandmothers' grandmothers. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
-Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
+Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-Nettle's hands shake in the rock. She watches your mouth like a clerk waiting for a signature. Sedge has not looked at you once.
+Nettle's hands shake in the rock. She watches your mouth like a clerk waiting for a signature. Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "She fed on the people of this valley. We owe you nothing."**
 

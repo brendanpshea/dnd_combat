@@ -15,14 +15,17 @@
  * shouted down or caught, the den's gate slipped, Vex turned so that Hask
  * stands aside from the chief's guard; staring down the road-out goblins carries the 2nd level a
  * company that has done the town would reach by fighting them. A company
- * that fights its road reaches 2nd on the marsh road and 3rd by the chief's
- * hall; one that walks past the side fights (the mill, the barrow, the
- * thicket) meets the chief at 2nd, by its own choice.
+ * that fights its road reaches 2nd on the marsh road, and every company
+ * reaches 3rd before the chief's hall: the den's
+ * gate (fought or slipped) and the pit on its forced spine carry about 510 XP
+ * a head between them, enough to lift a company that walked past every side
+ * fight (the mill, the barrow, the thicket, the toads, the kennels) to 3rd
+ * just as it wins the pit. The side fights buy a margin, not the level.
  *
  * MONSTER VARIETY is a goal in itself — this module is a tour of the bestiary,
  * a distinct roster per fight (goblins, human crooks, the marsh's toads and
  * risen dead, a hag-thrall lizardfolk war-party, a bugbear/gnoll gate, a chained
- * ogre pit-brute, kenneled hyenas, and a green-hag-and-warlord finale) across a
+ * ogre pit-brute and its berserker champion, kenneled hyenas, and a green-hag-and-warlord finale) across a
  * spread of maps (road, village square, bog ford, ruins, corridor, fire-pit). The connective story explains
  * *why* beasts, undead and lizardfolk fight for "bandits": chief Vargan, a
  * Thornwick-born reed-cutter, sold the reed-cutters' common marsh to the
@@ -1127,8 +1130,8 @@ const scenes: Record<string, Scene> = {
   },
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
-    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks through the gateway. Behind him two gnolls come yammering their high, laughing bark. The narrow timber run hems all three in.'],
-    again: ['The watch-post saw you coming this time. The bugbear already fills the gateway, and the two gnolls yammer their high, laughing bark behind him.'],
+    intro: ['A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks through the gateway. Behind him three gnolls come yammering their high, laughing bark, and a fourth, hung with bone charms, howls them on. The narrow timber run hems them all in.'],
+    again: ['The watch-post saw you coming this time. The bugbear already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway. The path in is open.'],
       effects: [{ kind: 'setFlag', flag: 'den-entered' }, SIGNAL_SPENT] },
     parley: {
@@ -1155,7 +1158,7 @@ const scenes: Record<string, Scene> = {
   'gate-caught': {
     id: 'gate-caught', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
     surprise: 'party',
-    intro: ['Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, the bugbear and two gnolls are already waiting at the foot of the wall.'],
+    intro: ['Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, the bugbear and his gnoll pack are already waiting at the foot of the wall.'],
     onWin: { to: 'inner', text: ['The bugbear goes down last, face-first in the mud at the foot of the wall. The path in is open.'],
       effects: [{ kind: 'setFlag', flag: 'den-entered' }, SIGNAL_SPENT] },
   },
@@ -1176,7 +1179,7 @@ const scenes: Record<string, Scene> = {
       rooms: [
         { id: 'gate', name: 'Gate', size: 'small', exit: { to: 'trail', label: 'Out to the marsh road' } },
         { id: 'yard', name: 'Muster Yard', size: 'large',
-          firstVisit: ['Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.'] },
+          firstVisit: ['Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.', 'No one at the fire has looked round yet. Behind the drying-racks there is room to sit, bind a cut and get your breath before anyone does.'] },
         { id: 'kennel', name: 'Kennels', fight: 'den-hyenas' },
         // What the hag is paid in: the captives, penned behind the kennels.
         { id: 'pens', name: 'The Pens', size: 'small', event: { scene: 'den-pens-door' } },
@@ -1203,14 +1206,15 @@ const scenes: Record<string, Scene> = {
     },
   },
   'den-muster': {
-    id: 'den-muster', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins',
+    id: 'den-muster', kind: 'battle', encounterId: 'den-pit', mapId: 'ruins',
     intro: [
       'The chained shape in the pit stands up, and keeps standing up: an **ogre**, half-starved, whip-scarred and beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they grin and haul the pins.',
-      '"Fresh meat for the pit!" one bellows, and slips the ogre\'s chain.',
+      'On the far side of the ring, a bare-chested raider gets up off an upturned barrel. Scars run from his collarbone to his belt. He lifts a notched greataxe and grins, because this is his pit.',
+      '"Fresh meat for the pit!" a goader bellows, and slips the ogre\'s chain.',
     ],
-    again: ['The ogre is off its chain now, and it is not going back on. The two orc goaders whoop and drive it at you with their barbed poles.'],
-    onWin: { to: 'inner', text: ['The ogre crashes down across its own broken chains, and the goaders don\'t outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.'],
-      effects: [{ kind: 'gold', amount: 25 }] },
+    again: ['The ogre is off its chain now, and it is not going back on. The two orc goaders whoop and drive it at you with their barbed poles. Their scarred champion comes round the ring behind it, greataxe high.'],
+    onWin: { to: 'inner', text: ['The ogre crashes down across its own broken chains. The goaders and their champion don\'t outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.'],
+      effects: [{ kind: 'gold', amount: 40 }] },
   },
   'den-camp-ambush': {
     id: 'den-camp-ambush', kind: 'battle',

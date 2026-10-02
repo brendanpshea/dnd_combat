@@ -21,7 +21,7 @@ installable to a phone home screen, works offline.
 | Ancestries | 8 |
 | Spells | 100 — cantrips through 5th level |
 | Monsters | 146, of which 17 cast spells |
-| Authored encounters | 85 |
+| Authored encounters | 86 |
 | Weapons / items / features | 254 / 103 / 153 |
 | Maps | 11 hand-built across 6 themes, plus a generator |
 
@@ -127,7 +127,7 @@ npm run adventure                          # a story module, headless
 | `--map <id>` | `open` `ruins` `marsh` `firepit` `corridor` `village` `grove` `thicket` `bog` `pass` `cliff` | Battle map (random if omitted) |
 | `--level <n>` | `1`–`5` | Party level (both sides in a mirror match) |
 | `--species <ids>` | four comma-separated ids | Species for Fighter, Wizard, Cleric, Rogue |
-| `--encounter <id>` | 85 rosters — see `ENCOUNTERS` in `src/data/encounters.ts` | Fight monsters instead of a mirror party |
+| `--encounter <id>` | 86 rosters — see `ENCOUNTERS` in `src/data/encounters.ts` | Fight monsters instead of a mirror party |
 | `--p1 ai`, `--p2 ai` | | Let the AI play that team |
 | `--ai <level>` | `easy` `normal` `hard` | AI strength |
 | `--new`, `--auto` | (campaign only) | Restart / let the AI play the party |
