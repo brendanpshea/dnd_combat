@@ -197,6 +197,12 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // The cast: every introducing scene exists.
+  for (const member of module.cast ?? []) {
+    if (!member.introducedAt.length) errors.push(`cast ${member.name} has no introducing scene`);
+    for (const sid of member.introducedAt) if (!ids.has(sid)) errors.push(`cast ${member.name} is introduced at unknown scene '${sid}'`);
+  }
+
   // The chapter's clock: mornings in order, after the first day.
   let lastDawn = 1;
   for (const d of module.dawns ?? []) {

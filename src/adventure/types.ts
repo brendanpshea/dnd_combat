@@ -452,6 +452,14 @@ export interface Module {
   /** The NPCs who may join the party in this module, by id. */
   companions?: Record<Id, CompanionDef>;
   /**
+   * The named characters a player meets in this chapter, and the scenes that
+   * introduce each. The reachability search proves no route shows a name
+   * before one of its introductions (a name with no referent is a debt the
+   * reader carries). A character known from an earlier chapter, by canon,
+   * needs no entry here.
+   */
+  cast?: CastMember[];
+  /**
    * The chapter's clock. A chapter starts on day 1, and every long rest (at a
    * camp, or a long `rest` scene) ends a day. Each dawn here plays on the
    * morning its `day` begins: its text is shown, and its effects apply. That
@@ -461,6 +469,17 @@ export interface Module {
    * slept, so it does not end the day. Days ascending, each 2 or later.
    */
   dawns?: Dawn[];
+}
+
+/** A named character and where a chapter introduces them (Module.cast). */
+export interface CastMember {
+  /** The name as written in prose ("Vargan"). Matched as a whole word. */
+  name: string;
+  /** Other names the prose uses for them ("the chief"), matched in any case. */
+  aka?: string[];
+  /** Scenes that introduce them. Any of these, entered first, counts; a
+   *  mention inside an introducing scene is the introduction itself. */
+  introducedAt: SceneRef[];
 }
 
 /** A morning that matters on a chapter's clock (Module.dawns). */

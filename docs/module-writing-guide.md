@@ -295,6 +295,25 @@ the search can't see gold, items, classes or counted flags (tallies), and
 says so. Prefer `assumes` to hoping: a shared scene that silently assumes a
 route is the commonest contradiction in review.
 
+### The cast
+
+Rule 7 (a name with no referent is a debt) is checked, not hoped for. List
+each chapter's named characters in `cast`, with the scenes that introduce
+them:
+
+```ts
+cast: [
+  { name: 'Vargan', aka: ['the chief'], introducedAt: ['tavern-meet', 'boss-approach'] },
+],
+```
+
+The reachability search proves no route shows the name (or an alias)
+anywhere a player reads it (prose, labels, map markers, slides) before
+passing one of its introducing scenes, and reports a route that does. A
+mention inside an introducing scene is the introduction. Names are matched as
+whole words, as written; aliases in any case. A character known from an
+earlier chapter needs no entry in a later one.
+
 ### The clock
 
 A chapter starts on day 1, and every long rest ends a day: a night at a

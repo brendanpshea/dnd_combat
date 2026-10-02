@@ -106,6 +106,20 @@ function assumptionsOf(scene: Scene): Array<{ where: string; reqs: Requirement[]
 const assumedReads = (module: Module): Requirement[] =>
   Object.values(module.scenes).flatMap((s) => assumptionsOf(s).flatMap((a) => [...a.reqs, ...a.when]));
 
+/** All the words a scene can show: its prose (every field, every variant),
+ *  its choice and approach labels, its map's labels, its ending's slides. */
+function sceneWords(scene: Scene): string {
+  const out: string[] = [];
+  for (const { paras } of parasOf(scene)) for (const p of paras) out.push(typeof p === 'string' ? p : p.text);
+  if (scene.kind === 'story' || scene.kind === 'dialogue') for (const c of scene.next) out.push(c.label);
+  if (scene.kind === 'dialogue') out.push(scene.npc.name);
+  if (scene.kind === 'challenge') for (const a of scene.approaches) out.push(a.label, a.hint ?? '');
+  if (scene.kind === 'battle' && scene.parley?.label) out.push(scene.parley.label);
+  if (scene.kind === 'ending') for (const sl of scene.slides ?? []) out.push(sl.text);
+  if (scene.kind === 'explore') for (const n of scene.map.nodes) out.push(n.label, n.note ?? '');
+  return out.join('\n');
+}
+
 /** The carried flags (`module:flag`) a party's path, or a line's assumption,
  *  can depend on. */
 function carriedReads(module: Module): string[] {
@@ -542,6 +556,38 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       }
     }
   });
+  // The cast (Module.cast): no route shows a name before one of its
+  // introductions. Walk forward from the start without entering any
+  // introducing scene; a state there whose scene mentions the name is a route
+  // that shows it first. No extra facts: it reads the graph already built.
+  for (const member of module.cast ?? []) {
+    const intro = new Set(member.introducedAt.map((sid) => index.get(sid)).filter((x): x is number => x !== undefined));
+    // The name as written (proper nouns are capitalised: "Wren", not a wren);
+    // an alias in any case ("The chief" opening a sentence).
+    const word = (w: string, flags: string) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, flags);
+    const words = [word(member.name, ''), ...(member.aka ?? []).map((a) => word(a, 'i'))];
+    const mentions = ids.map((id, si) => !intro.has(si) && words.some((re) => re.test(sceneWords(module.scenes[id]!))));
+    if (!mentions.some(Boolean)) continue;
+    const from = new Int32Array(N).fill(-2);
+    const queue: number[] = [];
+    for (let n = 0; n < N; n++) if (parent[n] === -1 && !intro.has(sceneOf[n]!)) { from[n] = -1; queue.push(n); }
+    let found = -1;
+    for (let q = 0; q < queue.length && found < 0; q++) {
+      const n = queue[q]!;
+      if (mentions[sceneOf[n]!]) { found = n; break; }
+      for (let i = fwdOff[n]!; i < fwdOff[n + 1]!; i++) {
+        const m = fwd[i]!;
+        if (from[m] !== -2 || intro.has(sceneOf[m]!)) continue;
+        from[m] = n; queue.push(m);
+      }
+    }
+    if (found < 0) continue;
+    const path: string[] = [];
+    for (let m = found; from[m]! >= 0; m = from[m]!) path.unshift(`${ids[sceneOf[from[m]!]!]} → ${ids[sceneOf[m]!]}`);
+    errors.push(`[${ids[sceneOf[found]!]}] names ${member.name} before any introduction (${member.introducedAt.join(', ')})${carriedNote}.`
+      + ` One way: ${path.length ? path.join(', ') : '(the start)'}`);
+  }
+
   // What each line takes for granted (`assumes`) holds on every route that
   // reaches it. States are numbered breadth-first, so the first state found
   // breaking an assumption has the shortest way there.
