@@ -73,7 +73,7 @@ _Journal (lead): The Calling Stone_
 
 <sub>scene `command-thin`</sub>
 
-The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
+The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
 
 It is a short row. "Not enough yet," Vex says, and he taps the fires still burning in the passes. "If all of that came down tonight, it would go through this camp like a flood."
 

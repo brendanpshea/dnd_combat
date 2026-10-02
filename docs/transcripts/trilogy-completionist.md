@@ -1485,7 +1485,7 @@ _-10 gold (1390)_
 
 <sub>scene `sb-claim-round`</sub>
 
-The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. Then someone names Mira, who pretends not to hear it.
+The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. Then someone names Mira the innkeeper, who pretends not to hear it.
 
 **» Back to the square**
 
@@ -1499,7 +1499,7 @@ Thornwick goes about its burying, and its living.
 
 The barrows sleep, and Thornwick's churchyard is quiet again.
 
-Halden and his acolytes share a new grave by the chapel. Mira paid for the white headstone, and had his own burial words cut into it.
+Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.
 
 Far below the barrow-field, the Warden's door stays shut and silent, the way a good door should.
 
@@ -1575,7 +1575,7 @@ _Journal (lead): The Calling Stone_
 
 <sub>scene `command-thin`</sub>
 
-The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
+The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
 
 It is a short row. "Not enough yet," Vex says, and he taps the fires still burning in the passes. "If all of that came down tonight, it would go through this camp like a flood."
 

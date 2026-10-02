@@ -1135,7 +1135,7 @@ Thornwick reburies its dead in the following days, oldest graves first. The reev
 
 The barrows sleep, and Thornwick's churchyard is quiet again.
 
-Halden and his acolytes share a new grave by the chapel. Mira paid for the white headstone, and had his own burial words cut into it.
+Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.
 
 Far below the barrow-field, the Warden's door stays shut and silent, the way a good door should.
 

@@ -2157,7 +2157,7 @@ Thornwick reburies its dead in the following days, oldest graves first. The reev
 
 The barrows sleep, and Thornwick's churchyard is quiet again.
 
-Halden and his acolytes share a new grave by the chapel. Mira paid for the white headstone, and had his own burial words cut into it.
+Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.
 
 The door holds, but on still nights the fen-folk swear that something under the barrows still knocks, faintly.
 
@@ -2427,7 +2427,7 @@ The wyrmling uncoils along a broken wall, crackling, and the air turns sharp and
 
 <sub>scene `wc-defeat`</sub>
 
-You wake in the hospital tent to canvas light and the smell of Bram's stew. The scouts carried you off the mountain in relays, and you have slept a whole day away.
+You wake in the hospital tent to canvas light and the smell of stew from Bram's war-stores. The scouts carried you off the mountain in relays, and you have slept a whole day away.
 
 Vex looks in, sees that you are breathing, and sets your kit at the foot of the cot without a word. The hills are still up there. The stone is still calling. It is only waiting.
 
@@ -2583,7 +2583,7 @@ The Calling peaked in the night. The whole mountain hummed with it, and horns so
 
 <sub>scene `peak-night`</sub>
 
-The war-camp has had its night. The Calling peaked in the dark, and everything still loose in the hills came down the slope at once, just as Vex said it would.
+The war-camp has had its night. The Calling peaked in the dark, and everything still loose in the hills came down the slope at once, just as Captain Vex said it would.
 
 The pikes held, but it cost. The east line is a mess of mud and broken shafts, and the hospital tent is full. Vex walks the line at dawn, stopping at every stretcher.
 
@@ -2637,7 +2637,7 @@ The hedge-witch is still knitting by the fen-folk's fire. "Hear it knock?" she s
 
 <sub>scene `command-half`</sub>
 
-The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
+The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
 
 The row reaches about halfway down the edge of the map. "That's about half of it," Vex says. "The rest is still up there."
 

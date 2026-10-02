@@ -651,7 +651,7 @@ _-10 gold (999)_
 
 <sub>scene `sb-claim-round`</sub>
 
-The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. Then someone names Mira, who pretends not to hear it.
+The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. Then someone names Mira the innkeeper, who pretends not to hear it.
 
 **» Back to the square**
 
@@ -665,7 +665,7 @@ Thornwick goes about its burying, and its living.
 
 The barrows sleep, and Thornwick's churchyard is quiet again.
 
-Halden and his acolytes share a new grave by the chapel. Mira paid for the white headstone, and had his own burial words cut into it.
+Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.
 
 Far below the barrow-field, the Warden's door stays shut and silent, the way a good door should.
 
