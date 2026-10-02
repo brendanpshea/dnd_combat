@@ -97,7 +97,7 @@ His finger moves to the dens. "The green, blue and red dens are still standing. 
 
 _The shop: The War-Stores (the route buys nothing)._
 
-Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more. Except my goods, because I'm a patriot. Also the captain reads my books." He turns a crate around to face you. "There's big things up that hill. Buy accordingly."
+Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more," he says. "Except my goods. The captain reads my books." He turns a crate around to face you. "There's big things up that hill. Buy accordingly."
 
 **↳ The War-Camp** <sub>(map `warcamp`)</sub>
 
@@ -145,7 +145,7 @@ Pikemen stand to their posts along the east line. At the far end the line runs t
 
 <sub>scene `fenfolk-fire`</sub>
 
-The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old hedge-witch waves you over. She has river-stones braided into her hair. In Thornwick she drinks at the regulars' table in Mira's inn. She knits while she talks, and she doesn't look up.
+The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. By it sits the old hedge-witch from the regulars' table at Mira's inn, with river-stones in her hair. She knits while she talks, and she does not look up.
 
 "Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
 
@@ -159,7 +159,7 @@ The fen-folk keep their own small fire at the edge of the camp, with their boar-
 
 <sub>scene `hills-out`</sub>
 
-The high trail leaves the last lookout behind at a stone marker the recruits have started saluting. Above you the hills stack up into the sky, pass over pass. Over the highest one you hear it for the first time: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds.
+The high trail leaves the last lookout behind at a stone marker the recruits have started saluting. Above you the hills stack up into the sky, pass over pass. Over the highest one you hear it at last: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds.
 
 For a moment there is a voice on the wind, too. It is a woman's voice, raw from crying. "She kept it alone," it says. "In the dark, all those winters. And nobody ever came." The wind turns, and the voice is gone.
 
@@ -179,7 +179,7 @@ A boulder sits beside the trail with a handprint pressed into it. The hand was w
 
 Water has cut fresh channels across the path, though no stream runs anywhere up here.
 
-Under it all runs that steady pull, and every track in the mud points the same way: up.
+Under it all runs that steady pull. The mud is full of tracks, and none of them come back down.
 
 Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.
 
@@ -193,7 +193,7 @@ The griffons come down on the switchbacks screaming, all beak and talon, and the
 
 **» Fight — won**
 
-The last griffon tumbles away down the scree, and the trail is yours. Above you the whole mountain is still climbing toward the stone. Time to pick your fights.
+The last griffon tumbles away down the loose rock, and the trail is yours. Above you the whole mountain is still climbing toward the stone.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -207,7 +207,7 @@ The last griffon tumbles away down the scree, and the trail is yours. Above you 
 
 The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
 
-A green **wyrmling** slides out of the briar on its belly. It is no longer than a pony, but its grin is a dragon's grin, and everything in that bone pile mistook it for a safe one.
+A green **wyrmling** slides out of the briar on its belly. It is no longer than a pony, but its grin is a dragon's grin. Every bone on the tunnel floor came from something bigger than it is.
 
 **» Go in after it**
 
@@ -239,7 +239,7 @@ A crack runs down the rock behind the pool, thin as a knife cut, and cold air br
 
 <sub>scene `seam-fight`</sub>
 
-The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like the flood it actually is. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.
+The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like a flood. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.
 
 **Battle:** The Flooded Pass <sub>(`flooded-seam` on `bog`)</sub>
 
@@ -247,7 +247,7 @@ The pool stands up into twelve feet of mountain water, in the rough shape of a g
 
 The elemental falls apart all at once. A hundred gallons of plain water run away downhill like any other brook.
 
-Behind it, the crack in the rock is closing. Just before it shuts, you hear a slow drip far below, like water on a stone door under the fen.
+Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
 _+50 gold (1025)_
 
@@ -271,15 +271,13 @@ Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and 
 
 "The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
-Wren's notes are short on the ogre-mage: *Wants the valley. Doesn't trust the ettin.*
-
 **» Pay the toll (600 gold)**
 
 _-600 gold (425)_
 
 <sub>scene `onihold-paid`</sub>
 
-The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times. By noon its warband is marching down the far side of the mountain, away from the valley. The middle pass is open.
+The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times. By noon its warband is marching down the other side of the mountain, away from the valley. The middle pass is open.
 
 **» Walk through the open pass**
 
@@ -293,7 +291,7 @@ Above the tree-line stands the giants' hall. Something built it in one season, o
 
 At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.
 
-"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Then both heads notice you at the same moment, and for the first time all day they agree about something.
+"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Both heads notice you at the same moment, and both of them stop talking.
 
 In the margin of Wren's map, beside the hall, she has written: *Two heads. Never agree. Use that.*
 
@@ -305,7 +303,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 "The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.
 
-The ettin stands very still for a long moment, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll on down the far side of the mountain, and the ogres and the orc runner chase after them.
+The ettin stands very still, and then it punches itself in the jaw. The two heads fight their way across the hall and out through the back wall. They roll away down the mountain, with the ogres chasing after them and the orc trotting behind.
 
 The road to the stone stands open.
 
@@ -322,8 +320,6 @@ The trail narrows under an overhang, and something lies along the ledge above it
 It lifts its head, and the face is a man's. It is a **manticore**, and it is in no hurry at all.
 
 "Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with a man's mouth, and the teeth behind it are a lion's. "You will pay in meat. I have decided."
-
-You remember what Wren wrote about this cliff: *It talks. It's greedy.*
 
 **» [Persuasion DC 11] "Have the hags paid you yet?"**
 
@@ -343,11 +339,11 @@ The manticore's human face goes thoughtful. "Promises," it says, tasting the wor
 
 <sub>scene `boarruns`</sub>
 
-A dry gully crosses the trail. Hooves have churned its floor to mud and left coarse hair snagged on every thorn. The hoofprints are as wide as wash-basins, and every one of them points uphill, toward the song.
+A dry gully crosses the trail. Hooves have churned its floor to mud and left coarse hair snagged on every thorn. The hoofprints are as wide as wash-basins, and the newest are still filling with water.
 
 Under your boots, the ground has begun to drum.
 
-Wren's notes have one line on this gully, underlined twice: *Watch the dust.*
+Far up the gully, a haze of dust hangs where the herd last ran. You know what to watch for now.
 
 **» [Survival DC 11] Time the stampede**
 
@@ -357,7 +353,7 @@ Wren's notes have one line on this gully, underlined twice: *Watch the dust.*
 
 You lie flat on the lip of the gully and watch the dust. The herd thunders past below you and away over the next rise. You count to twenty, and then you run.
 
-On the far side you pile dry brush across the narrows and set it alight. When the herd comes back, it smells the smoke and swings away over the far ridge, away from the valley. Every boar lives, and not one of them will come near the camp.
+Across the gully you pile dry brush in the narrows and set it alight. When the herd comes back, it smells the smoke and swings away over the far ridge, away from the valley. Every boar lives, and not one of them will come near the camp.
 
 **» Climb on**
 
@@ -393,9 +389,9 @@ On the largest heap lies a red **wyrmling** with one eye open. The stone's song 
 
 **» Fight — won**
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh them twice and pay well.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
-The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war," she says, like a clerk striking out a line. "Never mind. Promises are cheap, and we have plenty left."
+The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She says it like a clerk striking out a line.
 
 _+120 gold (640)_
 
@@ -423,7 +419,7 @@ The statues stand in crooked rows, and their purses lie in the grass at their fe
 
 One wrong step on the loose rock, and you join the collection.
 
-**» Creep in the way Wren's notes say**
+**» Creep in while it grazes**
 
 `[Stealth DC 11 — Ash the Sneaky rolls 22 — passed]`
 
@@ -479,11 +475,11 @@ On a ledge above the bowl crouches the manticore from the toll-cliff. It came up
 
 They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister kept the door under the fen since before your Thornwick had a name. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
-Sedge does not turn either. Her voice is raw. "She kept it alone, in the dark, for an age. Nobody ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
+Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Nobody ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "She fed on the people of this valley. We owe you nothing." — Nettle has the shorter temper, and her grip on the rock is only as steady as she is.**
+**» "She fed on the people of this valley. We owe you nothing." — Nettle's hands are shaking.**
 
 <sub>scene `answer-defiant`</sub>
 
@@ -499,7 +495,7 @@ Sedge has her hands sunk to the wrist in the black rock, and the stone is drinki
 
 Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are two old women with sharp nails. Leave us in, and we are the whole mountain."
 
-**» Drag Nettle out while she rages — She is shouting at you, not holding on. Take her wrists while her hands are half out of the rock.**
+**» Drag Nettle out while she rages — She is shouting, not holding on.**
 
 `[Athletics DC 11 — Arthur the Bold rolls 12 — passed]`
 
@@ -513,7 +509,7 @@ The sisters come at you with green claws and burning faces. "Then we collect by 
 
 **» Fight — won**
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling her dead sister's name, and then cursing yours. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling her dead sister's name, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
@@ -551,7 +547,7 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 <sub>scene `wc-epilogue`</sub>
 
-The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split from top to bottom, with dry reeds blowing round its foot.
+The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
 Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight, and she keeps count of every cup.
 
@@ -559,7 +555,7 @@ The manticore never came back to its cliff. Shepherds say it circled the broken 
 
 Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
-The war-camp fought the night of the Calling while you were still up in the hills, and Vex did not lose a single soldier. He still walks the east line every morning, out of habit.
+The war-camp fought its long night while you were still up in the hills, and Vex did not lose a single soldier. He still walks the east line every morning, out of habit.
 
 Deep under the fen, moss is creeping over the lead letters on the Warden's door. The door has not moved since you shut it.
 

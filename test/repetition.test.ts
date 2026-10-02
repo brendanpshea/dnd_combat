@@ -26,12 +26,9 @@ const MOTIFS = new Set([
   'mark of reeds and', 'reeds and a reaching', 'and a reaching hand', // the brand, recognised each time
 ]);
 
-/** Tics found when this check was written. Strike each off as it is fixed. */
-const KNOWN = new Set([
-  'for the first time', 'on the far side', 'the far side of', 'far side of the', 'for a long moment',
-  'braided into her hair', 'into the deep fen', 'she kept it alone', 'night of the calling',
-  'from top to bottom', 'out through the crack', 'and the orc runner',
-]);
+/** Tics found and not yet fixed. Strike each off as it is fixed. (The
+ *  thirteen found when this check was written are all gone.) */
+const KNOWN = new Set<string>([]);
 
 function repeats(transcript: string): Map<string, number> {
   const paras = [...new Set(transcript.split('\n').filter((l) => l && !/^(#|<sub>|\*\*|_|`|\||- |\[|> )/.test(l.trim())))];
