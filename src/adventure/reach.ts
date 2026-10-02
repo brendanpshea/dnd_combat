@@ -252,8 +252,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     ...Object.values(module.scenes).flatMap(effectsOf), ...(module.dawns ?? []).flatMap((d) => d.effects ?? []),
   ].flatMap((e) => (e.kind === 'setFlag' && typeof e.value === 'number' ? [e.flag]
     // A snapshot can hold any value its source can: never a bit.
-    : e.kind === 'copyFlag' ? [e.to] : [])));
-  for (const r of pathReads(module)) if (r.kind === 'flag' && typeof r.value === 'number') counted.add(r.flag);
+    : e.kind === 'copyFlag' || e.kind === 'addFlag' ? [e.kind === 'copyFlag' ? e.to : e.flag] : [])));
+  for (const r of [...pathReads(module), ...assumedReads(module)]) if ((r.kind === 'flag' && typeof r.value === 'number') || r.kind === 'count') counted.add(r.flag);
   for (const r of [...pathReads(module), ...assumedReads(module)]) {
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !counted.has(r.flag)) fact(`flag:${r.flag}`);
     if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
@@ -617,6 +617,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // breaking an assumption has the shortest way there.
   const unseen = (r: Requirement): string | null => {
     if (r.kind === 'item' || r.kind === 'gold' || r.kind === 'classInParty' || r.kind === 'speciesInParty') return r.kind;
+    if (r.kind === 'count') return `the tally '${r.flag}'`;
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !facts.has(`flag:${r.flag}`)) return `the counted flag '${r.flag}'`;
     return null;
   };

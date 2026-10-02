@@ -18,6 +18,8 @@ import type { Module, NpcDef, NpcRef, CompanionDef, Requirement, Effect } from '
 export const NPC_FLAG_PREFIX = 'npc.';
 export const npcMetFlag = (id: Id) => `${NPC_FLAG_PREFIX}${id}.met`;
 export const npcFateFlag = (id: Id, fate: string) => `${NPC_FLAG_PREFIX}${id}.fate.${fate}`;
+/** How a character feels about the company: a signed tally, 0 to begin. */
+export const npcAttitudeFlag = (id: Id) => `${NPC_FLAG_PREFIX}${id}.attitude`;
 export const isNpcFlag = (flag: string) => flag.startsWith(NPC_FLAG_PREFIX);
 
 /** A token: `{id}`, the id in lower case with hyphens. */
@@ -62,6 +64,7 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
           ...(r.notFate ?? []).map((f) => ({ kind: 'notFlag' as const, flag: npcFateFlag(r.npc, f) })),
           ...(r.met === true ? [{ kind: 'flag' as const, flag: npcMetFlag(r.npc) }] : []),
           ...(r.met === false ? [{ kind: 'notFlag' as const, flag: npcMetFlag(r.npc) }] : []),
+          ...(r.attitude ? [{ kind: 'count' as const, flag: npcAttitudeFlag(r.npc), ...r.attitude }] : []),
         ];
       }) as T;
     }
@@ -71,6 +74,7 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
         const npc = npcOf(e.npc, e.fate);
         return [
           ...(e.met ? [{ kind: 'setFlag' as const, flag: npcMetFlag(e.npc) }] : []),
+          ...(e.attitude ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(e.npc), amount: e.attitude }] : []),
           // A new fate replaces the old: one at a time.
           ...(e.fate !== undefined ? [
             ...(npc.fates ?? []).filter((f) => f !== e.fate).map((f) => ({ kind: 'clearFlag' as const, flag: npcFateFlag(e.npc, f) })),

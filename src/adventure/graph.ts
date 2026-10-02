@@ -145,5 +145,5 @@ export function parasOf(scene: Scene): Array<{ where: string; paras: readonly Pa
 /** The flags a module's scenes or dawns can set or clear. */
 export function flagsWritten(module: Module): Set<string> {
   return new Set([...Object.values(module.scenes).flatMap(effectsOf), ...(module.dawns ?? []).flatMap((d) => d.effects ?? [])]
-    .flatMap((e) => (e.kind === 'setFlag' || e.kind === 'clearFlag' ? [e.flag] : e.kind === 'copyFlag' ? [e.to] : [])));
+    .flatMap((e) => (e.kind === 'setFlag' || e.kind === 'clearFlag' || e.kind === 'addFlag' ? [e.flag] : e.kind === 'copyFlag' ? [e.to] : [])));
 }

@@ -59,8 +59,11 @@ export type Requirement =
   | { kind: 'noCompanion'; companion: Id }
   /** What became of a registry NPC, and whether the company has met them,
    *  across the whole campaign (see NpcDef.fates). Compiled to flags by
-   *  `withNpcs`. `fate`: is this; `notFate`: is none of these. */
-  | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean };
+   *  `withNpcs`. `fate`: is this; `notFate`: is none of these; `attitude`:
+   *  how they feel about the company (a signed tally from 0) is in bounds. */
+  | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean; attitude?: { atLeast?: number; below?: number } }
+  /** A tally against bounds, unset counting as 0. */
+  | { kind: 'count'; flag: string; atLeast?: number; below?: number };
 
 /** A state mutation a choice/outcome applies. Deliberately tiny vocabulary. */
 export type Effect =
@@ -84,8 +87,11 @@ export type Effect =
   | { kind: 'copyFlag'; from: string; to: string }
   /** Record what became of a registry NPC (`fate`, replacing any other), or
    *  that the company has met them. Compiled to flags by `withNpcs`; the state
-   *  carries into every later chapter of the campaign. */
-  | { kind: 'npc'; npc: Id; fate?: string; met?: true };
+   *  carries into every later chapter of the campaign. `attitude` adds to
+   *  how they feel about the company (signed). */
+  | { kind: 'npc'; npc: Id; fate?: string; met?: true; attitude?: number }
+  /** Add to a tally (signed; unset counts as 0). */
+  | { kind: 'addFlag'; flag: string; amount: number };
 
 export interface JournalEntry {
   id: Id;

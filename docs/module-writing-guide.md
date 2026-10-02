@@ -339,6 +339,21 @@ can kill her.
 Use this for anything said about a person. Keep plain flags for things
 about the world (a gate shut, a den raided).
 
+How a character feels about the company is their `attitude`: a signed tally
+that starts at 0 and carries like the rest. Deeds move it, and lines and
+choices read it by bounds:
+
+```ts
+effects: [{ kind: 'npc', npc: 'wren', attitude: -1 }]      // left her to the wolves
+if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }]  // she'd follow you anywhere
+if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }]    // she hasn't forgotten
+```
+
+The search doesn't track a tally, so it treats an attitude gate as possibly
+open and possibly shut. Don't gate the only way on, and don't `assume` it.
+Use attitude to colour a line or open an extra door. (The same tools, `addFlag`
+and `count`, work on any tally.)
+
 ### The cast
 
 Rule 7 (a name with no referent is a debt) is checked, not hoped for. List

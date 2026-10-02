@@ -85,6 +85,7 @@ export function validateModule(module: Module): string[] {
       if (eff.kind === 'setFlag') written.add(eff.flag);
       if (eff.kind === 'clearFlag') written.add(eff.flag);
       if (eff.kind === 'copyFlag') { written.add(eff.to); read.add(eff.from); }
+      if (eff.kind === 'addFlag') written.add(eff.flag);
       if (eff.kind === 'journal' && eff.entry.kind === 'lead' && eff.entry.resolvedBy) {
         leadResolvers.set(eff.entry.resolvedBy, id);
       }
@@ -102,7 +103,7 @@ export function validateModule(module: Module): string[] {
     }
     const sceneAssumes = 'assumes' in scene ? scene.assumes ?? [] : [];
     for (const req of [...requirementsOf(scene), ...textConds, ...sceneAssumes]) {
-      if (req.kind === 'flag' || req.kind === 'notFlag') read.add(req.flag);
+      if (req.kind === 'flag' || req.kind === 'notFlag' || req.kind === 'count') read.add(req.flag);
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);
       if (req.kind === 'visited' && !ids.has(req.scene)) at(id, `requires visiting unknown scene '${req.scene}'`);
@@ -220,6 +221,7 @@ export function validateModule(module: Module): string[] {
     for (const eff of d.effects ?? []) {
       if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
       if (eff.kind === 'copyFlag') { written.add(eff.to); read.add(eff.from); }
+      if (eff.kind === 'addFlag') written.add(eff.flag);
       if ((eff.kind === 'addItem' || eff.kind === 'removeItem') && !itemExists(eff.itemId)) errors.push(`dawn of day ${d.day} references unknown item '${eff.itemId}'`);
       if ((eff.kind === 'joinParty' || eff.kind === 'leaveParty') && !module.companions?.[eff.companion]) errors.push(`dawn of day ${d.day} names unknown companion '${eff.companion}'`);
       if (eff.kind === 'passDay') errors.push(`dawn of day ${d.day} loses a day: a morning cannot pass another`);

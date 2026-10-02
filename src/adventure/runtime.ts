@@ -255,6 +255,11 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     case 'visited': return state.visited.includes(req.scene);
     case 'companion': return (state.companions ?? []).some((x) => x.id === req.companion);
     case 'noCompanion': return !(state.companions ?? []).some((x) => x.id === req.companion);
+    case 'count': {
+      const v = state.flags[req.flag];
+      const n = typeof v === 'number' ? v : v === true ? 1 : 0;
+      return (req.atLeast === undefined || n >= req.atLeast) && (req.below === undefined || n < req.below);
+    }
     case 'npc': throw new Error(`NPC requirement on '${req.npc}' in a module not built with withNpcs`);
   }
 }
@@ -295,6 +300,7 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'visited': return 'Requires exploring elsewhere first';
     case 'companion': return 'Requires someone who isn\'t with you';
     case 'noCompanion': return 'Not while they\'re with you';
+    case 'count': return 'Not as things stand';
     case 'npc': return 'Requires something you haven\'t done yet';
   }
 }
@@ -386,6 +392,13 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       const v = state.flags[eff.from];
       if (v === undefined) delete state.flags[eff.to];
       else state.flags[eff.to] = v;
+      break;
+    }
+    case 'addFlag': {
+      const cur = state.flags[eff.flag];
+      const value = (typeof cur === 'number' ? cur : cur === true ? 1 : 0) + eff.amount;
+      state.flags[eff.flag] = value;
+      events.push({ type: 'flag', flag: eff.flag, value });
       break;
     }
     case 'npc': throw new Error(`NPC effect on '${eff.npc}' in a module not built with withNpcs`);

@@ -3,8 +3,8 @@
  * party has met them, kept campaign-wide and changeable by any chapter.
  */
 import { describe, it, expect } from 'vitest';
-import { withNpcs, npcFateFlag, npcMetFlag } from '../src/adventure/npcs.js';
-import { startAdventure, enterScene, choose, carriedFlags, requirementMet } from '../src/adventure/runtime.js';
+import { withNpcs, npcFateFlag, npcMetFlag, npcAttitudeFlag } from '../src/adventure/npcs.js';
+import { startAdventure, enterScene, choose, carriedFlags, requirementMet, blockedReason } from '../src/adventure/runtime.js';
 import { validateModule } from '../src/adventure/validate.js';
 import { checkModuleReach } from '../src/adventure/reach.js';
 import { newCampaign } from '../src/campaign/campaign.js';
@@ -102,5 +102,29 @@ describe('NPC state', () => {
       { id: 'on', label: 'On', to: 'won', effects: [{ kind: 'npc', npc: 'scout', met: true }] },
     ] } } }, NPCS);
     expect(checkModuleReach(grave, [partA, kindB, grave]).errors.some((e) => e.startsWith('[grave] can never be reached'))).toBe(true);
+  });
+
+  it('attitude is a signed tally that starts at 0, carries, and gates by bounds', () => {
+    const m = withNpcs({ id: 'att', title: 'A', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], next: [
+        { id: 'snub', label: 'Snub her', to: 'a', effects: [{ kind: 'npc', npc: 'scout', attitude: -2 }] },
+        { id: 'help', label: 'Help her', to: 'a', effects: [{ kind: 'npc', npc: 'scout', attitude: 1 }] },
+        { id: 'warm', label: 'She grins', to: 'won', requires: [{ kind: 'npc', npc: 'scout', attitude: { atLeast: 1 } }] },
+        { id: 'cold', label: 'She looks away', to: 'won', requires: [{ kind: 'npc', npc: 'scout', attitude: { below: 0 } }] },
+        { id: 'on', label: 'On', to: 'won' },
+      ] },
+      won,
+    } }, NPCS);
+    expect(validateModule(m)).toEqual([]);
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'a');
+    const open = () => ['warm', 'cold'].filter((id) => !blockedReason(s, (m.scenes.a as Extract<Scene, { kind: 'story' }>).next.find((c) => c.id === id)!.requires));
+    expect(open()).toEqual([]);
+    choose(s, m, 'snub');
+    expect(s.flags[npcAttitudeFlag('scout')]).toBe(-2);
+    expect(open()).toEqual(['cold']);
+    choose(s, m, 'help'); choose(s, m, 'help'); choose(s, m, 'help');
+    expect(open()).toEqual(['warm']);
+    expect(carriedFlags(m, s)).toEqual({ [npcAttitudeFlag('scout')]: 1 });
   });
 });

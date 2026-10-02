@@ -66,6 +66,8 @@ export function needsOf(reqs: Requirement[] | undefined): string | undefined {
       case 'visited': return `seen ${r.scene}`;
       case 'companion': return `+${r.companion}`;
       case 'noCompanion': return `-${r.companion}`;
+      case 'count': return `${r.flag}${r.atLeast !== undefined ? `≥${r.atLeast}` : ''}${r.below !== undefined ? `<${r.below}` : ''}`;
+      case 'npc': return `${r.npc}${r.fate ? `:${r.fate}` : ''}`;
     }
   }).join(', ');
 }
