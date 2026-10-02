@@ -1125,11 +1125,11 @@ _+150 gold (956)_
 
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
-The walk home is long and wet, and the best walk any of you can remember.
+The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
 Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
 
-That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
+That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin, and does not lose count once.
 
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.
 
@@ -1587,11 +1587,11 @@ The valley is safe. Up on the rim, Vex's pikes raise a ragged cheer. Far down th
 
 <sub>scene `wc-aftermath`</sub>
 
-Vex's column was waiting on the rim when you climbed out of the bowl, and it came down the mountain with you. You come down on your own feet. You walk into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown.
+Vex's column was waiting on the rim when you climbed out of the bowl. You walk down the mountain with it, on your own feet. Below, the camp has stopped being an army and started being the biggest festival the valley has ever thrown.
 
 At the camp gate Vex shakes your hand like a man who has just found an exit he never expected. "The Calling's broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."
 
-**Wren** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and goes back to giving orders.
+**Wren** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she nods to your company, once, and goes straight to Vex with her report.
 
 **» Let the valley celebrate**
 

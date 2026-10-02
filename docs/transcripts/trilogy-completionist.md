@@ -2035,7 +2035,7 @@ The valley is safe. Up on the rim, Vex's pikes raise a ragged cheer. Far down th
 
 <sub>scene `wc-aftermath`</sub>
 
-Vex's column was waiting on the rim when you climbed out of the bowl, and it came down the mountain with you. You come down on your own feet. You walk into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown.
+Vex's column was waiting on the rim when you climbed out of the bowl. You walk down the mountain with it, on your own feet. Below, the camp has stopped being an army and started being the biggest festival the valley has ever thrown.
 
 At the camp gate Vex shakes your hand like a man who has just found an exit he never expected. "The Calling's broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."
 

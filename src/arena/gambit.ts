@@ -188,9 +188,9 @@ export function gambitLine(
  * "The {them}" in the table keeps the same slot usable mid-sentence, where
  * "Somebody built the Scarecrows" wants the article lower case.
  *
- * EVERY sentence, not just the first: "Tracks in the mud. {them} came through
+ * EVERY sentence, not just the first: "Tracks in the sand. {them} came through
  * here" put the slot after a full stop, and capitalising only the opening
- * character left "Tracks in the mud. the Tyrannosaurus Rex came through here".
+ * character left "Tracks in the sand. the Tyrannosaurus Rex came through here".
  */
 const capitalise = (t: string): string =>
   t.replace(/(^|[.!?]\s+)([a-z])/g, (_m, lead: string, ch: string) => lead + ch.toUpperCase());
@@ -389,9 +389,9 @@ export const GAMBITS: GambitDef[] = [
   },
   {
     skill: 'athletics',
-    setup: '{them} {are} coming across that ground. Make it worse first?',
-    won: 'You get it braced in time and dig in behind it.',
-    lost: "It goes over the wrong way, and you're under it.",
+    setup: '{them} {are} coming straight across the sand. Drag the old barricade into the way first?',
+    won: 'You get the barricade braced in time and dig in behind it.',
+    lost: "The barricade goes over the wrong way, and you're under it.",
     subject: (w) => firstOf(w, 'giant') ?? w.members.find((id) => MONSTERS[id]?.size === 'huge'),
     eligible: (w) => w.sizes.has('huge') || w.types.has('giant'),
     onSuccess: (p) => p.forEach((c) => { c.tempHp = (c.tempHp ?? 0) + 10; }),   // +9
@@ -420,7 +420,7 @@ export const GAMBITS: GambitDef[] = [
   },
   {
     skill: 'survival',
-    setup: 'Tracks in the mud. {them} came through here — read them?',
+    setup: 'Tracks in the sand. {them} came through here — read them?',
     won: 'You read them right, and meet it on your own terms.',
     lost: 'You read them wrong, and spend the time going nowhere.',
     // Plant was in this gate and is cut: a creeping vine leaves no trail, and
@@ -435,7 +435,7 @@ export const GAMBITS: GambitDef[] = [
     skill: 'perception',
     setup: 'Open ground, long sightlines. Take a proper look before you commit?',
     won: 'You spot them early. Their first swings come telegraphed.',
-    lost: 'You call it wrong twice, and nobody trusts the third time.',
+    lost: 'You call it wrong, and your own first swings go wide.',
     eligible: (w) => w.cover <= 2,
     /*
      * `outlined` was the obvious fit and had to go: measured +8 / +9 / +2 across

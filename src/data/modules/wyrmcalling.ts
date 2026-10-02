@@ -525,8 +525,11 @@ type Slide = { if: Requirement[]; text: string };
 /** Ending slides every company's ending shares: the hills, and the people. */
 const SLIDES_HILLS: Slide[] = [
   // A company that won both earlier chapters.
-  { if: [{ kind: 'flag', flag: 'hollow-road:won' }, { kind: 'flag', flag: 'sunken-barrows:won' }],
+  { if: [{ kind: 'flag', flag: 'hollow-road:won' }, { kind: 'flag', flag: 'sunken-barrows:won' }, { kind: 'notFlag', flag: 'vigil-kept' }],
     text: 'You broke the {ashfang}, sealed the {undercrypt}, and silenced the stone.' },
+  // On the vigil ending the stone went quiet because {sedge} chose to keep the door.
+  { if: [{ kind: 'flag', flag: 'hollow-road:won' }, { kind: 'flag', flag: 'sunken-barrows:won' }, { kind: 'flag', flag: 'vigil-kept' }],
+    text: 'You broke the {ashfang} and sealed the {undercrypt}. The stone went quiet because a hag chose to keep a door.' },
   { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
     text: 'Nobody in the valley mourns {vargan}. Nobody sings about the way he died, either, on his knees in his own hall with the hag already dead. The reed-cutters are back in the shallows he sold, and they do not say his name.' },
   // (`notFate`: a save from before NPC state can hold both.)
@@ -1820,12 +1823,16 @@ const scenes: Record<string, Scene> = {
   'wc-aftermath': {
     id: 'wc-aftermath', kind: 'story', art: { imageId: 'loc-camp', emoji: '🎉' },
     text: [
-      '{vex}\'s column was waiting on the rim when you climbed out of the bowl, and it came down the mountain with you. You come down on your own feet. You walk into a camp that has stopped being an army and started being the biggest festival the valley has ever thrown.',
+      '{vex}\'s column was waiting on the rim when you climbed out of the bowl. You walk down the mountain with it, on your own feet. Below, the camp has stopped being an army and started being the biggest festival the valley has ever thrown.',
       'At the camp gate {vex} shakes your hand like a man who has just found an exit he never expected. "The {calling}\'s broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."',
-      { if: [{ kind: 'noCompanion', companion: 'wren' }],
+      { if: [{ kind: 'noCompanion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0 } }],
         text: '**{wren}** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. Then she remembers herself, coughs, and goes back to giving orders.' },
-      { if: [{ kind: 'companion', companion: 'wren' }],
+      { if: [{ kind: 'noCompanion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: '**{wren}** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she nods to your company, once, and goes straight to {vex} with her report.' },
+      { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0 } }],
         text: '{wren} hands {vex} her route report before she has even sat down. Then she looks back up at the hills and grins her whole age for once. She remembers herself, coughs, and goes off to give orders.' },
+      { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: '{wren} hands {vex} her route report before she has even sat down, and goes off to give orders without looking back.' },
     ],
     next: [
       { id: 'pay', label: 'Accept the valley\'s purse — every village paid in', to: 'wc-purse',

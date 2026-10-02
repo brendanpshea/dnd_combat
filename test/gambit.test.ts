@@ -238,7 +238,7 @@ describe('the writing', () => {
           const line = gambitLine(g, field, c);
           expect(line, `${g.skill} rendered an unfilled slot: ${line}`).not.toMatch(/[{}]/);
           // Every sentence, not only the first: a slot after a full stop gave
-          // "Tracks in the mud. the Tyrannosaurus Rex came through here".
+          // "Tracks in the sand. the Tyrannosaurus Rex came through here".
           for (const m of line.matchAll(/(?:^|[.!?]\s+)([a-z])/g)) {
             expect(m[1], `${g.skill} left a sentence in lower case: ${line}`).toBeUndefined();
           }

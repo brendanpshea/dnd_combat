@@ -1597,7 +1597,7 @@ Down in Thornwick, the reeve orders a plaque made for the square. He has the wor
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 
-You broke the Ashfang, sealed the Undercrypt, and silenced the stone.
+You broke the Ashfang and sealed the Undercrypt. The stone went quiet because a hag chose to keep a door.
 
 Nobody in the valley mourns Vargan. His mother's house is still under the water, but the reed-cutters are back in the shallows he sold, cutting reeds for a copper a bundle.
 
