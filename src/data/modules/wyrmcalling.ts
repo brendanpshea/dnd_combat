@@ -121,6 +121,15 @@ const WREN_GORGON =
 const WREN_GIANTS =
   '"The ogre-mage and the ettin both want the valley, and neither one trusts the other. The ettin\'s two heads can\'t even agree with each other. Use that."';
 
+/** How {wren} hands over her notes, by what she makes of the company (her
+ *  `attitude`, built in Parts 1–2). Neither line shows on a cold start. */
+const WREN_SEES_YOU_OFF = [
+  { if: [{ kind: 'npc' as const, npc: 'wren', attitude: { atLeast: 2 } }],
+    text: 'She walks you to the edge of the firelight, which she does not do for the captain.' },
+  { if: [{ kind: 'npc' as const, npc: 'wren', attitude: { below: 0 } }],
+    text: 'She hands the notes over the way she would hand them to anyone. They are complete and correct, and there is nothing extra in them.' },
+];
+
 const TAKE_NOTES: Choice[] = [{ id: 'ok', label: 'Take her map-notes', to: 'warcamp',
   effects: [{ kind: 'setFlag', flag: 'wren-brief' }, { kind: 'xp', amount: 30 },
     { kind: 'journal', entry: { id: 'c-scoutnotes', kind: 'clue', title: '{wren}\'s Map-Notes',
@@ -482,7 +491,9 @@ const escortChoices = (): Choice[] => {
       id: `go-${g.join('-') || 'alone'}-${i}`, label, to: 'calling-approach', hideWhenBlocked: true,
       requires: owed,
       effects: [{ kind: 'setFlag', flag: 'rim-clear' },
+        // Taking {wren} down, rather than leaving her on the rim: she warms to it.
         ...g.flatMap((c): Effect[] => [{ kind: 'joinParty', companion: c },
+          ...(c === 'wren' ? [{ kind: 'npc' as const, npc: 'wren', attitude: 1 }] : []),
           { kind: 'journal', entry: { kind: 'npc', ...SEATS[c].journal } }])],
     }));
   });
@@ -574,6 +585,11 @@ const SLIDES_PEOPLE: Slide[] = [
   // A cold start is still the company Wren guided through the fen.
   { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }],
     text: '{wren} tells every new scout how she held the gate of the Undercrypt, and how you walked back out.' },
+  // What she made of the company, over three chapters (her `attitude`).
+  { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
+    text: '{wren} keeps a list of the people she would follow anywhere. It is a short list. You are on it.' },
+  { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+    text: '{wren} keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.' },
   // What became of Marrow, the gravedigger at the Warden's door (Part 2).
   { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
     text: 'Word comes up from Saltmere that a grey old gravedigger has mended forty graves there. While the stone sang, he sat up among them every night with a lamp, saying the rites, in case anyone woke.' },
@@ -958,6 +974,7 @@ const scenes: Record<string, Scene> = {
       '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
       'She looks up. ' + WREN_GIANTS + ' "And the streams are walking uphill. I don\'t know what that means yet, but I\'m watching it." She hands over the map-notes. "You walked past me once. Then you came back up out of that barrow when you said you would. I\'m still counting, but that one counted."',
+      ...WREN_SEES_YOU_OFF,
     ],
     next: TAKE_NOTES,
   },
@@ -973,6 +990,7 @@ const scenes: Record<string, Scene> = {
       '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
       'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I don\'t know what that means yet, but I\'m watching it." She pauses. "Last time I held a gate and waited for you to walk back out. I didn\'t enjoy it." She rolls the map up tight. "Don\'t make me wait at the top of a mountain as well."',
+      ...WREN_SEES_YOU_OFF,
     ],
     next: TAKE_NOTES,
   },
@@ -987,6 +1005,7 @@ const scenes: Record<string, Scene> = {
       '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
       WREN_GORGON,
       'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I don\'t know what that means yet, but I\'m watching it." She pauses. "I counted the watch-posts for you once, lying under a horse. This is a better map." She almost smiles. "Come down the hill on your own feet. All of you. I\'ll be counting."',
+      ...WREN_SEES_YOU_OFF,
     ],
     next: TAKE_NOTES,
   },
@@ -1591,6 +1610,10 @@ const scenes: Record<string, Scene> = {
       'Behind the pikes come people from the valley who have not forgotten you. They are out of breath and mud to the knees, and not one of them has climbed this mountain to stand at the back.',
       // One line for each debt that holds (see OWED); text only, so free.
       { assumes: [{ kind: 'noCompanion', companion: 'wren' }], text: '{wren} is first up the last slope, bow on her back and map under her arm.' },
+      { if: [{ kind: 'noCompanion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
+        text: 'She finds your end of the rim before she reports to {vex}. Then she pretends she was only checking the ground.' },
+      { if: [{ kind: 'noCompanion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: 'She reports to {vex} first. You get a nod, later.' },
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }], text: 'Brother {halden} climbs with his prayer book under his arm, red in the face and still praying.' },
       { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask}, the chief\'s old guard who stood aside for you in {vargan}\'s hall, walks at {vex}\'s shoulder.' },
       { if: [has('sunken-barrows:drowned-gold-home')], text: 'Two fen-folk carry coils of rope over their shoulders. They are kin to the drowned whose purses you carried home.' },

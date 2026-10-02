@@ -1054,8 +1054,10 @@ const scenes: Record<string, Scene> = {
       { id: 'pick', label: '[Sleight of Hand DC 13] Work the padlock open quietly', to: 'den-pens-freed',
         once: true, check: { skill: 'sleight-of-hand', dc: 13, failTo: 'pens-alarm' } },
       { id: 'hack', label: 'Hack through the stakes, and never mind the noise', to: 'pens-alarm' },
+      // Wren hears of it either way: she rounds up the Ashfang after, and
+      // the reeve's men find the pens (her `attitude`, read in Parts 2–3).
       { id: 'leave', label: 'Leave them for the reeve\'s men', to: 'den-pens-left',
-        effects: [{ kind: 'setFlag', flag: 'captives-left' }] },
+        effects: [{ kind: 'setFlag', flag: 'captives-left' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
     ],
     noBack: true,
   },
@@ -1075,7 +1077,7 @@ const scenes: Record<string, Scene> = {
     id: 'den-pens-freed', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: ['The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.'],
     next: [{ id: 'ok', label: 'Back to the den', to: 'inner',
-      effects: [{ kind: 'setFlag', flag: 'captives-freed' }] }], noBack: true,
+      effects: [{ kind: 'setFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', attitude: 1 }] }], noBack: true,
   },
   'den-pens-left': {
     id: 'den-pens-left', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
@@ -1302,15 +1304,16 @@ const scenes: Record<string, Scene> = {
       '"Thornwick will want me hanged," he says. "Thornwick is right. I sold them to her for a full barn." He looks at the trophies in the rafters. "Do what you came to do."',
     ],
     next: [
+      // Wren asked for this at the tree line: "Leave me something to arrest."
       { id: 'reeve', label: 'Bind him and march him down to the reeve', to: 'aftermath',
-        effects: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }] },
+        effects: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
       // Mercy has a price: the reeve pays for a chief he gets to see, not one
       // the company let walk.
       { id: 'free', label: 'Let him walk out into the marsh', to: 'aftermath',
         effects: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }, { kind: 'setFlag', flag: 'got-bounty' }] },
       // Executed is read only by text and the endings, so it is free.
       { id: 'end', label: 'End it here', to: 'aftermath',
-        effects: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }] },
+        effects: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
     ],
   },
 

@@ -9,8 +9,8 @@
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
 - **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.met`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=-2`, `npc.wren.met`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=-2`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -867,6 +867,8 @@ The **Undercrypt**. This is the prison the old prayers named, the one the Reedwi
 
 Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
+She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
+
 **» Leave Wren the gate, and go down**
 
 _Wren leaves the party._
@@ -1124,6 +1126,8 @@ _+150 gold (956)_
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 The walk home is long and wet, and the best walk any of you can remember.
+
+Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
 
 That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
 
@@ -1491,6 +1495,8 @@ Behind the pikes come people from the valley who have not forgotten you. They ar
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
+She reports to Vex first. You get a nod, later.
+
 "We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party's a loud one."
 
 **» Go down into the bowl alone**
@@ -1614,6 +1620,8 @@ You broke the stone before the Calling peaked, and you had thinned the hills on 
 Some nights you still think about the sisters, and about the vigil you ended without knowing it was one.
 
 Wren tells every new scout how she held the gate of the Undercrypt, and how you walked back out.
+
+Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
 
 Deep under the fen, the Undercrypt's door stays shut and silent, just as you left it.
 

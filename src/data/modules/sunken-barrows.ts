@@ -554,9 +554,11 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'keep', label: 'Keep the purses. The dead won\'t spend them', to: 'lights-kept',
-        effects: [{ kind: 'gold', amount: 55 }, { kind: 'setFlag', flag: 'lights-cleared' }, WORM_CLUE] },
+        effects: [{ kind: 'gold', amount: 55 }, { kind: 'setFlag', flag: 'lights-cleared' }, WORM_CLUE,
+          { kind: 'npc', npc: 'wren', attitude: -1 }] },
       { id: 'home', label: 'Carry the purses home for the families', to: 'lights-home',
         effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'drowned-gold-home' }, WORM_CLUE,
+          { kind: 'npc', npc: 'wren', attitude: 1 },
           { kind: 'journal', entry: { id: 'c-purses', kind: 'clue', title: 'The Drowned Folk\'s Purses',
             body: 'You took the purses of the people the corpse-lights drowned. You mean to hand them back to the fen-folk families in Thornwick, once the barrows are shut.' } }] },
     ],
@@ -674,6 +676,11 @@ const scenes: Record<string, Scene> = {
       'Past the Barrow Gate the mounds rise in their dozens. At the field\'s heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.',
       'The **Undercrypt**. This is the prison the old prayers named, the one the {reedwife} kept shut since long before the first reed-cutters came to the fen.',
       { assumes: [{ kind: 'companion', companion: 'wren' }], text: '{wren} looks at the steps, then at you. "This is as far as I know the ground," she says. "I\'ll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.' },
+      // What she makes of the company so far (her `attitude`; neither line on a cold start).
+      { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
+        text: 'Then she ties a strip of the reeve\'s colours round your arm, quick and tight, and does not explain it.' },
+      { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: 'She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.' },
     ],
     next: [
       { id: 'down', label: 'Leave {wren} the gate, and go down', to: 'undercrypt',
@@ -887,13 +894,15 @@ const scenes: Record<string, Scene> = {
       'The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.',
     ],
     // A real trade: the old reeve home (a war asset in Part 3) or the gold.
+    // Either way {wren}, the reeve's scout, sees what comes up the stair.
     next: [
       { id: 'carry', label: 'Wrap him in a cloak and carry him home', to: '@hub',
         effects: [{ kind: 'setFlag', flag: 'diggers-passed' }, { kind: 'setFlag', flag: 'grandfather-home' },
+          { kind: 'npc', npc: 'wren', attitude: 1 },
           { kind: 'journal', entry: { id: 'c-grandfather', kind: 'clue', title: 'The Old Reeve',
             body: 'Reeve {aldous}\'s grandfather was digging with the dead in the Undercrypt. You knew him by his chain of office. You are carrying him home to Thornwick.' } }] },
       { id: 'leave', label: 'Lay him down here, chain and all, and take the grave-goods', to: '@hub',
-        effects: [{ kind: 'setFlag', flag: 'diggers-passed' }, { kind: 'gold', amount: 40 }] },
+        effects: [{ kind: 'setFlag', flag: 'diggers-passed' }, { kind: 'gold', amount: 40 }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
     ],
     noBack: true,
   },
@@ -1144,6 +1153,10 @@ const scenes: Record<string, Scene> = {
         text: 'The walk home is long and wet, and the best walk any of you can remember.' },
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
         text: 'The walk home is long and wet, and nobody says much. Every so often, one of you looks back at the barrow-field. Nobody says what you are all listening for.' },
+      { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
+        text: 'At the edge of town {wren} stops and says "Thank you," fast, to the road. Then she walks off before anyone can ask what for.' },
+      { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: '{wren} walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.' },
       'That evening, in the reeve\'s hall, {aldous} counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.',
       { if: [{ kind: 'flag', flag: 'grandfather-home' }],
         text: 'Then you carry the old man in, still wrapped in your cloak, and lay him on the long table among the ledgers. {aldous} takes off his own chain of office and lays it beside his grandfather\'s. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window, and he does not turn back while you are in the room.' },

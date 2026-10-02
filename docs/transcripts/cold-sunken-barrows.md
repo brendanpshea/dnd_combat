@@ -8,7 +8,7 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Sunken Barrows → victory
 - **Ending reached:** `sb-epilogue` (victory) in The Sunken Barrows
-- **The Sunken Barrows** — flags carried in: _none (start of the run)_; flags carried out: `npc.marrow.fate.sings`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
+- **The Sunken Barrows** — flags carried in: _none (start of the run)_; flags carried out: `npc.marrow.fate.sings`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Sunken Barrows `sunken-barrows`
@@ -352,6 +352,8 @@ Past the Barrow Gate the mounds rise in their dozens. At the field's heart the l
 The **Undercrypt**. This is the prison the old prayers named, the one the Reedwife kept shut since long before the first reed-cutters came to the fen.
 
 Wren looks at the steps, then at you. "This is as far as I know the ground," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+
+She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
 **» Leave Wren the gate, and go down**
 
