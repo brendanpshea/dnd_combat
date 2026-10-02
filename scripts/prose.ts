@@ -76,6 +76,11 @@ function sceneMd(scene: Scene): string {
   if ('failure' in scene && scene.failure?.text) md += block('On failure', scene.failure.text, true);
   if ('onWin' in scene && scene.onWin?.text) md += block('On win', scene.onWin.text, true);
   if ('onLoss' in scene && scene.onLoss?.text) md += block('On loss', scene.onLoss.text, true);
+  if (scene.kind === 'battle' && scene.parley) {
+    if (scene.parley.success.text) md += block('Parley won', scene.parley.success.text, true);
+    if (scene.parley.failure?.text) md += block('Parley failed', scene.parley.failure.text, true);
+    if (scene.parley.refused) md += block('Parley refused', scene.parley.refused, true);
+  }
 
   if ('approaches' in scene) {
     for (const a of scene.approaches ?? []) {

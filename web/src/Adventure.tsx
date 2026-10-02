@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs, introParagraphs,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -711,7 +711,7 @@ function BattleIntro(
           <div className="adv-scene centered">
             <div className="adv-panel adv-battle-intro">
               <h2 className="adv-battle-title">{enc?.name ?? 'A Fight!'}</h2>
-              {(scene.intro ? paragraphsFor(state, scene.intro) : ['They move to attack!']).map((p, i) => (
+              {(scene.intro || scene.again ? introParagraphs(state, scene) : ['They move to attack!']).map((p, i) => (
                 <p key={i} className="adv-text">{renderProse(p)}</p>
               ))}
               <div className="adv-foes">
@@ -771,8 +771,7 @@ function BattleIntro(
  *  their words — shown behind the dice modal so the roll happens *in* the scene. */
 function FrozenScene({ scene, state }: { scene: Scene; state: AdventureState }) {
   const lines = scene.kind === 'story' || scene.kind === 'dialogue' ? sceneParagraphs(state, scene)
-    : scene.kind === 'check' ? paragraphsFor(state, scene.intro)
-    : scene.kind === 'challenge' ? paragraphsFor(state, scene.intro) : [];
+    : scene.kind === 'check' || scene.kind === 'challenge' ? introParagraphs(state, scene) : [];
   return (
     <div className="adv-scene bottom">
       <div className="adv-panel">
@@ -1043,7 +1042,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     return (
       <div className="adv-scene bottom">
         <div className="adv-panel">
-          {paragraphsFor(state, scene.intro).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+          {introParagraphs(state, scene).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
           {scene.roller === 'chosen' ? (
             <>
               <p className="adv-prompt">Who steps up? ({scene.skill}, DC {scene.dc})</p>
@@ -1243,7 +1242,7 @@ function ChallengeBody(
   return (
     <div className="adv-scene bottom">
       <div className="adv-panel">
-        {paragraphsFor(state, scene.intro).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+        {introParagraphs(state, scene).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
         <p className="adv-prompt">How do you handle this?</p>
         <div className="adv-choices">
           {options.map(({ approach, blocked, spent }) => {

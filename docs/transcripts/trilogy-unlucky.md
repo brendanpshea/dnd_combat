@@ -263,7 +263,7 @@ His crew shoulders out of the market crowd — a fixer and two hired knives, bla
 
 `[Deception DC 13 — Ash the Sneaky rolls 9 — failed]`
 
-They aren't interested in talking.
+The fixer doesn't even look round. "The reeve's men are down at the marsh gate, friend. We watched them go." His knives close in.
 
 **» Fight — won**
 
@@ -305,7 +305,7 @@ Barely a mile from the gate, the reeds erupt. The Ashfang keep goblin outriders 
 
 `[Intimidation DC 13 — Arthur the Bold rolls 7 — failed]`
 
-_(a paragraph shown before: “They aren't interested in talking.…”)_
+The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."
 
 **» Fight — won**
 
@@ -775,7 +775,7 @@ _(2 paragraphs shown before: “You come up out of the sinkholes…” / “The 
 
 <sub>scene `ambush-sprung` (again)</sub>
 
-_(a paragraph shown before: “The reeds erupt around you. Lizardfolk rush…”)_
+The reeds erupt around you again. The lizardfolk and their toad have been waiting for you to come back.
 
 **Battle:** The Hag's Thralls <sub>(`hag-thralls` on `bog`)</sub>
 
@@ -929,7 +929,7 @@ _(a paragraph shown before: “Osk the miller still has his boat-hook…”)_
 
 <sub>scene `mill-fight` (again)</sub>
 
-_(a paragraph shown before: “Two bat-winged things explode out of the…”)_
+The cockatrices are still in the hedge, and this time they come out of it the moment you reach the gate. Mind the bite.
 
 **Battle:** Cockatrice Flock <sub>(`cockatrice-flock` on `open`)</sub>
 
@@ -1073,7 +1073,7 @@ _(a paragraph shown before: “The grey webs still sheet the reeds,…”)_
 
 <sub>scene `thicket-fight` (again)</sub>
 
-_(a paragraph shown before: “The silk trembles — then the reeds…”)_
+The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.
 
 **Battle:** Spider Nest <sub>(`spiders` on `marsh`)</sub>
 
@@ -1125,7 +1125,7 @@ _(a paragraph shown before: “A wooden wall of lashed timber rings…”)_
 
 <sub>scene `den-muster` (again)</sub>
 
-_(2 paragraphs shown before: “The chained shape in the pit is…” / “"Fresh meat for the pit!" one bellows,…”)_
+The ogre is off its chain now, and nobody is getting it back on. The two orc goaders whoop and drive it at you with their barbed poles.
 
 **Battle:** The Pit-Brute <sub>(`den-muster` on `ruins`)</sub>
 
@@ -1211,7 +1211,7 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 
 <sub>scene `boss` (again)</sub>
 
-_(a paragraph shown before: “"You've cost me a good season," the…”)_
+The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief.
 
 **Battle:** The Ashfang Chief <sub>(`ashfang-warlord` on `firepit`)</sub>
 
@@ -1567,7 +1567,7 @@ The old raised road runs out into the fog, the same as before. The fen waits at 
 
 <sub>scene `chapel-fight` (again)</sub>
 
-_(a paragraph shown before: “Halden sighs, a shepherd let down by…”)_
+Halden sighs again, a shepherd let down twice. "The Warden provides," he says, and his acolytes and the two skeletons come for you once more.
 
 **Battle:** Corrupt Temple <sub>(`temple` on `ruins`)</sub>
 
@@ -1613,7 +1613,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 `[History DC 14 — Morgan Le Fey rolls 7 — failed]`
 
-They aren't interested in talking.
+You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
 **» Fight — won**
 
@@ -1763,7 +1763,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 `[History DC 15 — Morgan Le Fey rolls 11 — failed]`
 
-_(a paragraph shown before: “They aren't interested in talking.…”)_
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — lost**
 
@@ -1953,7 +1953,7 @@ _(3 paragraphs shown before: “The Barrow Gate stands unwatched, its broken…�
 
 <sub>scene `wights` (again)</sub>
 
-_(2 paragraphs shown before: “This is the hall of the kings'…” / “From the slabs on either side, two…”)_
+The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides like soldiers on parade.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
 
@@ -1991,7 +1991,7 @@ _(a paragraph shown before: “You think better of it and fall…”)_
 
 <sub>scene `king` (again)</sub>
 
-_(3 paragraphs shown before: “Old masons sealed the king's chamber in…” / “They are the names of villages, hundreds…” / “The embalmed king turns. He served the…”)_
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.
 
 **Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
 
@@ -2051,7 +2051,7 @@ _Long rest._
 
 <sub>scene `seal-battle` (again)</sub>
 
-_(a paragraph shown before: “Marrow turns with the chisel still in…”)_
+Marrow turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out, and the armour and the ghouls come for you once more.
 
 **Battle:** Cult of the Worm <sub>(`cult` on `firepit`)</sub>
 
@@ -2119,7 +2119,7 @@ _Long rest._
 
 <sub>scene `seal-breach` (again)</sub>
 
-_(a paragraph shown before: “The Warden's own dead squeeze out through…”)_
+The Warden's dead are still squeezing out through the crack, a few at a time. If they get past you, Thornwick is next.
 
 **Battle:** Restless Dead <sub>(`undead` on `firepit`)</sub>
 

@@ -342,10 +342,16 @@ export type Scene =
   | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
-      intro: Para[]; art?: SceneArt; success: Outcome; failure: Outcome;
+      intro: Para[];
+      /** The intro on every visit after the first (see story `again`). */
+      again?: Para[];
+      art?: SceneArt; success: Outcome; failure: Outcome;
     }
   | {
       id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Para[]; art?: SceneArt;
+      /** The intro on every visit after the first: coming back to a fight
+       *  fallen back from, or lost and retried (see story `again`). */
+      again?: Para[];
       onWin: Outcome; onLoss?: Outcome;
       /** Ambush: `enemies` surprised (a won perception check) or `party` caught
        *  out (a failed one). The surprised side loses its first round. */
@@ -367,6 +373,10 @@ export type Scene =
         label?: string;
         success: Outcome;
         failure?: Outcome;
+        /** What they say when the talk fails and the fight goes on (no
+         *  `failure` to route elsewhere). Without it: "They aren't
+         *  interested in talking." */
+        refused?: Para[];
         /** One try shared with every other use of this id (see `Choice.attempt`). */
         attempt?: Id;
       };
@@ -376,6 +386,8 @@ export type Scene =
     }
   | {
       id: Id; kind: 'challenge'; intro: Para[]; art?: SceneArt;
+      /** The intro on every visit after the first (see story `again`). */
+      again?: Para[];
       /** The lines of attack on offer — the player picks how to try. */
       approaches: Approach[];
       /** `single` (default): the first approach attempted resolves the whole

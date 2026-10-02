@@ -76,6 +76,8 @@ interface Option {
   defeat: boolean;
   /** Keyword score for the cruel route (see CRUEL_WORDS). */
   cruel: number;
+  /** The merciful route's score for it (see `mercy`). */
+  mercy: number;
   /** Runs the option; returns the events it produced. */
   run: () => AdventureEvent[];
   /** The option rolls dice the route may want to steer. */
@@ -136,6 +138,19 @@ const CRUEL_WORDS: Array<[RegExp, number]> = [
 ];
 function cruelty(text: string): number {
   return CRUEL_WORDS.reduce((s, [re, w]) => s + (re.test(text) ? w : 0), 0);
+}
+
+/**
+ * The merciful route's heuristic: the cruel words counted the other way,
+ * and owning a wrong or keeping faith scores too.
+ */
+const KIND_WORDS: Array<[RegExp, number]> = [
+  // Owning a wrong outweighs naming it ("Killing her broke the vigil… sorry").
+  [/\bsorry|\bapolog/i, 6],
+  [/\bvigil|\bbless|\bmend|for the reeve/i, 3],
+];
+function mercy(text: string): number {
+  return KIND_WORDS.reduce((s, [re, w]) => s + (re.test(text) ? w : 0), -cruelty(text));
 }
 
 /**
@@ -206,6 +221,22 @@ const ROUTES: Route[] = [
     score: (o) => [o.defeat ? 1 : 0, o.times > 0 ? 0 : -o.cruel, rush(o)],
     check: 'natural',
     battle: () => 'fight',
+    win: () => true,
+    camp: ({ fightsSinceRest }) => fightsSinceRest >= 2,
+  },
+  {
+    id: 'trilogy-merciful',
+    title: 'Trilogy — merciful',
+    summary: [
+      'Plays all three chapters with one carried company.',
+      'Prefers kind options: the cruel route\'s keyword score counted the other way (spare/free/help/save/mercy/give/pay/bury first; kill/keep/loot/refuse last), with owning a wrong (sorry, apologise: +6) or keeping faith (vigil, bless, mend, "for the reeve": +3) scoring too. Ties, and options already taken, fall back to the rusher\'s distance score.',
+      'Steers every skill check it rolls to a pass. Talks a fight down where it can; otherwise fights and wins. Camps on a map after every two fights.',
+    ],
+    seed: 79,
+    chapters: ['hollow-road', 'sunken-barrows', 'wyrmcalling'],
+    score: (o) => [o.defeat ? 1 : 0, o.times > 0 ? 0 : -o.mercy, rush(o)],
+    check: 'pass',
+    battle: ({ canParley }) => (canParley ? 'parley' : 'fight'),
     win: () => true,
     camp: ({ fightsSinceRest }) => fightsSinceRest >= 2,
   },
@@ -515,7 +546,7 @@ function playChapter(
             ...base(`${scene.id}:${c.id}`, c.to),
             label: c.label,
             defeat: isDefeat(c.to),
-            cruel: cruelty(`${c.label} ${c.id}`),
+            cruel: cruelty(`${c.label} ${c.id}`), mercy: mercy(`${c.label} ${c.id}`),
             rolls: !!c.check,
             kind: 'choice' as const,
             run: () => choose(S(), module, c.id),
@@ -542,7 +573,7 @@ function playChapter(
             ...base(`${scene.id}::${a.id}`, target),
             label: `${a.label}${a.hint ? ` — ${a.hint}` : ''}`,
             defeat: false,
-            cruel: cruelty(`${a.label} ${a.id} ${a.hint ?? ''}`),
+            cruel: cruelty(`${a.label} ${a.id} ${a.hint ?? ''}`), mercy: mercy(`${a.label} ${a.id} ${a.hint ?? ''}`),
             rolls: true, kind: 'approach' as const,
             run: () => tryApproach(S(), module, a.id),
           };
@@ -614,7 +645,7 @@ function playChapter(
               ...base(`${scene.id}#${node.id}`, node.scene),
               novel: !explored,
               label: node.label,
-              cruel: cruelty(`${node.label} ${node.id}`),
+              cruel: cruelty(`${node.label} ${node.id}`), mercy: mercy(`${node.label} ${node.id}`),
               rolls: false, kind: 'node' as const,
               run: () => enterNode(S(), module, node.id),
             };
@@ -633,7 +664,7 @@ function playChapter(
             opts.push({
               key: `${scene.id}>${x.to}`, times: counts.get(`${scene.id}>${x.to}`) ?? 0,
               dist: dDist + roomsToGoal(scene, x.to), novel: !p.seen.includes(x.to), defeat: false,
-              label: name, cruel: 0, rolls: false, kind: 'room',
+              label: name, cruel: 0, mercy: 0, rolls: false, kind: 'room',
               run: () => walkTo(S(), module, x.to),
             });
           } else if (x.force) {
@@ -641,7 +672,7 @@ function playChapter(
               key: `${scene.id}!${x.link}`, times: counts.get(`${scene.id}!${x.link}`) ?? 0,
               dist: dDist + roomsToGoal(scene, p.at) + 0.5, novel: true, defeat: false,
               label: `Force the door to ${name} [${SKILL_LABEL[x.force.skill as SkillId] ?? x.force.skill} DC ${x.force.dc}]`,
-              cruel: 1, rolls: true, kind: 'force',
+              cruel: 1, mercy: -1, rolls: true, kind: 'force',
               run: () => forceDoor(S(), module, x.link),
             });
           }
@@ -650,7 +681,7 @@ function playChapter(
           const key = `${scene.id}?${p.at}`;
           opts.push({
             key, times: counts.get(key) ?? 0, dist: dDist + roomsToGoal(scene, p.at) + 0.5, novel: true, defeat: false,
-            label: 'Search the room', cruel: 0, rolls: true, kind: 'search',
+            label: 'Search the room', cruel: 0, mercy: 0, rolls: true, kind: 'search',
             run: () => searchRoom(S(), module),
           });
         }
@@ -658,7 +689,7 @@ function playChapter(
         if (exit) {
           const key = `${scene.id}^${p.at}`;
           opts.push({
-            ...base(key, exit.to), label: exit.label, cruel: 0, rolls: false, kind: 'leave',
+            ...base(key, exit.to), label: exit.label, cruel: 0, mercy: 0, rolls: false, kind: 'leave',
             run: () => leaveDungeon(S(), module),
           });
         }
