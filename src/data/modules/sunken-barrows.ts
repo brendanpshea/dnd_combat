@@ -280,6 +280,14 @@ const scenes: Record<string, Scene> = {
     lines: [
       'The reeve\'s hall smells of candle-wax and ledgers. **Reeve {aldous}** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn\'t know how to use.',
       '"You have returned," he says, without turning. "You broke the {ashfang} for us, and {thornwick} remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather\'s grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."',
+      // The chief's sale of the shallows, set down for Part 3 (where the
+      // sisters hold it against the valley). A cold start has no word of him.
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }],
+        text: 'Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is {vargan}. "Those shallows were common water in my grandfather\'s day," {aldous} says. "It is written so in my ledger. He sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."' },
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }],
+        text: '"Those shallows were common water in my grandfather\'s day," {aldous} says to the glass. "It is written so in my ledger. {vargan} sold them to the hag anyway, and the people off the marsh road with them. And you let him walk back out into them."' },
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
+        text: '"Those shallows were common water in my grandfather\'s day," {aldous} says to the glass. "It is written so in my ledger. {vargan} sold them to the hag anyway, and the people off the marsh road with them. I wrote the sale down under the bounty, and the day you killed him under that."' },
       'He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, {wren}, will meet you at the fen road. She asked for the task before I could give it. {thornwick}\'s people do not wait to be told."',
     ],

@@ -519,7 +519,7 @@ _(a paragraph shown before: “A wall of lashed timber rings the…”)_
 
 <sub>scene `gate-caught`</sub>
 
-Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, the bugbear and two gnolls are already waiting at the foot of the wall.
+Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, the bugbear and his gnoll pack are already waiting at the foot of the wall.
 
 **Battle:** Gate Enforcers <sub>(`den-gate` on `corridor`)</sub>
 
@@ -731,7 +731,7 @@ _(a paragraph shown before: “A wall of lashed timber rings the…”)_
 
 <sub>scene `gate-fight`</sub>
 
-A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks through the gateway. Behind him two gnolls come yammering their high, laughing bark. The narrow timber run hems all three in.
+A horn brays from the watch-post, and the gate-runners answer. A hulking bugbear ducks through the gateway. Behind him three gnolls come yammering their high, laughing bark, and a fourth, hung with bone charms, howls them on. The narrow timber run hems them all in.
 
 **Battle:** Gate Enforcers <sub>(`den-gate` on `corridor`)</sub>
 
@@ -853,6 +853,8 @@ The bugbear goes down last, face-first in the mud at the foot of the wall. The p
 
 Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.
 
+No one at the fire has looked round yet. Behind the drying-racks there is room to sit, bind a cut and get your breath before anyone does.
+
 → The Pit
 
 **→ The Pit** <sub>(room `muster`)</sub>
@@ -861,15 +863,17 @@ Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, 
 
 The chained shape in the pit stands up, and keeps standing up: an **ogre**, half-starved, whip-scarred and beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they grin and haul the pins.
 
-"Fresh meat for the pit!" one bellows, and slips the ogre's chain.
+On the far side of the ring, a bare-chested raider gets up off an upturned barrel. Scars run from his collarbone to his belt. He lifts a notched greataxe and grins, because this is his pit.
 
-**Battle:** The Pit-Brute <sub>(`den-muster` on `ruins`)</sub>
+"Fresh meat for the pit!" a goader bellows, and slips the ogre's chain.
+
+**Battle:** The Pit-Brute and Its Champion <sub>(`den-pit` on `ruins`)</sub>
 
 **» Fight — won**
 
-The ogre crashes down across its own broken chains, and the goaders don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
+The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
 
-_+25 gold (230)_
+_+40 gold (245)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -969,7 +973,7 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 The chief falls across the fire-pit, and the **Reedwife** screams. She falls too, full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
-_+100 gold (330)_
+_+100 gold (345)_
 
 <sub>scene `vargan-beaten`</sub>
 
@@ -993,7 +997,7 @@ Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
 **» Let the reeve settle the rest of the bounty**
 
-_+95 gold (425)_
+_+95 gold (440)_
 
 <sub>scene `claim-balance`</sub>
 
@@ -1123,13 +1127,15 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
+> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. He sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
+
 > He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
 > "My scout, Wren, will meet you at the fen road. She asked for the task before I could give it. Thornwick's people do not wait to be told."
 
 **» Take the reeve's commission**
 
-_+60 gold (485)_
+_+60 gold (500)_
 
 _Journal (npc): Reeve Aldous_
 
@@ -1285,7 +1291,7 @@ She looks at the purses, then at you. "Those belonged to somebody's husband, som
 
 **» Keep the purses. The dead won't spend them**
 
-_+55 gold (540)_
+_+55 gold (555)_
 
 _Journal (clue): Robes the Colour of Worms_
 
@@ -1619,7 +1625,7 @@ The old guardsman stands before its slab again, sword drawn, cold light in its e
 
 The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it.
 
-_+40 gold (580)_
+_+40 gold (595)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1663,7 +1669,7 @@ The king crumbles, his grave-cloths sagging around nothing but dust and old spic
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
-_+60 gold (640)_
+_+60 gold (655)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1727,7 +1733,7 @@ Marrow turns from the door again, chisel in hand. "The door opens for the *faith
 
 Marrow dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.
 
-_+120 gold (760)_
+_+120 gold (775)_
 
 <sub>scene `seal-door`</sub>
 
@@ -1817,7 +1823,7 @@ The walk home is long and wet. Every so often one of you stops and looks back at
 
 **» Go up to the reeve's hall**
 
-_+150 gold (910)_
+_+150 gold (925)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -2013,7 +2019,7 @@ The wyrmling drops in the middle of a hiss, and its poison breath thins to a har
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
-_+75 gold (985)_
+_+75 gold (1000)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2117,7 +2123,7 @@ _Journal (clue): Thornwick's Watch_
 
 The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. By it sits the old hedge-witch from the regulars' table at Mira's inn, with river-stones in her hair. She knits while she talks, and she does not look up.
 
-"Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
+"Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed, and their chief was glad to sell them to her," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
 
 "You know the door under the barrows. You shut it, near enough. Well, it knocks now, every night the stone sings, and louder each time." She pulls her yarn tight. "If the Calling runs much longer, that crack'll open. The sisters know it. I think they're counting on it."
 
@@ -2169,7 +2175,7 @@ The manticore listens with its head on one side. "Promises," it says. "The hags 
 
 The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
-_+110 gold (1095)_
+_+110 gold (1110)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2183,7 +2189,7 @@ The drumming starts up under your boots again. The herd is still running its gul
 
 `[Survival DC 11 — Elaine the Holy rolls 10 — failed]`
 
-_-30 gold (1065)_
+_-30 gold (1080)_
 
 <sub>scene `boarruns-scattered`</sub>
 
@@ -2201,7 +2207,7 @@ The drumming turns into thunder. Two boars the size of hay-carts come down the n
 
 The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley.
 
-_+40 gold (1105)_
+_+40 gold (1120)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2245,7 +2251,7 @@ The elemental falls apart all at once. A hundred gallons of plain water run away
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
-_+50 gold (1155)_
+_+50 gold (1170)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2375,7 +2381,7 @@ Its orcs went down against the war-camp in the night, and the ones who came back
 
 **» Pay the toll (600 gold)**
 
-_-600 gold (555)_
+_-600 gold (570)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -2497,7 +2503,7 @@ The ettin lifts both its clubs again, and both heads still want the same thing. 
 
 The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
-_+140 gold (695)_
+_+140 gold (710)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2545,11 +2551,11 @@ Down in the bowl, at the foot of the stone, the **sisters** are waiting. **Nettl
 
 They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister kept the door under the fen since before your grandmothers' grandmothers. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
-Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
+Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-Nettle's hands shake in the rock. She watches your mouth like a clerk waiting for a signature. Sedge has not looked at you once.
+Nettle's hands shake in the rock. She watches your mouth like a clerk waiting for a signature. Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "She fed on the people of this valley. We owe you nothing."**
 
@@ -2641,7 +2647,7 @@ The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes wit
 
 The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (895)_
+_+200 gold (910)_
 
 <sub>scene `calling-won`</sub>
 

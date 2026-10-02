@@ -17,7 +17,7 @@ import type { NpcDef } from '../../adventure/types.js';
 
 /** Each version of the stone's `tear-loose` challenge (see wyrmcalling.ts). */
 const TEAR_LOOSE = ['tear-loose', 'tear-loose-cracked', 'tear-loose-defiant', 'tear-loose-defiant-cracked',
-  'tear-loose-cold', 'tear-loose-cold-cracked'];
+  'tear-loose-cold', 'tear-loose-cold-cracked', 'tear-loose-sold', 'tear-loose-sold-cracked'];
 
 export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   mira: {
