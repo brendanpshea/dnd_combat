@@ -569,6 +569,19 @@ once, plainly, in the interface, because a player can silence the quasit.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
 
+## Checking your work
+
+Edit against `npm run check:story` (about 30 seconds): the typecheck, every
+module's validation and reachability search (with its state count), and the
+adventure's own tests, transcripts and readability included. Regenerate with
+`npm run transcripts` and `npm run reference` when prose or routes change,
+and read the transcript diff. The full `npm test` (about two minutes, most
+of it arena simulations) is for once before a commit, not for every edit.
+
+When several people (or agents) work at once, split the work by chapter: one
+owner per chapter file, so nobody edits a file someone else has open.
+Anything that spans chapters, or touches the engine, goes first, on its own.
+
 ## Reading a route
 
 A scene that reads well on its own can still contradict the one before it — a
