@@ -467,6 +467,10 @@ You are inside the wall, and no horn has sounded. Up in the gateway the bugbear 
 
 **Dawn — day 4.**
 
+Last night's moon was a thin paring of light, and it was down long before dawn.
+
+Somewhere out there the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+
 → Muster Yard
 
 **→ Muster Yard** <sub>(room `yard`)</sub>
@@ -559,7 +563,7 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 **» Fight — won**
 
-The chief falls across the fire-pit, and the **Reedwife** screams. As the scream goes on she slumps into river-weed and black water, and the earth floor drinks her down. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief falls across the fire-pit, and the **Reedwife** screams. She falls too, full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 _+100 gold (346)_
 
@@ -921,9 +925,17 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
-**» Leave Wren the gate, and go down**
+**» Ask Wren to come down with you**
 
 _Wren leaves the party._
+
+<sub>scene `lychgate-wren-stays`</sub>
+
+"No," Wren says. "I said I'd get you to the barrow-country, and I have."
+
+She sits down on the nearest stone with her bow across her knees, facing the fen. You leave her at her post and start down the worked steps.
+
+**» Go down into the Undercrypt**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1180,6 +1192,8 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 **» Climb the cult's rope ladder back to the light**
 
 <sub>scene `sb-aftermath`</sub>
+
+The rope ladder brings you up out of the great barrow and into the open air.
 
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
@@ -1613,7 +1627,7 @@ Sedge does not turn either. Her voice is raw, and you have heard it before, on t
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "Killing her broke the vigil. We know, and we're sorry for that part." — Sedge has not looked at you once.**
+**» "Killing her broke the vigil. We know, and we're sorry for that part." — Sedge has not looked at you once. Nettle is waiting to hear you own the debt.**
 
 <sub>scene `answer-rueful`</sub>
 

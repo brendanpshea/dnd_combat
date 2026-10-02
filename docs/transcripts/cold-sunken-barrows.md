@@ -361,9 +361,17 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
-**» Leave Wren the gate, and go down**
+**» Ask Wren to come down with you**
 
 _Wren leaves the party._
+
+<sub>scene `lychgate-wren-stays`</sub>
+
+"No," Wren says. "I said I'd get you to the barrow-country, and I have."
+
+She sits down on the nearest stone with her bow across her knees, facing the fen. You leave her at her post and start down the worked steps.
+
+**» Go down into the Undercrypt**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -654,6 +662,8 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 **» Climb the cult's rope ladder back to the light**
 
 <sub>scene `sb-aftermath`</sub>
+
+The rope ladder brings you up out of the great barrow and into the open air.
 
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 

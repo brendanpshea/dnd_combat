@@ -607,7 +607,7 @@ The **Reedwife** stands by the fire-pit with river-weed dripping from her finger
 
 **» Fight — won**
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing. When the steam clears there is nothing in the coals but a twist of river-weed, curling as it dries.
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
 
 _+100 gold (296)_
 
@@ -1211,6 +1211,8 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 
 <sub>scene `sb-aftermath`</sub>
 
+The rope ladder brings you up out of the great barrow and into the open air.
+
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 Brother Halden climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.
@@ -1643,7 +1645,7 @@ Sedge does not turn either. Her voice is raw, and you have heard it before, on t
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "Killing her broke the vigil. We know, and we're sorry for that part." — Sedge has not looked at you once.**
+**» "Killing her broke the vigil. We know, and we're sorry for that part." — Sedge has not looked at you once. Nettle is waiting to hear you own the debt.**
 
 <sub>scene `answer-rueful`</sub>
 

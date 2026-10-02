@@ -81,7 +81,9 @@ const WREN_ON_VEX: Para[] = [
  *  (`vargan-beaten`), and finishing him there is an execution (`executed`),
  *  as it is for a chief who turned on her. The hag's death also closes the
  *  pens lead: there is no going back into the den after it. */
-const BOSS_FALLS = 'The chief falls across the fire-pit, and the **{reedwife}** screams. As the scream goes on she slumps into river-weed and black water, and the earth floor drinks her down. Up in the rafters, the trophies of a hundred raids stop swinging.';
+// She dies as a body, not a heap of reeds: in Part 3 her sister's seeming
+// melts into wet reeds and a puddle, and the two must not read alike.
+const BOSS_FALLS = 'The chief falls across the fire-pit, and the **{reedwife}** screams. She falls too, full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.';
 const BOSS_WON: Effect[] = [
   { kind: 'npc', npc: 'reedwife', fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' },
 ];
@@ -122,7 +124,7 @@ const BIND_VARGAN: Choice[] = [
     requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }] },
 ];
-const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and goes down hissing. When the steam clears there is nothing in the coals but a twist of river-weed, curling as it dries.';
+const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.';
 const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' }];
 const REEDWIFE_LOST = [
   'The hag\'s cold fingers close over your eyes, and the hall goes dark.',
@@ -807,7 +809,9 @@ const scenes: Record<string, Scene> = {
     // then shows only the empty horse, never the rescue again. Left untended
     // until the fifth morning (the dawn's `scout-bled-out`; {mira} warns of
     // her at the first meeting), she dies there: the scout the party covers
-    // then is {tamsin} (fate `dead`).
+    // then is {tamsin} (fate `dead`). Walked past or never found, the fifth
+    // morning is the same for her: that dawn clears `left`, so walking past
+    // never leaves her better off than not finding her at all.
     next: [
       { id: 'potion', label: 'Give her a healing potion', to: 'scout-saved',
         requires: [{ kind: 'item', itemId: 'potion-healing' }], hideWhenBlocked: true,
@@ -824,8 +828,10 @@ const scenes: Record<string, Scene> = {
         attempt: 'scout-wound', check: { skill: 'nature', dc: 9, failTo: 'scout-fail' } },
       { id: 'medicine', label: '[Medicine DC 12] Ease her out and bind the leg', to: 'scout-saved',
         attempt: 'scout-wound', check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
+      // `scout-walked-past` outlives the fate (the fifth dawn clears it), so
+      // the body and the ending can say who stepped round her.
       { id: 'leave', label: 'Leave her and press on', to: 'scout-left',
-        effects: [{ kind: 'npc', npc: 'wren', fate: 'left' }] },
+        effects: [{ kind: 'npc', npc: 'wren', fate: 'left' }, { kind: 'setFlag', flag: 'scout-walked-past' }] },
     ],
   },
   // Walking past (Wren's fate `left`, but not `met`): the party never
@@ -888,13 +894,21 @@ const scenes: Record<string, Scene> = {
       effects: [...WREN_SAVED, { kind: 'passDay' }] }],
   },
   // The fifth morning came first: the scout under the horse is {tamsin},
-  // and the party only finds her (or finds her again) to cover her.
+  // and the party only finds her (or finds her again) to cover her. A party
+  // that stepped round her finds where she crawled to.
   'scout-dead': {
     id: 'scout-dead', kind: 'story', noBack: true, art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'flag', flag: 'scout-bled-out' }, { kind: 'npc', npc: 'wren', notFate: ['saved', 'left'] }],
     text: [
-      'A young scout in the reeve\'s colours lies under the dead horse with an arrow through her leg. She died in the night, alone. There are tally-marks scratched in the mud by her hand. She was still counting the den\'s watch-posts.',
-      'At her belt is the healing potion she could never reach with the horse on top of her. There is no one on the road to tell you her name.',
+      { if: [{ kind: 'notFlag', flag: 'scout-walked-past' }],
+        text: 'A young scout in the reeve\'s colours lies under the dead horse with an arrow through her leg. She died in the night, alone. There are tally-marks scratched in the mud by her hand. She was still counting the den\'s watch-posts.' },
+      { if: [{ kind: 'notFlag', flag: 'scout-walked-past' }],
+        text: 'At her belt is the healing potion she could never reach with the horse on top of her.' },
+      { if: [{ kind: 'flag', flag: 'scout-walked-past' }],
+        text: 'A line of flattened reeds runs from the dead horse toward {thornwick} for a hundred yards, and stops. The scout you stepped round lies at the end of it, face down. She died in the night, alone.' },
+      { if: [{ kind: 'flag', flag: 'scout-walked-past' }],
+        text: 'She got the healing potion out of her belt at last. Her fingers are still closed round it, and the stopper is still in.' },
+      'There is no one on the road to tell you her name.',
     ],
     next: [{ id: 'ok', label: 'Cover her and go', to: 'trail',
       effects: [{ kind: 'npc', npc: 'tamsin', met: true, fate: 'dead' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] }],
@@ -1706,6 +1720,9 @@ const scenes: Record<string, Scene> = {
         text: 'At dawn {wren} limps out ahead of the reeve\'s men to round up what\'s left of the {ashfang}. She makes a list first.' },
       { if: [{ kind: 'npc', npc: 'wren', fate: 'left' }],
         text: 'The reeve\'s men bring a scout in from the marsh road on a door. Whether she lives, nobody at the bonfire will say.' },
+      // Stepped round her, and the fifth morning came before anyone else did.
+      { if: [{ kind: 'flag', flag: 'scout-walked-past' }, { kind: 'npc', npc: 'wren', notFate: ['left'] }, { kind: 'npc', npc: 'tamsin', notFate: ['dead'] }],
+        text: 'The reeve\'s men find a scout in the reeds off the marsh road, a hundred yards from a dead horse. She had been crawling toward {thornwick}.' },
       // Mira's thanks are earned, as her near-smile in the square is: the
       // captives out, the scout brought home, or the mill turning again, and
       // never from a company that killed a beaten man in front of her town.
@@ -1783,9 +1800,20 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     // Every dawn here is read wherever the party woke: a camp on the marsh
     // road, the den, or Mira's cot after a wipe (where `at` still names the
     // place it fell). So none of them names a place to stand in.
+    // The warning before the dark moon, while the pen is still an open
+    // question: what {vex} told them (PENS_LEAD), or only what {mira} did.
+    { day: 4, text: [
+      'Last night\'s moon was a thin paring of light, and it was down long before dawn.',
+      { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: true }],
+        text: '{vex} said the chief keeps people in the pen behind the kennels for the {reedwife}, and she comes for them when the moon goes dark. Three more nights of this moon, at most.' },
+      { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }],
+        text: 'Somewhere out there the {ashfang} still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },
+    ] },
     { day: 5, text: ['There is frost on everything this morning, and the sun comes up thin and cold. The moon is wasting. A few more nights and it will be gone.'],
-      // The scout under the horse dies if no one has tended her (see `wounded`).
-      effects: [{ kind: 'setFlag', flag: 'scout-bled-out' }] },
+      // The scout under the horse dies if no one has tended her (see
+      // `wounded`), walked past or not: `left` is cleared, so a company that
+      // stepped round her stands where one that never found her does.
+      effects: [{ kind: 'setFlag', flag: 'scout-bled-out' }, { kind: 'clearFlag', flag: npcFateFlag('wren', 'left') }] },
     { day: 6, text: ['A rind of moon rose late over the marsh and set early. One more night of it, at most.'] },
     { day: 7, text: ['There was no moon at all last night. Far out on the marsh, something sang until dawn, and then stopped.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }, { kind: 'setFlag', flag: 'pens-settled' }] },
@@ -1795,7 +1823,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   // captives out of the pens (a war asset at the Wyrmcalling's council). What
   // became of Wren, Tamsin, Vex, Vargan and the Reedwife is NPC state, which
   // every later chapter sees without a carry.
-  carries: ['won', 'captives-freed'],
+  carries: ['won', 'captives-freed', 'scout-walked-past'],
   // Saves from before that state moved onto the NPCs.
   renamedFlags: HOLLOW_ROAD_RENAMED,
   companions: companionsFrom(NPCS, [

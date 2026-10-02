@@ -359,6 +359,10 @@ A reed-cutter found you face-down in the reeds and poled you home on his raft. H
 
 **Dawn — day 4.**
 
+Last night's moon was a thin paring of light, and it was down long before dawn.
+
+Somewhere out there the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+
 **↳ The Marsh Road** <sub>(map `trail`)</sub>
 
 **» Make camp (long rest)** <sub>(day 4)</sub>
@@ -373,7 +377,9 @@ There is frost on everything this morning, and the sun comes up thin and cold. T
 
 A young scout in the reeve's colours lies under the dead horse with an arrow through her leg. She died in the night, alone. There are tally-marks scratched in the mud by her hand. She was still counting the den's watch-posts.
 
-At her belt is the healing potion she could never reach with the horse on top of her. There is no one on the road to tell you her name.
+At her belt is the healing potion she could never reach with the horse on top of her.
+
+There is no one on the road to tell you her name.
 
 **» Cover her and go**
 
@@ -961,7 +967,7 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 **» Fight — won**
 
-The chief falls across the fire-pit, and the **Reedwife** screams. As the scream goes on she slumps into river-weed and black water, and the earth floor drinks her down. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief falls across the fire-pit, and the **Reedwife** screams. She falls too, full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 _+100 gold (330)_
 
@@ -1801,6 +1807,8 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 
 <sub>scene `sb-aftermath`</sub>
 
+The rope ladder brings you up out of the great barrow and into the open air.
+
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the steps."
@@ -2601,101 +2609,13 @@ The sisters pour the last of themselves into the stone, and the stone spends it 
 
 **» Fight — lost**
 
-<sub>scene `wc-defeat` (again)</sub>
+The rock bucks under you like a struck bell, and the Calling's note goes on singing after the light goes out.
 
-_(2 paragraphs shown before: “You wake in the hospital tent to…” / “Vex looks in, sees that you are…”)_
+<sub>scene `stone-lost`</sub>
 
-**» Get back on your feet**
+You come to on the rim, flat on your back on cold rock, with rope burns under your arms. Vex's pikemen went down the slope on lines and dragged you up while the stone was busy singing.
 
-**Dawn — day 7.**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-**» Make camp (long rest)** <sub>(day 7)</sub>
-
-**Dawn — day 8.**
-
-→ The War-Stores
-
-<sub>scene `wc-stores` (again)</sub>
-
-_The shop: The War-Stores (the route buys nothing)._
-
-_(a paragraph shown before: “Bram has taken over a supply wagon…”)_
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Scouts' Fire
-
-<sub>scene `scouts-done` (again)</sub>
-
-_(a paragraph shown before: “The scouts' fire crackles through another change…”)_
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Supply Wagons
-
-<sub>scene `wagons-busy` (again)</sub>
-
-_(a paragraph shown before: “Supply wagons come and go from Bram's…”)_
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The East Line
-
-<sub>scene `eastline-held` (again)</sub>
-
-_(a paragraph shown before: “Thornwick's watch has dug in at the…”)_
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Fen-Folk's Fire
-
-<sub>scene `fenfolk-fire-cracked` (again)</sub>
-
-_(a paragraph shown before: “The hedge-witch is still knitting by the…”)_
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Command Tent
-
-<sub>scene `command-done`</sub>
-
-_(a paragraph shown before: “The command tent works on. Guard posts,…”)_
-
-The row is longer than the list of fires now. "More than half of it's pinned," Vex says. "Now go and finish the rest."
-
-_(a paragraph shown before: “He taps the east line. "We got…”)_
-
-"And all three dens are burned out," Vex says. "No wyrm is coming down this slope. I never thought I'd get to say that."
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The High Trail
-
-<sub>scene `hills-out` (again)</sub>
-
-_(a paragraph shown before: “You take the high trail again, past…”)_
-
-**» Climb**
-
-**↳ The High Hills** <sub>(map `hills`)</sub>
-
-→ The Last Ridge
-
-<sub>scene `ridge-quiet` (again)</sub>
-
-_(a paragraph shown before: “The ridge lies still, and no wings…”)_
+Vex crouches beside you. Down in the bowl, the light round the stone has not dimmed at all. "You're still breathing," he says, and nods down at it. "So is that thing. My column holds this rim as long as it takes. Go back down when you can stand."
 
 **» Go back down into the bowl**
 
