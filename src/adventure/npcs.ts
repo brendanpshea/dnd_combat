@@ -128,13 +128,17 @@ export function unresolvedTokens(module: Module): string[] {
   return [...found];
 }
 
-/** A dialogue speaker from the registry: the name, or the name with a title
- *  for this chapter ("Wren, Chief of Scouts"). */
-export function speaker(npc: NpcDef, title?: string): NpcRef {
-  return {
-    id: `npc-${npc.id}`, name: title ? `${npc.name}, ${title}` : npc.name,
-    ...(npc.portraitId ? { portraitId: npc.portraitId } : {}), ...(npc.emoji ? { emoji: npc.emoji } : {}),
-  };
+/** A dialogue speaker from the registry: the name, the name with a title
+ *  for this chapter (`speaker(NPCS.wren, 'Chief of Scouts')` → "Wren, Chief
+ *  of Scouts"), or a label of its own where the scene wants one ("{mira} the
+ *  Innkeeper", or "Wounded Scout" before she gives her name), with the
+ *  portrait or emoji overridden if need be. */
+export function speaker(npc: NpcDef, title?: string | { label?: string; portraitId?: string; emoji?: string }): NpcRef {
+  const o = typeof title === 'object' ? title : {};
+  const name = typeof title === 'string' ? `${npc.name}, ${title}` : o.label ?? npc.name;
+  const portraitId = o.portraitId ?? npc.portraitId;
+  const emoji = o.emoji ?? npc.emoji;
+  return { id: `npc-${npc.id}`, name, ...(portraitId ? { portraitId } : {}), ...(emoji ? { emoji } : {}) };
 }
 
 /** Companions (Module.companions) from the registry, for the NPCs who can

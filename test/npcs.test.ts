@@ -43,6 +43,9 @@ describe('the NPC registry', () => {
 
   it('speakers and companions come from the same record', () => {
     expect(speaker(NPCS.wren!, 'Chief of Scouts')).toEqual({ id: 'npc-wren', name: 'Wren, Chief of Scouts', portraitId: 'npc-scout', emoji: '🏹' });
+    // A label of its own (before she gives her name), with the portrait overridden.
+    expect(speaker(NPCS.wren!, { label: 'Wounded Scout', portraitId: 'npc-wounded', emoji: '🤕' }))
+      .toEqual({ id: 'npc-wren', name: 'Wounded Scout', portraitId: 'npc-wounded', emoji: '🤕' });
     expect(companionsFrom(NPCS, ['wren']).wren).toMatchObject({ name: 'Wren', monsterId: 'scout', blurb: 'A scout.' });
     expect(() => companionsFrom(NPCS, ['vargan'])).toThrow(/can join/);
   });
