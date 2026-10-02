@@ -62,6 +62,9 @@ export type Requirement =
    *  `withNpcs`. `fate`: is this; `notFate`: is none of these; `attitude`:
    *  how they feel about the company (a signed tally from 0) is in bounds. */
   | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean; attitude?: { atLeast?: number; below?: number } }
+  /** Where the party is: the map or dungeon it last entered (its hub). A dawn
+   *  read in camp, or a defeat scene after a fight, is somewhere: say so. */
+  | { kind: 'at'; hub: SceneRef }
   /** A tally against bounds, unset counting as 0. */
   | { kind: 'count'; flag: string; atLeast?: number; below?: number };
 
@@ -225,9 +228,10 @@ export interface ExploreNode {
  *  (0–1) rng roll can divert to `battleScene` (whose onWin should route home). */
 export interface CampRule {
   risky?: { chance: number; battleScene: SceneRef };
-  /** How many nights the party may sleep here in one chapter (an ambushed
-   *  night counts: it was spent). Past them, short rests only: deep in enemy
-   *  ground, you cannot wait out every wound. Absent: no limit. */
+  /** How many nights the party may sleep here in one chapter (a night
+   *  broken up by an ambush was never slept, and doesn't count). Past them,
+   *  short rests only: deep in enemy ground, you cannot wait out every
+   *  wound. Absent: no limit. */
   nights?: number;
 }
 
@@ -269,6 +273,9 @@ export interface ExploreMap {
  */
 export interface Dungeon {
   title: string;
+  /** What a room searched for nothing says, in this place's own words (one
+   *  is picked per room). Absent: the engine's plain few. */
+  emptySearches?: string[];
   /** The look of the place, and of the boards its `@room` fights are fought on. */
   theme: MapTheme;
   art?: SceneArt;
@@ -345,8 +352,8 @@ export type Scene =
    *  first, so a scene the party returns to doesn't replay a first meeting. */
   /** `assumes` (story, dialogue, ending): what the whole scene takes for
    *  granted; proven on every route to it, like a paragraph's `assumes`. */
-  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; assumes?: Requirement[] }
+  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[] }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[] }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
       intro: Para[];
@@ -406,6 +413,9 @@ export type Scene =
       success: Outcome; failure: Outcome;
       /** Suppress the implicit "leave to the hub" — a forced obstacle. */
       noBack?: boolean;
+      /** The way back is meant (see the guide: a scene reached as an outcome
+       *  declares one or the other). */
+      back?: true;
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'dungeon'; dungeon: Dungeon }
@@ -462,6 +472,9 @@ export interface CanonFact {
   text: string;
   /** The number behind it, for effects and checks to use. */
   value?: number;
+  /** A number only rules use, never said in prose: a loss the player sees
+   *  as it happens (the interface shows what was taken). */
+  unspoken?: true;
 }
 
 export interface NpcDef {

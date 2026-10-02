@@ -60,7 +60,7 @@ stand-up bit, cut it.
    name with no referent is a debt the reader carries for the rest of the scene.
    Introduce it attached to a sound, a sight, or a feeling — and let a character
    say what it *means* for the party.
-   - ✅ "you hear it for the first time: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds."
+   - ✅ "you hear it at last: the **Calling**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds."
    - ❌ "The Calling threads through it all… one voice fewer when the Calling peaks."
 
 8. **The narrator describes; a character explains.** When a scene carries
@@ -85,7 +85,12 @@ stand-up bit, cut it.
 11. **Shared text is neutral; warmth and coldness are earned.** A line that
     every route reads must be true on every route. A smile, a thank-you, "the
     best walk any of you can remember" — anything that praises the company —
-    needs a flag, or an NPC's attitude, behind it. So does a rebuke. Read the
+    needs a flag, or an NPC's attitude, behind it. So does a rebuke. Before
+    you leave a shared scene, check each line against three questions: does
+    it praise the company, or assume someone helped, came, or was told
+    something? Does it name where the party is? Does it state what someone
+    remembers from an earlier chapter? Each yes needs an `if` or an
+    `assumes`. Read the
     cruel and merciful transcripts after any change to a shared scene.
 
 12. **Ration the tells, and write the recurring beats more than once.** Give
@@ -95,7 +100,10 @@ stand-up bit, cut it.
     or three written variants, not one sentence with the place swapped. Words
     that have been worked too hard: "Then" to open a sentence, "Nobody",
     "Whatever…", "older than…", "honest", "like a man who…", "comes apart
-    like reeds".
+    like reeds". A test reads every route transcript for four-word
+    phrases that turn up in three or more paragraphs of one playthrough
+    (test/repetition.test.ts): rewrite the tic, or, if the repeat is the
+    point (the liturgy, a place's name), list it as a motif there.
 
 13. **Epilogues are eight to twelve fates, and they build.** Each slide is a
     person or a place told through an object or a gesture (the stone dog's
@@ -320,6 +328,13 @@ wolves, but a waste on anyone with something to say.
 
 ### Falling back, and locked markers
 
+A scene opened from a map marker or a room can always be walked away from.
+Any other story, dialogue or challenge (one reached as the outcome of a
+choice, a check or a fight) must say whether it can: `noBack: true`, or
+`back: true` when stepping back to the map is meant. The validator refuses
+a scene that says neither. A way back out of a victory is how a won fight
+gets fought again; and a won fight pays once regardless.
+
 A party can fall back from most fights to the map (or, in a dungeon, to the
 room it came from). Two exceptions: a fight marked `noFlee`, and any fight
 where the party is caught out (`surprise: 'party'`, or a sneak-up rolled
@@ -446,7 +461,10 @@ effects: [{ kind: 'gold', amount: FACTS['drowned-gold'].value }],
 `{^id}` capitalises a fact or name to open a sentence ("{^drowned-gold} in
 all."). Build the module with `withCanon(module, { npcs, facts })`. An id
 names a person or a fact, never both, and an unknown token is an error at
-load. Register a fact when a second line or a rule depends on it. A one-off
+load. Register a fact when a second line or a rule depends on it. That goes for things
+and terms too, not only numbers: if two scenes name the same object (the
+peddler's stall, the raiders' gate-signal), make it a fact, so one scene
+can't call it a cart and another a tray. A one-off
 detail stays plain prose. The trilogy's facts are in src/data/modules/canon.ts
 (`TRILOGY_FACTS`). As with people, a test fails if a registered place or group
 name is typed in a chapter's source outside a comment, and another checks that
@@ -473,11 +491,20 @@ choice or a conditional slide counts only where its condition can hold, so a
 mention gated on a flag that only an introduction sets needs no entry. A character known from an
 earlier chapter needs no entry in a later one.
 
+### Where the party is
+
+A dawn is read wherever the party slept, and a defeat scene wherever it
+fell. Say where with `{ kind: 'at', hub: 'undercrypt' }`: the map or dungeon
+the party last entered. As an `if` it picks the line ("You wake on the cold
+floor of the crypt" / "You wake in Mira's back room"); as an `assumes` the
+search proves no route reads the line anywhere else. A dawn that names no
+place must suit every place.
+
 ### The clock
 
 A camp deep in enemy ground can limit its nights: `camp: { nights: 2 }`
-lets the party sleep there twice in the chapter (an ambushed night counts),
-then only short-rest. Use it where waiting out every wound would take the
+lets the party sleep there twice in the chapter (a night broken up by an
+ambush was never slept, and doesn't count), then only short-rest. Use it where waiting out every wound would take the
 danger out of a dungeon; leave towns and safe maps unlimited.
 
 A chapter starts on day 1, and every long rest ends a day: a night at a

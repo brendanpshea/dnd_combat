@@ -54,7 +54,7 @@ export const TRILOGY_FACTS: Record<Id, CanonFact> = {
   /** The reeve's reward for his scout, which she brings you herself. */
   'scout-reward': { text: 'fifty gold', value: 50 },
   /** What the peddler's fixer lifts from a company that looks in the wrong places. */
-  'pinched-purse': { text: 'fifteen gold', value: 15 },
+  'pinched-purse': { text: 'fifteen gold', value: 15, unspoken: true },
   /** A round for the taproom (Part 1), and a room for the night (Parts 1 and 2). */
   'tavern-round': { text: '3 gold', value: 3 },
   'inn-room': { text: '1 gold', value: 1 },
@@ -75,7 +75,7 @@ export const TRILOGY_FACTS: Record<Id, CanonFact> = {
   'rope-bearers': { text: 'two fen-folk', value: 2 },
   /** The ogre-mage's toll for the middle pass: priced to hurt, about half of
    *  what a company carries up the mountain, against a fight or a lie. */
-  'ogre-toll': { text: 'four hundred gold', value: 400 },
+  'ogre-toll': { text: 'six hundred gold', value: 600 },
   /** Wren's reckoning on the third morning: the nights left before the
    *  Calling peaks (the dawn that marks the peak comes that many days later). */
   'peak-nights': { text: 'three more nights', value: 3 },

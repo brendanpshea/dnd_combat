@@ -11,22 +11,24 @@
  *
  * XP budget (see trilogy-plan.md), and no level floor: the fights carry a
  * company from 3rd to 4th before the Warden's door (docs/module-writing-guide.md,
- * "Levels come from fights"). Required spine ≈ 6,000 encounter XP before the
- * finale (shadows 400, the drowned chapel 1,050, the corpse-lights 1,550, the
- * lychgate 900, wights 800, the embalmed king 1,600), then the cult at the
- * door 2,050, or 900 with Marrow talked down; the serpent pool optional
- * (+900). The finale is the chapter's hardest fight. Every way past a fight
- * (Halden talked down, the lights skirted, the watchers or the wight stood
- * down) pays what the fight would have (`avoidedFightXP`). A continuing
- * company (~1,200–1,600 XP from Part 1) and a cold start alike reach 4th
- * by the finale. Cold starts: only the cold-start choice carries
+ * "Levels come from fights"). Required spine ≈ 8,000 encounter XP before the
+ * finale (the churchyard's shadows and ghost 1,500, the drowned chapel 1,050,
+ * the corpse-lights 2,200, the Barrow Gate's watchers 1,100, wights 800, the
+ * embalmed king 1,600), then the cult at the door 2,050, or 900 with Marrow
+ * talked down; the serpent pool optional (+900). The XP sits early, so a
+ * carried company (~1,100–1,600 XP from Part 1) reaches 4th between the
+ * corpse-lights and the first rooms of the Undercrypt, and a cold start by
+ * the barrow-guard. The finale is the chapter's hardest fight. Every way past a fight
+ * (Halden talked down, the lights skirted, the diggers slipped past, the
+ * watchers or the wight stood down) pays what the fight would have
+ * (`avoidedFightXP`). Cold starts: only the cold-start choice carries
  * `xpToLevel: 3`; a continuing company arrives with what it earned.
  *
  * MONSTER VARIETY: this module owns the undead/guardian shelf — shadows,
  * ghouls by night, a corrupt chapel, will-o'-wisps, gargoyles, wights, a
- * mummy, constrictor snakes, and the cult — none of it fielded by Part 1.
+ * mummy, constrictor snakes, a ghost, and the cult — none of it fielded by Part 1.
  */
-import type { Module, Scene, Effect } from '../../adventure/types.js';
+import type { Module, Scene, Effect, Choice } from '../../adventure/types.js';
 import { withCanon, speaker, companionsFrom, npcMetFlag, npcFateFlag, carriedRenames } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from './npcs.js';
 import { TRILOGY_FACTS, factValue } from './canon.js';
@@ -57,9 +59,42 @@ const CHAPEL_CLEARED: Effect[] = [
 /** The words Halden said over Thornwick's dead, said back to him. */
 const LITURGY = '*Lie down and be at peace. Your work is done. The bell will wake you.*';
 
+/** The one try at saving Halden with his own words, from wherever it is offered. */
+const LITURGY_TRY = (dc: number): Choice => ({ id: 'speak', label: `[Religion DC ${dc}] Speak his own liturgy back to him`, to: 'chapel-saved',
+  attempt: 'liturgy', check: { skill: 'religion', dc, failTo: 'chapel-unheard' } });
+
+/** Past the diggers without a fight: what the fight would have paid. */
+const DIGGERS_SLIPPED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('undead') }];
+
+/** The kneelers at the Warden's door, turned to the rites or not. */
+const KNEELERS_WON = { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the {warden}," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The {warden}\'s own faithful sing him back to sleep.'] };
+const KNEELERS_LOST = { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] };
+/** While Marrow leads his faithful, they are his to turn, not the company's. */
+const NOT_SINGING = { kind: 'npc' as const, npc: 'marrow', notFate: ['sings'] };
+/** Marrow's kneelers, chanting each line after whoever reads it. */
+const SINGERS = { if: [{ kind: 'npc' as const, npc: 'marrow', fate: 'sings' }],
+  text: 'At the back of the stair, {marrow}\'s kneelers chant every line back. Forty voices keep time, low and steady.' };
+
 /** The cult, glimpsed in the fen before it shows itself at the Warden's door. */
 const WORM_CLUE: Effect = { kind: 'journal', entry: { id: 'c-worm', kind: 'clue', title: 'Robes the Colour of Worms',
   body: 'A stranger in long, worm-pale robes lay drowned among the corpse-lights. Nailed boots on the old road, black candles in the chapel, and now this. Someone living is helping the dead along.' } };
+
+/** The drowned folk's purses, found after the fight or on the firm ground
+ *  round it: keep them, or carry them home (Wren's call to watch you make).
+ *  `extra` is what the way to them costs or pays. */
+const purseChoices = (extra: Effect[]): Choice[] => [
+  { id: 'keep', label: 'Keep the purses. The dead won\'t spend them', to: 'lights-kept',
+    effects: [...extra, { kind: 'gold', amount: factValue('drowned-gold') }, { kind: 'setFlag', flag: 'lights-cleared' }, WORM_CLUE,
+      { kind: 'npc', npc: 'wren', attitude: -1 }] },
+  { id: 'home', label: 'Carry the purses home for the families', to: 'lights-home',
+    effects: [...extra, { kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'drowned-gold-home' }, WORM_CLUE,
+      { kind: 'npc', npc: 'wren', attitude: 1 },
+      { kind: 'journal', entry: { id: 'c-purses', kind: 'clue', title: 'The Drowned Folk\'s Purses',
+        body: 'You took the purses of the people the corpse-lights drowned. You mean to hand them back to the fen-folk families in {thornwick}, once the barrows are shut.' } }] },
+];
+
+/** Wren's question over the purses, wherever they turn up. */
+const PURSES_ASK = 'She looks at the purses, then at you. "Those belonged to somebody\'s husband, somebody\'s gran. The families could use them. So could you. Your call."';
 
 /** Taking Aldous's commission. */
 const REEVE_TAKE = [{ id: 'take', label: 'Take the reeve\'s commission', to: 'town', once: true,
@@ -86,7 +121,7 @@ const POOL_CHOICES = [
 
 /** The way home from the sealed door, whichever way it shut. The reeve's
  *  commission is paid on arrival, and what the company carried up (the old
- *  reeve, the drowned folk's purses) is handed over in `sb-aftermath` itself,
+ *  reeve, the drowned folk's purses) is handed over in `sb-hall`, the next beat,
  *  so what this chapter carries on is what really reached Thornwick. */
 const CLIMB_HOME = [{ id: 'home', label: 'Climb the cult\'s rope ladder back to the light', to: 'sb-aftermath',
   effects: [{ kind: 'gold' as const, amount: 150 }] }];
@@ -120,7 +155,7 @@ const scenes: Record<string, Scene> = {
       'The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It\'s the **churchyard**," he manages. "The graves are *open*, and it wasn\'t shovels did it."',
       'Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.',
       { if: [{ kind: 'notFlag', flag: 'hollow-road:won' }],
-        text: 'Your purse is still heavy with last season\'s bounty. {thornwick} keeps its word.' },
+        text: 'Your purse is still heavy with the reeve\'s bounty for the {ashfang}. {thornwick} keeps its word.' },
     ],
     next: [
       { id: 'go', label: 'Answer the bells', to: 'lychyard', hideWhenBlocked: true,
@@ -136,9 +171,10 @@ const scenes: Record<string, Scene> = {
     id: 'lychyard', kind: 'battle', encounterId: 'shadow-ambush', mapId: 'corridor',
     intro: [
       'The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.',
+      'Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.',
       'Draw steel, for whatever good steel does against a shadow.',
     ],
-    onWin: { to: 'grave-morning', text: ['The last shadow tatters apart on your blade like smoke off a doused fire. The churchyard holds its breath.'] },
+    onWin: { to: 'grave-morning', text: ['The last shadow tatters apart on your blade like smoke off a doused fire. The woman in the shift sinks back into her grave without a sound, and the churchyard holds its breath.'] },
     // Lost before the party has met anyone who could drag them out of the fen:
     // the town carries them in, and morning still shows them the graves.
     onLoss: { to: 'lychyard-lost' },
@@ -147,14 +183,14 @@ const scenes: Record<string, Scene> = {
     id: 'lychyard-lost', kind: 'rest', variant: 'long', next: 'grave-morning',
     intro: [
       'The cold sinks into your bones, and you fall among the headstones. The last thing you hear is the bells.',
-      'You wake in the {wander-inn} with the sun up. The bell-ringers carried you in. "The shadows went with the dark," **{mira}** says, and puts a bowl in your hands. "The graves have waited this long. They can wait while you eat."',
+      'You wake in the {wander-inn} with the sun up. The bell-ringers carried you in. "The shadows went with the dark," **{mira}** says, and tears you a heel of bread. "The graves have waited this long. They can wait while you eat."',
     ],
   },
   'grave-morning': {
     id: 'grave-morning', kind: 'story', noBack: true, art: { emoji: '⛪' },
     text: [
       'Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead didn\'t wait for anyone to take them. They climbed out and left on their own, and they left together.',
-      'The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way, straight as a drawn line: **into the deep fen**.',
+      'The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way, straight as a drawn line: **out to the deep fen**.',
       'Every old headstone carries the same words, cut deep and green with moss. ' + LITURGY + ' {thornwick}\'s priests have said them over every grave for {thornwick-liturgy}.',
     ],
     next: [{ id: 'on', label: 'Take it to the town', to: 'town',
@@ -205,9 +241,9 @@ const scenes: Record<string, Scene> = {
   inn: {
     id: 'inn', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
-      'The {wander-inn} is full, and no one is in a hurry to leave, not with the churchyard standing open across the lane. **{mira}** sets down a bowl in front of you unasked.',
-      '"Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I\'ll say it, since nobody else in here will. You killed the {reedwife} last season, and this whole town drank to it. I poured. This season the dead get up and walk, and now we all sleep with the lamp lit."',
-      '"No one in here can tell you what the one thing has to do with the other. That\'s why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother {halden}\'s not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and nobody\'s seen him since."',
+      'The {wander-inn} is full, and the drinkers are in no hurry to leave, not with the churchyard standing open across the lane. **{mira}** sets down a bowl in front of you unasked.',
+      '"Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I\'ll say it, since the rest of them won\'t. You killed the {reedwife}, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."',
+      '"Not a soul in here can tell you what the one thing has to do with the other. That\'s why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother {halden}\'s not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn\'t come back."',
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
         text: 'She stops with the jug still tilted. "Some of them haven\'t forgotten the chief, either. On his knees in his own hall, they say, with the hag already dead." She sets the jug down. "I haven\'t forgotten it myself."' },
       '"Eat. Then go see the reeve. He\'s been pacing his hall since the bells."',
@@ -243,7 +279,7 @@ const scenes: Record<string, Scene> = {
     id: 'reeve-hall', kind: 'dialogue', npc: REEVE, art: { emoji: '⚖️' },
     lines: [
       'The reeve\'s hall smells of candle-wax and ledgers. **Reeve {aldous}** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn\'t know how to use.',
-      '"You have returned," he says, without turning. "Last season you broke the {ashfang}. {thornwick} remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather\'s grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."',
+      '"You have returned," he says, without turning. "You broke the {ashfang} for us, and {thornwick} remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather\'s grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."',
       'He turns. He looks as if he has not slept since the bells. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, {wren}, will meet you at the fen road. She asked for the task before I could give it. {thornwick}\'s people do not wait to be told."',
     ],
@@ -257,11 +293,11 @@ const scenes: Record<string, Scene> = {
   },
   'grave-study': {
     id: 'grave-study', kind: 'check', skill: 'medicine', dc: 12, art: { emoji: '🪦' },
-    intro: ['The open graves wait for a steadier eye. The dead left in company — but bodies, even walking ones, tell their stories to anyone trained to listen.'],
+    intro: ['The open graves are as the dead left them. In the bottom of the nearest, the clay still holds the shape of the body that lay there, pressed in like a boot-print. A healer\'s eye might read how it got up.'],
     // `graves-ranks`: the dead keep step, oldest first. Knowing it opens an
     // easier way past the diggers in the Undercrypt. A failed read closes it.
     success: { to: 'town', text: ['The story is in the turf. They didn\'t claw out in hunger. They *stepped* out in order, oldest graves first, called up in ranks. Something with real authority is summoning them, and it is old enough to call the oldest first.',
-      'If you ever have to walk among them, you know how now. Keep the step, and keep to the back of the oldest rank.'],
+      'At the lip of the oldest grave, two heel-marks sit square in the clay. The next grave\'s pair stands one pace behind them, and the next behind that, like a file of soldiers waiting for their names.'],
       effects: [{ kind: 'setFlag', flag: 'graves-read' }, { kind: 'setFlag', flag: 'graves-ranks' }, { kind: 'xp', amount: 30 },
         { kind: 'journal', entry: { id: 'c-muster', kind: 'clue', title: 'The Dead Marched in Ranks',
           body: 'The dead left in neat rows, oldest graves first. They were not hungry. They were obeying orders. Something down there has the right to command graves, and it is using it. If you must pass among them, fall in at the back of the oldest rank.' } }] },
@@ -327,7 +363,7 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
-      'The cart-road ends where the old raised road begins. A familiar figure sits there sharpening a familiar boot-knife. It is **{wren}**, upright this time, with no dead horse on top of her. Someone has mended the reeve\'s colours at her shoulder.',
+      'The cart-road ends where the old raised road begins. **{wren}** sits on a milestone there, putting an edge on a boot-knife, upright this time and with no dead horse on top of her. Someone has mended the reeve\'s colours at her shoulder.',
       '"Heard the bells. Figured you\'d be along." She stands, and only barely favours the leg. "' + WREN_BRIEF + '"',
     ],
     next: [{ id: 'go', label: 'Follow her onto the raised road', to: 'fen',
@@ -381,9 +417,9 @@ const scenes: Record<string, Scene> = {
   causeway: {
     id: 'causeway', kind: 'story', art: { imageId: 'loc-marsh', emoji: '👣' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
-    again: ['{wren} still crouches at the edge of the raised road, reading the files of footprints. "Same as before," she says. "They all go one way."'],
+    again: ['{wren} still crouches at the edge of the raised road, reading the files of footprints. "Same as before," she says. "Nothing\'s come back the other way."'],
     text: [
-      'The old raised road was here long before the cart-track that meets it. Each of its great flat stones is too heavy for a cart. {wren} crouches at its edge and reads the mud, slow and careful.',
+      'The old raised road was here long before the cart-track that meets it. Each of its great flat stones would take a team of oxen to shift. {wren} crouches at its edge and reads the mud, slow and careful.',
       '"Here. And here." Footprints, water-filled, in files. "Your churchyard dead came through in *step*. And look at this." She points to older prints, sunk deeper and wider. "They weren\'t the first. The fen\'s own dead have been walking for days. Whatever\'s calling has been at it a while, and it isn\'t calling them to wander. It\'s calling them to **work**."',
       '{wren} frowns at one print and sets her thumb in it. "This one has nails in the heel. The dead don\'t buy boots. Somebody **living** walked out here with them."',
       'There are two ways on: north to the broken tower of the **drowned chapel**, or south across the flat water where the **corpse-lights** dance. Past them both, where all the tracks come together, the barrow-country waits.',
@@ -404,7 +440,7 @@ const scenes: Record<string, Scene> = {
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. Two shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. They do not hurry. They have done this before.'],
-    onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time, and the fire is out. In the grey before dawn you find their tracks, leading back the way every track in this fen leads: further in.'] },
+    onWin: { to: '@hub', text: ['The ghouls lie still, properly still this time, and the fire is out. In the grey before dawn you find their tracks, leading back into the black water they crawled out of.'] },
   },
   chapel: {
     id: 'chapel', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '🕯️' },
@@ -418,12 +454,21 @@ const scenes: Record<string, Scene> = {
     // Back after falling back or a wipe: no second sermon.
     again: ['The drowned congregation still stands in its rows, and {halden} still waits on the altar steps. "You came back," he says, and beams. "Everyone does, sooner or later."'],
     next: [
-      // A read of him finds the man under the thing, and the one try at his
-      // own liturgy (`chapel-read`). Refusing him goes straight to the fight.
+      // Saving Halden: the thing wearing him borrowed his prayers, so his own
+      // words for the dead can turn it out. One try (`liturgy`), always
+      // offered; a read of him first (`chapel-read`) makes it easier, and a
+      // failed read costs nothing but the read.
       { id: 'insight', label: '[Insight DC 13] Read what is wearing him', to: 'chapel-read',
-        once: true, check: { skill: 'insight', dc: 13, failTo: 'chapel-fight' } },
+        once: true, check: { skill: 'insight', dc: 13, failTo: 'chapel-unread' } },
+      LITURGY_TRY(14),
       { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight' },
     ],
+  },
+  // The read came to nothing: he is as calm as a millpond, and still asking.
+  'chapel-unread': {
+    id: 'chapel-unread', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '🕯️' },
+    text: ['You watch him for a long breath and learn nothing. His calm is perfect all the way down, if there is a man under it at all. "Will you kneel?" {halden} asks again, gently, as if you might not have heard.'],
+    next: [LITURGY_TRY(14), { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight' }],
   },
   // Read him: strike first, or speak to the man still under it.
   'chapel-read': {
@@ -434,10 +479,8 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       { id: 'strike', label: 'Strike before it moves', to: 'chapel-caught' },
-      // Saving Halden: the thing wearing him borrowed his prayers, so his own
-      // words for the dead can turn it out. One try.
-      { id: 'speak', label: '[Religion DC 14] Speak his own liturgy back to him', to: 'chapel-saved',
-        attempt: 'liturgy', check: { skill: 'religion', dc: 14, failTo: 'chapel-unheard' } },
+      // Knowing where the man is, the words find him more easily.
+      LITURGY_TRY(11),
     ],
   },
   // The liturgy, said wrong: the thing in him takes the words for its own.
@@ -467,18 +510,18 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'companion', companion: 'wren' }],
     lines: [
       'You know the words {halden} said over {thornwick}\'s dead. They are cut on every old headstone in his churchyard. You say them back to him, slow and plain. ' + LITURGY,
-      'His smile twitches, and the acolytes stop in mid-step. The thing inside {halden} lets go of him all at once, like a hand opening. His acolytes drop where they stand, and his dead fold into the water.',
-      '{halden} sits down hard on the altar steps, shaking, and himself again. Behind him, his acolytes sit up in the shallows, coughing up fen-water. "It came up through the floor," he says. "Through the *prayers*. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **{marrow}**, and I *thanked* him."',
+      'The thing inside {halden} lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **{marrow}**, and I *thanked* him."',
       'He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."',
       // "We" only from the Wren who mapped the den for the company in Part 1.
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says quietly. "And we broke it without knowing it was one."' },
-      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says quietly. "And you broke it without knowing it was one."' },
-      '{halden} taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That\'s the hag\'s brand," {wren} says. "Every marsh-thing that ran with the {ashfang} wore it." {halden} shakes his head. "It was a keeper\'s mark first, the vigil\'s mark. The old builders cut it into the {barrow-gate}, and the gate\'s watchers know it. She grew greedy and made it a slaver\'s brand."',
-      '"The rites of sealing are in there too. Someone must say them whole, at his door in the great barrow past the gate. It will take nerve. I couldn\'t say them while it had me, but I\'ll follow you down and wait on the stair." He finds a healing potion under the altar cloth and gives you that too. {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says, and she means it.',
+      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says. "And we broke it without knowing it was one."' },
+      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "So the hag was the lock," she says. "And you broke it without knowing it was one."' },
+      '{halden} taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil\'s mark first. The old builders cut it into the {barrow-gate}, and the gate\'s watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I\'ll follow you down and wait on the stair." {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says.',
     ],
     // Talked down, not fought: the chapel's fight is still earned.
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen',
+      // Wren has known him all her life: she saw who reached for him.
       effects: [...CHAPEL_CLEARED, { kind: 'npc', npc: 'halden', fate: 'saved' }, { kind: 'xp', amount: avoidedFightXP('drowned-chapel') },
+        { kind: 'npc', npc: 'wren', attitude: 1 },
         { kind: 'journal', entry: { id: 'n-halden', kind: 'npc', title: 'Brother {halden}',
           body: '{halden} keeps {thornwick}\'s little chapel. Something under the fen took hold of him through his own prayers, and you talked it out of him. He has promised to follow you down to the {warden}\'s door.' } }] }],
   },
@@ -503,14 +546,14 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Head back into the fen', to: 'fen' }], noBack: true,
   },
   // The corpse-lights: fight them (after resisting their pull), or walk round
-  // the pools by the firm ground. Only the fight finds the drowned folk's purses.
+  // the pools by the firm ground. Either way finds the drowned folk's purses.
   lights: {
     id: 'lights', kind: 'story', art: { emoji: '💡' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
     again: ['The corpse-lights still sway over the black water, warm as windows. {wren} keeps a hand on your sleeve. "Still there," she says. "Still hungry."'],
     text: [
       'The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror — soft, swaying, warm as windows. {wren}\'s face goes carefully blank. "Corpse-candles. They walk mourners into the deep pools and hold them under. Half the people the fen has taken this year are *under this water*."',
-      'The lights drift nearer, hopeful as dogs. Something else moves between them, further out. It is a colder shape, and it was a person once.',
+      'The lights drift nearer, hopeful as dogs. Other things move between them, further out. They are two colder shapes, and they were people once.',
       '"We don\'t have to go through," {wren} says quietly. "There\'s firm ground round the pools, if you can find it. Miss it, and the lights find *you*."',
     ],
     next: [
@@ -540,8 +583,8 @@ const scenes: Record<string, Scene> = {
   },
   'lights-fight': {
     id: 'lights-fight', kind: 'battle', encounterId: 'corpse-lights', mapId: 'bog',
-    intro: ['Three of the lights come in low and fast over the water, crackling with stolen life. The cold shape rises between them, trailing fen-mist, its mouth open on a scream the water drank years ago.'],
-    again: ['The three lights come in low over the water again. The drowned thing rises between them, its mouth still open on that scream.'],
+    intro: ['Four of the lights come in low and fast over the water, crackling with stolen life. The two cold shapes rise between them, trailing fen-mist, their mouths open on screams the water drank years ago.'],
+    again: ['The four lights come in low over the water again. The drowned things rise between them, their mouths still open on those screams.'],
     onWin: { to: 'lights-won', text: ['The last wisp winks out, and the water goes dark for good.'] },
   },
   // Missed the firm ground: in the water before the lights even sing.
@@ -555,7 +598,7 @@ const scenes: Record<string, Scene> = {
   'lights-lured': {
     id: 'lights-lured', kind: 'battle', encounterId: 'corpse-lights', mapId: 'bog',
     surprise: 'party',
-    intro: ['Three wisps flare white-hot in front of your faces. Something cold rises out of the pool behind you, close enough to touch. You have to fight your way back to the mud before you can fight anything else.'],
+    intro: ['Four wisps flare white-hot in front of your faces. Two cold things rise out of the pool behind you, close enough to touch. You have to fight your way back to the mud before you can fight anything else.'],
     onWin: { to: 'lights-won', text: ['You drag each other out onto the mud, soaked and shaking. Behind you the last wisp is out, and the water lies dark and still.'] },
   },
   // The drowned folk's purses, and a body that isn't one of them.
@@ -565,18 +608,9 @@ const scenes: Record<string, Scene> = {
     text: [
       'In the shallows you find the drowned, with their purses still tied at their belts. There are {drowned-purses} purses, {drowned-gold} between them.',
       'One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. {wren} turns it over with her boot. "That\'s no fen-folk," she says. "Nobody from here dresses like that to go walking."',
-      'She looks at the purses, then at you. "Those belonged to somebody\'s husband, somebody\'s gran. The families could use them. So could you. Your call."',
+      PURSES_ASK,
     ],
-    next: [
-      { id: 'keep', label: 'Keep the purses. The dead won\'t spend them', to: 'lights-kept',
-        effects: [{ kind: 'gold', amount: factValue('drowned-gold') }, { kind: 'setFlag', flag: 'lights-cleared' }, WORM_CLUE,
-          { kind: 'npc', npc: 'wren', attitude: -1 }] },
-      { id: 'home', label: 'Carry the purses home for the families', to: 'lights-home',
-        effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'drowned-gold-home' }, WORM_CLUE,
-          { kind: 'npc', npc: 'wren', attitude: 1 },
-          { kind: 'journal', entry: { id: 'c-purses', kind: 'clue', title: 'The Drowned Folk\'s Purses',
-            body: 'You took the purses of the people the corpse-lights drowned. You mean to hand them back to the fen-folk families in {thornwick}, once the barrows are shut.' } }] },
-    ],
+    next: purseChoices([]),
     noBack: true,
   },
   // The purses kept: Wren has one thing to say about it, and says it once.
@@ -593,17 +627,18 @@ const scenes: Record<string, Scene> = {
     text: ['{wren} watches you fill your pockets with the drowned folk\'s coin. She says nothing for a while. "Somebody\'s gran," she says at last, and walks on ahead.'],
     next: [{ id: 'on', label: 'Follow her into the fen', to: 'fen' }],
   },
-  // Round the pools on firm ground: the lights stay lit, and the purses stay
-  // under the water, but nobody has to wade in.
+  // Round the pools on firm ground: the lights stay lit, but nobody has to
+  // wade in, and Wren spots the drowned folk where the reeds hold them.
   'lights-skirted': {
     id: 'lights-skirted', kind: 'story', art: { emoji: '🌾' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
     text: [
       'You find the firm ground and keep to it, one tussock to the next. The lights follow along the water\'s edge, swaying, waiting for a foot to slip. None does.',
-      'Halfway round, {wren} grabs your sleeve and points. A body floats face-down in the pool. It wears long robes the colour of grave-worms. "That\'s no fen-folk," she whispers. "Not in those robes." The lights drift closer, and you keep moving.',
+      'Halfway round, {wren} grabs your sleeve and points. The drowned lie in the reeds at the pool\'s edge where the lights let them go, with their purses still tied at their belts. There are {drowned-purses} purses, {drowned-gold} between them.',
+      'One body is not like the others. It wears long robes the colour of grave-worms. "That\'s no fen-folk," {wren} whispers. "Not in those robes." The lights drift closer.',
+      PURSES_ASK,
     ],
-    next: [{ id: 'on', label: 'Push on toward the barrows', to: 'fen',
-      effects: [{ kind: 'setFlag', flag: 'lights-cleared' }, { kind: 'setFlag', flag: 'lights-skirted' }, { kind: 'xp', amount: avoidedFightXP('corpse-lights') }, WORM_CLUE] }],
+    next: purseChoices([{ kind: 'setFlag', flag: 'lights-skirted' }, { kind: 'xp', amount: avoidedFightXP('corpse-lights') }]),
     noBack: true,
   },
   'lights-skirted-done': {
@@ -622,7 +657,7 @@ const scenes: Record<string, Scene> = {
     again: ['The serpent pool lies still again, too still. {wren} watches the rim for ripples, and keeps well back from it.'],
     text: [
       'North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been feeding something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.',
-      '{wren} picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody\'s fed it since the graves opened." The water ripples again, closer. {wren} takes one careful step back. "It will be hungry," she says quietly.',
+      '{wren} picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Since the dead took to the fen roads, not one of them has dared come out this far with a coin." The water ripples again, closer. {wren} takes one careful step back. "It will be hungry."',
     ],
     next: [
       { id: 'wren', label: 'Let {wren} draw it out from the far bank', to: 'pool-drawn',
@@ -664,18 +699,18 @@ const scenes: Record<string, Scene> = {
   lychgate: {
     id: 'lychgate', kind: 'story', art: { imageId: 'loc-crypt', emoji: '⛩️' },
     text: [
-      'All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **{barrow-gate}**, mossed to the knees. Two weathered granite watchers crouch on top of it.',
+      'All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **{barrow-gate}**, mossed to the knees. Two weathered granite watchers crouch on top of it. In the gateway below them, an empty suit of green-bronze armour leans on its spear.',
       { assumes: [{ kind: 'companion', companion: 'wren' }],
-        text: '{wren} stops dead. "Those weren\'t in anybody\'s stories." The stone bases are mossy, but the watchers\' claws are clean.' },
+        text: '{wren} stops dead. "Those weren\'t in anybody\'s stories." The stone bases are mossy, but the watchers\' claws are clean, and so is the spear.' },
     ],
     again: [{ assumes: [{ kind: 'companion', companion: 'wren' }],
-      text: 'The two granite watchers crouch on the {barrow-gate} again, whole, with their wings folded. Their claws are still clean. {wren} nocks an arrow and says nothing.' }],
+      text: 'The two granite watchers crouch on the {barrow-gate} again, whole, with their wings folded, and the green-bronze armour leans in the gateway below. {wren} nocks an arrow and says nothing.' }],
     next: [{ id: 'on', label: 'Walk up to the gate', to: 'lychgate-fight' }],
   },
   'lychgate-fight': {
-    id: 'lychgate-fight', kind: 'battle', encounterId: 'gargoyle-perch', mapId: 'ruins',
-    intro: ['The nearest watcher turns its head with a sound like a millstone. The granite stretches, cracks its wings, and drops on you like a falling roof.'],
-    onWin: { to: 'lychgate-won', text: ['The second gargoyle shatters mid-dive and rains down as plain gravel. The {barrow-gate} stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.'] },
+    id: 'lychgate-fight', kind: 'battle', encounterId: 'barrow-watchers', mapId: 'ruins',
+    intro: ['The nearest watcher turns its head with a sound like a millstone. The granite stretches, cracks its wings, and drops on you like a falling roof. Below it, the empty armour lifts its spear and steps out of the gateway.'],
+    onWin: { to: 'lychgate-won', text: ['The second gargoyle shatters mid-dive and rains down as plain gravel, over the green-bronze plates scattered across the road. The {barrow-gate} stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.'] },
     // The watchers were set to guard the vigil, not to fight it. Halden's book
     // carries the vigil's mark, if someone knows the old way to show it.
     parley: {
@@ -683,8 +718,8 @@ const scenes: Record<string, Scene> = {
       refused: ['You hold up {halden}\'s book, but you cannot find the builders\' mark on the gate in time. The watchers see only strangers at the vigil\'s door, and they keep coming.'],
       success: { to: 'lychgate-won', text: [
         'You hold up {halden}\'s book, open at the reed-woman\'s mark on the flyleaf. The old builders cut that same mark into the gate. You find it on the nearest stone and lay your hand flat on it.',
-        'The watchers stop at the edge of the lintel. They look at the book for a long, grinding moment, then fold their wings and turn back into plain grey stone.',
-      ], effects: [{ kind: 'setFlag', flag: 'watchers-stilled' }, { kind: 'xp', amount: avoidedFightXP('gargoyle-perch') }] },
+        'The watchers stop at the edge of the lintel. They look at the book for a long, grinding moment, then fold their wings and turn back into plain grey stone. Below them, the armour grounds its spear and stands aside.',
+      ], effects: [{ kind: 'setFlag', flag: 'watchers-stilled' }, { kind: 'xp', amount: avoidedFightXP('barrow-watchers') }] },
     },
   },
   // Wren stays here. Every way down the steps sends her to her post.
@@ -692,7 +727,11 @@ const scenes: Record<string, Scene> = {
     id: 'lychgate-won', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛩️' },
     text: [
       'Past the {barrow-gate} the mounds rise in their dozens. At the field\'s heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.',
-      'The **{undercrypt}**: the prison the old prayers named.',
+      'Letters are cut into the lintel over the doorway, worn almost smooth.',
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '{wren} scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **{undercrypt}**. Let it stay shut.*" She wipes her thumb on her coat.' },
+      { if: [{ kind: 'noCompanion', companion: 'wren' }],
+        text: 'You scrape the moss out of them and read them aloud. *Here is the **{undercrypt}**. Let it stay shut.*' },
       { assumes: [{ kind: 'companion', companion: 'wren' }], text: '{wren} looks at the steps, then at you. "I don\'t know the ground past here," she says. "I\'ll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.' },
       // What she makes of the company so far (her `attitude`; neither line on a cold start).
       { if: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
@@ -714,8 +753,8 @@ const scenes: Record<string, Scene> = {
     id: 'lychgate-open', kind: 'story', art: { imageId: 'loc-crypt', emoji: '⛩️' },
     // Only text reads `watchers-stilled`, so it costs the reach search nothing.
     text: [
-      { if: [{ kind: 'notFlag', flag: 'watchers-stilled' }], text: 'The {barrow-gate} stands unwatched, its broken guardians spread across the old road as gravel.' },
-      { if: [{ kind: 'flag', flag: 'watchers-stilled' }], text: 'The {barrow-gate}\'s two watchers crouch on the lintel as plain grey stone, wings folded. They do not stir as you pass under them.' },
+      { if: [{ kind: 'notFlag', flag: 'watchers-stilled' }], text: 'The {barrow-gate} stands unwatched, its broken guardians spread across the old road as gravel and green bronze.' },
+      { if: [{ kind: 'flag', flag: 'watchers-stilled' }], text: 'The {barrow-gate}\'s two watchers crouch on the lintel as plain grey stone, wings folded, and the armour stands aside in the gateway. None of them stirs as you pass.' },
       'Beyond, the great barrow\'s doorway breathes out cold.',
       { assumes: [{ kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} keeps her post at the stones, arms wrapped tight against more than the chill.' },
@@ -734,6 +773,12 @@ const scenes: Record<string, Scene> = {
     id: 'undercrypt', kind: 'dungeon',
     dungeon: {
       title: 'The {undercrypt}', theme: 'graveyard', art: { imageId: 'loc-crypt', emoji: '🕳️' },
+      emptySearches: [
+        'You lift a slab, and find packed earth and roots under it. The builders hid nothing here.',
+        'Every niche is empty. The walking dead took their grave-goods with them when they went down to dig.',
+        'Your torch finds old chisel-marks and a painted eye, flaking off the stone. Nothing else.',
+        'You sift the dust by hand. It is mostly the dead, and they carried nothing.',
+      ],
       torch: { length: 16, out: 'crypt-dark' },
       // Enemy ground: two nights' sleep down here in the chapter, then only short rests.
       camp: { nights: 2, risky: { chance: 0.35, battleScene: 'crypt-night' } },
@@ -774,6 +819,10 @@ const scenes: Record<string, Scene> = {
     id: 'warden-stair', kind: 'dungeon',
     dungeon: {
       title: 'The {warden}\'s Stair', theme: 'graveyard', art: { imageId: 'loc-crypt', emoji: '🕯️' },
+      emptySearches: [
+        'Candle-stubs, drips of black tallow and a dropped bone chisel, worn to a nub. The cult brought nothing it could spare.',
+        'You feel along the steps by candle-light. They are worn hollow in the middle, and there is nothing in the hollows.',
+      ],
       // Its own night attack: a loss here wakes on the stair, not in Thornwick
       // (no way back up the shaft, and no fast travel from a room with no exit).
       // Two nights at most below the drop, as above it.
@@ -806,7 +855,10 @@ const scenes: Record<string, Scene> = {
       'The stair opens into a painted hall. Artists covered these walls before {thornwick} had a name. The pictures tell one story, over and over. A **door** stands under the earth with a **horned warden** behind it, and before it, age after age, a **woman of the reeds** keeps watch.',
       'In one panel a line of soldiers in green bronze stands before the door, each with a fist pressed flat to his chest. It is the old kings\' salute, and the painter took great care over it.',
       'The last panel is fresh mud smeared over old paint. One angry stroke crosses out the woman of the reeds. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**',
-      'The mud is still wet. The hands that wrote it are at the door now, somewhere deep below you.',
+      'The mud is still wet. A thin grey man in a gravedigger\'s apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.',
+      { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
+        text: 'A grey little gravedigger, {halden} said. The one who brought the candles.' },
+      'He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don\'t like to be stopped." He picks up his lantern and goes on down into the dark, in no hurry at all.',
     ],
     next: [{ id: 'on', label: 'Go deeper in', to: '@hub',
       effects: [
@@ -858,7 +910,7 @@ const scenes: Record<string, Scene> = {
     ],
   },
   diggers: {
-    id: 'diggers', kind: 'challenge', art: { imageId: 'loc-crypt', emoji: '⛏️' },
+    id: 'diggers', kind: 'challenge', back: true, art: { imageId: 'loc-crypt', emoji: '⛏️' },
     intro: [
       '{thornwick}\'s dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.',
       'The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.',
@@ -868,30 +920,30 @@ const scenes: Record<string, Scene> = {
     approaches: [
       { id: 'sneak', label: 'Slip past along the wall', hint: 'The picks ring loud enough to cover a footstep.',
         skill: 'stealth', dc: 12, roller: 'group',
-        success: { to: 'diggers-chain', text: ['You edge along the wall between swings. Not one head turns. At the far end, the digger with the chain lowers its pick, and does not lift it again.'] },
+        success: { to: 'diggers-chain', effects: DIGGERS_SLIPPED, text: ['You edge along the wall between swings. Not one head turns. At the far end, the digger with the chain lowers its pick, and does not lift it again.'] },
         failure: { to: 'diggers', text: ['A loose stone skitters across the floor, and every pick in the cut stops. After a long moment they start again, and you remember to breathe.'] } },
       { id: 'still', label: 'Say the burial words over them', hint: '{halden} said these over every grave in {thornwick}.',
         skill: 'religion', dc: 13,
-        success: { to: 'diggers-chain', text: ['You speak the old words, slow and plain. ' + LITURGY, 'One by one, the picks go quiet. The dead lie down in the cut in rows, as if they had only ever been asleep.'] },
+        success: { to: 'diggers-chain', effects: DIGGERS_SLIPPED, text: ['You speak the old words, slow and plain. ' + LITURGY, 'One by one, the picks go quiet. The dead lie down in the cut in rows, as if they had only ever been asleep.'] },
         failure: { to: 'diggers', text: ['The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.'] } },
       // The churchyard read (`graves-ranks`): you know the order they keep.
       { id: 'step-ranks', label: 'Fall in at the back of the oldest rank', hint: 'In the churchyard they stepped out of their graves in order, oldest first.',
         skill: 'deception', dc: 10, requires: [{ kind: 'flag', flag: 'graves-ranks' }], hideWhenBlocked: true, attempt: 'fall-in',
-        success: { to: 'diggers-chain', text: ['You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing, in time with the rest. The dead make room for you the way soldiers make room in a line. You walk out the far end, still swinging.'] },
+        success: { to: 'diggers-chain', effects: DIGGERS_SLIPPED, text: ['You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing, in time with the rest. The dead make room for you the way soldiers make room in a line. You walk out the far end, still swinging.'] },
         failure: { to: 'diggers', text: ['You fall in a beat behind the rank, and the rank notices. The nearest digger stops and turns its empty face toward you. Then, slowly, it goes back to work.'] } },
       { id: 'step', label: 'Pick up a tool and fall into step', hint: 'Shuffle, swing, and look as dead as they do.',
         skill: 'deception', dc: 13, requires: [{ kind: 'notFlag', flag: 'graves-ranks' }], hideWhenBlocked: true, attempt: 'fall-in',
-        success: { to: 'diggers-chain', text: ['You take a pick from the pile and shuffle in among them. Swing, step, swing. Nobody looks twice at one more digger. You walk out the far end, still swinging.'] },
+        success: { to: 'diggers-chain', effects: DIGGERS_SLIPPED, text: ['You take a pick from the pile and shuffle in among them. Swing, step, swing. Nobody looks twice at one more digger. You walk out the far end, still swinging.'] },
         failure: { to: 'diggers', text: ['You swing too fast. The living always do. The nearest digger stops and turns its empty face toward you, then slowly goes back to work.'] } },
       { id: 'cleric', label: '[Cleric] Raise your holy symbol and turn them aside', hint: 'The dead give way to the gods, when the gods are asked properly.',
         skill: 'religion', dc: 10,
         requires: [{ kind: 'classInParty', classId: 'cleric' }], hideWhenBlocked: true,
-        success: { to: 'diggers-chain', text: ['You hold up your holy symbol, and a light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog. They press to the walls and leave you a road.'] },
+        success: { to: 'diggers-chain', effects: DIGGERS_SLIPPED, text: ['You hold up your holy symbol, and a light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog. They press to the walls and leave you a road.'] },
         failure: { to: 'diggers', text: ['The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.'] } },
       { id: 'paladin', label: '[Paladin] Stand in their road and speak your oath', hint: 'An oath is a promise. The dead remember promises.',
         skill: 'religion', dc: 10,
         requires: [{ kind: 'classInParty', classId: 'paladin' }], hideWhenBlocked: true,
-        success: { to: 'diggers-chain', text: ['You plant your feet and speak your oath aloud. The nearest dead stop digging. They step aside one by one, the way a crowd makes room for a funeral.'] },
+        success: { to: 'diggers-chain', effects: DIGGERS_SLIPPED, text: ['You plant your feet and speak your oath aloud. The nearest dead stop digging. They step aside one by one, the way a crowd makes room for a funeral.'] },
         failure: { to: 'diggers', text: ['Your oath rings off the stone, and the dead do not hear it. The call from below is louder.'] } },
     ],
     success: { to: 'diggers-chain' },
@@ -934,7 +986,7 @@ const scenes: Record<string, Scene> = {
   'diggers-carry': {
     id: 'diggers-carry', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛓️' },
     assumes: [{ kind: 'flag', flag: 'grandfather-home' }],
-    text: ['He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.'],
+    text: ['He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and you feel every hour of it in your shoulders.'],
     next: [{ id: 'on', label: 'Go on, with the old man on your back', to: '@hub', effects: [{ kind: 'passDay' }] }],
   },
   // The Worm's own sentry, waiting in the passage past the diggers.
@@ -961,7 +1013,7 @@ const scenes: Record<string, Scene> = {
       refused: ['You give the salute, but not quite the way the painted soldiers gave it. The wight\'s sword stays up. "Not relieved," it rasps. "Not by you."'],
       success: { to: '@hub', text: [
         'The painted hall showed how the old kings\' soldiers saluted. You give that salute now, fist to chest, and tell him his watch is over.',
-        'The wight stands still for a long moment. It lowers its sword and lies back down on its slab, and its skeletons lie down with it.',
+        'The wight does not move. At last it lowers its sword and lies back down on its slab, and its skeletons lie down with it.',
       ], effects: [{ kind: 'setFlag', flag: 'wights-down' }, { kind: 'xp', amount: avoidedFightXP('wight-tomb') }] },
     },
   },
@@ -970,7 +1022,7 @@ const scenes: Record<string, Scene> = {
     intro: [
       'Old masons sealed the king\'s chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Within, a figure in grave-wrappings the colour of old honey stands before a wall carved with names.',
       'They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore. These are the places the {warden} swallowed the last time he woke.',
-      'The embalmed king turns. He served the {warden} once, and the {warden} has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.',
+      'The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.',
     ],
     again: ['The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.'],
     onWin: { to: '@hub', text: ['The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.', 'Behind the king\'s throne, a burial shaft drops into the dark. The chanting comes up out of it.'],
@@ -979,8 +1031,9 @@ const scenes: Record<string, Scene> = {
   'seal-approach': {
     id: 'seal-approach', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
     text: [
-      'The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it.',
-      'The chanting you\'ve heard for an hour comes from the **living**. They kneel at the door in the same long robes, holding candles of black tallow. This is the **Cult of the {worm}**. Their leader is a thin grey man in a gravedigger\'s apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.',
+      'The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something behind it leans its weight on it.',
+      'The chanting you\'ve heard for an hour comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms, like the drowned stranger among the corpse-lights. "The {worm} goes before the {warden}," they chant, over and over. Their leader is the thin grey man from the painted hall, in his gravedigger\'s apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.',
+      'Against the door itself sits a soldier of the old kings in green bronze, its sword across its knees. Its eyes are two points of cold light. It watches the stair, and waits for an order.',
       '"Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**{marrow}**," he says, by way of greeting. "I brought your priest his candles."',
       '"I dug graves at {saltmere} for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. {^saltmere-graves}, and then I walked away and left them all in the cold. The {warden} leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."',
       // The door's clock (see `dawns`).
@@ -991,19 +1044,20 @@ const scenes: Record<string, Scene> = {
     next: [
       // Marrow's own reasons, turned on him: the king's wall shows what the
       // Warden does with a village. Talked round, he fights half-hearted and
-      // lives; what to do with him is the company's next choice.
+      // lives; what to do with him is the company's next choice. Not swayed,
+      // his kneelers saw it (`kneelers-scorned`): harder to turn later, not shut.
       { id: 'wall', label: '[Persuasion DC 14] Tell {marrow} what the king\'s wall says', to: 'seal-doubt-words', once: true,
         check: { skill: 'persuasion', dc: 14, failTo: 'seal-scorned', failEffects: [{ kind: 'setFlag', flag: 'kneelers-scorned' }] } },
       { id: 'fight', label: 'Interrupt the service', to: 'seal-battle' },
     ],
   },
   // Marrow not swayed, in front of his whole congregation: they saw the
-  // company fail, and they will not chant for it at the door later.
+  // company fail, and will be slower to chant for it at the door later.
   'seal-scorned': {
     id: 'seal-scorned', kind: 'story', noBack: true, art: { imageId: 'loc-dungeon', emoji: '🕯️' },
     text: [
       'You tell him about the wall in the king\'s chamber, and the villages with a line through every name. {marrow} hears you out without stopping his chisel. "Then the {warden} chose {thornwick}," he says. "He chose well."',
-      'Behind him the kneelers laugh, all together, and lift their black candles higher. They watched you try to turn their gravedigger, and they watched you fail. Nothing you say at this door will reach them now.',
+      'Behind him the kneelers laugh, all together, and lift their black candles higher. They watched you try to turn their gravedigger, and they watched you fail. They will take a great deal more turning now.',
     ],
     next: [{ id: 'on', label: 'Interrupt the service', to: 'seal-battle' }],
   },
@@ -1026,7 +1080,7 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' },
     intro: [
       '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. {marrow} only watches, as if from very far away.',
-      'Beside him, a soldier of the old kings crouches by the door in green bronze, with cold light in its eye sockets. It waits for an order, and {marrow} gives none.',
+      'Beside him, the soldier of the old kings does not stir from the door. It waits for an order, and {marrow} gives none.',
     ],
     onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. {marrow} never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
@@ -1051,7 +1105,7 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
     intro: ['{marrow} turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.',
-      'Beside the door, a soldier of the old kings gets up off the floor in green bronze, with cold light in its eye sockets. {marrow} woke it to keep his door, and it draws its sword.'],
+      'Against the door, the soldier of the old kings gets to its feet in its green bronze. {marrow} woke it to keep his door, and it draws its sword.'],
     again: ['{marrow} turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the soldier in green bronze come for you once more.'],
     onWin: { to: 'seal-door', text: ['{marrow} dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
@@ -1063,7 +1117,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the {warden} leans on what is left of its lead.',
       { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
-        text: '{marrow} kneels down among his faithful and holds out his hands for the book. "They know how to chant at this door," he says. "Let me teach them the right words. They will follow me faster than they will follow you."' },
+        text: '{marrow} kneels down among his faithful. "They know how to chant at this door," he says. "Read, or let me read. Whoever reads, they will chant it after, because I will."' },
       { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
         text: 'You tie {marrow}\'s wrists with his own apron strings. The cult\'s offering-purse hangs at his belt, fat with {offering-purse} of the faithful\'s coin. You take that too.' },
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
@@ -1077,7 +1131,9 @@ const scenes: Record<string, Scene> = {
   resealing: {
     id: 'resealing', kind: 'challenge', art: { imageId: 'loc-dungeon', emoji: '📖' },
     intro: [
-      'The great door still bulges outward. Half the lead is gone from its letters, and the {warden} leans on what is left. Against the far wall, the cultists who never fought are still on their knees. They watch you with their black candles guttering.',
+      'The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.',
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
+        text: '{marrow} has laid his chisel down on the step. He watches the book now, not the door.' },
       '{halden}\'s book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.',
     ],
     retry: 'perApproach',
@@ -1088,49 +1144,51 @@ const scenes: Record<string, Scene> = {
       // one ungated way). A shared `attempt`, so one try at each.
       { id: 'rites', label: 'Speak the rites aloud',
         skill: 'religion', dc: 13,
-        success: { to: 'seal-clean', text: ['You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.'] },
+        success: { to: 'seal-clean', text: ['You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.', SINGERS] },
         failure: { to: 'resealing', text: ['Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.'] } },
       { id: 'letters', attempt: 'letters', label: 'Read the lead letters as a spell', hint: 'They are cut deeper than any prayer needs.',
         skill: 'arcana', dc: 14, requires: [{ kind: 'notFlag', flag: 'door-straining' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.'] },
+        success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.', SINGERS] },
         failure: { to: 'resealing', text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons\' work will not take orders from you.'] } },
       { id: 'letters-shifted', attempt: 'letters', label: 'Read the lead letters as a spell', hint: 'They are cut deeper than any prayer needs, and the door has shifted in its frame since.',
         skill: 'arcana', dc: 16, requires: [{ kind: 'flag', flag: 'door-straining' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.'] },
+        success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.', SINGERS] },
         failure: { to: 'resealing', text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons\' work will not take orders from you.'] } },
-      // Closed for good if Marrow already laughed off the company in front of them.
-      { id: 'kneelers', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door. Make them chant the right thing.',
-        skill: 'persuasion', dc: 14, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }, { kind: 'notFlag', flag: 'door-straining' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the {warden}," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The {warden}\'s own faithful sing him back to sleep.'] },
-        failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
-      { id: 'kneelers-shaken', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They felt the ground shake, and they think their door is opening. Make them chant the right thing anyway.',
-        skill: 'persuasion', dc: 16, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }, { kind: 'flag', flag: 'door-straining' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the {warden}," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The {warden}\'s own faithful sing him back to sleep.'] },
-        failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
+      // Harder once the ground has shaken, or once they watched {marrow} laugh
+      // the company off (`kneelers-scorned`). Not offered while {marrow} leads them.
+      { id: 'kneelers', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door.',
+        skill: 'persuasion', dc: 14, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }, { kind: 'notFlag', flag: 'door-straining' }, NOT_SINGING], hideWhenBlocked: true,
+        success: KNEELERS_WON, failure: KNEELERS_LOST },
+      { id: 'kneelers-shaken', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They felt the ground shake, and they think their door is opening.',
+        skill: 'persuasion', dc: 16, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }, { kind: 'flag', flag: 'door-straining' }, NOT_SINGING], hideWhenBlocked: true,
+        success: KNEELERS_WON, failure: KNEELERS_LOST },
+      { id: 'kneelers-scorned', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They laughed at you once.',
+        skill: 'persuasion', dc: 16, requires: [{ kind: 'flag', flag: 'kneelers-scorned' }, NOT_SINGING], hideWhenBlocked: true,
+        success: KNEELERS_WON, failure: KNEELERS_LOST },
       { id: 'wizard', label: '[Wizard] Pick the lock the old masons cut', hint: 'You know a ward when you see one. This one is only half-broken.',
         skill: 'arcana', dc: 11,
         requires: [{ kind: 'classInParty', classId: 'wizard' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['You have read wards like this in dusty books. This one is a lock, and the rites are its key. You find where {marrow}\'s chisel broke it, and mend each letter with the line that belongs to it. The lead glows, and sets hard.'] },
+        success: { to: 'seal-clean', text: ['You have read wards like this in dusty books. This one is a lock, and the rites are its key. You find where {marrow}\'s chisel broke it, and mend each letter with the line that belongs to it. The lead glows, and sets hard.', SINGERS] },
         failure: { to: 'resealing', text: ['No book you have ever read goes back as far as this ward. You lose your place in it, and a letter spits hot lead at your hand.'] } },
       { id: 'marrow', label: 'Let {marrow} lead his faithful in the rites', hint: 'His faithful will sing whatever he sings.',
         skill: 'persuasion', dc: 9,
         requires: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }], hideWhenBlocked: true,
         success: { to: 'seal-clean', text: ['{marrow} takes the book in both hands and turns to his kneelers. "We had the words wrong," he tells them. He reads, and forty living voices follow him, and one by one the lead letters fill with light.'] },
         failure: { to: 'resealing', text: ['{marrow}\'s voice breaks on the first line. He was never a priest. The kneelers wait for him, and the door groans.'] } },
-      { id: 'halden', label: 'Give {halden} the book', hint: 'He followed you all the way down. Let him say his own rites.',
+      { id: 'halden', label: 'Give {halden} the book', hint: 'He followed you all the way down.',
         skill: 'religion', dc: 8,
         requires: [{ kind: 'npc', npc: 'halden', fate: 'saved' }], hideWhenBlocked: true,
-        success: { to: 'seal-clean', text: ['{halden} takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead letters drink every word.'] },
+        success: { to: 'seal-clean', text: ['{halden} takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead letters drink every word.', SINGERS] },
         failure: { to: 'resealing', text: ['{halden} opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."'] } },
     ],
     success: { to: 'seal-clean' },
     // Every voice failed: the door cracks before it seals.
-    failure: { to: 'seal-breach', text: ['The last word dies in the dark, and for a moment nothing happens. The great door splits from top to bottom with a crack like river ice, and grey hands push out through the gap. The {warden} has stopped waiting for his servants.'] },
+    failure: { to: 'seal-breach', text: ['The last word dies in the dark, and for a moment nothing happens. The great door splits down its middle with a crack like river ice, and grey hands push out through the gap. The {warden} has stopped waiting for his servants.'] },
   },
   'seal-clean': {
     id: 'seal-clean', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '📖' },
     text: [
-      'Line by line the great door stops *straining*, and last of all the weight behind it eases off. Something enormous on the far side turns away, unhurried and unimpressed, like a sleeper turning over in a warm bed. Far above you, across the barrow-field, every walking corpse lies down where it stands.',
+      'Line by line the great door stops *straining*, and last of all the weight behind it eases off. Something enormous behind the stone turns away, unhurried and unimpressed, like a sleeper turning over in a warm bed. Far above you, across the barrow-field, every walking corpse lies down where it stands.',
       'The **{warden}** sleeps. The door is shut.',
       'The vigil has a new keeper now: a book, a door, and a town that knows to watch it. It will have to do.',
       'Among the cult\'s packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.',
@@ -1145,8 +1203,8 @@ const scenes: Record<string, Scene> = {
     // Beaten back from a cracked door: the dead are still coming through it,
     // so the party gets up and holds it again.
     onLoss: { to: 'seal-breach-lost' },
-    intro: ['The {warden}\'s own dead squeeze out through the crack in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and more grey fingers wait behind them. If they get past you, {thornwick} is next.'],
-    again: ['The {warden}\'s dead are still squeezing out through the crack, a few at a time. If they get past you, {thornwick} is next.'],
+    intro: ['The {warden}\'s own dead squeeze out through the split in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and more grey fingers wait behind them. If they get past you, {thornwick} is next.'],
+    again: ['The {warden}\'s dead are still coming, a few at a time. If they get past you, {thornwick} is next.'],
     onWin: { to: 'seal-shut', text: ['The last of them falls across the doorstep. All of you put your shoulders to the door and shove it home over the bodies. You shout the rites into the crack, badly and all at once. It is enough, barely.'],
       effects: [{ kind: 'setFlag', flag: 'seal-cracked' }] },
   },
@@ -1163,7 +1221,7 @@ const scenes: Record<string, Scene> = {
   },
   'seal-breach-lost': {
     id: 'seal-breach-lost', kind: 'rest', variant: 'long', next: 'seal-breach',
-    intro: ['Grey hands close over your face, and the dark comes with them. You wake on the stair, far above the door, and the dead have not climbed past you. They are still pushing out through the crack, slowly, one at a time.', 'You get up. Someone has to hold that door, and it is still you.'],
+    intro: ['Grey hands close over your face, and the dark comes with them. You wake on the stair, far above the door, and the dead have not climbed past you. They are still squeezing through the door, slowly, one at a time.', 'You get up. Someone has to hold that door, and it is still you.'],
   },
   'seal-shut': {
     id: 'seal-shut', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
@@ -1185,8 +1243,8 @@ const scenes: Record<string, Scene> = {
     text: ['{thornwick} goes about its burying, and its living.'],
     next: SB_CLAIMS, noBack: true,
   },
-  // In the order it happens: up out of the barrow, the walk home, the
-  // reeve's hall that evening, then the reburials in the days after.
+  // In the order it happens: up out of the barrow and the walk home here;
+  // the reeve's hall that evening and the reburials after, in `sb-hall`.
   'sb-aftermath': {
     id: 'sb-aftermath', kind: 'story', art: { imageId: 'loc-town', emoji: '🏘️' },
     text: [
@@ -1195,14 +1253,14 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'Brother {halden} climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
       { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
-        text: '{marrow} climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" {wren} asks. She looks at him for a long moment, then takes the rope herself.' },
+        text: '{marrow} climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" {wren} asks. She looks him up and down, then takes the rope herself.' },
       { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
         text: '{marrow} climbs out after you, and walks off alone across the barrow-field toward {saltmere}. {wren} watches him go with her hand on her knife. She counts his steps until the fog takes him. "If he comes back," she says, "I\'ll know."' },
-      { if: [{ kind: 'flag', flag: 'grandfather-home' }],
-        text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps."' },
       // The best walk only for a company that brought the old reeve home.
       { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }],
-        text: 'The walk home is long and wet, and the best walk any of you can remember.' },
+        text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps." The walk home is long and wet, and the best walk any of you can remember.' },
+      { if: [{ kind: 'flag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }],
+        text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps."' },
       { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'notFlag', flag: 'grandfather-home' }],
         text: 'The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.' },
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
@@ -1211,12 +1269,23 @@ const scenes: Record<string, Scene> = {
         text: 'At the edge of town {wren} stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.' },
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
         text: '{wren} walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.' },
+    ],
+    next: [{ id: 'hall', label: 'Go up to the reeve\'s hall', to: 'sb-hall' }],
+    // Home, with the door sealed: nothing below is left to walk back into.
+    noBack: true,
+  },
+  // That evening and the days after: the reeve pays, the old reeve is laid
+  // down (if he came home), the town reburies its dead and the drowned folk's
+  // purses go back to their families.
+  'sb-hall': {
+    id: 'sb-hall', kind: 'story', art: { emoji: '⚖️' },
+    text: [
       { if: [{ kind: 'flag', flag: 'grandfather-home' }],
         text: 'That evening, in the reeve\'s hall, {aldous} counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.' },
       { if: [{ kind: 'notFlag', flag: 'grandfather-home' }],
         text: 'That evening, in the reeve\'s hall, {aldous} counts your purse into your hands himself, coin by coin, and does not lose count once.' },
       { if: [{ kind: 'flag', flag: 'grandfather-home' }],
-        text: 'Then you carry the old man in, still wrapped in your cloak, and lay him on the long table among the ledgers. {aldous} takes off his own chain of office and lays it beside his grandfather\'s. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window, and he does not turn back while you are in the room.' },
+        text: 'You carry the old man in after the coin, still wrapped in your cloak, and lay him on the long table among the ledgers. {aldous} takes off his own chain of office and lays it beside his grandfather\'s. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window, and he does not turn back while you are in the room.' },
       '{thornwick} reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.',
       // The company's one line of its own, at the chapter's last beat (rule 15).
       { if: [{ kind: 'npc', npc: 'halden', notFate: ['saved'] }, { kind: 'classInParty', classId: 'cleric' }],
@@ -1226,26 +1295,39 @@ const scenes: Record<string, Scene> = {
         text: 'The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk\'s purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. {wren} tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.' },
     ],
     next: SB_CLAIMS,
-    // Home, with the door sealed: nothing below is left to walk back into.
     noBack: true,
   },
   'sb-defeat': {
     id: 'sb-defeat', kind: 'story', art: { imageId: 'loc-tavern', emoji: '🍺' },
     text: [
-      'You wake in the {wander-inn}\'s back room with fen-mud in your ears, and {mira}\'s bone-broth steaming on the sill.',
-      { if: [{ kind: 'notFlag', flag: 'lychgate-cleared' }],
-        text: 'Someone hauled you all back across the fen in the dark. {mira} will not say who, and you do not ask.' },
-      { if: [{ kind: 'flag', flag: 'lychgate-cleared' }],
-        text: 'Someone carried you up the barrow stair and across the fen in the dark. {mira} will not say who. There are muddy boots drying by her fire, a scout\'s size, and you do not ask.' },
+      'The first thing you know is the smell of tallow and wet wool. You are lying on the settles in the {wander-inn}\'s back room, pushed together to make beds, with fen-mud dried stiff in your hair.',
+      // Where the party fell: in the fen (a fight there, or a night camp), or
+      // down in the barrows. Once the gate is passed, Wren is the one out there.
+      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
+        text: 'Eel-men from the far pools found you by the raised road at first light, {mira} says. They brought you in on hurdles, and would not stop for so much as a cup.' },
+      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }],
+        text: '{mira} will not say who brought you back across the fen. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
+      { if: [{ kind: 'at', hub: 'undercrypt' }],
+        text: 'Somebody got you up the barrow stair and across the whole fen in the dark. {mira} will not say who. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
       '"The fen\'s still there," {mira} says, which is her way of asking if you\'re going back. You are. She puts the bread where you can reach it.',
     ],
+    again: [
+      'Back on the settles in {mira}\'s back room, with fresh bruises under the old mud.',
+      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
+        text: 'The eel-men found you this time, {mira} says. They stayed only long enough to warm their hands.' },
+      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }],
+        text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
+      { if: [{ kind: 'at', hub: 'undercrypt' }],
+        text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
+      '"You know where the bread is," {mira} says, and leaves you to it.',
+    ],
     // A wipe costs a day, as in every chapter (and the door's clock runs on).
-    // Then the town, or, once the party has been down there, straight back
-    // down the barrow stair: a loss in the barrows is not the whole fen again.
+    // Then the town, or, for a party that fell in the barrows, straight back
+    // down the barrow stair: a loss there is not the whole fen again.
     // (A party that fell in the barrows comes back to the room it fell in.)
     next: [{ id: 'up', label: 'Get back on your feet', to: 'town', effects: [{ kind: 'passDay' }] },
       { id: 'back', label: 'Go straight back down the barrow stair', to: 'undercrypt', effects: [{ kind: 'passDay' }],
-        requires: [{ kind: 'visited', scene: 'undercrypt' }], hideWhenBlocked: true }], noBack: true,
+        requires: [{ kind: 'at', hub: 'undercrypt' }], hideWhenBlocked: true }], noBack: true,
   },
   'sb-epilogue': {
     id: 'sb-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
@@ -1284,7 +1366,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'visited', scene: 'chapel' }],
         text: 'Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.' },
       { if: [],
-        text: 'On the night the barrows close, at the fen\'s edge, the reeds part around two figures. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain late {reedwife}. They look at the sealed barrow-field for a long moment, and then at the town, and take their time about it. The reeds close behind them without a ripple.' },
+        text: 'On the night the barrows close, at the fen\'s edge, the reeds part around two figures. They do not walk so much as *arrive*, tall and green-fingered, with river-weed in their hair. They are sisters, unmistakably, of a certain late {reedwife}. They look at the sealed barrow-field, and then at the town, and take their time about both. The reeds close behind them without a ripple.' },
     ],
   },
 };
@@ -1316,8 +1398,8 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
   // `letters`) are harder to say at it. No door is lost, only made worse.
   // Worded for anywhere the party wakes: the inn, the fen, the barrows.
   dawns: [
-    { day: 4, text: ['The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.'] },
-    { day: 6, text: ['The ground shook again before dawn, longer this time. Every dog in {thornwick} howled at once. Somewhere under the fen, old stone gave a little.'],
+    { day: 4, text: ['The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.'] },
+    { day: 6, text: ['The ground shook again before dawn, longer this time, and hard enough to wake the soundest sleeper. Somewhere under the fen, old stone gave a little.'],
       effects: [{ kind: 'setFlag', flag: 'door-straining' }] },
   ],
   // What the last chapter remembers (read there as 'sunken-barrows:<flag>'):

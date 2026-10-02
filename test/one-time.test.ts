@@ -46,3 +46,58 @@ describe('a camp with a night limit', () => {
     expect(validateModule(bad).some((e) => e.includes('camp nights'))).toBe(true);
   });
 });
+
+describe('the validator holds the guide\'s money and XP rules', () => {
+  const enc = 'cutpurses';
+  const base = (parleyEffects: Module['scenes'][string] extends never ? never : unknown[], lossText: string): Module => ({
+    id: 'mx', title: 'M', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], noBack: true, next: [
+        { id: 'rob', label: 'Get robbed', to: 'robbed', effects: [{ kind: 'gold', amount: -15 }] },
+        { id: 'fight', label: 'Fight', to: 'f' },
+      ] },
+      robbed: { id: 'robbed', kind: 'story', text: [lossText], noBack: true, next: [{ id: 'on', label: 'On', to: 'f' }] },
+      f: { id: 'f', kind: 'battle', encounterId: enc, mapId: 'open', onWin: { to: 'won' },
+        parley: { dc: 10, success: { to: 'won', effects: parleyEffects as never } } },
+      won,
+    },
+  });
+  it('a talk-down must pay XP', () => {
+    expect(validateModule(base([], 'Your purse is gone.')).some((e) => e.includes('parley succeeds without paying XP'))).toBe(true);
+    expect(validateModule(base([{ kind: 'xp', amount: 10 }], 'Your purse is gone.')).some((e) => e.includes('parley'))).toBe(false);
+  });
+  it('a loss of gold is not narrated as a sum', () => {
+    expect(validateModule(base([{ kind: 'xp', amount: 10 }], 'Fifteen gold went with him.')).some((e) => e.includes('names a sum'))).toBe(true);
+  });
+});
+
+describe('a scene reached as an outcome says whether it can be walked away from', () => {
+  it('is an error to leave it undeclared', () => {
+    const m = (decl: object): Module => ({ id: 'bk', title: 'B', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'M', nodes: [{ id: 'n', x: 1, y: 1, label: 'Hall', icon: '🚪', scene: 'hall' }] } } as Scene,
+      hall: { id: 'hall', kind: 'story', text: ['A hall.'], next: [{ id: 'win', label: 'Win', to: 'won-hall' }] },
+      'won-hall': { id: 'won-hall', kind: 'story', text: ['You won.'], ...decl, next: [{ id: 'on', label: 'On', to: 'won' }] } as Scene,
+      won,
+    } });
+    expect(validateModule(m({})).some((e) => e.startsWith('[won-hall]') && e.includes('declare noBack'))).toBe(true);
+    expect(validateModule(m({ noBack: true })).some((e) => e.includes('declare noBack'))).toBe(false);
+    expect(validateModule(m({ back: true })).some((e) => e.includes('declare noBack'))).toBe(false);
+  });
+});
+
+describe('a night broken up by an ambush', () => {
+  it('does not count against the camp\'s nights', async () => {
+    const { startAdventure, enterScene, campRest, nightsLeft } = await import('../src/adventure/runtime.js');
+    const { newCampaign } = await import('../src/campaign/campaign.js');
+    const m: Module = { id: 'cz', title: 'C', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'M', camp: { nights: 1, risky: { chance: 1, battleScene: 'ambush' } }, nodes: [{ id: 'n', x: 1, y: 1, label: 'Out', icon: '🚪', scene: 'won' }] } } as Scene,
+      ambush: { id: 'ambush', kind: 'battle', encounterId: 'cutpurses', mapId: 'open', onWin: { to: '@hub' } },
+      won,
+    } };
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'map');
+    campRest(s, m, 'long');
+    expect(s.sceneId).toBe('ambush');
+    expect(s.campNights?.map ?? 0).toBe(0);
+    void nightsLeft;
+  });
+});

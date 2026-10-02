@@ -31,7 +31,7 @@ const m: Module = { id: 'att', title: 'T', blurb: '', start: 'map', scenes: {
     ],
     success: { to: 'won' }, failure: { to: 'map' } },
   gate: { id: 'gate', kind: 'battle', encounterId: 'goblins', mapId: 'open', onWin: { to: 'won' },
-    parley: { dc: 30, success: { to: 'won' }, attempt: 'toll' } },
+    parley: { dc: 30, success: { to: 'won', effects: [{ kind: 'xp', amount: 10 }] }, attempt: 'toll' } },
 } };
 
 describe('attempt groups', () => {

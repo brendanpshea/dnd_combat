@@ -9,7 +9,7 @@ Everything the game implements, printed from the data modules.
 **12** classes (levels 1–7) ·
 **8** species · **154** features ·
 **254** weapons · **108** consumables ·
-**84** encounters · **11** maps
+**85** encounters · **11** maps
 
 | File | Contents |
 | --- | --- |

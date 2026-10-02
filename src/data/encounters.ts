@@ -223,11 +223,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'gorgon-maze', name: 'Gorgon Lair', suggestedLevel: 5,
     members: ['gorgon'],
   },
-  // The Sunken Barrows' cold open, fought at 3rd level: four shadows, not
-  // two, so the churchyard pays its share of the road to 4th.
+  // The Sunken Barrows' cold open, fought at 3rd level: four shadows and the
+  // churchyard's ghost, so the churchyard pays its share of the road to 4th.
+  // 100% at 3rd (greedy AI, 120 seeds), but the ghost leaves marks.
   'shadow-ambush': {
-    id: 'shadow-ambush', name: 'Shadow Ambush', suggestedLevel: 2,
-    members: ['shadow', 'shadow', 'shadow', 'shadow'],
+    id: 'shadow-ambush', name: 'Shadow Ambush', suggestedLevel: 3,
+    members: ['shadow', 'shadow', 'shadow', 'shadow', 'ghost'],
   },
   'specter-haunt': {
     id: 'specter-haunt', name: 'Specter Haunt', suggestedLevel: 2,
@@ -360,11 +361,18 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'drowned-chapel', name: 'The Drowned Chapel', suggestedLevel: 3,
     members: ['priest', 'acolyte', 'acolyte', 'ghoul', 'ghoul', 'skeleton', 'skeleton'],
   },
-  // The fen's corpse-lights: three wisps and the drowned thing they feed.
+  // The fen's corpse-lights: four wisps and the two drowned things they feed.
   // 100% at 3rd, but it drains the party.
   'corpse-lights': {
     id: 'corpse-lights', name: 'The Corpse-Lights', suggestedLevel: 3,
-    members: ['will-o-wisp', 'will-o-wisp', 'will-o-wisp', 'specter'],
+    members: ['will-o-wisp', 'will-o-wisp', 'will-o-wisp', 'will-o-wisp', 'specter', 'specter'],
+  },
+  // The Barrow Gate: the ladder's `gargoyle-perch` and a suit of the old
+  // kings' green bronze standing in the gateway below them. 93% at 3rd,
+  // 100% at 4th.
+  'barrow-watchers': {
+    id: 'barrow-watchers', name: 'The Watchers at the Barrow Gate', suggestedLevel: 3,
+    members: ['gargoyle', 'gargoyle', 'animated-armor'],
   },
   // The embalmed king and his household dead, ghasts in their funeral best:
   // the Undercrypt's hardest room before the door. 91% at 3rd.

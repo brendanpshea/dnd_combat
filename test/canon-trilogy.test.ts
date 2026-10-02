@@ -65,7 +65,8 @@ describe('the trilogy\'s numeric facts', () => {
 
   it.each(numeric)('%s: its text spells its value, and the prose says it', (id, fact) => {
     expect(spelled(fact.text)).toBe(fact.value);
-    expect(PROSE.some((s) => s.toLowerCase().includes(fact.text.toLowerCase()))).toBe(true);
+    // A loss is shown as it happens, so its number is never said (unspoken).
+    expect(PROSE.some((s) => s.toLowerCase().includes(fact.text.toLowerCase()))).toBe(!fact.unspoken);
   });
 
   it('the reeve\'s balance is the bounty less the retainer', () => {

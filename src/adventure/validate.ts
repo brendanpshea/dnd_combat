@@ -13,7 +13,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement, type Effect, type Outcome, type SceneRef } from './types.js';
+import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement, type Effect, type Outcome, type SceneRef, type Para } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf, flagsWritten } from './graph.js';
 import { unresolvedTokens, isNpcFlag, hasUncompiledNpcState } from './npcs.js';
 import { checkDungeon } from './dungeon.js';
@@ -89,6 +89,11 @@ export function validateModule(module: Module): string[] {
   const errors: string[] = [];
   const ids = new Set(Object.keys(module.scenes));
   const at = (id: Id, msg: string) => errors.push(`[${id}] ${msg}`);
+  /** An `at` requirement names a place the party can be: a map or a dungeon. */
+  const checkAt = (where: string, hub: Id) => {
+    const k = module.scenes[hub]?.kind;
+    if (k !== 'explore' && k !== 'dungeon') at(where, `requires being at '${hub}', which is not a map or a dungeon`);
+  };
 
   if (!module.scenes[module.start]) errors.push(`start scene '${module.start}' does not exist`);
   if (module.defeatScene && !ids.has(module.defeatScene)) {
@@ -161,6 +166,7 @@ export function validateModule(module: Module): string[] {
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);
       if (req.kind === 'visited' && !ids.has(req.scene)) at(id, `requires visiting unknown scene '${req.scene}'`);
+      if (req.kind === 'at') checkAt(id, req.hub);
       if ((req.kind === 'companion' || req.kind === 'noCompanion') && !module.companions?.[req.companion]) {
         at(id, `requires unknown companion '${req.companion}'`);
       }
@@ -274,6 +280,7 @@ export function validateModule(module: Module): string[] {
     if (!Number.isInteger(d.day) || d.day <= lastDawn) errors.push(`dawn of day ${d.day} must be a whole day after ${lastDawn}, in order`);
     lastDawn = Math.max(lastDawn, d.day);
     if (!d.text.length) errors.push(`dawn of day ${d.day} has no text: a player must see the morning that changed things`);
+    for (const p of d.text) if (typeof p !== 'string') for (const r of [...(p.if ?? []), ...(p.assumes ?? [])]) if (r.kind === 'at') checkAt(`dawn of day ${d.day}`, r.hub);
     for (const eff of d.effects ?? []) {
       if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
       if (eff.kind === 'copyFlag') { written.add(eff.to); read.add(eff.from); }
@@ -365,6 +372,16 @@ export function validateModule(module: Module): string[] {
       }
     }
   }
+  // Every other scene that would offer a way back says whether it means to:
+  // `noBack`, or `back: true`. A way back out of an outcome is how a victory
+  // got walked away from and a fight re-farmed; it must be a decision.
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    if (entries.has(id) || (sc.kind !== 'story' && sc.kind !== 'dialogue' && sc.kind !== 'challenge')) continue;
+    if (sc.noBack === undefined && !sc.back) {
+      at(id, 'is reached as an outcome and would offer a way back: declare noBack: true, or back: true if walking away is meant');
+    }
+    if (sc.noBack && sc.back) at(id, 'declares both noBack and back');
+  }
   for (const [id, sc] of Object.entries(module.scenes)) {
     if (entries.has(id) || (sc.kind !== 'story' && sc.kind !== 'dialogue') || sc.noBack || sc.next.length === 0) continue;
     if (sc.next.every((c) => (c.effects?.length ?? 0) > 0 || !!c.check)) {
@@ -376,6 +393,40 @@ export function validateModule(module: Module): string[] {
   for (const [id, sc] of Object.entries(module.scenes)) {
     const camp = sc.kind === 'explore' ? sc.map.camp : sc.kind === 'dungeon' ? sc.dungeon.camp : undefined;
     if (camp?.nights !== undefined && !(Number.isInteger(camp.nights) && camp.nights >= 1)) at(id, `camp nights ${camp.nights} must be a whole number, at least 1`);
+  }
+
+  // Walking past a fight pays what the fight would have: a talk-down that
+  // works pays XP, like every other way past (see "Levels come from fights").
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    if (sc.kind !== 'battle' || !sc.parley) continue;
+    const pays = (sc.parley.success.effects ?? []).some((e) => e.kind === 'xp' || e.kind === 'xpToLevel');
+    if (!pays) at(id, 'its parley succeeds without paying XP: a fight talked past pays what it would have (avoidedFightXP)');
+  }
+
+  // A loss of gold is shown to the player as it happens, capped at what the
+  // party holds; text that names the amount can name a sum they never had.
+  const NAMED_SUM = /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|hundred)\b[\w\s-]{0,24}\bgold\b/i;
+  const losesGold = (es: readonly Effect[] | undefined) => (es ?? []).some((e) => e.kind === 'gold' && e.amount < 0);
+  const readAfter = (paras: readonly Para[] | undefined) => (paras ?? []).map((p) => (typeof p === 'string' ? p : p.text));
+  const sceneText = (to: Id) => { const t = module.scenes[to]; return t && 'text' in t ? readAfter(t.text as Para[]) : t && 'lines' in t ? readAfter(t.lines) : []; };
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    const checks: string[] = [];
+    if (sc.kind === 'story' || sc.kind === 'dialogue') {
+      for (const c of sc.next) {
+        if (losesGold(c.effects)) checks.push(...sceneText(c.to));
+        if (c.check && losesGold(c.check.failEffects)) checks.push(...sceneText(c.check.failTo));
+      }
+    }
+    for (const { paras, where } of parasOf(sc)) {
+      // An outcome's own text, when that outcome loses gold.
+      const o = where === 'success' && 'success' in sc ? sc.success : where === 'failure' && 'failure' in sc ? sc.failure
+        : where === 'onWin' && 'onWin' in sc ? sc.onWin : where === 'onLoss' && 'onLoss' in sc ? sc.onLoss : undefined;
+      if (o && losesGold(o.effects)) checks.push(...readAfter(paras));
+    }
+    for (const line of new Set(checks)) {
+      const m = line.match(NAMED_SUM);
+      if (m) at(id, `loses gold, and the text after it names a sum ("${m[0]}"): the player sees what was taken; say it without a number`);
+    }
   }
 
   // One-time things can't be spent by walking away. A dungeon room's event

@@ -359,7 +359,7 @@ describe('the Ashfang Den', () => {
     enterScene(s, H, 'inner');
     enterScene(s, H, 'boss');
     resolveBattle(s, H, true);
-    expect(s.sceneId).toBe('aftermath');
+    expect(s.sceneId).toBe('vargan-beaten');
     expect(hubReturn(s, H)).toBeNull();
   });
 });

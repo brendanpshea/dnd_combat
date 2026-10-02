@@ -178,7 +178,7 @@ const DEMO: Module = {
       ],
     },
     guard: {
-      id: 'guard', kind: 'dialogue', npc: { id: 'grix', name: 'Grix' },
+      id: 'guard', kind: 'dialogue', noBack: true, npc: { id: 'grix', name: 'Grix' },
       lines: ['"Password?"'],
       next: [
         { id: 'bribe', label: 'Offer 10 gold', to: 'inside',
@@ -256,14 +256,14 @@ describe('adventure runtime vocabulary', () => {
       id: 'lf', title: 'T', blurb: '', start: 's',
       scenes: {
         s: { id: 's', kind: 'story', text: ['x'], next: [{ id: 'go', label: 'Go', to: 'gate', effects: floor }] },
-        gate: { id: 'gate', kind: 'story', text: ['A gate.'], next: [
+        gate: { id: 'gate', kind: 'story', noBack: true, text: ['A gate.'], next: [
           { id: 'talk', label: 'Talk', to: 'road', effects: floor },
           { id: 'fight', label: 'Fight', to: 'guards' },
         ] },
         guards: { id: 'guards', kind: 'battle', encounterId: 'goblins', mapId: 'open', intro: ['Guards.'],
           onWin: { to: 'road' },
           parley: { skill: 'persuasion', dc: 12, success: { to: 'road', text: ['They let you by.'], effects: floor } } },
-        road: { id: 'road', kind: 'story', text: ['A road.'], next: [{ id: 'on', label: 'On', to: 'e' }] },
+        road: { id: 'road', kind: 'story', noBack: true, text: ['A road.'], next: [{ id: 'on', label: 'On', to: 'e' }] },
         e: { id: 'e', kind: 'ending', outcome: 'victory', text: ['done'] },
         ...over,
       } as Module['scenes'],
