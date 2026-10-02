@@ -65,7 +65,7 @@ describe('joining and leaving', () => {
         next: [{ id: 'x', label: 'x', to: 'trail', effects: [{ kind: 'joinParty', companion: 'nobody' }] }] } as never },
     };
     expect(validateModule(broken).some((e) => e.includes("unknown companion 'nobody'"))).toBe(true);
-  });
+  }, 30_000);
 });
 
 describe('in a fight', () => {

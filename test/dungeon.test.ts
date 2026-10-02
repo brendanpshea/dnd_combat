@@ -9,7 +9,7 @@ import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, enterScene, currentScene, resolveBattle, fleeBattle, dungeonProgress, dungeonExits,
   walkTo, searchRoom, canSearch, forceDoor, leaveDungeon, dungeonExitHere, battleMap, choose,
-  dungeonRoute, travelDestinations, campRule,
+  dungeonRoute, travelDestinations, campRule, hubReturn, campRest,
   type AdventureEvent,
 } from '../src/adventure/runtime.js';
 import { runModule } from '../src/adventure/runner.js';
@@ -251,6 +251,29 @@ describe('walking a dungeon', () => {
     expect(s.sceneId).toBe('den');
   });
 
+  it('an unsettled event is still waiting when a beaten party comes back into its room', () => {
+    const m = moduleWith(den(), {
+      'vex-talk': { id: 'vex-talk', kind: 'story', text: ['Vex.'], next: [
+        { id: 'deal', label: 'Deal', to: '@hub', effects: [{ kind: 'setFlag', flag: 'met-vex' }] },
+        { id: 'fight', label: 'Fight', to: 'vex-fight' },
+      ] },
+      'vex-fight': { id: 'vex-fight', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins', onWin: { to: '@hub' }, onLoss: { to: 'outside' } },
+    });
+    const s = startAdventure(newCampaign(3), m);
+    enterScene(s, m, 'start'); choose(s, m, 'in');
+    walkTo(s, m, 'yard'); walkTo(s, m, 'pit'); resolveBattle(s, m, true);
+    walkTo(s, m, 'vex');
+    expect(s.sceneId).toBe('vex-talk');
+    // No backing out of a confrontation into the room it stands in.
+    expect(hubReturn(s, m)).toBeNull();
+    choose(s, m, 'fight');
+    resolveBattle(s, m, false);
+    // Beaten, dragged off, and straight back in: Vex is still at the fire.
+    choose(s, m, 'back');
+    expect(dungeonProgress(s, 'den', den()).at).toBe('vex');
+    expect(s.sceneId).toBe('vex-talk');
+  });
+
   it('search finds a secret door and the room\'s own find, once', () => {
     const d = den({ links: den().links.map((l) => (l.b === 'cellar' ? { ...l, door: { secret: { dc: 1 } } } : l)) });
     const m = moduleWith(d);
@@ -337,6 +360,19 @@ describe('walking a dungeon', () => {
     walkTo(s, M, 'gate');
     leaveDungeon(s, M);
     expect(s.sceneId).toBe('outside');
+  });
+
+  it('fleeing a night\'s ambush leaves the party in the room it slept in', () => {
+    const d = den({ camp: { risky: { chance: 1, battleScene: 'night' } } });
+    const m = moduleWith(d, { night: { id: 'night', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins', onWin: { to: '@hub' } } });
+    const s = startAdventure(newCampaign(3), m);
+    enterScene(s, m, 'start'); choose(s, m, 'in');
+    walkTo(s, m, 'yard');
+    campRest(s, m, 'long');
+    expect(s.sceneId).toBe('night');
+    fleeBattle(s, m, true);
+    expect(s.sceneId).toBe('den');
+    expect(dungeonProgress(s, 'den', d).at).toBe('yard');
   });
 
   it('a headless party can play it to the end', () => {

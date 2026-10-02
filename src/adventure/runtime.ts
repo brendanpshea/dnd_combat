@@ -677,6 +677,12 @@ export function hubReturn(state: AdventureState, module: Module): Id | null {
   // Out of a dungeon: its map is behind the party, not somewhere to step back to.
   const hub = module.scenes[state.hub];
   if (hub?.kind === 'dungeon' && state.dungeons?.[hub.id]?.outside) return null;
+  // A confrontation in the room the party stands in can't be stepped back out
+  // of: it would only begin again (see enterDungeon). Leave by another door.
+  if (hub?.kind === 'dungeon') {
+    const p = state.dungeons?.[hub.id];
+    if (p && standingEvent(state, hub.dungeon, p) === scene.id) return null;
+  }
   return state.hub;
 }
 
@@ -919,6 +925,13 @@ function enterDungeon(
     if (d.torch) p.torch = d.torch.length;
   }
   return p.pending ? arrive(state, module, scene.id, d, p) : [];
+}
+
+/** The event of the room the party stands in, if it plays until something
+ *  holds and that something doesn't yet: a confrontation still under way. */
+function standingEvent(state: AdventureState, d: Dungeon, p: DungeonProgress): Id | undefined {
+  const ev = roomOf(d, p.at)?.event;
+  return ev?.until && !ev.until.every((r) => requirementMet(state, r)) ? ev.scene : undefined;
 }
 
 /**
@@ -1243,6 +1256,12 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   // Either way the party is picked up first (half HP): an authored loss beat
   // is still somebody dragging them off the field, and leaving them at 0 HP
   // put a party on the map that could not survive its next step.
+  // Beaten inside a dungeon: whatever the room held is still there when the
+  // party comes back to it (a wipe, then "go straight back in"). The arrival
+  // plays again: the room's fight, or a confrontation not yet settled. Without
+  // this the room stood empty, and the chief could be camped in front of.
+  const hub = hubDungeon(state, module);
+  if (hub) dungeonProgress(state, hub.id, hub.dungeon).pending = true;
   if (scene.onLoss) {
     reviveParty(state.campaign);
     restCompanions(state, 'revive', module);
@@ -1384,9 +1403,11 @@ export function fleeBattle(state: AdventureState, module: Module, retreated: boo
   // In a dungeon, falling back puts the party back in the room it came from,
   // whatever started the fight: the room's own fight, a corridor ambush, or a
   // scene the room's event led to (which plays again when the party returns,
-  // until its condition holds). The fight stays where it was.
+  // until its condition holds). The fight stays where it was. A night's
+  // ambush is the exception: it came to the party's camp, so the party runs
+  // off into the dark of the room it slept in, not back a room.
   const d = hubDungeon(state, module);
-  if (d) {
+  if (d && d.dungeon.camp?.risky?.battleScene !== scene.id) {
     const p = dungeonProgress(state, d.id, d.dungeon);
     if (p.pending || p.from || roomOf(d.dungeon, p.at)?.fight === scene.id) {
       p.at = p.from ?? d.dungeon.entry;

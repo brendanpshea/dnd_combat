@@ -68,7 +68,8 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   vargan: {
     id: 'vargan', name: 'Vargan', aka: ['the chief', 'the Ashfang chief'],
-    // Killed in his hall; or, turned on the hag, executed, jailed or let go.
+    // Executed, jailed or let go once beaten. 'slain' is set by nothing now
+    // (killing him in his hall is an execution); kept so older saves load.
     fates: ['slain', 'executed', 'jailed', 'freed'],
     introducedAt: {
       // The bandit on the road speaks of his chief, and Mira tells of the
