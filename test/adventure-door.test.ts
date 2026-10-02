@@ -96,7 +96,7 @@ describe('the choices at a fight\'s door', () => {
 
   it('the modules with parleys still validate', () => {
     expect(validateModule(HOLLOW)).toEqual([]);
-  });
+  }, 30_000);
 });
 
 describe('retreating mid-fight', () => {

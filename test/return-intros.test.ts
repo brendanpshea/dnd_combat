@@ -15,7 +15,7 @@ const mod: Module = { id: 'ri', title: 'R', blurb: '', start: 'gate', scenes: {
   gate: { id: 'gate', kind: 'battle', encounterId: ENC, mapId: 'open',
     intro: ['Three goblins jump out of the ditch.'],
     again: ['The goblins are still in the ditch, and they are ready for you now.'],
-    parley: { dc: 30, success: { to: 'won' }, refused: ['The boss spits. "You talk like a toll-man."'] },
+    parley: { dc: 30, success: { to: 'won', effects: [{ kind: 'xp', amount: 10 }] }, refused: ['The boss spits. "You talk like a toll-man."'] },
     onWin: { to: 'won' } },
   won: { id: 'won', kind: 'ending', outcome: 'victory', text: ['Done.'] },
 } };
