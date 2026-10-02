@@ -351,7 +351,9 @@ The second gargoyle shatters mid-dive and rains down as plain gravel. The Barrow
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
-The **Undercrypt**: the prison the old prayers named.
+Letters are cut into the lintel over the doorway, worn almost smooth.
+
+Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **Undercrypt**. Let it stay shut.*" She wipes her thumb on her coat.
 
 Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
@@ -369,7 +371,7 @@ Worked steps lead down into the cold. Your torch makes a small, brave circle, an
 
 → Search the room
 
-Dust, old bones and nothing else.
+Every niche is empty. The walking dead took their grave-goods with them when they went down to dig.
 
 → The Painted Hall
 
@@ -385,7 +387,9 @@ In one panel a line of soldiers in green bronze stands before the door, each wit
 
 The last panel is fresh mud smeared over old paint. One angry stroke crosses out the woman of the reeds. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**
 
-The mud is still wet. The hands that wrote it are at the door now, somewhere deep below you.
+The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
+
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -421,7 +425,7 @@ _Gained: Potion of Greater Healing_
 
 → Search the room
 
-_(a paragraph shown before: “Dust, old bones and nothing else.…”)_
+_(a paragraph shown before: “Every niche is empty. The walking dead…”)_
 
 → The Lead Cut
 
@@ -471,7 +475,7 @@ The ground shivered once in the night, deep down under the fen, the way a door s
 
 → Search the room
 
-Nothing turns up.
+_(a paragraph shown before: “Every niche is empty. The walking dead…”)_
 
 → The Barrow-Guard
 
@@ -509,7 +513,7 @@ The specters tear apart into cold and silence. Where they came from, two bare pa
 
 → Search the room
 
-You sound the walls and lift what can be lifted. Nothing.
+_(a paragraph shown before: “Every niche is empty. The walking dead…”)_
 
 → The King's Chamber
 
@@ -543,7 +547,7 @@ _+60 gold (739)_
 
 → Search the room
 
-_(a paragraph shown before: “Nothing turns up.…”)_
+You sift the dust by hand. It is mostly the dead, and they carried nothing.
 
 → Drop down the burial shaft
 
@@ -557,7 +561,7 @@ Below, black candles burn on every step of the last stair. You will not need you
 
 → Search the room
 
-You find only scratches in the stone, and none of them mean anything.
+Candle-stubs, drips of black tallow and a dropped bone chisel, worn to a nub. The cult brought nothing it could spare.
 
 → The Warden's Door
 
@@ -567,7 +571,9 @@ You find only scratches in the stone, and none of them mean anything.
 
 The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something on the far side leans against it.
 
-The chanting you've heard for an hour comes from the **living**. They kneel at the door in the same long robes, holding candles of black tallow. This is the **Cult of the Worm**. Their leader is a thin grey man in a gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.
+The chanting you've heard for an hour comes from the **living**. They kneel at the door in the same long robes, holding candles of black tallow. This is the **Cult of the Worm**. Their leader is the thin grey man from the painted hall, in his gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.
+
+Against the door itself sits a soldier of the old kings in green bronze, its sword across its knees. Its eyes are two points of cold light. It watches the stair, and waits for an order.
 
 "Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
@@ -589,7 +595,7 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that he has lost hi
 
 Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, as if from very far away.
 
-Beside him, a soldier of the old kings crouches by the door in green bronze, with cold light in its eye sockets. It waits for an order, and Marrow gives none.
+Beside him, the soldier of the old kings does not stir from the door. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
@@ -613,13 +619,15 @@ _+120 gold (859)_
 
 Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the Warden leans on what is left of its lead.
 
-Marrow kneels down among his faithful and holds out his hands for the book. "They know how to chant at this door," he says. "Let me teach them the right words. They will follow me faster than they will follow you."
+Marrow kneels down among his faithful. "They know how to chant at this door," he says. "Read, or let me read. Whoever reads, they will chant it after, because I will."
 
 **» Open Halden's book at the door**
 
 <sub>scene `resealing`</sub>
 
 The great door still bulges outward. Half the lead is gone from its letters, and the Warden leans on what is left. Against the far wall, the cultists who never fought are still on their knees. They watch you with their black candles guttering.
+
+Marrow has laid his chisel down on the step. He watches the book now, not the door.
 
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
 
@@ -628,6 +636,8 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 `[Religion DC 13 — Morgan Le Fey rolls 13 — passed]`
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.
+
+At the back of the stair, Marrow's kneelers chant every line back. Forty voices keep time, low and steady.
 
 <sub>scene `seal-clean`</sub>
 

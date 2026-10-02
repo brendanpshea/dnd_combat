@@ -30,7 +30,7 @@ const MOTIFS = new Set([
 const KNOWN = new Set([
   'for the first time', 'on the far side', 'the far side of', 'far side of the', 'for a long moment',
   'braided into her hair', 'into the deep fen', 'she kept it alone', 'night of the calling',
-  'cold light in its', 'from top to bottom', 'out through the crack', 'and the orc runner',
+  'from top to bottom', 'out through the crack', 'and the orc runner',
 ]);
 
 function repeats(transcript: string): Map<string, number> {
