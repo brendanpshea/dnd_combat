@@ -883,8 +883,9 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'stair-night-lost' },
   },
   'stair-night-lost': {
-    id: 'stair-night-lost', kind: 'rest', variant: 'long', next: 'warden-stair',
-    intro: ['The cold closes over you. You wake stiff on the bottom step with frost in your hair, and the grey shapes are back inside the wall. They took their fill of your warmth. No one below came up to look, and the chanting goes on.'],
+    id: 'stair-night-lost', kind: 'story', noBack: true,
+    text: ['The cold closes over you. You wake stiff on the bottom step with frost in your hair, and the grey shapes are back inside the wall. They took their fill of your warmth, and the night with it: nobody slept. No one below came up to look, and the chanting goes on.'],
+    next: [{ id: 'up', label: 'Get up', to: 'warden-stair' }],
   },
   ossuary: {
     id: 'ossuary', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '💀' },

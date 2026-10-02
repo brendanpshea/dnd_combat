@@ -1403,9 +1403,11 @@ export function fleeBattle(state: AdventureState, module: Module, retreated: boo
   // In a dungeon, falling back puts the party back in the room it came from,
   // whatever started the fight: the room's own fight, a corridor ambush, or a
   // scene the room's event led to (which plays again when the party returns,
-  // until its condition holds). The fight stays where it was.
+  // until its condition holds). The fight stays where it was. A night's
+  // ambush is the exception: it came to the party's camp, so the party runs
+  // off into the dark of the room it slept in, not back a room.
   const d = hubDungeon(state, module);
-  if (d) {
+  if (d && d.dungeon.camp?.risky?.battleScene !== scene.id) {
     const p = dungeonProgress(state, d.id, d.dungeon);
     if (p.pending || p.from || roomOf(d.dungeon, p.at)?.fight === scene.id) {
       p.at = p.from ?? d.dungeon.entry;

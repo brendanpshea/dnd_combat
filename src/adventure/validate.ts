@@ -395,6 +395,33 @@ export function validateModule(module: Module): string[] {
     if (camp?.nights !== undefined && !(Number.isInteger(camp.nights) && camp.nights >= 1)) at(id, `camp nights ${camp.nights} must be a whole number, at least 1`);
   }
 
+  // A night's ambush lost is a night lost: the way out of it must not be a
+  // long rest or a full heal, or losing on purpose beats the camp's risk.
+  for (const sc of Object.values(module.scenes)) {
+    const camp = sc.kind === 'explore' ? sc.map.camp : sc.kind === 'dungeon' ? sc.dungeon.camp : undefined;
+    const night = camp?.risky ? module.scenes[camp.risky.battleScene] : undefined;
+    if (night?.kind !== 'battle' || !night.onLoss) continue;
+    const restful = (effects?: Effect[]) => effects?.some((e) => e.kind === 'heal' && e.amount === 'full');
+    if (restful(night.onLoss.effects)) at(night.id, 'a lost night ambush heals the party in full: losing it must not be a rest');
+    const seen = new Set<Id>();
+    const walk = [night.onLoss.to];
+    while (walk.length) {
+      const to = walk.pop()!;
+      const next = module.scenes[to];
+      if (!next || seen.has(to) || next.kind === 'explore' || next.kind === 'dungeon') continue;
+      seen.add(to);
+      if (next.kind === 'rest') {
+        if (next.variant === 'long') at(night.id, `a lost night ambush leads to '${to}', a long rest: losing it must not be a rest`);
+        walk.push(next.next);
+      } else if (next.kind === 'story' || next.kind === 'dialogue') {
+        for (const c of next.next) {
+          if (restful(c.effects)) at(night.id, `a lost night ambush leads to '${to}', whose '${c.id}' heals in full: losing it must not be a rest`);
+          walk.push(c.to);
+        }
+      }
+    }
+  }
+
   // Walking past a fight pays what the fight would have: a talk-down that
   // works pays XP, like every other way past (see "Levels come from fights").
   for (const [id, sc] of Object.entries(module.scenes)) {

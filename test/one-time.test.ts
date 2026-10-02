@@ -100,4 +100,17 @@ describe('a night broken up by an ambush', () => {
     expect(s.campNights?.map ?? 0).toBe(0);
     void nightsLeft;
   });
+
+  it('lost, is not a night slept: the way out of it is no long rest', () => {
+    const m = (lost: Scene): Module => ({ id: 'cl', title: 'C', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'M', camp: { risky: { chance: 1, battleScene: 'ambush' } }, nodes: [{ id: 'n', x: 1, y: 1, label: 'Out', icon: '🚪', scene: 'won' }] } } as Scene,
+      ambush: { id: 'ambush', kind: 'battle', encounterId: 'cutpurses', mapId: 'open', onWin: { to: '@hub' }, onLoss: { to: 'lost' } },
+      lost,
+      won,
+    } });
+    const flagged = (lost: Scene) => validateModule(m(lost)).some((e) => e.startsWith('[ambush]') && e.includes('must not be a rest'));
+    expect(flagged({ id: 'lost', kind: 'rest', variant: 'long', next: 'map' })).toBe(true);
+    expect(flagged({ id: 'lost', kind: 'story', noBack: true, text: ['Cold.'], next: [{ id: 'up', label: 'Up', to: 'map', effects: [{ kind: 'heal', amount: 'full' }] }] })).toBe(true);
+    expect(flagged({ id: 'lost', kind: 'story', noBack: true, text: ['Cold.'], next: [{ id: 'up', label: 'Up', to: 'map' }] })).toBe(false);
+  });
 });

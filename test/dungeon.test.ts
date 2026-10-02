@@ -9,7 +9,7 @@ import { validateModule } from '../src/adventure/validate.js';
 import {
   startAdventure, enterScene, currentScene, resolveBattle, fleeBattle, dungeonProgress, dungeonExits,
   walkTo, searchRoom, canSearch, forceDoor, leaveDungeon, dungeonExitHere, battleMap, choose,
-  dungeonRoute, travelDestinations, campRule, hubReturn,
+  dungeonRoute, travelDestinations, campRule, hubReturn, campRest,
   type AdventureEvent,
 } from '../src/adventure/runtime.js';
 import { runModule } from '../src/adventure/runner.js';
@@ -360,6 +360,19 @@ describe('walking a dungeon', () => {
     walkTo(s, M, 'gate');
     leaveDungeon(s, M);
     expect(s.sceneId).toBe('outside');
+  });
+
+  it('fleeing a night\'s ambush leaves the party in the room it slept in', () => {
+    const d = den({ camp: { risky: { chance: 1, battleScene: 'night' } } });
+    const m = moduleWith(d, { night: { id: 'night', kind: 'battle', encounterId: 'den-muster', mapId: 'ruins', onWin: { to: '@hub' } } });
+    const s = startAdventure(newCampaign(3), m);
+    enterScene(s, m, 'start'); choose(s, m, 'in');
+    walkTo(s, m, 'yard');
+    campRest(s, m, 'long');
+    expect(s.sceneId).toBe('night');
+    fleeBattle(s, m, true);
+    expect(s.sceneId).toBe('den');
+    expect(dungeonProgress(s, 'den', d).at).toBe('yard');
   });
 
   it('a headless party can play it to the end', () => {
