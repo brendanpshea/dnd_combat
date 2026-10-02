@@ -74,24 +74,27 @@ const POOL_CHOICES = [
   { id: 'leave', label: 'Leave the pool its privacy', to: 'fen' },
 ];
 
+/** The way home from the sealed door, whichever way it shut. The reeve's
+ *  commission is paid on arrival, and what the company carried up (the old
+ *  reeve, the drowned folk's purses) is handed over in `sb-aftermath` itself,
+ *  so what this chapter carries on is what really reached Thornwick. */
+const CLIMB_HOME = [{ id: 'home', label: 'Climb the cult\'s rope ladder back to the light', to: 'sb-aftermath',
+  effects: [{ kind: 'gold' as const, amount: 150 }] }];
+
 /** What the party can still do in Thornwick once the door is sealed. */
 const SB_CLAIMS = [
-  { id: 'bounty', label: 'Collect the reeve\'s commission', to: 'sb-claim-paid',
-    requires: [{ kind: 'notFlag' as const, flag: 'sb-paid' }], hideWhenBlocked: true,
-    effects: [{ kind: 'gold' as const, amount: 150 }, { kind: 'setFlag' as const, flag: 'sb-paid' }] },
   { id: 'mira', label: 'Stand Mira\'s taproom a round (10 gold)', to: 'sb-claim-round',
     requires: [{ kind: 'gold' as const, atLeast: 10 }, { kind: 'notFlag' as const, flag: 'sb-round' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold' as const, amount: -10 }, { kind: 'setFlag' as const, flag: 'sb-round' }] },
-  // The good deeds from below, handed over in person, once each.
-  { id: 'grandfather', label: 'Lay the old reeve before Aldous', to: 'sb-claim-grandfather', once: true,
-    requires: [{ kind: 'flag' as const, flag: 'grandfather-home' }, { kind: 'notFlag' as const, flag: 'sb-grandfather' }], hideWhenBlocked: true,
-    effects: [{ kind: 'setFlag' as const, flag: 'sb-grandfather' }] },
-  { id: 'purses', label: 'Hand the drowned folk\'s purses to the fen-folk', to: 'sb-claim-purses', once: true,
-    requires: [{ kind: 'flag' as const, flag: 'drowned-gold-home' }, { kind: 'notFlag' as const, flag: 'sb-purses' }], hideWhenBlocked: true,
-    effects: [{ kind: 'setFlag' as const, flag: 'sb-purses' }] },
   // `won`: the one road to the victory ending, carried for the last chapter.
   { id: 'done', label: 'Let the town sleep', to: 'sb-epilogue', effects: [{ kind: 'setFlag' as const, flag: 'won' }] },
 ];
+
+/** Into the churchyard. Cold-start floor: a fresh company starts this
+ *  module at 3rd level (no-op for a party continuing from The Hollow Road). */
+const OPENING: Effect[] = [{ kind: 'xpToLevel', level: 3 },
+  { kind: 'journal', entry: { id: 'q-barrows', kind: 'quest', title: 'The Opened Graves',
+    body: 'Thornwick\'s dead are leaving their graves and walking into the deep fen. Find what is calling them, and stop it.' } }];
 
 const scenes: Record<string, Scene> = {
   // === ACT 1 — THORNWICK, THE WRONG BELLS ================================
@@ -100,14 +103,18 @@ const scenes: Record<string, Scene> = {
     text: [
       'Thornwick by night, and the bells are ringing. Not the steady count of the hour. This is the panicked clatter of a rope hauled by somebody who has forgotten how bells work.',
       'Last season the Ashfang raiders fell, and the **Reedwife**, the green hag of the fen, died in the Ashfang chief\'s hall. That was your company\'s work, and Thornwick still toasts you for it. Since then, the valley has slept easy. The gate-warden\'s face says the sleeping is over. "It\'s the **churchyard**," he manages. "The graves are *open*, and it wasn\'t shovels did it."',
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:won' }],
+        text: 'Your purse is still heavy with last season\'s bounty. Thornwick pays its debts.' },
       'Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.',
     ],
-    next: [{ id: 'go', label: 'Answer the bells', to: 'lychyard',
-      // Cold-start floor: a fresh company starts this module at 3rd level
-      // (no-op for a party continuing from The Hollow Road at L3+).
-      effects: [{ kind: 'xpToLevel', level: 3 },
-        { kind: 'journal', entry: { id: 'q-barrows', kind: 'quest', title: 'The Opened Graves',
-          body: 'Thornwick\'s dead are leaving their graves and walking into the deep fen. Find what is calling them, and stop it.' } }] }],
+    next: [
+      { id: 'go', label: 'Answer the bells', to: 'lychyard', hideWhenBlocked: true,
+        requires: [{ kind: 'flag', flag: 'hollow-road:won' }], effects: OPENING },
+      // A cold start: still the company that broke the Ashfang, so it still
+      // has last season's bounty, about what a run through Part 1 carries.
+      { id: 'go-cold', label: 'Answer the bells', to: 'lychyard', hideWhenBlocked: true,
+        requires: [{ kind: 'notFlag', flag: 'hollow-road:won' }], effects: [...OPENING, { kind: 'gold', amount: 250 }] },
+    ],
     noBack: true,
   },
   lychyard: {
@@ -165,6 +172,7 @@ const scenes: Record<string, Scene> = {
         // under a horse in Part 1, a stranger otherwise; after that, the road.
         { id: 'fen-gate', x: 80, y: 76, label: 'The Fen Road', icon: 'tok-gate', scene: 'fen-out',
           requires: [{ kind: 'flag', flag: 'reeve-task' }],
+          note: 'The gate-warden will not open the fen road without the reeve\'s say-so. See Reeve Aldous at his hall.',
           sceneWhen: [
             { if: [{ kind: 'flag', flag: 'met-wren' }], to: 'fen-road' },
             { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], to: 'fen-reunion' },
@@ -332,6 +340,7 @@ const scenes: Record<string, Scene> = {
             { if: [{ kind: 'noCompanion', companion: 'wren' }], to: 'pool-alone' }] },
         { id: 'lychgate', x: 78, y: 56, label: 'The Barrow Gate', mystery: 'Standing stones ahead…', icon: 'tok-gate', scene: 'lychgate',
           requires: [{ kind: 'flag', flag: 'chapel-cleared' }, { kind: 'flag', flag: 'lights-cleared' }],
+          note: 'Every trail to the barrows runs past the drowned chapel and the corpse-lights. Deal with both first.',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'lychgate-cleared' }], to: 'lychgate-open' }] },
       ],
     },
@@ -408,7 +417,10 @@ const scenes: Record<string, Scene> = {
     id: 'chapel-saved', kind: 'dialogue', noBack: true, npc: HALDEN, art: { imageId: 'loc-temple', emoji: '📖' },
     lines: [
       'Halden sits down hard on the altar steps, shaking, and himself again. He stares at his hands as if someone has just given them back. Behind him, his two acolytes sit up in the shallows, coughing up fen-water. "It came up through the floor," he says. "Through the *prayers*. The black candles aren\'t mine. A grey little gravedigger brought them. He said his name was **Marrow**, and I *thanked* him."',
-      'He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."',
+      'He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water\'s edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside."',
+      // "We" only from the Wren who mapped the den for the company in Part 1.
+      { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }], text: 'Wren lets out a breath. "So the hag was the lock," she says quietly. "And we broke it."' },
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }], text: 'Wren lets out a breath. "So the hag was the lock," she says quietly. "And you broke it."' },
       'Halden taps the flyleaf, where someone has inked a mark of reeds and a reaching hand. "That\'s the hag\'s brand," Wren says. "Every marsh-thing that ran with the Ashfang wore it." Halden shakes his head. "It was a keeper\'s mark first. The vigil\'s mark. The old builders cut it into the Barrow Gate, and the gate\'s watchers know it. She grew greedy and burned it into everything she owned. She made a keeper\'s mark into a slaver\'s brand."',
       '"The rites of sealing are in there too. Someone must say them at his door, in the great barrow past the gate, and say them whole. It will take nerve. I couldn\'t say them while it had me, but I\'ll follow you down and wait on the stair." He finds a healing potion under the altar cloth and gives you that too. "Nerve we\'ve got," Wren says, and she sounds almost sure of it. She puts her own cloak round Halden\'s shoulders without looking at him.',
     ],
@@ -422,7 +434,10 @@ const scenes: Record<string, Scene> = {
     text: [
       'Halden\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand. *The Reedwife was the jailer of the Warden of the Barrows. The fen-folk paid her a lamb each midwinter, and she kept him asleep under the fen. She is dead, and the vigil is over. The Warden wakes, and gathers hands to open his door from within.* Further down, the hand changes. It shakes, like a man fighting his own arm.',
       'Pressed so hard the nib tore the page: *"The rites of sealing are in this book. Someone with nerve must say them at his door, in the great barrow. Not me. It will not let it be me."* On the flyleaf, someone has inked a mark of reeds and a reaching hand. Beside it, in the tidy hand: *The vigil\'s mark. The old builders cut it into the Barrow Gate, and its watchers know it. It was a keeper\'s mark first. She made it a slaver\'s brand.*',
-      '"That\'s the hag\'s brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And we broke it." She shuts the book and hands it to you. "Well. Nerve we\'ve got. The door\'s past the Barrow Gate."',
+      { if: [{ kind: 'flag', flag: 'hollow-road:saved-scout' }],
+        text: '"That\'s the hag\'s brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And we broke it." She shuts the book and hands it to you. "Well. Nerve we\'ve got. The door\'s past the Barrow Gate."' },
+      { if: [{ kind: 'notFlag', flag: 'hollow-road:saved-scout' }],
+        text: '"That\'s the hag\'s brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "Well. Nerve we\'ve got. The door\'s past the Barrow Gate."' },
       'Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],
@@ -946,8 +961,9 @@ const scenes: Record<string, Scene> = {
       'Line by line, the great door stops *straining*. Last of all goes the pressure behind it. Something enormous on the far side turns its attention away, unhurried and unimpressed. It is not beaten. It has simply gone back to sleep. Up above, across the barrow-field, every walking corpse lies down where it stands.',
       'It is done. The door stands sealed, and the **Warden** sleeps again.',
       'The vigil holds. It has a new keeper now — a book, a door, and a town that knows to watch it. It will have to do.',
+      'Among the cult\'s packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.',
     ],
-    next: [{ id: 'home', label: 'Climb back to the light', to: 'sb-aftermath' }], noBack: true,
+    next: CLIMB_HOME, noBack: true,
   },
   // The rites failed, and the Warden pushed back. Win, and the door shuts
   // over the bodies, but not cleanly: the crack carries into Part 3.
@@ -981,34 +997,14 @@ const scenes: Record<string, Scene> = {
     text: [
       'The door holds. The crack in it does not close. Lead creeps into it from the letters on either side, and stops a finger short. Behind the stone, the Warden settles. He is not asleep. Now and then the door ticks under your hand, like a knuckle tapping.',
       'Up above, across the barrow-field, every walking corpse lies down where it stands. It is done, more or less. The vigil holds, with a new keeper — a book, a cracked door, and a town that will have to watch it closely.',
+      'Among the cult\'s packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.',
     ],
-    next: [{ id: 'home', label: 'Climb back to the light', to: 'sb-aftermath' }], noBack: true,
+    next: CLIMB_HOME, noBack: true,
   },
   // Each claim gets one line, then a short hub: the homecoming doesn't replay.
-  'sb-claim-paid': {
-    id: 'sb-claim-paid', kind: 'story', art: { imageId: 'loc-town', emoji: '💰' },
-    text: ['The reeve counts the purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.'],
-    next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
-  },
   'sb-claim-round': {
     id: 'sb-claim-round', kind: 'story', art: { imageId: 'loc-tavern', emoji: '🍺' },
     text: ['The taproom drinks to the company, then to the dead, then to Mira, who pretends not to hear it.'],
-    next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
-  },
-  'sb-claim-grandfather': {
-    id: 'sb-claim-grandfather', kind: 'story', art: { imageId: 'loc-town', emoji: '⛓️' },
-    text: [
-      'You carry the old man into the reeve\'s hall, still wrapped in your cloak, and lay him on the long table among the ledgers. Aldous lifts the edge of the cloak and looks for a long time.',
-      'Then he takes off his own chain of office and lays it beside his grandfather\'s. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window. He does not turn back while you are in the room.',
-    ],
-    next: [{ id: 'ok', label: 'Leave him with his grandfather', to: 'sb-aftermath-hub' }], noBack: true,
-  },
-  'sb-claim-purses': {
-    id: 'sb-claim-purses', kind: 'story', art: { imageId: 'loc-town', emoji: '💰' },
-    text: [
-      'The fen-folk have come in from the far pools for the reburials. You hand over the purses one by one, and they pass them along, name by name. Nobody counts the coins.',
-      'One widow opens hers and finds a carved bone button among the coins. She closes it again. "He always kept that," she says, and holds the purse against her chest. Wren tucks the last purse into her coat. It belongs to a widow at the far edge of the fen, and Wren says she will walk it out there herself.',
-    ],
     next: [{ id: 'ok', label: 'Back to the square', to: 'sb-aftermath-hub' }], noBack: true,
   },
   'sb-aftermath-hub': {
@@ -1020,7 +1016,12 @@ const scenes: Record<string, Scene> = {
     id: 'sb-aftermath', kind: 'story', art: { imageId: 'loc-town', emoji: '🏘️' },
     text: [
       'Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time. The walk home is long and wet, and the best walk any of you can remember.',
-      'Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service. He has a purse set aside for you, and does not make you ask twice. He shakes each of your hands one entire second longer than protocol requires.',
+      'Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service. He counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.',
+      // The good deeds from below, handed over as soon as the company is home.
+      { if: [{ kind: 'flag', flag: 'grandfather-home' }],
+        text: 'You carry the old man into the reeve\'s hall, still wrapped in your cloak, and lay him on the long table among the ledgers. Aldous takes off his own chain of office and lays it beside his grandfather\'s. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word. He turns to the window, and he does not turn back while you are in the room.' },
+      { if: [{ kind: 'flag', flag: 'drowned-gold-home' }],
+        text: 'The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk\'s purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. Wren tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.' },
     ],
     next: SB_CLAIMS,
     // Home, with the door sealed: nothing below is left to walk back into.
