@@ -128,3 +128,14 @@ describe('NPC state', () => {
     expect(carriedFlags(m, s)).toEqual({ [npcAttitudeFlag('scout')]: 1 });
   });
 });
+
+describe('a save from before a flag was renamed', () => {
+  it('loads with the flag under its new name', async () => {
+    const { serializeAdventure, parseAdventure } = await import('../src/adventure/save.js');
+    const s = startAdventure(newCampaign(1), partB);
+    s.flags = { 'na:saved-scout': true, plain: 1 };
+    const renamed = { ...partB, renamedFlags: { 'na:saved-scout': npcFateFlag('scout', 'saved') } };
+    const back = parseAdventure(serializeAdventure(s), renamed)!;
+    expect(back.flags).toEqual({ [npcFateFlag('scout', 'saved')]: true, plain: 1 });
+  });
+});

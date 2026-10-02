@@ -489,6 +489,12 @@ export interface Module {
    * a cold start has none, so a scene that reads one needs a version without.
    */
   carries?: string[];
+  /**
+   * Flags this module once used under another name, old → new (a carried one
+   * by its full `module:flag` name). A save made before the rename loads with
+   * them renamed, so a run in progress keeps what it did.
+   */
+  renamedFlags?: Record<string, string>;
   /** The NPCs who may join the party in this module, by id. */
   companions?: Record<Id, CompanionDef>;
   /**
