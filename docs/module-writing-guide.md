@@ -312,6 +312,9 @@ token to the registry's `name`. A rename is one line, and a misspelt token
 `introducedAt` lists, by chapter, the scenes that introduce the character,
 and feeds the cast check below.
 
+A test fails if a registered name is typed in a chapter's source outside a
+comment: write the token.
+
 ### What became of them: NPC state
 
 A character's fate and whether the party has met them belong to the
@@ -370,7 +373,9 @@ The reachability search proves no route shows the name (or an alias)
 anywhere a player reads it (prose, labels, map markers, slides) before
 passing one of its introducing scenes, and reports a route that does. A
 mention inside an introducing scene is the introduction. Names are matched as
-whole words, as written; aliases in any case. A character known from an
+whole words, as written; aliases in any case. A line behind an `if`, a hidden
+choice or a conditional slide counts only where its condition can hold, so a
+mention gated on a flag that only an introduction sets needs no entry. A character known from an
 earlier chapter needs no entry in a later one.
 
 ### The clock

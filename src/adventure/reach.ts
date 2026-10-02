@@ -108,15 +108,18 @@ const assumedReads = (module: Module): Requirement[] =>
   Object.values(module.scenes).flatMap((s) => assumptionsOf(s).flatMap((a) => [...a.reqs, ...a.when]));
 
 /** All the words a scene can show: its prose (every field, every variant),
- *  its choice and approach labels, its map's labels, its ending's slides. */
-function sceneWords(scene: Scene): string {
+ *  its choice and approach labels, its map's labels, its ending's slides.
+ *  `can` says whether a line's condition might hold (a hidden choice shows
+ *  only when its requirements might); by default, every line counts. */
+function sceneWords(scene: Scene, can: (reqs: Requirement[] | undefined) => boolean = () => true): string {
   const out: string[] = [];
-  for (const { paras } of parasOf(scene)) for (const p of paras) out.push(typeof p === 'string' ? p : p.text);
-  if (scene.kind === 'story' || scene.kind === 'dialogue') for (const c of scene.next) out.push(c.label);
+  for (const { paras } of parasOf(scene)) for (const p of paras) if (typeof p === 'string' || can(p.if)) out.push(typeof p === 'string' ? p : p.text);
+  const shown = (x: { requires?: Requirement[]; hideWhenBlocked?: boolean }) => !x.hideWhenBlocked || can(x.requires);
+  if (scene.kind === 'story' || scene.kind === 'dialogue') for (const c of scene.next) if (shown(c)) out.push(c.label);
   if (scene.kind === 'dialogue') out.push(scene.npc.name);
-  if (scene.kind === 'challenge') for (const a of scene.approaches) out.push(a.label, a.hint ?? '');
+  if (scene.kind === 'challenge') for (const a of scene.approaches) if (shown(a)) out.push(a.label, a.hint ?? '');
   if (scene.kind === 'battle' && scene.parley?.label) out.push(scene.parley.label);
-  if (scene.kind === 'ending') for (const sl of scene.slides ?? []) out.push(sl.text);
+  if (scene.kind === 'ending') for (const sl of scene.slides ?? []) if (can(sl.if)) out.push(sl.text);
   if (scene.kind === 'explore') for (const n of scene.map.nodes) out.push(n.label, n.note ?? '');
   return out.join('\n');
 }
@@ -206,7 +209,8 @@ function searchChapter(module: Module, chapters: readonly Module[]): ReachReport
     if (run.skipped) return { errors: [], states: states + run.states, skipped: run.skipped };
     states += run.states;
     run.seen.forEach((id) => seen.add(id));
-    for (const e of run.errors) if (!errors.includes(e)) errors.push(e);
+    // The same finding in another mix of carried choices is the same finding.
+    for (const e of run.errors) if (!errors.some((x) => sameFinding(x, e))) errors.push(e);
     for (const full of fulls) {
       for (const own of run.outputs) {
         // NPC state this chapter can change is handed on as it left it.
@@ -219,6 +223,11 @@ function searchChapter(module: Module, chapters: readonly Module[]): ReachReport
     .map((id) => `[${id}] can never be reached: every way in is shut by a requirement that cannot hold by then`);
   return { errors: [...unreached, ...errors], states, carried: [...carried.values()] };
 }
+
+const sameFinding = (a: string, b: string) => {
+  const bare = (e: string) => e.replace(/ \(carried in: [^)]*\)/, '');
+  return bare(a) === bare(b);
+};
 
 interface Run {
   errors: string[];
@@ -590,15 +599,30 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     // an alias in any case ("The chief" opening a sentence).
     const word = (w: string, flags: string) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, flags);
     const words = [word(member.name, ''), ...(member.aka ?? []).map((a) => word(a, 'i'))];
+    // A scene that can name them at all; then, state by state, whether it
+    // does with what the party holds there (a line behind a flag only an
+    // introduction sets never shows before one).
     const mentions = ids.map((id, si) => !intro.has(si) && words.some((re) => re.test(sceneWords(module.scenes[id]!))));
     if (!mentions.some(Boolean)) continue;
+    const said = new Map<string, boolean>();
+    const names = (n: number) => {
+      const si = sceneOf[n]!;
+      if (!mentions[si]) return false;
+      const key = `${si}|${factsOf[n]!}`;
+      let hit = said.get(key);
+      if (hit === undefined) {
+        hit = words.some((re) => re.test(sceneWords(module.scenes[ids[si]!]!, (reqs) => met(mask(reqs), factsOf[n]!))));
+        said.set(key, hit);
+      }
+      return hit;
+    };
     const from = new Int32Array(N).fill(-2);
     const queue: number[] = [];
     for (let n = 0; n < N; n++) if (parent[n] === -1 && !intro.has(sceneOf[n]!)) { from[n] = -1; queue.push(n); }
     let found = -1;
     for (let q = 0; q < queue.length && found < 0; q++) {
       const n = queue[q]!;
-      if (mentions[sceneOf[n]!]) { found = n; break; }
+      if (names(n)) { found = n; break; }
       for (let i = fwdOff[n]!; i < fwdOff[n + 1]!; i++) {
         const m = fwd[i]!;
         if (from[m] !== -2 || intro.has(sceneOf[m]!)) continue;
