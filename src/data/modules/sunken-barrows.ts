@@ -753,7 +753,39 @@ const scenes: Record<string, Scene> = {
       { id: 'down-alone', label: 'Leave {wren} the gate, and go down', to: 'undercrypt',
         requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'lychgate-cleared' }, { kind: 'setFlag', flag: 'undercrypt-found' }] },
+      // Asking is always the company's to do; the answer is hers (her
+      // `attitude`). One of the two shows, under the same words.
+      { id: 'ask', label: 'Ask {wren} to come down with you', to: 'lychgate-wren-comes',
+        requires: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }], hideWhenBlocked: true,
+        effects: [{ kind: 'setFlag', flag: 'lychgate-cleared' }, { kind: 'setFlag', flag: 'undercrypt-found' }] },
+      { id: 'ask-no', label: 'Ask {wren} to come down with you', to: 'lychgate-wren-stays',
+        requires: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 2 } }], hideWhenBlocked: true,
+        effects: [{ kind: 'leaveParty', companion: 'wren' },
+          { kind: 'setFlag', flag: 'lychgate-cleared' }, { kind: 'setFlag', flag: 'undercrypt-found' }] },
     ],
+  },
+  // Asked, by a company she would follow anywhere: she comes down.
+  'lychgate-wren-comes': {
+    id: 'lychgate-wren-comes', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '🏹' },
+    assumes: [{ kind: 'companion', companion: 'wren' }],
+    text: [
+      '{wren} looks at the strip of colours she has just tied round your arm. Then she unties it, and ties it round her own. "Fine," she says. "I still don\'t know the ground down there. I know you."',
+      'She lights a second torch from yours and takes the first step down before anyone can think better of it. Behind you the {barrow-gate} stands empty.',
+    ],
+    next: [{ id: 'down', label: 'Follow her down the steps', to: 'undercrypt' }],
+  },
+  // Asked, by a company she does not trust that far: she keeps the gate.
+  'lychgate-wren-stays': {
+    id: 'lychgate-wren-stays', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛩️' },
+    assumes: [{ kind: 'noCompanion', companion: 'wren' }],
+    text: [
+      { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 0 } }],
+        text: '{wren} shakes her head. "Down there I\'m one more thing for you to watch. Up here I\'m some use."' },
+      { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
+        text: '"No," {wren} says. "I said I\'d get you to the barrow-country, and I have."' },
+      'She sits down on the nearest stone with her bow across her knees, facing the fen. You leave her at her post and start down the worked steps.',
+    ],
+    next: [{ id: 'down', label: 'Go down into the {undercrypt}', to: 'undercrypt' }],
   },
   'lychgate-open': {
     id: 'lychgate-open', kind: 'story', art: { imageId: 'loc-crypt', emoji: '⛩️' },
@@ -762,7 +794,8 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'notFlag', flag: 'watchers-stilled' }], text: 'The {barrow-gate} stands unwatched, its broken guardians spread across the old road as gravel and green bronze.' },
       { if: [{ kind: 'flag', flag: 'watchers-stilled' }], text: 'The {barrow-gate}\'s two watchers crouch on the lintel as plain grey stone, wings folded, and the armour stands aside in the gateway. None of them stirs as you pass.' },
       'Beyond, the great barrow\'s doorway breathes out cold.',
-      { assumes: [{ kind: 'noCompanion', companion: 'wren' }],
+      // Unless she came down with the company (`lychgate-wren-comes`).
+      { if: [{ kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} keeps her post at the stones, arms wrapped tight against more than the chill.' },
     ],
     next: [{ id: 'down', label: 'Go down into the {undercrypt}', to: 'undercrypt' }], noBack: true,
@@ -865,6 +898,8 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'A grey little gravedigger, {halden} said. The one who brought the candles.' },
       'He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don\'t like to be stopped." He picks up his lantern and goes on down into the dark, in no hurry at all.',
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '{wren} keeps an arrow on the string until his lantern is gone. "The dead don\'t tell you to mind the cut," she says.' },
     ],
     next: [{ id: 'on', label: 'Go deeper in', to: '@hub',
       effects: [
@@ -972,6 +1007,8 @@ const scenes: Record<string, Scene> = {
         text: 'The call that brought him down here has let him go. He is light now, just bones in a coat.' },
       { if: [{ kind: 'flag', flag: 'diggers-roused' }],
         text: 'He came at you with the rest of them, and he fell with the rest of them. He is light now, just bones in a coat.' },
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '{wren} kneels and straightens the chain on his chest, and says nothing at all.' },
       'The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.',
     ],
     // A real trade: the old reeve home (a war asset in Part 3) or the gold.
@@ -1255,19 +1292,29 @@ const scenes: Record<string, Scene> = {
   'sb-aftermath': {
     id: 'sb-aftermath', kind: 'story', art: { imageId: 'loc-town', emoji: '🏘️' },
     text: [
-      { assumes: [{ kind: 'noCompanion', companion: 'wren' }],
+      'The rope ladder brings you up out of the great barrow and into the open air.',
+      { if: [{ kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} is still holding the {barrow-gate} when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.' },
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '{wren} comes up behind you. At the top she stands a long moment in the barrow-field, among dead who have finally stopped moving, and then she unstrings her bow.' },
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'Brother {halden} climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
-      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{marrow} climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" {wren} asks. She looks him up and down, then takes the rope herself.' },
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'companion', companion: 'wren' }],
+        text: '{marrow} climbs out with his wrists tied. {wren} has held the end of his rope since the door, and she does not give it up now.' },
       { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
         text: '{marrow} climbs out after you, and walks off alone across the barrow-field toward {saltmere}. {wren} watches him go with her hand on her knife. She counts his steps until the fog takes him. "If he comes back," she says, "I\'ll know."' },
       // The best walk only for a company that brought the old reeve home.
-      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }],
+      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps." The walk home is long and wet, and the best walk any of you can remember.' },
-      { if: [{ kind: 'flag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }],
+      { if: [{ kind: 'flag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the steps."' },
+      // She came down, and has carried him since the cut.
+      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'companion', companion: 'wren' }],
+        text: '{wren} has carried the old man\'s feet since the lead cut, and she will not hand them over now. "Mind the steps," she says, at every step. The walk home is long and wet, and the best walk any of you can remember.' },
+      { if: [{ kind: 'flag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'companion', companion: 'wren' }],
+        text: '{wren} has carried the old man\'s feet since the lead cut, and she will not hand them over now. "Mind the steps," she says, at every step.' },
       { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'notFlag', flag: 'grandfather-home' }],
         text: 'The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.' },
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
@@ -1313,20 +1360,25 @@ const scenes: Record<string, Scene> = {
       // down in the barrows. Once the gate is passed, Wren is the one out there.
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
         text: 'Eel-men from the far pools found you by the raised road at first light, {mira} says. They brought you in on hurdles, and would not stop for so much as a cup.' },
-      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }],
+      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{mira} will not say who brought you back across the fen. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
-      { if: [{ kind: 'at', hub: 'undercrypt' }],
+      { if: [{ kind: 'at', hub: 'undercrypt' }, { kind: 'noCompanion', companion: 'wren' }],
         text: 'Somebody got you up the barrow stair and across the whole fen in the dark. {mira} will not say who. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
+      // {wren} came down with the company, and fell with it.
+      { if: [{ kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'companion', companion: 'wren' }],
+        text: 'Eel-men from the far pools found the whole company in the mud, {wren} among you, and carried you in on hurdles. She is asleep on the next settle with her boots still on.' },
       '"The fen\'s still there," {mira} says, which is her way of asking if you\'re going back. You are. She puts the bread where you can reach it.',
     ],
     again: [
       'Back on the settles in {mira}\'s back room, with fresh bruises under the old mud.',
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
         text: 'The eel-men found you this time, {mira} says. They stayed only long enough to warm their hands.' },
-      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }],
+      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
         text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
-      { if: [{ kind: 'at', hub: 'undercrypt' }],
+      { if: [{ kind: 'at', hub: 'undercrypt' }, { kind: 'noCompanion', companion: 'wren' }],
         text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
+      { if: [{ kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'companion', companion: 'wren' }],
+        text: '{wren} is on the next settle again, boots and all, and does not open her eyes.' },
       '"You know where the bread is," {mira} says, and leaves you to it.',
     ],
     // A wipe costs a day, as in every chapter (and the door's clock runs on).
@@ -1420,6 +1472,6 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
   // Saves from before that state moved onto the NPCs.
   renamedFlags: SUNKEN_BARROWS_RENAMED,
   companions: companionsFrom(NPCS, [
-    { id: 'wren', blurb: 'The reeve\'s scout. Guiding you through the deep fen as far as the {barrow-gate}, where she holds the way out.' },
+    { id: 'wren', blurb: 'The reeve\'s scout. Guiding you through the deep fen as far as the {barrow-gate}, where she means to hold the way out.' },
   ]),
 }, { npcs: NPCS, facts: TRILOGY_FACTS });
