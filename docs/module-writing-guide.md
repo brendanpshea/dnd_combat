@@ -246,8 +246,10 @@ generic "Requires something you haven't done yet".
 
 ### One scene, routes that differ in a line
 
-A story's `text` and a dialogue's `lines` take conditional paragraphs, the
-same shape as an ending's slides:
+Every prose field takes conditional paragraphs, the same shape as an
+ending's slides: a story's `text`, a dialogue's `lines`, every `intro`
+(check, challenge, battle, shop, rest), every outcome's result `text`, an
+ending's `text`, a dungeon room's `firstVisit` and a dawn's `text`:
 
 ```ts
 text: [

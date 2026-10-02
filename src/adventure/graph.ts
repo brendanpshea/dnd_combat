@@ -3,7 +3,7 @@
  * asks for. Shared by the validator and the dungeon checks.
  */
 import type { Id } from '../engine/types.js';
-import type { Scene, Choice, Effect, Requirement, Outcome } from './types.js';
+import type { Scene, Choice, Effect, Requirement, Outcome, Para } from './types.js';
 
 /** Collect every SceneRef a scene can route to. */
 export function refsOf(scene: Scene): Id[] {
@@ -110,3 +110,33 @@ export function skillsOf(scene: Scene): string[] {
   return out;
 }
 
+
+/**
+ * Every paragraph of prose a scene can show, by where it shows: its text or
+ * lines, its intro, and each outcome's result text. (Not an ending's slides,
+ * nor a dungeon room's first visit: see `roomParasOf`.)
+ */
+export function parasOf(scene: Scene): Array<{ where: string; paras: readonly Para[] }> {
+  const out: Array<{ where: string; paras: readonly Para[] }> = [];
+  const add = (where: string, paras: readonly Para[] | undefined) => { if (paras?.length) out.push({ where, paras }); };
+  const outcome = (where: string, o: Outcome | undefined) => add(where, o?.text);
+  if ('text' in scene) add('text', scene.text);
+  if ('lines' in scene) add('lines', scene.lines);
+  if ('intro' in scene) add('intro', scene.intro);
+  switch (scene.kind) {
+    case 'check': outcome('success', scene.success); outcome('failure', scene.failure); break;
+    case 'challenge':
+      outcome('success', scene.success); outcome('failure', scene.failure);
+      for (const a of scene.approaches) { outcome(`${a.id}:success`, a.success); outcome(`${a.id}:failure`, a.failure); }
+      break;
+    case 'battle':
+      outcome('onWin', scene.onWin); outcome('onLoss', scene.onLoss);
+      if (scene.parley) { outcome('parley:success', scene.parley.success); outcome('parley:failure', scene.parley.failure); }
+      break;
+    case 'dungeon':
+      for (const r of scene.dungeon.rooms) add(`room:${r.id}`, r.firstVisit);
+      break;
+    default: break;
+  }
+  return out;
+}

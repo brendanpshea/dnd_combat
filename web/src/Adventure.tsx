@@ -372,6 +372,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       return (
         <BattleIntro
           scene={scene}
+          state={state}
           options={battleOptions(state, module)}
           surprise={battleSurpriseOf(state, module)}
           onFight={() => { sfx('melee'); setArmedBattle(scene.id); }}
@@ -686,8 +687,9 @@ function Backdrop({ artId, glyph }: { artId: string | undefined; glyph: string }
  *  reads as an encounter with *someone*, not a sudden grid. Reusable by any
  *  module — it derives everything from the encounter's roster. */
 function BattleIntro(
-  { scene, options, surprise, onFight, onParley, onSneak, onFallBack, onExit }: {
+  { scene, state, options, surprise, onFight, onParley, onSneak, onFallBack, onExit }: {
     scene: Extract<Scene, { kind: 'battle' }>;
+    state: AdventureState;
     options: BattleOptions;
     surprise: 'party' | 'enemies' | undefined;
     onFight: () => void; onParley: () => void; onSneak: () => void; onFallBack: () => void; onExit: () => void;
@@ -709,7 +711,7 @@ function BattleIntro(
           <div className="adv-scene centered">
             <div className="adv-panel adv-battle-intro">
               <h2 className="adv-battle-title">{enc?.name ?? 'A Fight!'}</h2>
-              {(scene.intro ?? ['They move to attack!']).map((p, i) => (
+              {(scene.intro ? paragraphsFor(state, scene.intro) : ['They move to attack!']).map((p, i) => (
                 <p key={i} className="adv-text">{renderProse(p)}</p>
               ))}
               <div className="adv-foes">
@@ -770,8 +772,8 @@ function BattleIntro(
 function FrozenScene({ scene, state }: { scene: Scene; state: AdventureState }) {
   const lines = scene.kind === 'story' ? paragraphsFor(state, scene.text)
     : scene.kind === 'dialogue' ? paragraphsFor(state, scene.lines)
-    : scene.kind === 'check' ? scene.intro
-    : scene.kind === 'challenge' ? scene.intro : [];
+    : scene.kind === 'check' ? paragraphsFor(state, scene.intro)
+    : scene.kind === 'challenge' ? paragraphsFor(state, scene.intro) : [];
   return (
     <div className="adv-scene bottom">
       <div className="adv-panel">
@@ -1042,7 +1044,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     return (
       <div className="adv-scene bottom">
         <div className="adv-panel">
-          {scene.intro.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+          {paragraphsFor(state, scene.intro).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
           {scene.roller === 'chosen' ? (
             <>
               <p className="adv-prompt">Who steps up? ({scene.skill}, DC {scene.dc})</p>
@@ -1242,7 +1244,7 @@ function ChallengeBody(
   return (
     <div className="adv-scene bottom">
       <div className="adv-panel">
-        {scene.intro.map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
+        {paragraphsFor(state, scene.intro).map((p, i) => <p key={i} className="adv-text">{renderProse(p)}</p>)}
         <p className="adv-prompt">How do you handle this?</p>
         <div className="adv-choices">
           {options.map(({ approach, blocked, spent }) => {

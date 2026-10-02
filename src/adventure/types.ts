@@ -79,7 +79,7 @@ export interface JournalEntry {
 /** Where a check/branch lands, plus what it does on the way. */
 export interface Outcome {
   to: SceneRef;
-  text?: Paragraph[];        // shown before the transition (the result narration)
+  text?: Para[];        // shown before the transition (the result narration)
   effects?: Effect[];
 }
 
@@ -251,7 +251,7 @@ export interface DungeonRoom {
   /** How big it is drawn, and how deep its `@room` battle board is. */
   size?: RoomSize;
   /** The room's one piece of prose, shown the first time the party walks in. */
-  firstVisit?: Paragraph[];
+  firstVisit?: Para[];
   /** A battle scene sprung on walking in, every time, until it is won. */
   fight?: SceneRef;
   /** A scene that plays on walking in (a conversation, a find): once, or on
@@ -302,10 +302,10 @@ export type Scene =
   | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
-      intro: Paragraph[]; art?: SceneArt; success: Outcome; failure: Outcome;
+      intro: Para[]; art?: SceneArt; success: Outcome; failure: Outcome;
     }
   | {
-      id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Paragraph[]; art?: SceneArt;
+      id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Para[]; art?: SceneArt;
       onWin: Outcome; onLoss?: Outcome;
       /** Ambush: `enemies` surprised (a won perception check) or `party` caught
        *  out (a failed one). The surprised side loses its first round. */
@@ -333,7 +333,7 @@ export type Scene =
       noFlee?: boolean;
     }
   | {
-      id: Id; kind: 'challenge'; intro: Paragraph[]; art?: SceneArt;
+      id: Id; kind: 'challenge'; intro: Para[]; art?: SceneArt;
       /** The lines of attack on offer — the player picks how to try. */
       approaches: Approach[];
       /** `single` (default): the first approach attempted resolves the whole
@@ -348,16 +348,16 @@ export type Scene =
     }
   | { id: Id; kind: 'explore'; map: ExploreMap }
   | { id: Id; kind: 'dungeon'; dungeon: Dungeon }
-  | { id: Id; kind: 'shop'; next: SceneRef; intro?: Paragraph[];
+  | { id: Id; kind: 'shop'; next: SceneRef; intro?: Para[];
       /** Per-location stock (item ids). Absent = the default SHOP_STOCK. */
       stock?: Id[]; title?: string;
       /** The shopkeeper — rendered like a dialogue NPC so a shop reads as a
        *  conversation with someone, not a bare list. Defaults to a generic
        *  merchant archetype when absent. */
       npc?: NpcRef }
-  | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Paragraph[] }
+  | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Para[] }
   | {
-      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Paragraph[]; art?: SceneArt;
+      id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Para[]; art?: SceneArt;
       /**
        * Ending slides: a line each about what became of the people and places
        * the player touched, shown after `text` when its requirements hold
@@ -438,6 +438,6 @@ export interface Module {
 /** A morning that matters on a chapter's clock (Module.dawns). */
 export interface Dawn {
   day: number;
-  text: Paragraph[];
+  text: Para[];
   effects?: Effect[];
 }

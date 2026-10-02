@@ -13,8 +13,8 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, ROOM_MAP_REF, type Module } from './types.js';
-import { refsOf, effectsOf, requirementsOf, skillsOf } from './graph.js';
+import { HUB_REF, ROOM_MAP_REF, type Module, type Requirement } from './types.js';
+import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf } from './graph.js';
 import { checkDungeon } from './dungeon.js';
 import { checkModuleReach } from './reach.js';
 import { MODULES } from '../data/modules/index.js';
@@ -90,9 +90,15 @@ export function validateModule(module: Module): string[] {
     }
     // Conditional paragraphs (see `Para`): their requirements are checked like
     // any other, and a scene always has something to say whatever holds.
-    const paras = scene.kind === 'story' ? scene.text : scene.kind === 'dialogue' ? scene.lines : [];
-    const textConds = paras.flatMap((p) => (typeof p === 'string' ? [] : p.if));
-    if (paras.length && paras.every((p) => typeof p !== 'string')) at(id, 'every paragraph is conditional: give it at least one that always shows');
+    const textConds: Requirement[] = [];
+    for (const { where, paras } of parasOf(scene)) {
+      textConds.push(...paras.flatMap((p) => (typeof p === 'string' ? [] : p.if)));
+      // The text a scene stands on must always say something; an intro or a
+      // result may be wholly conditional (it can add a line, or none).
+      if ((where === 'text' || where === 'lines') && paras.every((p) => typeof p !== 'string')) {
+        at(id, 'every paragraph is conditional: give it at least one that always shows');
+      }
+    }
     for (const req of [...requirementsOf(scene), ...textConds]) {
       if (req.kind === 'flag' || req.kind === 'notFlag') read.add(req.flag);
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);

@@ -46,3 +46,34 @@ describe('conditional paragraphs', () => {
     expect(checkModuleReach(flagged).states).toBe(checkModuleReach(mod({ id: 'a', kind: 'story', text: ['Plain.'], next: [{ id: 'on', label: 'On', to: 'won' }] })).states);
   });
 });
+
+describe('conditional paragraphs in every prose field', () => {
+  it('an intro, an outcome\'s result and an ending show only the lines that hold', async () => {
+    const { choose, endingText, rollSceneCheck } = await import('../src/adventure/runtime.js');
+    const wren = { kind: 'companion' as const, companion: 'wren' };
+    const m = mod({ id: 'a', kind: 'story', text: ['A.'], next: [{ id: 'go', label: 'Go', to: 'chk', effects: [{ kind: 'gold', amount: 0 }] }], noBack: true });
+    m.scenes.chk = { id: 'chk', kind: 'check', skill: 'athletics', dc: 1,
+      intro: ['A wall.', { if: [wren], text: 'Wren points at a handhold.' }],
+      success: { to: 'won', text: ['Over.', { if: [{ kind: 'noCompanion', companion: 'wren' }], text: 'Alone, it takes longer.' }] },
+      failure: { to: 'won' } };
+    m.scenes.won = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Done.', { if: [wren], text: 'Wren grins.' }] };
+    expect(validateModule(m)).toEqual([]);
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'a');
+    const intro = choose(s, m, 'go').filter((e) => e.type === 'text');
+    expect(intro.at(-1)).toMatchObject({ paragraphs: ['A wall.'] });
+    const res = rollSceneCheck(s, m).filter((e) => e.type === 'text');
+    expect(res[0]).toMatchObject({ paragraphs: ['Over.', 'Alone, it takes longer.'] });
+    const end = m.scenes.won;
+    if (end.kind !== 'ending') throw new Error();
+    expect(endingText(s, end)).toEqual(['Done.']);
+    s.companions = [{ id: 'wren' }];
+    expect(endingText(s, end)).toEqual(['Done.', 'Wren grins.']);
+  });
+
+  it('the validator checks their requirements wherever they are', () => {
+    const m = mod({ id: 'a', kind: 'story', text: ['A.'], next: [{ id: 'go', label: 'Go', to: 'won', effects: [{ kind: 'gold', amount: 0 }] }], noBack: true });
+    m.scenes.won = { id: 'won', kind: 'ending', outcome: 'victory', text: ['Done.', { if: [{ kind: 'companion', companion: 'hask' }], text: 'Hask nods.' }] };
+    expect(validateModule(m).some((e) => e.includes('unknown companion \'hask\''))).toBe(true);
+  });
+});

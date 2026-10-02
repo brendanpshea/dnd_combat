@@ -400,20 +400,20 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
   switch (scene.kind) {
     case 'story': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.text) }); break;
     case 'dialogue': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.lines) }); break;
-    case 'check': events.push({ type: 'text', paragraphs: scene.intro }); break;
-    case 'challenge': events.push({ type: 'text', paragraphs: scene.intro }); break;
+    case 'check': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
+    case 'challenge': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
     case 'battle':
-      if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
+      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
       events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
       break;
     case 'shop':
       // A fresh visit: haggle discount and spent gambits reset each entry.
       state.shopVisits[resolved] = { priceMult: 1, haggleUsed: false, stealUsed: false };
-      if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
+      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
       events.push({ type: 'enterShop', next: scene.next });
       break;
     case 'rest':
-      if (scene.intro) events.push({ type: 'text', paragraphs: scene.intro });
+      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
       events.push({ type: 'rest', variant: scene.variant, next: scene.next });
       break;
     case 'ending':
@@ -428,10 +428,8 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
 
 /** An ending's paragraphs: its text, then each slide whose requirements hold. */
 export function endingText(state: AdventureState, scene: Extract<Scene, { kind: 'ending' }>): string[] {
-  return [
-    ...scene.text,
-    ...(scene.slides ?? []).filter((s) => s.if.every((r) => requirementMet(state, r))).map((s) => s.text),
-  ];
+  // Slides are conditional paragraphs by another name.
+  return paragraphsFor(state, [...scene.text, ...(scene.slides ?? [])]);
 }
 
 /** The scenes that are places: a map the party stands on, and returns to. */
@@ -448,7 +446,7 @@ export function hubTitleOf(scene: Scene | undefined): string | null {
 
 function applyOutcome(state: AdventureState, module: Module, outcome: Outcome): AdventureEvent[] {
   const events: AdventureEvent[] = [];
-  if (outcome.text) events.push({ type: 'text', paragraphs: outcome.text });
+  if (outcome.text) events.push({ type: 'text', paragraphs: paragraphsFor(state, outcome.text) });
   applyEffects(state, outcome.effects, events, module);
   events.push(...enterScene(state, module, outcome.to));
   return events;
@@ -564,7 +562,7 @@ export function tryApproach(
   }
   // A `perApproach` failure: show this line's beat and stay — unless nothing
   // else is left to try, in which case the challenge fails for good.
-  if (approach.failure?.text) events.push({ type: 'text', paragraphs: approach.failure.text });
+  if (approach.failure?.text) events.push({ type: 'text', paragraphs: paragraphsFor(state, approach.failure.text) });
   applyEffects(state, approach.failure?.effects, events, module);
   const anyLeft = legalApproaches(state, module).some((a) => !a.spent && !a.blocked);
   if (!anyLeft) events.push(...applyOutcome(state, module, scene.failure));
@@ -850,7 +848,7 @@ function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, 
   const events: AdventureEvent[] = [];
   const first = !p.seen.includes(room.id);
   if (first) p.seen.push(room.id);
-  events.push({ type: 'room', roomId: room.id, name: room.name, ...(first && room.firstVisit ? { firstVisit: room.firstVisit } : {}) });
+  events.push({ type: 'room', roomId: room.id, name: room.name, ...(first && room.firstVisit ? { firstVisit: paragraphsFor(state, room.firstVisit) } : {}) });
 
   const passive = partyPassivePerception(state.campaign);
   for (const { link } of allLinksAt(d, room.id)) {
@@ -1422,7 +1420,7 @@ export function endDay(state: AdventureState, module: Module): AdventureEvent[] 
   const events: AdventureEvent[] = [{ type: 'dawn', day }];
   for (const d of module.dawns ?? []) {
     if (d.day !== day) continue;
-    events.push({ type: 'text', paragraphs: d.text });
+    events.push({ type: 'text', paragraphs: paragraphsFor(state, d.text) });
     applyEffects(state, d.effects, events, module);
   }
   return events;
