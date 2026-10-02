@@ -31,7 +31,7 @@ describe('what it catches', () => {
     const m = clone(byId('hollow-road'));
     delete (m.scenes.aftermath as { noBack?: boolean }).noBack;
     const errors = checkModuleReach(m).errors;
-    expect(errors.some((e) => e.includes('stranded') && e.includes(npcFateFlag('vargan', 'slain')))).toBe(true);
+    expect(errors.some((e) => e.includes('stranded') && e.includes(npcFateFlag('reedwife', 'dead')))).toBe(true);
   }, SEARCH_TIMEOUT);
 
   it('Wyrmcalling: losing the opening fight and never being briefed', () => {

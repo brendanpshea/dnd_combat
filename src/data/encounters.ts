@@ -196,7 +196,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['dryad', 'sprite', 'sprite'],
   },
   'hag-coven': {
-    id: 'hag-coven', name: 'Hag Coven', suggestedLevel: 4,
+    id: 'hag-coven', name: 'Green Hag and Hired Blades', suggestedLevel: 4,
     members: ['green-hag', 'bandit', 'bandit'],
   },
   'unicorn-sanctuary': {
@@ -297,7 +297,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   // warriors, not three: with no milestone on the win, this fight carries more
   // of the road to 2nd level (88% won by a 1st-level party, greedy AI).
   'goblin-outriders': {
-    id: 'goblin-outriders', name: 'Ashfang Outriders', suggestedLevel: 1,
+    id: 'goblin-outriders', name: 'Goblin Outriders', suggestedLevel: 1,
     members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
   },
   // The marsh tribe in the green hag's thrall — lizardfolk driven to serve, herding
