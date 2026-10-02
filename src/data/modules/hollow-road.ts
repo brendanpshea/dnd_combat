@@ -240,7 +240,8 @@ const scenes: Record<string, Scene> = {
   },
   'tavern-plain': {
     id: 'tavern-plain', kind: 'story', art: { emoji: '🍺' },
-    text: ['"The marsh road, then. Mind yourself." She turns back to her taps.'],
+    text: ['"The marsh road, then. Follow it till the reeds close in, and keep going." She sets down the cup she was wiping. "The reeve sent a scout down that road a few days back, a girl on a grey horse. She hasn\'t come back."',
+      '"If you find her, she\'ll be too proud to ask for help," {mira} says. "Give it anyway. Take a healing potion with you, too. I\'d rather not bury anyone this month." She turns back to her taps.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
   'tavern-blank': {
@@ -1159,6 +1160,11 @@ const scenes: Record<string, Scene> = {
     lines: [
       'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.',
       '"**{vex}**," he offers. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven\'t seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
+      // Every winning route passes his fire before the hall, so no company
+      // misses the pen by not knowing it is there (it drives a Part 3 war
+      // asset and the epilogue's slide). Text only, so free to the search.
+      { if: [{ kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }, { kind: 'notFlag', flag: 'captives-taken' }],
+        text: 'Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There\'s a pen behind the dogs, with people in it. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might."' },
     ],
     next: [
       // Wren's tip (`know-vex`): the party knows what he wants before he says it.

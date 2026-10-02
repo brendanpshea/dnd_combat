@@ -904,12 +904,14 @@ const scenes: Record<string, Scene> = {
         text: 'The call that brought him down here has let him go. He is light now, just bones in a coat.' },
       { if: [{ kind: 'flag', flag: 'diggers-roused' }],
         text: 'He came at you with the rest of them, and he fell with the rest of them. He is light now, just bones in a coat.' },
-      'The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.',
+      'The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.',
     ],
     // A real trade: the old reeve home (a war asset in Part 3) or the gold.
-    // Either way {wren}, the reeve's scout, sees what comes up the stair.
+    // The kind choice is priced in time as well: a dead man on your back
+    // costs a day against the door's clock (see `dawns`). Either way {wren},
+    // the reeve's scout, sees what comes up the stair.
     next: [
-      { id: 'carry', label: 'Wrap him in a cloak and carry him home', to: '@hub',
+      { id: 'carry', label: 'Carry him home in your cloak, though it will cost the day', to: 'diggers-carry',
         effects: [{ kind: 'setFlag', flag: 'diggers-passed' }, { kind: 'setFlag', flag: 'grandfather-home' },
           { kind: 'npc', npc: 'wren', attitude: 1 },
           { kind: 'journal', entry: { id: 'c-grandfather', kind: 'clue', title: 'The Old Reeve',
@@ -918,6 +920,13 @@ const scenes: Record<string, Scene> = {
         effects: [{ kind: 'setFlag', flag: 'diggers-passed' }, { kind: 'gold', amount: 40 }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
     ],
     noBack: true,
+  },
+  // The price of carrying him: the day, and the door's clock with it.
+  'diggers-carry': {
+    id: 'diggers-carry', kind: 'story', noBack: true, art: { imageId: 'loc-crypt', emoji: '⛓️' },
+    assumes: [{ kind: 'flag', flag: 'grandfather-home' }],
+    text: ['He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.'],
+    next: [{ id: 'on', label: 'Go on, with the old man on your back', to: '@hub', effects: [{ kind: 'passDay' }] }],
   },
   // The Worm's own sentry, waiting in the passage past the diggers.
   'crypt-ambush': {

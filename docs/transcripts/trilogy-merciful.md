@@ -151,7 +151,9 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 <sub>scene `tavern-plain`</sub>
 
-"The marsh road, then. Mind yourself." She turns back to her taps.
+"The marsh road, then. Follow it till the reeds close in, and keep going." She sets down the cup she was wiping. "The reeve sent a scout down that road a few days back, a girl on a grey horse. She hasn't come back."
+
+"If you find her, she'll be too proud to ask for help," Mira says. "Give it anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -540,6 +542,8 @@ You put the patrol down before the whole den wakes, and kick dirt over the fire.
 > At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
 
 > "**Vex**," he offers. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might."
 
 **» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
 
@@ -997,11 +1001,19 @@ At the end of the cut lies an old man in a good burial coat. A reeve's chain of 
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
-**» Wrap him in a cloak and carry him home**
+**» Carry him home in your cloak, though it will cost the day**
 
 _Journal (clue): The Old Reeve_
+
+<sub>scene `diggers-carry`</sub>
+
+He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.
+
+**» Go on, with the old man on your back**
+
+**Dawn — day 2.**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1055,7 +1067,7 @@ _+60 gold (416)_
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
 
-**» Make camp (long rest)** <sub>(day 1)</sub>
+**» Make camp (long rest)** <sub>(day 2)</sub>
 
 <sub>scene `crypt-night`</sub>
 
@@ -1435,11 +1447,11 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of one hundred and fifty gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of four hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
-**» Pay the toll (150 gold)**
+**» Pay the toll (400 gold)**
 
-_-150 gold (856)_
+_-400 gold (606)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -1583,7 +1595,7 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 **» Accept the valley's purse**
 
-_+250 gold (1106)_
+_+250 gold (856)_
 
 <sub>scene `vigil-purse`</sub>
 

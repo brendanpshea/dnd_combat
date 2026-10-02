@@ -451,11 +451,21 @@ At the end of the cut lies an old man in a good burial coat. A reeve's chain of 
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
-**» Wrap him in a cloak and carry him home**
+**» Carry him home in your cloak, though it will cost the day**
 
 _Journal (clue): The Old Reeve_
+
+<sub>scene `diggers-carry`</sub>
+
+He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.
+
+**» Go on, with the old man on your back**
+
+**Dawn — day 4.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -483,7 +493,7 @@ _+40 gold (679)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 4)</sub>
 
 <sub>scene `crypt-night`</sub>
 
@@ -529,11 +539,9 @@ _+60 gold (739)_
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 4)</sub>
 
-**Dawn — day 4.**
-
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
+**Dawn — day 5.**
 
 → Search the room
 

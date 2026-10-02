@@ -145,7 +145,9 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 <sub>scene `tavern-plain`</sub>
 
-"The marsh road, then. Mind yourself." She turns back to her taps.
+"The marsh road, then. Follow it till the reeds close in, and keep going." She sets down the cup she was wiping. "The reeve sent a scout down that road a few days back, a girl on a grey horse. She hasn't come back."
+
+"If you find her, she'll be too proud to ask for help," Mira says. "Give it anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -1747,11 +1749,19 @@ At the end of the cut lies an old man in a good burial coat. A reeve's chain of 
 
 He came at you with the rest of them, and he fell with the rest of them. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
-**» Wrap him in a cloak and carry him home**
+**» Carry him home in your cloak, though it will cost the day**
 
 _Journal (clue): The Old Reeve_
+
+<sub>scene `diggers-carry`</sub>
+
+He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.
+
+**» Go on, with the old man on your back**
+
+**Dawn — day 5.**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1785,11 +1795,13 @@ _(a paragraph shown before: “"The fen's still there," Mira says, which…”)_
 
 **» Go straight back down the barrow stair**
 
-**Dawn — day 5.**
+**Dawn — day 6.**
+
+The ground shook again before dawn, longer this time. Every dog in Thornwick howled at once. Somewhere under the fen, old stone gave a little.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 5)</sub>
+**» Make camp (long rest)** <sub>(day 6)</sub>
 
 <sub>scene `crypt-night`</sub>
 
@@ -1871,6 +1883,8 @@ The chanting you've heard for an hour comes from the **living**. They kneel at t
 
 "I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves, and then I walked away and left them all in the cold. The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."
 
+The door has shifted in its frame since the ground shook. A line of dark, a finger wide, shows along its top. "He leaned on it in the night, and the stone gave," Marrow says. "It will be harder to shut now."
+
 **» Interrupt the service**
 
 <sub>scene `seal-battle`</sub>
@@ -1889,9 +1903,7 @@ A knife-hilt catches you behind the ear, and the candles go out. You come to by 
 
 _Long rest._
 
-**Dawn — day 6.**
-
-The ground shook again before dawn, longer this time. Every dog in Thornwick howled at once. Somewhere under the fen, old stone gave a little.
+**Dawn — day 7.**
 
 <sub>scene `seal-battle` (again)</sub>
 
@@ -1959,7 +1971,7 @@ You get up. Someone has to hold that door, and it is still you.
 
 _Long rest._
 
-**Dawn — day 7.**
+**Dawn — day 8.**
 
 <sub>scene `seal-breach` (again)</sub>
 
@@ -2257,7 +2269,7 @@ _Journal (clue): Wren's Map-Notes_
 
 <sub>scene `wagons-busy`</sub>
 
-Supply wagons come and go from Bram's stores in a slow line. The drivers are too busy to talk.
+Supply wagons come and go from Bram's stores in a slow line. A driver hands down a crate of healing flasks, the good kind, and Bram's clerk inks a price on every one. None of the drivers knows your faces, and none of them looks up.
 
 **» Head back to the camp**
 
@@ -2325,13 +2337,13 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of one hundred and fifty gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of four hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
 Wren's notes are short on the ogre-mage: *Wants the valley. Doesn't trust the ettin.*
 
-**» Pay the toll (150 gold)**
+**» Pay the toll (400 gold)**
 
-_-150 gold (759)_
+_-400 gold (509)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -2403,7 +2415,7 @@ The ettin lifts both its clubs. For once both heads want the same thing, and the
 
 The ettin goes down still arguing about whose fault it was, and the orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
-_+140 gold (899)_
+_+140 gold (649)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2481,9 +2493,9 @@ _(a paragraph shown before: “Supply wagons come and go from Bram's…”)_
 
 → The East Line
 
-<sub>scene `eastline-busy`</sub>
+<sub>scene `eastline-held`</sub>
 
-Pikemen stand to their posts along the east line. The sergeants wave you past without looking up from their work.
+Thornwick's watch has dug in at the end of the east line, where the pikes were thinnest. Their sergeant raises a muddy hand to you and goes back to his digging.
 
 **» Head back to the camp**
 
@@ -2633,7 +2645,7 @@ Sedge does not turn either. Her voice is raw. It is the voice you heard on the w
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "She ate people out of a pen. We owe you nothing."**
+**» "She fed on the people of this valley. We owe you nothing."**
 
 <sub>scene `answer-defiant`</sub>
 
@@ -2697,7 +2709,7 @@ The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes wit
 
 The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (1099)_
+_+200 gold (849)_
 
 <sub>scene `calling-won`</sub>
 

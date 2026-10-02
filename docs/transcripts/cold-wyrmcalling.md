@@ -17,6 +17,10 @@
 
 The valley has raised an army at last. A **war-camp** spreads across the wet meadows below the high hills, where Thornwick's recruits drill: fen-folk with boar-spears, and carters holding pikes. This time everyone can see the trouble coming. Fires burn every night up in the high passes, and no shepherd lit them.
 
+Two seasons ago your company broke the Ashfang raiders in their den past the marsh. You killed the hag their chief had sold himself to, the one the fen-folk called the Reedwife.
+
+Last season the dead of Thornwick walked out of their graves. You followed them down into the barrows under the fen, and shut the door they came out of.
+
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
 He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night she died, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
@@ -119,7 +123,7 @@ _Journal (clue): Wren's Map-Notes_
 
 <sub>scene `wagons-busy`</sub>
 
-Supply wagons come and go from Bram's stores in a slow line. The drivers are too busy to talk.
+Supply wagons come and go from Bram's stores in a slow line. A driver hands down a crate of healing flasks, the good kind, and Bram's clerk inks a price on every one. None of the drivers knows your faces, and none of them looks up.
 
 **» Head back to the camp**
 
@@ -129,7 +133,7 @@ Supply wagons come and go from Bram's stores in a slow line. The drivers are too
 
 <sub>scene `eastline-busy`</sub>
 
-Pikemen stand to their posts along the east line. The sergeants wave you past without looking up from their work.
+Pikemen stand to their posts along the east line. At the far end the line runs thin, and a sergeant has marked a gap on his board where twenty more men ought to stand. He waves you past without looking up.
 
 **» Head back to the camp**
 
@@ -245,13 +249,13 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of one hundred and fifty gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of four hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
 Wren's notes are short on the ogre-mage: *Wants the valley. Doesn't trust the ettin.*
 
-**» Pay the toll (150 gold)**
+**» Pay the toll (400 gold)**
 
-_-150 gold (475)_
+_-400 gold (225)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -353,7 +357,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (570)_
+_+95 gold (320)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -389,7 +393,7 @@ The wyrmling's fire goes out from the inside, and it is finally, simply small. I
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war," she says, like a clerk striking out a line. "Never mind. Promises are cheap, and we have plenty left."
 
-_+120 gold (690)_
+_+120 gold (440)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -427,7 +431,7 @@ You work down the rows with soft hands, gathering purses out of the grass. A sil
 
 The gorgon chews on and never once looks up. You are back on the trail before your hands stop shaking.
 
-_+90 gold (780)_
+_+90 gold (530)_
 
 _Gained: Potion of Greater Healing_
 
@@ -471,7 +475,7 @@ Sedge does not turn either. Her voice is raw. It is the voice you heard on the w
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "She ate people out of a pen. We owe you nothing."**
+**» "She fed on the people of this valley. We owe you nothing."**
 
 <sub>scene `answer-defiant`</sub>
 
@@ -505,7 +509,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (980)_
+_+200 gold (730)_
 
 <sub>scene `calling-won`</sub>
 
@@ -527,7 +531,7 @@ At the camp gate Vex shakes your hand, once. "The Calling's broken," he says. "T
 
 **» Accept the valley's purse**
 
-_+250 gold (1230)_
+_+250 gold (980)_
 
 <sub>scene `wc-purse`</sub>
 

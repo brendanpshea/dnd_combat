@@ -102,7 +102,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
       'sunken-barrows': ['sb-market'],
       // His stores; "Bram's stores" at the wagons, "Bram's war-stores" in the
       // hospital tent, the hoard he will buy, the arrows he sells in the ending.
-      wyrmcalling: ['wc-stores', 'wagons-busy', 'wagons-carter', 'wc-defeat', 'redden', 'wc-epilogue', 'wc-epilogue-vigil'],
+      wyrmcalling: ['wc-stores', 'wagons-busy', 'wagons-paid', 'wagons-carter', 'wc-defeat', 'redden', 'wc-epilogue', 'wc-epilogue-vigil'],
     },
   },
   osk: {

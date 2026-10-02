@@ -125,7 +125,9 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 <sub>scene `tavern-plain`</sub>
 
-"The marsh road, then. Mind yourself." She turns back to her taps.
+"The marsh road, then. Follow it till the reeds close in, and keep going." She sets down the cup she was wiping. "The reeve sent a scout down that road a few days back, a girl on a grey horse. She hasn't come back."
+
+"If you find her, she'll be too proud to ask for help," Mira says. "Give it anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -1313,11 +1315,21 @@ At the end of the cut lies an old man in a good burial coat. A reeve's chain of 
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both.
+The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
-**» Wrap him in a cloak and carry him home**
+**» Carry him home in your cloak, though it will cost the day**
 
 _Journal (clue): The Old Reeve_
+
+<sub>scene `diggers-carry`</sub>
+
+He weighs almost nothing, and he is still the hardest thing you have ever carried. You take every narrow turn sideways, and every low arch on your knees. Somewhere far above you the day goes by, and far below, the door goes on shivering.
+
+**» Go on, with the old man on your back**
+
+**Dawn — day 4.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1345,11 +1357,9 @@ _+40 gold (1070)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 4)</sub>
 
-**Dawn — day 4.**
-
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
+**Dawn — day 5.**
 
 → Search the room
 
@@ -1803,13 +1813,13 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of one hundred and fifty gold, and we will find another war. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of four hundred gold, and we will find another war. Or try us. We have not had a proper fight all week."
 
 Wren's notes are short on the ogre-mage: *Wants the valley. Doesn't trust the ettin.*
 
-**» Pay the toll (150 gold)**
+**» Pay the toll (400 gold)**
 
-_-150 gold (1365)_
+_-400 gold (1115)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -1911,7 +1921,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (1460)_
+_+95 gold (1210)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1931,7 +1941,7 @@ The wyrmling's fire goes out from the inside, and it is finally, simply small. I
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war," she says, like a clerk striking out a line. "Never mind. Promises are cheap, and we have plenty left."
 
-_+120 gold (1580)_
+_+120 gold (1330)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1969,7 +1979,7 @@ You work down the rows with soft hands, gathering purses out of the grass. A sil
 
 The gorgon chews on and never once looks up. You are back on the trail before your hands stop shaking.
 
-_+90 gold (1670)_
+_+90 gold (1420)_
 
 _Gained: Potion of Greater Healing_
 
@@ -1995,7 +2005,7 @@ Behind the pikes come people from the valley, out of breath and mud to the knees
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-She finds your end of the rim before she reports to Vex, and then pretends she was only checking the ground.
+She finds your end of the rim before she reports to Vex. "I went down into the bowl at first light, on my own," she says quietly. "There's a seam in that stone, and I chalked it. Take me down, and I'll show you where."
 
 Hask, the chief's old guard who stood aside for you in Vargan's hall, walks at Vex's shoulder.
 
@@ -2017,7 +2027,7 @@ Sedge does not turn either. Her voice is raw. It is the voice you heard on the w
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-**» "She ate people out of a pen. We owe you nothing."**
+**» "She fed on the people of this valley. We owe you nothing."**
 
 <sub>scene `answer-defiant`</sub>
 
@@ -2053,7 +2063,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (1870)_
+_+200 gold (1620)_
 
 <sub>scene `calling-won`</sub>
 
@@ -2075,7 +2085,7 @@ At the camp gate Vex shakes your hand, once. "The Calling's broken," he says. "T
 
 **» Accept the valley's purse**
 
-_+250 gold (2120)_
+_+250 gold (1870)_
 
 <sub>scene `wc-purse`</sub>
 
