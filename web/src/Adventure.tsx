@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -770,8 +770,7 @@ function BattleIntro(
 /** A non-interactive snapshot of a story/dialogue/check scene — the NPC and
  *  their words — shown behind the dice modal so the roll happens *in* the scene. */
 function FrozenScene({ scene, state }: { scene: Scene; state: AdventureState }) {
-  const lines = scene.kind === 'story' ? paragraphsFor(state, scene.text)
-    : scene.kind === 'dialogue' ? paragraphsFor(state, scene.lines)
+  const lines = scene.kind === 'story' || scene.kind === 'dialogue' ? sceneParagraphs(state, scene)
     : scene.kind === 'check' ? paragraphsFor(state, scene.intro)
     : scene.kind === 'challenge' ? paragraphsFor(state, scene.intro) : [];
   return (
@@ -989,7 +988,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
   }
 
   if (scene.kind === 'story' || scene.kind === 'dialogue') {
-    const lines = paragraphsFor(state, scene.kind === 'story' ? scene.text : scene.lines);
+    const lines = sceneParagraphs(state, scene);
     // Beats reveal one tap at a time; choices wait until the prose is finished.
     const revealed = Math.min(beat, lines.length - 1);
     const shown = lines.slice(0, revealed + 1);

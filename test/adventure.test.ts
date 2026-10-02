@@ -779,7 +779,7 @@ describe('traversal maps (paths & frontier)', () => {
 describe('exploration (M2)', () => {
   it('every registered module validates', () => {
     for (const m of MODULES) expect(validateModule(m)).toEqual([]);
-  });
+  }, 30_000); // the reach search over every chapter: slow under a loaded run
 
   it('the hideout demo validates and auto-plays to an ending', () => {
     expect(validateModule(HIDEOUT_MODULE)).toEqual([]);

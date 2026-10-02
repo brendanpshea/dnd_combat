@@ -95,7 +95,7 @@ export function validateModule(module: Module): string[] {
       textConds.push(...paras.flatMap((p) => (typeof p === 'string' ? [] : p.if)));
       // The text a scene stands on must always say something; an intro or a
       // result may be wholly conditional (it can add a line, or none).
-      if ((where === 'text' || where === 'lines') && paras.every((p) => typeof p !== 'string')) {
+      if ((where === 'text' || where === 'lines' || where === 'again') && paras.every((p) => typeof p !== 'string')) {
         at(id, 'every paragraph is conditional: give it at least one that always shows');
       }
     }

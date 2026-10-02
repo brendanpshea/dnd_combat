@@ -100,6 +100,11 @@ export interface Choice {
    *  / anti-farm guard that makes a revisitable scene safe: a social check can't
    *  be re-rolled, a one-time reward can't be re-claimed. */
   once?: boolean;
+  /** One try shared by every choice, approach or parley with the same id,
+   *  anywhere in the module. Using any of them, whatever the roll, spends it
+   *  for all: a "with Wren's notes" version and the plain one, or two fights
+   *  that offer the same parley, can't be used to roll twice. */
+  attempt?: Id;
 }
 
 /** One way to tackle a challenge scene: a named line of attack the party can
@@ -126,6 +131,8 @@ export interface Approach {
    *  only its text/effects show, as the flavour before the party tries another
    *  way. */
   failure?: Outcome;
+  /** One try shared with every other choice, approach or parley of this id (see `Choice.attempt`). */
+  attempt?: Id;
 }
 
 /** The special SceneRef `@hub` resolves at runtime to the explore scene the
@@ -298,8 +305,10 @@ export const ROOM_MAP_REF = '@room';
 export type Scene =
   // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
   // beat the player shouldn't be able to walk away from.
-  | { id: Id; kind: 'story'; text: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  /** `again`: shown instead of `text` / `lines` on every visit after the
+   *  first, so a scene the party returns to doesn't replay a first meeting. */
+  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean }
   | {
       id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
       intro: Para[]; art?: SceneArt; success: Outcome; failure: Outcome;
@@ -327,6 +336,8 @@ export type Scene =
         label?: string;
         success: Outcome;
         failure?: Outcome;
+        /** One try shared with every other use of this id (see `Choice.attempt`). */
+        attempt?: Id;
       };
       /** No falling back or retreating from this one (a fight the story
        *  cannot let you walk away from). Sneaking up is still allowed. */

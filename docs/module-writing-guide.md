@@ -231,6 +231,20 @@ bring (a scout both saved and left behind) is never searched, and carried
 choices cost no facts. A chapter pays instead for what it hands on: each of
 its `carries` that a later chapter reads is one more fact.
 
+### One try, and coming back
+
+`once` stops a choice being taken twice at one scene. When the same try is
+offered in more than one place (a plain version and a "with Wren's notes"
+version, a story choice and a fight's parley, two fights that offer the same
+talk-down), give them a shared `attempt: 'toll'`. Using any one of them,
+whatever the roll, spends the attempt for all: choices with it disappear,
+approaches show as spent, and the parley is no longer offered.
+
+A story or dialogue the party can come back to should have `again`: the
+text shown on every visit after the first, instead of `text` / `lines`. Use
+it for anything that would otherwise replay a first meeting ("Welcome!",
+introductions, a monster rising to meet you).
+
 ### Falling back, and locked markers
 
 A party can fall back from most fights to the map (or, in a dungeon, to the

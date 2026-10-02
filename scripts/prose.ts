@@ -70,6 +70,7 @@ function sceneMd(scene: Scene): string {
 
   if ('text' in scene) md += block('Text', scene.text);
   if ('lines' in scene) md += block('Lines', scene.lines);
+  if ('again' in scene) md += block('On a return visit', scene.again);
   if ('intro' in scene) md += block('Intro', scene.intro);
   if ('success' in scene && scene.success?.text) md += block('On success', scene.success.text, true);
   if ('failure' in scene && scene.failure?.text) md += block('On failure', scene.failure.text, true);

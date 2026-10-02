@@ -79,6 +79,8 @@ export interface AdventureState {
   companions?: Array<{ id: Id; hp?: number }>;
   /** The chapter's day (Module.dawns): absent = day 1. Each long rest ends one. */
   day?: number;
+  /** The scene the party stands in was visited before (its `again` text shows). */
+  returning?: boolean;
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
@@ -255,8 +257,23 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
   }
 }
 
-/** The paragraphs of a scene this party sees: plain ones, and conditional
- *  ones whose requirements hold (see `Para`). */
+/** What a story or dialogue says to this party: its `again` text on a
+ *  return visit (when it has one), else its own; conditional paragraphs
+ *  resolved. */
+export function sceneParagraphs(state: AdventureState, scene: Extract<Scene, { kind: 'story' | 'dialogue' }>): Paragraph[] {
+  const own = scene.kind === 'story' ? scene.text : scene.lines;
+  return paragraphsFor(state, state.returning && scene.again ? scene.again : own);
+}
+
+/** A one-try group (`attempt`) already spent? */
+export const attemptSpent = (state: AdventureState, attempt: Id | undefined): boolean =>
+  !!attempt && state.consumedChoices.includes(`attempt:${attempt}`);
+const spendAttempt = (state: AdventureState, attempt: Id | undefined) => {
+  if (attempt && !attemptSpent(state, attempt)) state.consumedChoices.push(`attempt:${attempt}`);
+};
+
+/** The paragraphs this party sees: plain ones, and conditional ones whose
+ *  requirements hold (see `Para`). */
 export function paragraphsFor(state: AdventureState, paras: readonly Para[]): Paragraph[] {
   return paras.flatMap((p) => (typeof p === 'string' ? [p] : p.if.every((r) => requirementMet(state, r)) ? [p.text] : []));
 }
@@ -392,14 +409,14 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
   const revisit = state.visited.includes(resolved); // already been here before
   state.sceneId = resolved;
   if (!revisit) state.visited.push(resolved);
+  state.returning = revisit;
   const scene = currentScene(state, module);
   const cameFrom = state.hub;
   if (isHub(scene)) state.hub = resolved; // this is now the location
   const events: AdventureEvent[] = [{ type: 'scene', sceneId: resolved, kind: scene.kind, revisit }];
 
   switch (scene.kind) {
-    case 'story': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.text) }); break;
-    case 'dialogue': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.lines) }); break;
+    case 'story': case 'dialogue': events.push({ type: 'text', paragraphs: sceneParagraphs(state, scene) }); break;
     case 'check': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
     case 'challenge': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
     case 'battle':
@@ -519,7 +536,7 @@ export function legalApproaches(
     .map((approach) => ({
       approach,
       blocked: blockedReason(state, approach.requires),
-      spent: state.spentApproaches.includes(approachKey(scene.id, approach.id)),
+      spent: state.spentApproaches.includes(approachKey(scene.id, approach.id)) || attemptSpent(state, approach.attempt),
     }))
     .filter(({ approach, blocked }) => !(blocked && approach.hideWhenBlocked));
 }
@@ -539,12 +556,13 @@ export function tryApproach(
   if (!approach) throw new Error(`No approach ${approachId} at ${state.sceneId}`);
   if (blockedReason(state, approach.requires)) throw new Error(`Approach ${approachId} is blocked`);
   const key = approachKey(scene.id, approach.id);
-  if (state.spentApproaches.includes(key)) throw new Error(`Approach ${approachId} already tried`);
+  if (state.spentApproaches.includes(key) || attemptSpent(state, approach.attempt)) throw new Error(`Approach ${approachId} already tried`);
 
   const perApproach = scene.retry === 'perApproach';
   // Spend the approach up front (a failed try can't be re-rolled). In `single`
   // mode the whole challenge ends here regardless, so tracking it is harmless.
   if (perApproach) state.spentApproaches.push(key);
+  spendAttempt(state, approach.attempt);
 
   const events: AdventureEvent[] = [];
   const roller = approach.roller ?? 'best';
@@ -582,6 +600,7 @@ export function legalChoices(
   const next = scene.kind === 'story' || scene.kind === 'dialogue' ? scene.next : [];
   return next
     .filter((choice) => !(choice.once && state.consumedChoices.includes(choiceKey(scene.id, choice.id))))
+    .filter((choice) => !attemptSpent(state, choice.attempt))
     .map((choice) => ({ choice, blocked: blockedReason(state, choice.requires) }))
     .filter(({ choice, blocked }) => !(blocked && choice.hideWhenBlocked));
 }
@@ -658,9 +677,11 @@ export function choose(
   const choice = list.find((c) => c.id === choiceId);
   if (!choice) throw new Error(`No choice ${choiceId} at ${state.sceneId}`);
   if (blockedReason(state, choice.requires)) throw new Error(`Choice ${choiceId} is blocked`);
+  if (attemptSpent(state, choice.attempt)) throw new Error(`Choice ${choiceId} already tried`);
   // Record a `once` choice as spent up front — a failed social check is still
   // spent, so it can't be re-rolled by revisiting.
   if (choice.once) state.consumedChoices.push(choiceKey(scene.id, choice.id));
+  spendAttempt(state, choice.attempt);
 
   const events: AdventureEvent[] = [];
   applyEffects(state, choice.effects, events, module);
@@ -1178,7 +1199,7 @@ export function battleOptions(state: AdventureState, module: Module): BattleOpti
   const scene = currentScene(state, module);
   if (scene.kind !== 'battle') return {};
   const out: BattleOptions = {};
-  if (scene.parley && !state.consumedChoices.includes(doorKey(scene.id, 'parley'))) {
+  if (scene.parley && !state.consumedChoices.includes(doorKey(scene.id, 'parley')) && !attemptSpent(state, scene.parley.attempt)) {
     out.parley = {
       label: scene.parley.label ?? 'Parley',
       skill: scene.parley.skill ?? 'persuasion',
@@ -1206,6 +1227,7 @@ export function parleyBattle(state: AdventureState, module: Module, actorIdx?: n
   if (scene.kind !== 'battle' || !scene.parley) throw new Error('No parley here');
   if (!battleOptions(state, module).parley) throw new Error('Parley already tried');
   state.consumedChoices.push(doorKey(scene.id, 'parley'));
+  spendAttempt(state, scene.parley!.attempt);
   const p = scene.parley;
   const skill = (p.skill ?? 'persuasion') as Parameters<typeof characterSkillCheck>[2];
   const roller = p.roller ?? 'chosen';

@@ -122,6 +122,7 @@ export function parasOf(scene: Scene): Array<{ where: string; paras: readonly Pa
   const outcome = (where: string, o: Outcome | undefined) => add(where, o?.text);
   if ('text' in scene) add('text', scene.text);
   if ('lines' in scene) add('lines', scene.lines);
+  if ('again' in scene) add('again', scene.again);
   if ('intro' in scene) add('intro', scene.intro);
   switch (scene.kind) {
     case 'check': outcome('success', scene.success); outcome('failure', scene.failure); break;
