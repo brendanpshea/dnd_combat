@@ -85,7 +85,12 @@ stand-up bit, cut it.
 11. **Shared text is neutral; warmth and coldness are earned.** A line that
     every route reads must be true on every route. A smile, a thank-you, "the
     best walk any of you can remember" — anything that praises the company —
-    needs a flag, or an NPC's attitude, behind it. So does a rebuke. Read the
+    needs a flag, or an NPC's attitude, behind it. So does a rebuke. Before
+    you leave a shared scene, check each line against three questions: does
+    it praise the company, or assume someone helped, came, or was told
+    something? Does it name where the party is? Does it state what someone
+    remembers from an earlier chapter? Each yes needs an `if` or an
+    `assumes`. Read the
     cruel and merciful transcripts after any change to a shared scene.
 
 12. **Ration the tells, and write the recurring beats more than once.** Give
