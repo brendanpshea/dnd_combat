@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue-vigil` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=-1`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=-1`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -649,7 +649,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
+> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. And there he is. Alive, and cutting reeds in the shallows he sold."
 
 > He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -1155,7 +1155,7 @@ With Halden in the ground, the town has no priest. Your cleric says the burial w
 
 The barrows sleep, and Thornwick's churchyard is quiet again.
 
-Out on the common land, Vargan stops cutting reeds when the bells ring, and does not start again until they stop.
+Out in the reed-beds, Vargan stops cutting when the bells ring, and does not start again until they stop.
 
 Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.
 
@@ -1183,9 +1183,13 @@ A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Cal
 
 He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night the den fell, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
+Twenty men in Thornwick's colours fall in behind you, and their sergeant hands you a folded note in the reeve's stiff handwriting. *Thornwick is in your debt, and I keep its accounts. The watch is yours until the Calling is broken. — Aldous* "We'll take the weakest stretch of the line," the sergeant says.
+
 **» Report to the command tent**
 
 _Journal (quest): Silence the Calling_
+
+_Journal (clue): Thornwick's Watch_
 
 <sub>scene `envoys`</sub>
 
@@ -1211,11 +1215,9 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 **» Hear him out**
 
-<sub>scene `vex-brief-met`</sub>
+<sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at his lone fire in the chief's den, and you did not leave it with a deal.
-
-"You gave me a choice, and I turned it down," he says. "The chief's guard answered to me. I could have stood him down, and I let him fight you instead. I've thought about that."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. He kept a lone fire in the chief's den, apart from the rest, and he made no deal with you. "The chief's guard answered to me," he says. "I could have stood him down, and I let him fight you instead. I've thought about that."
 
 The morning after, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
@@ -1465,7 +1467,7 @@ You reach the last ridge. The Calling is not a pull any more. It is a pressure, 
 
 Down in the bowl, two green shapes at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
-Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.
+Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
 
 One column on the slope below keeps step, with a horn at its head. The ogre-mage is taking its spears to the camp, as it said it would.
 
@@ -1479,15 +1481,15 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
 
-Vex has not slept, and there is a bandage round one hand. "We held," he says. "It cost. I have a list of names in my coat."
+Vex has had some sleep, by the look of him. "The night went our way," he says. "I didn't bury anyone."
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-She reports to Vex first. You get a nod, later. When Vex asks who is going down with you, she says the rim needs its scout more than you do.
+"My riders were on the east line all night," Wren says. "Every one of them came back."
 
-No guard walks at Vex's shoulder. The chief's guard answered to him once, and Vex let that man fight you in Vargan's hall. Now Vex holds this column on the reeve's terms, and two of the reeve's pikemen walk behind him.
+No guard walks at Vex's shoulder. The chief's guard answered to him once, and Vex let that man stand against you at the end. Now Vex holds this column on the reeve's terms, and two of the reeve's pikemen walk behind him.
 
-"We hold the ridge. You go down," Vex says. He looks along the rim, where no one from the valley has come to see you off. "That's the whole plan. A small party's a quiet one."
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
 
 **» Let them hold the rim while you go down**
 
@@ -1503,11 +1505,11 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and I will hold on until it is paid." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
-**» "Vargan sold her that water, and the people off the marsh road with it. The reeve has him cutting reeds in it now."**
+**» "Vargan sold her that water, and the people off the marsh road with it. He lives, and cuts reeds in it."**
 
 <sub>scene `answer-sold`</sub>
 
-Sedge turns her burning face toward you for the first time. "Cutting reeds," she says. "In my sister's water." You tell her the rest: he works in a chain, and every bundle goes to a widow. "So your valley remembered whose water it was," Sedge says. "Late."
+Sedge turns her burning face toward you for the first time. "Cutting reeds," she says. "In my sister's water." You tell her the rest: he cuts them for Thornwick's market now, at a copper a bundle. "So your valley remembered whose water it was," Sedge says. "Late."
 
 Nettle laughs without turning round. "Two names on the account, then. His for the selling, and yours for the chief's hall. I can collect from both." Her song climbs, louder than before.
 
@@ -1519,11 +1521,11 @@ Sedge has stopped singing. Her hands are still in the rock, but she is listening
 
 Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
 
-**» Promise her Thornwick will remember her this time — The reeve owes you his grandfather, and he keeps the town's ledger.**
+**» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
 `[Persuasion DC 15 — Elaine the Holy rolls 23 — passed]`
 
-"The reeve owes us his grandfather," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
+"The reeve owes us," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 
 <sub>scene `vigil-kept`</sub>
 
@@ -1549,20 +1551,20 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She pours for the pikemen first. When she gets to you, she fills your cup and holds out her hand for the coin, the same as anyone's.
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 
 Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
-The war-camp fought its long night while you were still up in the hills. The pikes held, but it cost. The pikemen still keep the list of names.
+The war-camp fought its long night while you were still up in the hills. The sentries still keep the arrows they never had to loose.
 
-Vargan hears about the Calling in the reeve's reed-beds. He asks to go up and fight. The reeve says no, and Vargan goes back to cutting.
+Vargan still cuts reeds in the shallows he sold. While the stone sang, a sack of reed-arrows turned up at the war-camp gate, and nobody saw who left it. Bram sold every one.
 
 Deep under the fen, the Warden's door stays shut. Tall shapes keep watch over it now, and the fen-folk know better than to ask their names.
 
-Down in Thornwick, the reeve orders a plaque for the square, to mark the year of three wars. He has the wording changed twice.
+Thornwick's watch held the camp's weakest line all through the long night. Reeve Aldous has every man's name cut into a plaque for the square, and he has the wording changed twice.
 
-Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
+Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
 
 ### Ending: victory

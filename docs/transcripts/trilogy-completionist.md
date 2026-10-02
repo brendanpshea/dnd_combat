@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`, `sunken-barrows:wren-came-down`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:scout-bled-out`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.jailed`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:won`, `sunken-barrows:wren-came-down`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -1017,7 +1017,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
+> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. And there he is. Alive, and cutting reeds in the shallows he sold."
 
 > He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -1627,7 +1627,7 @@ The barrows sleep, and Thornwick's churchyard is quiet again.
 
 Vex hears the news in a hill inn. He sits up late by the fire, looking back toward the valley.
 
-Out on the common land, Vargan stops cutting reeds when the bells ring, and does not start again until they stop.
+Out in the reed-beds, Vargan stops cutting when the bells ring, and does not start again until they stop.
 
 In Saltmere, Marrow keeps forty graves he once left in the cold. He says the rites over them every evening.
 
@@ -1657,9 +1657,13 @@ A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Cal
 
 He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night the den fell, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
+Twenty men in Thornwick's colours fall in behind you, and their sergeant hands you a folded note in the reeve's stiff handwriting. *Thornwick is in your debt, and I keep its accounts. The watch is yours until the Calling is broken. — Aldous* "We'll take the weakest stretch of the line," the sergeant says.
+
 **» Report to the command tent**
 
 _Journal (quest): Silence the Calling_
+
+_Journal (clue): Thornwick's Watch_
 
 <sub>scene `envoys`</sub>
 
@@ -1771,17 +1775,11 @@ _Journal (clue): The Carter's Crate_
 
 → The East Line
 
-<sub>scene `eastline-watch`</sub>
+<sub>scene `eastline-held`</sub>
 
-Twenty men in Thornwick's colours are digging in at the end of the camp's east line, where the pikes are thinnest. Their sergeant hands you a folded note in the reeve's stiff handwriting.
+Thornwick's watch has dug in at the end of the east line, where the pikes were thinnest. Their sergeant raises a muddy hand to you and goes back to his digging.
 
-*You carried my grandfather home. The watch is yours until the Calling is broken. — Aldous*
-
-"Give us the weakest stretch of the line," the sergeant says. "We'll hold it, and the pikes can worry about the rest."
-
-**» Put Thornwick's watch on the weakest line**
-
-_Journal (clue): Thornwick's Watch_
+**» Head back to the camp**
 
 **↳ The War-Camp** <sub>(map `warcamp`)</sub>
 
@@ -2143,7 +2141,19 @@ While the pikes dig in, she drops over the lip of the bowl and is gone. She come
 
 Hask walks at Vex's shoulder. He is a grey, scarred soldier, the chief's old guard. The night you came for Vargan, he found somewhere else to be.
 
+Two fen-folk come up behind the pikes, out of breath and mud to the knees, with coils of rope over their shoulders. "The valley owes you a rope at least," one of them says.
+
 "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
+
+**» Take the fen-folk's drowning-ropes**
+
+_Journal (clue): The Fen-Folk's Ropes_
+
+<sub>scene `war-council-table`</sub>
+
+The fen-folk show you how a drowning-rope loops under the arms. "It pulls the drowned out of deep water," one says. "It will pull a hag out of a rock."
+
+The column digs in along the rim. Vex waits at the edge of the bowl, and the faces from the valley wait to hear what else you need.
 
 **» Let them hold the rim while you go down**
 
@@ -2231,11 +2241,11 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "I did warn you about habits."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
 
 The war-camp fought its long night while you were still up in the hills. The sentries still keep the arrows they never had to loose.
 
-Vargan hears about the Calling in the reeve's reed-beds. He asks to go up and fight. The reeve says no, and Vargan goes back to cutting.
+Vargan still cuts reeds in the shallows he sold. While the stone sang, a sack of reed-arrows turned up at the war-camp gate, and nobody saw who left it. Bram sold every one.
 
 A fen-boy dares his friends to knock on the barrow stair. None of them do.
 

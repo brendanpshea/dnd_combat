@@ -14,6 +14,7 @@
  */
 import type { Id } from '../../engine/types.js';
 import type { NpcDef } from '../../adventure/types.js';
+import { npcFateFlag } from '../../adventure/npcs.js';
 
 /** Each version of the stone's `tear-loose` challenge (see wyrmcalling.ts). */
 const TEAR_LOOSE = ['tear-loose', 'tear-loose-cracked', 'tear-loose-defiant', 'tear-loose-defiant-cracked',
@@ -36,42 +37,44 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   wren: {
     id: 'wren', name: 'Wren', portraitId: 'npc-scout', emoji: '🏹', monsterId: 'scout',
     blurb: 'The reeve\'s scout.',
-    // Pulled from under the horse on the marsh road (well, or at the cost of
-    // a day), or walked past there.
-    fates: ['saved', 'left'],
+    // The ledger's first entry (docs/state-ledger.md). Pulled from under the
+    // horse on the marsh road (`saved`), or the scout under the horse died
+    // there (`lost`): she was Wren's partner, {tamsin}, and this Wren is the
+    // one who came home. Neither: the company walked past or never found her,
+    // and she lived to limp home.
+    fates: ['saved', 'lost'],
     introducedAt: {
       'hollow-road': ['scout-saved', 'scout-fail'],
-      'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-left', 'fen-partner', 'fen-reunion'],
+      'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-partner', 'fen-reunion'],
       // Her fire, the council on the rim, and "Wren's scouts" at the forts they took.
-      wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'scouts-fire-mended', 'war-council',
+      wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'war-council',
         'onihold-done', 'steading-done'],
     },
   },
   tamsin: {
     id: 'tamsin', name: 'Tamsin',
-    // The scout who died under the horse when no one tended her in time.
-    fates: ['dead'],
-    introducedAt: { 'sunken-barrows': ['fen-partner', 'fen-out'] },
+    // A name, not state: the scout who died under the horse, when {wren}'s
+    // fate is `lost`.
+    introducedAt: { 'sunken-barrows': ['fen-partner'] },
   },
   vex: {
     id: 'vex', name: 'Vex', aka: ['the lieutenant'], portraitId: 'npc-captain', emoji: '🗡️',
-    // At his fire: took the company's offer (`turned`), turned it down
-    // (`refused`), or was refused a deal (`rebuffed`). `met` with no fate is
-    // a save from before the last two.
-    fates: ['turned', 'refused', 'rebuffed'],
+    // At his fire: took the company's offer, bought or cowed (`turned`).
+    // Refusing it, or being refused, is no fate: he was not turned.
+    fates: ['turned'],
     introducedAt: {
       'hollow-road': ['scout-saved', 'scout-fail', 'vex-parley'],
       // His briefing, and "Captain Vex" on the morning after the peak, and at
       // his map in the command tent.
-      wyrmcalling: ['vex-brief', 'vex-brief-met', 'vex-brief-turned', 'peak-night', 'peak-line',
+      wyrmcalling: ['vex-brief', 'vex-brief-turned', 'peak-night', 'peak-line',
         'command-done', 'command-half', 'command-thin'],
     },
   },
   vargan: {
     id: 'vargan', name: 'Vargan', aka: ['the chief', 'the Ashfang chief'],
-    // Executed, jailed or let go once beaten. 'slain' is set by nothing now
-    // (killing him in his hall is an execution); kept so older saves load.
-    fates: ['slain', 'executed', 'jailed', 'freed'],
+    // Killed once beaten (`dead`), or marched to the reeve or let go
+    // (`spared`: which of the two is the Hollow Road's own business).
+    fates: ['dead', 'spared'],
     introducedAt: {
       // The bandit on the road speaks of his chief, and Mira tells of the
       // reed-cutter's boy; the hall gives him his name.
@@ -118,9 +121,9 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     introducedAt: {
       // "See Reeve Aldous at his hall": the fen road's note, on the town map.
       'sunken-barrows': ['town', 'reeve-hall'],
-      // His note to the company, signed.
-      // His note to the company, signed; "Reeve Aldous" in the ending slides.
-      wyrmcalling: ['eastline-watch', 'eastline-late', 'wc-epilogue', 'wc-epilogue-vigil'],
+      // His note to the company, signed, at the muster (the valley's regard
+      // at 1 or more); "Reeve Aldous" in the ending slides.
+      wyrmcalling: ['muster', 'wc-epilogue', 'wc-epilogue-vigil'],
     },
   },
   halden: {
@@ -155,4 +158,20 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     id: 'sedge', name: 'Sedge',
     introducedAt: { wyrmcalling: ['calling-approach'] },
   },
+};
+
+/**
+ * Fates the ledger folded together (docs/state-ledger.md), old → new. NPC
+ * state is campaign-wide, so every chapter loads an older save with these
+ * renamed (`renamedFlags`). A fate the ledger dropped outright has no new
+ * name and is simply never read again: {wren} `left` (walked past, and she
+ * lived: no fate), {vex} `refused` and `rebuffed` (not turned: no fate).
+ */
+export const TRILOGY_RENAMED_FATES: Record<string, string> = {
+  [npcFateFlag('vargan', 'slain')]: npcFateFlag('vargan', 'dead'),
+  [npcFateFlag('vargan', 'executed')]: npcFateFlag('vargan', 'dead'),
+  [npcFateFlag('vargan', 'jailed')]: npcFateFlag('vargan', 'spared'),
+  [npcFateFlag('vargan', 'freed')]: npcFateFlag('vargan', 'spared'),
+  // The scout under the horse died: Wren lost her partner.
+  [npcFateFlag('tamsin', 'dead')]: npcFateFlag('wren', 'lost'),
 };

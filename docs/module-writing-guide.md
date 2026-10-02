@@ -596,6 +596,27 @@ once, plainly, in the interface, because a player can silence the quasit.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
 
+## What crosses between chapters: the ledger
+
+A chapter may remember as much as it likes while it is played. What it hands
+on is fixed: the ten entries in `docs/state-ledger.md` (Wren, Wren's regard,
+Vargan, Vex, the captives, the Reedwife, Halden, Marrow, the seal, the
+valley's regard). Each has at most three values, and a tally is read only in
+its bands.
+
+- **Read only the ledger in a later chapter.** If a line needs a finer fact
+  (jailed or let go, which deed raised the valley's regard), rewrite the line
+  so it is true across the ledger value instead of carrying the fact.
+- **Pay off in a few places:** a chapter's opening, its key conversations and
+  its epilogue. Shared text elsewhere is true on every route.
+- **A new choice resolves inside its chapter.** It may move a ledger entry; it
+  doesn't add one.
+- **Mind the budget.** `npm run check:story` prints each chapter's story flags,
+  conditional paragraphs and reachable states against its ceiling in
+  `src/data/modules/ledger.ts`, and `test/ledger.test.ts` holds the chapters
+  to the ledger. Passing a ceiling means raising it in the same commit, with
+  a reason.
+
 ## Checking your work
 
 Edit against `npm run check:story` (about 30 seconds): the typecheck, every

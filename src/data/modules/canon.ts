@@ -71,7 +71,7 @@ export const TRILOGY_FACTS: Record<Id, CanonFact> = {
   'taproom-supper': { text: '10 gold', value: 10 },
 
   // ── Part 3: the Wyrmcalling ──────────────────────────────────────────────
-  /** Kin of the drowned, who bring their ropes to a company that carried the purses home. */
+  /** Kin of the drowned, who bring their ropes to a company the valley owes (its regard at 2 or more). */
   'rope-bearers': { text: 'two fen-folk', value: 2 },
   /** The ogre-mage's toll for the middle pass: priced to hurt, about half of
    *  what a company carries up the mountain, against a fight or a lie. */
