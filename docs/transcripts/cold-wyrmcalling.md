@@ -421,7 +421,7 @@ One wrong step on the loose rock, and you join the collection.
 
 `[Stealth DC 11 — Ash the Sneaky rolls 13 — passed]`
 
-You work down the rows with soft hands. You lift a purse from a stone shepherd and a silver ring from a stone finger. A hired sword gives up his flask of healing without a word.
+You work down the rows with soft hands, gathering purses out of the grass. A silver ring lies at a stone shepherd's feet, and a hired sword's flask of healing lies where his belt let it go.
 
 The gorgon chews on and never once looks up. You are back on the trail before your hands stop shaking.
 
@@ -547,7 +547,7 @@ Hunters still hear the ettin some nights, far off in the high hills. It is still
 
 The war-camp never had to fight its night. The pikemen are home before the first snow, and the smith in Thornwick buys their pikes back cheap and makes them into hay-forks.
 
-Deep under the fen, moss is creeping over the lead letters on the Undercrypt's door. It has not moved since you shut it.
+Deep under the fen, moss is creeping over the lead letters on the Warden's door. The door has not moved since you shut it.
 
 Vex keeps a key to the reeve's cells on a nail by his cot. He walked into Thornwick once expecting a rope. Now he holds the keys.
 

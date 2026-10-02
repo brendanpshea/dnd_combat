@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:seal-cracked`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:seal-cracked`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.tamsin.fate.dead`, `npc.tamsin.met`, `npc.vargan.fate.slain`, `npc.vex.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.tamsin.fate.dead`, `npc.tamsin.met`, `npc.vargan.fate.slain`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.tamsin.fate.dead`, `npc.tamsin.met`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:seal-cracked`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.tamsin.fate.dead`, `npc.tamsin.met`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:grandfather-home`, `sunken-barrows:seal-cracked`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -91,7 +91,7 @@ _Journal (quest): Break the Ashfang_
 
 The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until we know who."
 
-"Don't look at me like that. If I knew his face, he'd be in the cells. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me the whistler, and the road's yours."
+"Don't look at me like that. If I knew his face, he'd be in the cells. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
 
 "Or ask Mira at the Wander-Inn. She hears everything."
 
@@ -239,7 +239,7 @@ _Journal (clue): The Reeve's Bounty_
 
 > The peddler's stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He never once takes his eyes off the gate.
 
-> When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks.
+> When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.
 
 **» [Investigation DC 13] Pick his crew out of the crowd first**
 
@@ -515,27 +515,15 @@ The gate-warden waves you through, and the marsh road lies quiet. The goblins yo
 
 → A Cry for Help
 
-<sub>scene `wounded`</sub>
+<sub>scene `scout-dead`</sub>
 
-**Wounded Scout**
+A young scout in the reeve's colours lies under the dead horse with an arrow through her leg. She died in the night, alone. There are tally-marks scratched in the mud by her hand. She was still counting the den's watch-posts.
 
-> A young scout in the reeve's colours lies pinned under a dead horse, an arrow through her leg, her jaw set hard against the pain. "I'm fine," she says — a lie you can see from here. "Get the horse off me and I'll tell you everything. How they're set, where they watch. I counted. That's the job."
+At her belt is the healing potion she could never reach with the horse on top of her. You never learn her name.
 
-**» Give her a healing potion**
+**» Cover her and go**
 
-_Lost: Potion of Healing_
-
-<sub>scene `scout-saved`</sub>
-
-The horse comes off and the bleeding stops, and the scout lets out a breath she looks like she'd been saving all week. "**Wren**," she offers, as if admitting to a name costs her something. She scratches the den's watch-posts into the mud, quick and exact. She really did count.
-
-"You got the horse off me. Let me pay some of that back." She catches your wrist. "There's a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."
-
-**» Send Wren back to Thornwick**
-
-_Journal (npc): Wren, the Scout_
-
-_Journal (lead): Vex, the Lieutenant_
+_Gained: Potion of Healing_
 
 **↳ The Marsh Road** <sub>(map `trail`)</sub>
 
@@ -637,7 +625,7 @@ The reeds burst apart around you, and scaled shapes rush in with hooked spears, 
 
 <sub>scene `defeat` (again)</sub>
 
-You wake on Mira's cot again, under the same crack in the ceiling. Someone has fetched you off the field a second time.
+You wake on Mira's cot again, under the same crack in the ceiling. Someone has fetched you off the field once more.
 
 "Same bowl, same soup," Mira says, and sets it down. "Try to need it less."
 
@@ -757,7 +745,7 @@ The grey webs still sheet the reeds, and the man-shaped bundles still hang in th
 
 <sub>scene `thicket-fight`</sub>
 
-The silk trembles, and then the reeds themselves seem to stand up and walk. Four giant spiders drop from the high webbing on every side, fangs already wet.
+The silk trembles over your heads. Four giant spiders drop from the high webbing on every side, fangs already wet.
 
 **Battle:** Spider Nest <sub>(`spiders` on `marsh`)</sub>
 
@@ -975,9 +963,9 @@ The mud has told you all it can. Nothing new has passed this way since.
 
 → A Cry for Help
 
-<sub>scene `scout-sent`</sub>
+<sub>scene `scout-gone`</sub>
 
-The dead horse still lies across the trail. Wren is long gone, limping to Thornwick for the reeve's men. A line of neat round holes in the mud shows where she leaned on her bow.
+The dead horse still lies across the trail, flies rising in the heat. Beside it is the low mound of reeds where you covered the scout.
 
 **» Move on**
 
@@ -1047,7 +1035,7 @@ _(a paragraph shown before: “The mud has told you all it…”)_
 
 → A Cry for Help
 
-<sub>scene `scout-sent` (again)</sub>
+<sub>scene `scout-gone` (again)</sub>
 
 _(a paragraph shown before: “The dead horse still lies across the…”)_
 
@@ -1153,9 +1141,9 @@ _+25 gold (308)_
 
 > "**Vex**," he offers. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
 
-**» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
+**» [Persuasion DC 13] Offer him the reeve's pardon and a road out**
 
-`[Persuasion DC 9 — Elaine the Holy rolls 6 — failed]`
+`[Persuasion DC 13 — Elaine the Holy rolls 9 — failed]`
 
 <sub>scene `vex-refuses`</sub>
 
@@ -1209,7 +1197,7 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 
 **» [Insight DC 14] Look at his hands**
 
-`[Insight DC 14 — Elaine the Holy rolls 12 — failed]`
+`[Insight DC 14 — Elaine the Holy rolls 11 — failed]`
 
 <sub>scene `boss` (again)</sub>
 
@@ -1241,9 +1229,9 @@ By morning the carters are already complaining about the state of the road. Mira
 
 Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
 
-At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first.
-
 Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+
+Mira sets an extra cup at the end of the bar and fills it. Nobody drinks from it. Nobody asks.
 
 Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.
 
@@ -1257,7 +1245,7 @@ Every evening, a widow walks the edge of the marsh and calls a name across the w
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-Last season your company broke the Ashfang here, and killed the hag who ran them. You had hoped for a quiet homecoming.
+Last season your company broke the Ashfang in their den past the marsh, and killed the hag their chief had sold himself to. You had hoped for a quiet homecoming.
 
 The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -1337,7 +1325,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn't know how to use.
 
-> "You have returned," he says, without turning. "Last season you broke the Ashfang, and Thornwick paid you, as it pays every debt. Now the marsh has opened a new one. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
+> "You have returned," he says, without turning. "Last season you broke the Ashfang. Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
 > He turns. He looks as if he has not slept since the bells. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -1355,19 +1343,21 @@ _Journal (lead): Into the Deep Fen_
 
 → The Fen Road
 
-<sub>scene `fen-reunion`</sub>
+<sub>scene `fen-partner`</sub>
 
 **Wren, the Reeve's Scout**
 
-> The cart-road ends where the old raised road begins. A familiar figure sits there sharpening a familiar boot-knife. It is **Wren**, upright this time, with no dead horse on top of her. Someone has mended the reeve's colours at her shoulder.
+> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. A bow lies across her knees.
 
-> "Heard the bells. Figured you'd be along." She stands, and only barely favours the leg. "I've scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+> "**Wren**. The reeve's scout." She looks you over. "You're the ones who found Tamsin under that horse on the marsh road. She was my partner. I went out and found her where you covered her with reeds. Nobody else was out on that road but you." She puts the knife away. "Thank you for that."
+
+> "I've scouted the near fen twice since the graves opened. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
 **» Follow her onto the raised road**
 
 _Wren joins the party._
 
-_Journal (npc): Wren, Again_
+_Journal (npc): Wren, the Reeve's Scout_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
@@ -1419,7 +1409,7 @@ The lights drift nearer, hopeful as dogs. Something else moves between them, fur
 
 **» [Insight DC 13] Read what is wearing him**
 
-`[Insight DC 13 — Elaine the Holy rolls 12 — failed]`
+`[Insight DC 13 — Elaine the Holy rolls 10 — failed]`
 
 <sub>scene `chapel-fight`</sub>
 
@@ -1439,7 +1429,7 @@ You think better of it and fall back the way you came.
 
 North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been feeding something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.
 
-Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody's fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "Weeks without feeding," she says quietly. "It will be hungry."
+Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody's fed it since the graves opened." The water ripples again, closer. Wren takes one careful step back. "It will be hungry," she says quietly.
 
 **» Leave the pool its privacy**
 
@@ -1463,7 +1453,7 @@ The corpse-lights still sway over the black water, warm as windows. Wren keeps a
 
 **» [Survival DC 13] Find the dry way round the pools**
 
-`[Survival DC 13 — Elaine the Holy rolls 6 — failed]`
+`[Survival DC 13 — Elaine the Holy rolls 11 — failed]`
 
 <sub>scene `lights-sunk`</sub>
 
@@ -1541,7 +1531,7 @@ Someone hauled you all back across the fen in the dark. Mira will not say who, a
 
 The open graves wait for a steadier eye. The dead left in company — but bodies, even walking ones, tell their stories to anyone trained to listen.
 
-`[Medicine DC 12 — Elaine the Holy rolls 8 — failed]`
+`[Medicine DC 12 — Elaine the Holy rolls 10 — failed]`
 
 You get mud, turf, and the underside of a churchyard. You trample the edges of three graves, and what they had to say is gone under your boots.
 
@@ -1587,7 +1577,7 @@ The next note is shorter. *She is dead. No one pays the jailer now, and he is wa
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And we broke it." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She frowns at the page. "So the hag was the lock. And you broke it." She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. Somebody brought them out here."
 
@@ -1617,7 +1607,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 7 — failed]`
+`[History DC 14 — Morgan Le Fey rolls 12 — failed]`
 
 You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
@@ -1711,19 +1701,19 @@ A loose stone skitters across the floor, and every pick in the cut stops. After 
 
 **» Say the burial words over them — Halden said these over every grave in Thornwick.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 10 — failed]`
 
 The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
 
 **» Pick up a tool and fall into step — Shuffle, swing, and look as dead as they do.**
 
-`[Deception DC 13 — Ash the Sneaky rolls 3 — failed]`
+`[Deception DC 13 — Ash the Sneaky rolls 8 — failed]`
 
 You swing too fast. The living always do. The nearest digger stops and turns its empty face toward you, then slowly goes back to work.
 
 **» [Cleric] Raise your holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Elaine the Holy rolls 8 — failed]`
+`[Religion DC 10 — Elaine the Holy rolls 3 — failed]`
 
 The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.
 
@@ -1755,13 +1745,21 @@ _Journal (clue): The Old Reeve_
 
 → The Barrow-Guard
 
-<sub>scene `crypt-ambush`</sub>
+**→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
+<sub>scene `wights`</sub>
 
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
 
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+From the slabs on either side, two skeletons rise to guard it. They snap to their feet like soldiers called to order, and they come for you.
+
+**Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
+
+**» [History DC 15] Relieve him of his post, the old way**
+
+`[History DC 15 — Morgan Le Fey rolls 12 — failed]`
+
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — lost**
 
@@ -1789,7 +1787,7 @@ _(a paragraph shown before: “"The fen's still there," Mira says, which…”)_
 
 > The Wander-Inn is as full as ever. Thornwick would sooner sleep on the benches in company than alone in its own beds while the dead are walking. **Mira** slides a bowl your way without asking.
 
-> "So Aldous hired you. Good. He pays slow, but he pays." She tops up your cup. "Finish what she left behind, and the town will stop looking at you sideways. The fen will still be out there in the morning. That's the trouble with it."
+> "So Aldous hired you. Good. He pays slow, but he pays." She tops up your cup. "Put the dead back where they belong, and the town will stop looking at you sideways. The fen will still be out there in the morning. That's the trouble with it."
 
 **» Go back out to the street**
 
@@ -1923,7 +1921,7 @@ The flat water lies dark and truthful, and nothing dances over it now.
 
 _(a paragraph shown before: “North of the chapel the reeds part…”)_
 
-The newest offering on the rim is green with weeks of fen-damp. The water ripples again, closer to the rim, as if it has noticed.
+The newest offering on the rim is already green with fen-damp. The water ripples again, closer to the rim, as if it has noticed.
 
 **» Leave the pool its privacy**
 
@@ -1953,19 +1951,11 @@ _(3 paragraphs shown before: “The Barrow Gate stands unwatched, its broken…�
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-<sub>scene `wights`</sub>
+<sub>scene `wights` (again)</sub>
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
-
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet like soldiers called to order, and they come for you.
+The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides like soldiers on parade.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
-
-**» [History DC 15] Relieve him of his post, the old way**
-
-`[History DC 15 — Morgan Le Fey rolls 13 — failed]`
-
-You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — won**
 
@@ -1986,6 +1976,22 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore. These are the places the Warden swallowed the last time he woke.
 
 The embalmed king turns. He served the Warden once, and the Warden has woken him first, as a reward. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
+
+**Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
+
+**» Fall back to The Undercrypt**
+
+_(a paragraph shown before: “You think better of it and fall…”)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+
+→ The King's Chamber
+
+**→ The King's Chamber** <sub>(room `king`)</sub>
+
+<sub>scene `king` (again)</sub>
+
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.
 
 **Battle:** Mummy Crypt <sub>(`mummy-crypt` on `@room`)</sub>
 
@@ -2069,25 +2075,25 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 10 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 7 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — The words cut in the door are a lock. Use the rites as its key.**
 
-`[Arcana DC 14 — Morgan Le Fey rolls 9 — failed]`
+`[Arcana DC 14 — Morgan Le Fey rolls 13 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They came here to chant at this door. Make them chant the right thing.**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 8 — failed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 4 — failed]`
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
 
 **» [Wizard] Pick the lock the old masons cut — You know a ward when you see one. This one is only half-broken.**
 
-`[Arcana DC 11 — Morgan Le Fey rolls 8 — failed]`
+`[Arcana DC 11 — Morgan Le Fey rolls 6 — failed]`
 
 No book you have ever read goes back as far as this ward. You lose your place in it, and a letter spits hot lead at your hand.
 
@@ -2199,87 +2205,9 @@ Nettle's green fingers are the last thing you see before the mud comes up to mee
 
 You wake on a cot in the hospital tent, with mud still drying in your hair. The scouts who dragged you in say the tall woman sank into a puddle, and her hired swords walked off after her.
 
-A grey-haired captain looks in through the tent flap. "She does that," he says. "When you can stand, come to the command tent. We've a war to plan, and you're in it."
+A grey-haired captain looks in through the tent flap. "She does that," he says. "Can you stand? Good. Come to the command tent. We've a war to plan, and you're in it."
 
-**» Get back on your feet**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-**» Make camp (long rest)** <sub>(day 1)</sub>
-
-**Dawn — day 2.**
-
-→ The War-Stores
-
-<sub>scene `wc-stores`</sub>
-
-_The shop: The War-Stores (the route buys nothing)._
-
-Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more. Except my goods, because I'm a patriot. Also the captain reads my books." He turns a crate around to face you. "There's big things up that hill. Buy accordingly."
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Scouts' Fire
-
-<sub>scene `scouts-fire-saved`</sub>
-
-**Wren, Chief of Scouts**
-
-> **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She stands when she sees you, and she only barely favours the leg you once pulled out from under a dead horse on the marsh road.
-
-> "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
-
-> "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
-
-> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. The ettin's two heads can't even agree with each other. Use that." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it." She pauses. "I counted the watch-posts for you once, lying under a horse. This is a better map." She almost smiles. "Come down the hill on your own feet. All of you. I'll be counting."
-
-**» Take her map-notes**
-
-_Journal (clue): Wren's Map-Notes_
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Supply Wagons
-
-<sub>scene `wagons-busy`</sub>
-
-Supply wagons come and go from Bram's stores in a slow line. The drivers are too busy to talk.
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The East Line
-
-<sub>scene `eastline-watch`</sub>
-
-Twenty men in Thornwick's colours are digging in at the end of the camp's east line, where the pikes are thinnest. Their sergeant hands you a folded note in the reeve's stiff handwriting.
-
-*You carried my grandfather home. The watch is yours until the Calling is broken. — Aldous*
-
-"Give us the weakest stretch of the line," the sergeant says. "We'll hold it, and the pikes can worry about the rest."
-
-**» Put Thornwick's watch on the weakest line**
-
-_Journal (clue): Thornwick's Watch_
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Fen-Folk's Fire
-
-<sub>scene `fenfolk-fire-cracked`</sub>
-
-The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old hedge-witch waves you over. She has river-stones braided into her hair. In Thornwick she drinks at the regulars' table in Mira's inn. "Magic's never free," she tells the young casters there, "whatever the college boys say." She knits while she talks, and she doesn't look up.
-
-"Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed," she says. "The door never asked for them. The fen gave her a little, for a long time, and the dead slept sound." She pulls a stitch tight. "The sisters want feeding again now, and a little won't do. They want the whole valley."
-
-"You know the door under the barrows. You shut it, near enough. Well, it knocks now, every night the stone sings, and louder each time." She pulls her yarn tight. "If the Calling runs much longer, that crack'll open. The sisters know it. I think they're counting on it."
-
-**» Head back to the camp**
-
-**↳ The War-Camp** <sub>(map `warcamp`)</sub>
-
-→ The Command Tent
+**» Follow him to the command tent**
 
 <sub>scene `tent-after-loss`</sub>
 
@@ -2304,6 +2232,10 @@ _Journal (npc): Captain Vex_
 _Journal (lead): The Calling Stone_
 
 **↳ The War-Camp** <sub>(map `warcamp`)</sub>
+
+**» Make camp (long rest)** <sub>(day 1)</sub>
+
+**Dawn — day 2.**
 
 → The High Trail
 
@@ -2345,8 +2277,6 @@ It lifts its head, and the face is a man's. It is a **manticore**, and it is in 
 
 "Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with a man's mouth, and the teeth behind it are a lion's. "You will pay in meat. I have decided."
 
-You remember what Wren wrote about this cliff: *It talks. It's greedy.*
-
 **» Leave it on its ledge**
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
@@ -2358,8 +2288,6 @@ You remember what Wren wrote about this cliff: *It talks. It's greedy.*
 A dry gully crosses the trail. Hooves have churned its floor to mud and left coarse hair snagged on every thorn. The hoofprints are as wide as wash-basins, and every one of them points uphill, toward the song.
 
 Under your boots, the ground has begun to drum.
-
-Wren's notes have one line on this gully, underlined twice: *Watch the dust.*
 
 **» Leave the herd to its runs**
 
@@ -2444,6 +2372,90 @@ A rider from the scouts' fire brings Wren's word at first light. Three more nigh
 **» Make camp (long rest)** <sub>(day 3)</sub>
 
 **Dawn — day 4.**
+
+→ The War-Stores
+
+<sub>scene `wc-stores`</sub>
+
+_The shop: The War-Stores (the route buys nothing)._
+
+Bram has taken over a supply wagon and, by the look of things, every pricing decision in the war. "War makes everything cost more. Except my goods, because I'm a patriot. Also the captain reads my books." He turns a crate around to face you. "There's big things up that hill. Buy accordingly."
+
+**↳ The War-Camp** <sub>(map `warcamp`)</sub>
+
+→ The Scouts' Fire
+
+<sub>scene `scouts-fire-old`</sub>
+
+**Wren, Chief of Scouts**
+
+> **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young. She wears the title like a coat that fits her but embarrasses her anyway.
+
+> "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+> "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. The ettin's two heads can't even agree with each other. Use that." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it." She pauses. "Last time I held a gate and waited for you to walk back out. I didn't enjoy it." She rolls the map up tight. "Don't make me wait at the top of a mountain as well."
+
+**» Take her map-notes**
+
+_Journal (clue): Wren's Map-Notes_
+
+**↳ The War-Camp** <sub>(map `warcamp`)</sub>
+
+→ The Supply Wagons
+
+<sub>scene `wagons-busy`</sub>
+
+Supply wagons come and go from Bram's stores in a slow line. The drivers are too busy to talk.
+
+**» Head back to the camp**
+
+**↳ The War-Camp** <sub>(map `warcamp`)</sub>
+
+→ The East Line
+
+<sub>scene `eastline-watch`</sub>
+
+Twenty men in Thornwick's colours are digging in at the end of the camp's east line, where the pikes are thinnest. Their sergeant hands you a folded note in the reeve's stiff handwriting.
+
+*You carried my grandfather home. The watch is yours until the Calling is broken. — Aldous*
+
+"Give us the weakest stretch of the line," the sergeant says. "We'll hold it, and the pikes can worry about the rest."
+
+**» Put Thornwick's watch on the weakest line**
+
+_Journal (clue): Thornwick's Watch_
+
+**↳ The War-Camp** <sub>(map `warcamp`)</sub>
+
+→ The Fen-Folk's Fire
+
+<sub>scene `fenfolk-fire-cracked`</sub>
+
+The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. An old hedge-witch waves you over. She has river-stones braided into her hair. In Thornwick she drinks at the regulars' table in Mira's inn. "Magic's never free," she tells the young casters there, "whatever the college boys say." She knits while she talks, and she doesn't look up.
+
+"Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed," she says. "The door never asked for them. The fen gave her a little, for a long time, and the dead slept sound." She pulls a stitch tight. "The sisters want feeding again now, and a little won't do. They want the whole valley."
+
+"You know the door under the barrows. You shut it, near enough. Well, it knocks now, every night the stone sings, and louder each time." She pulls her yarn tight. "If the Calling runs much longer, that crack'll open. The sisters know it. I think they're counting on it."
+
+**» Head back to the camp**
+
+**↳ The War-Camp** <sub>(map `warcamp`)</sub>
+
+→ The Command Tent
+
+<sub>scene `command-thin`</sub>
+
+The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
+
+It is a short row. "Not enough yet," Vex says, and he taps the fires still burning in the passes. "If all of that came down tonight, it would go through this camp like a flood."
+
+His finger moves to the dens. "The green, blue and red dens are still standing. Burn them out, and that's three more wyrms that never reach the rim."
+
+**» Head back to the camp**
+
+**↳ The War-Camp** <sub>(map `warcamp`)</sub>
 
 → The High Trail
 
@@ -2641,7 +2653,7 @@ The hedge-witch is still knitting by the fen-folk's fire. "Hear it knock?" she s
 
 <sub>scene `command-half`</sub>
 
-The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
+_(a paragraph shown before: “The command tent works on. Guard posts,…”)_
 
 The row reaches about halfway down the edge of the map. "That's about half of it," Vex says. "The rest is still up there."
 
@@ -2779,7 +2791,7 @@ For one breath, the song falters. Sedge turns her burning face toward you. "Sorr
 
 **» [Persuasion DC 15] Ask Sedge to keep the vigil her sister kept**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 9 — failed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 14 — failed]`
 
 <sub>scene `vigil-refused`</sub>
 
@@ -2799,31 +2811,31 @@ Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are 
 
 **» Drag their hands out of the rock — Grab a wrist each and pull, while the stone pulls back.**
 
-`[Athletics DC 15 — Arthur the Bold rolls 14 — failed]`
+`[Athletics DC 15 — Arthur the Bold rolls 10 — failed]`
 
 The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
 
 **» Break the song — Sing a wrong note into the Calling and knock it off its beat.**
 
-`[Arcana DC 15 — Morgan Le Fey rolls 7 — failed]`
+`[Arcana DC 15 — Morgan Le Fey rolls 8 — failed]`
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
 **» Say Halden's rites over the stone — Brother Halden's book of rites went down into the barrows with you. Its oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 4 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 8 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
 **» Read the old letters cut into the stone — Your wizard knows these marks. Find the line that holds the sisters, and scratch it out.**
 
-`[Arcana DC 12 — Morgan Le Fey rolls 11 — failed]`
+`[Arcana DC 12 — Morgan Le Fey rolls 10 — failed]`
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
 **» Find where the stone is weakest — Look for the seam the song leaks out of, and hit it hard.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 13 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 
@@ -2881,6 +2893,6 @@ Vex keeps a key to the reeve's cells on a nail by his cot. He walked into Thornw
 
 Thornwick's watch held the camp's weakest line on the night of the Calling. Reeve Aldous has every man's name cut into a plaque for the square, and he has the wording changed twice.
 
-Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.
+Wren tells every new scout how she held the gate of the Undercrypt, and how you walked back out.
 
 ### Ending: victory

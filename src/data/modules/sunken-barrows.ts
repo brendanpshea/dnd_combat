@@ -106,7 +106,7 @@ const scenes: Record<string, Scene> = {
     id: 'return', kind: 'story', art: { imageId: 'loc-town', emoji: '🔔' },
     text: [
       '{thornwick} by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.',
-      'Last season your company broke the {ashfang} here, and killed the hag who ran them. You had hoped for a quiet homecoming.',
+      'Last season your company broke the {ashfang} in their den past the marsh, and killed the hag their chief had sold himself to. You had hoped for a quiet homecoming.',
       'The gate-warden meets you at the gate. His hands are raw from the bell-rope. "It\'s the **churchyard**," he manages. "The graves are *open*, and it wasn\'t shovels did it."',
       'Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.',
       { if: [{ kind: 'notFlag', flag: 'hollow-road:won' }],
@@ -148,7 +148,7 @@ const scenes: Record<string, Scene> = {
       'Every old headstone carries the same words, cut deep and green with moss. ' + LITURGY + ' {thornwick}\'s priests have said them over every grave for {thornwick-liturgy}.',
     ],
     next: [{ id: 'on', label: 'Take it to the town', to: 'town',
-      effects: [{ kind: 'setFlag', flag: 'dead-walk' },
+      effects: [
         { kind: 'journal', entry: { id: 'c-deadwalk', kind: 'clue', title: 'They Walk One Way',
           body: 'Something opened the graves from below. Every trail leads the same way. They all point into the deep fen, where the old burial mounds stand.' } }] }],
   },
@@ -209,7 +209,7 @@ const scenes: Record<string, Scene> = {
     id: 'inn-later', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
       'The {wander-inn} is as full as ever. {thornwick} would sooner sleep on the benches in company than alone in its own beds while the dead are walking. **{mira}** slides a bowl your way without asking.',
-      '"So {aldous} hired you. Good. He pays slow, but he pays." She tops up your cup. "Finish what she left behind, and the town will stop looking at you sideways. The fen will still be out there in the morning. That\'s the trouble with it."',
+      '"So {aldous} hired you. Good. He pays slow, but he pays." She tops up your cup. "Put the dead back where they belong, and the town will stop looking at you sideways. The fen will still be out there in the morning. That\'s the trouble with it."',
     ],
     next: INN_CHOICES,
   },
@@ -233,7 +233,7 @@ const scenes: Record<string, Scene> = {
     id: 'reeve-hall', kind: 'dialogue', npc: REEVE, art: { emoji: '⚖️' },
     lines: [
       'The reeve\'s hall smells of candle-wax and ledgers. **Reeve {aldous}** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn\'t know how to use.',
-      '"You have returned," he says, without turning. "Last season you broke the {ashfang}, and {thornwick} paid you, as it pays every debt. Now the marsh has opened a new one. My grandfather\'s grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."',
+      '"You have returned," he says, without turning. "Last season you broke the {ashfang}. {thornwick} remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather\'s grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."',
       'He turns. He looks as if he has not slept since the bells. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, {wren}, will meet you at the fen road. She asked for the task before I could give it. {thornwick}\'s people do not wait to be told."',
     ],
@@ -420,7 +420,7 @@ const scenes: Record<string, Scene> = {
     id: 'chapel-read', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '👁️' },
     text: [
       'You see it a breath before it moves. Something winds up through {halden}\'s calm like rot up a post. His smile belongs to it, and so does his voice.',
-      'But his hands are shaking on the altar rail, and somewhere under that thing {halden} is still in there. The words he said over {thornwick}\'s dead might reach him. Or you could strike now, while it still thinks you are kneeling.',
+      'But his hands are shaking on the altar rail, and somewhere under that thing {halden} is still in there. The words he said over {thornwick}\'s dead might reach him. Or you could strike now, while it still thinks you came to listen.',
     ],
     next: [
       { id: 'strike', label: 'Strike before it moves', to: 'chapel-caught' },
@@ -611,7 +611,7 @@ const scenes: Record<string, Scene> = {
     again: ['The serpent pool lies still again, too still. {wren} watches the rim for ripples, and keeps well back from it.'],
     text: [
       'North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been feeding something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.',
-      '{wren} picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody\'s fed it since the graves opened." The water ripples again, closer. {wren} takes one careful step back. "Weeks without feeding," she says quietly. "It will be hungry."',
+      '{wren} picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Nobody\'s fed it since the graves opened." The water ripples again, closer. {wren} takes one careful step back. "It will be hungry," she says quietly.',
     ],
     next: [
       { id: 'wren', label: 'Let {wren} draw it out from the far bank', to: 'pool-drawn',
@@ -623,7 +623,7 @@ const scenes: Record<string, Scene> = {
     id: 'pool-alone', kind: 'story', art: { emoji: '🐍' },
     text: [
       'North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have been feeding something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.',
-      'The newest offering on the rim is green with weeks of fen-damp. The water ripples again, closer to the rim, as if it has noticed.',
+      'The newest offering on the rim is already green with fen-damp. The water ripples again, closer to the rim, as if it has noticed.',
     ],
     again: ['The serpent pool lies still again, and the offerings on its rim gleam. The water has not forgotten you.'],
     next: POOL_CHOICES,
@@ -796,7 +796,7 @@ const scenes: Record<string, Scene> = {
       'The mud is still wet. The hands that wrote it are at the door now, somewhere deep below you.',
     ],
     next: [{ id: 'on', label: 'Go deeper in', to: '@hub',
-      effects: [{ kind: 'setFlag', flag: 'hall-seen' },
+      effects: [
         { kind: 'journal', entry: { id: 'c-warden', kind: 'clue', title: 'The Door Opens From Within',
           body: 'The painted hall at the top of the {undercrypt} shows the {warden}\'s door, far below, and the reed-woman who guarded it. Fresh mud over the paint says the vigil has ended and the door opens from within. His servants are at the door now. Get there first and speak {halden}\'s rites.' } }] }],
   },
@@ -825,9 +825,9 @@ const scenes: Record<string, Scene> = {
     id: 'ossuary', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '💀' },
     intro: ['Grave-goods glint in the niches between the skulls. The barrow-lords took their wealth down with them. A careful eye might take some of it back up.'],
     success: { to: '@hub', text: ['Behind a row of skulls, the builders left a hidden nook. Inside are coins stamped with kings no song remembers. There is also a flask of drink that has gone strong with age instead of sour.'],
-      effects: [{ kind: 'setFlag', flag: 'ossuary-searched' }, { kind: 'gold', amount: 90 }, { kind: 'addItem', itemId: 'potion-greater-healing', qty: 1 }] },
+      effects: [{ kind: 'gold', amount: 90 }, { kind: 'addItem', itemId: 'potion-greater-healing', qty: 1 }] },
     failure: { to: '@hub', text: ['You grope through two niches, touch something that crunches, and decide to stop. You leave with a few loose coins off the floor. The dead can keep the rest. They did the work.'],
-      effects: [{ kind: 'setFlag', flag: 'ossuary-searched' }, { kind: 'gold', amount: 20 }] },
+      effects: [{ kind: 'gold', amount: 20 }] },
   },
   // Thornwick's own dead, quarrying the lead. Get past them, still them, or
   // fight them. Among them is the reeve's grandfather, in his chain.
@@ -952,7 +952,7 @@ const scenes: Record<string, Scene> = {
     ],
     again: ['The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.'],
     onWin: { to: '@hub', text: ['The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.', 'Behind the king\'s throne, a burial shaft drops into the dark. The chanting comes up out of it.'],
-      effects: [{ kind: 'setFlag', flag: 'king-down' }, { kind: 'gold', amount: 60 }] },
+      effects: [{ kind: 'gold', amount: 60 }] },
   },
   'seal-approach': {
     id: 'seal-approach', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
@@ -1002,7 +1002,7 @@ const scenes: Record<string, Scene> = {
     intro: [
       '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway. {marrow} only watches, as if from very far away.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. {marrow} never moved from the door. When it is over, he is sitting on the bottom stair with the chisel in his lap.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. {marrow} never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.'],
       effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -1087,8 +1087,7 @@ const scenes: Record<string, Scene> = {
     ],
     success: { to: 'seal-clean' },
     // Every voice failed: the door cracks before it seals.
-    failure: { to: 'seal-breach', text: ['The last word dies in the dark, and for a moment nothing happens. The great door splits from top to bottom with a crack like river ice, and grey hands push out through the gap. The {warden} has stopped waiting for his servants.'],
-      effects: [{ kind: 'setFlag', flag: 'seal-breach' }] },
+    failure: { to: 'seal-breach', text: ['The last word dies in the dark, and for a moment nothing happens. The great door splits from top to bottom with a crack like river ice, and grey hands push out through the gap. The {warden} has stopped waiting for his servants.'] },
   },
   'seal-clean': {
     id: 'seal-clean', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '📖' },
@@ -1140,7 +1139,7 @@ const scenes: Record<string, Scene> = {
   // Each claim gets one line, then a short hub: the homecoming doesn't replay.
   'sb-claim-round': {
     id: 'sb-claim-round', kind: 'story', art: { imageId: 'loc-tavern', emoji: '🍺' },
-    text: ['The whole taproom eats on your coin. Someone stands and names {thornwick}\'s dead, one by one, and the room goes quiet to listen. Last of all, someone names {mira} the innkeeper, who pretends not to hear it.'],
+    text: ['The whole taproom eats on your coin. Someone stands and names {thornwick}\'s dead, one by one, and the room goes quiet to listen. When the last name is said, someone raises a cup to {mira}, who cooked it all, and she pretends not to hear.'],
     next: [{ id: 'ok', label: 'Go back to the square', to: 'sb-aftermath-hub' }], noBack: true,
   },
   'sb-aftermath-hub': {

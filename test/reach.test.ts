@@ -38,6 +38,11 @@ describe('what it catches', () => {
     const m = clone(byId('wyrmcalling'));
     const camp = m.scenes.warcamp;
     if (camp?.kind !== 'explore') throw new Error();
+    // The shape before the fix: the hospital tent let the party out into the
+    // camp, rather than straight into the briefing.
+    const lost = m.scenes['envoys-lost'];
+    if (lost?.kind !== 'story') throw new Error();
+    lost.next = [{ id: 'up', label: 'Get back on your feet', to: 'warcamp' }];
     m.scenes.unbriefed = { id: 'unbriefed', kind: 'story', text: ['Vex waves you off.'], next: [{ id: 'ok', label: 'Leave', to: 'warcamp' }] };
     camp.map.nodes = camp.map.nodes.map((n) => (n.id === 'command' ? { ...n, scene: 'unbriefed' } : n));
     const errors = checkModuleReach(m).errors;
