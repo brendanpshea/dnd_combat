@@ -62,6 +62,9 @@ export type Requirement =
    *  `withNpcs`. `fate`: is this; `notFate`: is none of these; `attitude`:
    *  how they feel about the company (a signed tally from 0) is in bounds. */
   | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean; attitude?: { atLeast?: number; below?: number } }
+  /** Where the party is: the map or dungeon it last entered (its hub). A dawn
+   *  read in camp, or a defeat scene after a fight, is somewhere: say so. */
+  | { kind: 'at'; hub: SceneRef }
   /** A tally against bounds, unset counting as 0. */
   | { kind: 'count'; flag: string; atLeast?: number; below?: number };
 

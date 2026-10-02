@@ -43,7 +43,9 @@ const MAX_FACTS = 52;
 /** A search bigger than this is reported, not run. */
 const MAX_STATES = 3_000_000;
 
-interface Mask { has: number; not: number }
+/** Facts that must hold (`has`), must not (`not`), and the hub the party
+ *  must be at (`at`, an index into the hubs; -2 for nowhere it can be). */
+interface Mask { has: number; not: number; at?: number }
 interface Step { to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true }
 
 export interface ReachReport {
@@ -319,6 +321,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
 
   const mask = (reqs: Requirement[] | undefined): Mask => {
     let has = 0, not = 0;
+    let at: number | undefined;
     for (const r of reqs ?? []) {
       // A carried flag is settled for the whole run: met, or never.
       if ((r.kind === 'flag' || r.kind === 'notFlag') && settled.has(r.flag)) {
@@ -329,9 +332,13 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       else if (r.kind === 'companion') has = or(has, bit(`companion:${r.companion}`));
       else if (r.kind === 'noCompanion') not = or(not, bit(`companion:${r.companion}`));
       else if (r.kind === 'visited') has = or(has, bit(`visited:${r.scene}`));
+      else if (r.kind === 'at') {
+        const h = hubIndex.get(r.hub) ?? -2;
+        at = at === undefined || at === h ? h : -2; // two different places: nowhere
+      }
       // gold, items, classes, species: not tracked, taken as possible.
     }
-    return { has, not };
+    return { has, not, ...(at !== undefined ? { at } : {}) };
   };
   const effects = (es: Effect[] | undefined): { set: number; clr: number } => {
     let set = 0, clr = 0;
@@ -345,7 +352,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     }
     return { set, clr };
   };
-  const met = (m: Mask, f: number) => and(f, m.has) === m.has && and(f, m.not) === 0;
+  const met = (m: Mask, f: number, h: number) => and(f, m.has) === m.has && and(f, m.not) === 0 && (m.at === undefined || m.at === h);
   const OPEN: Mask = { has: 0, not: 0 };
   const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined): Step =>
     ({ to, label, req, ...effects(eff), ...(eff?.some((e) => e.kind === 'passDay') ? { day: true as const } : {}) });
@@ -485,7 +492,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     // The next morning that matters, if any is still to come.
     const next = dawnSteps.find((d) => !and(f, d.bit));
     for (const st of c.steps) {
-      if (!met(st.req, f)) continue;
+      if (!met(st.req, f, hub)) continue;
       enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
       // A day lost may bring that morning (or may not yet).
       // The step's effects, then the morning's.
@@ -495,17 +502,17 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       }
     }
     for (const nd of c.nodes) {
-      if (!met(nd.req, f)) continue;
+      if (!met(nd.req, f, hub)) continue;
       // First matching redirect wins; one that reads an untracked flag may or
       // may not apply, so it is taken and the search carries on past it too.
       let to: Id = nd.to;
       for (const w of nd.when) {
         if (w.maybe) { enter(n, w.to, 0, 0, `${here}: ${nd.label}`); continue; }
-        if (met(w.req, f)) { to = w.to; break; }
+        if (met(w.req, f, hub)) { to = w.to; break; }
       }
       enter(n, to, 0, 0, `${here}: ${nd.label}`);
     }
-    for (const ev of c.events) if (!ev.until || !met(ev.until, f)) enter(n, ev.to, 0, 0, `${here}: ${ev.label}`);
+    for (const ev of c.events) if (!ev.until || !met(ev.until, f, hub)) enter(n, ev.to, 0, 0, `${here}: ${ev.label}`);
     if (c.leave && hub >= 0 && hubs[hub] !== here) enter(n, HUB_REF, 0, 0, `${here}: goes back`);
     if (c.travel) {
       hubs.forEach((h, i) => { if (h !== here && and(f, hubVisitedBits[i]!)) enter(n, h, 0, 0, `${here}: travels to ${h}`); });
@@ -627,7 +634,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       const key = `${si}|${factsOf[n]!}`;
       let hit = said.get(key);
       if (hit === undefined) {
-        hit = words.some((re) => re.test(sceneWords(module.scenes[ids[si]!]!, (reqs) => met(mask(reqs), factsOf[n]!))));
+        hit = words.some((re) => re.test(sceneWords(module.scenes[ids[si]!]!, (reqs) => met(mask(reqs), factsOf[n]!, hubOf[n]!))));
         said.set(key, hit);
       }
       return hit;
@@ -663,7 +670,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   };
   const describe = (r: Requirement): string =>
     r.kind === 'flag' ? r.flag : r.kind === 'notFlag' ? `not ${r.flag}` : r.kind === 'companion' ? `${r.companion} in the party`
-      : r.kind === 'noCompanion' ? `${r.companion} not in the party` : r.kind === 'visited' ? `visited ${r.scene}` : r.kind;
+      : r.kind === 'noCompanion' ? `${r.companion} not in the party` : r.kind === 'visited' ? `visited ${r.scene}`
+      : r.kind === 'at' ? `at ${r.hub}` : r.kind;
   const assumed = ids.map((id) => assumptionsOf(module.scenes[id]!).map((a) => ({ ...a, mask: mask(a.reqs), shows: mask(a.when) })));
   const broken = new Set<string>();
   ids.forEach((id, si) => {
@@ -679,7 +687,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const si = sceneOf[n]!;
     for (const a of assumed[si]!) {
       const key = `${si}|${a.where}`;
-      if (broken.has(key) || !met(a.shows, factsOf[n]!) || met(a.mask, factsOf[n]!)) continue;
+      if (broken.has(key) || !met(a.shows, factsOf[n]!, hubOf[n]!) || met(a.mask, factsOf[n]!, hubOf[n]!)) continue;
       broken.add(key);
       const path: string[] = [];
       for (let m = n; parent[m]! >= 0; m = parent[m]!) path.unshift(via[m]!);

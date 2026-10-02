@@ -259,6 +259,7 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     case 'visited': return state.visited.includes(req.scene);
     case 'companion': return (state.companions ?? []).some((x) => x.id === req.companion);
     case 'noCompanion': return !(state.companions ?? []).some((x) => x.id === req.companion);
+    case 'at': return state.hub === req.hub;
     case 'count': {
       const v = state.flags[req.flag];
       const n = typeof v === 'number' ? v : v === true ? 1 : 0;
@@ -311,6 +312,7 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'visited': return 'Requires exploring elsewhere first';
     case 'companion': return 'Requires someone who isn\'t with you';
     case 'noCompanion': return 'Not while they\'re with you';
+    case 'at': return 'Not from here';
     case 'count': return 'Not as things stand';
     case 'npc': return 'Requires something you haven\'t done yet';
   }

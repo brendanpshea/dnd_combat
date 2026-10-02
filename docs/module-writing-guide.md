@@ -473,6 +473,15 @@ choice or a conditional slide counts only where its condition can hold, so a
 mention gated on a flag that only an introduction sets needs no entry. A character known from an
 earlier chapter needs no entry in a later one.
 
+### Where the party is
+
+A dawn is read wherever the party slept, and a defeat scene wherever it
+fell. Say where with `{ kind: 'at', hub: 'undercrypt' }`: the map or dungeon
+the party last entered. As an `if` it picks the line ("You wake on the cold
+floor of the crypt" / "You wake in Mira's back room"); as an `assumes` the
+search proves no route reads the line anywhere else. A dawn that names no
+place must suit every place.
+
 ### The clock
 
 A camp deep in enemy ground can limit its nights: `camp: { nights: 2 }`

@@ -89,6 +89,11 @@ export function validateModule(module: Module): string[] {
   const errors: string[] = [];
   const ids = new Set(Object.keys(module.scenes));
   const at = (id: Id, msg: string) => errors.push(`[${id}] ${msg}`);
+  /** An `at` requirement names a place the party can be: a map or a dungeon. */
+  const checkAt = (where: string, hub: Id) => {
+    const k = module.scenes[hub]?.kind;
+    if (k !== 'explore' && k !== 'dungeon') at(where, `requires being at '${hub}', which is not a map or a dungeon`);
+  };
 
   if (!module.scenes[module.start]) errors.push(`start scene '${module.start}' does not exist`);
   if (module.defeatScene && !ids.has(module.defeatScene)) {
@@ -161,6 +166,7 @@ export function validateModule(module: Module): string[] {
       if (req.kind === 'item' && !itemExists(req.itemId)) at(id, `requires unknown item '${req.itemId}'`);
       if (req.kind === 'classInParty' && !CLASSES[req.classId]) at(id, `requires unknown class '${req.classId}'`);
       if (req.kind === 'visited' && !ids.has(req.scene)) at(id, `requires visiting unknown scene '${req.scene}'`);
+      if (req.kind === 'at') checkAt(id, req.hub);
       if ((req.kind === 'companion' || req.kind === 'noCompanion') && !module.companions?.[req.companion]) {
         at(id, `requires unknown companion '${req.companion}'`);
       }
@@ -274,6 +280,7 @@ export function validateModule(module: Module): string[] {
     if (!Number.isInteger(d.day) || d.day <= lastDawn) errors.push(`dawn of day ${d.day} must be a whole day after ${lastDawn}, in order`);
     lastDawn = Math.max(lastDawn, d.day);
     if (!d.text.length) errors.push(`dawn of day ${d.day} has no text: a player must see the morning that changed things`);
+    for (const p of d.text) if (typeof p !== 'string') for (const r of [...(p.if ?? []), ...(p.assumes ?? [])]) if (r.kind === 'at') checkAt(`dawn of day ${d.day}`, r.hub);
     for (const eff of d.effects ?? []) {
       if (eff.kind === 'setFlag' || eff.kind === 'clearFlag') written.add(eff.flag);
       if (eff.kind === 'copyFlag') { written.add(eff.to); read.add(eff.from); }
