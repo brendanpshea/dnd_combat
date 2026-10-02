@@ -336,6 +336,15 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
  *     song is harder), and {sedge} stops listening: no vigil.
  *   - cold (a drawn blade): {sedge} flinches, so dragging her out is easier,
  *     and no one will hear another word: no vigil.
+ *   - sold ("{vargan} sold her the water"): names the chief's sale, which
+ *     {sedge} has been brooding on since `calling-approach`. Only a company
+ *     that knows what became of him (a cold start has no fate for him). If he
+ *     lives (`jailed`, `freed`) {sedge} turns to listen: the vigil opens
+ *     (`vigil-sold`) on the rueful answer's ask, but {nettle} has a second
+ *     name to collect from and sings louder (`tear-loose-sold`: the song is
+ *     harder, the haul is plain). If the company executed him, the sale is
+ *     already paid for, and by the same hands: no vigil, and the stone as it
+ *     stands (`answer-sold-dead`).
  * Routed by scene, not by flag, so an answer costs the reach search nothing.
  * A company that cut the captives out of the {ashfang} pens (Part 1) says so
  * in its defiance (`answer-defiant`). No XP rides on the way down (see goDown),
@@ -357,7 +366,17 @@ const REPLIES = [
 ] as const;
 // Answered once: a company that falls back and climbs again goes to
 // `calling-return`, not back through the sisters' greeting.
-const replyChoices: Choice[] = REPLIES.map((r) => ({ id: r.id, label: r.label, to: r.to }));
+const SOLD = '{vargan} sold her that water, and the people off the marsh road with it.';
+const SOLD_REPLIES: Choice[] = [
+  { id: 'sold', label: `"${SOLD} The reeve has him cutting reeds in it now."`, to: 'answer-sold',
+    requires: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }], hideWhenBlocked: true },
+  { id: 'sold-freed', label: `"${SOLD} We let him walk. Take it up with him."`, to: 'answer-sold',
+    requires: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }], hideWhenBlocked: true },
+  { id: 'sold-dead', label: `"${SOLD} We killed him for it."`, to: 'answer-sold-dead',
+    requires: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }], hideWhenBlocked: true },
+];
+const replyChoices: Choice[] = REPLIES.flatMap((r) => [{ id: r.id, label: r.label, to: r.to },
+  ...(r.id === 'unknowing' ? SOLD_REPLIES : [])]);
 /**
  * `tear-loose` spends every approach it tries, for good. So a company that
  * loses the fight after it and climbs back must not walk into it again with
@@ -656,9 +675,9 @@ const COUNCIL: Choice[] = [
 const FENFOLK_WITCH = 'The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. By it sits the old hedge-witch from the regulars\' table at {mira}\'s inn, with river-stones in her hair. She knits while she talks, and she does not look up.';
 
 /** The witch's point: the people the Ashfang penned for the Reedwife were her
- *  own greed, not the door's price. (The price itself, a lamb a winter, is
+ *  own greed (and the chief's sale), not the door's price. (The price itself, a lamb a winter, is
  *  Nettle's to tell, at the stone.) */
-const FENFOLK_PRICE = '"Those poor souls the {ashfang} penned up for her? That was the {reedwife}\'s own greed," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."';
+const FENFOLK_PRICE = '"Those poor souls the {ashfang} penned up for her? That was the {reedwife}\'s own greed, and their chief was glad to sell them to her," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."';
 
 /** Mira at the feast. She warned the company about habits in Part 1 only if
  *  it did not kill a beaten {vargan} in front of her town; and a company that
@@ -788,8 +807,9 @@ const TEAR_CRACKED = [
  */
 /** How the sisters took the company's answer (see REPLIES): a rueful one
  *  makes the haul harder, a defiant one makes {nettle} easy to drag and the
- *  song harder to break, a cold one makes {sedge} easy to drag. */
-type TearMood = 'rueful' | 'defiant' | 'cold';
+ *  song harder to break, a cold one makes {sedge} easy to drag, and naming
+ *  the chief's sale makes the song harder. */
+type TearMood = 'rueful' | 'defiant' | 'cold' | 'sold';
 /** The haul without {hask}: plain, or as the answer left the sisters. `won`
  *  is its own success beat (the plain haul uses the challenge's). */
 type Drag = { id: string; label: string; hint?: string; dc: number; won?: string; lost: string };
@@ -803,6 +823,9 @@ const DRAG: Record<TearMood | 'plain', Drag> = {
   defiant: { id: 'drag-nettle', label: 'Drag {nettle} out while she rages', hint: 'Her hands keep coming out of the rock when she shouts.', dc: 11,
     won: '{nettle} is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. {sedge} will not leave her sister alone with you, and she pulls free after her.',
     lost: '{nettle} stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.' },
+  // The sale named: {nettle} only sings louder, and the haul is the plain one.
+  sold: { id: 'drag', label: 'Drag their hands out of the rock', dc: 15,
+    lost: 'The rock holds them fast. You let go with burned palms, and the stone keeps drinking.' },
   // The cold answer: {sedge} flinched at the drawn blade. Take her first.
   cold: { id: 'drag-sedge', label: 'Drag {sedge} out first', hint: 'She flinched when you drew steel. Take her wrists before she finds her nerve again.', dc: 12,
     won: '{sedge} does not pull back, not at first. By the time she does, her hands are out of the rock. {nettle} will not let her sister go alone, and she tears free after her, screaming.',
@@ -835,6 +858,11 @@ const tearLoose = (id: string, intro: string[], sisters: string, calling: string
         ? { id: 'song', label: 'Sing a wrong note into the {calling}', hint: '{nettle} has sung louder since you answered her.',
           skill: 'arcana', dc: 17,
           failure: { to: id, text: ['{nettle} hears your wrong note and sings right over it, louder. The {calling} never misses a beat.'] } }
+        : mood === 'sold'
+        // The sale named: Nettle has a second name to collect from.
+        ? { id: 'song', label: 'Sing a wrong note into the {calling}', hint: '{nettle} has sung louder since you gave her a second name.',
+          skill: 'arcana', dc: 17,
+          failure: { to: id, text: ['{nettle} hums your wrong note back at you, pleased, and folds it into the song.'] } }
         : { id: 'song', label: 'Sing a wrong note into the {calling}',
           skill: 'arcana', dc: 15,
           failure: { to: id, text: ['Your wrong note goes into the song and vanishes. The {calling} swallows it and sings on.'] } },
@@ -917,9 +945,9 @@ const tearLoose = (id: string, intro: string[], sisters: string, calling: string
  * it does an attitude gate; read as flags, each would double its whole walk.
  */
 const OWED = (flag: string): Requirement => ({ kind: 'count', flag, atLeast: 1 });
-type VigilMood = 'rueful' | 'unknowing';
+type VigilMood = 'rueful' | 'unknowing' | 'sold';
 const WREN_REBUFFED = '{sedge} hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."';
-const VIGIL_ASK_DC: Record<VigilMood, number> = { rueful: 15, unknowing: 17 };
+const VIGIL_ASK_DC: Record<VigilMood, number> = { rueful: 15, unknowing: 17, sold: 15 };
 const vigilScene = (mood: VigilMood): Scene => ({
   id: `vigil-${mood}`, kind: 'challenge', art: { imageId: 'loc-mountain', emoji: '🚪' },
   intro: ['{sedge} keeps her hands in the rock, but she is listening. {nettle} sings louder, to drown you out.'],
@@ -2020,9 +2048,9 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'manticore-sent' }],
         text: 'On a ledge above the bowl crouches the manticore from the toll-cliff. It came up here to collect its meal from the hags. It watches the sisters, and licks its lips, and waits to see who wins.' },
       'They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," {nettle} says, without turning around. "Our sister kept the door under the fen since before your grandmothers\' grandmothers. One {door-price} at the water\'s edge each {door-midwinter}, and the {warden} slept. That was the price, and it was paid. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."',
-      '{sedge} does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name." {nettle} goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."',
+      '{sedge} does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." {nettle} goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."',
       'The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," {nettle} says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
-      '{nettle}\'s hands shake in the rock. She watches your mouth like a clerk waiting for a signature. {sedge} has not looked at you once.',
+      '{nettle}\'s hands shake in the rock. She watches your mouth like a clerk waiting for a signature. {sedge} has not looked at you once. She is looking down the mountain, toward the marsh.',
     ],
     next: replyChoices,
   },
@@ -2084,6 +2112,39 @@ const scenes: Record<string, Scene> = {
     ],
     noBack: true,
   },
+  // The chief's sale named, and he still lives (see REPLIES).
+  'answer-sold': {
+    id: 'answer-sold', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    assumes: [{ kind: 'npc', npc: 'vargan', notFate: ['executed'] }],
+    text: [
+      '{sedge} turns her burning face toward you for the first time. "The reed-cutter," she says. "He lives?"',
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'jailed' }],
+        text: 'You tell her where. He cuts reeds in a chain in the reeve\'s reed-beds, in the shallows he sold, and every bundle goes to a widow. "So your valley remembered whose water it was," {sedge} says. "Late."' },
+      { if: [{ kind: 'npc', npc: 'vargan', fate: 'freed' }],
+        text: 'You tell her how he walked out into the marsh with her mark gone grey on his hand. No one in the valley has seen his face since. "Then the marsh has him," {sedge} says. "We know the marsh."' },
+      '{nettle} laughs without turning round. "Two names on the account, then. His for the selling, and yours for the killing. I can collect from both." Her song climbs, louder than before.',
+      { if: [{ kind: 'companion', companion: 'wren' }],
+        text: '"His name was first on the reeve\'s list," {wren} says quietly. "I wrote it there myself."' },
+      '{sedge} has stopped singing. Her hands are still in the rock, but she is listening.',
+    ],
+    next: [
+      { id: 'vigil', label: 'Ask {sedge} to take up her sister\'s vigil', to: 'vigil-sold',
+        once: true, hideWhenBlocked: true,
+        requires: [{ kind: 'notFlag', flag: 'sisters-loose' }, { kind: 'notFlag', flag: 'stone-spent' }] },
+      ...stoneChoices('tear-loose-sold'),
+    ],
+    noBack: true,
+  },
+  // The chief's sale named, by the company that killed him for it.
+  'answer-sold-dead': {
+    id: 'answer-sold-dead', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
+    assumes: [{ kind: 'npc', npc: 'vargan', fate: 'executed' }],
+    text: [
+      '{sedge} turns her burning face toward you. "The reed-cutter," she says. "You killed him as well. We heard how." She turns back to the stone. "Then who is left to answer for the water?"',
+      '{nettle} only nods. "Paid," she says, like a clerk drawing a line through a name. "His share is closed. Yours is open."',
+    ],
+    next: TO_STONE, noBack: true,
+  },
   'answer-cold': {
     id: 'answer-cold', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
     text: [
@@ -2095,7 +2156,7 @@ const scenes: Record<string, Scene> = {
     next: stoneChoices('tear-loose-cold'), noBack: true,
   },
   // One `tear-loose` per answer's mood, sound and cracked (see tearLoose).
-  ...Object.fromEntries((['', 'rueful', 'defiant', 'cold'] as const).flatMap((mood) => {
+  ...Object.fromEntries((['', 'rueful', 'defiant', 'cold', 'sold'] as const).flatMap((mood) => {
     const id = mood ? `tear-loose-${mood}` : 'tear-loose';
     const open = mood === 'defiant' ? TEAR_OPEN_DEFIANT : TEAR_OPEN;
     return [
@@ -2153,8 +2214,14 @@ const scenes: Record<string, Scene> = {
     text: ['{sedge} slowly shakes her head. "She kept that door so that you could sleep soundly, and none of you ever asked her name. Now you want me to do the same? No." {nettle} hisses at her to hold still. "I told you. Not knowing pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.'],
     next: TO_STONE,
   },
+  'vigil-refused-sold': {
+    id: 'vigil-refused-sold', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🗿' },
+    text: ['{sedge} slowly shakes her head. "One of yours sold her the water, and the rest of you cut her down for drinking it. Now you want me to sit in her dark for you? No." {nettle} does not even look round. "Two names," she says. The stone drinks deeper, and the burning ground creeps toward your boots.'],
+    next: stoneChoices('tear-loose-sold'),
+  },
   'vigil-rueful': vigilScene('rueful'),
   'vigil-unknowing': vigilScene('unknowing'),
+  'vigil-sold': vigilScene('sold'),
   'vigil-aftermath': {
     id: 'vigil-aftermath', kind: 'story', art: { imageId: 'loc-camp', emoji: '🎉' },
     text: [
