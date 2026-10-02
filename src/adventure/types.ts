@@ -56,7 +56,11 @@ export type Requirement =
   | { kind: 'speciesInParty'; speciesId: Id }
   | { kind: 'visited'; scene: SceneRef }
   | { kind: 'companion'; companion: Id }                       // travelling with the party
-  | { kind: 'noCompanion'; companion: Id };
+  | { kind: 'noCompanion'; companion: Id }
+  /** What became of a registry NPC, and whether the company has met them,
+   *  across the whole campaign (see NpcDef.fates). Compiled to flags by
+   *  `withNpcs`. `fate`: is this; `notFate`: is none of these. */
+  | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean };
 
 /** A state mutation a choice/outcome applies. Deliberately tiny vocabulary. */
 export type Effect =
@@ -77,7 +81,11 @@ export type Effect =
   /** Snapshot a flag: `to` takes `from`'s value as it is now (unset if
    *  `from` is). A dawn can freeze a tally at the moment it matters, so later
    *  deeds don't rewrite how a night went. */
-  | { kind: 'copyFlag'; from: string; to: string };
+  | { kind: 'copyFlag'; from: string; to: string }
+  /** Record what became of a registry NPC (`fate`, replacing any other), or
+   *  that the company has met them. Compiled to flags by `withNpcs`; the state
+   *  carries into every later chapter of the campaign. */
+  | { kind: 'npc'; npc: Id; fate?: string; met?: true };
 
 export interface JournalEntry {
   id: Id;
@@ -433,6 +441,9 @@ export interface NpcDef {
   blurb?: string;
   /** By module id: the scenes that introduce them in that chapter. */
   introducedAt?: Record<Id, SceneRef[]>;
+  /** What can become of them, besides carrying on: 'dead', 'jailed',
+   *  'freed'… Requirements and effects may only name these. */
+  fates?: string[];
 }
 
 export interface Module {

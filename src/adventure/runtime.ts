@@ -34,6 +34,7 @@ import {
   type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph,
 } from './types.js';
 import { linkKey, linksFrom, roomOf } from './dungeon.js';
+import { isNpcFlag } from './npcs.js';
 
 export interface AdventureState {
   campaign: CampaignState;
@@ -185,7 +186,7 @@ export function carryCompanyInto(
  */
 export function carriedFlags(module: Module, state: AdventureState): Record<string, boolean | number> {
   const out: Record<string, boolean | number> = {};
-  for (const [k, v] of Object.entries(state.flags)) if (k.includes(':')) out[k] = v;
+  for (const [k, v] of Object.entries(state.flags)) if (k.includes(':') || isNpcFlag(k)) out[k] = v;
   for (const f of module.carries ?? []) {
     const v = state.flags[f];
     if (v === true || (typeof v === 'number' && v > 0)) out[`${module.id}:${f}`] = v;
@@ -254,6 +255,7 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     case 'visited': return state.visited.includes(req.scene);
     case 'companion': return (state.companions ?? []).some((x) => x.id === req.companion);
     case 'noCompanion': return !(state.companions ?? []).some((x) => x.id === req.companion);
+    case 'npc': throw new Error(`NPC requirement on '${req.npc}' in a module not built with withNpcs`);
   }
 }
 
@@ -293,6 +295,7 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'visited': return 'Requires exploring elsewhere first';
     case 'companion': return 'Requires someone who isn\'t with you';
     case 'noCompanion': return 'Not while they\'re with you';
+    case 'npc': return 'Requires something you haven\'t done yet';
   }
 }
 
@@ -385,6 +388,7 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       else state.flags[eff.to] = v;
       break;
     }
+    case 'npc': throw new Error(`NPC effect on '${eff.npc}' in a module not built with withNpcs`);
     case 'passDay':
       // A day lost, not a night slept: the clock moves, nobody rests.
       if (module) events.push(...endDay(state, module));

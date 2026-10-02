@@ -34,7 +34,8 @@
  */
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Requirement, type Effect, type Scene } from './types.js';
-import { requirementsOf, effectsOf, parasOf } from './graph.js';
+import { requirementsOf, effectsOf, parasOf, flagsWritten } from './graph.js';
+import { isNpcFlag } from './npcs.js';
 import { MODULES } from '../data/modules/index.js';
 
 /** The most facts a state can carry: they share a 32-bit word. */
@@ -120,12 +121,15 @@ function sceneWords(scene: Scene): string {
   return out.join('\n');
 }
 
-/** The carried flags (`module:flag`) a party's path, or a line's assumption,
- *  can depend on. */
+/** A flag that can arrive from an earlier chapter: one carried (`module:flag`),
+ *  or an NPC's campaign-wide state (`npc.…`). */
+const inherited = (flag: string) => flag.includes(':') || isNpcFlag(flag);
+
+/** The inherited flags a party's path, or a line's assumption, can depend on. */
 function carriedReads(module: Module): string[] {
   const out = new Set<string>();
   for (const r of [...pathReads(module), ...assumedReads(module)]) {
-    if ((r.kind === 'flag' || r.kind === 'notFlag') && r.flag.includes(':')) out.add(r.flag);
+    if ((r.kind === 'flag' || r.kind === 'notFlag') && inherited(r.flag)) out.add(r.flag);
   }
   return [...out].sort();
 }
@@ -182,8 +186,10 @@ function searchChapter(module: Module, chapters: readonly Module[]): ReachReport
     if (before.skipped) return { errors: [], states: 0, skipped: `the chapter before (${prev.id}) was not searched: ${before.skipped}` };
     handed = [[], ...(before.carried ?? [])];
   } else {
-    if (reads.length > MAX_FREE_CARRIED) return { errors: [], states: 0, skipped: `${reads.length} carried flags read, with no earlier chapter to say which arrive together` };
-    handed = Array.from({ length: 1 << reads.length }, (_, mix) => reads.filter((_, i) => mix & (1 << i)));
+    // With no chapter before, NPC state starts clean; carried choices could be anything.
+    const free = reads.filter((f) => f.includes(':'));
+    if (free.length > MAX_FREE_CARRIED) return { errors: [], states: 0, skipped: `${free.length} carried flags read, with no earlier chapter to say which arrive together` };
+    handed = Array.from({ length: 1 << free.length }, (_, mix) => free.filter((_, i) => mix & (1 << i)));
   }
   // One walk per distinct mix of the flags this chapter actually reads.
   const groups = new Map<string, string[][]>();
@@ -203,7 +209,8 @@ function searchChapter(module: Module, chapters: readonly Module[]): ReachReport
     for (const e of run.errors) if (!errors.includes(e)) errors.push(e);
     for (const full of fulls) {
       for (const own of run.outputs) {
-        const out = [...new Set([...full, ...own.map((f) => `${module.id}:${f}`)])].sort();
+        // NPC state this chapter can change is handed on as it left it.
+        const out = [...new Set([...full.filter((f) => !run.rewrites.has(f)), ...own])].sort();
         carried.set(out.join('|'), out);
       }
     }
@@ -218,12 +225,14 @@ interface Run {
   states: number;
   skipped?: string;
   seen: Set<Id>;
-  /** The chapter's own carried flags, by every mix a victory state holds. */
+  /** What it hands on (fully named), by every mix a victory state holds. */
   outputs: string[][];
+  /** Inherited flags it tracks and may change, so hands on afresh. */
+  rewrites: Set<string>;
 }
 
 function searchModule(module: Module, handed: ReadonlySet<string>, chapters: readonly Module[]): Run {
-  const none: Run = { errors: [], states: 0, seen: new Set(), outputs: [] };
+  const none: Run = { errors: [], states: 0, seen: new Set(), outputs: [], rewrites: new Set() };
   const ids = Object.keys(module.scenes);
   const index = new Map(ids.map((id, i) => [id, i]));
   const hubs = ids.filter((id) => isHubScene(module.scenes[id]));
@@ -232,7 +241,10 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // --- The facts worth tracking -------------------------------------------
   const facts = new Map<string, number>();
   const fact = (k: string) => { if (!facts.has(k)) facts.set(k, facts.size); };
-  const settled = new Set(carriedReads(module));
+  // Inherited flags are settled for the run — unless this chapter can change
+  // them (NPC state), when they are facts that start as they were handed.
+  const written = flagsWritten(module);
+  const settled = new Set(carriedReads(module).filter((f) => !written.has(f)));
   // A counted flag (a tally: set to a number, or read against one) has more
   // than two states, and a bit cannot hold it. It is left untracked, so a
   // requirement on it is taken as possible either way, like gold or items.
@@ -243,7 +255,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     : e.kind === 'copyFlag' ? [e.to] : [])));
   for (const r of pathReads(module)) if (r.kind === 'flag' && typeof r.value === 'number') counted.add(r.flag);
   for (const r of [...pathReads(module), ...assumedReads(module)]) {
-    if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':') && !counted.has(r.flag)) fact(`flag:${r.flag}`);
+    if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !counted.has(r.flag)) fact(`flag:${r.flag}`);
     if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
     if (r.kind === 'visited') fact(`visited:${r.scene}`);
   }
@@ -251,8 +263,11 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // What this chapter hands on, where a later chapter reads it: tracked so a
   // victory can say which mixes it carries.
   const downstream = new Set(sequelsOf(module, chapters).flatMap(carriedReads));
-  const handsOn = (module.carries ?? []).filter((f) => downstream.has(`${module.id}:${f}`));
-  handsOn.forEach((f) => fact(`flag:${f}`));
+  const handsOn = [
+    ...(module.carries ?? []).filter((f) => downstream.has(`${module.id}:${f}`)).map((f) => ({ flag: f, as: `${module.id}:${f}` })),
+    ...[...downstream].filter((f) => isNpcFlag(f) && written.has(f)).map((f) => ({ flag: f, as: f })),
+  ];
+  handsOn.forEach((h) => fact(`flag:${h.flag}`));
   // The chapter's clock: which of the mornings that change something have
   // come. They come in order, so the next is always the first not yet come.
   // A dawn that touches nothing tracked changes nowhere a party can get to,
@@ -433,7 +448,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const start = index.get(module.start);
   if (start === undefined) return { ...none, skipped: 'no start scene' };
   const startHub = hubIndex.get(module.start) ?? -1;
-  add(start, startHub, sceneVisitedBit[start]! | (startHub >= 0 ? hubVisitedBits[startHub]! : 0), -1, '');
+  const handedBits = [...handed].reduce((acc, f) => acc | bit(`flag:${f}`), 0);
+  add(start, startHub, handedBits | sceneVisitedBit[start]! | (startHub >= 0 ? hubVisitedBits[startHub]! : 0), -1, '');
   for (let n = 0; n < sceneOf.length; n++) {
     if (sceneOf.length > MAX_STATES) {
       return { ...none, states: sceneOf.length, skipped: `more than ${MAX_STATES} states` };
@@ -601,7 +617,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // breaking an assumption has the shortest way there.
   const unseen = (r: Requirement): string | null => {
     if (r.kind === 'item' || r.kind === 'gold' || r.kind === 'classInParty' || r.kind === 'speciesInParty') return r.kind;
-    if ((r.kind === 'flag' || r.kind === 'notFlag') && !r.flag.includes(':') && !facts.has(`flag:${r.flag}`)) return `the counted flag '${r.flag}'`;
+    if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !facts.has(`flag:${r.flag}`)) return `the counted flag '${r.flag}'`;
     return null;
   };
   const describe = (r: Requirement): string =>
@@ -634,11 +650,11 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
 
   // What a victory hands on.
   const outputs = new Map<number, string[]>();
-  const handBits = handsOn.map((f) => bit(`flag:${f}`));
+  const handBits = handsOn.map((h) => bit(`flag:${h.flag}`));
   for (let n = 0; n < N; n++) {
     if (!victory(n)) continue;
     const m = handBits.reduce((acc, b) => acc | (factsOf[n]! & b), 0);
-    if (!outputs.has(m)) outputs.set(m, handsOn.filter((_, i) => factsOf[n]! & handBits[i]!));
+    if (!outputs.has(m)) outputs.set(m, handsOn.filter((_, i) => factsOf[n]! & handBits[i]!).map((h) => h.as));
   }
-  return { errors, states: N, seen: seenScenes, outputs: [...outputs.values()] };
+  return { errors, states: N, seen: seenScenes, outputs: [...outputs.values()], rewrites: new Set(handsOn.filter((h) => isNpcFlag(h.flag)).map((h) => h.flag)) };
 }

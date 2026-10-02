@@ -9,7 +9,16 @@
  * record's `introducedAt` feeds the reachability search's cast check.
  */
 import type { Id } from '../engine/types.js';
-import type { Module, NpcDef, NpcRef, CompanionDef } from './types.js';
+import type { Module, NpcDef, NpcRef, CompanionDef, Requirement, Effect } from './types.js';
+
+/**
+ * NPC state lives in campaign-wide flags under `npc.`: they carry, unprefixed,
+ * into every later chapter, and any chapter may change them.
+ */
+export const NPC_FLAG_PREFIX = 'npc.';
+export const npcMetFlag = (id: Id) => `${NPC_FLAG_PREFIX}${id}.met`;
+export const npcFateFlag = (id: Id, fate: string) => `${NPC_FLAG_PREFIX}${id}.fate.${fate}`;
+export const isNpcFlag = (flag: string) => flag.startsWith(NPC_FLAG_PREFIX);
 
 /** A token: `{id}`, the id in lower case with hyphens. */
 const TOKEN = /\{([a-z][a-z0-9-]*)\}/g;
@@ -26,9 +35,64 @@ function mapStrings<T>(value: T, f: (s: string) => string): T {
   return value;
 }
 
+/** Arrays holding requirements, and arrays holding effects, by their key. */
+const REQUIREMENT_LISTS = new Set(['requires', 'if', 'assumes', 'until', 'locked']);
+const EFFECT_LISTS = new Set(['effects', 'failEffects']);
+
 /**
- * The module with every `{id}` token resolved to that NPC's name, and the
- * registry attached. Throws on a token the registry doesn't know.
+ * NPC requirements and effects, compiled to the flags they stand for. Throws
+ * on an NPC the registry doesn't know, or a fate it doesn't declare.
+ */
+function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, key = ''): T {
+  const npcOf = (id: Id, fate?: string) => {
+    const npc = npcs[id];
+    if (!npc) throw new Error(`${where}: unknown NPC '${id}'`);
+    if (fate !== undefined && !npc.fates?.includes(fate)) throw new Error(`${where}: '${id}' has no fate '${fate}' (declare it in NpcDef.fates)`);
+    return npc;
+  };
+  if (Array.isArray(value)) {
+    const items = value.map((v) => compileNpcState(v, npcs, where));
+    if (REQUIREMENT_LISTS.has(key)) {
+      return items.flatMap((r: Requirement): Requirement[] => {
+        if (r?.kind !== 'npc') return [r];
+        npcOf(r.npc, r.fate);
+        for (const f of r.notFate ?? []) npcOf(r.npc, f);
+        return [
+          ...(r.fate !== undefined ? [{ kind: 'flag' as const, flag: npcFateFlag(r.npc, r.fate) }] : []),
+          ...(r.notFate ?? []).map((f) => ({ kind: 'notFlag' as const, flag: npcFateFlag(r.npc, f) })),
+          ...(r.met === true ? [{ kind: 'flag' as const, flag: npcMetFlag(r.npc) }] : []),
+          ...(r.met === false ? [{ kind: 'notFlag' as const, flag: npcMetFlag(r.npc) }] : []),
+        ];
+      }) as T;
+    }
+    if (EFFECT_LISTS.has(key)) {
+      return items.flatMap((e: Effect): Effect[] => {
+        if (e?.kind !== 'npc') return [e];
+        const npc = npcOf(e.npc, e.fate);
+        return [
+          ...(e.met ? [{ kind: 'setFlag' as const, flag: npcMetFlag(e.npc) }] : []),
+          // A new fate replaces the old: one at a time.
+          ...(e.fate !== undefined ? [
+            ...(npc.fates ?? []).filter((f) => f !== e.fate).map((f) => ({ kind: 'clearFlag' as const, flag: npcFateFlag(e.npc, f) })),
+            { kind: 'setFlag' as const, flag: npcFateFlag(e.npc, e.fate) },
+          ] : []),
+        ];
+      }) as T;
+    }
+    return items as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) out[k] = compileNpcState(v, npcs, where, k);
+    return out as T;
+  }
+  return value;
+}
+
+/**
+ * The module with every `{id}` token resolved to that NPC's name, every NPC
+ * requirement and effect compiled to its flags, and the registry attached.
+ * Throws on a token, NPC or fate the registry doesn't know.
  */
 export function withNpcs(module: Module, npcs: Record<Id, NpcDef>): Module {
   const unknown = new Set<string>();
@@ -38,7 +102,19 @@ export function withNpcs(module: Module, npcs: Record<Id, NpcDef>): Module {
     return npc.name;
   }));
   if (unknown.size) throw new Error(`${module.id}: unknown NPC token(s) ${[...unknown].map((u) => `{${u}}`).join(', ')}`);
-  return { ...resolved, npcs };
+  const compiled = compileNpcState(resolved, npcs, module.id);
+  return { ...compiled, npcs };
+}
+
+/** Whether NPC requirements or effects are left in a module (one built
+ *  without `withNpcs`). */
+export function hasUncompiledNpcState(value: unknown, key = ''): boolean {
+  if (Array.isArray(value)) {
+    if ((REQUIREMENT_LISTS.has(key) || EFFECT_LISTS.has(key)) && value.some((v) => v?.kind === 'npc')) return true;
+    return value.some((v) => hasUncompiledNpcState(v));
+  }
+  if (value && typeof value === 'object') return Object.entries(value).some(([k, v]) => hasUncompiledNpcState(v, k));
+  return false;
 }
 
 /** Tokens left in a module (one built without `withNpcs`, or a bad token). */

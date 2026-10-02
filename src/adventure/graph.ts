@@ -3,7 +3,7 @@
  * asks for. Shared by the validator and the dungeon checks.
  */
 import type { Id } from '../engine/types.js';
-import type { Scene, Choice, Effect, Requirement, Outcome, Para } from './types.js';
+import type { Module, Scene, Choice, Effect, Requirement, Outcome, Para } from './types.js';
 
 /** Collect every SceneRef a scene can route to. */
 export function refsOf(scene: Scene): Id[] {
@@ -140,4 +140,10 @@ export function parasOf(scene: Scene): Array<{ where: string; paras: readonly Pa
     default: break;
   }
   return out;
+}
+
+/** The flags a module's scenes or dawns can set or clear. */
+export function flagsWritten(module: Module): Set<string> {
+  return new Set([...Object.values(module.scenes).flatMap(effectsOf), ...(module.dawns ?? []).flatMap((d) => d.effects ?? [])]
+    .flatMap((e) => (e.kind === 'setFlag' || e.kind === 'clearFlag' ? [e.flag] : e.kind === 'copyFlag' ? [e.to] : [])));
 }

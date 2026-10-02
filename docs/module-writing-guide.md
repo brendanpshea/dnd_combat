@@ -312,6 +312,33 @@ token to the registry's `name`. A rename is one line, and a misspelt token
 `introducedAt` lists, by chapter, the scenes that introduce the character,
 and feeds the cast check below.
 
+### What became of them: NPC state
+
+A character's fate and whether the party has met them belong to the
+character, not to a chapter. Declare the fates a record can have, then set
+and test them by NPC:
+
+```ts
+scout: { id: 'scout', name: 'Wren', fates: ['saved', 'left', 'dead'] },
+
+effects: [{ kind: 'npc', npc: 'scout', met: true, fate: 'saved' }]
+requires: [{ kind: 'npc', npc: 'scout', fate: 'saved' }]
+if: [{ kind: 'npc', npc: 'scout', notFate: ['dead'] }]
+```
+
+A fate replaces the one before it: a character has one at a time. The state
+is campaign-wide. Every later chapter sees it with no `carries` entry, and
+any chapter may change it (the saved scout can fall at the ford in chapter
+two, and chapter three knows). `withNpcs` compiles these to flags (`npc.scout.fate.saved`,
+`npc.scout.met`). An unknown NPC or an undeclared fate is an error at load,
+and a fate no chapter so far sets is an error in validation. The
+reachability search follows the state across chapters as each one leaves it,
+so a scene that needs the scout dead is reachable only if some earlier route
+can kill her.
+
+Use this for anything said about a person. Keep plain flags for things
+about the world (a gate shut, a den raided).
+
 ### The cast
 
 Rule 7 (a name with no referent is a debt) is checked, not hoped for. List

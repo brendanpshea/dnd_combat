@@ -14,8 +14,8 @@ import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
 import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement } from './types.js';
-import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf } from './graph.js';
-import { unresolvedTokens } from './npcs.js';
+import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf, flagsWritten } from './graph.js';
+import { unresolvedTokens, isNpcFlag, hasUncompiledNpcState } from './npcs.js';
 import { checkDungeon } from './dungeon.js';
 import { checkModuleReach } from './reach.js';
 import { MODULES } from '../data/modules/index.js';
@@ -243,7 +243,15 @@ export function validateModule(module: Module): string[] {
       else if (!from.carries?.includes(name)) errors.push(`flag '${flag}' is not in ${origin}'s carries`);
       continue;
     }
+    if (isNpcFlag(flag)) {
+      // NPC state is campaign-wide: this chapter or any before it may set it.
+      if (!written.has(flag) && !ancestors.some((m) => flagsWritten(m).has(flag))) errors.push(`NPC state '${flag}' is read but no scene of this chapter or an earlier one sets it`);
+      continue;
+    }
     if (!written.has(flag)) errors.push(`flag '${flag}' is read but never set by any scene`);
+  }
+  if (hasUncompiledNpcState([module.scenes, module.dawns ?? []])) {
+    errors.push('has NPC requirements or effects left uncompiled: build the module with withNpcs');
   }
   for (const flag of module.carries ?? []) {
     if (!written.has(flag)) errors.push(`carries '${flag}', which no scene sets`);
