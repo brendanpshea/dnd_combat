@@ -295,7 +295,7 @@ You wake to a hand on your shoulder and a blade already drawn beside you. Two sh
 
 **» Fight — won**
 
-The ghouls lie still, properly still this time, and the fire is out. In the grey before dawn you find their tracks, leading back into the black water they crawled out of.
+The ghouls lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back into the black water they crawled out of. It is a long while before anyone's hands are steady enough to bank the fire again.
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
@@ -357,7 +357,7 @@ Letters are cut into the lintel over the doorway, worn almost smooth.
 
 Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **Undercrypt**. Let it stay shut.*" She wipes her thumb on her coat.
 
-Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
@@ -443,7 +443,7 @@ The passage narrows into a long cut through the rock. Ahead of you, dozens of pi
 
 Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.
+The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its burial coat.
 
 **» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
@@ -509,7 +509,7 @@ You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on th
 
 **» Fight — won**
 
-The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. You sit out the rest of the night with your backs to it.
+The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. Your fire lies kicked across the vault floor, and you have never been more awake.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -639,7 +639,7 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.
 
-At the back of the stair, Marrow's kneelers chant every line back. Forty voices keep time, low and steady.
+At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
 
 <sub>scene `seal-clean`</sub>
 
@@ -653,8 +653,6 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 
 **» Climb the cult's rope ladder back to the light**
 
-_+150 gold (1009)_
-
 <sub>scene `sb-aftermath`</sub>
 
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
@@ -664,6 +662,8 @@ Marrow climbs out after you, and walks off alone across the barrow-field toward 
 Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the steps." The walk home is long and wet, and the best walk any of you can remember.
 
 **» Go up to the reeve's hall**
+
+_+150 gold (1009)_
 
 <sub>scene `sb-hall`</sub>
 

@@ -89,9 +89,9 @@ _Journal (quest): Break the Ashfang_
 
 <sub>scene `gate-blocked`</sub>
 
-The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until we know who."
+The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until he's in the cells."
 
-"Don't look at me like that. If I knew his face, he'd be in the cells. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
+"Don't look at me like that. If I knew his face, he'd be there already. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
 
 "Or ask Mira at the Wander-Inn. She hears everything."
 
@@ -357,7 +357,7 @@ Somewhere out in that maze the Ashfang keep their den. Somewhere a good deal clo
 
 Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling something in Goblin that needs no translation.
 
-**Battle:** Ashfang Outriders <sub>(`goblin-outriders` on `open`)</sub>
+**Battle:** Goblin Outriders <sub>(`goblin-outriders` on `open`)</sub>
 
 **» [Intimidation DC 13] Stare down the goblin boss**
 
@@ -603,7 +603,7 @@ The hag looks down at him for a moment before she turns to you, smiling.
 
 The **Reedwife** stands by the fire-pit with river-weed dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. Hask still does not come. Two raiders stumble in from the yard instead, still fumbling with their belts, and you are on them before they find their blades.
 
-**Battle:** Hag Coven <sub>(`hag-coven` on `firepit`)</sub>
+**Battle:** Green Hag and Hired Blades <sub>(`hag-coven` on `firepit`)</sub>
 
 **» Fight — won**
 
@@ -835,7 +835,9 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 > He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she died, his seal broke with her. Now he calls the dead to open his door from the inside." Wren lets out a breath. "So the hag was the lock," she says. "And we broke it without knowing it was one."
 
-> Halden taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
+> Halden lifts the altar cloth and hands you a healing potion. "I bought it in Thornwick for a bad night," he says. "I think yours will be worse."
+
+> He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
 **» Take the prayer book**
 
@@ -935,7 +937,9 @@ Letters are cut into the lintel over the doorway, worn almost smooth.
 
 Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **Undercrypt**. Let it stay shut.*" She wipes her thumb on her coat.
 
-Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
+
+"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
 She ties a strip of the reeve's colours round your arm, quick and tight, and does not explain it.
 
@@ -1021,7 +1025,7 @@ The passage narrows into a long cut through the rock. Ahead of you, dozens of pi
 
 Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.
+The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its burial coat.
 
 **» [Cleric] Raise your holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
@@ -1191,7 +1195,7 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 Halden takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead letters drink every word.
 
-At the back of the stair, Marrow's kneelers chant every line back. Forty voices keep time, low and steady.
+At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
 
 <sub>scene `seal-clean`</sub>
 
@@ -1204,8 +1208,6 @@ The vigil has a new keeper now: a book, a door, and a town that knows to watch i
 Among the cult's packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.
 
 **» Climb the cult's rope ladder back to the light**
-
-_+150 gold (686)_
 
 <sub>scene `sb-aftermath`</sub>
 
@@ -1220,6 +1222,8 @@ Wren sees the chain glint in the folds of your cloak, and she knows it. She take
 At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
 
 **» Go up to the reeve's hall**
+
+_+150 gold (686)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -1319,7 +1323,7 @@ You know this man. It is **Vex**, once the Ashfang's lieutenant. In the chief's 
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
-"Those two are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
+"Nettle and her sister are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
 
 "So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. Apparently I'm respectable now, and respectable men don't go up first."
 
@@ -1385,7 +1389,7 @@ The singing starts in the dream and goes on after it. It is sweet, and wrong, an
 
 **» Fight — won**
 
-The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and sit round it until the sky goes grey. No one mentions the dream.
+The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1615,7 +1619,7 @@ Behind the pikes come people from the valley, out of breath and mud to the knees
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-She finds your end of the rim before she reports to Vex. "I went down into the bowl at first light, on my own," she says quietly. "There's a seam in that stone, and I chalked it. Take me down, and I'll show you where."
+While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
 
 "My riders were on the east line all night," Wren says. "Every one of them walked off it."
 
@@ -1671,11 +1675,11 @@ With no one feeding it, the Calling falters. The black fang cracks from top to b
 
 <sub>scene `vigil-aftermath`</sub>
 
-Up on the rim, Vex's pikes opened their line for two tall green shapes, and no one said a word. The column came down the mountain a long way behind the sisters, and you came down with it. The camp watched the sisters walk past its lines in the dusk, and it has not decided yet whether to cheer.
+You reach the war-camp at dusk with Vex's column, a long way behind the sisters. They walked through the pikes on the rim without a word from anyone, and through the camp's lines the same way. The camp has not decided yet whether to cheer.
 
 Vex decides for it. "The Calling's broken," he says, loud enough to carry. He says the next part more quietly. "Hags in the fen again. I watched them walk through my own line." You tell him they're keepers now. He is quiet a while. "Then I hope they keep," he says.
 
-**Wren** stood on the rim with an arrow on the string while the two hags walked through the line. She kept it there all the way down the mountain. At the camp gate she puts the arrow back in her quiver and sits down hard, laughing.
+**Wren** has kept an arrow on the string since the two hags walked through the line on the rim. At the camp gate she puts it back in her quiver at last, and sits down hard, laughing.
 
 **» Accept the valley's purse**
 
@@ -1707,7 +1711,7 @@ Word comes up from Saltmere that a grey old gravedigger has mended forty graves 
 
 Brother Halden climbs to the bowl each spring to bless the broken stone, and then he walks home to his little chapel.
 
-Down in Thornwick, the reeve orders a plaque made for the square. He has the wording changed twice.
+Down in Thornwick, the reeve orders a plaque for the square, to mark the year of three wars. He has the wording changed twice.
 
 Wren keeps a list of the people she would follow anywhere. It is a short list. You are on it.
 

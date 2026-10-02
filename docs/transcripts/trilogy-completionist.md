@@ -347,7 +347,7 @@ Somewhere out in that maze the Ashfang keep their den. Somewhere a good deal clo
 
 Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling something in Goblin that needs no translation.
 
-**Battle:** Ashfang Outriders <sub>(`goblin-outriders` on `open`)</sub>
+**Battle:** Goblin Outriders <sub>(`goblin-outriders` on `open`)</sub>
 
 **» Fight — won**
 
@@ -473,7 +473,7 @@ The dragging sound comes again, out in the dark. The marsh has more dead in it t
 
 **» Fight — won**
 
-Two more of them go back under the black water. No one so much as lies down after that. You sit out the dark back to back, and walk on at first grey.
+Two more of them go back under the black water. You sit back to back by the dead fire for a long while after, blades across your knees, listening to the marsh.
 
 **↳ The Marsh Road** <sub>(map `trail`)</sub>
 
@@ -721,8 +721,6 @@ _(a paragraph shown before: “Dust, old bones and nothing else.…”)_
 
 **» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
 
-_Journal (lead): The Pens Behind the Kennels_
-
 `[Persuasion DC 9 — Elaine the Holy rolls 14 — passed]`
 
 <sub>scene `vex-turned`</sub>
@@ -783,7 +781,7 @@ The hag looks down at him for a moment before she turns to you, smiling.
 
 The **Reedwife** stands by the fire-pit with river-weed dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. Hask still does not come. Two raiders stumble in from the yard instead, still fumbling with their belts, and you are on them before they find their blades.
 
-**Battle:** Hag Coven <sub>(`hag-coven` on `firepit`)</sub>
+**Battle:** Green Hag and Hired Blades <sub>(`hag-coven` on `firepit`)</sub>
 
 **» Fight — won**
 
@@ -1217,7 +1215,9 @@ Letters are cut into the lintel over the doorway, worn almost smooth.
 
 Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **Undercrypt**. Let it stay shut.*" She wipes her thumb on her coat.
 
-Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate. Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
+
+"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
 
 She ties a strip of the reeve's colours round your arm, quick and tight, and does not explain it.
 
@@ -1241,7 +1241,7 @@ You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on th
 
 **» Fight — won**
 
-The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. You sit out the rest of the night with your backs to it.
+The specters tear apart into cold and silence. Where they came from, two bare patches of plaster show on the painted wall. Your fire lies kicked across the vault floor, and you have never been more awake.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1317,7 +1317,7 @@ The passage narrows into a long cut through the rock. Ahead of you, dozens of pi
 
 Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. Nobody gives them orders. Nobody needs to.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its shroud.
+The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its burial coat.
 
 **» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
@@ -1499,7 +1499,7 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.
 
-At the back of the stair, Marrow's kneelers chant every line back. Forty voices keep time, low and steady.
+At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
 
 <sub>scene `seal-clean`</sub>
 
@@ -1513,8 +1513,6 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 
 **» Climb the cult's rope ladder back to the light**
 
-_+150 gold (1400)_
-
 <sub>scene `sb-aftermath`</sub>
 
 Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
@@ -1526,6 +1524,8 @@ Wren sees the chain glint in the folds of your cloak, and she knows it. She take
 At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
 
 **» Go up to the reeve's hall**
+
+_+150 gold (1400)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -1625,7 +1625,7 @@ You know this man. It is **Vex**, once the Ashfang's lieutenant. In the chief's 
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
-"Those two are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
+"Nettle and her sister are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
 
 "So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. Apparently I'm respectable now, and respectable men don't go up first."
 
@@ -1785,7 +1785,7 @@ The singing starts in the dream and goes on after it. It is sweet, and wrong, an
 
 **» Fight — won**
 
-The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and sit round it until the sky goes grey. No one mentions the dream.
+The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1915,7 +1915,7 @@ It lifts its head, and the face is a man's. It is a **manticore**, and it is in 
 
 You tell it the truth, more or less. "The hags promised you a valley full of meat. They're up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn't wait on a ledge for scraps."
 
-The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. Even its goblins, hiding in the rocks below the ledge, run the other way.
+The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.
 
 **» Walk the open trail**
 
@@ -2047,13 +2047,13 @@ Vex has had some sleep, by the look of him. "The night went our way," he says. "
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-She finds your end of the rim before she reports to Vex. "I went down into the bowl at first light, on my own," she says quietly. "There's a seam in that stone, and I chalked it. Take me down, and I'll show you where."
+While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
 
 "My riders were on the east line all night," Wren says. "Every one of them walked off it."
 
 Hask, the chief's old guard who stood aside for you in Vargan's hall, walks at Vex's shoulder.
 
-"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or two, but no more. A big party's a loud one."
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
 
 **» Let them hold the rim while you go down**
 
@@ -2119,11 +2119,11 @@ Up on the rim, Vex's pikes raise a ragged cheer. Far down the slope, faint and d
 
 <sub>scene `wc-aftermath`</sub>
 
-Vex's column was waiting on the rim when you climbed out of the bowl, and you walk down the mountain together. Below, the camp has stopped being an army and started being the biggest festival the valley has ever thrown.
+You reach the war-camp with Vex's column at your back. The camp has stopped being an army and started being the biggest festival the valley has ever thrown.
 
 At the camp gate Vex shakes your hand, once. "The Calling's broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."
 
-**Wren** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.
+**Wren** walks in at the head of the column, with every pass on the way down marked on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.
 
 Your fighter sits down on the first barrel inside the gate, and does not get up again until morning.
 

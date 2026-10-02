@@ -65,7 +65,7 @@ You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at 
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
-"Those two are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
+"Nettle and her sister are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
 
 "So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. Apparently I'm respectable now, and respectable men don't go up first."
 
@@ -329,7 +329,7 @@ It lifts its head, and the face is a man's. It is a **manticore**, and it is in 
 
 You tell it the truth, more or less. "The hags promised you a valley full of meat. They're up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn't wait on a ledge for scraps."
 
-The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. Even its goblins, hiding in the rocks below the ledge, run the other way.
+The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.
 
 **» Walk the open trail**
 
@@ -449,7 +449,7 @@ At first light, nothing moves overhead. Old scorch marks blacken the rim where w
 
 **Dawn — day 5.**
 
-The streams on the mountain ran uphill all night, loud enough to hear from the valley floor.
+The streams on the mountain ran uphill all night. You could hear them in the dark, chattering the wrong way.
 
 <sub>scene `war-council`</sub>
 
@@ -459,11 +459,9 @@ Vex has had some sleep, by the look of him. "The night went our way," he says. "
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-She finds your end of the rim before she reports to Vex. "I went down into the bowl at first light, on my own," she says quietly. "There's a seam in that stone, and I chalked it. Take me down, and I'll show you where."
-
 "My riders were on the east line all night," Wren says. "Every one of them walked off it."
 
-"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or two, but no more. A big party's a loud one."
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
 
 **» Let them hold the rim while you go down**
 
@@ -527,11 +525,11 @@ Up on the rim, Vex's pikes raise a ragged cheer. Far down the slope, faint and d
 
 <sub>scene `wc-aftermath`</sub>
 
-Vex's column was waiting on the rim when you climbed out of the bowl, and you walk down the mountain together. Below, the camp has stopped being an army and started being the biggest festival the valley has ever thrown.
+You reach the war-camp with Vex's column at your back. The camp has stopped being an army and started being the biggest festival the valley has ever thrown.
 
 At the camp gate Vex shakes your hand, once. "The Calling's broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."
 
-**Wren** came down off the rim at the head of the column, marking every pass on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.
+**Wren** walks in at the head of the column, with every pass on the way down marked on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.
 
 Your fighter sits down on the first barrel inside the gate, and does not get up again until morning.
 
@@ -549,7 +547,7 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight, and she keeps count of every cup.
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
 
 The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting for the meal the hags swore to give it.
 
@@ -561,7 +559,7 @@ Deep under the fen, moss is creeping over the lead letters on the Warden's door.
 
 Vex keeps a key to the reeve's cells on a nail by his cot. Some nights he takes it down and turns it over in his hands.
 
-Down in Thornwick, the reeve orders a plaque made for the square. He has the wording changed twice.
+Down in Thornwick, the reeve orders a plaque for the square, to mark the year of three wars. He has the wording changed twice.
 
 Wren tells every new scout how she held the gate of the Undercrypt, and how you walked back out.
 
