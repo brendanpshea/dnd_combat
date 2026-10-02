@@ -72,11 +72,20 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'cult', name: 'Cult of the Worm', suggestedLevel: 3,
     members: ['cult-fanatic', 'acolyte', 'ghoul', 'ghoul', 'animated-armor'],
   },
+  // The Sunken Barrows' finale: the cult at the Warden's door, with an old
+  // kings' soldier Marrow woke to keep it. The chapter's hardest fight, fought
+  // at 4th level (the floor rides on the king). The ladder keeps `cult`.
+  'cult-at-door': {
+    id: 'cult-at-door', name: 'The Worm at the Door', suggestedLevel: 4,
+    members: ['cult-fanatic', 'acolyte', 'ghast', 'ghoul', 'animated-armor', 'wight'],
+  },
   // The Sunken Barrows: the cult once Marrow has stopped believing. He stands
-  // aside; his acolyte and the things he raised do not.
+  // aside, and so does the soldier he woke; his acolyte and the things he
+  // raised do not. One of the two "ghouls" at the door is a ghast, here as
+  // in `cult-at-door`.
   'cult-wavering': {
-    id: 'cult-wavering', name: 'The Worm Without Its Shepherd', suggestedLevel: 3,
-    members: ['acolyte', 'ghoul', 'ghoul', 'animated-armor'],
+    id: 'cult-wavering', name: 'The Worm Without Its Shepherd', suggestedLevel: 4,
+    members: ['acolyte', 'ghast', 'ghoul', 'animated-armor'],
   },
   knights: {
     id: 'knights', name: 'Knightly Order', suggestedLevel: 4,
@@ -302,6 +311,19 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   'ashfang-warlord': {
     id: 'ashfang-warlord', name: 'The Ashfang Chief', suggestedLevel: 3,
     members: ['bandit-captain', 'green-hag', 'bandit'],
+  },
+  // The Hollow Road's hall as it is fought: the chief, the hag, and Hask, the
+  // guard who answers to Vex — a veteran, the hall's real muscle, so turning
+  // Vex (who stands him down) is felt. (The ladder keeps `ashfang-warlord`.)
+  'ashfang-hall': {
+    id: 'ashfang-hall', name: 'The Ashfang Chief and His Guard', suggestedLevel: 3,
+    members: ['bandit-captain', 'green-hag', 'veteran'],
+  },
+  // The hag after the chief turns on her, with his guard (Hask, the veteran)
+  // and one raider at her whistle. With Vex turned, `hag-coven` instead.
+  'hag-guarded': {
+    id: 'hag-guarded', name: 'The Reedwife and the Chief\'s Guard', suggestedLevel: 3,
+    members: ['green-hag', 'veteran', 'bandit'],
   },
   // The same fight after Vex turns: his guard stands down, so the chief and
   // the hag face the party alone — the parley's promised payoff.

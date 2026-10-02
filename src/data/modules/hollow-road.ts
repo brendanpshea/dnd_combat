@@ -1022,7 +1022,8 @@ const scenes: Record<string, Scene> = {
       title: 'The {ashfang} Den', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🔥' },
       // Hostile ground, but you can bank a fire in a cleared corner and chance
       // a rest — the watch may stumble on you (no recovery if they do).
-      camp: { risky: { chance: 0.35, battleScene: 'den-camp-ambush' } },
+      // Enemy ground: two nights' sleep in the den in the chapter, then only short rests.
+      camp: { nights: 2, risky: { chance: 0.35, battleScene: 'den-camp-ambush' } },
       entry: 'gate',
       rooms: [
         { id: 'gate', name: 'Gate', size: 'small', exit: { to: 'trail', label: 'Out to the marsh road' } },
@@ -1186,12 +1187,12 @@ const scenes: Record<string, Scene> = {
       '{vex} studies you a long moment, then shakes his head, almost sorry about it. "No. You\'d hang me the morning after, and we both know it."',
       '"Pity. I\'d have liked to see the far end of this valley." He melts back into the dark, toward the ridge above the den.',
     ],
-    next: [{ id: 'ok', label: 'Leave him to the dark', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
+    next: [{ id: 'ok', label: 'Leave him to the dark', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true, fate: 'refused' }] }],
   },
   'vex-dismissed': {
     id: 'vex-dismissed', kind: 'story', noBack: true, art: { emoji: '🗡️' },
     text: ['"Suit yourself." {vex} turns back to his fire. "I won\'t help you. I won\'t get in your way, either."'],
-    next: [{ id: 'ok', label: 'Leave him to his fire', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
+    next: [{ id: 'ok', label: 'Leave him to his fire', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true, fate: 'rebuffed' }] }],
   },
   'boss-approach': {
     id: 'boss-approach', kind: 'story', art: { imageId: 'loc-throne', emoji: '👑' },
@@ -1250,18 +1251,20 @@ const scenes: Record<string, Scene> = {
     ],
   },
   boss: {
-    id: 'boss', kind: 'battle', encounterId: 'ashfang-warlord', mapId: 'firepit',
-    intro: ['"You\'ve cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don\'t kill them quickly," she tells him. "Waste not."'],
-    again: ['The hag\'s fingers are already weaving something cold out of the smoke. "Don\'t kill them quickly this time," she tells the chief.'],
+    id: 'boss', kind: 'battle', encounterId: 'ashfang-hall', mapId: 'firepit',
+    intro: ['"You\'ve cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don\'t kill them quickly," she tells him. "Waste not."',
+      'The chief\'s guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word.'],
+    again: ['The hag\'s fingers are already weaving something cold out of the smoke. "Don\'t kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder.'],
     loot: { bonusTier: 'rare' }, // a warlord's hoard + a hag's trophies — guaranteed drop
     onWin: { to: 'aftermath', text: [BOSS_FALLS], effects: BOSS_WON },
   },
   // The same hall with Vargan's brand named: he loses the first round.
   'boss-shaken': {
-    id: 'boss-shaken', kind: 'battle', encounterId: 'ashfang-warlord', mapId: 'firepit',
+    id: 'boss-shaken', kind: 'battle', encounterId: 'ashfang-hall', mapId: 'firepit',
     surprise: 'enemies',
     intro: [
       { assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan} closes his fist over the brand and looks at it a moment too long. Behind him the hag says nothing at all. By then you are already moving.' },
+      'By the door, the chief\'s guard, a grey and scarred old soldier, is still reaching for his weapon.',
     ],
     again: [{ assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan}\'s eyes go to his shut fist again. Behind him the hag says nothing. By then you are already moving.' }],
     loot: { bonusTier: 'rare' },
@@ -1329,7 +1332,7 @@ const scenes: Record<string, Scene> = {
   },
   // The hag fights on without him, with the chief's guard and one more raider.
   'reedwife-fight': {
-    id: 'reedwife-fight', kind: 'battle', encounterId: 'hag-coven', mapId: 'firepit',
+    id: 'reedwife-fight', kind: 'battle', encounterId: 'hag-guarded', mapId: 'firepit',
     // No falling back: the hall behind you is the one where Vargan turned.
     noFlee: true,
     loot: { bonusTier: 'rare' },
@@ -1477,8 +1480,12 @@ const scenes: Record<string, Scene> = {
       { assumes: [{ kind: 'npc', npc: 'vargan', notFate: ['slain'] }],
         text: '"Same bowl, same soup," {mira} says, and sets it down. "Try to need it less."' },
     ],
-    // A wipe costs time: the day goes by on Mira's cot.
-    next: [{ id: 'up', label: 'Get back on your feet', to: 'square', effects: [{ kind: 'passDay' }] }], noBack: true,
+    // A wipe costs time: the day goes by on Mira's cot. Then the square, or,
+    // once the party has walked it, straight back out on the marsh road, so a
+    // loss out there or in the den is not the whole road again.
+    next: [{ id: 'up', label: 'Get back on your feet', to: 'square', effects: [{ kind: 'passDay' }] },
+      { id: 'back', label: 'Go straight back out on the marsh road', to: 'trail', effects: [{ kind: 'passDay' }],
+        requires: [{ kind: 'visited', scene: 'trail' }], hideWhenBlocked: true }], noBack: true,
   },
 
   // The ending reads the run back: a short universal close, then one line for

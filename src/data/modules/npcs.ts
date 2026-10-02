@@ -54,8 +54,10 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   vex: {
     id: 'vex', name: 'Vex', aka: ['the lieutenant'], portraitId: 'npc-captain', emoji: '🗡️',
-    // Took the company's offer at his fire (`met` alone: met, no deal).
-    fates: ['turned'],
+    // At his fire: took the company's offer (`turned`), turned it down
+    // (`refused`), or was refused a deal (`rebuffed`). `met` with no fate is
+    // a save from before the last two.
+    fates: ['turned', 'refused', 'rebuffed'],
     introducedAt: {
       'hollow-road': ['scout-saved', 'scout-fail', 'vex-parley'],
       // His briefing, and "Captain Vex" on the morning after the peak, and at

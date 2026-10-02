@@ -26,9 +26,12 @@
  * swords 925, the flooded seam 1,800, the oni's hold 1,650, the giants' hall 1,650,
  * cataclysm finale 3,600, or 3,200 for the sisters in person); optional
  * dens/beasts add up to ~6,000 more. A continuing company (~3,050 XP from
- * Part 2) that raids most of the hills passes L5's 6,500 honestly; `xpToLevel: 5` on the way down to the war council is the floor
- * for a fight-shy run (or one that buys its way past the ogre-mage). Cold
- * starts are floored to L4 by the opening choice.
+ * Part 2) that raids most of the hills still reached L5's 6,500 only at the
+ * stone, so the hills were fought a level low: `xpToLevel: 5` on the climb
+ * out of the war-camp (`hills-out`) now floors every company to 5th before
+ * the first hill fight, and the one on the way down to the war council stays
+ * as a backstop. Cold starts are floored to L4 by the opening choice (the
+ * envoy's hired swords are the one L4 fight).
  *
  * CARRIED CHOICES: Vex's briefing reads his fate `turned` (he took the
  * party's offer in Part 1) and `met` (they met at his fire, no deal); Wren's
@@ -594,8 +597,12 @@ const SLIDES_HILLS: Slide[] = [
 const SLIDES_PEOPLE: Slide[] = [
   { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
     text: '{vex} keeps the reeve\'s pardon folded in his coat. He has opened it so often that the creases have gone soft.' },
-  { if: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }],
+  // A cold start: he went to the reeve of his own accord.
+  { if: [{ kind: 'npc', npc: 'vex', met: false, notFate: ['turned'] }],
     text: '{vex} keeps a key to the reeve\'s cells on a nail by his cot. He walked into {thornwick} once expecting a rope. Now he holds the keys.' },
+  // No deal at his fire: he held the valley on the reeve's hard terms.
+  { if: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }],
+    text: 'In the autumn the reeve sends {vex} his pardon, sealed in red wax, as the bargain said. {vex} has never opened it. It hangs on a nail by his cot, where he can see it from his pillow.' },
   // What became of Marrow, the gravedigger at the Warden's door (Part 2).
   { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
     text: 'Word comes up from {saltmere} that a grey old gravedigger has mended {saltmere-graves} there. While the stone sang, he sat up among them every night with a lamp, saying the rites, in case anyone woke.' },
@@ -894,17 +901,24 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'on', label: 'Step out into the camp', to: 'warcamp',
       effects: briefed('You met {vex} at his fire in the {ashfang} den. He kept out of the chief\'s last fight and went to the reeve. Now he runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the {calling} peaks.') }],
   },
-  // The party met him at his fire in the Ashfang den, and he did not take
-  // their offer (or they never made one). He gave himself up anyway.
+  // The party met him at his fire in the Ashfang den, and left without a
+  // deal: he turned their offer down (`refused`), or they would not make one
+  // (`rebuffed`). Either way the chief's guard fought for the chief, and Vex
+  // gave himself up after. He commands on the reeve's terms, not as a reward.
   'vex-brief-met': {
     id: 'vex-brief-met', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
     assumes: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }],
     text: [
-      'You know this man. It is **{vex}**, once the {ashfang}\'s lieutenant. You met him at his lone fire in the chief\'s den, and you did not leave it with a deal. He sat out the last fight anyway, and the next morning he walked into the reeve\'s hall and gave himself up. Now {thornwick} trusts him to run its war. "I walked in expecting to hang by noon," he says. "Instead the reeve handed me an army."',
+      'You know this man. It is **{vex}**, once the {ashfang}\'s lieutenant. You met him at his lone fire in the chief\'s den, and you did not leave it with a deal.',
+      { if: [{ kind: 'npc', npc: 'vex', fate: 'refused' }],
+        text: '"You made me an offer, and I turned it down," he says. "The chief\'s guard answered to me. I could have stood him down, and I let him fight you instead. I\'ve thought about that."' },
+      { if: [{ kind: 'npc', npc: 'vex', fate: 'rebuffed' }],
+        text: '"You wouldn\'t deal with a raider," he says. "Fair enough. The chief\'s guard answered to me, and I let him fight you in that hall. I\'ve thought about that."' },
+      'The morning after, he walked into the reeve\'s hall and gave himself up. The reeve did not pardon him. He handed him the war instead. "Hold the valley through the summer, and I walk free," {vex} says. "Lose it, and he has a rope ready. I\'ve made worse bargains. Most of them with the chief."',
       ...BRIEF_PLAN,
     ],
     next: [{ id: 'on', label: 'Step out into the camp', to: 'warcamp',
-      effects: briefed('You met {vex} at his fire in the {ashfang} den, and he did not take your offer. He sat out the chief\'s last fight, gave himself up, and now runs the valley\'s war-camp. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the {calling} peaks.') }],
+      effects: briefed('You met {vex} at his fire in the {ashfang} den and left without a deal. He let the chief\'s guard fight you in the hall, then gave himself up. The reeve gave him no pardon, only the war-camp: hold the valley and walk free, or hang. His plan is simple: every den and every beast you clear in the hills is one monster fewer when the {calling} peaks.') }],
   },
   'vex-brief-turned': {
     id: 'vex-brief-turned', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🗡️' },
@@ -1184,7 +1198,9 @@ const scenes: Record<string, Scene> = {
     text: ['The high trail leaves the last lookout behind at a stone marker the recruits have started saluting. Above you the hills stack up into the sky, pass over pass. Over the highest one you hear it for the first time: the **{calling}**. It is not really a sound. It is a pull, like a door standing open somewhere above the clouds.',
       // Sedge's first beat, on every road up: her grief, not Nettle's ledger.
       'For a moment there is a voice on the wind, too. It is a woman\'s voice, raw from crying. "She kept it alone," it says. "In the dark, all those winters. And nobody ever came." The wind turns, and the voice is gone.'],
-    next: [{ id: 'up', label: 'Climb', to: 'hills' }],
+    // The level floor: every company meets the hills at 5th level (their
+    // fights are tuned for it). The council's floor stays as a backstop.
+    next: [{ id: 'up', label: 'Climb', to: 'hills', effects: [{ kind: 'xpToLevel', level: 5 }] }],
   },
 
   // === ACT 2 — THE HIGH HILLS ===========================================
@@ -1736,6 +1752,7 @@ const scenes: Record<string, Scene> = {
         text: 'She reports to {vex} first. You get a nod, later.' },
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }], text: 'Brother {halden} climbs with his prayer book under his arm, red in the face and still praying.' },
       { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask}, the chief\'s old guard who stood aside for you in {vargan}\'s hall, walks at {vex}\'s shoulder.' },
+      { if: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }], text: 'No guard walks at {vex}\'s shoulder. His last one fell in {vargan}\'s hall, fighting for the chief, and {vex} holds this column on the reeve\'s terms.' },
       { if: [has('sunken-barrows:drowned-gold-home')], text: '{^rope-bearers} carry coils of rope over their shoulders. They are kin to the drowned whose purses you carried home.' },
       '"We hold the ridge. You go down," {vex} says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party\'s a loud one."',
     ],

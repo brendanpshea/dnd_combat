@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=-2`, `npc.wren.met`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.met`, `npc.wren.attitude=-2`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-2`, `npc.wren.met`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.vargan.fate.slain`, `npc.vex.fate.refused`, `npc.vex.met`, `npc.wren.attitude=-2`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -545,7 +545,9 @@ The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sittin
 
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
-**Battle:** The Ashfang Chief <sub>(`ashfang-warlord` on `firepit`)</sub>
+The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word.
+
+**Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
 
 **» Fight — won**
 
@@ -1053,6 +1055,8 @@ _+60 gold (686)_
 
 **Dawn — day 4.**
 
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
+
 → Drop down the burial shaft
 
 **↳ The Warden's Stair** <sub>(dungeon `warden-stair`)</sub>
@@ -1081,9 +1085,11 @@ The chanting you've heard for an hour comes from the **living**. They kneel at t
 
 <sub>scene `seal-battle`</sub>
 
-Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.
+Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.
 
-**Battle:** Cult of the Worm <sub>(`cult` on `firepit`)</sub>
+Beside the door, a soldier of the old kings gets up off the floor in green bronze, with cold light in its eye sockets. Marrow woke it to keep his door, and it draws its sword.
+
+**Battle:** The Worm at the Door <sub>(`cult-at-door` on `firepit`)</sub>
 
 **» Fight — won**
 
@@ -1195,7 +1201,11 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief-met`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at his lone fire in the chief's den, and you did not leave it with a deal. He sat out the last fight anyway, and the next morning he walked into the reeve's hall and gave himself up. Now Thornwick trusts him to run its war. "I walked in expecting to hang by noon," he says. "Instead the reeve handed me an army."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at his lone fire in the chief's den, and you did not leave it with a deal.
+
+"You made me an offer, and I turned it down," he says. "The chief's guard answered to me. I could have stood him down, and I let him fight you instead. I've thought about that."
+
+The morning after, he walked into the reeve's hall and gave himself up. The reeve did not pardon him. He handed him the war instead. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
@@ -1218,6 +1228,8 @@ The high trail leaves the last lookout behind at a stone marker the recruits hav
 For a moment there is a voice on the wind, too. It is a woman's voice, raw from crying. "She kept it alone," it says. "In the dark, all those winters. And nobody ever came." The wind turns, and the voice is gone.
 
 **» Climb**
+
+_Level up: 4 → 5_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1495,8 +1507,6 @@ Nothing moves overhead. Old scorch marks blacken the rim where wyrms once perche
 
 **» Go down into the bowl**
 
-_Level up: 4 → 5_
-
 <sub>scene `war-council`</sub>
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
@@ -1506,6 +1516,8 @@ Behind the pikes come people from the valley, out of breath and mud to the knees
 Wren is first up the last slope, bow on her back and map under her arm.
 
 She reports to Vex first. You get a nod, later.
+
+No guard walks at Vex's shoulder. His last one fell in Vargan's hall, fighting for the chief, and Vex holds this column on the reeve's terms.
 
 "We hold the ridge. You go down," Vex says. "That was the whole plan, until this lot followed you up." He jerks a thumb at them. "Take what they brought. Take one of them down with you, or two, or none. Two at most. A big party's a loud one."
 
@@ -1625,7 +1637,7 @@ Vargan's mother's house is still under the water. The reed-cutters are back in t
 
 Deep under the fen, moss is creeping over the lead letters on the Warden's door. The door has not moved since you shut it.
 
-Vex keeps a key to the reeve's cells on a nail by his cot. He walked into Thornwick once expecting a rope. Now he holds the keys.
+In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain said. Vex has never opened it. It hangs on a nail by his cot, where he can see it from his pillow.
 
 Down in Thornwick, the reeve orders a plaque made for the square. He has the wording changed twice.
 

@@ -159,6 +159,8 @@ For a moment there is a voice on the wind, too. It is a woman's voice, raw from 
 
 **» Climb**
 
+_Level up: 4 → 5_
+
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Switchbacks
@@ -273,7 +275,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 16 — passed]`
+`[Deception DC 11 — Ash the Sneaky rolls 17 — passed]`
 
 <sub>scene `steading-talked`</sub>
 
@@ -301,7 +303,7 @@ You remember what Wren wrote about this cliff: *It talks. It's greedy.*
 
 **» [Persuasion DC 11] "Have the hags paid you yet?"**
 
-`[Persuasion DC 11 — Elaine the Holy rolls 14 — passed]`
+`[Persuasion DC 11 — Elaine the Holy rolls 15 — passed]`
 
 <sub>scene `tollcliff-talked`</sub>
 
@@ -419,7 +421,7 @@ One wrong step on the loose rock, and you join the collection.
 
 **» Creep in the way Wren's notes say — The purses lie at the statues' feet. Take those, and nothing else.**
 
-`[Stealth DC 11 — Ash the Sneaky rolls 13 — passed]`
+`[Stealth DC 11 — Ash the Sneaky rolls 14 — passed]`
 
 You work down the rows with soft hands, gathering purses out of the grass. A silver ring lies at a stone shepherd's feet, and a hired sword's flask of healing lies where his belt let it go.
 
@@ -442,8 +444,6 @@ Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands 
 Nothing moves overhead. Old scorch marks blacken the rim where wyrms once perched. Nothing perches there now, and you cross the ridge with only the wind for company.
 
 **» Go down into the bowl**
-
-_Level up: 4 → 5_
 
 <sub>scene `war-council`</sub>
 

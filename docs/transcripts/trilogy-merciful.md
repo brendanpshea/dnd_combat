@@ -1047,6 +1047,8 @@ The king crumbles, his grave-cloths sagging around nothing but dust and old spic
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
+_Level up: 3 → 4_
+
 _+60 gold (416)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
@@ -1105,15 +1107,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that he has lost hi
 
 <sub>scene `seal-doubt`</sub>
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway. Marrow only watches, as if from very far away.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, as if from very far away.
+
+Beside him, a soldier of the old kings crouches by the door in green bronze, with cold light in its eye sockets. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
 The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.
-
-_Level up: 3 → 4_
 
 _+120 gold (536)_
 
@@ -1282,6 +1284,8 @@ The high trail leaves the last lookout behind at a stone marker the recruits hav
 For a moment there is a voice on the wind, too. It is a woman's voice, raw from crying. "She kept it alone," it says. "In the dark, all those winters. And nobody ever came." The wind turns, and the voice is gone.
 
 **» Climb**
+
+_Level up: 4 → 5_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1471,7 +1475,7 @@ At the first scrape of your boots, one huge body ducks out of the door with two 
 
 **» [Deception DC 14] Agree with both heads at once**
 
-`[Deception DC 14 — Ash the Sneaky rolls 17 — passed]`
+`[Deception DC 14 — Ash the Sneaky rolls 18 — passed]`
 
 <sub>scene `steading-talked`</sub>
 
@@ -1512,8 +1516,6 @@ The last wyrmling drops out of the bruised light and does not get up. The rim is
 The ridge lies still, and no wings ride the wind. Below you, the bowl and the stone wait in their bruised light.
 
 **» Go down into the bowl**
-
-_Level up: 4 → 5_
 
 <sub>scene `war-council`</sub>
 

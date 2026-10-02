@@ -9,12 +9,14 @@
  * company killed her, so the barrows are opening, and the debt is theirs.
  * The Cult of the Worm arrives to finish what the broken ward began.
  *
- * XP budget (see trilogy-plan.md): required spine ≈ 5,550 encounter XP
+ * XP budget (see trilogy-plan.md): required spine ≈ 6,500 encounter XP
  * (shadows 200, chapel 650, wisps 1100, lychgate 900, wights 800, the king
- * 800, cult finale 1100), the serpent pool optional (+900). A continuing
- * company (median ~1,650 XP from Part 1) reaches L4 honestly before the
- * finale; the `xpToLevel: 4` on the finale win is the floor for a
- * fight-shy or cold-start run. Cold starts: the opening choice carries
+ * 800, the cult at the door 2050, or 900 with Marrow talked down), the
+ * serpent pool optional (+900). The finale is the chapter's hardest fight.
+ * A continuing company (~1,650 XP from Part 1) mostly reaches the king at
+ * 3rd; the `xpToLevel: 4` on the king's fall (the one way down to the
+ * Warden's door) lifts those that are not yet 4th, so the cult is always
+ * fought at 4th level. Cold starts: the opening choice carries
  * `xpToLevel: 3`, a no-op for a continuing party.
  *
  * MONSTER VARIETY: this module owns the undead/guardian shelf — shadows,
@@ -724,7 +726,8 @@ const scenes: Record<string, Scene> = {
     dungeon: {
       title: 'The {undercrypt}', theme: 'graveyard', art: { imageId: 'loc-crypt', emoji: '🕳️' },
       torch: { length: 16, out: 'crypt-dark' },
-      camp: { risky: { chance: 0.35, battleScene: 'crypt-night' } },
+      // Enemy ground: two nights' sleep down here in the chapter, then only short rests.
+      camp: { nights: 2, risky: { chance: 0.35, battleScene: 'crypt-night' } },
       entry: 'stair',
       rooms: [
         { id: 'stair', name: 'The Barrow Stair', size: 'small',
@@ -764,7 +767,8 @@ const scenes: Record<string, Scene> = {
       title: 'The {warden}\'s Stair', theme: 'graveyard', art: { imageId: 'loc-crypt', emoji: '🕯️' },
       // Its own night attack: a loss here wakes on the stair, not in Thornwick
       // (no way back up the shaft, and no fast travel from a room with no exit).
-      camp: { risky: { chance: 0.35, battleScene: 'stair-night' } },
+      // Two nights at most below the drop, as above it.
+      camp: { nights: 2, risky: { chance: 0.35, battleScene: 'stair-night' } },
       entry: 'shaft',
       rooms: [
         { id: 'shaft', name: 'The Shaft\'s Foot', size: 'small',
@@ -952,7 +956,9 @@ const scenes: Record<string, Scene> = {
     ],
     again: ['The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.'],
     onWin: { to: '@hub', text: ['The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.', 'Behind the king\'s throne, a burial shaft drops into the dark. The chanting comes up out of it.'],
-      effects: [{ kind: 'gold', amount: 60 }] },
+      // The level floor rides on the king, not the finale: the only way down
+      // to the door is past him, so the cult is fought at 4th level.
+      effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'gold', amount: 60 }] },
   },
   'seal-approach': {
     id: 'seal-approach', kind: 'story', art: { imageId: 'loc-dungeon', emoji: '🚪' },
@@ -961,6 +967,9 @@ const scenes: Record<string, Scene> = {
       'The chanting you\'ve heard for an hour comes from the **living**. They kneel at the door in the same long robes, holding candles of black tallow. This is the **Cult of the {worm}**. Their leader is a thin grey man in a gravedigger\'s apron. He pries the lead out of the door one letter at a time with a chisel of bone. An acolyte kneels at his side with a candle. A walking suit of ancient armour guards the stair, and two ghouls crouch among the candles like pets.',
       '"Faster," he tells his chisel, sweetly reasonable. He sees you, and he does not stop working. "**{marrow}**," he says, by way of greeting. "I brought your priest his candles."',
       '"I dug graves at {saltmere} for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. {^saltmere-graves}, and then I walked away and left them all in the cold. The {warden} leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."',
+      // The door's clock (see `dawns`).
+      { if: [{ kind: 'flag', flag: 'door-straining' }],
+        text: 'The door has shifted in its frame since the ground shook. A line of dark, a finger wide, shows along its top. "He leaned on it in the night, and the stone gave," {marrow} says. "It will be harder to shut now."' },
     ],
     again: ['{marrow} is still at the door, prying the lead out of its letters one at a time. He does not look round. "Back again," he says. "It is nearly open now. You may as well watch."'],
     next: [
@@ -1000,10 +1009,11 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
     intro: [
-      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway. {marrow} only watches, as if from very far away.',
+      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. {marrow} only watches, as if from very far away.',
+      'Beside him, a soldier of the old kings crouches by the door in green bronze, with cold light in its eye sockets. It waits for an order, and {marrow} gives none.',
     ],
     onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. {marrow} never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.'],
-      effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
+      effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
   'marrow-spared': {
@@ -1021,13 +1031,14 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'seal-battle': {
-    id: 'seal-battle', kind: 'battle', encounterId: 'cult', mapId: 'firepit',
+    id: 'seal-battle', kind: 'battle', encounterId: 'cult-at-door', mapId: 'firepit',
     onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
-    intro: ['{marrow} turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles.'],
-    again: ['{marrow} turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out, and the armour and the ghouls come for you once more.'],
+    intro: ['{marrow} turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.',
+      'Beside the door, a soldier of the old kings gets up off the floor in green bronze, with cold light in its eye sockets. {marrow} woke it to keep his door, and it draws its sword.'],
+    again: ['{marrow} turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the soldier in green bronze come for you once more.'],
     onWin: { to: 'seal-door', text: ['{marrow} dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.'],
-      effects: [{ kind: 'xpToLevel', level: 4 }, { kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
+      effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // The fighting over, before the rites: Halden keeps his promise here, if
   // he lived, so the door's challenge can take his book from him.
@@ -1056,17 +1067,28 @@ const scenes: Record<string, Scene> = {
     retry: 'perApproach',
     noBack: true,
     approaches: [
+      // The door's clock (see `dawns`): once the ground has shaken twice, the
+      // letters and the kneelers are harder (the rites stay as they are, the
+      // one ungated way). A shared `attempt`, so one try at each.
       { id: 'rites', label: 'Speak the rites aloud',
         skill: 'religion', dc: 13,
         success: { to: 'seal-clean', text: ['You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. The lead letters drink the words the way dry ground drinks rain.'] },
         failure: { to: 'resealing', text: ['Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.'] } },
-      { id: 'letters', label: 'Read the lead letters as a spell', hint: 'The words cut in the door are a lock. Use the rites as its key.',
-        skill: 'arcana', dc: 14,
+      { id: 'letters', attempt: 'letters', label: 'Read the lead letters as a spell', hint: 'The words cut in the door are a lock. Use the rites as its key.',
+        skill: 'arcana', dc: 14, requires: [{ kind: 'notFlag', flag: 'door-straining' }], hideWhenBlocked: true,
+        success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.'] },
+        failure: { to: 'resealing', text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons\' work will not take orders from you.'] } },
+      { id: 'letters-shifted', attempt: 'letters', label: 'Read the lead letters as a spell', hint: 'The words cut in the door are a lock, and the door has shifted in its frame. Use the rites as its key, if it still fits.',
+        skill: 'arcana', dc: 16, requires: [{ kind: 'flag', flag: 'door-straining' }], hideWhenBlocked: true,
         success: { to: 'seal-clean', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.'] },
         failure: { to: 'resealing', text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons\' work will not take orders from you.'] } },
       // Closed for good if Marrow already laughed off the company in front of them.
-      { id: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door. Make them chant the right thing.',
-        skill: 'persuasion', dc: 14, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }],
+      { id: 'kneelers', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door. Make them chant the right thing.',
+        skill: 'persuasion', dc: 14, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }, { kind: 'notFlag', flag: 'door-straining' }], hideWhenBlocked: true,
+        success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the {warden}," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The {warden}\'s own faithful sing him back to sleep.'] },
+        failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
+      { id: 'kneelers-shaken', attempt: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They felt the ground shake, and they think their door is opening. Make them chant the right thing anyway.',
+        skill: 'persuasion', dc: 16, requires: [{ kind: 'notFlag', flag: 'kneelers-scorned' }, { kind: 'flag', flag: 'door-straining' }], hideWhenBlocked: true,
         success: { to: 'seal-clean', text: ['You hold the book up where the kneelers can see it. "You came to sing to the {warden}," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The {warden}\'s own faithful sing him back to sleep.'] },
         failure: { to: 'resealing', text: ['The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.'] } },
       { id: 'wizard', label: '[Wizard] Pick the lock the old masons cut', hint: 'You know a ward when you see one. This one is only half-broken.',
@@ -1201,7 +1223,13 @@ const scenes: Record<string, Scene> = {
         text: 'Someone carried you up the barrow stair and across the fen in the dark. {mira} will not say who. There are muddy boots drying by her fire, a scout\'s size, and you do not ask.' },
       '"The fen\'s still there," {mira} says, which is her way of asking if you\'re going back. You are. She puts the bread where you can reach it.',
     ],
-    next: [{ id: 'up', label: 'Get back on your feet', to: 'town' }], noBack: true,
+    // A wipe costs a day, as in every chapter (and the door's clock runs on).
+    // Then the town, or, once the party has been down there, straight back
+    // down the barrow stair: a loss in the barrows is not the whole fen again.
+    // (A party that fell in the barrows comes back to the room it fell in.)
+    next: [{ id: 'up', label: 'Get back on your feet', to: 'town', effects: [{ kind: 'passDay' }] },
+      { id: 'back', label: 'Go straight back down the barrow stair', to: 'undercrypt', effects: [{ kind: 'passDay' }],
+        requires: [{ kind: 'visited', scene: 'undercrypt' }], hideWhenBlocked: true }], noBack: true,
   },
   'sb-epilogue': {
     id: 'sb-epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
@@ -1262,6 +1290,16 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
   // Part 2 of the trilogy: a victory carries the company into The Wyrmcalling.
   sequel: 'wyrmcalling',
   start: 'return', scenes, defeatScene: 'sb-defeat', town: 'town',
+  // The clock: {marrow} is prying the lead out of the Warden's door, and the
+  // thing behind it pushes back. A warning on the fourth morning; on the
+  // sixth the door has shifted, and the rites every company has (`rites`,
+  // `letters`) are harder to say at it. No door is lost, only made worse.
+  // Worded for anywhere the party wakes: the inn, the fen, the barrows.
+  dawns: [
+    { day: 4, text: ['The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.'] },
+    { day: 6, text: ['The ground shook again before dawn, longer this time. Every dog in {thornwick} howled at once. Somewhere under the fen, old stone gave a little.'],
+      effects: [{ kind: 'setFlag', flag: 'door-straining' }] },
+  ],
   // What the last chapter remembers (read there as 'sunken-barrows:<flag>'):
   // that the company won this chapter (`won`), whether the Warden's door
   // shut cracked, and whether the company carried the old reeve home and the

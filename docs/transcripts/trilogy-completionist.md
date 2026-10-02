@@ -1349,6 +1349,8 @@ _+40 gold (1070)_
 
 **Dawn — day 4.**
 
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the far side. It did not happen again.
+
 → Search the room
 
 You sound the walls and lift what can be lifted. Nothing.
@@ -1425,7 +1427,9 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that he has lost hi
 
 <sub>scene `seal-doubt`</sub>
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway. Marrow only watches, as if from very far away.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, as if from very far away.
+
+Beside him, a soldier of the old kings crouches by the door in green bronze, with cold light in its eye sockets. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
@@ -1697,6 +1701,8 @@ For a moment there is a voice on the wind, too. It is a woman's voice, raw from 
 
 **» Climb**
 
+_Level up: 4 → 5_
+
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Switchbacks
@@ -1827,7 +1833,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 14 — passed]`
+`[Deception DC 11 — Ash the Sneaky rolls 15 — passed]`
 
 <sub>scene `steading-talked`</sub>
 
@@ -1855,7 +1861,7 @@ You remember what Wren wrote about this cliff: *It talks. It's greedy.*
 
 **» [Persuasion DC 11] "Have the hags paid you yet?"**
 
-`[Persuasion DC 11 — Elaine the Holy rolls 19 — passed]`
+`[Persuasion DC 11 — Elaine the Holy rolls 11 — passed]`
 
 <sub>scene `tollcliff-talked`</sub>
 
@@ -1879,7 +1885,7 @@ Wren's notes have one line on this gully, underlined twice: *Watch the dust.*
 
 **» [Survival DC 11] Time the stampede**
 
-`[Survival DC 11 — Elaine the Holy rolls 23 — passed]`
+`[Survival DC 11 — Elaine the Holy rolls 21 — passed]`
 
 <sub>scene `boarruns-timed`</sub>
 
@@ -1957,7 +1963,7 @@ One wrong step on the loose rock, and you join the collection.
 
 **» Creep in the way Wren's notes say — The purses lie at the statues' feet. Take those, and nothing else.**
 
-`[Stealth DC 11 — Ash the Sneaky rolls 23 — passed]`
+`[Stealth DC 11 — Ash the Sneaky rolls 14 — passed]`
 
 You work down the rows with soft hands, gathering purses out of the grass. A silver ring lies at a stone shepherd's feet, and a hired sword's flask of healing lies where his belt let it go.
 
@@ -1980,8 +1986,6 @@ Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands 
 Nothing moves overhead. Old scorch marks blacken the rim where wyrms once perched. Nothing perches there now, and you cross the ridge with only the wind for company.
 
 **» Go down into the bowl**
-
-_Level up: 4 → 5_
 
 <sub>scene `war-council`</sub>
 
@@ -2033,7 +2037,7 @@ Nettle sees you looking at her wrists, and she laughs. "Pull us out, and we are 
 
 **» Drag Nettle out while she rages — She is shouting at you, not holding on. Take her wrists while her hands are half out of the rock.**
 
-`[Athletics DC 11 — Arthur the Bold rolls 27 — passed]`
+`[Athletics DC 11 — Arthur the Bold rolls 11 — passed]`
 
 Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
