@@ -257,6 +257,8 @@ Under a loose board at the back of his stall lies a list of every caravan that h
 
 The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own." None of his crew went toward the marsh, so the signal is still good.
 
+The reeve pays a purse for the town's leak. The gate-warden is already waving you over.
+
 **» Hand him to the reeve**
 
 _+40 gold (136)_
@@ -497,7 +499,7 @@ The silk trembles over your heads. Four giant spiders drop from the high webbing
 
 **» Fight — won**
 
-The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He does not stop thanking you until the reeds swallow the sound.
+The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
 
 _+60 gold (301)_
 
@@ -593,7 +595,7 @@ Dust, old bones and nothing else.
 
 Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.
 
-No one at the fire has looked round yet. Behind the drying-racks there is room to sit, bind a cut and get your breath before anyone does.
+The den knows it has been broken into, and every eye in the yard is on the gate. Behind the drying-racks, out of the torchlight, there is a corner to bind a cut and get your breath while they watch the wrong end of the yard.
 
 → Kennels
 
@@ -731,6 +733,8 @@ On the far side of the ring, a bare-chested raider gets up off an upturned barre
 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
 
+Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
+
 _+40 gold (451)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
@@ -816,6 +820,8 @@ The **Reedwife** stands by the fire-pit with marsh water dripping from her finge
 **» Fight — won**
 
 The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+
+A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
 
 _+100 gold (551)_
 
@@ -973,7 +979,7 @@ _Journal (clue): They Walk One Way_
 
 > "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You killed the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
+> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket when the graves opened was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -1011,9 +1017,9 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. He sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
+> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
 
-> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
+> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
 > "My scout, Wren, will meet you at the fen road. She asked for the task before I could give it. Thornwick's people do not wait to be told."
 
@@ -1417,6 +1423,8 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it.
 
+Under its slab lies a guardsman's pay that no one ever came to collect, old coins gone green in a rotted pouch.
+
 _+40 gold (1085)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
@@ -1442,6 +1450,8 @@ The embalmed king turns. His wrappings are new-tied at wrist and throat, the kno
 **» Fight — won**
 
 The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
+
+You pick his gold rings out of the dust where his hands fell.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
@@ -1512,6 +1522,8 @@ Beside him, the soldier of the old kings does not stir from the door. It waits f
 **» Fight — won**
 
 The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.
+
+Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
 _+120 gold (1265)_
 
@@ -1669,7 +1681,7 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief-turned`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. In the chief's den he took your offer and kept his guards out of the last fight. The last you heard, he had taken the road out of the valley, just as he said he would.
+You know this man. It is **Vex**, once the Ashfang's lieutenant. In the chief's den he took the way out you gave him, and kept his guards out of the last fight. The last you heard, he had taken the road out of the valley, just as he said he would.
 
 "I got as far as a hill inn," he says. "Then word came that the dead were walking, and then fires in the passes. I found I couldn't sit and drink while this valley went through it all again. So I walked back and offered the reeve my sword. He took it, which surprised us both. No more burned barns. I like this side better."
 
@@ -1723,7 +1735,7 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 > "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
-> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. And the ettin. Watch which head is talking." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it. I counted the watch-posts for you once, lying under a horse. This is a better map." She hands it over. "Come down the hill on your own feet. All of you. I'll be at the bottom."
+> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. And the ettin. Watch which head is talking." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it. I counted the watch-posts for you once, lying under a horse. This is a better map." She hands it over. "Come down off that mountain on your own feet. All of you. I won't be far behind you."
 
 > She walks you to the edge of the firelight, which she does not do for the captain.
 
@@ -2083,7 +2095,7 @@ One wrong step on the loose rock, and you join the collection.
 
 `[Stealth DC 11 — Ash the Sneaky rolls 15 — passed]`
 
-You work down the rows with soft hands, gathering purses out of the grass. A silver ring lies at a stone shepherd's feet, and a hired sword's flask of healing lies by his stone boot.
+You work down the rows with soft hands, gathering purses out of the grass. A hired sword's flask of healing lies by his stone boot.
 
 The gorgon chews on and does not look up. You are back on the trail before your hands stop shaking.
 
@@ -2119,11 +2131,11 @@ Vex has had some sleep, by the look of him. "The night went our way," he says. "
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
+"My riders were on the east line all night," Wren says. "Every one of them came back."
+
 While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
 
-"My riders were on the east line all night," Wren says. "Every one of them walked off it."
-
-Hask, the chief's old guard who stood aside for you in Vargan's hall, walks at Vex's shoulder.
+Hask walks at Vex's shoulder. He is a grey, scarred soldier, the chief's old guard. The night you came for Vargan, he found somewhere else to be.
 
 "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
 

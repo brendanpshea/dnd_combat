@@ -331,6 +331,8 @@ Under a loose board at the back of his stall lies a list of every caravan that h
 
 The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own." None of his crew went toward the marsh, so the signal is still good.
 
+The reeve pays a purse for the town's leak. The gate-warden is already waving you over.
+
 **» Hand him to the reeve**
 
 _+40 gold (171)_
@@ -523,6 +525,8 @@ _Level up: 2 → 3_
 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
 
+Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
+
 _+40 gold (211)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
@@ -612,6 +616,8 @@ The **Reedwife** stands by the fire-pit with marsh water dripping from her finge
 **» Fight — won**
 
 The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+
+A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
 
 _+100 gold (311)_
 
@@ -717,7 +723,7 @@ _Journal (clue): They Walk One Way_
 
 > "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You killed the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
+> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket when the graves opened was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -747,7 +753,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "Those shallows were common water in my grandfather's day," Aldous says to the glass. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. And you let him walk back out into them."
 
-> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
+> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
 > "My scout, Wren, will meet you at the fen road. She asked for the task before I could give it. Thornwick's people do not wait to be told."
 
@@ -1103,6 +1109,8 @@ The embalmed king turns. His wrappings are new-tied at wrist and throat, the kno
 
 The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
+You pick his gold rings out of the dust where his hands fell.
+
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
 _+60 gold (431)_
@@ -1164,6 +1172,8 @@ Beside him, the soldier of the old kings does not stir from the door. It waits f
 **» Fight — won**
 
 The last ghoul falls among the candles. Marrow never moved from the door. When it is over, he is still sitting against it with the chisel in his lap.
+
+Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
 _+120 gold (551)_
 
@@ -1325,7 +1335,7 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief-turned`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. In the chief's den he took your offer and kept his guards out of the last fight. The last you heard, he had taken the road out of the valley, just as he said he would.
+You know this man. It is **Vex**, once the Ashfang's lieutenant. In the chief's den he took the way out you gave him, and kept his guards out of the last fight. The last you heard, he had taken the road out of the valley, just as he said he would.
 
 "I got as far as a hill inn," he says. "Then word came that the dead were walking, and then fires in the passes. I found I couldn't sit and drink while this valley went through it all again. So I walked back and offered the reeve my sword. He took it, which surprised us both. No more burned barns. I like this side better."
 
@@ -1627,13 +1637,13 @@ Behind the pikes come people from the valley, out of breath and mud to the knees
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
+"My riders were on the east line all night," Wren says. "Every one of them came back."
 
-"My riders were on the east line all night," Wren says. "Every one of them walked off it."
+While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
 
 Brother Halden climbs with his prayer book under his arm, red in the face and still praying.
 
-Hask, the chief's old guard who stood aside for you in Vargan's hall, walks at Vex's shoulder.
+Hask walks at Vex's shoulder. He is a grey, scarred soldier, the chief's old guard. The night you came for Vargan, he found somewhere else to be.
 
 Two fen-folk carry coils of rope over their shoulders. They are kin to the drowned whose purses you carried home.
 

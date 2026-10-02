@@ -19,7 +19,7 @@ The valley has raised an army at last. A **war-camp** spreads across the wet mea
 
 Two seasons ago your company broke the Ashfang raiders in their den past the marsh. You killed the hag their chief had sold himself to, the one the fen-folk called the Reedwife.
 
-Last season the dead of Thornwick walked out of their graves. You followed them down into the barrows under the fen, and shut the door they came out of.
+Last season the dead of Thornwick walked out of their graves. You followed them down into the barrows under the fen, and shut the door they came out of. The rites you said there came from the prayer book of Brother Halden, Thornwick's priest. It still rides in your pack, fen-damp.
 
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
@@ -113,7 +113,9 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 > "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
-> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. And the ettin. Watch which head is talking." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it." She pauses. "Last time I held a gate and waited for you to walk back out. I didn't enjoy it." She rolls the map up tight. "Don't make me wait at the top of a mountain as well."
+> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. And the ettin. Watch which head is talking." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+> She pauses. "Last time I held a gate and waited for you to walk back out. I didn't enjoy it." She rolls the map up tight. "Don't make me wait at the top of a mountain as well."
 
 **» Take her map-notes**
 
@@ -477,7 +479,7 @@ One wrong step on the loose rock, and you join the collection.
 
 `[Stealth DC 11 — Ash the Sneaky rolls 21 — passed]`
 
-You work down the rows with soft hands, gathering purses out of the grass. A silver ring lies at a stone shepherd's feet, and a hired sword's flask of healing lies by his stone boot.
+You work down the rows with soft hands, gathering purses out of the grass. A hired sword's flask of healing lies by his stone boot.
 
 The gorgon chews on and does not look up. You are back on the trail before your hands stop shaking.
 
@@ -513,7 +515,7 @@ Vex has had some sleep, by the look of him. "The night went our way," he says. "
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-"My riders were on the east line all night," Wren says. "Every one of them walked off it."
+"My riders were on the east line all night," Wren says. "Every one of them came back."
 
 "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
 

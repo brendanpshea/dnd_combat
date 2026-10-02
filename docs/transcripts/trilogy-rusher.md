@@ -269,6 +269,8 @@ Under a loose board at the back of his stall lies a list of every caravan that h
 
 The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own." None of his crew went toward the marsh, so the signal is still good.
 
+The reeve pays a purse for the town's leak. The gate-warden is already waving you over.
+
 **» Hand him to the reeve**
 
 _+40 gold (161)_
@@ -431,6 +433,8 @@ _Level up: 2 → 3_
 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. Its collar has worn a groove in its neck as deep as a thumb.
 
+Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
+
 _+40 gold (201)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
@@ -496,6 +500,8 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 **» Fight — won**
 
 The chief falls across the fire-pit, and the **Reedwife** screams. She falls too, full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
 _+100 gold (301)_
 
@@ -613,7 +619,7 @@ _Journal (clue): They Walk One Way_
 
 > "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You killed the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket last night was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
+> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket when the graves opened was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -641,9 +647,9 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. He sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
+> Out past the glass, at the edge of the water-meadows, a man in a chain is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and the people off the marsh road with them. So now he cuts them for the town, and every bundle goes to a widow."
 
-> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard last night, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
+> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you. Follow my dead into the fen, find what calls them, and put it down."
 
 > "My scout, Wren, will meet you at the fen road. She asked for the task before I could give it. Thornwick's people do not wait to be told."
 
@@ -1023,6 +1029,8 @@ The embalmed king turns. His wrappings are new-tied at wrist and throat, the kno
 
 The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
+You pick his gold rings out of the dust where his hands fell.
+
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
 _+60 gold (571)_
@@ -1070,6 +1078,8 @@ Against the door, the soldier of the old kings gets to its feet in its green bro
 **» Fight — won**
 
 Marrow dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.
+
+Coins lie thick on the bottom step, where the faithful threw them at the door. You sweep them into a sack before you open the book.
 
 _+120 gold (691)_
 
@@ -1197,7 +1207,7 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 You know this man. It is **Vex**, once the Ashfang's lieutenant. You met him at his lone fire in the chief's den, and you did not leave it with a deal.
 
-"You made me an offer, and I turned it down," he says. "The chief's guard answered to me. I could have stood him down, and I let him fight you instead. I've thought about that."
+"You gave me a choice, and I turned it down," he says. "The chief's guard answered to me. I could have stood him down, and I let him fight you instead. I've thought about that."
 
 The morning after, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
@@ -1461,9 +1471,9 @@ Vex has had some sleep, by the look of him. "The night went our way," he says. "
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
-While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
+"My riders were on the east line all night," Wren says. "Every one of them came back."
 
-"My riders were on the east line all night," Wren says. "Every one of them walked off it."
+While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up breathing hard, with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
 
 No guard walks at Vex's shoulder. The chief's guard answered to him once, and Vex let that man fight you in Vargan's hall. Now Vex holds this column on the reeve's terms, and two of the reeve's pikemen walk behind him.
 
@@ -1487,9 +1497,7 @@ Nettle's hands shake in the rock. She watches your mouth like a clerk waiting fo
 
 <sub>scene `answer-sold`</sub>
 
-Sedge turns her burning face toward you for the first time. "The reed-cutter," she says. "He lives?"
-
-You tell her where. He cuts reeds in a chain in the reeve's reed-beds, in the shallows he sold, and every bundle goes to a widow. "So your valley remembered whose water it was," Sedge says. "Late."
+Sedge turns her burning face toward you for the first time. "Cutting reeds," she says. "In my sister's water." You tell her the rest: he works in a chain, and every bundle goes to a widow. "So your valley remembered whose water it was," Sedge says. "Late."
 
 Nettle laughs without turning round. "Two names on the account, then. His for the selling, and yours for the killing. I can collect from both." Her song climbs, louder than before.
 
@@ -1531,7 +1539,7 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "I did warn you about habits."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 
