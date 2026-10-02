@@ -432,6 +432,19 @@ export interface CompanionDef {
  * is built, so a rename is one line and a typo is an error. Dialogue
  * speakers, companions and the cast check all come from here.
  */
+/**
+ * A fact of the campaign's world written once: a place's name, a price, a
+ * count. Prose says it by token (`{drowned-gold}`; `{^id}` capitalises it to
+ * open a sentence). A fact with a `value` is also the number that rules use,
+ * so "fifty-five gold" in the text and the 55 the party is paid are one record.
+ */
+export interface CanonFact {
+  /** What prose shows: "fifty-five gold", "Thornwick". */
+  text: string;
+  /** The number behind it, for effects and checks to use. */
+  value?: number;
+}
+
 export interface NpcDef {
   /** The token and the id everything else uses: 'vargan', 'wren'. */
   id: Id;
@@ -508,6 +521,8 @@ export interface Module {
   /** The campaign's NPC registry (set by `withNpcs`). Its `introducedAt` for
    *  this module joins `cast` in the reachability check. */
   npcs?: Record<Id, NpcDef>;
+  /** The campaign's facts (set by `withCanon`). */
+  facts?: Record<Id, CanonFact>;
   /**
    * The chapter's clock. A chapter starts on day 1, and every long rest (at a
    * camp, or a long `rest` scene) ends a day. Each dawn here plays on the

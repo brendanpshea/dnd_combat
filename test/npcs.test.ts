@@ -36,7 +36,7 @@ describe('the NPC registry', () => {
   });
 
   it('a misspelt token is an error at load, and an unresolved one fails validation', () => {
-    expect(() => withNpcs(raw('{vragan} rises.'), NPCS)).toThrow(/unknown NPC token.*\{vragan\}/);
+    expect(() => withNpcs(raw('{vragan} rises.'), NPCS)).toThrow(/unknown token.*\{vragan\}/);
     expect(validateModule(raw('{vargan} rises.')).some((e) => e.includes('unresolved NPC token {vargan}'))).toBe(true);
     expect(unresolvedTokens(withNpcs(raw('Plain.'), NPCS))).toEqual([]);
   });

@@ -2,7 +2,7 @@
  * The trilogy's cast: one record per named character across The Hollow Road,
  * The Sunken Barrows and The Wyrmcalling (see src/adventure/npcs.ts). Prose
  * names them by token (`{wren}`), and each chapter is built with
- * `withNpcs(module, TRILOGY_NPCS)`.
+ * `withCanon(module, { npcs: TRILOGY_NPCS, facts: TRILOGY_FACTS })` (facts in canon.ts).
  *
  * `introducedAt` lists, by chapter, the scenes where a player first learns who
  * the character is. A chapter that can be started cold (Parts 2 and 3) lists
@@ -75,7 +75,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   hask: {
     id: 'hask', name: 'Hask', portraitId: 'npc-guard', emoji: '🛡️', monsterId: 'veteran',
-    blurb: 'The Ashfang chief\'s guard, who answered to {vex} and stood aside for you. {vex} lent him to you for the stone.',
+    blurb: 'The {ashfang} chief\'s guard, who answered to {vex} and stood aside for you. {vex} lent him to you for the stone.',
     introducedAt: {
       // Named by Vex when he turns; the hall's "Hask stands aside" choices
       // show only to a company that turned him.
@@ -118,7 +118,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   },
   halden: {
     id: 'halden', name: 'Halden', portraitId: 'npc-priest', emoji: '🕯️', monsterId: 'priest',
-    blurb: 'Thornwick\'s priest, whom you talked back out of the Warden\'s grip. He came to say his rites at the stone.',
+    blurb: '{thornwick}\'s priest, whom you talked back out of the {warden}\'s grip. He came to say his rites at the stone.',
     // Talked out of the Warden's grip in the drowned chapel.
     fates: ['saved'],
     introducedAt: {
@@ -132,6 +132,12 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     // Spared at the Warden's door: leads his faithful in the rites, or bound for the reeve.
     fates: ['sings', 'bound'],
     introducedAt: { 'sunken-barrows': ['chapel-saved', 'seal-approach'] },
+  },
+  warden: {
+    id: 'warden', name: 'Warden',
+    // What sleeps behind the door under the barrows. Halden speaks of him in
+    // the drowned chapel; by Part 3 every company has stood at his door.
+    introducedAt: { 'sunken-barrows': ['chapel', 'chapel-saved'] },
   },
   nettle: {
     id: 'nettle', name: 'Nettle',
