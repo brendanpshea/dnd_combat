@@ -503,8 +503,8 @@ place must suit every place.
 ### The clock
 
 A camp deep in enemy ground can limit its nights: `camp: { nights: 2 }`
-lets the party sleep there twice in the chapter (an ambushed night counts),
-then only short-rest. Use it where waiting out every wound would take the
+lets the party sleep there twice in the chapter (a night broken up by an
+ambush was never slept, and doesn't count), then only short-rest. Use it where waiting out every wound would take the
 danger out of a dungeon; leave towns and safe maps unlimited.
 
 A chapter starts on day 1, and every long rest ends a day: a night at a

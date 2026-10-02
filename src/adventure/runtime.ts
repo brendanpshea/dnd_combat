@@ -1094,10 +1094,11 @@ const EMPTY_SEARCHES = [
   'Whatever was worth taking here went long ago.',
   'You find only scratches in the stone, and none of them mean anything.',
 ];
-function emptySearch(roomId: string): string {
+function emptySearch(roomId: string, own?: readonly string[]): string {
+  const lines = own?.length ? own : EMPTY_SEARCHES;
   let h = 0;
   for (const ch of roomId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return EMPTY_SEARCHES[h % EMPTY_SEARCHES.length]!;
+  return lines[h % lines.length]!;
 }
 
 /** Whether the room the party stands in can still be searched. */
@@ -1141,7 +1142,7 @@ export function searchRoom(state: AdventureState, module: Module): AdventureEven
   const dark = spendTorch(state, module, d, p, 1);
   if (dark) return [...events, ...dark];
   if (room.search) events.push(...enterScene(state, module, room.search));
-  else if (found === 0) events.push({ type: 'text', paragraphs: [emptySearch(room.id)] });
+  else if (found === 0) events.push({ type: 'text', paragraphs: [emptySearch(room.id, d.emptySearches)] });
   return events;
 }
 
@@ -1511,10 +1512,7 @@ export function campRest(
 ): AdventureEvent[] {
   const rule = campRule(state, module);
   if (!rule) throw new Error('No camp at this location');
-  if (variant === 'long' && rule.nights !== undefined) {
-    if (nightsLeft(state, module) === 0) throw new Error('No nights left to sleep here');
-    (state.campNights ??= {})[state.sceneId] = (state.campNights[state.sceneId] ?? 0) + 1;
-  }
+  if (variant === 'long' && nightsLeft(state, module) === 0) throw new Error('No nights left to sleep here');
   const events: AdventureEvent[] = [];
   const c = state.campaign;
   // A risky long rest can be interrupted *before* you get any benefit — roll
@@ -1526,6 +1524,11 @@ export function campRest(
     if ((r.value - 1) / 1000 < rule.risky.chance) {
       return enterScene(state, module, rule.risky.battleScene);
     }
+  }
+  // A night slept counts against the camp's limit; one broken up by a fight
+  // (above) was never slept.
+  if (variant === 'long' && rule.nights !== undefined) {
+    (state.campNights ??= {})[state.sceneId] = (state.campNights[state.sceneId] ?? 0) + 1;
   }
   const { totalHealed } = variant === 'long' ? longRest(c) : shortRest(c);
   restCompanions(state, variant === 'long' ? 'full' : 'short', module);

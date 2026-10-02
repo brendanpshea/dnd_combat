@@ -83,3 +83,21 @@ describe('a scene reached as an outcome says whether it can be walked away from'
     expect(validateModule(m({ back: true })).some((e) => e.includes('declare noBack'))).toBe(false);
   });
 });
+
+describe('a night broken up by an ambush', () => {
+  it('does not count against the camp\'s nights', async () => {
+    const { startAdventure, enterScene, campRest, nightsLeft } = await import('../src/adventure/runtime.js');
+    const { newCampaign } = await import('../src/campaign/campaign.js');
+    const m: Module = { id: 'cz', title: 'C', blurb: '', start: 'map', scenes: {
+      map: { id: 'map', kind: 'explore', map: { title: 'M', camp: { nights: 1, risky: { chance: 1, battleScene: 'ambush' } }, nodes: [{ id: 'n', x: 1, y: 1, label: 'Out', icon: '🚪', scene: 'won' }] } } as Scene,
+      ambush: { id: 'ambush', kind: 'battle', encounterId: 'cutpurses', mapId: 'open', onWin: { to: '@hub' } },
+      won,
+    } };
+    const s = startAdventure(newCampaign(1), m);
+    enterScene(s, m, 'map');
+    campRest(s, m, 'long');
+    expect(s.sceneId).toBe('ambush');
+    expect(s.campNights?.map ?? 0).toBe(0);
+    void nightsLeft;
+  });
+});

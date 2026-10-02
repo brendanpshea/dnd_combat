@@ -228,9 +228,10 @@ export interface ExploreNode {
  *  (0–1) rng roll can divert to `battleScene` (whose onWin should route home). */
 export interface CampRule {
   risky?: { chance: number; battleScene: SceneRef };
-  /** How many nights the party may sleep here in one chapter (an ambushed
-   *  night counts: it was spent). Past them, short rests only: deep in enemy
-   *  ground, you cannot wait out every wound. Absent: no limit. */
+  /** How many nights the party may sleep here in one chapter (a night
+   *  broken up by an ambush was never slept, and doesn't count). Past them,
+   *  short rests only: deep in enemy ground, you cannot wait out every
+   *  wound. Absent: no limit. */
   nights?: number;
 }
 
@@ -272,6 +273,9 @@ export interface ExploreMap {
  */
 export interface Dungeon {
   title: string;
+  /** What a room searched for nothing says, in this place's own words (one
+   *  is picked per room). Absent: the engine's plain few. */
+  emptySearches?: string[];
   /** The look of the place, and of the boards its `@room` fights are fought on. */
   theme: MapTheme;
   art?: SceneArt;
