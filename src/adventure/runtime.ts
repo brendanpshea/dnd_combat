@@ -272,6 +272,13 @@ export function sceneParagraphs(state: AdventureState, scene: Extract<Scene, { k
   return paragraphsFor(state, state.returning && scene.again ? scene.again : own);
 }
 
+/** What a check, challenge or battle says as the party arrives: its `again`
+ *  intro on a return visit (when it has one), else its own. */
+export function introParagraphs(state: AdventureState, scene: Extract<Scene, { kind: 'check' | 'challenge' | 'battle' }>): Paragraph[] {
+  const own = scene.intro ?? [];
+  return paragraphsFor(state, state.returning && scene.again ? scene.again : own);
+}
+
 /** A one-try group (`attempt`) already spent? */
 export const attemptSpent = (state: AdventureState, attempt: Id | undefined): boolean =>
   !!attempt && state.consumedChoices.includes(`attempt:${attempt}`);
@@ -434,10 +441,9 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
 
   switch (scene.kind) {
     case 'story': case 'dialogue': events.push({ type: 'text', paragraphs: sceneParagraphs(state, scene) }); break;
-    case 'check': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
-    case 'challenge': events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) }); break;
+    case 'check': case 'challenge': events.push({ type: 'text', paragraphs: introParagraphs(state, scene) }); break;
     case 'battle':
-      if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
+      if (scene.intro || scene.again) events.push({ type: 'text', paragraphs: introParagraphs(state, scene) });
       events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
       break;
     case 'shop':
@@ -1258,7 +1264,7 @@ export function parleyBattle(state: AdventureState, module: Module, actorIdx?: n
   } else if (p.failure) {
     events.push(...applyOutcome(state, module, p.failure));
   } else {
-    events.push({ type: 'text', paragraphs: ["They aren't interested in talking."] });
+    events.push({ type: 'text', paragraphs: p.refused ? paragraphsFor(state, p.refused) : ["They aren't interested in talking."] });
   }
   return events;
 }

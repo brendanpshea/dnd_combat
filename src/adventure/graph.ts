@@ -132,7 +132,10 @@ export function parasOf(scene: Scene): Array<{ where: string; paras: readonly Pa
       break;
     case 'battle':
       outcome('onWin', scene.onWin); outcome('onLoss', scene.onLoss);
-      if (scene.parley) { outcome('parley:success', scene.parley.success); outcome('parley:failure', scene.parley.failure); }
+      if (scene.parley) {
+        outcome('parley:success', scene.parley.success); outcome('parley:failure', scene.parley.failure);
+        add('parley:refused', scene.parley.refused);
+      }
       break;
     case 'dungeon':
       for (const r of scene.dungeon.rooms) add(`room:${r.id}`, r.firstVisit);

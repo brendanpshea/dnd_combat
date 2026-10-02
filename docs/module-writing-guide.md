@@ -245,6 +245,16 @@ text shown on every visit after the first, instead of `text` / `lines`. Use
 it for anything that would otherwise replay a first meeting ("Welcome!",
 introductions, a monster rising to meet you).
 
+A battle, check or challenge takes `again` too, in place of its `intro`. A
+fight the party fell back from, or lost and came back to, shouldn't burst
+out of the ditch a second time ("The goblins are still in the ditch, and
+they are ready for you now").
+
+A talk-down that fails and leaves the party in the fight can say why, with
+`parley.refused`: the boss's answer, in the boss's voice. Without it the
+game says "They aren't interested in talking." That is fine for a pack of
+wolves, but a waste on anyone with something to say.
+
 ### Falling back, and locked markers
 
 A party can fall back from most fights to the map (or, in a dungeon, to the
