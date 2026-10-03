@@ -573,6 +573,23 @@ wandering encounter). A company that walks past optional fights may arrive a
 level lower; that is its choice, and no floor makes it up. The validator
 rejects an `xpToLevel` anywhere else.
 
+The transcripts show seven routes; the **XP ceiling** checks all of them.
+`maxXpReport` (src/adventure/xp-reach.ts) tags every edge of the
+reachability search with what it pays (a won fight's encounter XP unless
+`loot: false`, and every `xp`/`xpToLevel` effect, wherever effects run) and
+takes the longest path through it: the most XP any route can meet each fight
+with, and end the chapter with, starting each chapter where the one before
+can end. A won fight, a `once` choice, a shared `attempt`, a parley or a
+spent approach pays once; a marker's side trip (an optional fight behind a
+"done" redirect on a flag its payment sets) pays once in all. Something that
+pays every time and can be come back to is reported as farmable. It is an
+upper bound (every roll goes the way that pays), so a fight it puts over the
+band comes with the path that does it. `npm run check:story` prints each
+chapter's ceiling and the headroom to the next level, and fails on farmable
+XP or a fight met above the chapter's `levelBand`; `test/xp-ceiling.test.ts`
+asserts the same. An ending may level (the trilogy's last blow can bring
+6th); a fight may not be met above the band.
+
 ## The arena's voice
 
 The arena is drier and more knowing than the valley, and that is fine: it is

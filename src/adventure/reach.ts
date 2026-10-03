@@ -50,9 +50,58 @@ interface Step {
   to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true; sset: number; sclr: number;
   /** Collect mode: what it does to the tracked tallies (an index into the walk's ops), and the raw parts behind that. */
   op: number; reqs?: Requirement[]; effs?: Effect[];
+  /** XP mode: what it pays (an index into the walk's pay lists; 0 pays nothing). */
+  pay: number;
 }
 /** What a step does to the atlas's shadow facts (see `searchModule`). */
 interface Shade { sset: number; sclr: number }
+
+// --- For the XP ceiling (xp-reach.ts) ------------------------------------------
+// The walk can say what each of its edges pays in XP. It never changes the
+// walk: the same states and edges, each tagged. Off (and free) in the check.
+
+/** One payment an edge makes: XP to `max(xp + add, floor)`, under `key` — a
+ *  thing that pays once per run (`battle:<scene>`, `choice:<scene>:<id>`,
+ *  `attempt:<id>`, `parley:<scene>`, …), or null when it pays every time. */
+export interface XpPay { add: number; floor: number; key: string | null }
+/** One walk's graph, its edges tagged with what they pay. State 0 is the start. */
+export interface XpGraph {
+  handed: ReadonlySet<string>;
+  ids: readonly Id[];
+  sceneOf: readonly number[];
+  edgeFrom: readonly number[];
+  edgeTo: readonly number[];
+  /** Per edge: an index into `pays` (0: nothing). */
+  edgePay: readonly number[];
+  pays: readonly (readonly XpPay[])[];
+  /** Per paying edge: what the party did. */
+  edgeLabel: ReadonlyMap<number, string>;
+  /** Payments the walk could not place (a morning it does not track). */
+  loose: readonly XpPay[];
+}
+export interface XpTrace {
+  /** What winning a battle scene pays each hero before its win's effects. */
+  battleXp: (scene: Extract<Scene, { kind: 'battle' }>) => number;
+  /** The XP a level starts at (`xpToLevel`). */
+  levelXp: (level: number) => number;
+  /** A side trip the scene belongs to: a set of scenes a run can pay out of
+   *  once at most, all of whose payments are then one, under this key. */
+  group?: (scene: Id) => string | undefined;
+  onGraph: (g: XpGraph) => void;
+}
+
+/** Search a chapter as the check does, handing `trace` each walk's graph with
+ *  what every edge pays. Earlier chapters are searched by the check (cached).
+ *  The walk is the check's own, so its report is the check's too: it goes in
+ *  the check's cache, and `checkModuleReach` after it costs nothing. */
+export function traceXp(module: Module, trace: XpTrace, chapters: readonly Module[] = MODULES): ReachReport {
+  const report = searchChapter(module, chapters, undefined, trace);
+  if (chapters === MODULES) {
+    if (cache.size >= 64) cache.clear();
+    cache.set(JSON.stringify(module), report);
+  }
+  return { ...report, errors: [...report.errors] };
+}
 
 export interface ReachReport {
   errors: string[];
@@ -324,7 +373,7 @@ export function checkModuleReach(module: Module, chapters: readonly Module[] = M
  * saved and left behind) is never searched, and carried choices do not count
  * against the 52 facts a state can hold.
  */
-function searchChapter(module: Module, chapters: readonly Module[], collect?: Collect): ReachReport {
+function searchChapter(module: Module, chapters: readonly Module[], collect?: Collect, xp?: XpTrace): ReachReport {
   const reads = carriedReads(module, collect);
   const prev = chapters.find((m) => m.sequel === module.id && m.id !== module.id);
   let handed: string[][];
@@ -354,7 +403,7 @@ function searchChapter(module: Module, chapters: readonly Module[], collect?: Co
   const carried = new Map<string, string[]>();
   let states = 0;
   for (const [k, fulls] of groups) {
-    const run = searchModule(module, new Set(k ? k.split('|') : []), chapters, collect, fulls);
+    const run = searchModule(module, new Set(k ? k.split('|') : []), chapters, collect, fulls, xp);
     if (run.skipped) return { errors: [], states: states + run.states, skipped: run.skipped };
     states += run.states;
     run.seen.forEach((id) => seen.add(id));
@@ -395,7 +444,9 @@ interface Run {
   seedOfFull?: number[];
 }
 
-function searchModule(module: Module, handed: ReadonlySet<string>, chapters: readonly Module[], collect?: Collect, fulls: string[][] = []): Run {
+function searchModule(
+  module: Module, handed: ReadonlySet<string>, chapters: readonly Module[], collect?: Collect, fulls: string[][] = [], xp?: XpTrace,
+): Run {
   const none: Run = { errors: [], states: 0, seen: new Set(), outputs: [], rewrites: new Set() };
   const ids = Object.keys(module.scenes);
   const index = new Map(ids.map((id, i) => [id, i]));
@@ -619,9 +670,36 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   };
   const met = (m: Mask, f: number, h: number) => and(f, m.has) === m.has && and(f, m.not) === 0 && (m.at === undefined || m.at === h);
   const OPEN: Mask = { has: 0, not: 0 };
-  const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined, reqs?: Requirement[]): Step =>
+  const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined, reqs?: Requirement[], pay = 0): Step =>
     ({ to, label, req, ...effects(eff), ...(eff?.some((e) => e.kind === 'passDay') ? { day: true as const } : {}),
-      op: opFor([reqs], [], [eff]), ...(T ? { reqs: reqs ?? [], effs: eff ?? [] } : {}) });
+      op: opFor([reqs], [], [eff]), ...(T ? { reqs: reqs ?? [], effs: eff ?? [] } : {}), pay });
+
+  // XP mode (see `XpTrace`): what each way pays. Its effects, in order, take
+  // XP to `max(xp + add, floor)` — `xp` adds, `xpToLevel` floors, and any run
+  // of them is one such pair — under the key that stops it paying twice
+  // (null: it pays every time). A scene in a side trip (`XpTrace.group`)
+  // pays under the trip's key.
+  const pays: XpPay[][] = [[]];
+  const payOf = (effs: Effect[] | undefined, key: string | null, bonus = 0, group?: string): number => {
+    if (!xp) return 0;
+    let add = bonus, floor = 0, any = bonus !== 0;
+    for (const e of effs ?? []) {
+      if (e.kind === 'xp') { add += e.amount; floor += e.amount; any = true; }
+      else if (e.kind === 'xpToLevel') { floor = Math.max(floor, xp.levelXp(e.level)); any = true; }
+    }
+    if (!any) return 0;
+    pays.push([{ add, floor: Math.max(0, floor), key: group ?? key }]);
+    return pays.length - 1;
+  };
+  const payPairs = new Map<string, number>();
+  const payThen = (a: number, b: number): number => {
+    if (!a || !b) return a || b;
+    let id = payPairs.get(`${a},${b}`);
+    if (id === undefined) { pays.push([...pays[a]!, ...pays[b]!]); payPairs.set(`${a},${b}`, (id = pays.length - 1)); }
+    return id;
+  };
+  /** The key a once-only thing pays under: a shared attempt, else its own. */
+  const onceKey = (attempt: Id | undefined, own: string | null): string | null => (attempt ? `attempt:${attempt}` : own);
 
   // --- Each scene's ways out, compiled once ----------------------------------
   // `leave` marks the implicit way back to the hub; `when` the explore nodes,
@@ -636,33 +714,53 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const compiled: Compiled[] = ids.map((id) => {
     const s = module.scenes[id]!;
     const c: Compiled = { steps: [], leave: false, nodes: [], events: [], travel: false };
-    const out = (o: { to: Id; effects?: Effect[] }, label: string, req?: Mask, reqs?: Requirement[]) => c.steps.push(step(o.to, label, req, o.effects, reqs));
+    const grp = xp?.group?.(id);
+    const out = (o: { to: Id; effects?: Effect[] }, label: string, req?: Mask, reqs?: Requirement[], key: string | null = null, bonus = 0) =>
+      c.steps.push(step(o.to, label, req, o.effects, reqs, payOf(o.effects, key, bonus, grp)));
     switch (s.kind) {
       case 'story': case 'dialogue':
         for (const ch of s.next) {
           const req = mask(ch.requires);
-          c.steps.push(step(ch.to, `"${ch.label}"`, req, ch.effects, ch.requires));
-          if (ch.check) c.steps.push(step(ch.check.failTo, `"${ch.label}" (fails)`, req, [...(ch.effects ?? []), ...(ch.check.failEffects ?? [])], ch.requires));
+          // A `once` choice is spent when taken, pass or fail.
+          const key = onceKey(ch.attempt, ch.once ? `choice:${id}:${ch.id}` : null);
+          c.steps.push(step(ch.to, `"${ch.label}"`, req, ch.effects, ch.requires, payOf(ch.effects, key, 0, grp)));
+          if (ch.check) {
+            const effs = [...(ch.effects ?? []), ...(ch.check.failEffects ?? [])];
+            c.steps.push(step(ch.check.failTo, `"${ch.label}" (fails)`, req, effs, ch.requires, payOf(effs, key, 0, grp)));
+          }
         }
         c.leave = !s.noBack;
         break;
       case 'check': out(s.success, 'passes the check'); out(s.failure, 'fails the check'); break;
-      case 'challenge':
-        out(s.success, 'gets past'); out(s.failure, 'fails to get past');
+      case 'challenge': {
+        // Per approach, each is spent once tried, and the shared failure
+        // comes once every one is; a single-try challenge can be met again.
+        const per = s.retry === 'perApproach';
+        out(s.success, 'gets past'); out(s.failure, 'fails to get past', undefined, undefined, per ? `challenge:${id}` : null);
         for (const a of s.approaches) {
           const req = mask(a.requires);
-          if (a.success) out(a.success, `"${a.label}"`, req, a.requires);
-          if (a.failure && s.retry !== 'perApproach') out(a.failure, `"${a.label}" (fails)`, req, a.requires);
+          const key = onceKey(a.attempt, per ? `approach:${id}:${a.id}` : null);
+          if (a.success) out(a.success, `"${a.label}"`, req, a.requires, key);
+          if (a.failure && !per) out(a.failure, `"${a.label}" (fails)`, req, a.requires, key);
+          // A spent approach's own failure plays where the party stands.
+          if (a.failure && per && xp) {
+            const pay = payOf(a.failure.effects, key, 0, grp);
+            if (pay) c.steps.push(step(id, `"${a.label}" (fails)`, req, undefined, a.requires, pay));
+          }
         }
         c.leave = !s.noBack;
         break;
+      }
       case 'battle':
-        out(s.onWin, 'wins the fight');
+        // A won fight pays once (`battleWonBefore`): its encounter XP, then
+        // its win's rewards.
+        out(s.onWin, 'wins the fight', undefined, undefined, `battle:${id}`, xp?.battleXp(s) ?? 0);
         if (s.onLoss) out(s.onLoss, 'loses the fight');
         else c.steps.push(step(module.defeatScene ?? id, 'loses the fight'));
         if (s.parley) {
-          out(s.parley.success, 'talks them down');
-          if (s.parley.failure) out(s.parley.failure, 'fails to talk them down');
+          const key = onceKey(s.parley.attempt, `parley:${id}`);
+          out(s.parley.success, 'talks them down', undefined, undefined, key);
+          if (s.parley.failure) out(s.parley.failure, 'fails to talk them down', undefined, undefined, key);
         }
         c.leave = !s.noFlee && s.surprise !== 'party'; // caught out: no falling back
         break;
@@ -697,7 +795,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     return c;
   });
   const hubVisitedBits = hubs.map((h) => bit(`visited:${h}`));
-  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects), op: opFor([], [], [d.effects]) }));
+  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects), op: opFor([], [], [d.effects]), pay: payOf(d.effects, `dawn:${d.day}`) }));
   /** Where a party can sleep the night, by scene: at a camp (the place it
    *  stands in — as `campRule`), or a long rest scene. */
   const campAt = (s: Scene | undefined) =>
@@ -724,6 +822,9 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const edgeSet: number[] = [], edgeClr: number[] = [];
   // And what each edge does to the tracked tallies (an op; collect mode only).
   const edgeOp: number[] = [];
+  // And, in XP mode, what each edge pays (and how it is labelled, for those that pay).
+  const edgePay: number[] = [];
+  const edgeLabel = new Map<number, string>();
   const sceneShadowBit = ids.map((id) => sbit(`visited:${id}`));
 
   const add = (scene: number, hub: number, f: number, from: number, label: string): number => {
@@ -737,7 +838,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     return n;
   };
   /** Walk from state `n` to scene `to`, after effects. */
-  const enter = (n: number, toRef: Id, set: number, clr: number, label: string, shade?: Shade, op = 0) => {
+  const enter = (n: number, toRef: Id, set: number, clr: number, label: string, shade?: Shade, op = 0, pay = 0) => {
     const hub = hubOf[n]!;
     const target = toRef === HUB_REF ? (hub >= 0 ? hubs[hub]! : module.start) : toRef;
     const t = index.get(target);
@@ -749,6 +850,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const m = add(t, h, f, n, label);
     edgeFrom.push(n); edgeTo.push(m);
     if (collect) { edgeSet.push((shade?.sset ?? 0) | sceneShadowBit[t]!); edgeClr.push(shade?.sclr ?? 0); edgeOp.push(op); }
+    if (xp) { if (pay) edgeLabel.set(edgePay.length, label); edgePay.push(pay); }
   };
 
   const start = index.get(module.start);
@@ -767,13 +869,13 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const next = dawnSteps.find((d) => !and(f, d.bit));
     for (const st of c.steps) {
       if (!met(st.req, f, hub)) continue;
-      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`, st, st.op);
+      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`, st, st.op, st.pay);
       // A day lost may bring that morning (or may not yet).
       // The step's effects, then the morning's.
       if (st.day && next) {
         enter(n, st.to, or(or(without(st.set, next.clr), next.set), next.bit), or(st.clr, next.clr),
           `${here}: ${st.label}, and loses a day to the morning of day ${next.day}`,
-          { sset: (st.sset & ~next.sclr) | next.sset, sclr: st.sclr | next.sclr }, then(st.op, next.op));
+          { sset: (st.sset & ~next.sclr) | next.sset, sclr: st.sclr | next.sclr }, then(st.op, next.op), payThen(st.pay, next.pay));
       }
     }
     for (const nd of c.nodes) {
@@ -806,9 +908,17 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       const scene = module.scenes[here];
       const camp = isHubScene(scene) && campAt(scene);
       const label = `sleeps until the morning of day ${next.day}`;
-      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`, next, next.op);
-      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`, next, next.op);
+      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`, next, next.op, next.pay);
+      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`, next, next.op, next.pay);
     }
+  }
+
+  if (xp) {
+    // A morning the walk does not track (it changes nothing a route reads)
+    // still comes, once, after any night: its XP may land anywhere.
+    const tracked = new Set(dawns.map((d) => d.day));
+    const loose = (module.dawns ?? []).filter((d) => !tracked.has(d.day)).flatMap((d) => (pays[payOf(d.effects, `dawn:${d.day}`)] ?? []));
+    xp.onGraph({ handed, ids, sceneOf, edgeFrom, edgeTo, edgePay, pays, edgeLabel, loose });
   }
 
   // In the last chapter, a tally that never falls reads the same from any
