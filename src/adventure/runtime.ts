@@ -1434,7 +1434,7 @@ export function resolveShopOrRest(state: AdventureState, module: Module): Advent
     if (scene.variant === 'long') healParty(state.campaign, 'full');
     else shortRest(state.campaign);
     restCompanions(state, scene.variant === 'long' ? 'full' : 'short', module);
-    if (scene.variant === 'long') events.push(...endDay(state, module));
+    if (scene.variant === 'long' && !scene.sameDay) events.push(...endDay(state, module));
   }
   return [...events, ...enterScene(state, module, scene.next)];
 }

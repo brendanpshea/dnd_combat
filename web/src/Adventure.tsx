@@ -240,7 +240,8 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
   // Rest scenes auto-resolve (they only heal and advance). Shops render a panel.
   useEffect(() => {
     if (scene.kind === 'rest') {
-      const isLong = scene.variant === 'long';
+      // A sameDay rest heals but is no night, so no time to re-prepare spells.
+      const isLong = scene.variant === 'long' && !scene.sameDay;
       const evs = resolveShopOrRest(state, module);
       markRevisit(evs);
       const { overlays, banner } = presentFeedback(evs);

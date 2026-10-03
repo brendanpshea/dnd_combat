@@ -399,10 +399,15 @@ export function validateModule(module: Module): string[] {
   // to it must be a long rest: a short one returns no spell slots and no hit
   // dice, so each loss leaves the party weaker, and there is no way out.
   for (const sc of Object.values(module.scenes)) {
-    if (sc.kind !== 'battle' || !sc.noFlee || !sc.onLoss) continue;
+    if (sc.kind !== 'battle' || !sc.onLoss) continue;
     const lost = module.scenes[sc.onLoss.to];
-    if (lost?.kind === 'rest' && lost.variant === 'short' && lost.next === sc.id) {
+    if (sc.noFlee && lost?.kind === 'rest' && lost.variant === 'short' && lost.next === sc.id) {
       at(sc.id, `loses into '${lost.id}', a short rest straight back into the fight: with no way out, make it a long rest`);
+    }
+    // ...and no night passes in it: the fight is still going on, so no dawn
+    // (and nothing a dawn sets) can come between the loss and the retry.
+    if (lost?.kind === 'rest' && lost.variant === 'long' && lost.next === sc.id && !lost.sameDay) {
+      at(sc.id, `loses into '${lost.id}', a long rest straight back into the fight: no night passes mid-fight, so give it sameDay`);
     }
   }
 

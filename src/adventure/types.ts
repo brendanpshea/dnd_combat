@@ -426,7 +426,9 @@ export type Scene =
        *  conversation with someone, not a bare list. Defaults to a generic
        *  merchant archetype when absent. */
       npc?: NpcRef }
-  | { id: Id; kind: 'rest'; variant: 'short' | 'long'; next: SceneRef; intro?: Para[] }
+  /** `sameDay`: a long rest's healing without the night — a party dragged off
+   *  a fight it must go straight back into (no dawn can come mid-fight). */
+  | { id: Id; kind: 'rest'; variant: 'short' | 'long'; sameDay?: true; next: SceneRef; intro?: Para[] }
   | {
       id: Id; kind: 'ending'; outcome: 'victory' | 'defeat'; text: Para[]; art?: SceneArt; assumes?: Requirement[];
       /**
