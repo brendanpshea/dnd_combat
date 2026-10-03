@@ -546,7 +546,8 @@ the encounter XP first (each of four characters earns a quarter of it), then
 check the curve on the transcript routes, not on paper. Tune each fight for
 the level the party really meets it at.
 
-`xpToLevel` is **not** a progression mechanism. It stands in two places only:
+`xpToLevel` is **not** a progression mechanism. It stands in one place only,
+the opening; a way past a fight pays the fight's XP instead:
 
 - **The opening.** A chapter's start scene can set a fresh company's level (a
   cold start begins Part 2 at 3rd). Only the cold-start choice carries it; a

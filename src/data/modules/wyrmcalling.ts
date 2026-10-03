@@ -34,7 +34,7 @@
  * paying, scattering the herd) pays what the fight would have
  * (`avoidedFightXP`), the toll paid after the peak (`pay-late`) included
  * (docs/design-decisions.md, "Levels come from fights"). A continuing
- * company (~4,700–6,150 XP from Part 2) reaches 5th at the camp or partway
+ * company (~4,400–6,350 XP from Part 2) reaches 5th at the camp or partway
  * up the hills (the most thorough route meets the near side at 5th). No
  * fight is met at 6th: the XP ceiling in `npm run check:story` proves it
  * over every path (at most 13,786 at the stone's door, 214 short); a cold start opens at 4th (its one floor, on the
@@ -135,15 +135,6 @@ const WREN_GORGON =
   '"Past the middle pass there\'s a valley full of statues, and they\'re far too good. **Gorgon.** Don\'t let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."';
 const WREN_GIANTS =
   '"The ogre-mage and the ettin both want the valley, and neither one trusts the other."';
-/** Her beasts and statues, as they stand when the company sits down at her
- *  fire: after the peak the manticore, the herd and the gorgon have flown
- *  (`*-flown`), and she watched them come down the slope. */
-const WREN_HILLS: Para[] = [
-  { if: [{ kind: 'notFlag', flag: 'calling-peaked' }],
-    text: '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS + ' ' + WREN_GORGON },
-  { if: [{ kind: 'flag', flag: 'calling-peaked' }],
-    text: '"Right. Listen." She jabs a finger at the map. "The manticore, the boars, the thing that makes statues: they all came down the slope at us the night it peaked. What\'s still up there is on the map."' },
-];
 
 /** How {wren} hands over her notes, by what she makes of the company (her
  *  `attitude`, built in Parts 1–2). `knows`: what the warm line takes for
@@ -1213,6 +1204,10 @@ const scenes: Record<string, Scene> = {
             // After the war council she is up on the rim with the column.
             { if: [has('rim-clear')], to: 'scouts-rim' },
             { if: [{ kind: 'flag', flag: 'wren-brief' }], to: 'scouts-done' },
+            // First visited after the peak: her briefing is about hills that
+            // have since come down, and the warbands the ridge required are
+            // dealt with, so she has nothing to brief (guide: "Late visits").
+            { if: [has('calling-peaked')], to: 'scouts-late' },
             { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], to: 'scouts-fire-saved' },
           ] },
         // War assets paid at the camp (see WAR ASSETS): the marker's scene is
@@ -1363,7 +1358,8 @@ const scenes: Record<string, Scene> = {
       // `lost` (Part 1): her partner died under the horse on the marsh road.
       { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }],
         text: 'A second bow hangs unstrung from the post behind her, with {tamsin}\'s name burned into the grip. Nobody at the fire touches it.' },
-      ...WREN_HILLS,
+      '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
+      WREN_GORGON,
       'She looks up. ' + WREN_GIANTS + ' She frowns. "And the streams are walking uphill. I don\'t know what that means yet, but I\'m watching it."',
       // Only a company she walked the fen with (WREN_KNOWS); to a cold start
       // she is the reeve's scout, and it is strangers to her.
@@ -1381,7 +1377,8 @@ const scenes: Record<string, Scene> = {
     again: ['{wren} looks up from the map board. "My notes are still here when you want them," she says. "The passes won\'t read themselves."'],
     lines: [
       '**{wren}** runs the scouts\' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.',
-      ...WREN_HILLS,
+      '"Right. Listen." She jabs a finger at the map. ' + WREN_BEASTS,
+      WREN_GORGON,
       'She looks up. ' + WREN_GIANTS + ' She taps a blue line on the map. "And the streams are walking uphill. I don\'t know what that means yet, but I\'m watching it."',
       // The warm lines are for a {wren} who holds nothing against the company;
       // a cold one hands over her notes and no more (wrenSeesYouOff).
@@ -1390,6 +1387,12 @@ const scenes: Record<string, Scene> = {
       ...wrenSeesYouOff(),
     ],
     next: TAKE_NOTES,
+  },
+  'scouts-late': {
+    id: 'scouts-late', kind: 'story', art: { emoji: '🏹' },
+    assumes: [{ kind: 'noCompanion', companion: 'wren' }],
+    text: ['The scouts\' fire has burned down to coals. Its riders sleep in a heap beside it, still in their boots. Only **{wren}**, who runs the fire, is awake, scraping mud off a map. "Nothing up there I could warn you about now that you haven\'t seen for yourselves," she says.'],
+    next: [{ id: 'ok', label: 'Head back to the camp', to: 'warcamp' }], noBack: true,
   },
   'scouts-done': {
     id: 'scouts-done', kind: 'story', art: { emoji: '🏹' },

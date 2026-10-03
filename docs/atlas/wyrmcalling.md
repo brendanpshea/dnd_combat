@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-135 scenes · 217 versions · 558,616 states searched (with text conditions tracked).
+136 scenes · 222 versions · 558,616 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -43,8 +43,8 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S22** “His finger moves to the dens. "The green, blue and red dens. …”
   - **S23** “His finger moves to the dens. "The green, blue and red dens …”
 - `scouts-fire-old`, `scouts-fire-saved`:
-  - **S24** “"Right. Listen." She jabs a finger at the map. "The manticore …”
-  - **S25** “"Right. Listen." She jabs a finger at the map. "The manticore, …”
+  - **S24** “"Right. Listen." She jabs a finger at the map. "The …”
+  - **S25** “"Past the middle pass there's a valley full of statues, …”
   - **S26** “She walks you to the edge of the firelight, which …”
   - **S27** “The notes are complete and correct, the same as she …”
   - **S28** “Wren looks up from the map board. "My notes are …”
@@ -320,6 +320,7 @@ You know this man. It is **Vex**, with a captain's sash across the same coat he 
   - goes to `scouts-with-you` instead when Wren in the party
   - goes to `scouts-rim` instead when `rim-clear`
   - goes to `scouts-done` instead when `wren-brief`
+  - goes to `scouts-late` instead when `calling-peaked`
   - goes to `scouts-fire-saved` instead when Wren saved
 - **The Supply Wagons** → `wagons-carter`
   - goes to `peak-night` instead when `calling-peaked` · `peak-seen` < 1? · not `rim-clear` · `peak-held` ≥ 1?
@@ -805,39 +806,161 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 ## `scouts-fire-old` · dialogue · Wren, Chief of Scouts
 
-<sub>reads: flag:npc.wren.fate.lost, flag:calling-peaked, flag:sunken-barrows:won, flag:npc.wren.attitude, return?</sub>
+<sub>reads: flag:npc.wren.fate.lost, flag:sunken-barrows:won, flag:npc.wren.attitude, return?</sub>
 
-**15 versions** — printed once, each conditional line marked with when it shows.
+**8 versions**
 
-*lines:*
+### 1. when not Part 2 won · the first visit?
+
+**Wren, Chief of Scouts:**
 
 **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
 
-> **[when Wren lost]** A second bow hangs unstrung from the post behind her, with Tamsin's name burned into the grip. Nobody at the fire touches it.
-
-> **[when not `calling-peaked`]** "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust." "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
 <sub>(shared with: `scouts-fire-saved`)</sub>
 
-> **[when `calling-peaked`]** "Right. Listen." She jabs a finger at the map. "The manticore, the boars, the thing that makes statues: they all came down the slope at us the night it peaked. What's still up there is on the map."
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
 <sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
-> **[when Wren's regard < 0 or Wren's regard ≥ 2 — or — Part 2 won]** She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+### 2. when a return visit?
 
-> **[when Wren's regard ≥ 2]** She walks you to the edge of the firelight, which she does not do for the captain.
-
-<sub>(shared with: `scouts-fire-saved`)</sub>
-
-> **[when Wren's regard < 0]** The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
-
-<sub>(shared with: `scouts-fire-saved`)</sub>
-
-*again:*
+**Wren, Chief of Scouts:**
 
 Wren looks up from the map board. "My notes are still here when you want them," she says. "The passes won't read themselves."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 3. when Wren not lost · Wren's regard < 0 · the first visit?
+
+**Wren, Chief of Scouts:**
+
+**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
+
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+
+The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 4. when Wren not lost · Part 2 won · Wren's regard 0–1 · the first visit?
+
+**Wren, Chief of Scouts:**
+
+**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
+
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+
+### 5. when Wren not lost · Wren's regard ≥ 2 · the first visit?
+
+**Wren, Chief of Scouts:**
+
+**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
+
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+
+She walks you to the edge of the firelight, which she does not do for the captain.
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 6. when Wren lost · Wren's regard < 0 · the first visit?
+
+**Wren, Chief of Scouts:**
+
+**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
+
+A second bow hangs unstrung from the post behind her, with Tamsin's name burned into the grip. Nobody at the fire touches it.
+
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+
+The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 7. when Wren lost · Wren's regard 0–1 · the first visit?
+
+**Wren, Chief of Scouts:**
+
+**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
+
+A second bow hangs unstrung from the post behind her, with Tamsin's name burned into the grip. Nobody at the fire touches it.
+
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+
+### 8. when Wren lost · Wren's regard ≥ 2 · the first visit?
+
+**Wren, Chief of Scouts:**
+
+**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
+
+A second bow hangs unstrung from the post behind her, with Tamsin's name burned into the grip. Nobody at the fire touches it.
+
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+
+She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
+
+She walks you to the edge of the firelight, which she does not do for the captain.
 
 <sub>(shared with: `scouts-fire-saved`)</sub>
 
@@ -845,17 +968,21 @@ Wren looks up from the map board. "My notes are still here when you want them," 
 
 ## `scouts-fire-saved` · dialogue · Wren, Chief of Scouts
 
-<sub>reads: flag:calling-peaked, flag:npc.wren.attitude, return?</sub>
+<sub>reads: flag:npc.wren.attitude, return?</sub>
 
-**7 versions**
+**4 versions**
 
-### 1. when not `calling-peaked` · Wren's regard < 0 · the first visit?
+### 1. when Wren's regard < 0 · the first visit?
 
 **Wren, Chief of Scouts:**
 
 **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.
 
-"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust." "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-old`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
 <sub>(shared with: `scouts-fire-old`)</sub>
 
@@ -873,13 +1000,17 @@ Wren looks up from the map board. "My notes are still here when you want them," 
 
 <sub>(shared with: `scouts-fire-old`)</sub>
 
-### 3. when not `calling-peaked` · Wren's regard 0–1 · the first visit?
+### 3. when Wren's regard 0–1 · the first visit?
 
 **Wren, Chief of Scouts:**
 
 **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.
 
-"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust." "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+
+<sub>(shared with: `scouts-fire-old`)</sub>
+
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
 <sub>(shared with: `scouts-fire-old`)</sub>
 
@@ -887,61 +1018,17 @@ She looks up. "The ogre-mage and the ettin both want the valley, and neither one
 
 She stands, on the leg you once pulled out from under a dead horse on the marsh road, and holds the map out to you. "I counted watch-posts for you once. This is a better map. Come down off that mountain on your own feet. All of you."
 
-### 4. when not `calling-peaked` · Wren's regard ≥ 2 · the first visit?
+### 4. when Wren's regard ≥ 2 · the first visit?
 
 **Wren, Chief of Scouts:**
 
 **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.
 
-"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust." "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
 <sub>(shared with: `scouts-fire-old`)</sub>
 
-She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
-
-She stands, on the leg you once pulled out from under a dead horse on the marsh road, and holds the map out to you. "I counted watch-posts for you once. This is a better map. Come down off that mountain on your own feet. All of you."
-
-She walks you to the edge of the firelight, which she does not do for the captain.
-
-<sub>(shared with: `scouts-fire-old`)</sub>
-
-### 5. when `calling-peaked` · Wren's regard < 0 · the first visit?
-
-**Wren, Chief of Scouts:**
-
-**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.
-
-"Right. Listen." She jabs a finger at the map. "The manticore, the boars, the thing that makes statues: they all came down the slope at us the night it peaked. What's still up there is on the map."
-
-<sub>(shared with: `scouts-fire-old`)</sub>
-
-She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
-
-The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
-
-<sub>(shared with: `scouts-fire-old`)</sub>
-
-### 6. when `calling-peaked` · Wren's regard 0–1 · the first visit?
-
-**Wren, Chief of Scouts:**
-
-**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.
-
-"Right. Listen." She jabs a finger at the map. "The manticore, the boars, the thing that makes statues: they all came down the slope at us the night it peaked. What's still up there is on the map."
-
-<sub>(shared with: `scouts-fire-old`)</sub>
-
-She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
-
-She stands, on the leg you once pulled out from under a dead horse on the marsh road, and holds the map out to you. "I counted watch-posts for you once. This is a better map. Come down off that mountain on your own feet. All of you."
-
-### 7. when `calling-peaked` · Wren's regard ≥ 2 · the first visit?
-
-**Wren, Chief of Scouts:**
-
-**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads.
-
-"Right. Listen." She jabs a finger at the map. "The manticore, the boars, the thing that makes statues: they all came down the slope at us the night it peaked. What's still up there is on the map."
+"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
 <sub>(shared with: `scouts-fire-old`)</sub>
 
@@ -954,6 +1041,12 @@ She walks you to the edge of the firelight, which she does not do for the captai
 <sub>(shared with: `scouts-fire-old`)</sub>
 
 - » **Take her map-notes**
+
+## `scouts-late` · story
+
+The scouts' fire has burned down to coals. Its riders sleep in a heap beside it, still in their boots. Only **Wren**, who runs the fire, is awake, scraping mud off a map. "Nothing up there I could warn you about now that you haven't seen for yourselves," she says.
+
+- » **Head back to the camp**
 
 ## `scouts-done` · story
 

@@ -12,8 +12,7 @@ campaign is a **trilogy**: three modules, each a complete evening with its own
 region, bestiary slice, and climax, linked by **party continuation**
 (`Module.sequel` — a victory ending carries the same `CampaignState` into the
 next part). Fights are the engine of leveling. `xpToLevel` survives only as a
-cold start's opening level and as the reward for getting past a fight without
-one; the milestone floors this plan first put on finale wins and common paths
+cold start's opening level (a way past a fight pays the fight's XP); the milestone floors this plan first put on finale wins and common paths
 are gone (see the module-writing guide, "Levels come from fights", which the
 validator enforces).
 

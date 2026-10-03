@@ -17,13 +17,13 @@
  * finale (the churchyard's shadows, ghost and new-buried 2,150, the drowned
  * chapel 1,050, the corpse-lights 2,200, the Barrow Gate's watchers 1,100,
  * wights 800, the embalmed king and his soldier 2,300), then the cult at the
- * door 2,750, or 2,500 with Marrow talked down (one bronze soldier and two
- * kneelers still fight); the serpent pool optional
+ * door 2,750 (talked round, Marrow's words pay the part of the fight they
+ * save); the serpent pool optional
  * (+1,350). The XP sits early, so a carried company (~1,500–2,600 XP from
  * Part 1) reaches 4th between the chapel and the Barrow Gate, and a cold
  * start just past the Barrow Gate. The finale is the chapter's hardest fight. Every way past a fight
  * (Halden talked down, the lights skirted, the diggers slipped past, the
- * watchers or the wight stood down) pays what the fight would have
+ * watchers or the wight stood down, half of Marrow's flock) pays what the fight would have
  * (`avoidedFightXP`). Cold starts: only the cold-start choice carries
  * `xpToLevel: 3`; a continuing company arrives with what it earned.
  *
@@ -1259,7 +1259,7 @@ const scenes: Record<string, Scene> = {
     ],
     // Back up from a loss below the drop: the flock is already on its feet.
     again: ['The acolyte is still shrieking over the candles. The armour and the ghouls come for you again, with the two praying kneelers and the one bronze soldier that rose. Its twin still waits by the door, and {marrow} still has not lifted his chisel.'],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred, and as the last candle gutters the cold light goes out of its eyes. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred, and as the candles on the stair gutter the cold light goes out of its eyes. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -1340,7 +1340,7 @@ const scenes: Record<string, Scene> = {
   // Losing after Marrow has stopped believing does not make him believe again.
   'seal-doubt-lost': {
     id: 'seal-doubt-lost', kind: 'rest', variant: 'long', sameDay: true, next: 'seal-doubt',
-    intro: ['The ghouls drag you down among the candles. When you come round, you are lying by the shaft with a gravedigger\'s coat folded under your head. Below, the acolyte is still chanting, and {marrow} still has not lifted his chisel.'],
+    intro: ['The ghouls drag you down among the candles. When you come round, you are lying by the shaft with a gravedigger\'s coat folded under your head. Below, the acolyte is still shrieking, and {marrow} still has not lifted his chisel.'],
   },
   'seal-battle-lost': {
     id: 'seal-battle-lost', kind: 'rest', variant: 'long', sameDay: true, next: 'seal-battle',

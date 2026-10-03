@@ -37,10 +37,9 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // new spend: 36 / 89 / 1.19M, 23 / 84 / 97k and 34 / 203 / 559k.
   'hollow-road': { flags: 37, conditional: 91, states: 1_200_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
-  // bell for a company that never read the churchyard (+1), and Wren's hill
-  // briefing after the Calling peaks (+2).
+  // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },
-  wyrmcalling: { flags: 35, conditional: 207, states: 575_000 },
+  wyrmcalling: { flags: 35, conditional: 205, states: 575_000 },
 };
 
 /** Walk a module's data and count what the budget counts. */
