@@ -642,6 +642,16 @@ adventure's own tests, transcripts and readability included. Regenerate with
 and read the transcript diff. The full `npm test` (about two minutes, most
 of it arena simulations) is for once before a commit, not for every edit.
 
+Difficulty claims rest on `docs/balance.md`, not on the win rates in
+`src/data/encounters.ts` comments. `npm run balance` (about 30 seconds on four
+cores, two minutes with `--serial`) replays the transcript routes, reads the
+level each route really carries to each fight, and simulates every fight for a
+fresh party at that level on its own map (greedy AI both sides, 50 seeds); it
+flags fights won under 60% or met more than a level below `suggestedLevel`.
+It is too slow for `check:story` and has no staleness test, so **regenerate
+with `npm run balance` when encounters or chapters change**, and read the
+flagged rows.
+
 When several people (or agents) work at once, split the work by chapter: one
 owner per chapter file, so nobody edits a file someone else has open.
 Anything that spans chapters, or touches the engine, goes first, on its own.

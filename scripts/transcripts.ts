@@ -48,8 +48,10 @@ import {
   rollSceneCheck, nightsLeft, battleWonBefore, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
   resolveShopOrRest, dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere,
   leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, dungeonProgress,
-  endingText, dayOf,
+  endingText, dayOf, battleSurpriseOf, battleMap,
 } from '../src/adventure/runtime.js';
+import { ROOM_MAP_REF } from '../src/adventure/types.js';
+import type { MapData } from '../src/data/maps.js';
 import { type CampaignState, newCampaign, xpAward, levelForXp, itemName, fullRest } from '../src/campaign/campaign.js';
 import { seedRng } from '../src/engine/rng.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
@@ -382,6 +384,37 @@ function steered(
   return { events: act(state), ...(note ? { note } : {}) };
 }
 
+/**
+ * One fight a route stood at the door of, as `npm run balance`
+ * (scripts/balance.ts) reads it: where, against what, and with how much XP.
+ * Recorded on the first visit to the door; `how` is updated as the route
+ * deals with it (a retry after a loss or a fall-back is the same meeting).
+ */
+export interface BattleMeeting {
+  routeId: string;
+  chapterId: string;
+  chapterTitle: string;
+  sceneId: string;
+  encounterId: string;
+  /** The scene's `mapId` (`@room` for a board drawn for a dungeon room). */
+  mapId: string;
+  /** The board the fight is played on, for a given battle seed (a named map
+   *  ignores the seed; a dungeon room's board is drawn from it). */
+  board: (seed: number) => MapData;
+  /** Party XP and level on arrival at the door, before any XP the fight pays. */
+  xp: number;
+  level: number;
+  /** Who starts surprised (an authored ambush, or a sneak gone wrong). */
+  surprise?: 'party' | 'enemies';
+  /** Fought (won on the route), talked down, left by falling back, or
+   *  passed by some other way (a failed parley that routes elsewhere). */
+  how: 'fought' | 'parleyed' | 'fell back' | 'not fought';
+  /** Fights lost on the route before it was won (the unlucky route). */
+  losses: number;
+}
+
+export type BattleObserver = (m: BattleMeeting) => void;
+
 interface ChapterResult {
   module: Module;
   state: AdventureState;
@@ -478,8 +511,9 @@ class Transcript {
 
 function playChapter(
   route: Route, module: Module, state: AdventureState, opening: AdventureEvent[],
-  counts: Map<string, number>, maxSteps = 6000,
+  counts: Map<string, number>, maxSteps = 6000, onBattle?: BattleObserver,
 ): ChapterResult {
+  const meetings = new Map<string, BattleMeeting>();
   const carriedIn = { ...state.flags };
   const t = new Transcript(module, () => state);
   const dist = distancesToVictory(module);
@@ -612,20 +646,45 @@ function playChapter(
         };
         if (!fightOrder.includes(scene.id)) fightOrder.push(scene.id);
         const decision = route.battle(ctx);
+        let meeting = meetings.get(scene.id);
+        if (onBattle && !meeting) {
+          const surprise = battleSurpriseOf(state, module);
+          // A dungeon room's board depends on where the party stands; keep a
+          // copy of the state as it is now and draw from that.
+          const snap = scene.mapId === ROOM_MAP_REF ? structuredClone(state) : undefined;
+          const named = snap ? undefined : battleMap(state, module);
+          meeting = {
+            routeId: route.id, chapterId: module.id, chapterTitle: module.title,
+            sceneId: scene.id, encounterId: scene.encounterId, mapId: scene.mapId,
+            board: (seed) => {
+              if (!snap) return named!;
+              snap.campaign.rng = seed;
+              return battleMap(snap, module);
+            },
+            xp: state.campaign.xp, level: levelForXp(state.campaign.xp),
+            ...(surprise ? { surprise } : {}),
+            how: 'not fought', losses: 0,
+          };
+          meetings.set(scene.id, meeting);
+          onBattle(meeting);
+        }
         if (decision === 'parley' && opt.parley) {
           t.line(`**» [${SKILL_LABEL[opt.parley.skill as SkillId] ?? opt.parley.skill} DC ${opt.parley.dc}] ${opt.parley.label}**`);
           const events = route.check === 'natural'
             ? parleyBattle(state, module)
             : steer(route.check, () => parleyBattle(S(), module)).events;
+          if (meeting && events.some((e) => (e.type === 'check' || e.type === 'groupCheck') && e.success)) meeting.how = 'parleyed';
           t.events(events);
           break;
         }
         if (decision === 'flee' && opt.fallBack) {
+          if (meeting && meeting.how === 'not fought') meeting.how = 'fell back';
           t.line(`**» Fall back to ${opt.fallBack.title}**`);
           t.events(fleeBattle(state, module, false));
           break;
         }
         const won = route.win(ctx);
+        if (meeting) { meeting.how = 'fought'; if (!won) meeting.losses++; }
         t.line(`**» Fight — ${won ? 'won' : 'lost'}**`);
         if (won && scene.loot !== false) {
           if (!battleWonBefore(state, scene.id)) {
@@ -732,7 +791,7 @@ function flagList(flags: Record<string, boolean | number>): string {
   return keys.map((k) => `\`${k}${flags[k] === true ? '' : `=${flags[k]}`}\``).join(', ');
 }
 
-export function renderRoute(route: Route): string {
+export function renderRoute(route: Route, onBattle?: BattleObserver): string {
   const modules = route.chapters.map((id) => {
     const m = moduleById(id);
     if (!m) throw new Error(`Unknown module ${id}`);
@@ -746,7 +805,7 @@ export function renderRoute(route: Route): string {
   let opening = enterScene(state, modules[0]!, modules[0]!.start);
   for (let i = 0; i < modules.length; i++) {
     const module = modules[i]!;
-    const res = playChapter(route, module, state, opening, new Map());
+    const res = playChapter(route, module, state, opening, new Map(), undefined, onBattle);
     results.push(res);
     if (res.ending !== 'victory' || i === modules.length - 1) break;
     const sequel = modules[i + 1]!;
@@ -788,6 +847,16 @@ export function buildTranscripts(): Record<string, string> {
   const out: Record<string, string> = {};
   for (const r of ROUTES) out[`${r.id}.md`] = renderRoute(r);
   return out;
+}
+
+/**
+ * Every fight each route meets, in the order it meets them (each door once),
+ * for `npm run balance`. Plays the same routes `buildTranscripts` does.
+ */
+export function routeBattles(): { routes: Array<{ id: string; title: string; seed: number }>; meetings: BattleMeeting[] } {
+  const meetings: BattleMeeting[] = [];
+  for (const r of ROUTES) renderRoute(r, (m) => meetings.push(m));
+  return { routes: ROUTES.map((r) => ({ id: r.id, title: r.title, seed: r.seed })), meetings };
 }
 
 export const TRANSCRIPT_DIR = fileURLToPath(new URL('../docs/transcripts/', import.meta.url));
