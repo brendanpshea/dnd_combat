@@ -17,7 +17,8 @@
  * finale (the churchyard's shadows, ghost and new-buried 2,150, the drowned
  * chapel 1,050, the corpse-lights 2,200, the Barrow Gate's watchers 1,100,
  * wights 800, the embalmed king and his soldier 2,300), then the cult at the
- * door 2,750, or 900 with Marrow talked down; the serpent pool optional
+ * door 2,750, or 2,500 with Marrow talked down (one bronze soldier and two
+ * kneelers still fight); the serpent pool optional
  * (+1,350). The XP sits early, so a carried company (~1,500–2,600 XP from
  * Part 1) reaches 4th between the chapel and the Barrow Gate, and a cold
  * start just past the Barrow Gate. The finale is the chapter's hardest fight. Every way past a fight
@@ -527,8 +528,8 @@ const scenes: Record<string, Scene> = {
     // A night attack is a setback, not a payday: no XP or loot, so a
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'fen-dead', mapId: 'bog',
-    intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.'],
-    onWin: { to: '@hub', text: ['The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.'] },
+    intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. Seven shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Three of them stink worse than the fen. Behind them a tall dead soldier in green bronze wades up out of the reeds, its sword already drawn. They do not hurry. They have done this before.'],
+    onWin: { to: '@hub', text: ['The dead lie still, properly still this time, the bronze soldier in a heap among them, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.'] },
   },
   chapel: {
     id: 'chapel', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '🕯️' },
@@ -1235,10 +1236,10 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
     intro: [
-      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. {marrow} only watches, the chisel loose in his lap.',
-      'Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and {marrow} gives none.',
+      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. {marrow} only watches, the chisel loose in his lap.',
+      'At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and {marrow} gives none.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred from the door. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -1246,7 +1247,7 @@ const scenes: Record<string, Scene> = {
     id: 'marrow-spared', kind: 'dialogue', noBack: true, art: { imageId: 'loc-dungeon', emoji: '⛏️' },
     npc: speaker(NPCS.marrow!, 'the Gravedigger'),
     lines: [
-      '{marrow} looks up at the door, and at the letters he pried loose. "{^saltmere-graves}," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.',
+      '{marrow} looks up at the door, and at the letters he pried loose. "{^saltmere-graves}," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.',
       '"They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."',
     ],
     next: [

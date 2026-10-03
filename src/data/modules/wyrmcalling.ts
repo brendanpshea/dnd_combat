@@ -26,15 +26,15 @@
  * company from 4th to 5th before the stone (docs/module-writing-guide.md,
  * "Levels come from fights"). On every road up: the envoy's hired swords
  * 1,750, the griffons on the switchbacks 2,250, the flooded seam 2,800, the
- * three dens 3,775 (or the brood on the rim), the ogre-mage's hold 3,200 and
+ * three dens 9,950 (or the brood on the rim), the ogre-mage's hold 3,200 and
  * the giants' hall 2,200; the manticore and its wyvern, the boar-runs and
- * the gorgon add 6,150 more. The near side is fought at 4th and tuned for it
+ * the gorgon's herd add 9,750 more. The near side is fought at 4th and tuned for it
  * (docs/balance.md: the flooded seam and the toll-cliff are the hardest,
  * about 75% won at 4th). Every way past a fight (talking, tricking,
  * paying, scattering the herd) pays what the fight would have
  * (`avoidedFightXP`), the toll paid after the peak (`pay-late`) included
  * (docs/design-decisions.md, "Levels come from fights"). A continuing
- * company (~4,300–5,750 XP from Part 2) reaches 5th partway up the hills on
+ * company (~4,700–6,150 XP from Part 2) reaches 5th partway up the hills on
  * every transcript route; a cold start opens at 4th (its one floor, on the
  * cold-start choice) and gets there at the boar-runs. The stone is fought at 5th.
  *
@@ -225,7 +225,7 @@ const HERD_SPARED: Effect[] = [{ kind: 'setFlag', flag: 'boarruns-cleared' },
 /** A missed run across the boar-runs: a pack bursts under the herd. */
 const SCATTERED: Effect[] = [{ kind: 'gold', amount: -30 }];
 
-const GORGON_WON = { to: 'hills', text: ['The gorgon crashes onto its side with its iron plates ringing, and the green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.'],
+const GORGON_WON = { to: 'hills', text: ['The gorgon crashes onto its side with its iron plates ringing, beside the two young bulls already down among the broken statues. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.'],
   effects: [{ kind: 'setFlag', flag: 'gorgon-cleared' }, ...tally(), { kind: 'gold', amount: 100 }] } satisfies Outcome;
 
 /** The ettin talked into a fight with itself: the hall empties, no loot. It
@@ -1724,7 +1724,7 @@ const scenes: Record<string, Scene> = {
   'gorgonvale-flown': {
     id: 'gorgonvale-flown', kind: 'story', art: { emoji: '🗿' },
     assumes: [{ kind: 'flag', flag: 'calling-peaked' }],
-    text: ['The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon has gone down to the war-camp.'],
+    text: ['The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its two young bulls have gone down to the war-camp.'],
     next: [{ id: 'ok', label: 'Back to the trail', to: 'hills' }], noBack: true,
   },
   'greenden-done': {
@@ -1758,10 +1758,10 @@ const scenes: Record<string, Scene> = {
     id: 'blueden', kind: 'battle', encounterId: 'blue-dragon-den', mapId: 'ruins',
     intro: [
       'The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.',
-      'Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.',
+      'Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.',
     ],
-    again: ['The copper rods still hum on the mesa\'s broken walls. The blue wyrmling uncoils along its wall again, crackling, and the air turns sharp and metallic.'],
-    onWin: { to: 'hills', text: ['The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon\'s future. It rides out in your packs instead.'],
+    again: ['The copper rods still hum on the mesa\'s broken walls. The blue wyrmling uncoils along its wall again, crackling, and the air turns sharp and metallic. The two whirlwinds spin up between the rods, and the stone thing unfolds on the tower.'],
+    onWin: { to: 'hills', text: ['The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon\'s future. It rides out in your packs instead.'],
       effects: [{ kind: 'setFlag', flag: 'blue-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 95 }] },
   },
   'blueden-done': {
@@ -1859,13 +1859,13 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Back to the trail', to: 'hills' }], noBack: true,
   },
   redden: {
-    id: 'redden', kind: 'battle', encounterId: 'red-dragon-den', mapId: 'firepit',
+    id: 'redden', kind: 'battle', encounterId: 'red-forge', mapId: 'firepit',
     intro: [
-      'You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers.',
-      'On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light.',
+      'You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers. Three hounds as red as coals sleep among the heaps, with smoke curling from their jaws.',
+      'On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light, and its hounds rise with it.',
     ],
-    again: ['The forge-hall still smokes in its scorched bowl. The red wyrmling rises off its heap again, burning with its own light, and its kobolds run for cover.'],
-    onWin: { to: 'hills', text: ['The wyrmling\'s fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and {bram} will weigh every one twice before he pays.',
+    again: ['The forge-hall still smokes in its scorched bowl. The red wyrmling rises off its heap again, burning with its own light. Its three hounds come off the heaps with smoke curling from their jaws, and its kobolds run for cover.'],
+    onWin: { to: 'hills', text: ['The wyrmling\'s fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and {bram} will weigh every one twice before he pays.',
       'The stone\'s song dips, and {nettle}\'s voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.'],
       effects: [{ kind: 'setFlag', flag: 'red-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 120 }] },
   },
@@ -1876,15 +1876,15 @@ const scenes: Record<string, Scene> = {
   },
   gorgonvale: {
     id: 'gorgonvale', kind: 'story', art: { emoji: '🗿' },
-    again: ['The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils. It is not looking your way.'],
+    again: ['The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils, and two more plumes rise further down the rows. It is not looking your way.'],
     // {wren}'s notes (`wren-brief`) already named the beast; without them,
     // the valley names it itself.
     text: [
       'The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.',
-      'At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.',
+      'At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.',
       { if: [{ kind: 'notFlag', flag: 'wren-brief' }],
         text: 'Someone has scratched one word into the rock at the shepherd\'s feet, in big, shaky letters: **GORGON**.' },
-      'The bull has not noticed you yet.',
+      'None of them has noticed you yet.',
     ],
     next: [
       // Wren's clue: the statues' purses lie at their feet. One try, and the
@@ -1897,7 +1897,7 @@ const scenes: Record<string, Scene> = {
   'gorgonvale-sneak': {
     id: 'gorgonvale-sneak', kind: 'challenge', art: { emoji: '🗿' }, noBack: true,
     intro: [
-      'The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.',
+      'The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. Two younger bulls doze among the statues halfway down the rows.',
       'One wrong step on the loose rock, and you join the collection.',
     ],
     approaches: [
@@ -1915,14 +1915,14 @@ const scenes: Record<string, Scene> = {
     failure: { to: 'gorgonvale-woken', text: ['A stone arm snaps off under your elbow and hits the rock like a dropped bell. Across the valley, the gorgon\'s head comes up.'] },
   },
   'gorgonvale-fight': {
-    id: 'gorgonvale-fight', kind: 'battle', encounterId: 'gorgon-maze', mapId: 'corridor',
-    intro: ['The gorgon\'s head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering, and the valley becomes a maze of stone people with you inside it.'],
+    id: 'gorgonvale-fight', kind: 'battle', encounterId: 'gorgon-vale', mapId: 'corridor',
+    intro: ['The gorgon\'s head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering. Two younger bulls come crashing out of the rows after it, and the valley becomes a maze of stone people with you inside it.'],
     onWin: GORGON_WON,
   },
   // Caught robbing the statues: the same fight, on the gorgon's terms.
   'gorgonvale-woken': {
-    id: 'gorgonvale-woken', kind: 'battle', encounterId: 'gorgon-maze', mapId: 'corridor', surprise: 'party',
-    intro: ['The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues, and the maze closes in around you.'],
+    id: 'gorgonvale-woken', kind: 'battle', encounterId: 'gorgon-vale', mapId: 'corridor', surprise: 'party',
+    intro: ['The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues. Two younger bulls come snorting out of the rows behind you, and the maze closes in around you.'],
     onWin: GORGON_WON,
   },
   'gorgonvale-done': {

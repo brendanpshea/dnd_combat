@@ -194,9 +194,18 @@ never "the girl".
   scales) appears only where Vex is turned and Hask doesn't come: it answers
   her whistle in the unguarded hall and in her fight after Vargan turns.
 - **The Warden's door:** two soldiers of the old kings, in bronze, stand with
-  the cult (not one).
+  the cult (not one). Both fight when Marrow does (`seal-battle`). With Marrow
+  talked round (`seal-doubt`), one rises at his acolyte's scream and the other
+  stays at the door; two of the kneelers rise to fight, and the rest never
+  do.
+- **The fen dead at night (`fen-night`):** seven shapes out of the water (four
+  ghouls, three that stink worse: ghasts) and a soldier in green bronze.
 - **The toll-cliff:** the manticore keeps a wyvern on its ledge; its goblins
   stay hidden in the rocks.
+- **The valley of statues:** the gorgon (the old bull) and two younger bulls.
+- **The dens:** the red forge keeps three hounds and two kobolds; the blue
+  mesa two kobolds, two emberlings, two whirlwinds and a winged stone thing on
+  its tower. The brood on the rim is the wyrmlings alone.
 
 ## Who was where, per ledger value
 

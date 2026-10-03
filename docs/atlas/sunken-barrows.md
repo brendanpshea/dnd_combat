@@ -460,13 +460,13 @@ The old road's stones stretch on into the fog. The files of footprints are still
 
 ## `fen-night` · battle
 
-You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
+You wake to a hand on your shoulder and a blade already drawn beside you. Seven shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Three of them stink worse than the fen. Behind them a tall dead soldier in green bronze wades up out of the reeds, its sword already drawn. They do not hurry. They have done this before.
 
 **Battle:** The Fen Dead
 
 *Won:*
 
-The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
+The dead lie still, properly still this time, the bronze soldier in a heap among them, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
 
 ## `chapel` · dialogue · Brother Halden
 
@@ -1635,15 +1635,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 ## `seal-doubt` · battle
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
+At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd
 
 *Won:*
 
-The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred from the door. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1651,7 +1651,7 @@ Coins lie thick on the bottom step, thrown there by the faithful for the Warden.
 
 **Marrow, the Gravedigger:**
 
-Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.
+Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.
 
 "They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."
 
