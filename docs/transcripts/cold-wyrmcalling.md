@@ -23,7 +23,7 @@ Last season the dead of Thornwick walked out of their graves. You followed them 
 
 A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Calling Stone**," he says, and points his spear at the passes. "A black fang of rock up in the high hills. It sings, and every monster in the hills comes to listen. Down here you can't hear it yet. Up there, you will. The **Reedwife's sisters** woke it. My cousin saw them at the edge of the fen the night the barrows closed."
 
-He looks sideways at you, and then away. "There's talk round the fires that it's on you, for the hag. I lit a bonfire the night the den fell, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
+He looks sideways at you, and then away. "There's talk round the fires that it's on you, for what you did to the hag. I lit a bonfire the night the den fell, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
 Your purse still holds two seasons of the reeve's pay: the bounty for the Ashfang, and the commission for the barrows. Thornwick keeps its word.
 
@@ -109,15 +109,13 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 **Wren, Chief of Scouts**
 
-> **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young. She wears the title like a coat that fits her but embarrasses her anyway.
+> **Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
 
 > "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
 > "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
 > She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. And the ettin. Watch which head is talking." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
-
-> She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere with a sky over it this time."
 
 **» Take her map-notes**
 
@@ -211,7 +209,7 @@ The last griffon tumbles away down the loose rock. Above you the whole mountain 
 
 The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
 
-A green **wyrmling** slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon's teeth. Every bone on the tunnel floor came from something bigger than it is.
+Something green slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon's teeth. Every bone on the tunnel floor came from something bigger than it is.
 
 **» Go in after it**
 
@@ -249,7 +247,7 @@ The pool stands up into twelve feet of mountain water, in the rough shape of a g
 
 **» Fight — won**
 
-The water-giant falls apart all at once. A hundred gallons of plain water run away downhill like any other brook.
+The water-giant falls apart all at once. A hundred gallons of plain water run away downhill like any other brook, and leave the purses of the travellers it drowned lying in the mud.
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
@@ -273,7 +271,7 @@ Someone holds the middle pass, and holds it the way a soldier would. A stone for
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums.
 
-"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Pay a toll of six hundred gold, and the pass is yours. We will take our spears somewhere else. Down to your camp in the meadows, I expect, on the night the stone peaks. Or try us. We have not had a proper fight all week."
+"The stone sings," it calls down, pleasantly. "We answered first, and whoever answers first holds the pass. Six hundred gold buys it. We will take our spears somewhere else. Down to your camp in the meadows, I expect, on the night the stone peaks. Or try us. We have not had a proper fight all week."
 
 **» Take the pass by force**
 
@@ -341,7 +339,7 @@ The last harpy drops into the dark with its song broken off mid-note. You kick t
 
 The trail narrows under an overhang, and something lies along the ledge above it like a lord at his dinner table. You see a lion's body first, then folded bat's wings, then a tail bristling with black spikes.
 
-It lifts its head, and the face is a man's. It is a **manticore**, and it is in no hurry at all.
+It lifts its head, and the face is a man's, smiling.
 
 "Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with human lips, and the teeth behind them are a lion's. "You will pay in meat. I have decided."
 
@@ -395,7 +393,7 @@ The drumming turns into thunder. Two boars the size of hay-carts come down the n
 
 **» Fight — won**
 
-The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley.
+The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. A drover's torn purse hangs from the lead boar's tusk, still half full.
 
 _+40 gold (1445)_
 
@@ -467,7 +465,7 @@ The statues stand in the grass just as Wren said. One is a shepherd caught mid-s
 
 At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
 
-It has not noticed you yet.
+The bull has not noticed you yet.
 
 **» Rob the statues without waking it**
 
@@ -495,7 +493,7 @@ _Gained: Potion of Greater Healing_
 
 <sub>scene `calling-gate-clear`</sub>
 
-You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a light that hurts to look at.
+You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
@@ -507,13 +505,13 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 **Dawn — day 5.**
 
-The streams on the mountain ran uphill all night. You could hear them in the dark, chattering the wrong way.
+The stone sang all night. Loose stones crept down the slope in the dark, ticking against each other, and nothing had touched them.
 
 <sub>scene `war-council`</sub>
 
 Before you start down, horns sound behind you. Vex has marched the forward column up through the passes you cleared, and his pikes spread out along the rim to hold it.
 
-Vex is breathing hard from the climb, but his eyes are clear. "The night went our way," he says. "I didn't bury anyone."
+Vex's boots are white with rock-dust from the climb, but his eyes are clear. "The night went our way," he says. "I didn't bury anyone."
 
 Wren is first up the last slope, bow on her back and map under her arm.
 
@@ -527,7 +525,7 @@ Vex holds this column on the reeve's terms. Two of the reeve's pikemen walk behi
 
 <sub>scene `calling-approach`</sub>
 
-Down in the bowl, at the foot of the stone, the **sisters** are waiting. **Nettle**, the elder, is the hag who met you at the war-camp, and **Sedge** is the younger. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen.
+Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen.
 
 The sisters are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
@@ -567,7 +565,7 @@ The sisters come at you with green claws and burning faces. "Then we collect by 
 
 **» Fight — won**
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air.
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
@@ -609,14 +607,14 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 
 Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
 
-While you were still up in the hills, the Calling had its last night, and hardly anything came down to the war-camp. Bram tried to sell the army back its own arrows.
+After the Calling's last night, Bram tried to sell the army back its own arrows. Hardly anyone had loosed one.
 
 A fen-boy dares his friends to knock on the barrow stair. None of them do.
 
 In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain said. Vex has never opened it. It hangs on a nail by his cot, where he can see it from his pillow.
 
-Down in Thornwick, the reeve orders a plaque for the square, to mark the year of three wars. He has the wording changed twice.
+Down in Thornwick, the reeve orders a plaque for the square. He has the wording changed twice.
 
-Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
+Wren draws the road to the stone for every new scout. She marks the place where your company went down into the bowl, and the place it came back up.
 
 ### Ending: victory
