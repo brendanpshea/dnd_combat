@@ -291,12 +291,13 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['specter', 'specter', 'wight'],
   },
   // The fen's dead at night (the Sunken Barrows' risky camp on the causeway,
-  // met at 4th; no XP): four ghouls, three ghasts, and a dead soldier of the
-  // old kings in green bronze behind them. ~88% at 4th (the six alone won
-  // 100%). Part 1's marsh camp keeps `marsh-dead`.
+  // met at 4th; no XP): four ghouls and two ghasts. 100% fresh, ~70% worn at
+  // 4th; a night ambush meets a party that camped because it was spent, so
+  // the worn rate is the one to hold (a bronze soldier with them: 0% worn).
+  // Part 1's marsh camp keeps `marsh-dead`.
   'fen-dead': {
-    id: 'fen-dead', name: 'The Fen Dead', suggestedLevel: 4,
-    members: ['ghoul', 'ghoul', 'ghoul', 'ghoul', 'ghast', 'ghast', 'ghast', 'wight'],
+    id: 'fen-dead', name: 'The Fen Dead', suggestedLevel: 3,
+    members: ['ghoul', 'ghoul', 'ghoul', 'ghoul', 'ghast', 'ghast'],
   },
   // The Undercrypt's diggers (the ladder keeps `undead`): two skeletons,
   // three fresh dead and two ghouls. Met at 4th, and only by a company that

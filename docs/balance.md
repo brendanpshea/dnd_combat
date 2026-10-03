@@ -27,7 +27,7 @@ Main-path fights per chapter, counted **below / in / above** the band.
 | Chapter | Main-path fights | Bosses | Fresh | Arrival | Worn | EASY | OVER |
 |---|---|---|---|---|---|---|---|
 | The Hollow Road | 19 | 2 | 1 / 14 / 4 | 10 / 6 / 3 | 18 / 0 / 1 | 1 | 0 |
-| The Sunken Barrows | 16 | 2 | 0 / 6 / 10 | 5 / 5 / 6 | 11 / 0 / 5 | 7 | 0 |
+| The Sunken Barrows | 16 | 2 | 0 / 5 / 11 | 5 / 4 / 7 | 10 / 1 / 5 | 8 | 0 |
 | The Wyrmcalling | 17 | 2 | 0 / 11 / 6 | 8 / 4 / 5 | 14 / 0 / 3 | 3 | 0 |
 
 ### Furthest above the band
@@ -45,6 +45,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | sunken-barrows | `wights` | Wight Tomb `wight-tomb` | `corridor` | 4 (3) | 100% | 97% | 70–90% |
 | sunken-barrows | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 97% | 70–90% |
 | sunken-barrows | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 97% | 70–90% |
+| sunken-barrows | `fen-night` | The Fen Dead `fen-dead` | `bog` | 4 (3) | 100% | 70% | 70–90% |
 | sunken-barrows | `crypt-night` | The Painted Dead `painted-dead` | `corridor` | 4 (4) | 100% | 23% | 70–90% |
 | sunken-barrows | `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | 4 (3) | 98% | 63% | 70–90% |
 | sunken-barrows | `seal-breach` | The Warden's Dead `warden-dead` | `firepit` | 4 (4) | 96% | 27% | 70–90% |
@@ -55,7 +56,8 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | hollow-road | `camp-ambush` | The Marsh Dead `marsh-dead` | `bog` | 2 (2) | 92% | 13% | 70–90% |
 | hollow-road | `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | 3 (3) | 82% | 23% | 60–80% |
 | sunken-barrows | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | 4 (4) | 82% | 10% | 60–80% |
-| wyrmcalling | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | 5 (5) | 82% | 3% | 60–80% |
+
+…and 1 more (see the chapter tables).
 
 ## Flagged
 
@@ -74,6 +76,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 - `den-gate` on `corridor` at level 3: 100% fresh, 90% worn **EASY**
 - `den-pit` on `ruins` at level 3: 100% fresh, 90% worn **EASY**
 - `corpse-lights` on `bog` at level 4: 100% fresh, 100% worn **EASY**
+- `fen-dead` on `bog` at level 4: 100% fresh, 70% worn **EASY**
 - `serpent-pool` on `marsh` at level 4, foes surprised: 100% fresh, 87% worn **EASY**
 - `barrow-watchers` on `ruins` at level 4: 100% fresh, 63% worn **EASY**
 - `wight-tomb` on `corridor` at level 4: 100% fresh, 97% worn **EASY**
@@ -198,7 +201,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | trilogy-completionist | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2583 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
 | trilogy-completionist | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 4 (3151 XP) | 3 | 96% | 96% (0) | 50% | fought |  |
 | trilogy-completionist | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 4 (3414 XP) | 3 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-completionist | `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 4 (3964 XP) | 4 | 88% | 88% (0) | 0% | fought |  |
+| trilogy-completionist | `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 4 (3964 XP) | 3 | 100% | 100% (0) | 70% | fought | **EASY** |
 | trilogy-completionist | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 4 (3964 XP) | 3 | 100% | 97% (1) | 87% | fought | **EASY** |
 | trilogy-completionist | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (4302 XP) | 3 | 100% | 93% (1) | 63% | fought | **EASY** |
 | trilogy-completionist | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (4740 XP) | 3 | 100% | 100% (0) | 97% | fought | **EASY** |
@@ -253,7 +256,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | Scene(s) | Encounter | Map | Surprise | Sugg. | Levels | Fresh at low | Worn at low | Fresh at high | Worn at high | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 | routes 3 | 90% | 27% | ″ | ″ |  |
-| `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 4 | routes 4 | 88% | 0% | ″ | ″ |  |
+| `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 3 | routes 4 | 100% | 70% | ″ | ″ | **EASY** |
 | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 | routes 3–4 | 94% | 17% | 96% | 50% |  |
 | `chapel-caught` | The Drowned Chapel `drowned-chapel` | `ruins` | foes surprised | 3 | routes 3–4 | 80% | 17% | 98% | 57% |  |
 | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 3 | routes 3–4 | 100% | 97% | 100% | 100% | **EASY** |

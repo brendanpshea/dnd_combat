@@ -528,8 +528,8 @@ const scenes: Record<string, Scene> = {
     // A night attack is a setback, not a payday: no XP or loot, so a
     // risky camp can't be farmed by resting over and over.
     loot: false, encounterId: 'fen-dead', mapId: 'bog',
-    intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. Seven shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Three of them stink worse than the fen. Behind them a tall dead soldier in green bronze wades up out of the reeds, its sword already drawn. They do not hurry. They have done this before.'],
-    onWin: { to: '@hub', text: ['The dead lie still, properly still this time, the bronze soldier in a heap among them, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.'] },
+    intro: ['You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.'],
+    onWin: { to: '@hub', text: ['The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.'] },
   },
   chapel: {
     id: 'chapel', kind: 'dialogue', npc: HALDEN, art: { imageId: 'loc-temple', emoji: '🕯️' },

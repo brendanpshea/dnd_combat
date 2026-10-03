@@ -198,8 +198,8 @@ never "the girl".
   talked round (`seal-doubt`), one rises at his acolyte's scream and the other
   stays at the door; two of the kneelers rise to fight, and the rest never
   do.
-- **The fen dead at night (`fen-night`):** seven shapes out of the water (four
-  ghouls, three that stink worse: ghasts) and a soldier in green bronze.
+- **The fen dead at night (`fen-night`):** six shapes out of the water (four
+  ghouls, two that stink worse: ghasts).
 - **The toll-cliff:** the manticore keeps a wyvern on its ledge; its goblins
   stay hidden in the rocks.
 - **The valley of statues:** the gorgon (the old bull) and two younger bulls.

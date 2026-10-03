@@ -59,6 +59,7 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | The Corpse-Lights | `corpse-lights` | 3 | 2200 | 4× Will-o'-Wisp, 2× Specter |
 | The Diggers | `diggers` | 3 | 650 | 2× Skeleton, 3× Zombie, 2× Ghoul |
 | The Drowned Chapel | `drowned-chapel` | 3 | 1050 | 1× Priest, 2× Priest Acolyte, 2× Ghoul, 2× Skeleton |
+| The Fen Dead | `fen-dead` | 3 | 1700 | 4× Ghoul, 2× Ghast |
 | The Kennels | `kennel-hyenas` | 3 | 900 | 3× Giant Hyena, 3× Worg |
 | The Night Watch | `den-watch` | 3 | 800 | 1× Orc Raider, 2× Scout, 5× Worg |
 | The Pit-Brute | `den-muster` | 3 | 650 | 1× Ogre, 2× Orc Raider |
@@ -87,7 +88,6 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | The Brood on the Rim | `den-clutch-br` | 4 | 1800 | 1× Blue Dragon Wyrmling, 1× Red Dragon Wyrmling |
 | The Brood on the Rim | `den-clutch-gbr` | 4 | 2250 | 1× Green Dragon Wyrmling, 1× Blue Dragon Wyrmling, 1× Red Dragon Wyrmling |
 | The Embalmed King | `barrow-king` | 4 | 2300 | 1× Mummy, 2× Ghast, 1× Wight |
-| The Fen Dead | `fen-dead` | 4 | 2850 | 4× Ghoul, 3× Ghast, 1× Wight |
 | The Flooded Pass | `flooded-seam` | 4 | 2800 | 1× Water Elemental, 3× Ice Mephit, 1× Winter Wolf |
 | The Giants' Hall | `giants-hall` | 4 | 2200 | 1× Ettin, 2× Ogre, 2× Orc Raider |
 | The Ogre-Mage's Hold | `oni-hold` | 4 | 3200 | 1× Oni, 3× Orc Raider |

@@ -460,13 +460,13 @@ The old road's stones stretch on into the fog. The files of footprints are still
 
 ## `fen-night` · battle
 
-You wake to a hand on your shoulder and a blade already drawn beside you. Seven shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Three of them stink worse than the fen. Behind them a tall dead soldier in green bronze wades up out of the reeds, its sword already drawn. They do not hurry. They have done this before.
+You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
 
 **Battle:** The Fen Dead
 
 *Won:*
 
-The dead lie still, properly still this time, the bronze soldier in a heap among them, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
+The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
 
 ## `chapel` · dialogue · Brother Halden
 
