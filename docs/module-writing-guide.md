@@ -656,6 +656,38 @@ When several people (or agents) work at once, split the work by chapter: one
 owner per chapter file, so nobody edits a file someone else has open.
 Anything that spans chapters, or touches the engine, goes first, on its own.
 
+## Reading the atlas
+
+The transcripts (below) show a few fixed routes. A line that is wrong only on
+a route none of them takes — one that implies Wren remembers the party, shown
+to a party that never met her — is invisible there. `docs/atlas/<chapter>.md`
+shows every scene the other way round: each distinct version of its text that
+some reachable state can produce, carried choices from earlier chapters
+included, with when that version shows ("when Wren saved · Vargan spared").
+Under the versions come the scene's choices, approaches or map markers, each
+with when it is open.
+
+- **Writers: read every version of each scene you change**, not just the one
+  your route shows. Ask of each: is every line true for every party the
+  "when" admits? A scene with too many versions is printed once, each
+  conditional line marked with when it shows: read those lines against each
+  other.
+- **Reviewers, human or AI: read the atlas diff** of a content change, and
+  the whole chapter now and then. Report a wrong line with the scene id, the
+  version's "when" and the quoted line.
+- **"Never shown on any reachable route"** (per scene, and gathered at the
+  end of each file) is a line, choice or marker whose condition no reachable
+  state meets: dead text, or a condition that is wrong.
+- **What `?` means.** A condition marked `?` is one the search does not track
+  (a tally such as a regard, gold, an item, a class in the party, a return
+  visit): both ways are shown, though not every party can bring both. A flag
+  only text reads is checked one at a time, so two such flags in one "when"
+  may not go together.
+- **Regenerate** with `npm run atlas` after any module or runtime change;
+  `test/atlas.test.ts` (in `check:story`) fails until the committed files
+  match. It runs the reachability search once more per chapter, with every
+  text condition tracked (about ten seconds).
+
 ## Reading a route
 
 A scene that reads well on its own can still contradict the one before it — a

@@ -46,7 +46,9 @@ const MAX_STATES = 3_000_000;
 /** Facts that must hold (`has`), must not (`not`), and the hub the party
  *  must be at (`at`, an index into the hubs; -2 for nowhere it can be). */
 interface Mask { has: number; not: number; at?: number }
-interface Step { to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true }
+interface Step { to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true; sset: number; sclr: number }
+/** What a step does to the atlas's shadow facts (see `searchModule`). */
+interface Shade { sset: number; sclr: number }
 
 export interface ReachReport {
   errors: string[];
@@ -143,10 +145,11 @@ function sceneWords(scene: Scene, can: (reqs: Requirement[] | undefined) => bool
  *  or an NPC's campaign-wide state (`npc.…`). */
 const inherited = (flag: string) => flag.includes(':') || isNpcFlag(flag);
 
-/** The inherited flags a party's path, or a line's assumption, can depend on. */
-function carriedReads(module: Module): string[] {
+/** The inherited flags a party's path, or a line's assumption, can depend on
+ *  (and, for the atlas, whatever else `collect` asks to be tracked). */
+function carriedReads(module: Module, collect?: Collect): string[] {
   const out = new Set<string>();
-  for (const r of [...pathReads(module), ...assumedReads(module)]) {
+  for (const r of [...pathReads(module), ...assumedReads(module), ...(collect?.reads(module) ?? [])]) {
     if ((r.kind === 'flag' || r.kind === 'notFlag') && inherited(r.flag)) out.add(r.flag);
   }
   return [...out].sort();
@@ -174,6 +177,75 @@ const isHubScene = (s: Scene | undefined) => s?.kind === 'explore' || s?.kind ==
  */
 const cache = new Map<string, ReachReport>();
 
+// --- For the scene atlas (scripts/atlas.ts) -----------------------------------
+// The atlas shows every version of a scene's text that some reachable state
+// can produce. The normal check tracks only facts a party's *path* depends on;
+// a line's `if` changes no route, so its flags are not facts and the check
+// never pays for them. The atlas asks for them to be tracked too (`reads`),
+// and is handed every state each walk finds (`onRun`). None of this runs, or
+// costs anything, in `checkModuleReach`: `collect` is undefined there.
+
+/** Everything one walk found: one per mix of carried flags (see `searchChapter`). */
+export interface ReachRun {
+  /** Inherited flags (`module:flag`, `npc.…`) the walk was handed, of those
+   *  it steers by. */
+  handed: ReadonlySet<string>;
+  /** Every full mix of inherited flags a party can arrive with that this walk
+   *  stands for (they differ only in flags that steer nothing here). */
+  fulls: readonly string[][];
+  /** Inherited flags fixed for the whole walk: held iff in the arriving mix
+   *  (one of `fulls`). Any other inherited flag read is a fact, starting as
+   *  handed. */
+  fixed: ReadonlySet<string>;
+  /** Each fact's name, by bit: `flag:x`, `companion:x`, `visited:x`, `dawn:n`. */
+  facts: readonly string[];
+  hubs: readonly Id[];
+  ids: readonly Id[];
+  /** State n is (ids[sceneOf[n]], hubs[hubOf[n]] or none when -1, factsOf[n]). */
+  sceneOf: readonly number[];
+  hubOf: readonly number[];
+  factsOf: readonly number[];
+  /** What else `reads` asked about, by bit (at most 31; past them, untracked),
+   *  and by state whether each may be on there (`mayOn`) or off (`mayOff`).
+   *  Exact for each alone; two together are not known to go together. */
+  shadows: readonly string[];
+  mayOn: Int32Array;
+  mayOff: Int32Array;
+}
+interface Collect {
+  /** Requirements to track as facts beyond the path's own (a pure function
+   *  of the module: results are cached by it). */
+  reads: (m: Module) => Requirement[];
+  /** Told each walk of the chapter asked about (not of earlier chapters). */
+  onRun?: (run: ReachRun) => void;
+}
+const collectCache = new WeakMap<Collect['reads'], Map<string, ReachReport>>();
+
+/**
+ * The same search, tracking `reads` as well, with every state handed to
+ * `onRun`. Earlier chapters are searched the same way (and cached), so a flag
+ * a later chapter only *shows* text on is still carried across exactly.
+ * Slower than the check (more facts, more states), and not used by it.
+ */
+export function collectReach(
+  module: Module, reads: Collect['reads'], onRun: (run: ReachRun) => void, chapters: readonly Module[] = MODULES,
+): ReachReport {
+  const report = searchChapter(module, chapters, { reads, onRun });
+  let byReads = collectCache.get(reads);
+  if (!byReads) collectCache.set(reads, (byReads = new Map()));
+  byReads.set(JSON.stringify(module), report);
+  return report;
+}
+function collectedBefore(module: Module, chapters: readonly Module[], collect: Collect): ReachReport {
+  const byReads = collectCache.get(collect.reads);
+  const hit = byReads?.get(JSON.stringify(module));
+  if (hit) return hit;
+  const report = searchChapter(module, chapters, { reads: collect.reads });
+  if (!byReads) collectCache.set(collect.reads, new Map([[JSON.stringify(module), report]]));
+  else byReads.set(JSON.stringify(module), report);
+  return report;
+}
+
 export function checkModuleReach(module: Module, chapters: readonly Module[] = MODULES): ReachReport {
   // Other chapters (a test's own) are searched afresh: the cache is for the shipped ones.
   if (chapters !== MODULES) return searchChapter(module, chapters);
@@ -195,12 +267,12 @@ export function checkModuleReach(module: Module, chapters: readonly Module[] = M
  * saved and left behind) is never searched, and carried choices do not count
  * against the 52 facts a state can hold.
  */
-function searchChapter(module: Module, chapters: readonly Module[]): ReachReport {
-  const reads = carriedReads(module);
+function searchChapter(module: Module, chapters: readonly Module[], collect?: Collect): ReachReport {
+  const reads = carriedReads(module, collect);
   const prev = chapters.find((m) => m.sequel === module.id && m.id !== module.id);
   let handed: string[][];
   if (prev) {
-    const before = checkModuleReach(prev, chapters);
+    const before = collect ? collectedBefore(prev, chapters, collect) : checkModuleReach(prev, chapters);
     if (before.skipped) return { errors: [], states: 0, skipped: `the chapter before (${prev.id}) was not searched: ${before.skipped}` };
     handed = [[], ...(before.carried ?? [])];
   } else {
@@ -209,10 +281,15 @@ function searchChapter(module: Module, chapters: readonly Module[]): ReachReport
     if (free.length > MAX_FREE_CARRIED) return { errors: [], states: 0, skipped: `${free.length} carried flags read, with no earlier chapter to say which arrive together` };
     handed = Array.from({ length: 1 << free.length }, (_, mix) => free.filter((_, i) => mix & (1 << i)));
   }
-  // One walk per distinct mix of the flags this chapter actually reads.
+  // One walk per distinct mix of the flags this chapter actually reads. (The
+  // atlas's extra reads need no walks of their own when the chapter never
+  // changes them: such a flag is fixed for the walk and steers nothing, so
+  // `onRun` is told every full mix the walk stands for instead.)
+  const written = flagsWritten(module);
+  const walkReads = collect && prev ? [...new Set([...carriedReads(module), ...reads.filter((f) => written.has(f))])] : reads;
   const groups = new Map<string, string[][]>();
   for (const full of handed) {
-    const k = full.filter((f) => reads.includes(f)).sort().join('|');
+    const k = full.filter((f) => walkReads.includes(f)).sort().join('|');
     groups.set(k, [...(groups.get(k) ?? []), full]);
   }
   const seen = new Set<string>();
@@ -220,7 +297,7 @@ function searchChapter(module: Module, chapters: readonly Module[]): ReachReport
   const carried = new Map<string, string[]>();
   let states = 0;
   for (const [k, fulls] of groups) {
-    const run = searchModule(module, new Set(k ? k.split('|') : []), chapters);
+    const run = searchModule(module, new Set(k ? k.split('|') : []), chapters, collect, fulls);
     if (run.skipped) return { errors: [], states: states + run.states, skipped: run.skipped };
     states += run.states;
     run.seen.forEach((id) => seen.add(id));
@@ -255,7 +332,7 @@ interface Run {
   rewrites: Set<string>;
 }
 
-function searchModule(module: Module, handed: ReadonlySet<string>, chapters: readonly Module[]): Run {
+function searchModule(module: Module, handed: ReadonlySet<string>, chapters: readonly Module[], collect?: Collect, fulls: string[][] = []): Run {
   const none: Run = { errors: [], states: 0, seen: new Set(), outputs: [], rewrites: new Set() };
   const ids = Object.keys(module.scenes);
   const index = new Map(ids.map((id, i) => [id, i]));
@@ -269,6 +346,15 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   // them (NPC state), when they are facts that start as they were handed.
   const written = flagsWritten(module);
   const settled = new Set(carriedReads(module).filter((f) => !written.has(f)));
+  // What the atlas asks to track besides (nothing, for the check). An
+  // inherited flag this chapter changes becomes a fact (there are few); one
+  // it never changes is fixed for the walk, and the atlas reads it off each
+  // arriving mix (`fulls`). The rest are shadows (below), which never
+  // multiply the states.
+  const extra = collect?.reads(module) ?? [];
+  const extraFacts = extra.filter((r) => (r.kind === 'flag' || r.kind === 'notFlag') && inherited(r.flag) && written.has(r.flag));
+  const fixed = new Set([...settled, ...extra.flatMap((r) =>
+    ((r.kind === 'flag' || r.kind === 'notFlag' || r.kind === 'count') && inherited(r.flag) && !written.has(r.flag) ? [r.flag] : []))]);
   // A counted flag (a tally: set to a number, or read against one) has more
   // than two states, and a bit cannot hold it. It is left untracked, so a
   // requirement on it is taken as possible either way, like gold or items.
@@ -277,8 +363,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   ].flatMap((e) => (e.kind === 'setFlag' && typeof e.value === 'number' ? [e.flag]
     // A snapshot can hold any value its source can: never a bit.
     : e.kind === 'copyFlag' || e.kind === 'addFlag' ? [e.kind === 'copyFlag' ? e.to : e.flag] : [])));
-  for (const r of [...pathReads(module), ...assumedReads(module)]) if ((r.kind === 'flag' && typeof r.value === 'number') || r.kind === 'count') counted.add(r.flag);
-  for (const r of [...pathReads(module), ...assumedReads(module)]) {
+  for (const r of [...pathReads(module), ...assumedReads(module), ...extra]) if ((r.kind === 'flag' && typeof r.value === 'number') || r.kind === 'count') counted.add(r.flag);
+  for (const r of [...pathReads(module), ...assumedReads(module), ...extraFacts]) {
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !counted.has(r.flag)) fact(`flag:${r.flag}`);
     if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
     if (r.kind === 'visited') fact(`visited:${r.scene}`);
@@ -286,7 +372,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   for (const h of hubs) fact(`visited:${h}`);
   // What this chapter hands on, where a later chapter reads it: tracked so a
   // victory can say which mixes it carries.
-  const downstream = new Set(sequelsOf(module, chapters).flatMap(carriedReads));
+  const downstream = new Set(sequelsOf(module, chapters).flatMap((m) => carriedReads(m, collect)));
   const handsOn = [
     ...(module.carries ?? []).filter((f) => downstream.has(`${module.id}:${f}`)).map((f) => ({ flag: f, as: `${module.id}:${f}` })),
     ...[...downstream].filter((f) => isNpcFlag(f) && written.has(f)).map((f) => ({ flag: f, as: f })),
@@ -313,6 +399,17 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     return { ...none, skipped: `${facts.size} facts to track; the search packs at most ${MAX_FACTS}` };
   }
   const bit = (k: string) => (facts.has(k) ? 2 ** facts.get(k)! : 0);
+  // Shadow facts, for the atlas only: what a line's `if` reads that no route
+  // depends on. As facts, each would double the walk. Instead each edge
+  // records what it does to them, and after the walk each state learns, one
+  // shadow at a time, whether it may be on there and whether it may be off
+  // (exact for each alone; how two shadows go together is not known).
+  const shadowKey = (r: Requirement): string | null =>
+    (r.kind === 'flag' || r.kind === 'notFlag') && !inherited(r.flag) && !counted.has(r.flag) ? `flag:${r.flag}`
+      : r.kind === 'companion' || r.kind === 'noCompanion' ? `companion:${r.companion}`
+        : r.kind === 'visited' ? `visited:${r.scene}` : null;
+  const shadows = [...new Set(extra.map(shadowKey).filter((k): k is string => !!k && !facts.has(k)))].slice(0, 31);
+  const sbit = (k: string) => (shadows.includes(k) ? 1 << shadows.indexOf(k) : 0);
   // A flag read only behind a cosmetic redirect is neither a fact nor
   // settled: such a redirect is taken both ways. So is one that reads a tally
   // (a `count`), which no bit can hold: a marker may route on the valley's
@@ -342,17 +439,20 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     }
     return { has, not, ...(at !== undefined ? { at } : {}) };
   };
-  const effects = (es: Effect[] | undefined): { set: number; clr: number } => {
-    let set = 0, clr = 0;
+  const effects = (es: Effect[] | undefined): { set: number; clr: number } & Shade => {
+    let set = 0, clr = 0, sset = 0, sclr = 0;
     for (const e of es ?? []) {
-      let b = 0, on = true;
-      if (e.kind === 'setFlag') { b = bit(`flag:${e.flag}`); on = e.value !== false; }
-      else if (e.kind === 'clearFlag') { b = bit(`flag:${e.flag}`); on = false; }
-      else if (e.kind === 'joinParty') b = bit(`companion:${e.companion}`);
-      else if (e.kind === 'leaveParty') { b = bit(`companion:${e.companion}`); on = false; }
-      if (on) { set = or(set, b); clr = without(clr, b); } else { clr = or(clr, b); set = without(set, b); }
+      let k = '', on = true;
+      if (e.kind === 'setFlag') { k = `flag:${e.flag}`; on = e.value !== false; }
+      else if (e.kind === 'clearFlag') { k = `flag:${e.flag}`; on = false; }
+      else if (e.kind === 'joinParty') k = `companion:${e.companion}`;
+      else if (e.kind === 'leaveParty') { k = `companion:${e.companion}`; on = false; }
+      if (!k) continue;
+      const b = bit(k), sb = shadows.length ? sbit(k) : 0;
+      if (on) { set = or(set, b); clr = without(clr, b); sset |= sb; sclr &= ~sb; }
+      else { clr = or(clr, b); set = without(set, b); sclr |= sb; sset &= ~sb; }
     }
-    return { set, clr };
+    return { set, clr, sset, sclr };
   };
   const met = (m: Mask, f: number, h: number) => and(f, m.has) === m.has && and(f, m.not) === 0 && (m.at === undefined || m.at === h);
   const OPEN: Mask = { has: 0, not: 0 };
@@ -454,6 +554,9 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const parent: number[] = [], via: string[] = [];
   const idOf = new Map<number | string, number>();
   const edgeFrom: number[] = [], edgeTo: number[] = [];
+  // The atlas's shadows: what each edge sets and clears (collect mode only).
+  const edgeSet: number[] = [], edgeClr: number[] = [];
+  const sceneShadowBit = ids.map((id) => sbit(`visited:${id}`));
 
   const add = (scene: number, hub: number, f: number, from: number, label: string): number => {
     const key = pack(scene, hub, f);
@@ -466,7 +569,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     return n;
   };
   /** Walk from state `n` to scene `to`, after effects. */
-  const enter = (n: number, toRef: Id, set: number, clr: number, label: string) => {
+  const enter = (n: number, toRef: Id, set: number, clr: number, label: string, shade?: Shade) => {
     const hub = hubOf[n]!;
     const target = toRef === HUB_REF ? (hub >= 0 ? hubs[hub]! : module.start) : toRef;
     const t = index.get(target);
@@ -477,6 +580,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     if (hx !== undefined) { h = hx; f = or(f, hubVisitedBits[hx]!); }
     const m = add(t, h, f, n, label);
     edgeFrom.push(n); edgeTo.push(m);
+    if (collect) { edgeSet.push((shade?.sset ?? 0) | sceneShadowBit[t]!); edgeClr.push(shade?.sclr ?? 0); }
   };
 
   const start = index.get(module.start);
@@ -495,12 +599,13 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const next = dawnSteps.find((d) => !and(f, d.bit));
     for (const st of c.steps) {
       if (!met(st.req, f, hub)) continue;
-      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`);
+      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`, st);
       // A day lost may bring that morning (or may not yet).
       // The step's effects, then the morning's.
       if (st.day && next) {
         enter(n, st.to, or(or(without(st.set, next.clr), next.set), next.bit), or(st.clr, next.clr),
-          `${here}: ${st.label}, and loses a day to the morning of day ${next.day}`);
+          `${here}: ${st.label}, and loses a day to the morning of day ${next.day}`,
+          { sset: (st.sset & ~next.sclr) | next.sset, sclr: st.sclr | next.sclr });
       }
     }
     for (const nd of c.nodes) {
@@ -525,9 +630,33 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       const scene = module.scenes[here];
       const camp = isHubScene(scene) && campAt(scene);
       const label = `sleeps until the morning of day ${next.day}`;
-      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`);
-      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`);
+      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`, next);
+      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`, next);
     }
+  }
+
+  if (collect?.onRun) {
+    // Shadows forward along every edge, to a fixed point: a shadow may be on
+    // in a state if some edge in leaves it on (or sets it), and likewise off.
+    const N = sceneOf.length;
+    const mayOn = new Int32Array(N), mayOff = new Int32Array(N);
+    const out = new Int32Array(N + 1);
+    for (const f of edgeFrom) out[f + 1]!++;
+    for (let i = 0; i < N; i++) out[i + 1]! += out[i]!;
+    const order = new Int32Array(edgeFrom.length), fill = out.slice(0, N);
+    for (let e = 0; e < edgeFrom.length; e++) order[fill[edgeFrom[e]!]!++] = e;
+    mayOn[0] = sceneShadowBit[start]!; mayOff[0] = ~sceneShadowBit[start]!;
+    const queued = new Uint8Array(N); const work = [0]; queued[0] = 1;
+    while (work.length) {
+      const n = work.pop()!; queued[n] = 0;
+      for (let i = out[n]!; i < out[n + 1]!; i++) {
+        const e = order[i]!, m = edgeTo[e]!;
+        const on = mayOn[m]! | (mayOn[n]! & ~edgeClr[e]!) | edgeSet[e]!;
+        const off = mayOff[m]! | (mayOff[n]! & ~edgeSet[e]!) | edgeClr[e]!;
+        if (on !== mayOn[m] || off !== mayOff[m]) { mayOn[m] = on; mayOff[m] = off; if (!queued[m]) { queued[m] = 1; work.push(m); } }
+      }
+    }
+    collect.onRun({ handed, fulls, fixed, facts: factNames, hubs, ids, sceneOf, hubOf, factsOf, shadows, mayOn, mayOff });
   }
 
   // --- What it found -------------------------------------------------------------
@@ -537,6 +666,18 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
 
   const victory = (n: number) => { const s = module.scenes[ids[sceneOf[n]!]!]; return s?.kind === 'ending' && s.outcome === 'victory'; };
   const N = sceneOf.length;
+  // What a victory hands on.
+  const byMix = new Map<number, string[]>();
+  const handBits = handsOn.map((h) => bit(`flag:${h.flag}`));
+  for (let n = 0; n < N; n++) {
+    if (!victory(n)) continue;
+    const m = handBits.reduce((acc, b) => or(acc, and(factsOf[n]!, b)), 0);
+    if (!byMix.has(m)) byMix.set(m, handsOn.filter((_, i) => and(factsOf[n]!, handBits[i]!)).map((h) => h.as));
+  }
+  const outputs = [...byMix.values()];
+  const rewrites = new Set(handsOn.filter((h) => isNpcFlag(h.flag)).map((h) => h.flag));
+  // The atlas wants the states and what is handed on, not the findings.
+  if (collect) return { errors, states: N, seen: seenScenes, outputs, rewrites };
   // A module with a victory ending: a state that cannot reach one is stranded,
   // even in a run (a mix of carried choices) where none is reached at all.
   if (Object.values(module.scenes).some((sc) => sc.kind === 'ending' && sc.outcome === 'victory')) {
@@ -699,13 +840,5 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     }
   }
 
-  // What a victory hands on.
-  const outputs = new Map<number, string[]>();
-  const handBits = handsOn.map((h) => bit(`flag:${h.flag}`));
-  for (let n = 0; n < N; n++) {
-    if (!victory(n)) continue;
-    const m = handBits.reduce((acc, b) => or(acc, and(factsOf[n]!, b)), 0);
-    if (!outputs.has(m)) outputs.set(m, handsOn.filter((_, i) => and(factsOf[n]!, handBits[i]!)).map((h) => h.as));
-  }
-  return { errors, states: N, seen: seenScenes, outputs: [...outputs.values()], rewrites: new Set(handsOn.filter((h) => isNpcFlag(h.flag)).map((h) => h.flag)) };
+  return { errors, states: N, seen: seenScenes, outputs, rewrites };
 }

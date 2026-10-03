@@ -22,6 +22,7 @@
     "web:typecheck": "tsc -p web/tsconfig.json",
     "reference": "tsx scripts/reference.ts",
     "transcripts": "tsx scripts/transcripts.ts",
+    "atlas": "tsx scripts/atlas.ts",
     "balance": "tsx scripts/balance.ts",
     "art-registry": "tsx scripts/art-registry.ts",
     "svg-frame": "tsx scripts/svg-item-frame.ts",
@@ -33,7 +34,7 @@
     "arena-eda": "tsx scripts/arena-eda.ts",
     "dungeon:preview": "tsx scripts/dungeon-preview.ts",
     "module:map": "tsx scripts/module-map.ts",
-    "check:story": "tsc --noEmit -p . && tsx scripts/check-story.ts && vitest run --exclude '.claude/**' test/adventure.test.ts test/adventure-carry.test.ts test/adventure-chain.test.ts test/adventure-companions.test.ts test/adventure-door.test.ts test/assumptions.test.ts test/attempts.test.ts test/canon-trilogy.test.ts test/canon.test.ts test/cast.test.ts test/clock.test.ts test/dungeon.test.ts test/locked-rolls.test.ts test/module-map.test.ts test/npc-names.test.ts test/npc-state.test.ts test/npcs.test.ts test/one-time.test.ts test/paragraphs.test.ts test/reach-flight.test.ts test/reach.test.ts test/readability.test.ts test/return-intros.test.ts test/transcripts.test.ts test/repetition.test.ts test/at.test.ts test/won-once.test.ts test/ledger.test.ts test/reach-count.test.ts"
+    "check:story": "tsc --noEmit -p . && tsx scripts/check-story.ts && vitest run --exclude '.claude/**' test/adventure.test.ts test/adventure-carry.test.ts test/adventure-chain.test.ts test/adventure-companions.test.ts test/adventure-door.test.ts test/assumptions.test.ts test/attempts.test.ts test/canon-trilogy.test.ts test/canon.test.ts test/cast.test.ts test/clock.test.ts test/dungeon.test.ts test/locked-rolls.test.ts test/module-map.test.ts test/npc-names.test.ts test/npc-state.test.ts test/npcs.test.ts test/one-time.test.ts test/paragraphs.test.ts test/reach-flight.test.ts test/reach.test.ts test/readability.test.ts test/return-intros.test.ts test/transcripts.test.ts test/atlas.test.ts test/repetition.test.ts test/at.test.ts test/won-once.test.ts test/ledger.test.ts test/reach-count.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
