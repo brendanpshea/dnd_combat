@@ -53,7 +53,7 @@ Her hired swords were real enough. They stay where they fell.
 
 <sub>scene `envoys-won`</sub>
 
-The command tent stands open. Inside, maps cover a table, and a grey-haired captain sits with a sword across his knees. He watches you duck in with a tired calm, as if his bad guesses keep coming true and he has stopped minding.
+The command tent stands open. Inside, maps cover a table, and a grey-haired captain sits with a sword across his knees. He watches you duck in with a tired calm.
 
 "She's been at my patrols all week." He nods at the tent flap. "You're the first she's stopped to talk to. You did better than they did."
 
@@ -61,9 +61,9 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. He kept a lone fire in the chief's den, apart from the rest, and he made no deal with you. "The chief's guard answered to me," he says. "I could have stood him down, and I let him fight you instead. I've thought about that."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down, and I let him fight you instead. I've thought about that."
 
-The morning after, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
+The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
@@ -115,7 +115,7 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 > "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
-> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other. And the ettin. Watch which head is talking." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+> She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
 **» Take her map-notes**
 
@@ -261,13 +261,13 @@ _+50 gold (1025)_
 
 The stone's note is louder this morning.
 
-A rider from the scouts' fire brings Wren's word at first light. Three more nights before the Calling peaks, she reckons, and not one more.
+A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Middle Pass
 
 <sub>scene `onihold`</sub>
 
-Someone holds the middle pass, and holds it the way a soldier would. A stone fort stands across it, rebuilt in a week by hands that lift boulders like loaves of bread. Guard posts of sharpened pine ring its walls, and a horn hangs by the gate. It has sounded once today.
+A stone fort stands across the middle pass, rebuilt in a week by hands that lift boulders like loaves of bread. Guard posts of sharpened pine ring its walls, and a horn hangs by the gate. It has sounded once today.
 
 Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums.
 
@@ -277,7 +277,7 @@ Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and 
 
 <sub>scene `onihold-fight`</sub>
 
-The horn sounds twice, and the gate opens on the ogre-mage's guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders, like drilled soldiers. A scarred old orc calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.
+The horn sounds twice, and the gate opens on the ogre-mage's guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders. The elder of the two, scarred to the eyebrows, calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.
 
 **Battle:** The Ogre-Mage's Hold <sub>(`oni-hold` on `open`)</sub>
 
@@ -403,6 +403,8 @@ _+40 gold (1445)_
 
 **Dawn — day 4.**
 
+Before first light the stone's note thins, and a woman's voice comes down the wind in its place, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
+
 → The Blue Mesa
 
 <sub>scene `blueden`</sub>
@@ -513,7 +515,7 @@ Before you start down, horns sound behind you. Vex has marched the forward colum
 
 Vex's boots are white with rock-dust from the climb, but his eyes are clear. "The night went our way," he says. "I didn't bury anyone."
 
-Wren is first up the last slope, bow on her back and map under her arm.
+**Wren**, the Chief of Scouts, is first up the last slope, bow on her back and map under her arm.
 
 "My riders were on the east line all night," Wren says. "Every one of them came back."
 
@@ -525,23 +527,29 @@ Vex holds this column on the reeve's terms. Two of the reeve's pikemen walk behi
 
 <sub>scene `calling-approach`</sub>
 
-Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen.
+Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen. The sisters' faces are burning down like candles, and the stone sings louder for every drop.
 
-The sisters are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
+"Sister-killers," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb at the water's edge each midwinter, and the Warden slept. That was the price, and it was paid. You cut her down in the chief's hall, and you left that door to a priest's book."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
 The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
 
-Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and I will hold on until it is paid." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
+Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
-**» "She fed on the people of this valley. We owe you nothing."**
+**» "She fed on the people of this valley. We owe you nothing." — Nettle wants a fight. Sedge wants something else.**
 
 <sub>scene `answer-defiant`</sub>
 
 Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and not one of the dead walked. Set that against your carters."
 
 Sedge does not laugh. "Ask your barrows what her fall bought you," she says, very quietly, and turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
+
+**» Ask Sedge to take up her sister's vigil**
+
+<sub>scene `vigil-refused-defiant`</sub>
+
+Sedge does not turn from the stone. "You owe nothing?" she says. "Then neither do we." Nettle laughs, and sings louder.
 
 **» Tear them out of the stone**
 
@@ -551,7 +559,7 @@ Sedge has her hands sunk to the wrist in the black rock, and the stone is drinki
 
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
 
-**» Drag Nettle out while she rages — She is angrier than she is careful.**
+**» Drag Nettle out first — She is angrier than she is careful.**
 
 `[Athletics DC 11 — Arthur the Bold rolls 12 — passed]`
 
@@ -573,7 +581,7 @@ _+200 gold (1950)_
 
 <sub>scene `calling-won`</sub>
 
-Your cleric kneels by the dry reeds and says the short prayer for the dead over them. It is the only one the sisters will get.
+Your cleric scatters a handful of grit over the dry reeds and says the short prayer for the dead. It is the only one the sisters will get.
 
 Below you, pass by pass, the hills go quiet. Out on the slopes, things that were walking toward the valley stop, shake their heads, and turn back toward their own high places. The wingbeats fade off the wind.
 
@@ -587,7 +595,7 @@ You reach the war-camp with Vex's column at your back. The camp has stopped bein
 
 At the camp gate Vex shakes your hand, once. "The Calling's broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."
 
-**Wren** walks in beside you, with every pass on the way down marked on her map. She looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.
+**Wren** comes in behind the column, with every pass on the way down marked on her map. She nods to your company, once, and goes straight to Vex with her report.
 
 Your fighter sits down on the first barrel inside the gate, and does not get up again until morning.
 
@@ -613,7 +621,7 @@ A fen-boy dares his friends to knock on the barrow stair. None of them do.
 
 In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain said. Vex has never opened it. It hangs on a nail by his cot, where he can see it from his pillow.
 
-Down in Thornwick, the reeve orders a plaque for the square. He has the wording changed twice.
+Down in Thornwick, the reeve orders a plaque for the square, for the war-camp on the meadows. He has the wording changed twice.
 
 Wren draws the road to the stone for every new scout. She marks the place where your company went down into the bowl, and the place it came back up.
 

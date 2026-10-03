@@ -11,6 +11,7 @@
 ## Flagged
 
 - `spiders` on `marsh` at level 1: 52% **LOW** — met by trilogy-unlucky
+- `elemental-cataclysm` on `firepit` at level 4: 16% **LOW** **UNDER** (sugg. 6) — met by trilogy-unlucky
 
 ## The Hollow Road `hollow-road`
 
@@ -231,9 +232,9 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | trilogy-unlucky | `tollcliff-stung` | Manticore Cliff `manticore-cliff` | `cliff` | party surprised | 4 (4421 XP) | 3 | 100% | fought |  |
 | trilogy-unlucky | `boarruns-fight` | Boar Stampede `boar-stampede` | `pass` | — | 4 (4621 XP) | 3 | 100% | fought |  |
 | trilogy-unlucky | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 4 (5371 XP) | 3 | 100% | fought (lost 1 first) |  |
-| trilogy-unlucky | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 (6146 XP) | 4 | 98% | fought |  |
-| trilogy-unlucky | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 5 (6671 XP) | 4 | 100% | fought |  |
-| trilogy-unlucky | `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | party surprised | 5 (7121 XP) | 6 | 80% | fought (lost 1 first) |  |
+| trilogy-unlucky | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 (5371 XP) | 4 | 98% | fought |  |
+| trilogy-unlucky | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 4 (5896 XP) | 4 | 100% | fought |  |
+| trilogy-unlucky | `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 4 (6346 XP) | 6 | 16% | fought (lost 1 first) | **LOW** **UNDER** (sugg. 6) |
 | cold-wyrmcalling | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (2700 XP) | 4 | 100% | fought |  |
 | cold-wyrmcalling | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (3155 XP) | 4 | 100% | fought |  |
 | cold-wyrmcalling | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (3605 XP) | 2 | 100% | fought |  |
@@ -267,15 +268,14 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | `gorgonvale-fight` | Gorgon Lair `gorgon-maze` | `corridor` | — | 5 | routes 5 | 100% | ″ |  |
 | `gorgonvale-woken` | Gorgon Lair `gorgon-maze` | `corridor` | party surprised | 5 | routes 5 | 100% | ″ |  |
 | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 | routes 4–5 | 98% | 100% |  |
-| `steading-raided` | The Raided Hall `giants-raided` | `ruins` | — | 5 | not met; late chapter 5 | 100% | ″ |  |
-| `clutch-g` | The Brood on the Rim `den-clutch-g` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
-| `clutch-b` | The Brood on the Rim `den-clutch-b` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
+| `steading-raided` | The Raided Hall `giants-raided` | `ruins` | — | 5 | not met; late chapter 4–5 | 100% | 100% |  |
+| `clutch-g` | The Brood on the Rim `den-clutch-g` | `open` | — | 4 | not met; late chapter 4–5 | 100% | 100% |  |
+| `clutch-b` | The Brood on the Rim `den-clutch-b` | `open` | — | 4 | not met; late chapter 4–5 | 100% | 100% |  |
 | `clutch-r` | The Brood on the Rim `den-clutch-r` | `open` | — | 4 | routes 5 | 100% | ″ |  |
-| `clutch-gb` | The Brood on the Rim `den-clutch-gb` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
-| `clutch-gr` | The Brood on the Rim `den-clutch-gr` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
-| `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 4 | routes 5 | 100% | ″ |  |
-| `clutch-gbr` | The Brood on the Rim `den-clutch-gbr` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
+| `clutch-gb` | The Brood on the Rim `den-clutch-gb` | `open` | — | 4 | not met; late chapter 4–5 | 100% | 100% |  |
+| `clutch-gr` | The Brood on the Rim `den-clutch-gr` | `open` | — | 4 | not met; late chapter 4–5 | 100% | 100% |  |
+| `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 4 | routes 4 | 100% | ″ |  |
+| `clutch-gbr` | The Brood on the Rim `den-clutch-gbr` | `open` | — | 4 | not met; late chapter 4–5 | 100% | 100% |  |
 | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 | routes 5 | 84% | ″ |  |
 | `sisters-battle-cracked` | The Sisters at the Stone `sisters-at-stone` | `firepit` | party surprised | 5 | routes 5 | 84% | ″ |  |
-| `calling-battle` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 6 | routes 5 | 62% | ″ |  |
-| `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | party surprised | 6 | routes 5 | 80% | ″ |  |
+| `calling-battle`, `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 6 | routes 4 | 16% | ″ | **LOW** **UNDER** (sugg. 6) |
