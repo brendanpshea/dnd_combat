@@ -149,7 +149,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
+"Buy a healing potion at the market before you go," Mira says. "I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -2109,9 +2109,7 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 > A second bow hangs unstrung from the post behind her, with Tamsin's name burned into the grip. Nobody at the fire touches it.
 
-> "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
-
-> "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+> "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust." "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
 > She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
@@ -2615,7 +2613,7 @@ You stumble over the old words. "Even the words are forgotten," Sedge says, and 
 
 <sub>scene `vigil-refused-rueful`</sub>
 
-Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The light round the stone thickens, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
@@ -2641,7 +2639,7 @@ Nettle smiles at you the whole time you pull. You let go with burned palms.
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
-**» Say Halden's rites over the stone — Its oldest words are for shutting doors.**
+**» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
 
 `[Religion DC 11 — Morgan Le Fey rolls 7 — failed]`
 
@@ -2729,7 +2727,7 @@ Your fighter sits down on the first barrel inside the gate, and does not get up 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says, and moves on down the line before you can thank her.
 
 The pikemen still keep the list of names from the Calling's last night. Once a year they stand where the torches went out, and read it aloud.
 

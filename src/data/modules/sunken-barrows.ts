@@ -66,14 +66,23 @@ const LITURGY = '*Lie down and be at peace. Your work is done. The bell will wak
 const LITURGY_TRY = (dc: number): Choice => ({ id: 'speak', label: `[Religion DC ${dc}] Speak his own liturgy back to him`, to: 'chapel-saved',
   attempt: 'liturgy', check: { skill: 'religion', dc, failTo: 'chapel-unheard' } });
 
-/** The same one try, for a company that read the ranks in the churchyard
- *  (`graves-ranks`) and has no priest's words: his own bell, turned on him.
- *  `halden-bell` tells `chapel-saved` which way he was reached (text only). */
-const BELL_TRY = (dc: number): Choice => ({ id: 'bell', label: `[Persuasion DC ${dc}] Remind him of the bell he rang in {thornwick}`, to: 'chapel-saved',
-  hint: 'In the churchyard the dead stepped out in ranks, as if they were called.',
-  requires: [{ kind: 'flag', flag: 'graves-ranks' }], hideWhenBlocked: true,
-  effects: [{ kind: 'setFlag', flag: 'halden-bell' }],
-  attempt: 'liturgy', check: { skill: 'persuasion', dc, failTo: 'chapel-unrung' } });
+/** The same one try, for a company with no priest's words: his own bell,
+ *  turned on him. Easier for a company that read the ranks in the churchyard
+ *  (`graves-ranks`); any company can try it, so the mercy is never
+ *  Religion-only (docs/design-decisions.md). `halden-bell` tells
+ *  `chapel-saved` which way he was reached (text only). */
+const BELL_TRY = (dc: number): Choice[] => [
+  { id: 'bell', label: `[Persuasion DC ${dc}] Remind him of the bell he rang in {thornwick}`, to: 'chapel-saved',
+    hint: 'In the churchyard the dead stepped out in ranks, as if they were called.',
+    requires: [{ kind: 'flag', flag: 'graves-ranks' }], hideWhenBlocked: true,
+    effects: [{ kind: 'setFlag', flag: 'halden-bell' }],
+    attempt: 'liturgy', check: { skill: 'persuasion', dc, failTo: 'chapel-unrung' } },
+  { id: 'bell-plain', label: `[Persuasion DC ${dc + 3}] Remind him of the bell he rang in {thornwick}`, to: 'chapel-saved',
+    hint: 'Back in {thornwick}, his bell has rung only for alarms since he left.',
+    requires: [{ kind: 'notFlag', flag: 'graves-ranks' }], hideWhenBlocked: true,
+    effects: [{ kind: 'setFlag', flag: 'halden-bell' }],
+    attempt: 'liturgy', check: { skill: 'persuasion', dc: dc + 3, failTo: 'chapel-unrung' } },
+];
 
 /** The old reeve left in the cut: the grave-goods instead. */
 const GRAVE_GOODS: Effect[] = [{ kind: 'setFlag', flag: 'diggers-passed' }, { kind: 'gold', amount: 40 }, { kind: 'addItem', itemId: 'silvered-spear' }];
@@ -550,7 +559,7 @@ const scenes: Record<string, Scene> = {
       { id: 'insight', label: '[Insight DC 13] Read what is wearing him', to: 'chapel-read',
         once: true, check: { skill: 'insight', dc: 13, failTo: 'chapel-unread' } },
       LITURGY_TRY(14),
-      BELL_TRY(12),
+      ...BELL_TRY(12),
       { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight' },
     ],
   },
@@ -558,7 +567,7 @@ const scenes: Record<string, Scene> = {
   'chapel-unread': {
     id: 'chapel-unread', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '🕯️' },
     text: ['You watch him for a long breath and learn nothing. His calm is perfect all the way down, if there is a man under it at all. "Will you kneel?" {halden} asks again, gently, as if you might not have heard.'],
-    next: [LITURGY_TRY(14), BELL_TRY(12), { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight' }],
+    next: [LITURGY_TRY(14), ...BELL_TRY(12), { id: 'refuse', label: 'Refuse the sermon and draw', to: 'chapel-fight' }],
   },
   // Read him: strike first, or speak to the man still under it.
   'chapel-read': {
@@ -571,7 +580,7 @@ const scenes: Record<string, Scene> = {
       { id: 'strike', label: 'Strike before it moves', to: 'chapel-caught' },
       // Knowing where the man is, the words find him more easily.
       LITURGY_TRY(11),
-      BELL_TRY(10),
+      ...BELL_TRY(10),
     ],
   },
   // The liturgy, said wrong: the thing in him takes the words for its own.
@@ -587,7 +596,10 @@ const scenes: Record<string, Scene> = {
   'chapel-unrung': {
     id: 'chapel-unrung', kind: 'story', noBack: true, art: { imageId: 'loc-temple', emoji: '🔔' },
     text: [
-      'You tell him what you read in his churchyard. His dead stepped out in ranks, oldest first. He rang his bell over every one of them.',
+      { if: [{ kind: 'flag', flag: 'graves-ranks' }],
+        text: 'You tell him what you read in his churchyard. His dead stepped out in ranks, oldest first. He rang his bell over every one of them.' },
+      { if: [{ kind: 'notFlag', flag: 'graves-ranks' }],
+        text: 'You tell him his bell in {thornwick} has rung for nothing but alarms since he left, and not once over a grave.' },
       '{halden} listens with his head on one side, smiling. "Yes," says the thing in his mouth. "They came when they were called. Good parishioners do." His acolytes step down off the altar, and the dead in the water turn toward you.',
     ],
     next: [{ id: 'fight', label: 'Draw steel', to: 'chapel-fight' }],
@@ -611,7 +623,9 @@ const scenes: Record<string, Scene> = {
     lines: [
       { if: [{ kind: 'notFlag', flag: 'halden-bell' }],
         text: 'You know the words {halden} said over {thornwick}\'s dead. They are cut on every old headstone in his churchyard. You say them back to him, slow and plain. ' + LITURGY },
-      { if: [{ kind: 'flag', flag: 'halden-bell' }],
+      { if: [{ kind: 'flag', flag: 'halden-bell' }, { kind: 'notFlag', flag: 'graves-ranks' }],
+        text: 'You tell him his bell in {thornwick} has rung for nothing but alarms since he left, and not once over a grave. "You rang it to lay them down, Brother," you say. "Whose bell are you ringing now?"' },
+      { if: [{ kind: 'flag', flag: 'halden-bell' }, { kind: 'flag', flag: 'graves-ranks' }],
         text: 'You tell him what you read in his churchyard. His dead did not claw their way out. They stepped out in ranks, oldest first, like a parish called to a service. "You rang your bell in {thornwick} to lay them down, Brother," you say. "Whose bell is calling them up?"' },
       'The thing inside {halden} lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **{marrow}**, and I *thanked* him."',
       'He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."',
@@ -640,7 +654,7 @@ const scenes: Record<string, Scene> = {
       '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "Every marsh-thing that ran with the {ashfang} wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."',
       // Bound in Part 1: the note read against a keeper still alive.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
-        text: 'When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a {door-price} tied ready for {door-midwinter}. It makes no difference. A keeper held by strangers\' words keeps the price, not the watch.* {wren} reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."' },
+        text: 'When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a {door-price} penned ready for {door-midwinter}. It makes no difference. A keeper held by strangers\' words keeps the price, not the watch.* {wren} reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."' },
       'Under the altar cloth you find a healing potion that {halden} never got to drink. On the way out, {wren} sniffs one of the black candles and makes a face. "{halden} never bought these in {thornwick}. No chandler in the valley makes them."',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],
@@ -1240,10 +1254,12 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
     intro: [
-      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. {marrow} only watches, the chisel loose in his lap.',
-      'At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and {marrow} gives none.',
+      '{marrow} sits with his back against the door, his chisel loose in his lap. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. {marrow} only watches.',
+      'One of the two bronze soldiers gets to its feet at the acolyte\'s scream and draws its sword. Its twin waits for an order, and {marrow} gives none.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
+    // Back up from a loss below the drop: the flock is already on its feet.
+    again: ['The acolyte is still shrieking over the candles. The armour and the ghouls come for you again, with the two praying kneelers and the one bronze soldier that rose. Its twin still waits by the door, and {marrow} still has not lifted his chisel.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred, and as the last candle gutters the cold light goes out of its eyes. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -1366,7 +1382,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'companion', companion: 'wren' }],
         text: '{wren} comes up behind you. At the top she stands a long moment in the barrow-field, among dead who have finally stopped moving, and then she unstrings her bow.' },
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
-        text: 'Brother {halden} climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
+        text: 'Brother {halden} climbs out, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
       // One job for {wren}: the old reeve's feet if he came home, else {marrow}'s rope.
       // {marrow}'s rope stays in the company's hands: {wren}'s may be full of
       // the old reeve's feet (below).

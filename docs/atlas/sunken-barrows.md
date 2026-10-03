@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-90 scenes · 160 versions · 124,948 states searched (with text conditions tracked).
+90 scenes · 164 versions · 124,964 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -495,6 +495,7 @@ The drowned congregation still stands in its rows, and Halden still waits on the
 - » **[Insight DC 13] Read what is wearing him** [Insight DC 13] <sub>(once)</sub>
 - » **[Religion DC 14] Speak his own liturgy back to him** [Religion DC 14]
 - » **[Persuasion DC 12] Remind him of the bell he rang in Thornwick** [Persuasion DC 12] — _In the churchyard the dead stepped out in ranks, as if they were called._ <sub>open when `graves-ranks`; otherwise hidden</sub>
+- » **[Persuasion DC 15] Remind him of the bell he rang in Thornwick** [Persuasion DC 15] — _Back in Thornwick, his bell has rung only for alarms since he left._ <sub>open when not `graves-ranks`; otherwise hidden</sub>
 - » **Refuse the sermon and draw**
 
 ## `chapel-unread` · story
@@ -505,6 +506,7 @@ You watch him for a long breath and learn nothing. His calm is perfect all the w
 
 - » **[Religion DC 14] Speak his own liturgy back to him** [Religion DC 14]
 - » **[Persuasion DC 12] Remind him of the bell he rang in Thornwick** [Persuasion DC 12] — _In the churchyard the dead stepped out in ranks, as if they were called._ <sub>open when `graves-ranks`; otherwise hidden</sub>
+- » **[Persuasion DC 15] Remind him of the bell he rang in Thornwick** [Persuasion DC 15] — _Back in Thornwick, his bell has rung only for alarms since he left._ <sub>open when not `graves-ranks`; otherwise hidden</sub>
 - » **Refuse the sermon and draw**
 
 ## `chapel-read` · story
@@ -518,6 +520,7 @@ But his hands are shaking on the altar rail, and somewhere under that thing Hald
 - » **Strike before it moves**
 - » **[Religion DC 11] Speak his own liturgy back to him** [Religion DC 11]
 - » **[Persuasion DC 10] Remind him of the bell he rang in Thornwick** [Persuasion DC 10] — _In the churchyard the dead stepped out in ranks, as if they were called._ <sub>open when `graves-ranks`; otherwise hidden</sub>
+- » **[Persuasion DC 13] Remind him of the bell he rang in Thornwick** [Persuasion DC 13] — _Back in Thornwick, his bell has rung only for alarms since he left._ <sub>open when not `graves-ranks`; otherwise hidden</sub>
 
 ## `chapel-unheard` · story
 
@@ -528,6 +531,18 @@ They come out wrong, or too late. Halden's smile only widens. "Yes," says the th
 - » **Draw steel**
 
 ## `chapel-unrung` · story
+
+<sub>reads: flag:graves-ranks</sub>
+
+**2 versions**
+
+### 1. when not `graves-ranks`
+
+You tell him his bell in Thornwick has rung for nothing but alarms since he left, and not once over a grave.
+
+Halden listens with his head on one side, smiling. "Yes," says the thing in his mouth. "They came when they were called. Good parishioners do." His acolytes step down off the altar, and the dead in the water turn toward you.
+
+### 2. when `graves-ranks`
 
 You tell him what you read in his churchyard. His dead stepped out in ranks, oldest first. He rang his bell over every one of them.
 
@@ -573,9 +588,9 @@ The dead are still shuffling into their rows when the last of them falls. Halden
 
 ## `chapel-saved` · dialogue · Brother Halden
 
-<sub>reads: flag:halden-bell, flag:npc.reedwife.fate.bound</sub>
+<sub>reads: flag:halden-bell, flag:graves-ranks, flag:npc.reedwife.fate.bound</sub>
 
-**4 versions**
+**6 versions**
 
 ### 1. when not `halden-bell` · Reedwife not bound
 
@@ -607,7 +622,37 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
-### 3. when `halden-bell` · Reedwife not bound
+### 3. when `halden-bell` · not `graves-ranks` · Reedwife not bound
+
+**Brother Halden:**
+
+You tell him his bell in Thornwick has rung for nothing but alarms since he left, and not once over a grave. "You rang it to lay them down, Brother," you say. "Whose bell are you ringing now?"
+
+The thing inside Halden lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **Marrow**, and I *thanked* him."
+
+He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
+
+He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "The whole town drank to her fall," she says.
+
+Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
+
+### 4. when `halden-bell` · not `graves-ranks` · Reedwife bound
+
+**Brother Halden:**
+
+You tell him his bell in Thornwick has rung for nothing but alarms since he left, and not once over a grave. "You rang it to lay them down, Brother," you say. "Whose bell are you ringing now?"
+
+The thing inside Halden lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **Marrow**, and I *thanked* him."
+
+He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
+
+He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "The whole town drank to her fall," she says.
+
+"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
+
+Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
+
+### 5. when `halden-bell` · `graves-ranks` · Reedwife not bound
 
 **Brother Halden:**
 
@@ -621,7 +666,7 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
-### 4. when `halden-bell` · Reedwife bound
+### 6. when `halden-bell` · `graves-ranks` · Reedwife bound
 
 **Brother Halden:**
 
@@ -667,7 +712,7 @@ Further down the hand starts to shake, and the nib tears the page. *The rites of
 
 "That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
-When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
+When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb penned ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -1635,15 +1680,33 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 ## `seal-doubt` · battle
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches, the chisel loose in his lap.
+<sub>reads: return?</sub>
 
-At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and Marrow gives none.
+**2 versions**
+
+### 1. when the first visit?
+
+Marrow sits with his back against the door, his chisel loose in his lap. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches.
+
+One of the two bronze soldiers gets to its feet at the acolyte's scream and draws its sword. Its twin waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd
 
 *Won:*
 
-The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred, and as the last candle gutters the cold light goes out of its eyes. When it is over, Marrow is still sitting against the door.
+
+Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
+
+### 2. when a return visit?
+
+The acolyte is still shrieking over the candles. The armour and the ghouls come for you again, with the two praying kneelers and the one bronze soldier that rose. Its twin still waits by the door, and Marrow still has not lifted his chisel.
+
+**Battle:** The Worm Without Its Shepherd
+
+*Won:*
+
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred, and as the last candle gutters the cold light goes out of its eyes. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -2295,7 +2358,7 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when Wren in the party]** Wren comes up behind you. At the top she stands a long moment in the barrow-field, among dead who have finally stopped moving, and then she unstrings her bow.
 
-> **[when Halden saved]** Brother Halden climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.
+> **[when Halden saved]** Brother Halden climbs out, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.
 
 > **[when Marrow bound · Wren's regard < 0 — or — Wren not in the party · Marrow bound]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, and leaves his rope in your hands.
 

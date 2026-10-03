@@ -615,7 +615,16 @@ once, plainly, in the interface, because a player can silence the quasit.
 Settled decisions (what is not reopened each round) are in
 `docs/design-decisions.md`.
 
-### The world bible
+### Late visits
+
+An optional NPC at a hub can be met first at any point: after a defeat sends
+the company back to town, or after the world has moved on (a peak, a fight
+won, a companion found). Advice and briefings in such a scene must hold at
+every point it can be reached. Guard what goes stale on the flag that makes
+it stale (`calling-peaked`, a scene `visited`), or say less. Check it in the
+atlas: a scene with no `reads` shows one version everywhere.
+
+## The world bible
 
 The facts the prose relies on and no rule reads live in `docs/canon.md`:
 which season each part happens in, which road, where the places lie, who looks

@@ -445,7 +445,7 @@ const scenes: Record<string, Scene> = {
   'tavern-plain': {
     id: 'tavern-plain', kind: 'story', back: true, art: { emoji: '🍺' },
     text: ['She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."',
-      '"If you find the reeve\'s scout, she\'ll tell you she\'s fine," {mira} says. "Help her anyway. Buy a healing potion at the market, too. I\'d rather not bury anyone this month." She turns back to her taps.'],
+      '"Buy a healing potion at the market before you go," {mira} says. "I\'d rather not bury anyone this month." She turns back to her taps.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
   'tavern-blank': {
