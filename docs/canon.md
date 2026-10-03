@@ -147,7 +147,8 @@ keep the two from reading alike.)
 company that executed Vargan: "wiping the same cup"); the extra cup she fills
 for the dead scout. **Her lamp:** lit in the inn's window every night from the
 night the graves opened (Part 2); she blows it out in Part 2's epilogue. She
-pours on the house three times in the trilogy ("Three times now").
+pours on the house only for a company the town thinks well of; she never
+counts the times aloud (Part 1's round depends on facts the ledger drops).
 
 **Halden.** Thornwick's priest, Brother Halden. **His prayer book** holds the
 rites of sealing, notes in his tidy hand. In the drowned chapel the party gets

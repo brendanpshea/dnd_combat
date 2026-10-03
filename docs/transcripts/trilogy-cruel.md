@@ -1231,7 +1231,7 @@ Wren is still holding the Barrow Gate when you come up. She is upright, knife ou
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
-Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
+Wren talks to the fen-folk on the road the whole way home, and not much to you.
 
 **» Go up to the reeve's hall**
 
@@ -1309,7 +1309,7 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
+He gives his name as **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
 The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 

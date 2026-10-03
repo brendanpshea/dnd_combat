@@ -1380,9 +1380,9 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
         text: 'The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.' },
       { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
-        text: 'At the edge of town {wren} stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.' },
+        text: 'At the edge of town {wren} says "Thank you," fast, to the road, and walks on before anyone can ask what for.' },
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
-        text: '{wren} walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.' },
+        text: '{wren} talks to the fen-folk on the road the whole way home, and not much to you.' },
     ],
     // The reeve's commission, counted out in the hall that evening.
     next: [{ id: 'hall', label: 'Go up to the reeve\'s hall', to: 'sb-hall', effects: [{ kind: 'gold', amount: 150 }] }],

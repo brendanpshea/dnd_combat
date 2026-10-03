@@ -2311,9 +2311,9 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when `seal-cracked`]** The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.
 
-> **[when Wren's regard ≥ 2]** At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
+> **[when Wren's regard ≥ 2]** At the edge of town Wren says "Thank you," fast, to the road, and walks on before anyone can ask what for.
 
-> **[when Wren's regard < 0]** Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
+> **[when Wren's regard < 0]** Wren talks to the fen-folk on the road the whole way home, and not much to you.
 
 - » **Go up to the reeve's hall**
 

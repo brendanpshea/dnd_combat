@@ -102,8 +102,8 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S69** “Nettle smiles at you the whole time you pull. You …”
 - `tear-loose-defiant`, `tear-loose-defiant-cracked`:
   - **S70** “Sedge has her hands sunk to the wrist in the …”
-  - **S71** “Nettle is still shouting when you take her wrists, and …”
-  - **S72** “Nettle stops shouting just in time. She drives her hands …”
+  - **S71** “Nettle is still laughing when you take her wrists, and …”
+  - **S72** “Nettle stops laughing just in time. She drives her hands …”
   - **S73** “Nettle hears your wrong note and sings right over it, …”
 - `tear-loose-cold`, `tear-loose-cold-cracked`:
   - **S74** “Sedge does not pull back, not at first. By the …”
@@ -122,7 +122,7 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `vigil-down-with-hask`, `down-with-hask`:
   - **S83** “Hask walks down at the back, the way a guard …”
 - `vigil-rueful`, `vigil-unknowing`, `vigil-sold`:
-  - **S84** “Sedge keeps her hands in the rock, but she is …”
+  - **S84** “Sedge has not looked away from you since you spoke. …”
   - **S85** “"Her pen is empty," you tell Sedge. "The carter walked …”
   - **S86** “"One pen," Sedge says. "She sat in the dark for …”
   - **S87** “"The fen-folk on the rim came up this mountain for …”
@@ -262,7 +262,7 @@ The command tent stands open. Maps cover a table, and the grey-haired captain si
 
 ## `vex-brief` · story
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
+He gives his name as **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
 The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
@@ -2363,7 +2363,7 @@ Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can 
 
 Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen. The sisters' faces are burning down like candles, and the stone sings louder for every drop.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She takes your lamb now like a dog on a leash and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -2391,7 +2391,7 @@ Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her
 
 On a ledge above the bowl crouches the manticore from the toll-cliff. It came up here to collect its meal from the hags. It watches the sisters, and licks its lips, and waits to see who wins.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She takes your lamb now like a dog on a leash and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -3342,13 +3342,13 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag Nettle out first, passed:*
 
-Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
+Nettle is still laughing when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>(shared with: `tear-loose-defiant-cracked`)</sub>
 
 *Drag Nettle out first, failed:*
 
-Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+Nettle stops laughing just in time. She drives her hands back into the rock, and her song climbs over your grunting.
 
 <sub>(shared with: `tear-loose-defiant-cracked`)</sub>
 
@@ -3536,13 +3536,13 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag Nettle out first, passed:*
 
-Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
+Nettle is still laughing when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>(shared with: `tear-loose-defiant`)</sub>
 
 *Drag Nettle out first, failed:*
 
-Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+Nettle stops laughing just in time. She drives her hands back into the rock, and her song climbs over your grunting.
 
 <sub>(shared with: `tear-loose-defiant`)</sub>
 
@@ -4649,7 +4649,7 @@ Sedge slowly shakes her head. "One of yours sold her the water, and the rest of 
 
 <sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4667,7 +4667,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 *Promise her the fen will pay the old price, passed:*
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4775,7 +4775,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 <sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -4793,7 +4793,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 *Promise her the fen will pay the old price, passed:*
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -4901,7 +4901,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 <sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -4919,7 +4919,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 *Promise her the fen will pay the old price, passed:*
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -5345,7 +5345,7 @@ Vex's clerk looks in, sees that you are breathing, and sets your kit at the foot
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 <sub>(shared with: `wc-epilogue-vigil`)</sub>
 
@@ -5459,7 +5459,7 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 <sub>(shared with: `wc-epilogue`)</sub>
 
@@ -5501,7 +5501,7 @@ Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's
 
 <sub>(shared with: `wc-epilogue`)</sub>
 
-> **[when Part 2 seal-cracked]** Deep under the fen, the knocking at the Undercrypt's door stops for good. The fen-folk leave a lamb at the water's edge each midwinter, the way their grandparents did.
+> **[when Part 2 seal-cracked]** Deep under the fen, the knocking at the Warden's door stops for good. The fen-folk leave a lamb at the water's edge each midwinter, the way their grandparents did.
 
 > **[when not Part 2 seal-cracked · Reedwife not bound]** Deep under the fen, the Warden's door stays shut. Tall shapes keep watch over it now, and the fen-folk know better than to ask their names.
 

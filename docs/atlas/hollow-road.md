@@ -2372,7 +2372,7 @@ Somewhere out there the Ashfang still have the carter they took off the marsh ro
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Vex said the chief keeps people in the pen behind the kennels for the Reedwife, and she comes for them when the moon goes dark. Three more nights of this moon, at most.
+Vex said the chief keeps people in the pen behind the kennels for the Reedwife. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
@@ -2380,7 +2380,7 @@ There is still no word of the reeve's scouts. If one of them is lying hurt out o
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Vex said the chief keeps people in the pen behind the kennels for the Reedwife, and she comes for them when the moon goes dark. Three more nights of this moon, at most.
+Vex said the chief keeps people in the pen behind the kennels for the Reedwife. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.
 
 #### when `pens-settled` · `scout-walked-past` — or — `pens-settled` · met Wren
 

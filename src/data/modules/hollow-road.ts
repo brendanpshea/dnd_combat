@@ -1982,7 +1982,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     { day: 4, text: [
       'Last night\'s moon was a thin paring of light, and it was down long before dawn.',
       { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: true }],
-        text: '{vex} said the chief keeps people in the pen behind the kennels for the {reedwife}, and she comes for them when the moon goes dark. Three more nights of this moon, at most.' },
+        text: '{vex} said the chief keeps people in the pen behind the kennels for the {reedwife}. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.' },
       // Woken on the marsh road or in town (`at` names no third map but the
       // den), or in the den itself, or on {mira}'s cot after falling there.
       ...(['square', 'trail'] as const).map((hub) => ({

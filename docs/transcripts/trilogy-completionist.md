@@ -1583,7 +1583,7 @@ Since the lead cut Wren has taken the old man's feet wherever the roof drops low
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
-At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
+At the edge of town Wren says "Thank you," fast, to the road, and walks on before anyone can ask what for.
 
 **» Go up to the reeve's hall**
 
@@ -2229,7 +2229,7 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 `[Athletics DC 11 — Arthur the Bold rolls 26 — passed]`
 
-Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
+Nettle is still laughing when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>scene `sisters-battle`</sub>
 
@@ -2279,7 +2279,7 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 After the Calling's last night, Bram tried to sell the army back its own arrows. Hardly anyone had loosed one.
 
