@@ -200,9 +200,9 @@ never "the girl".
   my back." She is his granddaughter.
 - `wyrmcalling:vigil-rueful`, `vigil-sold`, `vigil-unknowing` (Wren speaks):
   "Sedge looks at the girl, and then at you." The girl here is Wren.
-- Loose, not banned: `sunken-barrows:reeve-hall` "sold her the carters he
-  took off the marsh road" and Nettle's "your carters" (`answer-defiant`): the
-  pen held one carter. They read as "the people", and may stay.
+- Loose, not banned: Nettle's "your carters" (`answer-defiant`): the pen held
+  one carter. It reads as "the people", and may stay. (`reeve-hall` now says
+  "a carter off the marsh road… and his granddaughter".)
 
 ## Who was where, per ledger value
 

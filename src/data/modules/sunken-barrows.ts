@@ -372,9 +372,9 @@ const scenes: Record<string, Scene> = {
       // sisters hold it against the valley). A cold start has no word of him.
       // Spared is one line, true of a chief marched in or let go.
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }],
-        text: 'Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is {vargan}. "Those shallows were common water in my grandfather\'s day," {aldous} says. "It is written so in my ledger. {vargan} sold them to the hag anyway, and sold her the carters he took off the marsh road besides. And there he is. Alive, and cutting reeds in the shallows he sold."' },
+        text: 'Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is {vargan}. "Those shallows were common water in my grandfather\'s day," {aldous} says. "It is written so in my ledger. {vargan} sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. And there he is. Alive, and cutting reeds in the shallows he sold."' },
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }],
-        text: '"Those shallows were common water in my grandfather\'s day," {aldous} says to the glass. "It is written so in my ledger. {vargan} sold them to the hag anyway, and sold her the carters he took off the marsh road besides. I wrote the sale down under the bounty, and the day you killed him under that."' },
+        text: '"Those shallows were common water in my grandfather\'s day," {aldous} says to the glass. "It is written so in my ledger. {vargan} sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. I wrote the sale down under the bounty, and the day you killed him under that."' },
       'He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."',
       '"My scout, {wren}, will meet you at the fen road. She asked for the task before I could give it. {thornwick}\'s people do not wait to be told."',
     ],
@@ -637,7 +637,7 @@ const scenes: Record<string, Scene> = {
       'The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower\'s bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*',
       'Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil\'s mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*',
       { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
-        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
+        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the {ashfang}." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
       { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }],
         text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
       // Bound in Part 1: the note read against a keeper still alive.
@@ -1002,7 +1002,7 @@ const scenes: Record<string, Scene> = {
       // The door's clock, said by the man running it (see `dawns`). Only text
       // reads `door-straining` here.
       { if: [{ kind: 'notFlag', flag: 'door-straining' }],
-        text: 'He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don\'t like to be stopped. Another night or two, and the {warden} will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.' },
+        text: 'He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don\'t like to be stopped. Soon enough, the {warden} will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.' },
       { if: [{ kind: 'flag', flag: 'door-straining' }],
         text: 'He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don\'t like to be stopped. You felt the ground shake? That was the {warden}, leaning on his door." He picks up his lantern and goes on down into the dark, in no hurry at all.' },
       { if: [{ kind: 'companion', companion: 'wren' }],
@@ -1111,7 +1111,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve\'s chain of office hangs round his neck, the twin of the one {aldous} grips in his hall.',
       { if: [{ kind: 'notFlag', flag: 'diggers-roused' }],
-        text: 'The call that brought him down here has let him go. He is light now, just bones in a coat.' },
+        text: 'He has stopped answering the call that brought him down here. He is light now, just bones in a coat.' },
       { if: [{ kind: 'flag', flag: 'diggers-roused' }],
         text: 'He came at you with the rest of them, and he fell with the rest of them. He is light now, just bones in a coat.' },
       { if: [{ kind: 'companion', companion: 'wren' }],
@@ -1417,7 +1417,7 @@ const scenes: Record<string, Scene> = {
         text: 'With {halden} in the ground, the town has no priest. Your cleric says the burial words at every grave, and each time stops short of the line about the bell.' },
       // The drowned folk's purses, handed over at the reburials.
       { if: [{ kind: 'flag', flag: 'drowned-gold-home' }],
-        text: 'The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk\'s purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. {wren} tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.' },
+        text: 'The fen-folk come in from the far pools for the reburials, and {wren} hands over the drowned folk\'s purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. The last purse {wren} keeps back, tucked into her coat. She will walk it out to the far edge of the fen herself.' },
       // The supper's worth, said before it is bought (the valley's regard).
       // "The innkeeper": a company that never stopped at the inn has not met
       // {mira} by name (see her `introducedAt`).
@@ -1433,7 +1433,7 @@ const scenes: Record<string, Scene> = {
       // Where the party fell: in the fen (a fight there, or a night camp), or
       // down in the barrows. Once the gate is passed, Wren is the one out there.
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
-        text: 'Eel-catchers from the far pools found you by the raised road at first light, {mira} says. They brought you in on hurdles, and would not stop for so much as a cup.' },
+        text: 'Eel-catchers from the far pools found the whole company by the raised road at first light, {wren} among you, {mira} says. They brought you in on hurdles, and would not stop for so much as a cup.' },
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{mira} will not say who brought you back across the fen. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
       { if: [{ kind: 'at', hub: 'undercrypt' }, { kind: 'noCompanion', companion: 'wren' }],
@@ -1449,13 +1449,13 @@ const scenes: Record<string, Scene> = {
     again: [
       'Back on the settles in {mira}\'s back room, with fresh bruises under the old mud.',
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
-        text: 'The eel-catchers found you this time, {mira} says. They stayed only long enough to warm their hands.' },
+        text: 'The eel-catchers brought you in again, {wren} with you, {mira} says. They stayed only long enough to warm their hands.' },
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
         text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
       { if: [{ kind: 'at', hub: 'undercrypt' }, { kind: 'noCompanion', companion: 'wren' }],
         text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
       { if: [{ kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'companion', companion: 'wren' }],
-        text: '{wren} is on the next settle again, boots and all, and does not open her eyes.' },
+        text: '{wren} is on the next settle, boots and all, and does not open her eyes.' },
       '"You know where the bread is," {mira} says, and leaves you to it.',
     ],
     // A wipe costs a day, as in every chapter (and the door's clock runs on).
